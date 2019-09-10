@@ -2,78 +2,94 @@ Return-Path: <SRS0=Blre=XF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D14A5C3A5A2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 06:06:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 32DA3C3A5A2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 06:31:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4B94D2089F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 06:06:05 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="dGp+kTd8"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4B94D2089F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 7664C2171F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 06:31:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7664C2171F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46SDzv35PjzDqV1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 16:06:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46SFXw10ZzzDqTG
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 16:31:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="dGp+kTd8"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46SDxv2HKVzDqPT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2019 16:04:18 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 46SDxp5XBpz9twm3;
- Tue, 10 Sep 2019 08:04:14 +0200 (CEST)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=dGp+kTd8; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 0jE7q2QeiFSq; Tue, 10 Sep 2019 08:04:14 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 46SDxp4Qjkz9twm2;
- Tue, 10 Sep 2019 08:04:14 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1568095454; bh=gaHQgkUONjgM7e5sTpiG9hKW2wcu3sDKClNiLbQr+G0=;
- h=From:Subject:To:Cc:Date:From;
- b=dGp+kTd8MFb+A6ub88VAvyIgBL+gNtMDiPIk6eBeQK7XvuqYXkCQksKXTLZJuRGGv
- edeH6l45cXSt2adFoPN8yzRPDhWXBeWKHwAsRVmfrBQtrh1EEkm/tOESAVTvLRGsJ0
- 5ACi3HRB8g0sQUBfz7t4mc4/f2XitC8NRbON+vAk=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 75ACC8B78E;
- Tue, 10 Sep 2019 08:04:15 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id Ztk9dE8IcFel; Tue, 10 Sep 2019 08:04:15 +0200 (CEST)
-Received: from pc16032vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 35A448B754;
- Tue, 10 Sep 2019 08:04:15 +0200 (CEST)
-Received: by localhost.localdomain (Postfix, from userid 0)
- id C1E3D6B734; Tue, 10 Sep 2019 06:04:14 +0000 (UTC)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] crypto: talitos - fix hash result for VMAP_STACK
-To: Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>, Eric Biggers <ebiggers@google.com>
-Message-Id: <20190910060414.C1E3D6B734@pc16032vm.idsi0.si.c-s.fr>
-Date: Tue, 10 Sep 2019 06:04:14 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46SFVs1R72zDqT5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2019 16:29:24 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x8A6T3qg046927; Tue, 10 Sep 2019 02:29:12 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ux6hc852q-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 10 Sep 2019 02:29:12 -0400
+Received: from m0098421.ppops.net (m0098421.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x8A6T8pR047682;
+ Tue, 10 Sep 2019 02:29:08 -0400
+Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
+ [169.55.91.170])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ux6hc84tm-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 10 Sep 2019 02:29:06 -0400
+Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
+ by ppma02wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x8A6RKFm011447;
+ Tue, 10 Sep 2019 06:28:43 GMT
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by ppma02wdc.us.ibm.com with ESMTP id 2uv4670m6c-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 10 Sep 2019 06:28:43 +0000
+Received: from b03ledav005.gho.boulder.ibm.com
+ (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x8A6Sg2B36241826
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 10 Sep 2019 06:28:42 GMT
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 55D30BE04F;
+ Tue, 10 Sep 2019 06:28:42 +0000 (GMT)
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id CA354BE053;
+ Tue, 10 Sep 2019 06:28:39 +0000 (GMT)
+Received: from skywalker.ibmuc.com (unknown [9.199.41.80])
+ by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Tue, 10 Sep 2019 06:28:39 +0000 (GMT)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: dan.j.williams@intel.com, mpe@ellerman.id.au, oohall@gmail.com
+Subject: [PATCH 2/2] powerpc/nvdimm: Update vmemmap_populated to check
+ sub-section range
+Date: Tue, 10 Sep 2019 11:58:26 +0530
+Message-Id: <20190910062826.10041-2-aneesh.kumar@linux.ibm.com>
+X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20190910062826.10041-1-aneesh.kumar@linux.ibm.com>
+References: <20190910062826.10041-1-aneesh.kumar@linux.ibm.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-09-10_06:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1906280000 definitions=main-1909100063
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,52 +101,109 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
- linux-kernel@vger.kernel.org
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-nvdimm@lists.01.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When VMAP_STACK is selected, stack cannot be DMA-mapped.
-Therefore, the hash result has to be DMA-mapped in the request
-context and copied into areq->result at completion.
+With commit: 7cc7867fb061 ("mm/devm_memremap_pages: enable sub-section remap")
+pmem namespaces are remapped in 2M chunks. On architectures like ppc64 we
+can map the memmap area using 16MB hugepage size and that can cover
+a memory range of 16G.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+While enabling new pmem namespaces, since memory is added in sub-section chunks,
+before creating a new memmap mapping, kernel should check whether there is an
+existing memmap mapping covering the new pmem namespace. Currently, this is
+validated by checking whether the section covering the range is already
+initialized or not. Considering there can be multiple namespaces in the same
+section this can result in wrong validation. Update this to check for
+sub-sections in the range. This is done by checking for all pfns in the range we
+are mapping.
+
+We could optimize this by checking only just one pfn in each sub-section. But
+since this is not fast-path we keep this simple.
+
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- drivers/crypto/talitos.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ arch/powerpc/mm/init_64.c | 45 ++++++++++++++++++++-------------------
+ 1 file changed, 23 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
-index c9d686a0e805..9bd9ff312e2d 100644
---- a/drivers/crypto/talitos.c
-+++ b/drivers/crypto/talitos.c
-@@ -1728,6 +1728,7 @@ static void common_nonsnoop_hash_unmap(struct device *dev,
- 				       struct ahash_request *areq)
- {
- 	struct talitos_ahash_req_ctx *req_ctx = ahash_request_ctx(areq);
-+	struct crypto_ahash *tfm = crypto_ahash_reqtfm(areq);
- 	struct talitos_private *priv = dev_get_drvdata(dev);
- 	bool is_sec1 = has_ftr_sec1(priv);
- 	struct talitos_desc *desc = &edesc->desc;
-@@ -1738,6 +1739,9 @@ static void common_nonsnoop_hash_unmap(struct device *dev,
- 	if (desc->next_desc &&
- 	    desc->ptr[5].ptr != desc2->ptr[5].ptr)
- 		unmap_single_talitos_ptr(dev, &desc2->ptr[5], DMA_FROM_DEVICE);
-+	if (req_ctx->last)
-+		memcpy(areq->result, req_ctx->hw_context,
-+		       crypto_ahash_digestsize(tfm));
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index 4e08246acd79..7710ccdc19a2 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -70,30 +70,24 @@ EXPORT_SYMBOL_GPL(kernstart_addr);
  
- 	if (req_ctx->psrc)
- 		talitos_sg_unmap(dev, edesc, req_ctx->psrc, NULL, 0, 0);
-@@ -1869,7 +1873,7 @@ static int common_nonsnoop_hash(struct talitos_edesc *edesc,
- 	if (req_ctx->last)
- 		map_single_talitos_ptr(dev, &desc->ptr[5],
- 				       crypto_ahash_digestsize(tfm),
--				       areq->result, DMA_FROM_DEVICE);
-+				       req_ctx->hw_context, DMA_FROM_DEVICE);
- 	else
- 		map_single_talitos_ptr_nosync(dev, &desc->ptr[5],
- 					      req_ctx->hw_context_size,
+ #ifdef CONFIG_SPARSEMEM_VMEMMAP
+ /*
+- * Given an address within the vmemmap, determine the pfn of the page that
+- * represents the start of the section it is within.  Note that we have to
+- * do this by hand as the proffered address may not be correctly aligned.
+- * Subtraction of non-aligned pointers produces undefined results.
+- */
+-static unsigned long __meminit vmemmap_section_start(unsigned long page)
+-{
+-	unsigned long offset = page - ((unsigned long)(vmemmap));
+-
+-	/* Return the pfn of the start of the section. */
+-	return (offset / sizeof(struct page)) & PAGE_SECTION_MASK;
+-}
+-
+-/*
+- * Check if this vmemmap page is already initialised.  If any section
++ * Check if this vmemmap page is already initialised.  If any sub section
+  * which overlaps this vmemmap page is initialised then this page is
+  * initialised already.
+  */
+-static int __meminit vmemmap_populated(unsigned long start, int page_size)
++
++static int __meminit vmemmap_populated(unsigned long start, int size)
+ {
+-	unsigned long end = start + page_size;
+-	start = (unsigned long)(pfn_to_page(vmemmap_section_start(start)));
++	unsigned long end = start + size;
+ 
+-	for (; start < end; start += (PAGES_PER_SECTION * sizeof(struct page)))
++	/* start is size aligned and it is always > sizeof(struct page) */
++	VM_BUG_ON(start & sizeof(struct page));
++	for (; start < end; start += sizeof(struct page))
++		/*
++		 * pfn valid check here is intended to really check
++		 * whether we have any subsection already initialized
++		 * in this range. We keep it simple by checking every
++		 * pfn in the range.
++		 */
+ 		if (pfn_valid(page_to_pfn((struct page *)start)))
+ 			return 1;
+ 
+@@ -201,6 +195,12 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node,
+ 		void *p = NULL;
+ 		int rc;
+ 
++		/*
++		 * This vmemmap range is backing different subsections. If any
++		 * of that subsection is marked valid, that means we already
++		 * have initialized a page table covering this range and hence
++		 * the vmemmap range is populated.
++		 */
+ 		if (vmemmap_populated(start, page_size))
+ 			continue;
+ 
+@@ -290,9 +290,10 @@ void __ref vmemmap_free(unsigned long start, unsigned long end,
+ 		struct page *page;
+ 
+ 		/*
+-		 * the section has already be marked as invalid, so
+-		 * vmemmap_populated() true means some other sections still
+-		 * in this page, so skip it.
++		 * We have already marked the subsection we are trying to remove
++		 * invalid. So if we want to remove the vmemmap range, we
++		 * need to make sure there is no subsection marked valid
++		 * in this range.
+ 		 */
+ 		if (vmemmap_populated(start, page_size))
+ 			continue;
 -- 
-2.13.3
+2.21.0
 
