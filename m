@@ -2,81 +2,65 @@ Return-Path: <SRS0=Blre=XF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3156C3A5A2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 09:47:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C7B3C3A5A2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 09:50:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 64A7B20872
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 09:47:16 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="Q+/VrpLZ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 64A7B20872
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id E970A20872
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 09:50:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E970A20872
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46SKv62kqXzDrbj
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 19:47:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46SKyj2FmJzDrN9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 19:50:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com;
+ envelope-from=pagupta@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="Q+/VrpLZ"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46SKDl4pDSzDr5N
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2019 19:17:27 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 46SKDZ3jDFz9txW4;
- Tue, 10 Sep 2019 11:17:18 +0200 (CEST)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=Q+/VrpLZ; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 6XwP7np1WQcI; Tue, 10 Sep 2019 11:17:18 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 46SKDZ2V45z9txW3;
- Tue, 10 Sep 2019 11:17:18 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1568107038; bh=ZoAw49VCT8ne5Yeo1dRk2fXtv2R60t2YgTp5B7ZoyCw=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=Q+/VrpLZO8+MuHu0zmNZbHYXC7+36vhUwJ8cyNlxJXKHLP4ej4wrYqDk+FBQjs2hC
- gZo+UuVJ7DR+gYfkZ82gFJNLRrTgWMkVcrFeSBd/KJTeXZfwkyGE0lXJZu+3K89xSS
- Zp0fQGPN3LtKC2FmBPa046mUiMv3xYoggWd4biKs=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A2D008B88D;
- Tue, 10 Sep 2019 11:17:16 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 4IsK2LFNfSqA; Tue, 10 Sep 2019 11:17:15 +0200 (CEST)
-Received: from pc16032vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D33BB8B89D;
- Tue, 10 Sep 2019 11:16:34 +0200 (CEST)
-Received: by pc16032vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 6DD2B6B739; Tue, 10 Sep 2019 09:16:34 +0000 (UTC)
-Message-Id: <a99bdfb64e287b16b8cd3f7ec1abfdfb50c7cc64.1568106758.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1568106758.git.christophe.leroy@c-s.fr>
-References: <cover.1568106758.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 15/15] powerpc/32s: Activate CONFIG_VMAP_STACK
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
- npiggin@gmail.com, dja@axtens.net
-Date: Tue, 10 Sep 2019 09:16:34 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46SH5R2Nc6zDqVj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2019 17:40:56 +1000 (AEST)
+Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.phx2.redhat.com
+ [10.5.11.22])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id 444F910F23E6;
+ Tue, 10 Sep 2019 07:40:54 +0000 (UTC)
+Received: from colo-mx.corp.redhat.com
+ (colo-mx02.intmail.prod.int.phx2.redhat.com [10.5.11.21])
+ by smtp.corp.redhat.com (Postfix) with ESMTPS id 33C3510018F9;
+ Tue, 10 Sep 2019 07:40:53 +0000 (UTC)
+Received: from zmail21.collab.prod.int.phx2.redhat.com
+ (zmail21.collab.prod.int.phx2.redhat.com [10.5.83.24])
+ by colo-mx.corp.redhat.com (Postfix) with ESMTP id 9F7564EE50;
+ Tue, 10 Sep 2019 07:40:53 +0000 (UTC)
+Date: Tue, 10 Sep 2019 03:40:52 -0400 (EDT)
+From: Pankaj Gupta <pagupta@redhat.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Message-ID: <2020260189.13761278.1568101252797.JavaMail.zimbra@redhat.com>
+In-Reply-To: <20190910062826.10041-1-aneesh.kumar@linux.ibm.com>
+References: <20190910062826.10041-1-aneesh.kumar@linux.ibm.com>
+Subject: Re: [PATCH 1/2] libnvdimm/altmap: Track namespace boundaries in altmap
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.67.116.33, 10.4.195.7]
+Thread-Topic: libnvdimm/altmap: Track namespace boundaries in altmap
+Thread-Index: 0vGHbgAC4vRUi42fXCRBMq+d5EI7bA==
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.22
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.6.2
+ (mx1.redhat.com [10.5.110.66]); Tue, 10 Sep 2019 07:40:54 +0000 (UTC)
+X-Mailman-Approved-At: Tue, 10 Sep 2019 19:26:42 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,292 +72,156 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: Sachin Sant <sachinp@linux.vnet.ibm.com>, linux-nvdimm@lists.01.org,
+ oohall@gmail.com, dan j williams <dan.j.williams@intel.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-A few changes to retrieve DAR and DSISR from struct regs
-instead of retrieving them directly, as they may have
-changed due to a TLB miss.
 
-Also modifies hash_page() and friends to work with virtual
-data addresses instead of physical ones.
+> 
+> With PFN_MODE_PMEM namespace, the memmap area is allocated from the device
+> area. Some architectures map the memmap area with large page size. On
+> architectures like ppc64, 16MB page for memap mapping can map 262144 pfns.
+> This maps a namespace size of 16G.
+> 
+> When populating memmap region with 16MB page from the device area,
+> make sure the allocated space is not used to map resources outside this
+> namespace. Such usage of device area will prevent a namespace destroy.
+> 
+> Add resource end pnf in altmap and use that to check if the memmap area
+> allocation can map pfn outside the namespace. On ppc64 in such case we
+> fallback
+> to allocation from memory.
+> 
+> This fix kernel crash reported below:
+> 
+> [  132.034989] WARNING: CPU: 13 PID: 13719 at mm/memremap.c:133
+> devm_memremap_pages_release+0x2d8/0x2e0
+> [  133.464754] BUG: Unable to handle kernel data access at 0xc00c00010b204000
+> [  133.464760] Faulting instruction address: 0xc00000000007580c
+> [  133.464766] Oops: Kernel access of bad area, sig: 11 [#1]
+> [  133.464771] LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=2048 NUMA pSeries
+> .....
+> [  133.464901] NIP [c00000000007580c] vmemmap_free+0x2ac/0x3d0
+> [  133.464906] LR [c0000000000757f8] vmemmap_free+0x298/0x3d0
+> [  133.464910] Call Trace:
+> [  133.464914] [c000007cbfd0f7b0] [c0000000000757f8] vmemmap_free+0x298/0x3d0
+> (unreliable)
+> [  133.464921] [c000007cbfd0f8d0] [c000000000370a44]
+> section_deactivate+0x1a4/0x240
+> [  133.464928] [c000007cbfd0f980] [c000000000386270]
+> __remove_pages+0x3a0/0x590
+> [  133.464935] [c000007cbfd0fa50] [c000000000074158]
+> arch_remove_memory+0x88/0x160
+> [  133.464942] [c000007cbfd0fae0] [c0000000003be8c0]
+> devm_memremap_pages_release+0x150/0x2e0
+> [  133.464949] [c000007cbfd0fb70] [c000000000738ea0]
+> devm_action_release+0x30/0x50
+> [  133.464955] [c000007cbfd0fb90] [c00000000073a5a4]
+> release_nodes+0x344/0x400
+> [  133.464961] [c000007cbfd0fc40] [c00000000073378c]
+> device_release_driver_internal+0x15c/0x250
+> [  133.464968] [c000007cbfd0fc80] [c00000000072fd14] unbind_store+0x104/0x110
+> [  133.464973] [c000007cbfd0fcd0] [c00000000072ee24] drv_attr_store+0x44/0x70
+> [  133.464981] [c000007cbfd0fcf0] [c0000000004a32bc] sysfs_kf_write+0x6c/0xa0
+> [  133.464987] [c000007cbfd0fd10] [c0000000004a1dfc]
+> kernfs_fop_write+0x17c/0x250
+> [  133.464993] [c000007cbfd0fd60] [c0000000003c348c] __vfs_write+0x3c/0x70
+> [  133.464999] [c000007cbfd0fd80] [c0000000003c75d0] vfs_write+0xd0/0x250
+> 
+> Reported-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> ---
+>  arch/powerpc/mm/init_64.c | 17 ++++++++++++++++-
+>  drivers/nvdimm/pfn_devs.c |  2 ++
+>  include/linux/memremap.h  |  1 +
+>  3 files changed, 19 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+> index a44f6281ca3a..4e08246acd79 100644
+> --- a/arch/powerpc/mm/init_64.c
+> +++ b/arch/powerpc/mm/init_64.c
+> @@ -172,6 +172,21 @@ static __meminit void vmemmap_list_populate(unsigned
+> long phys,
+>  	vmemmap_list = vmem_back;
+>  }
+>  
+> +static bool altmap_cross_boundary(struct vmem_altmap *altmap, unsigned long
+> start,
+> +				unsigned long page_size)
+> +{
+> +	unsigned long nr_pfn = page_size / sizeof(struct page);
+> +	unsigned long start_pfn = page_to_pfn((struct page *)start);
+> +
+> +	if ((start_pfn + nr_pfn) > altmap->end_pfn)
+> +		return true;
+> +
+> +	if (start_pfn < altmap->base_pfn)
+> +		return true;
+> +
+> +	return false;
+> +}
+> +
+>  int __meminit vmemmap_populate(unsigned long start, unsigned long end, int
+>  node,
+>  		struct vmem_altmap *altmap)
+>  {
+> @@ -194,7 +209,7 @@ int __meminit vmemmap_populate(unsigned long start,
+> unsigned long end, int node,
+>  		 * fail due to alignment issues when using 16MB hugepages, so
+>  		 * fall back to system memory if the altmap allocation fail.
+>  		 */
+> -		if (altmap) {
+> +		if (altmap && !altmap_cross_boundary(altmap, start, page_size)) {
+>  			p = altmap_alloc_block_buf(page_size, altmap);
+>  			if (!p)
+>  				pr_debug("altmap block allocation failed, falling back to system
+>  				memory");
+> diff --git a/drivers/nvdimm/pfn_devs.c b/drivers/nvdimm/pfn_devs.c
+> index 3e7b11cf1aae..a616d69c8224 100644
+> --- a/drivers/nvdimm/pfn_devs.c
+> +++ b/drivers/nvdimm/pfn_devs.c
+> @@ -618,9 +618,11 @@ static int __nvdimm_setup_pfn(struct nd_pfn *nd_pfn,
+> struct dev_pagemap *pgmap)
+>  	struct nd_namespace_common *ndns = nd_pfn->ndns;
+>  	struct nd_namespace_io *nsio = to_nd_namespace_io(&ndns->dev);
+>  	resource_size_t base = nsio->res.start + start_pad;
+> +	resource_size_t end = nsio->res.end - end_trunc;
+>  	struct vmem_altmap __altmap = {
+>  		.base_pfn = init_altmap_base(base),
+>  		.reserve = init_altmap_reserve(base),
+> +		.end_pfn = PHYS_PFN(end),
+>  	};
+>  
+>  	memcpy(res, &nsio->res, sizeof(*res));
+> diff --git a/include/linux/memremap.h b/include/linux/memremap.h
+> index f8a5b2a19945..c70996fe48c8 100644
+> --- a/include/linux/memremap.h
+> +++ b/include/linux/memremap.h
+> @@ -17,6 +17,7 @@ struct device;
+>   */
+>  struct vmem_altmap {
+>  	const unsigned long base_pfn;
+> +	const unsigned long end_pfn;
+>  	const unsigned long reserve;
+>  	unsigned long free;
+>  	unsigned long align;
+> --
+> 2.21.0
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/kernel/entry_32.S         |  4 +++
- arch/powerpc/kernel/head_32.S          | 19 +++++++++++---
- arch/powerpc/kernel/head_32.h          |  4 ++-
- arch/powerpc/mm/book3s32/hash_low.S    | 46 +++++++++++++++++++++-------------
- arch/powerpc/mm/book3s32/mmu.c         |  9 +++++--
- arch/powerpc/platforms/Kconfig.cputype |  2 ++
- 6 files changed, 61 insertions(+), 23 deletions(-)
+This patch looks good to me. It helps to prevent
+namespace access across boundaries for altmap
+hugepage allocation.
 
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 00fcf954e742..1d3b152ee54f 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -1365,7 +1365,11 @@ _GLOBAL(enter_rtas)
- 	lis	r6,1f@ha	/* physical return address for rtas */
- 	addi	r6,r6,1f@l
- 	tophys(r6,r6)
-+#ifdef CONFIG_VMAP_STACK
-+	mr	r7, r1
-+#else
- 	tophys(r7,r1)
-+#endif
- 	lwz	r8,RTASENTRY(r4)
- 	lwz	r4,RTASBASE(r4)
- 	mfmsr	r9
-diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
-index 5bda6a092673..97bc02306a34 100644
---- a/arch/powerpc/kernel/head_32.S
-+++ b/arch/powerpc/kernel/head_32.S
-@@ -272,14 +272,22 @@ __secondary_hold_acknowledge:
-  */
- 	. = 0x200
- 	DO_KVM  0x200
-+MachineCheck:
- 	EXCEPTION_PROLOG_0
-+#ifdef CONFIG_VMAP_STACK
-+	li	r11, MSR_KERNEL & ~(MSR_IR | MSR_RI) /* can take DTLB miss */
-+	mtmsr	r11
-+#endif
- #ifdef CONFIG_PPC_CHRP
- 	mfspr	r11, SPRN_SPRG_THREAD
-+#ifdef CONFIG_VMAP_STACK
-+	tovirt(r11, r11)
-+#endif
- 	lwz	r11, RTAS_SP(r11)
- 	cmpwi	cr1, r11, 0
- 	bne	cr1, 7f
- #endif /* CONFIG_PPC_CHRP */
--	EXCEPTION_PROLOG_1
-+	EXCEPTION_PROLOG_1 rtas
- 7:	EXCEPTION_PROLOG_2
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- #ifdef CONFIG_PPC_CHRP
-@@ -294,7 +302,7 @@ __secondary_hold_acknowledge:
- 	. = 0x300
- 	DO_KVM  0x300
- DataAccess:
--	EXCEPTION_PROLOG
-+	EXCEPTION_PROLOG dar
- 	get_and_save_dar_dsisr_on_stack	r4, r5, r11
- BEGIN_MMU_FTR_SECTION
- #ifdef CONFIG_PPC_KUAP
-@@ -336,7 +344,7 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_HPTE_TABLE)
- 	. = 0x600
- 	DO_KVM  0x600
- Alignment:
--	EXCEPTION_PROLOG
-+	EXCEPTION_PROLOG dar
- 	save_dar_dsisr_on_stack r4, r5, r11
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	EXC_XFER_STD(0x600, alignment_exception)
-@@ -643,6 +651,11 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_NEED_DTLB_SW_LRU)
- handle_page_fault_tramp:
- 	EXC_XFER_LITE(0x300, handle_page_fault)
- 
-+#ifdef CONFIG_VMAP_STACK
-+stack_ovf_trampoline:
-+	b	stack_ovf
-+#endif
-+
- AltiVecUnavailable:
- 	EXCEPTION_PROLOG
- #ifdef CONFIG_ALTIVEC
-diff --git a/arch/powerpc/kernel/head_32.h b/arch/powerpc/kernel/head_32.h
-index 283d4298d555..ae2c8e07e1d5 100644
---- a/arch/powerpc/kernel/head_32.h
-+++ b/arch/powerpc/kernel/head_32.h
-@@ -38,10 +38,12 @@
- 	andi.	r11, r11, MSR_PR
- .endm
- 
--.macro EXCEPTION_PROLOG_1
-+.macro EXCEPTION_PROLOG_1 rtas
- #ifdef CONFIG_VMAP_STACK
-+	.ifb	\rtas
- 	li	r11, MSR_KERNEL & ~(MSR_IR | MSR_RI) /* can take DTLB miss */
- 	mtmsr	r11
-+	.endif
- 	subi	r11, r1, INT_FRAME_SIZE		/* use r1 if kernel */
- #else
- 	tophys(r11,r1)			/* use tophys(r1) if kernel */
-diff --git a/arch/powerpc/mm/book3s32/hash_low.S b/arch/powerpc/mm/book3s32/hash_low.S
-index 8bbbd9775c8a..c11b0a005196 100644
---- a/arch/powerpc/mm/book3s32/hash_low.S
-+++ b/arch/powerpc/mm/book3s32/hash_low.S
-@@ -25,6 +25,12 @@
- #include <asm/feature-fixups.h>
- #include <asm/code-patching-asm.h>
- 
-+#ifdef CONFIG_VMAP_STACK
-+#define ADDR_OFFSET	0
-+#else
-+#define ADDR_OFFSET	PAGE_OFFSET
-+#endif
-+
- #ifdef CONFIG_SMP
- 	.section .bss
- 	.align	2
-@@ -47,8 +53,8 @@ mmu_hash_lock:
- 	.text
- _GLOBAL(hash_page)
- #ifdef CONFIG_SMP
--	lis	r8, (mmu_hash_lock - PAGE_OFFSET)@h
--	ori	r8, r8, (mmu_hash_lock - PAGE_OFFSET)@l
-+	lis	r8, (mmu_hash_lock - ADDR_OFFSET)@h
-+	ori	r8, r8, (mmu_hash_lock - ADDR_OFFSET)@l
- 	lis	r0,0x0fff
- 	b	10f
- 11:	lwz	r6,0(r8)
-@@ -66,9 +72,12 @@ _GLOBAL(hash_page)
- 	cmplw	0,r4,r0
- 	ori	r3,r3,_PAGE_USER|_PAGE_PRESENT /* test low addresses as user */
- 	mfspr	r5, SPRN_SPRG_PGDIR	/* phys page-table root */
-+#ifdef CONFIG_VMAP_STACK
-+	tovirt(r5, r5)
-+#endif
- 	blt+	112f			/* assume user more likely */
--	lis	r5, (swapper_pg_dir - PAGE_OFFSET)@ha	/* if kernel address, use */
--	addi	r5 ,r5 ,(swapper_pg_dir - PAGE_OFFSET)@l	/* kernel page table */
-+	lis	r5, (swapper_pg_dir - ADDR_OFFSET)@ha	/* if kernel address, use */
-+	addi	r5 ,r5 ,(swapper_pg_dir - ADDR_OFFSET)@l	/* kernel page table */
- 	rlwimi	r3,r9,32-12,29,29	/* MSR_PR -> _PAGE_USER */
- 112:
- #ifndef CONFIG_PTE_64BIT
-@@ -80,6 +89,9 @@ _GLOBAL(hash_page)
- 	lwzx	r8,r8,r5		/* Get L1 entry */
- 	rlwinm.	r8,r8,0,0,20		/* extract pt base address */
- #endif
-+#ifdef CONFIG_VMAP_STACK
-+	tovirt(r8, r8)
-+#endif
- #ifdef CONFIG_SMP
- 	beq-	hash_page_out		/* return if no mapping */
- #else
-@@ -137,9 +149,9 @@ retry:
- 
- #ifdef CONFIG_SMP
- 	eieio
--	lis	r8, (mmu_hash_lock - PAGE_OFFSET)@ha
-+	lis	r8, (mmu_hash_lock - ADDR_OFFSET)@ha
- 	li	r0,0
--	stw	r0, (mmu_hash_lock - PAGE_OFFSET)@l(r8)
-+	stw	r0, (mmu_hash_lock - ADDR_OFFSET)@l(r8)
- #endif
- 
- 	/* Return from the exception */
-@@ -152,9 +164,9 @@ retry:
- #ifdef CONFIG_SMP
- hash_page_out:
- 	eieio
--	lis	r8, (mmu_hash_lock - PAGE_OFFSET)@ha
-+	lis	r8, (mmu_hash_lock - ADDR_OFFSET)@ha
- 	li	r0,0
--	stw	r0, (mmu_hash_lock - PAGE_OFFSET)@l(r8)
-+	stw	r0, (mmu_hash_lock - ADDR_OFFSET)@l(r8)
- 	blr
- #endif /* CONFIG_SMP */
- 
-@@ -329,7 +341,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_NEED_COHERENT)
- 	patch_site	1f, patch__hash_page_A1
- 	patch_site	2f, patch__hash_page_A2
- 	/* Get the address of the primary PTE group in the hash table (r3) */
--0:	lis	r0, (Hash_base - PAGE_OFFSET)@h	/* base address of hash table */
-+0:	lis	r0, (Hash_base - ADDR_OFFSET)@h	/* base address of hash table */
- 1:	rlwimi	r0,r3,LG_PTEG_SIZE,HASH_LEFT,HASH_RIGHT    /* VSID -> hash */
- 2:	rlwinm	r3,r4,20+LG_PTEG_SIZE,HASH_LEFT,HASH_RIGHT /* PI -> hash */
- 	xor	r3,r3,r0		/* make primary hash */
-@@ -343,10 +355,10 @@ END_FTR_SECTION_IFCLR(CPU_FTR_NEED_COHERENT)
- 	beq+	10f			/* no PTE: go look for an empty slot */
- 	tlbie	r4
- 
--	lis	r4, (htab_hash_searches - PAGE_OFFSET)@ha
--	lwz	r6, (htab_hash_searches - PAGE_OFFSET)@l(r4)
-+	lis	r4, (htab_hash_searches - ADDR_OFFSET)@ha
-+	lwz	r6, (htab_hash_searches - ADDR_OFFSET)@l(r4)
- 	addi	r6,r6,1			/* count how many searches we do */
--	stw	r6, (htab_hash_searches - PAGE_OFFSET)@l(r4)
-+	stw	r6, (htab_hash_searches - ADDR_OFFSET)@l(r4)
- 
- 	/* Search the primary PTEG for a PTE whose 1st (d)word matches r5 */
- 	mtctr	r0
-@@ -378,10 +390,10 @@ END_FTR_SECTION_IFCLR(CPU_FTR_NEED_COHERENT)
- 	beq+	found_empty
- 
- 	/* update counter of times that the primary PTEG is full */
--	lis	r4, (primary_pteg_full - PAGE_OFFSET)@ha
--	lwz	r6, (primary_pteg_full - PAGE_OFFSET)@l(r4)
-+	lis	r4, (primary_pteg_full - ADDR_OFFSET)@ha
-+	lwz	r6, (primary_pteg_full - ADDR_OFFSET)@l(r4)
- 	addi	r6,r6,1
--	stw	r6, (primary_pteg_full - PAGE_OFFSET)@l(r4)
-+	stw	r6, (primary_pteg_full - ADDR_OFFSET)@l(r4)
- 
- 	patch_site	0f, patch__hash_page_C
- 	/* Search the secondary PTEG for an empty slot */
-@@ -415,8 +427,8 @@ END_FTR_SECTION_IFCLR(CPU_FTR_NEED_COHERENT)
- 	 * lockup here but that shouldn't happen
- 	 */
- 
--1:	lis	r4, (next_slot - PAGE_OFFSET)@ha	/* get next evict slot */
--	lwz	r6, (next_slot - PAGE_OFFSET)@l(r4)
-+1:	lis	r4, (next_slot - ADDR_OFFSET)@ha	/* get next evict slot */
-+	lwz	r6, (next_slot - ADDR_OFFSET)@l(r4)
- 	addi	r6,r6,HPTE_SIZE			/* search for candidate */
- 	andi.	r6,r6,7*HPTE_SIZE
- 	stw	r6,next_slot@l(r4)
-diff --git a/arch/powerpc/mm/book3s32/mmu.c b/arch/powerpc/mm/book3s32/mmu.c
-index 84d5fab94f8f..087487323948 100644
---- a/arch/powerpc/mm/book3s32/mmu.c
-+++ b/arch/powerpc/mm/book3s32/mmu.c
-@@ -404,6 +404,7 @@ void __init MMU_init_hw(void)
- void __init MMU_init_hw_patch(void)
- {
- 	unsigned int hmask = Hash_mask >> (16 - LG_HPTEG_SIZE);
-+	unsigned int hash;
- 
- 	if (ppc_md.progress)
- 		ppc_md.progress("hash:patch", 0x345);
-@@ -415,8 +416,12 @@ void __init MMU_init_hw_patch(void)
- 	/*
- 	 * Patch up the instructions in hashtable.S:create_hpte
- 	 */
--	modify_instruction_site(&patch__hash_page_A0, 0xffff,
--				((unsigned int)Hash - PAGE_OFFSET) >> 16);
-+	if (IS_ENABLED(CONFIG_VMAP_STACK))
-+		hash = (unsigned int)Hash;
-+	else
-+		hash = (unsigned int)Hash - PAGE_OFFSET;
-+
-+	modify_instruction_site(&patch__hash_page_A0, 0xffff, hash >> 16);
- 	modify_instruction_site(&patch__hash_page_A1, 0x7c0, hash_mb << 6);
- 	modify_instruction_site(&patch__hash_page_A2, 0x7c0, hash_mb2 << 6);
- 	modify_instruction_site(&patch__hash_page_B, 0xffff, hmask);
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 3c42569b75cc..15c9097dc4f7 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -31,12 +31,14 @@ config PPC_BOOK3S_6xx
- 	select PPC_HAVE_PMU_SUPPORT
- 	select PPC_HAVE_KUEP
- 	select PPC_HAVE_KUAP
-+	select HAVE_ARCH_VMAP_STACK
- 
- config PPC_BOOK3S_601
- 	bool "PowerPC 601"
- 	select PPC_BOOK3S_32
- 	select PPC_FPU
- 	select PPC_HAVE_KUAP
-+	select HAVE_ARCH_VMAP_STACK
- 
- config PPC_85xx
- 	bool "Freescale 85xx"
--- 
-2.13.3
+Reviewed-by: Pankaj Gupta <pagupta@redhat.com>
 
+Thanks,
+Pankaj
+> 
+> _______________________________________________
+> Linux-nvdimm mailing list
+> Linux-nvdimm@lists.01.org
+> https://lists.01.org/mailman/listinfo/linux-nvdimm
+> 
