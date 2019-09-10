@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C9831C3A5A2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 09:26:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A9CCEC3A5A2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 09:28:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CC73F20872
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 09:26:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 29E3220872
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 09:28:26 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="bRfVBqGT"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CC73F20872
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="IYKgYCtR"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 29E3220872
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46SKRM4cwMzDrHp
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 19:26:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46SKTP17lQzDqGJ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 19:28:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,54 +29,55 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="bRfVBqGT"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="IYKgYCtR"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46SKDb0MrBzDr0m
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46SKDZ6vJszDqvL
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2019 19:17:17 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 46SKDT4VFtz9txVy;
+ by localhost (Postfix) with ESMTP id 46SKDT5GGfz9txVw;
  Tue, 10 Sep 2019 11:17:13 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=bRfVBqGT; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=IYKgYCtR; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id gGVpoIF28Ftl; Tue, 10 Sep 2019 11:17:13 +0200 (CEST)
+ with ESMTP id 1hmBA15ncuo5; Tue, 10 Sep 2019 11:17:13 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 46SKDT3N62z9txVw;
+ by pegase1.c-s.fr (Postfix) with ESMTP id 46SKDT49WXz9txVx;
  Tue, 10 Sep 2019 11:17:13 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1568107033; bh=kGon0ub1xJnz0O6Eae+CiFjeXTbJxumDVRZ8IyCl084=;
+ t=1568107033; bh=N7iNBXrKk9Iu0CbrqCmgFWgwrPQ2JpHJEeAehfG7eeM=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=bRfVBqGTm7ZP4TNHo9d4OwEGPPNEDsVuceZm4Z9QKfBh3L9M1H18Boq0bohSbaYj7
- YQcZbhlnXwS5bfH7AQ/zHN6iTLd4PJv46JVLKpfogSFrNFL8HMO3a8xyNYXg7jDBbP
- 13NG9g4/xhCgJySauKt5R3YagsKncUdvCP9ZOJdw=
+ b=IYKgYCtRz2jEkYJ4kZ6zdWpUGGcmfIS/eLuJExLYJgGphvHVpBWAxAOWkL03Z2df3
+ Amju3kN0tsConICiVsrLKk/g0sGS8mMWeKDOvGN2GE6w2qjs+kOt6oKIG/8+2vARhy
+ iynFM4s2s4EAeVbSYNVAK5K73ZWCkMCAido9WMOM=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 327F18B878;
- Tue, 10 Sep 2019 11:17:13 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 006698B875;
+ Tue, 10 Sep 2019 11:17:12 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id BWrtv-xqzQwT; Tue, 10 Sep 2019 11:17:12 +0200 (CEST)
+ with ESMTP id zPIeYemDEANR; Tue, 10 Sep 2019 11:17:12 +0200 (CEST)
 Received: from pc16032vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 66CD38B886;
- Tue, 10 Sep 2019 11:16:20 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 5E94D8B889;
+ Tue, 10 Sep 2019 11:16:22 +0200 (CEST)
 Received: by pc16032vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 096006B739; Tue, 10 Sep 2019 09:16:20 +0000 (UTC)
-Message-Id: <20ee91d8a7abc7d27a79ba704c0fd4b2800e9951.1568106758.git.christophe.leroy@c-s.fr>
+ id 16E0F6B739; Tue, 10 Sep 2019 09:16:22 +0000 (UTC)
+Message-Id: <c3c2b4de8794815d35d88c679f22a49fd8a9e0b7.1568106758.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1568106758.git.christophe.leroy@c-s.fr>
 References: <cover.1568106758.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 01/15] powerpc/32: replace MTMSRD() by mtmsr
+Subject: [PATCH v3 03/15] powerpc/32: save DEAR/DAR before calling
+ handle_page_fault
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  npiggin@gmail.com, dja@axtens.net
-Date: Tue, 10 Sep 2019 09:16:20 +0000 (UTC)
+Date: Tue, 10 Sep 2019 09:16:22 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,124 +95,125 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On PPC32, MTMSRD() is simply defined as mtmsr.
+handle_page_fault() is the only function that save DAR/DEAR itself.
 
-Replace MTMSRD(reg) by mtmsr reg in files dedicated to PPC32,
-this makes the code less obscure.
+Save DAR/DEAR before calling handle_page_fault() to prepare for
+VMAP stack which will require to save even before.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/entry_32.S | 18 +++++++++---------
- arch/powerpc/kernel/head_32.h  |  4 ++--
- 2 files changed, 11 insertions(+), 11 deletions(-)
+ arch/powerpc/kernel/entry_32.S       | 1 -
+ arch/powerpc/kernel/head_32.S        | 2 ++
+ arch/powerpc/kernel/head_40x.S       | 2 ++
+ arch/powerpc/kernel/head_8xx.S       | 2 ++
+ arch/powerpc/kernel/head_booke.h     | 2 ++
+ arch/powerpc/kernel/head_fsl_booke.S | 1 +
+ 6 files changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index d60908ea37fb..6273b4862482 100644
+index 6273b4862482..317ad9df8ba8 100644
 --- a/arch/powerpc/kernel/entry_32.S
 +++ b/arch/powerpc/kernel/entry_32.S
-@@ -397,7 +397,7 @@ ret_from_syscall:
- 	LOAD_REG_IMMEDIATE(r10,MSR_KERNEL)	/* doesn't include MSR_EE */
- 	/* Note: We don't bother telling lockdep about it */
- 	SYNC
--	MTMSRD(r10)
-+	mtmsr	r10
- 	lwz	r9,TI_FLAGS(r2)
- 	li	r8,-MAX_ERRNO
- 	andi.	r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP|_TIF_USER_WORK_MASK|_TIF_PERSYSCALL_MASK)
-@@ -554,7 +554,7 @@ syscall_exit_work:
- 	 */
- 	ori	r10,r10,MSR_EE
- 	SYNC
--	MTMSRD(r10)
-+	mtmsr	r10
+@@ -621,7 +621,6 @@ ppc_swapcontext:
+  */
+ 	.globl	handle_page_fault
+ handle_page_fault:
+-	stw	r4,_DAR(r1)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ #ifdef CONFIG_PPC_BOOK3S_32
+ 	andis.  r0,r5,DSISR_DABRMATCH@h
+diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+index 9e868567b716..bebb49d877f2 100644
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -310,6 +310,7 @@ BEGIN_MMU_FTR_SECTION
+ END_MMU_FTR_SECTION_IFSET(MMU_FTR_HPTE_TABLE)
+ 1:	lwz	r5,_DSISR(r11)		/* get DSISR value */
+ 	mfspr	r4,SPRN_DAR
++	stw	r4, _DAR(r11)
+ 	EXC_XFER_LITE(0x300, handle_page_fault)
  
- 	/* Save NVGPRS if they're not saved already */
- 	lwz	r4,_TRAP(r1)
-@@ -697,7 +697,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_SPE)
- 	and.	r0,r0,r11	/* FP or altivec or SPE enabled? */
- 	beq+	1f
- 	andc	r11,r11,r0
--	MTMSRD(r11)
-+	mtmsr	r11
- 	isync
- 1:	stw	r11,_MSR(r1)
- 	mfcr	r10
-@@ -831,7 +831,7 @@ ret_from_except:
- 	/* Note: We don't bother telling lockdep about it */
- 	LOAD_REG_IMMEDIATE(r10,MSR_KERNEL)
- 	SYNC			/* Some chip revs have problems here... */
--	MTMSRD(r10)		/* disable interrupts */
-+	mtmsr	r10		/* disable interrupts */
  
- 	lwz	r3,_MSR(r1)	/* Returning to user mode? */
- 	andi.	r0,r3,MSR_PR
-@@ -998,7 +998,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_NEED_PAIRED_STWCX)
- 	 */
- 	LOAD_REG_IMMEDIATE(r10,MSR_KERNEL & ~MSR_RI)
- 	SYNC
--	MTMSRD(r10)		/* clear the RI bit */
-+	mtmsr	r10		/* clear the RI bit */
- 	.globl exc_exit_restart
- exc_exit_restart:
- 	lwz	r12,_NIP(r1)
-@@ -1234,7 +1234,7 @@ do_resched:			/* r10 contains MSR_KERNEL here */
- #endif
- 	ori	r10,r10,MSR_EE
- 	SYNC
--	MTMSRD(r10)		/* hard-enable interrupts */
-+	mtmsr	r10		/* hard-enable interrupts */
- 	bl	schedule
- recheck:
- 	/* Note: And we don't tell it we are disabling them again
-@@ -1243,7 +1243,7 @@ recheck:
- 	 */
- 	LOAD_REG_IMMEDIATE(r10,MSR_KERNEL)
- 	SYNC
--	MTMSRD(r10)		/* disable interrupts */
-+	mtmsr	r10		/* disable interrupts */
- 	lwz	r9,TI_FLAGS(r2)
- 	andi.	r0,r9,_TIF_NEED_RESCHED
- 	bne-	do_resched
-@@ -1252,7 +1252,7 @@ recheck:
- do_user_signal:			/* r10 contains MSR_KERNEL here */
- 	ori	r10,r10,MSR_EE
- 	SYNC
--	MTMSRD(r10)		/* hard-enable interrupts */
-+	mtmsr	r10		/* hard-enable interrupts */
- 	/* save r13-r31 in the exception frame, if not already done */
- 	lwz	r3,_TRAP(r1)
- 	andi.	r0,r3,1
-@@ -1341,7 +1341,7 @@ _GLOBAL(enter_rtas)
- 	stw	r9,8(r1)
- 	LOAD_REG_IMMEDIATE(r0,MSR_KERNEL)
- 	SYNC			/* disable interrupts so SRR0/1 */
--	MTMSRD(r0)		/* don't get trashed */
-+	mtmsr	r0		/* don't get trashed */
- 	li	r9,MSR_KERNEL & ~(MSR_IR|MSR_DR)
- 	mtlr	r6
- 	stw	r7, THREAD + RTAS_SP(r2)
-diff --git a/arch/powerpc/kernel/head_32.h b/arch/powerpc/kernel/head_32.h
-index 8abc7783dbe5..b2ca8c9ffd8b 100644
---- a/arch/powerpc/kernel/head_32.h
-+++ b/arch/powerpc/kernel/head_32.h
-@@ -50,7 +50,7 @@
- 	rlwinm	r9,r9,0,14,12		/* clear MSR_WE (necessary?) */
- #else
- 	li	r10,MSR_KERNEL & ~(MSR_IR|MSR_DR) /* can take exceptions */
--	MTMSRD(r10)			/* (except for mach check in rtas) */
-+	mtmsr	r10			/* (except for mach check in rtas) */
- #endif
- 	stw	r0,GPR0(r11)
- 	lis	r10,STACK_FRAME_REGS_MARKER@ha /* exception frame marker */
-@@ -80,7 +80,7 @@
- 	rlwinm	r9,r9,0,14,12		/* clear MSR_WE (necessary?) */
- #else
- 	LOAD_REG_IMMEDIATE(r10, MSR_KERNEL & ~(MSR_IR|MSR_DR)) /* can take exceptions */
--	MTMSRD(r10)			/* (except for mach check in rtas) */
-+	mtmsr	r10			/* (except for mach check in rtas) */
- #endif
- 	lis	r10,STACK_FRAME_REGS_MARKER@ha /* exception frame marker */
- 	stw	r2,GPR2(r11)
+@@ -327,6 +328,7 @@ BEGIN_MMU_FTR_SECTION
+ END_MMU_FTR_SECTION_IFSET(MMU_FTR_HPTE_TABLE)
+ 1:	mr	r4,r12
+ 	andis.	r5,r9,DSISR_SRR1_MATCH_32S@h /* Filter relevant SRR1 bits */
++	stw	r4, _DAR(r11)
+ 	EXC_XFER_LITE(0x400, handle_page_fault)
+ 
+ /* External interrupt */
+diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
+index 585ea1976550..9bb663977e84 100644
+--- a/arch/powerpc/kernel/head_40x.S
++++ b/arch/powerpc/kernel/head_40x.S
+@@ -313,6 +313,7 @@ _ENTRY(saved_ksp_limit)
+ 	START_EXCEPTION(0x0400, InstructionAccess)
+ 	EXCEPTION_PROLOG
+ 	mr	r4,r12			/* Pass SRR0 as arg2 */
++	stw	r4, _DEAR(r11)
+ 	li	r5,0			/* Pass zero as arg3 */
+ 	EXC_XFER_LITE(0x400, handle_page_fault)
+ 
+@@ -676,6 +677,7 @@ DataAccess:
+ 	mfspr	r5,SPRN_ESR		/* Grab the ESR, save it, pass arg3 */
+ 	stw	r5,_ESR(r11)
+ 	mfspr	r4,SPRN_DEAR		/* Grab the DEAR, save it, pass arg2 */
++	stw	r4, _DEAR(r11)
+ 	EXC_XFER_LITE(0x300, handle_page_fault)
+ 
+ /* Other PowerPC processors, namely those derived from the 6xx-series
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index dac7c0a34eea..fb284d95c76a 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -486,6 +486,7 @@ InstructionTLBError:
+ 	tlbie	r4
+ 	/* 0x400 is InstructionAccess exception, needed by bad_page_fault() */
+ .Litlbie:
++	stw	r4, _DAR(r11)
+ 	EXC_XFER_LITE(0x400, handle_page_fault)
+ 
+ /* This is the data TLB error on the MPC8xx.  This could be due to
+@@ -504,6 +505,7 @@ DARFixed:/* Return from dcbx instruction bug workaround */
+ 	mfspr	r5,SPRN_DSISR
+ 	stw	r5,_DSISR(r11)
+ 	mfspr	r4,SPRN_DAR
++	stw	r4, _DAR(r11)
+ 	andis.	r10,r5,DSISR_NOHPTE@h
+ 	beq+	.Ldtlbie
+ 	tlbie	r4
+diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
+index 2ae635df9026..37fc84ed90e3 100644
+--- a/arch/powerpc/kernel/head_booke.h
++++ b/arch/powerpc/kernel/head_booke.h
+@@ -467,6 +467,7 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_EMB_HV)
+ 	mfspr	r5,SPRN_ESR;		/* Grab the ESR and save it */	      \
+ 	stw	r5,_ESR(r11);						      \
+ 	mfspr	r4,SPRN_DEAR;		/* Grab the DEAR */		      \
++	stw	r4, _DEAR(r11);						      \
+ 	EXC_XFER_LITE(0x0300, handle_page_fault)
+ 
+ #define INSTRUCTION_STORAGE_EXCEPTION					      \
+@@ -475,6 +476,7 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_EMB_HV)
+ 	mfspr	r5,SPRN_ESR;		/* Grab the ESR and save it */	      \
+ 	stw	r5,_ESR(r11);						      \
+ 	mr      r4,r12;                 /* Pass SRR0 as arg2 */		      \
++	stw	r4, _DEAR(r11);						      \
+ 	li      r5,0;                   /* Pass zero as arg3 */		      \
+ 	EXC_XFER_LITE(0x0400, handle_page_fault)
+ 
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index adf0505dbe02..442aaac292b0 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -376,6 +376,7 @@ interrupt_base:
+ 	mfspr	r4,SPRN_DEAR		/* Grab the DEAR, save it, pass arg2 */
+ 	andis.	r10,r5,(ESR_ILK|ESR_DLK)@h
+ 	bne	1f
++	stw	r4, _DEAR(r11)
+ 	EXC_XFER_LITE(0x0300, handle_page_fault)
+ 1:
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
 -- 
 2.13.3
 
