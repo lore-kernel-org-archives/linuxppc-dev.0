@@ -4,53 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-10.0 required=3.0
 	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77FAAC3A5A2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 08:58:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E824C4740A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 09:00:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EF6C220863
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 08:58:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EF6C220863
+	by mail.kernel.org (Postfix) with ESMTPS id B0FB120863
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 09:00:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B0FB120863
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46SJpR5BsZzDr41
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 18:58:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46SJrf4spJzDr4L
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 19:00:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=178.33.251.49; helo=2.mo173.mail-out.ovh.net;
+ (client-ip=46.105.56.113; helo=14.mo6.mail-out.ovh.net;
  envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from 2.mo173.mail-out.ovh.net (2.mo173.mail-out.ovh.net
- [178.33.251.49])
+Received: from 14.mo6.mail-out.ovh.net (14.mo6.mail-out.ovh.net
+ [46.105.56.113])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46SJkq4mcvzDqmY
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2019 18:54:58 +1000 (AEST)
-Received: from player694.ha.ovh.net (unknown [10.108.57.183])
- by mo173.mail-out.ovh.net (Postfix) with ESMTP id CCED9118ED0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2019 10:19:18 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46SJq00bHJzDqrZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2019 18:58:34 +1000 (AEST)
+Received: from player694.ha.ovh.net (unknown [10.109.159.20])
+ by mo6.mail-out.ovh.net (Postfix) with ESMTP id 812211DF4D9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2019 10:19:15 +0200 (CEST)
 Received: from kaod.org (lfbn-1-2240-157.w90-76.abo.wanadoo.fr [90.76.60.157])
  (Authenticated sender: clg@kaod.org)
- by player694.ha.ovh.net (Postfix) with ESMTPSA id 5CF3098EF5A5;
- Tue, 10 Sep 2019 08:19:15 +0000 (UTC)
+ by player694.ha.ovh.net (Postfix) with ESMTPSA id 6388098EF565;
+ Tue, 10 Sep 2019 08:19:11 +0000 (UTC)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 2/2] powerpc/xmon: Fix output of XIVE IPI
-Date: Tue, 10 Sep 2019 10:18:50 +0200
-Message-Id: <20190910081850.26038-3-clg@kaod.org>
+Subject: [PATCH 1/2] powerpc/xmon: Improve output of XIVE interrupts
+Date: Tue, 10 Sep 2019 10:18:49 +0200
+Message-Id: <20190910081850.26038-2-clg@kaod.org>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190910081850.26038-1-clg@kaod.org>
 References: <20190910081850.26038-1-clg@kaod.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 6667016301829917617
+X-Ovh-Tracer-Id: 6666171875507211185
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: 0
 X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduvddrudekkedgtddvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenuc
@@ -71,62 +71,113 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When dumping the XIVE state of an CPU IPI, xmon does not check if the
-CPU is started or not which can cause an error. Add a check for that
-and change the output to be on one line just as the XIVE interrupts of
-the machine.
+When looping on the list of interrupts, add the current value of the
+PQ bits with a load on the ESB page. This has the side effect of
+faulting the ESB page of all interrupts.
 
 Signed-off-by: Cédric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/sysdev/xive/common.c | 27 ++++++++++++++++-----------
- 1 file changed, 16 insertions(+), 11 deletions(-)
+ arch/powerpc/include/asm/xive.h   |  3 +--
+ arch/powerpc/sysdev/xive/common.c | 29 ++++++++++++++++++++++++++---
+ arch/powerpc/xmon/xmon.c          | 15 ++++-----------
+ 3 files changed, 31 insertions(+), 16 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/xive.h
+index 967d6ab3c977..71f52f22c36b 100644
+--- a/arch/powerpc/include/asm/xive.h
++++ b/arch/powerpc/include/asm/xive.h
+@@ -99,8 +99,7 @@ extern void xive_flush_interrupt(void);
+ 
+ /* xmon hook */
+ extern void xmon_xive_do_dump(int cpu);
+-extern int xmon_xive_get_irq_config(u32 irq, u32 *target, u8 *prio,
+-				    u32 *sw_irq);
++extern int xmon_xive_get_irq_config(u32 hw_irq, struct irq_data *d);
+ 
+ /* APIs used by KVM */
+ extern u32 xive_native_default_eq_shift(void);
 diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-index 85a27ec49d34..20f45b8a52ab 100644
+index ed4561e71951..85a27ec49d34 100644
 --- a/arch/powerpc/sysdev/xive/common.c
 +++ b/arch/powerpc/sysdev/xive/common.c
-@@ -237,25 +237,30 @@ static notrace void xive_dump_eq(const char *name, struct xive_q *q)
- 	i0 = be32_to_cpup(q->qpage + idx);
- 	idx = (idx + 1) & q->msk;
- 	i1 = be32_to_cpup(q->qpage + idx);
--	xmon_printf("  %s Q T=%d %08x %08x ...\n", name,
--		    q->toggle, i0, i1);
-+	xmon_printf("%s idx=%d T=%d %08x %08x ...", name,
-+		     q->idx, q->toggle, i0, i1);
- }
- 
- notrace void xmon_xive_do_dump(int cpu)
- {
- 	struct xive_cpu *xc = per_cpu(xive_cpu, cpu);
- 
--	xmon_printf("XIVE state for CPU %d:\n", cpu);
--	xmon_printf("  pp=%02x cppr=%02x\n", xc->pending_prio, xc->cppr);
--	xive_dump_eq("IRQ", &xc->queue[xive_irq_priority]);
-+	xmon_printf("CPU %d:", cpu);
-+	if (xc) {
-+		xmon_printf("pp=%02x CPPR=%02x ", xc->pending_prio, xc->cppr);
-+
- #ifdef CONFIG_SMP
--	{
--		u64 val = xive_esb_read(&xc->ipi_data, XIVE_ESB_GET);
--		xmon_printf("  IPI state: %x:%c%c\n", xc->hw_ipi,
--			val & XIVE_ESB_VAL_P ? 'P' : 'p',
--			val & XIVE_ESB_VAL_Q ? 'Q' : 'q');
--	}
-+		{
-+			u64 val = xive_esb_read(&xc->ipi_data, XIVE_ESB_GET);
-+
-+			xmon_printf("IPI=0x%08x PQ=%c%c ", xc->hw_ipi,
-+				    val & XIVE_ESB_VAL_P ? 'P' : '-',
-+				    val & XIVE_ESB_VAL_Q ? 'Q' : '-');
-+		}
+@@ -258,10 +258,33 @@ notrace void xmon_xive_do_dump(int cpu)
  #endif
-+		xive_dump_eq("EQ", &xc->queue[xive_irq_priority]);
-+	}
-+	xmon_printf("\n");
  }
  
- int xmon_xive_get_irq_config(u32 hw_irq, struct irq_data *d)
+-int xmon_xive_get_irq_config(u32 irq, u32 *target, u8 *prio,
+-			     u32 *sw_irq)
++int xmon_xive_get_irq_config(u32 hw_irq, struct irq_data *d)
+ {
+-	return xive_ops->get_irq_config(irq, target, prio, sw_irq);
++	int rc;
++	u32 target;
++	u8 prio;
++	u32 lirq;
++
++	rc = xive_ops->get_irq_config(hw_irq, &target, &prio, &lirq);
++	if (rc) {
++		xmon_printf("IRQ 0x%08x : no config rc=%d\n", hw_irq, rc);
++		return rc;
++	}
++
++	xmon_printf("IRQ 0x%08x : target=0x%x prio=%02x lirq=0x%x ",
++		    hw_irq, target, prio, lirq);
++
++	if (d) {
++		struct xive_irq_data *xd = irq_data_get_irq_handler_data(d);
++		u64 val = xive_esb_read(xd, XIVE_ESB_GET);
++
++		xmon_printf("PQ=%c%c",
++			    val & XIVE_ESB_VAL_P ? 'P' : '-',
++			    val & XIVE_ESB_VAL_Q ? 'Q' : '-');
++	}
++
++	xmon_printf("\n");
++	return 0;
+ }
+ 
+ #endif /* CONFIG_XMON */
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index dc9832e06256..d83364ebc5c5 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -2572,16 +2572,9 @@ static void dump_all_xives(void)
+ 		dump_one_xive(cpu);
+ }
+ 
+-static void dump_one_xive_irq(u32 num)
++static void dump_one_xive_irq(u32 num, struct irq_data *d)
+ {
+-	int rc;
+-	u32 target;
+-	u8 prio;
+-	u32 lirq;
+-
+-	rc = xmon_xive_get_irq_config(num, &target, &prio, &lirq);
+-	xmon_printf("IRQ 0x%08x : target=0x%x prio=%d lirq=0x%x (rc=%d)\n",
+-		    num, target, prio, lirq, rc);
++	xmon_xive_get_irq_config(num, d);
+ }
+ 
+ static void dump_all_xive_irq(void)
+@@ -2599,7 +2592,7 @@ static void dump_all_xive_irq(void)
+ 		hwirq = (unsigned int)irqd_to_hwirq(d);
+ 		/* IPIs are special (HW number 0) */
+ 		if (hwirq)
+-			dump_one_xive_irq(hwirq);
++			dump_one_xive_irq(hwirq, d);
+ 	}
+ }
+ 
+@@ -2619,7 +2612,7 @@ static void dump_xives(void)
+ 		return;
+ 	} else if (c == 'i') {
+ 		if (scanhex(&num))
+-			dump_one_xive_irq(num);
++			dump_one_xive_irq(num, NULL);
+ 		else
+ 			dump_all_xive_irq();
+ 		return;
 -- 
 2.21.0
 
