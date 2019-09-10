@@ -2,81 +2,81 @@ Return-Path: <SRS0=Blre=XF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AEEB6C3A5A2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 09:10:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D405C3A5A2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 09:20:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ECF59206A5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 09:10:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 85C2620872
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 09:20:43 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=intel-com.20150623.gappssmtp.com header.i=@intel-com.20150623.gappssmtp.com header.b="QYcl9tvm"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ECF59206A5
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="RUeGbqhm"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 85C2620872
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46SK556yxQzDr7k
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 19:10:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46SKJT2GM2zDr4m
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 19:20:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=intel.com
- (client-ip=2607:f8b0:4864:20::344; helo=mail-ot1-x344.google.com;
- envelope-from=dan.j.williams@intel.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=intel-com.20150623.gappssmtp.com
- header.i=@intel-com.20150623.gappssmtp.com header.b="QYcl9tvm"; 
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="RUeGbqhm"; 
  dkim-atps=neutral
-Received: from mail-ot1-x344.google.com (mail-ot1-x344.google.com
- [IPv6:2607:f8b0:4864:20::344])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46SK3G1PvXzDr0R
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2019 19:09:08 +1000 (AEST)
-Received: by mail-ot1-x344.google.com with SMTP id g16so2205006otp.8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2019 02:09:08 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=intel-com.20150623.gappssmtp.com; s=20150623;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=gzySq2KgU23Lz62leK1/JYGc7N1eDn8ko0/2bOX2/jA=;
- b=QYcl9tvm/E8Bmj+3/7A3sDwjTV1JrxFts8PHtnSfl9Bfcoq69qypc9U89qKqe0f2EQ
- uuEh2GnVcws7kS/Fagzex3PDMNhSLBJJCrY3T2z0ANeyE9jsY53teLqUKwYt/vtafWQS
- ysom1jPbg2ko8BjpXumMqfTLNJTH0iIqMIwLTQwxodyLaz6ozOgvmz7k5fQWUl4L1Uwa
- E27aXddAqDmNOG76TH4rj5U6zOgHz1WW1SaIE8IBJmKVYCoxKXGd42J82Q8Mf9ArWfjr
- CwkuOzAYgnlLdBClYwWOtChPPBl0xkoXSCdbGM6HGLduIhfJo7j1t4egYJ+EuC0QN7yn
- n19Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=gzySq2KgU23Lz62leK1/JYGc7N1eDn8ko0/2bOX2/jA=;
- b=ntvNdhWc+17kPVqCGQ+MjinrdULxj7DA2Mo9665yUKoPbtuOJiyU4ERaocnEERxLz8
- F4B2cf7iwVjPjTPmoRCm+CiXVi25BhITzd/Fyyx0utg+20NghNrpFTXIrAUiicEhe9BV
- 628Y09+ZbWg2uUuHROniL4NCpkocdt/a9cnDdLF+PNi6hmdwuqBdhReL4j4v2XknYPb3
- P+xfZGlHGGX4CqbhA4mtusUR2LBjtuwRzUxxEGrK+4vT7wbnTnWRjTBqNz4wCeDar3Ox
- RRgoeWACEi3z7pEyuBLrv61BQlG7uPxmznuj24DTR8/OTIW10BmY5vUGhsJgo4PNGemo
- USNg==
-X-Gm-Message-State: APjAAAWhPV6DaXyP8EwqwiOQbC3TOCuMwTJ/ilQP2uQjmY8MnUz2TYee
- GOzADtvllR8hLrb4gDBMXzIcPdl3oF3brDbT4QYG/Q==
-X-Google-Smtp-Source: APXvYqxwLshjInXu0oU2m4xsjP474lcUaazRBBAqlBtfF7xR3iJNA8yJ0eNDpzK0DGmThD+e5HZt29ol1d8Q4WS4GVY=
-X-Received: by 2002:a9d:6d15:: with SMTP id o21mr25318322otp.363.1568106545407; 
- Tue, 10 Sep 2019 02:09:05 -0700 (PDT)
-MIME-Version: 1.0
-References: <20190910062826.10041-1-aneesh.kumar@linux.ibm.com>
- <CAPcyv4jmO381oLTHBM80jNy6uNNkXvsOyGTjqSY4zzaS6-4_nQ@mail.gmail.com>
- <14129b58-37a5-56f5-9e90-8740400d07f6@linux.ibm.com>
-In-Reply-To: <14129b58-37a5-56f5-9e90-8740400d07f6@linux.ibm.com>
-From: Dan Williams <dan.j.williams@intel.com>
-Date: Tue, 10 Sep 2019 02:08:53 -0700
-Message-ID: <CAPcyv4iYjz-v23eHkhnJqE4wnvoE2uvJ5HE9xrwPCnOCVZ3G2Q@mail.gmail.com>
-Subject: Re: [PATCH 1/2] libnvdimm/altmap: Track namespace boundaries in altmap
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46SKDZ6wp7zDqxt
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2019 19:17:18 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 46SKDV0l5bz9txW5;
+ Tue, 10 Sep 2019 11:17:14 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=RUeGbqhm; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id qUplvgyWTpPZ; Tue, 10 Sep 2019 11:17:14 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 46SKDT6fjlz9txVx;
+ Tue, 10 Sep 2019 11:17:13 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1568107033; bh=EO9Qxk0hjLo3ieTea7LgHM8klTAmnyp7SMifgH/BhW0=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=RUeGbqhmtSQL6TkjVQeHzuKDxJuSeE6kGuyrtadXRHcnlDDbxmXqQaE/Sc7shn/jk
+ 39l2vnSYfRBY00g5ctauzFQUPoSKKms+X4MLgbrCUvK/0ct69k/O44eQ0rhr2/rwj2
+ zz45eYC9qMs7dS1awzstzMrtdNIjhwvkasvudh5c=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 006148B874;
+ Tue, 10 Sep 2019 11:17:12 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id uZn0QpmHIKjG; Tue, 10 Sep 2019 11:17:12 +0200 (CEST)
+Received: from pc16032vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 5790C8B888;
+ Tue, 10 Sep 2019 11:16:21 +0200 (CEST)
+Received: by pc16032vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 0FC5E6B739; Tue, 10 Sep 2019 09:16:21 +0000 (UTC)
+Message-Id: <d499a16f946110de264ab8db46f29d6c22acc218.1568106758.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1568106758.git.christophe.leroy@c-s.fr>
+References: <cover.1568106758.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v3 02/15] powerpc/32: Add EXCEPTION_PROLOG_0 in head_32.h
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ npiggin@gmail.com, dja@axtens.net
+Date: Tue, 10 Sep 2019 09:16:21 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,54 +88,89 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sachin Sant <sachinp@linux.vnet.ibm.com>,
- Oliver O'Halloran <oohall@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-nvdimm <linux-nvdimm@lists.01.org>
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Sep 10, 2019 at 1:31 AM Aneesh Kumar K.V
-<aneesh.kumar@linux.ibm.com> wrote:
->
-> On 9/10/19 1:40 PM, Dan Williams wrote:
-> > On Mon, Sep 9, 2019 at 11:29 PM Aneesh Kumar K.V
-> > <aneesh.kumar@linux.ibm.com> wrote:
-> >>
-> >> With PFN_MODE_PMEM namespace, the memmap area is allocated from the device
-> >> area. Some architectures map the memmap area with large page size. On
-> >> architectures like ppc64, 16MB page for memap mapping can map 262144 pfns.
-> >> This maps a namespace size of 16G.
-> >>
-> >> When populating memmap region with 16MB page from the device area,
-> >> make sure the allocated space is not used to map resources outside this
-> >> namespace. Such usage of device area will prevent a namespace destroy.
-> >>
-> >> Add resource end pnf in altmap and use that to check if the memmap area
-> >> allocation can map pfn outside the namespace. On ppc64 in such case we fallback
-> >> to allocation from memory.
-> >
-> > Shouldn't this instead be comprehended by nd_pfn_init() to increase
-> > the reservation size so that it fits in the alignment? It may not
-> > always be possible to fall back to allocation from memory for
-> > extremely large pmem devices. I.e. at 64GB of memmap per 1TB of pmem
-> > there may not be enough DRAM to store the memmap.
-> >
->
-> We do switch between DRAM and device for memmap allocation. ppc64
-> vmemmap_populate  does
->
-> if (altmap && !altmap_cross_boundary(altmap, start, page_size)) {
->         p = altmap_alloc_block_buf(page_size, altmap);
->         if (!p)
->                 pr_debug("altmap block allocation failed, falling back to system memory");
->         }
->         if (!p)
->                 p = vmemmap_alloc_block_buf(page_size, node);
->
->
-> With that we should be using DRAM for the first and the last mapping,
-> rest of the memmap should be backed by device.
+This patch creates a macro for the very first part of
+exception prolog, this will help when implementing
+CONFIG_VMAP_STACK
 
-Ah, ok, makes sense.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/kernel/head_32.S  | 4 +---
+ arch/powerpc/kernel/head_32.h  | 9 ++++++---
+ arch/powerpc/kernel/head_8xx.S | 9 ++-------
+ 3 files changed, 9 insertions(+), 13 deletions(-)
+
+diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+index 4a24f8f026c7..9e868567b716 100644
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -272,9 +272,7 @@ __secondary_hold_acknowledge:
+  */
+ 	. = 0x200
+ 	DO_KVM  0x200
+-	mtspr	SPRN_SPRG_SCRATCH0,r10
+-	mtspr	SPRN_SPRG_SCRATCH1,r11
+-	mfcr	r10
++	EXCEPTION_PROLOG_0
+ #ifdef CONFIG_PPC_CHRP
+ 	mfspr	r11, SPRN_SPRG_THREAD
+ 	lwz	r11, RTAS_SP(r11)
+diff --git a/arch/powerpc/kernel/head_32.h b/arch/powerpc/kernel/head_32.h
+index b2ca8c9ffd8b..8e345f8d4b0e 100644
+--- a/arch/powerpc/kernel/head_32.h
++++ b/arch/powerpc/kernel/head_32.h
+@@ -10,13 +10,16 @@
+  * We assume sprg3 has the physical address of the current
+  * task's thread_struct.
+  */
+-
+ .macro EXCEPTION_PROLOG
++	EXCEPTION_PROLOG_0
++	EXCEPTION_PROLOG_1
++	EXCEPTION_PROLOG_2
++.endm
++
++.macro EXCEPTION_PROLOG_0
+ 	mtspr	SPRN_SPRG_SCRATCH0,r10
+ 	mtspr	SPRN_SPRG_SCRATCH1,r11
+ 	mfcr	r10
+-	EXCEPTION_PROLOG_1
+-	EXCEPTION_PROLOG_2
+ .endm
+ 
+ .macro EXCEPTION_PROLOG_1
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index 19f583e18402..dac7c0a34eea 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -494,10 +494,7 @@ InstructionTLBError:
+  */
+ 	. = 0x1400
+ DataTLBError:
+-	mtspr	SPRN_SPRG_SCRATCH0, r10
+-	mtspr	SPRN_SPRG_SCRATCH1, r11
+-	mfcr	r10
+-
++	EXCEPTION_PROLOG_0
+ 	mfspr	r11, SPRN_DAR
+ 	cmpwi	cr0, r11, RPN_PATTERN
+ 	beq-	FixupDAR	/* must be a buggy dcbX, icbi insn. */
+@@ -530,9 +527,7 @@ DARFixed:/* Return from dcbx instruction bug workaround */
+  */
+ 	. = 0x1c00
+ DataBreakpoint:
+-	mtspr	SPRN_SPRG_SCRATCH0, r10
+-	mtspr	SPRN_SPRG_SCRATCH1, r11
+-	mfcr	r10
++	EXCEPTION_PROLOG_0
+ 	mfspr	r11, SPRN_SRR0
+ 	cmplwi	cr0, r11, (.Ldtlbie - PAGE_OFFSET)@l
+ 	cmplwi	cr7, r11, (.Litlbie - PAGE_OFFSET)@l
+-- 
+2.13.3
+
