@@ -6,92 +6,107 @@ X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55009C3A5A2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 08:49:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 53EE5C3A5A2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 08:52:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9AF3C20863
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 08:49:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9AF3C20863
+	by mail.kernel.org (Postfix) with ESMTPS id D2BE320863
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 08:52:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D2BE320863
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46SJcz5wRPzDqtQ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 18:49:55 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46SJgc07GczDqvZ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Sep 2019 18:52:12 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46SJc10LPhzDqqD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2019 18:49:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 46SJc044Whz8tCx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2019 18:49:04 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 46SJc03S0xz9sP4; Tue, 10 Sep 2019 18:49:04 +1000 (AEST)
+Authentication-Results: ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=hbathini@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46SJBt6y02zDqZX
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Sep 2019 18:30:46 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 46SJbz757dz9s7T
+ for <linuxppc-dev@ozlabs.org>; Tue, 10 Sep 2019 18:49:03 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x8A8Rvxs066369; Tue, 10 Sep 2019 04:30:37 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ux6hcbhmx-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 10 Sep 2019 04:30:37 -0400
-Received: from m0098421.ppops.net (m0098421.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x8A8SGTw067975;
- Tue, 10 Sep 2019 04:30:37 -0400
-Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.11])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ux6hcbhmc-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 10 Sep 2019 04:30:36 -0400
-Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
- by ppma03dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x8A8TZPQ017704;
- Tue, 10 Sep 2019 08:30:36 GMT
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by ppma03dal.us.ibm.com with ESMTP id 2uv4687kms-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 10 Sep 2019 08:30:36 +0000
-Received: from b03ledav004.gho.boulder.ibm.com
- (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x8A8UYhc52429304
+ x8A8l2fx029662
+ for <linuxppc-dev@ozlabs.org>; Tue, 10 Sep 2019 04:49:01 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ux6ck4jtr-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Tue, 10 Sep 2019 04:49:01 -0400
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.ibm.com>;
+ Tue, 10 Sep 2019 09:48:59 +0100
+Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 10 Sep 2019 09:48:56 +0100
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id x8A8mUXv39977248
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 10 Sep 2019 08:30:34 GMT
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 778FD7805C;
- Tue, 10 Sep 2019 08:30:34 +0000 (GMT)
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1DD9678067;
- Tue, 10 Sep 2019 08:30:29 +0000 (GMT)
-Received: from [9.199.41.80] (unknown [9.199.41.80])
- by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Tue, 10 Sep 2019 08:30:28 +0000 (GMT)
-Subject: Re: [PATCH 1/2] libnvdimm/altmap: Track namespace boundaries in altmap
-To: Dan Williams <dan.j.williams@intel.com>
-References: <20190910062826.10041-1-aneesh.kumar@linux.ibm.com>
- <CAPcyv4jmO381oLTHBM80jNy6uNNkXvsOyGTjqSY4zzaS6-4_nQ@mail.gmail.com>
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Message-ID: <14129b58-37a5-56f5-9e90-8740400d07f6@linux.ibm.com>
-Date: Tue, 10 Sep 2019 14:00:25 +0530
+ Tue, 10 Sep 2019 08:48:30 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 24DCE11C04A;
+ Tue, 10 Sep 2019 08:48:55 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id EF2D311C04C;
+ Tue, 10 Sep 2019 08:48:51 +0000 (GMT)
+Received: from [9.204.130.183] (unknown [9.204.130.183])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue, 10 Sep 2019 08:48:51 +0000 (GMT)
+Subject: Re: [PATCH v5 21/31] powernv/fadump: process architected register
+ state data provided by firmware
+To: "Oliver O'Halloran" <oohall@gmail.com>
+References: <156630261682.8896.3418665808003586786.stgit@hbathini.in.ibm.com>
+ <156630280239.8896.11769233860624935762.stgit@hbathini.in.ibm.com>
+ <87sgpcp80n.fsf@mpe.ellerman.id.au>
+ <b7c46267-92d8-9202-b657-7cb8e37451fe@linux.ibm.com>
+ <CAOSf1CHjV5PM-rYJ_5-XHmZyBNO_H=Nw8X7+HoOZnL+D7pM-sg@mail.gmail.com>
+From: Hari Bathini <hbathini@linux.ibm.com>
+Date: Tue, 10 Sep 2019 14:18:50 +0530
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.8.0
 MIME-Version: 1.0
-In-Reply-To: <CAPcyv4jmO381oLTHBM80jNy6uNNkXvsOyGTjqSY4zzaS6-4_nQ@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <CAOSf1CHjV5PM-rYJ_5-XHmZyBNO_H=Nw8X7+HoOZnL+D7pM-sg@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
+x-cbid: 19091008-0016-0000-0000-000002A96986
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19091008-0017-0000-0000-00003309EF01
+Message-Id: <af1c8b69-7340-005e-12b1-5e7228b9ea3a@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-09-10_06:, , signatures=0
+ definitions=2019-09-10_07:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
  mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1906280000 definitions=main-1909100085
+ scancount=1 engine=8.0.1-1906280000 definitions=main-1909100088
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,51 +118,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sachin Sant <sachinp@linux.vnet.ibm.com>,
- Oliver O'Halloran <oohall@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-nvdimm <linux-nvdimm@lists.01.org>
+Cc: Ananth N Mavinakayanahalli <ananth@linux.ibm.com>,
+ Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+ Vasant Hegde <hegdevasant@linux.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 9/10/19 1:40 PM, Dan Williams wrote:
-> On Mon, Sep 9, 2019 at 11:29 PM Aneesh Kumar K.V
-> <aneesh.kumar@linux.ibm.com> wrote:
+
+
+On 09/09/19 9:03 PM, Oliver O'Halloran wrote:
+> On Mon, Sep 9, 2019 at 11:23 PM Hari Bathini <hbathini@linux.ibm.com> wrote:
 >>
->> With PFN_MODE_PMEM namespace, the memmap area is allocated from the device
->> area. Some architectures map the memmap area with large page size. On
->> architectures like ppc64, 16MB page for memap mapping can map 262144 pfns.
->> This maps a namespace size of 16G.
+>> On 04/09/19 5:50 PM, Michael Ellerman wrote:
+>>> Hari Bathini <hbathini@linux.ibm.com> writes:
+>>>
 >>
->> When populating memmap region with 16MB page from the device area,
->> make sure the allocated space is not used to map resources outside this
->> namespace. Such usage of device area will prevent a namespace destroy.
+>> [...]
 >>
->> Add resource end pnf in altmap and use that to check if the memmap area
->> allocation can map pfn outside the namespace. On ppc64 in such case we fallback
->> to allocation from memory.
+>>>> +/*
+>>>> + * CPU state data is provided by f/w. Below are the definitions
+>>>> + * provided in HDAT spec. Refer to latest HDAT specification for
+>>>> + * any update to this format.
+>>>> + */
+>>>
+>>> How is this meant to work? If HDAT ever changes the format they will
+>>> break all existing kernels in the field.
+>>>
+>>>> +#define HDAT_FADUMP_CPU_DATA_VERSION                1
+>>
+>> Changes are not expected here. But this is just to cover for such scenario,
+>> if that ever happens.
 > 
-> Shouldn't this instead be comprehended by nd_pfn_init() to increase
-> the reservation size so that it fits in the alignment? It may not
-> always be possible to fall back to allocation from memory for
-> extremely large pmem devices. I.e. at 64GB of memmap per 1TB of pmem
-> there may not be enough DRAM to store the memmap.
+> The HDAT spec doesn't define the SPR numbers for NIA, MSR and the CR.
+> As far as I can tell the values you've assumed here are chip-specific,
+> non-architected SPR numbers that come from an array buried somewhere
+> in the SBE codebase. I don't believe you for a second when you say
+> that this will never change.
+
+At least, the understanding is that this numbers not change across processor
+generations. If something changes, it is supposed to be handled in SBE. Also,
+I am told this numbers would be listed in the HDAT Spec. Not sure if that
+happened yet though. Vasant, you have anything to add?
+
+>> Also, I think it is a bit far-fetched to error out if versions mismatch.
+>> Warning and proceeding sounds worthier because the changes are usually
+>> backward compatible, if and when there are any. Will update accordingly...
 > 
+> Literally the only reason I didn't drop the CPU DATA parts of the OPAL
+> MPIPL series was because I assumed the kernel would do the sensible
+> thing and reject or ignore the structure if it did not know how to
+> parse the data.
 
-We do switch between DRAM and device for memmap allocation. ppc64 
-vmemmap_populate  does
+I think, the changes if any, would have to be backward compatible for the sake
+of sanity. Even if they are not, we are better off exporting the /proc/vmcore
+with a warning and some crazy CPU register data (if parsing goes alright) than
+no dump at all? 
 
-if (altmap && !altmap_cross_boundary(altmap, start, page_size)) {
-	p = altmap_alloc_block_buf(page_size, altmap);
-	if (!p)
-		pr_debug("altmap block allocation failed, falling back to system memory");
-	}
-	if (!p)
-		p = vmemmap_alloc_block_buf(page_size, node);
-	
+- Hari
 
-With that we should be using DRAM for the first and the last mapping, 
-rest of the memmap should be backed by device.
-
--aneesh
