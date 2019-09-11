@@ -2,91 +2,102 @@ Return-Path: <SRS0=eZMg=XG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 11BA1C5ACAE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 15:15:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E5B10C49ED6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 15:21:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 921E5206A5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 15:15:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 921E5206A5
+	by mail.kernel.org (Postfix) with ESMTPS id 1F395206A5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 15:21:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1F395206A5
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46T56s4Hh5zF0bq
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 01:15:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=nathanl@linux.ibm.com; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46T5GP0VTYzF3Lq
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 01:21:33 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46T4YH6Q3CzF3Br
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2019 00:49:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 46T4YH4ps4z8t0n
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2019 00:49:23 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 46T4YH49xwz9sNk; Thu, 12 Sep 2019 00:49:23 +1000 (AEST)
+Authentication-Results: ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=hbathini@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46T4Y84Zc4zF3Bc
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2019 00:49:16 +1000 (AEST)
-Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x8BEgbn7188381; Wed, 11 Sep 2019 10:49:10 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2uxc00r18e-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 11 Sep 2019 10:49:09 -0400
-Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x8BEgdqw188458;
- Wed, 11 Sep 2019 10:48:59 -0400
-Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
- [169.63.121.186])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2uxc00r13a-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 11 Sep 2019 10:48:59 -0400
-Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
- by ppma03wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x8BEe9D2028840;
- Wed, 11 Sep 2019 14:48:41 GMT
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by ppma03wdc.us.ibm.com with ESMTP id 2uv467bv35-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 11 Sep 2019 14:48:41 +0000
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x8BEmerc54919494
+ by ozlabs.org (Postfix) with ESMTPS id 46T4YH0ppcz9sNT
+ for <linuxppc-dev@ozlabs.org>; Thu, 12 Sep 2019 00:49:22 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x8BEgf00107443
+ for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2019 10:49:21 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2uy107nd3h-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2019 10:49:20 -0400
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.ibm.com>;
+ Wed, 11 Sep 2019 15:49:19 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 11 Sep 2019 15:49:17 +0100
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x8BEnFka55574646
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 11 Sep 2019 14:48:40 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9EAB6BE056;
- Wed, 11 Sep 2019 14:48:40 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 80988BE054;
- Wed, 11 Sep 2019 14:48:40 +0000 (GMT)
-Received: from localhost (unknown [9.41.101.192])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
- Wed, 11 Sep 2019 14:48:40 +0000 (GMT)
-From: Nathan Lynch <nathanl@linux.ibm.com>
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v3 3/5] powerpc/numa: Use cpu node map of first sibling
- thread
-In-Reply-To: <20190906135020.19772-4-srikar@linux.vnet.ibm.com>
-References: <20190906135020.19772-1-srikar@linux.vnet.ibm.com>
- <20190906135020.19772-4-srikar@linux.vnet.ibm.com>
-Date: Wed, 11 Sep 2019 09:48:34 -0500
-Message-ID: <87lfuurirh.fsf@linux.ibm.com>
+ Wed, 11 Sep 2019 14:49:15 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A97BAA4054;
+ Wed, 11 Sep 2019 14:49:15 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id BE17CA4060;
+ Wed, 11 Sep 2019 14:49:13 +0000 (GMT)
+Received: from hbathini.in.ibm.com (unknown [9.102.24.71])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 11 Sep 2019 14:49:13 +0000 (GMT)
+Subject: [PATCH v6 09/36] pseries/fadump: add source info while displaying
+ region contents
+From: Hari Bathini <hbathini@linux.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Date: Wed, 11 Sep 2019 20:19:12 +0530
+In-Reply-To: <156821308145.5656.2233728784001623843.stgit@hbathini.in.ibm.com>
+References: <156821308145.5656.2233728784001623843.stgit@hbathini.in.ibm.com>
+User-Agent: StGit/0.17.1-dirty
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
+x-cbid: 19091114-4275-0000-0000-000003648166
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19091114-4276-0000-0000-00003876D965
+Message-Id: <156821334740.5656.5897097884010195405.stgit@hbathini.in.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-09-11_08:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
  mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1906280000 definitions=main-1909110138
@@ -101,69 +112,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>
+Cc: Ananth N Mavinakayanahalli <ananth@linux.ibm.com>,
+ Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+ Vasant Hegde <hegdevasant@linux.ibm.com>, Oliver <oohall@gmail.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Srikar,
+Improve how fadump_region contents are displayed by adding source
+information of memory regions that are to be dumped by f/w.
 
-Srikar Dronamraju <srikar@linux.vnet.ibm.com> writes:
-> @@ -467,15 +467,20 @@ static int of_drconf_to_nid_single(struct drmem_lmb *lmb)
->   */
->  static int numa_setup_cpu(unsigned long lcpu)
->  {
-> -	int nid = NUMA_NO_NODE;
->  	struct device_node *cpu;
-> +	int fcpu = cpu_first_thread_sibling(lcpu);
-> +	int nid = NUMA_NO_NODE;
->  
->  	/*
->  	 * If a valid cpu-to-node mapping is already available, use it
->  	 * directly instead of querying the firmware, since it represents
->  	 * the most recent mapping notified to us by the platform (eg: VPHN).
-> +	 * Since cpu_to_node binding remains the same for all threads in the
-> +	 * core. If a valid cpu-to-node mapping is already available, for
-> +	 * the first thread in the core, use it.
->  	 */
-> -	if ((nid = numa_cpu_lookup_table[lcpu]) >= 0) {
-> +	nid = numa_cpu_lookup_table[fcpu];
-> +	if (nid >= 0) {
->  		map_cpu_to_node(lcpu, nid);
->  		return nid;
->  	}
+Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
+---
 
-Yes, we need to something like this to prevent a VPHN change that occurs
-concurrently with onlining a core's threads from messing us up.
-
-Is it a good assumption that the first thread of a sibling group will
-have its mapping initialized first? I think the answer is yes for boot,
-but hotplug... not so sure.
+* New patch to update how fadump region contents are displayed.
 
 
-> @@ -496,6 +501,16 @@ static int numa_setup_cpu(unsigned long lcpu)
->  	if (nid < 0 || !node_possible(nid))
->  		nid = first_online_node;
->  
-> +	/*
-> +	 * Update for the first thread of the core. All threads of a core
-> +	 * have to be part of the same node. This not only avoids querying
-> +	 * for every other thread in the core, but always avoids a case
-> +	 * where virtual node associativity change causes subsequent threads
-> +	 * of a core to be associated with different nid.
-> +	 */
-> +	if (fcpu != lcpu)
-> +		map_cpu_to_node(fcpu, nid);
-> +
+ arch/powerpc/platforms/pseries/rtas-fadump.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-OK, I see that this somewhat addresses my concern above. But changing
-this mapping for a remote cpu is unsafe except under specific
-circumstances. I think this should first assert:
+diff --git a/arch/powerpc/platforms/pseries/rtas-fadump.c b/arch/powerpc/platforms/pseries/rtas-fadump.c
+index 1daa29f..a11e3c2 100644
+--- a/arch/powerpc/platforms/pseries/rtas-fadump.c
++++ b/arch/powerpc/platforms/pseries/rtas-fadump.c
+@@ -204,10 +204,10 @@ static void rtas_fadump_region_show(struct fw_dump *fadump_conf,
+ 		   be64_to_cpu(fdm_ptr->hpte_region.source_len),
+ 		   be64_to_cpu(fdm_ptr->hpte_region.bytes_dumped));
+ 
+-	seq_printf(m, "DUMP: [%#016llx-%#016llx] %#llx bytes, Dumped: %#llx\n",
+-		   be64_to_cpu(fdm_ptr->rmr_region.destination_address),
+-		   be64_to_cpu(fdm_ptr->rmr_region.destination_address) +
+-		   be64_to_cpu(fdm_ptr->rmr_region.source_len) - 1,
++	seq_printf(m, "DUMP: Src: %#016llx, Dest: %#016llx, ",
++		   be64_to_cpu(fdm_ptr->rmr_region.source_address),
++		   be64_to_cpu(fdm_ptr->rmr_region.destination_address));
++	seq_printf(m, "Size: %#llx, Dumped: %#llx bytes\n",
+ 		   be64_to_cpu(fdm_ptr->rmr_region.source_len),
+ 		   be64_to_cpu(fdm_ptr->rmr_region.bytes_dumped));
+ }
 
-* numa_cpu_lookup_table[fcpu] == NUMA_NO_NODE
-* cpu_online(fcpu) == false
-
-to document and enforce the conditions that must hold for this to be OK.
