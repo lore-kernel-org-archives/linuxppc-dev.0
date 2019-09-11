@@ -2,51 +2,56 @@ Return-Path: <SRS0=eZMg=XG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D501C49ED6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 19:54:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 840E7C5ACAE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 20:39:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B1EBD2082C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 19:54:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B1EBD2082C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id C5C632082C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 20:39:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C5C632082C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=neo-zeon.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46TCKQ2qGjzDrG3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 05:54:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46TDK246LCzF3pG
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 06:39:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=thuth@redhat.com;
+ spf=pass (mailfrom) smtp.mailfrom=neo-zeon.de
+ (client-ip=96.90.244.226; helo=neo-zeon.de; envelope-from=cam@neo-zeon.de;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ dmarc=none (p=none dis=none) header.from=neo-zeon.de
+X-Greylist: delayed 1701 seconds by postgrey-1.36 at bilbo;
+ Thu, 12 Sep 2019 02:03:17 AEST
+Received: from neo-zeon.de (neo-zeon.de [96.90.244.226])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46TCHH4j1DzF3s9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2019 05:52:42 +1000 (AEST)
-Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
- [10.5.11.23])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 49B3F30833BE;
- Wed, 11 Sep 2019 19:52:40 +0000 (UTC)
-Received: from thuth.com (ovpn-116-192.ams2.redhat.com [10.36.116.192])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 00F3A19C6A;
- Wed, 11 Sep 2019 19:52:38 +0000 (UTC)
-From: Thomas Huth <thuth@redhat.com>
-To: Paul Mackerras <paulus@ozlabs.org>
-Subject: [PATCH] KVM: PPC: Remove superfluous check for non-zero return value
-Date: Wed, 11 Sep 2019 21:52:35 +0200
-Message-Id: <20190911195235.29048-1-thuth@redhat.com>
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.44]); Wed, 11 Sep 2019 19:52:40 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46T6BY3bg0zF3bv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2019 02:03:16 +1000 (AEST)
+Received: from [192.168.0.55] (ukyo.nerv.lan [192.168.0.55])
+ (authenticated bits=0)
+ by neo-zeon.de (8.15.2/8.15.2) with ESMTPSA id x8BFYnnx084719
+ (version=TLSv1.2 cipher=AES128-SHA bits=128 verify=NO);
+ Wed, 11 Sep 2019 08:34:49 -0700 (PDT) (envelope-from cam@neo-zeon.de)
+Subject: Re: [Bug 204789] New: Boot failure with more than 256G of memory
+To: Andrew Morton <akpm@linux-foundation.org>
+References: <bug-204789-27@https.bugzilla.kernel.org/>
+ <20190911073153.9df4d4618d7f99752cd18edd@linux-foundation.org>
+From: Cameron Berkenpas <cam@neo-zeon.de>
+Message-ID: <b966080e-0a5f-a584-9fe3-85d26be8fda4@neo-zeon.de>
+Date: Wed, 11 Sep 2019 08:34:48 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.8.0
+MIME-Version: 1.0
+In-Reply-To: <20190911073153.9df4d4618d7f99752cd18edd@linux-foundation.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
+X-Mailman-Approved-At: Thu, 12 Sep 2019 06:37:11 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,55 +63,87 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kvm-ppc@vger.kernel.org
+Cc: bugzilla-daemon@bugzilla.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-After the kfree()s haven been removed in the previous
-commit 9798f4ea71ea ("fix rollback when kvmppc_xive_create fails"),
-the code can be simplified even more to simply always "return ret"
-now.
+Hello,
 
-Signed-off-by: Thomas Huth <thuth@redhat.com>
----
- arch/powerpc/kvm/book3s_xive.c        | 5 +----
- arch/powerpc/kvm/book3s_xive_native.c | 5 +----
- 2 files changed, 2 insertions(+), 8 deletions(-)
+Regression set to "yes". Not sure how I missed that. :)
 
-diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
-index e3ba67095895..2f6f463fcdfb 100644
---- a/arch/powerpc/kvm/book3s_xive.c
-+++ b/arch/powerpc/kvm/book3s_xive.c
-@@ -1986,10 +1986,7 @@ static int kvmppc_xive_create(struct kvm_device *dev, u32 type)
- 
- 	xive->single_escalation = xive_native_has_single_escalation();
- 
--	if (ret)
--		return ret;
--
--	return 0;
-+	return ret;
- }
- 
- int kvmppc_xive_debug_show_queues(struct seq_file *m, struct kvm_vcpu *vcpu)
-diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/book3s_xive_native.c
-index a998823f68a3..7a50772f26fe 100644
---- a/arch/powerpc/kvm/book3s_xive_native.c
-+++ b/arch/powerpc/kvm/book3s_xive_native.c
-@@ -1089,10 +1089,7 @@ static int kvmppc_xive_native_create(struct kvm_device *dev, u32 type)
- 	xive->single_escalation = xive_native_has_single_escalation();
- 	xive->ops = &kvmppc_xive_native_ops;
- 
--	if (ret)
--		return ret;
--
--	return 0;
-+	return ret;
- }
- 
- /*
--- 
-2.18.1
+Will report future PPC issues to that I come across to this list as well.
+
+Thanks!
+
+-Cameron
+
+On 9/11/19 7:31 AM, Andrew Morton wrote:
+> (switched to email.  Please respond via emailed reply-to-all, not via the
+> bugzilla web interface).
+>
+> On Sun, 08 Sep 2019 00:04:26 +0000 bugzilla-daemon@bugzilla.kernel.org wrote:
+>
+>> https://bugzilla.kernel.org/show_bug.cgi?id=204789
+>>
+>>              Bug ID: 204789
+>>             Summary: Boot failure with more than 256G of memory
+>>             Product: Memory Management
+>>             Version: 2.5
+>>      Kernel Version: 5.2.x
+>>            Hardware: PPC-64
+>>                  OS: Linux
+>>                Tree: Mainline
+>>              Status: NEW
+>>            Severity: high
+>>            Priority: P1
+>>           Component: Other
+>>            Assignee: akpm@linux-foundation.org
+>>            Reporter: cam@neo-zeon.de
+>>          Regression: No
+> "Yes" :)
+>
+>> Kernel series 5.2.x will not boot on my Talos II workstation with dual POWER9
+>> 18 core processors and 512G of physical memory with disable_radix=yes and 4k
+>> pages.
+>>
+>> 5.3-rc6 did not work either.
+>>
+>> 5.1 and earlier boot fine.
+> Thanks.  It's probably best to report this on the powerpc list, cc'ed here.
+>
+>> I can get the system to boot IF I leave the Radix MMU enabled or if I boot a
+>> kernel with 64k pages. I haven't yet tested enabling the Radix MMU with 64k
+>> pages at the same time, but I suspect this would work. This is a system I
+>> cannot take down TOO frequently.
+>>
+>> The system will also boot with the Radix MMU disabled and 4k pages with 256G or
+>> less memory. Setting mem on the kernel CLI to 256G or less results in a
+>> successful boot. Setting mem=257G or higher no Radix MMU and 4k pages and the
+>> kernel will not boot.
+>>
+>> Petitboot comes up, but the system fails VERY early in boot in the serial
+>> console with:
+>> SIGTERM received, booting...
+>> [   23.838858] kexec_core: Starting new kernel
+>>
+>> Early printk is enabled, and it never progresses any further.
+>>
+>> 5.1 boots just fine with the Radix MMU disabled and 4k pages.
+>>
+>> Unfortunately, I currently need 4k pages for bcache to work, and Radix MMU
+>> disabled in order for FreeBSD 12.x to work under KVM so I'm sticking with
+>> 5.1.21 for now.
+>>
+>> I have been unable to reproduce this issue in KVM.
+>>
+>> Here are my PCIe peripherals:
+>> 1. Microsemi/Adaptec HBA 1100-4i SAS controller
+>> 2. Megaraid 9316-16i SAS RAID controller.
+>>
+>> I've only tried little endian as this is a little endian install.
+>>
+>> -- 
+>> You are receiving this mail because:
+>> You are the assignee for the bug.
 
