@@ -2,36 +2,36 @@ Return-Path: <SRS0=eZMg=XG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	UNWANTED_LANGUAGE_BODY autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 031FEC49ED6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 15:37:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63CA9C49ED6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 15:40:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 49E712084D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 15:37:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 49E712084D
+	by mail.kernel.org (Postfix) with ESMTPS id E46F02085B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 15:40:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E46F02085B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46T5cj0lphzF3R5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 01:37:25 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 46T5gv2R0FzF3S1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 01:40:11 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46T4b15vcdzF3Cb
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2019 00:50:53 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46T4bN3Mr7zF3CQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2019 00:51:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 46T4b14kF1z8wJy
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2019 00:50:53 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 46T4bM5llpz8swG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2019 00:51:11 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 46T4b12ZL9z9s4Y; Thu, 12 Sep 2019 00:50:53 +1000 (AEST)
+ id 46T4bM4X3Lz9sNF; Thu, 12 Sep 2019 00:51:11 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
@@ -42,45 +42,46 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 46T4b05dhzz9sDB
- for <linuxppc-dev@ozlabs.org>; Thu, 12 Sep 2019 00:50:52 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x8BEis8d140121
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2019 10:50:50 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2uy0caxj8b-1
+ by ozlabs.org (Postfix) with ESMTPS id 46T4bL6f9wz9sDB
+ for <linuxppc-dev@ozlabs.org>; Thu, 12 Sep 2019 00:51:10 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x8BEgfth188204
+ for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2019 10:51:08 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2uy2ew9fv0-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2019 10:50:50 -0400
+ for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2019 10:51:08 -0400
 Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <hbathini@linux.ibm.com>;
- Wed, 11 Sep 2019 15:50:48 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Wed, 11 Sep 2019 15:51:06 +0100
+Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 11 Sep 2019 15:50:31 +0100
+ Wed, 11 Sep 2019 15:51:03 +0100
 Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
  [9.149.105.61])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x8BEoTdA11862120
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id x8BEoaUZ31261060
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 11 Sep 2019 14:50:29 GMT
+ Wed, 11 Sep 2019 14:50:36 GMT
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8F65011C04A;
- Wed, 11 Sep 2019 14:50:29 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 197E511C05C;
+ Wed, 11 Sep 2019 14:51:01 +0000 (GMT)
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A347811C04C;
- Wed, 11 Sep 2019 14:50:27 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 2250C11C05B;
+ Wed, 11 Sep 2019 14:50:59 +0000 (GMT)
 Received: from hbathini.in.ibm.com (unknown [9.102.24.71])
  by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 11 Sep 2019 14:50:27 +0000 (GMT)
-Subject: [PATCH v6 14/36] powernv/fadump: add fadump support on powernv
+ Wed, 11 Sep 2019 14:50:58 +0000 (GMT)
+Subject: [PATCH v6 16/36] powernv/fadump: register kernel metadata address
+ with opal
 From: Hari Bathini <hbathini@linux.ibm.com>
 To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Date: Wed, 11 Sep 2019 20:20:26 +0530
+Date: Wed, 11 Sep 2019 20:20:57 +0530
 In-Reply-To: <156821308145.5656.2233728784001623843.stgit@hbathini.in.ibm.com>
 References: <156821308145.5656.2233728784001623843.stgit@hbathini.in.ibm.com>
 User-Agent: StGit/0.17.1-dirty
@@ -88,10 +89,10 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
-x-cbid: 19091114-4275-0000-0000-000003648187
+x-cbid: 19091114-0008-0000-0000-000003146BD2
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19091114-4276-0000-0000-00003876D980
-Message-Id: <156821342072.5656.4346362203141486452.stgit@hbathini.in.ibm.com>
+x-cbparentid: 19091114-0009-0000-0000-00004A32D801
+Message-Id: <156821345011.5656.13567765019032928471.stgit@hbathini.in.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-09-11_08:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -119,198 +120,260 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add basic callback functions for FADump on PowerNV platform.
+OPAL allows registering address with it in the first kernel and
+retrieving it after MPIPL. Setup kernel metadata and register its
+address with OPAL to use it for processing the crash dump.
 
 Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
 ---
 
 Changes in v6:
-  * Drop using unnecessary return type for platform specific DT scan function.
+  * Use kernel types instead of ulong and such
+  * Drop shallow callbacks. Instead, check before making those calls.
 
 
- arch/powerpc/Kconfig                         |    5 +
- arch/powerpc/include/asm/fadump-internal.h   |    7 ++
- arch/powerpc/kernel/fadump.c                 |   15 +++-
- arch/powerpc/platforms/powernv/Makefile      |    1 
- arch/powerpc/platforms/powernv/opal-fadump.c |   92 ++++++++++++++++++++++++++
- 5 files changed, 115 insertions(+), 5 deletions(-)
- create mode 100644 arch/powerpc/platforms/powernv/opal-fadump.c
+ arch/powerpc/include/asm/fadump-internal.h   |    4 +
+ arch/powerpc/kernel/fadump.c                 |   23 ++++++-
+ arch/powerpc/platforms/powernv/opal-fadump.c |   84 ++++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/opal-fadump.h |   39 ++++++++++++
+ 4 files changed, 146 insertions(+), 4 deletions(-)
+ create mode 100644 arch/powerpc/platforms/powernv/opal-fadump.h
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index d8dcd88..fc4ecfe 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -566,7 +566,7 @@ config CRASH_DUMP
- 
- config FA_DUMP
- 	bool "Firmware-assisted dump"
--	depends on PPC64 && PPC_RTAS
-+	depends on PPC64 && (PPC_RTAS || PPC_POWERNV)
- 	select CRASH_CORE
- 	select CRASH_DUMP
- 	help
-@@ -577,7 +577,8 @@ config FA_DUMP
- 	  is meant to be a kdump replacement offering robustness and
- 	  speed not possible without system firmware assistance.
- 
--	  If unsure, say "N"
-+	  If unsure, say "y". Only special kernels like petitboot may
-+	  need to say "N" here.
- 
- config IRQ_ALL_CPUS
- 	bool "Distribute interrupts on all CPUs by default"
 diff --git a/arch/powerpc/include/asm/fadump-internal.h b/arch/powerpc/include/asm/fadump-internal.h
-index 8c0eb0f..8046fe0 100644
+index 8046fe0..5262c76 100644
 --- a/arch/powerpc/include/asm/fadump-internal.h
 +++ b/arch/powerpc/include/asm/fadump-internal.h
-@@ -135,4 +135,11 @@ static inline void
- rtas_fadump_dt_scan(struct fw_dump *fadump_conf, u64 node) { }
- #endif
+@@ -97,6 +97,8 @@ struct fw_dump {
+ 	unsigned long	cpu_notes_buf_vaddr;
+ 	unsigned long	cpu_notes_buf_size;
  
-+#ifdef CONFIG_PPC_POWERNV
-+extern void opal_fadump_dt_scan(struct fw_dump *fadump_conf, u64 node);
-+#else
-+static inline void
-+opal_fadump_dt_scan(struct fw_dump *fadump_conf, u64 node) { }
-+#endif
++	u64		kernel_metadata;
 +
- #endif /* _ASM_POWERPC_FADUMP_INTERNAL_H */
+ 	int		ibm_configure_kernel_dump;
+ 
+ 	unsigned long	fadump_enabled:1;
+@@ -110,6 +112,8 @@ struct fw_dump {
+ 
+ struct fadump_ops {
+ 	u64	(*fadump_init_mem_struct)(struct fw_dump *fadump_conf);
++	u64	(*fadump_get_metadata_size)(void);
++	int	(*fadump_setup_metadata)(struct fw_dump *fadump_conf);
+ 	int	(*fadump_register)(struct fw_dump *fadump_conf);
+ 	int	(*fadump_unregister)(struct fw_dump *fadump_conf);
+ 	int	(*fadump_invalidate)(struct fw_dump *fadump_conf);
 diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 9d9f7c3..b17673d 100644
+index 7d47d4bb..7e70563 100644
 --- a/arch/powerpc/kernel/fadump.c
 +++ b/arch/powerpc/kernel/fadump.c
-@@ -107,11 +107,20 @@ static int __init fadump_cma_init(void) { return 1; }
- int __init early_init_dt_scan_fw_dump(unsigned long node, const char *uname,
- 				      int depth, void *data)
- {
--	if (depth != 1 || strcmp(uname, "rtas") != 0)
-+	if (depth != 1)
- 		return 0;
+@@ -313,6 +313,10 @@ static unsigned long get_fadump_area_size(void)
+ 	size += sizeof(struct elf_phdr) * (memblock_num_regions(memory) + 2);
  
--	rtas_fadump_dt_scan(&fw_dump, node);
--	return 1;
-+	if (strcmp(uname, "rtas") == 0) {
-+		rtas_fadump_dt_scan(&fw_dump, node);
-+		return 1;
-+	}
+ 	size = PAGE_ALIGN(size);
 +
-+	if (strcmp(uname, "ibm,opal") == 0) {
-+		opal_fadump_dt_scan(&fw_dump, node);
-+		return 1;
-+	}
-+
-+	return 0;
++	/* This is to hold kernel metadata on platforms that support it */
++	size += (fw_dump.ops->fadump_get_metadata_size ?
++		 fw_dump.ops->fadump_get_metadata_size() : 0);
+ 	return size;
  }
  
- /*
-diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-index da2e99e..43a6e1c 100644
---- a/arch/powerpc/platforms/powernv/Makefile
-+++ b/arch/powerpc/platforms/powernv/Makefile
-@@ -6,6 +6,7 @@ obj-y			+= opal-msglog.o opal-hmi.o opal-power.o opal-irqchip.o
- obj-y			+= opal-kmsg.o opal-powercap.o opal-psr.o opal-sensor-groups.o
+@@ -348,6 +352,7 @@ int __init fadump_reserve_mem(void)
+ 		pr_info("Firmware-Assisted Dump is not supported on this hardware\n");
+ 		goto error_out;
+ 	}
++
+ 	/*
+ 	 * Initialize boot memory size
+ 	 * If dump is active then we have already calculated the size during
+@@ -426,8 +431,21 @@ int __init fadump_reserve_mem(void)
+ 			base += size;
+ 		}
  
- obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
-+obj-$(CONFIG_FA_DUMP)	+= opal-fadump.o
- obj-$(CONFIG_PCI)	+= pci.o pci-ioda.o npu-dma.o pci-ioda-tce.o
- obj-$(CONFIG_CXL_BASE)	+= pci-cxl.o
- obj-$(CONFIG_EEH)	+= eeh-powernv.o
+-		if ((base > (mem_boundary - size)) ||
+-		    memblock_reserve(base, size)) {
++		if (base > (mem_boundary - size)) {
++			pr_err("Failed to find memory chunk for reservation!\n");
++			goto error_out;
++		}
++		fw_dump.reserve_dump_area_start = base;
++
++		/*
++		 * Calculate the kernel metadata address and register it with
++		 * f/w if the platform supports.
++		 */
++		if (fw_dump.ops->fadump_setup_metadata &&
++		    (fw_dump.ops->fadump_setup_metadata(&fw_dump) < 0))
++			goto error_out;
++
++		if (memblock_reserve(base, size)) {
+ 			pr_err("Failed to reserve memory!\n");
+ 			goto error_out;
+ 		}
+@@ -435,7 +453,6 @@ int __init fadump_reserve_mem(void)
+ 		pr_info("Reserved %lldMB of memory at %#016llx (System RAM: %lldMB)\n",
+ 			(size >> 20), base, (memblock_phys_mem_size() >> 20));
+ 
+-		fw_dump.reserve_dump_area_start = base;
+ 		ret = fadump_cma_init();
+ 	}
+ 
 diff --git a/arch/powerpc/platforms/powernv/opal-fadump.c b/arch/powerpc/platforms/powernv/opal-fadump.c
-new file mode 100644
-index 0000000..bbc5356
---- /dev/null
+index bbc5356..21de832 100644
+--- a/arch/powerpc/platforms/powernv/opal-fadump.c
 +++ b/arch/powerpc/platforms/powernv/opal-fadump.c
-@@ -0,0 +1,92 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
+@@ -11,13 +11,83 @@
+ #include <linux/seq_file.h>
+ #include <linux/of_fdt.h>
+ #include <linux/libfdt.h>
++#include <linux/mm.h>
+ 
++#include <asm/page.h>
+ #include <asm/opal.h>
+ #include <asm/fadump-internal.h>
+ 
++#include "opal-fadump.h"
++
++static struct opal_fadump_mem_struct *opal_fdm;
++
++/* Initialize kernel metadata */
++static void opal_fadump_init_metadata(struct opal_fadump_mem_struct *fdm)
++{
++	fdm->version = OPAL_FADUMP_VERSION;
++	fdm->region_cnt = 0;
++	fdm->registered_regions = 0;
++	fdm->fadumphdr_addr = 0;
++}
++
+ static u64 opal_fadump_init_mem_struct(struct fw_dump *fadump_conf)
+ {
+-	return fadump_conf->reserve_dump_area_start;
++	u64 addr = fadump_conf->reserve_dump_area_start;
++
++	opal_fdm = __va(fadump_conf->kernel_metadata);
++	opal_fadump_init_metadata(opal_fdm);
++
++	opal_fdm->region_cnt = 1;
++	opal_fdm->rgn[0].src	= 0;
++	opal_fdm->rgn[0].dest	= addr;
++	opal_fdm->rgn[0].size	= fadump_conf->boot_memory_size;
++	addr += fadump_conf->boot_memory_size;
++
++	/*
++	 * Kernel metadata is passed to f/w and retrieved in capture kerenl.
++	 * So, use it to save fadump header address instead of calculating it.
++	 */
++	opal_fdm->fadumphdr_addr = (opal_fdm->rgn[0].dest +
++				    fadump_conf->boot_memory_size);
++
++	return addr;
++}
++
++static u64 opal_fadump_get_metadata_size(void)
++{
++	return PAGE_ALIGN(sizeof(struct opal_fadump_mem_struct));
++}
++
++static int opal_fadump_setup_metadata(struct fw_dump *fadump_conf)
++{
++	int err = 0;
++	s64 ret;
++
++	/*
++	 * Use the last page(s) in FADump memory reservation for
++	 * kernel metadata.
++	 */
++	fadump_conf->kernel_metadata = (fadump_conf->reserve_dump_area_start +
++					fadump_conf->reserve_dump_area_size -
++					opal_fadump_get_metadata_size());
++	pr_info("Kernel metadata addr: %llx\n", fadump_conf->kernel_metadata);
++
++	/* Initialize kernel metadata before registering the address with f/w */
++	opal_fdm = __va(fadump_conf->kernel_metadata);
++	opal_fadump_init_metadata(opal_fdm);
++
++	/*
++	 * Register metadata address with f/w. Can be retrieved in
++	 * the capture kernel.
++	 */
++	ret = opal_mpipl_register_tag(OPAL_MPIPL_TAG_KERNEL,
++				      fadump_conf->kernel_metadata);
++	if (ret != OPAL_SUCCESS) {
++		pr_err("Failed to set kernel metadata tag!\n");
++		err = -EPERM;
++	}
++
++	return err;
+ }
+ 
+ static int opal_fadump_register(struct fw_dump *fadump_conf)
+@@ -43,6 +113,16 @@ static int __init opal_fadump_process(struct fw_dump *fadump_conf)
+ static void opal_fadump_region_show(struct fw_dump *fadump_conf,
+ 				    struct seq_file *m)
+ {
++	const struct opal_fadump_mem_struct *fdm_ptr = opal_fdm;
++	u64 dumped_bytes = 0;
++	int i;
++
++	for (i = 0; i < fdm_ptr->region_cnt; i++) {
++		seq_printf(m, "DUMP: Src: %#016llx, Dest: %#016llx, ",
++			   fdm_ptr->rgn[i].src, fdm_ptr->rgn[i].dest);
++		seq_printf(m, "Size: %#llx, Dumped: %#llx bytes\n",
++			   fdm_ptr->rgn[i].size, dumped_bytes);
++	}
+ }
+ 
+ static void opal_fadump_trigger(struct fadump_crash_info_header *fdh,
+@@ -60,6 +140,8 @@ static void opal_fadump_trigger(struct fadump_crash_info_header *fdh,
+ 
+ static struct fadump_ops opal_fadump_ops = {
+ 	.fadump_init_mem_struct		= opal_fadump_init_mem_struct,
++	.fadump_get_metadata_size	= opal_fadump_get_metadata_size,
++	.fadump_setup_metadata		= opal_fadump_setup_metadata,
+ 	.fadump_register		= opal_fadump_register,
+ 	.fadump_unregister		= opal_fadump_unregister,
+ 	.fadump_invalidate		= opal_fadump_invalidate,
+diff --git a/arch/powerpc/platforms/powernv/opal-fadump.h b/arch/powerpc/platforms/powernv/opal-fadump.h
+new file mode 100644
+index 0000000..0b83d89
+--- /dev/null
++++ b/arch/powerpc/platforms/powernv/opal-fadump.h
+@@ -0,0 +1,39 @@
++/* SPDX-License-Identifier: GPL-2.0-or-later */
 +/*
 + * Firmware-Assisted Dump support on POWER platform (OPAL).
 + *
 + * Copyright 2019, Hari Bathini, IBM Corporation.
 + */
 +
-+#define pr_fmt(fmt) "opal fadump: " fmt
++#ifndef _POWERNV_OPAL_FADUMP_H
++#define _POWERNV_OPAL_FADUMP_H
 +
-+#include <linux/string.h>
-+#include <linux/seq_file.h>
-+#include <linux/of_fdt.h>
-+#include <linux/libfdt.h>
++/*
++ * OPAL FADump metadata structure format version
++ *
++ * OPAL FADump kernel metadata structure stores kernel metadata needed to
++ * register-for/process crash dump. Format version is used to keep a tab on
++ * the changes in the structure format. The changes, if any, to the format
++ * are expected to be minimal and backward compatible.
++ */
++#define OPAL_FADUMP_VERSION			0x1
 +
-+#include <asm/opal.h>
-+#include <asm/fadump-internal.h>
++/* Maximum number of memory regions kernel supports */
++#define OPAL_FADUMP_MAX_MEM_REGS		128
 +
-+static u64 opal_fadump_init_mem_struct(struct fw_dump *fadump_conf)
-+{
-+	return fadump_conf->reserve_dump_area_start;
-+}
++/*
++ * OPAL FADump kernel metadata
++ *
++ * The address of this structure will be registered with f/w for retrieving
++ * and processing during crash dump.
++ */
++struct opal_fadump_mem_struct {
++	u8	version;
++	u8	reserved[3];
++	u16	region_cnt;		/* number of regions */
++	u16	registered_regions;	/* Regions registered for MPIPL */
++	u64	fadumphdr_addr;
++	struct opal_mpipl_region	rgn[OPAL_FADUMP_MAX_MEM_REGS];
++} __packed;
 +
-+static int opal_fadump_register(struct fw_dump *fadump_conf)
-+{
-+	return -EIO;
-+}
-+
-+static int opal_fadump_unregister(struct fw_dump *fadump_conf)
-+{
-+	return -EIO;
-+}
-+
-+static int opal_fadump_invalidate(struct fw_dump *fadump_conf)
-+{
-+	return -EIO;
-+}
-+
-+static int __init opal_fadump_process(struct fw_dump *fadump_conf)
-+{
-+	return -EINVAL;
-+}
-+
-+static void opal_fadump_region_show(struct fw_dump *fadump_conf,
-+				    struct seq_file *m)
-+{
-+}
-+
-+static void opal_fadump_trigger(struct fadump_crash_info_header *fdh,
-+				const char *msg)
-+{
-+	int rc;
-+
-+	rc = opal_cec_reboot2(OPAL_REBOOT_MPIPL, msg);
-+	if (rc == OPAL_UNSUPPORTED) {
-+		pr_emerg("Reboot type %d not supported.\n",
-+			 OPAL_REBOOT_MPIPL);
-+	} else if (rc == OPAL_HARDWARE)
-+		pr_emerg("No backend support for MPIPL!\n");
-+}
-+
-+static struct fadump_ops opal_fadump_ops = {
-+	.fadump_init_mem_struct		= opal_fadump_init_mem_struct,
-+	.fadump_register		= opal_fadump_register,
-+	.fadump_unregister		= opal_fadump_unregister,
-+	.fadump_invalidate		= opal_fadump_invalidate,
-+	.fadump_process			= opal_fadump_process,
-+	.fadump_region_show		= opal_fadump_region_show,
-+	.fadump_trigger			= opal_fadump_trigger,
-+};
-+
-+void __init opal_fadump_dt_scan(struct fw_dump *fadump_conf, u64 node)
-+{
-+	unsigned long dn;
-+
-+	/*
-+	 * Check if Firmware-Assisted Dump is supported. if yes, check
-+	 * if dump has been initiated on last reboot.
-+	 */
-+	dn = of_get_flat_dt_subnode_by_name(node, "dump");
-+	if (dn == -FDT_ERR_NOTFOUND) {
-+		pr_debug("FADump support is missing!\n");
-+		return;
-+	}
-+
-+	if (!of_flat_dt_is_compatible(dn, "ibm,opal-dump")) {
-+		pr_err("Support missing for this f/w version!\n");
-+		return;
-+	}
-+
-+	fadump_conf->ops		= &opal_fadump_ops;
-+	fadump_conf->fadump_supported	= 1;
-+}
++#endif /* _POWERNV_OPAL_FADUMP_H */
 
