@@ -6,79 +6,82 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E862C49ED6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 15:07:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 91919C49ED6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 15:10:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2B60E2075C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 15:07:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2B60E2075C
+	by mail.kernel.org (Postfix) with ESMTPS id 1C68A2084F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 15:10:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1C68A2084F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46T4xg6svJzF3KX
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 01:07:03 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 46T51X4V20zDrqP
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 01:10:24 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46T4Xk4PJPzF27h
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2019 00:48:54 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46T4Y739RyzF3Bt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2019 00:49:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 46T4Xk0nXWz8t0n
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2019 00:48:54 +1000 (AEST)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 46T4Y7089Mz8t0n
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2019 00:49:15 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 46T4Xk0MrRz9sNT; Thu, 12 Sep 2019 00:48:54 +1000 (AEST)
+ id 46T4Y65Qgtz9sNT; Thu, 12 Sep 2019 00:49:14 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=hbathini@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 46T4Xj3xZdz9s4Y
- for <linuxppc-dev@ozlabs.org>; Thu, 12 Sep 2019 00:48:53 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 46T4Y60PNqz9sNk
+ for <linuxppc-dev@ozlabs.org>; Thu, 12 Sep 2019 00:49:13 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x8BEgehb136592
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2019 10:48:52 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2uy1ryb7w9-1
+ x8BEgdPs103081
+ for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2019 10:49:09 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2uy1y02rj2-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2019 10:48:50 -0400
+ for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2019 10:49:09 -0400
 Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <hbathini@linux.ibm.com>;
- Wed, 11 Sep 2019 15:48:48 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Wed, 11 Sep 2019 15:49:07 +0100
+Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 11 Sep 2019 15:48:45 +0100
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x8BEmhTu56361094
+ Wed, 11 Sep 2019 15:49:04 +0100
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id x8BEmbdW39715116
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 11 Sep 2019 14:48:43 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 509D95204F;
- Wed, 11 Sep 2019 14:48:43 +0000 (GMT)
+ Wed, 11 Sep 2019 14:48:37 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 14F06AE051;
+ Wed, 11 Sep 2019 14:49:02 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C2AE7AE04D;
+ Wed, 11 Sep 2019 14:48:58 +0000 (GMT)
 Received: from hbathini.in.ibm.com (unknown [9.102.24.71])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 6BF9752054;
- Wed, 11 Sep 2019 14:48:41 +0000 (GMT)
-Subject: [PATCH v6 07/36] pseries/fadump: introduce callbacks for platform
- specific operations
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 11 Sep 2019 14:48:58 +0000 (GMT)
+Subject: [PATCH v6 08/36] pseries/fadump: define RTAS register/un-register
+ callback functions
 From: Hari Bathini <hbathini@linux.ibm.com>
 To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Date: Wed, 11 Sep 2019 20:18:40 +0530
+Date: Wed, 11 Sep 2019 20:18:57 +0530
 In-Reply-To: <156821308145.5656.2233728784001623843.stgit@hbathini.in.ibm.com>
 References: <156821308145.5656.2233728784001623843.stgit@hbathini.in.ibm.com>
 User-Agent: StGit/0.17.1-dirty
@@ -86,15 +89,15 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
-x-cbid: 19091114-0020-0000-0000-0000036B0DA9
+x-cbid: 19091114-4275-0000-0000-00000364815E
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19091114-0021-0000-0000-000021C09AE2
-Message-Id: <156821330286.5656.15538934400074110770.stgit@hbathini.in.ibm.com>
+x-cbparentid: 19091114-4276-0000-0000-00003876D95C
+Message-Id: <156821332856.5656.16380417702046411631.stgit@hbathini.in.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-09-11_08:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
  mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1906280000 definitions=main-1909110138
@@ -117,275 +120,489 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Introduce callback functions for platform specific operations like
-register, unregister, invalidate & such. Also, define place-holders
-for the same on pSeries platform.
+Move platform specific register/un-register code, the RTAS calls, to
+register/un-register callback functions. This would also mean moving
+code that initializes and prints the platform specific FADump data.
 
 Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
+Reviewed-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 ---
 
 Changes in v6:
-  * Drop using unnecessary return type for platform specific DT scan function.
+  * Split the change that updates how fadump region contents are displayed.
 
 
- arch/powerpc/include/asm/fadump-internal.h   |   24 +++++
- arch/powerpc/kernel/fadump.c                 |   45 ----------
- arch/powerpc/platforms/pseries/Makefile      |    1 
- arch/powerpc/platforms/pseries/rtas-fadump.c |  122 ++++++++++++++++++++++++++
- 4 files changed, 148 insertions(+), 44 deletions(-)
- create mode 100644 arch/powerpc/platforms/pseries/rtas-fadump.c
+ arch/powerpc/include/asm/fadump-internal.h   |    2 
+ arch/powerpc/kernel/fadump.c                 |  165 ++------------------------
+ arch/powerpc/platforms/pseries/rtas-fadump.c |  162 +++++++++++++++++++++++++-
+ 3 files changed, 176 insertions(+), 153 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/fadump-internal.h b/arch/powerpc/include/asm/fadump-internal.h
-index f809751..8ecd234 100644
+index 8ecd234..8c0eb0f 100644
 --- a/arch/powerpc/include/asm/fadump-internal.h
 +++ b/arch/powerpc/include/asm/fadump-internal.h
-@@ -77,6 +77,9 @@ struct fad_crash_memory_ranges {
- 	unsigned long long	size;
- };
+@@ -89,7 +89,9 @@ struct fw_dump {
  
-+/* Platform specific callback functions */
-+struct fadump_ops;
+ 	unsigned long	cpu_state_data_size;
+ 	unsigned long	hpte_region_size;
 +
- /* Firmware-assisted dump configuration details. */
- struct fw_dump {
- 	unsigned long	reserve_dump_area_start;
-@@ -99,6 +102,20 @@ struct fw_dump {
- 	unsigned long	dump_active:1;
- 	unsigned long	dump_registered:1;
- 	unsigned long	nocma:1;
-+
-+	struct fadump_ops	*ops;
-+};
-+
-+struct fadump_ops {
-+	u64	(*fadump_init_mem_struct)(struct fw_dump *fadump_conf);
-+	int	(*fadump_register)(struct fw_dump *fadump_conf);
-+	int	(*fadump_unregister)(struct fw_dump *fadump_conf);
-+	int	(*fadump_invalidate)(struct fw_dump *fadump_conf);
-+	int	(*fadump_process)(struct fw_dump *fadump_conf);
-+	void	(*fadump_region_show)(struct fw_dump *fadump_conf,
-+				      struct seq_file *m);
-+	void	(*fadump_trigger)(struct fadump_crash_info_header *fdh,
-+				  const char *msg);
- };
+ 	unsigned long	boot_memory_size;
++	u64		boot_mem_dest_addr;
  
- /* Helper functions */
-@@ -109,4 +126,11 @@ void fadump_update_elfcore_header(char *bufp);
- bool is_fadump_boot_mem_contiguous(void);
- bool is_fadump_reserved_mem_contiguous(void);
- 
-+#ifdef CONFIG_PPC_PSERIES
-+extern void rtas_fadump_dt_scan(struct fw_dump *fadump_conf, u64 node);
-+#else
-+static inline void
-+rtas_fadump_dt_scan(struct fw_dump *fadump_conf, u64 node) { }
-+#endif
-+
- #endif /* _ASM_POWERPC_FADUMP_INTERNAL_H */
+ 	unsigned long	fadumphdr_addr;
+ 	unsigned long	cpu_notes_buf_vaddr;
 diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 03f2708..aa342ee 100644
+index aa342ee..3cf6210 100644
 --- a/arch/powerpc/kernel/fadump.c
 +++ b/arch/powerpc/kernel/fadump.c
-@@ -112,24 +112,10 @@ static int __init fadump_cma_init(void) { return 1; }
- int __init early_init_dt_scan_fw_dump(unsigned long node,
- 			const char *uname, int depth, void *data)
- {
--	const __be32 *sections;
--	int i, num_sections;
--	int size;
--	const __be32 *token;
--
- 	if (depth != 1 || strcmp(uname, "rtas") != 0)
- 		return 0;
+@@ -36,7 +36,6 @@
+ #include "../platforms/pseries/rtas-fadump.h"
  
--	/*
--	 * Check if Firmware Assisted dump is supported. if yes, check
--	 * if dump has been initiated on last reboot.
--	 */
--	token = of_get_flat_dt_prop(node, "ibm,configure-kernel-dump", NULL);
--	if (!token)
--		return 1;
--
--	fw_dump.fadump_supported = 1;
--	fw_dump.ibm_configure_kernel_dump = be32_to_cpu(*token);
-+	rtas_fadump_dt_scan(&fw_dump, node);
+ static struct fw_dump fw_dump;
+-static struct rtas_fadump_mem_struct fdm;
+ static const struct rtas_fadump_mem_struct *fdm_active;
  
- 	/*
- 	 * The 'ibm,kernel-dump' rtas node is present only if there is
-@@ -139,35 +125,6 @@ int __init early_init_dt_scan_fw_dump(unsigned long node,
- 	if (fdm_active)
- 		fw_dump.dump_active = 1;
- 
--	/* Get the sizes required to store dump data for the firmware provided
--	 * dump sections.
--	 * For each dump section type supported, a 32bit cell which defines
--	 * the ID of a supported section followed by two 32 bit cells which
--	 * gives teh size of the section in bytes.
--	 */
--	sections = of_get_flat_dt_prop(node, "ibm,configure-kernel-dump-sizes",
--					&size);
--
--	if (!sections)
--		return 1;
--
--	num_sections = size / (3 * sizeof(u32));
--
--	for (i = 0; i < num_sections; i++, sections += 3) {
--		u32 type = (u32)of_read_number(sections, 1);
--
--		switch (type) {
--		case RTAS_FADUMP_CPU_STATE_DATA:
--			fw_dump.cpu_state_data_size =
--					of_read_ulong(&sections[1], 2);
--			break;
--		case RTAS_FADUMP_HPTE_REGION:
--			fw_dump.hpte_region_size =
--					of_read_ulong(&sections[1], 2);
--			break;
--		}
--	}
--
- 	return 1;
+ static DEFINE_MUTEX(fadump_mutex);
+@@ -229,61 +228,6 @@ static void fadump_show_config(void)
+ 	pr_debug("Boot memory size  : %lx\n", fw_dump.boot_memory_size);
  }
  
-diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
-index ab3d59a..e248724 100644
---- a/arch/powerpc/platforms/pseries/Makefile
-+++ b/arch/powerpc/platforms/pseries/Makefile
-@@ -26,6 +26,7 @@ obj-$(CONFIG_IBMVIO)		+= vio.o
- obj-$(CONFIG_IBMEBUS)		+= ibmebus.o
- obj-$(CONFIG_PAPR_SCM)		+= papr_scm.o
- obj-$(CONFIG_PPC_SPLPAR)	+= vphn.o
-+obj-$(CONFIG_FA_DUMP)		+= rtas-fadump.o
+-static unsigned long init_fadump_mem_struct(struct rtas_fadump_mem_struct *fdm,
+-				unsigned long addr)
+-{
+-	if (!fdm)
+-		return 0;
+-
+-	memset(fdm, 0, sizeof(struct rtas_fadump_mem_struct));
+-	addr = addr & PAGE_MASK;
+-
+-	fdm->header.dump_format_version = cpu_to_be32(0x00000001);
+-	fdm->header.dump_num_sections = cpu_to_be16(3);
+-	fdm->header.dump_status_flag = 0;
+-	fdm->header.offset_first_dump_section =
+-		cpu_to_be32((u32)offsetof(struct rtas_fadump_mem_struct, cpu_state_data));
+-
+-	/*
+-	 * Fields for disk dump option.
+-	 * We are not using disk dump option, hence set these fields to 0.
+-	 */
+-	fdm->header.dd_block_size = 0;
+-	fdm->header.dd_block_offset = 0;
+-	fdm->header.dd_num_blocks = 0;
+-	fdm->header.dd_offset_disk_path = 0;
+-
+-	/* set 0 to disable an automatic dump-reboot. */
+-	fdm->header.max_time_auto = 0;
+-
+-	/* Kernel dump sections */
+-	/* cpu state data section. */
+-	fdm->cpu_state_data.request_flag = cpu_to_be32(RTAS_FADUMP_REQUEST_FLAG);
+-	fdm->cpu_state_data.source_data_type = cpu_to_be16(RTAS_FADUMP_CPU_STATE_DATA);
+-	fdm->cpu_state_data.source_address = 0;
+-	fdm->cpu_state_data.source_len = cpu_to_be64(fw_dump.cpu_state_data_size);
+-	fdm->cpu_state_data.destination_address = cpu_to_be64(addr);
+-	addr += fw_dump.cpu_state_data_size;
+-
+-	/* hpte region section */
+-	fdm->hpte_region.request_flag = cpu_to_be32(RTAS_FADUMP_REQUEST_FLAG);
+-	fdm->hpte_region.source_data_type = cpu_to_be16(RTAS_FADUMP_HPTE_REGION);
+-	fdm->hpte_region.source_address = 0;
+-	fdm->hpte_region.source_len = cpu_to_be64(fw_dump.hpte_region_size);
+-	fdm->hpte_region.destination_address = cpu_to_be64(addr);
+-	addr += fw_dump.hpte_region_size;
+-
+-	/* RMA region section */
+-	fdm->rmr_region.request_flag = cpu_to_be32(RTAS_FADUMP_REQUEST_FLAG);
+-	fdm->rmr_region.source_data_type = cpu_to_be16(RTAS_FADUMP_REAL_MODE_REGION);
+-	fdm->rmr_region.source_address = cpu_to_be64(RMA_START);
+-	fdm->rmr_region.source_len = cpu_to_be64(fw_dump.boot_memory_size);
+-	fdm->rmr_region.destination_address = cpu_to_be64(addr);
+-	addr += fw_dump.boot_memory_size;
+-
+-	return addr;
+-}
+-
+ /**
+  * fadump_calculate_reserve_size(): reserve variable boot area 5% of System RAM
+  *
+@@ -546,61 +490,6 @@ static int __init early_fadump_reserve_mem(char *p)
+ }
+ early_param("fadump_reserve_mem", early_fadump_reserve_mem);
  
- ifdef CONFIG_PPC_PSERIES
- obj-$(CONFIG_SUSPEND)		+= suspend.o
+-static int register_fw_dump(struct rtas_fadump_mem_struct *fdm)
+-{
+-	int rc, err;
+-	unsigned int wait_time;
+-
+-	pr_debug("Registering for firmware-assisted kernel dump...\n");
+-
+-	/* TODO: Add upper time limit for the delay */
+-	do {
+-		rc = rtas_call(fw_dump.ibm_configure_kernel_dump, 3, 1, NULL,
+-			FADUMP_REGISTER, fdm,
+-			sizeof(struct rtas_fadump_mem_struct));
+-
+-		wait_time = rtas_busy_delay_time(rc);
+-		if (wait_time)
+-			mdelay(wait_time);
+-
+-	} while (wait_time);
+-
+-	err = -EIO;
+-	switch (rc) {
+-	default:
+-		pr_err("Failed to register. Unknown Error(%d).\n", rc);
+-		break;
+-	case -1:
+-		printk(KERN_ERR "Failed to register firmware-assisted kernel"
+-			" dump. Hardware Error(%d).\n", rc);
+-		break;
+-	case -3:
+-		if (!is_fadump_boot_mem_contiguous())
+-			pr_err("Can't have holes in boot memory area while registering fadump\n");
+-		else if (!is_fadump_reserved_mem_contiguous())
+-			pr_err("Can't have holes in reserved memory area while"
+-			       " registering fadump\n");
+-
+-		printk(KERN_ERR "Failed to register firmware-assisted kernel"
+-			" dump. Parameter Error(%d).\n", rc);
+-		err = -EINVAL;
+-		break;
+-	case -9:
+-		printk(KERN_ERR "firmware-assisted kernel dump is already "
+-			" registered.");
+-		fw_dump.dump_registered = 1;
+-		err = -EEXIST;
+-		break;
+-	case 0:
+-		printk(KERN_INFO "firmware-assisted kernel dump registration"
+-			" is successful\n");
+-		fw_dump.dump_registered = 1;
+-		err = 0;
+-		break;
+-	}
+-	return err;
+-}
+-
+ void crash_fadump(struct pt_regs *regs, const char *str)
+ {
+ 	struct fadump_crash_info_header *fdh = NULL;
+@@ -643,8 +532,7 @@ void crash_fadump(struct pt_regs *regs, const char *str)
+ 
+ 	fdh->online_mask = *cpu_online_mask;
+ 
+-	/* Call ibm,os-term rtas call to trigger firmware assisted dump */
+-	rtas_os_term((char *)str);
++	fw_dump.ops->fadump_trigger(fdh, str);
+ }
+ 
+ #define GPR_MASK	0xffffff0000000000
+@@ -1129,7 +1017,7 @@ static int fadump_setup_crash_memory_ranges(void)
+ static inline unsigned long fadump_relocate(unsigned long paddr)
+ {
+ 	if (paddr > RMA_START && paddr < fw_dump.boot_memory_size)
+-		return be64_to_cpu(fdm.rmr_region.destination_address) + paddr;
++		return fw_dump.boot_mem_dest_addr + paddr;
+ 	else
+ 		return paddr;
+ }
+@@ -1202,7 +1090,7 @@ static int fadump_create_elfcore_headers(char *bufp)
+ 			 * to the specified destination_address. Hence set
+ 			 * the correct offset.
+ 			 */
+-			phdr->p_offset = be64_to_cpu(fdm.rmr_region.destination_address);
++			phdr->p_offset = fw_dump.boot_mem_dest_addr;
+ 		}
+ 
+ 		phdr->p_paddr = mbase;
+@@ -1254,7 +1142,8 @@ static int register_fadump(void)
+ 	if (ret)
+ 		return ret;
+ 
+-	addr = be64_to_cpu(fdm.rmr_region.destination_address) + be64_to_cpu(fdm.rmr_region.source_len);
++	addr = fw_dump.fadumphdr_addr;
++
+ 	/* Initialize fadump crash info header. */
+ 	addr = init_fadump_header(addr);
+ 	vaddr = __va(addr);
+@@ -1263,34 +1152,8 @@ static int register_fadump(void)
+ 	fadump_create_elfcore_headers(vaddr);
+ 
+ 	/* register the future kernel dump with firmware. */
+-	return register_fw_dump(&fdm);
+-}
+-
+-static int fadump_unregister_dump(struct rtas_fadump_mem_struct *fdm)
+-{
+-	int rc = 0;
+-	unsigned int wait_time;
+-
+-	pr_debug("Un-register firmware-assisted dump\n");
+-
+-	/* TODO: Add upper time limit for the delay */
+-	do {
+-		rc = rtas_call(fw_dump.ibm_configure_kernel_dump, 3, 1, NULL,
+-			FADUMP_UNREGISTER, fdm,
+-			sizeof(struct rtas_fadump_mem_struct));
+-
+-		wait_time = rtas_busy_delay_time(rc);
+-		if (wait_time)
+-			mdelay(wait_time);
+-	} while (wait_time);
+-
+-	if (rc) {
+-		printk(KERN_ERR "Failed to un-register firmware-assisted dump."
+-			" unexpected error(%d).\n", rc);
+-		return rc;
+-	}
+-	fw_dump.dump_registered = 0;
+-	return 0;
++	pr_debug("Registering for firmware-assisted kernel dump...\n");
++	return fw_dump.ops->fadump_register(&fw_dump);
+ }
+ 
+ static int fadump_invalidate_dump(const struct rtas_fadump_mem_struct *fdm)
+@@ -1328,7 +1191,7 @@ void fadump_cleanup(void)
+ 		fadump_invalidate_dump(fdm_active);
+ 	} else if (fw_dump.dump_registered) {
+ 		/* Un-register Firmware-assisted dump if it was registered. */
+-		fadump_unregister_dump(&fdm);
++		fw_dump.ops->fadump_unregister(&fw_dump);
+ 		free_crash_memory_ranges();
+ 	}
+ }
+@@ -1433,7 +1296,7 @@ static void fadump_invalidate_release_mem(void)
+ 	fadump_free_cpu_notes_buf();
+ 
+ 	/* Initialize the kernel dump memory structure for FAD registration. */
+-	init_fadump_mem_struct(&fdm, fw_dump.reserve_dump_area_start);
++	fw_dump.ops->fadump_init_mem_struct(&fw_dump);
+ }
+ 
+ static ssize_t fadump_release_memory_store(struct kobject *kobj,
+@@ -1498,12 +1361,13 @@ static ssize_t fadump_register_store(struct kobject *kobj,
+ 			goto unlock_out;
+ 		}
+ 		/* Un-register Firmware-assisted dump */
+-		fadump_unregister_dump(&fdm);
++		pr_debug("Un-register firmware-assisted dump\n");
++		fw_dump.ops->fadump_unregister(&fw_dump);
+ 		break;
+ 	case 1:
+ 		if (fw_dump.dump_registered == 1) {
+ 			/* Un-register Firmware-assisted dump */
+-			fadump_unregister_dump(&fdm);
++			fw_dump.ops->fadump_unregister(&fw_dump);
+ 		}
+ 		/* Register Firmware-assisted dump */
+ 		ret = register_fadump();
+@@ -1530,7 +1394,8 @@ static int fadump_region_show(struct seq_file *m, void *private)
+ 		fdm_ptr = fdm_active;
+ 	else {
+ 		mutex_unlock(&fadump_mutex);
+-		fdm_ptr = &fdm;
++		fw_dump.ops->fadump_region_show(&fw_dump, m);
++		return 0;
+ 	}
+ 
+ 	seq_printf(m,
+@@ -1651,7 +1516,7 @@ int __init setup_fadump(void)
+ 	}
+ 	/* Initialize the kernel dump memory structure for FAD registration. */
+ 	else if (fw_dump.reserve_dump_area_size)
+-		init_fadump_mem_struct(&fdm, fw_dump.reserve_dump_area_start);
++		fw_dump.ops->fadump_init_mem_struct(&fw_dump);
+ 	fadump_init_files();
+ 
+ 	return 1;
 diff --git a/arch/powerpc/platforms/pseries/rtas-fadump.c b/arch/powerpc/platforms/pseries/rtas-fadump.c
-new file mode 100644
-index 0000000..9efe7b1
---- /dev/null
+index 9efe7b1..1daa29f 100644
+--- a/arch/powerpc/platforms/pseries/rtas-fadump.c
 +++ b/arch/powerpc/platforms/pseries/rtas-fadump.c
-@@ -0,0 +1,122 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+/*
-+ * Firmware-Assisted Dump support on POWERVM platform.
-+ *
-+ * Copyright 2011, Mahesh Salgaonkar, IBM Corporation.
-+ * Copyright 2019, Hari Bathini, IBM Corporation.
-+ */
+@@ -22,19 +22,151 @@
+ 
+ #include "rtas-fadump.h"
+ 
++static struct rtas_fadump_mem_struct fdm;
 +
-+#define pr_fmt(fmt) "rtas fadump: " fmt
-+
-+#include <linux/string.h>
-+#include <linux/memblock.h>
-+#include <linux/delay.h>
-+#include <linux/seq_file.h>
-+#include <linux/crash_dump.h>
-+
-+#include <asm/page.h>
-+#include <asm/prom.h>
-+#include <asm/rtas.h>
-+#include <asm/fadump.h>
-+#include <asm/fadump-internal.h>
-+
-+#include "rtas-fadump.h"
-+
-+static u64 rtas_fadump_init_mem_struct(struct fw_dump *fadump_conf)
++static void rtas_fadump_update_config(struct fw_dump *fadump_conf,
++				      const struct rtas_fadump_mem_struct *fdm)
 +{
-+	return fadump_conf->reserve_dump_area_start;
++	fadump_conf->boot_mem_dest_addr =
++		be64_to_cpu(fdm->rmr_region.destination_address);
++
++	fadump_conf->fadumphdr_addr = (fadump_conf->boot_mem_dest_addr +
++				       fadump_conf->boot_memory_size);
 +}
 +
-+static int rtas_fadump_register(struct fw_dump *fadump_conf)
-+{
-+	return -EIO;
-+}
+ static u64 rtas_fadump_init_mem_struct(struct fw_dump *fadump_conf)
+ {
+-	return fadump_conf->reserve_dump_area_start;
++	u64 addr = fadump_conf->reserve_dump_area_start;
 +
-+static int rtas_fadump_unregister(struct fw_dump *fadump_conf)
-+{
-+	return -EIO;
-+}
++	memset(&fdm, 0, sizeof(struct rtas_fadump_mem_struct));
++	addr = addr & PAGE_MASK;
 +
-+static int rtas_fadump_invalidate(struct fw_dump *fadump_conf)
-+{
-+	return -EIO;
-+}
-+
-+/*
-+ * Validate and process the dump data stored by firmware before exporting
-+ * it through '/proc/vmcore'.
-+ */
-+static int __init rtas_fadump_process(struct fw_dump *fadump_conf)
-+{
-+	return -EINVAL;
-+}
-+
-+static void rtas_fadump_region_show(struct fw_dump *fadump_conf,
-+				    struct seq_file *m)
-+{
-+}
-+
-+static void rtas_fadump_trigger(struct fadump_crash_info_header *fdh,
-+				const char *msg)
-+{
-+	/* Call ibm,os-term rtas call to trigger firmware assisted dump */
-+	rtas_os_term((char *)msg);
-+}
-+
-+static struct fadump_ops rtas_fadump_ops = {
-+	.fadump_init_mem_struct		= rtas_fadump_init_mem_struct,
-+	.fadump_register		= rtas_fadump_register,
-+	.fadump_unregister		= rtas_fadump_unregister,
-+	.fadump_invalidate		= rtas_fadump_invalidate,
-+	.fadump_process			= rtas_fadump_process,
-+	.fadump_region_show		= rtas_fadump_region_show,
-+	.fadump_trigger			= rtas_fadump_trigger,
-+};
-+
-+void __init rtas_fadump_dt_scan(struct fw_dump *fadump_conf, u64 node)
-+{
-+	int i, size, num_sections;
-+	const __be32 *sections;
-+	const __be32 *token;
++	fdm.header.dump_format_version = cpu_to_be32(0x00000001);
++	fdm.header.dump_num_sections = cpu_to_be16(3);
++	fdm.header.dump_status_flag = 0;
++	fdm.header.offset_first_dump_section =
++		cpu_to_be32((u32)offsetof(struct rtas_fadump_mem_struct,
++					  cpu_state_data));
 +
 +	/*
-+	 * Check if Firmware Assisted dump is supported. if yes, check
-+	 * if dump has been initiated on last reboot.
++	 * Fields for disk dump option.
++	 * We are not using disk dump option, hence set these fields to 0.
 +	 */
-+	token = of_get_flat_dt_prop(node, "ibm,configure-kernel-dump", NULL);
-+	if (!token)
-+		return;
++	fdm.header.dd_block_size = 0;
++	fdm.header.dd_block_offset = 0;
++	fdm.header.dd_num_blocks = 0;
++	fdm.header.dd_offset_disk_path = 0;
 +
-+	fadump_conf->ibm_configure_kernel_dump = be32_to_cpu(*token);
-+	fadump_conf->ops		= &rtas_fadump_ops;
-+	fadump_conf->fadump_supported	= 1;
++	/* set 0 to disable an automatic dump-reboot. */
++	fdm.header.max_time_auto = 0;
 +
-+	/* Get the sizes required to store dump data for the firmware provided
-+	 * dump sections.
-+	 * For each dump section type supported, a 32bit cell which defines
-+	 * the ID of a supported section followed by two 32 bit cells which
-+	 * gives the size of the section in bytes.
-+	 */
-+	sections = of_get_flat_dt_prop(node, "ibm,configure-kernel-dump-sizes",
-+					&size);
++	/* Kernel dump sections */
++	/* cpu state data section. */
++	fdm.cpu_state_data.request_flag =
++		cpu_to_be32(RTAS_FADUMP_REQUEST_FLAG);
++	fdm.cpu_state_data.source_data_type =
++		cpu_to_be16(RTAS_FADUMP_CPU_STATE_DATA);
++	fdm.cpu_state_data.source_address = 0;
++	fdm.cpu_state_data.source_len =
++		cpu_to_be64(fadump_conf->cpu_state_data_size);
++	fdm.cpu_state_data.destination_address = cpu_to_be64(addr);
++	addr += fadump_conf->cpu_state_data_size;
 +
-+	if (!sections)
-+		return;
++	/* hpte region section */
++	fdm.hpte_region.request_flag = cpu_to_be32(RTAS_FADUMP_REQUEST_FLAG);
++	fdm.hpte_region.source_data_type =
++		cpu_to_be16(RTAS_FADUMP_HPTE_REGION);
++	fdm.hpte_region.source_address = 0;
++	fdm.hpte_region.source_len =
++		cpu_to_be64(fadump_conf->hpte_region_size);
++	fdm.hpte_region.destination_address = cpu_to_be64(addr);
++	addr += fadump_conf->hpte_region_size;
 +
-+	num_sections = size / (3 * sizeof(u32));
++	/* RMA region section */
++	fdm.rmr_region.request_flag = cpu_to_be32(RTAS_FADUMP_REQUEST_FLAG);
++	fdm.rmr_region.source_data_type =
++		cpu_to_be16(RTAS_FADUMP_REAL_MODE_REGION);
++	fdm.rmr_region.source_address = cpu_to_be64(RMA_START);
++	fdm.rmr_region.source_len = cpu_to_be64(fadump_conf->boot_memory_size);
++	fdm.rmr_region.destination_address = cpu_to_be64(addr);
++	addr += fadump_conf->boot_memory_size;
 +
-+	for (i = 0; i < num_sections; i++, sections += 3) {
-+		u32 type = (u32)of_read_number(sections, 1);
++	rtas_fadump_update_config(fadump_conf, &fdm);
 +
-+		switch (type) {
-+		case RTAS_FADUMP_CPU_STATE_DATA:
-+			fadump_conf->cpu_state_data_size =
-+					of_read_ulong(&sections[1], 2);
-+			break;
-+		case RTAS_FADUMP_HPTE_REGION:
-+			fadump_conf->hpte_region_size =
-+					of_read_ulong(&sections[1], 2);
-+			break;
-+		}
++	return addr;
+ }
+ 
+ static int rtas_fadump_register(struct fw_dump *fadump_conf)
+ {
+-	return -EIO;
++	unsigned int wait_time;
++	int rc, err = -EIO;
++
++	/* TODO: Add upper time limit for the delay */
++	do {
++		rc =  rtas_call(fadump_conf->ibm_configure_kernel_dump, 3, 1,
++				NULL, FADUMP_REGISTER, &fdm,
++				sizeof(struct rtas_fadump_mem_struct));
++
++		wait_time = rtas_busy_delay_time(rc);
++		if (wait_time)
++			mdelay(wait_time);
++
++	} while (wait_time);
++
++	switch (rc) {
++	case 0:
++		pr_info("Registration is successful!\n");
++		fadump_conf->dump_registered = 1;
++		err = 0;
++		break;
++	case -1:
++		pr_err("Failed to register. Hardware Error(%d).\n", rc);
++		break;
++	case -3:
++		if (!is_fadump_boot_mem_contiguous())
++			pr_err("Can't have holes in boot memory area.\n");
++		else if (!is_fadump_reserved_mem_contiguous())
++			pr_err("Can't have holes in reserved memory area.\n");
++
++		pr_err("Failed to register. Parameter Error(%d).\n", rc);
++		err = -EINVAL;
++		break;
++	case -9:
++		pr_err("Already registered!\n");
++		fadump_conf->dump_registered = 1;
++		err = -EEXIST;
++		break;
++	default:
++		pr_err("Failed to register. Unknown Error(%d).\n", rc);
++		break;
 +	}
-+}
++
++	return err;
+ }
+ 
+ static int rtas_fadump_unregister(struct fw_dump *fadump_conf)
+ {
+-	return -EIO;
++	unsigned int wait_time;
++	int rc;
++
++	/* TODO: Add upper time limit for the delay */
++	do {
++		rc =  rtas_call(fadump_conf->ibm_configure_kernel_dump, 3, 1,
++				NULL, FADUMP_UNREGISTER, &fdm,
++				sizeof(struct rtas_fadump_mem_struct));
++
++		wait_time = rtas_busy_delay_time(rc);
++		if (wait_time)
++			mdelay(wait_time);
++	} while (wait_time);
++
++	if (rc) {
++		pr_err("Failed to un-register - unexpected error(%d).\n", rc);
++		return -EIO;
++	}
++
++	fadump_conf->dump_registered = 0;
++	return 0;
+ }
+ 
+ static int rtas_fadump_invalidate(struct fw_dump *fadump_conf)
+@@ -54,6 +186,30 @@ static int __init rtas_fadump_process(struct fw_dump *fadump_conf)
+ static void rtas_fadump_region_show(struct fw_dump *fadump_conf,
+ 				    struct seq_file *m)
+ {
++	const struct rtas_fadump_mem_struct *fdm_ptr = &fdm;
++	const struct rtas_fadump_section *cpu_data_section;
++
++	cpu_data_section = &(fdm_ptr->cpu_state_data);
++	seq_printf(m, "CPU :[%#016llx-%#016llx] %#llx bytes, Dumped: %#llx\n",
++		   be64_to_cpu(cpu_data_section->destination_address),
++		   be64_to_cpu(cpu_data_section->destination_address) +
++		   be64_to_cpu(cpu_data_section->source_len) - 1,
++		   be64_to_cpu(cpu_data_section->source_len),
++		   be64_to_cpu(cpu_data_section->bytes_dumped));
++
++	seq_printf(m, "HPTE:[%#016llx-%#016llx] %#llx bytes, Dumped: %#llx\n",
++		   be64_to_cpu(fdm_ptr->hpte_region.destination_address),
++		   be64_to_cpu(fdm_ptr->hpte_region.destination_address) +
++		   be64_to_cpu(fdm_ptr->hpte_region.source_len) - 1,
++		   be64_to_cpu(fdm_ptr->hpte_region.source_len),
++		   be64_to_cpu(fdm_ptr->hpte_region.bytes_dumped));
++
++	seq_printf(m, "DUMP: [%#016llx-%#016llx] %#llx bytes, Dumped: %#llx\n",
++		   be64_to_cpu(fdm_ptr->rmr_region.destination_address),
++		   be64_to_cpu(fdm_ptr->rmr_region.destination_address) +
++		   be64_to_cpu(fdm_ptr->rmr_region.source_len) - 1,
++		   be64_to_cpu(fdm_ptr->rmr_region.source_len),
++		   be64_to_cpu(fdm_ptr->rmr_region.bytes_dumped));
+ }
+ 
+ static void rtas_fadump_trigger(struct fadump_crash_info_header *fdh,
 
