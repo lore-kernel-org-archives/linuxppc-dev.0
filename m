@@ -6,32 +6,32 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B3D08C5ACAE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 15:32:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BAACC49ED6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 15:34:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 42CE7206CD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 15:32:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 42CE7206CD
+	by mail.kernel.org (Postfix) with ESMTPS id 13FB52084D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 15:34:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 13FB52084D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46T5Vm66dLzF3Q4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 01:32:16 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 46T5Yr5HZ4zF197
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 01:34:56 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46T4ZT3kCqzF334
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2019 00:50:25 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46T4b1509vzF3CS
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2019 00:50:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 46T4ZT2W4wz8vLW
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2019 00:50:25 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 46T4b12Yz6z8swG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2019 00:50:53 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 46T4ZT1pW5z9sNF; Thu, 12 Sep 2019 00:50:25 +1000 (AEST)
+ id 46T4b10qSHz9sNF; Thu, 12 Sep 2019 00:50:53 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
@@ -42,42 +42,45 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 46T4ZS5p5Pz9s4Y
- for <linuxppc-dev@ozlabs.org>; Thu, 12 Sep 2019 00:50:24 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 46T4b043sKz9s4Y
+ for <linuxppc-dev@ozlabs.org>; Thu, 12 Sep 2019 00:50:52 +1000 (AEST)
 Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x8BEgwgG101671
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2019 10:50:23 -0400
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2uy0uj5dyu-1
+ x8BEgvnv101574
+ for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2019 10:50:51 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2uy0uj5eey-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2019 10:50:22 -0400
+ for <linuxppc-dev@ozlabs.org>; Wed, 11 Sep 2019 10:50:50 -0400
 Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <hbathini@linux.ibm.com>;
- Wed, 11 Sep 2019 15:50:20 +0100
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Wed, 11 Sep 2019 15:50:48 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 11 Sep 2019 15:50:17 +0100
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x8BEoFww29098172
+ Wed, 11 Sep 2019 15:50:46 +0100
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x8BEoi5v30343222
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 11 Sep 2019 14:50:15 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 77DFE52054;
- Wed, 11 Sep 2019 14:50:15 +0000 (GMT)
+ Wed, 11 Sep 2019 14:50:45 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D6C0F4C04E;
+ Wed, 11 Sep 2019 14:50:44 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E1D044C040;
+ Wed, 11 Sep 2019 14:50:42 +0000 (GMT)
 Received: from hbathini.in.ibm.com (unknown [9.102.24.71])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 9260E52051;
- Wed, 11 Sep 2019 14:50:13 +0000 (GMT)
-Subject: [PATCH v6 13/36] opal: add MPIPL interface definitions
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 11 Sep 2019 14:50:42 +0000 (GMT)
+Subject: [PATCH v6 15/36] powerpc/fadump: improve fadump_reserve_mem()
 From: Hari Bathini <hbathini@linux.ibm.com>
 To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Date: Wed, 11 Sep 2019 20:20:12 +0530
+Date: Wed, 11 Sep 2019 20:20:41 +0530
 In-Reply-To: <156821308145.5656.2233728784001623843.stgit@hbathini.in.ibm.com>
 References: <156821308145.5656.2233728784001623843.stgit@hbathini.in.ibm.com>
 User-Agent: StGit/0.17.1-dirty
@@ -85,17 +88,17 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
-x-cbid: 19091114-0028-0000-0000-0000039B0A1E
+x-cbid: 19091114-0020-0000-0000-0000036B0DD5
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19091114-0029-0000-0000-0000245D7214
-Message-Id: <156821340710.5656.10071829040515662624.stgit@hbathini.in.ibm.com>
+x-cbparentid: 19091114-0021-0000-0000-000021C09B11
+Message-Id: <156821343485.5656.10202857091553646948.stgit@hbathini.in.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-09-11_08:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=970 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1906280000 definitions=main-1909110138
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -116,126 +119,121 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-MPIPL is Memory Preserving IPL supported from POWER9. This enables the
-kernel to reset the system with memory 'preserved'. Also, it supports
-copying memory from a source address to some destination address during
-MPIPL boot. Add MPIPL interface definitions here to leverage these f/w
-features in adding FADump support for PowerNV platform.
+Some code clean-up like using minimal assignments and updating printk
+messages. Also, add an 'error_out' label for handling error cleanup
+at one place.
 
 Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
 ---
 
-Changes in v6:
-  * Changelog update.
-  * Make sure asm/opal-api.h stays consistent with skiboot's opal-api.h
+* New patch for code clean-up.
 
 
- arch/powerpc/include/asm/opal-api.h        |   44 +++++++++++++++++++++++++++-
- arch/powerpc/include/asm/opal.h            |    5 +++
- arch/powerpc/platforms/powernv/opal-call.c |    3 ++
- 3 files changed, 51 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/fadump.c |   48 ++++++++++++++++++++++--------------------
+ 1 file changed, 25 insertions(+), 23 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 383242e..3c39e7f 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -208,7 +208,10 @@
- #define OPAL_HANDLE_HMI2			166
- #define	OPAL_NX_COPROC_INIT			167
- #define OPAL_XIVE_GET_VP_STATE			170
--#define OPAL_LAST				170
-+#define OPAL_MPIPL_UPDATE			173
-+#define OPAL_MPIPL_REGISTER_TAG			174
-+#define OPAL_MPIPL_QUERY_TAG			175
-+#define OPAL_LAST				175
+diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+index b17673d..7d47d4bb 100644
+--- a/arch/powerpc/kernel/fadump.c
++++ b/arch/powerpc/kernel/fadump.c
+@@ -338,16 +338,15 @@ static void __init fadump_reserve_crash_area(unsigned long base,
  
- #define QUIESCE_HOLD			1 /* Spin all calls at entry */
- #define QUIESCE_REJECT			2 /* Fail all calls with OPAL_BUSY */
-@@ -1059,6 +1062,7 @@ enum {
- 	OPAL_REBOOT_NORMAL		= 0,
- 	OPAL_REBOOT_PLATFORM_ERROR	= 1,
- 	OPAL_REBOOT_FULL_IPL		= 2,
-+	OPAL_REBOOT_MPIPL		= 3,
- };
+ int __init fadump_reserve_mem(void)
+ {
+-	unsigned long base, size, memory_boundary;
++	u64 base, size, mem_boundary;
++	int ret = 1;
  
- /* Argument to OPAL_PCI_TCE_KILL */
-@@ -1135,6 +1139,44 @@ enum {
- #define OPAL_PCI_P2P_LOAD		0x2
- #define OPAL_PCI_P2P_STORE		0x4
+ 	if (!fw_dump.fadump_enabled)
+ 		return 0;
  
-+/* MPIPL update operations */
-+enum opal_mpipl_ops {
-+	OPAL_MPIPL_ADD_RANGE			= 0,
-+	OPAL_MPIPL_REMOVE_RANGE			= 1,
-+	OPAL_MPIPL_REMOVE_ALL			= 2,
-+	OPAL_MPIPL_FREE_PRESERVED_MEMORY	= 3,
-+};
-+
-+/* Tag will point to various metadata area. Kernel will
-+ * use tag to get metadata value.
-+ */
-+enum opal_mpipl_tags {
-+	OPAL_MPIPL_TAG_CPU	= 0,
-+	OPAL_MPIPL_TAG_OPAL	= 1,
-+	OPAL_MPIPL_TAG_KERNEL	= 2,
-+	OPAL_MPIPL_TAG_BOOT_MEM	= 3,
-+};
-+
-+/* Preserved memory details */
-+struct opal_mpipl_region {
-+	__be64	src;
-+	__be64	dest;
-+	__be64	size;
-+};
-+
-+/* Structure version */
-+#define OPAL_MPIPL_VERSION		0x01
-+
-+struct opal_mpipl_fadump {
-+	u8	version;
-+	u8	reserved[7];
-+	__be32	crashing_pir;	/* OPAL crashing CPU PIR */
-+	__be32	cpu_data_version;
-+	__be32	cpu_data_size;
-+	__be32	region_cnt;
-+	struct	opal_mpipl_region region[];
-+} __packed;
-+
- #endif /* __ASSEMBLY__ */
+ 	if (!fw_dump.fadump_supported) {
+-		printk(KERN_INFO "Firmware-assisted dump is not supported on"
+-				" this hardware\n");
+-		fw_dump.fadump_enabled = 0;
+-		return 0;
++		pr_info("Firmware-Assisted Dump is not supported on this hardware\n");
++		goto error_out;
+ 	}
+ 	/*
+ 	 * Initialize boot memory size
+@@ -355,7 +354,8 @@ int __init fadump_reserve_mem(void)
+ 	 * first kernel.
+ 	 */
+ 	if (!fw_dump.dump_active) {
+-		fw_dump.boot_memory_size = fadump_calculate_reserve_size();
++		fw_dump.boot_memory_size =
++			PAGE_ALIGN(fadump_calculate_reserve_size());
+ #ifdef CONFIG_CMA
+ 		if (!fw_dump.nocma)
+ 			fw_dump.boot_memory_size =
+@@ -381,10 +381,11 @@ int __init fadump_reserve_mem(void)
+ 				" dump, now %#016llx\n", memory_limit);
+ 	}
+ 	if (memory_limit)
+-		memory_boundary = memory_limit;
++		mem_boundary = memory_limit;
+ 	else
+-		memory_boundary = memblock_end_of_DRAM();
++		mem_boundary = memblock_end_of_DRAM();
  
- #endif /* __OPAL_API_H */
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 57bd029..c3e4904 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -39,6 +39,7 @@ int64_t opal_npu_spa_clear_cache(uint64_t phb_id, uint32_t bdfn,
- 				uint64_t PE_handle);
- int64_t opal_npu_tl_set(uint64_t phb_id, uint32_t bdfn, long cap,
- 			uint64_t rate_phys, uint32_t size);
-+
- int64_t opal_console_write(int64_t term_number, __be64 *length,
- 			   const uint8_t *buffer);
- int64_t opal_console_read(int64_t term_number, __be64 *length,
-@@ -297,6 +298,10 @@ int opal_sensor_group_clear(u32 group_hndl, int token);
- int opal_sensor_group_enable(u32 group_hndl, int token, bool enable);
- int opal_nx_coproc_init(uint32_t chip_id, uint32_t ct);
++	base = fw_dump.boot_memory_size;
+ 	size = get_fadump_area_size();
+ 	fw_dump.reserve_dump_area_size = size;
+ 	if (fw_dump.dump_active) {
+@@ -404,8 +405,7 @@ int __init fadump_reserve_mem(void)
+ 		 * dump is written to disk by userspace tool. This memory
+ 		 * will be released for general use once the dump is saved.
+ 		 */
+-		base = fw_dump.boot_memory_size;
+-		size = memory_boundary - base;
++		size = mem_boundary - base;
+ 		fadump_reserve_crash_area(base, size);
  
-+s64 opal_mpipl_update(enum opal_mpipl_ops op, u64 src, u64 dest, u64 size);
-+s64 opal_mpipl_register_tag(enum opal_mpipl_tags tag, u64 addr);
-+s64 opal_mpipl_query_tag(enum opal_mpipl_tags tag, u64 *addr);
+ 		pr_debug("fadumphdr_addr = %#016lx\n", fw_dump.fadumphdr_addr);
+@@ -418,29 +418,31 @@ int __init fadump_reserve_mem(void)
+ 		 * use memblock_find_in_range() here since it doesn't allocate
+ 		 * from bottom to top.
+ 		 */
+-		for (base = fw_dump.boot_memory_size;
+-		     base <= (memory_boundary - size);
+-		     base += size) {
++		while (base <= (mem_boundary - size)) {
+ 			if (memblock_is_region_memory(base, size) &&
+ 			    !memblock_is_region_reserved(base, size))
+ 				break;
 +
- s64 opal_signal_system_reset(s32 cpu);
- s64 opal_quiesce(u64 shutdown_type, s32 cpu);
++			base += size;
+ 		}
+-		if ((base > (memory_boundary - size)) ||
++
++		if ((base > (mem_boundary - size)) ||
+ 		    memblock_reserve(base, size)) {
+-			pr_err("Failed to reserve memory\n");
+-			return 0;
++			pr_err("Failed to reserve memory!\n");
++			goto error_out;
+ 		}
  
-diff --git a/arch/powerpc/platforms/powernv/opal-call.c b/arch/powerpc/platforms/powernv/opal-call.c
-index 29ca523..fc8cc7c 100644
---- a/arch/powerpc/platforms/powernv/opal-call.c
-+++ b/arch/powerpc/platforms/powernv/opal-call.c
-@@ -287,3 +287,6 @@ OPAL_CALL(opal_pci_set_pbcq_tunnel_bar,		OPAL_PCI_SET_PBCQ_TUNNEL_BAR);
- OPAL_CALL(opal_sensor_read_u64,			OPAL_SENSOR_READ_U64);
- OPAL_CALL(opal_sensor_group_enable,		OPAL_SENSOR_GROUP_ENABLE);
- OPAL_CALL(opal_nx_coproc_init,			OPAL_NX_COPROC_INIT);
-+OPAL_CALL(opal_mpipl_update,			OPAL_MPIPL_UPDATE);
-+OPAL_CALL(opal_mpipl_register_tag,		OPAL_MPIPL_REGISTER_TAG);
-+OPAL_CALL(opal_mpipl_query_tag,			OPAL_MPIPL_QUERY_TAG);
+-		pr_info("Reserved %ldMB of memory at %ldMB for firmware-"
+-			"assisted dump (System RAM: %ldMB)\n",
+-			(unsigned long)(size >> 20),
+-			(unsigned long)(base >> 20),
+-			(unsigned long)(memblock_phys_mem_size() >> 20));
++		pr_info("Reserved %lldMB of memory at %#016llx (System RAM: %lldMB)\n",
++			(size >> 20), base, (memblock_phys_mem_size() >> 20));
+ 
+ 		fw_dump.reserve_dump_area_start = base;
+-		return fadump_cma_init();
++		ret = fadump_cma_init();
+ 	}
+-	return 1;
++
++	return ret;
++error_out:
++	fw_dump.fadump_enabled = 0;
++	return 0;
+ }
+ 
+ unsigned long __init arch_reserved_kernel_pages(void)
 
