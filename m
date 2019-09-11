@@ -2,62 +2,62 @@ Return-Path: <SRS0=eZMg=XG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EEF8AC49ED6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 14:28:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B6798C5ACAE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 14:36:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 30A98207FC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 14:28:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3196F2053B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 14:36:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="NVoQxm/Q"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 30A98207FC
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="kaWGEzpE"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3196F2053B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46T45c6Qk1zF39X
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 00:28:52 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46T42d20w3zF33Q
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2019 00:26:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46T4G71XvRzF365
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 00:36:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=linux-foundation.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=akpm@linux-foundation.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.b="NVoQxm/Q"; dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 46T42b1Yf2z9s4Y;
- Thu, 12 Sep 2019 00:26:14 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1568211976;
- bh=FwvxfqH3g3FLezSauT+DVJLwHdBUTERn647l2G3HzSQ=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=NVoQxm/QaOV1g2QRT4A+EhYW7N/ZEu9pyvv0JHDCi0rB+UJCITUHhdkK6NefYH2jN
- S/a45IvVdkPS5nFIMT2qkN9yqkjXGPAtBimAvKCRvkwk22SGrLDDH0G5lLaZuUEEny
- 15Q+LbcjTJ0a5Ik0FixryVLxyW9m4I4o0CAQMblfBrN56VHf+UG8hcudd0cPY3UBYo
- assaiGcomf5JwfbGUO51+4ubCPRBbpKVM4wvv0HSTr7UYcCrQPxWgsMbTn0P5XGNcB
- TAtsMfzxCy7peYEl95NpvKFN29ya5p2no5KG4tnFXPuEWsiUFfEYoxfteRgpjXyBk9
- f+RHmnxXHlOzA==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Greg Kurz <groug@kaod.org>
-Subject: Re: [PATCH] powerpc/xive: Fix bogus error code returned by OPAL
-In-Reply-To: <156812362556.1866243.7399893138425681517.stgit@bahia.tls.ibm.com>
-References: <156812362556.1866243.7399893138425681517.stgit@bahia.tls.ibm.com>
-Date: Thu, 12 Sep 2019 00:26:19 +1000
-Message-ID: <87k1aezz78.fsf@mpe.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ header.from=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="kaWGEzpE"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46T49C2bTmzF34r
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2019 00:31:58 +1000 (AEST)
+Received: from X1 (110.8.30.213.rev.vodafone.pt [213.30.8.110])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id A59F620872;
+ Wed, 11 Sep 2019 14:31:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1568212316;
+ bh=/drgJXkv8kbv289r58cL8NRLzUQK4lt8QF8RDME9a9s=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=kaWGEzpE5LBOKJv7pUwd1MyCufZPJq4bSKfewzyCdWlfuCFEuNEm75uwI9XxIwn6G
+ NFJzpVWcj1LDmSPYrtPNjBokS9N/3Zb2AFu4A1AkJjseXelgVb7W8cw66HgQEnyvA0
+ rCV9o6TcefsP32qbMd6OX1k6GXKtFJ7kuFjn/Et0=
+Date: Wed, 11 Sep 2019 07:31:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: cam@neo-zeon.de
+Subject: Re: [Bug 204789] New: Boot failure with more than 256G of memory
+Message-Id: <20190911073153.9df4d4618d7f99752cd18edd@linux-foundation.org>
+In-Reply-To: <bug-204789-27@https.bugzilla.kernel.org/>
+References: <bug-204789-27@https.bugzilla.kernel.org/>
+X-Mailer: Sylpheed 3.5.1 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,81 +69,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- =?utf-8?Q?C=C3=A9dric?= Le Goater <clg@kaod.org>,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: bugzilla-daemon@bugzilla.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Greg,
+(switched to email.  Please respond via emailed reply-to-all, not via the
+bugzilla web interface).
 
-Couple of comments ...
+On Sun, 08 Sep 2019 00:04:26 +0000 bugzilla-daemon@bugzilla.kernel.org wrote:
 
-Greg Kurz <groug@kaod.org> writes:
-> There's a bug in skiboot that causes the OPAL_XIVE_ALLOCATE_IRQ call
-> to return the 32-bit value 0xffffffff when OPAL has run out of IRQs.
-> Unfortunatelty, OPAL return values are signed 64-bit entities and
-> errors are supposed to be negative. If that happens, the linux code
-> confusingly treats 0xffffffff as a valid IRQ number and panics at some
-> point.
->
-> A fix was recently merged in skiboot:
->
-> e97391ae2bb5 ("xive: fix return value of opal_xive_allocate_irq()")
->
-> but we need a workaround anyway to support older skiboots already
-> on the field.
-  ^
-  in
- 
->
-> Internally convert 0xffffffff to OPAL_RESOURCE which is the usual error
-> returned upon resource exhaustion.
+> https://bugzilla.kernel.org/show_bug.cgi?id=204789
+> 
+>             Bug ID: 204789
+>            Summary: Boot failure with more than 256G of memory
+>            Product: Memory Management
+>            Version: 2.5
+>     Kernel Version: 5.2.x
+>           Hardware: PPC-64
+>                 OS: Linux
+>               Tree: Mainline
+>             Status: NEW
+>           Severity: high
+>           Priority: P1
+>          Component: Other
+>           Assignee: akpm@linux-foundation.org
+>           Reporter: cam@neo-zeon.de
+>         Regression: No
 
-This should go to stable, any idea what versions it should go back to?
-Probably whenever the xive code was introduced?
+"Yes" :)
 
-> Signed-off-by: Greg Kurz <groug@kaod.org>
-> ---
->  arch/powerpc/sysdev/xive/native.c |   13 +++++++++++--
->  1 file changed, 11 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/powerpc/sysdev/xive/native.c b/arch/powerpc/sysdev/xive/native.c
-> index 37987c815913..c35583f84f9f 100644
-> --- a/arch/powerpc/sysdev/xive/native.c
-> +++ b/arch/powerpc/sysdev/xive/native.c
-> @@ -231,6 +231,15 @@ static bool xive_native_match(struct device_node *node)
->  	return of_device_is_compatible(node, "ibm,opal-xive-vc");
->  }
->  
-> +static int64_t opal_xive_allocate_irq_fixup(uint32_t chip_id)
-          ^                                    ^
-          Can you use s64 here and u32 here ....
+> Kernel series 5.2.x will not boot on my Talos II workstation with dual POWER9
+> 18 core processors and 512G of physical memory with disable_radix=yes and 4k
+> pages.
+> 
+> 5.3-rc6 did not work either.
+> 
+> 5.1 and earlier boot fine. 
 
-Instead of calling this opal_xive_allocate_irq_fixup() and relying on
-all callers to call the fixup, can we rename the opal wrapper and leave
-this function's name unchanged, eg:
+Thanks.  It's probably best to report this on the powerpc list, cc'ed here.
 
--OPAL_CALL(opal_xive_allocate_irq,              OPAL_XIVE_ALLOCATE_IRQ);
-+OPAL_CALL(opal_xive_allocate_irq_raw,          OPAL_XIVE_ALLOCATE_IRQ);
-
-
-> +{
-> +	s64 irq = opal_xive_allocate_irq(chip_id);
-> +
-> +#define XIVE_ALLOC_NO_SPACE	0xffffffff /* No possible space */
-> +	return
-> +		irq == XIVE_ALLOC_NO_SPACE ? OPAL_RESOURCE : irq;
-> +}
-
-I don't really like the #define and the weird indenting and so on, can
-we instead do it like:
-
-	/*
-         * Old versions of skiboot can incorrectly return 0xffffffff to
-         * indicate no space, fix it up here.
-         */
-	return irq == 0xffffffff ? OPAL_RESOURCE : irq;
-
-cheers
+> I can get the system to boot IF I leave the Radix MMU enabled or if I boot a
+> kernel with 64k pages. I haven't yet tested enabling the Radix MMU with 64k
+> pages at the same time, but I suspect this would work. This is a system I
+> cannot take down TOO frequently.
+> 
+> The system will also boot with the Radix MMU disabled and 4k pages with 256G or
+> less memory. Setting mem on the kernel CLI to 256G or less results in a
+> successful boot. Setting mem=257G or higher no Radix MMU and 4k pages and the
+> kernel will not boot.
+> 
+> Petitboot comes up, but the system fails VERY early in boot in the serial
+> console with:
+> SIGTERM received, booting...
+> [   23.838858] kexec_core: Starting new kernel
+> 
+> Early printk is enabled, and it never progresses any further.
+> 
+> 5.1 boots just fine with the Radix MMU disabled and 4k pages.
+> 
+> Unfortunately, I currently need 4k pages for bcache to work, and Radix MMU
+> disabled in order for FreeBSD 12.x to work under KVM so I'm sticking with
+> 5.1.21 for now.
+> 
+> I have been unable to reproduce this issue in KVM.
+> 
+> Here are my PCIe peripherals:
+> 1. Microsemi/Adaptec HBA 1100-4i SAS controller
+> 2. Megaraid 9316-16i SAS RAID controller.
+> 
+> I've only tried little endian as this is a little endian install.
+> 
+> -- 
+> You are receiving this mail because:
+> You are the assignee for the bug.
