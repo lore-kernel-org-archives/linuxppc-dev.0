@@ -2,71 +2,62 @@ Return-Path: <SRS0=eZMg=XG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97FFFC49ED6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 10:14:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC20BC49ED6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 10:40:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 15F9C207FC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 10:14:52 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="u0FZLYzm"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 15F9C207FC
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 0BE542087E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 10:40:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0BE542087E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=cyphar.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46SyST5yKNzDrZD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 20:14:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46Sz2Z1RDZzDrN1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 20:40:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
- (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
- envelope-from=broonie@sirena.org.uk; receiver=<UNKNOWN>)
+ spf=permerror (mailfrom) smtp.mailfrom=cyphar.com
+ (client-ip=2001:67c:2050:104:0:2:25:2; helo=mx2a.mailbox.org;
+ envelope-from=cyphar@cyphar.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="u0FZLYzm"; dkim-atps=neutral
-Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
- [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46SyPx3yz7zF2DW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2019 20:12:37 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=sirena.org.uk; s=20170815-heliosphere; h=In-Reply-To:Content-Type:
- MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=Ep0j7m5xNfG4CR6HHkPWK2kdBVsDxedxi47kQTEiChI=; b=u0FZLYzmH84kRI/HHbIR4jvdR
- 2C4c+MORLpTVFvfvtpOgUR72Ie81FZ0WI5cT7wZG/H0kPOJsJao2htnaEBzSIc9+GXIkGonEV1BjC
- cLWQEUlhORQUEIAUl9+71DDfz8HTcGXwmNVmObPsLP8BfRtYNie3TebUrcKAv5NOAhB7M=;
-Received: from [148.69.85.38] (helo=fitzroy.sirena.org.uk)
- by heliosphere.sirena.org.uk with esmtpsa
- (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
- (envelope-from <broonie@sirena.org.uk>)
- id 1i7zbz-0007as-AB; Wed, 11 Sep 2019 10:12:31 +0000
-Received: by fitzroy.sirena.org.uk (Postfix, from userid 1000)
- id 6E4F0D02A53; Wed, 11 Sep 2019 11:12:30 +0100 (BST)
-Date: Wed, 11 Sep 2019 11:12:30 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Shengjiu Wang <shengjiu.wang@nxp.com>
-Subject: Re: [PATCH 2/2] ASoC: fsl_mqs: Add MQS component driver
-Message-ID: <20190911101230.GT2036@sirena.org.uk>
-References: <cff8bff1e8d3334fa308ddfcec266a5284e3c858.1568169346.git.shengjiu.wang@nxp.com>
- <08524f143c18521680b724ab98375828fc18ab2b.1568169346.git.shengjiu.wang@nxp.com>
+ dmarc=none (p=none dis=none) header.from=cyphar.com
+Received: from mx2a.mailbox.org (mx2a.mailbox.org
+ [IPv6:2001:67c:2050:104:0:2:25:2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46SyzG0Ms6zF266
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2019 20:37:58 +1000 (AEST)
+Received: from smtp1.mailbox.org (smtp1.mailbox.org [80.241.60.240])
+ (using TLSv1.2 with cipher ECDHE-RSA-CHACHA20-POLY1305 (256/256 bits))
+ (No client certificate requested)
+ by mx2.mailbox.org (Postfix) with ESMTPS id AC930A2C82;
+ Wed, 11 Sep 2019 12:37:46 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at heinlein-support.de
+Received: from smtp1.mailbox.org ([80.241.60.240])
+ by spamfilter04.heinlein-hosting.de (spamfilter04.heinlein-hosting.de
+ [80.241.56.122]) (amavisd-new, port 10030)
+ with ESMTP id ATeziMSY9H4D; Wed, 11 Sep 2019 12:37:41 +0200 (CEST)
+Date: Wed, 11 Sep 2019 20:37:30 +1000
+From: Aleksa Sarai <cyphar@cyphar.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v12 01/12] lib: introduce copy_struct_{to,from}_user
+ helpers
+Message-ID: <20190911103730.72unmfp7lsvvafxo@yavin>
+References: <20190904201933.10736-1-cyphar@cyphar.com>
+ <20190904201933.10736-2-cyphar@cyphar.com>
+ <20190905073205.GY2332@hirez.programming.kicks-ass.net>
+ <20190905092622.tlb6nn3uisssdfbu@yavin.dot.cyphar.com>
+ <20190905094305.GJ2349@hirez.programming.kicks-ass.net>
+ <20190905105749.GW2386@hirez.programming.kicks-ass.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="HywJcj55HbA57jnN"
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="xpghzs3x7rsccuuz"
 Content-Disposition: inline
-In-Reply-To: <08524f143c18521680b724ab98375828fc18ab2b.1568169346.git.shengjiu.wang@nxp.com>
-X-Cookie: Be careful!  UGLY strikes 9 out of 10!
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20190905105749.GW2386@hirez.programming.kicks-ass.net>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,80 +69,153 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, timur@kernel.org, Xiubo.Lee@gmail.com,
- linuxppc-dev@lists.ozlabs.org, tiwai@suse.com, lgirdwood@gmail.com,
- perex@perex.cz, nicoleotsuka@gmail.com, robh+dt@kernel.org, festevam@gmail.com,
- linux-kernel@vger.kernel.org
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ Alexei Starovoitov <ast@kernel.org>, linux-kernel@vger.kernel.org,
+ David Howells <dhowells@redhat.com>, linux-kselftest@vger.kernel.org,
+ sparclinux@vger.kernel.org, Jiri Olsa <jolsa@redhat.com>,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Tycho Andersen <tycho@tycho.ws>, Aleksa Sarai <asarai@suse.de>,
+ Shuah Khan <shuah@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ linux-arm-kernel@lists.infradead.org, linux-mips@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, Kees Cook <keescook@chromium.org>,
+ Arnd Bergmann <arnd@arndb.de>, Jann Horn <jannh@google.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-m68k@lists.linux-m68k.org,
+ Al Viro <viro@zeniv.linux.org.uk>, Andy Lutomirski <luto@kernel.org>,
+ Shuah Khan <skhan@linuxfoundation.org>, Namhyung Kim <namhyung@kernel.org>,
+ David Drysdale <drysdale@google.com>, Christian Brauner <christian@brauner.io>,
+ "J. Bruce Fields" <bfields@fieldses.org>, linux-parisc@vger.kernel.org,
+ linux-api@vger.kernel.org, Chanho Min <chanho.min@lge.com>,
+ Jeff Layton <jlayton@kernel.org>, Oleg Nesterov <oleg@redhat.com>,
+ patrick.bellasi@arm.com, Eric Biederman <ebiederm@xmission.com>,
+ linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ containers@lists.linux-foundation.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---HywJcj55HbA57jnN
+--xpghzs3x7rsccuuz
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, Sep 11, 2019 at 10:42:39AM -0400, Shengjiu Wang wrote:
+On 2019-09-05, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Thu, Sep 05, 2019 at 11:43:05AM +0200, Peter Zijlstra wrote:
+> > On Thu, Sep 05, 2019 at 07:26:22PM +1000, Aleksa Sarai wrote:
+> > > On 2019-09-05, Peter Zijlstra <peterz@infradead.org> wrote:
+> > > > On Thu, Sep 05, 2019 at 06:19:22AM +1000, Aleksa Sarai wrote:
+> > > > > +/**
+> > > > > + * copy_struct_to_user: copy a struct to user space
+> > > > > + * @dst:   Destination address, in user space.
+> > > > > + * @usize: Size of @dst struct.
+> > > > > + * @src:   Source address, in kernel space.
+> > > > > + * @ksize: Size of @src struct.
+> > > > > + *
+> > > > > + * Copies a struct from kernel space to user space, in a way tha=
+t guarantees
+> > > > > + * backwards-compatibility for struct syscall arguments (as long=
+ as future
+> > > > > + * struct extensions are made such that all new fields are *appe=
+nded* to the
+> > > > > + * old struct, and zeroed-out new fields have the same meaning a=
+s the old
+> > > > > + * struct).
+> > > > > + *
+> > > > > + * @ksize is just sizeof(*dst), and @usize should've been passed=
+ by user space.
+> > > > > + * The recommended usage is something like the following:
+> > > > > + *
+> > > > > + *   SYSCALL_DEFINE2(foobar, struct foo __user *, uarg, size_t, =
+usize)
+> > > > > + *   {
+> > > > > + *      int err;
+> > > > > + *      struct foo karg =3D {};
+> > > > > + *
+> > > > > + *      // do something with karg
+> > > > > + *
+> > > > > + *      err =3D copy_struct_to_user(uarg, usize, &karg, sizeof(k=
+arg));
+> > > > > + *      if (err)
+> > > > > + *        return err;
+> > > > > + *
+> > > > > + *      // ...
+> > > > > + *   }
+> > > > > + *
+> > > > > + * There are three cases to consider:
+> > > > > + *  * If @usize =3D=3D @ksize, then it's copied verbatim.
+> > > > > + *  * If @usize < @ksize, then kernel space is "returning" a new=
+er struct to an
+> > > > > + *    older user space. In order to avoid user space getting inc=
+omplete
+> > > > > + *    information (new fields might be important), all trailing =
+bytes in @src
+> > > > > + *    (@ksize - @usize) must be zerored
+> > > >=20
+> > > > s/zerored/zero/, right?
+> > >=20
+> > > It should've been "zeroed".
+> >=20
+> > That reads wrong to me; that way it reads like this function must take
+> > that action and zero out the 'rest'; which is just wrong.
+> >=20
+> > This function must verify those bytes are zero, not make them zero.
+> >=20
+> > > > >                                          , otherwise -EFBIG is re=
+turned.
+> > > >=20
+> > > > 'Funny' that, copy_struct_from_user() below seems to use E2BIG.
+> > >=20
+> > > This is a copy of the semantics that sched_[sg]etattr(2) uses -- E2BI=
+G for
+> > > a "too big" struct passed to the kernel, and EFBIG for a "too big"
+> > > struct passed to user-space. I would personally have preferred EMSGSI=
+ZE
+> > > instead of EFBIG, but felt using the existing error codes would be le=
+ss
+> > > confusing.
+> >=20
+> > Sadly a recent commit:
+> >=20
+> >   1251201c0d34 ("sched/core: Fix uclamp ABI bug, clean up and robustify=
+ sched_read_attr() ABI logic and code")
+> >=20
+> > Made the situation even 'worse'.
+>=20
+> And thinking more about things; I'm not convinced the above patch is
+> actually right.
+>=20
+> Do we really want to simply truncate all the attributes of the task?
+>=20
+> And should we not at least set sched_flags when there are non-default
+> clamp values applied?
+>=20
+> See; that is I think the primary bug that had chrt failing; we tried to
+> publish the default clamp values as !0.
 
-This looks good, a few minor comments below but nothing major -
-it's mostly nits with the DT binding.
+I just saw this patch in -rc8 -- should I even attempt to port
+sched_getattr(2) to copy_struct_to_user()? I agree that publishing a
+default non-zero value is a mistake -- once you do that, old user space
+will either get confused or lose information.
 
-> --- /dev/null
-> +++ b/sound/soc/fsl/fsl_mqs.c
-> @@ -0,0 +1,336 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * ALSA SoC IMX MQS driver
-> + *
-> + * Copyright (C) 2014-2019 Freescale Semiconductor, Inc.
-> + *
+--=20
+Aleksa Sarai
+Senior Software Engineer (Containers)
+SUSE Linux GmbH
+<https://www.cyphar.com/>
 
-Please make the entire comment block a C++ comment so things look
-neater.
-
-> +	/* On i.MX6sx the MQS control register is in GPR domain
-> +	 * But in i.MX8QM/i.MX8QXP the control register is moved
-> +	 * to its own domain.
-> +	 */
-> +	if (of_device_is_compatible(np, "fsl,imx8qm-mqs"))
-> +		mqs_priv->use_gpr = false;
-> +	else
-> +		mqs_priv->use_gpr = true;
-
-The GPR was listed as a required property in the binding document
-but it is only needed here so the binding document should say
-"required if compatible is...".
-
-> +	} else {
-> +		res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +		regs = devm_ioremap_resource(&pdev->dev, res);
-> +		if (IS_ERR(regs))
-
-You can use devm_platform_ioremap_resource() here.
-
-> +		mqs_priv->ipg = devm_clk_get(&pdev->dev, "core");
-> +		if (IS_ERR(mqs_priv->ipg)) {
-> +			dev_err(&pdev->dev, "failed to get the clock: %ld\n",
-> +				PTR_ERR(mqs_priv->ipg));
-> +			goto out;
-> +		}
-
-The core clock wasn't listed in the bindings document.
-
---HywJcj55HbA57jnN
+--xpghzs3x7rsccuuz
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAl14yI0ACgkQJNaLcl1U
-h9BO/Af/aIFQPppNc8K51nmTQbe5/qlY6KawrXb2O2vnWrT0cZMpaXII/WfVHarC
-N5tQrIStSR99l5V93WUkKolVo3SJS2Gg5Opo4XLHTFt9vHlhOYX8iRt0xz5B+UF9
-qKo8AHuR0kOSAsRy2w9lEFq07cRPSFR9bQH3axNxUybh7v6YEbo473gX0rRf3qUL
-HRfeAMEzjuK5CQz74088qfUQmfiDoVbCC+cbvkUeWhR0/VbZA3zdeos3wbUDRqrA
-KJGMzwAyQISn8+uXAEUNzmepdcKl/tec9JJCjZHh/lSTnMQwAwj6/NPhDhIZwCmy
-5GYinXK/xsebKn2yLidfvP2yyzICdw==
-=GpDq
+iHUEABYIAB0WIQSxZm6dtfE8gxLLfYqdlLljIbnQEgUCXXjOZwAKCRCdlLljIbnQ
+EgeZAP9UC+Kf1AuY3XgSz6a5avhF1Eskr6DzrSR4wx0T62dnoQD9GcCXU0oVrERB
+0xz5K9MrU1nBr6ERqmBwygo/DVsTwAk=
+=oep8
 -----END PGP SIGNATURE-----
 
---HywJcj55HbA57jnN--
+--xpghzs3x7rsccuuz--
