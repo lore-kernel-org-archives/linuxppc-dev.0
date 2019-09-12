@@ -2,62 +2,60 @@ Return-Path: <SRS0=nVWd=XH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E69C1C5ACAE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 07:43:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DDA17C5ACAE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 10:20:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2D6B620830
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 07:43:45 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="b5zTIocn"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2D6B620830
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
+	by mail.kernel.org (Postfix) with ESMTPS id 30E5F20856
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 10:20:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 30E5F20856
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46TW3d6wMpzF48Q
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 17:43:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46TZY04LR3zF49b
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 20:20:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=softfail (mailfrom) smtp.mailfrom=socionext.com
- (client-ip=210.131.2.74; helo=conuserg-07.nifty.com;
- envelope-from=yamada.masahiro@socionext.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=huawei.com
+ (client-ip=45.249.212.35; helo=huawei.com;
+ envelope-from=linyunsheng@huawei.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=socionext.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="b5zTIocn"; 
- dkim-atps=neutral
-Received: from conuserg-07.nifty.com (conuserg-07.nifty.com [210.131.2.74])
+ dmarc=none (p=none dis=none) header.from=huawei.com
+Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46TW1Y5ptzzF43v
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2019 17:41:53 +1000 (AEST)
-Received: from localhost.localdomain (p14092-ipngnfx01kyoto.kyoto.ocn.ne.jp
- [153.142.97.92]) (authenticated)
- by conuserg-07.nifty.com with ESMTP id x8C7edBo002482;
- Thu, 12 Sep 2019 16:40:39 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-07.nifty.com x8C7edBo002482
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1568274040;
- bh=tYNGmUKDdlHdaYWdH5IidgIolcOzTVD5cgXor3vQ83I=;
- h=From:To:Cc:Subject:Date:From;
- b=b5zTIocnN33/DdUDcjaMeyjFzoTtbxCd5868rKO0xNO0s4hj4TNzpDUOblkZcIN5s
- blwV1MedYVuH8L4E6jhrG9tGRK5B6XcHeO9hj0vbKerkxkYHo2Ide3IG4M/1a7c4bX
- 1PaFV6ym3Hz6Rf1JatWU/532qvHQvpov555Eto+SN0h143gBLKQRZ81xTz1moDF4q8
- PIRr9nPjvDy9VjennU0QLC/d+55xbxsG5lX6PE7UvoAwocoen+R8QD/u8uMmFMIzBi
- yEL4RALzlrR3T6bfH2CDH66vDOel/m3mCNo/vLZ6dB9qFtFdxrTaTKOewUmDQU56i6
- cURS0DcBm/zvw==
-X-Nifty-SrcIP: [153.142.97.92]
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] powerpc: improve prom_init_check rule
-Date: Thu, 12 Sep 2019 16:40:37 +0900
-Message-Id: <20190912074037.13813-1-yamada.masahiro@socionext.com>
-X-Mailer: git-send-email 2.17.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46TZTl6dG4zF48Q
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2019 20:18:02 +1000 (AEST)
+Received: from DGGEMS414-HUB.china.huawei.com (unknown [172.30.72.59])
+ by Forcepoint Email with ESMTP id 16F4FEDB530A876F1624;
+ Thu, 12 Sep 2019 18:17:57 +0800 (CST)
+Received: from localhost.localdomain (10.67.212.75) by
+ DGGEMS414-HUB.china.huawei.com (10.3.19.214) with Microsoft SMTP Server id
+ 14.3.439.0; Thu, 12 Sep 2019 18:17:55 +0800
+From: Yunsheng Lin <linyunsheng@huawei.com>
+To: <catalin.marinas@arm.com>, <will@kernel.org>, <mingo@redhat.com>,
+ <bp@alien8.de>, <rth@twiddle.net>, <ink@jurassic.park.msu.ru>,
+ <mattst88@gmail.com>, <benh@kernel.crashing.org>, <paulus@samba.org>,
+ <mpe@ellerman.id.au>, <heiko.carstens@de.ibm.com>, <gor@linux.ibm.com>,
+ <borntraeger@de.ibm.com>, <ysato@users.sourceforge.jp>, <dalias@libc.org>,
+ <davem@davemloft.net>, <ralf@linux-mips.org>, <paul.burton@mips.com>,
+ <jhogan@kernel.org>, <jiaxun.yang@flygoat.com>, <chenhc@lemote.com>
+Subject: [PATCH v3 1/8] arm64: numa: make node_to_cpumask_map() NUMA_NO_NODE
+ aware for arm64
+Date: Thu, 12 Sep 2019 18:15:27 +0800
+Message-ID: <1568283334-178380-2-git-send-email-linyunsheng@huawei.com>
+X-Mailer: git-send-email 2.8.1
+In-Reply-To: <1568283334-178380-1-git-send-email-linyunsheng@huawei.com>
+References: <1568283334-178380-1-git-send-email-linyunsheng@huawei.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+X-Originating-IP: [10.67.212.75]
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,74 +67,87 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linux-kernel@vger.kernel.org,
- Nicholas Piggin <npiggin@gmail.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Firoz Khan <firoz.khan@linaro.org>, Joel Stanley <joel@jms.id.au>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Paul Mackerras <paulus@samba.org>
+Cc: linux-sh@vger.kernel.org, peterz@infradead.org, dave.hansen@linux.intel.com,
+ linux-mips@vger.kernel.org, mwb@linux.vnet.ibm.com, hpa@zytor.com,
+ sparclinux@vger.kernel.org, linux-s390@vger.kernel.org, x86@kernel.org,
+ rppt@linux.ibm.com, dledford@redhat.com, jeffrey.t.kirsher@intel.com,
+ naveen.n.rao@linux.vnet.ibm.com, len.brown@intel.com,
+ anshuman.khandual@arm.com, gregkh@linuxfoundation.org, cai@lca.pw,
+ luto@kernel.org, tglx@linutronix.de, mhocko@kernel.org,
+ linux-arm-kernel@lists.infradead.org, axboe@kernel.dk, robin.murphy@arm.com,
+ linux-kernel@vger.kernel.org, tbogendoerfer@suse.de,
+ linux-alpha@vger.kernel.org, rafael@kernel.org, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This slightly improves the prom_init_check rule.
+When passing the return value of dev_to_node() to cpumask_of_node()
+without checking the node id if the node id is NUMA_NO_NODE, there is
+global-out-of-bounds detected by KASAN.
 
-[1] Avoid needless check
+From the discussion [1], NUMA_NO_NODE really means no node affinity,
+which also means all cpus should be usable. So the cpumask_of_node()
+should always return all cpus online when user passes the node id
+as NUMA_NO_NODE, just like similar semantic that page allocator handles
+NUMA_NO_NODE.
 
-Currently, prom_init_check.sh is invoked every time you run 'make'
-even if you have changed nothing in prom_init.c. With this commit,
-the script is re-run only when prom_init.o is recompiled.
+But we cannot really copy the page allocator logic. Simply because the
+page allocator doesn't enforce the near node affinity. It just picks it
+up as a preferred node but then it is free to fallback to any other numa
+node. This is not the case here and node_to_cpumask_map will only restrict
+to the particular node's cpus which would have really non deterministic
+behavior depending on where the code is executed. So in fact we really
+want to return cpu_online_mask for NUMA_NO_NODE.
 
-[2] Beautify the build log
+Also there is a debuging version of node_to_cpumask_map(), which only
+is used when CONFIG_DEBUG_PER_CPU_MAPS is defined, this patch changes
+it to handle NUMA_NO_NODE as the normal node_to_cpumask_map(). And "fix"
+a sign "bug" since it is for debugging and should catch all the error
+cases.
 
-Currently, the O= build shows the absolute path to the script:
-
-  CALL    /abs/path/to/source/of/linux/arch/powerpc/kernel/prom_init_check.sh
-
-With this commit, it is always a relative path to the timestamp file:
-
-  PROMCHK arch/powerpc/kernel/prom_init_check
-
-Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+[1] https://lore.kernel.org/patchwork/patch/1125789/
+Signed-off-by: Yunsheng Lin <linyunsheng@huawei.com>
+Suggested-by: Michal Hocko <mhocko@kernel.org>
 ---
+V3: Change to only handle NUMA_NO_NODE, and return cpu_online_mask
+    for NUMA_NO_NODE case, and change the commit log to better justify
+    the change.
+---
+ arch/arm64/include/asm/numa.h | 3 +++
+ arch/arm64/mm/numa.c          | 5 ++++-
+ 2 files changed, 7 insertions(+), 1 deletion(-)
 
- arch/powerpc/kernel/.gitignore |  1 +
- arch/powerpc/kernel/Makefile   | 14 ++++++--------
- 2 files changed, 7 insertions(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/kernel/.gitignore b/arch/powerpc/kernel/.gitignore
-index c5f676c3c224..67ebd3003c05 100644
---- a/arch/powerpc/kernel/.gitignore
-+++ b/arch/powerpc/kernel/.gitignore
-@@ -1 +1,2 @@
-+prom_init_check
- vmlinux.lds
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 56dfa7a2a6f2..07bf5a45f176 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -184,15 +184,13 @@ extra-$(CONFIG_ALTIVEC)		+= vector.o
- extra-$(CONFIG_PPC64)		+= entry_64.o
- extra-$(CONFIG_PPC_OF_BOOT_TRAMPOLINE)	+= prom_init.o
+diff --git a/arch/arm64/include/asm/numa.h b/arch/arm64/include/asm/numa.h
+index 626ad01..c8a4b31 100644
+--- a/arch/arm64/include/asm/numa.h
++++ b/arch/arm64/include/asm/numa.h
+@@ -25,6 +25,9 @@ const struct cpumask *cpumask_of_node(int node);
+ /* Returns a pointer to the cpumask of CPUs on Node 'node'. */
+ static inline const struct cpumask *cpumask_of_node(int node)
+ {
++	if (node == NUMA_NO_NODE)
++		return cpu_online_mask;
++
+ 	return node_to_cpumask_map[node];
+ }
+ #endif
+diff --git a/arch/arm64/mm/numa.c b/arch/arm64/mm/numa.c
+index 4f241cc..bef4bdd 100644
+--- a/arch/arm64/mm/numa.c
++++ b/arch/arm64/mm/numa.c
+@@ -46,7 +46,10 @@ EXPORT_SYMBOL(node_to_cpumask_map);
+  */
+ const struct cpumask *cpumask_of_node(int node)
+ {
+-	if (WARN_ON(node >= nr_node_ids))
++	if (node == NUMA_NO_NODE)
++		return cpu_online_mask;
++
++	if (WARN_ON((unsigned int)node >= nr_node_ids))
+ 		return cpu_none_mask;
  
--ifdef CONFIG_PPC_OF_BOOT_TRAMPOLINE
--$(obj)/built-in.a:		prom_init_check
-+extra-$(CONFIG_PPC_OF_BOOT_TRAMPOLINE)	+= prom_init_check
- 
--quiet_cmd_prom_init_check = CALL    $<
--      cmd_prom_init_check = $(CONFIG_SHELL) $< "$(NM)" "$(obj)/prom_init.o"
-+quiet_cmd_prom_init_check = PROMCHK $@
-+      cmd_prom_init_check = $(CONFIG_SHELL) $< "$(NM)" $(obj)/prom_init.o; touch $@
- 
--PHONY += prom_init_check
--prom_init_check: $(src)/prom_init_check.sh $(obj)/prom_init.o
--	$(call cmd,prom_init_check)
--endif
-+$(obj)/prom_init_check: $(src)/prom_init_check.sh $(obj)/prom_init.o FORCE
-+	$(call if_changed,prom_init_check)
-+targets += prom_init_check
- 
- clean-files := vmlinux.lds
+ 	if (WARN_ON(node_to_cpumask_map[node] == NULL))
 -- 
-2.17.1
+2.8.1
 
