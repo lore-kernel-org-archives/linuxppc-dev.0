@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7585BC47404
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 13:02:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6E57C47404
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 13:05:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F2E732075C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 13:02:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F2E732075C
+	by mail.kernel.org (Postfix) with ESMTPS id 31B032084D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 13:05:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 31B032084D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46Tf7j2PXwzF4My
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 23:02:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46TfCQ04wGzF4Nk
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 23:05:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=arm.com
  (client-ip=217.140.110.172; helo=foss.arm.com;
@@ -27,29 +27,29 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=arm.com
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 46Tf4K3GChzF37y
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2019 22:59:43 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 46Tf6z74vfzF4NK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2019 23:02:02 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 48B7B28;
- Thu, 12 Sep 2019 05:59:42 -0700 (PDT)
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BA45928;
+ Thu, 12 Sep 2019 06:02:01 -0700 (PDT)
 Received: from localhost (unknown [10.37.6.20])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id B4FCE3F71F;
- Thu, 12 Sep 2019 05:59:41 -0700 (PDT)
-Date: Thu, 12 Sep 2019 13:59:40 +0100
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 09BF13F71F;
+ Thu, 12 Sep 2019 06:02:01 -0700 (PDT)
+Date: Thu, 12 Sep 2019 14:01:59 +0100
 From: Andrew Murray <andrew.murray@arm.com>
-To: Xiaowei Bao <xiaowei.bao@nxp.com>, helgaas@kernel.org
-Subject: Re: [PATCH v3 11/11] misc: pci_endpoint_test: Add LS1088a in
- pci_device_id table
-Message-ID: <20190912125939.GE9720@e119886-lin.cambridge.arm.com>
+To: Xiaowei Bao <xiaowei.bao@nxp.com>
+Subject: Re: [PATCH v3 10/11] arm64: dts: layerscape: Add PCIe EP node for
+ ls1088a
+Message-ID: <20190912130159.GF9720@e119886-lin.cambridge.arm.com>
 References: <20190902031716.43195-1-xiaowei.bao@nxp.com>
- <20190902031716.43195-12-xiaowei.bao@nxp.com>
- <20190902125454.GK9720@e119886-lin.cambridge.arm.com>
- <AM5PR04MB3299D598229952C13C492B48F5B90@AM5PR04MB3299.eurprd04.prod.outlook.com>
+ <20190902031716.43195-11-xiaowei.bao@nxp.com>
+ <20190902130628.GL9720@e119886-lin.cambridge.arm.com>
+ <AM5PR04MB329926C6F424C4BE1CE9B787F5B90@AM5PR04MB3299.eurprd04.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <AM5PR04MB3299D598229952C13C492B48F5B90@AM5PR04MB3299.eurprd04.prod.outlook.com>
+In-Reply-To: <AM5PR04MB329926C6F424C4BE1CE9B787F5B90@AM5PR04MB3299.eurprd04.prod.outlook.com>
 User-Agent: Mutt/1.10.1+81 (426a6c1) (2018-08-26)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -82,12 +82,12 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Sep 03, 2019 at 01:52:30AM +0000, Xiaowei Bao wrote:
+On Tue, Sep 03, 2019 at 02:01:32AM +0000, Xiaowei Bao wrote:
 > 
 > 
 > > -----Original Message-----
 > > From: Andrew Murray <andrew.murray@arm.com>
-> > Sent: 2019年9月2日 20:55
+> > Sent: 2019年9月2日 21:06
 > > To: Xiaowei Bao <xiaowei.bao@nxp.com>
 > > Cc: robh+dt@kernel.org; mark.rutland@arm.com; shawnguo@kernel.org; Leo
 > > Li <leoyang.li@nxp.com>; kishon@ti.com; lorenzo.pieralisi@arm.com; M.h.
@@ -98,52 +98,45 @@ On Tue, Sep 03, 2019 at 01:52:30AM +0000, Xiaowei Bao wrote:
 > > linux-arm-kernel@lists.infradead.org; linuxppc-dev@lists.ozlabs.org;
 > > arnd@arndb.de; gregkh@linuxfoundation.org; Z.q. Hou
 > > <zhiqiang.hou@nxp.com>
-> > Subject: Re: [PATCH v3 11/11] misc: pci_endpoint_test: Add LS1088a in
-> > pci_device_id table
+> > Subject: Re: [PATCH v3 10/11] arm64: dts: layerscape: Add PCIe EP node for
+> > ls1088a
 > > 
-> > On Mon, Sep 02, 2019 at 11:17:16AM +0800, Xiaowei Bao wrote:
-> > > Add LS1088a in pci_device_id table so that pci-epf-test can be used
-> > > for testing PCIe EP in LS1088a.
+> > On Mon, Sep 02, 2019 at 11:17:15AM +0800, Xiaowei Bao wrote:
+> > > Add PCIe EP node for ls1088a to support EP mode.
 > > >
 > > > Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
 > > > ---
 > > > v2:
-> > >  - No change.
+> > >  - Remove the pf-offset proparty.
 > > > v3:
 > > >  - No change.
 > > >
-> > >  drivers/misc/pci_endpoint_test.c | 1 +
-> > >  1 file changed, 1 insertion(+)
+> > >  arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi | 31
+> > ++++++++++++++++++++++++++
+> > >  1 file changed, 31 insertions(+)
 > > >
-> > > diff --git a/drivers/misc/pci_endpoint_test.c
-> > > b/drivers/misc/pci_endpoint_test.c
-> > > index 6e208a0..d531951 100644
-> > > --- a/drivers/misc/pci_endpoint_test.c
-> > > +++ b/drivers/misc/pci_endpoint_test.c
-> > > @@ -793,6 +793,7 @@ static const struct pci_device_id
-> > pci_endpoint_test_tbl[] = {
-> > >  	{ PCI_DEVICE(PCI_VENDOR_ID_TI, PCI_DEVICE_ID_TI_DRA74x) },
-> > >  	{ PCI_DEVICE(PCI_VENDOR_ID_TI, PCI_DEVICE_ID_TI_DRA72x) },
-> > >  	{ PCI_DEVICE(PCI_VENDOR_ID_FREESCALE, 0x81c0) },
-> > > +	{ PCI_DEVICE(PCI_VENDOR_ID_FREESCALE, 0x80c0) },
+> > > diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
+> > b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
+> > > index c676d07..da246ab 100644
+> > > --- a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
+> > > +++ b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
+> > > @@ -483,6 +483,17 @@
+> > >  			status = "disabled";
+> > >  		};
+> > >
+> > > +		pcie_ep@3400000 {
+> > > +			compatible = "fsl,ls1088a-pcie-ep","fsl,ls-pcie-ep";
 > > 
-> > The Freescale PCI devices are the only devices in this table that don't have a
-> > define for their device ID. I think a define should be created for both of the
-> > device IDs above.
+> > Here you specify a fallback "fsl,ls-pcie-ep" that is removed by this series.
+> > 
+> > Besides that, this looks OK.
 > 
-> OK, but I only define in this file, I am not sure this can define in include/linux/pci_ids.h
-> file 
+> As explained, the "fsl,ls-pcie-ep" is needed, due to the u-boot will fixup the status
+> property base on this compatible, I think we reserve this compatible is helpfully,
+> if delate this compatible, I have to modify the code of bootloader.
 
-This file seems a little inconsistent...
-
- - Two of the TI device IDs are defined in pci_ids.h and only used in pci_endpoint_test.c
- - One of the TI device IDs are defined in pci_endpoint_test.c and only used there
- - The Freescale device ID is hardcoded and only used in pci_endpoint_test.c
-
-The header in pci_ids.h has a comment suggestion definitions are only added where used
-in multiple files - yet I don't think this holds true.
-
-Bjorn - do you have a suggestion?
+I assume you mean that u-boot fixes up "fsl,ls-pcie-ep" *only* for ls1046a
+devices?
 
 Thanks,
 
@@ -151,16 +144,61 @@ Andrew Murray
 
 > 
 > Thanks 
-> Xiaowei
+> XIaowei
 > 
 > > 
 > > Thanks,
 > > 
 > > Andrew Murray
 > > 
-> > >  	{ PCI_DEVICE_DATA(SYNOPSYS, EDDA, NULL) },
-> > >  	{ PCI_DEVICE(PCI_VENDOR_ID_TI, PCI_DEVICE_ID_TI_AM654),
-> > >  	  .driver_data = (kernel_ulong_t)&am654_data
+> > > +			reg = <0x00 0x03400000 0x0 0x00100000
+> > > +			       0x20 0x00000000 0x8 0x00000000>;
+> > > +			reg-names = "regs", "addr_space";
+> > > +			num-ib-windows = <24>;
+> > > +			num-ob-windows = <128>;
+> > > +			max-functions = /bits/ 8 <2>;
+> > > +			status = "disabled";
+> > > +		};
+> > > +
+> > >  		pcie@3500000 {
+> > >  			compatible = "fsl,ls1088a-pcie";
+> > >  			reg = <0x00 0x03500000 0x0 0x00100000   /* controller
+> > registers */
+> > > @@ -508,6 +519,16 @@
+> > >  			status = "disabled";
+> > >  		};
+> > >
+> > > +		pcie_ep@3500000 {
+> > > +			compatible = "fsl,ls1088a-pcie-ep","fsl,ls-pcie-ep";
+> > > +			reg = <0x00 0x03500000 0x0 0x00100000
+> > > +			       0x28 0x00000000 0x8 0x00000000>;
+> > > +			reg-names = "regs", "addr_space";
+> > > +			num-ib-windows = <6>;
+> > > +			num-ob-windows = <8>;
+> > > +			status = "disabled";
+> > > +		};
+> > > +
+> > >  		pcie@3600000 {
+> > >  			compatible = "fsl,ls1088a-pcie";
+> > >  			reg = <0x00 0x03600000 0x0 0x00100000   /* controller
+> > registers */
+> > > @@ -533,6 +554,16 @@
+> > >  			status = "disabled";
+> > >  		};
+> > >
+> > > +		pcie_ep@3600000 {
+> > > +			compatible = "fsl,ls1088a-pcie-ep","fsl,ls-pcie-ep";
+> > > +			reg = <0x00 0x03600000 0x0 0x00100000
+> > > +			       0x30 0x00000000 0x8 0x00000000>;
+> > > +			reg-names = "regs", "addr_space";
+> > > +			num-ib-windows = <6>;
+> > > +			num-ob-windows = <8>;
+> > > +			status = "disabled";
+> > > +		};
+> > > +
+> > >  		smmu: iommu@5000000 {
+> > >  			compatible = "arm,mmu-500";
+> > >  			reg = <0 0x5000000 0 0x800000>;
 > > > --
 > > > 2.9.5
 > > >
