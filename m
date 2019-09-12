@@ -1,87 +1,80 @@
-Return-Path: <SRS0=eZMg=XG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=nVWd=XH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4135DC49ED6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 23:59:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3698CC49ED6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 02:52:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8373A2075B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2019 23:59:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8373A2075B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 537622075C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 02:52:15 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="VviLB/cT"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 537622075C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46TJlp1RXczF41n
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 09:59:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46TNbJ5kzRzF421
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 12:52:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=bauerman@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::d41; helo=mail-io1-xd41.google.com;
+ envelope-from=kernelfans@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="VviLB/cT"; 
+ dkim-atps=neutral
+Received: from mail-io1-xd41.google.com (mail-io1-xd41.google.com
+ [IPv6:2607:f8b0:4864:20::d41])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46TJkD1WrWzF3vx
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2019 09:57:55 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x8BNvo4E069648; Wed, 11 Sep 2019 19:57:50 -0400
-Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
- [169.53.41.122])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2uy7u7myy7-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 11 Sep 2019 19:57:50 -0400
-Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
- by ppma04dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x8BNnwUF024757;
- Wed, 11 Sep 2019 23:53:24 GMT
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by ppma04dal.us.ibm.com with ESMTP id 2uv467gra0-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 11 Sep 2019 23:53:24 +0000
-Received: from b03ledav004.gho.boulder.ibm.com
- (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x8BNrNlL59310362
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 11 Sep 2019 23:53:23 GMT
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6BDB17805C;
- Wed, 11 Sep 2019 23:53:23 +0000 (GMT)
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B6D5D7805E;
- Wed, 11 Sep 2019 23:53:21 +0000 (GMT)
-Received: from morokweng.localdomain (unknown [9.85.169.8])
- by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTPS;
- Wed, 11 Sep 2019 23:53:21 +0000 (GMT)
-References: <20190911163433.12822-1-bauerman@linux.ibm.com>
-User-agent: mu4e 1.2.0; emacs 26.2
-From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/prom_init: Undo relocation before entering secure
- mode
-In-reply-to: <20190911163433.12822-1-bauerman@linux.ibm.com>
-Date: Wed, 11 Sep 2019 20:53:15 -0300
-Message-ID: <875zly1jbo.fsf@morokweng.localdomain>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46TNY81WdBzF3Ps
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2019 12:50:19 +1000 (AEST)
+Received: by mail-io1-xd41.google.com with SMTP id k13so35782349ioj.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2019 19:50:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=ZmAI5Kneh1f6hodgeBCHENt2raEtEl9n5OlXr4wIQHY=;
+ b=VviLB/cTCqGK/W3A1yCJ6xCe6YVWV+WRUIXFf83PIP2Vpjr5fb50LuomDuziamnnIG
+ PPbRqD3DIWkXjUeUi/OpyjMtoofvnxzlEpogW7BvR7SEDXjuk1L+a2cGUBp+aPooE4jJ
+ MthDx1xDwS+AF3hD65erPj0e37m3Q6T8GsIxHPlW8zEMO3Guf4UshZfLwPO0vquESIR2
+ p9d9CZ7+i5Ji8cvE647vQwFNHmePdtqiAEebj382mQidE4AMZS9FxUZMncgguqtOXtai
+ VeJU7xwzmlZk4e7HnN3ijjLn7GHrcjOv7nwsnTc1O3sFXhjOnZfzSxPG8ScMRx/K3HI6
+ XGbA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=ZmAI5Kneh1f6hodgeBCHENt2raEtEl9n5OlXr4wIQHY=;
+ b=ck6DBK8/xIRLBFOtNsQ7dUVJkFP8XrrGAFWBBh9RbGuPN8xGdsP3RYS4cEZjOK8YmP
+ bNiWlbp3JQWpTX/KqZSaVI+Edq5z/s+i+aFCtFw9khuJHlzfayRmWY/scrcButrAabXg
+ 3DvGIPQSUd8Ek4Eix1al/XtIhEii8FJeUf+hLh427gLIG7HeMACYt/VpBlpuEWCwms8i
+ LTpXeSGvC0fiwkvYKzDMwjaxWAmCZCsuVstcupBY3r3wQgdpT/XXgPwqO3NAMtE6B5Pv
+ 01I55c1vd+iD2qEZx7oGkymKFhzswFU27EXxtUDirNQ3uC2tfy3uq50cqydENT3/FVuN
+ JkPg==
+X-Gm-Message-State: APjAAAW9vPKhuHWcSO0iHXqtAiOiDhsbDStXM99cFKW/VsJHRtAX5Fsd
+ r4ZnCqjoH0Vb0ZJct4o5HmkPV4FCoOIciAGy+bBT
+X-Google-Smtp-Source: APXvYqyBvUS0DpqgnrHnuMsjo2WvP3PtlsGUH3OWaNSiPmImZGbX7e44lcdJ4RT8ryh30aD8HYdiR4IAbnNwjqQoua8=
+X-Received: by 2002:a02:9a12:: with SMTP id b18mr40783068jal.70.1568256616579; 
+ Wed, 11 Sep 2019 19:50:16 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-09-11_11:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=893 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1906280000 definitions=main-1909110210
+References: <1568001906-5750-1-git-send-email-kernelfans@gmail.com>
+In-Reply-To: <1568001906-5750-1-git-send-email-kernelfans@gmail.com>
+From: Pingfan Liu <kernelfans@gmail.com>
+Date: Thu, 12 Sep 2019 10:50:05 +0800
+Message-ID: <CAFgQCTtQCSuGszaeoQu3wFozWGvc-mSPBBV31yLwO33OGqshBg@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/crashkernel: take mem option into account
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,29 +86,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Mackerras <paulus@samba.org>, Mike Anderson <andmike@linux.ibm.com>,
- Ram Pai <linuxram@us.ibm.com>, linux-kernel@vger.kernel.org
+Cc: Hari Bathini <hbathini@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+NACK it. Due to a miss the updating of printk info. I will send out V2
 
-Thiago Jung Bauermann <bauerman@linux.ibm.com> writes:
-
-> The ultravisor will do an integrity check of the kernel image but we
-> relocated it so the check will fail. Restore the original image by
-> relocating it back to the kernel virtual base address.
+On Mon, Sep 9, 2019 at 12:05 PM Pingfan Liu <kernelfans@gmail.com> wrote:
 >
-> This works because during build vmlinux is linked with an expected virtual
-> runtime address of KERNELBASE.
+> 'mem=" option is an easy way to put high pressure on memory during some
+> test. Hence in stead of total mem, the effective usable memory size should
+> be considered when reserving mem for crashkernel. Otherwise the boot up may
+> experience oom issue.
 >
-> Fixes: 6a9c930bd775 ("powerpc/prom_init: Add the ESM call to prom_init")
-> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-
-I meant to put a Suggested-by: Paul Mackerras <paulus@samba.org>
-
-Sorry. Will add it if there's a v2.
-
--- 
-Thiago Jung Bauermann
-IBM Linux Technology Center
+> E.g passing
+> crashkernel="2G-4G:384M,4G-16G:512M,16G-64G:1G,64G-128G:2G,128G-:4G", and
+> mem=5G.
+>
+> Signed-off-by: Pingfan Liu <kernelfans@gmail.com>
+> Cc: Hari Bathini <hbathini@linux.ibm.com>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> To: linuxppc-dev@lists.ozlabs.org
+> ---
+>  arch/powerpc/kernel/machine_kexec.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
+> index c4ed328..714b733 100644
+> --- a/arch/powerpc/kernel/machine_kexec.c
+> +++ b/arch/powerpc/kernel/machine_kexec.c
+> @@ -114,11 +114,12 @@ void machine_kexec(struct kimage *image)
+>
+>  void __init reserve_crashkernel(void)
+>  {
+> -       unsigned long long crash_size, crash_base;
+> +       unsigned long long crash_size, crash_base, total_mem_sz;
+>         int ret;
+>
+> +       total_mem_sz = memory_limit ? memory_limit : memblock_phys_mem_size();
+>         /* use common parsing */
+> -       ret = parse_crashkernel(boot_command_line, memblock_phys_mem_size(),
+> +       ret = parse_crashkernel(boot_command_line, total_mem_sz,
+>                         &crash_size, &crash_base);
+>         if (ret == 0 && crash_size > 0) {
+>                 crashk_res.start = crash_base;
+> --
+> 2.7.5
+>
