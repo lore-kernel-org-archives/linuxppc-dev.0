@@ -2,23 +2,24 @@ Return-Path: <SRS0=nVWd=XH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D6EFBC4CEC5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 17:29:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B5E28C4CEC6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 17:31:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6632F2081B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 17:29:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6632F2081B
+	by mail.kernel.org (Postfix) with ESMTPS id 42D1D2081B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 17:31:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 42D1D2081B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46Tm3d1fjvzF1tk
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Sep 2019 03:29:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46Tm6F3wkYzF4nR
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Sep 2019 03:31:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=suse.de
  (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=msuchanek@suse.de;
@@ -28,18 +29,20 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46Tm075yBXzF4kw
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Sep 2019 03:26:31 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46Tm0G5lqPzF4lS
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Sep 2019 03:26:38 +1000 (AEST)
 X-Virus-Scanned: by amavisd-new at test-mx.suse.de
 Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id 61455B713;
- Thu, 12 Sep 2019 17:26:25 +0000 (UTC)
+ by mx1.suse.de (Postfix) with ESMTP id 88819B816;
+ Thu, 12 Sep 2019 17:26:33 +0000 (UTC)
 From: Michal Suchanek <msuchanek@suse.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v8 0/7] Disable compat cruft on ppc64le v8
-Date: Thu, 12 Sep 2019 19:26:02 +0200
-Message-Id: <cover.1568306311.git.msuchanek@suse.de>
+Subject: [PATCH v8 3/7] powerpc/perf: consolidate read_user_stack_32
+Date: Thu, 12 Sep 2019 19:26:05 +0200
+Message-Id: <488f195b714b57c80045a89c2625afed924d3b83.1568306311.git.msuchanek@suse.de>
 X-Mailer: git-send-email 2.23.0
+In-Reply-To: <cover.1568306311.git.msuchanek@suse.de>
+References: <cover.1568306311.git.msuchanek@suse.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -70,67 +73,105 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Less code means less bugs so add a knob to skip the compat stuff.
+There are two almost identical copies for 32bit and 64bit.
 
-This is tested on ppc64le top of
+The function is used only in 32bit code which will be split out in next
+patch so consolidate to one function.
 
-https://patchwork.ozlabs.org/patch/1153850/
-https://patchwork.ozlabs.org/patch/1158412/
+Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+v6: new patch
+v8: move the consolidated function out of the ifdef block.
+---
+ arch/powerpc/perf/callchain.c | 59 +++++++++++++++--------------------
+ 1 file changed, 25 insertions(+), 34 deletions(-)
 
-Changes in v2: saner CONFIG_COMPAT ifdefs
-Changes in v3:
- - change llseek to 32bit instead of builing it unconditionally in fs
- - clanup the makefile conditionals
- - remove some ifdefs or convert to IS_DEFINED where possible
-Changes in v4:
- - cleanup is_32bit_task and current_is_64bit
- - more makefile cleanup
-Changes in v5:
- - more current_is_64bit cleanup
- - split off callchain.c 32bit and 64bit parts
-Changes in v6:
- - cleanup makefile after split
- - consolidate read_user_stack_32
- - fix some checkpatch warnings
-Changes in v7:
- - add back __ARCH_WANT_SYS_LLSEEK to fix build with llseek
- - remove leftover hunk
- - add review tags
-Changes in v8:
- - consolidate valid_user_sp to fix it in the split callchain.c
- - fix build errors/warnings with PPC64 !COMPAT and PPC32
-
-Michal Suchanek (7):
-  powerpc: Add back __ARCH_WANT_SYS_LLSEEK macro
-  powerpc: move common register copy functions from signal_32.c to
-    signal.c
-  powerpc/perf: consolidate read_user_stack_32
-  powerpc/perf: consolidate valid_user_sp
-  powerpc/64: make buildable without CONFIG_COMPAT
-  powerpc/64: Make COMPAT user-selectable disabled on littleendian by
-    default.
-  powerpc/perf: split callchain.c by bitness
-
- arch/powerpc/Kconfig                   |   5 +-
- arch/powerpc/include/asm/thread_info.h |   4 +-
- arch/powerpc/include/asm/unistd.h      |   1 +
- arch/powerpc/kernel/Makefile           |   7 +-
- arch/powerpc/kernel/entry_64.S         |   2 +
- arch/powerpc/kernel/signal.c           | 144 +++++++++-
- arch/powerpc/kernel/signal_32.c        | 140 ---------
- arch/powerpc/kernel/syscall_64.c       |   6 +-
- arch/powerpc/kernel/vdso.c             |   3 +-
- arch/powerpc/perf/Makefile             |   5 +-
- arch/powerpc/perf/callchain.c          | 377 +------------------------
- arch/powerpc/perf/callchain.h          |  25 ++
- arch/powerpc/perf/callchain_32.c       | 197 +++++++++++++
- arch/powerpc/perf/callchain_64.c       | 178 ++++++++++++
- fs/read_write.c                        |   3 +-
- 15 files changed, 566 insertions(+), 531 deletions(-)
- create mode 100644 arch/powerpc/perf/callchain.h
- create mode 100644 arch/powerpc/perf/callchain_32.c
- create mode 100644 arch/powerpc/perf/callchain_64.c
-
+diff --git a/arch/powerpc/perf/callchain.c b/arch/powerpc/perf/callchain.c
+index c84bbd4298a0..d86bdbffda9e 100644
+--- a/arch/powerpc/perf/callchain.c
++++ b/arch/powerpc/perf/callchain.c
+@@ -165,22 +165,6 @@ static int read_user_stack_64(unsigned long __user *ptr, unsigned long *ret)
+ 	return read_user_stack_slow(ptr, ret, 8);
+ }
+ 
+-static int read_user_stack_32(unsigned int __user *ptr, unsigned int *ret)
+-{
+-	if ((unsigned long)ptr > TASK_SIZE - sizeof(unsigned int) ||
+-	    ((unsigned long)ptr & 3))
+-		return -EFAULT;
+-
+-	pagefault_disable();
+-	if (!__get_user_inatomic(*ret, ptr)) {
+-		pagefault_enable();
+-		return 0;
+-	}
+-	pagefault_enable();
+-
+-	return read_user_stack_slow(ptr, ret, 4);
+-}
+-
+ static inline int valid_user_sp(unsigned long sp, int is_64)
+ {
+ 	if (!sp || (sp & 7) || sp > (is_64 ? TASK_SIZE : 0x100000000UL) - 32)
+@@ -295,25 +279,9 @@ static inline int current_is_64bit(void)
+ }
+ 
+ #else  /* CONFIG_PPC64 */
+-/*
+- * On 32-bit we just access the address and let hash_page create a
+- * HPTE if necessary, so there is no need to fall back to reading
+- * the page tables.  Since this is called at interrupt level,
+- * do_page_fault() won't treat a DSI as a page fault.
+- */
+-static int read_user_stack_32(unsigned int __user *ptr, unsigned int *ret)
++static int read_user_stack_slow(void __user *ptr, void *buf, int nb)
+ {
+-	int rc;
+-
+-	if ((unsigned long)ptr > TASK_SIZE - sizeof(unsigned int) ||
+-	    ((unsigned long)ptr & 3))
+-		return -EFAULT;
+-
+-	pagefault_disable();
+-	rc = __get_user_inatomic(*ret, ptr);
+-	pagefault_enable();
+-
+-	return rc;
++	return 0;
+ }
+ 
+ static inline void perf_callchain_user_64(struct perf_callchain_entry_ctx *entry,
+@@ -341,6 +309,29 @@ static inline int valid_user_sp(unsigned long sp, int is_64)
+ 
+ #endif /* CONFIG_PPC64 */
+ 
++/*
++ * On 32-bit we just access the address and let hash_page create a
++ * HPTE if necessary, so there is no need to fall back to reading
++ * the page tables.  Since this is called at interrupt level,
++ * do_page_fault() won't treat a DSI as a page fault.
++ */
++static int read_user_stack_32(unsigned int __user *ptr, unsigned int *ret)
++{
++	int rc;
++
++	if ((unsigned long)ptr > TASK_SIZE - sizeof(unsigned int) ||
++	    ((unsigned long)ptr & 3))
++		return -EFAULT;
++
++	pagefault_disable();
++	rc = __get_user_inatomic(*ret, ptr);
++	pagefault_enable();
++
++	if (IS_ENABLED(CONFIG_PPC64) && rc)
++		return read_user_stack_slow(ptr, ret, 4);
++	return rc;
++}
++
+ /*
+  * Layout for non-RT signal frames
+  */
 -- 
 2.23.0
 
