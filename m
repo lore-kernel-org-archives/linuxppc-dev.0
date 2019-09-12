@@ -2,76 +2,82 @@ Return-Path: <SRS0=mxpJ=ZD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.7 required=3.0 tests=DATE_IN_PAST_96_XX,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 68B4AC43331
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 11:39:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DAA8AC43331
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 11:42:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1F978214DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 11:39:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1F978214DB
+	by mail.kernel.org (Postfix) with ESMTPS id 910762190F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 11:42:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 910762190F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47BTRV3p5KzF1hK
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 22:39:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47BTWF4r44zF4SJ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 22:42:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47BTJy3FHBzF32Y
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2019 22:33:21 +1100 (AEDT)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47BTKD5BgMzF3JP
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2019 22:33:36 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- xABBWs6w170482; Mon, 11 Nov 2019 06:33:16 -0500
-Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.27])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2w5s55c8n7-1
+ xABBXKFC036678; Mon, 11 Nov 2019 06:33:26 -0500
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2w76aq9hhs-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 11 Nov 2019 06:33:14 -0500
-Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
- by ppma05wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id xABBWgpw022527;
- Mon, 11 Nov 2019 11:33:10 GMT
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by ppma05wdc.us.ibm.com with ESMTP id 2w5n35vm9u-1
+ Mon, 11 Nov 2019 06:33:26 -0500
+Received: from m0098393.ppops.net (m0098393.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id xABBXP3F037122;
+ Mon, 11 Nov 2019 06:33:25 -0500
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
+ [169.53.41.122])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2w76aq9h51-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 11 Nov 2019 11:33:10 +0000
-Received: from b03ledav001.gho.boulder.ibm.com
- (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xABBX8g153019010
+ Mon, 11 Nov 2019 06:33:25 -0500
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+ by ppma04dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id xABBUr2o002969;
+ Mon, 11 Nov 2019 11:32:56 GMT
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24]) by ppma04dal.us.ibm.com with ESMTP id 2w5n361psm-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 11 Nov 2019 11:32:56 +0000
+Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
+ [9.57.199.106])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xABBWtD454788524
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 11 Nov 2019 11:33:08 GMT
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E86AC6E056;
- Mon, 11 Nov 2019 11:33:07 +0000 (GMT)
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 322806E04C;
- Mon, 11 Nov 2019 11:33:04 +0000 (GMT)
+ Mon, 11 Nov 2019 11:32:55 GMT
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 871B928059;
+ Mon, 11 Nov 2019 11:32:55 +0000 (GMT)
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 547E028058;
+ Mon, 11 Nov 2019 11:32:50 +0000 (GMT)
 Received: from skywalker.linux.ibm.com (unknown [9.199.36.163])
- by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP;
- Mon, 11 Nov 2019 11:33:04 +0000 (GMT)
+ by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
+ Mon, 11 Nov 2019 11:32:49 +0000 (GMT)
 X-Mailer: emacs 26.2 (via feedmail 11-beta-1 Q)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: "Alastair D'Silva" <alastair@au1.ibm.com>
-Subject: Re: [PATCH 09/10] powerpc: Enable OpenCAPI Storage Class Memory
- driver on bare metal
-In-Reply-To: <20191025044721.16617-10-alastair@au1.ibm.com>
-References: <20191025044721.16617-1-alastair@au1.ibm.com>
- <20191025044721.16617-10-alastair@au1.ibm.com>
-Date: Mon, 11 Nov 2019 15:16:43 +0530
-Message-ID: <87zhh2wxrw.fsf@linux.ibm.com>
+To: Laurent Dufour <ldufour@linux.ibm.com>, mpe@ellerman.id.au,
+ benh@kernel.crashing.org, paulus@samba.org, npiggin@gmail.com
+Subject: Re: [PATCH 1/3] powerpc/mm: Initialize the HPTE encoding values
+In-Reply-To: <20190830120712.22971-2-ldufour@linux.ibm.com>
+References: <20190830120712.22971-1-ldufour@linux.ibm.com>
+ <20190830120712.22971-2-ldufour@linux.ibm.com>
+Date: Thu, 12 Sep 2019 19:02:40 +0530
+Message-ID: <87v9txzll3.fsf@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-TM-AS-GCONF: 00
@@ -79,9 +85,9 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-11-11_03:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=906 adultscore=0 classifier=spam adjust=0 reason=mlx
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1910280000 definitions=main-1911110109
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -94,38 +100,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-nvdimm@lists.01.org
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-"Alastair D'Silva" <alastair@au1.ibm.com> writes:
+Laurent Dufour <ldufour@linux.ibm.com> writes:
 
-> From: Alastair D'Silva <alastair@d-silva.org>
+> Before reading the HPTE encoding values we initialize all of them to -1 (an
+> invalid value) to later being able to detect the initialized ones.
 >
-> Enable OpenCAPI Storage Class Memory driver on bare metal
+> Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
 
-But that doesn't explain why these need to be builtin.
->
-> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+We already do this in mmu_psize_set_default_penc() ?
+
 > ---
->  arch/powerpc/configs/powernv_defconfig | 4 ++++
->  1 file changed, 4 insertions(+)
+>  arch/powerpc/mm/book3s64/hash_utils.c | 8 ++++++--
+>  1 file changed, 6 insertions(+), 2 deletions(-)
 >
-> diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
-> index 6658cceb928c..45c0eff94964 100644
-> --- a/arch/powerpc/configs/powernv_defconfig
-> +++ b/arch/powerpc/configs/powernv_defconfig
-> @@ -352,3 +352,7 @@ CONFIG_KVM_BOOK3S_64=m
->  CONFIG_KVM_BOOK3S_64_HV=m
->  CONFIG_VHOST_NET=m
->  CONFIG_PRINTK_TIME=y
-> +CONFIG_OCXL_SCM=m
-> +CONFIG_DEV_DAX=y
-> +CONFIG_DEV_DAX_PMEM=y
-> +CONFIG_FS_DAX=y
+> diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
+> index c3bfef08dcf8..2039bc315459 100644
+> --- a/arch/powerpc/mm/book3s64/hash_utils.c
+> +++ b/arch/powerpc/mm/book3s64/hash_utils.c
+> @@ -408,7 +408,7 @@ static int __init htab_dt_scan_page_sizes(unsigned long node,
+>  {
+>  	const char *type = of_get_flat_dt_prop(node, "device_type", NULL);
+>  	const __be32 *prop;
+> -	int size = 0;
+> +	int size = 0, idx, base_idx;
+>  
+>  	/* We are scanning "cpu" nodes only */
+>  	if (type == NULL || strcmp(type, "cpu") != 0)
+> @@ -418,6 +418,11 @@ static int __init htab_dt_scan_page_sizes(unsigned long node,
+>  	if (!prop)
+>  		return 0;
+>  
+> +	/* Set all the penc values to invalid */
+> +	for (base_idx = 0; base_idx < MMU_PAGE_COUNT; base_idx++)
+> +		for (idx = 0; idx < MMU_PAGE_COUNT; idx++)
+> +			mmu_psize_defs[base_idx].penc[idx] = -1;
+> +
+>  	pr_info("Page sizes from device-tree:\n");
+>  	size /= 4;
+>  	cur_cpu_spec->mmu_features &= ~(MMU_FTR_16M_PAGE);
+> @@ -426,7 +431,6 @@ static int __init htab_dt_scan_page_sizes(unsigned long node,
+>  		unsigned int slbenc = be32_to_cpu(prop[1]);
+>  		unsigned int lpnum = be32_to_cpu(prop[2]);
+>  		struct mmu_psize_def *def;
+> -		int idx, base_idx;
+>  
+>  		size -= 3; prop += 3;
+>  		base_idx = get_idx_from_shift(base_shift);
 > -- 
-> 2.21.0
-> _______________________________________________
-> Linux-nvdimm mailing list -- linux-nvdimm@lists.01.org
-> To unsubscribe send an email to linux-nvdimm-leave@lists.01.org
+> 2.23.0
