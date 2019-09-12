@@ -2,95 +2,90 @@ Return-Path: <SRS0=nVWd=XH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D3783ECDE20
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 10:44:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A512C4CECB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 11:03:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5E0BD2084F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 10:44:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5E0BD2084F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 38C6E20693
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 11:03:01 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=shutemov-name.20150623.gappssmtp.com header.i=@shutemov-name.20150623.gappssmtp.com header.b="XU1ehr7B"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 38C6E20693
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=shutemov.name
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46Tb4G2Kl9zDqSM
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 20:44:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46TbTZ5LF6zF4MB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2019 21:02:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=ego@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=none (mailfrom) smtp.mailfrom=shutemov.name
+ (client-ip=2a00:1450:4864:20::542; helo=mail-ed1-x542.google.com;
+ envelope-from=kirill@shutemov.name; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=shutemov.name
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=shutemov-name.20150623.gappssmtp.com
+ header.i=@shutemov-name.20150623.gappssmtp.com header.b="XU1ehr7B"; 
+ dkim-atps=neutral
+Received: from mail-ed1-x542.google.com (mail-ed1-x542.google.com
+ [IPv6:2a00:1450:4864:20::542])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46TZtZ4bqzzF3WB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2019 20:36:03 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x8CAX2We026048; Thu, 12 Sep 2019 06:35:55 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2uym8prbx7-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 12 Sep 2019 06:35:54 -0400
-Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x8CAXQgI027988;
- Thu, 12 Sep 2019 06:35:54 -0400
-Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.10])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2uym8prbwu-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 12 Sep 2019 06:35:54 -0400
-Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
- by ppma02dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x8CAU7n1025637;
- Thu, 12 Sep 2019 10:35:53 GMT
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28]) by ppma02dal.us.ibm.com with ESMTP id 2uv467wfh6-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 12 Sep 2019 10:35:53 +0000
-Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
- [9.57.199.109])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x8CAZqOg43057540
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 12 Sep 2019 10:35:52 GMT
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9D58F112066;
- Thu, 12 Sep 2019 10:35:52 +0000 (GMT)
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5EE23112061;
- Thu, 12 Sep 2019 10:35:52 +0000 (GMT)
-Received: from sofia.ibm.com (unknown [9.124.35.237])
- by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP;
- Thu, 12 Sep 2019 10:35:52 +0000 (GMT)
-Received: by sofia.ibm.com (Postfix, from userid 1000)
- id 01C892E47C1; Thu, 12 Sep 2019 16:05:51 +0530 (IST)
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-To: Nathan Lynch <nathanl@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Tyrel Datwyler <tyreld@linux.ibm.com>
-Subject: [PATCH 1/2] pseries/hotplug-cpu: Change default behaviour of
- cede_offline to "off"
-Date: Thu, 12 Sep 2019 16:05:40 +0530
-Message-Id: <1568284541-15169-2-git-send-email-ego@linux.vnet.ibm.com>
-X-Mailer: git-send-email 1.8.3.1
-In-Reply-To: <1568284541-15169-1-git-send-email-ego@linux.vnet.ibm.com>
-References: <1568284541-15169-1-git-send-email-ego@linux.vnet.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-09-12_05:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1906280000 definitions=main-1909120112
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46TbQf51jfzF3SS
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2019 21:00:21 +1000 (AEST)
+Received: by mail-ed1-x542.google.com with SMTP id u6so23536793edq.6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2019 04:00:21 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=shutemov-name.20150623.gappssmtp.com; s=20150623;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=i4n3cs5YIwHpBBnCvQbY3FnLMZHpwOIQycs63oVDiSc=;
+ b=XU1ehr7BQ2UPg1KBuVQ5nl6L4OIYSyENUTpJxtu0PcESlZD1JDIDF/kfEGLVTwGTPP
+ MxBuxnwufiCItM0eu2f6PGyyjzV27Q2cNWmrCI/fGkWv00JgM+mdZSN1lgpv2XIZF9yD
+ Ti1WM/t84cLxXEP8DSXzi5NQKs0TYyJ79hQa7AZv9JgQdH0hTuNKnH8BEAiZ+ewccLLa
+ vvU+d/v7/7I+eQ9LvIytn9jJr+WOd1sRRaRjF83QEr00IfWCJU2SCQ/EcoyWOdAh3E8X
+ tFKZsg92QCTLtpzpNowjR1vbUr8LIL24WrcjhMNVcplThOrveFyd6bS7Oehx93UQGF8r
+ wpAw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=i4n3cs5YIwHpBBnCvQbY3FnLMZHpwOIQycs63oVDiSc=;
+ b=mmm7rHZ4gNhAcIHkR1e4y3Kwpl26hY2utDhRoXaJmrUbHA/oF/e2JpIyvDhk+yEBxl
+ 4rbhH5t6lhyK9p8BurT8gbqDvoE3uHFfHq2F+GimIlCgHh96bOllaF3aoJqZqMc5jRxW
+ sbxjC+T4rc6zmRznHJgDkl+L2kQiSYazxp+lBV1KM1RfWLUQ2eppcvypObkiC3MOhDdF
+ l8jr0Rg3PP44g4V2GKoNm3PQAGkNRWmyzqIOhCR6jZz3mk0+/3HgJxfb6wvJh8S3NsyS
+ Ranj4r9GqPduujvrGt8WCFk/RoM9M0eMBTF7B5v4+xIOV8JTBwfM8x1vGoVSJUKqx7hA
+ AH4Q==
+X-Gm-Message-State: APjAAAWUgboCElJFQsm+y8VueAj+j0QY0gHOgdFpFVk5ui6ySWcdRRr1
+ Ox7I/xieWJL9hTiYTueBpYXBJQ==
+X-Google-Smtp-Source: APXvYqzn86bOsg/hOamx0ZM4X4jdcRXf0RIV/TYjmuJGR8c1qTMEHrx7GcnktNsAZCbZ5Sfr2/boLg==
+X-Received: by 2002:a50:d084:: with SMTP id v4mr42151595edd.48.1568286015703; 
+ Thu, 12 Sep 2019 04:00:15 -0700 (PDT)
+Received: from box.localdomain ([86.57.175.117])
+ by smtp.gmail.com with ESMTPSA id 60sm4730030edg.10.2019.09.12.04.00.14
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Thu, 12 Sep 2019 04:00:14 -0700 (PDT)
+Received: by box.localdomain (Postfix, from userid 1000)
+ id 379ED100B4A; Thu, 12 Sep 2019 14:00:16 +0300 (+03)
+Date: Thu, 12 Sep 2019 14:00:16 +0300
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: Anshuman Khandual <anshuman.khandual@arm.com>
+Subject: Re: [PATCH V2 2/2] mm/pgtable/debug: Add test validating
+ architecture page table helpers
+Message-ID: <20190912110016.srrydg2krplscbgq@box>
+References: <1568268173-31302-1-git-send-email-anshuman.khandual@arm.com>
+ <1568268173-31302-3-git-send-email-anshuman.khandual@arm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1568268173-31302-3-git-send-email-anshuman.khandual@arm.com>
+User-Agent: NeoMutt/20180716
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,78 +97,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Kamalesh Babulal <kamaleshb@in.ibm.com>, linux-kernel@vger.kernel.org,
- "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ James Hogan <jhogan@kernel.org>,
+ Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Michal Hocko <mhocko@kernel.org>,
+ linux-mm@kvack.org, Dave Hansen <dave.hansen@intel.com>,
+ Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>, linux-s390@vger.kernel.org,
+ x86@kernel.org, Russell King - ARM Linux <linux@armlinux.org.uk>,
+ Matthew Wilcox <willy@infradead.org>, Steven Price <Steven.Price@arm.com>,
+ Jason Gunthorpe <jgg@ziepe.ca>, Gerald Schaefer <gerald.schaefer@de.ibm.com>,
+ linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
+ Kees Cook <keescook@chromium.org>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Mark Brown <broonie@kernel.org>, Dan Williams <dan.j.williams@intel.com>,
+ Vlastimil Babka <vbabka@suse.cz>, Sri Krishna chowdary <schowdary@nvidia.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-mips@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, linux-kernel@vger.kernel.org,
+ Paul Burton <paul.burton@mips.com>, Mike Rapoport <rppt@linux.vnet.ibm.com>,
+ Vineet Gupta <vgupta@synopsys.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+On Thu, Sep 12, 2019 at 11:32:53AM +0530, Anshuman Khandual wrote:
+> +MODULE_LICENSE("GPL v2");
+> +MODULE_AUTHOR("Anshuman Khandual <anshuman.khandual@arm.com>");
+> +MODULE_DESCRIPTION("Test architecture page table helpers");
 
-Currently on Pseries Linux Guests, the offlined CPU can be put to one
-of the following two states:
-   - Long term processor cede (also called extended cede)
-   - Returned to the Hypervisor via RTAS "stop-self" call.
+It's not module. Why?
 
-This is controlled by the kernel boot parameter "cede_offline=on/off".
+BTW, I think we should make all code here __init (or it's variants) so it
+can be discarded on boot. It has not use after that.
 
-By default the offlined CPUs enter extended cede. The PHYP hypervisor
-considers CPUs in extended cede to be "active" since they are still
-under the control fo the Linux Guests. Hence, when we change the SMT
-modes by offlining the secondary CPUs, the PURR and the RWMR SPRs will
-continue to count the values for offlined CPUs in extended cede as if
-they are online. This breaks the accounting in tools such as lparstat.
-
-To fix this, ensure that by default the offlined CPUs are returned to
-the Hypervisor via RTAS "stop-self" call by changing the default value
-of "cede_offline_enabled" to false.
-
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
----
- Documentation/core-api/cpu_hotplug.rst       |  2 +-
- arch/powerpc/platforms/pseries/hotplug-cpu.c | 12 +++++++++++-
- 2 files changed, 12 insertions(+), 2 deletions(-)
-
-diff --git a/Documentation/core-api/cpu_hotplug.rst b/Documentation/core-api/cpu_hotplug.rst
-index 4a50ab7..5319593 100644
---- a/Documentation/core-api/cpu_hotplug.rst
-+++ b/Documentation/core-api/cpu_hotplug.rst
-@@ -53,7 +53,7 @@ Command Line Switches
- ``cede_offline={"off","on"}``
-   Use this option to disable/enable putting offlined processors to an extended
-   ``H_CEDE`` state on supported pseries platforms. If nothing is specified,
--  ``cede_offline`` is set to "on".
-+  ``cede_offline`` is set to "off".
- 
-   This option is limited to the PowerPC architecture.
- 
-diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index bbda646..f9d0366 100644
---- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -46,7 +46,17 @@ static DEFINE_PER_CPU(enum cpu_state_vals, preferred_offline_state) =
- 
- static enum cpu_state_vals default_offline_state = CPU_STATE_OFFLINE;
- 
--static bool cede_offline_enabled __read_mostly = true;
-+/*
-+ * Determines whether the offlined CPUs should be put to a long term
-+ * processor cede (called extended cede) for power-saving
-+ * purposes. The CPUs in extended cede are still with the Linux Guest
-+ * and are not returned to the Hypervisor.
-+ *
-+ * By default, the offlined CPUs are returned to the hypervisor via
-+ * RTAS "stop-self". This behaviour can be changed by passing the
-+ * kernel commandline parameter "cede_offline=on".
-+ */
-+static bool cede_offline_enabled __read_mostly;
- 
- /*
-  * Enable/disable cede_offline when available.
 -- 
-1.9.4
-
+ Kirill A. Shutemov
