@@ -2,23 +2,24 @@ Return-Path: <SRS0=Kows=XJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_2 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 22E14C4CEC9
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Sep 2019 14:35:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B5B27C4CEC9
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Sep 2019 14:39:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A16132084F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Sep 2019 14:35:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A16132084F
+	by mail.kernel.org (Postfix) with ESMTPS id D93CE2084F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Sep 2019 14:39:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D93CE2084F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=buserror.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46Vw5y504PzF5DY
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Sep 2019 00:35:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46Vw9y18nFzF5yc
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Sep 2019 00:39:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=buserror.net
  (client-ip=165.227.176.147; helo=baldur.buserror.net;
@@ -28,37 +29,32 @@ Authentication-Results: lists.ozlabs.org;
 Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46Vw223vTbzF5Zm
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Sep 2019 00:32:10 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46Vw7f49bQzF5xv
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Sep 2019 00:37:02 +1000 (AEST)
 Received: from [2601:449:8480:af0:12bf:48ff:fe84:c9a0]
  by baldur.buserror.net with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
  (Exim 4.89) (envelope-from <oss@buserror.net>)
- id 1i993g-0001r0-Cz; Sat, 14 Sep 2019 09:29:54 -0500
-Message-ID: <3e9b3395eba14da55da8a0198716c47c9082397b.camel@buserror.net>
+ id 1i998P-0001sT-6n; Sat, 14 Sep 2019 09:34:45 -0500
+Message-ID: <b201df6242e7f6cebd525e0a301eef2afdb38f30.camel@buserror.net>
 From: Scott Wood <oss@buserror.net>
-To: Madalin-cristian Bucur <madalin.bucur@nxp.com>, Valentin Longchamp
- <valentin@longchamp.me>
-Date: Sat, 14 Sep 2019 09:29:51 -0500
-In-Reply-To: <VI1PR04MB5567F47E3CAA778F96F25533ECA20@VI1PR04MB5567.eurprd04.prod.outlook.com>
-References: <20190714200501.1276-1-valentin@longchamp.me>
- <CADYrJDwvwVThmOwHZ4Moqenf=-iqoHC+yJ_uxtrD8sDso33rjg@mail.gmail.com>
- <2243421e574c72c5e75d27cc0122338e2e0bde63.camel@buserror.net>
- <VI1PR04MB55679AAE8DDC3160B9CCE073ECDC0@VI1PR04MB5567.eurprd04.prod.outlook.com>
- <CADYrJDxsQ3H7b_BHOfmfTNb1OuXt+vzTg4k8Goj8tKPaaOMz_g@mail.gmail.com>
- <b535dcfc3d6b06ca583dc26703d4adc958eacdd8.camel@buserror.net>
- <VI1PR04MB5567F47E3CAA778F96F25533ECA20@VI1PR04MB5567.eurprd04.prod.outlook.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
+ Ellerman <mpe@ellerman.id.au>, galak@kernel.crashing.org
+Date: Sat, 14 Sep 2019 09:34:44 -0500
+In-Reply-To: <331759c1bcba5797d30f8eace74afb16ac5f3c36.1566564560.git.christophe.leroy@c-s.fr>
+References: <b51b96090138aba1920d2cf7c0e0e348667f9a69.1566564560.git.christophe.leroy@c-s.fr>
+ <331759c1bcba5797d30f8eace74afb16ac5f3c36.1566564560.git.christophe.leroy@c-s.fr>
 Organization: Red Hat
 Content-Type: text/plain; charset="UTF-8"
 X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.1 
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 X-SA-Exim-Connect-IP: 2601:449:8480:af0:12bf:48ff:fe84:c9a0
-X-SA-Exim-Rcpt-To: madalin.bucur@nxp.com, valentin@longchamp.me,
- linuxppc-dev@lists.ozlabs.org, galak@kernel.crashing.org,
- netdev@vger.kernel.org
+X-SA-Exim-Rcpt-To: christophe.leroy@c-s.fr, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au, galak@kernel.crashing.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 X-SA-Exim-Mail-From: oss@buserror.net
-Subject: Re: [PATCH] powerpc/kmcent2: update the ethernet devices' phy
- properties
+Subject: Re: [PATCH 2/2] powerpc/83xx: map IMMR with a BAT.
 X-SA-Exim-Version: 4.2.1 (built Tue, 02 Aug 2016 21:08:31 +0000)
 X-SA-Exim-Scanned: Yes (on baldur.buserror.net)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -72,114 +68,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2019-08-29 at 11:25 +0000, Madalin-cristian Bucur wrote:
-> > -----Original Message-----
-> > From: Scott Wood <oss@buserror.net>
-> > Sent: Wednesday, August 28, 2019 7:19 AM
-> > To: Valentin Longchamp <valentin@longchamp.me>; Madalin-cristian Bucur
-> > <madalin.bucur@nxp.com>
-> > Cc: linuxppc-dev@lists.ozlabs.org; galak@kernel.crashing.org;
-> > netdev@vger.kernel.org
-> > Subject: Re: [PATCH] powerpc/kmcent2: update the ethernet devices' phy
-> > properties
-> > 
-> > On Thu, 2019-08-08 at 23:09 +0200, Valentin Longchamp wrote:
-> > > Le mar. 30 juil. 2019 à 11:44, Madalin-cristian Bucur
-> > > <madalin.bucur@nxp.com> a écrit :
-> > > > 
-> > > > > -----Original Message-----
-> > > > > 
-> > > > > > Le dim. 14 juil. 2019 à 22:05, Valentin Longchamp
-> > > > > > <valentin@longchamp.me> a écrit :
-> > > > > > > 
-> > > > > > > Change all phy-connection-type properties to phy-mode that are
-> > > > > > > better
-> > > > > > > supported by the fman driver.
-> > > > > > > 
-> > > > > > > Use the more readable fixed-link node for the 2 sgmii links.
-> > > > > > > 
-> > > > > > > Change the RGMII link to rgmii-id as the clock delays are added
-> > 
-> > by
-> > > > > > > the
-> > > > > > > phy.
-> > > > > > > 
-> > > > > > > Signed-off-by: Valentin Longchamp <valentin@longchamp.me>
-> > > > > 
-> > > > > I don't see any other uses of phy-mode in arch/powerpc/boot/dts/fsl,
-> > 
-> > and
-> > > > > I see
-> > > > > lots of phy-connection-type with fman.  Madalin, does this patch
-> > 
-> > look
-> > > > > OK?
-> > > > > 
-> > > > > -Scott
-> > > > 
-> > > > Hi,
-> > > > 
-> > > > we are using "phy-connection-type" not "phy-mode" for the NXP (former
-> > > > Freescale)
-> > > > DPAA platforms. While the two seem to be interchangeable ("phy-mode"
-> > 
-> > seems
-> > > > to be
-> > > > more recent, looking at the device tree bindings), the driver code in
-> > > > Linux seems
-> > > > to use one or the other, not both so one should stick with the variant
-> > 
-> > the
-> > > > driver
-> > > > is using. To make things more complex, there may be dependencies in
-> > > > bootloaders,
-> > > > I see code in u-boot using only "phy-connection-type" or only "phy-
-> > 
-> > mode".
-> > > > 
-> > > > I'd leave "phy-connection-type" as is.
-> > > 
-> > > So I have finally had time to have a look and now I understand what
-> > > happens. You are right, there are bootloader dependencies: u-boot
-> > > calls fdt_fixup_phy_connection() that somehow in our case adds (or
-> > > changes if already in the device tree) the phy-connection-type
-> > > property to a wrong value ! By having a phy-mode in the device tree,
-> > > that is not changed by u-boot and by chance picked up by the kernel
-> > > fman driver (of_get_phy_mode() ) over phy-connection-mode, the below
-> > > patch fixes it for us.
-> > > 
-> > > I agree with you, it's not correct to have both phy-connection-type
-> > > and phy-mode. Ideally, u-boot on the board should be reworked so that
-> > > it does not perform the above wrong fixup. However, in an "unfixed"
-> > > .dtb (I have disabled fdt_fixup_phy_connection), the device tree in
-> > > the end only has either phy-connection-type or phy-mode, according to
-> > > what was chosen in the .dts file. And the fman driver works well with
-> > > both (thanks to the call to of_get_phy_mode() ). I would therefore
-> > > argue that even if all other DPAA platforms use phy-connection-type,
-> > > phy-mode is valid as well. (Furthermore we already have hundreds of
-> > > such boards in the field and we don't really support "remote" u-boot
-> > > update, so the u-boot fix is going to be difficult for us to pull).
-> > > 
-> > > Valentin
-> > 
-> > Madalin, are you OK with the patch given this explanation?
-> > 
-> > -Scott
-> > 
+On Fri, 2019-08-23 at 12:50 +0000, Christophe Leroy wrote:
+> On mpc83xx with a QE, IMMR is 2Mbytes.
+> On mpc83xx without a QE, IMMR is 1Mbytes.
+> Each driver will map a part of it to access the registers it needs.
+> Some driver will map the same part of IMMR as other drivers.
 > 
-> Yes, I understand that it's the only option they have, given the inability
-> to upgrade u-boot (this may prove to be an issue in the future, in other
-> situations).
+> In order to reduce TLB misses, map the full IMMR with a BAT.
 > 
-> Acked-by: Madalin Bucur <madalin.bucur@nxp.com>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+>  arch/powerpc/platforms/83xx/misc.c | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
+> 
+> diff --git a/arch/powerpc/platforms/83xx/misc.c
+> b/arch/powerpc/platforms/83xx/misc.c
+> index f46d7bf3b140..1e395b01c535 100644
+> --- a/arch/powerpc/platforms/83xx/misc.c
+> +++ b/arch/powerpc/platforms/83xx/misc.c
+> @@ -18,6 +18,8 @@
+>  #include <sysdev/fsl_soc.h>
+>  #include <sysdev/fsl_pci.h>
+>  
+> +#include <mm/mmu_decl.h>
+> +
+>  #include "mpc83xx.h"
+>  
+>  static __be32 __iomem *restart_reg_base;
+> @@ -145,6 +147,14 @@ void __init mpc83xx_setup_arch(void)
+>  	if (ppc_md.progress)
+>  		ppc_md.progress("mpc83xx_setup_arch()", 0);
+>  
+> +	if (!__map_without_bats) {
+> +		int immrsize = IS_ENABLED(CONFIG_QUICC_ENGINE) ? SZ_2M :
+> SZ_1M;
 
-Acked-by: Scott Wood <oss@buserror.net>
+Any reason not to unconditionally make it 2M?  After all, the kernel being
+built with CONFIG_QUICC_ENGINE doesn't mean that the hardware you're running
+on has it...
 
 -Scott
+
 
