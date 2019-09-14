@@ -2,23 +2,22 @@ Return-Path: <SRS0=Kows=XJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.0 required=3.0 tests=MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6331C49ED6
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Sep 2019 08:17:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E21B5C49ED6
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Sep 2019 08:23:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2FFB8206A4
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Sep 2019 08:17:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2FFB8206A4
+	by mail.kernel.org (Postfix) with ESMTPS id 84F0720830
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Sep 2019 08:23:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 84F0720830
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46Vljp0L6szF5tm
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Sep 2019 18:17:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46VlrY4c7czF5vh
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Sep 2019 18:23:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -29,12 +28,12 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46VlgW6hCQzF4mp
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Sep 2019 18:15:35 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46Vlpb14GDzF5lQ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Sep 2019 18:21:42 +1000 (AEST)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 204819] KASAN still got problems loading some modules at boot
-Date: Sat, 14 Sep 2019 08:15:32 +0000
+Date: Sat, 14 Sep 2019 08:21:40 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
@@ -49,8 +48,8 @@ X-Bugzilla-Resolution:
 X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-204819-206035-yZSduWHZAF@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: attachments.created
+Message-ID: <bug-204819-206035-aM7oVKFFFi@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-204819-206035@https.bugzilla.kernel.org/>
 References: <bug-204819-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -75,13 +74,10 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D204819
 
---- Comment #6 from Christophe Leroy (christophe.leroy@c-s.fr) ---
-Aaarrgghhh ! kernel_page_tables addresses are wrong. Ok, I'll manage.
-
-For next time, please apply
-https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commit/=
-arch/powerpc/mm/ptdump?h=3Dnext-20190904&id=3D7c7a532ba3fc51bf9527d191fb410=
-786c1fdc73c
+--- Comment #7 from Christophe Leroy (christophe.leroy@c-s.fr) ---
+Created attachment 284961
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D284961&action=3Dedit
+Manually fixed kernel_page_tables
 
 --=20
 You are receiving this mail because:
