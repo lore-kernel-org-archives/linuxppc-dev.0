@@ -5,19 +5,19 @@ X-Spam-Level:
 X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E21B5C49ED6
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Sep 2019 08:23:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63977C49ED6
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Sep 2019 08:28:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 84F0720830
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Sep 2019 08:23:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 84F0720830
+	by mail.kernel.org (Postfix) with ESMTPS id 08CC6206A4
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Sep 2019 08:28:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 08CC6206A4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46VlrY4c7czF5vh
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Sep 2019 18:23:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46VlyM175dzF5wg
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Sep 2019 18:28:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -28,12 +28,12 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46Vlpb14GDzF5lQ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Sep 2019 18:21:42 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46Vlw04BX0zF5SN
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Sep 2019 18:26:24 +1000 (AEST)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 204819] KASAN still got problems loading some modules at boot
-Date: Sat, 14 Sep 2019 08:21:40 +0000
+Date: Sat, 14 Sep 2019 08:26:21 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
@@ -48,8 +48,8 @@ X-Bugzilla-Resolution:
 X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: attachments.created
-Message-ID: <bug-204819-206035-aM7oVKFFFi@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-204819-206035-s1p0Mv30mO@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-204819-206035@https.bugzilla.kernel.org/>
 References: <bug-204819-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -74,10 +74,20 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D204819
 
---- Comment #7 from Christophe Leroy (christophe.leroy@c-s.fr) ---
-Created attachment 284961
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D284961&action=3Dedit
-Manually fixed kernel_page_tables
+--- Comment #8 from Christophe Leroy (christophe.leroy@c-s.fr) ---
+You get:
+
+Sep 13 17:43:49 T600 kernel: BUG: Unable to handle kernel data access at
+0xfe205150
+
+However this area is properly mapped RW:
+
+0xfe205000-0xfe205fff  0x297d6000         4K        rw       present=20=20=
+=20=20=20=20=20=20=20=20
+dirty  accessed=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=
+=20=20=20=20=20
+
+There must be something wrong with hash table update.
 
 --=20
 You are receiving this mail because:
