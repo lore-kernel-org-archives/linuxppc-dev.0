@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36EE1C49ED7
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Sep 2019 11:21:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B5CFC49ED7
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Sep 2019 11:24:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D6D9C2067D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Sep 2019 11:21:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D6D9C2067D
+	by mail.kernel.org (Postfix) with ESMTPS id 29DE02067B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Sep 2019 11:24:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 29DE02067B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46X3jR56ldzF4jh
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Sep 2019 21:21:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46X3m33MpfzF1LY
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Sep 2019 21:24:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -29,12 +29,12 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46X3Wg3r2yzDqH4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Sep 2019 21:13:19 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46X3XJ4WDHzF12j
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Sep 2019 21:13:52 +1000 (AEST)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 204819] KASAN still got problems loading some modules at boot
-Date: Mon, 16 Sep 2019 11:13:17 +0000
+Date: Mon, 16 Sep 2019 11:13:50 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
@@ -50,7 +50,7 @@ X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
 X-Bugzilla-Changed-Fields: attachments.created
-Message-ID: <bug-204819-206035-HyU1s2Bjd5@https.bugzilla.kernel.org/>
+Message-ID: <bug-204819-206035-DB2ZczFjbC@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-204819-206035@https.bugzilla.kernel.org/>
 References: <bug-204819-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -75,10 +75,10 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D204819
 
---- Comment #15 from Erhard F. (erhard_f@mailbox.org) ---
-Created attachment 284997
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D284997&action=3Dedit
-objdump usbcore v2 (5.3-rc8 + ptdump patch)
+--- Comment #16 from Erhard F. (erhard_f@mailbox.org) ---
+Created attachment 284999
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D284999&action=3Dedit
+dmesg v3 (5.3-rc8 + ptdump patch, NO SMP)
 
 --=20
 You are receiving this mail because:
