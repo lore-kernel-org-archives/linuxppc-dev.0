@@ -2,80 +2,80 @@ Return-Path: <SRS0=+D1h=XM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 86138C4CECD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Sep 2019 03:42:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7463BC4CEC9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Sep 2019 04:22:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EC61420650
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Sep 2019 03:42:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 66A2F20862
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Sep 2019 04:22:27 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="HYGQmtsp"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC61420650
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="rK241p/k"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 66A2F20862
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46XTT620tWzF40Y
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Sep 2019 13:42:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46XVM505mjzF42G
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Sep 2019 14:22:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::d41; helo=mail-io1-xd41.google.com;
+ (client-ip=2607:f8b0:4864:20::d43; helo=mail-io1-xd43.google.com;
  envelope-from=oohall@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="HYGQmtsp"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="rK241p/k"; 
  dkim-atps=neutral
-Received: from mail-io1-xd41.google.com (mail-io1-xd41.google.com
- [IPv6:2607:f8b0:4864:20::d41])
+Received: from mail-io1-xd43.google.com (mail-io1-xd43.google.com
+ [IPv6:2607:f8b0:4864:20::d43])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46XTNx2CsnzF33v
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Sep 2019 13:38:57 +1000 (AEST)
-Received: by mail-io1-xd41.google.com with SMTP id q10so4234651iop.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Sep 2019 20:38:57 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46XVJr3zmrzF3vk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Sep 2019 14:20:25 +1000 (AEST)
+Received: by mail-io1-xd43.google.com with SMTP id m11so4434680ioo.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Sep 2019 21:20:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=lj39JjK1Ka6WytDXmoflHyCDfc0DT9CuN49WyQyzVE8=;
- b=HYGQmtspl6oODhr9V0m7qOpPjoTzgCZYKCDJTuzFme1GJsWenXbBQ6wmmttAWr1f2B
- hXhgelo31z6dq2vfA8vfHV1iOFEL/sP2OAWU4yiUow3U8TJnqKVYLYCYExmb3CoPP9Wa
- dxj24JjUbbydoQq17a0xXgvlitgWzGC1eewGk/A1YbO4/PJ0ncm+fZBP2ixDbe+tbAU2
- 6phVIPXzC7JSlmGwvWdjcYAPsc94ulYDImbScBmJh4syvEUi+3hd85kR3jW1SqiI2h09
- JTx0jb/Iq9MKUFYDGAzv2LaWz3hHbSj+kjlfSan2cmosGlKFiknO8LyoOaTmkOYxeFUu
- 2DOA==
+ :cc; bh=oEF8NySr0K6/Ijr+n5Et9s43PFDWSWV44y+495v7P7U=;
+ b=rK241p/kv6mHQOFL9pdVV5n2yb162KV+wSSxJVOJVwj7hg7bn7yK1ongnhCxK9tbiu
+ ANz4jL36+6LKLAugPF9JmmOpfcYWT337YWpiACesH/NISdj0DmQ5Ffz4h10wZHt01oXX
+ sAS/ss40XAQtU+EL/uo+BBhHZqw9cpWZ9jk0gKfLWqSY1Bo9Y20wNhfB0SfdNAMqIwp/
+ Kgnwn31iwGK4CNMrX1sE0Hr+0BApCbNhN/fiKw2KohWS1NZvMyCmb3LjMOUCJa1n5gJQ
+ IDKxIkseliFFm6ZptkS8AJ0Ibvy/jUmLsIjG7UPKzNvFRv5XFuESw5TH+H5DwDxKi+JY
+ xCZg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=lj39JjK1Ka6WytDXmoflHyCDfc0DT9CuN49WyQyzVE8=;
- b=Vdf2x3cJppbSSGrmozrdJ1tqKfxAtA1M6a261efiGpC3hW4+hgn5MfcOG29693W+4b
- pxizQOoZdhz5DYcXSRzirailoS3H95z2U2buPlJIhkUDe1287fiUCpUu7UTrlk4e2mea
- txtufOo2teQoID24V4Xj9FLgN2YFlYVjlknxEbvpz5WVyc+PS/aFdxj8X0vL0m+o0zTZ
- Un2OrtKNVpG/O5OgPfiBs2BDnv/A2RWHrJijtWNa8bSB3lsM3XS2gFQtuL6z4qmv+VsX
- x2177TM/iz/LH0w8dZx5m2rNjTwYMmKvDwxJhLGmKFu4lb9DpFPz4pjleG8ys/6OwWb6
- nHJw==
-X-Gm-Message-State: APjAAAX9Xs08SGEwoxSzbKXMJKYlNUDtdUu+nlGUVH6QYtnCcLDa/SXe
- mN/B1ldoFxB4MOb43zkbLn/VTOpZzk0G4tQLUOz1Ug==
-X-Google-Smtp-Source: APXvYqzlhfEZEdSRwM7kta6GNTfhLPk9V0ay/VzIshvvsEcYab+iTlj/31EFDr/IsFJxNvtqdBfMP30VmsUwRtH1Ehw=
-X-Received: by 2002:a5d:9b02:: with SMTP id y2mr1388095ion.146.1568691533889; 
- Mon, 16 Sep 2019 20:38:53 -0700 (PDT)
+ bh=oEF8NySr0K6/Ijr+n5Et9s43PFDWSWV44y+495v7P7U=;
+ b=KpyYebzSY4gXRtFuYf6CzJamHxXnVzR7RovH60rNp4YUEn6KgxV1EULyH3BySFJ98G
+ 8G33w8EKTWVI/avjBaF++k+SSpklsr29oIHzgGr/WT8bbyfPhWY9u6eOBZxjq/K16rj8
+ 8+7J34dCXBwGQnbQotj1XsrpAXs/3qH1cNiXuDuBlmp0II4+uaFgj6yc9MMi0ATC1SsA
+ c0luQAhah/yUYcBD1LUdNlBVuCXNmQ9YduQC57cfCqFPTfQKX/ILj6NeFqhyq6+77cNA
+ rO169zGflWUfap+K25BTjuBPZpbwFF5pN1FXKQCPec6YoZJrdttGNA8Gt58IAHt0WlgC
+ eX6Q==
+X-Gm-Message-State: APjAAAWciKVkpHD4RuFADlzZoJaJDGM/J1geUihD53r7bbtimGf1HaAq
+ Bf5R8pyJUZkKRBqHZyEUjqZmMmC7mLauyGeCBKo=
+X-Google-Smtp-Source: APXvYqyBLX8EeRvvn0RubwkObD/WmlaNhIatCpHUa82vAaXOKh55xGSLo+kHkqnMQ2yoZkH6t7N63y6JB82bA1PhaFg=
+X-Received: by 2002:a05:6638:6b2:: with SMTP id
+ d18mr1873618jad.61.1568694022446; 
+ Mon, 16 Sep 2019 21:20:22 -0700 (PDT)
 MIME-Version: 1.0
 References: <20190903101605.2890-1-oohall@gmail.com>
- <20190903101605.2890-6-oohall@gmail.com>
- <20190917010421.GE21303@tungsten.ozlabs.ibm.com>
- <CAOSf1CERpP0aFKoTiBprLXfr-CwRhix0wGosXBYnMffFtzF+gQ@mail.gmail.com>
- <20190917033513.GK21303@tungsten.ozlabs.ibm.com>
-In-Reply-To: <20190917033513.GK21303@tungsten.ozlabs.ibm.com>
+ <20190903101605.2890-5-oohall@gmail.com>
+ <20190917010048.GD21303@tungsten.ozlabs.ibm.com>
+In-Reply-To: <20190917010048.GD21303@tungsten.ozlabs.ibm.com>
 From: "Oliver O'Halloran" <oohall@gmail.com>
-Date: Tue, 17 Sep 2019 13:38:42 +1000
-Message-ID: <CAOSf1CEV-2AMv=rp6j57UmUZaE0Q8rUUfaft+jGsJ=J6LecgSw@mail.gmail.com>
-Subject: Re: [PATCH 05/14] powerpc/eeh: Defer printing stack trace
+Date: Tue, 17 Sep 2019 14:20:11 +1000
+Message-ID: <CAOSf1CEE9wsLkjuUMgYwd-D+JVbV3QTmmiauXEKNo2G5KBjpLg@mail.gmail.com>
+Subject: Re: [PATCH 04/14] powerpc/eeh: Check slot presence state in
+ eeh_handle_normal_event()
 To: Sam Bobroff <sbobroff@linux.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -94,19 +94,108 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Sep 17, 2019 at 1:35 PM Sam Bobroff <sbobroff@linux.ibm.com> wrote:
+On Tue, Sep 17, 2019 at 11:01 AM Sam Bobroff <sbobroff@linux.ibm.com> wrote:
 >
-> On Tue, Sep 17, 2019 at 11:45:14AM +1000, Oliver O'Halloran wrote:
+> On Tue, Sep 03, 2019 at 08:15:55PM +1000, Oliver O'Halloran wrote:
+> > When a device is surprise removed while undergoing IO we will probably
+> > get an EEH PE freeze due to MMIO timeouts and other errors. When a freeze
+> > is detected we send a recovery event to the EEH worker thread which will
+> > notify drivers, and perform recovery as needed.
 > >
-> > Two reasons:
+> > In the event of a hot-remove we don't want recovery to occur since there
+> > isn't a device to recover. The recovery process is fairly long due to
+> > the number of wait states (required by PCIe) which causes problems when
+> > devices are removed and replaced (e.g. hot swapping of U.2 NVMe drives).
 > >
-> > 1) the eeh_event structures are allocated with GFP_ATOMIC since
-> > eeh_dev_check_failure() can be called from any context. Minimising the
-> > number of atomic allocations we do is a good idea as a matter of
-> > course.
+> > To determine if we need to skip the recovery process we can use the
+> > get_adapter_state() operation of the hotplug_slot to determine if the
+> > slot contains a device or not, and if the slot is empty we can skip
+> > recovery entirely.
+> >
+> > One thing to note is that the slot being EEH frozen does not prevent the
+> > hotplug driver from working. We don't have the EEH recovery thread
+> > remove any of the devices since it's assumed that the hotplug driver
+> > will handle tearing down the slot state.
+> >
+> > Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 >
-> Yes, but I meant directly inside eeh_event so there wouldn't be a second
-> allocation. It would just be a bit bigger.
+> Looks good, but some comments, below.
+>
+> > ---
+> >  arch/powerpc/kernel/eeh_driver.c | 60 ++++++++++++++++++++++++++++++++
+> >  1 file changed, 60 insertions(+)
+> >
+> > diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+> > index 18a69fac4d80..52ce7584af43 100644
+> > --- a/arch/powerpc/kernel/eeh_driver.c
+> > +++ b/arch/powerpc/kernel/eeh_driver.c
+> > @@ -27,6 +27,7 @@
+> >  #include <linux/irq.h>
+> >  #include <linux/module.h>
+> >  #include <linux/pci.h>
+> > +#include <linux/pci_hotplug.h>
+> >  #include <asm/eeh.h>
+> >  #include <asm/eeh_event.h>
+> >  #include <asm/ppc-pci.h>
+> > @@ -769,6 +770,46 @@ static void eeh_pe_cleanup(struct eeh_pe *pe)
+> >       }
+> >  }
+> >
+> > +/**
+> > + * eeh_check_slot_presence - Check if a device is still present in a slot
+> > + * @pdev: pci_dev to check
+> > + *
+> > + * This function may return a false positive if we can't determine the slot's
+> > + * presence state. This might happen for for PCIe slots if the PE containing
+> > + * the upstream bridge is also frozen, or the bridge is part of the same PE
+> > + * as the device.
+> > + *
+> > + * This shouldn't happen often, but you might see it if you hotplug a PCIe
+> > + * switch.
+> > + */
+>
+> I don't think the function name is very good; it does check the slot but
+> it doesn't tell you what a true result means -- but I don't see an
+> obviously great alternative either. If it can return false positives, it's
+> really testing for empty so maybe 'eeh_slot_definitely_empty()' or
+> 'eeh_slot_maybe_populated()'?
 
-Right, my point was that increasing the allocation size also increases
-the chance of an allocation failure.
+I don't see a better name either. I thought the meaning was fairly
+clear when looked at in the context of the caller though.
+
+> > +     /*
+> > +      * When devices are hot-removed we might get an EEH due to
+> > +      * a driver attempting to touch the MMIO space of a removed
+> > +      * device. In this case we don't have a device to recover
+> > +      * so suppress the event if we can't find any present devices.
+> > +      *
+> > +      * The hotplug driver should take care of tearing down the
+> > +      * device itself.
+> > +      */
+> > +     eeh_for_each_pe(pe, tmp_pe)
+> > +             eeh_pe_for_each_dev(tmp_pe, edev, tmp)
+> > +                     if (eeh_slot_presence_check(edev->pdev))
+> > +                             devices++;
+>
+> In other parts of the EEH code we do a get_device() on edev->pdev before
+> passing it around, it might be good to do that here too.
+
+I don't see any calls to get_device (or pci_dev_get) in arch/powerpc/kernel/
+
+I agree that we probably should be taking a ref to the pci_dev, but
+IIRC you we're working on a series to do just that so I figured I
+should keep things in line with what's there currently.
+
+> > +     if (!devices)
+> > +             goto out; /* nothing to recover */
+>
+> Does this handle an empty, but frozen, PHB correctly? (Can that happen?)
+
+Probably not, but I don't think we handle the case well (at all?)
+currently. In order to start the recovery process we need something to
+flag that an error has occurred on the PHB and without a device being
+present I don't see where that would come from. It might work on P8
+where we have PHB error interrupts, but I don't think those can fire
+if the PHB is fenced.
+
+Oliver
