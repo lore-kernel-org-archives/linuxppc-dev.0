@@ -2,80 +2,95 @@ Return-Path: <SRS0=+D1h=XM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AA297C4CECD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Sep 2019 20:30:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D05D0C4CECD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Sep 2019 21:23:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 220EB2054F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Sep 2019 20:30:06 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="tGTrxNkp"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 220EB2054F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 535492054F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Sep 2019 21:23:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 535492054F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46Xvqc6QsGzF3J5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Sep 2019 06:30:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46Xx1j6CZ8zF0tr
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Sep 2019 07:23:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=leonardo@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="tGTrxNkp"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46Xvhz2T9kzF36W
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Sep 2019 06:24:17 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 46Xvhq3S6bz9vKHb;
- Tue, 17 Sep 2019 22:24:11 +0200 (CEST)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=tGTrxNkp; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id bTnuu6A5TJVg; Tue, 17 Sep 2019 22:24:11 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 46Xvhq2LDpz9vKHW;
- Tue, 17 Sep 2019 22:24:11 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1568751851; bh=PgW7h/tGRLuy79KUySCnCAqcDGM5n4zLU6TcnXLOhFQ=;
- h=From:Subject:To:Cc:Date:From;
- b=tGTrxNkpUi6ttigOmD6mu1Ry/G3X4XaBMmM3ovs8P6eCiblwuU33cUbUbKuEq/1ov
- gZjhuDQB0e+/NlV3I1euAQPSMdMl4UgkwZ40SI+uGK4pMC68gPLd6x5OGHlbJuTitV
- rs+FokRh7tRuyAtKnZgtDUict20MZqxggSScjdc8=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 6A0858B8B4;
- Tue, 17 Sep 2019 22:24:11 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id Y-Lt2digccTg; Tue, 17 Sep 2019 22:24:11 +0200 (CEST)
-Received: from pc16032vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 284248B8B1;
- Tue, 17 Sep 2019 22:24:11 +0200 (CEST)
-Received: by pc16032vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id D446A69881; Tue, 17 Sep 2019 20:24:10 +0000 (UTC)
-Message-Id: <512ec59433470a2dfb0d1168e0c660b843fe92d5.1568751807.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 1/2] powerpc/irq: bring back ksp_limit management in C
- functions.
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
- segher@kernel.crashing.org
-Date: Tue, 17 Sep 2019 20:24:10 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46XwzF6DTJzF3j9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Sep 2019 07:21:44 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x8HLHnVL042838; Tue, 17 Sep 2019 17:21:30 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2v35wtu7b8-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 17 Sep 2019 17:21:30 -0400
+Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x8HLIFKP044425;
+ Tue, 17 Sep 2019 17:21:30 -0400
+Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.27])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2v35wtu7av-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 17 Sep 2019 17:21:30 -0400
+Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
+ by ppma05wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x8HLJi7P026267;
+ Tue, 17 Sep 2019 21:21:29 GMT
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26]) by ppma05wdc.us.ibm.com with ESMTP id 2v0tcyks9j-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 17 Sep 2019 21:21:29 +0000
+Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
+ [9.57.199.111])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x8HLLTEM39649586
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 17 Sep 2019 21:21:29 GMT
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id F1D83AC06A;
+ Tue, 17 Sep 2019 21:21:28 +0000 (GMT)
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 44E3EAC065;
+ Tue, 17 Sep 2019 21:21:26 +0000 (GMT)
+Received: from leobras.br.ibm.com (unknown [9.18.235.58])
+ by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
+ Tue, 17 Sep 2019 21:21:26 +0000 (GMT)
+Message-ID: <bd6a2e6bc8981ced1b6693fdcfa1e111b1c609b7.camel@linux.ibm.com>
+Subject: Re: [PATCH 1/1] powerpc: mm: Check if
+ serialize_against_pte_lookup() really needs to run
+From: Leonardo Bras <leonardo@linux.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Date: Tue, 17 Sep 2019 18:21:22 -0300
+In-Reply-To: <c1ff17e2-902d-87e6-3c1d-fc5db2428b69@linux.ibm.com>
+References: <20190916205527.1859-1-leonardo@linux.ibm.com>
+ <c1ff17e2-902d-87e6-3c1d-fc5db2428b69@linux.ibm.com>
+Content-Type: multipart/signed; micalg="pgp-sha256";
+ protocol="application/pgp-signature"; boundary="=-6lXjFATey8w+YYYmxG+7"
+User-Agent: Evolution 3.30.5 (3.30.5-1.fc29) 
+MIME-Version: 1.0
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-09-17_11:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1908290000 definitions=main-1909170197
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,147 +102,88 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Ralph Campbell <rcampbell@nvidia.com>, Davidlohr Bueso <dave@stgolabs.net>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Andrew Morton <akpm@linux-foundation.org>, Jann Horn <jannh@google.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Mike Rapoport <rppt@linux.ibm.com>,
+ Jason Gunthorpe <jgg@ziepe.ca>, Paul Mackerras <paulus@samba.org>,
+ "Tobin C. Harding" <tobin@kernel.org>,
+ Jesper Dangaard Brouer <brouer@redhat.com>,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>, Christoph Lameter <cl@linux.com>,
+ Dan Williams <dan.j.williams@intel.com>, Vlastimil Babka <vbabka@suse.cz>,
+ Souptick Joarder <jrdr.linux@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Commit cbc9565ee826 ("powerpc: Remove ksp_limit on ppc64") moved
-PPC32 ksp_limit handling in assembly functions call_do_softirq()
-and call_do_irq() as they are different for PPC32 and PPC64.
 
-In preparation of replacing these functions by inline assembly,
-partialy revert that commit to bring back ksp_limit assignment
-in the callers.
+--=-6lXjFATey8w+YYYmxG+7
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-To get and set ksp_limit without a forest of #ifdefs CONFIG_PPC32,
-use helpers that will void on PPC64.
+Hello Aneesh, thanks for the feedback!
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/include/asm/irq.h | 21 +++++++++++++++++++++
- arch/powerpc/kernel/irq.c      | 14 +++++++++++++-
- arch/powerpc/kernel/misc_32.S  | 14 --------------
- 3 files changed, 34 insertions(+), 15 deletions(-)
+On Tue, 2019-09-17 at 08:26 +0530, Aneesh Kumar K.V wrote:
+> We could possibly avoid that serialize for a full task exit unmap. ie,=
+=20
+> when tlb->fullmm =3D=3D 1 . But that won't help the Qemu case because it=
+=20
+> does an umap of the guest ram range for which tlb->fullmm !=3D 1.
+Yes, in qemu we can hot-add memory to guests using memory allocated by
+qemu using mmap(). If we want/need to free this memory to other
+processes (or guests), we remove it from this guest and do a common
+munmap(). This happens without exiting qemu, or pausing the guest.
 
-diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
-index 814dfab7e392..52adec9a379d 100644
---- a/arch/powerpc/include/asm/irq.h
-+++ b/arch/powerpc/include/asm/irq.h
-@@ -64,5 +64,26 @@ extern void __do_irq(struct pt_regs *regs);
- 
- int irq_choose_cpu(const struct cpumask *mask);
- 
-+#ifdef CONFIG_PPC32
-+static inline unsigned long get_ksp_limit(struct task_struct *tsk)
-+{
-+	return tsk->thread.ksp_limit;
-+}
-+
-+static inline void set_ksp_limit(struct task_struct *tsk, unsigned long limit)
-+{
-+	tsk->thread.ksp_limit = limit;
-+}
-+#else
-+static inline unsigned long get_ksp_limit(struct task_struct *tsk)
-+{
-+	return 0;
-+}
-+
-+static inline void set_ksp_limit(struct task_struct *tsk, unsigned long limit)
-+{
-+}
-+#endif
-+
- #endif /* _ASM_IRQ_H */
- #endif /* __KERNEL__ */
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 5645bc9cbc09..04204be49577 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -646,6 +646,7 @@ void do_IRQ(struct pt_regs *regs)
- {
- 	struct pt_regs *old_regs = set_irq_regs(regs);
- 	void *cursp, *irqsp, *sirqsp;
-+	unsigned long saved_ksp_limit = get_ksp_limit(current);
- 
- 	/* Switch to the irq stack to handle this */
- 	cursp = (void *)(current_stack_pointer() & ~(THREAD_SIZE - 1));
-@@ -658,9 +659,15 @@ void do_IRQ(struct pt_regs *regs)
- 		set_irq_regs(old_regs);
- 		return;
- 	}
-+	/* Adjust the stack limit */
-+	set_ksp_limit(current, (unsigned long)irqsp);
-+
- 	/* Switch stack and call */
- 	call_do_irq(regs, irqsp);
- 
-+	/* Restore stack limit */
-+	set_ksp_limit(current, saved_ksp_limit);
-+
- 	set_irq_regs(old_regs);
- }
- 
-@@ -681,7 +688,12 @@ void *hardirq_ctx[NR_CPUS] __read_mostly;
- 
- void do_softirq_own_stack(void)
- {
--	call_do_softirq(softirq_ctx[smp_processor_id()]);
-+	void *irqsp = softirq_ctx[smp_processor_id()];
-+	unsigned long saved_ksp_limit = get_ksp_limit(current);
-+
-+	set_ksp_limit(current, (unsigned long)irqsp);
-+	call_do_softirq(irqsp);
-+	set_ksp_limit(current, saved_ksp_limit);
- }
- 
- irq_hw_number_t virq_to_hw(unsigned int virq)
-diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index 82df4b09e79f..a5422f7782b3 100644
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@ -33,23 +33,14 @@
- 
- 	.text
- 
--/*
-- * We store the saved ksp_limit in the unused part
-- * of the STACK_FRAME_OVERHEAD
-- */
- _GLOBAL(call_do_softirq)
- 	mflr	r0
- 	stw	r0,4(r1)
--	lwz	r10,THREAD+KSP_LIMIT(r2)
--	stw	r3, THREAD+KSP_LIMIT(r2)
- 	stwu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r3)
- 	mr	r1,r3
--	stw	r10,8(r1)
- 	bl	__do_softirq
--	lwz	r10,8(r1)
- 	lwz	r1,0(r1)
- 	lwz	r0,4(r1)
--	stw	r10,THREAD+KSP_LIMIT(r2)
- 	mtlr	r0
- 	blr
- 
-@@ -59,16 +50,11 @@ _GLOBAL(call_do_softirq)
- _GLOBAL(call_do_irq)
- 	mflr	r0
- 	stw	r0,4(r1)
--	lwz	r10,THREAD+KSP_LIMIT(r2)
--	stw	r4, THREAD+KSP_LIMIT(r2)
- 	stwu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r4)
- 	mr	r1,r4
--	stw	r10,8(r1)
- 	bl	__do_irq
--	lwz	r10,8(r1)
- 	lwz	r1,0(r1)
- 	lwz	r0,4(r1)
--	stw	r10,THREAD+KSP_LIMIT(r2)
- 	mtlr	r0
- 	blr
- 
--- 
-2.13.3
+
+> That is not correct. We need to keep the count updated  across the=20
+> local_irq_disable()/local_irq_enable().=20
+So, by that you mean incrementing the counter before
+local_irq_{disable,save} and decrementing only after
+local_irq_{enable,restore}?
+
+> That is we mostly should have a variant like=20
+> start_lockless_pgtbl_walk()/end_lockless_pgtbl_walk().=20
+And with that, you mean replacing the current local_irq_{disable,save}
+with a start_lockless_pgtbl_walk() (that contains increment + irq
+disable)? (and doing similarly with local_irq_{enable,restore} and
+end_lockless_pgtbl_walk())=20
+
+> Also there is hash_page_mm which we need to make sure we are protected=
+=20
+> against w.r.t collapse pmd.
+I did not get what I need to do here.=20
+Is it a new thing to protect?=20
+If so, I need to better understand how to protect it.
+If not, I would like to understand how it's protected by current
+behavior.=20
+
+> Move that to ppc64 specific mm_context_t.
+Ok, fixed! I will send that on v2.
+
+Best regards,
+Leonardo Bras
+
+--=-6lXjFATey8w+YYYmxG+7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEMdeUgIzgjf6YmUyOlQYWtz9SttQFAl2BTlIACgkQlQYWtz9S
+ttTDMQ/9GtlMAVSX2mm7qIMVQyFd+TRDw0cTzYWqgWeI0bLCL2hpGQzsITDp5g79
+xwmr1luIfWZHIy2xWZuVL/EkLEtFyKQ6qCM7PVPzn+TdQsySiZMARYQV6BzqXAGl
+yzst2hxelN3OpXS+ukaBd/xfwXJHgV1XA8vsmkozjYRIglor1ADwR/czs3XPXC9c
+I9/oEg604NBBXmiN9n0rwuep9QF6IeRW7HrX8lv1qfUwlv98goK570MqVxf/JQF+
+jLpmO4U9/LtqEw1VcWbHSu/68saubEeZRPc60n2vrtZ5k0g5yu5NK2WYGV/bJpRo
+lDub6d1SJvsugf3CXCbTvAm3aOHhzLy0BFNWkAVfGJcD9vg01Suyeul6wyGny5Es
+ntBvyrSX4u9Xc4WKnapEi0l/wonf0IxptnEVek5081vJDr0dNIV22jIztXWSIbju
+cD93sWKPH6P1PBrqqR+A7C2e3tVTGnyUClz0JID9/QcUeCy3cC/SkEx3gzAV/0Wp
+aHyZuY/IaR3pdcd04MdZfRtIqe9CEJ/z/OC6vqZvwrOlfY9e3yJUxwtdJWhtAJiu
+KM+5db9kPtGWn1JMXhROs+ZMdoFz74P3YwwsvFlhIOzxclGPcpkp8cpHnUlGUm2+
+xjTdyvucWrZZBsT8vcTJDJR+jf0gdIzhrIhx+QC59YepJB3BAis=
+=T/Yh
+-----END PGP SIGNATURE-----
+
+--=-6lXjFATey8w+YYYmxG+7--
 
