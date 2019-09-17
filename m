@@ -2,80 +2,80 @@ Return-Path: <SRS0=+D1h=XM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7463BC4CEC9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Sep 2019 04:22:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6C3EC4CEC9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Sep 2019 04:25:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 66A2F20862
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Sep 2019 04:22:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 1E94921670
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Sep 2019 04:25:31 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="rK241p/k"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 66A2F20862
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="emGotdw5"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1E94921670
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46XVM505mjzF42G
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Sep 2019 14:22:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46XVQd31hmzF3b6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Sep 2019 14:25:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::d43; helo=mail-io1-xd43.google.com;
+ (client-ip=2607:f8b0:4864:20::d42; helo=mail-io1-xd42.google.com;
  envelope-from=oohall@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="rK241p/k"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="emGotdw5"; 
  dkim-atps=neutral
-Received: from mail-io1-xd43.google.com (mail-io1-xd43.google.com
- [IPv6:2607:f8b0:4864:20::d43])
+Received: from mail-io1-xd42.google.com (mail-io1-xd42.google.com
+ [IPv6:2607:f8b0:4864:20::d42])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46XVJr3zmrzF3vk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Sep 2019 14:20:25 +1000 (AEST)
-Received: by mail-io1-xd43.google.com with SMTP id m11so4434680ioo.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Sep 2019 21:20:25 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46XVND3F9GzDr9S
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Sep 2019 14:23:24 +1000 (AEST)
+Received: by mail-io1-xd42.google.com with SMTP id r26so4300844ioh.8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Sep 2019 21:23:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=oEF8NySr0K6/Ijr+n5Et9s43PFDWSWV44y+495v7P7U=;
- b=rK241p/kv6mHQOFL9pdVV5n2yb162KV+wSSxJVOJVwj7hg7bn7yK1ongnhCxK9tbiu
- ANz4jL36+6LKLAugPF9JmmOpfcYWT337YWpiACesH/NISdj0DmQ5Ffz4h10wZHt01oXX
- sAS/ss40XAQtU+EL/uo+BBhHZqw9cpWZ9jk0gKfLWqSY1Bo9Y20wNhfB0SfdNAMqIwp/
- Kgnwn31iwGK4CNMrX1sE0Hr+0BApCbNhN/fiKw2KohWS1NZvMyCmb3LjMOUCJa1n5gJQ
- IDKxIkseliFFm6ZptkS8AJ0Ibvy/jUmLsIjG7UPKzNvFRv5XFuESw5TH+H5DwDxKi+JY
- xCZg==
+ :cc; bh=JwEmRuubrpYwe1CsdHg62N6j61FWP1pgjmhPhn4b0VI=;
+ b=emGotdw5dFz74G4fb74ggG6IWwBvuG3dx4jhC/YKy1vsXC2YA7rqXwNidOJl1X04C+
+ fKNJukJTuBjE/WupLdF8p9mvk6N9bO/4qm3snyzb9OEGzYrBp5yFZ7RX1uEA5x8VMpl4
+ irkY3gCi05fYlhsuBv0YLFjjtnQXAsV0veqkKSo56os/g1MH/+syMd+eWqEOZLpvjNgX
+ 2MpedNBYDUDykB4IMxURoDNKVllQDgQ/HDZhyyeF1pmicIlwvs/BQWuhw7yYxE/EInHI
+ 9Cz130P1KIY/VGKywN/w8mrvxnyI82SSQWGAS0RlHrYx8JPGBZSdqHqfV3BqeEZAd0zr
+ i9Hw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=oEF8NySr0K6/Ijr+n5Et9s43PFDWSWV44y+495v7P7U=;
- b=KpyYebzSY4gXRtFuYf6CzJamHxXnVzR7RovH60rNp4YUEn6KgxV1EULyH3BySFJ98G
- 8G33w8EKTWVI/avjBaF++k+SSpklsr29oIHzgGr/WT8bbyfPhWY9u6eOBZxjq/K16rj8
- 8+7J34dCXBwGQnbQotj1XsrpAXs/3qH1cNiXuDuBlmp0II4+uaFgj6yc9MMi0ATC1SsA
- c0luQAhah/yUYcBD1LUdNlBVuCXNmQ9YduQC57cfCqFPTfQKX/ILj6NeFqhyq6+77cNA
- rO169zGflWUfap+K25BTjuBPZpbwFF5pN1FXKQCPec6YoZJrdttGNA8Gt58IAHt0WlgC
- eX6Q==
-X-Gm-Message-State: APjAAAWciKVkpHD4RuFADlzZoJaJDGM/J1geUihD53r7bbtimGf1HaAq
- Bf5R8pyJUZkKRBqHZyEUjqZmMmC7mLauyGeCBKo=
-X-Google-Smtp-Source: APXvYqyBLX8EeRvvn0RubwkObD/WmlaNhIatCpHUa82vAaXOKh55xGSLo+kHkqnMQ2yoZkH6t7N63y6JB82bA1PhaFg=
-X-Received: by 2002:a05:6638:6b2:: with SMTP id
- d18mr1873618jad.61.1568694022446; 
- Mon, 16 Sep 2019 21:20:22 -0700 (PDT)
+ bh=JwEmRuubrpYwe1CsdHg62N6j61FWP1pgjmhPhn4b0VI=;
+ b=Omz9iLSHG2NbEbU65wqd/daf7gK71Cf+1+W/noN/7bLu1iGkgdYlJj5iZ0mVvVz9LL
+ wkgzlaXOXn/4C+KKFd85daiPkEoo4Fn2CwMpWwpj1YX4SbqmFmxbS3U3QTtwgnOLsvzU
+ +6NmobkK5c0IxsNofrWfLRGBy0wYchyXF/IcvZ/p9naiCWC0kWJPF/8IOBVu0T/Y12NL
+ 1/aI5Cw38j+lQ+jl4DNy3em7x/S9QTwRnTBEeTTUpYT9W+kkplk+jqtCeS1TBsuQzSq1
+ nPScqiDdoeByv3ZUNVm2f+gcGJQQO/+5snJ/PT/f3sLxjf0iFVG/EnJFFUNOYpx+wTHv
+ PTtQ==
+X-Gm-Message-State: APjAAAVt2yhpGsnciaSHKyWRxE8ck/FBLfG1D8leb7OH//MWKonbo7LV
+ mffIMxS6Bqi5N04nGE8hLXlhsExfK0rDYXHlsImicQ==
+X-Google-Smtp-Source: APXvYqzc4nVPNUraeQwyzLfXDKEHjCTPGzZ3QbvmiftObVb8aUfud3vRl234+u6r45E5WN2HLwsf9I/oDiB8xsnaXZQ=
+X-Received: by 2002:a02:2302:: with SMTP id u2mr954024jau.70.1568694200650;
+ Mon, 16 Sep 2019 21:23:20 -0700 (PDT)
 MIME-Version: 1.0
 References: <20190903101605.2890-1-oohall@gmail.com>
- <20190903101605.2890-5-oohall@gmail.com>
- <20190917010048.GD21303@tungsten.ozlabs.ibm.com>
-In-Reply-To: <20190917010048.GD21303@tungsten.ozlabs.ibm.com>
+ <20190903101605.2890-13-oohall@gmail.com>
+ <20190917031558.GI21303@tungsten.ozlabs.ibm.com>
+ <CAOSf1CGZmtCCKytFtDef+DLkASNFRGJE5z62P2S_t+aY7o9RiA@mail.gmail.com>
+In-Reply-To: <CAOSf1CGZmtCCKytFtDef+DLkASNFRGJE5z62P2S_t+aY7o9RiA@mail.gmail.com>
 From: "Oliver O'Halloran" <oohall@gmail.com>
-Date: Tue, 17 Sep 2019 14:20:11 +1000
-Message-ID: <CAOSf1CEE9wsLkjuUMgYwd-D+JVbV3QTmmiauXEKNo2G5KBjpLg@mail.gmail.com>
-Subject: Re: [PATCH 04/14] powerpc/eeh: Check slot presence state in
- eeh_handle_normal_event()
+Date: Tue, 17 Sep 2019 14:23:09 +1000
+Message-ID: <CAOSf1CF2dbc83KEvuKfG5RgEjdG04_4=GC55R5yjA+w7UAP1=g@mail.gmail.com>
+Subject: Re: [PATCH 12/14] powerpc/eeh: Add debugfs interface to run an EEH
+ check
 To: Sam Bobroff <sbobroff@linux.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -94,108 +94,51 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Sep 17, 2019 at 11:01 AM Sam Bobroff <sbobroff@linux.ibm.com> wrote:
+On Tue, Sep 17, 2019 at 1:36 PM Oliver O'Halloran <oohall@gmail.com> wrote:
 >
-> On Tue, Sep 03, 2019 at 08:15:55PM +1000, Oliver O'Halloran wrote:
-> > When a device is surprise removed while undergoing IO we will probably
-> > get an EEH PE freeze due to MMIO timeouts and other errors. When a freeze
-> > is detected we send a recovery event to the EEH worker thread which will
-> > notify drivers, and perform recovery as needed.
+> On Tue, Sep 17, 2019 at 1:16 PM Sam Bobroff <sbobroff@linux.ibm.com> wrote:
 > >
-> > In the event of a hot-remove we don't want recovery to occur since there
-> > isn't a device to recover. The recovery process is fairly long due to
-> > the number of wait states (required by PCIe) which causes problems when
-> > devices are removed and replaced (e.g. hot swapping of U.2 NVMe drives).
+> > On Tue, Sep 03, 2019 at 08:16:03PM +1000, Oliver O'Halloran wrote:
+> > > Detecting an frozen EEH PE usually occurs when an MMIO load returns a 0xFFs
+> > > response. When performing EEH testing using the EEH error injection feature
+> > > available on some platforms there is no simple way to kick-off the kernel's
+> > > recovery process since any accesses from userspace (usually /dev/mem) will
+> > > bypass the MMIO helpers in the kernel which check if a 0xFF response is due
+> > > to an EEH freeze or not.
+> > >
+> > > If a device contains a 0xFF byte in it's config space it's possible to
+> > > trigger the recovery process via config space read from userspace, but this
+> > > is not a reliable method. If a driver is bound to the device an in use it
+> > > will frequently trigger the MMIO check, but this is also inconsistent.
+> > >
+> > > To solve these problems this patch adds a debugfs file called
+> > > "eeh_dev_check" which accepts a <domain>:<bus>:<dev>.<fn> string and runs
+> > > eeh_dev_check_failure() on it. This is the same check that's done when the
+> > > kernel gets a 0xFF result from an config or MMIO read with the added
+> > > benifit that it can be reliably triggered from userspace.
+> > >
+> > > Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 > >
-> > To determine if we need to skip the recovery process we can use the
-> > get_adapter_state() operation of the hotplug_slot to determine if the
-> > slot contains a device or not, and if the slot is empty we can skip
-> > recovery entirely.
+> > Looks good, and I tested it with the next patch and it seems to work.
 > >
-> > One thing to note is that the slot being EEH frozen does not prevent the
-> > hotplug driver from working. We don't have the EEH recovery thread
-> > remove any of the devices since it's assumed that the hotplug driver
-> > will handle tearing down the slot state.
-> >
-> > Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+> > But I think you should make it clear that this does not work with
+> > the hardware "EEH error injection" facility accessible via debugfs in
+> > err_injct (that doesn't seem clear to me from the commit message).
 >
-> Looks good, but some comments, below.
->
-> > ---
-> >  arch/powerpc/kernel/eeh_driver.c | 60 ++++++++++++++++++++++++++++++++
-> >  1 file changed, 60 insertions(+)
-> >
-> > diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-> > index 18a69fac4d80..52ce7584af43 100644
-> > --- a/arch/powerpc/kernel/eeh_driver.c
-> > +++ b/arch/powerpc/kernel/eeh_driver.c
-> > @@ -27,6 +27,7 @@
-> >  #include <linux/irq.h>
-> >  #include <linux/module.h>
-> >  #include <linux/pci.h>
-> > +#include <linux/pci_hotplug.h>
-> >  #include <asm/eeh.h>
-> >  #include <asm/eeh_event.h>
-> >  #include <asm/ppc-pci.h>
-> > @@ -769,6 +770,46 @@ static void eeh_pe_cleanup(struct eeh_pe *pe)
-> >       }
-> >  }
-> >
-> > +/**
-> > + * eeh_check_slot_presence - Check if a device is still present in a slot
-> > + * @pdev: pci_dev to check
-> > + *
-> > + * This function may return a false positive if we can't determine the slot's
-> > + * presence state. This might happen for for PCIe slots if the PE containing
-> > + * the upstream bridge is also frozen, or the bridge is part of the same PE
-> > + * as the device.
-> > + *
-> > + * This shouldn't happen often, but you might see it if you hotplug a PCIe
-> > + * switch.
-> > + */
->
-> I don't think the function name is very good; it does check the slot but
-> it doesn't tell you what a true result means -- but I don't see an
-> obviously great alternative either. If it can return false positives, it's
-> really testing for empty so maybe 'eeh_slot_definitely_empty()' or
-> 'eeh_slot_maybe_populated()'?
+> It's not intended to be a separate mechanisms in the long term. I'm
+> planning on converting this interface to make use the platform defined
+> error injection mechanism once I can find how to use the PAPR ones
+> reliably. The idea is to use this as a generic "cause an EEH to happen
+> on this device" interface for userspace which we can use in test
+> scripts and the like.
 
-I don't see a better name either. I thought the meaning was fairly
-clear when looked at in the context of the caller though.
+Urgh, I'm tired and thought this was the eeh_debugfs_break patch.
 
-> > +     /*
-> > +      * When devices are hot-removed we might get an EEH due to
-> > +      * a driver attempting to touch the MMIO space of a removed
-> > +      * device. In this case we don't have a device to recover
-> > +      * so suppress the event if we can't find any present devices.
-> > +      *
-> > +      * The hotplug driver should take care of tearing down the
-> > +      * device itself.
-> > +      */
-> > +     eeh_for_each_pe(pe, tmp_pe)
-> > +             eeh_pe_for_each_dev(tmp_pe, edev, tmp)
-> > +                     if (eeh_slot_presence_check(edev->pdev))
-> > +                             devices++;
->
-> In other parts of the EEH code we do a get_device() on edev->pdev before
-> passing it around, it might be good to do that here too.
-
-I don't see any calls to get_device (or pci_dev_get) in arch/powerpc/kernel/
-
-I agree that we probably should be taking a ref to the pci_dev, but
-IIRC you we're working on a series to do just that so I figured I
-should keep things in line with what's there currently.
-
-> > +     if (!devices)
-> > +             goto out; /* nothing to recover */
->
-> Does this handle an empty, but frozen, PHB correctly? (Can that happen?)
-
-Probably not, but I don't think we handle the case well (at all?)
-currently. In order to start the recovery process we need something to
-flag that an error has occurred on the PHB and without a device being
-present I don't see where that would come from. It might work on P8
-where we have PHB error interrupts, but I don't think those can fire
-if the PHB is fenced.
+This (the _check) debugfs interface does work with the HW error
+injection facilities. After the HW injects an error the PE is frozen,
+but the kernel doesn't notice until something runs
+eeh_dev_check_failure(). This interface gives userspace a reliable way
+to do that rather than relying on drivers doing MMIO, or somewhere in
+config space containing a 0xFF.
 
 Oliver
