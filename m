@@ -2,89 +2,81 @@ Return-Path: <SRS0=+D1h=XM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C65A8C4CEC9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Sep 2019 17:41:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 264AFC4CECE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Sep 2019 20:27:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5C50C2067B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Sep 2019 17:41:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5C50C2067B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=us.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9C4972054F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Sep 2019 20:27:29 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="MkjTgoJZ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9C4972054F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46Xr5H0fsCzF49G
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Sep 2019 03:41:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46XvmZ5pq0zF3mT
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Sep 2019 06:27:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=us.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=linuxram@us.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=us.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="MkjTgoJZ"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46Xr0W0Dx2zF46N
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Sep 2019 03:37:27 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x8HHWW72055274
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Sep 2019 13:37:23 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2v33s20sse-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Sep 2019 13:37:23 -0400
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Tue, 17 Sep 2019 18:37:21 +0100
-Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 17 Sep 2019 18:37:17 +0100
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id x8HHapkK38732062
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 17 Sep 2019 17:36:51 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E4C8752052;
- Tue, 17 Sep 2019 17:37:16 +0000 (GMT)
-Received: from ram.ibm.com (unknown [9.80.213.14])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTPS id 70BAC5204E;
- Tue, 17 Sep 2019 17:37:15 +0000 (GMT)
-Date: Tue, 17 Sep 2019 10:37:12 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: Qian Cai <cai@lca.pw>
-References: <1568733750-14580-1-git-send-email-cai@lca.pw>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1568733750-14580-1-git-send-email-cai@lca.pw>
-User-Agent: Mutt/1.5.21 (2010-09-15)
-X-TM-AS-GCONF: 00
-x-cbid: 19091717-0008-0000-0000-000003179135
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19091717-0009-0000-0000-00004A36101A
-Message-Id: <20190917173712.GA5176@ram.ibm.com>
-Subject: Re:  [PATCH] powerpc/pkeys: remove unused pkey_allows_readwrite
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-09-17_08:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=27 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=979 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1908290000 definitions=main-1909170168
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46Xvhz2T5QzF32J
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Sep 2019 06:24:17 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 46Xvhr3l7Zz9vKHf;
+ Tue, 17 Sep 2019 22:24:12 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=MkjTgoJZ; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id 5TBdUO123Nwr; Tue, 17 Sep 2019 22:24:12 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 46Xvhr2Lysz9vKHW;
+ Tue, 17 Sep 2019 22:24:12 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1568751852; bh=/YM+jLAkL7rzYV6U2c34h3wDM7tw/nIeNfV5WeHFCUQ=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=MkjTgoJZ5mUZlcA2++bRs1zV0SKr0qwOnD9cNCmMbQXIbUeUuiyyfHwNllsJEHn2o
+ c7FzdMB3GxdM1GGYb3xl1dRD9Uq0b15LyOiJdQsA6Ail0ra93d4emPga2zYxKyMNG2
+ XkKeu3Il+YCRTHjhLrUBnX/Gpoh3t6PL/u3nI/oU=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 59CB48B8B4;
+ Tue, 17 Sep 2019 22:24:12 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id Oeul_87x7YQ8; Tue, 17 Sep 2019 22:24:12 +0200 (CEST)
+Received: from pc16032vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 143558B8B1;
+ Tue, 17 Sep 2019 22:24:12 +0200 (CEST)
+Received: by pc16032vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id D27B769881; Tue, 17 Sep 2019 20:24:11 +0000 (UTC)
+Message-Id: <c7e545f7a2fb470ba0ad76d3e7fd58086b929f92.1568751807.git.christophe.leroy@c-s.fr>
+In-Reply-To: <512ec59433470a2dfb0d1168e0c660b843fe92d5.1568751807.git.christophe.leroy@c-s.fr>
+References: <512ec59433470a2dfb0d1168e0c660b843fe92d5.1568751807.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH 2/2] powerpc/irq: inline call_do_irq() and call_do_softirq()
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ segher@kernel.crashing.org
+Date: Tue, 17 Sep 2019 20:24:11 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,55 +88,153 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Sep 17, 2019 at 11:22:30AM -0400, Qian Cai wrote:
-> pkey_allows_readwrite() was first introduced in the commit 5586cf61e108
-> ("powerpc: introduce execute-only pkey"), but the usage was removed
-> entirely in the commit a4fcc877d4e1 ("powerpc/pkeys: Preallocate
-> execute-only key").
-> 
-> Found by the "-Wunused-function" compiler warning flag.
-> 
-> Fixes: a4fcc877d4e1 ("powerpc/pkeys: Preallocate execute-only key")
-> Signed-off-by: Qian Cai <cai@lca.pw>
-> ---
->  arch/powerpc/mm/book3s64/pkeys.c | 10 ----------
->  1 file changed, 10 deletions(-)
-> 
-> diff --git a/arch/powerpc/mm/book3s64/pkeys.c b/arch/powerpc/mm/book3s64/pkeys.c
-> index ae7fca40e5b3..59e0ebbd8036 100644
-> --- a/arch/powerpc/mm/book3s64/pkeys.c
-> +++ b/arch/powerpc/mm/book3s64/pkeys.c
-> @@ -307,16 +307,6 @@ void thread_pkey_regs_init(struct thread_struct *thread)
->  	write_iamr(pkey_iamr_mask);
->  }
-> 
-> -static inline bool pkey_allows_readwrite(int pkey)
-> -{
-> -	int pkey_shift = pkeyshift(pkey);
-> -
-> -	if (!is_pkey_enabled(pkey))
-> -		return true;
-> -
-> -	return !(read_amr() & ((AMR_RD_BIT|AMR_WR_BIT) << pkey_shift));
-> -}
-> -
->  int __execute_only_pkey(struct mm_struct *mm)
->  {
->  	return mm->context.execute_only_pkey;
+call_do_irq() and call_do_softirq() are quite similar on PPC32 and
+PPC64 and are simple enough to be worth inlining.
 
-The function was initially used by __execute_only_pkey(), but ones we
-changed the implementation of __execute_only_pkey(), the need for 
-pkey_allows_readwrite() disappeared.
+Inlining them avoids an mflr/mtlr pair plus a save/reload on stack.
 
-Acked-by: Ram Pai <linuxram@us.ibm.com>
+This is inspired from S390 arch. Several other arches do more or
+less the same. The way sparc arch does seems odd thought.
 
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/include/asm/irq.h |  2 --
+ arch/powerpc/kernel/irq.c      | 26 ++++++++++++++++++++++++++
+ arch/powerpc/kernel/misc_32.S  | 25 -------------------------
+ arch/powerpc/kernel/misc_64.S  | 22 ----------------------
+ 4 files changed, 26 insertions(+), 49 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
+index 52adec9a379d..d3da269b0cc6 100644
+--- a/arch/powerpc/include/asm/irq.h
++++ b/arch/powerpc/include/asm/irq.h
+@@ -56,8 +56,6 @@ extern void *mcheckirq_ctx[NR_CPUS];
+ extern void *hardirq_ctx[NR_CPUS];
+ extern void *softirq_ctx[NR_CPUS];
+ 
+-void call_do_softirq(void *sp);
+-void call_do_irq(struct pt_regs *regs, void *sp);
+ extern void do_IRQ(struct pt_regs *regs);
+ extern void __init init_IRQ(void);
+ extern void __do_irq(struct pt_regs *regs);
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 04204be49577..b028c49f9635 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -642,6 +642,20 @@ void __do_irq(struct pt_regs *regs)
+ 	irq_exit();
+ }
+ 
++static inline void call_do_irq(struct pt_regs *regs, void *sp)
++{
++	register unsigned long r3 asm("r3") = (unsigned long)regs;
++
++	asm volatile(
++		"	"PPC_STLU"	1, %2(%1);\n"
++		"	mr		1, %1;\n"
++		"	bl		%3;\n"
++		"	"PPC_LL"	1, 0(1);\n" : "+r"(r3) :
++		"b"(sp), "i"(THREAD_SIZE - STACK_FRAME_OVERHEAD), "i"(__do_irq) :
++		"lr", "xer", "ctr", "memory", "cr0", "cr1", "cr5", "cr6", "cr7",
++		"r0", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11", "r12");
++}
++
+ void do_IRQ(struct pt_regs *regs)
+ {
+ 	struct pt_regs *old_regs = set_irq_regs(regs);
+@@ -686,6 +700,18 @@ void *mcheckirq_ctx[NR_CPUS] __read_mostly;
+ void *softirq_ctx[NR_CPUS] __read_mostly;
+ void *hardirq_ctx[NR_CPUS] __read_mostly;
+ 
++static inline void call_do_softirq(const void *sp)
++{
++	asm volatile(
++		"	"PPC_STLU"	1, %1(%0);\n"
++		"	mr		1, %0;\n"
++		"	bl		%2;\n"
++		"	"PPC_LL"	1, 0(1);\n" : :
++		"b"(sp), "i"(THREAD_SIZE - STACK_FRAME_OVERHEAD), "i"(__do_softirq) :
++		"lr", "xer", "ctr", "memory", "cr0", "cr1", "cr5", "cr6", "cr7",
++		"r0", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11", "r12");
++}
++
+ void do_softirq_own_stack(void)
+ {
+ 	void *irqsp = softirq_ctx[smp_processor_id()];
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index a5422f7782b3..307307b57743 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -33,31 +33,6 @@
+ 
+ 	.text
+ 
+-_GLOBAL(call_do_softirq)
+-	mflr	r0
+-	stw	r0,4(r1)
+-	stwu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r3)
+-	mr	r1,r3
+-	bl	__do_softirq
+-	lwz	r1,0(r1)
+-	lwz	r0,4(r1)
+-	mtlr	r0
+-	blr
+-
+-/*
+- * void call_do_irq(struct pt_regs *regs, void *sp);
+- */
+-_GLOBAL(call_do_irq)
+-	mflr	r0
+-	stw	r0,4(r1)
+-	stwu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r4)
+-	mr	r1,r4
+-	bl	__do_irq
+-	lwz	r1,0(r1)
+-	lwz	r0,4(r1)
+-	mtlr	r0
+-	blr
+-
+ /*
+  * This returns the high 64 bits of the product of two 64-bit numbers.
+  */
+diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
+index b55a7b4cb543..69fd714a5236 100644
+--- a/arch/powerpc/kernel/misc_64.S
++++ b/arch/powerpc/kernel/misc_64.S
+@@ -27,28 +27,6 @@
+ 
+ 	.text
+ 
+-_GLOBAL(call_do_softirq)
+-	mflr	r0
+-	std	r0,16(r1)
+-	stdu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r3)
+-	mr	r1,r3
+-	bl	__do_softirq
+-	ld	r1,0(r1)
+-	ld	r0,16(r1)
+-	mtlr	r0
+-	blr
+-
+-_GLOBAL(call_do_irq)
+-	mflr	r0
+-	std	r0,16(r1)
+-	stdu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r4)
+-	mr	r1,r4
+-	bl	__do_irq
+-	ld	r1,0(r1)
+-	ld	r0,16(r1)
+-	mtlr	r0
+-	blr
+-
+ 	.section	".toc","aw"
+ PPC64_CACHES:
+ 	.tc		ppc64_caches[TC],ppc64_caches
 -- 
-Ram Pai
+2.13.3
 
