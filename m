@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 57889C49ED7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Sep 2019 09:31:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B728C49ED7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Sep 2019 09:33:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D97682086A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Sep 2019 09:31:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D97682086A
+	by mail.kernel.org (Postfix) with ESMTPS id 1799F206C2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Sep 2019 09:33:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1799F206C2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46ZT4R3ppDzF3D2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Sep 2019 19:31:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46ZT6j4psTzF3GV
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Sep 2019 19:33:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=huawei.com
  (client-ip=45.249.212.32; helo=huawei.com; envelope-from=yanaijie@huawei.com;
@@ -29,23 +29,22 @@ Authentication-Results: lists.ozlabs.org;
 Received: from huawei.com (szxga06-in.huawei.com [45.249.212.32])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46ZSxQ5nBszF0hq
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46ZSxQ5kxqzF0dl
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2019 19:25:29 +1000 (AEST)
 Received: from DGGEMS406-HUB.china.huawei.com (unknown [172.30.72.58])
- by Forcepoint Email with ESMTP id 41D85F2F6259E1ED2F63;
+ by Forcepoint Email with ESMTP id 5106686FE8B226B0EF95;
  Fri, 20 Sep 2019 17:25:24 +0800 (CST)
 Received: from huawei.com (10.175.124.28) by DGGEMS406-HUB.china.huawei.com
  (10.3.19.206) with Microsoft SMTP Server id 14.3.439.0; Fri, 20 Sep 2019
- 17:25:18 +0800
+ 17:25:17 +0800
 From: Jason Yan <yanaijie@huawei.com>
 To: <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
  <diana.craciun@nxp.com>, <christophe.leroy@c-s.fr>,
  <benh@kernel.crashing.org>, <paulus@samba.org>, <npiggin@gmail.com>,
  <keescook@chromium.org>, <kernel-hardening@lists.openwall.com>
-Subject: [PATCH v7 02/12] powerpc: move memstart_addr and kernstart_addr to
- init-common.c
-Date: Fri, 20 Sep 2019 17:45:36 +0800
-Message-ID: <20190920094546.44948-3-yanaijie@huawei.com>
+Subject: [PATCH v7 01/12] powerpc: unify definition of M_IF_NEEDED
+Date: Fri, 20 Sep 2019 17:45:35 +0800
+Message-ID: <20190920094546.44948-2-yanaijie@huawei.com>
 X-Mailer: git-send-email 2.17.2
 In-Reply-To: <20190920094546.44948-1-yanaijie@huawei.com>
 References: <20190920094546.44948-1-yanaijie@huawei.com>
@@ -71,8 +70,8 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-These two variables are both defined in init_32.c and init_64.c. Move
-them to init-common.c and make them __ro_after_init.
+M_IF_NEEDED is defined too many times. Move it to a common place and
+rename it to MAS2_M_IF_NEEDED which is much readable.
 
 Signed-off-by: Jason Yan <yanaijie@huawei.com>
 Cc: Diana Craciun <diana.craciun@nxp.com>
@@ -86,59 +85,119 @@ Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
 Reviewed-by: Diana Craciun <diana.craciun@nxp.com>
 Tested-by: Diana Craciun <diana.craciun@nxp.com>
 ---
- arch/powerpc/mm/init-common.c | 5 +++++
- arch/powerpc/mm/init_32.c     | 5 -----
- arch/powerpc/mm/init_64.c     | 5 -----
- 3 files changed, 5 insertions(+), 10 deletions(-)
+ arch/powerpc/include/asm/nohash/mmu-book3e.h  | 10 ++++++++++
+ arch/powerpc/kernel/exceptions-64e.S          | 12 +-----------
+ arch/powerpc/kernel/fsl_booke_entry_mapping.S | 14 ++------------
+ arch/powerpc/kernel/misc_64.S                 |  7 +------
+ 4 files changed, 14 insertions(+), 29 deletions(-)
 
-diff --git a/arch/powerpc/mm/init-common.c b/arch/powerpc/mm/init-common.c
-index a84da92920f7..e223da482c0c 100644
---- a/arch/powerpc/mm/init-common.c
-+++ b/arch/powerpc/mm/init-common.c
-@@ -21,6 +21,11 @@
- #include <asm/pgtable.h>
- #include <asm/kup.h>
+diff --git a/arch/powerpc/include/asm/nohash/mmu-book3e.h b/arch/powerpc/include/asm/nohash/mmu-book3e.h
+index 4c9777d256fb..fa3efc2d310f 100644
+--- a/arch/powerpc/include/asm/nohash/mmu-book3e.h
++++ b/arch/powerpc/include/asm/nohash/mmu-book3e.h
+@@ -221,6 +221,16 @@
+ #define TLBILX_T_CLASS2			6
+ #define TLBILX_T_CLASS3			7
  
-+phys_addr_t memstart_addr __ro_after_init = (phys_addr_t)~0ull;
-+EXPORT_SYMBOL_GPL(memstart_addr);
-+phys_addr_t kernstart_addr __ro_after_init;
-+EXPORT_SYMBOL_GPL(kernstart_addr);
++/*
++ * The mapping only needs to be cache-coherent on SMP, except on
++ * Freescale e500mc derivatives where it's also needed for coherent DMA.
++ */
++#if defined(CONFIG_SMP) || defined(CONFIG_PPC_E500MC)
++#define MAS2_M_IF_NEEDED	MAS2_M
++#else
++#define MAS2_M_IF_NEEDED	0
++#endif
 +
- static bool disable_kuep = !IS_ENABLED(CONFIG_PPC_KUEP);
- static bool disable_kuap = !IS_ENABLED(CONFIG_PPC_KUAP);
+ #ifndef __ASSEMBLY__
+ #include <asm/bug.h>
  
-diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
-index b04896a88d79..872df48ae41b 100644
---- a/arch/powerpc/mm/init_32.c
-+++ b/arch/powerpc/mm/init_32.c
-@@ -56,11 +56,6 @@
- phys_addr_t total_memory;
- phys_addr_t total_lowmem;
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+index 1cfb3da4a84a..c5bc09b5e281 100644
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -1342,16 +1342,6 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	sync
+ 	isync
  
--phys_addr_t memstart_addr = (phys_addr_t)~0ull;
--EXPORT_SYMBOL(memstart_addr);
--phys_addr_t kernstart_addr;
--EXPORT_SYMBOL(kernstart_addr);
+-/*
+- * The mapping only needs to be cache-coherent on SMP, except on
+- * Freescale e500mc derivatives where it's also needed for coherent DMA.
+- */
+-#if defined(CONFIG_SMP) || defined(CONFIG_PPC_E500MC)
+-#define M_IF_NEEDED	MAS2_M
+-#else
+-#define M_IF_NEEDED	0
+-#endif
 -
- #ifdef CONFIG_RELOCATABLE
- /* Used in __va()/__pa() */
- long long virt_phys_offset;
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index a44f6281ca3a..c836f1269ee7 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -63,11 +63,6 @@
+ /* 6. Setup KERNELBASE mapping in TLB[0]
+  *
+  * r3 = MAS0 w/TLBSEL & ESEL for the entry we started in
+@@ -1364,7 +1354,7 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	ori	r6,r6,(MAS1_TSIZE(BOOK3E_PAGESZ_1GB))@l
+ 	mtspr	SPRN_MAS1,r6
  
- #include <mm/mmu_decl.h>
+-	LOAD_REG_IMMEDIATE(r6, PAGE_OFFSET | M_IF_NEEDED)
++	LOAD_REG_IMMEDIATE(r6, PAGE_OFFSET | MAS2_M_IF_NEEDED)
+ 	mtspr	SPRN_MAS2,r6
  
--phys_addr_t memstart_addr = ~0;
--EXPORT_SYMBOL_GPL(memstart_addr);
--phys_addr_t kernstart_addr;
--EXPORT_SYMBOL_GPL(kernstart_addr);
+ 	rlwinm	r5,r5,0,0,25
+diff --git a/arch/powerpc/kernel/fsl_booke_entry_mapping.S b/arch/powerpc/kernel/fsl_booke_entry_mapping.S
+index ea065282b303..f4d3eaae54a9 100644
+--- a/arch/powerpc/kernel/fsl_booke_entry_mapping.S
++++ b/arch/powerpc/kernel/fsl_booke_entry_mapping.S
+@@ -153,16 +153,6 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	tlbivax 0,r9
+ 	TLBSYNC
+ 
+-/*
+- * The mapping only needs to be cache-coherent on SMP, except on
+- * Freescale e500mc derivatives where it's also needed for coherent DMA.
+- */
+-#if defined(CONFIG_SMP) || defined(CONFIG_PPC_E500MC)
+-#define M_IF_NEEDED	MAS2_M
+-#else
+-#define M_IF_NEEDED	0
+-#endif
 -
- #ifdef CONFIG_SPARSEMEM_VMEMMAP
- /*
-  * Given an address within the vmemmap, determine the pfn of the page that
+ #if defined(ENTRY_MAPPING_BOOT_SETUP)
+ 
+ /* 6. Setup KERNELBASE mapping in TLB1[0] */
+@@ -171,8 +161,8 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	lis	r6,(MAS1_VALID|MAS1_IPROT)@h
+ 	ori	r6,r6,(MAS1_TSIZE(BOOK3E_PAGESZ_64M))@l
+ 	mtspr	SPRN_MAS1,r6
+-	lis	r6,MAS2_VAL(PAGE_OFFSET, BOOK3E_PAGESZ_64M, M_IF_NEEDED)@h
+-	ori	r6,r6,MAS2_VAL(PAGE_OFFSET, BOOK3E_PAGESZ_64M, M_IF_NEEDED)@l
++	lis	r6,MAS2_VAL(PAGE_OFFSET, BOOK3E_PAGESZ_64M, MAS2_M_IF_NEEDED)@h
++	ori	r6,r6,MAS2_VAL(PAGE_OFFSET, BOOK3E_PAGESZ_64M, MAS2_M_IF_NEEDED)@l
+ 	mtspr	SPRN_MAS2,r6
+ 	mtspr	SPRN_MAS3,r8
+ 	tlbwe
+diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
+index b55a7b4cb543..2062a299a22d 100644
+--- a/arch/powerpc/kernel/misc_64.S
++++ b/arch/powerpc/kernel/misc_64.S
+@@ -432,18 +432,13 @@ kexec_create_tlb:
+ 	rlwimi	r9,r10,16,4,15		/* Setup MAS0 = TLBSEL | ESEL(r9) */
+ 
+ /* Set up a temp identity mapping v:0 to p:0 and return to it. */
+-#if defined(CONFIG_SMP) || defined(CONFIG_PPC_E500MC)
+-#define M_IF_NEEDED	MAS2_M
+-#else
+-#define M_IF_NEEDED	0
+-#endif
+ 	mtspr	SPRN_MAS0,r9
+ 
+ 	lis	r9,(MAS1_VALID|MAS1_IPROT)@h
+ 	ori	r9,r9,(MAS1_TSIZE(BOOK3E_PAGESZ_1GB))@l
+ 	mtspr	SPRN_MAS1,r9
+ 
+-	LOAD_REG_IMMEDIATE(r9, 0x0 | M_IF_NEEDED)
++	LOAD_REG_IMMEDIATE(r9, 0x0 | MAS2_M_IF_NEEDED)
+ 	mtspr	SPRN_MAS2,r9
+ 
+ 	LOAD_REG_IMMEDIATE(r9, 0x0 | MAS3_SR | MAS3_SW | MAS3_SX)
 -- 
 2.17.2
 
