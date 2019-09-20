@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B6293C49ED7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Sep 2019 09:38:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9146DC49ED7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Sep 2019 09:40:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 41637208C0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Sep 2019 09:38:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 41637208C0
+	by mail.kernel.org (Postfix) with ESMTPS id 195A62086A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Sep 2019 09:40:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 195A62086A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46ZTD43sjyzF3LW
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Sep 2019 19:38:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46ZTGj2kbzzF3Gd
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Sep 2019 19:40:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=huawei.com
  (client-ip=45.249.212.191; helo=huawei.com; envelope-from=yanaijie@huawei.com;
@@ -29,23 +29,23 @@ Authentication-Results: lists.ozlabs.org;
 Received: from huawei.com (szxga05-in.huawei.com [45.249.212.191])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46ZSxS6lllzF0hq
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46ZSxT3bYnzF0dl
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2019 19:25:32 +1000 (AEST)
 Received: from DGGEMS406-HUB.china.huawei.com (unknown [172.30.72.59])
- by Forcepoint Email with ESMTP id 62DC7CFBADBB5743B55A;
+ by Forcepoint Email with ESMTP id 4BA4FA66B25612500C7D;
  Fri, 20 Sep 2019 17:25:29 +0800 (CST)
 Received: from huawei.com (10.175.124.28) by DGGEMS406-HUB.china.huawei.com
  (10.3.19.206) with Microsoft SMTP Server id 14.3.439.0; Fri, 20 Sep 2019
- 17:25:20 +0800
+ 17:25:21 +0800
 From: Jason Yan <yanaijie@huawei.com>
 To: <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
  <diana.craciun@nxp.com>, <christophe.leroy@c-s.fr>,
  <benh@kernel.crashing.org>, <paulus@samba.org>, <npiggin@gmail.com>,
  <keescook@chromium.org>, <kernel-hardening@lists.openwall.com>
-Subject: [PATCH v7 04/12] powerpc/fsl_booke/32: introduce
- create_kaslr_tlb_entry() helper
-Date: Fri, 20 Sep 2019 17:45:38 +0800
-Message-ID: <20190920094546.44948-5-yanaijie@huawei.com>
+Subject: [PATCH v7 05/12] powerpc/fsl_booke/32: introduce reloc_kernel_entry()
+ helper
+Date: Fri, 20 Sep 2019 17:45:39 +0800
+Message-ID: <20190920094546.44948-6-yanaijie@huawei.com>
 X-Mailer: git-send-email 2.17.2
 In-Reply-To: <20190920094546.44948-1-yanaijie@huawei.com>
 References: <20190920094546.44948-1-yanaijie@huawei.com>
@@ -71,9 +71,9 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add a new helper create_kaslr_tlb_entry() to create a tlb entry by the
-virtual and physical address. This is a preparation to support boot kernel
-at a randomized address.
+Add a new helper reloc_kernel_entry() to jump back to the start of the
+new kernel. After we put the new kernel in a randomized place we can use
+this new helper to enter the kernel and begin to relocate again.
 
 Signed-off-by: Jason Yan <yanaijie@huawei.com>
 Cc: Diana Craciun <diana.craciun@nxp.com>
@@ -87,65 +87,43 @@ Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
 Reviewed-by: Diana Craciun <diana.craciun@nxp.com>
 Tested-by: Diana Craciun <diana.craciun@nxp.com>
 ---
- arch/powerpc/kernel/head_fsl_booke.S | 35 ++++++++++++++++++++++++++++
+ arch/powerpc/kernel/head_fsl_booke.S | 13 +++++++++++++
  arch/powerpc/mm/mmu_decl.h           |  1 +
- 2 files changed, 36 insertions(+)
+ 2 files changed, 14 insertions(+)
 
 diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index adf0505dbe02..8c1928176ffe 100644
+index 8c1928176ffe..d9f599b01ff1 100644
 --- a/arch/powerpc/kernel/head_fsl_booke.S
 +++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -1114,6 +1114,41 @@ __secondary_hold_acknowledge:
- 	.long	-1
- #endif
+@@ -1149,6 +1149,19 @@ _GLOBAL(create_kaslr_tlb_entry)
+ 	sync
+ 	blr
  
 +/*
-+ * Create a 64M tlb by address and entry
-+ * r3 - entry
-+ * r4 - virtual address
-+ * r5/r6 - physical address
++ * Return to the start of the relocated kernel and run again
++ * r3 - virtual address of fdt
++ * r4 - entry of the kernel
 + */
-+_GLOBAL(create_kaslr_tlb_entry)
-+	lis     r7,0x1000               /* Set MAS0(TLBSEL) = 1 */
-+	rlwimi  r7,r3,16,4,15           /* Setup MAS0 = TLBSEL | ESEL(r6) */
-+	mtspr   SPRN_MAS0,r7            /* Write MAS0 */
++_GLOBAL(reloc_kernel_entry)
++	mfmsr	r7
++	rlwinm	r7, r7, 0, ~(MSR_IS | MSR_DS)
 +
-+	lis     r3,(MAS1_VALID|MAS1_IPROT)@h
-+	ori     r3,r3,(MAS1_TSIZE(BOOK3E_PAGESZ_64M))@l
-+	mtspr   SPRN_MAS1,r3            /* Write MAS1 */
-+
-+	lis     r3,MAS2_EPN_MASK(BOOK3E_PAGESZ_64M)@h
-+	ori     r3,r3,MAS2_EPN_MASK(BOOK3E_PAGESZ_64M)@l
-+	and     r3,r3,r4
-+	ori	r3,r3,MAS2_M_IF_NEEDED@l
-+	mtspr   SPRN_MAS2,r3            /* Write MAS2(EPN) */
-+
-+#ifdef CONFIG_PHYS_64BIT
-+	ori     r8,r6,(MAS3_SW|MAS3_SR|MAS3_SX)
-+	mtspr   SPRN_MAS3,r8            /* Write MAS3(RPN) */
-+	mtspr	SPRN_MAS7,r5
-+#else
-+	ori     r8,r5,(MAS3_SW|MAS3_SR|MAS3_SX)
-+	mtspr   SPRN_MAS3,r8            /* Write MAS3(RPN) */
-+#endif
-+
-+	tlbwe                           /* Write TLB */
-+	isync
-+	sync
-+	blr
++	mtspr	SPRN_SRR0,r4
++	mtspr	SPRN_SRR1,r7
++	rfi
 +
  /*
   * Create a tlb entry with the same effective and physical address as
   * the tlb entry used by the current running code. But set the TS to 1.
 diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index 32c1a191c28a..a492ece08f64 100644
+index a492ece08f64..55e86a0bf562 100644
 --- a/arch/powerpc/mm/mmu_decl.h
 +++ b/arch/powerpc/mm/mmu_decl.h
-@@ -142,6 +142,7 @@ extern unsigned long calc_cam_sz(unsigned long ram, unsigned long virt,
- extern void adjust_total_lowmem(void);
+@@ -143,6 +143,7 @@ extern void adjust_total_lowmem(void);
  extern int switch_to_as1(void);
  extern void restore_to_as0(int esel, int offset, void *dt_ptr, int bootcpu);
-+void create_kaslr_tlb_entry(int entry, unsigned long virt, phys_addr_t phys);
+ void create_kaslr_tlb_entry(int entry, unsigned long virt, phys_addr_t phys);
++void reloc_kernel_entry(void *fdt, int addr);
  #endif
  extern void loadcam_entry(unsigned int index);
  extern void loadcam_multi(int first_idx, int num, int tmp_idx);
