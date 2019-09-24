@@ -2,73 +2,44 @@ Return-Path: <SRS0=kV/c=XT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-2.5 required=3.0 tests=MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 39298C432C2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 13:03:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 70C09C432C1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 13:23:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6FC912146E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 13:03:21 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="b0KTt7xa"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6FC912146E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id B591020835
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 13:23:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B591020835
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46d1Zs36GNzDq7d
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 23:03:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46d22G3rT3zDqVQ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 23:23:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
- envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+ spf=softfail (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=mhocko@kernel.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="b0KTt7xa"; dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46d1WK2JHTzDq75
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2019 23:00:13 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=ylrO+be3Mmt+XjMqDRomHffExbjsXGlaXweUO2EGDGw=; b=b0KTt7xaHwsu3rE54aR9vlkxp
- aXve44h/2oq0DshKJQpyeK3clHkUTZBL2jf617MWWYi1VP+TBuo1zAw/egHbl2cQwxDjPG3n326wc
- CBPFOUX6971a0HFnr8xPfy8sqXrUIJn6wo4ySykwm1yWMdOXLe87GZ3mral+5xdHOVraQbyzjeeOb
- KzVVwubFdmgQvhXjsVCg9be0PiHlkfvdGwbOJ55IBt7PtAUOiH9LLyY2sucwO/r1M8Jug/sEtV+WM
- R64nVAZkbXZWJFgPsUT218LWuQbiHCxfmkctmbYDsMotGKIMx9CCaGLAM2EriZYPUD8GziRFYqoJe
- nyru16oqQ==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100]
- helo=noisy.programming.kicks-ass.net)
- by bombadil.infradead.org with esmtpsa (Exim 4.92.2 #3 (Red Hat Linux))
- id 1iCkPs-00081B-C4; Tue, 24 Sep 2019 12:59:41 +0000
-Received: from hirez.programming.kicks-ass.net
- (hirez.programming.kicks-ass.net [192.168.1.225])
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id AD9EB301A7A;
- Tue, 24 Sep 2019 14:58:50 +0200 (CEST)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
- id 4B82120C3E176; Tue, 24 Sep 2019 14:59:36 +0200 (CEST)
-Date: Tue, 24 Sep 2019 14:59:36 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Michal Hocko <mhocko@kernel.org>
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46d1xr6FjgzDqQC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2019 23:19:44 +1000 (AEST)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id D8F48AE34;
+ Tue, 24 Sep 2019 13:19:40 +0000 (UTC)
+Date: Tue, 24 Sep 2019 15:19:39 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [PATCH v6] numa: make node_to_cpumask_map() NUMA_NO_NODE aware
-Message-ID: <20190924125936.GR2349@hirez.programming.kicks-ass.net>
-References: <20190923165235.GD17206@dhcp22.suse.cz>
- <20190923203410.GI2369@hirez.programming.kicks-ass.net>
+Message-ID: <20190924131939.GS23050@dhcp22.suse.cz>
+References: <20190923203410.GI2369@hirez.programming.kicks-ass.net>
  <20190924074751.GB23050@dhcp22.suse.cz>
  <20190924091714.GJ2369@hirez.programming.kicks-ass.net>
  <20190924105622.GH23050@dhcp22.suse.cz>
@@ -77,10 +48,11 @@ References: <20190923165235.GD17206@dhcp22.suse.cz>
  <20190924120943.GP2349@hirez.programming.kicks-ass.net>
  <20190924122500.GP23050@dhcp22.suse.cz>
  <20190924124325.GQ2349@hirez.programming.kicks-ass.net>
+ <20190924125936.GR2349@hirez.programming.kicks-ass.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190924124325.GQ2349@hirez.programming.kicks-ass.net>
+In-Reply-To: <20190924125936.GR2349@hirez.programming.kicks-ass.net>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -114,59 +86,36 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Sep 24, 2019 at 02:43:25PM +0200, Peter Zijlstra wrote:
-> On Tue, Sep 24, 2019 at 02:25:00PM +0200, Michal Hocko wrote:
-> > On Tue 24-09-19 14:09:43, Peter Zijlstra wrote:
+On Tue 24-09-19 14:59:36, Peter Zijlstra wrote:
+> On Tue, Sep 24, 2019 at 02:43:25PM +0200, Peter Zijlstra wrote:
+> > On Tue, Sep 24, 2019 at 02:25:00PM +0200, Michal Hocko wrote:
+> > > On Tue 24-09-19 14:09:43, Peter Zijlstra wrote:
+> > 
+> > > > We can push back and say we don't respect the specification because it
+> > > > is batshit insane ;-)
+> > > 
+> > > Here is my fingers crossed.
+> > > 
+> > > [...]
+> > > 
+> > > > Now granted; there's a number of virtual devices that really don't have
+> > > > a node affinity, but then, those are not hurt by forcing them onto a
+> > > > random node, they really don't do anything. Like:
+> > > 
+> > > Do you really consider a random node a better fix than simply living
+> > > with a more robust NUMA_NO_NODE which tells the actual state? Page
+> > > allocator would effectivelly use the local node in that case. Any code
+> > > using the cpumask will know that any of the online cpus are usable.
+> > 
+> > For the pmu devices? Yes, those 'devices' aren't actually used for
+> > anything other than sysfs entries.
+> > 
+> > Nothing else uses the struct device.
 > 
-> > > We can push back and say we don't respect the specification because it
-> > > is batshit insane ;-)
-> > 
-> > Here is my fingers crossed.
-> > 
-> > [...]
-> > 
-> > > Now granted; there's a number of virtual devices that really don't have
-> > > a node affinity, but then, those are not hurt by forcing them onto a
-> > > random node, they really don't do anything. Like:
-> > 
-> > Do you really consider a random node a better fix than simply living
-> > with a more robust NUMA_NO_NODE which tells the actual state? Page
-> > allocator would effectivelly use the local node in that case. Any code
-> > using the cpumask will know that any of the online cpus are usable.
-> 
-> For the pmu devices? Yes, those 'devices' aren't actually used for
-> anything other than sysfs entries.
-> 
-> Nothing else uses the struct device.
+> The below would get rid of the PMU and workqueue warnings with no
+> side-effects (the device isn't used for anything except sysfs).
 
-The below would get rid of the PMU and workqueue warnings with no
-side-effects (the device isn't used for anything except sysfs).
-
-I'm stuck in the device code for BDIs, I can't find a sane place to set
-the node before it gets added, due to it using device_create_vargs().
-
----
-diff --git a/kernel/events/core.c b/kernel/events/core.c
-index 4f08b17d6426..2a64dcc3d70f 100644
---- a/kernel/events/core.c
-+++ b/kernel/events/core.c
-@@ -9965,6 +9965,7 @@ static int pmu_dev_alloc(struct pmu *pmu)
- 	if (!pmu->dev)
- 		goto out;
- 
-+	set_dev_node(pmu->dev, 0);
- 	pmu->dev->groups = pmu->attr_groups;
- 	device_initialize(pmu->dev);
- 	ret = dev_set_name(pmu->dev, "%s", pmu->name);
-diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index bc2e09a8ea61..efafc4590bbe 100644
---- a/kernel/workqueue.c
-+++ b/kernel/workqueue.c
-@@ -5613,6 +5613,7 @@ int workqueue_sysfs_register(struct workqueue_struct *wq)
- 	wq_dev->dev.bus = &wq_subsys;
- 	wq_dev->dev.release = wq_device_release;
- 	dev_set_name(&wq_dev->dev, "%s", wq->name);
-+	set_dev_node(wq_dev, 0);
- 
- 	/*
- 	 * unbound_attrs are created separately.  Suppress uevent until
+Hardcoding to 0 is simply wrong, if the node0 is cpuless for example...
+-- 
+Michal Hocko
+SUSE Labs
