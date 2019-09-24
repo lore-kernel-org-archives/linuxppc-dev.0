@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D28A4C432C2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 21:45:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D52F8C432C1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 21:47:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 52B0A207FD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 21:45:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 52B0A207FD
+	by mail.kernel.org (Postfix) with ESMTPS id 5A7CD20872
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 21:47:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5A7CD20872
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46dF8y2t22zDqWr
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 07:45:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46dFCS4cdlzDqZ2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 07:47:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
@@ -29,53 +29,53 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46dDkl4jR8zDqQ8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2019 07:25:51 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46dDkv2mT8zDqMp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2019 07:25:59 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x8OLMU5J124981; Tue, 24 Sep 2019 17:25:23 -0400
+ x8OLMQvg051496; Tue, 24 Sep 2019 17:25:37 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2v7r8x68d0-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2v7r436ftc-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 24 Sep 2019 17:25:23 -0400
-Received: from m0098413.ppops.net (m0098413.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x8OLMkUk125689;
- Tue, 24 Sep 2019 17:25:22 -0400
-Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.10])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2v7r8x68cd-1
+ Tue, 24 Sep 2019 17:25:37 -0400
+Received: from m0098414.ppops.net (m0098414.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x8OLMwwf052553;
+ Tue, 24 Sep 2019 17:25:36 -0400
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
+ [169.55.85.253])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2v7r436ft3-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 24 Sep 2019 17:25:22 -0400
-Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
- by ppma02dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x8OLJxwa018560;
- Tue, 24 Sep 2019 21:25:21 GMT
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by ppma02dal.us.ibm.com with ESMTP id 2v5bg7fy9d-1
+ Tue, 24 Sep 2019 17:25:36 -0400
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+ by ppma01wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x8OLPapT000741;
+ Tue, 24 Sep 2019 21:25:37 GMT
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by ppma01wdc.us.ibm.com with ESMTP id 2v5bg701v3-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 24 Sep 2019 21:25:21 +0000
+ Tue, 24 Sep 2019 21:25:36 +0000
 Received: from b03ledav006.gho.boulder.ibm.com
  (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x8OLPJse36110624
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x8OLPYET48038312
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 24 Sep 2019 21:25:19 GMT
+ Tue, 24 Sep 2019 21:25:34 GMT
 Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 845F0C605D;
- Tue, 24 Sep 2019 21:25:19 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 7C37EC605B;
+ Tue, 24 Sep 2019 21:25:34 +0000 (GMT)
 Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E060BC605A;
- Tue, 24 Sep 2019 21:25:14 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id D72B0C605D;
+ Tue, 24 Sep 2019 21:25:29 +0000 (GMT)
 Received: from LeoBras.aus.stglabs.ibm.com (unknown [9.18.235.184])
  by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Tue, 24 Sep 2019 21:25:14 +0000 (GMT)
+ Tue, 24 Sep 2019 21:25:29 +0000 (GMT)
 From: Leonardo Bras <leonardo@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  kvm-ppc@vger.kernel.org, linux-arch@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH v3 07/11] powerpc/kvm/e500: Applies counting method to monitor
- lockless pgtbl walks
-Date: Tue, 24 Sep 2019 18:24:24 -0300
-Message-Id: <20190924212427.7734-8-leonardo@linux.ibm.com>
+Subject: [PATCH v3 10/11] powerpc/book3s_64: Enables counting method to
+ monitor lockless pgtbl walk
+Date: Tue, 24 Sep 2019 18:24:27 -0300
+Message-Id: <20190924212427.7734-11-leonardo@linux.ibm.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190924212427.7734-1-leonardo@linux.ibm.com>
 References: <20190924212427.7734-1-leonardo@linux.ibm.com>
@@ -115,42 +115,31 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Applies the counting-based method for monitoring lockless pgtable walks on
-kvmppc_e500_shadow_map().
+Enables count-based monitoring method for lockless pagetable walks on
+PowerPC book3s_64.
+
+Other architectures/platforms fallback to using generic dummy functions.
 
 Signed-off-by: Leonardo Bras <leonardo@linux.ibm.com>
 ---
- arch/powerpc/kvm/e500_mmu_host.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ arch/powerpc/include/asm/book3s/64/pgtable.h | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
-index 321db0fdb9db..a1b8bfe20bc8 100644
---- a/arch/powerpc/kvm/e500_mmu_host.c
-+++ b/arch/powerpc/kvm/e500_mmu_host.c
-@@ -473,6 +473,7 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
- 	 * We are holding kvm->mmu_lock so a notifier invalidate
- 	 * can't run hence pfn won't change.
- 	 */
-+	start_lockless_pgtbl_walk(kvm->mm);
- 	local_irq_save(flags);
- 	ptep = find_linux_pte(pgdir, hva, NULL, NULL);
- 	if (ptep) {
-@@ -484,12 +485,15 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
- 			local_irq_restore(flags);
- 		} else {
- 			local_irq_restore(flags);
-+			end_lockless_pgtbl_walk(kvm->mm);
- 			pr_err_ratelimited("%s: pte not present: gfn %lx,pfn %lx\n",
- 					   __func__, (long)gfn, pfn);
- 			ret = -EINVAL;
- 			goto out;
- 		}
- 	}
-+	end_lockless_pgtbl_walk(kvm->mm);
-+
- 	kvmppc_e500_ref_setup(ref, gtlbe, pfn, wimg);
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index 8308f32e9782..eb9b26a4a483 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -1370,5 +1370,10 @@ static inline bool pgd_is_leaf(pgd_t pgd)
+ 	return !!(pgd_raw(pgd) & cpu_to_be64(_PAGE_PTE));
+ }
  
- 	kvmppc_e500_setup_stlbe(&vcpu_e500->vcpu, gtlbe, tsize,
++#define __HAVE_ARCH_LOCKLESS_PGTBL_WALK_COUNTER
++void start_lockless_pgtbl_walk(struct mm_struct *mm);
++void end_lockless_pgtbl_walk(struct mm_struct *mm);
++int running_lockless_pgtbl_walk(struct mm_struct *mm);
++
+ #endif /* __ASSEMBLY__ */
+ #endif /* _ASM_POWERPC_BOOK3S_64_PGTABLE_H_ */
 -- 
 2.20.1
 
