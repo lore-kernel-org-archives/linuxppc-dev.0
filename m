@@ -2,24 +2,23 @@ Return-Path: <SRS0=kV/c=XT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F69DC432C1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 10:57:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F273C432C1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 10:59:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E13AF214AF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 10:57:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E13AF214AF
+	by mail.kernel.org (Postfix) with ESMTPS id 1450D214AF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 10:59:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1450D214AF
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46cynC5WvJzDqD4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 20:57:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46cyqc3dYlzDqSv
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 20:59:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=nxp.com
  (client-ip=92.121.34.13; helo=inva020.nxp.com;
@@ -29,19 +28,19 @@ Authentication-Results: lists.ozlabs.org;
 Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46cykB2FhdzDqPm
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46cykB2Xm3zDqRG
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2019 20:54:23 +1000 (AEST)
 Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 710091A03C3;
- Tue, 24 Sep 2019 12:54:19 +0200 (CEST)
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 4CB771A0192;
+ Tue, 24 Sep 2019 12:54:18 +0200 (CEST)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
  [165.114.16.14])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id DA4D21A00E7;
- Tue, 24 Sep 2019 12:54:12 +0200 (CEST)
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id B31481A00DE;
+ Tue, 24 Sep 2019 12:54:11 +0200 (CEST)
 Received: from localhost.localdomain (shlinux2.ap.freescale.net
  [10.192.224.44])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 9AB2C40324;
- Tue, 24 Sep 2019 18:54:04 +0800 (SGT)
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id C906D4029F;
+ Tue, 24 Sep 2019 18:54:01 +0800 (SGT)
 From: Shengjiu Wang <shengjiu.wang@nxp.com>
 To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
  festevam@gmail.com, lgirdwood@gmail.com, broonie@kernel.org,
@@ -49,14 +48,10 @@ To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  robh+dt@kernel.org, mark.rutland@arm.com, devicetree@vger.kernel.org,
  lars@metafoo.de
-Subject: [PATCH V4 2/4] ASoC: fsl_asrc: update supported sample format
-Date: Tue, 24 Sep 2019 18:52:33 +0800
-Message-Id: <45a7c383f43cc1dd9d0934846447aee653278c03.1569296075.git.shengjiu.wang@nxp.com>
+Subject: [PATCH V4 0/4] update supported sample format
+Date: Tue, 24 Sep 2019 18:52:31 +0800
+Message-Id: <cover.1569296075.git.shengjiu.wang@nxp.com>
 X-Mailer: git-send-email 2.7.4
-In-Reply-To: <cover.1569296075.git.shengjiu.wang@nxp.com>
-References: <cover.1569296075.git.shengjiu.wang@nxp.com>
-In-Reply-To: <cover.1569296075.git.shengjiu.wang@nxp.com>
-References: <cover.1569296075.git.shengjiu.wang@nxp.com>
 X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -73,46 +68,36 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The ASRC support 24bit/16bit/8bit input width, which is
-data width, not slot width.
+This patch serial is to update the supported format for fsl_asrc
+and fix some format issue.
 
-For the S20_3LE format, the data with is 20bit, slot width
-is 24bit, if we set ASRMCR1n.IWD to be 24bits, the result
-is the volume is lower than expected, it likes 24bit data
-right shift 4 bits
+Shengjiu Wang (4):
+  ASoC: fsl_asrc: Use in(out)put_format instead of in(out)put_word_width
+  ASoC: fsl_asrc: update supported sample format
+  ASoC: pcm_dmaengine: Extract snd_dmaengine_pcm_refine_runtime_hwparams
+  ASoC: fsl_asrc: Fix error with S24_3LE format bitstream in i.MX8
 
-So replace S20_3LE with S24_3LE in supported list and add S8
-format in TX supported list
+changes in v2
+- extract snd_dmaengine_pcm_set_runtime_hwparams in one
+  separate path.
+- 4th patch depends on 3rd patch
 
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
----
- sound/soc/fsl/fsl_asrc.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+changes in v3
+- Fix build report by kbuild test robot <lkp@intel.com>
+- change snd_dmaengine_pcm_set_runtime_hwparams to
+  snd_dmaengine_pcm_refine_runtime_hwparams
 
-diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
-index 4d3804a1ea55..584badf956d2 100644
---- a/sound/soc/fsl/fsl_asrc.c
-+++ b/sound/soc/fsl/fsl_asrc.c
-@@ -624,7 +624,7 @@ static int fsl_asrc_dai_probe(struct snd_soc_dai *dai)
- 
- #define FSL_ASRC_FORMATS	(SNDRV_PCM_FMTBIT_S24_LE | \
- 				 SNDRV_PCM_FMTBIT_S16_LE | \
--				 SNDRV_PCM_FMTBIT_S20_3LE)
-+				 SNDRV_PCM_FMTBIT_S24_3LE)
- 
- static struct snd_soc_dai_driver fsl_asrc_dai = {
- 	.probe = fsl_asrc_dai_probe,
-@@ -635,7 +635,8 @@ static struct snd_soc_dai_driver fsl_asrc_dai = {
- 		.rate_min = 5512,
- 		.rate_max = 192000,
- 		.rates = SNDRV_PCM_RATE_KNOT,
--		.formats = FSL_ASRC_FORMATS,
-+		.formats = FSL_ASRC_FORMATS |
-+			   SNDRV_PCM_FMTBIT_S8,
- 	},
- 	.capture = {
- 		.stream_name = "ASRC-Capture",
+changes in v4
+- update according to Nicolin's comments.
+
+ include/sound/dmaengine_pcm.h         |  5 ++
+ sound/core/pcm_dmaengine.c            | 83 +++++++++++++++++++++++++++
+ sound/soc/fsl/fsl_asrc.c              | 65 ++++++++++++++-------
+ sound/soc/fsl/fsl_asrc.h              |  7 ++-
+ sound/soc/fsl/fsl_asrc_dma.c          | 59 ++++++++++++++++---
+ sound/soc/soc-generic-dmaengine-pcm.c | 61 ++------------------
+ 6 files changed, 193 insertions(+), 87 deletions(-)
+
 -- 
 2.21.0
 
