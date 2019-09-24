@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 95368C432C1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 21:40:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D33E9C432C1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 21:43:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0BCB7207FD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 21:40:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0BCB7207FD
+	by mail.kernel.org (Postfix) with ESMTPS id 2136F214DA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 21:43:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2136F214DA
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46dF3k0qHCzDqV4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 07:40:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46dF6f3V2KzDqVQ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 07:43:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
@@ -29,53 +29,53 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46dDkc1h2KzDqQJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2019 07:25:44 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x8OLOH4N040050; Tue, 24 Sep 2019 17:25:13 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46dDkk5FY6zDqNd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2019 07:25:50 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x8OLMOUG051360; Tue, 24 Sep 2019 17:25:27 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2v7u1f00ux-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2v7r436fp5-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 24 Sep 2019 17:25:13 -0400
-Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x8OLPCLh041938;
- Tue, 24 Sep 2019 17:25:12 -0400
-Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
- [169.53.41.122])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2v7u1f00ua-1
+ Tue, 24 Sep 2019 17:25:27 -0400
+Received: from m0098414.ppops.net (m0098414.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x8OLMhWg052136;
+ Tue, 24 Sep 2019 17:25:27 -0400
+Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.26])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2v7r436fnt-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 24 Sep 2019 17:25:12 -0400
-Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
- by ppma04dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x8OLJrLX003220;
- Tue, 24 Sep 2019 21:25:11 GMT
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by ppma04dal.us.ibm.com with ESMTP id 2v5bg7fya3-1
+ Tue, 24 Sep 2019 17:25:26 -0400
+Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
+ by ppma04wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x8OLJsq5013762;
+ Tue, 24 Sep 2019 21:25:26 GMT
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by ppma04wdc.us.ibm.com with ESMTP id 2v5bg77yja-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 24 Sep 2019 21:25:11 +0000
+ Tue, 24 Sep 2019 21:25:26 +0000
 Received: from b03ledav006.gho.boulder.ibm.com
  (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x8OLP9OB59244886
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x8OLPOx536700490
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 24 Sep 2019 21:25:09 GMT
+ Tue, 24 Sep 2019 21:25:24 GMT
 Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 85516C605F;
- Tue, 24 Sep 2019 21:25:09 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 84BF1C6059;
+ Tue, 24 Sep 2019 21:25:24 +0000 (GMT)
 Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id ED123C605B;
- Tue, 24 Sep 2019 21:25:04 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id DA88FC6057;
+ Tue, 24 Sep 2019 21:25:19 +0000 (GMT)
 Received: from LeoBras.aus.stglabs.ibm.com (unknown [9.18.235.184])
  by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Tue, 24 Sep 2019 21:25:04 +0000 (GMT)
+ Tue, 24 Sep 2019 21:25:19 +0000 (GMT)
 From: Leonardo Bras <leonardo@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  kvm-ppc@vger.kernel.org, linux-arch@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH v3 05/11] powerpc/perf: Applies counting method to monitor
- lockless pgtbl walks
-Date: Tue, 24 Sep 2019 18:24:22 -0300
-Message-Id: <20190924212427.7734-6-leonardo@linux.ibm.com>
+Subject: [PATCH v3 08/11] powerpc/kvm/book3s_hv: Applies counting method to
+ monitor lockless pgtbl walks
+Date: Tue, 24 Sep 2019 18:24:25 -0300
+Message-Id: <20190924212427.7734-9-leonardo@linux.ibm.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190924212427.7734-1-leonardo@linux.ibm.com>
 References: <20190924212427.7734-1-leonardo@linux.ibm.com>
@@ -88,7 +88,7 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=924 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1908290000 definitions=main-1909240173
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -115,45 +115,114 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Applies the counting-based method for monitoring lockless pgtable walks on
-read_user_stack_slow.
+Applies the counting-based method for monitoring all book3s_hv related
+functions that do lockless pagetable walks.
 
 Signed-off-by: Leonardo Bras <leonardo@linux.ibm.com>
 ---
- arch/powerpc/perf/callchain.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ arch/powerpc/kvm/book3s_hv_nested.c | 8 ++++++++
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c | 9 ++++++++-
+ 2 files changed, 16 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/perf/callchain.c b/arch/powerpc/perf/callchain.c
-index c84bbd4298a0..9d76194a2a8f 100644
---- a/arch/powerpc/perf/callchain.c
-+++ b/arch/powerpc/perf/callchain.c
-@@ -113,16 +113,18 @@ static int read_user_stack_slow(void __user *ptr, void *buf, int nb)
- 	int ret = -EFAULT;
- 	pgd_t *pgdir;
- 	pte_t *ptep, pte;
-+	struct mm_struct *mm = current->mm;
- 	unsigned shift;
- 	unsigned long addr = (unsigned long) ptr;
- 	unsigned long offset;
- 	unsigned long pfn, flags;
- 	void *kaddr;
+diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3s_hv_nested.c
+index 735e0ac6f5b2..ed68e57af3a3 100644
+--- a/arch/powerpc/kvm/book3s_hv_nested.c
++++ b/arch/powerpc/kvm/book3s_hv_nested.c
+@@ -804,6 +804,7 @@ static void kvmhv_update_nest_rmap_rc(struct kvm *kvm, u64 n_rmap,
+ 		return;
  
--	pgdir = current->mm->pgd;
-+	pgdir = mm->pgd;
- 	if (!pgdir)
- 		return -EFAULT;
- 
-+	start_lockless_pgtbl_walk(mm);
- 	local_irq_save(flags);
- 	ptep = find_current_mm_pte(pgdir, addr, NULL, &shift);
- 	if (!ptep)
-@@ -146,6 +148,7 @@ static int read_user_stack_slow(void __user *ptr, void *buf, int nb)
- 	ret = 0;
- err_out:
- 	local_irq_restore(flags);
-+	end_lockless_pgtbl_walk(mm);
- 	return ret;
+ 	/* Find the pte */
++	start_lockless_pgtbl_walk(kvm->mm);
+ 	ptep = __find_linux_pte(gp->shadow_pgtable, gpa, NULL, &shift);
+ 	/*
+ 	 * If the pte is present and the pfn is still the same, update the pte.
+@@ -815,6 +816,7 @@ static void kvmhv_update_nest_rmap_rc(struct kvm *kvm, u64 n_rmap,
+ 		__radix_pte_update(ptep, clr, set);
+ 		kvmppc_radix_tlbie_page(kvm, gpa, shift, lpid);
+ 	}
++	end_lockless_pgtbl_walk(kvm->mm);
  }
+ 
+ /*
+@@ -854,10 +856,12 @@ static void kvmhv_remove_nest_rmap(struct kvm *kvm, u64 n_rmap,
+ 		return;
+ 
+ 	/* Find and invalidate the pte */
++	start_lockless_pgtbl_walk(kvm->mm);
+ 	ptep = __find_linux_pte(gp->shadow_pgtable, gpa, NULL, &shift);
+ 	/* Don't spuriously invalidate ptes if the pfn has changed */
+ 	if (ptep && pte_present(*ptep) && ((pte_val(*ptep) & mask) == hpa))
+ 		kvmppc_unmap_pte(kvm, ptep, gpa, shift, NULL, gp->shadow_lpid);
++	end_lockless_pgtbl_walk(kvm->mm);
+ }
+ 
+ static void kvmhv_remove_nest_rmap_list(struct kvm *kvm, unsigned long *rmapp,
+@@ -921,6 +925,7 @@ static bool kvmhv_invalidate_shadow_pte(struct kvm_vcpu *vcpu,
+ 	int shift;
+ 
+ 	spin_lock(&kvm->mmu_lock);
++	start_lockless_pgtbl_walk(kvm->mm);
+ 	ptep = __find_linux_pte(gp->shadow_pgtable, gpa, NULL, &shift);
+ 	if (!shift)
+ 		shift = PAGE_SHIFT;
+@@ -928,6 +933,7 @@ static bool kvmhv_invalidate_shadow_pte(struct kvm_vcpu *vcpu,
+ 		kvmppc_unmap_pte(kvm, ptep, gpa, shift, NULL, gp->shadow_lpid);
+ 		ret = true;
+ 	}
++	end_lockless_pgtbl_walk(kvm->mm);
+ 	spin_unlock(&kvm->mmu_lock);
+ 
+ 	if (shift_ret)
+@@ -1362,11 +1368,13 @@ static long int __kvmhv_nested_page_fault(struct kvm_run *run,
+ 	/* See if can find translation in our partition scoped tables for L1 */
+ 	pte = __pte(0);
+ 	spin_lock(&kvm->mmu_lock);
++	start_lockless_pgtbl_walk(kvm->mm);
+ 	pte_p = __find_linux_pte(kvm->arch.pgtable, gpa, NULL, &shift);
+ 	if (!shift)
+ 		shift = PAGE_SHIFT;
+ 	if (pte_p)
+ 		pte = *pte_p;
++	end_lockless_pgtbl_walk(kvm->mm);
+ 	spin_unlock(&kvm->mmu_lock);
+ 
+ 	if (!pte_present(pte) || (writing && !(pte_val(pte) & _PAGE_WRITE))) {
+diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+index 63e0ce91e29d..53ca67492211 100644
+--- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+@@ -258,6 +258,7 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+ 	 * If called in real mode we have MSR_EE = 0. Otherwise
+ 	 * we disable irq above.
+ 	 */
++	start_lockless_pgtbl_walk(kvm->mm);
+ 	ptep = __find_linux_pte(pgdir, hva, NULL, &hpage_shift);
+ 	if (ptep) {
+ 		pte_t pte;
+@@ -311,6 +312,7 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+ 		ptel &= ~(HPTE_R_W|HPTE_R_I|HPTE_R_G);
+ 		ptel |= HPTE_R_M;
+ 	}
++	end_lockless_pgtbl_walk(kvm->mm);
+ 
+ 	/* Find and lock the HPTEG slot to use */
+  do_insert:
+@@ -886,10 +888,15 @@ static int kvmppc_get_hpa(struct kvm_vcpu *vcpu, unsigned long gpa,
+ 	hva = __gfn_to_hva_memslot(memslot, gfn);
+ 
+ 	/* Try to find the host pte for that virtual address */
++	start_lockless_pgtbl_walk(kvm->mm);
+ 	ptep = __find_linux_pte(vcpu->arch.pgdir, hva, NULL, &shift);
+-	if (!ptep)
++	if (!ptep) {
++		end_lockless_pgtbl_walk(kvm->mm);
+ 		return H_TOO_HARD;
++	}
+ 	pte = kvmppc_read_update_linux_pte(ptep, writing);
++	end_lockless_pgtbl_walk(kvm->mm);
++
+ 	if (!pte_present(pte))
+ 		return H_TOO_HARD;
  
 -- 
 2.20.1
