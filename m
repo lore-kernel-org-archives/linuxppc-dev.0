@@ -6,76 +6,76 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 14745C432C1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 21:37:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B57E6C432C1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 21:38:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 61612207FD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 21:37:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 61612207FD
+	by mail.kernel.org (Postfix) with ESMTPS id 3B3DC207FD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 21:38:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3B3DC207FD
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46dDzd3gLGzDqVD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 07:37:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46dF1b15FBzDqXG
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 07:38:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=leonardo@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46dDkR0YwyzDqRy
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2019 07:25:34 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x8OLMOU4051360; Tue, 24 Sep 2019 17:25:04 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46dDkc1PSDzDqNr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2019 07:25:43 +1000 (AEST)
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x8OLMKWS189141; Tue, 24 Sep 2019 17:25:24 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2v7r436f9v-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2v7mfpxgwf-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 24 Sep 2019 17:25:04 -0400
-Received: from m0098414.ppops.net (m0098414.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x8OLNmFp054078;
- Tue, 24 Sep 2019 17:25:03 -0400
-Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
- [169.53.41.122])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2v7r436f88-1
+ Tue, 24 Sep 2019 17:25:24 -0400
+Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x8OLMVZ1189523;
+ Tue, 24 Sep 2019 17:25:24 -0400
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2v7mfpxgsg-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 24 Sep 2019 17:25:03 -0400
-Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
- by ppma04dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x8OLJrSB003225;
- Tue, 24 Sep 2019 21:25:01 GMT
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by ppma04dal.us.ibm.com with ESMTP id 2v5bg7fy7s-1
+ Tue, 24 Sep 2019 17:25:23 -0400
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x8OLJr5o032754;
+ Tue, 24 Sep 2019 21:25:16 GMT
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by ppma03dal.us.ibm.com with ESMTP id 2v5bg780wn-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 24 Sep 2019 21:25:01 +0000
+ Tue, 24 Sep 2019 21:25:16 +0000
 Received: from b03ledav006.gho.boulder.ibm.com
  (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x8OLOxER52036024
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x8OLPEAg44564738
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 24 Sep 2019 21:24:59 GMT
+ Tue, 24 Sep 2019 21:25:14 GMT
 Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 95450C6062;
- Tue, 24 Sep 2019 21:24:59 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 7F8A5C6061;
+ Tue, 24 Sep 2019 21:25:14 +0000 (GMT)
 Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 07CB0C605A;
- Tue, 24 Sep 2019 21:24:55 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id E552FC6059;
+ Tue, 24 Sep 2019 21:25:09 +0000 (GMT)
 Received: from LeoBras.aus.stglabs.ibm.com (unknown [9.18.235.184])
  by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Tue, 24 Sep 2019 21:24:54 +0000 (GMT)
+ Tue, 24 Sep 2019 21:25:09 +0000 (GMT)
 From: Leonardo Bras <leonardo@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  kvm-ppc@vger.kernel.org, linux-arch@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH v3 03/11] mm/gup: Applies counting method to monitor
- gup_pgd_range
-Date: Tue, 24 Sep 2019 18:24:20 -0300
-Message-Id: <20190924212427.7734-4-leonardo@linux.ibm.com>
+Subject: [PATCH v3 06/11] powerpc/mm/book3s64/hash: Applies counting method to
+ monitor lockless pgtbl walks
+Date: Tue, 24 Sep 2019 18:24:23 -0300
+Message-Id: <20190924212427.7734-7-leonardo@linux.ibm.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190924212427.7734-1-leonardo@linux.ibm.com>
 References: <20190924212427.7734-1-leonardo@linux.ibm.com>
@@ -88,7 +88,7 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=760 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=743 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1908290000 definitions=main-1909240173
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -115,64 +115,90 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-As decribed, gup_pgd_range is a lockless pagetable walk. So, in order to
-monitor against THP split/collapse with the couting method, it's necessary
-to bound it with {start,end}_lockless_pgtbl_walk.
-
-There are dummy functions, so it is not going to add any overhead on archs
-that don't use this method.
+Applies the counting-based method for monitoring all hash-related functions
+that do lockless pagetable walks.
 
 Signed-off-by: Leonardo Bras <leonardo@linux.ibm.com>
 ---
- mm/gup.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ arch/powerpc/mm/book3s64/hash_tlb.c   | 2 ++
+ arch/powerpc/mm/book3s64/hash_utils.c | 7 +++++++
+ 2 files changed, 9 insertions(+)
 
-diff --git a/mm/gup.c b/mm/gup.c
-index 98f13ab37bac..eabd6fd15cf8 100644
---- a/mm/gup.c
-+++ b/mm/gup.c
-@@ -2325,6 +2325,7 @@ static bool gup_fast_permitted(unsigned long start, unsigned long end)
- int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
- 			  struct page **pages)
- {
-+	struct mm_struct mm;
- 	unsigned long len, end;
- 	unsigned long flags;
- 	int nr = 0;
-@@ -2352,9 +2353,12 @@ int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
- 
- 	if (IS_ENABLED(CONFIG_HAVE_FAST_GUP) &&
- 	    gup_fast_permitted(start, end)) {
-+		mm = current->mm;
-+		start_lockless_pgtbl_walk(mm);
- 		local_irq_save(flags);
- 		gup_pgd_range(start, end, write ? FOLL_WRITE : 0, pages, &nr);
- 		local_irq_restore(flags);
-+		end_lockless_pgtbl_walk(mm);
+diff --git a/arch/powerpc/mm/book3s64/hash_tlb.c b/arch/powerpc/mm/book3s64/hash_tlb.c
+index 4a70d8dd39cd..5e5213c3f7c4 100644
+--- a/arch/powerpc/mm/book3s64/hash_tlb.c
++++ b/arch/powerpc/mm/book3s64/hash_tlb.c
+@@ -209,6 +209,7 @@ void __flush_hash_table_range(struct mm_struct *mm, unsigned long start,
+ 	 * to being hashed). This is not the most performance oriented
+ 	 * way to do things but is fine for our needs here.
+ 	 */
++	start_lockless_pgtbl_walk(mm);
+ 	local_irq_save(flags);
+ 	arch_enter_lazy_mmu_mode();
+ 	for (; start < end; start += PAGE_SIZE) {
+@@ -230,6 +231,7 @@ void __flush_hash_table_range(struct mm_struct *mm, unsigned long start,
  	}
+ 	arch_leave_lazy_mmu_mode();
+ 	local_irq_restore(flags);
++	end_lockless_pgtbl_walk(mm);
+ }
  
- 	return nr;
-@@ -2404,6 +2408,7 @@ int get_user_pages_fast(unsigned long start, int nr_pages,
- 			unsigned int gup_flags, struct page **pages)
- {
- 	unsigned long addr, len, end;
-+	struct mm_struct *mm;
- 	int nr = 0, ret = 0;
+ void flush_tlb_pmd_range(struct mm_struct *mm, pmd_t *pmd, unsigned long addr)
+diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
+index b8ad14bb1170..299946cedc3a 100644
+--- a/arch/powerpc/mm/book3s64/hash_utils.c
++++ b/arch/powerpc/mm/book3s64/hash_utils.c
+@@ -1322,6 +1322,7 @@ int hash_page_mm(struct mm_struct *mm, unsigned long ea,
+ #endif /* CONFIG_PPC_64K_PAGES */
  
- 	if (WARN_ON_ONCE(gup_flags & ~(FOLL_WRITE | FOLL_LONGTERM)))
-@@ -2421,9 +2426,12 @@ int get_user_pages_fast(unsigned long start, int nr_pages,
+ 	/* Get PTE and page size from page tables */
++	start_lockless_pgtbl_walk(mm);
+ 	ptep = find_linux_pte(pgdir, ea, &is_thp, &hugeshift);
+ 	if (ptep == NULL || !pte_present(*ptep)) {
+ 		DBG_LOW(" no PTE !\n");
+@@ -1438,6 +1439,7 @@ int hash_page_mm(struct mm_struct *mm, unsigned long ea,
+ 	DBG_LOW(" -> rc=%d\n", rc);
  
- 	if (IS_ENABLED(CONFIG_HAVE_FAST_GUP) &&
- 	    gup_fast_permitted(start, end)) {
-+		mm = current->mm;
-+		start_lockless_pgtbl_walk(mm);
- 		local_irq_disable();
- 		gup_pgd_range(addr, end, gup_flags, pages, &nr);
- 		local_irq_enable();
-+		end_lockless_pgtbl_walk(mm);
- 		ret = nr;
- 	}
+ bail:
++	end_lockless_pgtbl_walk(mm);
+ 	exception_exit(prev_state);
+ 	return rc;
+ }
+@@ -1547,10 +1549,12 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
+ 	vsid = get_user_vsid(&mm->context, ea, ssize);
+ 	if (!vsid)
+ 		return;
++
+ 	/*
+ 	 * Hash doesn't like irqs. Walking linux page table with irq disabled
+ 	 * saves us from holding multiple locks.
+ 	 */
++	start_lockless_pgtbl_walk(mm);
+ 	local_irq_save(flags);
  
+ 	/*
+@@ -1597,6 +1601,7 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
+ 				   pte_val(*ptep));
+ out_exit:
+ 	local_irq_restore(flags);
++	end_lockless_pgtbl_walk(mm);
+ }
+ 
+ #ifdef CONFIG_PPC_MEM_KEYS
+@@ -1613,11 +1618,13 @@ u16 get_mm_addr_key(struct mm_struct *mm, unsigned long address)
+ 	if (!mm || !mm->pgd)
+ 		return 0;
+ 
++	start_lockless_pgtbl_walk(mm);
+ 	local_irq_save(flags);
+ 	ptep = find_linux_pte(mm->pgd, address, NULL, NULL);
+ 	if (ptep)
+ 		pkey = pte_to_pkey_bits(pte_val(READ_ONCE(*ptep)));
+ 	local_irq_restore(flags);
++	end_lockless_pgtbl_walk(mm);
+ 
+ 	return pkey;
+ }
 -- 
 2.20.1
 
