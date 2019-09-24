@@ -6,76 +6,76 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2500EC432C2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 21:32:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D577C432C1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 21:35:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 890C9207FD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 21:32:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 890C9207FD
+	by mail.kernel.org (Postfix) with ESMTPS id A98DB207FD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 21:35:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A98DB207FD
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46dDtv1CljzDqRY
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 07:32:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46dDxR3YK9zDqVL
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 07:35:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=leonardo@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46dDkF50JZzDqdP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2019 07:25:25 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x8OLMN5J011434; Tue, 24 Sep 2019 17:25:08 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46dDkQ42fhzDqNB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2019 07:25:34 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x8OLMOGx115972; Tue, 24 Sep 2019 17:24:59 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2v7r8veb8f-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2v7s8pku8m-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 24 Sep 2019 17:25:08 -0400
-Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x8OLMR1S011655;
- Tue, 24 Sep 2019 17:25:07 -0400
-Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.27])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2v7r8veb7f-1
+ Tue, 24 Sep 2019 17:24:59 -0400
+Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x8OLOwBd121383;
+ Tue, 24 Sep 2019 17:24:58 -0400
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2v7s8pku7a-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 24 Sep 2019 17:25:07 -0400
-Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
- by ppma05wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x8OLJsY7020037;
- Tue, 24 Sep 2019 21:25:06 GMT
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by ppma05wdc.us.ibm.com with ESMTP id 2v5bg782bw-1
+ Tue, 24 Sep 2019 17:24:58 -0400
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x8OLJruo032757;
+ Tue, 24 Sep 2019 21:24:56 GMT
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by ppma03dal.us.ibm.com with ESMTP id 2v5bg780sv-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 24 Sep 2019 21:25:06 +0000
+ Tue, 24 Sep 2019 21:24:56 +0000
 Received: from b03ledav006.gho.boulder.ibm.com
  (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x8OLP4Td58261866
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x8OLOsT648169450
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 24 Sep 2019 21:25:04 GMT
+ Tue, 24 Sep 2019 21:24:54 GMT
 Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 98FDEC605A;
- Tue, 24 Sep 2019 21:25:04 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id A5E3AC6057;
+ Tue, 24 Sep 2019 21:24:54 +0000 (GMT)
 Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 01EC4C6057;
- Tue, 24 Sep 2019 21:25:00 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 0B6B9C6055;
+ Tue, 24 Sep 2019 21:24:49 +0000 (GMT)
 Received: from LeoBras.aus.stglabs.ibm.com (unknown [9.18.235.184])
  by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Tue, 24 Sep 2019 21:24:59 +0000 (GMT)
+ Tue, 24 Sep 2019 21:24:49 +0000 (GMT)
 From: Leonardo Bras <leonardo@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  kvm-ppc@vger.kernel.org, linux-arch@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH v3 04/11] powerpc/mce_power: Applies counting method to
- monitor lockless pgtbl walks
-Date: Tue, 24 Sep 2019 18:24:21 -0300
-Message-Id: <20190924212427.7734-5-leonardo@linux.ibm.com>
+Subject: [PATCH v3 02/11] asm-generic/pgtable: Adds dummy functions to monitor
+ lockless pgtable walks
+Date: Tue, 24 Sep 2019 18:24:19 -0300
+Message-Id: <20190924212427.7734-3-leonardo@linux.ibm.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190924212427.7734-1-leonardo@linux.ibm.com>
 References: <20190924212427.7734-1-leonardo@linux.ibm.com>
@@ -88,7 +88,7 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=738 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=992 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1908290000 definitions=main-1909240173
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -115,51 +115,49 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Applies the counting-based method for monitoring lockless pgtable walks on
-addr_to_pfn().
+There is a need to monitor lockless pagetable walks, in order to avoid
+doing THP splitting/collapsing during them.
+
+Some methods rely on local_irq_{save,restore}, but that can be slow on
+cases with a lot of cpus are used for the process.
+
+In order to speedup these cases, I propose a refcount-based approach, that
+counts the number of lockless pagetable	walks happening on the process.
+
+Given that there are lockless pagetable walks on generic code, it's
+necessary to create dummy functions for archs that won't use the approach.
 
 Signed-off-by: Leonardo Bras <leonardo@linux.ibm.com>
 ---
- arch/powerpc/kernel/mce_power.c | 13 ++++++++++---
- 1 file changed, 10 insertions(+), 3 deletions(-)
+ include/asm-generic/pgtable.h | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
-index a814d2dfb5b0..0f2f87da4cd1 100644
---- a/arch/powerpc/kernel/mce_power.c
-+++ b/arch/powerpc/kernel/mce_power.c
-@@ -27,6 +27,7 @@ unsigned long addr_to_pfn(struct pt_regs *regs, unsigned long addr)
- {
- 	pte_t *ptep;
- 	unsigned long flags;
-+	unsigned long pfn;
- 	struct mm_struct *mm;
+diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
+index 75d9d68a6de7..0831475e72d3 100644
+--- a/include/asm-generic/pgtable.h
++++ b/include/asm-generic/pgtable.h
+@@ -1172,6 +1172,21 @@ static inline bool arch_has_pfn_modify_check(void)
+ #endif
+ #endif
  
- 	if (user_mode(regs))
-@@ -34,15 +35,21 @@ unsigned long addr_to_pfn(struct pt_regs *regs, unsigned long addr)
- 	else
- 		mm = &init_mm;
- 
-+	start_lockless_pgtbl_walk(mm);
- 	local_irq_save(flags);
- 	if (mm == current->mm)
- 		ptep = find_current_mm_pte(mm->pgd, addr, NULL, NULL);
- 	else
- 		ptep = find_init_mm_pte(addr, NULL);
--	local_irq_restore(flags);
++#ifndef __HAVE_ARCH_LOCKLESS_PGTBL_WALK_COUNTER
++static inline void start_lockless_pgtbl_walk(struct mm_struct *mm)
++{
++}
 +
- 	if (!ptep || pte_special(*ptep))
--		return ULONG_MAX;
--	return pte_pfn(*ptep);
-+		pfn = ULONG_MAX;
-+	else
-+		pfn = pte_pfn(*ptep);
++static inline void end_lockless_pgtbl_walk(struct mm_struct *mm)
++{
++}
 +
-+	local_irq_restore(flags);
-+	end_lockless_pgtbl_walk(mm);
-+	return pfn;
- }
- 
- /* flush SLBs and reload */
++static inline int running_lockless_pgtbl_walk(struct mm_struct *mm)
++{
++	return 0;
++}
++#endif
++
+ /*
+  * On some architectures it depends on the mm if the p4d/pud or pmd
+  * layer of the page table hierarchy is folded or not.
 -- 
 2.20.1
 
