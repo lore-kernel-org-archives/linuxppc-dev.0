@@ -2,60 +2,95 @@ Return-Path: <SRS0=kV/c=XT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34187C432C2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 06:13:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B213FC432C1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 06:42:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 67BC62064A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 06:13:17 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="aU6IZvHX"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 67BC62064A
-Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
+	by mail.kernel.org (Postfix) with ESMTPS id 0091B20665
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 06:42:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0091B20665
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46crTk6FypzDqTM
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 16:13:14 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46crRY4PmwzDqS1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2019 16:11:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46cs763GNQzDqSm
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 16:42:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=ozlabs.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="aU6IZvHX"; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1003)
- id 46crRY3Lxhz9sPJ; Tue, 24 Sep 2019 16:11:21 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1569305481; bh=+d6v8WYT+viMPFD2AWLGwcmMQ+4R+NXR5ZEghf3P1oQ=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=aU6IZvHX7peJwFrvLpLb4d4Rq7NOx4C3Xfu5QMsFWUDXrPDzRxrR2xjsTGADYl0K8
- MnaReMA1X0jD+ZyOKngJg4BXWfuS9k9w4+9nkxdM2Pt3RHPfUA4lcYGSF60z1z1m0o
- 4QKFtHjQb0zy/Uxqd89j9jTTobsIJqBO6c/uGSw7JNk2fjpdhUpHYSD/U1nbhJQri7
- 406r/sWU8/2YHhrmPYydnf8amrpG2UAy97Kv6LDfF7bBUe816SOdsb4IfXlQPaLHcS
- pWYOEgJmja/x5psdPesNoZc59khZeuGEfvnwJ1y4C1utFwgVNWNCrmlbav5P6etkxB
- ppyMrfzVUWFYQ==
-Date: Tue, 24 Sep 2019 15:33:28 +1000
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Greg Kurz <groug@kaod.org>
-Subject: Re: [PATCH 3/6] KVM: PPC: Book3S HV: XIVE: Ensure VP isn't already
- in use
-Message-ID: <20190924053328.GB7950@oak.ozlabs.ibm.com>
-References: <156925341155.974393.11681611197111945710.stgit@bahia.lan>
- <156925342885.974393.4930571278578115883.stgit@bahia.lan>
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=fbarrat@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46cs4c5wDtzDq61
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2019 16:39:59 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x8O6bd11123995
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2019 02:39:56 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2v7aaexf2g-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2019 02:39:56 -0400
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
+ Tue, 24 Sep 2019 07:39:54 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 24 Sep 2019 07:39:53 +0100
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x8O6dpai53280892
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 24 Sep 2019 06:39:51 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 827534C044;
+ Tue, 24 Sep 2019 06:39:51 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3E45B4C040;
+ Tue, 24 Sep 2019 06:39:51 +0000 (GMT)
+Received: from pic2.home (unknown [9.145.71.39])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue, 24 Sep 2019 06:39:51 +0000 (GMT)
+Subject: Re: [PATCH 00/11] opencapi: enable card reset and link retraining
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
+ andrew.donnellan@au1.ibm.com, clombard@linux.ibm.com
+References: <20190909154600.19917-1-fbarrat@linux.ibm.com>
+ <7e29a072-f212-5d09-05b5-dbc1ee0916f0@ozlabs.ru>
+From: Frederic Barrat <fbarrat@linux.ibm.com>
+Date: Tue, 24 Sep 2019 08:39:51 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.1.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <156925342885.974393.4930571278578115883.stgit@bahia.lan>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <7e29a072-f212-5d09-05b5-dbc1ee0916f0@ozlabs.ru>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19092406-0020-0000-0000-00000370DBEC
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19092406-0021-0000-0000-000021C69A7D
+Message-Id: <9ccce9b5-bba8-2fab-6d82-59bf03bf8b36@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-09-24_03:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=21 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1908290000 definitions=main-1909240065
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,31 +102,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
- kvm-ppc@vger.kernel.org, =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>,
- Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: groug@kaod.org, alastair@au1.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Sep 23, 2019 at 05:43:48PM +0200, Greg Kurz wrote:
-> We currently prevent userspace to connect a new vCPU if we already have
-> one with the same vCPU id. This is good but unfortunately not enough,
-> because VP ids derive from the packed vCPU ids, and kvmppc_pack_vcpu_id()
-> can return colliding values. For examples, 348 stays unchanged since it
-> is < KVM_MAX_VCPUS, but it is also the packed value of 2392 when the
-> guest's core stride is 8. Nothing currently prevents userspace to connect
-> vCPUs with forged ids, that end up being associated to the same VP. This
-> confuses the irq layer and likely crashes the kernel:
+
+
+Le 24/09/2019 à 06:24, Alexey Kardashevskiy a écrit :
+> Hi Fred,
 > 
-> [96631.670454] genirq: Flags mismatch irq 4161. 00010000 (kvm-1-2392) vs. 00010000 (kvm-1-348)
+> what is this made against of? It does not apply on the master. Thanks,
 
-Have you seen a host kernel crash?  How hard would it be to exploit
-this, and would it just be a denial of service, or do you think it
-could be used to get a use-after-free in the kernel or something like
-that?
+It applies on v5.3. And I can see there's a conflict with the current 
+state in the merge window. I'll resubmit.
 
-Also, does this patch depend on the patch 2 in this series?
+   Fred
 
-Paul.
+
+
+> On 10/09/2019 01:45, Frederic Barrat wrote:
+>> This is the linux part of the work to use the PCI hotplug framework to
+>> control an opencapi card so that it can be reset and re-read after
+>> flashing a new FPGA image. I had posted it earlier as an RFC and this
+>> version is mostly similar, with just some minor editing.
+>>
+>> It needs support in skiboot:
+>> http://patchwork.ozlabs.org/project/skiboot/list/?series=129724
+>> On an old skiboot, it will do nothing.
+>>
+>> A virtual PCI slot is created for the opencapi adapter, and its state
+>> can be controlled through the pnv-php hotplug driver:
+>>
+>>    echo 0|1 > /sys/bus/pci/slots/OPENCAPI-<...>/power
+>>
+>> Note that the power to the card is not really turned off, as the card
+>> needs to stay on to be flashed with a new image. Instead the card is
+>> in reset.
+>>
+>> The first part of the series mostly deals with the pci/ioda state, as
+>> the opencapi devices can now go away and the state needs to be cleaned
+>> up.
+>>
+>> The second part is modifications to the PCI hotplug driver on powernv,
+>> so that a virtual slot is created for the opencapi adapters found in
+>> the device tree.
+>>
+>>
+>>
+>> Frederic Barrat (11):
+>>    powerpc/powernv/ioda: Fix ref count for devices with their own PE
+>>    powerpc/powernv/ioda: Protect PE list
+>>    powerpc/powernv/ioda: set up PE on opencapi device when enabling
+>>    powerpc/powernv/ioda: Release opencapi device
+>>    powerpc/powernv/ioda: Find opencapi slot for a device node
+>>    pci/hotplug/pnv-php: Remove erroneous warning
+>>    pci/hotplug/pnv-php: Improve error msg on power state change failure
+>>    pci/hotplug/pnv-php: Register opencapi slots
+>>    pci/hotplug/pnv-php: Relax check when disabling slot
+>>    pci/hotplug/pnv-php: Wrap warnings in macro
+>>    ocxl: Add PCI hotplug dependency to Kconfig
+>>
+>>   arch/powerpc/include/asm/pnv-pci.h        |   1 +
+>>   arch/powerpc/platforms/powernv/pci-ioda.c | 107 ++++++++++++++--------
+>>   arch/powerpc/platforms/powernv/pci.c      |  10 +-
+>>   drivers/misc/ocxl/Kconfig                 |   1 +
+>>   drivers/pci/hotplug/pnv_php.c             |  82 ++++++++++-------
+>>   5 files changed, 125 insertions(+), 76 deletions(-)
+>>
+> 
+
