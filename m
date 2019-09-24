@@ -2,43 +2,79 @@ Return-Path: <SRS0=fxYp=XU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 739B8C432C1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 11:22:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E32A2C432C1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 11:24:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2844821D7C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 11:22:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2844821D7C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id EF71021D7C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 11:24:35 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KDsJx0z1"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EF71021D7C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46dbJ251WrzDqVl
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 21:22:26 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 46dbLV0XLyzDqbk
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 21:24:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::d43; helo=mail-io1-xd43.google.com;
+ envelope-from=aford173@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="KDsJx0z1"; 
+ dkim-atps=neutral
+Received: from mail-io1-xd43.google.com (mail-io1-xd43.google.com
+ [IPv6:2607:f8b0:4864:20::d43])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46dZwT56zhzDqdv
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2019 21:05:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 46dZwS46Ztz9sPK; Wed, 25 Sep 2019 21:05:28 +1000 (AEST)
-X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 677733e296b5c7a37c47da391fc70a43dc40bd67
-In-Reply-To: <20190924035254.24612-1-aneesh.kumar@linux.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, npiggin@gmail.com,
- paulus@samba.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH 1/4] powerpc/book3s64/mm: Don't do tlbie fixup for some
- hardware revisions
-Message-Id: <46dZwS46Ztz9sPK@ozlabs.org>
-Date: Wed, 25 Sep 2019 21:05:27 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46d8120fnxzDqWp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2019 03:52:50 +1000 (AEST)
+Received: by mail-io1-xd43.google.com with SMTP id c6so6547882ioo.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2019 10:52:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=i7nOdUPQO8n52YcV67l4CYsUQMUzMn8oGMVoe1snO9A=;
+ b=KDsJx0z1LDZXVlzQqXRrdwBlzM09gGR/sb1O1xx0IBuRbKHHe5jHQgVafZu5mO7o/a
+ EMP5O+b5/zIGrE6jOB9HABkMWPsIzH2eY5i/TSXPnwFQVkaUmUlTCKG41j3IxWXoQqaI
+ 21ipDPaF2Gn8VudpwuI7M4ocIcbMZ4ylo/zwg99zZbEo2ciDuq1oRfl539G8TNPoUmIv
+ 6A3m5wKxFgOl9M6ihgmG8xwGKJnInS8A0/2CIuv3DGfrbhKa7BJ9lMnwYkHTc508Jt8Z
+ Gtbm0d/l5TPJkjEUOJReowOLVxpJTkSQyk3HMAW1PrmkFMKZr2+SFOHIVq//d7WpT5a1
+ wygw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=i7nOdUPQO8n52YcV67l4CYsUQMUzMn8oGMVoe1snO9A=;
+ b=K6Jjq/Cc6GmOt0RbjaloqnKxm0QYivB3wcgewuThOhX+HAC+pG+gzkfZbjHK6VFi8O
+ egYISnmHPYxzQy2buZ1Fo0XC5vNM9TmZDAneLQH3LmEwsl/eV15trhnhFiceAr9jVXza
+ sDFIxb1BCHkG4hR/6EUk6QaFEdR18JZJxJmtv5aoU4oPhBjfRyElMAlWtJkxcHUwGjXj
+ ygjcxfUr/IuthwafSmIo8q4NZWyQBvyd5G8tFFwepfMw1VC61m56urIBNPQ2ygtzgRha
+ a5sHjYURVcZQRf+PMOAk/3Vpc0IOapTwhVfnNWBoJNkOHDyPbhcJtlqdk5ksPmNFx+jf
+ 39qQ==
+X-Gm-Message-State: APjAAAWyLEq4GEBXfMS+lHP7pPyvw7IA/iiIvYjouVZ/GUQrc+FT4puR
+ WpINzpaRfmZvNrCPp65WSlJViW1GONSMBNKzfUU=
+X-Google-Smtp-Source: APXvYqzavLuw+fYyO/Ee/mlQ+iY4CvacUIYc3xWeyHRCeNGC5+bZUljuFpVga925HYErcNTBU0srAK1dAYx0mT418mM=
+X-Received: by 2002:a6b:cd81:: with SMTP id d123mr4933848iog.78.1569347566383; 
+ Tue, 24 Sep 2019 10:52:46 -0700 (PDT)
+MIME-Version: 1.0
+References: <1548057848-15136-1-git-send-email-rppt@linux.ibm.com>
+In-Reply-To: <1548057848-15136-1-git-send-email-rppt@linux.ibm.com>
+From: Adam Ford <aford173@gmail.com>
+Date: Tue, 24 Sep 2019 12:52:35 -0500
+Message-ID: <CAHCN7x+Jv7yGPoB0Gm=TJ30ObLJduw2XomHkd++KqFEURYQcGg@mail.gmail.com>
+Subject: Re: [PATCH v2 00/21] Refine memblock API
+To: Mike Rapoport <rppt@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailman-Approved-At: Wed, 25 Sep 2019 21:11:23 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,27 +86,273 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
+ Petr Mladek <pmladek@suse.com>, linux-sh@vger.kernel.org,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>,
+ sparclinux@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
+ linux-s390@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Richard Weinberger <richard@nod.at>, x86@kernel.org,
+ Russell King <linux@armlinux.org.uk>, kasan-dev@googlegroups.com,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Mark Salter <msalter@redhat.com>,
+ Dennis Zhou <dennis@kernel.org>, Matt Turner <mattst88@gmail.com>,
+ linux-snps-arc@lists.infradead.org, uclinux-h8-devel@lists.sourceforge.jp,
+ devicetree <devicetree@vger.kernel.org>, linux-xtensa@linux-xtensa.org,
+ linux-um@lists.infradead.org, etnaviv@lists.freedesktop.org,
+ linux-m68k@lists.linux-m68k.org, Rob Herring <robh+dt@kernel.org>,
+ Greentime Hu <green.hu@gmail.com>, xen-devel@lists.xenproject.org,
+ Stafford Horne <shorne@gmail.com>, Guan Xuetao <gxt@pku.edu.cn>,
+ arm-soc <linux-arm-kernel@lists.infradead.org>,
+ Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
+ linux-mm@kvack.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linux-usb@vger.kernel.org, linux-mips@vger.kernel.org,
+ Paul Burton <paul.burton@mips.com>, Vineet Gupta <vgupta@synopsys.com>,
+ linux-alpha@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
+ openrisc@lists.librecores.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2019-09-24 at 03:52:51 UTC, "Aneesh Kumar K.V" wrote:
-> The store ordering vs tlbie issue mentioned in
-> commit a5d4b5891c2f ("powerpc/mm: Fixup tlbie vs store ordering issue on
-> POWER9") is fixed for Nimbus 2.3 and Cumulus 1.3 revisions. We don't need
-> to apply the fixup if we are running on them
-> 
-> We can only do this on PowerNV. On pseries guest with kvm we still don't
-> support redoing the feature fixup after migration. So we should be enabling
-> all the workarounds needed, because whe can possibly migrate between
-> DD 2.3 and DD 2.2
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+On Mon, Jan 21, 2019 at 2:05 AM Mike Rapoport <rppt@linux.ibm.com> wrote:
+>
+> Hi,
+>
+> Current memblock API is quite extensive and, which is more annoying,
+> duplicated. Except the low-level functions that allow searching for a free
+> memory region and marking it as reserved, memblock provides three (well,
+> two and a half) sets of functions to allocate memory. There are several
+> overlapping functions that return a physical address and there are
+> functions that return virtual address. Those that return the virtual
+> address may also clear the allocated memory. And, on top of all that, some
+> allocators panic and some return NULL in case of error.
+>
+> This set tries to reduce the mess, and trim down the amount of memblock
+> allocation methods.
+>
+> Patches 1-10 consolidate the functions that return physical address of
+> the allocated memory
+>
+> Patches 11-13 are some trivial cleanups
+>
+> Patches 14-19 add checks for the return value of memblock_alloc*() and
+> panics in case of errors. The patches 14-18 include some minor refactoring
+> to have better readability of the resulting code and patch 19 is a
+> mechanical addition of
+>
+>         if (!ptr)
+>                 panic();
+>
+> after memblock_alloc*() calls.
+>
+> And, finally, patches 20 and 21 remove panic() calls memblock and _nopanic
+> variants from memblock.
+>
+> v2 changes:
+> * replace some more %lu with %zu
+> * remove panics where they are not needed in s390 and in printk
+> * collect Acked-by and Reviewed-by.
+>
+>
+> Christophe Leroy (1):
+>   powerpc: use memblock functions returning virtual address
+>
+> Mike Rapoport (20):
+>   openrisc: prefer memblock APIs returning virtual address
+>   memblock: replace memblock_alloc_base(ANYWHERE) with memblock_phys_alloc
+>   memblock: drop memblock_alloc_base_nid()
+>   memblock: emphasize that memblock_alloc_range() returns a physical address
+>   memblock: memblock_phys_alloc_try_nid(): don't panic
+>   memblock: memblock_phys_alloc(): don't panic
+>   memblock: drop __memblock_alloc_base()
+>   memblock: drop memblock_alloc_base()
+>   memblock: refactor internal allocation functions
+>   memblock: make memblock_find_in_range_node() and choose_memblock_flags() static
+>   arch: use memblock_alloc() instead of memblock_alloc_from(size, align, 0)
+>   arch: don't memset(0) memory returned by memblock_alloc()
+>   ia64: add checks for the return value of memblock_alloc*()
+>   sparc: add checks for the return value of memblock_alloc*()
+>   mm/percpu: add checks for the return value of memblock_alloc*()
+>   init/main: add checks for the return value of memblock_alloc*()
+>   swiotlb: add checks for the return value of memblock_alloc*()
+>   treewide: add checks for the return value of memblock_alloc*()
+>   memblock: memblock_alloc_try_nid: don't panic
+>   memblock: drop memblock_alloc_*_nopanic() variants
+>
+I know it's rather late, but this patch broke the Etnaviv 3D graphics
+in my i.MX6Q.
 
-Series applied to powerpc fixes, thanks.
+When I try to use the 3D, it returns some errors and the dmesg log
+shows some memory allocation errors too:
+[    3.682347] etnaviv etnaviv: bound 130000.gpu (ops gpu_ops)
+[    3.688669] etnaviv etnaviv: bound 134000.gpu (ops gpu_ops)
+[    3.695099] etnaviv etnaviv: bound 2204000.gpu (ops gpu_ops)
+[    3.700800] etnaviv-gpu 130000.gpu: model: GC2000, revision: 5108
+[    3.723013] etnaviv-gpu 130000.gpu: command buffer outside valid
+memory window
+[    3.731308] etnaviv-gpu 134000.gpu: model: GC320, revision: 5007
+[    3.752437] etnaviv-gpu 134000.gpu: command buffer outside valid
+memory window
+[    3.760583] etnaviv-gpu 2204000.gpu: model: GC355, revision: 1215
+[    3.766766] etnaviv-gpu 2204000.gpu: Ignoring GPU with VG and FE2.0
+[    3.776131] [drm] Initialized etnaviv 1.2.0 20151214 for etnaviv on minor 0
 
-https://git.kernel.org/powerpc/c/677733e296b5c7a37c47da391fc70a43dc40bd67
+# glmark2-es2-drm
+Error creating gpu
+Error: eglCreateWindowSurface failed with error: 0x3009
+Error: eglCreateWindowSurface failed with error: 0x3009
+Error: CanvasGeneric: Invalid EGL state
+Error: main: Could not initialize canvas
 
-cheers
+
+Before this patch:
+
+[    3.691995] etnaviv etnaviv: bound 130000.gpu (ops gpu_ops)
+[    3.698356] etnaviv etnaviv: bound 134000.gpu (ops gpu_ops)
+[    3.704792] etnaviv etnaviv: bound 2204000.gpu (ops gpu_ops)
+[    3.710488] etnaviv-gpu 130000.gpu: model: GC2000, revision: 5108
+[    3.733649] etnaviv-gpu 134000.gpu: model: GC320, revision: 5007
+[    3.756115] etnaviv-gpu 2204000.gpu: model: GC355, revision: 1215
+[    3.762250] etnaviv-gpu 2204000.gpu: Ignoring GPU with VG and FE2.0
+[    3.771432] [drm] Initialized etnaviv 1.2.0 20151214 for etnaviv on minor 0
+
+and the 3D gemos work without this.
+
+I don't know enough about the i.MX6 nor the 3D accelerator to know how
+to fix it.
+I am hoping someone in the know might have some suggestions.
+
+>  arch/alpha/kernel/core_cia.c              |   5 +-
+>  arch/alpha/kernel/core_marvel.c           |   6 +
+>  arch/alpha/kernel/pci-noop.c              |  13 +-
+>  arch/alpha/kernel/pci.c                   |  11 +-
+>  arch/alpha/kernel/pci_iommu.c             |  16 +-
+>  arch/alpha/kernel/setup.c                 |   2 +-
+>  arch/arc/kernel/unwind.c                  |   3 +-
+>  arch/arc/mm/highmem.c                     |   4 +
+>  arch/arm/kernel/setup.c                   |   6 +
+>  arch/arm/mm/init.c                        |   6 +-
+>  arch/arm/mm/mmu.c                         |  14 +-
+>  arch/arm64/kernel/setup.c                 |   8 +-
+>  arch/arm64/mm/kasan_init.c                |  10 ++
+>  arch/arm64/mm/mmu.c                       |   2 +
+>  arch/arm64/mm/numa.c                      |   4 +
+>  arch/c6x/mm/dma-coherent.c                |   4 +
+>  arch/c6x/mm/init.c                        |   4 +-
+>  arch/csky/mm/highmem.c                    |   5 +
+>  arch/h8300/mm/init.c                      |   4 +-
+>  arch/ia64/kernel/mca.c                    |  25 +--
+>  arch/ia64/mm/contig.c                     |   8 +-
+>  arch/ia64/mm/discontig.c                  |   4 +
+>  arch/ia64/mm/init.c                       |  38 ++++-
+>  arch/ia64/mm/tlb.c                        |   6 +
+>  arch/ia64/sn/kernel/io_common.c           |   3 +
+>  arch/ia64/sn/kernel/setup.c               |  12 +-
+>  arch/m68k/atari/stram.c                   |   4 +
+>  arch/m68k/mm/init.c                       |   3 +
+>  arch/m68k/mm/mcfmmu.c                     |   7 +-
+>  arch/m68k/mm/motorola.c                   |   9 ++
+>  arch/m68k/mm/sun3mmu.c                    |   6 +
+>  arch/m68k/sun3/sun3dvma.c                 |   3 +
+>  arch/microblaze/mm/init.c                 |  10 +-
+>  arch/mips/cavium-octeon/dma-octeon.c      |   3 +
+>  arch/mips/kernel/setup.c                  |   3 +
+>  arch/mips/kernel/traps.c                  |   5 +-
+>  arch/mips/mm/init.c                       |   5 +
+>  arch/nds32/mm/init.c                      |  12 ++
+>  arch/openrisc/mm/init.c                   |   5 +-
+>  arch/openrisc/mm/ioremap.c                |   8 +-
+>  arch/powerpc/kernel/dt_cpu_ftrs.c         |   8 +-
+>  arch/powerpc/kernel/irq.c                 |   5 -
+>  arch/powerpc/kernel/paca.c                |   6 +-
+>  arch/powerpc/kernel/pci_32.c              |   3 +
+>  arch/powerpc/kernel/prom.c                |   5 +-
+>  arch/powerpc/kernel/rtas.c                |   6 +-
+>  arch/powerpc/kernel/setup-common.c        |   3 +
+>  arch/powerpc/kernel/setup_32.c            |  26 ++--
+>  arch/powerpc/kernel/setup_64.c            |   4 +
+>  arch/powerpc/lib/alloc.c                  |   3 +
+>  arch/powerpc/mm/hash_utils_64.c           |  11 +-
+>  arch/powerpc/mm/mmu_context_nohash.c      |   9 ++
+>  arch/powerpc/mm/numa.c                    |   4 +
+>  arch/powerpc/mm/pgtable-book3e.c          |  12 +-
+>  arch/powerpc/mm/pgtable-book3s64.c        |   3 +
+>  arch/powerpc/mm/pgtable-radix.c           |   9 +-
+>  arch/powerpc/mm/ppc_mmu_32.c              |   3 +
+>  arch/powerpc/platforms/pasemi/iommu.c     |   3 +
+>  arch/powerpc/platforms/powermac/nvram.c   |   3 +
+>  arch/powerpc/platforms/powernv/opal.c     |   3 +
+>  arch/powerpc/platforms/powernv/pci-ioda.c |   8 +
+>  arch/powerpc/platforms/ps3/setup.c        |   3 +
+>  arch/powerpc/sysdev/dart_iommu.c          |   3 +
+>  arch/powerpc/sysdev/msi_bitmap.c          |   3 +
+>  arch/s390/kernel/crash_dump.c             |   3 +
+>  arch/s390/kernel/setup.c                  |  16 ++
+>  arch/s390/kernel/smp.c                    |   9 +-
+>  arch/s390/kernel/topology.c               |   6 +
+>  arch/s390/numa/mode_emu.c                 |   3 +
+>  arch/s390/numa/numa.c                     |   6 +-
+>  arch/sh/boards/mach-ap325rxa/setup.c      |   5 +-
+>  arch/sh/boards/mach-ecovec24/setup.c      |  10 +-
+>  arch/sh/boards/mach-kfr2r09/setup.c       |   5 +-
+>  arch/sh/boards/mach-migor/setup.c         |   5 +-
+>  arch/sh/boards/mach-se/7724/setup.c       |  10 +-
+>  arch/sh/kernel/machine_kexec.c            |   3 +-
+>  arch/sh/mm/init.c                         |   8 +-
+>  arch/sh/mm/numa.c                         |   4 +
+>  arch/sparc/kernel/prom_32.c               |   6 +-
+>  arch/sparc/kernel/setup_64.c              |   6 +
+>  arch/sparc/kernel/smp_64.c                |  12 ++
+>  arch/sparc/mm/init_32.c                   |   2 +-
+>  arch/sparc/mm/init_64.c                   |  11 ++
+>  arch/sparc/mm/srmmu.c                     |  18 ++-
+>  arch/um/drivers/net_kern.c                |   3 +
+>  arch/um/drivers/vector_kern.c             |   3 +
+>  arch/um/kernel/initrd.c                   |   2 +
+>  arch/um/kernel/mem.c                      |  16 ++
+>  arch/unicore32/kernel/setup.c             |   4 +
+>  arch/unicore32/mm/mmu.c                   |  15 +-
+>  arch/x86/kernel/acpi/boot.c               |   3 +
+>  arch/x86/kernel/apic/io_apic.c            |   5 +
+>  arch/x86/kernel/e820.c                    |   5 +-
+>  arch/x86/kernel/setup_percpu.c            |  10 +-
+>  arch/x86/mm/kasan_init_64.c               |  14 +-
+>  arch/x86/mm/numa.c                        |  12 +-
+>  arch/x86/platform/olpc/olpc_dt.c          |   3 +
+>  arch/x86/xen/p2m.c                        |  11 +-
+>  arch/xtensa/mm/kasan_init.c               |  10 +-
+>  arch/xtensa/mm/mmu.c                      |   3 +
+>  drivers/clk/ti/clk.c                      |   3 +
+>  drivers/firmware/memmap.c                 |   2 +-
+>  drivers/macintosh/smu.c                   |   5 +-
+>  drivers/of/fdt.c                          |   8 +-
+>  drivers/of/of_reserved_mem.c              |   7 +-
+>  drivers/of/unittest.c                     |   8 +-
+>  drivers/usb/early/xhci-dbc.c              |   2 +-
+>  drivers/xen/swiotlb-xen.c                 |   7 +-
+>  include/linux/memblock.h                  |  59 +------
+>  init/main.c                               |  26 +++-
+>  kernel/dma/swiotlb.c                      |  21 ++-
+>  kernel/power/snapshot.c                   |   3 +
+>  kernel/printk/printk.c                    |   9 +-
+>  lib/cpumask.c                             |   3 +
+>  mm/cma.c                                  |  10 +-
+>  mm/kasan/init.c                           |  10 +-
+>  mm/memblock.c                             | 249 ++++++++++--------------------
+>  mm/page_alloc.c                           |  10 +-
+>  mm/page_ext.c                             |   2 +-
+>  mm/percpu.c                               |  84 +++++++---
+>  mm/sparse.c                               |  25 ++-
+>  121 files changed, 860 insertions(+), 412 deletions(-)
+>
+> --
+> 2.7.4
+>
+>
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
