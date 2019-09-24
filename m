@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 58BA2C432C1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 18:54:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56512C432C1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 18:57:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D3F52214AF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 18:54:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 92F26214AF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 18:57:13 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Vbzxa/G3"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D3F52214AF
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="LPdlXmLl"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 92F26214AF
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46d9NV5BYtzDqR6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 04:54:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46d9RC4TlbzDqcq
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 04:57:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -29,33 +29,33 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="Vbzxa/G3"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="LPdlXmLl"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46d6fh3Gq4zDqDQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2019 02:51:55 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46d6fs4359zDqPk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2019 02:52:05 +1000 (AEST)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 668F621BE5;
- Tue, 24 Sep 2019 16:51:51 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id D197C217D9;
+ Tue, 24 Sep 2019 16:52:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1569343912;
- bh=AA3UGzytwFlaFFB0h7c09QGX5TW/ljwxPmgI+tY/N1Y=;
+ s=default; t=1569343923;
+ bh=yXB39dAJ0OPDeSOHA2m2wMUfQ/NcOLpxgJl/vscunP4=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=Vbzxa/G31eEHHjkEUNbYpjDCqNeoZ6uLi4Y+q+Jpkvbb8IPC70vQEG58XceKFr6Ab
- kyRuPVGDmNeaLIgevWTv+1Fkb/0eHhVhOLCY/4wErIGN3CJ/6HQsRGlJH178RJTwUa
- 3qmFHdgtsGICgfNH0HXps+nUO6CJ633AjJKxGFz0=
+ b=LPdlXmLltWQYp8x9ZtbW26zxgvdWZxw+na1IusIzSGnol1RT298qCS81ZHGIniKmr
+ g6O2/17FB8llHIWtMaCvN1vefbJf9tLA1bSIevSWHf1GgkSSgwZyXtI96FYF7AC1lU
+ I9agNqpJCp+9x3mV7bVu+P4hgqlZ69GDO9PB4hy0=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 11/19] powerpc/pseries/mobility: use cond_resched
- when updating device tree
-Date: Tue, 24 Sep 2019 12:51:22 -0400
-Message-Id: <20190924165130.28625-11-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 15/19] powerpc/64s/exception: machine check use
+ correct cfar for late handler
+Date: Tue, 24 Sep 2019 12:51:26 -0400
+Message-Id: <20190924165130.28625-15-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190924165130.28625-1-sashal@kernel.org>
 References: <20190924165130.28625-1-sashal@kernel.org>
@@ -74,73 +74,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Sasha Levin <sashal@kernel.org>
+Cc: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Nathan Lynch <nathanl@linux.ibm.com>
+From: Nicholas Piggin <npiggin@gmail.com>
 
-[ Upstream commit ccfb5bd71d3d1228090a8633800ae7cdf42a94ac ]
+[ Upstream commit 0b66370c61fcf5fcc1d6901013e110284da6e2bb ]
 
-After a partition migration, pseries_devicetree_update() processes
-changes to the device tree communicated from the platform to
-Linux. This is a relatively heavyweight operation, with multiple
-device tree searches, memory allocations, and conversations with
-partition firmware.
+Bare metal machine checks run an "early" handler in real mode before
+running the main handler which reports the event.
 
-There's a few levels of nested loops which are bounded only by
-decisions made by the platform, outside of Linux's control, and indeed
-we have seen RCU stalls on large systems while executing this call
-graph. Use cond_resched() in these loops so that the cpu is yielded
-when needed.
+The main handler runs exactly as a normal interrupt handler, after the
+"windup" which sets registers back as they were at interrupt entry.
+CFAR does not get restored by the windup code, so that will be wrong
+when the handler is run.
 
-Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
+Restore the CFAR to the saved value before running the late handler.
+
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Link: https://lore.kernel.org/r/20190802192926.19277-4-nathanl@linux.ibm.com
+Link: https://lore.kernel.org/r/20190802105709.27696-8-npiggin@gmail.com
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/platforms/pseries/mobility.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ arch/powerpc/kernel/exceptions-64s.S | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-index 3784a7abfcc80..74791e8382d22 100644
---- a/arch/powerpc/platforms/pseries/mobility.c
-+++ b/arch/powerpc/platforms/pseries/mobility.c
-@@ -11,6 +11,7 @@
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 92474227262b4..0c8b966e80702 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -467,6 +467,10 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
+ 	RFI_TO_USER_OR_KERNEL
+ 9:
+ 	/* Deliver the machine check to host kernel in V mode. */
++BEGIN_FTR_SECTION
++	ld	r10,ORIG_GPR3(r1)
++	mtspr	SPRN_CFAR,r10
++END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
+ 	MACHINE_CHECK_HANDLER_WINDUP
+ 	b	machine_check_pSeries
  
- #include <linux/kernel.h>
- #include <linux/kobject.h>
-+#include <linux/sched.h>
- #include <linux/smp.h>
- #include <linux/stat.h>
- #include <linux/completion.h>
-@@ -206,7 +207,11 @@ static int update_dt_node(__be32 phandle, s32 scope)
- 
- 				prop_data += vd;
- 			}
-+
-+			cond_resched();
- 		}
-+
-+		cond_resched();
- 	} while (rtas_rc == 1);
- 
- 	of_node_put(dn);
-@@ -282,8 +287,12 @@ int pseries_devicetree_update(s32 scope)
- 					add_dt_node(phandle, drc_index);
- 					break;
- 				}
-+
-+				cond_resched();
- 			}
- 		}
-+
-+		cond_resched();
- 	} while (rc == 1);
- 
- 	kfree(rtas_buf);
 -- 
 2.20.1
 
