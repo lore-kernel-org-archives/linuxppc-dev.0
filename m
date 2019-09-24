@@ -2,67 +2,80 @@ Return-Path: <SRS0=kV/c=XT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C8C8C432C1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 19:21:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B6CE1C432C1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 19:25:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E7521214DA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 19:21:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 35EDF207FD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 19:25:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Q1S1b0b0"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E7521214DA
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=intel-com.20150623.gappssmtp.com header.i=@intel-com.20150623.gappssmtp.com header.b="Nm7UWbP8"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 35EDF207FD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46d9z56MzKzDqdM
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 05:21:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46dB3M5bbfzDqTd
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 05:25:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=intel.com
+ (client-ip=2607:f8b0:4864:20::241; helo=mail-oi1-x241.google.com;
+ envelope-from=dan.j.williams@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="Q1S1b0b0"; 
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=intel-com.20150623.gappssmtp.com
+ header.i=@intel-com.20150623.gappssmtp.com header.b="Nm7UWbP8"; 
  dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oi1-x241.google.com (mail-oi1-x241.google.com
+ [IPv6:2607:f8b0:4864:20::241])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46d6gh2GZWzDqJB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2019 02:52:48 +1000 (AEST)
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
- [73.47.72.35])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 4849721D80;
- Tue, 24 Sep 2019 16:52:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1569343966;
- bh=JWnS6eCa3vkdo1jTO8fCCNR5Mxxo+4+dhhhRNHODc+g=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=Q1S1b0b0lxxT9ARluQhG7x+yfSdDdcl1s0Zf5wah9Nw1IMWbjoCDEr3NNtqDw6eQX
- 77ng/vUflUvWTuLYrE+b1X0YfktFlneIty2gmApklG/Fef4pqeuTsg//1lq5Km8l3V
- svkkTbV5BRhtqJHew3ZwqSQPPP3kCmpgpsP0simI=
-From: Sasha Levin <sashal@kernel.org>
-To: linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.4 13/14] powerpc/pseries: correctly track irq state
- in default idle
-Date: Tue, 24 Sep 2019 12:52:11 -0400
-Message-Id: <20190924165214.28857-13-sashal@kernel.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190924165214.28857-1-sashal@kernel.org>
-References: <20190924165214.28857-1-sashal@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46d7YP1sxPzDqWg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2019 03:32:23 +1000 (AEST)
+Received: by mail-oi1-x241.google.com with SMTP id e18so2404632oii.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2019 10:32:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=intel-com.20150623.gappssmtp.com; s=20150623;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=vufHR4gTNWqyAPqOkAFSdaMG9FRPmHMMrJOcHYZrZnQ=;
+ b=Nm7UWbP88ZdsRNTHKyz/5IW6/lRTd7wGMUWUxRFB0NN2Nlwz29YClrjuWcASt9RI7b
+ W5TS10WfepT9X9E4Nx33P7aaCacWJnBE6/d3XXVUxKLXGZZY+QTp+RVfFFZSEpqouwfa
+ oD+yTjHI/eI5iCDRdIuhTe+Cs8aBWta5bf4fwOU7UUQO3f8SLaD/vUOEnwORWFe72F1f
+ yGmXKBW5wrQNnn6tqxB93uWgYAi0uaJFKlHm/tcwY2fn8fFEEZ6rEm9TLFwvzL/W2z7c
+ abSspao32/yeGBlTck+Y5HlJHU38NqSW/6PfzyVXj/2QNon+k2zuzadCbCT8kPQyiebs
+ AUxA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=vufHR4gTNWqyAPqOkAFSdaMG9FRPmHMMrJOcHYZrZnQ=;
+ b=HPdLlwYidlkGolD3HIsVYP1QTjhk4NxPslRdO4pBI4OekbMRf/wbxa10cottopuGUn
+ yPI+ZIBEqESK+VXOIVvxCNxN5ZG+j76h0l5EWA+QzWWbkn3mAzY+DYxBo7u3GHDfGBhM
+ an8zwr4FXqdM6aDIxRxbLbd24ArzWfYpCf5eLEBXPwk62aX9TL8bX/TOwl0CpdgcJaCi
+ EVmBgAIuJRVUaFg3+PyxaUDQQQwhBnZghSplbl7nYN0OmiCKVegnGdsVkpCyIDJvpym+
+ rF/2d1oCsCrAhlXY7ch+qHuSG7yKE3rd0ngLaFUs4wvhZI4sUB0+/D7Ix1gOt+Muj3iY
+ ROGA==
+X-Gm-Message-State: APjAAAVnw98/noLdNubMy2GgRhsBKJ5FsCfNAxK/TTc6LzWqHTwzjuTb
+ hxMWz44jCEc7uCJc40w+Vx26X6wdDoBrWAfftXq54Q==
+X-Google-Smtp-Source: APXvYqxGZn5csplKhSkggqH2B3a79gmO0I8UtOCpk5iIxx+1/zvqH3OzQp2h54EgO/JbZcmQV8+gYjTIbwm7mg3zVfI=
+X-Received: by 2002:aca:eb09:: with SMTP id j9mr1173051oih.105.1569346340355; 
+ Tue, 24 Sep 2019 10:32:20 -0700 (PDT)
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+References: <20190924042440.27946-1-aneesh.kumar@linux.ibm.com>
+In-Reply-To: <20190924042440.27946-1-aneesh.kumar@linux.ibm.com>
+From: Dan Williams <dan.j.williams@intel.com>
+Date: Tue, 24 Sep 2019 10:32:09 -0700
+Message-ID: <CAPcyv4i8a3jLUgMYp8_G9nRxtBJzrz=e4P6T+q_tJSVkhVmi=Q@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/book3s64: Export has_transparent_hugepage()
+ related functions.
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,63 +87,17 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Sasha Levin <sashal@kernel.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-nvdimm <linux-nvdimm@lists.01.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Nathan Lynch <nathanl@linux.ibm.com>
+On Mon, Sep 23, 2019 at 9:25 PM Aneesh Kumar K.V
+<aneesh.kumar@linux.ibm.com> wrote:
+>
+> In later patch, we want to use hash_transparent_hugepage() in a kernel module.
+> Export two related functions.
+>
 
-[ Upstream commit 92c94dfb69e350471473fd3075c74bc68150879e ]
-
-prep_irq_for_idle() is intended to be called before entering
-H_CEDE (and it is used by the pseries cpuidle driver). However the
-default pseries idle routine does not call it, leading to mismanaged
-lazy irq state when the cpuidle driver isn't in use. Manifestations of
-this include:
-
-* Dropped IPIs in the time immediately after a cpu comes
-  online (before it has installed the cpuidle handler), making the
-  online operation block indefinitely waiting for the new cpu to
-  respond.
-
-* Hitting this WARN_ON in arch_local_irq_restore():
-	/*
-	 * We should already be hard disabled here. We had bugs
-	 * where that wasn't the case so let's dbl check it and
-	 * warn if we are wrong. Only do that when IRQ tracing
-	 * is enabled as mfmsr() can be costly.
-	 */
-	if (WARN_ON_ONCE(mfmsr() & MSR_EE))
-		__hard_irq_disable();
-
-Call prep_irq_for_idle() from pseries_lpar_idle() and honor its
-result.
-
-Fixes: 363edbe2614a ("powerpc: Default arch idle could cede processor on pseries")
-Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Link: https://lore.kernel.org/r/20190910225244.25056-1-nathanl@linux.ibm.com
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- arch/powerpc/platforms/pseries/setup.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 9cc976ff7fecc..88fcf6a95fa67 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -369,6 +369,9 @@ static void pseries_lpar_idle(void)
- 	 * low power mode by cedeing processor to hypervisor
- 	 */
- 
-+	if (!prep_irq_for_idle())
-+		return;
-+
- 	/* Indicate to hypervisor that we are idle. */
- 	get_lppaca()->idle = 1;
- 
--- 
-2.20.1
-
+Looks good, thanks.
