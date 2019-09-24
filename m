@@ -2,82 +2,62 @@ Return-Path: <SRS0=kV/c=XT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD6AFC432C1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 09:28:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F69DC432C1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 10:57:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 88246214D9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 09:28:16 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="lytUR31w"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 88246214D9
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id E13AF214AF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 10:57:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E13AF214AF
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46cwpk1ZwTzDqSy
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 19:28:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46cynC5WvJzDqD4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 20:57:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
- envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.13; helo=inva020.nxp.com;
+ envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="lytUR31w"; dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46cwmd69b5zDqS3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2019 19:26:25 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=jpxNL12cNMAZAoNUWd3gZZ5abGhJ0ftyATBAiZSxSQU=; b=lytUR31wG42Kx44xHl1Qi+HEP
- d503DtCrHlkpVkJIig01ou5wdkagxJ8pPFOrHUWRzivw14hEO0i4UUB6FjPb7GXcgyodvG9h5SM7O
- /Mm31MMJM8e6CfMCQDt4HjEPRMRCwAF5YwjiPfWs81M8jd3n/Rl5vYQXPyGdffdlg9EDzmC8+qdY/
- uiwJ7MhOCy608Svimr/+uEstMd7G24lfij70nORC92UrTdg+CkE2IEzV9Fgl7prPY9UWbEwy5SSPF
- nzZkjyQy0GCM5v1NSmtubG67AIFpkW1pgFCB0OszOtjgX8e7Ama65wa8OgCnQiohUsv4HHh7IICil
- +ylXkIt3A==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100]
- helo=noisy.programming.kicks-ass.net)
- by bombadil.infradead.org with esmtpsa (Exim 4.92.2 #3 (Red Hat Linux))
- id 1iCh4z-0002RC-TG; Tue, 24 Sep 2019 09:25:54 +0000
-Received: from hirez.programming.kicks-ass.net
- (hirez.programming.kicks-ass.net [192.168.1.225])
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id E50D2305E35;
- Tue, 24 Sep 2019 11:25:05 +0200 (CEST)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
- id 6FC1F20D80D41; Tue, 24 Sep 2019 11:25:51 +0200 (CEST)
-Date: Tue, 24 Sep 2019 11:25:51 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Yunsheng Lin <linyunsheng@huawei.com>
-Subject: Re: [PATCH v6] numa: make node_to_cpumask_map() NUMA_NO_NODE aware
-Message-ID: <20190924092551.GK2369@hirez.programming.kicks-ass.net>
-References: <1568724534-146242-1-git-send-email-linyunsheng@huawei.com>
- <20190923151519.GE2369@hirez.programming.kicks-ass.net>
- <20190923152856.GB17206@dhcp22.suse.cz>
- <20190923154852.GG2369@hirez.programming.kicks-ass.net>
- <20190923165235.GD17206@dhcp22.suse.cz>
- <20190923203410.GI2369@hirez.programming.kicks-ass.net>
- <f1362dbb-ad31-51a8-2b06-16c9d928b876@huawei.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f1362dbb-ad31-51a8-2b06-16c9d928b876@huawei.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46cykB2FhdzDqPm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2019 20:54:23 +1000 (AEST)
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 710091A03C3;
+ Tue, 24 Sep 2019 12:54:19 +0200 (CEST)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
+ [165.114.16.14])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id DA4D21A00E7;
+ Tue, 24 Sep 2019 12:54:12 +0200 (CEST)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net
+ [10.192.224.44])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 9AB2C40324;
+ Tue, 24 Sep 2019 18:54:04 +0800 (SGT)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
+ festevam@gmail.com, lgirdwood@gmail.com, broonie@kernel.org,
+ perex@perex.cz, tiwai@suse.com, alsa-devel@alsa-project.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ robh+dt@kernel.org, mark.rutland@arm.com, devicetree@vger.kernel.org,
+ lars@metafoo.de
+Subject: [PATCH V4 2/4] ASoC: fsl_asrc: update supported sample format
+Date: Tue, 24 Sep 2019 18:52:33 +0800
+Message-Id: <45a7c383f43cc1dd9d0934846447aee653278c03.1569296075.git.shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <cover.1569296075.git.shengjiu.wang@nxp.com>
+References: <cover.1569296075.git.shengjiu.wang@nxp.com>
+In-Reply-To: <cover.1569296075.git.shengjiu.wang@nxp.com>
+References: <cover.1569296075.git.shengjiu.wang@nxp.com>
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,62 +69,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dalias@libc.org, linux-sh@vger.kernel.org, catalin.marinas@arm.com,
- dave.hansen@linux.intel.com, heiko.carstens@de.ibm.com,
- jiaxun.yang@flygoat.com, Michal Hocko <mhocko@kernel.org>,
- mwb@linux.vnet.ibm.com, paulus@samba.org, hpa@zytor.com,
- sparclinux@vger.kernel.org, chenhc@lemote.com, will@kernel.org, cai@lca.pw,
- linux-s390@vger.kernel.org, ysato@users.sourceforge.jp, x86@kernel.org,
- rppt@linux.ibm.com, borntraeger@de.ibm.com, dledford@redhat.com,
- mingo@redhat.com, jeffrey.t.kirsher@intel.com, jhogan@kernel.org,
- mattst88@gmail.com, linux-mips@vger.kernel.org, len.brown@intel.com,
- gor@linux.ibm.com, anshuman.khandual@arm.com, gregkh@linuxfoundation.org,
- bp@alien8.de, luto@kernel.org, tglx@linutronix.de,
- naveen.n.rao@linux.vnet.ibm.com, linux-arm-kernel@lists.infradead.org,
- rth@twiddle.net, axboe@kernel.dk, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, ralf@linux-mips.org, tbogendoerfer@suse.de,
- paul.burton@mips.com, linux-alpha@vger.kernel.org, rafael@kernel.org,
- ink@jurassic.park.msu.ru, akpm@linux-foundation.org, robin.murphy@arm.com,
- davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Sep 24, 2019 at 09:29:50AM +0800, Yunsheng Lin wrote:
-> On 2019/9/24 4:34, Peter Zijlstra wrote:
+The ASRC support 24bit/16bit/8bit input width, which is
+data width, not slot width.
 
-> > I'm saying the ACPI standard is wrong. Explain to me how it is
-> > physically possible to have a device without NUMA affinity in a NUMA
-> > system?
-> > 
-> >  1) The fundamental interconnect is not uniform.
-> >  2) The device needs to actually be somewhere.
-> > 
-> 
-> From what I can see, NUMA_NO_NODE may make sense in the below case:
-> 
-> 1) Theoretically, there would be a device that can access all the memory
-> uniformly and can be accessed by all cpus uniformly even in a NUMA system.
-> Suppose we have two nodes, and the device just sit in the middle of the
-> interconnect between the two nodes.
-> 
-> Even we define a third node solely for the device, we may need to look at
-> the node distance to decide the device can be accessed uniformly.
-> 
-> Or we can decide that the device can be accessed uniformly by setting
-> it's node to NUMA_NO_NODE.
+For the S20_3LE format, the data with is 20bit, slot width
+is 24bit, if we set ASRMCR1n.IWD to be 24bits, the result
+is the volume is lower than expected, it likes 24bit data
+right shift 4 bits
 
-This is indeed a theoretical case; it doesn't scale. The moment you're
-adding multiple sockets or even board interconnects this all goes out
-the window.
+So replace S20_3LE with S24_3LE in supported list and add S8
+format in TX supported list
 
-And in this case, forcing the device to either node is fine.
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
+---
+ sound/soc/fsl/fsl_asrc.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-> 2) For many virtual deivces, such as tun or loopback netdevice, they
-> are also accessed uniformly by all cpus.
-
-Not true; the virtual device will sit in memory local to some node.
-
-And as with physical devices, you probably want at least one (virtual)
-queue per node.
+diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
+index 4d3804a1ea55..584badf956d2 100644
+--- a/sound/soc/fsl/fsl_asrc.c
++++ b/sound/soc/fsl/fsl_asrc.c
+@@ -624,7 +624,7 @@ static int fsl_asrc_dai_probe(struct snd_soc_dai *dai)
+ 
+ #define FSL_ASRC_FORMATS	(SNDRV_PCM_FMTBIT_S24_LE | \
+ 				 SNDRV_PCM_FMTBIT_S16_LE | \
+-				 SNDRV_PCM_FMTBIT_S20_3LE)
++				 SNDRV_PCM_FMTBIT_S24_3LE)
+ 
+ static struct snd_soc_dai_driver fsl_asrc_dai = {
+ 	.probe = fsl_asrc_dai_probe,
+@@ -635,7 +635,8 @@ static struct snd_soc_dai_driver fsl_asrc_dai = {
+ 		.rate_min = 5512,
+ 		.rate_max = 192000,
+ 		.rates = SNDRV_PCM_RATE_KNOT,
+-		.formats = FSL_ASRC_FORMATS,
++		.formats = FSL_ASRC_FORMATS |
++			   SNDRV_PCM_FMTBIT_S8,
+ 	},
+ 	.capture = {
+ 		.stream_name = "ASRC-Capture",
+-- 
+2.21.0
 
