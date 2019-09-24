@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 055DFC432C1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 18:44:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EDBFC432C2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 18:47:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7A14B207FD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 18:44:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B72EC214AF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2019 18:47:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Cks2AaJa"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7A14B207FD
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="TPGWOZAu"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B72EC214AF
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46d9901MNFzDq72
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 04:44:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46d9D64wJ0zDqc9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 04:47:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -29,33 +29,33 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="Cks2AaJa"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="TPGWOZAu"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46d6dk4zxFzDqLl
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2019 02:51:06 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46d6f26T16zDqK6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2019 02:51:22 +1000 (AEST)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 989F32054F;
- Tue, 24 Sep 2019 16:51:03 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 5F11F21A4A;
+ Tue, 24 Sep 2019 16:51:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1569343864;
- bh=7S9cQcW7htV2m9M+uWzsUFrMxQ5slCUenIdT6l0JSu8=;
+ s=default; t=1569343881;
+ bh=WZWvLpu91GzMfveMKVhwBFKltwv+EJOdKuq185tjW3k=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=Cks2AaJaKROcTgZzvADh3xUvYs2lZTwQPD8DicT/JNhYl7gbAAa63Q0nPT3N9BxSK
- mY0kMk9omaiLP4sSd64+TfcHxGs2APB6WQ2ScMx6VIzNlC1xs4v0U/R5Hz02hCc9Qc
- i53pF8lsr/zuZgwSofC63Qrwegz1RqV4kQvtcidI=
+ b=TPGWOZAuKuQE5NtgSaZGJ1bg4pRSgLl35la/687fRlfrshU7BalK43DnmOvkY3fMR
+ SvYBx4j+Dodmtv4uD6jHO5sG0cxaqYVOZVPnRKB8e0QEq+vYQ863mIl4+7jJl0E+3i
+ xw3wLI/D5l4eMMcU3YrvSwqXkQWt/6k6DlFILE24=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 18/28] powerpc/pseries/mobility: use cond_resched
- when updating device tree
-Date: Tue, 24 Sep 2019 12:50:21 -0400
-Message-Id: <20190924165031.28292-18-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 24/28] powerpc/pseries: correctly track irq state
+ in default idle
+Date: Tue, 24 Sep 2019 12:50:27 -0400
+Message-Id: <20190924165031.28292-24-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190924165031.28292-1-sashal@kernel.org>
 References: <20190924165031.28292-1-sashal@kernel.org>
@@ -82,65 +82,55 @@ Sender: "Linuxppc-dev"
 
 From: Nathan Lynch <nathanl@linux.ibm.com>
 
-[ Upstream commit ccfb5bd71d3d1228090a8633800ae7cdf42a94ac ]
+[ Upstream commit 92c94dfb69e350471473fd3075c74bc68150879e ]
 
-After a partition migration, pseries_devicetree_update() processes
-changes to the device tree communicated from the platform to
-Linux. This is a relatively heavyweight operation, with multiple
-device tree searches, memory allocations, and conversations with
-partition firmware.
+prep_irq_for_idle() is intended to be called before entering
+H_CEDE (and it is used by the pseries cpuidle driver). However the
+default pseries idle routine does not call it, leading to mismanaged
+lazy irq state when the cpuidle driver isn't in use. Manifestations of
+this include:
 
-There's a few levels of nested loops which are bounded only by
-decisions made by the platform, outside of Linux's control, and indeed
-we have seen RCU stalls on large systems while executing this call
-graph. Use cond_resched() in these loops so that the cpu is yielded
-when needed.
+* Dropped IPIs in the time immediately after a cpu comes
+  online (before it has installed the cpuidle handler), making the
+  online operation block indefinitely waiting for the new cpu to
+  respond.
 
+* Hitting this WARN_ON in arch_local_irq_restore():
+	/*
+	 * We should already be hard disabled here. We had bugs
+	 * where that wasn't the case so let's dbl check it and
+	 * warn if we are wrong. Only do that when IRQ tracing
+	 * is enabled as mfmsr() can be costly.
+	 */
+	if (WARN_ON_ONCE(mfmsr() & MSR_EE))
+		__hard_irq_disable();
+
+Call prep_irq_for_idle() from pseries_lpar_idle() and honor its
+result.
+
+Fixes: 363edbe2614a ("powerpc: Default arch idle could cede processor on pseries")
 Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Link: https://lore.kernel.org/r/20190802192926.19277-4-nathanl@linux.ibm.com
+Link: https://lore.kernel.org/r/20190910225244.25056-1-nathanl@linux.ibm.com
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/platforms/pseries/mobility.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ arch/powerpc/platforms/pseries/setup.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-index 4addc552eb33d..9739a055e5f7b 100644
---- a/arch/powerpc/platforms/pseries/mobility.c
-+++ b/arch/powerpc/platforms/pseries/mobility.c
-@@ -12,6 +12,7 @@
- #include <linux/cpu.h>
- #include <linux/kernel.h>
- #include <linux/kobject.h>
-+#include <linux/sched.h>
- #include <linux/smp.h>
- #include <linux/stat.h>
- #include <linux/completion.h>
-@@ -208,7 +209,11 @@ static int update_dt_node(__be32 phandle, s32 scope)
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 6a0ad56e89b93..7a9945b350536 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -307,6 +307,9 @@ static void pseries_lpar_idle(void)
+ 	 * low power mode by ceding processor to hypervisor
+ 	 */
  
- 				prop_data += vd;
- 			}
++	if (!prep_irq_for_idle())
++		return;
 +
-+			cond_resched();
- 		}
-+
-+		cond_resched();
- 	} while (rtas_rc == 1);
+ 	/* Indicate to hypervisor that we are idle. */
+ 	get_lppaca()->idle = 1;
  
- 	of_node_put(dn);
-@@ -317,8 +322,12 @@ int pseries_devicetree_update(s32 scope)
- 					add_dt_node(phandle, drc_index);
- 					break;
- 				}
-+
-+				cond_resched();
- 			}
- 		}
-+
-+		cond_resched();
- 	} while (rc == 1);
- 
- 	kfree(rtas_buf);
 -- 
 2.20.1
 
