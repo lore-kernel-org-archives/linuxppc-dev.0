@@ -2,122 +2,88 @@ Return-Path: <SRS0=fxYp=XU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7215CC432C1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 04:27:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9873EC432C1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 05:09:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DAF112054F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 04:27:45 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="qmAZ0rtw"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DAF112054F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 20ADA21E6F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 05:09:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 20ADA21E6F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46dQ5V4YW7zDqRr
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 14:27:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46dR216vcFzDqjY
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 15:09:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=40.107.4.67; helo=eur03-db5-obe.outbound.protection.outlook.com;
- envelope-from=biwen.li@nxp.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com;
+ envelope-from=bharata@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=nxp.com header.i=@nxp.com header.b="qmAZ0rtw"; 
- dkim-atps=neutral
-Received: from EUR03-DB5-obe.outbound.protection.outlook.com
- (mail-eopbgr40067.outbound.protection.outlook.com [40.107.4.67])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46dPxw6XHSzDqjY
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2019 14:21:06 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=E1t+EWkSuOQNyJu+gTesN+AA092Mj2qMuYFxEpTmYhzQ6FyqZQii0teQ5WKY9YU8YfdvRFRSPqCqwy6iUo3W9PK3arIxqAJvkcAWx51Q/Jqjq2OZrKQ61YKkmX5Q6eaKh0WQ6EjK9VK2hNIsEyUQ8D+0y9rhnF9xVoGppDuo2o6ABBEcqA22XWunG5bWb0IKzx8hiv10dLRPqJWbGZI9d9q2gaGXLw7sBFZXE96kkegwNnyK5JHU9d1gmjVS6qirqlCzXZ2lAJctQuteey/0574DcjnnTZMLXDuzcWdBhJIIJj29xfXEm9JdlwxrNXMhnB2gITEjr5jzzstHr2T0EQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=7bNViU+H4OT41P5xc4/eS9rZMyylBGXYUnt0p+fNMaM=;
- b=WFd77ANpSopNXs2nWWQu0AD2qvyN004VLbTgHgDLUNuSPt/tJLbXDoIr19VOh6G1rHOk3pHzqLFaitJkMf8FukCQNXKxwXuBA21LmZe2S8d5wz2YoANIWFA7XI/nG7Wr/cfDTGmy4anoVt9WEKhcxXq5ffl79gtaZYpo1r5ZC6QjhZqZZdzO1mYYDoVVwEngsoYrkomGgYunkSIXXaBNkvoj3fmK7lEeuyuwmIuF1//je2UEsVYaXAx3576XJkTmkijHKxnCaAXH6X+jHxvJBiVfnJfCZgKBiWGLI5XR6ykmXB6jLiFtt/TjZL6FvpatJ7hBpn3kydJKnSbzvHfs+w==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2; 
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=7bNViU+H4OT41P5xc4/eS9rZMyylBGXYUnt0p+fNMaM=;
- b=qmAZ0rtwE3EBZcabCJpiBIgv7XFcgUoKZRwu1vcfA5sKlwIDEYjvpvsr6VlBXC3/FUTT/VPsageMPIB3EicF+iWgKzr/crxOOhd0sE7do6vUhzmYUXHCfiEaA8UMVGZ/5oVQk3JeKZGofymxLFMi9C+WcZyTISkvwr0QRGzzB78=
-Received: from DB7PR04MB4490.eurprd04.prod.outlook.com (52.135.138.150) by
- DB7PR04MB4220.eurprd04.prod.outlook.com (52.135.131.18) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.2284.20; Wed, 25 Sep 2019 04:21:01 +0000
-Received: from DB7PR04MB4490.eurprd04.prod.outlook.com
- ([fe80::4427:96f2:f651:6dfa]) by DB7PR04MB4490.eurprd04.prod.outlook.com
- ([fe80::4427:96f2:f651:6dfa%5]) with mapi id 15.20.2284.023; Wed, 25 Sep 2019
- 04:21:00 +0000
-From: Biwen Li <biwen.li@nxp.com>
-To: Leo Li <leoyang.li@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, 
- "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com"
- <mark.rutland@arm.com>, Ran Wang <ran.wang_1@nxp.com>
-Subject: RE: [v3,3/3] Documentation: dt: binding: fsl: Add
- 'fsl,ippdexpcr-alt-addr' property
-Thread-Topic: [v3,3/3] Documentation: dt: binding: fsl: Add
- 'fsl,ippdexpcr-alt-addr' property
-Thread-Index: AQHVcoOnab7d5ysBNkWsXmY0PrfSuKc6/L+AgAC3JZCAAAkFAIAAANMggAABmICAAAIKMIAAAb8AgAACHkCAAAZAMA==
-Date: Wed, 25 Sep 2019 04:21:00 +0000
-Message-ID: <DB7PR04MB4490684FE0E95695E89173948F870@DB7PR04MB4490.eurprd04.prod.outlook.com>
-References: <20190924024548.4356-1-biwen.li@nxp.com>
- <20190924024548.4356-3-biwen.li@nxp.com>
- <AM0PR04MB667690EE76D327D0FC09F7818F840@AM0PR04MB6676.eurprd04.prod.outlook.com>
- <DB7PR04MB449034C4BBAA89685A2130F78F870@DB7PR04MB4490.eurprd04.prod.outlook.com>
- <AM0PR04MB66762594DDFC6E5B00BD103C8F870@AM0PR04MB6676.eurprd04.prod.outlook.com>
- <DB7PR04MB4490FECDC76507AADC35948E8F870@DB7PR04MB4490.eurprd04.prod.outlook.com>
- <AM0PR04MB6676BD24B814C3D1D67CF9F88F870@AM0PR04MB6676.eurprd04.prod.outlook.com>
- <DB7PR04MB4490EAE9591B5AE7112C9D188F870@DB7PR04MB4490.eurprd04.prod.outlook.com>
- <AM0PR04MB6676B8A6F7C7C3BC822B45B28F870@AM0PR04MB6676.eurprd04.prod.outlook.com>
- <DB7PR04MB44902BADDDFD090BAF4178C68F870@DB7PR04MB4490.eurprd04.prod.outlook.com>
-In-Reply-To: <DB7PR04MB44902BADDDFD090BAF4178C68F870@DB7PR04MB4490.eurprd04.prod.outlook.com>
-Accept-Language: zh-CN, en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=biwen.li@nxp.com; 
-x-originating-ip: [119.31.174.73]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: 4dddadb6-cadb-4864-3d9c-08d7416fc5ae
-x-ms-office365-filtering-ht: Tenant
-x-microsoft-antispam: BCL:0; PCL:0;
- RULEID:(2390118)(7020095)(4652040)(8989299)(5600167)(711020)(4605104)(1401327)(4618075)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(2017052603328)(7193020);
- SRVR:DB7PR04MB4220; 
-x-ms-traffictypediagnostic: DB7PR04MB4220:|DB7PR04MB4220:
-x-ms-exchange-transport-forked: True
-x-microsoft-antispam-prvs: <DB7PR04MB422053D18B496356B9510E718F870@DB7PR04MB4220.eurprd04.prod.outlook.com>
-x-ms-oob-tlc-oobclassifiers: OLM:6790;
-x-forefront-prvs: 01713B2841
-x-forefront-antispam-report: SFV:NSPM;
- SFS:(10009020)(4636009)(346002)(396003)(136003)(366004)(39860400002)(376002)(189003)(199004)(74316002)(26005)(305945005)(52536014)(7736002)(33656002)(66476007)(229853002)(64756008)(3846002)(66446008)(2906002)(86362001)(76116006)(66946007)(14444005)(5660300002)(25786009)(478600001)(6116002)(256004)(110136005)(14454004)(66066001)(476003)(71190400001)(55016002)(11346002)(9686003)(71200400001)(4326008)(99286004)(486006)(54906003)(2940100002)(81156014)(44832011)(6506007)(2501003)(6246003)(316002)(186003)(102836004)(446003)(8676002)(7696005)(8936002)(66556008)(6636002)(6436002)(81166006)(76176011)(142933001);
- DIR:OUT; SFP:1101; SCL:1; SRVR:DB7PR04MB4220;
- H:DB7PR04MB4490.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
- PTR:InfoNoRecords; MX:1; A:1; 
-received-spf: None (protection.outlook.com: nxp.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: GC8hJbU44SOz2jrg8HjT4lOVgwasMQGrqN1cktwoQuRJLQ0lCkNzdNz10cvkGabzFIKbqLT/C7T2p9CPFNnuQrs1FSybz4UnN5RrcDfPho41gT/DrPmNCMnTsiTFZTyp5r7ddhTD7+Pwbmf5tbZu+LFcy/0rlfDb7OxzxDFnD/3lYK0xzPmjBHcBpAlk7+f2w1i8lyUmQ0xn2gSWPbQfET4w6/oIg0lQmr1/E06CIkeM4Aih73fLf6QrhO6RJDdFYr0UvrShMwJvfN4iC3wNDvWAizyC2cqY55O1FHKmBC+buKe+7/ozDT4Xe7uwnWwSXVkzD3MkdAunAkcdr7Z8Nk5Pnxc0jLItTbWaTN4OWkvRd8GLzxm9Bj4qlTqhrwmLSOryHe5scg/oXC+OZ0PtmYyCfwwQBKGJZ6VJ8oCIJvI=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46dQyx3wwdzDqfr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2019 15:07:04 +1000 (AEST)
+Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x8P52jsU070312
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2019 01:07:01 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2v7ky9ujmm-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2019 01:07:01 -0400
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bharata@linux.ibm.com>;
+ Wed, 25 Sep 2019 06:06:59 +0100
+Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 25 Sep 2019 06:06:55 +0100
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id x8P56rEX46727494
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 25 Sep 2019 05:06:53 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A40AEA4051;
+ Wed, 25 Sep 2019 05:06:53 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B2286A4055;
+ Wed, 25 Sep 2019 05:06:51 +0000 (GMT)
+Received: from bharata.ibmuc.com (unknown [9.199.52.56])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 25 Sep 2019 05:06:51 +0000 (GMT)
+From: Bharata B Rao <bharata@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v9 0/8] KVM: PPC: Driver to manage pages of secure guest
+Date: Wed, 25 Sep 2019 10:36:41 +0530
+X-Mailer: git-send-email 2.21.0
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 4dddadb6-cadb-4864-3d9c-08d7416fc5ae
-X-MS-Exchange-CrossTenant-originalarrivaltime: 25 Sep 2019 04:21:00.8411 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: a+1pcrM7oEO4ET9TkuPrI3cCiFdkMCe5PXaMfVtKn6Ae2vYbGrX4/C9zWkPrZWueFxBXb1YCQzufeV+CYH6rqA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB7PR04MB4220
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19092505-0028-0000-0000-000003A22EF6
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19092505-0029-0000-0000-000024644707
+Message-Id: <20190925050649.14926-1-bharata@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-09-25_03:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=983 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1908290000 definitions=main-1909250050
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -129,146 +95,95 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: linuxram@us.ibm.com, cclaudio@linux.ibm.com, kvm-ppc@vger.kernel.org,
+ Bharata B Rao <bharata@linux.ibm.com>, linux-mm@kvack.org, jglisse@redhat.com,
+ aneesh.kumar@linux.vnet.ibm.com, paulus@au1.ibm.com,
+ sukadev@linux.vnet.ibm.com, hch@lst.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> > >
-> > > > > > > > >
-> > > > > > > > > The 'fsl,ippdexpcr-alt-addr' property is used to handle
-> > > > > > > > > an errata
-> > > > > > > > > A-008646 on LS1021A
-> > > > > > > > >
-> > > > > > > > > Signed-off-by: Biwen Li <biwen.li@nxp.com>
-> > > > > > > > > ---
-> > > > > > > > > Change in v3:
-> > > > > > > > > 	- rename property name
-> > > > > > > > > 	  fsl,rcpm-scfg -> fsl,ippdexpcr-alt-addr
-> > > > > > > > >
-> > > > > > > > > Change in v2:
-> > > > > > > > > 	- update desc of the property 'fsl,rcpm-scfg'
-> > > > > > > > >
-> > > > > > > > >  Documentation/devicetree/bindings/soc/fsl/rcpm.txt | 14
-> > > > > > > > > ++++++++++++++
-> > > > > > > > >  1 file changed, 14 insertions(+)
-> > > > > > > > >
-> > > > > > > > > diff --git
-> > > > > > > > > a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
-> > > > > > > > > b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
-> > > > > > > > > index 5a33619d881d..157dcf6da17c 100644
-> > > > > > > > > --- a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
-> > > > > > > > > +++ b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
-> > > > > > > > > @@ -34,6 +34,11 @@ Chassis Version		Example
-> > > Chips
-> > > > > > > > >  Optional properties:
-> > > > > > > > >   - little-endian : RCPM register block is Little Endian.
-> > > > > > > > > Without it
-> > > > RCPM
-> > > > > > > > >     will be Big Endian (default case).
-> > > > > > > > > + - fsl,ippdexpcr-alt-addr : Must add the property for
-> > > > > > > > > + SoC LS1021A,
-> > > > > > > >
-> > > > > > > > You probably should mention this is related to a hardware
-> > > > > > > > issue on LS1021a and only needed on LS1021a.
-> > > > > > > Okay, got it, thanks, I will add this in v4.
-> > > > > > > >
-> > > > > > > > > +   Must include n + 1 entries (n =3D
-> > > > > > > > > + #fsl,rcpm-wakeup-cells, such
-> > as:
-> > > > > > > > > +   #fsl,rcpm-wakeup-cells equal to 2, then must include
-> > > > > > > > > + 2
-> > > > > > > > > + +
-> > > > > > > > > + 1
-> > > > entries).
-> > > > > > > >
-> > > > > > > > #fsl,rcpm-wakeup-cells is the number of IPPDEXPCR
-> > > > > > > > registers on an
-> > > > SoC.
-> > > > > > > > However you are defining an offset to scfg registers here.
-> > > > > > > > Why these two are related?  The length here should
-> > > > > > > > actually be related to the #address-cells of the soc/.
-> > > > > > > > But since this is only needed for LS1021, you can
-> > > > > > > just make it 3.
-> > > > > > > I need set the value of IPPDEXPCR resgiters from ftm_alarm0
-> > > > > > > device node(fsl,rcpm-wakeup =3D <&rcpm 0x0 0x20000000>;
-> > > > > > > 0x0 is a value for IPPDEXPCR0, 0x20000000 is a value for
-> > > > IPPDEXPCR1).
-> > > > > > > But because of the hardware issue on LS1021A, I need store
-> > > > > > > the value of IPPDEXPCR registers to an alt address. So I
-> > > > > > > defining an offset to scfg registers, then RCPM driver get
-> > > > > > > an abosolute address from offset, RCPM driver write the
-> > > > > > > value of IPPDEXPCR registers to these abosolute
-> > > > > > > addresses(backup the value of IPPDEXPCR
-> > > > registers).
-> > > > > >
-> > > > > > I understand what you are trying to do.  The problem is that
-> > > > > > the new fsl,ippdexpcr-alt-addr property contains a phandle and =
-an
-> offset.
-> > > > > > The size of it shouldn't be related to #fsl,rcpm-wakeup-cells.
-> > > > > You maybe like this: fsl,ippdexpcr-alt-addr =3D <&scfg 0x51c>;/*
-> > > > > SCFG_SPARECR8 */
-> > > >
-> > > > No.  The #address-cell for the soc/ is 2, so the offset to scfg
-> > > > should be 0x0 0x51c.  The total size should be 3, but it shouldn't
-> > > > be coming from #fsl,rcpm-wakeup-cells like you mentioned in the
-> binding.
-> > > Oh, I got it. You want that fsl,ippdexpcr-alt-add is relative with
-> > > #address-cells instead of #fsl,rcpm-wakeup-cells.
-> >
-> > Yes.
-> I got an example from drivers/pci/controller/dwc/pci-layerscape.c
-> and arch/arm/boot/dts/ls1021a.dtsi as follows:
-> fsl,pcie-scfg =3D <&scfg 0>, 0 is an index
->=20
-> In my fsl,ippdexpcr-alt-addr =3D <&scfg 0x0 0x51c>, It means that 0x0 is =
-an alt
-> offset address for IPPDEXPCR0, 0x51c is an alt offset address For
-> IPPDEXPCR1 instead of 0x0 and 0x51c compose to an alt address of
-> SCFG_SPARECR8.
-Maybe I need write it as:
-fsl,ippdexpcr-alt-addr =3D <&scfg 0x0 0x0 0x0 0x51c>;
-first two 0x0 compose an alt offset address for IPPDEXPCR0,
-last 0x0 and 0x51c compose an alt address for IPPDEXPCR1,
+[The main change in this version is the introduction of new
+locking to prevent concurrent page-in and page-out calls. More
+details about this are present in patch 2/8]
 
-Best Regards,
-Biwen Li=20
-> >
-> > Regards,
-> > Leo
-> > > >
-> > > > > >
-> > > > > > > >
-> > > > > > > > > +   The first entry must be a link to the SCFG device nod=
-e.
-> > > > > > > > > +   The non-first entry must be offset of registers of SC=
-FG.
-> > > > > > > > >
-> > > > > > > > >  Example:
-> > > > > > > > >  The RCPM node for T4240:
-> > > > > > > > > @@ -43,6 +48,15 @@ The RCPM node for T4240:
-> > > > > > > > >  		#fsl,rcpm-wakeup-cells =3D <2>;
-> > > > > > > > >  	};
-> > > > > > > > >
-> > > > > > > > > +The RCPM node for LS1021A:
-> > > > > > > > > +	rcpm: rcpm@1ee2140 {
-> > > > > > > > > +		compatible =3D "fsl,ls1021a-rcpm", "fsl,qoriq-rcpm-
-> > > > > 2.1+";
-> > > > > > > > > +		reg =3D <0x0 0x1ee2140 0x0 0x8>;
-> > > > > > > > > +		#fsl,rcpm-wakeup-cells =3D <2>;
-> > > > > > > > > +		fsl,ippdexpcr-alt-addr =3D <&scfg 0x0 0x51c>; /*
-> > > > > > > > > SCFG_SPARECR8 */
-> > > > > > > > > +	};
-> > > > > > > > > +
-> > > > > > > > > +
-> > > > > > > > >  * Freescale RCPM Wakeup Source Device Tree Bindings
-> > > > > > > > >  -------------------------------------------
-> > > > > > > > >  Required fsl,rcpm-wakeup property should be added to a
-> > > > > > > > > device node if the device
-> > > > > > > > > --
-> > > > > > > > > 2.17.1
+Hi,
+
+A pseries guest can be run as a secure guest on Ultravisor-enabled
+POWER platforms. On such platforms, this driver will be used to manage
+the movement of guest pages between the normal memory managed by
+hypervisor(HV) and secure memory managed by Ultravisor(UV).
+
+Private ZONE_DEVICE memory equal to the amount of secure memory
+available in the platform for running secure guests is created.
+Whenever a page belonging to the guest becomes secure, a page from
+this private device memory is used to represent and track that secure
+page on the HV side. The movement of pages between normal and secure
+memory is done via migrate_vma_pages(). The reverse movement is driven
+via pagemap_ops.migrate_to_ram().
+
+The page-in or page-out requests from UV will come to HV as hcalls and
+HV will call back into UV via uvcalls to satisfy these page requests.
+
+These patches are against hmm.git
+(https://git.kernel.org/pub/scm/linux/kernel/git/rdma/rdma.git/log/?h=hmm)
+
+plus
+
+Claudio Carvalho's base ultravisor enablement patches that are present
+in Michael Ellerman's tree
+(https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/log/?h=topic/ppc-kvm)
+
+These patches along with Claudio's above patches are required to
+run secure pseries guests on KVM. This patchset is based on hmm.git
+because hmm.git has migrate_vma cleanup and not-device memremap_pages
+patchsets that are required by this patchset.
+
+Changes in v9
+=============
+- Prevent concurrent page-in and page-out calls.
+- Ensure device PFNs are allocated for zero-pages that are sent to UV.
+- Failure to migrate a page during page-in will now return error via
+  hcall.
+- Address review comments by Suka
+- Misc cleanups
+
+v8: https://lore.kernel.org/linux-mm/20190910082946.7849-2-bharata@linux.ibm.com/T/
+
+Anshuman Khandual (1):
+  KVM: PPC: Ultravisor: Add PPC_UV config option
+
+Bharata B Rao (6):
+  KVM: PPC: Move pages between normal and secure memory
+  KVM: PPC: Shared pages support for secure guests
+  KVM: PPC: H_SVM_INIT_START and H_SVM_INIT_DONE hcalls
+  KVM: PPC: Handle memory plug/unplug to secure VM
+  KVM: PPC: Radix changes for secure guest
+  KVM: PPC: Support reset of secure guest
+
+Suraj Jitindar Singh (1):
+  KVM: PPC: Book3S HV: Define usage types for rmap array in guest
+    memslot
+
+ Documentation/virt/kvm/api.txt              |  19 +
+ arch/powerpc/Kconfig                        |  17 +
+ arch/powerpc/include/asm/hvcall.h           |   9 +
+ arch/powerpc/include/asm/kvm_book3s_uvmem.h |  48 ++
+ arch/powerpc/include/asm/kvm_host.h         |  57 +-
+ arch/powerpc/include/asm/kvm_ppc.h          |   2 +
+ arch/powerpc/include/asm/ultravisor-api.h   |   6 +
+ arch/powerpc/include/asm/ultravisor.h       |  36 ++
+ arch/powerpc/kvm/Makefile                   |   3 +
+ arch/powerpc/kvm/book3s_64_mmu_radix.c      |  22 +
+ arch/powerpc/kvm/book3s_hv.c                | 122 ++++
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c         |   2 +-
+ arch/powerpc/kvm/book3s_hv_uvmem.c          | 673 ++++++++++++++++++++
+ arch/powerpc/kvm/powerpc.c                  |  12 +
+ include/uapi/linux/kvm.h                    |   1 +
+ 15 files changed, 1024 insertions(+), 5 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/kvm_book3s_uvmem.h
+ create mode 100644 arch/powerpc/kvm/book3s_hv_uvmem.c
+
+-- 
+2.21.0
 
