@@ -2,43 +2,42 @@ Return-Path: <SRS0=fxYp=XU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,PDS_TONAME_EQ_TOLOCAL_SHORT,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A1117C432C1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 11:12:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E80A0C432C1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 11:14:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 55AE721D7A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 11:12:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 55AE721D7A
+	by mail.kernel.org (Postfix) with ESMTPS id A3FD821D7A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 11:14:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A3FD821D7A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46db4J3rdRzDqgX
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 21:12:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46db6l1ctFzDqj4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 21:14:23 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46dZwH6vDtzDqZQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2019 21:05:19 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46dZwJ5t0TzDqZQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2019 21:05:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 46dZwH2cgLz9sPL; Wed, 25 Sep 2019 21:05:18 +1000 (AEST)
+ id 46dZwJ4fsTz9sPc; Wed, 25 Sep 2019 21:05:20 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: a003365cab64b0f7988ac3ccb1da895ce0bece5e
-In-Reply-To: <20190904045529.23002-3-gromero@linux.vnet.ibm.com>
-To: gromero <gromero@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- mikey@neuling.org
+X-powerpc-patch-commit: 3a83f677a6eeff65751b29e3648d7c69c3be83f3
+In-Reply-To: <20190911223155.16045-1-mdroth@linux.vnet.ibm.com>
+To: Michael Roth <mdroth@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH v2 3/3] powerpc/tm: Add tm-poison test
-Message-Id: <46dZwH2cgLz9sPL@ozlabs.org>
-Date: Wed, 25 Sep 2019 21:05:18 +1000 (AEST)
+Subject: Re: [PATCH v2] KVM: PPC: Book3S HV: use smp_mb() when
+ setting/clearing host_ipi flag
+Message-Id: <46dZwJ4fsTz9sPc@ozlabs.org>
+Date: Wed, 25 Sep 2019 21:05:20 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,22 +49,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: cyrilbur@gmail.com, gromero@linux.vnet.ibm.com
+Cc: Nicholas Piggin <npiggin@gmail.com>, kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2019-09-04 at 04:55:29 UTC, gromero wrote:
-> From: Gustavo Romero <gromero@linux.ibm.com>
+On Wed, 2019-09-11 at 22:31:55 UTC, Michael Roth wrote:
+> On a 2-socket Power9 system with 32 cores/128 threads (SMT4) and 1TB
+> of memory running the following guest configs:
+...
+> To handle both cases, this patch splits kvmppc_set_host_ipi() into
+> separate set/clear functions, where we execute smp_mb() prior to
+> setting host_ipi flag, and after clearing host_ipi flag. These
+> functions pair with each other to synchronize the sender and receiver
+> sides.
 > 
-> Add TM selftest to check if FP or VEC register values from one process
-> can leak into another process when both run on the same CPU.
+> With that change in place the above workload ran for 20 hours without
+> triggering any lock-ups.
 > 
-> Signed-off-by: Gustavo Romero <gromero@linux.ibm.com>
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> Fixes: 755563bc79c7 ("powerpc/powernv: Fixes for hypervisor doorbell handling") # v4.0
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Paul Mackerras <paulus@ozlabs.org>
+> Cc: Nicholas Piggin <npiggin@gmail.com>
+> Cc: kvm-ppc@vger.kernel.org
+> Signed-off-by: Michael Roth <mdroth@linux.vnet.ibm.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/a003365cab64b0f7988ac3ccb1da895ce0bece5e
+https://git.kernel.org/powerpc/c/3a83f677a6eeff65751b29e3648d7c69c3be83f3
 
 cheers
