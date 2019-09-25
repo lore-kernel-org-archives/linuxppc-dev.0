@@ -2,43 +2,40 @@ Return-Path: <SRS0=fxYp=XU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 81B5FC432C1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 11:07:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 033ACC432C1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 11:09:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F33872082F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 11:07:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F33872082F
+	by mail.kernel.org (Postfix) with ESMTPS id AF2382082F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 11:09:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AF2382082F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46dZzH4pwMzDqlR
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 21:07:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46db1Y4HT7zDqgk
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2019 21:09:53 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46dZwF2nzTzDqZQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2019 21:05:17 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46dZwG18QzzDqZQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2019 21:05:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 46dZwF0gtJz9sPJ; Wed, 25 Sep 2019 21:05:17 +1000 (AEST)
+ id 46dZwG0DdXz9sPK; Wed, 25 Sep 2019 21:05:17 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 4c0f5d1eb4072871c34530358df45f05ab80edd6
-In-Reply-To: <9f33f44b9cd741c4a02b3dce7b8ef9438fe2cd2a.1566382750.git.christophe.leroy@c-s.fr>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
+X-powerpc-patch-commit: 4111cdef0e871c0f7c8874b19ee68a3671f7d63e
+In-Reply-To: <20190903123452.28620-1-aneesh.kumar@linux.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH 1/2] powerpc/mm: Add a helper to select PAGE_KERNEL_RO or
- PAGE_READONLY
-Message-Id: <46dZwF0gtJz9sPJ@ozlabs.org>
+Subject: Re: [PATCH v2 1/2] powerpc/nvdimm: Use HCALL error as the return value
+Message-Id: <46dZwG0DdXz9sPK@ozlabs.org>
 Date: Wed, 25 Sep 2019 21:05:17 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -51,23 +48,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Vaibhav Jain <vaibhav@linux.ibm.com>, Oliver O'Halloran <oohall@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2019-08-21 at 10:20:00 UTC, Christophe Leroy wrote:
-> In a couple of places there is a need to select whether read-only
-> protection of shadow pages is performed with PAGE_KERNEL_RO or with
-> PAGE_READONLY.
+On Tue, 2019-09-03 at 12:34:51 UTC, "Aneesh Kumar K.V" wrote:
+> This simplifies the error handling and also enable us to switch to
+> H_SCM_QUERY hcall in a later patch on H_OVERLAP error.
 > 
-> Add a helper to avoid duplicating the choice.
+> We also do some kernel print formatting fixup in this patch.
 > 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> Cc: stable@vger.kernel.org
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 
 Series applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/4c0f5d1eb4072871c34530358df45f05ab80edd6
+https://git.kernel.org/powerpc/c/4111cdef0e871c0f7c8874b19ee68a3671f7d63e
 
 cheers
