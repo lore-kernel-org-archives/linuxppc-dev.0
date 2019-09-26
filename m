@@ -7,70 +7,71 @@ X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A291C4360C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Sep 2019 18:51:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EDC77C4360C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Sep 2019 18:54:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A763021A4A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Sep 2019 18:51:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9E1B9222C3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Sep 2019 18:54:35 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="h2p8CR6C"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A763021A4A
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="YyccQSUv"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9E1B9222C3
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46fPCT2pzpzDqQY
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Sep 2019 04:51:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46fPHD3lcvzDr0k
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Sep 2019 04:54:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=chromium.org
- (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
+ (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
  envelope-from=keescook@chromium.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.b="h2p8CR6C";
+ unprotected) header.d=chromium.org header.i=@chromium.org header.b="YyccQSUv";
  dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
+Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
+ [IPv6:2607:f8b0:4864:20::641])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46fN0Q2vnRzDqnx
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2019 03:56:38 +1000 (AEST)
-Received: by mail-pg1-x541.google.com with SMTP id t14so1974737pgs.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2019 10:56:38 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46fNBZ0KjdzDqMd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2019 04:05:26 +1000 (AEST)
+Received: by mail-pl1-x641.google.com with SMTP id d22so1650643pls.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2019 11:05:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=0o22aj+Q2fPal3OzyLNHtFtEJCV1jKXrih1rnY9ZOvQ=;
- b=h2p8CR6CTCVG0EcWBzFZk9M7pS5/grZV7SzSB6Fp/b72sOhC+rJHHanRbr647L3D5O
- 3PK+ZsRgr4yUne37ilhSCOXRu+oA9brL1Q3zUBwCc+GNAanTNZBOlRbFkU/6xiHKWXKz
- z9Lk6mr7quDbn6Iv5uFqVP/gtakRm/cG9s24k=
+ bh=LBq+xea/ZmJQ/9uj4ezLaR0vyHYQneqqBGeQvqqFY5g=;
+ b=YyccQSUv7s3dpyKNfcnsTuVNk/Y6kwXh+M8oxRRtdUgW8nSUtTYRC0g/WriqeXH9y2
+ wwVCXNxHIivS7mTiFSK+TSyzV+h8hVp4SAUn1izuVQbvw0l7XMGaQM6lK95NH4vmtwbU
+ BZR9POA+VLIcdjNACdsaoN48Vcx862rY58h7Y=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=0o22aj+Q2fPal3OzyLNHtFtEJCV1jKXrih1rnY9ZOvQ=;
- b=KRtQGv8ickwBSIf96ILGZwlxn+JjNSqzSESGmDGO/wR19oGbqfQHYl+wJBIeyxE8D+
- PIM215XqcI3zgmIV4V3KxPfghVuetDYjOlKOk2XAyPu20snNcgG9aJ5bBvKFnEaVV/fk
- sPKI6LLxnumM15kGNmd030Ee+VTnW7y7Irkupqawjzpq1j3Pj3aQWYE/5GNN8gvb9eH3
- r4j7XSiQPEPd7rTO8iSw2cl7V2m5gu7nqrnBJ8ay0Q8fKcdF80fFAemE7Sj2N99fGvSu
- oW9zZeW2vYYKD3I2mbEcbKjcSF9mafcXWUvGMP2X23HHnlzDSzXz3IpCshUp4bWN4QSe
- eI7g==
-X-Gm-Message-State: APjAAAVAYS2SBpPrihaGjP+TmZZi+w6pXMM83Y0ACvVQ1D8JrZxqv160
- jJPS+KhkqV2Y9eFfiT27/hDhdQ==
-X-Google-Smtp-Source: APXvYqy6S7VpAjQkHoN68ZupzJjzmnjjpPcZsaZVMPIKEdbkFn7g1SNyoioq3hB1BxaJQAQsFZhPUg==
-X-Received: by 2002:a62:7a88:: with SMTP id v130mr5261721pfc.184.1569520595802; 
- Thu, 26 Sep 2019 10:56:35 -0700 (PDT)
+ bh=LBq+xea/ZmJQ/9uj4ezLaR0vyHYQneqqBGeQvqqFY5g=;
+ b=kookLMNmyiTlO1yfeooz1IT+m2LdKx/mmlShKMuDA5OqzE0DYx4pcymB9SXy8NS1nH
+ iTmKtk8EVZeOhDNY9LTvyoSZcZ4+FdDy5gBppCYho40vP5ovOlIjOmmsP3YamMigkyfg
+ s8+a2n0oX4wpLx7FulXyBc8K5F98uy/gAy9GBqrYLUuhs8sv1ihlYxC0PeVAJkKb7ZLG
+ LdO3Si9uWVNbb6lud4WIErlUNIlzZGDOtsDeKyH/HwfIpDakjJrMdg+WErXEuMfVjgC9
+ DUtGydRIO1z0Px2niwDdyJ5rl/KKnmzjnzU6B8OoMprgDFdf+eccuw/kusYCLBYjf5oF
+ gikQ==
+X-Gm-Message-State: APjAAAVbkgjBTUOMKXVRUac6Vr/rkxxgI3h/TJkMJTknviYOq+nLo63w
+ FWDY867tCB81cp0RZ539vjeKFA==
+X-Google-Smtp-Source: APXvYqzkn6dvMB+EvQiPjIgquz94zhqgnJASSzAj4vbdHobiWS7v9jA7Bv9z5kMPyHOm+3eNniFkDQ==
+X-Received: by 2002:a17:902:a618:: with SMTP id
+ u24mr5406606plq.76.1569521121016; 
+ Thu, 26 Sep 2019 11:05:21 -0700 (PDT)
 Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id t68sm6742712pgt.61.2019.09.26.10.56.27
+ by smtp.gmail.com with ESMTPSA id e127sm3746231pfe.37.2019.09.26.11.05.19
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 26 Sep 2019 10:56:30 -0700 (PDT)
+ Thu, 26 Sep 2019 11:05:20 -0700 (PDT)
 From: Kees Cook <keescook@chromium.org>
 To: Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 26/29] x86/mm: Remove redundant &s on addresses
-Date: Thu, 26 Sep 2019 10:55:59 -0700
-Message-Id: <20190926175602.33098-27-keescook@chromium.org>
+Subject: [PATCH 16/29] x86: Move EXCEPTION_TABLE to RO_DATA segment
+Date: Thu, 26 Sep 2019 10:55:49 -0700
+Message-Id: <20190926175602.33098-17-keescook@chromium.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190926175602.33098-1-keescook@chromium.org>
 References: <20190926175602.33098-1-keescook@chromium.org>
@@ -99,31 +100,37 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The &s on addresses are redundant and are better removed to match all
-the other similar functions.
+The exception table was needlessly marked executable. In preparation
+for execute-only memory, this moves the table into the RO_DATA segment
+via a new macro that can be used by any architectures that want to make
+a similar consolidation.
 
 Signed-off-by: Kees Cook <keescook@chromium.org>
 ---
- arch/x86/mm/init_64.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/x86/kernel/vmlinux.lds.S | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 26299e9ce6da..e67ddca8b7a8 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -1300,9 +1300,9 @@ void mark_rodata_ro(void)
- {
- 	unsigned long start = PFN_ALIGN(_text);
- 	unsigned long rodata_start = PFN_ALIGN(__start_rodata);
--	unsigned long end = (unsigned long) &__end_rodata_hpage_align;
--	unsigned long text_end = PFN_ALIGN(&_etext);
--	unsigned long rodata_end = PFN_ALIGN(&__end_rodata);
-+	unsigned long end = (unsigned long)__end_rodata_hpage_align;
-+	unsigned long text_end = PFN_ALIGN(_etext);
-+	unsigned long rodata_end = PFN_ALIGN(__end_rodata);
- 	unsigned long all_end;
+diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
+index a1a758e25b2b..a5c8571e4967 100644
+--- a/arch/x86/kernel/vmlinux.lds.S
++++ b/arch/x86/kernel/vmlinux.lds.S
+@@ -22,6 +22,7 @@
+ #endif
  
- 	printk(KERN_INFO "Write protecting the kernel read-only data: %luk\n",
+ #define EMITS_PT_NOTE
++#define RO_DATA_EXCEPTION_TABLE_ALIGN	16
+ 
+ #include <asm-generic/vmlinux.lds.h>
+ #include <asm/asm-offsets.h>
+@@ -145,8 +146,6 @@ SECTIONS
+ #endif
+ 	} :text = 0x9090
+ 
+-	EXCEPTION_TABLE(16)
+-
+ 	/* End of text section, which should occupy whole number of pages */
+ 	_etext = .;
+ 	. = ALIGN(PAGE_SIZE);
 -- 
 2.17.1
 
