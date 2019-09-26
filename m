@@ -2,79 +2,84 @@ Return-Path: <SRS0=Ic/D=XV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.4 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D9905C4360C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Sep 2019 19:05:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2AB46C4360C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Sep 2019 19:38:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8C087217F4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Sep 2019 19:05:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8DDB9222C2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Sep 2019 19:38:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="ZT90Hlbg"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8C087217F4
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lFVH4DJZ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8DDB9222C2
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46fPXN5vNMzDqDD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Sep 2019 05:05:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46fQFd08yhzDqvK
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Sep 2019 05:38:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=chromium.org
- (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
- envelope-from=keescook@chromium.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::d42; helo=mail-io1-xd42.google.com;
+ envelope-from=aford173@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.b="ZT90Hlbg";
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="lFVH4DJZ"; 
  dkim-atps=neutral
-Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
- [IPv6:2607:f8b0:4864:20::643])
+Received: from mail-io1-xd42.google.com (mail-io1-xd42.google.com
+ [IPv6:2607:f8b0:4864:20::d42])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46fNBd0fg2zDqfp
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2019 04:05:28 +1000 (AEST)
-Received: by mail-pl1-x643.google.com with SMTP id q24so1355252plr.13
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2019 11:05:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
- h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=l1/coTYTe+wj6TaniwTTIjxs1/tlAJ4ZBZ+k2HAUhoc=;
- b=ZT90Hlbgza5mA13/d6UGS0pzfZxLKfXWME64PvV9Xl8CYO2kbvJSsEXc4JwWRHrHWB
- InrMjw1u0CbOHhrlMXR26Z9Pb5c7tAJ8jH6LE/YESZsEJSUAo4/QiXnuUcayFxkX0Me0
- dj1EzZmZAVOcOsMHTRIfYk2DcenQKhga/VkuQ=
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46fQCH09K0zDqth
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2019 05:36:09 +1000 (AEST)
+Received: by mail-io1-xd42.google.com with SMTP id a1so9673981ioc.6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2019 12:36:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=uv8sypDhr4ui+8J14AcrUpiwkTC+Ius1tZ05+vuLNHk=;
+ b=lFVH4DJZInfXaRXpqmiMEK9WpeSM/1iq4W9bn5uziJHuNnpDS5uJfwrrSMkKUYaoWu
+ tjIzRew236DgZA4ISwubGuuzdkMEJIbQ8yLo4Gw4blLNNqTUJXJQc2T8EmFOMMaE/MZN
+ TWI21uIOpWZV0B6kiTUPUzXP+86XUqzfSXBes1IbztoB6sCaCe2+0vHVrK7I1YSyHTRf
+ vUusvWxQUo6svZWbb5qWyg1vE5i/0/5lEgToMxkxJ7QF/bNuxlBlDbD6OXf3ku60x8mI
+ qYDnylEQgvdyDcRtg2M6u1XUP8jT9lELn92+Mho67HMmT8OkOdOtqWogr7E2TIwC5RUe
+ rt7w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references;
- bh=l1/coTYTe+wj6TaniwTTIjxs1/tlAJ4ZBZ+k2HAUhoc=;
- b=JA5buSNZ1CF5hnBdJ+grQPcOB3wzfSWJFGh9DfYZIFki8XPdG4MIeiL/Pa3mpGFrCu
- CDlmFp/H6a19iFJoCCMF1prVEU/6FzFaixztrju2IXFbAxKklBisAI69v/HQrOSQgEaO
- jViPTyKYgAhfb8f98l3i18tMnnUW4y1J0SIp0e7W7Az2N2S4pyROsx/f4MqKAbSkrMxJ
- 4Jba31oCORc4rUSXFEh/KL5boybNnkORI6zq2MvwLbp08zT2fu2hXvRPwXI+nVhXzqPE
- iTOUPOatntFTSgwcUzf+ABFALm6yQ6caNEGIeE2wbNacC6ggftQBr5Sd/skuxTXLXwaT
- 2img==
-X-Gm-Message-State: APjAAAVXhxJXhg5GxWXiRL+s0kVlg1j8NnhetgYfd9GqHhMXXH4vLSqj
- Eg9Y7Ncae6+Em+6aJOTHcHeX9Q==
-X-Google-Smtp-Source: APXvYqwfZ1Op5CLpaniFH9tifhvJSxbOiM4V28ay34Ix7SESkioQ0yE1zEBFSFMDhs1Uhrrf1XeYJQ==
-X-Received: by 2002:a17:902:ff0e:: with SMTP id
- f14mr5388358plj.325.1569521122967; 
- Thu, 26 Sep 2019 11:05:22 -0700 (PDT)
-Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id b69sm3327625pfb.132.2019.09.26.11.05.19
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 26 Sep 2019 11:05:20 -0700 (PDT)
-From: Kees Cook <keescook@chromium.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 15/29] x86: Actually use _etext for end of text segment
-Date: Thu, 26 Sep 2019 10:55:48 -0700
-Message-Id: <20190926175602.33098-16-keescook@chromium.org>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190926175602.33098-1-keescook@chromium.org>
-References: <20190926175602.33098-1-keescook@chromium.org>
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=uv8sypDhr4ui+8J14AcrUpiwkTC+Ius1tZ05+vuLNHk=;
+ b=qvwCphuXdHx0AiAGchYVJRl/fvJ3go1AEi4LE9Wr/WM2ON9GwWU0gKnbTTVFuoZmyE
+ Yz7zk3vFxZR/qkC+Zmd3WXJbBKCPsuAUKO+eYkSTFEV7Iw/ePEac+cu9JjS1j6mA3NcR
+ 651/56ETwN8xPYDkcsgT69WLml8SR7opKaeHpwJ/i2IoVHKf4H+znl+BR79uww8iTCaa
+ SSMcYLQwtQQL4qsQ+FszC1hXC4Z+6MNe9hwvSLNKdqb3yt8rnYKMXJOchudJ0rT0NU9L
+ m1cio/q2iaS7u6lF5895c1TXmHqWxFTVfYH8/kIM2IGdiGkFKnuubcqMBAKlko0SnS//
+ nzOg==
+X-Gm-Message-State: APjAAAWoIHQMj93n7DYZTS1ye86CjgZRq4wlt8L+URdjQqPSWmcpkn7S
+ vrSbgbMHV9pB1P2m8YtsnBP/mrTJUJJlm9+02yY=
+X-Google-Smtp-Source: APXvYqz6Gzzz4fph8SDTgwR3nXuuRIG8y0wd6XvcO9/S+doLjWzArUyv9IHucQgjs6f3GvWFnHs+ZCUo69B6L3/gML4=
+X-Received: by 2002:a92:9912:: with SMTP id p18mr378753ili.78.1569526565531;
+ Thu, 26 Sep 2019 12:36:05 -0700 (PDT)
+MIME-Version: 1.0
+References: <1548057848-15136-1-git-send-email-rppt@linux.ibm.com>
+ <CAHCN7x+Jv7yGPoB0Gm=TJ30ObLJduw2XomHkd++KqFEURYQcGg@mail.gmail.com>
+ <CAOMZO5A_U4aYC4XZXK1r9JaLg-eRdXy8m6z4GatQp62rK4HZ6A@mail.gmail.com>
+ <CAHCN7xJdzEppn8-74SvzACsA25bUHGdV7v=CfS08xzSi59Z2uw@mail.gmail.com>
+ <CAOMZO5D2uzR6Sz1QnX3G-Ce_juxU-0PO_vBZX+nR1mpQB8s8-w@mail.gmail.com>
+ <CAHCN7xJ32BYZu-DVTVLSzv222U50JDb8F0A_tLDERbb8kPdRxg@mail.gmail.com>
+ <20190926160433.GD32311@linux.ibm.com>
+In-Reply-To: <20190926160433.GD32311@linux.ibm.com>
+From: Adam Ford <aford173@gmail.com>
+Date: Thu, 26 Sep 2019 14:35:53 -0500
+Message-ID: <CAHCN7xL1sFXDhKUpj04d3eDZNgLA1yGAOqwEeCxedy1Qm-JOfQ@mail.gmail.com>
+Subject: Re: [PATCH v2 00/21] Refine memblock API
+To: Mike Rapoport <rppt@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,112 +91,96 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- Michal Simek <monstr@monstr.eu>, linux-alpha@vger.kernel.org,
- linux-ia64@vger.kernel.org, Kees Cook <keescook@chromium.org>,
- Arnd Bergmann <arnd@arndb.de>, linux-xtensa@linux-xtensa.org,
- linux-kernel@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>,
- x86@kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- linux-parisc@vger.kernel.org, Andy Lutomirski <luto@kernel.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Rick Edgecombe <rick.p.edgecombe@intel.com>,
- linuxppc-dev@lists.ozlabs.org, linux-c6x-dev@linux-c6x.org
+Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mips@vger.kernel.org,
+ Max Filippov <jcmvbkbc@gmail.com>, devicetree <devicetree@vger.kernel.org>,
+ Guo Ren <guoren@kernel.org>, sparclinux@vger.kernel.org,
+ Fabio Estevam <festevam@gmail.com>, Christoph Hellwig <hch@lst.de>,
+ linux-s390@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Richard Weinberger <richard@nod.at>, x86@kernel.org,
+ Russell King <linux@armlinux.org.uk>, kasan-dev <kasan-dev@googlegroups.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Mark Salter <msalter@redhat.com>,
+ Dennis Zhou <dennis@kernel.org>, Matt Turner <mattst88@gmail.com>,
+ linux-snps-arc@lists.infradead.org, Chris Healy <cphealy@gmail.com>,
+ uclinux-h8-devel@lists.sourceforge.jp, Petr Mladek <pmladek@suse.com>,
+ linux-xtensa@linux-xtensa.org, linux-alpha@vger.kernel.org,
+ linux-um@lists.infradead.org,
+ The etnaviv authors <etnaviv@lists.freedesktop.org>,
+ linux-m68k@lists.linux-m68k.org, Rob Herring <robh+dt@kernel.org>,
+ Greentime Hu <green.hu@gmail.com>, xen-devel@lists.xenproject.org,
+ Stafford Horne <shorne@gmail.com>, Guan Xuetao <gxt@pku.edu.cn>,
+ arm-soc <linux-arm-kernel@lists.infradead.org>,
+ Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
+ Linux Memory Management List <linux-mm@kvack.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ USB list <linux-usb@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Paul Burton <paul.burton@mips.com>, Vineet Gupta <vgupta@synopsys.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>, openrisc@lists.librecores.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Various calculations are using the end of the exception table (which
-does not need to be executable) as the end of the text segment. Instead,
-in preparation for moving the exception table into RO_DATA, move _etext
-after the exception table and update the calculations.
+On Thu, Sep 26, 2019 at 11:04 AM Mike Rapoport <rppt@linux.ibm.com> wrote:
+>
+> Hi,
+>
+> On Thu, Sep 26, 2019 at 08:09:52AM -0500, Adam Ford wrote:
+> > On Wed, Sep 25, 2019 at 10:17 AM Fabio Estevam <festevam@gmail.com> wrote:
+> > >
+> > > On Wed, Sep 25, 2019 at 9:17 AM Adam Ford <aford173@gmail.com> wrote:
+> > >
+> > > > I tried cma=256M and noticed the cma dump at the beginning didn't
+> > > > change.  Do we need to setup a reserved-memory node like
+> > > > imx6ul-ccimx6ulsom.dtsi did?
+> > >
+> > > I don't think so.
+> > >
+> > > Were you able to identify what was the exact commit that caused such regression?
+> >
+> > I was able to narrow it down the 92d12f9544b7 ("memblock: refactor
+> > internal allocation functions") that caused the regression with
+> > Etnaviv.
+>
+>
+> Can you please test with this change:
+>
 
-Signed-off-by: Kees Cook <keescook@chromium.org>
----
- arch/x86/include/asm/sections.h | 1 -
- arch/x86/kernel/vmlinux.lds.S   | 7 +++----
- arch/x86/mm/init_64.c           | 6 +++---
- arch/x86/mm/pti.c               | 2 +-
- 4 files changed, 7 insertions(+), 9 deletions(-)
+That appears to have fixed my issue.  I am not sure what the impact
+is, but is this a safe option?
 
-diff --git a/arch/x86/include/asm/sections.h b/arch/x86/include/asm/sections.h
-index 71b32f2570ab..036c360910c5 100644
---- a/arch/x86/include/asm/sections.h
-+++ b/arch/x86/include/asm/sections.h
-@@ -6,7 +6,6 @@
- #include <asm/extable.h>
- 
- extern char __brk_base[], __brk_limit[];
--extern struct exception_table_entry __stop___ex_table[];
- extern char __end_rodata_aligned[];
- 
- #if defined(CONFIG_X86_64)
-diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
-index 41362e90142d..a1a758e25b2b 100644
---- a/arch/x86/kernel/vmlinux.lds.S
-+++ b/arch/x86/kernel/vmlinux.lds.S
-@@ -143,15 +143,14 @@ SECTIONS
- 		*(.text.__x86.indirect_thunk)
- 		__indirect_thunk_end = .;
- #endif
--
--		/* End of text section */
--		_etext = .;
- 	} :text = 0x9090
- 
- 	EXCEPTION_TABLE(16)
- 
--	/* .text should occupy whole number of pages */
-+	/* End of text section, which should occupy whole number of pages */
-+	_etext = .;
- 	. = ALIGN(PAGE_SIZE);
-+
- 	X86_ALIGN_RODATA_BEGIN
- 	RO_DATA(PAGE_SIZE)
- 	X86_ALIGN_RODATA_END
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index a6b5c653727b..26299e9ce6da 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -1263,7 +1263,7 @@ int kernel_set_to_readonly;
- void set_kernel_text_rw(void)
- {
- 	unsigned long start = PFN_ALIGN(_text);
--	unsigned long end = PFN_ALIGN(__stop___ex_table);
-+	unsigned long end = PFN_ALIGN(_etext);
- 
- 	if (!kernel_set_to_readonly)
- 		return;
-@@ -1282,7 +1282,7 @@ void set_kernel_text_rw(void)
- void set_kernel_text_ro(void)
- {
- 	unsigned long start = PFN_ALIGN(_text);
--	unsigned long end = PFN_ALIGN(__stop___ex_table);
-+	unsigned long end = PFN_ALIGN(_etext);
- 
- 	if (!kernel_set_to_readonly)
- 		return;
-@@ -1301,7 +1301,7 @@ void mark_rodata_ro(void)
- 	unsigned long start = PFN_ALIGN(_text);
- 	unsigned long rodata_start = PFN_ALIGN(__start_rodata);
- 	unsigned long end = (unsigned long) &__end_rodata_hpage_align;
--	unsigned long text_end = PFN_ALIGN(&__stop___ex_table);
-+	unsigned long text_end = PFN_ALIGN(&_etext);
- 	unsigned long rodata_end = PFN_ALIGN(&__end_rodata);
- 	unsigned long all_end;
- 
-diff --git a/arch/x86/mm/pti.c b/arch/x86/mm/pti.c
-index b196524759ec..bd3404fd9d80 100644
---- a/arch/x86/mm/pti.c
-+++ b/arch/x86/mm/pti.c
-@@ -572,7 +572,7 @@ static void pti_clone_kernel_text(void)
- 	 */
- 	unsigned long start = PFN_ALIGN(_text);
- 	unsigned long end_clone  = (unsigned long)__end_rodata_aligned;
--	unsigned long end_global = PFN_ALIGN((unsigned long)__stop___ex_table);
-+	unsigned long end_global = PFN_ALIGN((unsigned long)_etext);
- 
- 	if (!pti_kernel_image_global_ok())
- 		return;
--- 
-2.17.1
 
+adam
+
+> diff --git a/mm/memblock.c b/mm/memblock.c
+> index 7d4f61a..1f5a0eb 100644
+> --- a/mm/memblock.c
+> +++ b/mm/memblock.c
+> @@ -1356,9 +1356,6 @@ static phys_addr_t __init memblock_alloc_range_nid(phys_addr_t size,
+>                 align = SMP_CACHE_BYTES;
+>         }
+>
+> -       if (end > memblock.current_limit)
+> -               end = memblock.current_limit;
+> -
+>  again:
+>         found = memblock_find_in_range_node(size, align, start, end, nid,
+>                                             flags);
+>
+> > I also noticed that if I create a reserved memory node as was done one
+> > imx6ul-ccimx6ulsom.dtsi the 3D seems to work again, but without it, I
+> > was getting errors regardless of the 'cma=256M' or not.
+> > I don't have a problem using the reserved memory, but I guess I am not
+> > sure what the amount should be.  I know for the video decoding 1080p,
+> > I have historically used cma=128M, but with the 3D also needing some
+> > memory allocation, is that enough or should I use 256M?
+> >
+> > adam
+>
+> --
+> Sincerely yours,
+> Mike.
+>
