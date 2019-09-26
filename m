@@ -7,70 +7,70 @@ X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D285CC352AD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Sep 2019 18:38:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E946C4360C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Sep 2019 18:40:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8A65A206E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Sep 2019 18:38:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 04DF6206E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Sep 2019 18:40:34 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="GIG4pntI"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A65A206E0
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="Ki0F6+sL"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 04DF6206E0
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46fNww4pZXzDqkG
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Sep 2019 04:38:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46fNz36vSTzDqlm
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Sep 2019 04:40:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=chromium.org
- (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
+ (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
  envelope-from=keescook@chromium.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.b="GIG4pntI";
+ unprotected) header.d=chromium.org header.i=@chromium.org header.b="Ki0F6+sL";
  dkim-atps=neutral
-Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
- [IPv6:2607:f8b0:4864:20::542])
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46fN0N1zndzDqqW
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2019 03:56:36 +1000 (AEST)
-Received: by mail-pg1-x542.google.com with SMTP id y35so1985736pgl.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46fN0M6TXJzDqsM
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2019 03:56:35 +1000 (AEST)
+Received: by mail-pf1-x442.google.com with SMTP id q21so2232712pfn.11
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2019 10:56:35 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=yn5wfwJoFu2XxkEapi5oUode7Z6ofSq2WooR/oMOeig=;
- b=GIG4pntI4mSLZBUOLoFMk4guSw8F6GtVAwhEFiBddEsAgwrkRwPjIGbLRlxFjf3FFl
- AAkc2fNz+FhNHp9iA1Gn1CLcywcbJ+TQMeOOKdi3rLClFQao449j+D61pfii2Lo6mCp9
- gdFOurgujqWI728AB8TNIMWAJHUqnNxeyVafk=
+ bh=lY3gLtq1yv4TCNLsCOhid7qXT7bvA83WxioIIIqFVXA=;
+ b=Ki0F6+sLs6VORroy0ffqnJseBA7QSYUqd1wFP0NbS4cak1Wh3YkGMRzQvtEEccudzG
+ edctuQ/eEwwU5sHQJ5XfK3VeDlq6muLK9g3jC02FBRdOySPAoLy0gCS9CBjGysbAQtpV
+ XAVWcStOY/x6BsVgnubCCJ1P6LNHIFc/5/2+c=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=yn5wfwJoFu2XxkEapi5oUode7Z6ofSq2WooR/oMOeig=;
- b=QrKVUxbTdaFhweCT+bxozhFQwBcDBNEIQdHFZSAcoQBZljUCPk7luk84ulnCO/72Z3
- Hj5awxW67r2u3r0GqqDqQtWZO7g8GDbFTrzD9u4wtJZESQxgoHCufoCqO3Um7+VWHnmW
- VYnfJ8sa045wKl0eGYG0mnrsV3BsqwiegpJ6JBJWyfmPuADYpoAk9HaSG0Aa/Znp4IWh
- zR/b0CrR+RfBH1LCW2YcR/l4BDJlpW0ySO6zzeT0DhRV2PSUjgfF9sMDSvu+JMySC1T7
- gW2d5YHN23YuxourRFw+SMA0JHeQpbpi01+UbpkogJF/WhIvAN4g/YP737ymDUoXL8yV
- V9Yg==
-X-Gm-Message-State: APjAAAWzV3GRqCsAaG1PXSztQzaKe7Btkfo5cfbow8uVh4PmKdBMOQRm
- 00LuYfnBiJju24m7lQxvvrHZEA==
-X-Google-Smtp-Source: APXvYqztKKvfKjgB5MJEkhZ1uiyu1Mkac35wqulYkyxXb+7C2TAggJBadFx7VmxAR9W2f3IICOin9w==
-X-Received: by 2002:aa7:920d:: with SMTP id 13mr5075737pfo.17.1569520593466;
- Thu, 26 Sep 2019 10:56:33 -0700 (PDT)
+ bh=lY3gLtq1yv4TCNLsCOhid7qXT7bvA83WxioIIIqFVXA=;
+ b=t/9l0tZzHNJeWwhN4kagwPfjN/BTEsfUddEao7FFfB+VpL8T0pbOTPmU4or/MFqDkD
+ hnaBv4ZXT6MlJPWqdvcMZC/HiDVWdIizp5yfcpnePODDuYKqc24FrfSVukEyVHGQPDoF
+ phNAPD8EgtIuqjrewKv5/VksFkElAo8sbDNm9eK80rgcAJVlFGj8mLFFB1Gfmvq2KH0w
+ aEWnNzP3uAB8O5qHOT5kqlWvm90XHdPEQDREUMStsD9Jq8f8Zvdagi/2UlSC8IsnFRqU
+ Npl9cdaxOxTD1PBGfoVqPcpU7Nwgx7U4LZZalyIAx2S45Lc3APXwBksdY9kMietSCtBs
+ qvQw==
+X-Gm-Message-State: APjAAAXmiirTBaDpcpDvqrZ/cHerjFf8TLRMOQ6rahpywyvATfLOAOFs
+ G8R6aB/tj41etVL1lhC8LRTGvw==
+X-Google-Smtp-Source: APXvYqzUFG+7+GBGC0jBD0+mR//mqQSm/qKVQf8bQR8gVQHifb6ysRylAOP5049ta8XmpDzMuRucBg==
+X-Received: by 2002:a65:500d:: with SMTP id f13mr4684873pgo.359.1569520591224; 
+ Thu, 26 Sep 2019 10:56:31 -0700 (PDT)
 Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id x6sm7506434pfd.53.2019.09.26.10.56.27
+ by smtp.gmail.com with ESMTPSA id 8sm2842378pgd.87.2019.09.26.10.56.26
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 26 Sep 2019 10:56:30 -0700 (PDT)
+ Thu, 26 Sep 2019 10:56:28 -0700 (PDT)
 From: Kees Cook <keescook@chromium.org>
 To: Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 29/29] x86: Use INT3 instead of NOP for linker fill bytes
-Date: Thu, 26 Sep 2019 10:56:02 -0700
-Message-Id: <20190926175602.33098-30-keescook@chromium.org>
+Subject: [PATCH 25/29] xtensa: Move EXCEPTION_TABLE to RO_DATA segment
+Date: Thu, 26 Sep 2019 10:55:58 -0700
+Message-Id: <20190926175602.33098-26-keescook@chromium.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190926175602.33098-1-keescook@chromium.org>
 References: <20190926175602.33098-1-keescook@chromium.org>
@@ -99,58 +99,34 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Instead of using 0x90 (NOP) to fill bytes between functions, which makes
-it easier to sloppily target functions in function pointer overwrite
-attacks, fill with 0xCC (INT3) to force a trap. Also drops the space
-between "=" and the value to better match the binutils documentation
-https://sourceware.org/binutils/docs/ld/Output-Section-Fill.html#Output-Section-Fill
-
-Example "objdump -d" before:
-
-...
-ffffffff810001e0 <start_cpu0>:
-ffffffff810001e0:       48 8b 25 e1 b1 51 01    mov 0x151b1e1(%rip),%rsp        # ffffffff8251b3c8 <initial_stack>
-ffffffff810001e7:       e9 d5 fe ff ff          jmpq   ffffffff810000c1 <secondary_startup_64+0x91>
-ffffffff810001ec:       90                      nop
-ffffffff810001ed:       90                      nop
-ffffffff810001ee:       90                      nop
-ffffffff810001ef:       90                      nop
-
-ffffffff810001f0 <__startup_64>:
-...
-
-After:
-
-...
-ffffffff810001e0 <start_cpu0>:
-ffffffff810001e0:       48 8b 25 41 79 53 01    mov 0x1537941(%rip),%rsp        # ffffffff82537b28 <initial_stack>
-ffffffff810001e7:       e9 d5 fe ff ff          jmpq   ffffffff810000c1 <secondary_startup_64+0x91>
-ffffffff810001ec:       cc                      int3
-ffffffff810001ed:       cc                      int3
-ffffffff810001ee:       cc                      int3
-ffffffff810001ef:       cc                      int3
-
-ffffffff810001f0 <__startup_64>:
-...
+The EXCEPTION_TABLE is read-only, so collapse it into RO_DATA.
 
 Signed-off-by: Kees Cook <keescook@chromium.org>
 ---
- arch/x86/kernel/vmlinux.lds.S | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/xtensa/kernel/vmlinux.lds.S | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
-index a5c8571e4967..a37817fafb22 100644
---- a/arch/x86/kernel/vmlinux.lds.S
-+++ b/arch/x86/kernel/vmlinux.lds.S
-@@ -144,7 +144,7 @@ SECTIONS
- 		*(.text.__x86.indirect_thunk)
- 		__indirect_thunk_end = .;
- #endif
--	} :text = 0x9090
-+	} :text =0xcccc
+diff --git a/arch/xtensa/kernel/vmlinux.lds.S b/arch/xtensa/kernel/vmlinux.lds.S
+index bdbd7c4056c1..7341964722ae 100644
+--- a/arch/xtensa/kernel/vmlinux.lds.S
++++ b/arch/xtensa/kernel/vmlinux.lds.S
+@@ -14,6 +14,8 @@
+  * Joe Taylor <joe@tensilica.com, joetylr@yahoo.com>
+  */
  
- 	/* End of text section, which should occupy whole number of pages */
- 	_etext = .;
++#define RO_DATA_EXCEPTION_TABLE_ALIGN	16
++
+ #include <asm-generic/vmlinux.lds.h>
+ #include <asm/page.h>
+ #include <asm/thread_info.h>
+@@ -130,7 +132,6 @@ SECTIONS
+ 
+   .fixup   : { *(.fixup) }
+ 
+-  EXCEPTION_TABLE(16)
+   /* Data section */
+ 
+   _sdata = .;
 -- 
 2.17.1
 
