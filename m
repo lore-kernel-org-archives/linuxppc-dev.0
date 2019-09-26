@@ -2,75 +2,75 @@ Return-Path: <SRS0=Ic/D=XV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-6.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_NONE,UNWANTED_LANGUAGE_BODY,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 933A3C4360C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Sep 2019 18:44:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D62B7C4360C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Sep 2019 18:47:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4A381217F4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Sep 2019 18:44:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 814CA21A4A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Sep 2019 18:47:02 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="GqCpdlt2"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4A381217F4
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="UFt+V8/B"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 814CA21A4A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46fP3s5ktDzDqdV
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Sep 2019 04:44:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46fP6W3LKKzDqyq
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Sep 2019 04:46:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=chromium.org
- (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
+ (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
  envelope-from=keescook@chromium.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.b="GqCpdlt2";
+ unprotected) header.d=chromium.org header.i=@chromium.org header.b="UFt+V8/B";
  dkim-atps=neutral
-Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
- [IPv6:2607:f8b0:4864:20::442])
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
+ [IPv6:2607:f8b0:4864:20::542])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46fN0N2c5mzDqs1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46fN0N40NgzDqsN
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2019 03:56:36 +1000 (AEST)
-Received: by mail-pf1-x442.google.com with SMTP id a2so2240551pfo.10
+Received: by mail-pg1-x542.google.com with SMTP id x10so1964184pgi.5
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2019 10:56:36 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=DewAllPq01LncnaE6NYCCskktLTPQ+Oq7qAAM5yWaKA=;
- b=GqCpdlt27oIxoalJ+q55GpBWVA+O9B4EMwRWAPEitDTY5x/y/r3wW9KbkZvPr2V4X/
- S8caIKThukUOlDs2WCows35gv3FJcnOv4JTcjIQERxd+vzGaspWFjmHz3dbggEHqAL0H
- 9XgrssZH7A/r46cr0/K6ftOAUAm1WnB4t7vdU=
+ bh=lMtAqLKIV7iaSMLHYcvPv+kohztZyY/Z+5xJ+D8O728=;
+ b=UFt+V8/BMr/oQ/8CSnatqgIyXSDcvs3/19JyozsCgFPsqS0v3M/8jZg1fzL6Qc1wTN
+ zcaktCKmkfBZrskzRVnW1lpnKnbT1CTtX0kHIF9idT+XJVt92g3bq0Dpz4OLE6nMC5XH
+ NW8BhxFynv4qPmoQ9WfuzroS1lPcxOvqA3Vq0=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=DewAllPq01LncnaE6NYCCskktLTPQ+Oq7qAAM5yWaKA=;
- b=UN4Ux66C0dqSEvXUSVOW5iZBf4xsJo0AgmZdO5KlhehnSbIJqfyP4Za1/jLcXbbCKU
- Ft6qInOfTtdyTnErxpqcSqjbI4vyIkMTgxzQsSK4ketquDH4Ri3NC/jgoU2uT+/6S680
- 49bzOjFWFMXuTFjD03j8JM4Kr+ITY3ArrKmR40EZ9bAT4qAu4l/bccpY6zyblHj//Cnv
- 8rBXjnNR50lGKbxJL7TqPl84Klve+ia80Nn4JA+3PZQxLVTorH24H4c3zHLtE7ThjOJo
- PoHv8dhHdDbTZcTErGZTdV24ffhin7PR2x8FMIAm64zkLxTIoTjmCkULTq3dZZ1So+lw
- Ufsw==
-X-Gm-Message-State: APjAAAWsS4i58A7exFcoLuKpceY5NXLv/EkQdkmcfPw0Dq2zQ/7MAI9t
- PJXH82KhbR70XsZy+virvBwQqg==
-X-Google-Smtp-Source: APXvYqy6lsJedhQhLRYmBsUadf9UZQvX3qa3S7SjzPO8c/ioUQ997KVZPcsBQte8g5aQEg6d61NfYg==
-X-Received: by 2002:a65:5c0b:: with SMTP id u11mr4650029pgr.294.1569520592850; 
- Thu, 26 Sep 2019 10:56:32 -0700 (PDT)
+ bh=lMtAqLKIV7iaSMLHYcvPv+kohztZyY/Z+5xJ+D8O728=;
+ b=nZ5S4vsNvRaq/dpEDbDjnLNmCijlifwiuidZPjVOewFoIS8DdrAwKkgRnBQ0z2yQAu
+ jgFWoSsrg03CW7b3O6cemlLUPVDqSKiNbmHiZXcldGJir+iIczNZP0oVICrmkvl9xJg0
+ SGC5fh5b6LrzGAxHoTd3JU46rCafRmn65wBsPXdFO1vKydMEPkqwQGZ2aSUtqD4s67AO
+ 0YYBb7nr1lgmAgrCaxyRAOVYVOINb6cfXT5TyVbAf8Ct06aFzGC2708KdvwVHlRf/fuq
+ nje1XHmo9ZfIz77ZcV/O6k0OJx6L2folk9JFYtZ2XqXRyLBFGtFucIU/924YgQO8i7aI
+ y56Q==
+X-Gm-Message-State: APjAAAVjSmBTdw2/wDI8g4Nm27SKBnjUk0c31g1th1+fwEylN2aYyl08
+ IYOEZPla2x5BylRDbfG6cHh1SA==
+X-Google-Smtp-Source: APXvYqx+mrEmgBwFBIoSkO5Knd2FiUPuYbkq8tX7W4zsQact6t42C/glSDDrgO3H24UWPs5jK1YgqQ==
+X-Received: by 2002:a65:5905:: with SMTP id f5mr4751014pgu.332.1569520594154; 
+ Thu, 26 Sep 2019 10:56:34 -0700 (PDT)
 Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id m2sm3024583pgc.19.2019.09.26.10.56.26
+ by smtp.gmail.com with ESMTPSA id 22sm2887306pfo.131.2019.09.26.10.56.27
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
  Thu, 26 Sep 2019 10:56:30 -0700 (PDT)
 From: Kees Cook <keescook@chromium.org>
 To: Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 24/29] powerpc: Move EXCEPTION_TABLE to RO_DATA segment
-Date: Thu, 26 Sep 2019 10:55:57 -0700
-Message-Id: <20190926175602.33098-25-keescook@chromium.org>
+Subject: [PATCH 27/29] x86/mm: Report which part of kernel image is freed
+Date: Thu, 26 Sep 2019 10:56:00 -0700
+Message-Id: <20190926175602.33098-28-keescook@chromium.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190926175602.33098-1-keescook@chromium.org>
 References: <20190926175602.33098-1-keescook@chromium.org>
@@ -99,33 +99,92 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The EXCEPTION_TABLE is read-only, so collapse it into RO_DATA.
+The memory freeing report wasn't very useful for figuring out which
+parts of the kernel image were being freed. This adds the details for
+clearer reporting.
+
+Before:
+
+[    2.150450] Freeing unused kernel image memory: 1348K
+[    2.154574] Write protecting the kernel read-only data: 20480k
+[    2.157641] Freeing unused kernel image memory: 2040K
+[    2.158827] Freeing unused kernel image memory: 172K
+
+After:
+
+[    2.329678] Freeing unused kernel image (initmem) memory: 1348K
+[    2.331953] Write protecting the kernel read-only data: 20480k
+[    2.335361] Freeing unused kernel image (text/rodata gap) memory: 2040K
+[    2.336927] Freeing unused kernel image (rodata/data gap) memory: 172K
 
 Signed-off-by: Kees Cook <keescook@chromium.org>
 ---
- arch/powerpc/kernel/vmlinux.lds.S | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/x86/include/asm/processor.h | 2 +-
+ arch/x86/mm/init.c               | 8 ++++----
+ arch/x86/mm/init_64.c            | 6 ++++--
+ 3 files changed, 9 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 4e7cec088c8b..2ed44e5824d5 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -7,6 +7,7 @@
+diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+index 6e0a3b43d027..790f250d39a8 100644
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -958,7 +958,7 @@ static inline uint32_t hypervisor_cpuid_base(const char *sig, uint32_t leaves)
  
- #define BSS_FIRST_SECTIONS *(.bss.prominit)
- #define EMITS_PT_NOTE
-+#define RO_DATA_EXCEPTION_TABLE_ALIGN	0
+ extern unsigned long arch_align_stack(unsigned long sp);
+ void free_init_pages(const char *what, unsigned long begin, unsigned long end);
+-extern void free_kernel_image_pages(void *begin, void *end);
++extern void free_kernel_image_pages(const char *what, void *begin, void *end);
  
- #include <asm/page.h>
- #include <asm-generic/vmlinux.lds.h>
-@@ -162,7 +163,6 @@ SECTIONS
- 		__stop__btb_flush_fixup = .;
- 	}
+ void default_idle(void);
+ #ifdef	CONFIG_XEN
+diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
+index fd10d91a6115..e7bb483557c9 100644
+--- a/arch/x86/mm/init.c
++++ b/arch/x86/mm/init.c
+@@ -829,14 +829,13 @@ void free_init_pages(const char *what, unsigned long begin, unsigned long end)
+  * used for the kernel image only.  free_init_pages() will do the
+  * right thing for either kind of address.
+  */
+-void free_kernel_image_pages(void *begin, void *end)
++void free_kernel_image_pages(const char *what, void *begin, void *end)
+ {
+ 	unsigned long begin_ul = (unsigned long)begin;
+ 	unsigned long end_ul = (unsigned long)end;
+ 	unsigned long len_pages = (end_ul - begin_ul) >> PAGE_SHIFT;
+ 
+-
+-	free_init_pages("unused kernel image", begin_ul, end_ul);
++	free_init_pages(what, begin_ul, end_ul);
+ 
+ 	/*
+ 	 * PTI maps some of the kernel into userspace.  For performance,
+@@ -865,7 +864,8 @@ void __ref free_initmem(void)
+ 
+ 	mem_encrypt_free_decrypted_mem();
+ 
+-	free_kernel_image_pages(&__init_begin, &__init_end);
++	free_kernel_image_pages("unused kernel image (initmem)",
++				&__init_begin, &__init_end);
+ }
+ 
+ #ifdef CONFIG_BLK_DEV_INITRD
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index e67ddca8b7a8..dcb9bc961b39 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -1334,8 +1334,10 @@ void mark_rodata_ro(void)
+ 	set_memory_ro(start, (end-start) >> PAGE_SHIFT);
  #endif
--	EXCEPTION_TABLE(0)
  
- /*
-  * Init sections discarded at runtime
+-	free_kernel_image_pages((void *)text_end, (void *)rodata_start);
+-	free_kernel_image_pages((void *)rodata_end, (void *)_sdata);
++	free_kernel_image_pages("unused kernel image (text/rodata gap)",
++				(void *)text_end, (void *)rodata_start);
++	free_kernel_image_pages("unused kernel image (rodata/data gap)",
++				(void *)rodata_end, (void *)_sdata);
+ 
+ 	debug_checkwx();
+ }
 -- 
 2.17.1
 
