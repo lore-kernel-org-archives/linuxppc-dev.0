@@ -7,72 +7,70 @@ X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 30215C4360C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Sep 2019 18:23:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D075C4360C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Sep 2019 18:25:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D97C8222BF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Sep 2019 18:23:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 182F9222C9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Sep 2019 18:25:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="BB+Wp2c6"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D97C8222BF
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="Kt0MPBp1"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 182F9222C9
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46fNZp5kc7zDqw6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Sep 2019 04:22:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46fNdh1FqPzDqw6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Sep 2019 04:25:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=chromium.org
- (client-ip=2607:f8b0:4864:20::544; helo=mail-pg1-x544.google.com;
+ (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
  envelope-from=keescook@chromium.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.b="BB+Wp2c6";
+ unprotected) header.d=chromium.org header.i=@chromium.org header.b="Kt0MPBp1";
  dkim-atps=neutral
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
- [IPv6:2607:f8b0:4864:20::544])
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
+ [IPv6:2607:f8b0:4864:20::542])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46fN0D4160zDql5
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46fN0D5cWZzDqnx
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2019 03:56:28 +1000 (AEST)
-Received: by mail-pg1-x544.google.com with SMTP id s1so1953355pgv.8
+Received: by mail-pg1-x542.google.com with SMTP id w10so1954989pgj.7
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Sep 2019 10:56:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=N0Ly0RoWNzS0e9pealT2AjXWyAS0JHK0C0PsWn5tREE=;
- b=BB+Wp2c62cK4be/dVurtn2OePQOvo8kO+/cwllKtmj/lBxl1iCi9+x2FEqqPcAfu3H
- 5Jc3fOQT/WyzeOU1pOIuHyA+VT5vFLuQB6+QiCHBNurWJ+z4FXVlveHVrhV2+Pr+hwJX
- gZ7GbSmn29rI339LO1+fygFnZRmfnLy7trUyw=
+ bh=4OoO9/kqQZ9xXFd9jmzh+sji+0+urCkP2+LVDe5fGPM=;
+ b=Kt0MPBp1vWYay/J6CTJNxtKhAw6G5wCCoEhbJ7e0+7qQp53wQoH32XMsB7VcjjW8cx
+ 4n5ei4jcLt5cOlGxwseK9CUNEa1PwMGgojB41dyPkTZ+0nnKv4yyR9ehnWwAElksl0oo
+ UL/EWa4ETLAK1IJlRMikbUdclaao+PPrUmFXo=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=N0Ly0RoWNzS0e9pealT2AjXWyAS0JHK0C0PsWn5tREE=;
- b=Sw/5p0WmjcfRMuKXnXkMWW4joKd9WIKBJWm+MoIbjavuuBVlKl28RpBLG8KBBh+xYx
- jXmzRTD0l/P0t8RCeRAVkB/RkqtEKEcIccmxC4JxuZQRVhWv54TcD4ycnc7KoQyzr2A3
- vfM2o+DdFxTd8lj4r9+YaTslw5u89kAecbhdmJwl33HQl/suKnzB1+7DjVVlvZk9BJa/
- /4u43LX+w9fqkXHiTFgptcTSkRBsaTx8sY0TIhaQkT3yERd1wHo6WcKirz8/Hr+9Ovom
- b/vt++uWXlQp88ovSNBMT+5yfifs3f2YzcPRpLipkm3uFDYkzLPnAkFL7ozFEpNhWoir
- iSwQ==
-X-Gm-Message-State: APjAAAVUlg0ANxBy/FPeVwqU+B2yBjGLT8P5I9R+1c0ZEEKF+sJXqSlX
- Gp6JCmcPUkRvBBuQ5TPekPkruQ==
-X-Google-Smtp-Source: APXvYqz+7EO2SDY0fOuWK5JlMtTN7+23UyO2mdFrzXpQW5FVGpWlsVRMn6xa/+DO76Xw8kfOXh9ozw==
-X-Received: by 2002:a17:90a:2a4a:: with SMTP id
- d10mr4960722pjg.72.1569520586396; 
+ bh=4OoO9/kqQZ9xXFd9jmzh+sji+0+urCkP2+LVDe5fGPM=;
+ b=A7hoQv+WwOqEYIzzpgtRovfwBdBIP0LZLdYOvMcRQVTkJbIX2HND/vN3PBDiWIAofU
+ j7sPsN2JdR8zirENCav9S4MxbVcjzhKlBoHe8XpQ5V9J68yDprhYONi0lVmWSOgIl8QU
+ c1RKl5y8Y07uDok659LTxLV5kchzTgi01lgVdapdDXNvoSqFNCvyh2tpFo8fakmheCOw
+ YhJbVkrd8SiizgLPERVQKimLyIyZmhy8aMg6EYNY0u/hlKDz54z+lVtuQRvDR2Z/0/kF
+ EDa93BtYZDBPAIU+Vv5kWq0fuPp93NUFi1EFrOZg1yb1rNsmTVB9r324WJlw+HtnH4En
+ ABFA==
+X-Gm-Message-State: APjAAAWC7RH1aDvX8vYcJMixtQaZv8iOXG21ZI0V7t74GeD0N/r47TGZ
+ qA+mbrOA3AwW0pDcpc4se4qzxg==
+X-Google-Smtp-Source: APXvYqxweRYyy+FuCakseDUP9otT1JrAAZ6K77sV80DCrLZqyiEF0oUZBPpm9+PnY/7XVYYbKaiWnA==
+X-Received: by 2002:a63:e514:: with SMTP id r20mr4651534pgh.275.1569520586692; 
  Thu, 26 Sep 2019 10:56:26 -0700 (PDT)
 Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id l7sm8860071pga.92.2019.09.26.10.56.19
+ by smtp.gmail.com with ESMTPSA id d10sm1358129pgm.4.2019.09.26.10.56.21
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 26 Sep 2019 10:56:21 -0700 (PDT)
+ Thu, 26 Sep 2019 10:56:26 -0700 (PDT)
 From: Kees Cook <keescook@chromium.org>
 To: Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 08/29] vmlinux.lds.h: Provide EMIT_PT_NOTE to indicate export
- of .notes
-Date: Thu, 26 Sep 2019 10:55:41 -0700
-Message-Id: <20190926175602.33098-9-keescook@chromium.org>
+Subject: [PATCH 14/29] vmlinux.lds.h: Allow EXCEPTION_TABLE to live in RO_DATA
+Date: Thu, 26 Sep 2019 10:55:47 -0700
+Message-Id: <20190926175602.33098-15-keescook@chromium.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190926175602.33098-1-keescook@chromium.org>
 References: <20190926175602.33098-1-keescook@chromium.org>
@@ -101,132 +99,46 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In preparation for moving NOTES into RO_DATA, this provides a mechanism
-for architectures that want to emit a PT_NOTE Program Header to do so.
+Many architectures have an EXCEPTION_TABLE that needs only to be
+read-only. As such, it should live in RO_DATA. This creates a macro to
+identify this case for the architectures that can move EXCEPTION_TABLE
+into RO_DATA.
 
 Signed-off-by: Kees Cook <keescook@chromium.org>
 ---
- arch/alpha/kernel/vmlinux.lds.S   |  3 +++
- arch/ia64/kernel/vmlinux.lds.S    |  2 ++
- arch/mips/kernel/vmlinux.lds.S    | 12 ++++++------
- arch/powerpc/kernel/vmlinux.lds.S |  1 +
- arch/s390/kernel/vmlinux.lds.S    |  2 ++
- arch/x86/kernel/vmlinux.lds.S     |  2 ++
- include/asm-generic/vmlinux.lds.h |  8 ++++++++
- 7 files changed, 24 insertions(+), 6 deletions(-)
+ include/asm-generic/vmlinux.lds.h | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/arch/alpha/kernel/vmlinux.lds.S b/arch/alpha/kernel/vmlinux.lds.S
-index 781090cacc96..363a60ba7c31 100644
---- a/arch/alpha/kernel/vmlinux.lds.S
-+++ b/arch/alpha/kernel/vmlinux.lds.S
-@@ -1,4 +1,7 @@
- /* SPDX-License-Identifier: GPL-2.0 */
-+
-+#define EMITS_PT_NOTE
-+
- #include <asm-generic/vmlinux.lds.h>
- #include <asm/thread_info.h>
- #include <asm/cache.h>
-diff --git a/arch/ia64/kernel/vmlinux.lds.S b/arch/ia64/kernel/vmlinux.lds.S
-index c1067992fcd1..e034a6a4a444 100644
---- a/arch/ia64/kernel/vmlinux.lds.S
-+++ b/arch/ia64/kernel/vmlinux.lds.S
-@@ -5,6 +5,8 @@
- #include <asm/pgtable.h>
- #include <asm/thread_info.h>
- 
-+#define EMITS_PT_NOTE
-+
- #include <asm-generic/vmlinux.lds.h>
- 
- OUTPUT_FORMAT("elf64-ia64-little")
-diff --git a/arch/mips/kernel/vmlinux.lds.S b/arch/mips/kernel/vmlinux.lds.S
-index 33ee0d18fb0a..1c95612eb800 100644
---- a/arch/mips/kernel/vmlinux.lds.S
-+++ b/arch/mips/kernel/vmlinux.lds.S
-@@ -10,6 +10,11 @@
-  */
- #define BSS_FIRST_SECTIONS *(.bss..swapper_pg_dir)
- 
-+/* Cavium Octeon should not have a separate PT_NOTE Program Header. */
-+#ifndef CONFIG_CAVIUM_OCTEON_SOC
-+#define EMITS_PT_NOTE
-+#endif
-+
- #include <asm-generic/vmlinux.lds.h>
- 
- #undef mips
-@@ -76,12 +81,7 @@ SECTIONS
- 		__stop___dbe_table = .;
- 	}
- 
--#ifdef CONFIG_CAVIUM_OCTEON_SOC
--#define NOTES_HEADER
--#else /* CONFIG_CAVIUM_OCTEON_SOC */
--#define NOTES_HEADER :note
--#endif /* CONFIG_CAVIUM_OCTEON_SOC */
--	NOTES :text NOTES_HEADER
-+	NOTES NOTES_HEADERS
- 	.dummy : { *(.dummy) } :text
- 
- 	_sdata = .;			/* Start of data section */
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index e184a63aa5b0..7e26e20c8324 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -6,6 +6,7 @@
- #endif
- 
- #define BSS_FIRST_SECTIONS *(.bss.prominit)
-+#define EMITS_PT_NOTE
- 
- #include <asm/page.h>
- #include <asm-generic/vmlinux.lds.h>
-diff --git a/arch/s390/kernel/vmlinux.lds.S b/arch/s390/kernel/vmlinux.lds.S
-index 13294fef473e..646d939346df 100644
---- a/arch/s390/kernel/vmlinux.lds.S
-+++ b/arch/s390/kernel/vmlinux.lds.S
-@@ -15,6 +15,8 @@
- /* Handle ro_after_init data on our own. */
- #define RO_AFTER_INIT_DATA
- 
-+#define EMITS_PT_NOTE
-+
- #include <asm-generic/vmlinux.lds.h>
- #include <asm/vmlinux.lds.h>
- 
-diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
-index 788e78978030..2e18bf5c1aed 100644
---- a/arch/x86/kernel/vmlinux.lds.S
-+++ b/arch/x86/kernel/vmlinux.lds.S
-@@ -21,6 +21,8 @@
- #define LOAD_OFFSET __START_KERNEL_map
- #endif
- 
-+#define EMITS_PT_NOTE
-+
- #include <asm-generic/vmlinux.lds.h>
- #include <asm/asm-offsets.h>
- #include <asm/thread_info.h>
 diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index cd28f63bfbc7..2cc3ff9ac8c7 100644
+index d57a28786bb8..35a6cba39d9f 100644
 --- a/include/asm-generic/vmlinux.lds.h
 +++ b/include/asm-generic/vmlinux.lds.h
-@@ -54,6 +54,14 @@
- #define LOAD_OFFSET 0
+@@ -69,6 +69,17 @@
+ #define NOTES_HEADERS_RESTORE
  #endif
  
 +/*
-+ * Only some architectures want to have the .notes segment visible in
-+ * a separate PT_NOTE ELF Program Header.
++ * Some architectures have non-executable read-only exception tables.
++ * They can be added to the RO_DATA segment by specifying their desired
++ * alignment.
 + */
-+#ifdef EMITS_PT_NOTE
-+#define NOTES_HEADERS		:text :note
++#ifdef RO_DATA_EXCEPTION_TABLE_ALIGN
++#define RO_DATA_EXCEPTION_TABLE	EXCEPTION_TABLE(RO_DATA_EXCEPTION_TABLE_ALIGN)
++#else
++#define RO_DATA_EXCEPTION_TABLE
 +#endif
 +
  /* Align . to a 8 byte boundary equals to maximum function alignment. */
  #define ALIGN_FUNCTION()  . = ALIGN(8)
  
+@@ -508,6 +519,7 @@
+ 		__stop___modver = .;					\
+ 	}								\
+ 									\
++	RO_DATA_EXCEPTION_TABLE						\
+ 	NOTES								\
+ 									\
+ 	. = ALIGN((align));						\
 -- 
 2.17.1
 
