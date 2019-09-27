@@ -2,68 +2,89 @@ Return-Path: <SRS0=CCuM=XW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 47853C4360C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Sep 2019 18:37:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 326B9C4360C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Sep 2019 18:50:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9B45521655
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Sep 2019 18:37:03 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=anastas.io header.i=@anastas.io header.b="cFaZ9992"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9B45521655
-Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=anastas.io
+	by mail.kernel.org (Postfix) with ESMTPS id DD2FD2146E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Sep 2019 18:50:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DD2FD2146E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=us.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46g0rY28STzDqXW
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Sep 2019 04:37:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46g1882vZLzDqRH
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Sep 2019 04:50:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=anastas.io
- (client-ip=104.248.188.109; helo=alpha.anastas.io;
- envelope-from=shawn@anastas.io; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none)
- header.from=anastas.io
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=anastas.io header.i=@anastas.io header.b="cFaZ9992"; 
- dkim-atps=neutral
-Received: from alpha.anastas.io (alpha.anastas.io [104.248.188.109])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=pass (mailfrom) smtp.mailfrom=us.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=pc@us.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=us.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46g0my5yz9zDr0v
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Sep 2019 04:33:54 +1000 (AEST)
-Received: from authenticated-user (alpha.anastas.io [104.248.188.109])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by alpha.anastas.io (Postfix) with ESMTPSA id 17EE87E01A;
- Fri, 27 Sep 2019 13:33:21 -0500 (CDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=anastas.io; s=mail;
- t=1569609201; bh=wk1mdhZxXbNyN8NdhJA3cUtm/ZxciUydA26w8eVYR2s=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=cFaZ9992JNzVHC7adO3hByHpKrVvF0DrbMWzA0uMqlQjiXnmacmrnHaIUWPOrF2mn
- tsPygIlxWfZ07ObOtzM6C4EH1iMtsiXA3UB3bUvfhqZLGuWaXZ2XlqPNWuAoOXhRHU
- K0JboLNKfVKiSFsOCamrNMA7tDmGBkO78rPCYK9xPTe9nLI5otyTxQW29pD8gy1kWM
- ki0p/2PGet+olyl8xU2rOghW4izlfxC1aR+jmtrk4GkmLpIbQ9Xv5/kbkQcOXaMq7w
- kwDKPNyQIHbG92Zvz8TTcxC/w9dwD9RxhLELedwEiAP5a02cN2w5lhe3L0TyE9DpKA
- cJBjNphpaeNVw==
-Subject: Re: [PATCH v2 1/1] powerpc/pci: Fix pcibios_setup_device() ordering
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-References: <20190905191343.2919-1-shawn@anastas.io>
- <20190905191343.2919-2-shawn@anastas.io>
- <e090d238-d452-6c82-d21b-aeda5f5310e6@ozlabs.ru>
-From: Shawn Anastasio <shawn@anastas.io>
-Message-ID: <57bb4467-40ab-bdf7-4091-adc0236c3ea3@anastas.io>
-Date: Fri, 27 Sep 2019 13:33:19 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46g15z3HkhzDqfH
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Sep 2019 04:48:35 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x8RIlhYR145041
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2019 14:48:31 -0400
+Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.26])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2v9pc1b5xm-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2019 14:48:31 -0400
+Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
+ by ppma04wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x8RIm38G031040
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2019 18:48:30 GMT
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by ppma04wdc.us.ibm.com with ESMTP id 2v5bg82cj7-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2019 18:48:30 +0000
+Received: from b03ledav006.gho.boulder.ibm.com
+ (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x8RImSKs49873248
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 27 Sep 2019 18:48:28 GMT
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A3C24C6057;
+ Fri, 27 Sep 2019 18:48:28 +0000 (GMT)
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3F603C6055;
+ Fri, 27 Sep 2019 18:48:28 +0000 (GMT)
+Received: from oc3272150783.ibm.com (unknown [9.160.10.148])
+ by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTPS;
+ Fri, 27 Sep 2019 18:48:28 +0000 (GMT)
+Subject: Re: [RFC] powerpc/pseries/hcall: remove the save/restore of CR
+To: Lijun Pan <ljp@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <20190927034846.73066-1-ljp@linux.ibm.com>
+From: Paul Clarke <pc@us.ibm.com>
+Message-ID: <8db77cbf-b3b6-cc2a-6f7c-cc5f8bb4b3f5@us.ibm.com>
+Date: Fri, 27 Sep 2019 13:48:26 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
 MIME-Version: 1.0
-In-Reply-To: <e090d238-d452-6c82-d21b-aeda5f5310e6@ozlabs.ru>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <20190927034846.73066-1-ljp@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-09-27_08:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=695 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1908290000 definitions=main-1909270153
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,29 +96,14 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: sbobroff@linux.ibm.com, lukas@wunner.de, oohall@gmail.com,
- bhelgaas@google.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 9/9/19 2:59 AM, Alexey Kardashevskiy wrote:
-> 
-> 
-> On 06/09/2019 05:13, Shawn Anastasio wrote:
->> Move PCI device setup from pcibios_add_device() and pcibios_fixup_bus() to
->> pcibios_bus_add_device(). This ensures that platform-specific DMA and IOMMU
->> setup occurs after the device has been registered in sysfs, which is a
->> requirement for IOMMU group assignment to work
->>
->> This fixes IOMMU group assignment for hotplugged devices on pseries, where
->> the existing behavior results in IOMMU assignment before registration.
-> 
-> 
-> Although this is a correct approach which we should proceed with, this
-> breaks adding of SRIOV VFs from pnv_tce_iommu_bus_notifier (and possibly
-> the bare metal PCI hotplug), I am trying to fix that now...
+On 9/26/19 10:48 PM, Lijun Pan wrote:
+> According to the PAPR, hcalls should not modify the Condition
+> Register fields, hence save/restore the CR is not necessary.
 
-Were you able to make any progress? I can think of a couple of ways
-to fix SRIOV, but they're not particularly elegant and involve
-duplication.
+Just curious: could you provide a more specific reference?
+
+PC
