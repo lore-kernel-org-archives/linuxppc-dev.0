@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D2C4CC32792
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Sep 2019 14:58:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3E16C32792
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Sep 2019 14:59:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 256F920679
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Sep 2019 14:58:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 256F920679
+	by mail.kernel.org (Postfix) with ESMTPS id 7711B20679
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Sep 2019 14:59:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7711B20679
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46hlrb1823zDqLx
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Oct 2019 00:58:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46hltc1HjgzDqMl
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Oct 2019 00:59:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=arm.com
  (client-ip=217.140.110.172; helo=foss.arm.com;
@@ -26,26 +26,26 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=arm.com
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 46hlp063qtzDqGk
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Oct 2019 00:55:50 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 46hlqs22gxzDqM9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Oct 2019 00:57:28 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E76F028;
- Mon, 30 Sep 2019 07:55:46 -0700 (PDT)
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8730E28;
+ Mon, 30 Sep 2019 07:57:26 -0700 (PDT)
 Received: from localhost (unknown [10.37.6.20])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 36E9A3F706;
- Mon, 30 Sep 2019 07:55:46 -0700 (PDT)
-Date: Mon, 30 Sep 2019 15:55:44 +0100
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id CA1E33F706;
+ Mon, 30 Sep 2019 07:57:25 -0700 (PDT)
+Date: Mon, 30 Sep 2019 15:57:24 +0100
 From: Andrew Murray <andrew.murray@arm.com>
 To: Xiaowei Bao <xiaowei.bao@nxp.com>
-Subject: Re: [PATCH v4 10/11] arm64: dts: layerscape: Add PCIe EP node for
- ls1088a
-Message-ID: <20190930145544.GB42880@e119886-lin.cambridge.arm.com>
+Subject: Re: [PATCH v4 11/11] misc: pci_endpoint_test: Add LS1088a in
+ pci_device_id table
+Message-ID: <20190930145723.GC42880@e119886-lin.cambridge.arm.com>
 References: <20190924021849.3185-1-xiaowei.bao@nxp.com>
- <20190924021849.3185-11-xiaowei.bao@nxp.com>
+ <20190924021849.3185-12-xiaowei.bao@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190924021849.3185-11-xiaowei.bao@nxp.com>
+In-Reply-To: <20190924021849.3185-12-xiaowei.bao@nxp.com>
 User-Agent: Mutt/1.10.1+81 (426a6c1) (2018-08-26)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -69,80 +69,45 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Sep 24, 2019 at 10:18:48AM +0800, Xiaowei Bao wrote:
-> Add PCIe EP node for ls1088a to support EP mode.
+On Tue, Sep 24, 2019 at 10:18:49AM +0800, Xiaowei Bao wrote:
+> Add LS1088a in pci_device_id table so that pci-epf-test can be used
+> for testing PCIe EP in LS1088a.
 > 
 > Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
-
-Reviewed-by: Andrew Murray <andrew.murray@arm.com>
-
 > ---
 > v2:
->  - Remove the pf-offset proparty.
+>  - No change.
 > v3:
 >  - No change.
 > v4:
->  - No change.
+>  - Use a maco to define the LS1088a device ID.
 >  
->  arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi | 31 ++++++++++++++++++++++++++
->  1 file changed, 31 insertions(+)
+>  drivers/misc/pci_endpoint_test.c | 2 ++
+>  1 file changed, 2 insertions(+)
 > 
-> diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-> index c676d07..da246ab 100644
-> --- a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-> +++ b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-> @@ -483,6 +483,17 @@
->  			status = "disabled";
->  		};
+> diff --git a/drivers/misc/pci_endpoint_test.c b/drivers/misc/pci_endpoint_test.c
+> index 6e208a0..8c222a6 100644
+> --- a/drivers/misc/pci_endpoint_test.c
+> +++ b/drivers/misc/pci_endpoint_test.c
+> @@ -65,6 +65,7 @@
+>  #define PCI_ENDPOINT_TEST_IRQ_NUMBER		0x28
 >  
-> +		pcie_ep@3400000 {
-> +			compatible = "fsl,ls1088a-pcie-ep","fsl,ls-pcie-ep";
-> +			reg = <0x00 0x03400000 0x0 0x00100000
-> +			       0x20 0x00000000 0x8 0x00000000>;
-> +			reg-names = "regs", "addr_space";
-> +			num-ib-windows = <24>;
-> +			num-ob-windows = <128>;
-> +			max-functions = /bits/ 8 <2>;
-> +			status = "disabled";
-> +		};
-> +
->  		pcie@3500000 {
->  			compatible = "fsl,ls1088a-pcie";
->  			reg = <0x00 0x03500000 0x0 0x00100000   /* controller registers */
-> @@ -508,6 +519,16 @@
->  			status = "disabled";
->  		};
+>  #define PCI_DEVICE_ID_TI_AM654			0xb00c
+> +#define PCI_DEVICE_ID_LS1088A			0x80c0
+
+Reviewed-by: Andrew Murray <andrew.murray@arm.com>
+
 >  
-> +		pcie_ep@3500000 {
-> +			compatible = "fsl,ls1088a-pcie-ep","fsl,ls-pcie-ep";
-> +			reg = <0x00 0x03500000 0x0 0x00100000
-> +			       0x28 0x00000000 0x8 0x00000000>;
-> +			reg-names = "regs", "addr_space";
-> +			num-ib-windows = <6>;
-> +			num-ob-windows = <8>;
-> +			status = "disabled";
-> +		};
-> +
->  		pcie@3600000 {
->  			compatible = "fsl,ls1088a-pcie";
->  			reg = <0x00 0x03600000 0x0 0x00100000   /* controller registers */
-> @@ -533,6 +554,16 @@
->  			status = "disabled";
->  		};
->  
-> +		pcie_ep@3600000 {
-> +			compatible = "fsl,ls1088a-pcie-ep","fsl,ls-pcie-ep";
-> +			reg = <0x00 0x03600000 0x0 0x00100000
-> +			       0x30 0x00000000 0x8 0x00000000>;
-> +			reg-names = "regs", "addr_space";
-> +			num-ib-windows = <6>;
-> +			num-ob-windows = <8>;
-> +			status = "disabled";
-> +		};
-> +
->  		smmu: iommu@5000000 {
->  			compatible = "arm,mmu-500";
->  			reg = <0 0x5000000 0 0x800000>;
+>  #define is_am654_pci_dev(pdev)		\
+>  		((pdev)->device == PCI_DEVICE_ID_TI_AM654)
+> @@ -793,6 +794,7 @@ static const struct pci_device_id pci_endpoint_test_tbl[] = {
+>  	{ PCI_DEVICE(PCI_VENDOR_ID_TI, PCI_DEVICE_ID_TI_DRA74x) },
+>  	{ PCI_DEVICE(PCI_VENDOR_ID_TI, PCI_DEVICE_ID_TI_DRA72x) },
+>  	{ PCI_DEVICE(PCI_VENDOR_ID_FREESCALE, 0x81c0) },
+> +	{ PCI_DEVICE(PCI_VENDOR_ID_FREESCALE, PCI_DEVICE_ID_LS1088A) },
+>  	{ PCI_DEVICE_DATA(SYNOPSYS, EDDA, NULL) },
+>  	{ PCI_DEVICE(PCI_VENDOR_ID_TI, PCI_DEVICE_ID_TI_AM654),
+>  	  .driver_data = (kernel_ulong_t)&am654_data
 > -- 
 > 2.9.5
 > 
