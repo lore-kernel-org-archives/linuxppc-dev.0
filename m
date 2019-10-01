@@ -2,36 +2,36 @@ Return-Path: <SRS0=t3e+=X2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 38FB0C352AA
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Oct 2019 16:10:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 00F42C352AA
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Oct 2019 16:31:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7A1F52168B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Oct 2019 16:10:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7A1F52168B
+	by mail.kernel.org (Postfix) with ESMTPS id 6F27E2070B
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Oct 2019 16:31:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6F27E2070B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46jPP35GKRzDqQv
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Oct 2019 02:09:59 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 46jPsz14BqzDqVx
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Oct 2019 02:31:35 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46jPLF3z9NzDqJB
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Oct 2019 02:07:33 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46jPqf2r8PzDqP2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Oct 2019 02:29:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux.vnet.ibm.com
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 46jPLF21tQz8sx3
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Oct 2019 02:07:33 +1000 (AEST)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 46jPqf0zjWz8t9t
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Oct 2019 02:29:34 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 46jPLF1Jjxz9sP7; Wed,  2 Oct 2019 02:07:33 +1000 (AEST)
+ id 46jPqf0bdQz9sPJ; Wed,  2 Oct 2019 02:29:34 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
  (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
@@ -42,59 +42,60 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 46jPLD0yNkz9sDB;
- Wed,  2 Oct 2019 02:07:31 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 46jPqd4kFNz9sDB;
+ Wed,  2 Oct 2019 02:29:33 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x91G2Q2X017754; Tue, 1 Oct 2019 12:07:18 -0400
+ x91GDcPI084473; Tue, 1 Oct 2019 12:29:13 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2vc8e7m7mw-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2vc9bgahr1-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 01 Oct 2019 12:07:18 -0400
-Received: from m0098396.ppops.net (m0098396.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x91G2cZx018895;
- Tue, 1 Oct 2019 12:07:17 -0400
-Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.26])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2vc8e7m7m7-1
+ Tue, 01 Oct 2019 12:29:13 -0400
+Received: from m0098404.ppops.net (m0098404.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x91GFibZ104327;
+ Tue, 1 Oct 2019 12:29:12 -0400
+Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.10])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2vc9bgahqc-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 01 Oct 2019 12:07:17 -0400
-Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
- by ppma04wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x91G5EFo009042;
- Tue, 1 Oct 2019 16:07:15 GMT
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by ppma04wdc.us.ibm.com with ESMTP id 2v9y57vkwd-1
+ Tue, 01 Oct 2019 12:29:12 -0400
+Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
+ by ppma02dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x91GQQLN009749;
+ Tue, 1 Oct 2019 16:29:11 GMT
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by ppma02dal.us.ibm.com with ESMTP id 2v9y57m06g-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 01 Oct 2019 16:07:15 +0000
+ Tue, 01 Oct 2019 16:29:11 +0000
 Received: from b03ledav005.gho.boulder.ibm.com
  (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x91G7EKW59703610
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x91GT9Vl45351412
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 1 Oct 2019 16:07:14 GMT
+ Tue, 1 Oct 2019 16:29:09 GMT
 Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B3C18BE05B;
- Tue,  1 Oct 2019 16:07:13 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id C01F2BE053;
+ Tue,  1 Oct 2019 16:29:09 +0000 (GMT)
 Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 28767BE051;
- Tue,  1 Oct 2019 16:07:11 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id C6EE9BE056;
+ Tue,  1 Oct 2019 16:29:06 +0000 (GMT)
 Received: from swastik.ibm.com (unknown [9.80.224.222])
  by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
- Tue,  1 Oct 2019 16:07:10 +0000 (GMT)
-Subject: Re: [PATCH v6 3/9] powerpc: add support to initialize ima policy rules
-To: Thiago Jung Bauermann <bauerman@linux.ibm.com>,
- Nayna Jain <nayna@linux.ibm.com>
+ Tue,  1 Oct 2019 16:29:06 +0000 (GMT)
+Subject: Re: [PATCH v6 1/9] dt-bindings: ibm, secureboot: secure boot specific
+ properties for PowerNV
+To: Rob Herring <robh@kernel.org>, Nayna Jain <nayna@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
 References: <1569594360-7141-1-git-send-email-nayna@linux.ibm.com>
- <1569594360-7141-4-git-send-email-nayna@linux.ibm.com>
- <877e5pwa1b.fsf@morokweng.localdomain>
+ <1569594360-7141-2-git-send-email-nayna@linux.ibm.com>
+ <20191001133330.GA29810@bogus>
 From: Nayna <nayna@linux.vnet.ibm.com>
-Message-ID: <84f057d0-6a0b-d486-0eb6-f1590f32e377@linux.vnet.ibm.com>
-Date: Tue, 1 Oct 2019 12:07:10 -0400
+Message-ID: <e0575a28-5bd9-1f5b-c09d-ed86cb715165@linux.vnet.ibm.com>
+Date: Tue, 1 Oct 2019 12:29:06 -0400
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
  Thunderbird/52.9.1
 MIME-Version: 1.0
-In-Reply-To: <877e5pwa1b.fsf@morokweng.localdomain>
+In-Reply-To: <20191001133330.GA29810@bogus>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 8bit
 Content-Language: en-US
@@ -106,7 +107,7 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
  mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1908290000 definitions=main-1910010139
+ scancount=1 engine=8.0.1-1908290000 definitions=main-1910010140
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -120,12 +121,12 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
  linux-efi@vger.kernel.org, Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Eric Ricther <erichte@linux.ibm.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ Eric Ricther <erichte@linux.ibm.com>, linux-kernel@vger.kernel.org,
  Mimi Zohar <zohar@linux.ibm.com>, Claudio Carvalho <cclaudio@linux.ibm.com>,
  Matthew Garret <matthew.garret@nebula.com>, linuxppc-dev@ozlabs.org,
- Rob Herring <robh+dt@kernel.org>, Paul Mackerras <paulus@samba.org>,
- Jeremy Kerr <jk@ozlabs.org>, Elaine Palmer <erpalmer@us.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, Jeremy Kerr <jk@ozlabs.org>,
+ Elaine Palmer <erpalmer@us.ibm.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Oliver O'Halloran <oohall@gmail.com>, linux-integrity@vger.kernel.org,
  George Wilson <gcwilson@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
@@ -134,77 +135,38 @@ Sender: "Linuxppc-dev"
 
 
 
-On 09/30/2019 09:04 PM, Thiago Jung Bauermann wrote:
-> Hello,
-
-Hi,
-
->
->> diff --git a/arch/powerpc/kernel/ima_arch.c b/arch/powerpc/kernel/ima_arch.c
+On 10/01/2019 09:33 AM, Rob Herring wrote:
+> On Fri, Sep 27, 2019 at 10:25:52AM -0400, Nayna Jain wrote:
+>> PowerNV represents both the firmware and Host OS secureboot state of the
+>> system via device tree. This patch adds the documentation to give
+>> the definition of the nodes and the properties.
+>>
+>> Signed-off-by: Nayna Jain <nayna@linux.ibm.com>
+>> ---
+>>   .../bindings/powerpc/ibm,secureboot.rst       | 76 ++++++++++++++++
+>>   .../devicetree/bindings/powerpc/secvar.rst    | 89 +++++++++++++++++++
+>>   2 files changed, 165 insertions(+)
+>>   create mode 100644 Documentation/devicetree/bindings/powerpc/ibm,secureboot.rst
+>>   create mode 100644 Documentation/devicetree/bindings/powerpc/secvar.rst
+>>
+>> diff --git a/Documentation/devicetree/bindings/powerpc/ibm,secureboot.rst b/Documentation/devicetree/bindings/powerpc/ibm,secureboot.rst
 >> new file mode 100644
->> index 000000000000..39401b67f19e
+>> index 000000000000..03d32099d2eb
 >> --- /dev/null
->> +++ b/arch/powerpc/kernel/ima_arch.c
->> @@ -0,0 +1,33 @@
->> +// SPDX-License-Identifier: GPL-2.0
->> +/*
->> + * Copyright (C) 2019 IBM Corporation
->> + * Author: Nayna Jain
->> + */
->> +
->> +#include <linux/ima.h>
->> +#include <asm/secure_boot.h>
->> +
->> +bool arch_ima_get_secureboot(void)
->> +{
->> +	return is_powerpc_os_secureboot_enabled();
->> +}
->> +
->> +/* Defines IMA appraise rules for secureboot */
->> +static const char *const arch_rules[] = {
->> +	"appraise func=KEXEC_KERNEL_CHECK appraise_type=imasig|modsig",
->> +#if !IS_ENABLED(CONFIG_MODULE_SIG)
->> +	"appraise func=MODULE_CHECK appraise_type=imasig|modsig",
->> +#endif
->> +	NULL
->> +};
->> +
->> +/*
->> + * Returns the relevant IMA arch policies based on the system secureboot state.
->> + */
->> +const char *const *arch_get_ima_policy(void)
->> +{
->> +	if (is_powerpc_os_secureboot_enabled())
->> +		return arch_rules;
->> +
->> +	return NULL;
->> +}
-> If CONFIG_MODULE_SIG is enabled but module signatures aren't enforced,
-> then IMA won't enforce module signature either. x86's
-> arch_get_ima_policy() calls set_module_sig_enforced(). Doesn't the
-> powerpc version need to do that as well?
+>> +++ b/Documentation/devicetree/bindings/powerpc/ibm,secureboot.rst
+>> @@ -0,0 +1,76 @@
+>> +# SPDX-License-Identifier: GPL-2.0
+> Not the right form for reST files.
 >
-> On the flip side, if module signatures are enforced by the module
-> subsystem then IMA will verify the signature a second time since there's
-> no sharing of signature verification results between the module
-> subsystem and IMA (this was observed by Mimi).
->
-> IMHO this is a minor issue, since module loading isn't a hot path and
-> the duplicate work shouldn't impact anything. But it could be avoided by
-> having a NULL entry in arch_rules, which arch_get_ima_policy() would
-> dynamically update with the "appraise func=MODULE_CHECK" rule if
-> is_module_sig_enforced() is true.
+>> +*** NOTE ***
+>> +This document is copied from OPAL firmware
+>> +(skiboot/doc/device-tree/ibm,secureboot.rst)
+> Why copy into the kernel?
 
-Thanks Thiago for reviewing.  I am wondering that this will give two 
-meanings for NULL. Can we do something like below, there are possibly 
-two options ?
+Do you mean we do not need the device-tree documentation in the kernel 
+when it already exists in the skiboot tree ?
 
-1. Set IMA_APPRAISED in the iint->flags if is_module_sig_enforced().
-
-OR
-
-2. Let ima_get_action() check for is_module_sig_enforced() when policy 
-is appraise and func is MODULE_CHECK.
+I think I am ok with that. Michael, what do you think ?
 
 Thanks & Regards,
-    - Nayna
+      - Nayna
