@@ -2,85 +2,87 @@ Return-Path: <SRS0=t3e+=X2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9EFAC388F3
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Oct 2019 06:27:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6749CC388F3
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Oct 2019 06:29:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6FD85215EA
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Oct 2019 06:27:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6FD85215EA
+	by mail.kernel.org (Postfix) with ESMTPS id 1DAFE215EA
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Oct 2019 06:29:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1DAFE215EA
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46j8T45HfNzDqDC
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Oct 2019 16:27:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46j8W318RLzDqNW
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Oct 2019 16:29:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=tyreld@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46j87g43wfzDqF7
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46j87h0mbTzDqDd
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Oct 2019 16:12:31 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x9168E4e031291; Tue, 1 Oct 2019 02:12:22 -0400
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x9168ICl122434; Tue, 1 Oct 2019 02:12:27 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2vbyueaa7p-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2vbx57vpn8-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 01 Oct 2019 02:12:22 -0400
-Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x916BQQg039555;
- Tue, 1 Oct 2019 02:12:22 -0400
-Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.11])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2vbyueaa75-1
+ Tue, 01 Oct 2019 02:12:27 -0400
+Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x9168dks123512;
+ Tue, 1 Oct 2019 02:12:27 -0400
+Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
+ [169.63.214.131])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2vbx57vpn1-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 01 Oct 2019 02:12:21 -0400
-Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
- by ppma03dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x916A5bl015866;
- Tue, 1 Oct 2019 06:12:21 GMT
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23]) by ppma03dal.us.ibm.com with ESMTP id 2v9y57y3kh-1
+ Tue, 01 Oct 2019 02:12:27 -0400
+Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
+ by ppma01dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x916A4vW005191;
+ Tue, 1 Oct 2019 06:12:26 GMT
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27]) by ppma01dal.us.ibm.com with ESMTP id 2v9y5972v6-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 01 Oct 2019 06:12:21 +0000
+ Tue, 01 Oct 2019 06:12:26 +0000
 Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
  [9.57.199.109])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x916CJq449152488
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x916CPtN48628098
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 1 Oct 2019 06:12:19 GMT
+ Tue, 1 Oct 2019 06:12:25 GMT
 Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B410B112063;
- Tue,  1 Oct 2019 06:12:19 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 5B602112067;
+ Tue,  1 Oct 2019 06:12:25 +0000 (GMT)
 Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3E0EF112061;
- Tue,  1 Oct 2019 06:12:19 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id D9B26112061;
+ Tue,  1 Oct 2019 06:12:24 +0000 (GMT)
 Received: from ltcalpine2-lp18.aus.stglabs.ibm.com (unknown [9.40.195.201])
  by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP;
- Tue,  1 Oct 2019 06:12:19 +0000 (GMT)
+ Tue,  1 Oct 2019 06:12:24 +0000 (GMT)
 From: Tyrel Datwyler <tyreld@linux.ibm.com>
 To: mpe@ellerman.id.au, bhelgaas@google.com
-Subject: [RFC PATCH 0/9] Fixes and Enablement of ibm,drc-info property
-Date: Tue,  1 Oct 2019 01:12:05 -0500
-Message-Id: <1569910334-5972-1-git-send-email-tyreld@linux.ibm.com>
+Subject: [RFC PATCH 9/9] powerpc: Enable support for ibm,drc-info property
+Date: Tue,  1 Oct 2019 01:12:14 -0500
+Message-Id: <1569910334-5972-10-git-send-email-tyreld@linux.ibm.com>
 X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1569910334-5972-1-git-send-email-tyreld@linux.ibm.com>
+References: <1569910334-5972-1-git-send-email-tyreld@linux.ibm.com>
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-10-01_03:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
  mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1908290000 definitions=main-1910010060
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -100,42 +102,27 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There was an initial previous effort yo add support for the PAPR
-architected ibm,drc-info property. This property provides a more
-memory compact representation of a paritions Dynamic Reconfig
-Connectors (DRC). These can otherwise be thought of the currently
-partitioned, or available, but yet to be partitioned, system resources
-such as cpus, memory, and physical/logical IOA devices.
+Advertise client support for the PAPR architected ibm,drc-info device
+tree property during CAS handshake.
 
-The initial implementation proved buggy and was fully turned of by
-disabling the bit in the appropriate CAS support vector. We now have
-PowerVM firmware in the field that supports this new property, and 
-further to suppport partitions with 24TB+ or possible memory this
-property is required to perform platform migration.
+Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
+---
+ arch/powerpc/kernel/prom_init.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-This serious fixup the short comings of the previous implementation
-in the areas of general implementation, cpu hotplug, and IOA hotplug.
-
-Tyrel Datwyler (9):
-  powerpc/pseries: add cpu DLPAR support for drc-info property
-  powerpc/pseries: fix bad drc_index_start value parsing of drc-info
-    entry
-  powerpc/pseries: fix drc-info mappings of logical cpus to drc-index
-  PCI: rpaphp: fix up pointer to first drc-info entry
-  PCI: rpaphp: don't rely on firmware feature to imply drc-info support
-  PCI: rpaphp: add drc-info support for hotplug slot registration
-  PCI: rpaphp: annotate and correctly byte swap DRC properties
-  PCI: rpaphp: correctly match ibm,my-drc-index to drc-name when using
-    drc-info
-  powerpc: Enable support for ibm,drc-info property
-
- arch/powerpc/kernel/prom_init.c                 |   2 +-
- arch/powerpc/platforms/pseries/hotplug-cpu.c    | 117 ++++++++++++++++------
- arch/powerpc/platforms/pseries/of_helpers.c     |   8 +-
- arch/powerpc/platforms/pseries/pseries_energy.c |  23 ++---
- drivers/pci/hotplug/rpaphp_core.c               | 124 +++++++++++++++++-------
- 5 files changed, 191 insertions(+), 83 deletions(-)
-
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index a4e7762..2ca9966 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -1053,7 +1053,7 @@ static const struct ibm_arch_vec ibm_architecture_vec_template __initconst = {
+ 		.reserved2 = 0,
+ 		.reserved3 = 0,
+ 		.subprocessors = 1,
+-		.byte22 = OV5_FEAT(OV5_DRMEM_V2),
++		.byte22 = OV5_FEAT(OV5_DRMEM_V2) | OV5_FEAT(OV5_DRC_INFO),
+ 		.intarch = 0,
+ 		.mmu = 0,
+ 		.hash_ext = 0,
 -- 
 2.7.4
 
