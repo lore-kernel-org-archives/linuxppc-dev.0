@@ -2,82 +2,62 @@ Return-Path: <SRS0=t3e+=X2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DDF53C352AA
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Oct 2019 15:51:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CCAC6C352AA
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Oct 2019 16:05:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4820E2070B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Oct 2019 15:51:05 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="jpLjP0sV"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4820E2070B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
+	by mail.kernel.org (Postfix) with ESMTPS id 78D8F2053B
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Oct 2019 16:05:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 78D8F2053B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46jNz93GVTzDqVF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Oct 2019 01:51:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46jPJ41GTczDqT3
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Oct 2019 02:05:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=chromium.org
- (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com;
- envelope-from=keescook@chromium.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.b="jpLjP0sV";
- dkim-atps=neutral
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
- [IPv6:2607:f8b0:4864:20::441])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=srs0=il+s=x2=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=bugzilla.kernel.org
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46jNw34jwBzDqRH
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Oct 2019 01:48:17 +1000 (AEST)
-Received: by mail-pf1-x441.google.com with SMTP id b128so8300325pfa.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Oct 2019 08:48:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to;
- bh=aHMpO9J+CUbgrwJq2FPC5hQWPjIgrqNx/lVINe55yAg=;
- b=jpLjP0sVOqJ1io2GkUXKgc45cxfb7B1taqxOFsmCAMNJmlj5/fV9ZG/T16NITs4W9q
- cvbqYDNjPkgubuNgZtxJd+JdNRYNQcuTsRwBP+njU1INPXE7gYMZOi6b7xlFMKDrD14J
- DKcbIR540vNINUnM0FJ0c/BvYD5Gp0RtEXiDQ=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=aHMpO9J+CUbgrwJq2FPC5hQWPjIgrqNx/lVINe55yAg=;
- b=ZieQD4kMDj3B7y10Pr33Y63HQUd3nilz0GUrfuvuRDf2D3kZbR0/OxLpYA9damMtv2
- 16z4cx8JvIhXNcLFqU80cX/7krGEooKWp2iu99K+0QaVx3zfK1BoQsn8kWuJYWwXkadd
- L8UgpaDag62uiHtsKbEPSPfex3xbB2oXQgH2waQOyan9B9RkttNr7/IGmVBlXE9j8TuI
- pnMIByvPceYys8Cgqd0XDSYmvehBMHGSQnwfDw5B6i4DX8mHCcn6Aws0IYkAt2yk14kH
- GMchDiFYDyJEtf3d5AbjkWDmdbX0lT8zDE1tdUQnIsrWhSvxJnE2R8faPI7OAckxuHTJ
- q/Mw==
-X-Gm-Message-State: APjAAAXfTHMiRaihEoEJuyFjJ3QsoX25RpbmiQ/gxPRL0mO4rj7Ojn6C
- YE0yDx96ukNM0QiFN5BE5hAGhA==
-X-Google-Smtp-Source: APXvYqyO5jsKdDXhDO3bZGk1Keogaj2M/8EIIuQkcNmk5YSzFsJ5w0LY+0szmD2PzpB1320gFGeS9A==
-X-Received: by 2002:a62:14c2:: with SMTP id 185mr27818394pfu.47.1569944893417; 
- Tue, 01 Oct 2019 08:48:13 -0700 (PDT)
-Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id x18sm1559678pge.76.2019.10.01.08.48.12
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 01 Oct 2019 08:48:12 -0700 (PDT)
-Date: Tue, 1 Oct 2019 08:48:11 -0700
-From: Kees Cook <keescook@chromium.org>
-To: Will Deacon <will@kernel.org>
-Subject: Re: [PATCH 18/29] arm64: Move EXCEPTION_TABLE to RO_DATA segment
-Message-ID: <201910010846.D0712C1@keescook>
-References: <20190926175602.33098-1-keescook@chromium.org>
- <20190926175602.33098-19-keescook@chromium.org>
- <20191001090355.blnaqlf4rfzucpb2@willie-the-truck>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46jPCm5LL8zDqSt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Oct 2019 02:01:56 +1000 (AEST)
+From: bugzilla-daemon@bugzilla.kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 204789] Boot failure with more than 256G of memory on Power9
+ with 4K pages & Hash MMU
+Date: Tue, 01 Oct 2019 16:01:53 +0000
+X-Bugzilla-Reason: None
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Product: Platform Specific/Hardware
+X-Bugzilla-Component: PPC-64
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: high
+X-Bugzilla-Who: cam@neo-zeon.de
+X-Bugzilla-Status: ASSIGNED
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-204789-206035-UlJhpNtvRb@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-204789-206035@https.bugzilla.kernel.org/>
+References: <bug-204789-206035@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20191001090355.blnaqlf4rfzucpb2@willie-the-truck>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,77 +69,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- Michal Simek <monstr@monstr.eu>, linux-alpha@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
- Arnd Bergmann <arnd@arndb.de>, linux-xtensa@linux-xtensa.org,
- linux-kernel@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>,
- x86@kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- linux-parisc@vger.kernel.org, Andy Lutomirski <luto@kernel.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
- Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Oct 01, 2019 at 10:03:56AM +0100, Will Deacon wrote:
-> Hi Kees,
-> 
-> On Thu, Sep 26, 2019 at 10:55:51AM -0700, Kees Cook wrote:
-> > The EXCEPTION_TABLE is read-only, so collapse it into RO_DATA.
-> > 
-> > Signed-off-by: Kees Cook <keescook@chromium.org>
-> > ---
-> >  arch/arm64/kernel/vmlinux.lds.S | 6 ++++--
-> >  1 file changed, 4 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/arch/arm64/kernel/vmlinux.lds.S b/arch/arm64/kernel/vmlinux.lds.S
-> > index 81d94e371c95..c6ba2eee0ee8 100644
-> > --- a/arch/arm64/kernel/vmlinux.lds.S
-> > +++ b/arch/arm64/kernel/vmlinux.lds.S
-> > @@ -5,6 +5,8 @@
-> >   * Written by Martin Mares <mj@atrey.karlin.mff.cuni.cz>
-> >   */
-> >  
-> > +#define RO_DATA_EXCEPTION_TABLE_ALIGN	8
-> > +
-> >  #include <asm-generic/vmlinux.lds.h>
-> >  #include <asm/cache.h>
-> >  #include <asm/kernel-pgtable.h>
-> > @@ -135,8 +137,8 @@ SECTIONS
-> >  	. = ALIGN(SEGMENT_ALIGN);
-> >  	_etext = .;			/* End of text section */
-> >  
-> > -	RO_DATA(PAGE_SIZE)		/* everything from this point to     */
-> > -	EXCEPTION_TABLE(8)		/* __init_begin will be marked RO NX */
-> > +	/* everything from this point to __init_begin will be marked RO NX */
-> > +	RO_DATA(PAGE_SIZE)
-> >  
-> >  	. = ALIGN(PAGE_SIZE);
-> 
-> Do you reckon it would be worth merging this last ALIGN directive into the
-> RO_DATA definition too? Given that we want to map the thing read-only, it
-> really has to be aligned either side.
+https://bugzilla.kernel.org/show_bug.cgi?id=3D204789
 
-Actually, taking a closer look, this appears to be redundant: RO_DATA()
-ends with:
+--- Comment #11 from Cameron (cam@neo-zeon.de) ---
+grep RAM /proc/iomem
+00000000-3fffffffff : System RAM
 
-	. = ALIGN(align)
+The system has 16 dimm slots, all are populated. Unfortunately, I will=20
+not have physical to access to the box in the foreseeable future.
 
-(where "align" is the "PAGE_SIZE" argument to RO_DATA())
+Aneesh appears to be correct in that this issue started with 0034d395f89d.
 
-> Anyway, that's only a nit, so:
-> 
-> Acked-by: Will Deacon <will@kernel.org>
+On 10/1/19 3:04 AM, bugzilla-daemon@bugzilla.kernel.org wrote:
+> https://bugzilla.kernel.org/show_bug.cgi?id=3D204789
+>
+> --- Comment #10 from Michael Ellerman (michael@ellerman.id.au) ---
+> Can you boot a good kernel and do:
+>
+> $ sudo grep RAM /proc/iomem
+>
+> And paste the output. Just to confirm what your memory layout is.
+>
+> What arrangement of DIMMs do you have? It's possible you could work around
+> the
+> bug by changing that, depending on how many DIMMs and slots you have.
+>
 
-Thanks!
-
-> P.S. Please CC the arm64 maintainers on arm64 patches -- I nearly missed
-> this one!
-
-Okay, I can re-expand my list. I originally had done this but it was
-getting to be a rather large set of people. :)
-
--- 
-Kees Cook
+--=20
+You are receiving this mail because:
+You are watching the assignee of the bug.=
