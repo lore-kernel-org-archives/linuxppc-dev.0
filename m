@@ -5,19 +5,19 @@ X-Spam-Level:
 X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DC993C352AA
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Oct 2019 09:58:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4FF7AC352AA
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Oct 2019 10:00:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4F2F92190F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Oct 2019 09:58:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4F2F92190F
+	by mail.kernel.org (Postfix) with ESMTPS id F05DE2190F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Oct 2019 10:00:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F05DE2190F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46jF8Y0ZVrzDqSH
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Oct 2019 19:58:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46jFBg2GjdzDqST
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Oct 2019 20:00:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -28,12 +28,12 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46jF6Q712lzDqR1
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Oct 2019 19:56:46 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46jF6v2dFkzDqSZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Oct 2019 19:57:11 +1000 (AEST)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 204789] Boot failure with more than 256G of memory on POWER/ppc64
-Date: Tue, 01 Oct 2019 09:56:43 +0000
+Date: Tue, 01 Oct 2019 09:57:08 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
@@ -43,13 +43,13 @@ X-Bugzilla-Version: 2.5
 X-Bugzilla-Keywords: 
 X-Bugzilla-Severity: high
 X-Bugzilla-Who: michael@ellerman.id.au
-X-Bugzilla-Status: NEW
+X-Bugzilla-Status: ASSIGNED
 X-Bugzilla-Resolution: 
 X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: cc component assigned_to product
-Message-ID: <bug-204789-206035-0nHBh1YaYq@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: bug_status
+Message-ID: <bug-204789-206035-M3h0OeoR69@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-204789-206035@https.bugzilla.kernel.org/>
 References: <bug-204789-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -78,11 +78,7 @@ Michael Ellerman (michael@ellerman.id.au) changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-                 CC|                            |michael@ellerman.id.au
-          Component|Other                       |PPC-64
-           Assignee|akpm@linux-foundation.org   |platform_ppc-64@kernel-bugs
-                   |                            |.osdl.org
-            Product|Memory Management           |Platform Specific/Hardware
+             Status|NEW                         |ASSIGNED
 
 --=20
 You are receiving this mail because:
