@@ -2,78 +2,76 @@ Return-Path: <SRS0=vw+r=X4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2961AC10F14
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Oct 2019 07:14:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B972FC10F14
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Oct 2019 07:33:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C395D21848
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Oct 2019 07:14:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0ED1F20815
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Oct 2019 07:33:10 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="IfIlazFI"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C395D21848
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="B4wbOH9N"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0ED1F20815
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46kPQS4JtjzDqYp
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Oct 2019 17:14:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46kPql37plzDqY4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Oct 2019 17:33:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
+ (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
  envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="IfIlazFI"; dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
+ header.b="B4wbOH9N"; dkim-atps=neutral
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:8b0:10b:1231::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46kPNS5Fw9zDqXS
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2019 17:12:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46kPnT1p0czDqXb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2019 17:31:09 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
  Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
  Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
  List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=ZSEhzz0hkh6iXfOqXcwLTtkcvLhSIbKDHi0bTttdOXQ=; b=IfIlazFIJtufsLlQQN3Bq5Dti
- r2S2F/kx9HNu1musasFZtoSE/xNvzPbSz84HV7/Cv4yHZLlzAhpOUrgUpGhgZ9jKWCU4OxsMu7q2Z
- 1EHNdsQW8HkmbjKrTuAJ4TIpKqkccnUyfyrD9FXfg6bb7aCtJEJ8x06JA2bYBkWWwCyJf7zM4sYF5
- XerEXzAu5UlOqMvLBT8bs0aWCXecu0utBw7kvKfrfxUnM0j7FUd1MqR4iXl1saiavbBhoNAMLVmCk
- eCXTERS+WC4Fbfs5byGmz3qanaqeVU1A/bUsSHxbSZdI5OndSFPuynGDwt9YV2uT2exSzB1OlbrcL
- waGLn6b7g==;
+ bh=QsQ0pKc29g6AJUvIf8oghBRQ3LKFY4Dh/HxyizW2xtQ=; b=B4wbOH9NB4/QQQ0XP2JE6ZJpc
+ qBm4NYJ2bhIkYOjtu7lY6JQ3ei2MG79dTQ2TN7IEetm8Mj3gD3Ee0ulG2Y6i0k9yinZRnJFAozQMO
+ AGDj86EdrEp4RrwAPMPswc3+7gPnJJf/0HnuzS7Dp97ZUqU2VsZYULFj3wKz9czO9jBR389ob2QDP
+ DK201mUK82fZqlSIItfgJQGVDTtvENKjL71ga8eA8p4/CxTEy/XCDEvcqrlfxCNutmDWq9JUxfsRL
+ 39o62euiLHa5KcWthoaLFVxoJTkgkw7dglH6kiAv+qOw8jV6S7KZ6l9A7Px/OqO6Bab0ME4q67/wg
+ HsmVpl0pg==;
 Received: from j217100.upc-j.chello.nl ([24.132.217.100]
  helo=noisy.programming.kicks-ass.net)
- by bombadil.infradead.org with esmtpsa (Exim 4.92.2 #3 (Red Hat Linux))
- id 1iFvHE-0008PD-Gx; Thu, 03 Oct 2019 07:11:52 +0000
+ by merlin.infradead.org with esmtpsa (Exim 4.92.2 #3 (Red Hat Linux))
+ id 1iFvYj-0003dq-Rg; Thu, 03 Oct 2019 07:29:58 +0000
 Received: from hirez.programming.kicks-ass.net
  (hirez.programming.kicks-ass.net [192.168.1.225])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (Client did not present a certificate)
- by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 8B6CB301B59;
- Thu,  3 Oct 2019 09:10:56 +0200 (CEST)
+ by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id B9AE4301A79;
+ Thu,  3 Oct 2019 09:29:03 +0200 (CEST)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
- id 9A06A20FF8D3E; Thu,  3 Oct 2019 09:11:45 +0200 (CEST)
-Date: Thu, 3 Oct 2019 09:11:45 +0200
+ id CC90020FF8D3E; Thu,  3 Oct 2019 09:29:52 +0200 (CEST)
+Date: Thu, 3 Oct 2019 09:29:52 +0200
 From: Peter Zijlstra <peterz@infradead.org>
 To: Leonardo Bras <leonardo@linux.ibm.com>
-Subject: Re: [PATCH v5 01/11] asm-generic/pgtable: Adds generic functions to
- monitor lockless pgtable walks
-Message-ID: <20191003071145.GM4536@hirez.programming.kicks-ass.net>
+Subject: Re: [PATCH v5 00/11] Introduces new count-based method for tracking
+ lockless pagetable walks
+Message-ID: <20191003072952.GN4536@hirez.programming.kicks-ass.net>
 References: <20191003013325.2614-1-leonardo@linux.ibm.com>
- <20191003013325.2614-2-leonardo@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20191003013325.2614-2-leonardo@linux.ibm.com>
+In-Reply-To: <20191003013325.2614-1-leonardo@linux.ibm.com>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -119,50 +117,47 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Oct 02, 2019 at 10:33:15PM -0300, Leonardo Bras wrote:
-> diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
-> index 818691846c90..3043ea9812d5 100644
-> --- a/include/asm-generic/pgtable.h
-> +++ b/include/asm-generic/pgtable.h
-> @@ -1171,6 +1171,64 @@ static inline bool arch_has_pfn_modify_check(void)
->  #endif
->  #endif
->  
-> +#ifndef __HAVE_ARCH_LOCKLESS_PGTBL_WALK_CONTROL
-> +static inline unsigned long begin_lockless_pgtbl_walk(struct mm_struct *mm)
-> +{
-> +	unsigned long irq_mask;
-> +
-> +	if (IS_ENABLED(CONFIG_LOCKLESS_PAGE_TABLE_WALK_TRACKING))
-> +		atomic_inc(&mm->lockless_pgtbl_walkers);
+On Wed, Oct 02, 2019 at 10:33:14PM -0300, Leonardo Bras wrote:
+> If a process (qemu) with a lot of CPUs (128) try to munmap() a large
+> chunk of memory (496GB) mapped with THP, it takes an average of 275
+> seconds, which can cause a lot of problems to the load (in qemu case,
+> the guest will lock for this time).
+> 
+> Trying to find the source of this bug, I found out most of this time is
+> spent on serialize_against_pte_lookup(). This function will take a lot
+> of time in smp_call_function_many() if there is more than a couple CPUs
+> running the user process. Since it has to happen to all THP mapped, it
+> will take a very long time for large amounts of memory.
+> 
+> By the docs, serialize_against_pte_lookup() is needed in order to avoid
+> pmd_t to pte_t casting inside find_current_mm_pte(), or any lockless
+> pagetable walk, to happen concurrently with THP splitting/collapsing.
+> 
+> It does so by calling a do_nothing() on each CPU in mm->cpu_bitmap[],
+> after interrupts are re-enabled.
+> Since, interrupts are (usually) disabled during lockless pagetable
+> walk, and serialize_against_pte_lookup will only return after
+> interrupts are enabled, it is protected.
 
-This will not work for file backed THP. Also, this is a fairly serious
-contention point all on its own.
+This is something entirely specific to Power, you shouldn't be touching
+generic code at all.
 
-> +	/*
-> +	 * Interrupts must be disabled during the lockless page table walk.
-> +	 * That's because the deleting or splitting involves flushing TLBs,
-> +	 * which in turn issues interrupts, that will block when disabled.
-> +	 */
-> +	local_irq_save(irq_mask);
-> +
-> +	/*
-> +	 * This memory barrier pairs with any code that is either trying to
-> +	 * delete page tables, or split huge pages. Without this barrier,
-> +	 * the page tables could be read speculatively outside of interrupt
-> +	 * disabling.
-> +	 */
-> +	smp_mb();
+Also, I'm not sure I understand things properly.
 
-I don't think this is something smp_mb() can guarantee. smp_mb() is
-defined to order memory accesses, in this case the store of the old
-flags vs whatever comes after this.
+So serialize_against_pte_lookup() wants to wait for all currently
+out-standing __find_linux_pte() instances (which are very similar to
+gup_fast).
 
-It cannot (in generic) order against completion of prior instructions,
-like clearing the interrupt enabled flags.
+It seems to want to do this before flushing the THP TLB for some reason;
+why? Should not THP observe the normal page table freeing rules which
+includes a RCU-like grace period like this already.
 
-Possibly you want barrier_nospec().
+Why is THP special here? This doesn't seem adequately explained.
 
-> +
-> +	return irq_mask;
-> +}
+Also, specifically to munmap(), this seems entirely superfluous,
+munmap() uses the normal page-table freeing code and should be entirely
+fine without additional waiting.
+
+Furthermore, Power never accurately tracks mm_cpumask(), so using that
+makes the whole thing more expensive than it needs to be. Also, I
+suppose that is buggered vs file backed THP.
