@@ -6,38 +6,40 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DC843C10F14
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Oct 2019 23:09:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56331C32792
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Oct 2019 23:11:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 90EA620842
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Oct 2019 23:09:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 90EA620842
+	by mail.kernel.org (Postfix) with ESMTPS id 0DA5D20842
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Oct 2019 23:11:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0DA5D20842
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46kpcG06wXzDqbC
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Oct 2019 09:09:34 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 46kpfR40tSzDqZX
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Oct 2019 09:11:27 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46kpWr6wlJzDqYS
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2019 09:05:44 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46kpWs2z4vzDqZX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2019 09:05:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 46kpWr3kTYz9sPp; Fri,  4 Oct 2019 09:05:44 +1000 (AEST)
+ id 46kpWs0pdbz9sPq; Fri,  4 Oct 2019 09:05:45 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 8996ae8f05a1cc5559120aaec36183edb9c68c50
-In-Reply-To: <20190930101342.36c1afa0@canb.auug.org.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>
+X-powerpc-patch-commit: 9123b7914823a7d81dd0e5d8ae40bc6f1ee869c8
+In-Reply-To: <20191001132928.72555-1-ldufour@linux.ibm.com>
+To: Laurent Dufour <ldufour@linux.ibm.com>, sfr@linux.ibm.com,
+ benh@kernel.crashing.org, paulus@samba.org, aneesh.kumar@linux.ibm.com,
+ npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: linux-next: build failure after merge of the powerpc tree
-Message-Id: <46kpWr3kTYz9sPp@ozlabs.org>
-Date: Fri,  4 Oct 2019 09:05:44 +1000 (AEST)
+Subject: Re: [PATCH] powerpc/pseries: Remove confusing warning message.
+Message-Id: <46kpWs0pdbz9sPq@ozlabs.org>
+Date: Fri,  4 Oct 2019 09:05:45 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,48 +51,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux Next Mailing List <linux-next@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2019-09-30 at 00:13:42 UTC, Stephen Rothwell wrote:
-> Hi all,
+On Tue, 2019-10-01 at 13:29:28 UTC, Laurent Dufour wrote:
+> Since the commit 1211ee61b4a8 ("powerpc/pseries: Read TLB Block Invalidate
+> Characteristics"), a warning message is displayed when booting a guest on
+> top of KVM:
 > 
-> After merging the powerpc tree, today's linux-next build (powerpc64
-> allnoconfig) failed like this:
+> lpar: arch/powerpc/platforms/pseries/lpar.c pseries_lpar_read_hblkrm_characteristics Error calling get-system-parameter (0xfffffffd)
 > 
-> arch/powerpc/mm/book3s64/pgtable.c: In function 'flush_partition':
-> arch/powerpc/mm/book3s64/pgtable.c:216:3: error: implicit declaration of fu=
-> nction 'radix__flush_all_lpid_guest'; did you mean 'radix__flush_all_lpid'?=
->  [-Werror=3Dimplicit-function-declaration]
->   216 |   radix__flush_all_lpid_guest(lpid);
->       |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~
->       |   radix__flush_all_lpid
+> This message is displayed because this hypervisor is not supporting the
+> H_BLOCK_REMOVE hcall and thus is not exposing the corresponding feature.
 > 
-> Caused by commit
+> Reading the TLB Block Invalidate Characteristics should not be done if the
+> feature is not exposed.
 > 
->   99161de3a283 ("powerpc/64s/radix: tidy up TLB flushing code")
-> 
-> radix__flush_all_lpid_guest() is only declared for CONFIG_PPC_RADIX_MMU
-> which is not set for this build.
-> 
-> I am not sure why this did not show up earlier (maybe a Kconfig
-> change?).
-> 
-> I added the following hack for today.
-> 
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Mon, 30 Sep 2019 10:09:17 +1000
-> Subject: [PATCH] powerpc/64s/radix: fix for "tidy up TLB flushing code" and
->  !CONFIG_PPC_RADIX_MMU
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> Fixes: 1211ee61b4a8 ("powerpc/pseries: Read TLB Block Invalidate Characteristics")
+> Reported-by: Stephen Rothwell <sfr@linux.ibm.com>
+> Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/8996ae8f05a1cc5559120aaec36183edb9c68c50
+https://git.kernel.org/powerpc/c/9123b7914823a7d81dd0e5d8ae40bc6f1ee869c8
 
 cheers
