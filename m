@@ -6,76 +6,76 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D7EFC10F14
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Oct 2019 01:50:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B656DC4360C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Oct 2019 01:52:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 33B26222C0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Oct 2019 01:50:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 33B26222C0
+	by mail.kernel.org (Postfix) with ESMTPS id 2F3CA222C0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Oct 2019 01:52:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2F3CA222C0
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46kGD54cTHzDqWm
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Oct 2019 11:50:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46kGGV2cXRzDqVj
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Oct 2019 11:52:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com;
  envelope-from=leonardo@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46kFvZ6tMkzDqV6
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2019 11:35:54 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46kFvt1wdHzDqWP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2019 11:36:09 +1000 (AEST)
+Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x931WV2U021146; Wed, 2 Oct 2019 21:35:27 -0400
+ x931WV9W003339; Wed, 2 Oct 2019 21:35:39 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2vd3wfmxdb-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2vd1sg80vv-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 02 Oct 2019 21:35:27 -0400
-Received: from m0098393.ppops.net (m0098393.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x931XBRA022663;
- Wed, 2 Oct 2019 21:35:27 -0400
-Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.10])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2vd3wfmxct-1
+ Wed, 02 Oct 2019 21:35:39 -0400
+Received: from m0127361.ppops.net (m0127361.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x931Wam8003549;
+ Wed, 2 Oct 2019 21:35:39 -0400
+Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.26])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2vd1sg80va-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 02 Oct 2019 21:35:27 -0400
-Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
- by ppma02dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x931U4Qj021526;
- Thu, 3 Oct 2019 01:35:25 GMT
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by ppma02dal.us.ibm.com with ESMTP id 2v9y582n2y-1
+ Wed, 02 Oct 2019 21:35:38 -0400
+Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
+ by ppma04wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x931ZKKL030145;
+ Thu, 3 Oct 2019 01:35:37 GMT
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by ppma04wdc.us.ibm.com with ESMTP id 2v9y588ee4-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 03 Oct 2019 01:35:25 +0000
+ Thu, 03 Oct 2019 01:35:37 +0000
 Received: from b03ledav004.gho.boulder.ibm.com
  (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x931ZNp460883230
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x931Zare60686794
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 3 Oct 2019 01:35:23 GMT
+ Thu, 3 Oct 2019 01:35:36 GMT
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5F64B78067;
+ by IMSVA (Postfix) with ESMTP id 4C9BF78063;
+ Thu,  3 Oct 2019 01:35:36 +0000 (GMT)
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D898F7805C;
  Thu,  3 Oct 2019 01:35:23 +0000 (GMT)
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A970078063;
- Thu,  3 Oct 2019 01:35:10 +0000 (GMT)
 Received: from LeoBras.ibmuc.com (unknown [9.85.174.224])
  by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu,  3 Oct 2019 01:35:10 +0000 (GMT)
+ Thu,  3 Oct 2019 01:35:23 +0000 (GMT)
 From: Leonardo Bras <leonardo@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  kvm-ppc@vger.kernel.org, linux-arch@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH v5 07/11] powerpc/kvm/e500: Applies counting method to monitor
- lockless pgtbl walks
-Date: Wed,  2 Oct 2019 22:33:21 -0300
-Message-Id: <20191003013325.2614-8-leonardo@linux.ibm.com>
+Subject: [PATCH v5 08/11] powerpc/kvm/book3s_hv: Applies counting method to
+ monitor lockless pgtbl walks
+Date: Wed,  2 Oct 2019 22:33:22 -0300
+Message-Id: <20191003013325.2614-9-leonardo@linux.ibm.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20191003013325.2614-1-leonardo@linux.ibm.com>
 References: <20191003013325.2614-1-leonardo@linux.ibm.com>
@@ -88,7 +88,7 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=923 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=997 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1908290000 definitions=main-1910030012
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -134,64 +134,169 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Applies the counting-based method for monitoring lockless pgtable walks on
-kvmppc_e500_shadow_map().
+Applies the counting-based method for monitoring all book3s_hv related
+functions that do lockless pagetable walks.
 
-Fixes the place where local_irq_restore() is called: previously, if ptep
-was NULL, local_irq_restore() would never be called.
+Adds comments explaining that some lockless pagetable walks don't need
+protection due to guest pgd not being a target of THP collapse/split, or
+due to being called from Realmode + MSR_EE = 0
 
-local_irq_{save,restore} is already inside {begin,end}_lockless_pgtbl_walk,
-so there is no need to repeat it here.
+kvmppc_do_h_enter: Fixes where local_irq_restore() must be placed (after
+the last usage of ptep).
 
-Variable that saves the	irq mask was renamed from flags to irq_mask so it
-doesn't lose meaning now it's not directly passed to local_irq_* functions.
+Given that some of these functions can be called in real mode, and others
+always are, we use __{begin,end}_lockless_pgtbl_walk so we can decide when
+to disable interrupts.
 
 Signed-off-by: Leonardo Bras <leonardo@linux.ibm.com>
 ---
- arch/powerpc/kvm/e500_mmu_host.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ arch/powerpc/kvm/book3s_hv_nested.c | 22 ++++++++++++++++++--
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c | 32 ++++++++++++++++-------------
+ 2 files changed, 38 insertions(+), 16 deletions(-)
 
-diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
-index 321db0fdb9db..36f07c6a5f10 100644
---- a/arch/powerpc/kvm/e500_mmu_host.c
-+++ b/arch/powerpc/kvm/e500_mmu_host.c
-@@ -336,7 +336,7 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
- 	pte_t *ptep;
- 	unsigned int wimg = 0;
- 	pgd_t *pgdir;
--	unsigned long flags;
-+	unsigned long irq_mask;
+diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3s_hv_nested.c
+index cdf30c6eaf54..89944c699fd6 100644
+--- a/arch/powerpc/kvm/book3s_hv_nested.c
++++ b/arch/powerpc/kvm/book3s_hv_nested.c
+@@ -803,7 +803,11 @@ static void kvmhv_update_nest_rmap_rc(struct kvm *kvm, u64 n_rmap,
+ 	if (!gp)
+ 		return;
  
- 	/* used to check for invalidations in progress */
- 	mmu_seq = kvm->mmu_notifier_seq;
-@@ -473,7 +473,7 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
- 	 * We are holding kvm->mmu_lock so a notifier invalidate
- 	 * can't run hence pfn won't change.
+-	/* Find the pte */
++	/* Find the pte:
++	 * We are walking the nested guest (partition-scoped) page table here.
++	 * We can do this without disabling irq because the Linux MM
++	 * subsystem doesn't do THP splits and collapses on this tree.
++	 */
+ 	ptep = __find_linux_pte(gp->shadow_pgtable, gpa, NULL, &shift);
+ 	/*
+ 	 * If the pte is present and the pfn is still the same, update the pte.
+@@ -853,7 +857,11 @@ static void kvmhv_remove_nest_rmap(struct kvm *kvm, u64 n_rmap,
+ 	if (!gp)
+ 		return;
+ 
+-	/* Find and invalidate the pte */
++	/* Find and invalidate the pte:
++	 * We are walking the nested guest (partition-scoped) page table here.
++	 * We can do this without disabling irq because the Linux MM
++	 * subsystem doesn't do THP splits and collapses on this tree.
++	 */
+ 	ptep = __find_linux_pte(gp->shadow_pgtable, gpa, NULL, &shift);
+ 	/* Don't spuriously invalidate ptes if the pfn has changed */
+ 	if (ptep && pte_present(*ptep) && ((pte_val(*ptep) & mask) == hpa))
+@@ -921,6 +929,11 @@ static bool kvmhv_invalidate_shadow_pte(struct kvm_vcpu *vcpu,
+ 	int shift;
+ 
+ 	spin_lock(&kvm->mmu_lock);
++	/*
++	 * We are walking the nested guest (partition-scoped) page table here.
++	 * We can do this without disabling irq because the Linux MM
++	 * subsystem doesn't do THP splits and collapses on this tree.
++	 */
+ 	ptep = __find_linux_pte(gp->shadow_pgtable, gpa, NULL, &shift);
+ 	if (!shift)
+ 		shift = PAGE_SHIFT;
+@@ -1362,6 +1375,11 @@ static long int __kvmhv_nested_page_fault(struct kvm_run *run,
+ 	/* See if can find translation in our partition scoped tables for L1 */
+ 	pte = __pte(0);
+ 	spin_lock(&kvm->mmu_lock);
++	/*
++	 * We are walking the secondary (partition-scoped) page table here.
++	 * We can do this without disabling irq because the Linux MM
++	 * subsystem doesn't do THP splits and collapses on this tree.
++	 */
+ 	pte_p = __find_linux_pte(kvm->arch.pgtable, gpa, NULL, &shift);
+ 	if (!shift)
+ 		shift = PAGE_SHIFT;
+diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+index 220305454c23..a8be42f5be1e 100644
+--- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+@@ -210,7 +210,7 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+ 	pte_t *ptep;
+ 	unsigned int writing;
+ 	unsigned long mmu_seq;
+-	unsigned long rcbits, irq_flags = 0;
++	unsigned long rcbits, irq_mask = 0;
+ 
+ 	if (kvm_is_radix(kvm))
+ 		return H_FUNCTION;
+@@ -252,12 +252,8 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+ 	 * If we had a page table table change after lookup, we would
+ 	 * retry via mmu_notifier_retry.
  	 */
--	local_irq_save(flags);
-+	irq_mask = begin_lockless_pgtbl_walk(kvm->mm);
- 	ptep = find_linux_pte(pgdir, hva, NULL, NULL);
+-	if (!realmode)
+-		local_irq_save(irq_flags);
+-	/*
+-	 * If called in real mode we have MSR_EE = 0. Otherwise
+-	 * we disable irq above.
+-	 */
++	irq_mask = __begin_lockless_pgtbl_walk(kvm->mm, !realmode);
++
+ 	ptep = __find_linux_pte(pgdir, hva, NULL, &hpage_shift);
  	if (ptep) {
- 		pte_t pte = READ_ONCE(*ptep);
-@@ -481,15 +481,16 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
- 		if (pte_present(pte)) {
- 			wimg = (pte_val(pte) >> PTE_WIMGE_SHIFT) &
- 				MAS2_WIMGE_MASK;
--			local_irq_restore(flags);
- 		} else {
--			local_irq_restore(flags);
-+			end_lockless_pgtbl_walk(kvm->mm, irq_mask);
- 			pr_err_ratelimited("%s: pte not present: gfn %lx,pfn %lx\n",
- 					   __func__, (long)gfn, pfn);
- 			ret = -EINVAL;
- 			goto out;
+ 		pte_t pte;
+@@ -272,8 +268,7 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+ 		 * to <= host page size, if host is using hugepage
+ 		 */
+ 		if (host_pte_size < psize) {
+-			if (!realmode)
+-				local_irq_restore(flags);
++			__end_lockless_pgtbl_walk(kvm->mm, irq_mask, !realmode);
+ 			return H_PARAMETER;
+ 		}
+ 		pte = kvmppc_read_update_linux_pte(ptep, writing);
+@@ -287,8 +282,6 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+ 			pa |= gpa & ~PAGE_MASK;
  		}
  	}
-+	end_lockless_pgtbl_walk(kvm->mm, irq_mask);
-+
- 	kvmppc_e500_ref_setup(ref, gtlbe, pfn, wimg);
+-	if (!realmode)
+-		local_irq_restore(irq_flags);
  
- 	kvmppc_e500_setup_stlbe(&vcpu_e500->vcpu, gtlbe, tsize,
+ 	ptel &= HPTE_R_KEY | HPTE_R_PP0 | (psize-1);
+ 	ptel |= pa;
+@@ -302,8 +295,10 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+ 
+ 	/*If we had host pte mapping then  Check WIMG */
+ 	if (ptep && !hpte_cache_flags_ok(ptel, is_ci)) {
+-		if (is_ci)
++		if (is_ci) {
++			__end_lockless_pgtbl_walk(kvm->mm, irq_mask, !realmode);
+ 			return H_PARAMETER;
++		}
+ 		/*
+ 		 * Allow guest to map emulated device memory as
+ 		 * uncacheable, but actually make it cacheable.
+@@ -311,6 +306,7 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+ 		ptel &= ~(HPTE_R_W|HPTE_R_I|HPTE_R_G);
+ 		ptel |= HPTE_R_M;
+ 	}
++	__end_lockless_pgtbl_walk(kvm->mm, irq_mask, !realmode);
+ 
+ 	/* Find and lock the HPTEG slot to use */
+  do_insert:
+@@ -907,11 +903,19 @@ static int kvmppc_get_hpa(struct kvm_vcpu *vcpu, unsigned long gpa,
+ 	/* Translate to host virtual address */
+ 	hva = __gfn_to_hva_memslot(memslot, gfn);
+ 
+-	/* Try to find the host pte for that virtual address */
++	/* Try to find the host pte for that virtual address :
++	 * Called by hcall_real_table (real mode + MSR_EE=0)
++	 * Interrupts are disabled here.
++	 */
++	__begin_lockless_pgtbl_walk(kvm->mm, false);
+ 	ptep = __find_linux_pte(vcpu->arch.pgdir, hva, NULL, &shift);
+-	if (!ptep)
++	if (!ptep) {
++		__end_lockless_pgtbl_walk(kvm->mm, 0, false);
+ 		return H_TOO_HARD;
++	}
+ 	pte = kvmppc_read_update_linux_pte(ptep, writing);
++	__end_lockless_pgtbl_walk(kvm->mm, 0, false);
++
+ 	if (!pte_present(pte))
+ 		return H_TOO_HARD;
+ 
 -- 
 2.20.1
 
