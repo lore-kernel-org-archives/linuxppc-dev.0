@@ -2,72 +2,95 @@ Return-Path: <SRS0=3oZV=X5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 71A2FC10F14
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Oct 2019 03:29:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 439D7C4360C
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Oct 2019 07:53:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BE70B2084D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Oct 2019 03:29:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9B293207FF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Oct 2019 07:53:42 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="pK3CJJg5"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BE70B2084D
-Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="cPFMyuF6";
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="OXRlT0pj"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9B293207FF
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46kwNT2SVGzDqdV
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Oct 2019 13:29:45 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46kwLK2cZ8zDqZm
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2019 13:27:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46l2Dy4vBtzDqWr
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Oct 2019 17:53:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=ozlabs.org
+ spf=pass (mailfrom) smtp.mailfrom=russell.cc
+ (client-ip=64.147.123.24; helo=wout1-smtp.messagingengine.com;
+ envelope-from=ruscur@russell.cc; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="pK3CJJg5"; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix)
- id 46kwLJ3y35z9sPv; Fri,  4 Oct 2019 13:27:52 +1000 (AEST)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ unprotected) header.d=russell.cc header.i=@russell.cc header.b="cPFMyuF6"; 
+ dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.b="OXRlT0pj"; dkim-atps=neutral
+Received: from wout1-smtp.messagingengine.com (wout1-smtp.messagingengine.com
+ [64.147.123.24])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 46kwLJ0dyWz9sPq;
- Fri,  4 Oct 2019 13:27:52 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1570159672; bh=TcbKMW5KH27R1xtA9D4Gjb+DmQsJsuiNBmb43VsXBBY=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=pK3CJJg5Iz26eZzXO6aDT4OO1pSbBNtg0MaiclYPM8CXAZQMmy81Q6LfTGMYk21rJ
- OiyF7aE37uI26NHUZeBZtQuMm3Q5fn0eZvwtW7EuxCBkWR/PJRdGTI2SpJmKegoHr0
- qvyQZCNduvJYL/7SKVYzWWQ+JOoOflF2ZcGBjAcTO/3wjaniU6P8Vx4kWMl18YLD2q
- Rt0V90CqKPSe6iaIZLq1hmhATl6nwOVnUmE+QmYqyldwfrk8zOEqKY1PN7gEq0d879
- v1rgwQoaQbZhajPq21GU52W+Icn07sZ4mdZBZj/doh25o5xtzmO14NJaOgp9CvGuX5
- YbVzqUnmEOcYQ==
-Subject: Re: [PATCH] powerpc/powernv/prd: Validate whether address to be
- mapped is part of system RAM
-To: svaidy@linux.ibm.com
-References: <20191002074856.15014-1-hegdevasant@linux.vnet.ibm.com>
- <2bb75b409a1159d5524be2d661e548e32fed152e.camel@ozlabs.org>
- <0e8a4057-fbe7-9b1a-6613-ad500ebe8b67@linux.vnet.ibm.com>
- <049794f6a16f548bcb418d31fecf268cb4a335e5.camel@ozlabs.org>
- <9b9b529d-cad7-0ace-acf6-e07d0dea5670@linux.vnet.ibm.com>
- <452718dfe591c4718498aab6b5c7b68a95cf6c5a.camel@ozlabs.org>
- <20191003102940.GC3181@drishya.in.ibm.com>
-From: Jeremy Kerr <jk@ozlabs.org>
-Message-ID: <0b130833-6521-17eb-c693-8de4b6ef4d95@ozlabs.org>
-Date: Fri, 4 Oct 2019 11:27:46 +0800
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.7.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46l2Bb4DBJzDqbq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2019 17:51:35 +1000 (AEST)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
+ by mailout.west.internal (Postfix) with ESMTP id EBECD528;
+ Fri,  4 Oct 2019 03:51:32 -0400 (EDT)
+Received: from mailfrontend1 ([10.202.2.162])
+ by compute6.internal (MEProxy); Fri, 04 Oct 2019 03:51:33 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=
+ from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding; s=fm3; bh=g9XZdQcihsL+T
+ J0g40gPwfSRXv7Xn33lm7ZkFfhvlr8=; b=cPFMyuF6x1Gt5X1r0XiOrLe1sDKXQ
+ mZiDQcjAK2je2Qa8WOEpQv7HP7wZe7ancmiXBjKp0NzoHbeDvQ77pxnyW2oLvM2l
+ J/ktGQkDJa1Mt+pD2ZFwBC0kXfc76iL6w8I0LVaFhxnfTDkqdXCKrbi3BnahuADB
+ vb8RG+QVm4G9McgLlNYVlaOh3jj7qcS2uP3EayM3nktigmqrsHLpmm8Rj3xFG7ts
+ s14ZgQswBOpZXSlJwiIACrCtZpMXY4RNxL286JGV6jhaM2roWjfeXTrxj0elLKhX
+ njMbzbtHAYun/bLeTBTFyJ4EfFu6+EOj/Kwgwmn1PLeV+JMCtpKW/XiCg==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:content-transfer-encoding:date:from
+ :in-reply-to:message-id:mime-version:references:subject:to
+ :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+ fm3; bh=g9XZdQcihsL+TJ0g40gPwfSRXv7Xn33lm7ZkFfhvlr8=; b=OXRlT0pj
+ vjznrR0DQSNO5ZvEiUhM/c3A189OFEF4+XbTbePzR4Hp1dBFsEcW632wZj+xVXiA
+ Hzd3VeAx67sPZruYkDy+kyH3c6tG4UKynugi0LLk4CDToQLSdXcPBbj7pQPN+jJS
+ 4fNzvWXXquZZiuy2ykLJA+vMmWDRXiCSpmJzVLPvDM5aFm90LhS+fFC04IkSor6I
+ IWKANxtHUpK3rjmAmX1qLenoWiQ8LUAa7bkONqibpQzgGeASFKwtwp70NG998CLc
+ VEWO/QHZ0Bklrk+w+4N1WCFZhDtUcYxpZgKJ1XGQq1F8+LTD0bknXg0nYdbIXQ4V
+ NIN4fxZAuQaGQw==
+X-ME-Sender: <xms:BPqWXUDsQd8UFrIcWj7zZZYA-rZV9Znh1HFET6vbvExdPZN2gO-fVg>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedufedrhedtgdehlecutefuodetggdotefrodftvf
+ curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
+ uegrihhlohhuthemuceftddtnecufghrlhcuvffnffculdeftddmnecujfgurhephffvuf
+ ffkffojghfggfgsedtkeertdertddtnecuhfhrohhmpeftuhhsshgvlhhlucevuhhrrhgv
+ hicuoehruhhstghurhesrhhushhsvghllhdrtggtqeenucfkphepuddvvddrleelrdekvd
+ druddtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehruhhstghurhesrhhushhsvghllhdr
+ tggtnecuvehluhhsthgvrhfuihiivgepud
+X-ME-Proxy: <xmx:BPqWXSkgmL8eRvslAGCIqn5EIOQOwazZMJhhUfogKVGO2VI5GMw4tQ>
+ <xmx:BPqWXdhBFQvU4dkO4sNy9v255jhGrtTsjmf7YgRnzHuTzdiDh1uX5A>
+ <xmx:BPqWXbsmp8o1ARcTDcuiGoWIwLQ5Kdtl-PuL7UP8NtOyxzPHoSgGcw>
+ <xmx:BPqWXWeX855JYIx3QWf5NR1_4S8KBxArgKARkPBL-rtXVaHBuugS6A>
+Received: from crackle.ozlabs.ibm.com (unknown [122.99.82.10])
+ by mail.messagingengine.com (Postfix) with ESMTPA id 71CB88005C;
+ Fri,  4 Oct 2019 03:51:29 -0400 (EDT)
+From: Russell Currey <ruscur@russell.cc>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3 3/4] powerpc/mm/ptdump: debugfs handler for W+X checks at
+ runtime
+Date: Fri,  4 Oct 2019 17:50:49 +1000
+Message-Id: <20191004075050.73327-4-ruscur@russell.cc>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20191004075050.73327-1-ruscur@russell.cc>
+References: <20191004075050.73327-1-ruscur@russell.cc>
 MIME-Version: 1.0
-In-Reply-To: <20191003102940.GC3181@drishya.in.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,63 +102,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: ajd@linux.ibm.com, npiggin@gmail.com, joel@jms.id.au,
+ Russell Currey <ruscur@russell.cc>, rashmica.g@gmail.com, dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Vaidy,
+Very rudimentary, just
 
-> The current topic is who owns setting up the ATT bits for that piece
-> of memory.  It is the kernel today.  Kernel decides to set this up as
-> normal memory or I/O memory and sets the bits in page table entry.
-> 
->> Or, what if there's a range of address-space that isn't backed by system
->> RAM (say, some MMIO-mapped hardware) that we want to expose to a future
->> HBRT implementation? This change will block that.
->> 
->> The kernel doesn't know what is and is not valid for a HBRT mapping, so
->> it has no reason to override what's specified in the device tree. We've
->> designed this so that the kernel provides the mechanism for mapping
->> pages, and not the policy of which pages can be mapped.
-> 
-> The features altered are cache inhibit and guarding which affects
-> ability to fetch instructions.  If we allow HBRT to reside in an I/O
-> memory, the we need to tell kernel that it is ok to allow caching and
-> instruction execution in that region and accordingly change the ATT
-> bits.
+	echo 1 > [debugfs]/check_wx_pages
 
-But this isn't only about the HBRT range itself (ie., the memory 
-containing the HBRT binary). Everything that HBRT needs to map will come 
-through this path. We may not need to fetch instructions from those ranges.
+and check the kernel log.  Useful for testing strict module RWX.
 
-> This patch does not block a working function, but actually makes
-> debugging a failed case easier.  The failing scenario without this
-> check is such that HBRT cannot fetch from the region of memory and
-> loops in minor page faults doing nothing.
+Also fixed a typo.
 
-Yep, that's not great, but the alternative means applying this kernel 
-policy, which we can't guarantee is correct.
+Signed-off-by: Russell Currey <ruscur@russell.cc>
+---
+ arch/powerpc/mm/ptdump/ptdump.c | 31 +++++++++++++++++++++++++------
+ 1 file changed, 25 insertions(+), 6 deletions(-)
 
-That is, unless the page protection bits mean that this won't work 
-anyway, but we can probably fix that without a kernel policy, by 
-applying the appropriate pgprot_t, perhaps.
+diff --git a/arch/powerpc/mm/ptdump/ptdump.c b/arch/powerpc/mm/ptdump/ptdump.c
+index 2f9ddc29c535..0547cd9f264e 100644
+--- a/arch/powerpc/mm/ptdump/ptdump.c
++++ b/arch/powerpc/mm/ptdump/ptdump.c
+@@ -4,7 +4,7 @@
+  *
+  * This traverses the kernel pagetables and dumps the
+  * information about the used sections of memory to
+- * /sys/kernel/debug/kernel_pagetables.
++ * /sys/kernel/debug/kernel_page_tables.
+  *
+  * Derived from the arm64 implementation:
+  * Copyright (c) 2014, The Linux Foundation, Laura Abbott.
+@@ -409,16 +409,35 @@ void ptdump_check_wx(void)
+ 	else
+ 		pr_info("Checked W+X mappings: passed, no W+X pages found\n");
+ }
++
++static int check_wx_debugfs_set(void *data, u64 val)
++{
++	if (val != 1ULL)
++		return -EINVAL;
++
++	ptdump_check_wx();
++
++	return 0;
++}
++
++DEFINE_SIMPLE_ATTRIBUTE(check_wx_fops, NULL, check_wx_debugfs_set, "%llu\n");
+ #endif
+ 
+ static int ptdump_init(void)
+ {
+-	struct dentry *debugfs_file;
+-
+ 	populate_markers();
+ 	build_pgtable_complete_mask();
+-	debugfs_file = debugfs_create_file("kernel_page_tables", 0400, NULL,
+-			NULL, &ptdump_fops);
+-	return debugfs_file ? 0 : -ENOMEM;
++
++	if (!debugfs_create_file("kernel_page_tables", 0400, NULL,
++				 NULL, &ptdump_fops))
++		return -ENOMEM;
++
++#ifdef CONFIG_PPC_DEBUG_WX
++	if (!debugfs_create_file("check_wx_pages", 0200, NULL,
++				 NULL, &check_wx_fops))
++		return -ENOMEM;
++#endif
++
++	return 0;
+ }
+ device_initcall(ptdump_init);
+-- 
+2.23.0
 
-> As Vasant mentioned hostboot team will add code to relocate the HBRT
-> to the right place.  Addressing your concern, if we end up allowing
-> HBRT in non system-RAM area
-
-Not just HBRT, but anything that HBRT maps too.
-
-> we need to add some more flags in device
-> tree to instruct the driver to force change the page protection bits
-> as page_prot = pgprot_cached(page_prot);
-
-Doesn't phys_mem_access_prot() handle that for us? Or do I have my 
-_noncached/_cached logic inverted?
-
-Cheers,
-
-
-Jeremy
