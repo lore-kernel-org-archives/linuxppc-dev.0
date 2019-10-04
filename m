@@ -2,85 +2,96 @@ Return-Path: <SRS0=3oZV=X5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23955C10F14
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Oct 2019 02:55:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 51FA5C10F14
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Oct 2019 03:00:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 887BF207FF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Oct 2019 02:55:46 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="I+7X8PFy"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 887BF207FF
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id D0943206C0
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Oct 2019 03:00:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D0943206C0
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=popple.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46kvdC3tnszDqXN
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Oct 2019 12:55:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46kvl64JCKzDqcT
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Oct 2019 13:00:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
- envelope-from=jniethe5@gmail.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=popple.id.au
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=alistair@popple.id.au; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="I+7X8PFy"; 
- dkim-atps=neutral
-Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
- [IPv6:2607:f8b0:4864:20::643])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=popple.id.au
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46kvb76vc4zDqX8
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2019 12:53:55 +1000 (AEST)
-Received: by mail-pl1-x643.google.com with SMTP id u12so2424936pls.12
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Oct 2019 19:53:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=pw20gjwGyIvk4z43y2bV2DrT/I4s7wENPGMcRRJ5rbU=;
- b=I+7X8PFymt8BYtwV6VPllwcWxilbTowRfL8xWjjgfRDnyc1vOoMFchC9SqBarrsgAm
- 6ghMr6iSAVYWfyXYZbtwpFaL5m10QOx0SvNLbUCf9yzu6zmtGnOMiZE/eqwVAxvT/ZlR
- gnn2mvEePlMKHVn4PrCP+n8V7eYsHkjxVZBrZPDMjU4037JYe1NYNSKwe5OrcOgJb53m
- wDUSQw+7WwmK/vaxvYN1EoaKjv/qX4ZZOP1m+OwAZdYXoRVhVKdPYKqVQ0LJOjC/2t3s
- BSkFO5qdHDD9ZG/obz7Th/peMJBH7WXnmUwJvGCAEIdSzgKaM/Z6nBbDR9p4KMEnLiA4
- kNrQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=pw20gjwGyIvk4z43y2bV2DrT/I4s7wENPGMcRRJ5rbU=;
- b=AMUo1ZyBv1IE2z/LAeOXx2fH84WpmG7kl3Zp/sQMNtjx+MB/av8IAJrzUqODXVs5zu
- xMmtUrBhA8D0ps7JvyYhbzsw5XPMVAgU+8IbkcxIUAWDfyUdd0MA5v38VQAxW68EPnnW
- bc2q8xKCcubS2gItEEqj8ksD097OM3WMpL1ffeIu3TtgfyOOshO3uc7S3oQ8vwl2Nh/M
- j2RUeV8XYs7kYRDcG22JmafhJyHgYQJVZLzPBVfNwS/b2jzE3cg6Eaf+GkecW+IdeBl1
- xO0LavMczmBasOUkBHQEiazUkea0bT+9xMu4VPweXhhCA/TnqjyNxw2w12QB3z7Sl0tm
- EkUA==
-X-Gm-Message-State: APjAAAWRgkz8vZHC4zGudM+BLWKlZS3C3SQASNf0r0VU88xIVDM0AT9G
- pfERHpblIDR7yuBQX1veCu5/5AvB0/Uu7g==
-X-Google-Smtp-Source: APXvYqz+Wnmy5oq8K1YLi07YGFVPhyMZPZ0qDgQMDHCzmadww+fy1WVnAmWycWvQyFJxrLfO/vp3nA==
-X-Received: by 2002:a17:902:ff18:: with SMTP id
- f24mr12839898plj.173.1570157632027; 
- Thu, 03 Oct 2019 19:53:52 -0700 (PDT)
-Received: from pasglop.ozlabs.ibm.com ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id d20sm6920181pfq.88.2019.10.03.19.53.48
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 03 Oct 2019 19:53:51 -0700 (PDT)
-From: Jordan Niethe <jniethe5@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/kvm: Fix kvmppc_vcore->in_guest value in
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46kvj838nbzDqX8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Oct 2019 12:59:07 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x942MEA4111613
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Oct 2019 22:59:03 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2vdt5uwseq-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Oct 2019 22:59:02 -0400
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <alistair@popple.id.au>;
+ Fri, 4 Oct 2019 03:59:00 +0100
+Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 4 Oct 2019 03:58:57 +0100
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id x942wuCG43450626
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 4 Oct 2019 02:58:56 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 467E5A4055;
+ Fri,  4 Oct 2019 02:58:56 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E8344A404D;
+ Fri,  4 Oct 2019 02:58:55 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri,  4 Oct 2019 02:58:55 +0000 (GMT)
+Received: from townsend.localnet (haven.au.ibm.com [9.192.254.114])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 29A4BA01E9;
+ Fri,  4 Oct 2019 12:58:54 +1000 (AEST)
+From: Alistair Popple <alistair@popple.id.au>
+To: Jordan Niethe <jniethe5@gmail.com>
+Subject: Re: [PATCH] powerpc/kvm: Fix kvmppc_vcore->in_guest value in
  kvmhv_switch_to_host
-Date: Fri,  4 Oct 2019 12:53:17 +1000
-Message-Id: <20191004025317.19340-1-jniethe5@gmail.com>
-X-Mailer: git-send-email 2.20.1
+Date: Fri, 04 Oct 2019 12:58:54 +1000
+In-Reply-To: <20191004025317.19340-1-jniethe5@gmail.com>
+References: <20191004025317.19340-1-jniethe5@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+X-TM-AS-GCONF: 00
+x-cbid: 19100402-4275-0000-0000-0000036DDB79
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19100402-4276-0000-0000-00003880E3C2
+Message-Id: <1916396.0ElsYWBKjT@townsend>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-10-04_01:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=79 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1034 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1908290000 definitions=main-1910040018
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,73 +103,78 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aik@ozlabs.ru, alistair@popple.id.au, patch-notifications@ellerman.id.au,
- kvm-ppc@vger.kernel.org, Jordan Niethe <jniethe5@gmail.com>
+Cc: aik@ozlabs.ru, patch-notifications@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-kvmhv_switch_to_host() in arch/powerpc/kvm/book3s_hv_rmhandlers.S needs
-to set kvmppc_vcore->in_guest to 0 to signal secondary CPUs to continue.
-This happens after resetting the PCR. Before commit 13c7bb3c57dc
-("powerpc/64s: Set reserved PCR bits"), r0 would always be 0 before it
-was stored to kvmppc_vcore->in_guest. However because of this change in
-the commit:
+Reviewed-by: Alistair Popple <alistair@popple.id.au>
 
-        /* Reset PCR */
-        ld      r0, VCORE_PCR(r5)
--       cmpdi   r0, 0
-+       LOAD_REG_IMMEDIATE(r6, PCR_MASK)
-+       cmpld   r0, r6
-        beq     18f
--       li      r0, 0
--       mtspr   SPRN_PCR, r0
-+       mtspr   SPRN_PCR, r6
- 18:
-        /* Signal secondary CPUs to continue */
-        stb     r0,VCORE_IN_GUEST(r5)
+On Friday, 4 October 2019 12:53:17 PM AEST Jordan Niethe wrote:
+> kvmhv_switch_to_host() in arch/powerpc/kvm/book3s_hv_rmhandlers.S needs
+> to set kvmppc_vcore->in_guest to 0 to signal secondary CPUs to continue.
+> This happens after resetting the PCR. Before commit 13c7bb3c57dc
+> ("powerpc/64s: Set reserved PCR bits"), r0 would always be 0 before it
+> was stored to kvmppc_vcore->in_guest. However because of this change in
+> the commit:
+> 
+>         /* Reset PCR */
+>         ld      r0, VCORE_PCR(r5)
+> -       cmpdi   r0, 0
+> +       LOAD_REG_IMMEDIATE(r6, PCR_MASK)
+> +       cmpld   r0, r6
+>         beq     18f
+> -       li      r0, 0
+> -       mtspr   SPRN_PCR, r0
+> +       mtspr   SPRN_PCR, r6
+>  18:
+>         /* Signal secondary CPUs to continue */
+>         stb     r0,VCORE_IN_GUEST(r5)
+> 
+> We are no longer comparing r0 against 0 and loading it with 0 if it
+> contains something else. Hence when we store r0 to
+> kvmppc_vcore->in_guest, it might not be 0.  This means that secondary
+> CPUs will not be signalled to continue. Those CPUs get stuck and errors
+> like the following are logged:
+> 
+>     KVM: CPU 1 seems to be stuck
+>     KVM: CPU 2 seems to be stuck
+>     KVM: CPU 3 seems to be stuck
+>     KVM: CPU 4 seems to be stuck
+>     KVM: CPU 5 seems to be stuck
+>     KVM: CPU 6 seems to be stuck
+>     KVM: CPU 7 seems to be stuck
+> 
+> This can be reproduced with:
+>     $ for i in `seq 1 7` ; do chcpu -d $i ; done ;
+>     $ taskset -c 0 qemu-system-ppc64 -smp 8,threads=8 \
+>        -M pseries,accel=kvm,kvm-type=HV -m 1G -nographic -vga none \
+>        -kernel vmlinux -initrd initrd.cpio.xz
+> 
+> Fix by making sure r0 is 0 before storing it to kvmppc_vcore->in_guest.
+> 
+> Fixes: 13c7bb3c57dc ("powerpc/64s: Set reserved PCR bits")
+> Reported-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
+> ---
+>  arch/powerpc/kvm/book3s_hv_rmhandlers.S | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> index 74a9cfe84aee..faebcbb8c4db 100644
+> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> @@ -1921,6 +1921,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+>  	mtspr	SPRN_PCR, r6
+>  18:
+>  	/* Signal secondary CPUs to continue */
+> +	li	r0, 0
+>  	stb	r0,VCORE_IN_GUEST(r5)
+>  19:	lis	r8,0x7fff		/* MAX_INT@h */
+>  	mtspr	SPRN_HDEC,r8
+> 
 
-We are no longer comparing r0 against 0 and loading it with 0 if it
-contains something else. Hence when we store r0 to
-kvmppc_vcore->in_guest, it might not be 0.  This means that secondary
-CPUs will not be signalled to continue. Those CPUs get stuck and errors
-like the following are logged:
 
-    KVM: CPU 1 seems to be stuck
-    KVM: CPU 2 seems to be stuck
-    KVM: CPU 3 seems to be stuck
-    KVM: CPU 4 seems to be stuck
-    KVM: CPU 5 seems to be stuck
-    KVM: CPU 6 seems to be stuck
-    KVM: CPU 7 seems to be stuck
 
-This can be reproduced with:
-    $ for i in `seq 1 7` ; do chcpu -d $i ; done ;
-    $ taskset -c 0 qemu-system-ppc64 -smp 8,threads=8 \
-       -M pseries,accel=kvm,kvm-type=HV -m 1G -nographic -vga none \
-       -kernel vmlinux -initrd initrd.cpio.xz
-
-Fix by making sure r0 is 0 before storing it to kvmppc_vcore->in_guest.
-
-Fixes: 13c7bb3c57dc ("powerpc/64s: Set reserved PCR bits")
-Reported-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
----
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 74a9cfe84aee..faebcbb8c4db 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -1921,6 +1921,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
- 	mtspr	SPRN_PCR, r6
- 18:
- 	/* Signal secondary CPUs to continue */
-+	li	r0, 0
- 	stb	r0,VCORE_IN_GUEST(r5)
- 19:	lis	r8,0x7fff		/* MAX_INT@h */
- 	mtspr	SPRN_HDEC,r8
--- 
-2.20.1
 
