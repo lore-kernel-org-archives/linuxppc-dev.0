@@ -2,94 +2,55 @@ Return-Path: <SRS0=I7zA=YB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A6E6C10F14
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Oct 2019 14:49:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC5ACC4360C
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Oct 2019 15:23:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 814A5205F4
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Oct 2019 14:49:06 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=shutemov-name.20150623.gappssmtp.com header.i=@shutemov-name.20150623.gappssmtp.com header.b="se2aFiXX"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 814A5205F4
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=shutemov.name
+	by mail.kernel.org (Postfix) with ESMTPS id 68FE4206C0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Oct 2019 15:23:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 68FE4206C0
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46ngGR4rYmzDqHR
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Oct 2019 01:49:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46nh1c4kWyzDqLb
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Oct 2019 02:23:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=shutemov.name
- (client-ip=2a00:1450:4864:20::542; helo=mail-ed1-x542.google.com;
- envelope-from=kirill@shutemov.name; receiver=<UNKNOWN>)
+ spf=softfail (mailfrom) smtp.mailfrom=linux.com
+ (client-ip=3.19.106.255; helo=gentwo.org; envelope-from=cl@linux.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=shutemov.name
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=shutemov-name.20150623.gappssmtp.com
- header.i=@shutemov-name.20150623.gappssmtp.com header.b="se2aFiXX"; 
- dkim-atps=neutral
-Received: from mail-ed1-x542.google.com (mail-ed1-x542.google.com
- [IPv6:2a00:1450:4864:20::542])
+ dmarc=none (p=none dis=none) header.from=linux.com
+X-Greylist: delayed 587 seconds by postgrey-1.36 at bilbo;
+ Wed, 09 Oct 2019 02:21:04 AEDT
+Received: from gentwo.org (gentwo.org [3.19.106.255])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46ngDH5Lj3zDqPR
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Oct 2019 01:47:10 +1100 (AEDT)
-Received: by mail-ed1-x542.google.com with SMTP id r16so15806942edq.11
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Oct 2019 07:47:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=shutemov-name.20150623.gappssmtp.com; s=20150623;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=v5480SQD25UEO3u3h3+XfLx5vFnRoXUIs+mxAEl7+m0=;
- b=se2aFiXXhMrk97Swm5RVBKrZDzR4rbVDTQHoaephg3zQRqf4aiWct8dOpfWt+A6/MD
- EQXc7lGw+qNX/k7xLEfqdG/+Z18ewJvXPUHF3x3hiSbMgHm7+05YOss9b4+qgIJQ0331
- ltpJapqLojYHxnGse0s+MGwyO89dsWakkcQyMpaoVmlhS67GGjhYqFerFlD1gGKMMx1g
- egGWpU+tl3cS1bndnMw6bczTJkKVJDck5y6WAM2D+Hm3fEbqPHHgijTkLiizW4XAAPTm
- 52xS7wN43n6ydUNM+Fz/2g++ZJTmNbWiYp/1nUTCmn7CdHBUz31N4sQTakF4KfVjsRhZ
- ONEg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=v5480SQD25UEO3u3h3+XfLx5vFnRoXUIs+mxAEl7+m0=;
- b=Bm10lua0REtjwJBUYo6ey7yX+2Mb5Pp8Sf2+819ySHPEaE+IBDclKlVQgvFd0Vvbe8
- mEKO6sG6ACEuNQUqq6Opb4rvH6G3VbLayIbE8p83S9Nk/hSc4ggxVyhYwZI8YsWpEny+
- pvQWSQxLvwv3T8kQ6K+U8myBuuvosFdl6T8cN/IzkEM99sW9Iyy6XNg0MM+K2GO35hAG
- dnWEDe+PgjSWUtPiJj9uB2ofJXc3ifmtobJ2Fb9a9t0s3qa/ekYCvztXsZP8BaaJPlrX
- cuApYnD3f+E1w3xJ8O++yUsenJ4IGamWPk84N2QQHpOYCuoFEMW4JQDP9f2RO/PMj8yN
- n7RQ==
-X-Gm-Message-State: APjAAAXhrgbWrAE7E5ha9AMsmYUZXHwP2PytJszti2gCOfLToDQxDbEI
- bYaCqkOM/2+UXkbJbt5vbpDN+Q==
-X-Google-Smtp-Source: APXvYqxqKHsJy8HeTUty9LBa/Qt26DoTxp7ystN2S2TmUMeOOrGzsYaDRYOhxeGCTLSl7VrIgdRdVg==
-X-Received: by 2002:a05:6402:32f:: with SMTP id
- q15mr34455938edw.143.1570546027695; 
- Tue, 08 Oct 2019 07:47:07 -0700 (PDT)
-Received: from box.localdomain ([86.57.175.117])
- by smtp.gmail.com with ESMTPSA id v8sm3973001edl.74.2019.10.08.07.47.06
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 08 Oct 2019 07:47:06 -0700 (PDT)
-Received: by box.localdomain (Postfix, from userid 1000)
- id 9017810170F; Tue,  8 Oct 2019 17:47:06 +0300 (+03)
-Date: Tue, 8 Oct 2019 17:47:06 +0300
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH v5 01/11] asm-generic/pgtable: Adds generic functions to
- monitor lockless pgtable walks
-Message-ID: <20191008144706.yu6jrthweyn4kgdm@box>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46ngzN21KFzDqJg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Oct 2019 02:21:04 +1100 (AEDT)
+Received: by gentwo.org (Postfix, from userid 1002)
+ id 10DCB3EC01; Tue,  8 Oct 2019 15:11:14 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by gentwo.org (Postfix) with ESMTP id 0DA463EC00;
+ Tue,  8 Oct 2019 15:11:14 +0000 (UTC)
+Date: Tue, 8 Oct 2019 15:11:14 +0000 (UTC)
+From: Christopher Lameter <cl@linux.com>
+X-X-Sender: cl@www.lameter.com
+To: Leonardo Bras <leonardo@linux.ibm.com>
+Subject: Re: [PATCH v5 02/11] powerpc/mm: Adds counting method to monitor
+ lockless pgtable walks
+In-Reply-To: <20191003013325.2614-3-leonardo@linux.ibm.com>
+Message-ID: <alpine.DEB.2.21.1910081509070.1734@www.lameter.com>
 References: <20191003013325.2614-1-leonardo@linux.ibm.com>
- <20191003013325.2614-2-leonardo@linux.ibm.com>
- <20191003071145.GM4536@hirez.programming.kicks-ass.net>
- <20191003115141.GJ4581@hirez.programming.kicks-ass.net>
- <651856af-30de-15ad-2312-158f3ad5292e@linux.ibm.com>
+ <20191003013325.2614-3-leonardo@linux.ibm.com>
+User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <651856af-30de-15ad-2312-158f3ad5292e@linux.ibm.com>
-User-Agent: NeoMutt/20180716
+Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,27 +63,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Song Liu <songliubraving@fb.com>, Michal Hocko <mhocko@suse.com>,
- Peter Zijlstra <peterz@infradead.org>, "Dmitry V. Levin" <ldv@altlinux.org>,
- Keith Busch <keith.busch@intel.com>, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>, Christoph Lameter <cl@linux.com>,
+ "Peter Zijlstra \(Intel\)" <peterz@infradead.org>,
+ "Dmitry V. Levin" <ldv@altlinux.org>, Keith Busch <keith.busch@intel.com>,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ Christian Brauner <christian.brauner@ubuntu.com>,
  Ira Weiny <ira.weiny@intel.com>, Dan Williams <dan.j.williams@intel.com>,
  Elena Reshetova <elena.reshetova@intel.com>, linux-arch@vger.kernel.org,
  Santosh Sivaraj <santosh@fossix.org>, Davidlohr Bueso <dave@stgolabs.net>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
  Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
  Mike Rapoport <rppt@linux.ibm.com>, Jason Gunthorpe <jgg@ziepe.ca>,
  Vlastimil Babka <vbabka@suse.cz>,
  Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Leonardo Bras <leonardo@linux.ibm.com>, Alexey Dobriyan <adobriyan@gmail.com>,
- Ingo Molnar <mingo@kernel.org>, Andrea Arcangeli <aarcange@redhat.com>,
- Ralph Campbell <rcampbell@nvidia.com>, Arnd Bergmann <arnd@arndb.de>,
- Jann Horn <jannh@google.com>, John Hubbard <jhubbard@nvidia.com>,
- Jesper Dangaard Brouer <brouer@redhat.com>, kvm-ppc@vger.kernel.org,
- =?utf-8?B?SsOpcsO0bWU=?= Glisse <jglisse@redhat.com>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Nicholas Piggin <npiggin@gmail.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>,
+ Alexey Dobriyan <adobriyan@gmail.com>, Ingo Molnar <mingo@kernel.org>,
+ Andrea Arcangeli <aarcange@redhat.com>, Ralph Campbell <rcampbell@nvidia.com>,
+ Arnd Bergmann <arnd@arndb.de>, Jann Horn <jannh@google.com>,
+ John Hubbard <jhubbard@nvidia.com>, Jesper Dangaard Brouer <brouer@redhat.com>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ =?ISO-8859-15?Q?J=E9r=F4me_Glisse?= <jglisse@redhat.com>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, kvm-ppc@vger.kernel.org,
  Thomas Gleixner <tglx@linutronix.de>, Reza Arbab <arbab@linux.ibm.com>,
  Allison Randal <allison@lohutok.net>,
- Christian Brauner <christian.brauner@ubuntu.com>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
  Logan Gunthorpe <logang@deltatee.com>, Souptick Joarder <jrdr.linux@gmail.com>,
  Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
@@ -133,14 +95,20 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Oct 05, 2019 at 02:05:29PM +0530, Aneesh Kumar K.V wrote:
-> MADV_DONTNEED has caused us multiple issues due to the fact that it can run
-> in parallel to page fault. I am not sure whether we have a known/noticeable
-> performance gain in allowing that with mmap_sem held in read mode.
 
-Yes we do. MADV_DONTNEED used a lot by userspace memory allocators and it
-will be very noticible performance regression if we would switch it to
-down_write(mmap_sem).
 
--- 
- Kirill A. Shutemov
+On Wed, 2 Oct 2019, Leonardo Bras wrote:
+
+> +
+> +inline unsigned long __begin_lockless_pgtbl_walk(struct mm_struct *mm,
+> +						 bool disable_irq)
+> +{
+> +	unsigned long irq_mask = 0;
+> +
+> +	if (IS_ENABLED(CONFIG_LOCKLESS_PAGE_TABLE_WALK_TRACKING))
+> +		atomic_inc(&mm->lockless_pgtbl_walkers);
+> +
+
+You are creating contention on a single exclusive cacheline. Doesnt this
+defeat the whole purpose of the lockless page table walk? Use mmap_sem or
+so should cause the same performance regression?
