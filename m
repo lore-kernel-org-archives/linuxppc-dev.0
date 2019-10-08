@@ -2,57 +2,84 @@ Return-Path: <SRS0=I7zA=YB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+X-Spam-Status: No, score=-6.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	FSL_HELO_FAKE,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CC49FC4360C
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Oct 2019 18:29:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ACD07C4360C
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Oct 2019 20:26:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4BFF12070B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Oct 2019 18:29:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4BFF12070B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux.com
+	by mail.kernel.org (Postfix) with ESMTPS id 55EBA21721
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Oct 2019 20:26:51 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="J3H8ALxn"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 55EBA21721
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46nm8s0M0bzDqRg
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Oct 2019 05:29:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46npm92PmhzDqS9
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Oct 2019 07:26:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=softfail (mailfrom) smtp.mailfrom=linux.com
- (client-ip=3.19.106.255; helo=gentwo.org; envelope-from=cl@linux.com;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2a00:1450:4864:20::342; helo=mail-wm1-x342.google.com;
+ envelope-from=emmanuel.nicolet@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.com
-Received: from gentwo.org (gentwo.org [3.19.106.255])
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="J3H8ALxn"; 
+ dkim-atps=neutral
+Received: from mail-wm1-x342.google.com (mail-wm1-x342.google.com
+ [IPv6:2a00:1450:4864:20::342])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46nm6X3jwGzDqBj
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Oct 2019 05:27:31 +1100 (AEDT)
-Received: by gentwo.org (Postfix, from userid 1002)
- id 13AC43EC01; Tue,  8 Oct 2019 18:27:29 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by gentwo.org (Postfix) with ESMTP id 0F70E3E886;
- Tue,  8 Oct 2019 18:27:29 +0000 (UTC)
-Date: Tue, 8 Oct 2019 18:27:29 +0000 (UTC)
-From: Christopher Lameter <cl@linux.com>
-X-X-Sender: cl@www.lameter.com
-To: Leonardo Bras <leonardo@linux.ibm.com>
-Subject: Re: [PATCH v5 02/11] powerpc/mm: Adds counting method to monitor
- lockless pgtable walks
-In-Reply-To: <c1676fb14313a8378ec6bb72d1a7b24f48b898b5.camel@linux.ibm.com>
-Message-ID: <alpine.DEB.2.21.1910081826070.3584@www.lameter.com>
-References: <20191003013325.2614-1-leonardo@linux.ibm.com>
- <20191003013325.2614-3-leonardo@linux.ibm.com>
- <alpine.DEB.2.21.1910081509070.1734@www.lameter.com>
- <6e8877bff034603e75b35599797a39d9bc4840f1.camel@linux.ibm.com>
- <alpine.DEB.2.21.1910081741460.2923@www.lameter.com>
- <c1676fb14313a8378ec6bb72d1a7b24f48b898b5.camel@linux.ibm.com>
-User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46nfTs5YLWzDqPw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Oct 2019 01:13:50 +1100 (AEDT)
+Received: by mail-wm1-x342.google.com with SMTP id i16so3338716wmd.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Oct 2019 07:13:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:mime-version:content-disposition
+ :user-agent; bh=FgUOFDNnc6WKmY6/exR4dvx4qmVnecgxnd7fH/x8UcE=;
+ b=J3H8ALxnK6ShEFjev21xW5QZarvjBeVCoMAkc8iPxfaUf2SdVugD9Y6S2weFHjG+Zi
+ 0+nvOxU/DSbsb1KOoY7i/WXG3rZkqCLCo9hZqbK/DFTK4SdhXdASXpoW6AqsKVbZovP6
+ mD+lDnTkHJ7Ai1OjapIPLO3heIN5MEN++H9Udk8iUdmwcSGN6KPopqQLRc6nxgLjg5e+
+ isnsW5KCSN1vi8bbFu2fvwSf/KVv1TdNGnSwnypPzgtJi2b1BHTBFB6mtevpbsngKqtw
+ w9PcYygYHDoPP87uLChBtucBUJH6mJAD3cbl8QVHlLxXPh/gf5w3I7zDm0ZtyyJQh557
+ qshw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:mime-version
+ :content-disposition:user-agent;
+ bh=FgUOFDNnc6WKmY6/exR4dvx4qmVnecgxnd7fH/x8UcE=;
+ b=Q6GEf9MRARlrijLJ3BLAdQNebwIy+0kSXi6h/zFIqKOaMnilGn7Pc7jjtY76swtr4c
+ fuyJ9yOspVnsD3eoi075ImM4z8UAw6Yx2NOpC7Dhw+b+LgX1L09QNltnhYNQRFTyqu6t
+ q0GYPyB7ZUdHIONxVrYqEf3dR1wzamDsabHY/zPO+weS9WbfYk8i1AvpbrWD1PKVQu7L
+ qGmvigLcHRknhutHEigSCeSp48MHWZYdxotk5iCcY/g12neqprjhtS5064mCbHYaalGk
+ GO/14BPGnX68JSG+ukqiRtWXsyBI4xNUJwZvHNyJI+7dcZe4lzvQxpDW8+V4cmvre7je
+ 0ZaQ==
+X-Gm-Message-State: APjAAAUxfUDuWaKouldIN1+xpvcEWt0u7SC3GRGe0L50xaE6UJuYnHRP
+ T2QKaPbmv8v2mpp2rTHWSXh37pOTE6w=
+X-Google-Smtp-Source: APXvYqw0kFS2B0ds0qbi59OfUUeF/Mx0Ea9u6XEq64IZGrE2JR0Sc5lnWwOw8v2orcNTnirLfG0k5A==
+X-Received: by 2002:a1c:7c0b:: with SMTP id x11mr3973756wmc.92.1570544025036; 
+ Tue, 08 Oct 2019 07:13:45 -0700 (PDT)
+Received: from gmail.com (227.177.125.78.rev.sfr.net. [78.125.177.227])
+ by smtp.gmail.com with ESMTPSA id h63sm5270768wmf.15.2019.10.08.07.13.44
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 08 Oct 2019 07:13:44 -0700 (PDT)
+Date: Tue, 8 Oct 2019 16:13:42 +0200
+From: Emmanuel Nicolet <emmanuel.nicolet@gmail.com>
+To: Jeremy Kerr <jk@ozlabs.org>
+Subject: [PATCH] spufs: fix a crash in spufs_create_root()
+Message-ID: <20191008141342.GA266797@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.12.2 (2019-09-21)
+X-Mailman-Approved-At: Wed, 09 Oct 2019 07:25:10 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,54 +91,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Song Liu <songliubraving@fb.com>, Michal Hocko <mhocko@suse.com>,
- "Peter Zijlstra \(Intel\)" <peterz@infradead.org>,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- "Dmitry V. Levin" <ldv@altlinux.org>, Keith Busch <keith.busch@intel.com>,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- Christian Brauner <christian.brauner@ubuntu.com>,
- Ira Weiny <ira.weiny@intel.com>, Ingo Molnar <mingo@kernel.org>,
- Elena Reshetova <elena.reshetova@intel.com>, linux-arch@vger.kernel.org,
- Santosh Sivaraj <santosh@fossix.org>, Davidlohr Bueso <dave@stgolabs.net>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Jann Horn <jannh@google.com>,
- Mike Rapoport <rppt@linux.ibm.com>, Jason Gunthorpe <jgg@ziepe.ca>,
- Allison Randal <allison@lohutok.net>,
- Jesper Dangaard Brouer <brouer@redhat.com>,
- Andrey Ryabinin <aryabinin@virtuozzo.com>,
- Alexey Dobriyan <adobriyan@gmail.com>, Andrea Arcangeli <aarcange@redhat.com>,
- Ralph Campbell <rcampbell@nvidia.com>, Arnd Bergmann <arnd@arndb.de>,
- Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
- John Hubbard <jhubbard@nvidia.com>, linuxppc-dev@lists.ozlabs.org,
- Nicholas Piggin <npiggin@gmail.com>,
- =?ISO-8859-15?Q?J=E9r=F4me_Glisse?= <jglisse@redhat.com>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, kvm-ppc@vger.kernel.org,
- Dan Williams <dan.j.williams@intel.com>, Reza Arbab <arbab@linux.ibm.com>,
- Vlastimil Babka <vbabka@suse.cz>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, Souptick Joarder <jrdr.linux@gmail.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Logan Gunthorpe <logang@deltatee.com>, Roman Gushchin <guro@fb.com>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
- Al Viro <viro@zeniv.linux.org.uk>
+Cc: linuxppc-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+The spu_fs_context was not set in fc->fs_private, this caused a crash
+when accessing ctx->mode in spufs_create_root().
 
+Signed-off-by: Emmanuel Nicolet <emmanuel.nicolet@gmail.com>
+---
+ arch/powerpc/platforms/cell/spufs/inode.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-On Tue, 8 Oct 2019, Leonardo Bras wrote:
-
-> So you say that the performance impact of using my approach is the same
-> as using locks? (supposing that lock never waits)
->
-> So, there are 'lockless pagetable walks' only for the sake of better
-> performance?
-
-I thought that was the major motivation here.
-
-> I thought they existed to enable doing pagetable walks in states where
-> locking was not safe.
-
-That sounds profoundly dangerous. Usually locking makes things safe to
-access. Accesses without locking require a lot of care.
+diff --git a/arch/powerpc/platforms/cell/spufs/inode.c b/arch/powerpc/platforms/cell/spufs/inode.c
+index 1d93e55a2de1..2dd452a047cd 100644
+--- a/arch/powerpc/platforms/cell/spufs/inode.c
++++ b/arch/powerpc/platforms/cell/spufs/inode.c
+@@ -761,6 +761,7 @@ static int spufs_init_fs_context(struct fs_context *fc)
+ 	ctx->gid = current_gid();
+ 	ctx->mode = 0755;
+ 
++	fc->fs_private = ctx;
+ 	fc->s_fs_info = sbi;
+ 	fc->ops = &spufs_context_ops;
+ 	return 0;
+-- 
+2.23.0
 
