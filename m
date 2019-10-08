@@ -2,36 +2,36 @@ Return-Path: <SRS0=I7zA=YB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DA1EC47404
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Oct 2019 01:17:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4466EECE58C
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Oct 2019 01:18:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DE81920835
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Oct 2019 01:17:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DE81920835
+	by mail.kernel.org (Postfix) with ESMTPS id E8D8620835
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Oct 2019 01:18:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E8D8620835
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46nKFV2y85zDqNf
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Oct 2019 12:17:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46nKH40dDyzDqMn
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Oct 2019 12:18:24 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46nKC31wqkzDqK9
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Oct 2019 12:14:55 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46nKC9669kzDqKM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Oct 2019 12:15:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 46nKC22qZ8z8tDD
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Oct 2019 12:14:54 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 46nKC94G5Lz8tQV
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Oct 2019 12:15:01 +1100 (AEDT)
 Received: by ozlabs.org (Postfix)
- id 46nKC22WmWz9sPT; Tue,  8 Oct 2019 12:14:54 +1100 (AEDT)
+ id 46nKC93K2pz9sPk; Tue,  8 Oct 2019 12:15:01 +1100 (AEDT)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
@@ -42,53 +42,54 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 46nKC14qp3z9sNF
- for <linuxppc-dev@ozlabs.org>; Tue,  8 Oct 2019 12:14:53 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 46nKC90968z9sPT
+ for <linuxppc-dev@ozlabs.org>; Tue,  8 Oct 2019 12:15:00 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x981Bsu2121099
- for <linuxppc-dev@ozlabs.org>; Mon, 7 Oct 2019 21:14:50 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2vgcnrexm3-1
+ x981Bp9l105345
+ for <linuxppc-dev@ozlabs.org>; Mon, 7 Oct 2019 21:14:59 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2vgaaa3sev-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Mon, 07 Oct 2019 21:14:50 -0400
+ for <linuxppc-dev@ozlabs.org>; Mon, 07 Oct 2019 21:14:59 -0400
 Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <nayna@linux.ibm.com>;
- Tue, 8 Oct 2019 02:14:48 +0100
-Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Tue, 8 Oct 2019 02:14:56 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 8 Oct 2019 02:14:44 +0100
+ Tue, 8 Oct 2019 02:14:52 +0100
 Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
  [9.149.105.61])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id x981ECxP36372934
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x981Eovn10289222
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 8 Oct 2019 01:14:13 GMT
+ Tue, 8 Oct 2019 01:14:50 GMT
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 83ED411C054;
- Tue,  8 Oct 2019 01:14:42 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 5250011C04C;
+ Tue,  8 Oct 2019 01:14:50 +0000 (GMT)
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id ECC7B11C04C;
- Tue,  8 Oct 2019 01:14:39 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id B9E5111C05E;
+ Tue,  8 Oct 2019 01:14:47 +0000 (GMT)
 Received: from swastik.ibm.com (unknown [9.80.231.8])
  by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue,  8 Oct 2019 01:14:39 +0000 (GMT)
+ Tue,  8 Oct 2019 01:14:47 +0000 (GMT)
 From: Nayna Jain <nayna@linux.ibm.com>
 To: linuxppc-dev@ozlabs.org, linux-efi@vger.kernel.org,
  linux-integrity@vger.kernel.org
-Subject: [PATCH v7 0/8] powerpc: Enabling IMA arch specific secure boot
- policies
-Date: Mon,  7 Oct 2019 21:14:19 -0400
+Subject: [PATCH v7 2/8] powerpc: add support to initialize ima policy rules
+Date: Mon,  7 Oct 2019 21:14:21 -0400
 X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1570497267-13672-1-git-send-email-nayna@linux.ibm.com>
+References: <1570497267-13672-1-git-send-email-nayna@linux.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 19100801-0008-0000-0000-0000031EF96D
+x-cbid: 19100801-0020-0000-0000-00000375FA25
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19100801-0009-0000-0000-00004A3E0C47
-Message-Id: <1570497267-13672-1-git-send-email-nayna@linux.ibm.com>
+x-cbparentid: 19100801-0021-0000-0000-000021CC13BC
+Message-Id: <1570497267-13672-3-git-send-email-nayna@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-10-07_05:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -121,125 +122,105 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patchset extends the previous version of the patchset[1] by adding
-the support for checking against the binary blacklisted hashes.
+PowerNV systems uses kernel based bootloader, thus its secure boot
+implementation uses kernel IMA security subsystem to verify the kernel
+before kexec. Since the verification policy might differ based on the
+secure boot mode of the system, the policies are defined at runtime.
 
-IMA subsystem supports custom, built-in, arch-specific policies to define
-the files to be measured and appraised. These policies are honored based
-on the priority where arch-specific policies is the highest and custom
-is the lowest.
+This patch implements the arch-specific support to define the IMA policy
+rules based on the runtime secure boot mode of the system.
 
-PowerNV systems uses the linux based bootloader and kexec the Host OS.
-It rely on IMA for signature verification of the kernel before doing the
-kexec. This patchset adds support for powerpc arch specific ima policies
-that are defined based on system's OS secureboot and trustedboot state.
-The OS secureboot and trustedboot state are determined via device-tree
-properties.
+This patch provides arch-specific IMA policies if PPC_SECURE_BOOT
+config is enabled.
 
-The verification needs to be done only for the binaries which are not
-blacklisted. The kernel currently checks against the blacklisted keys.
-However that results in blacklisting all the binaries that are signed by
-that key. In order to prevent single binary from loading, it is required
-to support checking against blacklisting of the binary hash. This patchset
-adds the support in IMA to check against blacklisted hashes for the files
-signed by appended signature.
-
-[1] http://patchwork.ozlabs.org/cover/1149262/ 
-
-Changelog:
-v7:
-* Removes patch related to dt-bindings as per input from Rob Herring. 
-* fixes Patch 1/8 to use new device-tree updates as per Oliver
-  feedback to device-tree documentation in skiboot mailing list.
-(https://lists.ozlabs.org/pipermail/skiboot/2019-September/015329.html)
-* Includes feedbacks from Mimi, Thiago
-  * moves function get_powerpc_fw_sb_node() from Patch 1 to Patch 3 
-  * fixes Patch 2/8 to use CONFIG_MODULE_SIG_FORCE.
-  * updates Patch description in Patch 5/8
-  * adds a new patch to add wrapper is_binary_blacklisted()
-  * removes the patch that deprecated permit_directio
-
-v6:
-* includes feedbacks from Michael Ellerman on the patchset v5
-  * removed email ids from comments
-  * add the doc for the device-tree
-  * renames the secboot.c to secure_boot.c and secboot.h to secure_boot.h
-  * other code specific fixes
-* split the patches to differentiate between secureboot and trustedboot
-state of the system
-* adds the patches to support the blacklisting of the binary hash.
-
-v5:
-* secureboot state is now read via device tree entry rather than OPAL
-secure variables
-* ima arch policies are updated to use policy based template for
-measurement rules
-
-v4:
-* Fixed the build issue as reported by Satheesh Rajendran.
-
-v3:
-* OPAL APIs in Patch 1 are updated to provide generic interface based on
-key/keylen. This patchset updates kernel OPAL APIs to be compatible with
-generic interface.
-* Patch 2 is cleaned up to use new OPAL APIs.
-* Since OPAL can support different types of backend which can vary in the
-variable interpretation, the Patch 2 is updated to add a check for the
-backend version
-* OPAL API now expects consumer to first check the supported backend version
-before calling other secvar OPAL APIs. This check is now added in patch 2.
-* IMA policies in Patch 3 is updated to specify appended signature and
-per policy template.
-* The patches now are free of any EFIisms.
-
-v2:
-
-* Removed Patch 1: powerpc/include: Override unneeded early ioremap
-functions
-* Updated Subject line and patch description of the Patch 1 of this series
-* Removed dependency of OPAL_SECVAR on EFI, CPU_BIG_ENDIAN and UCS2_STRING
-* Changed OPAL APIs from static to non-static. Added opal-secvar.h for the
-same
-* Removed EFI hooks from opal_secvar.c
-* Removed opal_secvar_get_next(), opal_secvar_enqueue() and
-opal_query_variable_info() function
-* get_powerpc_sb_mode() in secboot.c now directly calls OPAL Runtime API
-rather than via EFI hooks.
-* Fixed log messages in get_powerpc_sb_mode() function.
-* Added dependency for PPC_SECURE_BOOT on configs PPC64 and OPAL_SECVAR
-* Replaced obj-$(CONFIG_IMA) with obj-$(CONFIG_PPC_SECURE_BOOT) in
-arch/powerpc/kernel/Makefile
-*** BLURB HERE ***
-
-Nayna Jain (8):
-  powerpc: detect the secure boot mode of the system
-  powerpc: add support to initialize ima policy rules
-  powerpc: detect the trusted boot state of the system
-  powerpc/ima: add measurement rules to ima arch specific policy
-  ima: make process_buffer_measurement() generic
-  certs: add wrapper function to check blacklisted binary hash
-  ima: check against blacklisted hashes for files with modsig
-  powerpc/ima: update ima arch policy to check for blacklist
-
- Documentation/ABI/testing/ima_policy   |  1 +
- arch/powerpc/Kconfig                   | 12 ++++
- arch/powerpc/include/asm/secure_boot.h | 35 ++++++++++++
- arch/powerpc/kernel/Makefile           |  2 +
- arch/powerpc/kernel/ima_arch.c         | 72 ++++++++++++++++++++++++
- arch/powerpc/kernel/secure_boot.c      | 77 ++++++++++++++++++++++++++
- certs/blacklist.c                      |  9 +++
- include/keys/system_keyring.h          |  6 ++
- include/linux/ima.h                    |  3 +-
- security/integrity/ima/ima.h           | 12 ++++
- security/integrity/ima/ima_appraise.c  | 39 +++++++++++++
- security/integrity/ima/ima_main.c      | 41 +++++++-------
- security/integrity/ima/ima_policy.c    | 10 +++-
- security/integrity/integrity.h         |  1 +
- 14 files changed, 298 insertions(+), 22 deletions(-)
- create mode 100644 arch/powerpc/include/asm/secure_boot.h
+Signed-off-by: Nayna Jain <nayna@linux.ibm.com>
+---
+ arch/powerpc/Kconfig           |  2 ++
+ arch/powerpc/kernel/Makefile   |  2 +-
+ arch/powerpc/kernel/ima_arch.c | 33 +++++++++++++++++++++++++++++++++
+ include/linux/ima.h            |  3 ++-
+ 4 files changed, 38 insertions(+), 2 deletions(-)
  create mode 100644 arch/powerpc/kernel/ima_arch.c
- create mode 100644 arch/powerpc/kernel/secure_boot.c
 
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index b4a221886fcf..deb19ec6ba3d 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -938,6 +938,8 @@ config PPC_SECURE_BOOT
+ 	prompt "Enable secure boot support"
+ 	bool
+ 	depends on PPC_POWERNV
++	depends on IMA
++	depends on IMA_ARCH_POLICY
+ 	help
+ 	  Systems with firmware secure boot enabled needs to define security
+ 	  policies to extend secure boot to the OS. This config allows user
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index e2a54fa240ac..e8eb2955b7d5 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -161,7 +161,7 @@ ifneq ($(CONFIG_PPC_POWERNV)$(CONFIG_PPC_SVM),)
+ obj-y				+= ucall.o
+ endif
+ 
+-obj-$(CONFIG_PPC_SECURE_BOOT)	+= secure_boot.o
++obj-$(CONFIG_PPC_SECURE_BOOT)	+= secure_boot.o ima_arch.o
+ 
+ # Disable GCOV, KCOV & sanitizers in odd or sensitive code
+ GCOV_PROFILE_prom_init.o := n
+diff --git a/arch/powerpc/kernel/ima_arch.c b/arch/powerpc/kernel/ima_arch.c
+new file mode 100644
+index 000000000000..c22d82965eb4
+--- /dev/null
++++ b/arch/powerpc/kernel/ima_arch.c
+@@ -0,0 +1,33 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (C) 2019 IBM Corporation
++ * Author: Nayna Jain
++ */
++
++#include <linux/ima.h>
++#include <asm/secure_boot.h>
++
++bool arch_ima_get_secureboot(void)
++{
++	return is_powerpc_os_secureboot_enabled();
++}
++
++/* Defines IMA appraise rules for secureboot */
++static const char *const arch_rules[] = {
++	"appraise func=KEXEC_KERNEL_CHECK appraise_type=imasig|modsig",
++#if !IS_ENABLED(CONFIG_MODULE_SIG_FORCE)
++	"appraise func=MODULE_CHECK appraise_type=imasig|modsig",
++#endif
++	NULL
++};
++
++/*
++ * Returns the relevant IMA arch policies based on the system secureboot state.
++ */
++const char *const *arch_get_ima_policy(void)
++{
++	if (is_powerpc_os_secureboot_enabled())
++		return arch_rules;
++
++	return NULL;
++}
+diff --git a/include/linux/ima.h b/include/linux/ima.h
+index 1c37f17f7203..6d904754d858 100644
+--- a/include/linux/ima.h
++++ b/include/linux/ima.h
+@@ -29,7 +29,8 @@ extern void ima_kexec_cmdline(const void *buf, int size);
+ extern void ima_add_kexec_buffer(struct kimage *image);
+ #endif
+ 
+-#if (defined(CONFIG_X86) && defined(CONFIG_EFI)) || defined(CONFIG_S390)
++#if (defined(CONFIG_X86) && defined(CONFIG_EFI)) || defined(CONFIG_S390) \
++	|| defined(CONFIG_PPC_SECURE_BOOT)
+ extern bool arch_ima_get_secureboot(void);
+ extern const char * const *arch_get_ima_policy(void);
+ #else
 -- 
 2.20.1
 
