@@ -2,62 +2,81 @@ Return-Path: <SRS0=m12B=YC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D703C47404
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Oct 2019 21:21:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 558ECECE58C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Oct 2019 22:21:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C6CC221929
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Oct 2019 21:21:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C6CC221929
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id C0837206BB
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Oct 2019 22:21:34 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="M6LMWFhF"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C0837206BB
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46pRxJ5fw9zDqWP
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Oct 2019 08:21:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46pTG21qrQzDqXZ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Oct 2019 09:21:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=srs0=wh7q=yc=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=bugzilla.kernel.org
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=axtens.net
+ (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
+ envelope-from=dja@axtens.net; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=axtens.net
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=axtens.net header.i=@axtens.net header.b="M6LMWFhF"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46pRtr6vmXzDqSB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Oct 2019 08:19:48 +1100 (AEDT)
-From: bugzilla-daemon@bugzilla.kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 205099] KASAN hit at raid6_pq: BUG: Unable to handle kernel
- data access at 0x00f0fd0d
-Date: Wed, 09 Oct 2019 21:19:45 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
-X-Bugzilla-Product: Platform Specific/Hardware
-X-Bugzilla-Component: PPC-32
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: erhard_f@mailbox.org
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-205099-206035-9zXViNkg3P@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-205099-206035@https.bugzilla.kernel.org/>
-References: <bug-205099-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46pTCc0XFkzDqWk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Oct 2019 09:19:22 +1100 (AEDT)
+Received: by mail-pl1-x643.google.com with SMTP id d22so1754883pls.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Oct 2019 15:19:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
+ h=from:to:subject:in-reply-to:references:date:message-id:mime-version;
+ bh=Nmp4QocRAfDAQzMGcBE0NVn/GYOh/1TSbHz3nLZx/+0=;
+ b=M6LMWFhFvoWJoI2tj+mN5Ze4ehgZQNbbkJTdNGZFVxBzFMbwGKbYIIqZh2cUTfFApH
+ 4rqQ6cpsiBEpTIFRcTIVuJVxDcL4QNIdySkpNTSlFfqH5RCC+Z0AuBPqaTskMXLL96xE
+ avqMQwrDm6BJiG21a+1FJh8j2Syiz3GCCFPHc=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:subject:in-reply-to:references:date
+ :message-id:mime-version;
+ bh=Nmp4QocRAfDAQzMGcBE0NVn/GYOh/1TSbHz3nLZx/+0=;
+ b=D5UGrQJdQxSauA5A2VcPfm+xgx6Zxf76sPfFP735lgA95TJKN2FjrmCEi2vf7mxEaD
+ sa2yBg68hMJbAFd2gMl+lABM0HsCO5I1r78ylwqZ4lElBwKd5S9YgVFkBI0RvjxDg7+o
+ nlSzaC+QJspqwbW1QD1JVIkTtr5B+lT7bB7C/N8ZF1hYiywg+p5pwp3BCts4SbZxvM5i
+ Hw5WDoL5lG8Op3AxmsCr5LUWjvzXcG4b++4jozfQboW7K4x3LbWAm7XabnHemH9tyQ9A
+ /nAHGyfF/o/qRmw8gA5HxDv4pxn8OrX5V3A/xlORsyvoh8fx9U8C9553knWna7oEXGuH
+ 9k2Q==
+X-Gm-Message-State: APjAAAXnFeWuTzBM/bYMEbv+cUieblB1duQ/hRa/tqaNrJettyD8w7sv
+ 2obBrf4B4AHOLpW/aci+4j4Jlw==
+X-Google-Smtp-Source: APXvYqxNtv7LKcc/vkVaDg0xlcdOoSY/dGgAmfiiTt0YpgJRF75erEGJ5g3x8XATMzXj7QUDu3100w==
+X-Received: by 2002:a17:902:8b81:: with SMTP id
+ ay1mr5516798plb.79.1570659558620; 
+ Wed, 09 Oct 2019 15:19:18 -0700 (PDT)
+Received: from localhost (ppp167-251-205.static.internode.on.net.
+ [59.167.251.205])
+ by smtp.gmail.com with ESMTPSA id z21sm3060263pfa.119.2019.10.09.15.19.16
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 09 Oct 2019 15:19:17 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: christophe lombard <clombard@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com, ajd@linux.ibm.com
+Subject: Re: [PATCH 0/2] ocxl: Move SPA and TL definitions
+In-Reply-To: <20191009151109.13752-1-clombard@linux.vnet.ibm.com>
+References: <20191009151109.13752-1-clombard@linux.vnet.ibm.com>
+Date: Thu, 10 Oct 2019 09:19:13 +1100
+Message-ID: <871rvlr28u.fsf@dja-thinkpad.axtens.net>
 MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,15 +92,48 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D205099
+Hi Christophe,
 
---- Comment #2 from Erhard F. (erhard_f@mailbox.org) ---
-As a side effect of this bug the btrfs module fails to load. If btrfs is not
-built as a module, but built into the kernel the machine fails to boot.
+As well as the checkpatch warnings noted on Patchwork
+(https://patchwork.ozlabs.org/patch/1173804/ and
+https://patchwork.ozlabs.org/patch/1173805/), I noticed:
 
-Btrfs behaves normal again when I set KASAN_SANITIZE :=3D n in
-lib/raid6/Makefile.
+Applying: powerpc/powernv: ocxl move SPA definition
+.git/rebase-apply/patch:405: new blank line at EOF.                                                                                  
++               
+warning: 1 line adds whitespace errors.
 
---=20
-You are receiving this mail because:
-You are watching the assignee of the bug.=
+Regards,
+Daniel
+
+christophe lombard <clombard@linux.vnet.ibm.com> writes:
+
+> This series moves the definition and the management of scheduled process area
+> (SPA) and of the templates (Transaction Layer) for an ocxl card, using the
+> OCAPI interface. The code is now located in the specific arch powerpc platform.
+> These patches will help for a futur implementation of the ocxl driver in QEMU.
+>
+> The Open Coherently Attached Processor Interface (OCAPI) is used to
+> allow an Attached Functional Unit (AFU) to connect to the Processor
+> Chip's system bus in a high speed and cache coherent manner.
+>
+> It builds on top of the existing ocxl driver.
+>
+> It has been tested in a bare-metal environment using the memcpy and
+> the AFP AFUs.
+>
+> christophe lombard (2):
+>   powerpc/powernv: ocxl move SPA definition
+>   powerpc/powernv: ocxl move TL definition
+>
+>  arch/powerpc/include/asm/pnv-ocxl.h   |  30 +-
+>  arch/powerpc/platforms/powernv/ocxl.c | 378 +++++++++++++++++++++++---
+>  drivers/misc/ocxl/afu_irq.c           |   1 -
+>  drivers/misc/ocxl/config.c            |  89 +-----
+>  drivers/misc/ocxl/link.c              | 347 +++++++----------------
+>  drivers/misc/ocxl/ocxl_internal.h     |  12 -
+>  drivers/misc/ocxl/trace.h             |  34 +--
+>  7 files changed, 467 insertions(+), 424 deletions(-)
+>
+> -- 
+> 2.21.0
