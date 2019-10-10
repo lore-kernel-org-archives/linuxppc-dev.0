@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A4C8CC4360C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Oct 2019 18:03:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AE52C4360C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Oct 2019 18:06:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0B48A206B6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Oct 2019 18:03:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E2D84214E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Oct 2019 18:06:22 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=alien8.de header.i=@alien8.de header.b="ho8GObx8"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0B48A206B6
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=alien8.de header.i=@alien8.de header.b="nU1pP2YS"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E2D84214E0
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=alien8.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46pzTG3ZCjzDqNR
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 05:02:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46pzY673VrzDqLD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 05:06:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=alien8.de
  (client-ip=2a01:4f8:190:11c2::b:1457; helo=mail.skyhub.de;
@@ -28,39 +28,38 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=alien8.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=alien8.de header.i=@alien8.de header.b="ho8GObx8"; 
+ unprotected) header.d=alien8.de header.i=@alien8.de header.b="nU1pP2YS"; 
  dkim-atps=neutral
 Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:190:11c2::b:1457])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46pzQL2ZVwzDqKT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2019 05:00:24 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46pzV072s4zDqKj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2019 05:03:36 +1100 (AEDT)
 Received: from zn.tnic (p200300EC2F0A6300D1C0EB70E9B309BA.dip0.t-ipconnect.de
  [IPv6:2003:ec:2f0a:6300:d1c0:eb70:e9b3:9ba])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 4B7011EC090E;
- Thu, 10 Oct 2019 20:00:15 +0200 (CEST)
+ by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 9C0E51EC090E;
+ Thu, 10 Oct 2019 20:03:33 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
- t=1570730415;
+ t=1570730613;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
- bh=Xe1SX//dDoWeX+ij/nDraOaVSkSMgvg4F8+xxebszBM=;
- b=ho8GObx8x8ogaRx5uJLjl31cqJAZGDuZNy/gKli2vkRXyewbGzasCVSSCyhDoQQwLUSAdB
- 6Ch+ilhWD9WU/Q44lP40VOutBHAqCxDcNCYXoLlw0x0BYwbf3EhUuehrKk4qWbR8joF/Uh
- MKxwSv/3EwfqYFCfTb6K2+9UEj5t1ns=
-Date: Thu, 10 Oct 2019 20:00:08 +0200
+ bh=1UJ85wrxUTh6ZjmKP+WxNvKm5uhVcmHwuihzVVphUA0=;
+ b=nU1pP2YSMQ1D+YbJ1lqIUj3fIbqXmRei9IrwE7casgVZ3bf6uvckQOYFEy6VxgMByJdLas
+ gfLhF2deNPAW3vJXpynsBSp1uVNCkCK3TGs2a02YYiWnywAPZqOojj1vdVy9ucSV/QlrU6
+ X6II6ljlFaBt+0oSrDlytkAJMAR1SFQ=
+Date: Thu, 10 Oct 2019 20:03:31 +0200
 From: Borislav Petkov <bp@alien8.de>
 To: Kees Cook <keescook@chromium.org>
-Subject: Re: [PATCH 28/29] x86/mm: Report actual image regions in /proc/iomem
-Message-ID: <20191010180008.GH7658@zn.tnic>
+Subject: Re: [PATCH 00/29] vmlinux.lds.h: Refactor EXCEPTION_TABLE and NOTES
+Message-ID: <20191010180331.GI7658@zn.tnic>
 References: <20190926175602.33098-1-keescook@chromium.org>
- <20190926175602.33098-29-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20190926175602.33098-29-keescook@chromium.org>
+In-Reply-To: <20190926175602.33098-1-keescook@chromium.org>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -87,24 +86,40 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Sep 26, 2019 at 10:56:01AM -0700, Kees Cook wrote:
-> The resource reservations in made for the kernel image did not reflect
-			      ^
-			      /proc/iomem
-
-> the gaps between text, rodata, and data. This adds the rodata resource
-
-s/This adds/Add/
-
-> and updates the start/end calculations to match the respective calls to
-
-s/updates/update/
-
-> free_kernel_image_pages().
+On Thu, Sep 26, 2019 at 10:55:33AM -0700, Kees Cook wrote:
+> This series works to move the linker sections for NOTES and
+> EXCEPTION_TABLE into the RO_DATA area, where they belong on most
+> (all?) architectures. The problem being addressed was the discovery
+> by Rick Edgecombe that the exception table was accidentally marked
+> executable while he was developing his execute-only-memory series. When
+> permissions were flipped from readable-and-executable to only-executable,
+> the exception table became unreadable, causing things to explode rather
+> badly. :)
 > 
-> Before (booted with "nokaslr" for easier comparison):
+> Roughly speaking, the steps are:
+> 
+> - regularize the linker names for PT_NOTE and PT_LOAD program headers
+>   (to "note" and "text" respectively)
+> - regularize restoration of linker section to program header assignment
+>   (when PT_NOTE exists)
+> - move NOTES into RO_DATA
+> - finish macro naming conversions for RO_DATA and RW_DATA
+> - move EXCEPTION_TABLE into RO_DATA on architectures where this is clear
+> - clean up some x86-specific reporting of kernel memory resources
+> - switch x86 linker fill byte from x90 (NOP) to 0xcc (INT3), just because
+>   I finally realized what that trailing ": 0x9090" meant -- and we should
+>   trap, not slide, if execution lands in section padding
 
-...
+Yap, nice patchset overall.
+
+> Since these changes are treewide, I'd love to get architecture-maintainer
+> Acks and either have this live in x86 -tip or in my own tree, however
+> people think it should go.
+
+Sure, I don't mind taking v2 through tip once I get ACKs from the
+respective arch maintainers.
+
+Thx.
 
 -- 
 Regards/Gruss,
