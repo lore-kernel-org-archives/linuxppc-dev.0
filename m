@@ -2,78 +2,73 @@ Return-Path: <SRS0=Lxno=YE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D6E4C4360C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 01:07:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F0FCC4360C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 02:09:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4D73C20B7C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 01:07:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5CEA82196E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 02:09:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="fp0EZsT2"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4D73C20B7C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=zytor.com header.i=@zytor.com header.b="oW9dfaaR"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5CEA82196E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=zytor.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46q8v21LCrzDqHZ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 12:07:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46qBGj49JtzDqYJ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 13:09:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=chromium.org
- (client-ip=2607:f8b0:4864:20::444; helo=mail-pf1-x444.google.com;
- envelope-from=keescook@chromium.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=zytor.com
+ (client-ip=198.137.202.136; helo=terminus.zytor.com;
+ envelope-from=hpa@zytor.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.b="fp0EZsT2";
+ dmarc=pass (p=none dis=none) header.from=zytor.com
+Authentication-Results: lists.ozlabs.org;
+ dkim=fail reason="signature verification failed" (2048-bit key;
+ unprotected) header.d=zytor.com header.i=@zytor.com header.b="oW9dfaaR"; 
  dkim-atps=neutral
-Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
- [IPv6:2607:f8b0:4864:20::444])
+X-Greylist: delayed 1710 seconds by postgrey-1.36 at bilbo;
+ Fri, 11 Oct 2019 13:07:36 AEDT
+Received: from terminus.zytor.com (terminus.zytor.com [198.137.202.136])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46q7hJ5RYMzDqJQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2019 11:13:04 +1100 (AEDT)
-Received: by mail-pf1-x444.google.com with SMTP id y22so4955556pfr.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Oct 2019 17:13:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
- h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=8/x+eaVk+ss1aFRFRC2BuuTBFLP58LLEcIBPNJoL2cs=;
- b=fp0EZsT2tyBJy4pMM0BrQdWNH3jIqPiiR0OFuPR3KKp9NlEmrHQgmL/ZBNM1hxDEVj
- gMnsWemWjREXcL9c9lek/rM89s9e/l7HiEkBH/KqKwR6byArefKYaaiKWxjJgqllWaPD
- 6nPt+boxm7/SK9xvW9TYHnHh28YvJaU9w+77g=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references;
- bh=8/x+eaVk+ss1aFRFRC2BuuTBFLP58LLEcIBPNJoL2cs=;
- b=YBzPPYNe9PD/PaurMkgPHVnPXHv60jICkomEsFX5pk1/YrMCYvI8TndtT25kc9VXXf
- riRJieN6O4F07karJVZp3GBdmMVGCzmeQjKANE6ouZsFZfOCkCY1GBxarmtJFdDgZnYi
- ghq2DT5Mb7RdrkJoAB8kFSe6fkKSdURfsZyj/tGByi6CbJ6iXoDXaqI3ZTLYbqdkcIKt
- STti10q+tJlmkw44QIwBGdA1w6vHeTCcKt5JRFdg8J6wRJBR0Q2Vlxg5gfrVj3XcVrbg
- hw3+lJat4xw1YTBtJ7hqsaO8ioOAr9n9QapK6u1OTUSUKXzInwIRAzNTGbl7i0R4DAZb
- gudQ==
-X-Gm-Message-State: APjAAAWG75YEoalIQ7tSV8Azlrmuf/kheE/3u/KH/JdrzlruhRzxwjn9
- kSFxMM9/3TMsywcR2mcmpNTERg==
-X-Google-Smtp-Source: APXvYqzYV7Ta2O1ssdo06WBxZ2tymf8EVzlYCRiZUZ2NeL/vJyas9bBJT97ICY4x4F39C1qUjsxcog==
-X-Received: by 2002:a63:2350:: with SMTP id u16mr1550233pgm.103.1570752782606; 
- Thu, 10 Oct 2019 17:13:02 -0700 (PDT)
-Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id q36sm7238812pgb.34.2019.10.10.17.12.55
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 10 Oct 2019 17:12:56 -0700 (PDT)
-From: Kees Cook <keescook@chromium.org>
-To: Borislav Petkov <bp@alien8.de>
-Subject: [PATCH v2 26/29] x86/mm: Remove redundant &s on addresses
-Date: Thu, 10 Oct 2019 17:06:06 -0700
-Message-Id: <20191011000609.29728-27-keescook@chromium.org>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20191011000609.29728-1-keescook@chromium.org>
-References: <20191011000609.29728-1-keescook@chromium.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46qBDS66sXzDqTR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2019 13:07:36 +1100 (AEDT)
+Received: from [IPv6:2601:646:8600:3281:14ec:615e:cb9c:4171]
+ ([IPv6:2601:646:8600:3281:14ec:615e:cb9c:4171])
+ (authenticated bits=0)
+ by mail.zytor.com (8.15.2/8.15.2) with ESMTPSA id x9B1cDnV301404
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NO);
+ Thu, 10 Oct 2019 18:38:14 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 mail.zytor.com x9B1cDnV301404
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zytor.com;
+ s=2019091901; t=1570757896;
+ bh=TUIhoFcV+31eZTr1kONofaEMms3/RhBG/iU3TdNS+pY=;
+ h=Date:In-Reply-To:References:Subject:To:CC:From:From;
+ b=oW9dfaaRmKd2dWoG3cgkzVO7BvegyKalCQTxvCkvgSHMMP1aHzoAgAKgrdfUT1oLy
+ knMJjvPLF83nLOn/ZAN3CPvsjjRfkJ0aerhHPcT19nudWK5NOitM033cLOnaGvI2e1
+ LSFP3+8NCXofkKyTku2Ig+hd5GPCzdOhgJdURHIZGaQ2FvCQboeNg++CFWqgbXefQR
+ /SpG4FYMCfGdB5IJbLA+2mNkqs5PSktOsAiaYQAYgeDgNBG+PkAvJWstHjn+LuCQM9
+ xfo1Giy+1NXKFUnN4iD3tpGhUd+JWd6VRGxDGhkAiURF0SGwTc0cH1h/qmMomAnUUS
+ wkKqLjoRiDOug==
+Date: Thu, 10 Oct 2019 18:38:03 -0700
+User-Agent: K-9 Mail for Android
+In-Reply-To: <201910101657.234CB71E53@keescook>
+References: <20190926175602.33098-1-keescook@chromium.org>
+ <20191010180331.GI7658@zn.tnic> <201910101657.234CB71E53@keescook>
+MIME-Version: 1.0
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH 00/29] vmlinux.lds.h: Refactor EXCEPTION_TABLE and NOTES
+To: Kees Cook <keescook@chromium.org>, Borislav Petkov <bp@alien8.de>
+From: hpa@zytor.com
+Message-ID: <A020A6D1-C7DB-480B-826E-AE18308CD3E5@zytor.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,43 +82,70 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
  Michal Simek <monstr@monstr.eu>, x86@kernel.org, linux-ia64@vger.kernel.org,
- Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
+ linux-c6x-dev@linux-c6x.org, Arnd Bergmann <arnd@arndb.de>,
  linux-xtensa@linux-xtensa.org, Dave Hansen <dave.hansen@linux.intel.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Yoshinori Sato <ysato@users.sourceforge.jp>, linux-parisc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Ingo Molnar <mingo@redhat.com>, linux-parisc@vger.kernel.org,
  Andy Lutomirski <luto@kernel.org>, linux-alpha@vger.kernel.org,
- linux-kernel@vger.kernel.org, Rick Edgecombe <rick.p.edgecombe@intel.com>,
- Will Deacon <will@kernel.org>, linux-arm-kernel@lists.infradead.org,
- linux-c6x-dev@linux-c6x.org
+ Thomas Gleixner <tglx@linutronix.de>,
+ Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The &s on addresses are redundant. Remove them to match all the other
-similar functions.
+On October 10, 2019 4:57:36 PM PDT, Kees Cook <keescook@chromium=2Eorg> wro=
+te:
+>On Thu, Oct 10, 2019 at 08:03:31PM +0200, Borislav Petkov wrote:
+>> On Thu, Sep 26, 2019 at 10:55:33AM -0700, Kees Cook wrote:
+>> > This series works to move the linker sections for NOTES and
+>> > EXCEPTION_TABLE into the RO_DATA area, where they belong on most
+>> > (all?) architectures=2E The problem being addressed was the discovery
+>> > by Rick Edgecombe that the exception table was accidentally marked
+>> > executable while he was developing his execute-only-memory series=2E
+>When
+>> > permissions were flipped from readable-and-executable to
+>only-executable,
+>> > the exception table became unreadable, causing things to explode
+>rather
+>> > badly=2E :)
+>> >=20
+>> > Roughly speaking, the steps are:
+>> >=20
+>> > - regularize the linker names for PT_NOTE and PT_LOAD program
+>headers
+>> >   (to "note" and "text" respectively)
+>> > - regularize restoration of linker section to program header
+>assignment
+>> >   (when PT_NOTE exists)
+>> > - move NOTES into RO_DATA
+>> > - finish macro naming conversions for RO_DATA and RW_DATA
+>> > - move EXCEPTION_TABLE into RO_DATA on architectures where this is
+>clear
+>> > - clean up some x86-specific reporting of kernel memory resources
+>> > - switch x86 linker fill byte from x90 (NOP) to 0xcc (INT3), just
+>because
+>> >   I finally realized what that trailing ": 0x9090" meant -- and we
+>should
+>> >   trap, not slide, if execution lands in section padding
+>>=20
+>> Yap, nice patchset overall=2E
+>
+>Thanks!
+>
+>> > Since these changes are treewide, I'd love to get
+>architecture-maintainer
+>> > Acks and either have this live in x86 -tip or in my own tree,
+>however
+>> > people think it should go=2E
+>>=20
+>> Sure, I don't mind taking v2 through tip once I get ACKs from the
+>> respective arch maintainers=2E
+>
+>Okay, excellent=2E I've only had acks from arm64, but I'll call it out
+>again in v2=2E Thanks for the review!
 
-Signed-off-by: Kees Cook <keescook@chromium.org>
----
- arch/x86/mm/init_64.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 26299e9ce6da..e67ddca8b7a8 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -1300,9 +1300,9 @@ void mark_rodata_ro(void)
- {
- 	unsigned long start = PFN_ALIGN(_text);
- 	unsigned long rodata_start = PFN_ALIGN(__start_rodata);
--	unsigned long end = (unsigned long) &__end_rodata_hpage_align;
--	unsigned long text_end = PFN_ALIGN(&_etext);
--	unsigned long rodata_end = PFN_ALIGN(&__end_rodata);
-+	unsigned long end = (unsigned long)__end_rodata_hpage_align;
-+	unsigned long text_end = PFN_ALIGN(_etext);
-+	unsigned long rodata_end = PFN_ALIGN(__end_rodata);
- 	unsigned long all_end;
- 
- 	printk(KERN_INFO "Write protecting the kernel read-only data: %luk\n",
--- 
-2.17.1
-
+I would like to once again advocate for the generalized link table mechani=
+sm=2E It is nuts that each individual table should need vmlinux=2Elds hacki=
+ng across architectures=2E
+--=20
+Sent from my Android device with K-9 Mail=2E Please excuse my brevity=2E
