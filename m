@@ -7,72 +7,70 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A7E3FECE58D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 00:27:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B631C4360C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 00:31:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5944321929
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 00:27:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 506492190F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 00:31:22 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="bRMOq0IW"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5944321929
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="Vr/ouYU4"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 506492190F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46q81M236QzDqWs
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 11:27:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46q85M5ZlmzDqV9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 11:31:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=chromium.org
- (client-ip=2607:f8b0:4864:20::642; helo=mail-pl1-x642.google.com;
+ (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
  envelope-from=keescook@chromium.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.b="bRMOq0IW";
+ unprotected) header.d=chromium.org header.i=@chromium.org header.b="Vr/ouYU4";
  dkim-atps=neutral
-Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
- [IPv6:2607:f8b0:4864:20::642])
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
+ [IPv6:2607:f8b0:4864:20::443])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46q7Xm5rkLzDqQx
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2019 11:06:32 +1100 (AEDT)
-Received: by mail-pl1-x642.google.com with SMTP id f21so3579450plj.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Oct 2019 17:06:32 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46q7Xn29tMzDqRZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2019 11:06:33 +1100 (AEDT)
+Received: by mail-pf1-x443.google.com with SMTP id y22so4947223pfr.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Oct 2019 17:06:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=+3bCi815qDNxWXNrKwLag9umK9x4HOIYX8e5T++c31U=;
- b=bRMOq0IWtWeHkkuzrRxpAOjG+rR4hWqjBGGYrfiCb+g0Wo93lleOSNL5PlbwrMlX2m
- UcAArEZAR28PhZpJ9ZQ2+Jx+5/XMFJo+6I1v47AsbgjpXxkd6kYBN+6tNzEwHNlN3EwO
- GygHfZgrHj6MFQQb22vJtjl9/O27IaD4iLe3I=
+ bh=DuZAsZxZLPZkISe3dR0RWEfgmN2J22w1LR1gS9Q060Y=;
+ b=Vr/ouYU4DY+c+dPQgQCkZkPiefEjf85+Y3JixQCNriQRX8TUgPrqjfwH2oAScfYlP0
+ v87cpbqpOqc05HYBtGLLLUi6frPtF1HntlUxhqWMdWSbbc0OGbFX6+Vj/cbPADRpI4my
+ m83qvTkkG7ExaRX6A003rjgQHcCwPYDISXCGA=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=+3bCi815qDNxWXNrKwLag9umK9x4HOIYX8e5T++c31U=;
- b=VQElfio/E/KXdZGS7ROay14Okw21L8TM9vjdI+euv4u7+sWAdifwdavF5yyZAFQ9Ag
- dNA/EYKvax2TYF4z2P5DKIha65f3b1EJMjWkky3gQvcQCmppW16MSjCbYbUj3lvENv44
- LhGumUmOeVSMsxJJz4NpODl6bUIX05uDLxHylbqKj5IDiX/RStystVp91YZYX/bWAJoY
- QlLhZymPJmF6Uy71+zm78ReiqHJLD5wP6VAXmFKAUdZqWPq4zcYa2AzxfTXFGQIPol6y
- R9Y5vngUKvoh9iRTE++ZJ4h8aGecZ+il3+wj/vTKVSeEzHubhbcBv2yJO4uON1wkQEkp
- qstg==
-X-Gm-Message-State: APjAAAUEXlthLnIItegSr7B58ib0wmHh/uzY8Ws1mcAst3frshmOrscw
- sHGh6H5N5OHUMpCCtL3e6H5IQQ==
-X-Google-Smtp-Source: APXvYqy0SXetX4NVbIikmpWxxdgAixqZ0JQVCss4X5LB0rtMMzElGLP4iAy5+ASzEE3vf1MUkTjFzA==
-X-Received: by 2002:a17:902:8218:: with SMTP id
- x24mr11712571pln.139.1570752390532; 
- Thu, 10 Oct 2019 17:06:30 -0700 (PDT)
+ bh=DuZAsZxZLPZkISe3dR0RWEfgmN2J22w1LR1gS9Q060Y=;
+ b=aK9LwxebvVkouSo6EJV9Ay628e06Yg1A71BPptdWv0arbsQ0VQiG+3wnznR4CjQtLE
+ vQDEy6ILT/A/d8AyY8F9fr4hz+PVlsdsMknJwvCGyuelfxNhNTna0MYnpPt1fPYqJpde
+ TznIySdbLcVCpRHGzd4/CUjPvMUxK+TxjW93KPq4sEXppnTg8u52ew8cjajGjtatmRDP
+ RxcrP8R+1/jlP+yWpAdOJXRsqxo2tg1xLN/X6VigBtHJSQRgMNr80/XRhaW+ggdxvX6O
+ rRbR/5PHHOS7u8DjcKEAoCemkoOXu4S4BYRyEXKFCcw2j0m/+ya9QLdIHpS0K2rIiYTx
+ v13A==
+X-Gm-Message-State: APjAAAWoiNlBckiyOriL9xaV2LeAf1awFfYDum4+9Wpfdgzxd4lVZDRO
+ P1Vvj6ZPDB+GZQC2S5l9YQGWLg==
+X-Google-Smtp-Source: APXvYqy4FSC3v/ZdArK/c4Ac15cpP2VC7Cyr72iHZzxLlMtXtVU20YHYU76YTX+x0YEjwevhm39Xxw==
+X-Received: by 2002:a62:b616:: with SMTP id j22mr13290419pff.35.1570752391278; 
+ Thu, 10 Oct 2019 17:06:31 -0700 (PDT)
 Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id i8sm7454975pgl.18.2019.10.10.17.06.23
+ by smtp.gmail.com with ESMTPSA id w2sm7929867pfn.57.2019.10.10.17.06.24
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
  Thu, 10 Oct 2019 17:06:24 -0700 (PDT)
 From: Kees Cook <keescook@chromium.org>
 To: Borislav Petkov <bp@alien8.de>
-Subject: [PATCH v2 09/29] vmlinux.lds.h: Move Program Header restoration into
- NOTES macro
-Date: Thu, 10 Oct 2019 17:05:49 -0700
-Message-Id: <20191011000609.29728-10-keescook@chromium.org>
+Subject: [PATCH v2 12/29] vmlinux.lds.h: Replace RO_DATA_SECTION with RO_DATA
+Date: Thu, 10 Oct 2019 17:05:52 -0700
+Message-Id: <20191011000609.29728-13-keescook@chromium.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20191011000609.29728-1-keescook@chromium.org>
 References: <20191011000609.29728-1-keescook@chromium.org>
@@ -101,143 +99,240 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In preparation for moving NOTES into RO_DATA, make the Program Header
-assignment restoration be part of the NOTES macro itself.
+Finish renaming RO_DATA_SECTION to RO_DATA. (Calling this a "section"
+is a lie, since it's multiple sections and section flags cannot be
+applied to the macro.)
 
 Signed-off-by: Kees Cook <keescook@chromium.org>
 ---
- arch/alpha/kernel/vmlinux.lds.S   |  5 +----
- arch/ia64/kernel/vmlinux.lds.S    |  4 +---
- arch/mips/kernel/vmlinux.lds.S    |  3 +--
- arch/powerpc/kernel/vmlinux.lds.S |  4 +---
- arch/s390/kernel/vmlinux.lds.S    |  4 +---
- arch/x86/kernel/vmlinux.lds.S     |  3 +--
- include/asm-generic/vmlinux.lds.h | 13 +++++++++++--
- 7 files changed, 17 insertions(+), 19 deletions(-)
+ arch/arc/kernel/vmlinux.lds.S       | 2 +-
+ arch/c6x/kernel/vmlinux.lds.S       | 2 +-
+ arch/csky/kernel/vmlinux.lds.S      | 2 +-
+ arch/h8300/kernel/vmlinux.lds.S     | 2 +-
+ arch/hexagon/kernel/vmlinux.lds.S   | 2 +-
+ arch/m68k/kernel/vmlinux-nommu.lds  | 2 +-
+ arch/nds32/kernel/vmlinux.lds.S     | 2 +-
+ arch/nios2/kernel/vmlinux.lds.S     | 2 +-
+ arch/openrisc/kernel/vmlinux.lds.S  | 4 ++--
+ arch/parisc/kernel/vmlinux.lds.S    | 4 ++--
+ arch/riscv/kernel/vmlinux.lds.S     | 2 +-
+ arch/s390/kernel/vmlinux.lds.S      | 2 +-
+ arch/unicore32/kernel/vmlinux.lds.S | 2 +-
+ include/asm-generic/vmlinux.lds.h   | 7 ++-----
+ 14 files changed, 17 insertions(+), 20 deletions(-)
 
-diff --git a/arch/alpha/kernel/vmlinux.lds.S b/arch/alpha/kernel/vmlinux.lds.S
-index 363a60ba7c31..cdfdc91ce64c 100644
---- a/arch/alpha/kernel/vmlinux.lds.S
-+++ b/arch/alpha/kernel/vmlinux.lds.S
-@@ -34,10 +34,7 @@ SECTIONS
- 	swapper_pg_dir = SWAPPER_PGD;
- 	_etext = .;	/* End of text section */
+diff --git a/arch/arc/kernel/vmlinux.lds.S b/arch/arc/kernel/vmlinux.lds.S
+index 1d6eef4b6976..7d1d27066deb 100644
+--- a/arch/arc/kernel/vmlinux.lds.S
++++ b/arch/arc/kernel/vmlinux.lds.S
+@@ -95,7 +95,7 @@ SECTIONS
+ 	_etext = .;
  
--	NOTES :text :note
--	.dummy : {
--		*(.dummy)
--	} :text
-+	NOTES
+ 	_sdata = .;
+-	RO_DATA_SECTION(PAGE_SIZE)
++	RO_DATA(PAGE_SIZE)
  
- 	RODATA
- 	EXCEPTION_TABLE(16)
-diff --git a/arch/ia64/kernel/vmlinux.lds.S b/arch/ia64/kernel/vmlinux.lds.S
-index 7cf4958b732d..bfc937ec168c 100644
---- a/arch/ia64/kernel/vmlinux.lds.S
-+++ b/arch/ia64/kernel/vmlinux.lds.S
-@@ -70,9 +70,7 @@ SECTIONS {
  	/*
- 	 * Read-only data
- 	 */
--	NOTES :text :note       /* put .notes in text and mark in PT_NOTE  */
--	code_continues : {
--	} :text                /* switch back to regular program...  */
-+	NOTES
+ 	 * 1. this is .data essentially
+diff --git a/arch/c6x/kernel/vmlinux.lds.S b/arch/c6x/kernel/vmlinux.lds.S
+index d6e3802536b3..a3547f9d415b 100644
+--- a/arch/c6x/kernel/vmlinux.lds.S
++++ b/arch/c6x/kernel/vmlinux.lds.S
+@@ -82,7 +82,7 @@ SECTIONS
  
  	EXCEPTION_TABLE(16)
  
-diff --git a/arch/mips/kernel/vmlinux.lds.S b/arch/mips/kernel/vmlinux.lds.S
-index 1c95612eb800..6a22f531d815 100644
---- a/arch/mips/kernel/vmlinux.lds.S
-+++ b/arch/mips/kernel/vmlinux.lds.S
-@@ -81,8 +81,7 @@ SECTIONS
- 		__stop___dbe_table = .;
+-	RO_DATA_SECTION(PAGE_SIZE)
++	RO_DATA(PAGE_SIZE)
+ 	.const :
+ 	{
+ 		*(.const .const.* .gnu.linkonce.r.*)
+diff --git a/arch/csky/kernel/vmlinux.lds.S b/arch/csky/kernel/vmlinux.lds.S
+index 75dd31412242..8598bd7a7bcd 100644
+--- a/arch/csky/kernel/vmlinux.lds.S
++++ b/arch/csky/kernel/vmlinux.lds.S
+@@ -49,7 +49,7 @@ SECTIONS
+ 
+ 
+ 	_sdata = .;
+-	RO_DATA_SECTION(PAGE_SIZE)
++	RO_DATA(PAGE_SIZE)
+ 	RW_DATA_SECTION(L1_CACHE_BYTES, PAGE_SIZE, THREAD_SIZE)
+ 	_edata = .;
+ 
+diff --git a/arch/h8300/kernel/vmlinux.lds.S b/arch/h8300/kernel/vmlinux.lds.S
+index 88776e785245..d3247d33b115 100644
+--- a/arch/h8300/kernel/vmlinux.lds.S
++++ b/arch/h8300/kernel/vmlinux.lds.S
+@@ -38,7 +38,7 @@ SECTIONS
+ 	_etext = . ;
  	}
+ 	EXCEPTION_TABLE(16)
+-	RO_DATA_SECTION(4)
++	RO_DATA(4)
+ 	ROMEND = .;
+ #if defined(CONFIG_ROMKERNEL)
+ 	. = RAMTOP;
+diff --git a/arch/hexagon/kernel/vmlinux.lds.S b/arch/hexagon/kernel/vmlinux.lds.S
+index 6a6e8fc422ee..0145251fa317 100644
+--- a/arch/hexagon/kernel/vmlinux.lds.S
++++ b/arch/hexagon/kernel/vmlinux.lds.S
+@@ -50,7 +50,7 @@ SECTIONS
  
--	NOTES NOTES_HEADERS
--	.dummy : { *(.dummy) } :text
-+	NOTES
+ 	_sdata = .;
+ 		RW_DATA_SECTION(32,PAGE_SIZE,_THREAD_SIZE)
+-		RO_DATA_SECTION(PAGE_SIZE)
++		RO_DATA(PAGE_SIZE)
+ 	_edata = .;
  
- 	_sdata = .;			/* Start of data section */
- 	RODATA
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 7e26e20c8324..4f19d814d592 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -164,9 +164,7 @@ SECTIONS
+ 	EXCEPTION_TABLE(16)
+diff --git a/arch/m68k/kernel/vmlinux-nommu.lds b/arch/m68k/kernel/vmlinux-nommu.lds
+index cf6edda38971..de80f8b8ae78 100644
+--- a/arch/m68k/kernel/vmlinux-nommu.lds
++++ b/arch/m68k/kernel/vmlinux-nommu.lds
+@@ -60,7 +60,7 @@ SECTIONS {
  #endif
- 	EXCEPTION_TABLE(0)
  
--	NOTES :text :note
--	/* Restore program header away from PT_NOTE. */
--	.dummy : { *(.dummy) } :text
-+	NOTES
+ 	_sdata = .;
+-	RO_DATA_SECTION(PAGE_SIZE)
++	RO_DATA(PAGE_SIZE)
+ 	RW_DATA_SECTION(16, PAGE_SIZE, THREAD_SIZE)
+ 	_edata = .;
  
- /*
-  * Init sections discarded at runtime
+diff --git a/arch/nds32/kernel/vmlinux.lds.S b/arch/nds32/kernel/vmlinux.lds.S
+index c4f1c5a604c3..10ff570ba95b 100644
+--- a/arch/nds32/kernel/vmlinux.lds.S
++++ b/arch/nds32/kernel/vmlinux.lds.S
+@@ -53,7 +53,7 @@ SECTIONS
+ 	_etext = .;			/* End of text and rodata section */
+ 
+ 	_sdata = .;
+-	RO_DATA_SECTION(PAGE_SIZE)
++	RO_DATA(PAGE_SIZE)
+ 	RW_DATA_SECTION(L1_CACHE_BYTES, PAGE_SIZE, THREAD_SIZE)
+ 	_edata  =  .;
+ 
+diff --git a/arch/nios2/kernel/vmlinux.lds.S b/arch/nios2/kernel/vmlinux.lds.S
+index 20e4078b3477..318804a2c7a1 100644
+--- a/arch/nios2/kernel/vmlinux.lds.S
++++ b/arch/nios2/kernel/vmlinux.lds.S
+@@ -49,7 +49,7 @@ SECTIONS
+ 	__init_end = .;
+ 
+ 	_sdata = .;
+-	RO_DATA_SECTION(PAGE_SIZE)
++	RO_DATA(PAGE_SIZE)
+ 	RW_DATA_SECTION(L1_CACHE_BYTES, PAGE_SIZE, THREAD_SIZE)
+ 	_edata = .;
+ 
+diff --git a/arch/openrisc/kernel/vmlinux.lds.S b/arch/openrisc/kernel/vmlinux.lds.S
+index 142c51c994f5..f73e0d3ea09f 100644
+--- a/arch/openrisc/kernel/vmlinux.lds.S
++++ b/arch/openrisc/kernel/vmlinux.lds.S
+@@ -67,8 +67,8 @@ SECTIONS
+ 
+ 	_sdata = .;
+ 
+-	/* Page alignment required for RO_DATA_SECTION */
+-	RO_DATA_SECTION(PAGE_SIZE)
++	/* Page alignment required for RO_DATA */
++	RO_DATA(PAGE_SIZE)
+ 	_e_kernel_ro = .;
+ 
+ 	/* Whatever comes after _e_kernel_ro had better be page-aligend, too */
+diff --git a/arch/parisc/kernel/vmlinux.lds.S b/arch/parisc/kernel/vmlinux.lds.S
+index 168d12b2ebb8..e1c563c7dca1 100644
+--- a/arch/parisc/kernel/vmlinux.lds.S
++++ b/arch/parisc/kernel/vmlinux.lds.S
+@@ -109,7 +109,7 @@ SECTIONS
+ 	_sdata = .;
+ 
+ 	/* Architecturally we need to keep __gp below 0x1000000 and thus
+-	 * in front of RO_DATA_SECTION() which stores lots of tracepoint
++	 * in front of RO_DATA() which stores lots of tracepoint
+ 	 * and ftrace symbols. */
+ #ifdef CONFIG_64BIT
+ 	. = ALIGN(16);
+@@ -127,7 +127,7 @@ SECTIONS
+ 	}
+ #endif
+ 
+-	RO_DATA_SECTION(8)
++	RO_DATA(8)
+ 
+ 	/* RO because of BUILDTIME_EXTABLE_SORT */
+ 	EXCEPTION_TABLE(8)
+diff --git a/arch/riscv/kernel/vmlinux.lds.S b/arch/riscv/kernel/vmlinux.lds.S
+index df5229c4034d..66dc17d24dd9 100644
+--- a/arch/riscv/kernel/vmlinux.lds.S
++++ b/arch/riscv/kernel/vmlinux.lds.S
+@@ -52,7 +52,7 @@ SECTIONS
+ 
+ 	/* Start of data section */
+ 	_sdata = .;
+-	RO_DATA_SECTION(L1_CACHE_BYTES)
++	RO_DATA(L1_CACHE_BYTES)
+ 	.srodata : {
+ 		*(.srodata*)
+ 	}
 diff --git a/arch/s390/kernel/vmlinux.lds.S b/arch/s390/kernel/vmlinux.lds.S
-index 646d939346df..f88eedeb915a 100644
+index beb4df053e20..b33c4823f8b5 100644
 --- a/arch/s390/kernel/vmlinux.lds.S
 +++ b/arch/s390/kernel/vmlinux.lds.S
-@@ -52,9 +52,7 @@ SECTIONS
+@@ -52,7 +52,7 @@ SECTIONS
  		_etext = .;		/* End of text section */
  	} :text = 0x0700
  
--	NOTES :text :note
--
--	.dummy : { *(.dummy) } :text
-+	NOTES
+-	RO_DATA_SECTION(PAGE_SIZE)
++	RO_DATA(PAGE_SIZE)
  
- 	RO_DATA_SECTION(PAGE_SIZE)
+ 	. = ALIGN(PAGE_SIZE);
+ 	_sdata = .;		/* Start of data section */
+diff --git a/arch/unicore32/kernel/vmlinux.lds.S b/arch/unicore32/kernel/vmlinux.lds.S
+index 78c4c56057b0..367c80313bec 100644
+--- a/arch/unicore32/kernel/vmlinux.lds.S
++++ b/arch/unicore32/kernel/vmlinux.lds.S
+@@ -43,7 +43,7 @@ SECTIONS
+ 	_etext = .;
  
-diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
-index 2e18bf5c1aed..8be25b09c2b7 100644
---- a/arch/x86/kernel/vmlinux.lds.S
-+++ b/arch/x86/kernel/vmlinux.lds.S
-@@ -148,8 +148,7 @@ SECTIONS
- 		_etext = .;
- 	} :text = 0x9090
- 
--	NOTES :text :note
--	.dummy : { *(.dummy) } :text
-+	NOTES
- 
- 	EXCEPTION_TABLE(16)
+ 	_sdata = .;
+-	RO_DATA_SECTION(PAGE_SIZE)
++	RO_DATA(PAGE_SIZE)
+ 	RW_DATA_SECTION(L1_CACHE_BYTES, PAGE_SIZE, THREAD_SIZE)
+ 	_edata = .;
  
 diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index f5dd45ce73f1..97d4299f14dc 100644
+index a0a989fbe411..061e57c609f6 100644
 --- a/include/asm-generic/vmlinux.lds.h
 +++ b/include/asm-generic/vmlinux.lds.h
-@@ -56,10 +56,18 @@
- 
+@@ -23,7 +23,7 @@
+  *	_etext = .;
+  *
+  *      _sdata = .;
+- *	RO_DATA_SECTION(PAGE_SIZE)
++ *	RO_DATA(PAGE_SIZE)
+  *	RW_DATA_SECTION(...)
+  *	_edata = .;
+  *
+@@ -363,7 +363,7 @@
  /*
-  * Only some architectures want to have the .notes segment visible in
-- * a separate PT_NOTE ELF Program Header.
-+ * a separate PT_NOTE ELF Program Header. When this happens, it needs
-+ * to be visible in both the kernel text's PT_LOAD and the PT_NOTE
-+ * Program Headers. In this case, though, the PT_LOAD needs to be made
-+ * the default again so that all the following sections don't also end
-+ * up in the PT_NOTE Program Header.
+  * Read only Data
   */
- #ifdef EMITS_PT_NOTE
- #define NOTES_HEADERS		:text :note
-+#define NOTES_HEADERS_RESTORE	__restore_ph : { *(.__restore_ph) } :text
-+#else
-+#define NOTES_HEADERS
-+#define NOTES_HEADERS_RESTORE
- #endif
+-#define RO_DATA_SECTION(align)						\
++#define RO_DATA(align)							\
+ 	. = ALIGN((align));						\
+ 	.rodata           : AT(ADDR(.rodata) - LOAD_OFFSET) {		\
+ 		__start_rodata = .;					\
+@@ -518,9 +518,6 @@
+ 	. = ALIGN((align));						\
+ 	__end_rodata = .;
  
- /* Align . to a 8 byte boundary equals to maximum function alignment. */
-@@ -798,7 +806,8 @@
- 		__start_notes = .;					\
- 		KEEP(*(.note.*))					\
- 		__stop_notes = .;					\
--	}
-+	} NOTES_HEADERS							\
-+	NOTES_HEADERS_RESTORE
- 
- #define INIT_SETUP(initsetup_align)					\
- 		. = ALIGN(initsetup_align);				\
+-/* All archs are supposed to use RO_DATA() */
+-#define RO_DATA(align)  RO_DATA_SECTION(align)
+-
+ /*
+  * .text section. Map to function alignment to avoid address changes
+  * during second ld run in second ld pass when generating System.map
 -- 
 2.17.1
 
