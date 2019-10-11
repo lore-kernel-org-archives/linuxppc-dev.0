@@ -7,70 +7,70 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D2ECC4360C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 00:43:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 23263C4360C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 00:46:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0E01321920
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 00:43:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 858932053B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 00:46:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="V5SSXiOU"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0E01321920
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="UICOc5TK"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 858932053B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46q8Mk0MXmzDqV2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 11:43:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46q8Ql1HhWzDqSh
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 11:46:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=chromium.org
- (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
+ (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
  envelope-from=keescook@chromium.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.b="V5SSXiOU";
+ unprotected) header.d=chromium.org header.i=@chromium.org header.b="UICOc5TK";
  dkim-atps=neutral
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
- [IPv6:2607:f8b0:4864:20::443])
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
+ [IPv6:2607:f8b0:4864:20::542])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46q7Xw17XWzDqRx
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2019 11:06:39 +1100 (AEDT)
-Received: by mail-pf1-x443.google.com with SMTP id q7so4935295pfh.8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Oct 2019 17:06:39 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46q7h74xqXzDqSZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2019 11:12:55 +1100 (AEDT)
+Received: by mail-pg1-x542.google.com with SMTP id z12so4696960pgp.9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Oct 2019 17:12:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=ZBHIZP91az7zFwublbVFIxiUPIvhqcpifj2fGv96nM4=;
- b=V5SSXiOU/2LqW+YWMWv2g8oE+O+8OqaVciMsltfBT6XAT+UmV5TNibrJhEtO410tXb
- /OnY7p2PJHhLZDVx/eoiV5CS19ovJ8wYT+GUzFT433OArvUWowNhqhNxhPEcl3xsRkLc
- lb2h6DldDdTdhb4T8VOEQWN9DqKeDub1PenXs=
+ bh=C4qrRt1wPf/MBbE+aHUnjpKB3JMiaG6wbnmkvfoIFU0=;
+ b=UICOc5TKza9BTCIUokRpRXRixWvfiu//j+nLFORdk7UGk/JwyzBWx+ycolyJCZr/Zj
+ USYjJEh9S6rYvbkeSR5dqh4t0wO42rK96mEpNN2uDcZMnixq8tbOTsEogIYGcWgVfWSY
+ D4i8QsjQVcM0qjRwO2F5cvKbTZ8BLcWZFx7T8=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=ZBHIZP91az7zFwublbVFIxiUPIvhqcpifj2fGv96nM4=;
- b=Od5DKUTaerqgQnfQaDhrxm/Qp/IqgR2yfnlFmaSNvBOKvAZk1TeGqgED0UihLRjRGW
- N1+9uzWW4VfzuQao1ilFX3kOlggbkG+8jha/m9AfvEEVN869IVbzmGzwOuoX7e/IR6tG
- zfQLnIHuK9XtbtkpVxj1yoY0YCzPm9AtJN8s6mMyn4GAbBD9AduR+MxVxs7XLPT1uAqY
- 9FOaQW03PypogqeQjTpMQQ6xQ9ZykyJ4ERyL53DdoDSyHA+o21SZMDOx5fPhLK5gfNGD
- bNPoV9sTCNYH+kpLbFcC7xReYOo6Odju7Y1QPtxNMoq2DsALQFGKdoeQQJ7Hefrv1+XF
- bLrQ==
-X-Gm-Message-State: APjAAAVeaDTRC5zgumimcgQ/EKPJrSaionAAiftFqWrt/2aRaSAxIX71
- 4+PpftP+rJyRwK+YVd5v3JOkVw==
-X-Google-Smtp-Source: APXvYqxIURRErEoWhZaXwUViGgbdz47KTCDz+s6x66JTdawkgAKVzwgCcLp2sAcohHOnlA3CSEfhcA==
-X-Received: by 2002:aa7:9157:: with SMTP id 23mr13458255pfi.73.1570752397032; 
- Thu, 10 Oct 2019 17:06:37 -0700 (PDT)
+ bh=C4qrRt1wPf/MBbE+aHUnjpKB3JMiaG6wbnmkvfoIFU0=;
+ b=e/zlrVoixZyafs4yYkjVbwDWEEU7k7QENy/OFMC31cZDvbVELCcMoiJEubkfSDEQ0O
+ GeJFI2KGEYY+LJ2fvdICPip+uapVHcLbfI89IqTGbEsVUKcu7uDSl+b1hAV3Pu2Edghh
+ aYCRjaSHv8ibaRl+cMqY3+bb5p/3AdtlFppMjx3Yj+4HYKQCaUGD/RN3we73PL9/cwUE
+ XI+BuaRAI46WEqbefGMaVFNm06Qs/6k1eZbgYl/XKvcuBYlvWHzxEuLPpe8WtetKRHJD
+ 4PkFKpc2a7UuZEwt3fSE6SBx6W2wsDsjQ77h1eklqA0PNwknp9khht/ZzpwZzUI54CqP
+ S+bw==
+X-Gm-Message-State: APjAAAVj0UpYZHde6ULUYcqne07JRVOvOPDrtYEzMFp2DYoyOch9f5HU
+ vJTteHO1iIPGzUIOFisg0R8n3Q==
+X-Google-Smtp-Source: APXvYqwliD8aT2m8D5BS3pRkZKxejc1RX6nlHmvajkiWktD94kckhfSBhz7/A5hJ2lTUaMfRy1yv0g==
+X-Received: by 2002:a62:e206:: with SMTP id a6mr13749471pfi.245.1570752773224; 
+ Thu, 10 Oct 2019 17:12:53 -0700 (PDT)
 Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id n15sm5864975pjt.13.2019.10.10.17.06.31
+ by smtp.gmail.com with ESMTPSA id w2sm7937638pfn.57.2019.10.10.17.12.51
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 10 Oct 2019 17:06:35 -0700 (PDT)
+ Thu, 10 Oct 2019 17:12:52 -0700 (PDT)
 From: Kees Cook <keescook@chromium.org>
 To: Borislav Petkov <bp@alien8.de>
-Subject: [PATCH v2 28/29] x86/mm: Report actual image regions in /proc/iomem
-Date: Thu, 10 Oct 2019 17:06:08 -0700
-Message-Id: <20191011000609.29728-29-keescook@chromium.org>
+Subject: [PATCH v2 17/29] alpha: Move EXCEPTION_TABLE to RO_DATA segment
+Date: Thu, 10 Oct 2019 17:05:57 -0700
+Message-Id: <20191011000609.29728-18-keescook@chromium.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20191011000609.29728-1-keescook@chromium.org>
 References: <20191011000609.29728-1-keescook@chromium.org>
@@ -99,68 +99,33 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The resource reservations in /proc/iomem made for the kernel image did
-not reflect the gaps between text, rodata, and data. Add the "rodata"
-resource and update the start/end calculations to match the respective
-calls to free_kernel_image_pages().
-
-Before (booted with "nokaslr" for easier comparison):
-
-00100000-bffd9fff : System RAM
-  01000000-01e011d0 : Kernel code
-  01e011d1-025619bf : Kernel data
-  02a95000-035fffff : Kernel bss
-
-After:
-
-00100000-bffd9fff : System RAM
-  01000000-01e011d0 : Kernel code
-  02000000-023d4fff : Kernel rodata
-  02400000-025619ff : Kernel data
-  02a95000-035fffff : Kernel bss
+Since the EXCEPTION_TABLE is read-only, collapse it into RO_DATA.
 
 Signed-off-by: Kees Cook <keescook@chromium.org>
 ---
- arch/x86/kernel/setup.c | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ arch/alpha/kernel/vmlinux.lds.S | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 77ea96b794bd..591e885a852e 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -143,6 +143,13 @@ struct boot_params boot_params;
- /*
-  * Machine setup..
-  */
-+static struct resource rodata_resource = {
-+	.name	= "Kernel rodata",
-+	.start	= 0,
-+	.end	= 0,
-+	.flags	= IORESOURCE_BUSY | IORESOURCE_SYSTEM_RAM
-+};
-+
- static struct resource data_resource = {
- 	.name	= "Kernel data",
- 	.start	= 0,
-@@ -951,7 +958,9 @@ void __init setup_arch(char **cmdline_p)
+diff --git a/arch/alpha/kernel/vmlinux.lds.S b/arch/alpha/kernel/vmlinux.lds.S
+index edc45f45523b..bc6f727278fd 100644
+--- a/arch/alpha/kernel/vmlinux.lds.S
++++ b/arch/alpha/kernel/vmlinux.lds.S
+@@ -1,6 +1,7 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
  
- 	code_resource.start = __pa_symbol(_text);
- 	code_resource.end = __pa_symbol(_etext)-1;
--	data_resource.start = __pa_symbol(_etext);
-+	rodata_resource.start = __pa_symbol(__start_rodata);
-+	rodata_resource.end = __pa_symbol(__end_rodata)-1;
-+	data_resource.start = __pa_symbol(_sdata);
- 	data_resource.end = __pa_symbol(_edata)-1;
- 	bss_resource.start = __pa_symbol(__bss_start);
- 	bss_resource.end = __pa_symbol(__bss_stop)-1;
-@@ -1040,6 +1049,7 @@ void __init setup_arch(char **cmdline_p)
+ #define EMITS_PT_NOTE
++#define RO_EXCEPTION_TABLE_ALIGN	16
  
- 	/* after parse_early_param, so could debug it */
- 	insert_resource(&iomem_resource, &code_resource);
-+	insert_resource(&iomem_resource, &rodata_resource);
- 	insert_resource(&iomem_resource, &data_resource);
- 	insert_resource(&iomem_resource, &bss_resource);
+ #include <asm-generic/vmlinux.lds.h>
+ #include <asm/thread_info.h>
+@@ -35,7 +36,6 @@ SECTIONS
+ 	_etext = .;	/* End of text section */
  
+ 	RO_DATA(4096)
+-	EXCEPTION_TABLE(16)
+ 
+ 	/* Will be freed after init */
+ 	__init_begin = ALIGN(PAGE_SIZE);
 -- 
 2.17.1
 
