@@ -6,38 +6,37 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5036FC47404
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 08:31:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F5B7ECE58C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 08:33:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0A5212196E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 08:31:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0A5212196E
+	by mail.kernel.org (Postfix) with ESMTPS id 2709F20679
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 08:33:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2709F20679
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46qLkt1Y33zDq77
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 19:31:02 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 46qLn81HsjzDqXW
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 19:33:00 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46qLXg5wQzzDqYn
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2019 19:22:11 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46qLXk2XHmzDqYn
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2019 19:22:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 46qLXg19TWz9sPk; Fri, 11 Oct 2019 19:22:10 +1100 (AEDT)
+ id 46qLXh6VtKz9sPn; Fri, 11 Oct 2019 19:22:12 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 7fe4e1176dfe47a243d8edd98d26abd11f91b042
-In-Reply-To: <20191004025317.19340-1-jniethe5@gmail.com>
-To: Jordan Niethe <jniethe5@gmail.com>, linuxppc-dev@lists.ozlabs.org
+X-powerpc-patch-commit: 2272905a4580f26630f7d652cc33935b59f96d4c
+In-Reply-To: <20191008141342.GA266797@gmail.com>
+To: Emmanuel Nicolet <emmanuel.nicolet@gmail.com>, Jeremy Kerr <jk@ozlabs.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/kvm: Fix kvmppc_vcore->in_guest value in
- kvmhv_switch_to_host
-Message-Id: <46qLXg19TWz9sPk@ozlabs.org>
-Date: Fri, 11 Oct 2019 19:22:10 +1100 (AEDT)
+Subject: Re: [PATCH] spufs: fix a crash in spufs_create_root()
+Message-Id: <46qLXh6VtKz9sPn@ozlabs.org>
+Date: Fri, 11 Oct 2019 19:22:12 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,61 +48,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aik@ozlabs.ru, alistair@popple.id.au, patch-notifications@ellerman.id.au,
- kvm-ppc@vger.kernel.org, Jordan Niethe <jniethe5@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2019-10-04 at 02:53:17 UTC, Jordan Niethe wrote:
-> kvmhv_switch_to_host() in arch/powerpc/kvm/book3s_hv_rmhandlers.S needs
-> to set kvmppc_vcore->in_guest to 0 to signal secondary CPUs to continue.
-> This happens after resetting the PCR. Before commit 13c7bb3c57dc
-> ("powerpc/64s: Set reserved PCR bits"), r0 would always be 0 before it
-> was stored to kvmppc_vcore->in_guest. However because of this change in
-> the commit:
+On Tue, 2019-10-08 at 14:13:42 UTC, Emmanuel Nicolet wrote:
+> The spu_fs_context was not set in fc->fs_private, this caused a crash
+> when accessing ctx->mode in spufs_create_root().
 > 
->         /* Reset PCR */
->         ld      r0, VCORE_PCR(r5)
-> -       cmpdi   r0, 0
-> +       LOAD_REG_IMMEDIATE(r6, PCR_MASK)
-> +       cmpld   r0, r6
->         beq     18f
-> -       li      r0, 0
-> -       mtspr   SPRN_PCR, r0
-> +       mtspr   SPRN_PCR, r6
->  18:
->         /* Signal secondary CPUs to continue */
->         stb     r0,VCORE_IN_GUEST(r5)
-> 
-> We are no longer comparing r0 against 0 and loading it with 0 if it
-> contains something else. Hence when we store r0 to
-> kvmppc_vcore->in_guest, it might not be 0.  This means that secondary
-> CPUs will not be signalled to continue. Those CPUs get stuck and errors
-> like the following are logged:
-> 
->     KVM: CPU 1 seems to be stuck
->     KVM: CPU 2 seems to be stuck
->     KVM: CPU 3 seems to be stuck
->     KVM: CPU 4 seems to be stuck
->     KVM: CPU 5 seems to be stuck
->     KVM: CPU 6 seems to be stuck
->     KVM: CPU 7 seems to be stuck
-> 
-> This can be reproduced with:
->     $ for i in `seq 1 7` ; do chcpu -d $i ; done ;
->     $ taskset -c 0 qemu-system-ppc64 -smp 8,threads=8 \
->        -M pseries,accel=kvm,kvm-type=HV -m 1G -nographic -vga none \
->        -kernel vmlinux -initrd initrd.cpio.xz
-> 
-> Fix by making sure r0 is 0 before storing it to kvmppc_vcore->in_guest.
-> 
-> Fixes: 13c7bb3c57dc ("powerpc/64s: Set reserved PCR bits")
-> Reported-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
+> Signed-off-by: Emmanuel Nicolet <emmanuel.nicolet@gmail.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/7fe4e1176dfe47a243d8edd98d26abd11f91b042
+https://git.kernel.org/powerpc/c/2272905a4580f26630f7d652cc33935b59f96d4c
 
 cheers
