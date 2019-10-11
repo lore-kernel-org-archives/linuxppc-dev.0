@@ -7,71 +7,70 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F8BFC4360C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 00:16:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 344FCC4360C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 00:17:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7980320B7C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 00:16:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D525B20B7C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 00:17:34 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="TBJeuKMY"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7980320B7C
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="fUPnxPNk"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D525B20B7C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46q7m15zz4zDqTl
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 11:16:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46q7nS59NKzDqbl
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Oct 2019 11:17:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=chromium.org
- (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
+ (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
  envelope-from=keescook@chromium.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.b="TBJeuKMY";
+ unprotected) header.d=chromium.org header.i=@chromium.org header.b="fUPnxPNk";
  dkim-atps=neutral
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
- [IPv6:2607:f8b0:4864:20::443])
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
+ [IPv6:2607:f8b0:4864:20::542])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46q7Xf1KRtzDqQl
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2019 11:06:25 +1100 (AEDT)
-Received: by mail-pf1-x443.google.com with SMTP id v4so4946295pff.6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Oct 2019 17:06:25 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46q7Xf2d5nzDqQs
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2019 11:06:26 +1100 (AEDT)
+Received: by mail-pg1-x542.google.com with SMTP id p30so4699685pgl.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Oct 2019 17:06:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=7MxClQbH59XRrbTRajW1Gh8uACzcU2+htsVcXyM7D1g=;
- b=TBJeuKMY2z8zTRQ1bFw/ImZS5YFoYQAHk+uSCJMry9jQKOeGheQ5i7gXGHU01GWcTB
- uOgoFqPErAXZia+mP12x9qnkRfY1Ys9PjUB5SmB5We4kWHLZQ5n99yhQi0dIKcFUZu6/
- hILLkVhE9upOn1PuRtaesOlh4SL00TV9kLm5U=
+ bh=WqLTzjTdYtu13eBI1Hsh3syPKd5R5C/bZSENvznkqN8=;
+ b=fUPnxPNkLbKz79eLdwRoDJjW70ASz4RGYombh+MpItuFQQCQWGWcKvPqy4gl6E62bz
+ YXcrXM4MjXChDuBwxAdJsCaz9rjKO2RPeC3DbmTKU7AZ15ypootuMHyTiE2LYXks+fRY
+ MfiZIZu5Q++w2SE3zrFSij8n4HmJ+XDt2oi0w=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=7MxClQbH59XRrbTRajW1Gh8uACzcU2+htsVcXyM7D1g=;
- b=uOzGuJCf70E7H2MhlhuoXn2QfsOQdXpgWBwH8Aw0Onq1emDlGfERBqzHkUz5ap/yLr
- 8TfPz0UtBLKCHWcZPAhOL28OiBZu4AjUN8dymwGTy4Hh0CaXlG34dQtTIsY7CvgBLpu8
- rHaoqe4W4fCsvD2FJnyAdys18GeB/ZeJOpHoN2PmfmSH9MHjoLFKWtVcMgNh/Qbbdg55
- 1fLiVdaOx94dRoLKjG9jhJaCOJ0/viaFK3/cSdV611foFKqhnKX/xQTcqG2A3+aOnCi9
- hPQ3IbSE4PHByN3fAuCy436ZNmqC++9iXoGi/4ITqwwTcICxYTAaaoCEvYKgDBrQdQRq
- lTZA==
-X-Gm-Message-State: APjAAAWezZp8Mcj7a1QGKQLO2yWRbHZ94c4MAsKyGWLWFERHtjczYYCP
- 14npDC8prGm/ufSz3nO6kgQd+ky+3lY=
-X-Google-Smtp-Source: APXvYqwg7IWyK5GALjp45zOGgCtbjryTtA5MoWvVIZiHDTE9GJEt+Ue8rYJCs4VD37qrCGGbQgqtBg==
-X-Received: by 2002:a62:5bc1:: with SMTP id
- p184mr12930072pfb.180.1570752383534; 
- Thu, 10 Oct 2019 17:06:23 -0700 (PDT)
+ bh=WqLTzjTdYtu13eBI1Hsh3syPKd5R5C/bZSENvznkqN8=;
+ b=GlozOlWnjTqeOdtYbyq0J0J6wXmzUWdARvcsMi+KGnOZisqmZLLpUVMEZkvAkMNpi0
+ lgSkg2TT5ExBJtkWsswaWRS4oEUCfvqlLcFvjk0etxV/OqopHhlK2AIIXLmCcmy/dgNd
+ yGbOcmNXOsVcE4vRQx3GUZhSnD3V+1zLTa9XQ7+xcU0XzWC/YoS9q0RD2TkveiMRMkRW
+ v5Oxc4XeL2H1I0u/J0fXX4Oxo1cLkzMAYSP5ioH1+533csUxKSmBnDq5Z5ymMoaFeq7+
+ xGf4s43xvyRUtIyQUzGO32Exvte2yBvxSH+KQUQdRLkyyEEN+HufJetrpFLac1d8DV2o
+ iT6Q==
+X-Gm-Message-State: APjAAAVlajvkEj3nl8IZihcJQEuN/L5cA30gN4gOI7mfzmlN9A3+GOei
+ BzBWOUHMmzP3ctkrsm97oZ+8ZA==
+X-Google-Smtp-Source: APXvYqwSvIKQzn0Wh29UPciSLsyXo4RVbmYIVzpELs7182W3aoZycw+TLoXbSJd3JfRFzRbTSmYlrw==
+X-Received: by 2002:a63:fb0a:: with SMTP id o10mr13787651pgh.258.1570752384285; 
+ Thu, 10 Oct 2019 17:06:24 -0700 (PDT)
 Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id d5sm5372814pjw.31.2019.10.10.17.06.19
+ by smtp.gmail.com with ESMTPSA id e192sm9402924pfh.83.2019.10.10.17.06.19
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
  Thu, 10 Oct 2019 17:06:20 -0700 (PDT)
 From: Kees Cook <keescook@chromium.org>
 To: Borislav Petkov <bp@alien8.de>
-Subject: [PATCH v2 04/29] alpha: Rename PT_LOAD identifier "kernel" to "text"
-Date: Thu, 10 Oct 2019 17:05:44 -0700
-Message-Id: <20191011000609.29728-5-keescook@chromium.org>
+Subject: [PATCH v2 01/29] powerpc: Rename "notes" PT_NOTE to "note"
+Date: Thu, 10 Oct 2019 17:05:41 -0700
+Message-Id: <20191011000609.29728-2-keescook@chromium.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20191011000609.29728-1-keescook@chromium.org>
 References: <20191011000609.29728-1-keescook@chromium.org>
@@ -100,46 +99,38 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In preparation for moving NOTES into RO_DATA, rename the linker script
-internal identifier for the PT_LOAD Program Header from "kernel" to
-"text" to match other architectures.
+The Program Header identifiers are internal to the linker scripts. In
+preparation for moving the NOTES segment declaration into RO_DATA,
+standardize the identifier for the PT_NOTE entry to "note" as used by
+all other architectures that emit PT_NOTE.
 
 Signed-off-by: Kees Cook <keescook@chromium.org>
 ---
- arch/alpha/kernel/vmlinux.lds.S | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ arch/powerpc/kernel/vmlinux.lds.S | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/alpha/kernel/vmlinux.lds.S b/arch/alpha/kernel/vmlinux.lds.S
-index c4b5ceceab52..781090cacc96 100644
---- a/arch/alpha/kernel/vmlinux.lds.S
-+++ b/arch/alpha/kernel/vmlinux.lds.S
-@@ -8,7 +8,7 @@
- OUTPUT_FORMAT("elf64-alpha")
- OUTPUT_ARCH(alpha)
- ENTRY(__start)
--PHDRS { kernel PT_LOAD; note PT_NOTE; }
-+PHDRS { text PT_LOAD; note PT_NOTE; }
- jiffies = jiffies_64;
- SECTIONS
- {
-@@ -27,14 +27,14 @@ SECTIONS
- 		LOCK_TEXT
- 		*(.fixup)
- 		*(.gnu.warning)
--	} :kernel
-+	} :text
- 	swapper_pg_dir = SWAPPER_PGD;
- 	_etext = .;	/* End of text section */
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index 060a1acd7c6d..81e672654789 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -19,7 +19,7 @@ ENTRY(_stext)
  
--	NOTES :kernel :note
-+	NOTES :text :note
- 	.dummy : {
- 		*(.dummy)
--	} :kernel
-+	} :text
+ PHDRS {
+ 	kernel PT_LOAD FLAGS(7); /* RWX */
+-	notes PT_NOTE FLAGS(0);
++	note PT_NOTE FLAGS(0);
+ 	dummy PT_NOTE FLAGS(0);
  
- 	RODATA
- 	EXCEPTION_TABLE(16)
+ 	/* binutils < 2.18 has a bug that makes it misbehave when taking an
+@@ -177,7 +177,7 @@ SECTIONS
+ #endif
+ 	EXCEPTION_TABLE(0)
+ 
+-	NOTES :kernel :notes
++	NOTES :kernel :note
+ 
+ 	/* The dummy segment contents for the bug workaround mentioned above
+ 	   near PHDRS.  */
 -- 
 2.17.1
 
