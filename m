@@ -2,79 +2,78 @@ Return-Path: <SRS0=uEoI=YG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D4AFC4360C
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 13 Oct 2019 14:39:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18EE8C4360C
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 13 Oct 2019 15:33:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9E6F92053B
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 13 Oct 2019 14:39:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 46CD420663
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 13 Oct 2019 15:33:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Lj8zukym"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9E6F92053B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="jO212bsL"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 46CD420663
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46rkq20bdMzDqht
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Oct 2019 01:39:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46rm1T65HHzDqjZ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Oct 2019 02:33:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
- envelope-from=kernelfans@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linaro.org
+ (client-ip=2a00:1450:4864:20::343; helo=mail-wm1-x343.google.com;
+ envelope-from=ard.biesheuvel@linaro.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+ dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="Lj8zukym"; 
+ unprotected) header.d=linaro.org header.i=@linaro.org header.b="jO212bsL"; 
  dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
+Received: from mail-wm1-x343.google.com (mail-wm1-x343.google.com
+ [IPv6:2a00:1450:4864:20::343])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46rkml36mczDqWl
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Oct 2019 01:37:24 +1100 (AEDT)
-Received: by mail-pg1-x541.google.com with SMTP id w3so1656865pgt.5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Oct 2019 07:37:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id;
- bh=/B2mtONxD2aUUUWc6yHqo7WZ2+z/3rGUm8xsJdHeFlE=;
- b=Lj8zukymA0sDB06/PVyFl2qC1tTNBj6EDTo6/J2hETeYV78fHolsai0mr03eaIArja
- KsK277Aa7y+wLCvLSsjjmwXZCl5MfOO4yZei/2qOQQW5QjrLA8p/U0F11dOKYZCopHuy
- 4M2zPtiHVp5IiR6PSry+bPusCLE8Q8RsT84e0kXw0vHZTJDBTDiy6RJsmtCYYno7jl6A
- FbkrpUDhISVKBdun1GeluJF7/JLBk1VPwP4cIpXygR4pmqBzp42Avg5C1SObJWziSQ8G
- k6chHBqqyyiiIptQResLsm2xDHx3RFC8nu43yybhuWwrcXlW3mO/s7MvXtL17g9U52dp
- +u3A==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46rlzT2bpczDqWN
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Oct 2019 02:31:48 +1100 (AEDT)
+Received: by mail-wm1-x343.google.com with SMTP id 3so14361529wmi.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Oct 2019 08:31:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=un6QLRuM9urISafHkBqQN+FKjxq2aO4SrSF2GfFXUuo=;
+ b=jO212bsLMmv0ZCk3bSEoPmBHjHkwY+ZyJCGSVM+RHzjAkXms5PqkK3+8/0ZhT6F9vA
+ XZ/YEWhAdg1askw8jWLcj6mM6rjij8eyC9izRQ0gklJsdRq0M3vmUlbo+kI0agXtyUwY
+ Z1Yxms9xpAxmORR5EclpvtscwIZrTcqDg4DIRFprxDBarvvaTz+7tOaFS7/kX2u8zBt+
+ 3fFBPmSWOXGlx2qz8HqJfwbhVU3W+EsFYGpnkUzZPyVH6AKg3jMjghqnO79KAZ8nM+PF
+ BHT9+9ktOjESkkVaJ427f5XmPmf7y4+hYgCKurmEslwnNa3/onzm6/IVenkiK6F8YTtH
+ VNkQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=/B2mtONxD2aUUUWc6yHqo7WZ2+z/3rGUm8xsJdHeFlE=;
- b=DYn3oBQcizqmtH8YaAuK7XbFhWXJUiX7LQEkEHYfFZmetnCibYrDT/ErtE/cBqRO8Q
- huk82lR328B1bhjKdQG3/pdjoudXfXQ0do0BmezUeee2JiMAbJrX0S077xzXhsnynKoz
- U7obUHajKuxbqmOJJbEV6BczztqYg9b3DKQSBmBkp4X7DSI+DQuuYLJ/q5TMstJ21L/6
- wMWy9+TIvIIYfCuaa2hfikxEV+53SpW87td+xfmsJGGChrKnlT0RyhgBLwzdHCAwri+1
- npEu7RVdKzrXxHGWVU32r2NrbG7OZ+5MwQCcRtc67cyihWgrqJK6ZxBtKJQeRVweSAEQ
- crLQ==
-X-Gm-Message-State: APjAAAUUCjbYD0Lr+epUXeR4/eUwoGefJxpGh1+RQuZe1DaoMSdsEzs2
- RdIFu4HbR8WMLGM60cIr8w==
-X-Google-Smtp-Source: APXvYqxtd4iYq8d229eM8HohdPVRKToCp0NPU4y8AkzdtstFyKEKZZPr2hY1yjXR0hNSOMBwFslpKg==
-X-Received: by 2002:a63:6d0:: with SMTP id 199mr27268024pgg.96.1570977439548; 
- Sun, 13 Oct 2019 07:37:19 -0700 (PDT)
-Received: from mylaptop.redhat.com ([209.132.188.80])
- by smtp.gmail.com with ESMTPSA id q132sm14914966pfq.16.2019.10.13.07.37.16
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Sun, 13 Oct 2019 07:37:18 -0700 (PDT)
-From: Pingfan Liu <kernelfans@gmail.com>
-To: linux-xfs@vger.kernel.org
-Subject: [PATCH] xfs: introduce "metasync" api to sync metadata to fsblock
-Date: Sun, 13 Oct 2019 22:37:00 +0800
-Message-Id: <1570977420-3944-1-git-send-email-kernelfans@gmail.com>
-X-Mailer: git-send-email 2.7.5
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=un6QLRuM9urISafHkBqQN+FKjxq2aO4SrSF2GfFXUuo=;
+ b=otfNcwxik2J6Ocq0AFNNxl+Skyu8KXWPk9OjkfmsKt1x75DvutD7B4aHViuQ2qUoyx
+ JJyIouuY/hr+/ld7V+2tfWUy8E5DPZqdjCz588gN5igBfuijw1n1KZkIi4rOdks2mXl/
+ LdHmS4wiomjMQ8p54Dk+0xpeQPQ3WnbQr2gYQFJFCRrfOD5zRind3qcRjUV+6DhPFPyK
+ i9ee61uqFcaoMjaaB4pMdGPYhIIxTysG3Ki1kZVe3NGHmY+WnTvcRtpKcI0BYagDK/97
+ /E7lc23C8FQLJ4Klt6e9Colc0D9T54j4VY/MTWWGqNg1OqAtYS/bdaOGEV0tgj5DWD9w
+ 57SQ==
+X-Gm-Message-State: APjAAAW9GbPzXbYUMCQ0i3Rdm2jHlyQ9HB9XeZ7upNBmZWJdp7wljjPT
+ nlREAo2pvrZ52nL62CisqER1dJRRK27nHZL3H2xhJg==
+X-Google-Smtp-Source: APXvYqw5e3GV0VJAjB0u7VuHOCiMhakyp+ejLPtjBvbRRrigL7S24yII+ua3CNj1igfmSmdSLJMk/+FuYmI5Z48gEcE=
+X-Received: by 2002:a1c:a9c5:: with SMTP id s188mr10638905wme.61.1570980704091; 
+ Sun, 13 Oct 2019 08:31:44 -0700 (PDT)
+MIME-Version: 1.0
+References: <20191013043918.337113-1-ebiggers@kernel.org>
+ <CAKv+Gu8nN48aWoeW-aA_1OA_s8Qw0nUbyg+GCZ9DsUA3tDNprg@mail.gmail.com>
+In-Reply-To: <CAKv+Gu8nN48aWoeW-aA_1OA_s8Qw0nUbyg+GCZ9DsUA3tDNprg@mail.gmail.com>
+From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Date: Sun, 13 Oct 2019 17:31:31 +0200
+Message-ID: <CAKv+Gu-PEemQvXv=kqxfqb4RvmpdU2h7TZHKps2FKTBUTKFehQ@mail.gmail.com>
+Subject: Re: [PATCH 0/4] crypto: nx - convert to skcipher API
+To: Eric Biggers <ebiggers@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,209 +85,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Eric Sandeen <esandeen@redhat.com>,
- "Darrick J. Wong" <darrick.wong@oracle.com>,
- Pingfan Liu <kernelfans@gmail.com>, Dave Chinner <dchinner@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, Hari Bathini <hbathini@linux.ibm.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, Nayna Jain <nayna@linux.ibm.com>,
+ Paulo Flabiano Smorigo <pfsmorigo@gmail.com>,
+ "open list:HARDWARE RANDOM NUMBER GENERATOR CORE"
+ <linux-crypto@vger.kernel.org>,
+ =?UTF-8?Q?Breno_Leit=C3=A3o?= <leitao@debian.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When using fadump (fireware assist dump) mode on powerpc, a mismatch
-between grub xfs driver and kernel xfs driver has been obsevered.  Note:
-fadump boots up in the following sequence: fireware -> grub reads kernel
-and initramfs -> kernel boots.
+On Sun, 13 Oct 2019 at 08:29, Ard Biesheuvel <ard.biesheuvel@linaro.org> wrote:
+>
+> On Sun, 13 Oct 2019 at 06:40, Eric Biggers <ebiggers@kernel.org> wrote:
+> >
+> > This series converts the PowerPC Nest (NX) implementations of AES modes
+> > from the deprecated "blkcipher" API to the "skcipher" API.  This is
+> > needed in order for the blkcipher API to be removed.
+> >
+> > This patchset is compile-tested only, as I don't have this hardware.
+> > If anyone has this hardware, please test this patchset with
+> > CONFIG_CRYPTO_MANAGER_EXTRA_TESTS=y.
+> >
+> > Eric Biggers (4):
+> >   crypto: nx - don't abuse blkcipher_desc to pass iv around
+> >   crypto: nx - convert AES-ECB to skcipher API
+> >   crypto: nx - convert AES-CBC to skcipher API
+> >   crypto: nx - convert AES-CTR to skcipher API
+> >
+> >  drivers/crypto/nx/nx-aes-cbc.c | 81 ++++++++++++++-----------------
+> >  drivers/crypto/nx/nx-aes-ccm.c | 40 ++++++----------
+> >  drivers/crypto/nx/nx-aes-ctr.c | 87 +++++++++++++++-------------------
+> >  drivers/crypto/nx/nx-aes-ecb.c | 76 +++++++++++++----------------
+> >  drivers/crypto/nx/nx-aes-gcm.c | 24 ++++------
+> >  drivers/crypto/nx/nx.c         | 64 ++++++++++++++-----------
+> >  drivers/crypto/nx/nx.h         | 19 ++++----
+> >  7 files changed, 176 insertions(+), 215 deletions(-)
+> >
+>
+> Hi Eric,
+>
+> Thanks for taking this on. I'll look in more detail at these patches
+> during the week. In the meantime, I may have a stab at converting ccp,
+> virtio-crypto and omap aes/des myself, since i have the hardware to
+> test those.
+>
 
-The process to reproduce this mismatch:
-  - On powerpc, boot kernel with fadump=on and edit /etc/kdump.conf.
-  - Replacing "path /var/crash" with "path /var/crashnew", then, "kdumpctl
-    restart" to rebuild the initramfs. Detail about the rebuilding looks
-    like: mkdumprd /boot/initramfs-`uname -r`.img.tmp;
-          mv /boot/initramfs-`uname -r`.img.tmp /boot/initramfs-`uname -r`.img
-          sync
-  - "echo c >/proc/sysrq-trigger".
+OK, I got a bit carried away, and converted a bunch of platforms in
+drivers/crypto (build tested only, except for the virtio driver)
 
-The result:
-The dump image will not be saved under /var/crashnew/* as expected, but
-still saved under /var/crash.
+crypto: qce - switch to skcipher API
+crypto: rockchip - switch to skcipher API
+crypto: stm32 - switch to skcipher API
+crypto: sahara - switch to skcipher API
+crypto: picoxcell - switch to skcipher API
+crypto: mediatek - switch to skcipher API
+crypto: mxs - switch to skcipher API
+crypto: ixp4xx - switch to skcipher API
+crypto: hifn - switch to skcipher API
+crypto: chelsio - switch to skcipher API
+crypto: cavium/cpt - switch to skcipher API
+crypto: nitrox - remove cra_type reference to ablkcipher
+crypto: bcm-spu - switch to skcipher API
+crypto: atmel-tdes - switch to skcipher API
+crypto: atmel-aes - switch to skcipher API
+crypto: s5p - switch to skcipher API
+crypto: ux500 - switch to skcipher API
+crypto: omap - switch to skcipher API
+crypto: virtio - switch to skcipher API
+crypto: virtio - deal with unsupported input sizes
+crypto: virtio - implement missing support for output IVs
+crypto: ccp - switch from ablkcipher to skcipher
 
-The root cause:
-As Eric pointed out that on xfs, 'sync' ensures the consistency by writing
-back metadata to xlog, but not necessary to fsblock. This raises issue if
-grub can not replay the xlog before accessing the xfs files. Since the
-above dir entry of initramfs should be saved as inline data with xfs_inode,
-so xfs_fs_sync_fs() does not guarantee it written to fsblock.
+https://git.kernel.org/pub/scm/linux/kernel/git/ardb/linux.git/log/?h=ablkcipher-removal
 
-umount can be used to write metadata fsblock, but the filesystem can not be
-umounted if still in use.
-
-There are two ways to fix this mismatch, either grub or xfs. It may be
-easier to do this in xfs side by introducing an interface to flush metadata
-to fsblock explicitly.
-
-With this patch, metadata can be written to fsblock by:
-  # update AIL
-  sync
-  # new introduced interface to flush metadata to fsblock
-  mount -o remount,metasync mountpoint
-
-Signed-off-by: Pingfan Liu <kernelfans@gmail.com>
-Cc: "Darrick J. Wong" <darrick.wong@oracle.com>
-Cc: Dave Chinner <dchinner@redhat.com>
-Cc: Eric Sandeen <esandeen@redhat.com>
-Cc: Hari Bathini <hbathini@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-To: linux-xfs@vger.kernel.org
----
- fs/xfs/xfs_mount.h      |  1 +
- fs/xfs/xfs_super.c      | 15 ++++++++++++++-
- fs/xfs/xfs_trans.h      |  2 ++
- fs/xfs/xfs_trans_ail.c  | 26 +++++++++++++++++++++++++-
- fs/xfs/xfs_trans_priv.h |  1 +
- 5 files changed, 43 insertions(+), 2 deletions(-)
-
-diff --git a/fs/xfs/xfs_mount.h b/fs/xfs/xfs_mount.h
-index fdb60e0..85f32e6 100644
---- a/fs/xfs/xfs_mount.h
-+++ b/fs/xfs/xfs_mount.h
-@@ -243,6 +243,7 @@ typedef struct xfs_mount {
- #define XFS_MOUNT_FILESTREAMS	(1ULL << 24)	/* enable the filestreams
- 						   allocator */
- #define XFS_MOUNT_NOATTR2	(1ULL << 25)	/* disable use of attr2 format */
-+#define XFS_MOUNT_METASYNC	(1ull << 26)	/* write meta to fsblock */
- 
- #define XFS_MOUNT_DAX		(1ULL << 62)	/* TEST ONLY! */
- 
-diff --git a/fs/xfs/xfs_super.c b/fs/xfs/xfs_super.c
-index 8d1df9f..41df810 100644
---- a/fs/xfs/xfs_super.c
-+++ b/fs/xfs/xfs_super.c
-@@ -59,7 +59,7 @@ enum {
- 	Opt_filestreams, Opt_quota, Opt_noquota, Opt_usrquota, Opt_grpquota,
- 	Opt_prjquota, Opt_uquota, Opt_gquota, Opt_pquota,
- 	Opt_uqnoenforce, Opt_gqnoenforce, Opt_pqnoenforce, Opt_qnoenforce,
--	Opt_discard, Opt_nodiscard, Opt_dax, Opt_err,
-+	Opt_discard, Opt_nodiscard, Opt_dax, Opt_metasync, Opt_err
- };
- 
- static const match_table_t tokens = {
-@@ -106,6 +106,7 @@ static const match_table_t tokens = {
- 	{Opt_discard,	"discard"},	/* Discard unused blocks */
- 	{Opt_nodiscard,	"nodiscard"},	/* Do not discard unused blocks */
- 	{Opt_dax,	"dax"},		/* Enable direct access to bdev pages */
-+	{Opt_metasync,	"metasync"},	/* one shot to write meta to fsblock */
- 	{Opt_err,	NULL},
- };
- 
-@@ -338,6 +339,9 @@ xfs_parseargs(
- 			mp->m_flags |= XFS_MOUNT_DAX;
- 			break;
- #endif
-+		case Opt_metasync:
-+			mp->m_flags |= XFS_MOUNT_METASYNC;
-+			break;
- 		default:
- 			xfs_warn(mp, "unknown mount option [%s].", p);
- 			return -EINVAL;
-@@ -1259,6 +1263,9 @@ xfs_fs_remount(
- 			mp->m_flags |= XFS_MOUNT_SMALL_INUMS;
- 			mp->m_maxagi = xfs_set_inode_alloc(mp, sbp->sb_agcount);
- 			break;
-+		case Opt_metasync:
-+			mp->m_flags |= XFS_MOUNT_METASYNC;
-+			break;
- 		default:
- 			/*
- 			 * Logically we would return an error here to prevent
-@@ -1286,6 +1293,12 @@ xfs_fs_remount(
- 		}
- 	}
- 
-+	if (mp->m_flags & XFS_MOUNT_METASYNC) {
-+		xfs_ail_push_sync(mp->m_ail);
-+		/* one shot flag */
-+		mp->m_flags &= ~XFS_MOUNT_METASYNC;
-+	}
-+
- 	/* ro -> rw */
- 	if ((mp->m_flags & XFS_MOUNT_RDONLY) && !(*flags & SB_RDONLY)) {
- 		if (mp->m_flags & XFS_MOUNT_NORECOVERY) {
-diff --git a/fs/xfs/xfs_trans.h b/fs/xfs/xfs_trans.h
-index 64d7f17..fcdb902 100644
---- a/fs/xfs/xfs_trans.h
-+++ b/fs/xfs/xfs_trans.h
-@@ -242,6 +242,8 @@ void		xfs_trans_buf_set_type(struct xfs_trans *, struct xfs_buf *,
- void		xfs_trans_buf_copy_type(struct xfs_buf *dst_bp,
- 					struct xfs_buf *src_bp);
- 
-+void		xfs_ail_push_sync(struct xfs_ail *ailp);
-+
- extern kmem_zone_t	*xfs_trans_zone;
- 
- #endif	/* __XFS_TRANS_H__ */
-diff --git a/fs/xfs/xfs_trans_ail.c b/fs/xfs/xfs_trans_ail.c
-index 6ccfd75..b8d8df1 100644
---- a/fs/xfs/xfs_trans_ail.c
-+++ b/fs/xfs/xfs_trans_ail.c
-@@ -488,7 +488,11 @@ xfsaild_push(
- 	xfs_trans_ail_cursor_done(&cur);
- 	spin_unlock(&ailp->ail_lock);
- 
--	if (xfs_buf_delwri_submit_nowait(&ailp->ail_buf_list))
-+	if (unlikely(mp->m_flags & XFS_MOUNT_METASYNC)) {
-+		xfs_buf_delwri_submit(&ailp->ail_buf_list);
-+		ailp->ail_log_flush++;
-+		wake_up_all(&ailp->pushed_que);
-+	} else if (xfs_buf_delwri_submit_nowait(&ailp->ail_buf_list))
- 		ailp->ail_log_flush++;
- 
- 	if (!count || XFS_LSN_CMP(lsn, target) >= 0) {
-@@ -641,6 +645,25 @@ xfs_ail_push(
- 	wake_up_process(ailp->ail_task);
- }
- 
-+void
-+xfs_ail_push_sync(
-+	struct xfs_ail		*ailp)
-+{
-+	xfs_lsn_t		sync_lsn;
-+	DEFINE_WAIT(wait);
-+
-+	sync_lsn = xfs_ail_max_lsn(ailp);
-+	for (;;) {
-+		xfs_ail_push(ailp, sync_lsn);
-+		prepare_to_wait(&ailp->pushed_que, &wait, TASK_INTERRUPTIBLE);
-+		if (XFS_LSN_CMP(READ_ONCE(ailp->ail_target_prev),
-+			sync_lsn) >= 0)
-+			break;
-+		schedule();
-+	}
-+	finish_wait(&ailp->pushed_que, &wait);
-+}
-+
- /*
-  * Push out all items in the AIL immediately
-  */
-@@ -834,6 +857,7 @@ xfs_trans_ail_init(
- 	spin_lock_init(&ailp->ail_lock);
- 	INIT_LIST_HEAD(&ailp->ail_buf_list);
- 	init_waitqueue_head(&ailp->ail_empty);
-+	init_waitqueue_head(&ailp->pushed_que);
- 
- 	ailp->ail_task = kthread_run(xfsaild, ailp, "xfsaild/%s",
- 			ailp->ail_mount->m_fsname);
-diff --git a/fs/xfs/xfs_trans_priv.h b/fs/xfs/xfs_trans_priv.h
-index 2e073c1..9fe3cc6 100644
---- a/fs/xfs/xfs_trans_priv.h
-+++ b/fs/xfs/xfs_trans_priv.h
-@@ -61,6 +61,7 @@ struct xfs_ail {
- 	int			ail_log_flush;
- 	struct list_head	ail_buf_list;
- 	wait_queue_head_t	ail_empty;
-+	wait_queue_head_t	pushed_que;
- };
- 
- /*
--- 
-2.7.5
-
+I pushed the branch to kernelci, so hopefully we'll get some automated
+results, but I think only a small subset of these are boot tested atm.
