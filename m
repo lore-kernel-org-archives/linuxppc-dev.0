@@ -2,60 +2,94 @@ Return-Path: <SRS0=PY1v=YH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A6B03C47404
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Oct 2019 04:56:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F700C47404
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Oct 2019 05:23:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4FD9420873
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Oct 2019 04:56:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 934BA206A3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Oct 2019 05:23:11 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="BDJfsvOK"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4FD9420873
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="vhbXIo/Z";
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="a2s7BMG2"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 934BA206A3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46s5r75K7fzDqZD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Oct 2019 15:56:39 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46s6Qg6QwqzDqXw
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Oct 2019 16:23:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=russell.cc
+ (client-ip=64.147.123.25; helo=wout2-smtp.messagingengine.com;
+ envelope-from=ruscur@russell.cc; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=russell.cc
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=russell.cc header.i=@russell.cc header.b="vhbXIo/Z"; 
+ dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.b="a2s7BMG2"; dkim-atps=neutral
+Received: from wout2-smtp.messagingengine.com (wout2-smtp.messagingengine.com
+ [64.147.123.25])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46s5lb3R3czDqQd
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Oct 2019 15:52:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gibson.dropbear.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="BDJfsvOK"; dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 46s5lZ6rscz9sP3; Mon, 14 Oct 2019 15:52:42 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1571028762;
- bh=5ic5WJLETE48dYyBLSCb1MM2F7flCGOpH3qsXLyV8n8=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=BDJfsvOKlYFniqmjeT/AI6HcNOV1ln1BxU/lRTiSl1OZR30b7aBpr9jdIkYRg/52x
- NGxFBlDbv1VXrJo3DY0hI4ChehpnlBtf+O+oxCC95ARasIgJ+WLE9nzsP/2cHusaYK
- LpKGJw6gzFvNYuSsGdCxGjR6ohdcNlzb9UyGkjfk=
-Date: Mon, 14 Oct 2019 15:52:35 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Ram Pai <linuxram@us.ibm.com>
-Subject: Re: [PATCH 2/2] virtio_ring: Use DMA API if memory is encrypted
-Message-ID: <20191014045235.GO4080@umbus.fritz.box>
-References: <1570843519-8696-1-git-send-email-linuxram@us.ibm.com>
- <1570843519-8696-2-git-send-email-linuxram@us.ibm.com>
- <1570843519-8696-3-git-send-email-linuxram@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46s6NM4rQSzDqWN
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Oct 2019 16:21:07 +1100 (AEDT)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
+ by mailout.west.internal (Postfix) with ESMTP id 3E3E43DC;
+ Mon, 14 Oct 2019 01:13:53 -0400 (EDT)
+Received: from mailfrontend1 ([10.202.2.162])
+ by compute6.internal (MEProxy); Mon, 14 Oct 2019 01:13:53 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=
+ from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding; s=fm3; bh=PStFRxzl4Zn7i
+ 9v7bh9ypxBUch/1PPtigM566gooksQ=; b=vhbXIo/Z3j5Nf53e2OQ97Qo4sy/ds
+ RSzDav9/HWZXOsX8oFZ837S/vrCQPsFLmanIt+Pv0E8kCnAdsu6fS9g2q2BPVBNz
+ nBfnXfdQXY1yT0pT1cmd86x0pRelX9vZV67DNg0ZRqaOa2AEgTLjV3qPVvWYwlrG
+ AXdyhjloOWFAVnjjz1FFgREN/hp9Kl8bv2oZpZ4ASlilkhDwWewWeL1vSDt80yb5
+ TXsG2R6l1wPWFGD51s7HouKHD9lfNuWZd96jkHQI7czs0aTvaxzmQ8fbPA0YOlpB
+ ONmuPO/O2jYCVqBXkLR/ehHAtqBr4q3QxtxJJC/OTga1ZUxPxedz8aGrA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:content-transfer-encoding:date:from
+ :in-reply-to:message-id:mime-version:references:subject:to
+ :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+ fm1; bh=PStFRxzl4Zn7i9v7bh9ypxBUch/1PPtigM566gooksQ=; b=a2s7BMG2
+ Dn31nb6flKsEQkv7HZXBauPfAJqpQYCYpzGH3dANNZgTB9GH4K8A6uP7MR45NouM
+ 3McPoUv/wuYT1MmQfZrOfTdkn3vYZJvSQI75yoouWAgt2oai35U5VNBzESxRSbLD
+ BHWnnJrUqvzQoaWyl4vZnmN16XFy5sAgY6kmDVBXQiqOP6KKS8APa4bYsx8HiYyQ
+ 317SNQrgS5KlaVPH4a3OQkRNKOeLPP1ioZXsppgGFgbpSRgXehA8HkUWxtSP2CZk
+ dnY8gw3uMB4eiO0dk/LA11IzX+smR+jpwflKVZE2tFMHj16s5qS7utHKFSsCmGwk
+ AdjhAvec6+u7JA==
+X-ME-Sender: <xms:EASkXRpqK4osoWggscIjZd-uTCdApg3irNWzLacUHmoAifsblucw4A>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedufedrjedtgdelgecutefuodetggdotefrodftvf
+ curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
+ uegrihhlohhuthemuceftddtnecufghrlhcuvffnffculdeftddmnecujfgurhephffvuf
+ ffkffojghfggfgsedtkeertdertddtnecuhfhrohhmpeftuhhsshgvlhhlucevuhhrrhgv
+ hicuoehruhhstghurhesrhhushhsvghllhdrtggtqeenucfkphepuddvvddrleelrdekvd
+ druddtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehruhhstghurhesrhhushhsvghllhdr
+ tggtnecuvehluhhsthgvrhfuihiivgeptd
+X-ME-Proxy: <xmx:EASkXdfQMqUSdmYKmwBwAfhpmP_naNV1I89nm7lcrw8EJn_vq8nx9w>
+ <xmx:EASkXdAAIfzUlIHoaTk02JY_j7S3FSIp1CpeWAA1U-YFTuNC_VpM3A>
+ <xmx:EASkXYRi7b5yyhS58D2qJ9wprbzfJNfX5e6C61RPU468t2b6qUJcXg>
+ <xmx:EASkXQL-wfbkKSc-6t2uG3AUF3Ea22FldJl_iVGkJEDe2gFAJ_rirA>
+Received: from crackle.ozlabs.ibm.com (unknown [122.99.82.10])
+ by mail.messagingengine.com (Postfix) with ESMTPA id AFD7B80065;
+ Mon, 14 Oct 2019 01:13:49 -0400 (EDT)
+From: Russell Currey <ruscur@russell.cc>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v4 2/4] powerpc/kprobes: Mark newly allocated probes as RO
+Date: Mon, 14 Oct 2019 16:13:18 +1100
+Message-Id: <20191014051320.158682-3-ruscur@russell.cc>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20191014051320.158682-1-ruscur@russell.cc>
+References: <20191014051320.158682-1-ruscur@russell.cc>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="8N0TQpGUCeEQshoq"
-Content-Disposition: inline
-In-Reply-To: <1570843519-8696-3-git-send-email-linuxram@us.ibm.com>
-User-Agent: Mutt/1.12.1 (2019-06-15)
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,79 +101,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: andmike@us.ibm.com, sukadev@linux.vnet.ibm.com, mdroth@linux.vnet.ibm.com,
- b.zolnierkie@samsung.com, jasowang@redhat.com, aik@linux.ibm.com,
- linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
- iommu@lists.linux-foundation.org, paul.burton@mips.com,
- m.szyprowski@samsung.com, linuxppc-dev@lists.ozlabs.org, hch@lst.de,
- robin.murphy@arm.com
+Cc: ajd@linux.ibm.com, kernel-hardening@lists.openwall.com, npiggin@gmail.com,
+ joel@jms.id.au, Russell Currey <ruscur@russell.cc>, dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+With CONFIG_STRICT_KERNEL_RWX=y and CONFIG_KPROBES=y, there will be one
+W+X page at boot by default.  This can be tested with
+CONFIG_PPC_PTDUMP=y and CONFIG_PPC_DEBUG_WX=y set, and checking the
+kernel log during boot.
 
---8N0TQpGUCeEQshoq
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+powerpc doesn't implement its own alloc() for kprobes like other
+architectures do, but we couldn't immediately mark RO anyway since we do
+a memcpy to the page we allocate later.  After that, nothing should be
+allowed to modify the page, and write permissions are removed well
+before the kprobe is armed.
 
-On Fri, Oct 11, 2019 at 06:25:19PM -0700, Ram Pai wrote:
-> From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
->=20
-> Normally, virtio enables DMA API with VIRTIO_F_IOMMU_PLATFORM, which must
-> be set by both device and guest driver. However, as a hack, when DMA API
-> returns physical addresses, guest driver can use the DMA API; even though
-> device does not set VIRTIO_F_IOMMU_PLATFORM and just uses physical
-> addresses.
->=20
-> Doing this works-around POWER secure guests for which only the bounce
-> buffer is accessible to the device, but which don't set
-> VIRTIO_F_IOMMU_PLATFORM due to a set of hypervisor and architectural bugs.
-> To guard against platform changes, breaking any of these assumptions down
-> the road, we check at probe time and fail if that's not the case.
->=20
-> cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> cc: David Gibson <david@gibson.dropbear.id.au>
-> cc: Michael Ellerman <mpe@ellerman.id.au>
-> cc: Paul Mackerras <paulus@ozlabs.org>
-> cc: Michael Roth <mdroth@linux.vnet.ibm.com>
-> cc: Alexey Kardashevskiy <aik@linux.ibm.com>
-> cc: Jason Wang <jasowang@redhat.com>
-> cc: Christoph Hellwig <hch@lst.de>
-> Suggested-by: Michael S. Tsirkin <mst@redhat.com>
-> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+Thus mark newly allocated probes as read-only once it's safe to do so.
 
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+Signed-off-by: Russell Currey <ruscur@russell.cc>
+---
+ arch/powerpc/kernel/kprobes.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-I don't know that this is the most elegant solution possible.  But
-it's simple, gets the job done and pretty unlikely to cause mysterious
-breakage down the road.
+diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
+index 2d27ec4feee4..2610496de7c7 100644
+--- a/arch/powerpc/kernel/kprobes.c
++++ b/arch/powerpc/kernel/kprobes.c
+@@ -24,6 +24,7 @@
+ #include <asm/sstep.h>
+ #include <asm/sections.h>
+ #include <linux/uaccess.h>
++#include <linux/set_memory.h>
+ 
+ DEFINE_PER_CPU(struct kprobe *, current_kprobe) = NULL;
+ DEFINE_PER_CPU(struct kprobe_ctlblk, kprobe_ctlblk);
+@@ -131,6 +132,8 @@ int arch_prepare_kprobe(struct kprobe *p)
+ 			(unsigned long)p->ainsn.insn + sizeof(kprobe_opcode_t));
+ 	}
+ 
++	set_memory_ro((unsigned long)p->ainsn.insn, 1);
++
+ 	p->ainsn.boostable = 0;
+ 	return ret;
+ }
+-- 
+2.23.0
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---8N0TQpGUCeEQshoq
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAl2j/xMACgkQbDjKyiDZ
-s5KZJw/7BRxGaRXVs4GwonOJMnJpzq+0zo4Rex4IzZu98y/3bSw1XB+cNfhAwGdo
-00Qpp0+AGxMNUmcXy+ilSprBokq1gDBh1hbq2ap/1yoK/fcW2L5ZuyoT5m9d1AMR
-4sExuhtQpr7ZMAHHC5Q99jOi44i4BNixlNI62OwtYwOoSvGz1dar6PthN/D6zZ1N
-k5ViBzqOY4CIoK/Onqlf47P0ZbgP2XP7rfri0m+PbY0ipOw7E+8zMl4NMIu+dGeU
-RQm5e1v8wX/5MUS50gAL+lW/QUxsneaCs3WLCXvHqSJL+shLJnV8Bnomgw+zsBCb
-lkLKb+MqdRLt+OMjmIzAtJ2Sza6CU5cpvOAWmIeTlxiwEdD5qrVzAryhFU204vwP
-J4ovQSOyR4geqNF3uzTvvVhdme9dNLHkwp7h9PnFwVQEYK6/BlUXxi6WXQXbcthz
-PDIj5YdYOwnHLsAv0uaEqRb8/n8ULgyLMfMI4EJOomafMlXF+VD0UPsOEC5glAJ4
-TQ6Q0MMzMJ48BhOhwoAZDEYCJYPSXDaKKxEPgvr+uY+VeGTMuMUC8W8VyKFfEZr2
-jKpt2P6u/9cPgZWI02Ve5xbRDHJ38cW74JxnTK21zEiF5m14JTYxU6lTTyPQZhFe
-DWvkWwsvDz0JvMt8z5DU+FZZbYAnax5XWnEqIl2urw/ChF6DHOY=
-=kf/I
------END PGP SIGNATURE-----
-
---8N0TQpGUCeEQshoq--
