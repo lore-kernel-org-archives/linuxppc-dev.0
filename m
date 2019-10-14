@@ -2,98 +2,86 @@ Return-Path: <SRS0=PY1v=YH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-14.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5F4DC4360C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Oct 2019 02:38:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 74B66C4360C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Oct 2019 02:53:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 55A1020815
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Oct 2019 02:38:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id BD9002067B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Oct 2019 02:53:23 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="KTjjCxHh";
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="w/l9fZx3"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 55A1020815
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Z/ZH4sY6"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BD9002067B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46s2nC55LqzDqPy
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Oct 2019 13:38:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46s35s51tGzDqTC
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Oct 2019 13:53:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=russell.cc
- (client-ip=64.147.123.24; helo=wout1-smtp.messagingengine.com;
- envelope-from=ruscur@russell.cc; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::243; helo=mail-oi1-x243.google.com;
+ envelope-from=natechancellor@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=russell.cc
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=russell.cc header.i=@russell.cc header.b="KTjjCxHh"; 
- dkim=pass (2048-bit key;
- unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.b="w/l9fZx3"; dkim-atps=neutral
-Received: from wout1-smtp.messagingengine.com (wout1-smtp.messagingengine.com
- [64.147.123.24])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="Z/ZH4sY6"; 
+ dkim-atps=neutral
+Received: from mail-oi1-x243.google.com (mail-oi1-x243.google.com
+ [IPv6:2607:f8b0:4864:20::243])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46s2l36zSyzDqPy
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Oct 2019 13:37:03 +1100 (AEDT)
-Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
- by mailout.west.internal (Postfix) with ESMTP id E472F2FD;
- Sun, 13 Oct 2019 22:36:59 -0400 (EDT)
-Received: from mailfrontend2 ([10.202.2.163])
- by compute6.internal (MEProxy); Sun, 13 Oct 2019 22:37:00 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=
- message-id:subject:from:to:cc:date:in-reply-to:references
- :content-type:mime-version:content-transfer-encoding; s=fm3; bh=
- t5nuBRtp7xovMqn6s3e4o50CTo3WgPcK1r+jGdzfIWY=; b=KTjjCxHhV9bZvhYh
- lsUYOtPOmwGm/i0rbIJaFuQCBMeuakbVGChYy35uuOZmi/v8qUqY3wF+Iqa63wnT
- kov5gH0uSrPF9C3ZF29v6QIZ+EXog8nuMCtwZHWkJBq2Tc8cdOljRGXMXMBVBKaf
- Ws1te24d49c0rIM1FSlghMVFKvXLRs7sWAu8P9/+NaWKt9GY1Vv2GjIybPXdNmxo
- 0i7NDSkvE7gToGQ+nx5ApY5qbYgqdgTgg5yDCRsWp2RGVfxNgo3itFzUfJaib9fm
- Yz88SdRgIP8rvdCekd5X4fqqQATMjzdfDY6nWZ57BtoGRKH6S+KDKRj2njl+4xJL
- rdq0tA==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
- messagingengine.com; h=cc:content-transfer-encoding:content-type
- :date:from:in-reply-to:message-id:mime-version:references
- :subject:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
- :x-sasl-enc; s=fm1; bh=t5nuBRtp7xovMqn6s3e4o50CTo3WgPcK1r+jGdzfI
- WY=; b=w/l9fZx3nYXf0vItp4gEBkplPbh0yN0vSVsCqUpcbnkUecaKO99+dKX8/
- gOqrHL9wqdKSIPxBslx0ydalU6hEp5DuGcmpypyHT3txy1eyCsb0+3aWjZTWsC3a
- EyV7o6H5/ToPiH6MLoXniP+cRrvTl3pTpheODQ58yOYAYk2WsdOU2J+BQvGDFATm
- s9uj9vR1/PB9xNS6iy7mtyyfmYyvo/a26QuZ0y7aJi5Rcv3ZGADUiZ6JQjvUyfHq
- OC/bpNG6esb1OxHSVFKs2hec95W9UQTvwGYEeGRCth4SJkREJXRFFWscSLFubxFW
- vix02+32ZCCqgbTvbl3nj1iypbgpA==
-X-ME-Sender: <xms:St-jXd11y-pxb697bxI3XFxfjA4Arbk0IZY1wX9lsjaDzsrTCtlafQ>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedufedrjedtgdeiudcutefuodetggdotefrodftvf
- curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
- uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenfg
- hrlhcuvffnffculdeftddmnecujfgurhepkffuhffvffgjfhgtfggggfesthekredttder
- jeenucfhrhhomheptfhushhsvghllhcuvehurhhrvgihuceorhhushgtuhhrsehruhhssh
- gvlhhlrdgttgeqnecukfhppeduvddvrdelledrkedvrddutdenucfrrghrrghmpehmrghi
- lhhfrhhomheprhhushgtuhhrsehruhhsshgvlhhlrdgttgenucevlhhushhtvghrufhiii
- gvpedt
-X-ME-Proxy: <xmx:St-jXTqn_PayRUWbdqjhaLkjoNTLYWuGPjcWj_dVBU05A6Px9Xio9A>
- <xmx:St-jXXTTlBmH8q3h3ICTmSaVWtbCe8kWeJShZMFAe503Mby9VAGU7g>
- <xmx:St-jXTqorU3A1j0KWnFjfuHGg-huAyDXVcoejrKiAOmw9h5ivCfFfw>
- <xmx:S9-jXXmb8nLcmP8xKqIb2eH_Ofz_IDa5-2R94Y52yVFMuUt34MRq_w>
-Received: from crackle.ozlabs.ibm.com (unknown [122.99.82.10])
- by mail.messagingengine.com (Postfix) with ESMTPA id A7294D60057;
- Sun, 13 Oct 2019 22:36:55 -0400 (EDT)
-Message-ID: <764cfbeb7233e3532a89820ff7cb242531aa63ea.camel@russell.cc>
-Subject: Re: [PATCH v3 3/4] powerpc/mm/ptdump: debugfs handler for W+X
- checks at runtime
-From: Russell Currey <ruscur@russell.cc>
-To: Christophe Leroy <christophe.leroy@c-s.fr>, linuxppc-dev@lists.ozlabs.org
-Date: Mon, 14 Oct 2019 13:36:52 +1100
-In-Reply-To: <665bacec-036f-f392-7e0f-95a57b0a7d22@c-s.fr>
-References: <20191004075050.73327-1-ruscur@russell.cc>
- <20191004075050.73327-4-ruscur@russell.cc>
- <665bacec-036f-f392-7e0f-95a57b0a7d22@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.34.1 
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46s33c47Y7zDqS7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Oct 2019 13:51:24 +1100 (AEDT)
+Received: by mail-oi1-x243.google.com with SMTP id o205so12535302oib.12
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Oct 2019 19:51:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=CHmUbEEX69AqhdbGgT5mtRK+KzbNgJpahv1dD9kcoow=;
+ b=Z/ZH4sY6OkTSRGyGfULWwz0nnTcjjTY56RwSiEHPADnMR79o16ZZz3J5ejCu8rRyK2
+ FiHIst1HatvX4z5BXeayrSKv8Q6cNiijNfhV9FLC5OtlqooeUR7D/A3thk5TA3jSwrnC
+ j0HS+iCyjhkF1zKT9g+0AOqi7iQZYr1o2uh56ZwO4lqQV2jLdJENoGxC+YWxV7WrSTY0
+ B9U2K1ktlFDigtjPkqQXYfXX1i/LAxzay8brzaUSbSYVA78l4KAFgg30K6H9k962wbU4
+ FMW2agc+hE9gLdzVWOi5kCL2T/ZMrJLCSZS+5o4l2ajknnUQbSnpcubxAS21upX99Nzy
+ 1eeQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=CHmUbEEX69AqhdbGgT5mtRK+KzbNgJpahv1dD9kcoow=;
+ b=OEa7TPx0VFuVKhFK7jgXBnoeFwCADjAX4KmTSHZeH7M6hkMzAFqnNUpauieoALsSsB
+ rytrGnxsAJWWO5wcJTcNA+9ZbQETg5hRStPi3GmCDpYm69qzv5k7aANJQyK1v3rd500z
+ CzsA8zPrtHPpxfgbO0adFajnZAhMmnAe4/Vwc1twmZmYrDTOwvXiBAqCXyiaolRAGxVr
+ dQNzPk8Pj9KjDGC9RX5zLsETFE7uiCKbgjkW01wVNd18f4+4wEDykjsE0gbowcTib1Yt
+ 3nt8WdwmkOt5gcvhE2QBCRAV9FQ+6uAr8omL9onrLuMvjkTxhf3ViN75szBcEH/T6bNq
+ heCQ==
+X-Gm-Message-State: APjAAAVPLe6mIivO3AnLxCzWx1W1mRCy/ERG2PVz7t6RVf/z8nlu6lOF
+ or90w5EougHisy8JrkPo4Fc=
+X-Google-Smtp-Source: APXvYqw6PeVHbSHxMK9QXZUVR43r2OehkYWUjPEpGrGg9Kg1EWZ8tl2/DaYxeecULNYz5IXa4sZ0vA==
+X-Received: by 2002:aca:211a:: with SMTP id 26mr21810859oiz.122.1571021481959; 
+ Sun, 13 Oct 2019 19:51:21 -0700 (PDT)
+Received: from localhost.localdomain ([2604:1380:4111:8b00::1])
+ by smtp.gmail.com with ESMTPSA id 11sm5612491otg.62.2019.10.13.19.51.21
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Sun, 13 Oct 2019 19:51:21 -0700 (PDT)
+From: Nathan Chancellor <natechancellor@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH v4 1/3] powerpc: Don't add -mabi= flags when building with
+ Clang
+Date: Sun, 13 Oct 2019 19:50:59 -0700
+Message-Id: <20191014025101.18567-2-natechancellor@gmail.com>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20191014025101.18567-1-natechancellor@gmail.com>
+References: <20190911182049.77853-1-natechancellor@gmail.com>
+ <20191014025101.18567-1-natechancellor@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -107,100 +95,122 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ajd@linux.ibm.com, npiggin@gmail.com, joel@jms.id.au, rashmica.g@gmail.com,
- dja@axtens.net
+Cc: Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org,
+ clang-built-linux@googlegroups.com,
+ Nathan Chancellor <natechancellor@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2019-10-08 at 08:21 +0200, Christophe Leroy wrote:
-> 
-> Le 04/10/2019 à 09:50, Russell Currey a écrit :
-> > Very rudimentary, just
-> > 
-> > 	echo 1 > [debugfs]/check_wx_pages
-> > 
-> > and check the kernel log.  Useful for testing strict module RWX.
-> > 
-> > Also fixed a typo.
-> > 
-> > Signed-off-by: Russell Currey <ruscur@russell.cc>
-> > ---
-> >   arch/powerpc/mm/ptdump/ptdump.c | 31 +++++++++++++++++++++++++---
-> > ---
-> >   1 file changed, 25 insertions(+), 6 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/mm/ptdump/ptdump.c
-> > b/arch/powerpc/mm/ptdump/ptdump.c
-> > index 2f9ddc29c535..0547cd9f264e 100644
-> > --- a/arch/powerpc/mm/ptdump/ptdump.c
-> > +++ b/arch/powerpc/mm/ptdump/ptdump.c
-> > @@ -4,7 +4,7 @@
-> >    *
-> >    * This traverses the kernel pagetables and dumps the
-> >    * information about the used sections of memory to
-> > - * /sys/kernel/debug/kernel_pagetables.
-> > + * /sys/kernel/debug/kernel_page_tables.
-> >    *
-> >    * Derived from the arm64 implementation:
-> >    * Copyright (c) 2014, The Linux Foundation, Laura Abbott.
-> > @@ -409,16 +409,35 @@ void ptdump_check_wx(void)
-> >   	else
-> >   		pr_info("Checked W+X mappings: passed, no W+X pages
-> > found\n");
-> >   }
-> > +
-> > +static int check_wx_debugfs_set(void *data, u64 val)
-> > +{
-> > +	if (val != 1ULL)
-> > +		return -EINVAL;
-> > +
-> > +	ptdump_check_wx();
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +DEFINE_SIMPLE_ATTRIBUTE(check_wx_fops, NULL, check_wx_debugfs_set,
-> > "%llu\n");
-> >   #endif
-> >   
-> >   static int ptdump_init(void)
-> >   {
-> > -	struct dentry *debugfs_file;
-> > -
-> >   	populate_markers();
-> >   	build_pgtable_complete_mask();
-> > -	debugfs_file = debugfs_create_file("kernel_page_tables", 0400,
-> > NULL,
-> > -			NULL, &ptdump_fops);
-> > -	return debugfs_file ? 0 : -ENOMEM;
-> > +
-> > +	if (!debugfs_create_file("kernel_page_tables", 0400, NULL,
-> > +				 NULL, &ptdump_fops))
-> > +		return -ENOMEM;
-> > +
-> > +#ifdef CONFIG_PPC_DEBUG_WX
-> > +	if (!debugfs_create_file("check_wx_pages", 0200, NULL,
-> > +				 NULL, &check_wx_fops))
-> > +		return -ENOMEM;
-> > +#endif
-> 
-> The above seems to be completely independant from everything else in 
-> ptdump_init().
-> 
-> Could we avoid this #ifdef block inside ptdump_init() by creating a 
-> selfstanding device_initcall() for that through a function called 
-> ptdump_check_wx_init() defined inside the same #ifdef block as 
-> ptdump_check_wx() ?
+When building pseries_defconfig, building vdso32 errors out:
 
-Yes that would be nicer, thanks
+  error: unknown target ABI 'elfv1'
 
-> 
-> Christophe
-> 
-> > +
-> > +	return 0;
-> >   }
-> >   device_initcall(ptdump_init);
-> > 
+This happens because -m32 in clang changes the target to 32-bit,
+which does not allow the ABI to be changed, as the setABI virtual
+function is not overridden:
+
+https://github.com/llvm/llvm-project/blob/llvmorg-9.0.0/clang/include/clang/Basic/TargetInfo.h#L1073-L1078
+
+https://github.com/llvm/llvm-project/blob/llvmorg-9.0.0/clang/lib/Basic/Targets/PPC.h#L327-L365
+
+Commit 4dc831aa8813 ("powerpc: Fix compiling a BE kernel with a
+powerpc64le toolchain") added these flags to fix building big endian
+kernels with a little endian GCC.
+
+Clang doesn't need -mabi because the target triple controls the default
+value. -mlittle-endian and -mbig-endian manipulate the triple into
+either powerpc64-* or powerpc64le-*, which properly sets the default
+ABI:
+
+https://github.com/llvm/llvm-project/blob/llvmorg-9.0.0/clang/lib/Driver/Driver.cpp#L450-L463
+
+https://github.com/llvm/llvm-project/blob/llvmorg-9.0.0/llvm/lib/Support/Triple.cpp#L1432-L1516
+
+https://github.com/llvm/llvm-project/blob/llvmorg-9.0.0/clang/lib/Basic/Targets/PPC.h#L377-L383
+
+Adding a debug print out in the PPC64TargetInfo constructor after line
+383 above shows this:
+
+$ echo | ./clang -E --target=powerpc64-linux -mbig-endian -o /dev/null -
+Default ABI: elfv1
+
+$ echo | ./clang -E --target=powerpc64-linux -mlittle-endian -o /dev/null -
+Default ABI: elfv2
+
+$ echo | ./clang -E --target=powerpc64le-linux -mbig-endian -o /dev/null -
+Default ABI: elfv1
+
+$ echo | ./clang -E --target=powerpc64le-linux -mlittle-endian -o /dev/null -
+Default ABI: elfv2
+
+Don't specify -mabi when building with clang to avoid the build error
+with -m32 and not change any code generation.
+
+-mcall-aixdesc is not an implemented flag in clang so it can be
+safely excluded as well, see commit 238abecde8ad ("powerpc: Don't
+use gcc specific options on clang").
+
+pseries_defconfig successfully builds after this patch and
+powernv_defconfig and ppc44x_defconfig don't regress.
+
+Link: https://github.com/ClangBuiltLinux/linux/issues/240
+Reviewed-by: Daniel Axtens <dja@axtens.net>
+Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
+---
+
+v1 -> v2:
+
+* Improve commit message
+
+v2 -> v3:
+
+* Rebase and merge into a single series.
+
+v3 -> v4:
+
+* Rebase on v5.4-rc3.
+
+* Update links to point to llvmorg-9.0.0 instead of llvmorg-9.0.0-rc2.
+
+ arch/powerpc/Makefile | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 83522c9fc7b6..37ac731a556b 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -91,11 +91,13 @@ MULTIPLEWORD	:= -mmultiple
+ endif
+ 
+ ifdef CONFIG_PPC64
++ifndef CONFIG_CC_IS_CLANG
+ cflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mabi=elfv1)
+ cflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mcall-aixdesc)
+ aflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mabi=elfv1)
+ aflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mabi=elfv2
+ endif
++endif
+ 
+ ifndef CONFIG_CC_IS_CLANG
+   cflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mno-strict-align
+@@ -141,6 +143,7 @@ endif
+ endif
+ 
+ CFLAGS-$(CONFIG_PPC64)	:= $(call cc-option,-mtraceback=no)
++ifndef CONFIG_CC_IS_CLANG
+ ifdef CONFIG_CPU_LITTLE_ENDIAN
+ CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv2,$(call cc-option,-mcall-aixdesc))
+ AFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv2)
+@@ -149,6 +152,7 @@ CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv1)
+ CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mcall-aixdesc)
+ AFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv1)
+ endif
++endif
+ CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mcmodel=medium,$(call cc-option,-mminimal-toc))
+ CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mno-pointers-to-nested-functions)
+ 
+-- 
+2.23.0
 
