@@ -2,27 +2,26 @@ Return-Path: <SRS0=PY1v=YH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5888EC47404
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Oct 2019 05:27:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E4A3EC47404
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Oct 2019 05:29:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 04366206A3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Oct 2019 05:27:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 91EAB206A3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Oct 2019 05:29:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="CZcCXK1r";
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="TGyP5rXI"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 04366206A3
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="frWQEcn2";
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="GCW3n7vi"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 91EAB206A3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46s6WW6J1VzDqNG
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Oct 2019 16:27:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46s6Ym31TqzDqN7
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Oct 2019 16:29:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=russell.cc
  (client-ip=64.147.123.25; helo=wout2-smtp.messagingengine.com;
@@ -30,65 +29,61 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=russell.cc header.i=@russell.cc header.b="CZcCXK1r"; 
+ unprotected) header.d=russell.cc header.i=@russell.cc header.b="frWQEcn2"; 
  dkim=pass (2048-bit key;
  unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.b="TGyP5rXI"; dkim-atps=neutral
+ header.b="GCW3n7vi"; dkim-atps=neutral
 Received: from wout2-smtp.messagingengine.com (wout2-smtp.messagingengine.com
  [64.147.123.25])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46s6NM3gqCzDqW9
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46s6NM2CsczDqW5
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Oct 2019 16:21:07 +1100 (AEDT)
 Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
- by mailout.west.internal (Postfix) with ESMTP id 910CB425;
- Mon, 14 Oct 2019 01:13:56 -0400 (EDT)
+ by mailout.west.internal (Postfix) with ESMTP id 574693BA;
+ Mon, 14 Oct 2019 01:13:47 -0400 (EDT)
 Received: from mailfrontend1 ([10.202.2.162])
- by compute6.internal (MEProxy); Mon, 14 Oct 2019 01:13:57 -0400
+ by compute6.internal (MEProxy); Mon, 14 Oct 2019 01:13:47 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=
- from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding; s=fm3; bh=HYGtzzTlMcF3v
- eMN2AqVXMM15POrvmVyLU/o7hZnrc4=; b=CZcCXK1ruQMsWifP+BuWFTDNOwqjK
- cUq+xsM/2hPoT/Ct58QQDMUP/iCo8BqP9wRJkgfbW1q/2w1m2Q0KRPrEUKuBnaIH
- Fann+0zA05uyeaapNBG+Jm6ijffVGkgM7EzEhZXYQDFQgvoD31UOtN7tcz8+P4ov
- NTrXa13DgtietJBIsGZqs3O3HGZ0hH6ZQivPg5nfu3w2l6F58E9Q8aFFKOevmr4Q
- Jd14hwVW8xDQN/R4V1p+bNkifRcd6tUD4tn17p0+8bdxuYS9tVteBef4sgXGvwwd
- /73CT5W/MEBjrdNydVpBZb529Nng7TB++7oEQi7Ss7LAWSMFwy5Ty7MjA==
+ from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding; s=fm3; bh=EhrH61vzh+La+AA9yvD4XTf/Wk
+ RGulZxThOS+PjIlj0=; b=frWQEcn2VPrmJn0HFITZXxTmembBWzfYgE4Nps8uhg
+ ZMLxq/6+vy5hEaZKgDsb+YceZm4A0PEMyQ74AJQ16j54G7D8cW7c9G3hARj+y2Z4
+ 3PSvxLqbz1wh46XGTma5HJEHvyo4yahqwaGBIVSrcvBf/47N82EAg7Wbxygfssbu
+ 5ylrTXIsrcj8C5BNS8k7ohGsc5Uc6dQ5ZkrD5kjJxQR/LVznFE9gBBN2d0gEA+By
+ 5czVd/s4RdxcLeMhQyHZZ+rJLS8w1H+g7WyWoQHO6lFfsO/t6CjKo2Qkm2z6LYdz
+ 3laTx9l8V7Tzq6F6a6KNOqVFYy5ZjSQ3JFMPUa5jgT7Q==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
  messagingengine.com; h=cc:content-transfer-encoding:date:from
- :in-reply-to:message-id:mime-version:references:subject:to
- :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
- fm1; bh=HYGtzzTlMcF3veMN2AqVXMM15POrvmVyLU/o7hZnrc4=; b=TGyP5rXI
- Po4QmiZG+PLIgKoTyopCASlfEGy4ZLWCDv54z0Ycr7GkL8PCW9X8Tdgs41+8ycr1
- YPSjKLe6z76EU07qVvQmf7p9IQqPiAlFAFbCcQ9SwoOY1oeYIlGhsghAcJ2dB/+d
- aRxTUkWW0ApUAyCnT74smhE09TQiPkD950dxRhru2FUosIK3CtoLpGYlRLniDbNL
- y0nmjwGyR/PWmaTHl68sZcsQqwI5lCHUy4MpyrP7psCLkZ7gEbv9hp1/4OwNsQ1A
- IDlleblqqQQcj8kMCGHHuxswL7xuM5Iibd2P/GnQixrEEVfCbJzXhG6es7OY+pwT
- xh7EMMfvBA/Oyw==
-X-ME-Sender: <xms:FASkXVHJs88H8Xol6uokigFp9MYKvYgC1QCLvH4jNKflPZiHA68xDg>
+ :message-id:mime-version:subject:to:x-me-proxy:x-me-proxy
+ :x-me-sender:x-me-sender:x-sasl-enc; s=fm1; bh=EhrH61vzh+La+AA9y
+ vD4XTf/WkRGulZxThOS+PjIlj0=; b=GCW3n7vitd7TCZX+i0M1TjDfbCzz2957G
+ M1vixDQY7i6X28p4axE2EXeFa/a5Zqco3oVvRJgZJU5tsWKVAwEqDNRICnO//GCl
+ 9I9FWNO5HIfcbXDQZE0DHn7tKs7P9jUb8im+E9Da0EqkRYbOnMI0eUuWiRS3aSdI
+ 65tdjObHkDjy7uF8TBe0qQa0AGpRfofLv/dcuQZxFkb1H+8hL/tusvhtfHxfA8hV
+ a28DU4tbKmje9cfAviv+SC1IIx9iU6xQf33l7Dhqb1ue5wVgiG3/NNZjXmskxTEX
+ emPAlyBY5qdkGXFqDduZhhSZVXYInJwSwfiQ+/417JCtObDXQOECg==
+X-ME-Sender: <xms:CQSkXfKXcWaFfnUwPuTEY14HyfxWuiOEk--ofyNEasge29dZr8lFgw>
 X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedufedrjedtgdelgecutefuodetggdotefrodftvf
  curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
- uegrihhlohhuthemuceftddtnecufghrlhcuvffnffculdeftddmnecujfgurhephffvuf
- ffkffojghfggfgsedtkeertdertddtnecuhfhrohhmpeftuhhsshgvlhhlucevuhhrrhgv
- hicuoehruhhstghurhesrhhushhsvghllhdrtggtqeenucfkphepuddvvddrleelrdekvd
- druddtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehruhhstghurhesrhhushhsvghllhdr
- tggtnecuvehluhhsthgvrhfuihiivgepvd
-X-ME-Proxy: <xmx:FASkXSCUuL3XrcCWg_LVbzthcsbonkTFSWBEvXqjR_cmRvH7IJhZfA>
- <xmx:FASkXZXh2UzElft5w8B9TctxVgywhzs0rYBmZNPapCLVAWRADKcEYQ>
- <xmx:FASkXZxvdm0gIkwC2GlfXonHzMcNxGmNpFTIcuVnyfhUYyPSptNdGw>
- <xmx:FASkXXTx8vWwfyRgrPhQtvcBEcl2fctmV-i9Ya-Kb8pYr3ZuUfgK5Q>
+ uegrihhlohhuthemuceftddtnecufghrlhcuvffnffculdduhedmnecujfgurhephffvuf
+ ffkffoggfgsedtkeertdertddtnecuhfhrohhmpeftuhhsshgvlhhlucevuhhrrhgvhicu
+ oehruhhstghurhesrhhushhsvghllhdrtggtqeenucffohhmrghinhepohiilhgrsghsrd
+ horhhgnecukfhppeduvddvrdelledrkedvrddutdenucfrrghrrghmpehmrghilhhfrhho
+ mheprhhushgtuhhrsehruhhsshgvlhhlrdgttgenucevlhhushhtvghrufhiiigvpedt
+X-ME-Proxy: <xmx:CQSkXTSfiqZeV9Y5AIkJqcAionKagvnL9Kyxaxe004WL28NiezQHnA>
+ <xmx:CQSkXfqK0b2vJjIWYWsYNiRSNflo33t-VSOEOP0B0qq7KIE0VS4gDQ>
+ <xmx:CQSkXQqJu2KiZXKlg520ozGt0ka8VkSPQttqik6XE0dAwya0qQmHQg>
+ <xmx:CgSkXZlELP-5Yo_YwyuERfKYQMyhkzoIV0JxiS5a9q1A_L4k7qJO3g>
 Received: from crackle.ozlabs.ibm.com (unknown [122.99.82.10])
- by mail.messagingengine.com (Postfix) with ESMTPA id 2434E80061;
- Mon, 14 Oct 2019 01:13:52 -0400 (EDT)
+ by mail.messagingengine.com (Postfix) with ESMTPA id BE26D80061;
+ Mon, 14 Oct 2019 01:13:42 -0400 (EDT)
 From: Russell Currey <ruscur@russell.cc>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 3/4] powerpc/mm/ptdump: debugfs handler for W+X checks at
- runtime
-Date: Mon, 14 Oct 2019 16:13:19 +1100
-Message-Id: <20191014051320.158682-4-ruscur@russell.cc>
+Subject: [PATCH v4 0/4] Implement STRICT_MODULE_RWX for powerpc
+Date: Mon, 14 Oct 2019 16:13:16 +1100
+Message-Id: <20191014051320.158682-1-ruscur@russell.cc>
 X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20191014051320.158682-1-ruscur@russell.cc>
-References: <20191014051320.158682-1-ruscur@russell.cc>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -108,85 +103,33 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Very rudimentary, just
+v3 cover letter here:
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2019-October/198023.html
 
-	echo 1 > [debugfs]/check_wx_pages
+Only minimal changes since then:
 
-and check the kernel log.  Useful for testing strict module RWX.
+- patch 2/4 commit message update thanks to Andrew Donnellan
+- patch 3/4 made neater thanks to Christophe Leroy
+- patch 3/4 updated Kconfig description thanks to Daniel Axtens
 
-Updated the Kconfig entry to reflect this.
+Russell Currey (4):
+  powerpc/mm: Implement set_memory() routines
+  powerpc/kprobes: Mark newly allocated probes as RO
+  powerpc/mm/ptdump: debugfs handler for W+X checks at runtime
+  powerpc: Enable STRICT_MODULE_RWX
 
-Also fixed a typo.
+ arch/powerpc/Kconfig                   |  2 +
+ arch/powerpc/Kconfig.debug             |  6 ++-
+ arch/powerpc/configs/skiroot_defconfig |  1 +
+ arch/powerpc/include/asm/set_memory.h  | 32 ++++++++++++++
+ arch/powerpc/kernel/kprobes.c          |  3 ++
+ arch/powerpc/mm/Makefile               |  1 +
+ arch/powerpc/mm/pageattr.c             | 60 ++++++++++++++++++++++++++
+ arch/powerpc/mm/ptdump/ptdump.c        | 21 ++++++++-
+ 8 files changed, 123 insertions(+), 3 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/set_memory.h
+ create mode 100644 arch/powerpc/mm/pageattr.c
 
-Signed-off-by: Russell Currey <ruscur@russell.cc>
----
- arch/powerpc/Kconfig.debug      |  6 ++++--
- arch/powerpc/mm/ptdump/ptdump.c | 21 ++++++++++++++++++++-
- 2 files changed, 24 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-index c59920920ddc..dcfe83d4c211 100644
---- a/arch/powerpc/Kconfig.debug
-+++ b/arch/powerpc/Kconfig.debug
-@@ -370,7 +370,7 @@ config PPC_PTDUMP
- 	  If you are unsure, say N.
- 
- config PPC_DEBUG_WX
--	bool "Warn on W+X mappings at boot"
-+	bool "Warn on W+X mappings at boot & enable manual checks at runtime"
- 	depends on PPC_PTDUMP
- 	help
- 	  Generate a warning if any W+X mappings are found at boot.
-@@ -384,7 +384,9 @@ config PPC_DEBUG_WX
- 	  of other unfixed kernel bugs easier.
- 
- 	  There is no runtime or memory usage effect of this option
--	  once the kernel has booted up - it's a one time check.
-+	  once the kernel has booted up, it only automatically checks once.
-+
-+	  Enables the "check_wx_pages" debugfs entry for checking at runtime.
- 
- 	  If in doubt, say "Y".
- 
-diff --git a/arch/powerpc/mm/ptdump/ptdump.c b/arch/powerpc/mm/ptdump/ptdump.c
-index 2f9ddc29c535..b6cba29ae4a0 100644
---- a/arch/powerpc/mm/ptdump/ptdump.c
-+++ b/arch/powerpc/mm/ptdump/ptdump.c
-@@ -4,7 +4,7 @@
-  *
-  * This traverses the kernel pagetables and dumps the
-  * information about the used sections of memory to
-- * /sys/kernel/debug/kernel_pagetables.
-+ * /sys/kernel/debug/kernel_page_tables.
-  *
-  * Derived from the arm64 implementation:
-  * Copyright (c) 2014, The Linux Foundation, Laura Abbott.
-@@ -409,6 +409,25 @@ void ptdump_check_wx(void)
- 	else
- 		pr_info("Checked W+X mappings: passed, no W+X pages found\n");
- }
-+
-+static int check_wx_debugfs_set(void *data, u64 val)
-+{
-+	if (val != 1ULL)
-+		return -EINVAL;
-+
-+	ptdump_check_wx();
-+
-+	return 0;
-+}
-+
-+DEFINE_SIMPLE_ATTRIBUTE(check_wx_fops, NULL, check_wx_debugfs_set, "%llu\n");
-+
-+static int ptdump_check_wx_init(void)
-+{
-+	return debugfs_create_file("check_wx_pages", 0200, NULL,
-+				   NULL, &check_wx_fops) ? 0 : -ENOMEM;
-+}
-+device_initcall(ptdump_check_wx_init);
- #endif
- 
- static int ptdump_init(void)
 -- 
 2.23.0
 
