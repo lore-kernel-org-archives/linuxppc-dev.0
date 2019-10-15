@@ -2,51 +2,54 @@ Return-Path: <SRS0=Pmlw=YI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 427F6ECE588
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Oct 2019 10:47:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E08AECE588
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Oct 2019 11:09:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ED50E2089C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Oct 2019 10:47:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ED50E2089C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id C26C8217F9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Oct 2019 11:09:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C26C8217F9
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46ssZh5cNszDr2d
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Oct 2019 21:47:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46st3s6VP6zDqgj
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Oct 2019 22:09:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=softfail (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=mhocko@kernel.org;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.110.172; helo=foss.arm.com;
+ envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46ssX63C3HzDqyf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Oct 2019 21:45:26 +1100 (AEDT)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id D65AFB2DA;
- Tue, 15 Oct 2019 10:45:22 +0000 (UTC)
-Date: Tue, 15 Oct 2019 12:45:21 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: Anshuman Khandual <anshuman.khandual@arm.com>
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+ by lists.ozlabs.org (Postfix) with ESMTP id 46st1K4zs1zDqWK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Oct 2019 22:07:16 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0FCDE28;
+ Tue, 15 Oct 2019 04:07:14 -0700 (PDT)
+Received: from [10.162.42.142] (p8cg001049571a15.blr.arm.com [10.162.42.142])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id
+ D3D3B3F68E; Tue, 15 Oct 2019 04:07:00 -0700 (PDT)
 Subject: Re: [PATCH V6 1/2] mm/page_alloc: Make alloc_gigantic_page()
  available for general use
-Message-ID: <20191015104521.GY317@dhcp22.suse.cz>
+To: Michal Hocko <mhocko@kernel.org>
 References: <1571131302-32290-1-git-send-email-anshuman.khandual@arm.com>
  <1571131302-32290-2-git-send-email-anshuman.khandual@arm.com>
+ <20191015104521.GY317@dhcp22.suse.cz>
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+Message-ID: <2d4e7b28-67bf-baf3-b8a0-a5b3a58e3b31@arm.com>
+Date: Tue, 15 Oct 2019 16:37:27 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1571131302-32290-2-git-send-email-anshuman.khandual@arm.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20191015104521.GY317@dhcp22.suse.cz>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,34 +93,37 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue 15-10-19 14:51:41, Anshuman Khandual wrote:
-[...]
-> +/**
-> + * alloc_gigantic_page_order() -- tries to allocate given order of pages
-> + * @order:	allocation order (greater than MAX_ORDER)
-> + * @gfp_mask:	GFP mask to use during compaction
-> + * @nid:	allocation node
-> + * @nodemask:	allocation nodemask
-> + *
-> + * This routine is an wrapper around alloc_contig_range() which scans over
-> + * all zones on an applicable zonelist to find a contiguous pfn range which
-> + * can the be allocated with alloc_contig_range(). This routine is intended
-> + * to be used for allocations greater than MAX_ORDER.
-> + *
-> + * Return: page on success or NULL on failure. On success a memory block
-> + * of 'order' starting with 'page' has been allocated successfully. Memory
-> + * allocated here needs to be freed with free_contig_range().
-> + */
-> +struct page *alloc_gigantic_page_order(unsigned int order, gfp_t gfp_mask,
-> +				       int nid, nodemask_t *nodemask)
 
-One of the objections when Mike has proposed a similar thing last year
-was that the interface shouldn't be order bases
-http://lkml.kernel.org/r/20180423000943.GO17484@dhcp22.suse.cz
 
-Order based API makes sense for the buddy allocator but why should we
-restrict sizes like that for an allocator that is capable to allocate
-arbitrary page sized requests?
--- 
-Michal Hocko
-SUSE Labs
+On 10/15/2019 04:15 PM, Michal Hocko wrote:
+> On Tue 15-10-19 14:51:41, Anshuman Khandual wrote:
+> [...]
+>> +/**
+>> + * alloc_gigantic_page_order() -- tries to allocate given order of pages
+>> + * @order:	allocation order (greater than MAX_ORDER)
+>> + * @gfp_mask:	GFP mask to use during compaction
+>> + * @nid:	allocation node
+>> + * @nodemask:	allocation nodemask
+>> + *
+>> + * This routine is an wrapper around alloc_contig_range() which scans over
+>> + * all zones on an applicable zonelist to find a contiguous pfn range which
+>> + * can the be allocated with alloc_contig_range(). This routine is intended
+>> + * to be used for allocations greater than MAX_ORDER.
+>> + *
+>> + * Return: page on success or NULL on failure. On success a memory block
+>> + * of 'order' starting with 'page' has been allocated successfully. Memory
+>> + * allocated here needs to be freed with free_contig_range().
+>> + */
+>> +struct page *alloc_gigantic_page_order(unsigned int order, gfp_t gfp_mask,
+>> +				       int nid, nodemask_t *nodemask)
+> 
+> One of the objections when Mike has proposed a similar thing last year
+> was that the interface shouldn't be order bases
+> http://lkml.kernel.org/r/20180423000943.GO17484@dhcp22.suse.cz
+> 
+> Order based API makes sense for the buddy allocator but why should we
+> restrict sizes like that for an allocator that is capable to allocate
+> arbitrary page sized requests?
+
+Fair enough, will change it. Anyways we calculate nr_pages from the order 
+argument at the very beginning.
