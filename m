@@ -1,50 +1,88 @@
-Return-Path: <SRS0=PY1v=YH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=Pmlw=YI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 796C1C4CECE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Oct 2019 21:01:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D21DC4CECE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Oct 2019 01:58:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2B69B2133F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Oct 2019 21:01:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2B69B2133F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 5DAE3217F9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Oct 2019 01:58:24 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TIHUzyDc"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5DAE3217F9
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46sWFG6JCkzDqxL
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Oct 2019 08:01:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46sdqw5tRgzDqxb
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Oct 2019 12:58:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=catalin.marinas@arm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::644; helo=mail-pl1-x644.google.com;
+ envelope-from=kernelfans@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 46sWBx6b9JzDqQT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Oct 2019 07:59:13 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8A383337;
- Mon, 14 Oct 2019 13:59:08 -0700 (PDT)
-Received: from iMac-3.local (unknown [172.31.20.19])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id BA5423F68E;
- Mon, 14 Oct 2019 13:59:06 -0700 (PDT)
-Date: Mon, 14 Oct 2019 21:59:00 +0100
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Subject: Re: [PATCH RFC 0/5] ARM: Raspberry Pi 4 DMA support
-Message-ID: <20191014205859.GA7634@iMac-3.local>
-References: <20191014183108.24804-1-nsaenzjulienne@suse.de>
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="TIHUzyDc"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
+ [IPv6:2607:f8b0:4864:20::644])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46sdnv4y9jzDqvr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Oct 2019 12:56:33 +1100 (AEDT)
+Received: by mail-pl1-x644.google.com with SMTP id d22so8807227pls.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Oct 2019 18:56:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=Kwwu5kbmkBQ1HH+8pWXVXW0xmQfdqCxeByRCN8KSXEY=;
+ b=TIHUzyDc6SGbORZPiz2reZIw7vN60Ixo8blMx0SNx6RBtQI/zstwu3hsCiWqL9JZQ6
+ IPThY2YzkQg8LrKB3cqxmkqsAs5VVvubIY28QgI45g0H0yaF5IzjbklpNV2+uzg7ULhD
+ 41VHOncIQSJhMRT2o32TECBBQ+NfE0tIi1QkvfROvb7aKd+NouZWdTt5bs63H5tk7Ji2
+ lgJqac9vy5pPNqpqTuv8j8JQxXSpPEXx8cXPgJNtDNi+Fb3nWytmId8qoUaiqQJznwsD
+ RzvUXAbBZYq4mAHTGUiGi8GCDb+XMcbtyT4TfXEdMoBGZjYFytyAH9oMmYLxg4F/HIz4
+ PdUw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=Kwwu5kbmkBQ1HH+8pWXVXW0xmQfdqCxeByRCN8KSXEY=;
+ b=dBTMg+2XRCaLYW+SoeKbH6y9b1YzD2PYO6Qt0H5GrfYVdfdgpv4OuWeMKqj8PaMZl+
+ UEb+ltOwOnscGYsNj1QJPRG7H5NObRtXAOsU6erY41jggJdvVCxy5cP3vbaIfSNFO1xm
+ YS6suAo4D4Vay3Q/Hh0VW94e4194UM2VS4ZPeZE8bMHKB9Jah7FxghC7L7wbDUZ3oUb0
+ 07jiOIZYluYhDlq1r4TiOixk1MLAhE9w57xaHdP3sCVdjycLm9mUpZ8TgXyDIR7Yhoel
+ 2Mqtj6KNeY55BKV506glzOuF1kU2ESdSs9xP4pf4bJ+fyWFDUHnYNbHmwfIUx/TqM8/3
+ ZFTA==
+X-Gm-Message-State: APjAAAXu2jpsFqATMOikIKDiBfzC+/tvT77LTgfVIC06YG0hqAKrjmGP
+ Zs95OuJF1gkDNkt3rfhzmw==
+X-Google-Smtp-Source: APXvYqw8OLndhpbDZgTRsz4NpKzRxTwytzyi9coZcCx6lgDY9wvvn1k4hzSKoy8pOwXWtzGMS7S1MA==
+X-Received: by 2002:a17:902:2e:: with SMTP id
+ 43mr32776368pla.270.1571104590386; 
+ Mon, 14 Oct 2019 18:56:30 -0700 (PDT)
+Received: from mypc ([209.132.188.80])
+ by smtp.gmail.com with ESMTPSA id b16sm24060901pfb.54.2019.10.14.18.56.27
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 14 Oct 2019 18:56:29 -0700 (PDT)
+Date: Tue, 15 Oct 2019 09:56:20 +0800
+From: Pingfan Liu <kernelfans@gmail.com>
+To: Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH] xfs: introduce "metasync" api to sync metadata to fsblock
+Message-ID: <20191015015620.GA14327@mypc>
+References: <1570977420-3944-1-git-send-email-kernelfans@gmail.com>
+ <20191014084027.GA3593@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20191014183108.24804-1-nsaenzjulienne@suse.de>
-User-Agent: Mutt/1.11.1 (2018-12-01)
+In-Reply-To: <20191014084027.GA3593@infradead.org>
+User-Agent: Mutt/1.11.3 (2019-02-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,32 +94,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, f.fainelli@gmail.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, hch@infradead.org,
- iommu@lists.linux-foundation.org, mbrugger@suse.com,
- bcm-kernel-feedback-list@broadcom.com, linux-rpi-kernel@lists.infradead.org,
- Robin Murphy <robin.murphy@arm.com>, linux-arm-kernel@lists.infradead.org,
- wahrenst@gmx.net
+Cc: Eric Sandeen <esandeen@redhat.com>,
+ "Darrick J. Wong" <darrick.wong@oracle.com>, linux-xfs@vger.kernel.org,
+ Dave Chinner <dchinner@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ Hari Bathini <hbathini@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Oct 14, 2019 at 08:31:02PM +0200, Nicolas Saenz Julienne wrote:
-> the Raspberry Pi 4 offers up to 4GB of memory, of which only the first
-> is DMA capable device wide. This forces us to use of bounce buffers,
-> which are currently not very well supported by ARM's custom DMA ops.
-> Among other things the current mechanism (see dmabounce.c) isn't
-> suitable for high memory. Instead of fixing it, this series introduces a
-> way of selecting dma-direct as the default DMA ops provider which allows
-> for the Raspberry Pi to make use of swiotlb.
+On Mon, Oct 14, 2019 at 01:40:27AM -0700, Christoph Hellwig wrote:
+> On Sun, Oct 13, 2019 at 10:37:00PM +0800, Pingfan Liu wrote:
+> > When using fadump (fireware assist dump) mode on powerpc, a mismatch
+> > between grub xfs driver and kernel xfs driver has been obsevered.  Note:
+> > fadump boots up in the following sequence: fireware -> grub reads kernel
+> > and initramfs -> kernel boots.
+> 
+> This isn't something new.  To fundamentally fix this you need to
+> implement (in-memory) log recovery in grub.  That is the only really safe
+> long-term solutioin.  But the equivalent of your patch you can already
+Agree. For the consistency of the whole fs, we need grub to be aware of
+log. While this patch just assumes that files accessed by grub are
+known, and the consistency is forced only on these files.
+> get by freezing and unfreezing the file system using the FIFREEZE and
+> FITHAW ioctls.  And if my memory is serving me correctly Dave has been
+freeze will block any further modification to the fs. That is different
+from my patch, which does not have such limitation.
+> preaching that to the bootloader folks for a long time, but apparently
+> without visible results.
+Yes, it is a pity. And maybe it is uneasy to do.
 
-I presume these patches go on top of this series:
-
-http://lkml.kernel.org/r/20190911182546.17094-1-nsaenzjulienne@suse.de
-
-which I queued here:
-
-https://git.kernel.org/pub/scm/linux/kernel/git/arm64/linux.git/log/?h=for-next/zone-dma
-
--- 
-Catalin
+Thanks and regards,
+	Pingfan
