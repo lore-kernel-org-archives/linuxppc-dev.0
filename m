@@ -2,61 +2,86 @@ Return-Path: <SRS0=QKeg=YJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	FAKE_REPLY_C,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 52768FA372A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Oct 2019 17:31:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6AAF3FA3728
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Oct 2019 18:38:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B924A2064B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Oct 2019 17:31:22 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="RXsXrlLH"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B924A2064B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id DDA542067D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Oct 2019 18:38:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DDA542067D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46tfV00zx9zDr61
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Oct 2019 04:31:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46tgzH1VcnzDr7J
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Oct 2019 05:38:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=helgaas@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="RXsXrlLH"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46tfRp6TcFzDr2m
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2019 04:29:26 +1100 (AEDT)
-Received: from localhost (unknown [69.71.4.100])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 11C3F2064B;
- Wed, 16 Oct 2019 17:29:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1571246963;
- bh=BEpB3EZXTTbBVHMZTuth4NJifvFzukmeM5QhNOdo5O8=;
- h=Date:From:To:Cc:Subject:In-Reply-To:From;
- b=RXsXrlLHIT6c2YxY3aRTF3agjspzd2zA6EvbXspnsMyNWhY6qr+Mlnxz/ITGQF7JB
- +WFkFg2u0vGjdcPMekt73bcWe3e3yUyValMWH2ZOW5Fb0pejyG6sawlvaZGGZRM0ve
- sxfTXrVbGvaSc6yuhyOdF3QO/ikKKDqlKhzkr1pw=
-Date: Wed, 16 Oct 2019 12:29:21 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
-Subject: Re: [PATCH v5 03/23] PCI: hotplug: Add a flag for the movable BARs
- feature
-Message-ID: <20191016172921.GA42365@google.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46tgwy5Z8KzDqLd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2019 05:36:18 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x9GIHZI7037267
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2019 14:36:16 -0400
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
+ [169.53.41.122])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2vp67rn7a3-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2019 14:36:15 -0400
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+ by ppma04dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x9GIK2J6024102
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2019 18:36:15 GMT
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by ppma04dal.us.ibm.com with ESMTP id 2vk6f7rhme-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2019 18:36:14 +0000
+Received: from b03ledav006.gho.boulder.ibm.com
+ (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x9GIaDip37355994
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 16 Oct 2019 18:36:13 GMT
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 28F2EC6055;
+ Wed, 16 Oct 2019 18:36:13 +0000 (GMT)
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0C114C605A;
+ Wed, 16 Oct 2019 18:36:13 +0000 (GMT)
+Received: from localhost (unknown [9.41.179.251])
+ by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Wed, 16 Oct 2019 18:36:12 +0000 (GMT)
+From: Nathan Lynch <nathanl@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 2/2] powerpc/pseries: safely roll back failed DLPAR cpu add
+Date: Wed, 16 Oct 2019 13:36:11 -0500
+Message-Id: <20191016183611.10867-3-nathanl@linux.ibm.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20191016183611.10867-1-nathanl@linux.ibm.com>
+References: <20191016183611.10867-1-nathanl@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <63c6c630-fbfb-175c-2a1a-c9a1f732498a@yadro.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-10-16_07:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=975 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1908290000 definitions=main-1910160151
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,126 +93,206 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: David Laight <David.Laight@ACULAB.COM>,
- Sam Bobroff <sbobroff@linux.ibm.com>, linux-pci@vger.kernel.org,
- linux@yadro.com, Lukas Wunner <lukas@wunner.de>,
- Oliver O'Halloran <oohall@gmail.com>, Rajat Jain <rajatja@google.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: tyreld@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Oct 16, 2019 at 06:50:30PM +0300, Sergey Miroshnichenko wrote:
-> On 10/16/19 1:14 AM, Bjorn Helgaas wrote:
-> > On Mon, Sep 30, 2019 at 03:59:25PM +0300, Sergey Miroshnichenko wrote:
-> > > On 9/28/19 1:02 AM, Bjorn Helgaas wrote:
+dlpar_online_cpu() attempts to online all threads of a core that has
+been added to an LPAR. If onlining a non-primary thread
+fails (e.g. due to an allocation failure), the core is left with at
+least one thread online. dlpar_cpu_add() attempts to roll back the
+whole operation, releasing the core back to the platform. However,
+since some threads of the core being removed are still online, the
+BUG_ON(cpu_online(cpu)) in pseries_remove_processor() strikes:
 
-> > > > It's possible that a hot-add will trigger this attempt to move things
-> > > > around, and it's possible that we won't find space for the new device
-> > > > even if we move things around.  But are we certain that every device
-> > > > that worked *before* the hot-add will still work *afterwards*?
-> > > > 
-> > > > Much of the assignment was probably done by the BIOS using different
-> > > > algorithms than Linux has, so I think there's some chance that the
-> > > > BIOS did a better job and if we lose that BIOS assignment, we might
-> > > > not be able to recreate it.
-> > > 
-> > > If a hardware has some special constraints on BAR assignment that the
-> > > kernel is not aware of yet, the movable BARs may break things after a
-> > > hotplug event. So the feature must be disabled there (manually) until
-> > > the kernel get support for that special needs.
-> > 
-> > I'm not talking about special constraints on BAR assignment.  (I'm not
-> > sure what those constraints would be -- AFAIK the constraints for a
-> > spec-compliant device are all discoverable via the BAR size and type
-> > (or the Enhanced Allocation capability)).
-> > 
-> > What I'm concerned about is the case where we boot with a working
-> > assignment, we hot-add a device, we move things around to try to
-> > accommodate the new device, and not only do we fail to find resources
-> > for the new device, we also fail to find a working assignment for the
-> > devices that were present at boot.  We've moved things around from
-> > what BIOS did, and since we use a different algorithm than the BIOS,
-> > there's no guarantee that we'll be able to find the assignment BIOS
-> > did.
-> 
-> If BAR assignment fails with a hot-added device, these patches will
-> disable BARs for this device and retry, falling back to the situation
-> where number of BARs and their size are the same as they were before
-> the hotplug event.
-> 
-> If all the BARs are immovable - they will just remain on their
-> positions. Nothing to break here I guess.
-> 
-> If almost all the BARs are immovable and there is one movable BAR,
-> after releasing the bridge windows there will be a free gap - right
-> where this movable BAR was. These patches are keeping the size of
-> released BARs, not requesting the size from the devices again - so the
-> device can't ask for a larger BAR. The space reserving is disabled by
-> this patchset, so the kernel will request the same size for the bridge
-> window containing this movable BAR. So there always will be a gap for
-> this BAR - in the same location it was before.
-> 
-> Based on these considerations I assume that the kernel is always able
-> to arrange BARs from scratch if a BIOS was able to make it before.
-> 
-> But! There is an implicit speculation that there will be the same
-> amount of BARs after the fallback (which is equivalent to a PCI rescan
-> triggered on unchanged topology). And two week ago I've found that
-> this is not always true!
-> 
-> I was testing on a "new" x86_64 PC, where BIOS doesn't reserve a space
-> for SR-IOV BARs (of a network adapter). On the boot, the kernel wasn't
-> arranging BARs itself - it took values written by the BIOS. And the
-> bridge window was "jammed" between immovable BARs, so it can't expand.
-> BARs of this device are also immovable, so the bridge window can't be
-> moved away. During the PCI rescan, the kernel tried to allocate both
-> "regular" and SR-IOV BARs - and failed. Even without changes in the
-> PCI topology.
-> 
-> So in the next version of this series there will be one more patch,
-> that allows the kernel to ignore BIOS's setting for the "safe" (non-IO
-> and non-VGA) BARs, so these BARs will be arranged kernel-way - and
-> also those forgotten by the BIOS.
+LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=2048 NUMA pSeries
+Modules linked in:
+CPU: 3 PID: 8587 Comm: drmgr Not tainted 5.3.0-rc2-00190-g9b123d1ea237-dirty #46
+NIP:  c0000000000eeb2c LR: c0000000000eeac4 CTR: c0000000000ee9e0
+REGS: c0000001f745b6c0 TRAP: 0700   Not tainted  (5.3.0-rc2-00190-g9b123d1ea237-dirty)
+MSR:  800000010282b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE,TM[E]>  CR: 44002448  XER: 00000000
+CFAR: c00000000195d718 IRQMASK: 0
+GPR00: c0000000000eeac4 c0000001f745b950 c0000000032f6200 0000000000000008
+GPR04: 0000000000000008 c000000003349c78 0000000000000040 00000000000001ff
+GPR08: 0000000000000008 0000000000000000 0000000000000001 0007ffffffffffff
+GPR12: 0000000084002844 c00000001ecacb80 0000000000000000 0000000000000000
+GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000008
+GPR24: c000000003349ee0 c00000000334a2e4 c0000000fca4d7a8 c000000001d20048
+GPR28: 0000000000000001 ffffffffffffffff ffffffffffffffff c0000000fca4d7c4
+NIP [c0000000000eeb2c] pseries_smp_notifier+0x14c/0x2e0
+LR [c0000000000eeac4] pseries_smp_notifier+0xe4/0x2e0
+Call Trace:
+[c0000001f745b950] [c0000000000eeac4] pseries_smp_notifier+0xe4/0x2e0 (unreliable)
+[c0000001f745ba10] [c0000000001ac774] notifier_call_chain+0xb4/0x190
+[c0000001f745bab0] [c0000000001ad62c] blocking_notifier_call_chain+0x7c/0xb0
+[c0000001f745baf0] [c00000000167bda0] of_detach_node+0xc0/0x110
+[c0000001f745bb50] [c0000000000e7ae4] dlpar_detach_node+0x64/0xa0
+[c0000001f745bb80] [c0000000000edefc] dlpar_cpu_add+0x31c/0x360
+[c0000001f745bc10] [c0000000000ee980] dlpar_cpu_probe+0x50/0xb0
+[c0000001f745bc50] [c00000000002cf70] arch_cpu_probe+0x40/0x70
+[c0000001f745bc70] [c000000000ccd808] cpu_probe_store+0x48/0x80
+[c0000001f745bcb0] [c000000000cbcef8] dev_attr_store+0x38/0x60
+[c0000001f745bcd0] [c00000000059c980] sysfs_kf_write+0x70/0xb0
+[c0000001f745bd10] [c00000000059afb8] kernfs_fop_write+0xf8/0x280
+[c0000001f745bd60] [c0000000004b437c] __vfs_write+0x3c/0x70
+[c0000001f745bd80] [c0000000004b8710] vfs_write+0xd0/0x220
+[c0000001f745bdd0] [c0000000004b8acc] ksys_write+0x7c/0x140
+[c0000001f745be20] [c00000000000bbd8] system_call+0x5c/0x68
 
-This still seems a little scary, so I'll probably ask about it again :)
+Move dlpar_offline_cpu() up in the file so that dlpar_online_cpu() can
+use it to re-offline any threads that have been onlined when an error
+is encountered.
 
-> After modifying the code as you advised, it became possible to mark
-> only some BARs of the device as immovable. So the code is less ugly
-> now, and it also works for drivers/video/fbdev/efifb.c , which uses
-> the BAR in a weird way (dev->driver is NULL, but not the res->child):
-> 
->   static bool pci_dev_movable(struct pci_dev *dev,
->                               bool res_has_children)
->   {
->     if (!pci_can_move_bars)
->       return false;
-> 
->     if (dev->driver && dev->driver->rescan_prepare)
->       return true;
-> 
->     if (!dev->driver && !res_has_children)
->       return true;
-> 
->     return false;
->   }
-> 
->   bool pci_dev_bar_movable(struct pci_dev *dev, struct resource *res)
->   {
->     if (res->flags & IORESOURCE_PCI_FIXED)
->       return false;
-> 
->     #ifdef CONFIG_X86
->     /* Workaround for the legacy VGA memory 0xa0000-0xbffff */
->     if (res->start == 0xa0000)
+Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
+Fixes: e666ae0b10aa ("powerpc/pseries: Update CPU hotplug error recovery")
+---
+ arch/powerpc/platforms/pseries/hotplug-cpu.c | 116 ++++++++++---------
+ 1 file changed, 59 insertions(+), 57 deletions(-)
 
-Nit here; "res->start" is the CPU address, but what you need to check
-is the PCI bus address, e.g., something from pcibios_resource_to_bus().
-And this is not x86-specific.  0xa0000 is magic on PCI no matter what
-the processor architecture.
+diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+index f3f54ef645e1..8ab24bd7f89c 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -338,6 +338,62 @@ static void pseries_remove_processor(struct device_node *np)
+ 	cpu_maps_update_done();
+ }
+ 
++static int dlpar_offline_cpu(struct device_node *dn)
++{
++	int rc = 0;
++	unsigned int cpu;
++	int len, nthreads, i;
++	const __be32 *intserv;
++	u32 thread;
++
++	intserv = of_get_property(dn, "ibm,ppc-interrupt-server#s", &len);
++	if (!intserv)
++		return -EINVAL;
++
++	nthreads = len / sizeof(u32);
++
++	cpu_maps_update_begin();
++	for (i = 0; i < nthreads; i++) {
++		thread = be32_to_cpu(intserv[i]);
++		for_each_present_cpu(cpu) {
++			if (get_hard_smp_processor_id(cpu) != thread)
++				continue;
++
++			if (get_cpu_current_state(cpu) == CPU_STATE_OFFLINE)
++				break;
++
++			if (get_cpu_current_state(cpu) == CPU_STATE_ONLINE) {
++				set_preferred_offline_state(cpu,
++							    CPU_STATE_OFFLINE);
++				cpu_maps_update_done();
++				timed_topology_update(1);
++				rc = device_offline(get_cpu_device(cpu));
++				if (rc)
++					goto out;
++				cpu_maps_update_begin();
++				break;
++			}
++
++			/*
++			 * The cpu is in CPU_STATE_INACTIVE.
++			 * Upgrade it's state to CPU_STATE_OFFLINE.
++			 */
++			set_preferred_offline_state(cpu, CPU_STATE_OFFLINE);
++			WARN_ON(plpar_hcall_norets(H_PROD, thread) != H_SUCCESS);
++			__cpu_die(cpu);
++			break;
++		}
++		if (cpu == num_possible_cpus()) {
++			pr_warn("Could not find cpu to offline with physical id 0x%x\n",
++				thread);
++		}
++	}
++	cpu_maps_update_done();
++
++out:
++	return rc;
++}
++
+ static int dlpar_online_cpu(struct device_node *dn)
+ {
+ 	int rc = 0;
+@@ -364,8 +420,10 @@ static int dlpar_online_cpu(struct device_node *dn)
+ 			timed_topology_update(1);
+ 			find_and_online_cpu_nid(cpu);
+ 			rc = device_online(get_cpu_device(cpu));
+-			if (rc)
++			if (rc) {
++				dlpar_offline_cpu(dn);
+ 				goto out;
++			}
+ 			cpu_maps_update_begin();
+ 
+ 			break;
+@@ -505,62 +563,6 @@ static ssize_t dlpar_cpu_add(u32 drc_index)
+ 	return rc;
+ }
+ 
+-static int dlpar_offline_cpu(struct device_node *dn)
+-{
+-	int rc = 0;
+-	unsigned int cpu;
+-	int len, nthreads, i;
+-	const __be32 *intserv;
+-	u32 thread;
+-
+-	intserv = of_get_property(dn, "ibm,ppc-interrupt-server#s", &len);
+-	if (!intserv)
+-		return -EINVAL;
+-
+-	nthreads = len / sizeof(u32);
+-
+-	cpu_maps_update_begin();
+-	for (i = 0; i < nthreads; i++) {
+-		thread = be32_to_cpu(intserv[i]);
+-		for_each_present_cpu(cpu) {
+-			if (get_hard_smp_processor_id(cpu) != thread)
+-				continue;
+-
+-			if (get_cpu_current_state(cpu) == CPU_STATE_OFFLINE)
+-				break;
+-
+-			if (get_cpu_current_state(cpu) == CPU_STATE_ONLINE) {
+-				set_preferred_offline_state(cpu,
+-							    CPU_STATE_OFFLINE);
+-				cpu_maps_update_done();
+-				timed_topology_update(1);
+-				rc = device_offline(get_cpu_device(cpu));
+-				if (rc)
+-					goto out;
+-				cpu_maps_update_begin();
+-				break;
+-			}
+-
+-			/*
+-			 * The cpu is in CPU_STATE_INACTIVE.
+-			 * Upgrade it's state to CPU_STATE_OFFLINE.
+-			 */
+-			set_preferred_offline_state(cpu, CPU_STATE_OFFLINE);
+-			WARN_ON(plpar_hcall_norets(H_PROD, thread) != H_SUCCESS);
+-			__cpu_die(cpu);
+-			break;
+-		}
+-		if (cpu == num_possible_cpus()) {
+-			pr_warn("Could not find cpu to offline with physical id 0x%x\n",
+-				thread);
+-		}
+-	}
+-	cpu_maps_update_done();
+-
+-out:
+-	return rc;
+-}
+-
+ static ssize_t dlpar_cpu_remove(struct device_node *dn, u32 drc_index)
+ {
+ 	int rc;
+-- 
+2.20.1
 
->       return false;
->     #endif
-> 
->     return pci_dev_movable(dev, res->child);
->   }
