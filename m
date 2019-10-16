@@ -2,24 +2,23 @@ Return-Path: <SRS0=QKeg=YJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4EF7DFA3728
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Oct 2019 10:51:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6732FA3728
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Oct 2019 10:53:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0B5342067D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Oct 2019 10:51:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0B5342067D
+	by mail.kernel.org (Postfix) with ESMTPS id 5E96B2067D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Oct 2019 10:53:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5E96B2067D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46tTcw39q2zDqpp
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Oct 2019 21:51:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46tTfy1wBSzDqt3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Oct 2019 21:53:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=huawei.com (client-ip=45.249.212.35; helo=huawei.com;
  envelope-from=yuehaibing@huawei.com; receiver=<UNKNOWN>)
@@ -28,14 +27,14 @@ Authentication-Results: lists.ozlabs.org;
 Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46tTWH1ky3zDqbD
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46tTWH6hN3zDqbD
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2019 21:46:51 +1100 (AEDT)
-Received: from DGGEMS404-HUB.china.huawei.com (unknown [172.30.72.60])
- by Forcepoint Email with ESMTP id C0CAFACCE9509A1880D9;
- Wed, 16 Oct 2019 18:46:48 +0800 (CST)
-Received: from localhost (10.133.213.239) by DGGEMS404-HUB.china.huawei.com
- (10.3.19.204) with Microsoft SMTP Server id 14.3.439.0; Wed, 16 Oct 2019
- 18:46:41 +0800
+Received: from DGGEMS409-HUB.china.huawei.com (unknown [172.30.72.59])
+ by Forcepoint Email with ESMTP id 6BC042E696B294CD8DC3;
+ Wed, 16 Oct 2019 18:46:49 +0800 (CST)
+Received: from localhost (10.133.213.239) by DGGEMS409-HUB.china.huawei.com
+ (10.3.19.209) with Microsoft SMTP Server id 14.3.439.0; Wed, 16 Oct 2019
+ 18:46:39 +0800
 From: YueHaibing <yuehaibing@huawei.com>
 To: <herbert@gondor.apana.org.au>, <mpm@selenic.com>, <arnd@arndb.de>,
  <gregkh@linuxfoundation.org>, <nicolas.ferre@microchip.com>,
@@ -45,10 +44,10 @@ To: <herbert@gondor.apana.org.au>, <mpm@selenic.com>, <arnd@arndb.de>,
  <wahrenst@gmx.net>, <l.stelmach@samsung.com>, <kgene@kernel.org>,
  <krzk@kernel.org>, <khilman@baylibre.com>, <dsaxena@plexity.net>,
  <patrice.chotard@st.com>
-Subject: [PATCH -next 03/13] hwrng: exynos - use
+Subject: [PATCH -next 02/13] hwrng: bcm2835 - use
  devm_platform_ioremap_resource() to simplify code
-Date: Wed, 16 Oct 2019 18:46:11 +0800
-Message-ID: <20191016104621.26056-4-yuehaibing@huawei.com>
+Date: Wed, 16 Oct 2019 18:46:10 +0800
+Message-ID: <20191016104621.26056-3-yuehaibing@huawei.com>
 X-Mailer: git-send-email 2.10.2.windows.1
 In-Reply-To: <20191016104621.26056-1-yuehaibing@huawei.com>
 References: <20191016104621.26056-1-yuehaibing@huawei.com>
@@ -80,30 +79,32 @@ This is detected by coccinelle.
 
 Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- drivers/char/hw_random/exynos-trng.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/char/hw_random/bcm2835-rng.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/drivers/char/hw_random/exynos-trng.c b/drivers/char/hw_random/exynos-trng.c
-index b4b52ab..8e1fe3f 100644
---- a/drivers/char/hw_random/exynos-trng.c
-+++ b/drivers/char/hw_random/exynos-trng.c
-@@ -109,7 +109,6 @@ static int exynos_trng_init(struct hwrng *rng)
- static int exynos_trng_probe(struct platform_device *pdev)
- {
- 	struct exynos_trng_dev *trng;
--	struct resource *res;
- 	int ret = -ENOMEM;
+diff --git a/drivers/char/hw_random/bcm2835-rng.c b/drivers/char/hw_random/bcm2835-rng.c
+index f759790..d2a5791 100644
+--- a/drivers/char/hw_random/bcm2835-rng.c
++++ b/drivers/char/hw_random/bcm2835-rng.c
+@@ -142,7 +142,6 @@ static int bcm2835_rng_probe(struct platform_device *pdev)
+ 	struct device_node *np = dev->of_node;
+ 	const struct of_device_id *rng_id;
+ 	struct bcm2835_rng_priv *priv;
+-	struct resource *r;
+ 	int err;
  
- 	trng = devm_kzalloc(&pdev->dev, sizeof(*trng), GFP_KERNEL);
-@@ -128,8 +127,7 @@ static int exynos_trng_probe(struct platform_device *pdev)
- 	platform_set_drvdata(pdev, trng);
- 	trng->dev = &pdev->dev;
+ 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+@@ -151,10 +150,8 @@ static int bcm2835_rng_probe(struct platform_device *pdev)
  
--	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	trng->mem = devm_ioremap_resource(&pdev->dev, res);
-+	trng->mem = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(trng->mem))
- 		return PTR_ERR(trng->mem);
+ 	platform_set_drvdata(pdev, priv);
+ 
+-	r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-
+ 	/* map peripheral */
+-	priv->base = devm_ioremap_resource(dev, r);
++	priv->base = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(priv->base))
+ 		return PTR_ERR(priv->base);
  
 -- 
 2.7.4
