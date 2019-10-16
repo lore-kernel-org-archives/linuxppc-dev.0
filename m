@@ -2,23 +2,24 @@ Return-Path: <SRS0=QKeg=YJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E946FA3728
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Oct 2019 10:55:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F37CBFA3728
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Oct 2019 10:57:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 176842067D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Oct 2019 10:55:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 176842067D
+	by mail.kernel.org (Postfix) with ESMTPS id AB7FD20659
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Oct 2019 10:57:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AB7FD20659
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46tTj26LC7zDqsR
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Oct 2019 21:55:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46tTlQ24CFzDqnT
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Oct 2019 21:57:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=huawei.com (client-ip=45.249.212.35; helo=huawei.com;
  envelope-from=yuehaibing@huawei.com; receiver=<UNKNOWN>)
@@ -27,14 +28,14 @@ Authentication-Results: lists.ozlabs.org;
 Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46tTWJ4Gn9zDqcT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2019 21:46:52 +1100 (AEDT)
-Received: from DGGEMS409-HUB.china.huawei.com (unknown [172.30.72.58])
- by Forcepoint Email with ESMTP id 58013CFF3E76FCB7C8C4;
- Wed, 16 Oct 2019 18:46:44 +0800 (CST)
-Received: from localhost (10.133.213.239) by DGGEMS409-HUB.china.huawei.com
- (10.3.19.209) with Microsoft SMTP Server id 14.3.439.0; Wed, 16 Oct 2019
- 18:46:34 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46tTWL0pY5zDqcT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2019 21:46:54 +1100 (AEDT)
+Received: from DGGEMS407-HUB.china.huawei.com (unknown [172.30.72.60])
+ by Forcepoint Email with ESMTP id 86ECA4684DCFA3037407;
+ Wed, 16 Oct 2019 18:46:51 +0800 (CST)
+Received: from localhost (10.133.213.239) by DGGEMS407-HUB.china.huawei.com
+ (10.3.19.207) with Microsoft SMTP Server id 14.3.439.0; Wed, 16 Oct 2019
+ 18:46:45 +0800
 From: YueHaibing <yuehaibing@huawei.com>
 To: <herbert@gondor.apana.org.au>, <mpm@selenic.com>, <arnd@arndb.de>,
  <gregkh@linuxfoundation.org>, <nicolas.ferre@microchip.com>,
@@ -44,11 +45,13 @@ To: <herbert@gondor.apana.org.au>, <mpm@selenic.com>, <arnd@arndb.de>,
  <wahrenst@gmx.net>, <l.stelmach@samsung.com>, <kgene@kernel.org>,
  <krzk@kernel.org>, <khilman@baylibre.com>, <dsaxena@plexity.net>,
  <patrice.chotard@st.com>
-Subject: [PATCH -next 00/13] hwrng: use devm_platform_ioremap_resource() to
- simplify code
-Date: Wed, 16 Oct 2019 18:46:08 +0800
-Message-ID: <20191016104621.26056-1-yuehaibing@huawei.com>
+Subject: [PATCH -next 05/13] hwrng: ks-sa - use
+ devm_platform_ioremap_resource() to simplify code
+Date: Wed, 16 Oct 2019 18:46:13 +0800
+Message-ID: <20191016104621.26056-6-yuehaibing@huawei.com>
 X-Mailer: git-send-email 2.10.2.windows.1
+In-Reply-To: <20191016104621.26056-1-yuehaibing@huawei.com>
+References: <20191016104621.26056-1-yuehaibing@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-Originating-IP: [10.133.213.239]
@@ -72,40 +75,36 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-devm_platform_ioremap_resource() internally have platform_get_resource()
-and devm_ioremap_resource() in it. So instead of calling them separately
-use devm_platform_ioremap_resource() directly.
+Use devm_platform_ioremap_resource() to simplify the code a bit.
+This is detected by coccinelle.
 
-YueHaibing (13):
-  hwrng: atmel - use devm_platform_ioremap_resource() to simplify code
-  hwrng: bcm2835 - use devm_platform_ioremap_resource() to simplify code
-  hwrng: exynos - use devm_platform_ioremap_resource() to simplify code
-  hwrng: hisi - use devm_platform_ioremap_resource() to simplify code
-  hwrng: ks-sa - use devm_platform_ioremap_resource() to simplify code
-  hwrng: meson - use devm_platform_ioremap_resource() to simplify code
-  hwrng: npcm - use devm_platform_ioremap_resource() to simplify code
-  hwrng: omap - use devm_platform_ioremap_resource() to simplify code
-  hwrng: pasemi - use devm_platform_ioremap_resource() to simplify code
-  hwrng: pic32 - use devm_platform_ioremap_resource() to simplify code
-  hwrng: st - use devm_platform_ioremap_resource() to simplify code
-  hwrng: tx4939 - use devm_platform_ioremap_resource() to simplify code
-  hwrng: xgene - use devm_platform_ioremap_resource() to simplify code
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+---
+ drivers/char/hw_random/ks-sa-rng.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
- drivers/char/hw_random/atmel-rng.c   | 4 +---
- drivers/char/hw_random/bcm2835-rng.c | 5 +----
- drivers/char/hw_random/exynos-trng.c | 4 +---
- drivers/char/hw_random/hisi-rng.c    | 4 +---
- drivers/char/hw_random/ks-sa-rng.c   | 4 +---
- drivers/char/hw_random/meson-rng.c   | 4 +---
- drivers/char/hw_random/npcm-rng.c    | 4 +---
- drivers/char/hw_random/omap-rng.c    | 4 +---
- drivers/char/hw_random/pasemi-rng.c  | 4 +---
- drivers/char/hw_random/pic32-rng.c   | 4 +---
- drivers/char/hw_random/st-rng.c      | 4 +---
- drivers/char/hw_random/tx4939-rng.c  | 4 +---
- drivers/char/hw_random/xgene-rng.c   | 4 +---
- 13 files changed, 13 insertions(+), 40 deletions(-)
-
+diff --git a/drivers/char/hw_random/ks-sa-rng.c b/drivers/char/hw_random/ks-sa-rng.c
+index a674300..556400a 100644
+--- a/drivers/char/hw_random/ks-sa-rng.c
++++ b/drivers/char/hw_random/ks-sa-rng.c
+@@ -174,7 +174,6 @@ static int ks_sa_rng_probe(struct platform_device *pdev)
+ 	struct ks_sa_rng	*ks_sa_rng;
+ 	struct device		*dev = &pdev->dev;
+ 	int			ret;
+-	struct resource		*mem;
+ 
+ 	ks_sa_rng = devm_kzalloc(dev, sizeof(*ks_sa_rng), GFP_KERNEL);
+ 	if (!ks_sa_rng)
+@@ -190,8 +189,7 @@ static int ks_sa_rng_probe(struct platform_device *pdev)
+ 	};
+ 	ks_sa_rng->rng.priv = (unsigned long)dev;
+ 
+-	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	ks_sa_rng->reg_rng = devm_ioremap_resource(dev, mem);
++	ks_sa_rng->reg_rng = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(ks_sa_rng->reg_rng))
+ 		return PTR_ERR(ks_sa_rng->reg_rng);
+ 
 -- 
 2.7.4
 
