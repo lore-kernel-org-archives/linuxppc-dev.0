@@ -7,35 +7,35 @@ X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 45FC2FA3728
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Oct 2019 10:49:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4EF7DFA3728
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Oct 2019 10:51:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BC7392067D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Oct 2019 10:49:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BC7392067D
+	by mail.kernel.org (Postfix) with ESMTPS id 0B5342067D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Oct 2019 10:51:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0B5342067D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46tTZc3DZWzDqgq
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Oct 2019 21:49:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46tTcw39q2zDqpp
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Oct 2019 21:51:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.191; helo=huawei.com;
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.35; helo=huawei.com;
  envelope-from=yuehaibing@huawei.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga05-in.huawei.com [45.249.212.191])
+Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46tTWG3Kl7zDqbD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2019 21:46:49 +1100 (AEDT)
-Received: from DGGEMS401-HUB.china.huawei.com (unknown [172.30.72.59])
- by Forcepoint Email with ESMTP id 8B09BB85DC26B4258360;
- Wed, 16 Oct 2019 18:46:44 +0800 (CST)
-Received: from localhost (10.133.213.239) by DGGEMS401-HUB.china.huawei.com
- (10.3.19.201) with Microsoft SMTP Server id 14.3.439.0; Wed, 16 Oct 2019
- 18:46:36 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46tTWH1ky3zDqbD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2019 21:46:51 +1100 (AEDT)
+Received: from DGGEMS404-HUB.china.huawei.com (unknown [172.30.72.60])
+ by Forcepoint Email with ESMTP id C0CAFACCE9509A1880D9;
+ Wed, 16 Oct 2019 18:46:48 +0800 (CST)
+Received: from localhost (10.133.213.239) by DGGEMS404-HUB.china.huawei.com
+ (10.3.19.204) with Microsoft SMTP Server id 14.3.439.0; Wed, 16 Oct 2019
+ 18:46:41 +0800
 From: YueHaibing <yuehaibing@huawei.com>
 To: <herbert@gondor.apana.org.au>, <mpm@selenic.com>, <arnd@arndb.de>,
  <gregkh@linuxfoundation.org>, <nicolas.ferre@microchip.com>,
@@ -45,10 +45,10 @@ To: <herbert@gondor.apana.org.au>, <mpm@selenic.com>, <arnd@arndb.de>,
  <wahrenst@gmx.net>, <l.stelmach@samsung.com>, <kgene@kernel.org>,
  <krzk@kernel.org>, <khilman@baylibre.com>, <dsaxena@plexity.net>,
  <patrice.chotard@st.com>
-Subject: [PATCH -next 01/13] hwrng: atmel - use
+Subject: [PATCH -next 03/13] hwrng: exynos - use
  devm_platform_ioremap_resource() to simplify code
-Date: Wed, 16 Oct 2019 18:46:09 +0800
-Message-ID: <20191016104621.26056-2-yuehaibing@huawei.com>
+Date: Wed, 16 Oct 2019 18:46:11 +0800
+Message-ID: <20191016104621.26056-4-yuehaibing@huawei.com>
 X-Mailer: git-send-email 2.10.2.windows.1
 In-Reply-To: <20191016104621.26056-1-yuehaibing@huawei.com>
 References: <20191016104621.26056-1-yuehaibing@huawei.com>
@@ -80,29 +80,30 @@ This is detected by coccinelle.
 
 Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- drivers/char/hw_random/atmel-rng.c | 4 +---
+ drivers/char/hw_random/exynos-trng.c | 4 +---
  1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/char/hw_random/atmel-rng.c b/drivers/char/hw_random/atmel-rng.c
-index e557057..b3138ec2 100644
---- a/drivers/char/hw_random/atmel-rng.c
-+++ b/drivers/char/hw_random/atmel-rng.c
-@@ -62,15 +62,13 @@ static void atmel_trng_disable(struct atmel_trng *trng)
- static int atmel_trng_probe(struct platform_device *pdev)
+diff --git a/drivers/char/hw_random/exynos-trng.c b/drivers/char/hw_random/exynos-trng.c
+index b4b52ab..8e1fe3f 100644
+--- a/drivers/char/hw_random/exynos-trng.c
++++ b/drivers/char/hw_random/exynos-trng.c
+@@ -109,7 +109,6 @@ static int exynos_trng_init(struct hwrng *rng)
+ static int exynos_trng_probe(struct platform_device *pdev)
  {
- 	struct atmel_trng *trng;
+ 	struct exynos_trng_dev *trng;
 -	struct resource *res;
- 	int ret;
+ 	int ret = -ENOMEM;
  
  	trng = devm_kzalloc(&pdev->dev, sizeof(*trng), GFP_KERNEL);
- 	if (!trng)
- 		return -ENOMEM;
+@@ -128,8 +127,7 @@ static int exynos_trng_probe(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, trng);
+ 	trng->dev = &pdev->dev;
  
 -	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	trng->base = devm_ioremap_resource(&pdev->dev, res);
-+	trng->base = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(trng->base))
- 		return PTR_ERR(trng->base);
+-	trng->mem = devm_ioremap_resource(&pdev->dev, res);
++	trng->mem = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(trng->mem))
+ 		return PTR_ERR(trng->mem);
  
 -- 
 2.7.4
