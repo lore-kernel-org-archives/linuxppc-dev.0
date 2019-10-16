@@ -2,67 +2,51 @@ Return-Path: <SRS0=QKeg=YJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A1517C4360C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Oct 2019 06:07:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B26DC4360C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Oct 2019 07:51:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 501F02067D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Oct 2019 06:07:48 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="j+y+HbY7"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 501F02067D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id D6BE32082C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Oct 2019 07:51:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D6BE32082C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46tMKF0pCGzDqvy
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Oct 2019 17:07:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
- helo=bombadil.infradead.org;
- envelope-from=batv+8addb06ce43a55e758ee+5897+infradead.org+hch@bombadil.srs.infradead.org;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46tPcY3jMrzDqnR
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Oct 2019 18:51:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=none (no SPF record) smtp.mailfrom=linutronix.de
+ (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
+ envelope-from=bigeasy@linutronix.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linutronix.de
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a0a:51c0:0:12e:550::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46tMHK07fJzDqNP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2019 17:06:05 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=tJFiarsuWBHNqpnLytXxWUC0DYU5NvHm76+f4n5h+Gk=; b=j+y+HbY7UYO+xDRqWixdDXfqd
- EAVLPJ+DeUYg0JF7OpZKKoEpWAD1B/85+VYqZjcwaUgLmg8upwTz51rS5FoDPbxAUF5L+zy3mjoyb
- MRjDLs+n1D31/6LmBfRu4ItJeeznQP2iWDKxNYWMr/kprtbfm84vNLIzyGsigHfDNcOEFig8GlI8V
- CJHtOYeQGXD05JBRi9Icj2rfGG9YRUGdATOSh4b8/Z/Bc1TXM+/5Ud/Ro1J7yI222w9aDP/nO+i6H
- K+dxwzYau3fetrujY/iCrBDlLxZ8Bmdku6mM/IBGPdK6rDeOit9sBNJ61jV29w5xS9mrkXF6rqCsE
- 5ndjzRibg==;
-Received: from hch by bombadil.infradead.org with local (Exim 4.92.3 #3 (Red
- Hat Linux)) id 1iKcRY-0003Pa-Iq; Wed, 16 Oct 2019 06:05:56 +0000
-Date: Tue, 15 Oct 2019 23:05:56 -0700
-From: Christoph Hellwig <hch@infradead.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/mm/book3s64/hash: Update 4k PAGE_SIZE kernel
- mapping
-Message-ID: <20191016060556.GA7279@infradead.org>
-References: <20191016055130.10533-1-aneesh.kumar@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46tPZ5150lzDqdd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2019 18:49:00 +1100 (AEDT)
+Received: from bigeasy by Galois.linutronix.de with local (Exim 4.80)
+ (envelope-from <bigeasy@linutronix.de>)
+ id 1iKe31-0007jH-2v; Wed, 16 Oct 2019 09:48:43 +0200
+Date: Wed, 16 Oct 2019 09:48:43 +0200
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: Re: [PATCH 03/34] powerpc: Use CONFIG_PREEMPTION
+Message-ID: <20191016074842.6acrlzbmgb5bx4pm@linutronix.de>
+References: <20191015191821.11479-1-bigeasy@linutronix.de>
+ <20191015191821.11479-4-bigeasy@linutronix.de>
+ <156db456-af80-1f5e-6234-2e78283569b6@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20191016055130.10533-1-aneesh.kumar@linux.ibm.com>
-User-Agent: Mutt/1.12.1 (2019-06-15)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
- bombadil.infradead.org. See http://www.infradead.org/rpr.html
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <156db456-af80-1f5e-6234-2e78283569b6@c-s.fr>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,25 +58,84 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Cameron Berkenpas <cam@neo-zeon.de>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Oct 16, 2019 at 11:21:30AM +0530, Aneesh Kumar K.V wrote:
-> With commit: 0034d395f89d ("powerpc/mm/hash64: Map all the kernel
-> regions in the same 0xc range"), kernel now split the 64TB address range
-> into 4 contexts each of 16TB. That implies we can do only 16TB linear
-> mapping. This results in boot failure on some P9 systems.
-> 
-> Fix this by redoing the hash 4k mapping as below.
-> 
->  vmalloc start     = 0xd000000000000000
->  IO start          = 0xd000380000000000
->  vmemmap start     = 0xf000000000000000
-> 
-> Vmalloc area is now 56TB in size and IO remap 8TB.
+On 2019-10-16 06:57:48 [+0200], Christophe Leroy wrote:
+>=20
+>=20
+> Le 15/10/2019 =C3=A0 21:17, Sebastian Andrzej Siewior a =C3=A9crit=C2=A0:
+> > From: Thomas Gleixner <tglx@linutronix.de>
+> >=20
+> > CONFIG_PREEMPTION is selected by CONFIG_PREEMPT and by CONFIG_PREEMPT_R=
+T.
+> > Both PREEMPT and PREEMPT_RT require the same functionality which today
+> > depends on CONFIG_PREEMPT.
+> >=20
+> > Switch the entry code over to use CONFIG_PREEMPTION. Add PREEMPT_RT
+> > output in __die().
+>=20
+> powerpc doesn't select ARCH_SUPPORTS_RT, so this change is useless as
+> CONFIG_PREEMPT_RT cannot be selected.
 
-Btw, is there any good reason to keep the vmalloc and ioremap ranges
-separate on powerpc?  Most architectures just use the low-level vmap
-code to implement both and share a range.
+No it is not. It makes it possible for PowerPC to select it one day and
+I have patches for it today. Also, if other ARCH copies code from
+PowerPC it will copy the correct thing (as in distinguish between the
+flavour PREEMPT and the functionality PREEMPTION).
+
+> > diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+> > index 82f43535e6867..23d2f20be4f2e 100644
+> > --- a/arch/powerpc/kernel/traps.c
+> > +++ b/arch/powerpc/kernel/traps.c
+> > @@ -252,14 +252,19 @@ NOKPROBE_SYMBOL(oops_end);
+> >   static int __die(const char *str, struct pt_regs *regs, long err)
+> >   {
+> > +	const char *pr =3D "";
+> > +
+>=20
+> Please follow the same approach as already existing. Don't add a local var
+> for that.
+
+I would leave it to the maintainer to comment on that and decide which
+one they want. My eyes find it more readable and the compiles does not
+create more code.
+
+> >   	printk("Oops: %s, sig: %ld [#%d]\n", str, err, ++die_counter);
+> > +	if (IS_ENABLED(CONFIG_PREEMPTION))
+> > +		pr =3D IS_ENABLED(CONFIG_PREEMPT_RT) ? " PREEMPT_RT" : " PREEMPT";
+> > +
+>=20
+> drop
+>=20
+> >   	printk("%s PAGE_SIZE=3D%luK%s%s%s%s%s%s%s %s\n",
+>=20
+> Add one %s
+>=20
+> >   	       IS_ENABLED(CONFIG_CPU_LITTLE_ENDIAN) ? "LE" : "BE",
+> >   	       PAGE_SIZE / 1024,
+> >   	       early_radix_enabled() ? " MMU=3DRadix" : "",
+> >   	       early_mmu_has_feature(MMU_FTR_HPTE_TABLE) ? " MMU=3DHash" : "=
+",
+> > -	       IS_ENABLED(CONFIG_PREEMPT) ? " PREEMPT" : "",
+>=20
+> Replace by: 	IS_ENABLED(CONFIG_PREEMPTION) ? " PREEMPT" : ""
+>=20
+> > +	       pr,
+>=20
+> add something like: IS_ENABLED(CONFIG_PREEMPT_RT) ? "_RT" : ""
+
+this on the other hand will create more code which is not strictly
+required.
+
+> >   	       IS_ENABLED(CONFIG_SMP) ? " SMP" : "",
+> >   	       IS_ENABLED(CONFIG_SMP) ? (" NR_CPUS=3D" __stringify(NR_CPUS))=
+ : "",
+> >   	       debug_pagealloc_enabled() ? " DEBUG_PAGEALLOC" : "",
+> >=20
+>=20
+> Christophe
+
+Sebastian
