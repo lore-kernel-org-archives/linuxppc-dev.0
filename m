@@ -2,68 +2,91 @@ Return-Path: <SRS0=Uveu=YL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 714C0CA9EA9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Oct 2019 16:11:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01ED8CA9EA9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Oct 2019 19:02:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BE16E2245B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Oct 2019 16:11:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 696212070B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Oct 2019 19:02:48 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="F91zrAla"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BE16E2245B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZI5aiYWM"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 696212070B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46vrdF61QnzDrJw
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Oct 2019 03:11:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
- helo=bombadil.infradead.org;
- envelope-from=batv+a41d4027e0bbc9b2ab1a+5899+infradead.org+hch@bombadil.srs.infradead.org;
+	by lists.ozlabs.org (Postfix) with ESMTP id 46vwQY6VFwzDqkK
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Oct 2019 06:02:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::242;
+ helo=mail-oi1-x242.google.com; envelope-from=natechancellor@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="ZI5aiYWM"; 
+ dkim-atps=neutral
+Received: from mail-oi1-x242.google.com (mail-oi1-x242.google.com
+ [IPv6:2607:f8b0:4864:20::242])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46vrZ053M7zDqZT
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Oct 2019 03:08:55 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=uZO4T3laCAFkLJNde78e3mOnKmGc7aiAK62njk4E0oo=; b=F91zrAlaRm0sYDs/QHsnqkU5j
- v6/E8OUC//BtIJmcEi/UGDnRtFTkYxAK14XNaAgtVRt36Fx6jGH9c7Dp4L9Um8VEecka5gypZouuB
- PZOGw/jCQmCIsXlEWN4sqFdDM1LLNlKJx+hDZUWssZEtRqZA3UngJ5/ngBZ+VczG4IbMWic2IGmoZ
- ndBdPYIgLJLen1TBM4xTbhL4gBf69bvMIHOJqC1YLiGdnMEhHlRAOdmFtQUwgsH/9zW+qCDw0C1K5
- KIGsPw4DgoOz1z+Rc1dgFP/HXJUr8IHrdbSWiSIhdynEKIdwqR5ZXZb7pZhu31LNItJqUMOy1gs7D
- 6h0/FC/1A==;
-Received: from hch by bombadil.infradead.org with local (Exim 4.92.3 #3 (Red
- Hat Linux)) id 1iLUo8-0007Tv-Ic; Fri, 18 Oct 2019 16:08:52 +0000
-Date: Fri, 18 Oct 2019 09:08:52 -0700
-From: Christoph Hellwig <hch@infradead.org>
-To: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Subject: Re: [PATCH 4/7] soc: fsl: qe: replace spin_event_timeout by
- readx_poll_timeout_atomic
-Message-ID: <20191018160852.GA13036@infradead.org>
-References: <20191018125234.21825-1-linux@rasmusvillemoes.dk>
- <20191018125234.21825-5-linux@rasmusvillemoes.dk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46vwMw6gPCzDqbG
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Oct 2019 06:00:28 +1100 (AEDT)
+Received: by mail-oi1-x242.google.com with SMTP id 83so6129041oii.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2019 12:00:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=t99ObJB56KhBS/WNpgsgAnYcJ+G543s7eRggbvF+GSc=;
+ b=ZI5aiYWM+xn39N9ZL4bzOc/HegZiWV9I8vBroRd4GUo4BX8a7uWfmvRi1rOlQ0yOrm
+ F2179cWsuL18gEZhsafeFRl2Kd1ODlkoge3lflx7dcGTLhP5mUamYddeu5/X3VGr74F9
+ VWi93Dqdvc2LrlYCPsfEqE5NP58rgHfjloniDzkqOnOP4qFHLzxyCRYDZeJhxSQ0dQNg
+ XzdQ6ua1WZ61PFAu9IJbUwo1iVS70dOWIMPFL7LvxLeUbsw1NOGnUy3xQ+qNVitnWQbW
+ tfJfJJ/on8S90wHJ0FlTGGVjqegtf10GO1HyEhdxyJShol9qzaWIQXbdtRMuLFIdRj+G
+ bttQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=t99ObJB56KhBS/WNpgsgAnYcJ+G543s7eRggbvF+GSc=;
+ b=a8Ez7hmhsiPvs5OJI3zVn7CrnFr0ulK1P8XmLnpqnZ2DIzDIeUh1UXrn+Ljr19K81z
+ +dDHdO0C5zViGMuDbioPuM9pbdwE7UXYrbwLJ82Sg6WPzVWiN70omvyeAwnDfj+N0Fh9
+ twU5ZywydxCxnXnP3XQuAabpZcIgfAyOlqTeOnuVzDVlzwmkTykAIZ3E5Sdqc6gVFs8y
+ 9R7POMXiU9eTM3sBBb45TnN8+7iqWJZK5z8JbCKN6Gg143kq2bSluCIr/cC6uoDzumkM
+ pWT85eZUyH6qSccR4p/oW0bk2gj3WqoS/dx0ArtOfpgwxFk9356Wd+3aAelJoBZO7svb
+ Phsw==
+X-Gm-Message-State: APjAAAX5DU9L1pj6cutiPKcOJlfZX5QUX4GSY4R9A5bHBSBrrPesBl9k
+ rHdc8RP9sDWcCXjkL878jaw=
+X-Google-Smtp-Source: APXvYqzCUlmptopKF+iqEPn/QEAG2McNNSZzczXsm6/Z8KP5BPeeLepxWUZOBD8o9+Z2WvXmnnIjSw==
+X-Received: by 2002:aca:1b04:: with SMTP id b4mr2309849oib.81.1571425224537;
+ Fri, 18 Oct 2019 12:00:24 -0700 (PDT)
+Received: from ubuntu-m2-xlarge-x86 ([2604:1380:4111:8b00::1])
+ by smtp.gmail.com with ESMTPSA id u14sm1745760otj.61.2019.10.18.12.00.23
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Fri, 18 Oct 2019 12:00:23 -0700 (PDT)
+Date: Fri, 18 Oct 2019 12:00:22 -0700
+From: Nathan Chancellor <natechancellor@gmail.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH v4 3/3] powerpc/prom_init: Use -ffreestanding to avoid a
+ reference to bcmp
+Message-ID: <20191018190022.GA1292@ubuntu-m2-xlarge-x86>
+References: <20190911182049.77853-1-natechancellor@gmail.com>
+ <20191014025101.18567-1-natechancellor@gmail.com>
+ <20191014025101.18567-4-natechancellor@gmail.com>
+ <20191014093501.GE28442@gate.crashing.org>
+ <CAKwvOdmcUT2A9FG0JD9jd0s=gAavRc_h+RLG6O3mBz4P1FfF8w@mail.gmail.com>
+ <20191014191141.GK28442@gate.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20191018125234.21825-5-linux@rasmusvillemoes.dk>
-User-Agent: Mutt/1.12.1 (2019-06-15)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
- bombadil.infradead.org. See http://www.infradead.org/rpr.html
+In-Reply-To: <20191014191141.GK28442@gate.crashing.org>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,22 +98,85 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Li Yang <leoyang.li@nxp.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- Qiang Zhao <qiang.zhao@nxp.com>
+Cc: Nick Desaulniers <ndesaulniers@google.com>,
+ LKML <linux-kernel@vger.kernel.org>,
+ clang-built-linux <clang-built-linux@googlegroups.com>,
+ Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Oct 18, 2019 at 02:52:31PM +0200, Rasmus Villemoes wrote:
->  	/* wait for the QE_CR_FLG to clear */
-> -	ret = spin_event_timeout((ioread32be(&qe_immr->cp.cecr) & QE_CR_FLG) == 0,
-> -				 100, 0);
-> -	/* On timeout (e.g. failure), the expression will be false (ret == 0),
-> -	   otherwise it will be true (ret == 1). */
-> +	ret = readx_poll_timeout_atomic(ioread32be, &qe_immr->cp.cecr, val, (val & QE_CR_FLG) == 0,
+On Mon, Oct 14, 2019 at 02:11:41PM -0500, Segher Boessenkool wrote:
+> On Mon, Oct 14, 2019 at 08:56:12AM -0700, Nick Desaulniers wrote:
+> > On Mon, Oct 14, 2019 at 2:35 AM Segher Boessenkool
+> > <segher@kernel.crashing.org> wrote:
+> > >
+> > > On Sun, Oct 13, 2019 at 07:51:01PM -0700, Nathan Chancellor wrote:
+> > > > r374662 gives LLVM the ability to convert certain loops into a reference
+> > > > to bcmp as an optimization; this breaks prom_init_check.sh:
+> > >
+> > > When/why does LLVM think this is okay?  This function has been removed
+> > > from POSIX over a decade ago (and before that it always was marked as
+> > > legacy).
+> > 
+> > Segher, do you have links for any of the above? If so, that would be
+> > helpful to me.
+> 
+> Sure!
+> 
+> https://pubs.opengroup.org/onlinepubs/9699919799/xrat/V4_xsh_chap03.html
+> 
+> Older versions are harder to find online, unfortunately.  But there is
+> 
+> https://kernel.org/pub/linux/docs/man-pages/man-pages-posix/
+> 
+> in which man3p/bcmp.3p says:
+> 
+> FUTURE DIRECTIONS
+>        This function may be withdrawn in a future version.
+> 
+> Finally, the Linux man pages say (man bcmp):
+> 
+> CONFORMING TO
+>        4.3BSD.   This  function   is   deprecated   (marked   as   LEGACY   in
+>        POSIX.1-2001): use memcmp(3) in new programs.  POSIX.1-2008 removes the
+>        specification of bcmp().
+> 
+> 
+> > I'm arguing against certain transforms that assume that
+> > one library function is faster than another, when such claims are
+> > based on measurements from one stdlib implementation.
+> 
+> Wow.  The difference between memcmp and bcmp is trivial (just the return
+> value is different, and that costs hardly anything to add).  And memcmp
+> is guaranteed to exist since C89/C90 at least.
+> 
+> > The rationale for why it was added was that memcmp takes a measurable
+> > amount of time in Google's fleet, and most calls to memcmp don't care
+> > about the position of the mismatch; bcmp is lower overhead (or at
+> > least for our libc implementation, not sure about others).
+> 
+> You just have to do the read of the last words you compare as big-endian,
+> and then you can just subtract the two words, convert that to "int" (which
+> is very inconvenient to do, but hardly expensive), and there you go.
+> 
+> Or on x86 use the bswap insn, or something like it.
+> 
+> Or, if you use GCC, it has __builtin_memcmp but also __builtin_memcmp_eq,
+> and those are automatically used, too.
+> 
+> 
+> Segher
 
-This creates an overly long line.
+Just as an FYI, there was some more discussion around the availablity
+and use of bcmp in this LLVM bug which spawned
+commit 5f074f3e192f ("lib/string.c: implement a basic bcmp").
 
-Btw, given how few users of spin_event_timeout we have it might be good
-idea to just kill it entirely.
+https://bugs.llvm.org/show_bug.cgi?id=41035#c13
+
+I believe this is the proper solution but I am fine with whatever works,
+I just want our CI to be green without any out of tree patches again...
+
+Cheers,
+Nathan
