@@ -2,48 +2,66 @@ Return-Path: <SRS0=Uveu=YL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4FC10CA9EAC
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Oct 2019 21:19:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 78E6ECA9EA9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Oct 2019 21:20:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DD812222C3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Oct 2019 21:19:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DD812222C3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 22CEB2089C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Oct 2019 21:20:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 22CEB2089C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=perches.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46vzRm01NJzDqrm
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Oct 2019 08:19:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46vzTs5wvZzDqpL
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Oct 2019 08:20:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
- receiver=<UNKNOWN>)
+ spf=none (no SPF record) smtp.mailfrom=perches.com
+ (client-ip=216.40.44.15; helo=smtprelay.hostedemail.com;
+ envelope-from=joe@perches.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+ dmarc=none (p=none dis=none) header.from=perches.com
+X-Greylist: delayed 402 seconds by postgrey-1.36 at bilbo;
+ Sat, 19 Oct 2019 02:43:23 AEDT
+Received: from smtprelay.hostedemail.com (smtprelay0015.hostedemail.com
+ [216.40.44.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46vqXX1DRSzDvHQ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Oct 2019 02:22:35 +1100 (AEDT)
-Received: by verein.lst.de (Postfix, from userid 2407)
- id E74F668BFE; Fri, 18 Oct 2019 17:22:26 +0200 (CEST)
-Date: Fri, 18 Oct 2019 17:22:26 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Petr Mladek <pmladek@suse.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46vr0W5g6VzF0gj
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Oct 2019 02:43:21 +1100 (AEDT)
+Received: from smtprelay.hostedemail.com (10.5.19.251.rfc1918.com
+ [10.5.19.251])
+ by smtpgrave07.hostedemail.com (Postfix) with ESMTP id 0CE051828DEDD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2019 15:36:45 +0000 (UTC)
+Received: from filter.hostedemail.com (clb03-v110.bra.tucows.net
+ [216.40.38.60])
+ by smtprelay03.hostedemail.com (Postfix) with ESMTP id BE2168384361;
+ Fri, 18 Oct 2019 15:36:25 +0000 (UTC)
+X-Session-Marker: 6A6F6540706572636865732E636F6D
+X-HE-Tag: dolls48_8e237410aa840
+X-Filterd-Recvd-Size: 3702
+Received: from XPS-9350.home (unknown [47.151.135.224])
+ (Authenticated sender: joe@perches.com)
+ by omf15.hostedemail.com (Postfix) with ESMTPA;
+ Fri, 18 Oct 2019 15:36:16 +0000 (UTC)
+Message-ID: <86695bdf8e8e7425b680dcbcb23acec5e58853da.camel@perches.com>
 Subject: Re: [PATCH v2 00/33] Kill pr_warning in the whole linux code
-Message-ID: <20191018152226.GA32150@lst.de>
+From: Joe Perches <joe@perches.com>
+To: Christoph Hellwig <hch@lst.de>, Petr Mladek <pmladek@suse.com>, Stephen
+ Rothwell <sfr@canb.auug.org.au>
+Date: Fri, 18 Oct 2019 08:36:15 -0700
+In-Reply-To: <20191018152226.GA32150@lst.de>
 References: <20191018031710.41052-1-wangkefeng.wang@huawei.com>
  <20191018142626.vmbgclelw23h5pdn@pathway.suse.cz>
+ <20191018152226.GA32150@lst.de>
+Content-Type: text/plain; charset="ISO-8859-1"
+User-Agent: Evolution 3.32.1-2 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20191018142626.vmbgclelw23h5pdn@pathway.suse.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 7bit
 X-Mailman-Approved-At: Sat, 19 Oct 2019 08:15:32 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -63,14 +81,13 @@ Cc: Mark Rutland <mark.rutland@arm.com>,
  Jaroslav Kysela <perex@perex.cz>, David Howells <dhowells@redhat.com>,
  Sylwester Nawrocki <s.nawrocki@samsung.com>, "H. Peter Anvin" <hpa@zytor.com>,
  Philipp Reisner <philipp.reisner@linbit.com>,
- Frank Rowand <frowand.list@gmail.com>, Christoph Hellwig <hch@lst.de>,
+ Frank Rowand <frowand.list@gmail.com>, linux-afs@lists.infradead.org,
  drbd-dev@lists.linbit.com, Song Liu <songliubraving@fb.com>,
  Stephen Rothwell <sfr@canb.auug.org.au>,
  Herbert Xu <herbert@gondor.apana.org.au>,
  Daniel Borkmann <daniel@iogearbox.net>, Jiri Olsa <jolsa@redhat.com>,
  Daniel Lezcano <daniel.lezcano@linaro.org>,
- Krzysztof Kozlowski <krzk@kernel.org>, linux-afs@lists.infradead.org,
- Peter Zijlstra <peterz@infradead.org>,
+ Krzysztof Kozlowski <krzk@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
  Andy Shevchenko <andy.shevchenko@gmail.com>, Ingo Molnar <mingo@redhat.com>,
  Catalin Marinas <catalin.marinas@arm.com>, Darren Hart <dvhart@infradead.org>,
  Marek Szyprowski <m.szyprowski@samsung.com>, Len Brown <lenb@kernel.org>,
@@ -92,12 +109,21 @@ Cc: Mark Rutland <mark.rutland@arm.com>,
  Martin KaFai Lau <kafai@fb.com>, Yonghong Song <yhs@fb.com>,
  Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
  James Morse <james.morse@arm.com>, Corentin Chary <corentin.chary@gmail.com>,
- Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
- Andy Shevchenko <andy@infradead.org>
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S.
+ Miller" <davem@davemloft.net>, Andy Shevchenko <andy@infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-As I said before: please just send Linus a scripted conversion after
-the next -rc1.  There is no point in creating all this churn.
+(Adding Stephen Rothwell)
+
+On Fri, 2019-10-18 at 17:22 +0200, Christoph Hellwig wrote:
+> As I said before: please just send Linus a scripted conversion after
+> the next -rc1.  There is no point in creating all this churn.	
+
+I again ask for a scripted mechanism to be added to
+-next to allow these types of scriptable patches to get
+compilation coverage testing.
+
+
