@@ -7,73 +7,75 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 380CECA9EA0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Oct 2019 12:57:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FF93CA9EA0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Oct 2019 13:00:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 80DD2222C2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Oct 2019 12:57:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B45862089C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Oct 2019 13:00:49 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="FSHcuBzP"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 80DD2222C2
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="KFyP8ivf"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B45862089C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rasmusvillemoes.dk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46vmJb4MTXzDrRF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Oct 2019 23:57:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46vmNt4SfgzDrdV
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Oct 2019 00:00:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::241;
- helo=mail-lj1-x241.google.com; envelope-from=linux@rasmusvillemoes.dk;
+ smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::142;
+ helo=mail-lf1-x142.google.com; envelope-from=linux@rasmusvillemoes.dk;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=rasmusvillemoes.dk
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk
- header.b="FSHcuBzP"; dkim-atps=neutral
-Received: from mail-lj1-x241.google.com (mail-lj1-x241.google.com
- [IPv6:2a00:1450:4864:20::241])
+ header.b="KFyP8ivf"; dkim-atps=neutral
+Received: from mail-lf1-x142.google.com (mail-lf1-x142.google.com
+ [IPv6:2a00:1450:4864:20::142])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46vmCj515rzDrVT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2019 23:52:45 +1100 (AEDT)
-Received: by mail-lj1-x241.google.com with SMTP id n14so6089355ljj.10
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2019 05:52:45 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46vmCk4mk0zDrVb
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2019 23:52:47 +1100 (AEDT)
+Received: by mail-lf1-x142.google.com with SMTP id q12so4613800lfc.11
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2019 05:52:47 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=rasmusvillemoes.dk; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=76C3KCBVTIWXOJRoGbkicD5UasUbJ5XDGEEs+OOGNvk=;
- b=FSHcuBzPR1mmeL4PACLKsTbqTj+24LBzK/6l+O/Lm/1IrQLP3nhdrLnFf6MSg0yH0g
- HoftTcmnUioa5SuvRouA12dlbveQ/icRsojJyg7o+TA6FzCF4LpHeb/WCkcTlKMjOMFj
- W12H1zsXT9+1u+Ng90qJFYXAQtc1ter6pD6Nk=
+ bh=b/kYsXKDEeEBcA1fCE+mpoBIaUoXu8b4ge6C0aEmGGA=;
+ b=KFyP8ivfbpHtepeGzrcdL51yIH0E0bUb8X+4a2KH0HGN4QWsIwbhQQBDFzpw8B4QAS
+ RbUd93jPl4MuGJetIgGZbsZyOKrmZfbazbh3U8W4NiWpzrx9at5H+K/9lL3NoBdPWnbx
+ iTRZaQAOW1xXsH1h45p9Y3RpNKZaeJif7ZIvY=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=76C3KCBVTIWXOJRoGbkicD5UasUbJ5XDGEEs+OOGNvk=;
- b=E1FRFYQGWw3fwXk5HkD5e1c76FK/oNs0XNay+EXAwSkjIL/TucS2LOvnrl5sTTgO/B
- FJlgqPrbIU/vIaHmaFFKE9m4Itls7xpLYtfYeH+kEfTzwtuRYpIUEw7JzviSB/L0Uee8
- 70AOIwH96HmRAT1J9S2Bg+uGGeunwtsuoJWxlpkm0TpR6wiJIOTu74W0nc1t67zFB6+s
- UyM6gEWfp6I+CObx6EO65Uy2Lw2Gt75eub/UPr8OTEkGWHqHXoFSs4/kShRRWDDmdyjj
- Y0nmvvlS6xol7cl64QeEXEVPLd5gJJLxeBVKnl38DdVQ2kMWDGUhVei5tZ7wEBJuWlaF
- Xv8g==
-X-Gm-Message-State: APjAAAXm4F/VKSq9H37/Gu+BwWNF6yglB6P/94Z+4jU60CugfJeorvKz
- lDCtNfBBZjf3Asnh+MV90cWKtXABBT185red
-X-Google-Smtp-Source: APXvYqwYe6ilX8TDGuGskrpio0qKSxCNGwmNMC2CS8ROsNPpnWHiv5TjxIYmTv9OVkt1GHfcoMvdMg==
-X-Received: by 2002:a2e:9112:: with SMTP id m18mr6305431ljg.75.1571403161898; 
- Fri, 18 Oct 2019 05:52:41 -0700 (PDT)
+ bh=b/kYsXKDEeEBcA1fCE+mpoBIaUoXu8b4ge6C0aEmGGA=;
+ b=g0eHg3cQBV4ujF4qlMWAyjCdtjxG3eOsmknCML5OngcNrR19FztdTZT2cee+ycVLu3
+ KuCBTrPOBe3eF3FCyzxXxBOsEpTrGSaObg0F8nNMI3ytTqNgAW4KGXRjF2jwOxDk+fxK
+ opjp3U34UZCTE1NFOFMj57kxupOicLmj7EfHP6vbgfBohwnyuCps1yHm5Jvjokq6h48R
+ BzUMbGQ5SZ6wUH02qyXtDzt0EqSwFim40tsqIIHvhVbKdEJI/kxwZ1N9ZkqfMW9Wbqal
+ u1o+P0N6xMqQ8/dLZVfa0/LQ8D5t/6iy3fZn1JZUxsLYs5irfxikO+jIv5U9NVvoN8X9
+ 0WFg==
+X-Gm-Message-State: APjAAAV0oYbl6wU8gTqq61kVdlFzqauFRVgNeiLV4pAhoe53V97LXiq4
+ rXa1BWTHZvIMoQOP4kfqKOHgXQ==
+X-Google-Smtp-Source: APXvYqwfp2OR81F0L53trJi7RZb+gW5SZ6EFdq5/LmCgN8KPrYOURZTPP/LvsMtj32ugvHQiRs800Q==
+X-Received: by 2002:a05:6512:71:: with SMTP id
+ i17mr5903293lfo.68.1571403163737; 
+ Fri, 18 Oct 2019 05:52:43 -0700 (PDT)
 Received: from prevas-ravi.prevas.se ([81.216.59.226])
- by smtp.gmail.com with ESMTPSA id m17sm7454792lje.0.2019.10.18.05.52.40
+ by smtp.gmail.com with ESMTPSA id m17sm7454792lje.0.2019.10.18.05.52.42
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 18 Oct 2019 05:52:40 -0700 (PDT)
+ Fri, 18 Oct 2019 05:52:42 -0700 (PDT)
 From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 To: Qiang Zhao <qiang.zhao@nxp.com>,
 	Li Yang <leoyang.li@nxp.com>
-Subject: [PATCH 1/7] soc: fsl: qe: remove space-before-tab
-Date: Fri, 18 Oct 2019 14:52:28 +0200
-Message-Id: <20191018125234.21825-2-linux@rasmusvillemoes.dk>
+Subject: [PATCH 2/7] soc: fsl: qe: drop volatile qualifier of struct
+ qe_ic::regs
+Date: Fri, 18 Oct 2019 14:52:29 +0200
+Message-Id: <20191018125234.21825-3-linux@rasmusvillemoes.dk>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20191018125234.21825-1-linux@rasmusvillemoes.dk>
 References: <20191018125234.21825-1-linux@rasmusvillemoes.dk>
@@ -96,26 +98,49 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+The actual io accessors (e.g. in_be32) implicitly add a volatile
+qualifier to their address argument. Remove volatile from the struct
+definition and the qe_ic_(read/write) helpers, in preparation for
+switching from the ppc-specific io accessors to generic ones.
+
 Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 ---
- drivers/soc/fsl/qe/qe.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/soc/fsl/qe/qe_ic.c | 4 ++--
+ drivers/soc/fsl/qe/qe_ic.h | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/soc/fsl/qe/qe.c b/drivers/soc/fsl/qe/qe.c
-index 417df7e19281..6fcbfad408de 100644
---- a/drivers/soc/fsl/qe/qe.c
-+++ b/drivers/soc/fsl/qe/qe.c
-@@ -378,8 +378,8 @@ static int qe_sdma_init(void)
- 	}
+diff --git a/drivers/soc/fsl/qe/qe_ic.c b/drivers/soc/fsl/qe/qe_ic.c
+index 9bac546998d3..9694569dcc76 100644
+--- a/drivers/soc/fsl/qe/qe_ic.c
++++ b/drivers/soc/fsl/qe/qe_ic.c
+@@ -171,12 +171,12 @@ static struct qe_ic_info qe_ic_info[] = {
+ 		},
+ };
  
- 	out_be32(&sdma->sdebcr, (u32) sdma_buf_offset & QE_SDEBCR_BA_MASK);
-- 	out_be32(&sdma->sdmr, (QE_SDMR_GLB_1_MSK |
-- 					(0x1 << QE_SDMR_CEN_SHIFT)));
-+	out_be32(&sdma->sdmr, (QE_SDMR_GLB_1_MSK |
-+					(0x1 << QE_SDMR_CEN_SHIFT)));
- 
- 	return 0;
+-static inline u32 qe_ic_read(volatile __be32  __iomem * base, unsigned int reg)
++static inline u32 qe_ic_read(__be32  __iomem * base, unsigned int reg)
+ {
+ 	return in_be32(base + (reg >> 2));
  }
+ 
+-static inline void qe_ic_write(volatile __be32  __iomem * base, unsigned int reg,
++static inline void qe_ic_write(__be32  __iomem * base, unsigned int reg,
+ 			       u32 value)
+ {
+ 	out_be32(base + (reg >> 2), value);
+diff --git a/drivers/soc/fsl/qe/qe_ic.h b/drivers/soc/fsl/qe/qe_ic.h
+index 08c695672a03..9420378d9b6b 100644
+--- a/drivers/soc/fsl/qe/qe_ic.h
++++ b/drivers/soc/fsl/qe/qe_ic.h
+@@ -72,7 +72,7 @@
+ 
+ struct qe_ic {
+ 	/* Control registers offset */
+-	volatile u32 __iomem *regs;
++	u32 __iomem *regs;
+ 
+ 	/* The remapper for this QEIC */
+ 	struct irq_domain *irqhost;
 -- 
 2.20.1
 
