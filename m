@@ -2,73 +2,89 @@ Return-Path: <SRS0=xGhR=YN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1AD75CA9EAD
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 20 Oct 2019 19:55:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A60DDCA9EAD
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 20 Oct 2019 21:19:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8A29A21928
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 20 Oct 2019 19:55:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A29A21928
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
+	by mail.kernel.org (Postfix) with ESMTPS id E1F1B21928
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 20 Oct 2019 21:19:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E1F1B21928
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46x9VD2kvqzDqRR
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 06:55:16 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 46xCLt6cK2zDqQX
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 08:19:02 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46x9SF5drvzDqNK
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Oct 2019 06:53:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linutronix.de
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46xCJv0hjxzDqQ8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Oct 2019 08:17:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-m68k.org
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 46x9SF4fXTz8tT3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Oct 2019 06:53:33 +1100 (AEDT)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 46xCJt4JsXz8tT4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Oct 2019 08:17:18 +1100 (AEDT)
 Received: by ozlabs.org (Postfix)
- id 46x9SF4F3Nz9sNx; Mon, 21 Oct 2019 06:53:33 +1100 (AEDT)
-Authentication-Results: ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=linutronix.de
- (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
- envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linutronix.de
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a0a:51c0:0:12e:550::1])
- (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
+ id 46xCJt3v97z9sPf; Mon, 21 Oct 2019 08:17:18 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=nefkom.net (client-ip=212.18.0.10; helo=mail-out.m-online.net;
+ envelope-from=whitebox@nefkom.net; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-m68k.org
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 46x9SD3RQmz9sNw
- for <linuxppc-dev@ozlabs.org>; Mon, 21 Oct 2019 06:53:31 +1100 (AEDT)
-Received: from p5b06da22.dip0.t-ipconnect.de ([91.6.218.34] helo=nanos)
- by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
- (Exim 4.80) (envelope-from <tglx@linutronix.de>)
- id 1iMHGS-0003oc-L8; Sun, 20 Oct 2019 21:53:20 +0200
-Date: Sun, 20 Oct 2019 21:53:19 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andreas Schwab <schwab@linux-m68k.org>
+ by ozlabs.org (Postfix) with ESMTPS id 46xCJs2lYNz9sPc
+ for <linuxppc-dev@ozlabs.org>; Mon, 21 Oct 2019 08:17:14 +1100 (AEDT)
+Received: from frontend01.mail.m-online.net (unknown [192.168.8.182])
+ by mail-out.m-online.net (Postfix) with ESMTP id 46xCJk4j1Sz1rVvB;
+ Sun, 20 Oct 2019 23:17:10 +0200 (CEST)
+Received: from localhost (dynscan1.mnet-online.de [192.168.6.70])
+ by mail.m-online.net (Postfix) with ESMTP id 46xCJk47Rcz1qqkJ;
+ Sun, 20 Oct 2019 23:17:10 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at mnet-online.de
+Received: from mail.mnet-online.de ([192.168.8.182])
+ by localhost (dynscan1.mail.m-online.net [192.168.6.70]) (amavisd-new,
+ port 10024)
+ with ESMTP id Y_qNTcrZ_0pg; Sun, 20 Oct 2019 23:17:09 +0200 (CEST)
+X-Auth-Info: QlbozI/3hpIdkPKg2h3z6WopigwPAjwwBghegXi4EGmgLBsxpRPPW790vQQQSgrI
+Received: from igel.home (ppp-46-244-172-176.dynamic.mnet-online.de
+ [46.244.172.176])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.mnet-online.de (Postfix) with ESMTPSA;
+ Sun, 20 Oct 2019 23:17:09 +0200 (CEST)
+Received: by igel.home (Postfix, from userid 1000)
+ id 332C02C01E5; Sun, 20 Oct 2019 23:17:09 +0200 (CEST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Thomas Gleixner <tglx@linutronix.de>
 Subject: Re: passing NULL to clock_getres (VDSO): terminated by unexpected
  signal 11
-In-Reply-To: <87r237h01a.fsf@igel.home>
-Message-ID: <alpine.DEB.2.21.1910202145160.2090@nanos.tec.linutronix.de>
 References: <0fc22a08-31d9-e4d1-557e-bf5b482a9a20__6444.28012180782$1571503753$gmane$org@c-s.fr>
- <87v9skcznp.fsf@igel.home> <ed65e4c6-2fe0-2f5c-f667-5a81b19eb073@c-s.fr>
- <87tv83zqt1.fsf@hase.home> <b64c367b-d1e5-bf26-d452-145c0be6e30a@c-s.fr>
+ <87v9skcznp.fsf@igel.home>
+ <ed65e4c6-2fe0-2f5c-f667-5a81b19eb073@c-s.fr>
+ <87tv83zqt1.fsf@hase.home>
+ <b64c367b-d1e5-bf26-d452-145c0be6e30a@c-s.fr>
  <alpine.DEB.2.21.1910201243580.2090@nanos.tec.linutronix.de>
  <875zkjipra.fsf@igel.home>
  <alpine.DEB.2.21.1910201731070.2090@nanos.tec.linutronix.de>
  <87r237h01a.fsf@igel.home>
-User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
+ <alpine.DEB.2.21.1910202145160.2090@nanos.tec.linutronix.de>
+X-Yow: They don't hire PERSONAL PINHEADS, Mr. Toad!
+Date: Sun, 20 Oct 2019 23:17:09 +0200
+In-Reply-To: <alpine.DEB.2.21.1910202145160.2090@nanos.tec.linutronix.de>
+ (Thomas Gleixner's message of "Sun, 20 Oct 2019 21:53:19 +0200
+ (CEST)")
+Message-ID: <87eez7glre.fsf@igel.home>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-X-Linutronix-Spam-Score: -1.0
-X-Linutronix-Spam-Level: -
-X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required, ALL_TRUSTED=-1,
- SHORTCIRCUIT=-0.0001
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,25 +103,17 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, 20 Oct 2019, Andreas Schwab wrote:
-> On Okt 20 2019, Thomas Gleixner wrote:
-> 
-> > POSIX does not mention anything about the validity of the pointer handed to
-> > clock_getres().
-> 
-> Sure it does: "If the argument res is not NULL, the resolution of the
-> specified clock shall be stored in the location pointed to by res.  If
-> res is NULL, the clock resolution is not returned.".
+On Okt 20 2019, Thomas Gleixner wrote:
 
-Sigh, that makes a lot of sense - NOT.
+> But for the sake of making a non-sensical specification happy we can add a
+> NULL pointer check for this. The interesting question is what should be
+> returned in this case.
 
-But for the sake of making a non-sensical specification happy we can add a
-NULL pointer check for this. The interesting question is what should be
-returned in this case. The kernel returns EFAULT which is probably not
-POSIX compliant either.
+0 if the clock id is valid, EINVAL otherwise.
 
-Patches are welcome.
+Andreas.
 
-Thanks,
-
-	tglx
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 7578 EB47 D4E5 4D69 2510  2552 DF73 E780 A9DA AEC1
+"And now for something completely different."
