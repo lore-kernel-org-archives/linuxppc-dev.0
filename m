@@ -2,83 +2,73 @@ Return-Path: <SRS0=xGhR=YN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2 autolearn=no
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E76E9CA9EA0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 20 Oct 2019 17:55:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1AD75CA9EAD
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 20 Oct 2019 19:55:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5B9CA21897
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 20 Oct 2019 17:55:55 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="HZkr9mE9"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5B9CA21897
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 8A29A21928
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 20 Oct 2019 19:55:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A29A21928
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46x6rS3yFRzDqNP
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 04:55:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46x9VD2kvqzDqRR
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 06:55:16 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46x4TK5MtDzDqNp
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Oct 2019 03:09:09 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46x9SF5drvzDqNK
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Oct 2019 06:53:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="HZkr9mE9"; 
- dkim-atps=neutral
+ dmarc=none (p=none dis=none) header.from=linutronix.de
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 46x4TK0DC3z8tT3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Oct 2019 03:09:09 +1100 (AEDT)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 46x9SF4fXTz8tT3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Oct 2019 06:53:33 +1100 (AEDT)
 Received: by ozlabs.org (Postfix)
- id 46x4TJ5ndDz9sPT; Mon, 21 Oct 2019 03:09:08 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=zohar@kernel.org; receiver=<UNKNOWN>)
+ id 46x9SF4F3Nz9sNx; Mon, 21 Oct 2019 06:53:33 +1100 (AEDT)
 Authentication-Results: ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="HZkr9mE9"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=none (no SPF record) smtp.mailfrom=linutronix.de
+ (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
+ envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linutronix.de
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a0a:51c0:0:12e:550::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 46x4TH5N00z9sPL;
- Mon, 21 Oct 2019 03:09:07 +1100 (AEDT)
-Received: from localhost.localdomain (ool-18bba523.dyn.optonline.net
- [24.187.165.35])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id AAB83218BA;
- Sun, 20 Oct 2019 16:09:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1571587744;
- bh=2rqZqTghk0jq/6poDX1vz2pfYzf7Qp8iUns4NuEy5NQ=;
- h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
- b=HZkr9mE9kNuZvNX5TVBK80qFqOhhKOI6Vd4XPcDsexisoiZQIUZLZ/LAj/FksDrGR
- bgMOem4aYqutYg8IUTz77yWm6QiAJnF4ImF78HC7TIBhqG66WXDFG2MSG0pQ0AA/ea
- uVPisOxbE+dqQv9ilAzF5wVw96sXtT4B8LpkVHCY=
-Message-ID: <1571587740.5104.10.camel@kernel.org>
-Subject: Re: [PATCH v8 7/8] ima: check against blacklisted hashes for files
- with modsig
-From: Mimi Zohar <zohar@kernel.org>
-To: Nayna Jain <nayna@linux.ibm.com>, linuxppc-dev@ozlabs.org, 
- linux-efi@vger.kernel.org, linux-integrity@vger.kernel.org
-Date: Sun, 20 Oct 2019 12:09:00 -0400
-In-Reply-To: <1571587602.5104.8.camel@linux.ibm.com>
-References: <1571508377-23603-1-git-send-email-nayna@linux.ibm.com>
- <1571508377-23603-8-git-send-email-nayna@linux.ibm.com>
- <1571587602.5104.8.camel@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.20.5 (3.20.5-1.fc24) 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Mon, 21 Oct 2019 04:53:50 +1100
+ by ozlabs.org (Postfix) with ESMTPS id 46x9SD3RQmz9sNw
+ for <linuxppc-dev@ozlabs.org>; Mon, 21 Oct 2019 06:53:31 +1100 (AEDT)
+Received: from p5b06da22.dip0.t-ipconnect.de ([91.6.218.34] helo=nanos)
+ by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
+ (Exim 4.80) (envelope-from <tglx@linutronix.de>)
+ id 1iMHGS-0003oc-L8; Sun, 20 Oct 2019 21:53:20 +0200
+Date: Sun, 20 Oct 2019 21:53:19 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Subject: Re: passing NULL to clock_getres (VDSO): terminated by unexpected
+ signal 11
+In-Reply-To: <87r237h01a.fsf@igel.home>
+Message-ID: <alpine.DEB.2.21.1910202145160.2090@nanos.tec.linutronix.de>
+References: <0fc22a08-31d9-e4d1-557e-bf5b482a9a20__6444.28012180782$1571503753$gmane$org@c-s.fr>
+ <87v9skcznp.fsf@igel.home> <ed65e4c6-2fe0-2f5c-f667-5a81b19eb073@c-s.fr>
+ <87tv83zqt1.fsf@hase.home> <b64c367b-d1e5-bf26-d452-145c0be6e30a@c-s.fr>
+ <alpine.DEB.2.21.1910201243580.2090@nanos.tec.linutronix.de>
+ <875zkjipra.fsf@igel.home>
+ <alpine.DEB.2.21.1910201731070.2090@nanos.tec.linutronix.de>
+ <87r237h01a.fsf@igel.home>
+User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+X-Linutronix-Spam-Score: -1.0
+X-Linutronix-Spam-Level: -
+X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required, ALL_TRUSTED=-1,
+ SHORTCIRCUIT=-0.0001
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,43 +80,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Eric Ricther <erichte@linux.ibm.com>, Prakhar Srivastava <prsriva02@gmail.com>,
- linux-kernel@vger.kernel.org, Claudio Carvalho <cclaudio@linux.ibm.com>,
- Matthew Garret <matthew.garret@nebula.com>,
- Lakshmi Ramasubramanian <nramas@linux.microsoft.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Paul Mackerras <paulus@samba.org>, Jeremy Kerr <jk@ozlabs.org>,
- Elaine Palmer <erpalmer@us.ibm.com>, Oliver O'Halloran <oohall@gmail.com>,
- George Wilson <gcwilson@linux.ibm.com>
+Cc: Nathan Lynch <nathanl@linux.ibm.com>,
+ Vincenzo Frascino <vincenzo.frascino@arm.com>,
+ "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, 2019-10-20 at 12:06 -0400, Mimi Zohar wrote:
-> On Sat, 2019-10-19 at 14:06 -0400, Nayna Jain wrote:
-> > Asymmetric private keys are used to sign multiple files. The kernel
-> > currently support checking against blacklisted keys. However, if the
-> > public key is blacklisted, any file signed by the blacklisted key will
-> > automatically fail signature verification. We might not want to blacklist
-> > all the files signed by a particular key, but just a single file.
-> > Blacklisting the public key is not fine enough granularity.
-> > 
-> > This patch adds support for checking against the blacklisted hash of the
-> > file based on the IMA policy. The blacklisted hash is the file hash
-> > without the appended signature. Defined is a new policy option
-> > "appraise_flag=check_blacklist".
+On Sun, 20 Oct 2019, Andreas Schwab wrote:
+> On Okt 20 2019, Thomas Gleixner wrote:
 > 
-> Please add an example of how to blacklist a file with an appended
-> signature.  The simplest example that works on x86 as well as Power
-> would be blacklisting a kernel module.  The example should include
-> calculating the kernel module hash without the appended signature,
-> enabling the Kconfig option (CONFIG_SYSTEM_BLACKLIST_HASH_LIST), and
-> the blacklist hash format (eg. "bin:<file hash>").
+> > POSIX does not mention anything about the validity of the pointer handed to
+> > clock_getres().
+> 
+> Sure it does: "If the argument res is not NULL, the resolution of the
+> specified clock shall be stored in the location pointed to by res.  If
+> res is NULL, the clock resolution is not returned.".
 
-And of course, the IMA appraise kernel module policy rule containing
-"appraise_flag=check_blacklist".
+Sigh, that makes a lot of sense - NOT.
 
-thanks,
+But for the sake of making a non-sensical specification happy we can add a
+NULL pointer check for this. The interesting question is what should be
+returned in this case. The kernel returns EFAULT which is probably not
+POSIX compliant either.
 
-Mimi
+Patches are welcome.
+
+Thanks,
+
+	tglx
