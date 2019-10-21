@@ -2,55 +2,60 @@ Return-Path: <SRS0=jKXk=YO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C80A8CA9EAB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 03:55:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 329E6C49EAC
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 04:15:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7EEAA20700
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 03:55:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7EEAA20700
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id C3ABE22459
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 04:08:32 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="uFrQ7d0o"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C3ABE22459
+Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46xN7t3H0CzDqZk
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 14:55:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.13; helo=inva020.nxp.com;
- envelope-from=ran.wang_1@nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 46xNRK5ty6zDqZx
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 15:08:29 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46xN1K5LC9zDqV3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Oct 2019 14:49:20 +1100 (AEDT)
-Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id D84871A04F9;
- Mon, 21 Oct 2019 05:49:15 +0200 (CEST)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
- [165.114.16.14])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 7446B1A04B8;
- Mon, 21 Oct 2019 05:49:09 +0200 (CEST)
-Received: from localhost.localdomain (mega.ap.freescale.net [10.192.208.232])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id A0644402DF;
- Mon, 21 Oct 2019 11:49:01 +0800 (SGT)
-From: Ran Wang <ran.wang_1@nxp.com>
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>,
- Li Yang <leoyang.li@nxp.com>, Mark Rutland <mark.rutland@arm.com>,
- Pavel Machek <pavel@ucw.cz>
-Subject: [PATCH v7 1/3] PM: wakeup: Add routine to help fetch wakeup source
- object.
-Date: Mon, 21 Oct 2019 11:49:25 +0800
-Message-Id: <20191021034927.19300-1-ran.wang_1@nxp.com>
-X-Mailer: git-send-email 2.17.1
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46xNNr2LZdzDqNW
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Oct 2019 15:06:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=ozlabs.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="uFrQ7d0o"; 
+ dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1003)
+ id 46xNNq5r9cz9sPL; Mon, 21 Oct 2019 15:06:19 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
+ t=1571630779; bh=0gIwOYRl+uLZLFdtC8UjqQo4XwJkG5ky/1miRAY9OXI=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=uFrQ7d0o8UWnjar+mh+ZFxZ1mDSn3m5dIt9yNR6EqQjYSz1EYO+gIccKPoGpunI5w
+ 0AIDCeEV2WBtpDEynARdN3dmOcdhJM/fktF67Gj2ra7tJr4gvR28m8CQBssIPjSIwN
+ U+u4hcS38D9+iwBu7BjxWGoo8+oFHHwNY4vNnciPhJ64J28qsWZqvIBSFwlYJtLfEH
+ bZybTxodoBoGatjBQtJDljCS71wqI6zuDjmg3XA9343R20BAZQS+pbXCIDJDjHm8qN
+ OdhRKdFynZLg5RyG/Xh6q1+iJlbfbEDRxoNwj79dGZ+VOCq7TUTKpG/Vvn//wnWYYs
+ 40PcjWjjhHX3g==
+Date: Mon, 21 Oct 2019 15:06:15 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Greg Kurz <groug@kaod.org>
+Subject: Re: [PATCH v2 0/6] KVM: PPC: Book3S: HV: XIVE: Allocate less VPs in
+ OPAL
+Message-ID: <20191021040615.GA20714@oak.ozlabs.ibm.com>
+References: <156958521220.1503771.2119482814236775333.stgit@bahia.lan>
+ <20191016234403.77cdf150@bahia.lan>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20191016234403.77cdf150@bahia.lan>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,116 +67,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Li Biwen <biwen.li@nxp.com>, Len Brown <len.brown@intel.com>,
- devicetree@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- Ran Wang <ran.wang_1@nxp.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: kvm@vger.kernel.org, Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+ kvm-ppc@vger.kernel.org, =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>,
+ Paolo Bonzini <pbonzini@redhat.com>, stable@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Some user might want to go through all registered wakeup sources
-and doing things accordingly. For example, SoC PM driver might need to
-do HW programming to prevent powering down specific IP which wakeup
-source depending on. So add this API to help walk through all registered
-wakeup source objects on that list and return them one by one.
+On Wed, Oct 16, 2019 at 11:44:03PM +0200, Greg Kurz wrote:
+> On Fri, 27 Sep 2019 13:53:32 +0200
+> Greg Kurz <groug@kaod.org> wrote:
+> 
+> > This brings some fixes and allows to start more VMs with an in-kernel
+> > XIVE or XICS-on-XIVE device.
+> > 
+> > Changes since v1 (https://patchwork.ozlabs.org/cover/1166099/):
+> > - drop a useless patch
+> > - add a patch to show VP ids in debugfs
+> > - update some changelogs
+> > - fix buggy check in patch 5
+> > - Cc: stable 
+> > 
+> > --
+> > Greg
+> > 
+> > ---
+> > 
+> > Greg Kurz (6):
+> >       KVM: PPC: Book3S HV: XIVE: Set kvm->arch.xive when VPs are allocated
+> >       KVM: PPC: Book3S HV: XIVE: Ensure VP isn't already in use
+> >       KVM: PPC: Book3S HV: XIVE: Show VP id in debugfs
+> >       KVM: PPC: Book3S HV: XIVE: Compute the VP id in a common helper
+> >       KVM: PPC: Book3S HV: XIVE: Make VP block size configurable
+> >       KVM: PPC: Book3S HV: XIVE: Allow userspace to set the # of VPs
+> > 
+> > 
+> >  Documentation/virt/kvm/devices/xics.txt |   14 +++
+> >  Documentation/virt/kvm/devices/xive.txt |    8 ++
+> >  arch/powerpc/include/uapi/asm/kvm.h     |    3 +
+> >  arch/powerpc/kvm/book3s_xive.c          |  142 ++++++++++++++++++++++++-------
+> >  arch/powerpc/kvm/book3s_xive.h          |   17 ++++
+> >  arch/powerpc/kvm/book3s_xive_native.c   |   40 +++------
+> >  6 files changed, 167 insertions(+), 57 deletions(-)
+> > 
+> 
+> Ping ?
 
-Signed-off-by: Ran Wang <ran.wang_1@nxp.com>
-Tested-by: Leonard Crestez <leonard.crestez@nxp.com>
----
-Change in v7:
-	- Remove define of member *dev in wake_irq to fix conflict with commit 
-	c8377adfa781 ("PM / wakeup: Show wakeup sources stats in sysfs"), user 
-	will use ws->dev->parent instead.
-	- Remove '#include <linux/of_device.h>' because it is not used.
+I'm about to send a pull request to Paolo for 2/6 (to go into 5.4) and
+I'm preparing a tree of stuff for 5.5 that will include the rest of
+the patches.  However, I have been delayed by the fact that multipath
+SCSI is currently broken upstream on the P8 test box that I use, so I
+haven't been able to test things.
 
-Change in v6:
-	- Add wakeup_source_get_star() and wakeup_source_get_stop() to aligned 
-	with wakeup_sources_stats_seq_start/nex/stop.
-
-Change in v5:
-	- Update commit message, add decription of walk through all wakeup
-	source objects.
-	- Add SCU protection in function wakeup_source_get_next().
-	- Rename wakeup_source member 'attached_dev' to 'dev' and move it up
-	(before wakeirq).
-
-Change in v4:
-	- None.
-
-Change in v3:
-	- Adjust indentation of *attached_dev;.
-
-Change in v2:
-	- None.
-
- drivers/base/power/wakeup.c | 37 +++++++++++++++++++++++++++++++++++++
- include/linux/pm_wakeup.h   |  3 +++
- 2 files changed, 40 insertions(+)
-
-diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-index 5817b51..dee1b09 100644
---- a/drivers/base/power/wakeup.c
-+++ b/drivers/base/power/wakeup.c
-@@ -248,6 +248,43 @@ void wakeup_source_unregister(struct wakeup_source *ws)
- EXPORT_SYMBOL_GPL(wakeup_source_unregister);
- 
- /**
-+ * wakeup_source_get_star - Begin a walk on wakeup source list
-+ * @srcuidx: Lock index allocated for this caller.
-+ */
-+struct wakeup_source *wakeup_source_get_start(int *srcuidx)
-+{
-+	struct list_head *ws_head = &wakeup_sources;
-+
-+	*srcuidx = srcu_read_lock(&wakeup_srcu);
-+
-+	return list_entry_rcu(ws_head->next, struct wakeup_source, entry);
-+}
-+EXPORT_SYMBOL_GPL(wakeup_source_get_start);
-+
-+/**
-+ * wakeup_source_get_next - Get next wakeup source from the list
-+ * @ws: Previous wakeup source object
-+ */
-+struct wakeup_source *wakeup_source_get_next(struct wakeup_source *ws)
-+{
-+	struct list_head *ws_head = &wakeup_sources;
-+
-+	return list_next_or_null_rcu(ws_head, &ws->entry,
-+				struct wakeup_source, entry);
-+}
-+EXPORT_SYMBOL_GPL(wakeup_source_get_next);
-+
-+/**
-+ * wakeup_source_get_stop - Stop a walk on wakeup source list
-+ * @idx: Dedicated lock index of this caller.
-+ */
-+void wakeup_source_get_stop(int idx)
-+{
-+	srcu_read_unlock(&wakeup_srcu, idx);
-+}
-+EXPORT_SYMBOL_GPL(wakeup_source_get_stop);
-+
-+/**
-  * device_wakeup_attach - Attach a wakeup source object to a device object.
-  * @dev: Device to handle.
-  * @ws: Wakeup source object to attach to @dev.
-diff --git a/include/linux/pm_wakeup.h b/include/linux/pm_wakeup.h
-index 661efa0..172e76c 100644
---- a/include/linux/pm_wakeup.h
-+++ b/include/linux/pm_wakeup.h
-@@ -92,6 +92,9 @@ extern void wakeup_source_remove(struct wakeup_source *ws);
- extern struct wakeup_source *wakeup_source_register(struct device *dev,
- 						    const char *name);
- extern void wakeup_source_unregister(struct wakeup_source *ws);
-+extern struct wakeup_source *wakeup_source_get_start(int *srcuidx);
-+extern struct wakeup_source *wakeup_source_get_next(struct wakeup_source *ws);
-+extern void wakeup_source_get_stop(int idx);
- extern int device_wakeup_enable(struct device *dev);
- extern int device_wakeup_disable(struct device *dev);
- extern void device_set_wakeup_capable(struct device *dev, bool capable);
--- 
-2.7.4
-
+Paul.
