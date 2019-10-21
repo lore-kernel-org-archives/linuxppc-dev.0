@@ -2,70 +2,55 @@ Return-Path: <SRS0=jKXk=YO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82719CA9EAF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 10:09:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 94F03CA9EAF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 10:23:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F206220684
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 10:09:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F206220684
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
+	by mail.kernel.org (Postfix) with ESMTPS id 4CBC12084C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 10:23:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4CBC12084C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46xXRq4bGBzDqg7
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 21:09:27 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46xXPW0kVDzDqg7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Oct 2019 21:07:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46xXmF0x2czDqmf
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 21:23:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linutronix.de
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 46xXPV66NVz8xTL
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Oct 2019 21:07:26 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 46xXPV5cF9z9sCJ; Mon, 21 Oct 2019 21:07:26 +1100 (AEDT)
-Authentication-Results: ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=linutronix.de
- (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
- envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linutronix.de
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a0a:51c0:0:12e:550::1])
- (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.21; helo=inva021.nxp.com; envelope-from=yinbo.zhu@nxp.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 46xXPV2Phrz9sP3
- for <linuxppc-dev@ozlabs.org>; Mon, 21 Oct 2019 21:07:25 +1100 (AEDT)
-Received: from [5.158.153.52] (helo=nanos.tec.linutronix.de)
- by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
- (Exim 4.80) (envelope-from <tglx@linutronix.de>)
- id 1iMUaq-0006Yb-JY; Mon, 21 Oct 2019 12:07:16 +0200
-Date: Mon, 21 Oct 2019 12:07:15 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andreas Schwab <schwab@linux-m68k.org>
-Subject: [PATCH] lib/vdso: Make clock_getres() POSIX compliant again
-In-Reply-To: <87eez7glre.fsf@igel.home>
-Message-ID: <alpine.DEB.2.21.1910211202260.1904@nanos.tec.linutronix.de>
-References: <0fc22a08-31d9-e4d1-557e-bf5b482a9a20__6444.28012180782$1571503753$gmane$org@c-s.fr>
- <87v9skcznp.fsf@igel.home> <ed65e4c6-2fe0-2f5c-f667-5a81b19eb073@c-s.fr>
- <87tv83zqt1.fsf@hase.home> <b64c367b-d1e5-bf26-d452-145c0be6e30a@c-s.fr>
- <alpine.DEB.2.21.1910201243580.2090@nanos.tec.linutronix.de>
- <875zkjipra.fsf@igel.home>
- <alpine.DEB.2.21.1910201731070.2090@nanos.tec.linutronix.de>
- <87r237h01a.fsf@igel.home>
- <alpine.DEB.2.21.1910202145160.2090@nanos.tec.linutronix.de>
- <87eez7glre.fsf@igel.home>
-User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46xXjj70yGzDqMV
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Oct 2019 21:21:25 +1100 (AEDT)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 7689C200123;
+ Mon, 21 Oct 2019 12:21:22 +0200 (CEST)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
+ [165.114.16.14])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 7A129200A5F;
+ Mon, 21 Oct 2019 12:21:17 +0200 (CEST)
+Received: from localhost.localdomain (mega.ap.freescale.net [10.192.208.232])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 1190D402F0;
+ Mon, 21 Oct 2019 18:21:10 +0800 (SGT)
+From: Yinbo Zhu <yinbo.zhu@nxp.com>
+To: Li Yang <leoyang.li@nxp.com>,
+	Felipe Balbi <balbi@kernel.org>
+Subject: [PATCH v1] usb: gadget: Correct NULL pointer checking in fsl gadget
+Date: Mon, 21 Oct 2019 18:21:53 +0800
+Message-Id: <20191021102153.16435-3-yinbo.zhu@nxp.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20191021102153.16435-1-yinbo.zhu@nxp.com>
+References: <20191021102153.16435-1-yinbo.zhu@nxp.com>
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,56 +62,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- Andy Lutomirski <luto@kernel.org>,
- Vincenzo Frascino <vincenzo.frascino@arm.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Nikhil Badola <nikhil.badola@freescale.com>, linux-usb@vger.kernel.org,
+ xiaobo.xie@nxp.com, linux-kernel@vger.kernel.org, jiafei.pan@nxp.com,
+ Ran Wang <ran.wang_1@nxp.com>, linuxppc-dev@lists.ozlabs.org,
+ yinbo.zhu@nxp.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-A recent commit removed the NULL pointer check from the clock_getres()
-implementation causing a test case to fault.
+From: Nikhil Badola <nikhil.badola@freescale.com>
 
-POSIX requires an explicit NULL pointer check for clock_getres() aside of
-the validity check of the clock_id argument for obscure reasons.
+Correct NULL pointer checking for endpoint descriptor
+before it gets dereferenced
 
-Add it back for both 32bit and 64bit.
-
-Note, this is only a partial revert of the offending commit which does not
-bring back the broken fallback invocation in the the 32bit compat
-implementations of clock_getres() and clock_gettime().
-
-Fixes: a9446a906f52 ("lib/vdso/32: Remove inconsistent NULL pointer checks")
-Reported-by: Andreas Schwab <schwab@linux-m68k.org>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: stable@vger.kernel.org
+Signed-off-by: Nikhil Badola <nikhil.badola@freescale.com>
+Signed-off-by: Ran Wang <ran.wang_1@nxp.com>
+Reviewed-by: Peter Chen <peter.chen@nxp.com>
 ---
- lib/vdso/gettimeofday.c |    9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ drivers/usb/gadget/udc/fsl_udc_core.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
---- a/lib/vdso/gettimeofday.c
-+++ b/lib/vdso/gettimeofday.c
-@@ -214,9 +214,10 @@ int __cvdso_clock_getres_common(clockid_
- 		return -1;
- 	}
+diff --git a/drivers/usb/gadget/udc/fsl_udc_core.c b/drivers/usb/gadget/udc/fsl_udc_core.c
+index 381fdff12d4e..980cb1382851 100644
+--- a/drivers/usb/gadget/udc/fsl_udc_core.c
++++ b/drivers/usb/gadget/udc/fsl_udc_core.c
+@@ -1052,10 +1052,11 @@ static int fsl_ep_fifo_status(struct usb_ep *_ep)
+ 	u32 bitmask;
+ 	struct ep_queue_head *qh;
  
--	res->tv_sec = 0;
--	res->tv_nsec = ns;
--
-+	if (likely(res)) {
-+		res->tv_sec = 0;
-+		res->tv_nsec = ns;
-+	}
- 	return 0;
- }
+-	ep = container_of(_ep, struct fsl_ep, ep);
+-	if (!_ep || (!ep->ep.desc && ep_index(ep) != 0))
++	if (!_ep || _ep->desc || !(_ep->desc->bEndpointAddress&0xF))
+ 		return -ENODEV;
  
-@@ -245,7 +246,7 @@ static __maybe_unused int
- 		ret = clock_getres_fallback(clock, &ts);
- #endif
++	ep = container_of(_ep, struct fsl_ep, ep);
++
+ 	udc = (struct fsl_udc *)ep->udc;
  
--	if (likely(!ret)) {
-+	if (likely(!ret && res)) {
- 		res->tv_sec = ts.tv_sec;
- 		res->tv_nsec = ts.tv_nsec;
- 	}
+ 	if (!udc->driver || udc->gadget.speed == USB_SPEED_UNKNOWN)
+-- 
+2.17.1
+
