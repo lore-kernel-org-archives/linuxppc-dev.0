@@ -2,47 +2,48 @@ Return-Path: <SRS0=jKXk=YO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8564BCA9EAF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 14:54:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BEE0CA9EAF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 15:03:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0299620656
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 14:54:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0299620656
+	by mail.kernel.org (Postfix) with ESMTPS id 5016D20679
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 15:03:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5016D20679
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46xfmq4sPZzDqrM
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 01:54:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46xfyt0yxdzDqtW
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 02:03:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=linux-m68k.org
- (client-ip=195.130.132.45; helo=newton.telenet-ops.be;
+ (client-ip=195.130.137.77; helo=leibniz.telenet-ops.be;
  envelope-from=geert@linux-m68k.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=glider.be
-Received: from newton.telenet-ops.be (newton.telenet-ops.be [195.130.132.45])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46xfk60p4jzDqNk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2019 01:52:13 +1100 (AEDT)
+X-Greylist: delayed 539 seconds by postgrey-1.36 at bilbo;
+ Tue, 22 Oct 2019 02:01:13 AEDT
+Received: from leibniz.telenet-ops.be (leibniz.telenet-ops.be [195.130.137.77])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46xfwT3mxFzDqkS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2019 02:01:12 +1100 (AEDT)
 Received: from andre.telenet-ops.be (andre.telenet-ops.be
  [IPv6:2a02:1800:120:4::f00:15])
- by newton.telenet-ops.be (Postfix) with ESMTPS id 46xfk22DHqzMrvZQ
+ by leibniz.telenet-ops.be (Postfix) with ESMTPS id 46xfk22PHpzMrTHK
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Oct 2019 16:52:10 +0200 (CEST)
 Received: from ramsan ([84.194.98.4]) by andre.telenet-ops.be with bizsmtp
- id GErr2100C05gfCL01Erri2; Mon, 21 Oct 2019 16:52:09 +0200
+ id GErr2100905gfCL01Erri1; Mon, 21 Oct 2019 16:52:09 +0200
 Received: from rox.of.borg ([192.168.97.57]) by ramsan with esmtp (Exim 4.90_1)
  (envelope-from <geert@linux-m68k.org>)
- id 1iMZ2F-00075u-3G; Mon, 21 Oct 2019 16:51:51 +0200
+ id 1iMZ2E-00075d-VZ; Mon, 21 Oct 2019 16:51:50 +0200
 Received: from geert by rox.of.borg with local (Exim 4.90_1)
  (envelope-from <geert@linux-m68k.org>)
- id 1iMZ2F-0008Fa-0U; Mon, 21 Oct 2019 16:51:51 +0200
+ id 1iMZ2E-0008FP-Rq; Mon, 21 Oct 2019 16:51:50 +0200
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: =?UTF-8?q?Breno=20Leit=C3=A3o?= <leitao@debian.org>,
  Nayna Jain <nayna@linux.ibm.com>,
@@ -58,13 +59,10 @@ To: =?UTF-8?q?Breno=20Leit=C3=A3o?= <leitao@debian.org>,
  Shannon Nelson <snelson@pensando.io>,
  Pensando Drivers <drivers@pensando.io>, Kevin Hilman <khilman@kernel.org>,
  Nishanth Menon <nm@ti.com>
-Subject: [PATCH 4/5] power: avs: smartreflex: Remove superfluous cast in
- debugfs_create_file() call
-Date: Mon, 21 Oct 2019 16:51:48 +0200
-Message-Id: <20191021145149.31657-5-geert+renesas@glider.be>
+Subject: [PATCH 0/5] debugfs: Remove casts in debugfs_create_*() callers
+Date: Mon, 21 Oct 2019 16:51:44 +0200
+Message-Id: <20191021145149.31657-1-geert+renesas@glider.be>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20191021145149.31657-1-geert+renesas@glider.be>
-References: <20191021145149.31657-1-geert+renesas@glider.be>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,28 +83,44 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There is no need to cast a typed pointer to a void pointer when calling
-a function that accepts the latter.  Remove it, as the cast prevents
-further compiler checks.
+	Hi all,
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
- drivers/power/avs/smartreflex.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Casting parameters in debugfs_create_*() calls prevents the compiler
+from performing some checks.
 
-diff --git a/drivers/power/avs/smartreflex.c b/drivers/power/avs/smartreflex.c
-index 4684e7df833a81e9..5376f3d22f31eade 100644
---- a/drivers/power/avs/smartreflex.c
-+++ b/drivers/power/avs/smartreflex.c
-@@ -905,7 +905,7 @@ static int omap_sr_probe(struct platform_device *pdev)
- 	sr_info->dbg_dir = debugfs_create_dir(sr_info->name, sr_dbg_dir);
- 
- 	debugfs_create_file("autocomp", S_IRUGO | S_IWUSR, sr_info->dbg_dir,
--			    (void *)sr_info, &pm_sr_fops);
-+			    sr_info, &pm_sr_fops);
- 	debugfs_create_x32("errweight", S_IRUGO, sr_info->dbg_dir,
- 			   &sr_info->err_weight);
- 	debugfs_create_x32("errmaxlimit", S_IRUGO, sr_info->dbg_dir,
+Hence this patch series removes superfluous casts, or reworks code to no
+longer need the casts.
+
+All patches can be applied independently, there are no dependencies.
+Thanks for your comments!
+
+Geert Uytterhoeven (5):
+  crypto: nx - Improve debugfs_create_u{32,64}() handling for atomics
+  cxgb4/cxgb4vf: Remove superfluous void * cast in debugfs_create_file()
+    call
+  drm/amdgpu: Remove superfluous void * cast in debugfs_create_file()
+    call
+  power: avs: smartreflex: Remove superfluous cast in
+    debugfs_create_file() call
+  ionic: Use debugfs_create_bool() to export bool
+
+ drivers/crypto/nx/nx_debugfs.c                 | 18 +++++++++---------
+ drivers/gpu/drm/amd/amdgpu/amdgpu_debugfs.c    |  4 ++--
+ .../ethernet/chelsio/cxgb4vf/cxgb4vf_main.c    |  2 +-
+ .../ethernet/pensando/ionic/ionic_debugfs.c    |  3 +--
+ drivers/power/avs/smartreflex.c                |  2 +-
+ 5 files changed, 14 insertions(+), 15 deletions(-)
+
 -- 
 2.17.1
 
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
