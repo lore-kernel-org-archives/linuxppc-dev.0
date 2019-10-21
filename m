@@ -4,44 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 506FECA9EB7
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 15:08:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 83584CA9EAF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 15:11:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0757D2084B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 15:08:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0757D2084B
+	by mail.kernel.org (Postfix) with ESMTPS id DD80420873
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 15:11:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DD80420873
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46xg4v5hgkzDqwj
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 02:08:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46xg8P4vbvzDqvx
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 02:11:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=linux-m68k.org
- (client-ip=195.130.137.77; helo=leibniz.telenet-ops.be;
+ (client-ip=2a02:1800:110:4::f00:d; helo=leibniz.telenet-ops.be;
  envelope-from=geert@linux-m68k.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=glider.be
-Received: from leibniz.telenet-ops.be (leibniz.telenet-ops.be [195.130.137.77])
+Received: from leibniz.telenet-ops.be (leibniz.telenet-ops.be
+ [IPv6:2a02:1800:110:4::f00:d])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46xfwT42VhzDqkT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2019 02:01:11 +1100 (AEDT)
-Received: from baptiste.telenet-ops.be (baptiste.telenet-ops.be
- [IPv6:2a02:1800:120:4::f00:13])
- by leibniz.telenet-ops.be (Postfix) with ESMTPS id 46xfk35l44zMrVkx
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Oct 2019 16:52:11 +0200 (CEST)
-Received: from ramsan ([84.194.98.4]) by baptiste.telenet-ops.be with bizsmtp
- id GErr2100805gfCL01Err8s; Mon, 21 Oct 2019 16:52:11 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46xfwT43z1zDqkc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2019 02:01:12 +1100 (AEDT)
+Received: from andre.telenet-ops.be (andre.telenet-ops.be
+ [IPv6:2a02:1800:120:4::f00:15])
+ by leibniz.telenet-ops.be (Postfix) with ESMTPS id 46xfk22MQBzMrSS0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Oct 2019 16:52:10 +0200 (CEST)
+Received: from ramsan ([84.194.98.4]) by andre.telenet-ops.be with bizsmtp
+ id GErr2100E05gfCL01Erri3; Mon, 21 Oct 2019 16:52:09 +0200
 Received: from rox.of.borg ([192.168.97.57]) by ramsan with esmtp (Exim 4.90_1)
  (envelope-from <geert@linux-m68k.org>)
- id 1iMZ2F-00075l-0P; Mon, 21 Oct 2019 16:51:51 +0200
+ id 1iMZ2F-000767-52; Mon, 21 Oct 2019 16:51:51 +0200
 Received: from geert by rox.of.borg with local (Exim 4.90_1)
  (envelope-from <geert@linux-m68k.org>)
- id 1iMZ2E-0008FT-V5; Mon, 21 Oct 2019 16:51:50 +0200
+ id 1iMZ2F-0008Fi-1d; Mon, 21 Oct 2019 16:51:51 +0200
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: =?UTF-8?q?Breno=20Leit=C3=A3o?= <leitao@debian.org>,
  Nayna Jain <nayna@linux.ibm.com>,
@@ -57,10 +59,9 @@ To: =?UTF-8?q?Breno=20Leit=C3=A3o?= <leitao@debian.org>,
  Shannon Nelson <snelson@pensando.io>,
  Pensando Drivers <drivers@pensando.io>, Kevin Hilman <khilman@kernel.org>,
  Nishanth Menon <nm@ti.com>
-Subject: [PATCH 2/5] cxgb4/cxgb4vf: Remove superfluous void * cast in
- debugfs_create_file() call
-Date: Mon, 21 Oct 2019 16:51:46 +0200
-Message-Id: <20191021145149.31657-3-geert+renesas@glider.be>
+Subject: [PATCH 5/5] ionic: Use debugfs_create_bool() to export bool
+Date: Mon, 21 Oct 2019 16:51:49 +0200
+Message-Id: <20191021145149.31657-6-geert+renesas@glider.be>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20191021145149.31657-1-geert+renesas@glider.be>
 References: <20191021145149.31657-1-geert+renesas@glider.be>
@@ -84,28 +85,31 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There is no need to cast a typed pointer to a void pointer when calling
-a function that accepts the latter.  Remove it, as the cast prevents
-further compiler checks.
+Currently bool ionic_cq.done_color is exported using
+debugfs_create_u8(), which requires a cast, preventing further compiler
+checks.
+
+Fix this by switching to debugfs_create_bool(), and dropping the cast.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- drivers/net/ethernet/chelsio/cxgb4vf/cxgb4vf_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/pensando/ionic/ionic_debugfs.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/chelsio/cxgb4vf/cxgb4vf_main.c b/drivers/net/ethernet/chelsio/cxgb4vf/cxgb4vf_main.c
-index f6fc0875d5b0a285..4a07a73c672b5996 100644
---- a/drivers/net/ethernet/chelsio/cxgb4vf/cxgb4vf_main.c
-+++ b/drivers/net/ethernet/chelsio/cxgb4vf/cxgb4vf_main.c
-@@ -2480,7 +2480,7 @@ static int setup_debugfs(struct adapter *adapter)
- 	for (i = 0; i < ARRAY_SIZE(debugfs_files); i++)
- 		debugfs_create_file(debugfs_files[i].name,
- 				    debugfs_files[i].mode,
--				    adapter->debugfs_root, (void *)adapter,
-+				    adapter->debugfs_root, adapter,
- 				    debugfs_files[i].fops);
+diff --git a/drivers/net/ethernet/pensando/ionic/ionic_debugfs.c b/drivers/net/ethernet/pensando/ionic/ionic_debugfs.c
+index bc03cecf80cc9eb4..5beba915f69d12dd 100644
+--- a/drivers/net/ethernet/pensando/ionic/ionic_debugfs.c
++++ b/drivers/net/ethernet/pensando/ionic/ionic_debugfs.c
+@@ -170,8 +170,7 @@ void ionic_debugfs_add_qcq(struct ionic_lif *lif, struct ionic_qcq *qcq)
+ 	debugfs_create_x64("base_pa", 0400, cq_dentry, &cq->base_pa);
+ 	debugfs_create_u32("num_descs", 0400, cq_dentry, &cq->num_descs);
+ 	debugfs_create_u32("desc_size", 0400, cq_dentry, &cq->desc_size);
+-	debugfs_create_u8("done_color", 0400, cq_dentry,
+-			  (u8 *)&cq->done_color);
++	debugfs_create_bool("done_color", 0400, cq_dentry, &cq->done_color);
  
- 	return 0;
+ 	debugfs_create_file("tail", 0400, cq_dentry, cq, &cq_tail_fops);
+ 
 -- 
 2.17.1
 
