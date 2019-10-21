@@ -2,69 +2,109 @@ Return-Path: <SRS0=jKXk=YO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 47542CA9EAF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 15:13:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DEAF8CA9EAF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 15:26:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F16DA2084B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 15:13:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F16DA2084B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be
+	by mail.kernel.org (Postfix) with ESMTPS id 8D44D2053B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 15:26:12 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="Skk3cYPI"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8D44D2053B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46xgC30TzXzDr0T
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 02:13:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46xgTF73cDzDqgd
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 02:26:09 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46xgQY5bQ9zDqyl
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2019 02:23:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=linux-m68k.org
- (client-ip=195.130.137.77; helo=leibniz.telenet-ops.be;
- envelope-from=geert@linux-m68k.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=glider.be
-Received: from leibniz.telenet-ops.be (leibniz.telenet-ops.be [195.130.137.77])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="Skk3cYPI"; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 46xgQX4cXKz8tTQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2019 02:23:48 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 46xgQX49m8z9sPT; Tue, 22 Oct 2019 02:23:48 +1100 (AEDT)
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="Skk3cYPI"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46xfwV0ZRHzDqkd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2019 02:01:12 +1100 (AEDT)
-Received: from xavier.telenet-ops.be (xavier.telenet-ops.be
- [IPv6:2a02:1800:120:4::f00:14])
- by leibniz.telenet-ops.be (Postfix) with ESMTPS id 46xfk10rrJzMr0ly
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Oct 2019 16:52:09 +0200 (CEST)
-Received: from ramsan ([84.194.98.4]) by xavier.telenet-ops.be with bizsmtp
- id GErr2100B05gfCL01ErrRZ; Mon, 21 Oct 2019 16:52:08 +0200
-Received: from rox.of.borg ([192.168.97.57]) by ramsan with esmtp (Exim 4.90_1)
- (envelope-from <geert@linux-m68k.org>)
- id 1iMZ2E-00075h-Vs; Mon, 21 Oct 2019 16:51:50 +0200
-Received: from geert by rox.of.borg with local (Exim 4.90_1)
- (envelope-from <geert@linux-m68k.org>)
- id 1iMZ2E-0008FR-UG; Mon, 21 Oct 2019 16:51:50 +0200
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-To: =?UTF-8?q?Breno=20Leit=C3=A3o?= <leitao@debian.org>,
- Nayna Jain <nayna@linux.ibm.com>,
- Paulo Flabiano Smorigo <pfsmorigo@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- "David S . Miller" <davem@davemloft.net>,
- Alex Deucher <alexander.deucher@amd.com>,
- =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>,
- David@rox.of.borg, David Airlie <airlied@linux.ie>,
- Daniel Vetter <daniel@ffwll.ch>, Casey Leedom <leedom@chelsio.com>,
- Shannon Nelson <snelson@pensando.io>,
- Pensando Drivers <drivers@pensando.io>, Kevin Hilman <khilman@kernel.org>,
- Nishanth Menon <nm@ti.com>
-Subject: [PATCH 1/5] crypto: nx - Improve debugfs_create_u{32,
- 64}() handling for atomics
-Date: Mon, 21 Oct 2019 16:51:45 +0200
-Message-Id: <20191021145149.31657-2-geert+renesas@glider.be>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20191021145149.31657-1-geert+renesas@glider.be>
-References: <20191021145149.31657-1-geert+renesas@glider.be>
+ by ozlabs.org (Postfix) with ESMTPS id 46xgQW5vNHz9sPL
+ for <linuxppc-dev@ozlabs.org>; Tue, 22 Oct 2019 02:23:46 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 46xgQL1gnpz9tyv5;
+ Mon, 21 Oct 2019 17:23:38 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=Skk3cYPI; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id 0oLWw6VBcru1; Mon, 21 Oct 2019 17:23:38 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 46xgQL0Xwsz9tyv4;
+ Mon, 21 Oct 2019 17:23:38 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1571671418; bh=nm0UPQIaAz9eXoUIEZbDmlT9s/fOientiagkm7/79CU=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=Skk3cYPIGnFSMihmQlheRa3z/IOC/tmfS1U8+JeB7nQ26lsXGHlUGpqJpOVPKEDNA
+ x0EFrq7w6gMb5hmhMWXTx2aWBboHBLsJvmzE+nAlOArBN6SErIbFu54Ck7MJXz2f7Q
+ U4HrIEBt2eV5Wo+/INlnh1l+kTjje6HT8WMBBS8I=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 371118BB21;
+ Mon, 21 Oct 2019 17:23:43 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id FqiSqnIpHT5m; Mon, 21 Oct 2019 17:23:43 +0200 (CEST)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B7BFE8B8FE;
+ Mon, 21 Oct 2019 17:23:42 +0200 (CEST)
+Subject: Re: [PATCH] lib/vdso: Make clock_getres() POSIX compliant again
+To: Thomas Gleixner <tglx@linutronix.de>,
+ Andreas Schwab <schwab@linux-m68k.org>
+References: <0fc22a08-31d9-e4d1-557e-bf5b482a9a20__6444.28012180782$1571503753$gmane$org@c-s.fr>
+ <87v9skcznp.fsf@igel.home> <ed65e4c6-2fe0-2f5c-f667-5a81b19eb073@c-s.fr>
+ <87tv83zqt1.fsf@hase.home> <b64c367b-d1e5-bf26-d452-145c0be6e30a@c-s.fr>
+ <alpine.DEB.2.21.1910201243580.2090@nanos.tec.linutronix.de>
+ <875zkjipra.fsf@igel.home>
+ <alpine.DEB.2.21.1910201731070.2090@nanos.tec.linutronix.de>
+ <87r237h01a.fsf@igel.home>
+ <alpine.DEB.2.21.1910202145160.2090@nanos.tec.linutronix.de>
+ <87eez7glre.fsf@igel.home>
+ <alpine.DEB.2.21.1910211202260.1904@nanos.tec.linutronix.de>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <fb552fd1-99e4-0685-c41f-3e4e0efc46ec@c-s.fr>
+Date: Mon, 21 Oct 2019 17:23:42 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
+MIME-Version: 1.0
+In-Reply-To: <alpine.DEB.2.21.1910211202260.1904@nanos.tec.linutronix.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,61 +116,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: amd-gfx@lists.freedesktop.org, Geert Uytterhoeven <geert+renesas@glider.be>,
- linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-crypto@vger.kernel.org, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: Nathan Lynch <nathanl@linux.ibm.com>,
+ "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ Vincenzo Frascino <vincenzo.frascino@arm.com>,
+ LKML <linux-kernel@vger.kernel.org>, Andy Lutomirski <luto@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Variables of type atomic{,64}_t can be used fine with
-debugfs_create_u{32,64}, when passing a pointer to the embedded counter.
-This allows to get rid of the casts, which prevented compiler checks.
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
- drivers/crypto/nx/nx_debugfs.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/crypto/nx/nx_debugfs.c b/drivers/crypto/nx/nx_debugfs.c
-index e0d44a5512ab455b..1975bcbee997481e 100644
---- a/drivers/crypto/nx/nx_debugfs.c
-+++ b/drivers/crypto/nx/nx_debugfs.c
-@@ -38,23 +38,23 @@ void nx_debugfs_init(struct nx_crypto_driver *drv)
- 	drv->dfs_root = root;
- 
- 	debugfs_create_u32("aes_ops", S_IRUSR | S_IRGRP | S_IROTH,
--			   root, (u32 *)&drv->stats.aes_ops);
-+			   root, &drv->stats.aes_ops.counter);
- 	debugfs_create_u32("sha256_ops", S_IRUSR | S_IRGRP | S_IROTH,
--			   root, (u32 *)&drv->stats.sha256_ops);
-+			   root, &drv->stats.sha256_ops.counter);
- 	debugfs_create_u32("sha512_ops", S_IRUSR | S_IRGRP | S_IROTH,
--			   root, (u32 *)&drv->stats.sha512_ops);
-+			   root, &drv->stats.sha512_ops.counter);
- 	debugfs_create_u64("aes_bytes", S_IRUSR | S_IRGRP | S_IROTH,
--			   root, (u64 *)&drv->stats.aes_bytes);
-+			   root, &drv->stats.aes_bytes.counter);
- 	debugfs_create_u64("sha256_bytes", S_IRUSR | S_IRGRP | S_IROTH,
--			   root, (u64 *)&drv->stats.sha256_bytes);
-+			   root, &drv->stats.sha256_bytes.counter);
- 	debugfs_create_u64("sha512_bytes", S_IRUSR | S_IRGRP | S_IROTH,
--			   root, (u64 *)&drv->stats.sha512_bytes);
-+			   root, &drv->stats.sha512_bytes.counter);
- 	debugfs_create_u32("errors", S_IRUSR | S_IRGRP | S_IROTH,
--			   root, (u32 *)&drv->stats.errors);
-+			   root, &drv->stats.errors.counter);
- 	debugfs_create_u32("last_error", S_IRUSR | S_IRGRP | S_IROTH,
--			   root, (u32 *)&drv->stats.last_error);
-+			   root, &drv->stats.last_error.counter);
- 	debugfs_create_u32("last_error_pid", S_IRUSR | S_IRGRP | S_IROTH,
--			   root, (u32 *)&drv->stats.last_error_pid);
-+			   root, &drv->stats.last_error_pid.counter);
- }
- 
- void
--- 
-2.17.1
+Le 21/10/2019 à 12:07, Thomas Gleixner a écrit :
+> A recent commit removed the NULL pointer check from the clock_getres()
+> implementation causing a test case to fault.
+> 
+> POSIX requires an explicit NULL pointer check for clock_getres() aside of
+> the validity check of the clock_id argument for obscure reasons.
+> 
+> Add it back for both 32bit and 64bit.
+> 
+> Note, this is only a partial revert of the offending commit which does not
+> bring back the broken fallback invocation in the the 32bit compat
+> implementations of clock_getres() and clock_gettime().
+> 
+> Fixes: a9446a906f52 ("lib/vdso/32: Remove inconsistent NULL pointer checks")
+> Reported-by: Andreas Schwab <schwab@linux-m68k.org>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
+Tested-by: Christophe Leroy <christophe.leroy@c-s.fr>
+
+> Cc: stable@vger.kernel.org
+> ---
+>   lib/vdso/gettimeofday.c |    9 +++++----
+>   1 file changed, 5 insertions(+), 4 deletions(-)
+> 
+> --- a/lib/vdso/gettimeofday.c
+> +++ b/lib/vdso/gettimeofday.c
+> @@ -214,9 +214,10 @@ int __cvdso_clock_getres_common(clockid_
+>   		return -1;
+>   	}
+>   
+> -	res->tv_sec = 0;
+> -	res->tv_nsec = ns;
+> -
+> +	if (likely(res)) {
+> +		res->tv_sec = 0;
+> +		res->tv_nsec = ns;
+> +	}
+>   	return 0;
+>   }
+>   
+> @@ -245,7 +246,7 @@ static __maybe_unused int
+>   		ret = clock_getres_fallback(clock, &ts);
+>   #endif
+>   
+> -	if (likely(!ret)) {
+> +	if (likely(!ret && res)) {
+>   		res->tv_sec = ts.tv_sec;
+>   		res->tv_nsec = ts.tv_nsec;
+>   	}
+> 
