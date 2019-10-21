@@ -7,43 +7,42 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83584CA9EAF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 15:11:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47542CA9EAF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 15:13:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DD80420873
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 15:11:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DD80420873
+	by mail.kernel.org (Postfix) with ESMTPS id F16DA2084B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 15:13:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F16DA2084B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46xg8P4vbvzDqvx
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 02:11:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46xgC30TzXzDr0T
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 02:13:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=linux-m68k.org
- (client-ip=2a02:1800:110:4::f00:d; helo=leibniz.telenet-ops.be;
+ (client-ip=195.130.137.77; helo=leibniz.telenet-ops.be;
  envelope-from=geert@linux-m68k.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=glider.be
-Received: from leibniz.telenet-ops.be (leibniz.telenet-ops.be
- [IPv6:2a02:1800:110:4::f00:d])
+Received: from leibniz.telenet-ops.be (leibniz.telenet-ops.be [195.130.137.77])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46xfwT43z1zDqkc
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46xfwV0ZRHzDqkd
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2019 02:01:12 +1100 (AEDT)
-Received: from andre.telenet-ops.be (andre.telenet-ops.be
- [IPv6:2a02:1800:120:4::f00:15])
- by leibniz.telenet-ops.be (Postfix) with ESMTPS id 46xfk22MQBzMrSS0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Oct 2019 16:52:10 +0200 (CEST)
-Received: from ramsan ([84.194.98.4]) by andre.telenet-ops.be with bizsmtp
- id GErr2100E05gfCL01Erri3; Mon, 21 Oct 2019 16:52:09 +0200
+Received: from xavier.telenet-ops.be (xavier.telenet-ops.be
+ [IPv6:2a02:1800:120:4::f00:14])
+ by leibniz.telenet-ops.be (Postfix) with ESMTPS id 46xfk10rrJzMr0ly
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Oct 2019 16:52:09 +0200 (CEST)
+Received: from ramsan ([84.194.98.4]) by xavier.telenet-ops.be with bizsmtp
+ id GErr2100B05gfCL01ErrRZ; Mon, 21 Oct 2019 16:52:08 +0200
 Received: from rox.of.borg ([192.168.97.57]) by ramsan with esmtp (Exim 4.90_1)
  (envelope-from <geert@linux-m68k.org>)
- id 1iMZ2F-000767-52; Mon, 21 Oct 2019 16:51:51 +0200
+ id 1iMZ2E-00075h-Vs; Mon, 21 Oct 2019 16:51:50 +0200
 Received: from geert by rox.of.borg with local (Exim 4.90_1)
  (envelope-from <geert@linux-m68k.org>)
- id 1iMZ2F-0008Fi-1d; Mon, 21 Oct 2019 16:51:51 +0200
+ id 1iMZ2E-0008FR-UG; Mon, 21 Oct 2019 16:51:50 +0200
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: =?UTF-8?q?Breno=20Leit=C3=A3o?= <leitao@debian.org>,
  Nayna Jain <nayna@linux.ibm.com>,
@@ -59,9 +58,10 @@ To: =?UTF-8?q?Breno=20Leit=C3=A3o?= <leitao@debian.org>,
  Shannon Nelson <snelson@pensando.io>,
  Pensando Drivers <drivers@pensando.io>, Kevin Hilman <khilman@kernel.org>,
  Nishanth Menon <nm@ti.com>
-Subject: [PATCH 5/5] ionic: Use debugfs_create_bool() to export bool
-Date: Mon, 21 Oct 2019 16:51:49 +0200
-Message-Id: <20191021145149.31657-6-geert+renesas@glider.be>
+Subject: [PATCH 1/5] crypto: nx - Improve debugfs_create_u{32,
+ 64}() handling for atomics
+Date: Mon, 21 Oct 2019 16:51:45 +0200
+Message-Id: <20191021145149.31657-2-geert+renesas@glider.be>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20191021145149.31657-1-geert+renesas@glider.be>
 References: <20191021145149.31657-1-geert+renesas@glider.be>
@@ -85,31 +85,52 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently bool ionic_cq.done_color is exported using
-debugfs_create_u8(), which requires a cast, preventing further compiler
-checks.
-
-Fix this by switching to debugfs_create_bool(), and dropping the cast.
+Variables of type atomic{,64}_t can be used fine with
+debugfs_create_u{32,64}, when passing a pointer to the embedded counter.
+This allows to get rid of the casts, which prevented compiler checks.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- drivers/net/ethernet/pensando/ionic/ionic_debugfs.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/crypto/nx/nx_debugfs.c | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/net/ethernet/pensando/ionic/ionic_debugfs.c b/drivers/net/ethernet/pensando/ionic/ionic_debugfs.c
-index bc03cecf80cc9eb4..5beba915f69d12dd 100644
---- a/drivers/net/ethernet/pensando/ionic/ionic_debugfs.c
-+++ b/drivers/net/ethernet/pensando/ionic/ionic_debugfs.c
-@@ -170,8 +170,7 @@ void ionic_debugfs_add_qcq(struct ionic_lif *lif, struct ionic_qcq *qcq)
- 	debugfs_create_x64("base_pa", 0400, cq_dentry, &cq->base_pa);
- 	debugfs_create_u32("num_descs", 0400, cq_dentry, &cq->num_descs);
- 	debugfs_create_u32("desc_size", 0400, cq_dentry, &cq->desc_size);
--	debugfs_create_u8("done_color", 0400, cq_dentry,
--			  (u8 *)&cq->done_color);
-+	debugfs_create_bool("done_color", 0400, cq_dentry, &cq->done_color);
+diff --git a/drivers/crypto/nx/nx_debugfs.c b/drivers/crypto/nx/nx_debugfs.c
+index e0d44a5512ab455b..1975bcbee997481e 100644
+--- a/drivers/crypto/nx/nx_debugfs.c
++++ b/drivers/crypto/nx/nx_debugfs.c
+@@ -38,23 +38,23 @@ void nx_debugfs_init(struct nx_crypto_driver *drv)
+ 	drv->dfs_root = root;
  
- 	debugfs_create_file("tail", 0400, cq_dentry, cq, &cq_tail_fops);
+ 	debugfs_create_u32("aes_ops", S_IRUSR | S_IRGRP | S_IROTH,
+-			   root, (u32 *)&drv->stats.aes_ops);
++			   root, &drv->stats.aes_ops.counter);
+ 	debugfs_create_u32("sha256_ops", S_IRUSR | S_IRGRP | S_IROTH,
+-			   root, (u32 *)&drv->stats.sha256_ops);
++			   root, &drv->stats.sha256_ops.counter);
+ 	debugfs_create_u32("sha512_ops", S_IRUSR | S_IRGRP | S_IROTH,
+-			   root, (u32 *)&drv->stats.sha512_ops);
++			   root, &drv->stats.sha512_ops.counter);
+ 	debugfs_create_u64("aes_bytes", S_IRUSR | S_IRGRP | S_IROTH,
+-			   root, (u64 *)&drv->stats.aes_bytes);
++			   root, &drv->stats.aes_bytes.counter);
+ 	debugfs_create_u64("sha256_bytes", S_IRUSR | S_IRGRP | S_IROTH,
+-			   root, (u64 *)&drv->stats.sha256_bytes);
++			   root, &drv->stats.sha256_bytes.counter);
+ 	debugfs_create_u64("sha512_bytes", S_IRUSR | S_IRGRP | S_IROTH,
+-			   root, (u64 *)&drv->stats.sha512_bytes);
++			   root, &drv->stats.sha512_bytes.counter);
+ 	debugfs_create_u32("errors", S_IRUSR | S_IRGRP | S_IROTH,
+-			   root, (u32 *)&drv->stats.errors);
++			   root, &drv->stats.errors.counter);
+ 	debugfs_create_u32("last_error", S_IRUSR | S_IRGRP | S_IROTH,
+-			   root, (u32 *)&drv->stats.last_error);
++			   root, &drv->stats.last_error.counter);
+ 	debugfs_create_u32("last_error_pid", S_IRUSR | S_IRGRP | S_IROTH,
+-			   root, (u32 *)&drv->stats.last_error_pid);
++			   root, &drv->stats.last_error_pid.counter);
+ }
  
+ void
 -- 
 2.17.1
 
