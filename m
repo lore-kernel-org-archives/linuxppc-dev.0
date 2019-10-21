@@ -4,48 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 72C52CA9EAF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 15:05:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 506FECA9EB7
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 15:08:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2BEA220684
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 15:05:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2BEA220684
+	by mail.kernel.org (Postfix) with ESMTPS id 0757D2084B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2019 15:08:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0757D2084B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46xg1P33g3zDqtv
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 02:05:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46xg4v5hgkzDqwj
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 02:08:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=linux-m68k.org
- (client-ip=2a02:1800:110:4::f00:d; helo=leibniz.telenet-ops.be;
+ (client-ip=195.130.137.77; helo=leibniz.telenet-ops.be;
  envelope-from=geert@linux-m68k.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=glider.be
-X-Greylist: delayed 534 seconds by postgrey-1.36 at bilbo;
- Tue, 22 Oct 2019 02:01:13 AEDT
-Received: from leibniz.telenet-ops.be (leibniz.telenet-ops.be
- [IPv6:2a02:1800:110:4::f00:d])
+Received: from leibniz.telenet-ops.be (leibniz.telenet-ops.be [195.130.137.77])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46xfwT3MgczDqk7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2019 02:01:12 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46xfwT42VhzDqkT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2019 02:01:11 +1100 (AEDT)
 Received: from baptiste.telenet-ops.be (baptiste.telenet-ops.be
  [IPv6:2a02:1800:120:4::f00:13])
- by leibniz.telenet-ops.be (Postfix) with ESMTPS id 46xfk35LT5zMrVl3
+ by leibniz.telenet-ops.be (Postfix) with ESMTPS id 46xfk35l44zMrVkx
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Oct 2019 16:52:11 +0200 (CEST)
 Received: from ramsan ([84.194.98.4]) by baptiste.telenet-ops.be with bizsmtp
- id GErr2100905gfCL01Err8t; Mon, 21 Oct 2019 16:52:11 +0200
+ id GErr2100805gfCL01Err8s; Mon, 21 Oct 2019 16:52:11 +0200
 Received: from rox.of.borg ([192.168.97.57]) by ramsan with esmtp (Exim 4.90_1)
  (envelope-from <geert@linux-m68k.org>)
- id 1iMZ2F-00075n-1J; Mon, 21 Oct 2019 16:51:51 +0200
+ id 1iMZ2F-00075l-0P; Mon, 21 Oct 2019 16:51:51 +0200
 Received: from geert by rox.of.borg with local (Exim 4.90_1)
  (envelope-from <geert@linux-m68k.org>)
- id 1iMZ2E-0008FW-Vt; Mon, 21 Oct 2019 16:51:50 +0200
+ id 1iMZ2E-0008FT-V5; Mon, 21 Oct 2019 16:51:50 +0200
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: =?UTF-8?q?Breno=20Leit=C3=A3o?= <leitao@debian.org>,
  Nayna Jain <nayna@linux.ibm.com>,
@@ -61,10 +57,10 @@ To: =?UTF-8?q?Breno=20Leit=C3=A3o?= <leitao@debian.org>,
  Shannon Nelson <snelson@pensando.io>,
  Pensando Drivers <drivers@pensando.io>, Kevin Hilman <khilman@kernel.org>,
  Nishanth Menon <nm@ti.com>
-Subject: [PATCH 3/5] drm/amdgpu: Remove superfluous void * cast in
+Subject: [PATCH 2/5] cxgb4/cxgb4vf: Remove superfluous void * cast in
  debugfs_create_file() call
-Date: Mon, 21 Oct 2019 16:51:47 +0200
-Message-Id: <20191021145149.31657-4-geert+renesas@glider.be>
+Date: Mon, 21 Oct 2019 16:51:46 +0200
+Message-Id: <20191021145149.31657-3-geert+renesas@glider.be>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20191021145149.31657-1-geert+renesas@glider.be>
 References: <20191021145149.31657-1-geert+renesas@glider.be>
@@ -94,24 +90,22 @@ further compiler checks.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- drivers/gpu/drm/amd/amdgpu/amdgpu_debugfs.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/chelsio/cxgb4vf/cxgb4vf_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_debugfs.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_debugfs.c
-index 5652cc72ed3a9b3a..b97a38b1e089b3d6 100644
---- a/drivers/gpu/drm/amd/amdgpu/amdgpu_debugfs.c
-+++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_debugfs.c
-@@ -1090,8 +1090,8 @@ int amdgpu_debugfs_init(struct amdgpu_device *adev)
- {
- 	adev->debugfs_preempt =
- 		debugfs_create_file("amdgpu_preempt_ib", 0600,
--				    adev->ddev->primary->debugfs_root,
--				    (void *)adev, &fops_ib_preempt);
-+				    adev->ddev->primary->debugfs_root, adev,
-+				    &fops_ib_preempt);
- 	if (!(adev->debugfs_preempt)) {
- 		DRM_ERROR("unable to create amdgpu_preempt_ib debugsfs file\n");
- 		return -EIO;
+diff --git a/drivers/net/ethernet/chelsio/cxgb4vf/cxgb4vf_main.c b/drivers/net/ethernet/chelsio/cxgb4vf/cxgb4vf_main.c
+index f6fc0875d5b0a285..4a07a73c672b5996 100644
+--- a/drivers/net/ethernet/chelsio/cxgb4vf/cxgb4vf_main.c
++++ b/drivers/net/ethernet/chelsio/cxgb4vf/cxgb4vf_main.c
+@@ -2480,7 +2480,7 @@ static int setup_debugfs(struct adapter *adapter)
+ 	for (i = 0; i < ARRAY_SIZE(debugfs_files); i++)
+ 		debugfs_create_file(debugfs_files[i].name,
+ 				    debugfs_files[i].mode,
+-				    adapter->debugfs_root, (void *)adapter,
++				    adapter->debugfs_root, adapter,
+ 				    debugfs_files[i].fops);
+ 
+ 	return 0;
 -- 
 2.17.1
 
