@@ -2,87 +2,78 @@ Return-Path: <SRS0=uEbk=YP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 309CBCA9EA0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 15:08:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 078FECA9EA0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 18:30:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D2CE6214B2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 15:08:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 669FA21783
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 18:30:41 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="IjCNGVD/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D2CE6214B2
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Mu/wPKo5"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 669FA21783
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46yH2D62m1zDqLy
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Oct 2019 02:08:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46yMWd3Xw4zDqMm
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Oct 2019 05:30:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=redhat.com (client-ip=205.139.110.61;
+ helo=us-smtp-delivery-1.mimecast.com; envelope-from=david@redhat.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
+ dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="IjCNGVD/"; 
+ unprotected) header.d=redhat.com header.i=@redhat.com header.b="Mu/wPKo5"; 
  dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+Received: from us-smtp-delivery-1.mimecast.com (us-smtp-1.mimecast.com
+ [205.139.110.61])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46yGzh0DMhzDqDG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2019 02:06:07 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 46yGzZ3WYzz9txrJ;
- Tue, 22 Oct 2019 17:06:02 +0200 (CEST)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=IjCNGVD/; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id Jh8cJZ18iESD; Tue, 22 Oct 2019 17:06:02 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 46yGzZ0Wppz9txrG;
- Tue, 22 Oct 2019 17:06:02 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1571756762; bh=ZTTwSzcfyFlbzpNpRSH3QAO6LqI52zwrKBYTswAtHNM=;
- h=Subject:To:References:From:Date:In-Reply-To:From;
- b=IjCNGVD/m+/3chtJGoKPuCqnoE/qjdU6NrH1x41xizbG/AhCOYIRQB+QO5vlsJ7/2
- wqzZ2eWImxNZQ/T4BDEEKb61YVt/OeI3FXDBrXiajTMpFSqXvckl1n+kYp1ejLLCul
- xWiNhXxkahj2A8m2aG1TrGbwz8FSVKfdFtjxUDFc=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 80D6D8B93A;
- Tue, 22 Oct 2019 17:06:03 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id JxnfEccYQSsS; Tue, 22 Oct 2019 17:06:03 +0200 (CEST)
-Received: from po16098vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id DAC5A8B931;
- Tue, 22 Oct 2019 17:06:02 +0200 (CEST)
-Subject: Re: [PATCH 0/7] towards QE support on ARM
-To: Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- Qiang Zhao <qiang.zhao@nxp.com>, Li Yang <leoyang.li@nxp.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby
- <jslaby@suse.com>, Timur Tabi <timur@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
-References: <20191018125234.21825-1-linux@rasmusvillemoes.dk>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <e50640a4-bf6b-9859-2acf-81f4af9c6409@c-s.fr>
-Date: Tue, 22 Oct 2019 15:06:02 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.7.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46yKqg469gzDqLx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2019 04:14:23 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1571764461;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=RJLxUYZkphEfv5+PiNRBYPJsBqxuoPsQs816P7mVHAI=;
+ b=Mu/wPKo5RtvUuNRJZ9sinwv0ot8/qTb0saRb828KW5NhpgkWYlVrGdKkCjRu46KLJAJwE7
+ TlQ4wiGv+Boi+M39U+2qbQ8waQb61iQAVrR3MX5/vllnDukrj34FircnVlhjkJ4ryU2Y1b
+ FFXd+Ity1kizJHN/ai33TGeEhqJuiFs=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-196-LQ7sslTiPc68PqWCypqf4g-1; Tue, 22 Oct 2019 13:14:18 -0400
+Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com
+ [10.5.11.14])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id C3CE880183D;
+ Tue, 22 Oct 2019 17:14:13 +0000 (UTC)
+Received: from t460s.redhat.com (ovpn-116-248.ams2.redhat.com [10.36.116.248])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 83D8F5ED21;
+ Tue, 22 Oct 2019 17:13:53 +0000 (UTC)
+From: David Hildenbrand <david@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH RFC v1 03/12] KVM: x86/mmu: Prepare kvm_is_mmio_pfn() for
+ PG_reserved changes
+Date: Tue, 22 Oct 2019 19:12:30 +0200
+Message-Id: <20191022171239.21487-4-david@redhat.com>
+In-Reply-To: <20191022171239.21487-1-david@redhat.com>
+References: <20191022171239.21487-1-david@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <20191018125234.21825-1-linux@rasmusvillemoes.dk>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
+X-MC-Unique: LQ7sslTiPc68PqWCypqf4g-1
+X-Mimecast-Spam-Score: 0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Mailman-Approved-At: Wed, 23 Oct 2019 05:28:43 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,50 +85,131 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Kate Stewart <kstewart@linuxfoundation.org>,
+ Sasha Levin <sashal@kernel.org>, linux-hyperv@vger.kernel.org,
+ Michal Hocko <mhocko@suse.com>,
+ =?UTF-8?q?Radim=20Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@redhat.com>,
+ kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>,
+ KarimAllah Ahmed <karahmed@amazon.de>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Alexander Duyck <alexander.duyck@gmail.com>, Michal Hocko <mhocko@kernel.org>,
+ linux-mm@kvack.org, Pavel Tatashin <pavel.tatashin@microsoft.com>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ Wanpeng Li <wanpengli@tencent.com>,
+ Alexander Duyck <alexander.h.duyck@linux.intel.com>,
+ "K. Y. Srinivasan" <kys@microsoft.com>, Fabio Estevam <festevam@gmail.com>,
+ Ben Chan <benchan@chromium.org>, Kees Cook <keescook@chromium.org>,
+ devel@driverdev.osuosl.org, Stefano Stabellini <sstabellini@kernel.org>,
+ Stephen Hemminger <sthemmin@microsoft.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Joerg Roedel <joro@8bytes.org>, x86@kernel.org,
+ YueHaibing <yuehaibing@huawei.com>, Mike Rapoport <rppt@linux.ibm.com>,
+ Madhumitha Prabakaran <madhumithabiw@gmail.com>,
+ Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ Vlastimil Babka <vbabka@suse.cz>, Nishka Dasgupta <nishkadg.linux@gmail.com>,
+ Anthony Yznaga <anthony.yznaga@oracle.com>, Oscar Salvador <osalvador@suse.de>,
+ Dan Carpenter <dan.carpenter@oracle.com>,
+ "Isaac J. Manjarres" <isaacm@codeaurora.org>,
+ Matt Sickler <Matt.Sickler@daktronics.com>, Juergen Gross <jgross@suse.com>,
+ Anshuman Khandual <anshuman.khandual@arm.com>,
+ Haiyang Zhang <haiyangz@microsoft.com>,
+ =?UTF-8?q?Simon=20Sandstr=C3=B6m?= <simon@nikanor.nu>,
+ Dan Williams <dan.j.williams@intel.com>, kvm-ppc@vger.kernel.org,
+ Qian Cai <cai@lca.pw>, Alex Williamson <alex.williamson@redhat.com>,
+ Mike Rapoport <rppt@linux.vnet.ibm.com>, Borislav Petkov <bp@alien8.de>,
+ Nicholas Piggin <npiggin@gmail.com>, Andy Lutomirski <luto@kernel.org>,
+ xen-devel@lists.xenproject.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ Todd Poynor <toddpoynor@google.com>, Vitaly Kuznetsov <vkuznets@redhat.com>,
+ Allison Randal <allison@lohutok.net>, Jim Mattson <jmattson@google.com>,
+ Vandana BN <bnvandana@gmail.com>, Jeremy Sowden <jeremy@azazel.net>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Cornelia Huck <cohuck@redhat.com>, Pavel Tatashin <pasha.tatashin@soleen.com>,
+ Mel Gorman <mgorman@techsingularity.net>,
+ Sean Christopherson <sean.j.christopherson@intel.com>,
+ Rob Springer <rspringer@google.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Johannes Weiner <hannes@cmpxchg.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Right now, ZONE_DEVICE memory is always set PG_reserved. We want to
+change that.
 
+KVM has this weird use case that you can map anything from /dev/mem
+into the guest. pfn_valid() is not a reliable check whether the memmap
+was initialized and can be touched. pfn_to_online_page() makes sure
+that we have an initialized memmap - however, there is no reliable and
+fast check to detect memmaps that were initialized and are ZONE_DEVICE.
 
-On 10/18/2019 12:52 PM, Rasmus Villemoes wrote:
-> There have been several attempts in the past few years to allow
-> building the QUICC engine drivers for platforms other than PPC. This
-> is (the beginning of) yet another attempt. I hope I can get someone to
-> pick up these relatively trivial patches (I _think_ they shouldn't
-> change functionality at all), and then I'll continue slowly working
-> towards removing the PPC32 dependency for CONFIG_QUICC_ENGINE.
-> 
-> Tested on an MPC8309-derived board.
-> 
-> Rasmus Villemoes (7):
->    soc: fsl: qe: remove space-before-tab
->    soc: fsl: qe: drop volatile qualifier of struct qe_ic::regs
->    soc: fsl: qe: avoid ppc-specific io accessors
->    soc: fsl: qe: replace spin_event_timeout by readx_poll_timeout_atomic
->    serial: make SERIAL_QE depend on PPC32
->    serial: ucc_uart.c: explicitly include asm/cpm.h
->    soc/fsl/qe/qe.h: remove include of asm/cpm.h
+Let's rewrite kvm_is_mmio_pfn() so we really only touch initialized
+memmaps that are guaranteed to not contain garbage. Make sure that
+RAM without a memmap is still not detected as MMIO and that ZONE_DEVICE
+that is not UC/UC-/WC is not detected as MMIO.
 
-Please copy the entire series to linuxppc-dev list. We are missing 5/7 
-and 7/7 (see 
-https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=137048)
+Cc: Paolo Bonzini <pbonzini@redhat.com>
+Cc: "Radim Kr=C4=8Dm=C3=A1=C5=99" <rkrcmar@redhat.com>
+Cc: Sean Christopherson <sean.j.christopherson@intel.com>
+Cc: Vitaly Kuznetsov <vkuznets@redhat.com>
+Cc: Wanpeng Li <wanpengli@tencent.com>
+Cc: Jim Mattson <jmattson@google.com>
+Cc: Joerg Roedel <joro@8bytes.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: KarimAllah Ahmed <karahmed@amazon.de>
+Cc: Michal Hocko <mhocko@kernel.org>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Signed-off-by: David Hildenbrand <david@redhat.com>
+---
+ arch/x86/kvm/mmu.c | 30 ++++++++++++++++++------------
+ 1 file changed, 18 insertions(+), 12 deletions(-)
 
-Christophe
+diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
+index 24c23c66b226..795869ffd4bb 100644
+--- a/arch/x86/kvm/mmu.c
++++ b/arch/x86/kvm/mmu.c
+@@ -2962,20 +2962,26 @@ static bool mmu_need_write_protect(struct kvm_vcpu =
+*vcpu, gfn_t gfn,
+=20
+ static bool kvm_is_mmio_pfn(kvm_pfn_t pfn)
+ {
++=09struct page *page =3D pfn_to_online_page(pfn);
++
++=09/*
++=09 * Online pages consist of pages managed by the buddy. Especially,
++=09 * ZONE_DEVICE pages are never online. Online pages that are reserved
++=09 * indicate the zero page and MMIO pages.
++=09 */
++=09if (page)
++=09=09return !is_zero_pfn(pfn) && PageReserved(pfn_to_page(pfn));
++
++=09/*
++=09 * Anything with a valid memmap could be ZONE_DEVICE - or the
++=09 * memmap could be uninitialized. Treat only UC/UC-/WC pages as MMIO.
++=09 */
+ =09if (pfn_valid(pfn))
+-=09=09return !is_zero_pfn(pfn) && PageReserved(pfn_to_page(pfn)) &&
+-=09=09=09/*
+-=09=09=09 * Some reserved pages, such as those from NVDIMM
+-=09=09=09 * DAX devices, are not for MMIO, and can be mapped
+-=09=09=09 * with cached memory type for better performance.
+-=09=09=09 * However, the above check misconceives those pages
+-=09=09=09 * as MMIO, and results in KVM mapping them with UC
+-=09=09=09 * memory type, which would hurt the performance.
+-=09=09=09 * Therefore, we check the host memory type in addition
+-=09=09=09 * and only treat UC/UC-/WC pages as MMIO.
+-=09=09=09 */
+-=09=09=09(!pat_enabled() || pat_pfn_immune_to_uc_mtrr(pfn));
++=09=09return !pat_enabled() || pat_pfn_immune_to_uc_mtrr(pfn);
+=20
++=09/*
++=09 * Any RAM that has no memmap (e.g., mapped via /dev/mem) is not MMIO.
++=09 */
+ =09return !e820__mapped_raw_any(pfn_to_hpa(pfn),
+ =09=09=09=09     pfn_to_hpa(pfn + 1) - 1,
+ =09=09=09=09     E820_TYPE_RAM);
+--=20
+2.21.0
 
-> 
->   drivers/soc/fsl/qe/gpio.c     | 30 ++++++++--------
->   drivers/soc/fsl/qe/qe.c       | 44 +++++++++++------------
->   drivers/soc/fsl/qe/qe_ic.c    |  8 ++---
->   drivers/soc/fsl/qe/qe_ic.h    |  2 +-
->   drivers/soc/fsl/qe/qe_io.c    | 40 ++++++++++-----------
->   drivers/soc/fsl/qe/qe_tdm.c   |  8 ++---
->   drivers/soc/fsl/qe/ucc.c      | 12 +++----
->   drivers/soc/fsl/qe/ucc_fast.c | 66 ++++++++++++++++++-----------------
->   drivers/soc/fsl/qe/ucc_slow.c | 38 ++++++++++----------
->   drivers/soc/fsl/qe/usb.c      |  2 +-
->   drivers/tty/serial/Kconfig    |  1 +
->   drivers/tty/serial/ucc_uart.c |  1 +
->   include/soc/fsl/qe/qe.h       |  1 -
->   13 files changed, 126 insertions(+), 127 deletions(-)
-> 
