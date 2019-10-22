@@ -2,26 +2,25 @@ Return-Path: <SRS0=uEbk=YP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C7155CA9EA0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 18:43:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 70D64CA9EA0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 18:45:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 748D421872
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 18:43:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 1E2D821872
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 18:45:29 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="LeeYjhX3"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 748D421872
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="aLtrL4M2"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1E2D821872
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46yMpd1PZHzDqNm
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Oct 2019 05:43:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46yMrl72l7zDqHH
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Oct 2019 05:45:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=redhat.com (client-ip=205.139.110.61;
  helo=us-smtp-delivery-1.mimecast.com; envelope-from=david@redhat.com;
@@ -29,47 +28,47 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.b="LeeYjhX3"; 
+ unprotected) header.d=redhat.com header.i=@redhat.com header.b="aLtrL4M2"; 
  dkim-atps=neutral
 Received: from us-smtp-delivery-1.mimecast.com (us-smtp-1.mimecast.com
  [205.139.110.61])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46yKt65vNbzDqBj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2019 04:16:30 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46yKt94jJCzDqBj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2019 04:16:33 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1571764588;
+ s=mimecast20190719; t=1571764590;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=U1S4FppofmjyZijjNbIY0XCtcc4HnEIEIXbCi0lPb5Y=;
- b=LeeYjhX3hBVL/oRC2qHu1DVRYcrCfkF+vRZNKX3DygB0PAxAwwAtyx8hGHz/4zR+10k7aK
- jCl77U0PKwONnXN7YCUJXVG3O3WN9ijJ1wRZJDCaYcYqFJwIbGXfqkybM2Pmtvo6B5GJxF
- Kbs8S2wphjxwTCwVZcOA6y1oWq44CGE=
+ bh=JzLCMm+xQ4R90TU2Qdv5H9QyOFSrGxYrIpM4gzVWQEQ=;
+ b=aLtrL4M2DALIj0NP4LW4+aqRGRc4bFHugZYcoWuLl+YLWsZRtgwAM/a0WaFZZvwPtS+eoK
+ Ms3q5MPfhnx4GyJDQPpx3NFCp4U+A5o6ZiDDxyq9Qykd7PbV81dgsX7nrhmT8BJ9rQ+SId
+ OZIiMOo/dt2ie7vT9AP0PWFQyRYig4k=
 Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
  [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-152-fU-qS8_YMIyHrwTYnW1SnA-1; Tue, 22 Oct 2019 13:16:26 -0400
+ us-mta-42-N1DsqZ8gPdiNLANKsu8dcA-1; Tue, 22 Oct 2019 13:15:22 -0400
 Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com
  [10.5.11.14])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 8F4E9107AD31;
- Tue, 22 Oct 2019 17:16:21 +0000 (UTC)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 441A147B;
+ Tue, 22 Oct 2019 17:15:17 +0000 (UTC)
 Received: from t460s.redhat.com (ovpn-116-248.ams2.redhat.com [10.36.116.248])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 36C045DA8D;
- Tue, 22 Oct 2019 17:16:01 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 026E85ED23;
+ Tue, 22 Oct 2019 17:14:56 +0000 (UTC)
 From: David Hildenbrand <david@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH RFC v1 09/12] powerpc/64s: Prepare hash_page_do_lazy_icache()
+Subject: [PATCH RFC v1 06/12] staging/gasket: Prepare gasket_release_page()
  for PG_reserved changes
-Date: Tue, 22 Oct 2019 19:12:36 +0200
-Message-Id: <20191022171239.21487-10-david@redhat.com>
+Date: Tue, 22 Oct 2019 19:12:33 +0200
+Message-Id: <20191022171239.21487-7-david@redhat.com>
 In-Reply-To: <20191022171239.21487-1-david@redhat.com>
 References: <20191022171239.21487-1-david@redhat.com>
 MIME-Version: 1.0
 X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
-X-MC-Unique: fU-qS8_YMIyHrwTYnW1SnA-1
+X-MC-Unique: N1DsqZ8gPdiNLANKsu8dcA-1
 X-Mimecast-Spam-Score: 0
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
@@ -136,50 +135,32 @@ Sender: "Linuxppc-dev"
 Right now, ZONE_DEVICE memory is always set PG_reserved. We want to
 change that.
 
-We could explicitly check for is_zone_device_page(page). But looking at
-the pfn_valid() check, it seems safer to just use pfn_to_online_page()
-here, that will skip all ZONE_DEVICE pages right away.
+The pages are obtained via get_user_pages_fast(). I assume, these
+could be ZONE_DEVICE pages. Let's just exclude them as well explicitly.
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mike Rapoport <rppt@linux.ibm.com>
-Cc: YueHaibing <yuehaibing@huawei.com>
+Cc: Rob Springer <rspringer@google.com>
+Cc: Todd Poynor <toddpoynor@google.com>
+Cc: Ben Chan <benchan@chromium.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Signed-off-by: David Hildenbrand <david@redhat.com>
 ---
- arch/powerpc/mm/book3s64/hash_utils.c | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ drivers/staging/gasket/gasket_page_table.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s=
-64/hash_utils.c
-index 6c123760164e..a1566039e747 100644
---- a/arch/powerpc/mm/book3s64/hash_utils.c
-+++ b/arch/powerpc/mm/book3s64/hash_utils.c
-@@ -1084,13 +1084,15 @@ void hash__early_init_mmu_secondary(void)
-  */
- unsigned int hash_page_do_lazy_icache(unsigned int pp, pte_t pte, int trap=
-)
- {
--=09struct page *page;
-+=09struct page *page =3D pfn_to_online_page(pte_pfn(pte));
+diff --git a/drivers/staging/gasket/gasket_page_table.c b/drivers/staging/g=
+asket/gasket_page_table.c
+index f6d715787da8..d43fed58bf65 100644
+--- a/drivers/staging/gasket/gasket_page_table.c
++++ b/drivers/staging/gasket/gasket_page_table.c
+@@ -447,7 +447,7 @@ static bool gasket_release_page(struct page *page)
+ =09if (!page)
+ =09=09return false;
 =20
--=09if (!pfn_valid(pte_pfn(pte)))
-+=09/*
-+=09 * We ignore any pages that are not online (not managed by the buddy).
-+=09 * This includes ZONE_DEVICE pages.
-+=09 */
-+=09if (!page)
- =09=09return pp;
+-=09if (!PageReserved(page))
++=09if (!PageReserved(page) && !is_zone_device_page(page))
+ =09=09SetPageDirty(page);
+ =09put_page(page);
 =20
--=09page =3D pte_page(pte);
--
- =09/* page is dirty */
- =09if (!test_bit(PG_arch_1, &page->flags) && !PageReserved(page)) {
- =09=09if (trap =3D=3D 0x400) {
 --=20
 2.21.0
 
