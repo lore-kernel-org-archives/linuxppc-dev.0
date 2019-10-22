@@ -2,78 +2,113 @@ Return-Path: <SRS0=uEbk=YP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97E01CA9EA0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 18:55:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E2CA3CA9EA0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 18:57:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 441E221872
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 18:55:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 72C7620B7C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 18:57:39 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="d5iGls7D"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 441E221872
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	dkim=pass (1024-bit key) header.d=daktronics.com header.i=@daktronics.com header.b="cIfdbfWW"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 72C7620B7C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=daktronics.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46yN4F0s6jzDqHn
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Oct 2019 05:55:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46yN6n33GszDqJ8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Oct 2019 05:57:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=205.139.110.61;
- helo=us-smtp-delivery-1.mimecast.com; envelope-from=david@redhat.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
+ smtp.mailfrom=daktronics.com (client-ip=40.107.81.70;
+ helo=nam01-by2-obe.outbound.protection.outlook.com;
+ envelope-from=matt.sickler@daktronics.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=daktronics.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.b="d5iGls7D"; 
- dkim-atps=neutral
-Received: from us-smtp-delivery-1.mimecast.com (us-smtp-1.mimecast.com
- [205.139.110.61])
+ unprotected) header.d=daktronics.com header.i=@daktronics.com
+ header.b="cIfdbfWW"; dkim-atps=neutral
+Received: from NAM01-BY2-obe.outbound.protection.outlook.com
+ (mail-eopbgr810070.outbound.protection.outlook.com [40.107.81.70])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46yKyS2RjTzDqBj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2019 04:20:16 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1571764813;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=zGQAc5VmCetr7C7c8aFEmIaobGzhiGLNzJdeTackaIM=;
- b=d5iGls7D4T3dU0QAtdk2fjJIxcNgKHXKBWVUGTmZu84yxgZAPR491xyX/C5Dsscf81ookT
- VkTVw/PVH6kfbOX7z5NKTdnvzOp9cexBzDOli/fvbVKOhhCI+HhzriT/dIIA6SRaFLOg4/
- raG8OBDj6JV6PZDPsxMJ4EWvMzpKnRg=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-263-qLpykW4SPYy_CRKVfRekMA-1; Tue, 22 Oct 2019 13:13:58 -0400
-Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com
- [10.5.11.14])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 356831800D6A;
- Tue, 22 Oct 2019 17:13:53 +0000 (UTC)
-Received: from t460s.redhat.com (ovpn-116-248.ams2.redhat.com [10.36.116.248])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 54CE05ED21;
- Tue, 22 Oct 2019 17:13:31 +0000 (UTC)
-From: David Hildenbrand <david@redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH RFC v1 02/12] mm/usercopy.c: Prepare check_page_span() for
- PG_reserved changes
-Date: Tue, 22 Oct 2019 19:12:29 +0200
-Message-Id: <20191022171239.21487-3-david@redhat.com>
-In-Reply-To: <20191022171239.21487-1-david@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46yLlj1QtXzDqDS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2019 04:55:59 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=jxBBDI5Hbch/qzVP3JJKncVckwcs/NxxkO0AaeAkSypuhNCkz6ZTM93mPKCS83mQu6P5kB20JF5Ioqdh1C1aXhw/ksJ08NKCoiorsUTjiU65FcLvgixGtIXVehWBk7Hyan4OJVwM0n6qvPACSki+eVxdPKZ2kRRc1SSIpzvh8kFJPISSfee+glqwzchYTN/s5s5wsZza4QuVcZ6Urf+rJRGtxFgHPMTge2/7w5deOffAd2w+bbb3pWNOwccGFzBayXjM22G4c1xHRpuuVQ99aU1NhZFHY5avjSwJRYekf2ueXi4P5R/MqlNsSN49bkz6mq0j4f4WFnrKEmVBOmNbLA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=1thR0bk6as6nO9GCMTPrp4CeRx1jloAgo/zT6b5nWdI=;
+ b=XMoCjBPwki0zEQJBOV9t5dLQUybleiVwPp66a1woPm/aDYJUKmjchfT1TIRwajodD7hwsJcssFBfQuAfqXJ5q6XnhWWXNJLG2l0X4sr+KZhPgihlRdkVfefaQIRanSf7TS0evRrzSiuiFWkvM3ARVGt5NB9DG/gaEdtgVc29Pmy7hGdW6ZNur4hdC7Pvk2luSS2fWjW2wKQhJyisTWeW49tQ9r3Q3RYWudwZVbL+Ek9MynnZMB90APuQiyD+cp3fJMLdngMHtk9Xw5ZcCtj8jdTsJfVOuJVqiwOqjoeXsi8k57AVom+9OPbyXDu8xnEOYSuxb0fU3EQdVQZdf1ti1A==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=daktronics.com; dmarc=pass action=none
+ header.from=daktronics.com; dkim=pass header.d=daktronics.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=daktronics.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=1thR0bk6as6nO9GCMTPrp4CeRx1jloAgo/zT6b5nWdI=;
+ b=cIfdbfWW/bd6l8KsEcHxV9GA8J9PbwTiteh5MZK4Q5VZa3OmQSSn/+6v/4uxPKC6yH/CZEGntUgBQkVVtu7UVf7WHNWY8vvEipBKQUa82AYHvPht52o3Ge5nWe+76WbW56BGwiDzSu9ziyVy6feH+WvSX1WuaBCCdFJRcpO8BJw=
+Received: from SN6PR02MB4016.namprd02.prod.outlook.com (52.135.69.145) by
+ SN6PR02MB5422.namprd02.prod.outlook.com (20.177.249.159) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.2387.20; Tue, 22 Oct 2019 17:55:55 +0000
+Received: from SN6PR02MB4016.namprd02.prod.outlook.com
+ ([fe80::ec31:ae9d:c354:319a]) by SN6PR02MB4016.namprd02.prod.outlook.com
+ ([fe80::ec31:ae9d:c354:319a%5]) with mapi id 15.20.2347.029; Tue, 22 Oct 2019
+ 17:55:55 +0000
+From: Matt Sickler <Matt.Sickler@daktronics.com>
+To: David Hildenbrand <david@redhat.com>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH RFC v1 07/12] staging: kpc2000: Prepare
+ transfer_complete_cb() for PG_reserved changes
+Thread-Topic: [PATCH RFC v1 07/12] staging: kpc2000: Prepare
+ transfer_complete_cb() for PG_reserved changes
+Thread-Index: AQHViPxcbvM0mySGyk+6f2twxm2iBqdm8Y8g
+Date: Tue, 22 Oct 2019 17:55:54 +0000
+Message-ID: <SN6PR02MB4016D75C028B7A1BEA005697EE680@SN6PR02MB4016.namprd02.prod.outlook.com>
 References: <20191022171239.21487-1-david@redhat.com>
+ <20191022171239.21487-8-david@redhat.com>
+In-Reply-To: <20191022171239.21487-8-david@redhat.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=Matt.Sickler@daktronics.com; 
+x-originating-ip: [63.85.214.4]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 14d5229b-224f-4510-04eb-08d757191616
+x-ms-traffictypediagnostic: SN6PR02MB5422:
+x-microsoft-antispam-prvs: <SN6PR02MB54226B9C5616DE2F7361BA9EEE680@SN6PR02MB5422.namprd02.prod.outlook.com>
+x-ms-oob-tlc-oobclassifiers: OLM:2582;
+x-forefront-prvs: 01986AE76B
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10009020)(4636009)(136003)(346002)(396003)(376002)(39860400002)(366004)(189003)(199004)(6506007)(7696005)(2906002)(99286004)(7366002)(76176011)(7406005)(33656002)(446003)(71190400001)(71200400001)(11346002)(76116006)(486006)(2501003)(229853002)(64756008)(66946007)(52536014)(66476007)(476003)(66556008)(66446008)(4326008)(186003)(26005)(102836004)(14454004)(7416002)(5660300002)(25786009)(8676002)(81156014)(81166006)(316002)(6436002)(14444005)(305945005)(256004)(7736002)(55016002)(74316002)(66066001)(86362001)(8936002)(9686003)(66574012)(478600001)(6116002)(6246003)(3846002)(54906003)(110136005);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:SN6PR02MB5422;
+ H:SN6PR02MB4016.namprd02.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; MX:1; A:1; 
+received-spf: None (protection.outlook.com: daktronics.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: GV0bdRparBfPQYQiFd5mobcttfMeUhasgAomG69+R6ITIQuSKj+emPcWIYxlfOeRZy7MfLPZvE0mrCWT5GUzDgSo8zpDESD97P2ir2D7xoK9e61oMQ+Bx4Kg2caoViGj2WeFmmTziW2k7agIX4XGyNhSGCJOvEVktQjXoRZEtbpqetl6kkPcdW9P9zX7eK3ZDb72F7GWH1wJcjovFD4l8fhPNq4z08ljVEPZiSdW+lQ0C8ZiapkjXU1dulIsfOssr4NGHB8w8LopgfEB1NLvmf4HjZTHyYYRwCoqXKshIQXBaIdMd9cH+TC9QvWZJ/3Zm4kX4CRF1TmOSULUXtBoIFydeaIk3/QeIwhe7YIE+YoznNeUMCtzFDHpiMXHT5MUfSJhS8lIvE6GUCCkxPEAiEjThv9TxOVIUBT4hrASPTrDtpY3d+q81Uds88Po4IyJ
+x-ms-exchange-transport-forked: True
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
-X-MC-Unique: qLpykW4SPYy_CRKVfRekMA-1
-X-Mimecast-Spam-Score: 0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Approved-At: Wed, 23 Oct 2019 05:28:44 +1100
+X-OriginatorOrg: daktronics.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 14d5229b-224f-4510-04eb-08d757191616
+X-MS-Exchange-CrossTenant-originalarrivaltime: 22 Oct 2019 17:55:54.8547 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: be88af81-0945-42aa-a3d2-b122777351a2
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: K2clwrltXeRtnk4WAd1cR0av6VmYgyUI7pYiHi+h0yWZNiiBmnQ5vA2nFJzB1mWYYjXQrWLx8smHBcAJsa5mmTpCJBljsFUUXPbDCrP/Hhg=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN6PR02MB5422
+X-Mailman-Approved-At: Wed, 23 Oct 2019 05:28:43 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,39 +121,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Kate Stewart <kstewart@linuxfoundation.org>,
- Sasha Levin <sashal@kernel.org>, linux-hyperv@vger.kernel.org,
+ Sasha Levin <sashal@kernel.org>,
+ "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>,
  Michal Hocko <mhocko@suse.com>,
- =?UTF-8?q?Radim=20Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@redhat.com>,
- kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>,
+ =?utf-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ Pavel Tatashin <pavel.tatashin@microsoft.com>,
  KarimAllah Ahmed <karahmed@amazon.de>,
  Dave Hansen <dave.hansen@linux.intel.com>,
  Alexander Duyck <alexander.duyck@gmail.com>, Michal Hocko <mhocko@kernel.org>,
- linux-mm@kvack.org, Pavel Tatashin <pavel.tatashin@microsoft.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Wanpeng Li <wanpengli@tencent.com>,
- Alexander Duyck <alexander.h.duyck@linux.intel.com>,
- "K. Y. Srinivasan" <kys@microsoft.com>, Fabio Estevam <festevam@gmail.com>,
+ "linux-mm@kvack.org" <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Wanpeng Li <wanpengli@tencent.com>,
+ Alexander Duyck <alexander.h.duyck@linux.intel.com>, "K. Y.
+ Srinivasan" <kys@microsoft.com>, Fabio Estevam <festevam@gmail.com>,
  Ben Chan <benchan@chromium.org>, Kees Cook <keescook@chromium.org>,
- devel@driverdev.osuosl.org, Stefano Stabellini <sstabellini@kernel.org>,
+ "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
+ Stefano Stabellini <sstabellini@kernel.org>,
  Stephen Hemminger <sthemmin@microsoft.com>,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Joerg Roedel <joro@8bytes.org>, x86@kernel.org,
+ Joerg Roedel <joro@8bytes.org>, "x86@kernel.org" <x86@kernel.org>,
  YueHaibing <yuehaibing@huawei.com>, Mike Rapoport <rppt@linux.ibm.com>,
  Madhumitha Prabakaran <madhumithabiw@gmail.com>,
  Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
  Vlastimil Babka <vbabka@suse.cz>, Nishka Dasgupta <nishkadg.linux@gmail.com>,
  Anthony Yznaga <anthony.yznaga@oracle.com>, Oscar Salvador <osalvador@suse.de>,
  Dan Carpenter <dan.carpenter@oracle.com>,
- "Isaac J. Manjarres" <isaacm@codeaurora.org>,
- Matt Sickler <Matt.Sickler@daktronics.com>, Juergen Gross <jgross@suse.com>,
+ "Isaac J. Manjarres" <isaacm@codeaurora.org>, Juergen Gross <jgross@suse.com>,
  Anshuman Khandual <anshuman.khandual@arm.com>,
  Haiyang Zhang <haiyangz@microsoft.com>,
- =?UTF-8?q?Simon=20Sandstr=C3=B6m?= <simon@nikanor.nu>,
- Dan Williams <dan.j.williams@intel.com>, kvm-ppc@vger.kernel.org,
- Qian Cai <cai@lca.pw>, Alex Williamson <alex.williamson@redhat.com>,
+ =?utf-8?B?U2ltb24gU2FuZHN0csO2bQ==?= <simon@nikanor.nu>,
+ Dan Williams <dan.j.williams@intel.com>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>, Qian Cai <cai@lca.pw>,
+ Alex Williamson <alex.williamson@redhat.com>,
  Mike Rapoport <rppt@linux.vnet.ibm.com>, Borislav Petkov <bp@alien8.de>,
  Nicholas Piggin <npiggin@gmail.com>, Andy Lutomirski <luto@kernel.org>,
- xen-devel@lists.xenproject.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>,
  Todd Poynor <toddpoynor@google.com>, Vitaly Kuznetsov <vkuznets@redhat.com>,
  Allison Randal <allison@lohutok.net>, Jim Mattson <jmattson@google.com>,
  Vandana BN <bnvandana@gmail.com>, Jeremy Sowden <jeremy@azazel.net>,
@@ -128,53 +166,39 @@ Cc: Kate Stewart <kstewart@linuxfoundation.org>,
  Sean Christopherson <sean.j.christopherson@intel.com>,
  Rob Springer <rspringer@google.com>, Thomas Gleixner <tglx@linutronix.de>,
  Johannes Weiner <hannes@cmpxchg.org>, Paolo Bonzini <pbonzini@redhat.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+ Andrew Morton <akpm@linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Right now, ZONE_DEVICE memory is always set PG_reserved. We want to
-change that.
-
-Let's make sure that the logic in the function won't change. Once we no
-longer set these pages to reserved, we can rework this function to
-perform separate checks for ZONE_DEVICE (split from PG_reserved checks).
-
-Cc: Kees Cook <keescook@chromium.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kate Stewart <kstewart@linuxfoundation.org>
-Cc: Allison Randal <allison@lohutok.net>
-Cc: "Isaac J. Manjarres" <isaacm@codeaurora.org>
-Cc: Qian Cai <cai@lca.pw>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: David Hildenbrand <david@redhat.com>
----
- mm/usercopy.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/mm/usercopy.c b/mm/usercopy.c
-index 660717a1ea5c..a3ac4be35cde 100644
---- a/mm/usercopy.c
-+++ b/mm/usercopy.c
-@@ -203,14 +203,15 @@ static inline void check_page_span(const void *ptr, u=
-nsigned long n,
- =09 * device memory), or CMA. Otherwise, reject since the object spans
- =09 * several independently allocated pages.
- =09 */
--=09is_reserved =3D PageReserved(page);
-+=09is_reserved =3D PageReserved(page) || is_zone_device_page(page);
- =09is_cma =3D is_migrate_cma_page(page);
- =09if (!is_reserved && !is_cma)
- =09=09usercopy_abort("spans multiple pages", NULL, to_user, 0, n);
-=20
- =09for (ptr +=3D PAGE_SIZE; ptr <=3D end; ptr +=3D PAGE_SIZE) {
- =09=09page =3D virt_to_head_page(ptr);
--=09=09if (is_reserved && !PageReserved(page))
-+=09=09if (is_reserved && !(PageReserved(page) ||
-+=09=09=09=09     is_zone_device_page(page)))
- =09=09=09usercopy_abort("spans Reserved and non-Reserved pages",
- =09=09=09=09       NULL, to_user, 0, n);
- =09=09if (is_cma && !is_migrate_cma_page(page))
---=20
-2.21.0
-
+PlJpZ2h0IG5vdywgWk9ORV9ERVZJQ0UgbWVtb3J5IGlzIGFsd2F5cyBzZXQgUEdfcmVzZXJ2ZWQu
+IFdlIHdhbnQgdG8gY2hhbmdlIHRoYXQuDQo+DQo+VGhlIHBhZ2VzIGFyZSBvYnRhaW5lZCB2aWEg
+Z2V0X3VzZXJfcGFnZXNfZmFzdCgpLiBJIGFzc3VtZSwgdGhlc2UgY291bGQgYmUgWk9ORV9ERVZJ
+Q0UgcGFnZXMuIExldCdzIGp1c3QgZXhjbHVkZSB0aGVtIGFzIHdlbGwgZXhwbGljaXRseS4NCg0K
+SSdtIG5vdCBzdXJlIHdoYXQgWk9ORV9ERVZJQ0UgcGFnZXMgYXJlLCBidXQgdGhlc2UgcGFnZXMg
+YXJlIG5vcm1hbCBzeXN0ZW0gUkFNLCB0eXBpY2FsbHkgSHVnZVBhZ2VzIChidXQgbm90IGFsd2F5
+cykuDQoNCj4NCj5DYzogR3JlZyBLcm9haC1IYXJ0bWFuIDxncmVna2hAbGludXhmb3VuZGF0aW9u
+Lm9yZz4NCj5DYzogVmFuZGFuYSBCTiA8Ym52YW5kYW5hQGdtYWlsLmNvbT4NCj5DYzogIlNpbW9u
+IFNhbmRzdHLDtm0iIDxzaW1vbkBuaWthbm9yLm51Pg0KPkNjOiBEYW4gQ2FycGVudGVyIDxkYW4u
+Y2FycGVudGVyQG9yYWNsZS5jb20+DQo+Q2M6IE5pc2hrYSBEYXNndXB0YSA8bmlzaGthZGcubGlu
+dXhAZ21haWwuY29tPg0KPkNjOiBNYWRodW1pdGhhIFByYWJha2FyYW4gPG1hZGh1bWl0aGFiaXdA
+Z21haWwuY29tPg0KPkNjOiBGYWJpbyBFc3RldmFtIDxmZXN0ZXZhbUBnbWFpbC5jb20+DQo+Q2M6
+IE1hdHQgU2lja2xlciA8TWF0dC5TaWNrbGVyQGRha3Ryb25pY3MuY29tPg0KPkNjOiBKZXJlbXkg
+U293ZGVuIDxqZXJlbXlAYXphemVsLm5ldD4NCj5TaWduZWQtb2ZmLWJ5OiBEYXZpZCBIaWxkZW5i
+cmFuZCA8ZGF2aWRAcmVkaGF0LmNvbT4NCj4tLS0NCj4gZHJpdmVycy9zdGFnaW5nL2twYzIwMDAv
+a3BjX2RtYS9maWxlb3BzLmMgfCAzICsrLQ0KPiAxIGZpbGUgY2hhbmdlZCwgMiBpbnNlcnRpb25z
+KCspLCAxIGRlbGV0aW9uKC0pDQo+DQo+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvc3RhZ2luZy9rcGMy
+MDAwL2twY19kbWEvZmlsZW9wcy5jIGIvZHJpdmVycy9zdGFnaW5nL2twYzIwMDAva3BjX2RtYS9m
+aWxlb3BzLmMNCj5pbmRleCBjYjUyYmQ5YTZkMmYuLjQ1N2FkY2M4MWZlNiAxMDA2NDQNCj4tLS0g
+YS9kcml2ZXJzL3N0YWdpbmcva3BjMjAwMC9rcGNfZG1hL2ZpbGVvcHMuYw0KPisrKyBiL2RyaXZl
+cnMvc3RhZ2luZy9rcGMyMDAwL2twY19kbWEvZmlsZW9wcy5jDQo+QEAgLTIxMiw3ICsyMTIsOCBA
+QCB2b2lkICB0cmFuc2Zlcl9jb21wbGV0ZV9jYihzdHJ1Y3QgYWlvX2NiX2RhdGEgKmFjZCwgc2l6
+ZV90IHhmcl9jb3VudCwgdTMyIGZsYWdzKQ0KPiAgICAgICAgQlVHX09OKGFjZC0+bGRldi0+cGxk
+ZXYgPT0gTlVMTCk7DQo+DQo+ICAgICAgICBmb3IgKGkgPSAwIDsgaSA8IGFjZC0+cGFnZV9jb3Vu
+dCA7IGkrKykgew0KPi0gICAgICAgICAgICAgICBpZiAoIVBhZ2VSZXNlcnZlZChhY2QtPnVzZXJf
+cGFnZXNbaV0pKSB7DQo+KyAgICAgICAgICAgICAgIGlmICghUGFnZVJlc2VydmVkKGFjZC0+dXNl
+cl9wYWdlc1tpXSkgJiYNCj4rICAgICAgICAgICAgICAgICAgICFpc196b25lX2RldmljZV9wYWdl
+KGFjZC0+dXNlcl9wYWdlc1tpXSkpIHsNCj4gICAgICAgICAgICAgICAgICAgICAgICBzZXRfcGFn
+ZV9kaXJ0eShhY2QtPnVzZXJfcGFnZXNbaV0pOw0KPiAgICAgICAgICAgICAgICB9DQo+ICAgICAg
+ICB9DQo+LS0NCj4yLjIxLjANCg0K
