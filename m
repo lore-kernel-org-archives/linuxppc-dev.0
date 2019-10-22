@@ -2,77 +2,74 @@ Return-Path: <SRS0=uEbk=YP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 369B8CA9EB9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 18:51:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A84BFCA9EA0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 18:53:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A201520B7C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 18:51:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 563E720B7C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 18:53:31 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="hwfYmEif"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A201520B7C
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="WlfE/fAg"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 563E720B7C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46yMzl01rFzDqHf
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Oct 2019 05:51:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46yN211ttDzDqPb
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Oct 2019 05:53:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=207.211.31.81;
+ smtp.mailfrom=redhat.com (client-ip=205.139.110.61;
  helo=us-smtp-delivery-1.mimecast.com; envelope-from=david@redhat.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.b="hwfYmEif"; 
+ unprotected) header.d=redhat.com header.i=@redhat.com header.b="WlfE/fAg"; 
  dkim-atps=neutral
-Received: from us-smtp-delivery-1.mimecast.com (us-smtp-2.mimecast.com
- [207.211.31.81])
+Received: from us-smtp-delivery-1.mimecast.com (us-smtp-1.mimecast.com
+ [205.139.110.61])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46yKvR6M1qzDqFJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2019 04:17:39 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46yKxf406nzDqBj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2019 04:19:34 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1571764656;
+ s=mimecast20190719; t=1571764771;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=A6YQSFHt8jOYSnh+0tXO/u1XF2EwlWVMRF9XxPpZuco=;
- b=hwfYmEifngnj9KQvo//uyKW9l/4EuVEMBqELUStc/jPG4voRnSWtL2hiicYDYv22LhhC++
- aqS6Us4iHDgFFJ0Kjtk73h3qxL1TGsBtedDboOfI3E7DxNT9RMMKcz5OwySy/c8uBeYlR/
- /bUrhwKkCt2+z/RD+bSHbETdV1jByHE=
+ content-transfer-encoding:content-transfer-encoding;
+ bh=lOu6AQP2dyv/4LtgwGlaMv6HFBAdtkUQmm1EyLtCFNM=;
+ b=WlfE/fAgpu6xvGEhlRS7s6dfRMZLePA5IYyYYYajMqg5uT8bnRHGyYLtuVKxCaUqBXygjj
+ aRFqfncJ3TmllzIiwauYOIL8C9FAnJOZkjHN9Yl5FGUbN61Fu6bFF6mvRVKUeDpurVwveZ
+ FL4NsvbsjkePidnW17S9eZyDvVOqCt0=
 Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
  [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-95-oTi2oKSAOt6g9bYqCTM7RQ-1; Tue, 22 Oct 2019 13:17:35 -0400
+ us-mta-263-9EHfARfbNLK-zZYBJq1aBA-1; Tue, 22 Oct 2019 13:13:15 -0400
 Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com
  [10.5.11.14])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 976BD1005512;
- Tue, 22 Oct 2019 17:17:30 +0000 (UTC)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 7918A47B;
+ Tue, 22 Oct 2019 17:13:07 +0000 (UTC)
 Received: from t460s.redhat.com (ovpn-116-248.ams2.redhat.com [10.36.116.248])
- by smtp.corp.redhat.com (Postfix) with ESMTP id B1A515DA8D;
- Tue, 22 Oct 2019 17:17:05 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 5B8BC5DD79;
+ Tue, 22 Oct 2019 17:12:40 +0000 (UTC)
 From: David Hildenbrand <david@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH RFC v1 12/12] mm/memory_hotplug: Don't mark pages PG_reserved
- when initializing the memmap
-Date: Tue, 22 Oct 2019 19:12:39 +0200
-Message-Id: <20191022171239.21487-13-david@redhat.com>
-In-Reply-To: <20191022171239.21487-1-david@redhat.com>
-References: <20191022171239.21487-1-david@redhat.com>
+Subject: [PATCH RFC v1 00/12] mm: Don't mark hotplugged pages PG_reserved
+ (including ZONE_DEVICE)
+Date: Tue, 22 Oct 2019 19:12:27 +0200
+Message-Id: <20191022171239.21487-1-david@redhat.com>
 MIME-Version: 1.0
 X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
-X-MC-Unique: oTi2oKSAOt6g9bYqCTM7RQ-1
+X-MC-Unique: 9EHfARfbNLK-zZYBJq1aBA-1
 X-Mimecast-Spam-Score: 0
-Content-Type: text/plain; charset=WINDOWS-1252
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-X-Mailman-Approved-At: Wed, 23 Oct 2019 05:28:43 +1100
+X-Mailman-Approved-At: Wed, 23 Oct 2019 05:28:44 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -132,223 +129,138 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Everything should be prepared to stop setting pages PG_reserved when
-initializing the memmap on memory hotplug. Most importantly, we
-stop marking ZONE_DEVICE pages PG_reserved.
+This series is based on [2], which should pop up in linux/next soon:
+=09https://lkml.org/lkml/2019/10/21/1034
 
-a) We made sure that any code that relied on PG_reserved to detect
-   ZONE_DEVICE memory will no longer rely on PG_reserved - either
-   by using pfn_to_online_page() to exclude them right away or by
-   checking against is_zone_device_page().
-b) We made sure that memory blocks with holes cannot be offlined and
-   therefore also not onlined. We have quite some code that relies on
-   memory holes being marked PG_reserved. This is now not an issue
-   anymore.
+This is the result of a recent discussion with Michal ([1], [2]). Right
+now we set all pages PG_reserved when initializing hotplugged memmaps. This
+includes ZONE_DEVICE memory. In case of system memory, PG_reserved is
+cleared again when onlining the memory, in case of ZONE_DEVICE memory
+never. In ancient times, we needed PG_reserved, because there was no way
+to tell whether the memmap was already properly initialized. We now have
+SECTION_IS_ONLINE for that in the case of !ZONE_DEVICE memory. ZONE_DEVICE
+memory is already initialized deferred, and there shouldn't be a visible
+change in that regard.
 
-generic_online_page() still calls __free_pages_core(), which performs
-__ClearPageReserved(p). AFAIKS, this should not hurt.
+I remember that some time ago, we already talked about stopping to set
+ZONE_DEVICE pages PG_reserved on the list, but I never saw any patches.
+Also, I forgot who was part of the discussion :)
 
-It is worth nothing that the users of online_page_callback_t might see a
-change. E.g., until now, pages not freed to the buddy by the HyperV
-balloonm were set PG_reserved until freed via generic_online_page(). Now,
-they would look like ordinarily allocated pages (refcount =3D=3D 1). This
-callback is used by the XEN balloon and the HyperV balloon. To not
-introduce any silent errors, keep marking the pages PG_reserved. We can
-most probably stop doing that, but have to double check if there are
-issues (e.g., offlining code aborts right away in has_unmovable_pages()
-when it runs into a PageReserved(page))
+One of the biggest fear were side effects. I went ahead and audited all
+users of PageReserved(). The ones that don't need any care (patches)
+can be found below. I will double check and hope I am not missing something
+important.
 
-Update the documentation at various places.
+I am probably a little bit too careful (but I don't want to break things).
+In most places (besides KVM and vfio that are nuts), the
+pfn_to_online_page() check could most probably be avoided by a
+is_zone_device_page() check. However, I usually get suspicious when I see
+a pfn_valid() check (especially after I learned that people mmap parts of
+/dev/mem into user space, including memory without memmaps. Also, people
+could memmap offline memory blocks this way :/). As long as this does not
+hurt performance, I think we should rather do it the clean way.
 
-Cc: "K. Y. Srinivasan" <kys@microsoft.com>
-Cc: Haiyang Zhang <haiyangz@microsoft.com>
-Cc: Stephen Hemminger <sthemmin@microsoft.com>
-Cc: Sasha Levin <sashal@kernel.org>
-Cc: Boris Ostrovsky <boris.ostrovsky@oracle.com>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Stefano Stabellini <sstabellini@kernel.org>
+I only gave it a quick test with DIMMs on x86-64, but didn't test the
+ZONE_DEVICE part at all (any tips for a nice QEMU setup?). Compile-tested
+on x86-64 and PPC.
+
+Other users of PageReserved() that should be fine:
+- mm/page_owner.c:pagetypeinfo_showmixedcount_print()
+  -> Never called for ZONE_DEVICE, (+ pfn_to_online_page(pfn))
+- mm/page_owner.c:init_pages_in_zone()
+  -> Never called for ZONE_DEVICE (!populated_zone(zone))
+- mm/page_ext.c:free_page_ext()
+  -> Only a BUG_ON(PageReserved(page)), not relevant
+- mm/page_ext.c:has_unmovable_pages()
+  -> Not releveant for ZONE_DEVICE
+- mm/page_ext.c:pfn_range_valid_contig()
+  -> pfn_to_online_page() already guards us
+- mm/mempolicy.c:queue_pages_pte_range()
+  -> vm_normal_page() checks against pte_devmap()
+- mm/memory-failure.c:hwpoison_user_mappings()
+  -> Not reached via memory_failure() due to pfn_to_online_page()
+  -> Also not reached indirectly via memory_failure_hugetlb()
+- mm/hugetlb.c:gather_bootmem_prealloc()
+  -> Only a WARN_ON(PageReserved(page)), not relevant
+- kernel/power/snapshot.c:saveable_highmem_page()
+  -> pfn_to_online_page() already guards us
+- kernel/power/snapshot.c:saveable_page()
+  -> pfn_to_online_page() already guards us
+- fs/proc/task_mmu.c:can_gather_numa_stats()
+  -> vm_normal_page() checks against pte_devmap()
+- fs/proc/task_mmu.c:can_gather_numa_stats_pmd
+  -> vm_normal_page_pmd() checks against pte_devmap()
+- fs/proc/page.c:stable_page_flags()
+  -> The reserved bit is simply copied, irrelevant
+- drivers/firmware/memmap.c:release_firmware_map_entry()
+  -> really only a check to detect bootmem. Not relevant for ZONE_DEVICE
+- arch/ia64/kernel/mca_drv.c
+- arch/mips/mm/init.c
+- arch/mips/mm/ioremap.c
+- arch/nios2/mm/ioremap.c
+- arch/parisc/mm/ioremap.c
+- arch/sparc/mm/tlb.c
+- arch/xtensa/mm/cache.c
+  -> No ZONE_DEVICE support
+- arch/powerpc/mm/init_64.c:vmemmap_free()
+  -> Special-cases memmap on altmap
+  -> Only a check for bootmem
+- arch/x86/kernel/alternative.c:__text_poke()
+  -> Only a WARN_ON(!PageReserved(pages[0])) to verify it is bootmem
+- arch/x86/mm/init_64.c
+  -> Only a check for bootmem
+
+[1] https://lkml.org/lkml/2019/10/21/736
+[2] https://lkml.org/lkml/2019/10/21/1034
+
+Cc: Michal Hocko <mhocko@kernel.org>
+Cc: Dan Williams <dan.j.williams@intel.com
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-Cc: Pavel Tatashin <pavel.tatashin@microsoft.com>
-Cc: Vlastimil Babka <vbabka@suse.cz>
-Cc: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Anthony Yznaga <anthony.yznaga@oracle.com>
-Cc: Michal Hocko <mhocko@suse.com>
-Cc: Oscar Salvador <osalvador@suse.de>
-Cc: Dan Williams <dan.j.williams@intel.com>
-Cc: Mel Gorman <mgorman@techsingularity.net>
-Cc: Mike Rapoport <rppt@linux.vnet.ibm.com>
-Cc: Anshuman Khandual <anshuman.khandual@arm.com>
-Suggested-by: Michal Hocko <mhocko@kernel.org>
-Signed-off-by: David Hildenbrand <david@redhat.com>
----
- drivers/hv/hv_balloon.c    |  6 ++++++
- drivers/xen/balloon.c      |  7 +++++++
- include/linux/page-flags.h |  8 +-------
- mm/memory_hotplug.c        | 17 +++++++----------
- mm/page_alloc.c            | 11 -----------
- 5 files changed, 21 insertions(+), 28 deletions(-)
+Cc: kvm-ppc@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: kvm@vger.kernel.org
+Cc: linux-hyperv@vger.kernel.org
+Cc: devel@driverdev.osuosl.org
+Cc: xen-devel@lists.xenproject.org
+Cc: x86@kernel.org
+Cc: Alexander Duyck <alexander.duyck@gmail.com>
 
-diff --git a/drivers/hv/hv_balloon.c b/drivers/hv/hv_balloon.c
-index c722079d3c24..3214b0ef5247 100644
---- a/drivers/hv/hv_balloon.c
-+++ b/drivers/hv/hv_balloon.c
-@@ -670,6 +670,12 @@ static struct notifier_block hv_memory_nb =3D {
- /* Check if the particular page is backed and can be onlined and online it=
-. */
- static void hv_page_online_one(struct hv_hotadd_state *has, struct page *p=
-g)
- {
-+=09/*
-+=09 * TODO: The core used to mark the pages reserved. Most probably
-+=09 * we can stop doing that now.
-+=09 */
-+=09__SetPageReserved(pg);
-+
- =09if (!has_pfn_is_backed(has, page_to_pfn(pg))) {
- =09=09if (!PageOffline(pg))
- =09=09=09__SetPageOffline(pg);
-diff --git a/drivers/xen/balloon.c b/drivers/xen/balloon.c
-index 4f2e78a5e4db..af69f057913a 100644
---- a/drivers/xen/balloon.c
-+++ b/drivers/xen/balloon.c
-@@ -374,6 +374,13 @@ static void xen_online_page(struct page *page, unsigne=
-d int order)
- =09mutex_lock(&balloon_mutex);
- =09for (i =3D 0; i < size; i++) {
- =09=09p =3D pfn_to_page(start_pfn + i);
-+=09=09/*
-+=09=09 * TODO: The core used to mark the pages reserved. Most probably
-+=09=09 * we can stop doing that now. However, especially
-+=09=09 * alloc_xenballooned_pages() left PG_reserved set
-+=09=09 * on pages that can get mapped to user space.
-+=09=09 */
-+=09=09__SetPageReserved(p);
- =09=09balloon_append(p);
- =09}
- =09mutex_unlock(&balloon_mutex);
-diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
-index f91cb8898ff0..d4f85d866b71 100644
---- a/include/linux/page-flags.h
-+++ b/include/linux/page-flags.h
-@@ -30,24 +30,18 @@
-  * - Pages falling into physical memory gaps - not IORESOURCE_SYSRAM. Tryi=
-ng
-  *   to read/write these pages might end badly. Don't touch!
-  * - The zero page(s)
-- * - Pages not added to the page allocator when onlining a section because
-- *   they were excluded via the online_page_callback() or because they are
-- *   PG_hwpoison.
-  * - Pages allocated in the context of kexec/kdump (loaded kernel image,
-  *   control pages, vmcoreinfo)
-  * - MMIO/DMA pages. Some architectures don't allow to ioremap pages that =
-are
-  *   not marked PG_reserved (as they might be in use by somebody else who =
-does
-  *   not respect the caching strategy).
-- * - Pages part of an offline section (struct pages of offline sections sh=
-ould
-- *   not be trusted as they will be initialized when first onlined).
-  * - MCA pages on ia64
-  * - Pages holding CPU notes for POWER Firmware Assisted Dump
-- * - Device memory (e.g. PMEM, DAX, HMM)
-  * Some PG_reserved pages will be excluded from the hibernation image.
-  * PG_reserved does in general not hinder anybody from dumping or swapping
-  * and is no longer required for remap_pfn_range(). ioremap might require =
-it.
-  * Consequently, PG_reserved for a page mapped into user space can indicat=
-e
-- * the zero page, the vDSO, MMIO pages or device memory.
-+ * the zero page, the vDSO, or MMIO pages.
-  *
-  * The PG_private bitflag is set on pagecache pages if they contain filesy=
-stem
-  * specific data (which is normally at page->private). It can be used by
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index 7210f4375279..9fbcdeaf0339 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -501,9 +501,7 @@ static void __remove_section(unsigned long pfn, unsigne=
-d long nr_pages,
-  * @altmap: alternative device page map or %NULL if default memmap is used
-  *
-  * Generic helper function to remove section mappings and sysfs entries
-- * for the section of the memory we are removing. Caller needs to make
-- * sure that pages are marked reserved and zones are adjust properly by
-- * calling offline_pages().
-+ * for the section of the memory we are removing.
-  */
- void __remove_pages(unsigned long pfn, unsigned long nr_pages,
- =09=09    struct vmem_altmap *altmap)
-@@ -584,9 +582,9 @@ static int online_pages_range(unsigned long start_pfn, =
-unsigned long nr_pages,
- =09int order;
-=20
- =09/*
--=09 * Online the pages. The callback might decide to keep some pages
--=09 * PG_reserved (to add them to the buddy later), but we still account
--=09 * them as being online/belonging to this zone ("present").
-+=09 * Online the pages. The callback might decide to not free some pages
-+=09 * (to add them to the buddy later), but we still account them as
-+=09 * being online/belonging to this zone ("present").
- =09 */
- =09for (pfn =3D start_pfn; pfn < end_pfn; pfn +=3D 1ul << order) {
- =09=09order =3D min(MAX_ORDER - 1, get_order(PFN_PHYS(end_pfn - pfn)));
-@@ -659,8 +657,7 @@ static void __meminit resize_pgdat_range(struct pglist_=
-data *pgdat, unsigned lon
- }
- /*
-  * Associate the pfn range with the given zone, initializing the memmaps
-- * and resizing the pgdat/zone data to span the added pages. After this
-- * call, all affected pages are PG_reserved.
-+ * and resizing the pgdat/zone data to span the added pages.
-  */
- void __ref move_pfn_range_to_zone(struct zone *zone, unsigned long start_p=
-fn,
- =09=09unsigned long nr_pages, struct vmem_altmap *altmap)
-@@ -684,8 +681,8 @@ void __ref move_pfn_range_to_zone(struct zone *zone, un=
-signed long start_pfn,
- =09/*
- =09 * TODO now we have a visible range of pages which are not associated
- =09 * with their zone properly. Not nice but set_pfnblock_flags_mask
--=09 * expects the zone spans the pfn range. All the pages in the range
--=09 * are reserved so nobody should be touching them so we should be safe
-+=09 * expects the zone spans the pfn range. The sections are not yet
-+=09 * marked online so nobody should be touching the memmap.
- =09 */
- =09memmap_init_zone(nr_pages, nid, zone_idx(zone), start_pfn,
- =09=09=09MEMMAP_HOTPLUG, altmap);
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index e153280bde9a..29787ac4aeb8 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -5927,8 +5927,6 @@ void __meminit memmap_init_zone(unsigned long size, i=
-nt nid, unsigned long zone,
-=20
- =09=09page =3D pfn_to_page(pfn);
- =09=09__init_single_page(page, pfn, zone, nid);
--=09=09if (context =3D=3D MEMMAP_HOTPLUG)
--=09=09=09__SetPageReserved(page);
-=20
- =09=09/*
- =09=09 * Mark the block movable so that blocks are reserved for
-@@ -5980,15 +5978,6 @@ void __ref memmap_init_zone_device(struct zone *zone=
-,
-=20
- =09=09__init_single_page(page, pfn, zone_idx, nid);
-=20
--=09=09/*
--=09=09 * Mark page reserved as it will need to wait for onlining
--=09=09 * phase for it to be fully associated with a zone.
--=09=09 *
--=09=09 * We can use the non-atomic __set_bit operation for setting
--=09=09 * the flag as we are still initializing the pages.
--=09=09 */
--=09=09__SetPageReserved(page);
--
- =09=09/*
- =09=09 * ZONE_DEVICE pages union ->lru with a ->pgmap back pointer
- =09=09 * and zone_device_data.  It is a bug if a ZONE_DEVICE page is
+David Hildenbrand (12):
+  mm/memory_hotplug: Don't allow to online/offline memory blocks with
+    holes
+  mm/usercopy.c: Prepare check_page_span() for PG_reserved changes
+  KVM: x86/mmu: Prepare kvm_is_mmio_pfn() for PG_reserved changes
+  KVM: Prepare kvm_is_reserved_pfn() for PG_reserved changes
+  vfio/type1: Prepare is_invalid_reserved_pfn() for PG_reserved changes
+  staging/gasket: Prepare gasket_release_page() for PG_reserved changes
+  staging: kpc2000: Prepare transfer_complete_cb() for PG_reserved
+    changes
+  powerpc/book3s: Prepare kvmppc_book3s_instantiate_page() for
+    PG_reserved changes
+  powerpc/64s: Prepare hash_page_do_lazy_icache() for PG_reserved
+    changes
+  powerpc/mm: Prepare maybe_pte_to_page() for PG_reserved changes
+  x86/mm: Prepare __ioremap_check_ram() for PG_reserved changes
+  mm/memory_hotplug: Don't mark pages PG_reserved when initializing the
+    memmap
+
+ arch/powerpc/kvm/book3s_64_mmu_radix.c     | 14 ++++---
+ arch/powerpc/mm/book3s64/hash_utils.c      | 10 +++--
+ arch/powerpc/mm/pgtable.c                  | 10 +++--
+ arch/x86/kvm/mmu.c                         | 30 +++++++++------
+ arch/x86/mm/ioremap.c                      | 13 +++++--
+ drivers/hv/hv_balloon.c                    |  6 +++
+ drivers/staging/gasket/gasket_page_table.c |  2 +-
+ drivers/staging/kpc2000/kpc_dma/fileops.c  |  3 +-
+ drivers/vfio/vfio_iommu_type1.c            | 10 ++++-
+ drivers/xen/balloon.c                      |  7 ++++
+ include/linux/page-flags.h                 |  8 +---
+ mm/memory_hotplug.c                        | 43 ++++++++++++++++------
+ mm/page_alloc.c                            | 11 ------
+ mm/usercopy.c                              |  5 ++-
+ virt/kvm/kvm_main.c                        | 10 ++++-
+ 15 files changed, 115 insertions(+), 67 deletions(-)
+
 --=20
 2.21.0
 
