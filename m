@@ -2,84 +2,81 @@ Return-Path: <SRS0=uEbk=YP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B914ECA9EA0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 08:03:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 38334CA9EB9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 08:05:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 704572064B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 08:03:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 704572064B
+	by mail.kernel.org (Postfix) with ESMTPS id DDFEF2184C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 08:05:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DDFEF2184C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46y5c51S3wzDq9Q
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 19:03:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46y5fn151RzDqKX
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Oct 2019 19:05:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=clombard@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46y5Mz65dFzDqMr
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2019 18:53:03 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x9M7qwrr011397
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2019 03:53:00 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2vsuymk8ab-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46y5N128D5zDqMN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2019 18:53:05 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x9M7qwWB003900
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2019 03:53:03 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2vsw33ha2x-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2019 03:53:00 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2019 03:53:01 -0400
 Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
- Tue, 22 Oct 2019 08:52:52 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Tue, 22 Oct 2019 08:52:51 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
  Tue, 22 Oct 2019 08:52:49 +0100
 Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
  [9.149.105.61])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x9M7qngg65142914
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x9M7qmvO61603972
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 22 Oct 2019 07:52:49 GMT
+ Tue, 22 Oct 2019 07:52:48 GMT
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 133F511C04A;
- Tue, 22 Oct 2019 07:52:49 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C5F6C11C052;
+ by IMSVA (Postfix) with ESMTP id 18DE911C04A;
  Tue, 22 Oct 2019 07:52:48 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D34A811C050;
+ Tue, 22 Oct 2019 07:52:47 +0000 (GMT)
 Received: from lombard-w541.nice-meridia.fr.ibm.com (unknown [9.134.167.65])
  by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 22 Oct 2019 07:52:48 +0000 (GMT)
+ Tue, 22 Oct 2019 07:52:47 +0000 (GMT)
 From: christophe lombard <clombard@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
  ajd@linux.ibm.com, groug@kaod.org
-Subject: [PATCH 3/3] powerpc/pseries: Fixup config space size of OpenCAPI
- devices
-Date: Tue, 22 Oct 2019 09:52:47 +0200
+Subject: [PATCH 0/3] ocxl: Support for an 0penCAPI device in a QEMU guest.
+Date: Tue, 22 Oct 2019 09:52:44 +0200
 X-Mailer: git-send-email 2.21.0
-In-Reply-To: <20191022075247.16266-1-clombard@linux.vnet.ibm.com>
-References: <20191022075247.16266-1-clombard@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19102207-4275-0000-0000-000003755CA0
+x-cbid: 19102207-0012-0000-0000-0000035B54F3
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19102207-4276-0000-0000-000038887F4E
-Message-Id: <20191022075247.16266-4-clombard@linux.vnet.ibm.com>
+x-cbparentid: 19102207-0013-0000-0000-000021967EB5
+Message-Id: <20191022075247.16266-1-clombard@linux.vnet.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-10-22_03:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -103,35 +100,53 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fix up the pci config size of the OpenCAPI PCIe devices in the pseries
-environment.
-Most of OpenCAPI PCIe devices have 4096 bytes of configuration space.
+This series adds support for an 0penCAPI device in a QEMU guest.
 
-Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/pseries/pci.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+It builds on top of the existing ocxl driver +
+http://patchwork.ozlabs.org/patch/1177999/
 
-diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
-index 1eae1d09980c..3397784767b0 100644
---- a/arch/powerpc/platforms/pseries/pci.c
-+++ b/arch/powerpc/platforms/pseries/pci.c
-@@ -291,6 +291,15 @@ static void fixup_winbond_82c105(struct pci_dev* dev)
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_WINBOND, PCI_DEVICE_ID_WINBOND_82C105,
- 			 fixup_winbond_82c105);
- 
-+static void fixup_opencapi_cfg_size(struct pci_dev *pdev)
-+{
-+	if (!machine_is(pseries))
-+		return;
-+
-+	pdev->cfg_size = PCI_CFG_SPACE_EXP_SIZE;
-+}
-+DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_IBM, 0x062b, fixup_opencapi_cfg_size);
-+
- int pseries_root_bridge_prepare(struct pci_host_bridge *bridge)
- {
- 	struct device_node *dn, *pdn;
+The ocxl module registers either a pci driver or a platform driver, based on
+the environment (bare-metal (powernv) or pseries).
+
+Roughly 4/5 of the code is common between the 2 types of driver:
+- PCI implementation
+- mmio operations
+- link management
+- sysfs folders
+- page fault and context handling
+
+The differences in implementation are essentially based on the interact with
+the opal api(s) defined in the host. Several hcalls have been defined
+(extension of the PAPR) to:
+- configure the Sceduled Process Area
+- get specific AFU information
+- allocated irq
+- handle page fault and process element
+
+When the code needs to call a platform-specific implementation, it does so
+through an API. The powervn and pseries implementations each describe
+their own definition. See struct ocxl_backend_ops.
+
+It has been tested in a bare-metal and QEMU environment using the memcpy and
+the AFP AFUs.
+
+christophe lombard (3):
+  ocxl: Introduce implementation-specific API
+  ocxl: Add pseries-specific code
+  powerpc/pseries: Fixup config space size of OpenCAPI devices
+
+ arch/powerpc/platforms/pseries/pci.c |   9 +
+ drivers/misc/ocxl/Makefile           |   3 +
+ drivers/misc/ocxl/config.c           |   7 +-
+ drivers/misc/ocxl/link.c             |  31 +-
+ drivers/misc/ocxl/main.c             |   9 +
+ drivers/misc/ocxl/ocxl_internal.h    |  25 ++
+ drivers/misc/ocxl/powernv.c          |  88 ++++++
+ drivers/misc/ocxl/pseries.c          | 450 +++++++++++++++++++++++++++
+ 8 files changed, 603 insertions(+), 19 deletions(-)
+ create mode 100644 drivers/misc/ocxl/powernv.c
+ create mode 100644 drivers/misc/ocxl/pseries.c
+
 -- 
 2.21.0
 
