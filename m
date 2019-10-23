@@ -2,53 +2,55 @@ Return-Path: <SRS0=qe53=YQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F410CA9EB6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Oct 2019 07:35:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 03EB1CA9EB6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Oct 2019 08:26:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 767B12064A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Oct 2019 07:35:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 767B12064A
+	by mail.kernel.org (Postfix) with ESMTPS id AFA4120679
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Oct 2019 08:26:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AFA4120679
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46yhwf4cjTzDqQN
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Oct 2019 18:34:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46yk4W2D2xzDqQs
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Oct 2019 19:26:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
  (client-ip=92.121.34.13; helo=inva020.nxp.com;
- envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
+ envelope-from=ran.wang_1@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=nxp.com
 Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46yhtR0VlQzDqMK
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2019 18:33:00 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46yk1Q3yKMzDqPC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2019 19:24:10 +1100 (AEDT)
 Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 388871A06EF;
- Wed, 23 Oct 2019 09:32:55 +0200 (CEST)
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 0CD921A070C;
+ Wed, 23 Oct 2019 10:24:07 +0200 (CEST)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
  [165.114.16.14])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 4F7061A06E3;
- Wed, 23 Oct 2019 09:32:50 +0200 (CEST)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net
- [10.192.224.44])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 0C054402F0;
- Wed, 23 Oct 2019 15:32:43 +0800 (SGT)
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
- festevam@gmail.com, broonie@kernel.org, alsa-devel@alsa-project.org,
- lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com
-Subject: [PATCH] ASoC: fsl_esai: Add spin lock to protect reset and stop
-Date: Wed, 23 Oct 2019 15:29:49 +0800
-Message-Id: <1571815789-15656-1-git-send-email-shengjiu.wang@nxp.com>
-X-Mailer: git-send-email 2.7.4
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 601101A0717;
+ Wed, 23 Oct 2019 10:24:00 +0200 (CEST)
+Received: from localhost.localdomain (mega.ap.freescale.net [10.192.208.232])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 3A82F402F0;
+ Wed, 23 Oct 2019 16:23:52 +0800 (SGT)
+From: Ran Wang <ran.wang_1@nxp.com>
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>,
+ Li Yang <leoyang.li@nxp.com>, Mark Rutland <mark.rutland@arm.com>,
+ Pavel Machek <pavel@ucw.cz>, Huang Anson <anson.huang@nxp.com>
+Subject: [PATCH v9 3/3] soc: fsl: add RCPM driver
+Date: Wed, 23 Oct 2019 16:24:23 +0800
+Message-Id: <20191023082423.12569-3-ran.wang_1@nxp.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20191023082423.12569-1-ran.wang_1@nxp.com>
+References: <20191023082423.12569-1-ran.wang_1@nxp.com>
 X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -61,89 +63,254 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Li Biwen <biwen.li@nxp.com>, Len Brown <len.brown@intel.com>,
+ devicetree@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Ran Wang <ran.wang_1@nxp.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-xrun may happen at the end of stream, the
-trigger->fsl_esai_trigger_stop maybe called in the middle of
-fsl_esai_hw_reset, this may cause esai in wrong state
-after stop, and there may be endless xrun interrupt.
-So Add spin lock to lock these two function.
+The NXP's QorIQ Processors based on ARM Core have RCPM module
+(Run Control and Power Management), which performs system level
+tasks associated with power management such as wakeup source control.
 
-Fixes: 7ccafa2b3879 ("ASoC: fsl_esai: recover the channel swap after xrun")
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+This driver depends on PM wakeup source framework which help to
+collect wake information.
+
+Signed-off-by: Ran Wang <ran.wang_1@nxp.com>
 ---
- sound/soc/fsl/fsl_esai.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+Change in v9:
+	- Add kerneldoc for rcpm_pm_prepare().
+	- Use pr_debug() to replace dev_info(), to print message when decide
+	  skip current wakeup object, this is mainly for debugging (in order
+	  to detect potential improper implementation on device tree which
+	  might cause this skip).
+	- Refactor looping implementation in rcpm_pm_prepare(), add more
+	  comments to help clarify.
 
-diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
-index 37b14c48b537..6a797648b66d 100644
---- a/sound/soc/fsl/fsl_esai.c
-+++ b/sound/soc/fsl/fsl_esai.c
-@@ -33,6 +33,7 @@
-  * @fsysclk: system clock source to derive HCK, SCK and FS
-  * @spbaclk: SPBA clock (optional, depending on SoC design)
-  * @task: tasklet to handle the reset operation
-+ * @lock: spin lock to handle reset and stop behavior
-  * @fifo_depth: depth of tx/rx FIFO
-  * @slot_width: width of each DAI slot
-  * @slots: number of slots
-@@ -56,6 +57,7 @@ struct fsl_esai {
- 	struct clk *fsysclk;
- 	struct clk *spbaclk;
- 	struct tasklet_struct task;
-+	spinlock_t lock; /* Protect reset and stop */
- 	u32 fifo_depth;
- 	u32 slot_width;
- 	u32 slots;
-@@ -676,8 +678,10 @@ static void fsl_esai_hw_reset(unsigned long arg)
- {
- 	struct fsl_esai *esai_priv = (struct fsl_esai *)arg;
- 	bool tx = true, rx = false, enabled[2];
-+	unsigned long lock_flags;
- 	u32 tfcr, rfcr;
- 
-+	spin_lock_irqsave(&esai_priv->lock, lock_flags);
- 	/* Save the registers */
- 	regmap_read(esai_priv->regmap, REG_ESAI_TFCR, &tfcr);
- 	regmap_read(esai_priv->regmap, REG_ESAI_RFCR, &rfcr);
-@@ -715,6 +719,8 @@ static void fsl_esai_hw_reset(unsigned long arg)
- 		fsl_esai_trigger_start(esai_priv, tx);
- 	if (enabled[rx])
- 		fsl_esai_trigger_start(esai_priv, rx);
+Change in v8:
+	- Adjust related API usage to meet wakeup.c's update in patch 1/3.
+	- Add sanity checking for the case of ws->dev or ws->dev->parent
+	  is null.
+
+Change in v7:
+	- Replace 'ws->dev' with 'ws->dev->parent' to get aligned with
+	c8377adfa781 ("PM / wakeup: Show wakeup sources stats in sysfs")
+	- Remove '+obj-y += ftm_alarm.o' since it is wrong.
+	- Cosmetic work.
+
+Change in v6:
+	- Adjust related API usage to meet wakeup.c's update in patch 1/3.
+
+Change in v5:
+	- Fix v4 regression of the return value of wakeup_source_get_next()
+	didn't pass to ws in while loop.
+	- Rename wakeup_source member 'attached_dev' to 'dev'.
+	- Rename property 'fsl,#rcpm-wakeup-cells' to '#fsl,rcpm-wakeup-cells'.
+	please see https://lore.kernel.org/patchwork/patch/1101022/
+
+Change in v4:
+	- Remove extra ',' in author line of rcpm.c
+	- Update usage of wakeup_source_get_next() to be less confusing to the
+reader, code logic remain the same.
+
+Change in v3:
+	- Some whitespace ajdustment.
+
+Change in v2:
+	- Rebase Kconfig and Makefile update to latest mainline.
+
+ drivers/soc/fsl/Kconfig  |   8 +++
+ drivers/soc/fsl/Makefile |   1 +
+ drivers/soc/fsl/rcpm.c   | 148 +++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 157 insertions(+)
+ create mode 100644 drivers/soc/fsl/rcpm.c
+
+diff --git a/drivers/soc/fsl/Kconfig b/drivers/soc/fsl/Kconfig
+index f9ad8ad..4918856 100644
+--- a/drivers/soc/fsl/Kconfig
++++ b/drivers/soc/fsl/Kconfig
+@@ -40,4 +40,12 @@ config DPAA2_CONSOLE
+ 	  /dev/dpaa2_mc_console and /dev/dpaa2_aiop_console,
+ 	  which can be used to dump the Management Complex and AIOP
+ 	  firmware logs.
 +
-+	spin_unlock_irqrestore(&esai_priv->lock, lock_flags);
- }
- 
- static int fsl_esai_trigger(struct snd_pcm_substream *substream, int cmd,
-@@ -722,6 +728,7 @@ static int fsl_esai_trigger(struct snd_pcm_substream *substream, int cmd,
- {
- 	struct fsl_esai *esai_priv = snd_soc_dai_get_drvdata(dai);
- 	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
-+	unsigned long lock_flags;
- 
- 	esai_priv->channels[tx] = substream->runtime->channels;
- 
-@@ -734,7 +741,9 @@ static int fsl_esai_trigger(struct snd_pcm_substream *substream, int cmd,
- 	case SNDRV_PCM_TRIGGER_SUSPEND:
- 	case SNDRV_PCM_TRIGGER_STOP:
- 	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
-+		spin_lock_irqsave(&esai_priv->lock, lock_flags);
- 		fsl_esai_trigger_stop(esai_priv, tx);
-+		spin_unlock_irqrestore(&esai_priv->lock, lock_flags);
- 		break;
- 	default:
- 		return -EINVAL;
-@@ -1002,6 +1011,7 @@ static int fsl_esai_probe(struct platform_device *pdev)
- 
- 	dev_set_drvdata(&pdev->dev, esai_priv);
- 
-+	spin_lock_init(&esai_priv->lock);
- 	ret = fsl_esai_hw_init(esai_priv);
- 	if (ret)
- 		return ret;
++config FSL_RCPM
++	bool "Freescale RCPM support"
++	depends on PM_SLEEP
++	help
++	  The NXP QorIQ Processors based on ARM Core have RCPM module
++	  (Run Control and Power Management), which performs all device-level
++	  tasks associated with power management, such as wakeup source control.
+ endmenu
+diff --git a/drivers/soc/fsl/Makefile b/drivers/soc/fsl/Makefile
+index 71dee8d..906f1cd 100644
+--- a/drivers/soc/fsl/Makefile
++++ b/drivers/soc/fsl/Makefile
+@@ -6,6 +6,7 @@
+ obj-$(CONFIG_FSL_DPAA)                 += qbman/
+ obj-$(CONFIG_QUICC_ENGINE)		+= qe/
+ obj-$(CONFIG_CPM)			+= qe/
++obj-$(CONFIG_FSL_RCPM)			+= rcpm.o
+ obj-$(CONFIG_FSL_GUTS)			+= guts.o
+ obj-$(CONFIG_FSL_MC_DPIO) 		+= dpio/
+ obj-$(CONFIG_DPAA2_CONSOLE)		+= dpaa2-console.o
+diff --git a/drivers/soc/fsl/rcpm.c b/drivers/soc/fsl/rcpm.c
+new file mode 100644
+index 0000000..9378073
+--- /dev/null
++++ b/drivers/soc/fsl/rcpm.c
+@@ -0,0 +1,148 @@
++// SPDX-License-Identifier: GPL-2.0
++//
++// rcpm.c - Freescale QorIQ RCPM driver
++//
++// Copyright 2019 NXP
++//
++// Author: Ran Wang <ran.wang_1@nxp.com>
++
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/of_address.h>
++#include <linux/slab.h>
++#include <linux/suspend.h>
++#include <linux/kernel.h>
++
++#define RCPM_WAKEUP_CELL_MAX_SIZE	7
++
++struct rcpm {
++	unsigned int	wakeup_cells;
++	void __iomem	*ippdexpcr_base;
++	bool		little_endian;
++};
++
++/**
++ * rcpm_pm_prepare - performs device-level tasks associated with power
++ * management, such as programming related to the wakeup source control.
++ * @dev: Device to handle.
++ *
++ */
++static int rcpm_pm_prepare(struct device *dev)
++{
++	int i, ret, idx;
++	void __iomem *base;
++	struct wakeup_source	*ws;
++	struct rcpm		*rcpm;
++	struct device_node	*np = dev->of_node;
++	u32 value[RCPM_WAKEUP_CELL_MAX_SIZE + 1];
++
++	rcpm = dev_get_drvdata(dev);
++	if (!rcpm)
++		return -EINVAL;
++
++	base = rcpm->ippdexpcr_base;
++	idx = wakeup_sources_read_lock();
++
++	/* Begin with first registered wakeup source */
++	for_each_wakeup_source(ws) {
++
++		/* skip object which is not attached to device */
++		if (!ws->dev || !ws->dev->parent)
++			continue;
++
++		ret = device_property_read_u32_array(ws->dev->parent,
++				"fsl,rcpm-wakeup", value,
++				rcpm->wakeup_cells + 1);
++
++		/*  Wakeup source should refer to current rcpm device */
++		if (ret || (np->phandle != value[0])) {
++			pr_debug("%s doesn't refer to this rcpm\n", ws->name);
++			continue;
++		}
++
++		/* Property "#fsl,rcpm-wakeup-cells" of rcpm node defines the
++		 * number of IPPDEXPCR register cells, and "fsl,rcpm-wakeup"
++		 * of wakeup source IP contains an integer array: <phandle to
++		 * RCPM node, IPPDEXPCR0 setting, IPPDEXPCR1 setting,
++		 * IPPDEXPCR2 setting, etc>.
++		 *
++		 * So we will go thought them and do programming accordngly.
++		 */
++		for (i = 0; i < rcpm->wakeup_cells; i++) {
++			u32 tmp = value[i + 1];
++			void __iomem *address = base + i * 4;
++
++			if (!tmp)
++				continue;
++
++			/* We can only OR related bits */
++			if (rcpm->little_endian) {
++				tmp |= ioread32(address);
++				iowrite32(tmp, address);
++			} else {
++				tmp |= ioread32be(address);
++				iowrite32be(tmp, address);
++			}
++		}
++	}
++
++	wakeup_sources_read_unlock(idx);
++
++	return 0;
++}
++
++static const struct dev_pm_ops rcpm_pm_ops = {
++	.prepare =  rcpm_pm_prepare,
++};
++
++static int rcpm_probe(struct platform_device *pdev)
++{
++	struct device	*dev = &pdev->dev;
++	struct resource *r;
++	struct rcpm	*rcpm;
++	int ret;
++
++	rcpm = devm_kzalloc(dev, sizeof(*rcpm), GFP_KERNEL);
++	if (!rcpm)
++		return -ENOMEM;
++
++	r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!r)
++		return -ENODEV;
++
++	rcpm->ippdexpcr_base = devm_ioremap_resource(&pdev->dev, r);
++	if (IS_ERR(rcpm->ippdexpcr_base)) {
++		ret =  PTR_ERR(rcpm->ippdexpcr_base);
++		return ret;
++	}
++
++	rcpm->little_endian = device_property_read_bool(
++			&pdev->dev, "little-endian");
++
++	ret = device_property_read_u32(&pdev->dev,
++			"#fsl,rcpm-wakeup-cells", &rcpm->wakeup_cells);
++	if (ret)
++		return ret;
++
++	dev_set_drvdata(&pdev->dev, rcpm);
++
++	return 0;
++}
++
++static const struct of_device_id rcpm_of_match[] = {
++	{ .compatible = "fsl,qoriq-rcpm-2.1+", },
++	{}
++};
++MODULE_DEVICE_TABLE(of, rcpm_of_match);
++
++static struct platform_driver rcpm_driver = {
++	.driver = {
++		.name = "rcpm",
++		.of_match_table = rcpm_of_match,
++		.pm	= &rcpm_pm_ops,
++	},
++	.probe = rcpm_probe,
++};
++
++module_platform_driver(rcpm_driver);
 -- 
-2.21.0
+2.7.4
 
