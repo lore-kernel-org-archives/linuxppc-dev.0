@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5729BCA9EB6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Oct 2019 14:29:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 655BDCA9EB7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Oct 2019 14:34:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E0D8821872
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Oct 2019 14:29:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id F02162173B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Oct 2019 14:34:29 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.b="rquAbX5F"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E0D8821872
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.b="iJ2v+CSs"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F02162173B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=armlinux.org.uk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46yt6x6XGVzDqQ8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 01:29:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46ytDg4ThGzDqSC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 01:34:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=armlinux.org.uk
  (client-ip=2001:4d48:ad52:3201:214:fdff:fe10:1be6;
@@ -31,40 +31,40 @@ Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
  header.from=armlinux.org.uk
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=armlinux.org.uk header.i=@armlinux.org.uk
- header.b="rquAbX5F"; dkim-atps=neutral
+ header.b="iJ2v+CSs"; dkim-atps=neutral
 Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk
  [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46yt0X1vHHzDqQ8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Oct 2019 01:23:54 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46ytBM3S3tzDqF5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Oct 2019 01:32:27 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=armlinux.org.uk; s=pandora-2019; h=Sender:In-Reply-To:Content-Type:
  MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
  Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
  Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
  List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=bhqjKEpn+qSsmpYYqb68xE5kHQPzkJYmaZ3ItnhlEJ4=; b=rquAbX5FtWs9a2HbwGSCDNwhH
- 2Fj9nfopSQqUlAxZvkpBSDl3ry8n7liQXfxKHBSNbV26P3Jcz2FJ/OP495R+dU+SySTJDxgaPMDrX
- VMHeaKIexYy7444dDwgVOCR/nUQ7d6kflR9ZjfHlMtH2iQ3kCQt2VL+J51Iv1fGvnzoNz0A/Ya3Qf
- 41WpS+I+KrSqFpPr8x2+LU3weIJrKaix+1TvU+68w+oHse04tc3Y/6XyHSKKiuLHD9WNYf/1R9Ck8
- rVPUM/xVkMpU7p3aN7SKpT6lL386/Cp/YSn770AbK3+QKDLE+2P4DbXUALV7QubuppeSdpfu4T5AJ
- sJMamXOxw==;
+ bh=cjPuS08fLHV8el8EaxndD6I/d/IQPJlUbi111PAD/l4=; b=iJ2v+CSstuLBKM08pLTx576aM
+ VxntxxCQSSo10E8/SL6JaCu7DGHBQbYKoGE9AWr2TOiZmWMAk1KfV1lMlOkN3GsHB0ajoUGKqdzj8
+ u202GiupQQbUAZAkvODo9ATZleYIkhkrpJRPRnu8LY4MSuAHQSWl3ggq8+45cAm2o2shQTiCGE7oc
+ QAJHHRgOHofIUFTKn/4GK+tcL3Hv9lV0IQf2zQLc3zHoiaLLO8l4DaQpQFUp1fN3yI7bBQAM2O2eN
+ Ph+2cwxlod+dsiP0rzFs98e6Yows2hrmXXJjtI8ixe3nYg/6TeHUpejwD6D/kMIr5FIou+yUS0Rpj
+ F7KtKig6Q==;
 Received: from shell.armlinux.org.uk
- ([2002:4e20:1eda:1:5054:ff:fe00:4ec]:53958)
+ ([fd8f:7570:feb6:1:5054:ff:fe00:4ec]:58106)
  by pandora.armlinux.org.uk with esmtpsa
  (TLSv1.2:ECDHE-RSA-AES256-GCM-SHA384:256) (Exim 4.90_1)
  (envelope-from <linux@armlinux.org.uk>)
- id 1iNHNp-0005MT-MW; Wed, 23 Oct 2019 15:13:05 +0100
+ id 1iNHg8-0005SK-LT; Wed, 23 Oct 2019 15:32:00 +0100
 Received: from linux by shell.armlinux.org.uk with local (Exim 4.92)
  (envelope-from <linux@shell.armlinux.org.uk>)
- id 1iNHNh-0005br-85; Wed, 23 Oct 2019 15:12:57 +0100
-Date: Wed, 23 Oct 2019 15:12:57 +0100
+ id 1iNHg7-0005cA-5R; Wed, 23 Oct 2019 15:31:59 +0100
+Date: Wed, 23 Oct 2019 15:31:59 +0100
 From: Russell King - ARM Linux admin <linux@armlinux.org.uk>
 To: Rob Herring <robh+dt@kernel.org>
 Subject: Re: Onboard SD card doesn't work anymore after the 'mmc-v5.4-2'
  updates
-Message-ID: <20191023141257.GA25745@shell.armlinux.org.uk>
+Message-ID: <20191023143159.GB25745@shell.armlinux.org.uk>
 References: <7b549219-a2e1-08c7-331b-9c3e4fdb8a8f@xenosoft.de>
  <3aeae0d8-e9be-2585-cbbd-70263cb495f1@xenosoft.de>
  <20191015125105.GU25745@shell.armlinux.org.uk>
@@ -100,45 +100,60 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 On Wed, Oct 23, 2019 at 08:52:33AM -0500, Rob Herring wrote:
-> On Wed, Oct 23, 2019 at 1:41 AM Benjamin Herrenschmidt
-> <benh@kernel.crashing.org> wrote:
-> >
-> > On Wed, 2019-10-23 at 16:42 +1100, Michael Ellerman wrote:
-> > >
-> > > Right, it seems of_dma_is_coherent() has baked in the assumption that
-> > > devices are non-coherent unless explicitly marked as coherent.
-> > >
-> > > Which is wrong on all or at least most existing powerpc systems
-> > > according to Ben.
-> >
-> > This is probably broken on sparc(64) as well and whatever else uses
-> > DT and is an intrinsicly coherent architecture (did we ever have
-> > DT enabled x86s ? Wasn't OLPC such a beast ?).
+> > I think this should have been done the other way around and default to
+> > coherent since most traditional OF platforms are coherent, and you
+> > can't just require those DTs to change.
 > 
-> Only if those platforms use one of the 5 drivers that call this function:
+> You can blame me. This was really only intended for cases where
+> coherency is configurable on a per peripheral basis and can't be
+> determined in other ways.
 > 
-> drivers/ata/ahci_qoriq.c:       qoriq_priv->is_dmacoherent =
-> of_dma_is_coherent(np);
-> drivers/crypto/ccree/cc_driver.c:       new_drvdata->coherent =
-> of_dma_is_coherent(np);
-> drivers/iommu/arm-smmu-v3.c:    if (of_dma_is_coherent(dev->of_node))
-> drivers/iommu/arm-smmu.c:       if (of_dma_is_coherent(dev->of_node))
-> drivers/mmc/host/sdhci-of-esdhc.c:      if (of_dma_is_coherent(dev->of_node))
-> 
-> Curious that a PPC specific driver (ahci_qoriq) calls it...
+> The simple solution here is simply to use the compatible string for
+> the device to determine coherent or not.
 
-Maybe because it is not PPC specific:
+It really isn't that simple.
 
-arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi:
-compatible = "fsl,lx2160a-ahci";
-arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi:
-compatible = "fsl,lx2160a-ahci";
-arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi:
-compatible = "fsl,lx2160a-ahci";
-arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi:
-compatible = "fsl,lx2160a-ahci";
+There are two aspects to coherency, both of which must match:
 
-drivers/ata/ahci_qoriq.c:       { .compatible = "fsl,lx2160a-ahci", .data = (void *)AHCI_LX2160A},
+1) The configuration of the device
+2) The configuration of the kernel's DMA API
+
+(1) is controlled by the driver, which can make the decision any way
+it pleases.
+
+(2) on ARM64 is controlled depending on whether or not "dma-coherent"
+is specified in the device tree, since ARM64 can have a mixture of
+DMA coherent and non-coherent devices.
+
+A mismatch between (1) and (2) results in data corruption, potentially
+eating your filesystem.  So, it's very important that the two match.
+
+These didn't match for the LX2160A, but, due to the way CMA was working,
+we sort of got away with it, but it was very dangerous as far as data
+safety went.
+
+Then, a change to CMA happened which moved where it was located, which
+caused a regression.  Reverting the CMA changes didn't seem to be an
+option, so another solution had to be found.
+
+I started a discussion on how best to solve this:
+
+https://archive.armlinux.org.uk/lurker/thread/20190919.041320.1e53541f.en.html
+
+and the solution that the discussion came out with was the one that has
+been merged - which we now know caused a regression on PPC.
+
+Using compatible strings doesn't solve the issue: there is no way to
+tell the DMA API from the driver that the device is coherent.  The
+only way to do that is via the "dma-coherent" property in DT on ARM64.
+
+To say that this is a mess is an under-statement, but we seem to have
+ended up here because of a series of piece-meal changes that don't seem
+to have been thought through enough.
+
+So, what's the right way to solve this, and ensure that the DMA API and
+device match as far as their coherency expectations go?  Revert all the
+changes for sdhci-of-esdhc and CMA back to 5.0 or 5.1 state?
 
 -- 
 RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
