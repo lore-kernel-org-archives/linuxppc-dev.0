@@ -2,87 +2,112 @@ Return-Path: <SRS0=qe53=YQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DE12CA9EB9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Oct 2019 19:12:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B6DD7CA9EB9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Oct 2019 20:09:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1AAB42086D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Oct 2019 19:12:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 1224C20650
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Oct 2019 20:09:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="APOUMKFt"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1AAB42086D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="SlGscV6u"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1224C20650
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46z0Py4yKSzDqRk
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 06:12:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::543;
- helo=mail-pg1-x543.google.com; envelope-from=nicoleotsuka@gmail.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46z1fk4ZpzzDqRy
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 07:09:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="APOUMKFt"; 
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=40.107.2.69; helo=eur02-ve1-obe.outbound.protection.outlook.com;
+ envelope-from=leoyang.li@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=nxp.com header.i=@nxp.com header.b="SlGscV6u"; 
  dkim-atps=neutral
-Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
- [IPv6:2607:f8b0:4864:20::543])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from EUR02-VE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr20069.outbound.protection.outlook.com [40.107.2.69])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46z0MB20XszDqQN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Oct 2019 06:10:30 +1100 (AEDT)
-Received: by mail-pg1-x543.google.com with SMTP id p1so12698000pgi.4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2019 12:10:30 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=Wedy5pGJORyqF9ETWtu/bm70wj9Mpmh0YPkLpaSld18=;
- b=APOUMKFtctD5mY/VLWicGv14AHP8YF2RxE9lCloG3iKAFDrN2TtgQYlXhplVkq163N
- LahF9pSBs/3XYq7f8DGrOA1pelXIB7/QHExaqDdYo0/XRURQ2dR6PNv+6orquAaoe27d
- Nv7Lr9mA4iCCfG5Gc0spya7J6B+m86iFUAXTJdlAL3PYLRAdGGvJ7S19DM6eF5WSGOFI
- 09fL00QiV6pGErDbntOxAwVofo2iag6NLtRnv4XyjEj1mZJAnN2D99AKHUe4gPfAH3zT
- Q81sQY7T/i9g0npiSm+X2rZ825QvJnwpQVbFHA19Oa0XaojLBCe9PekB0jgj9W5HMNLt
- HFrA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=Wedy5pGJORyqF9ETWtu/bm70wj9Mpmh0YPkLpaSld18=;
- b=MqCUIFGXRxqdBr72/V9eKbyWYzIahV7WEEpNh9c593c5ls7nY0Wf8mJN/UNE+F7j7r
- 6Y0ITz6dX6rEBKLXzZkHwB2UQP3zxS3UAs8bBhM7HgPb6PbmeorEt2lG4OFFTa4+AV68
- 2fcRP3uIJkaUoLWMQoSne8QJiX0pu+f9oi6qP/2uqNeSX6yYwnd4NwmklMDM5tjdOLml
- 5n3dhw7bzMrfSNBXHwDa21DFiI+TCMQ3Z0r93CFBCRePYdbZRN/Q9iaBdfIuitsTCq4v
- RAtMyzqRMwZHpLuiVqZxlFAhOp1uyad7FW8NFnWK0YQ9t0gcPQpTdAnnEEot5bjlSmrc
- GGJQ==
-X-Gm-Message-State: APjAAAVqDK06ZNMAkcnaKZEhZOA6V1PLVlmrAQg13V/Vu93oeQK5xith
- cJ0FsRixA+Ry59Mb+b6Wk88=
-X-Google-Smtp-Source: APXvYqwSZez+2yq+w1FWUCzo61I7MRI0T+B0lXJzyoigx6N9h9tZfgWThfcHw5zU+lftX9TnLkY/3g==
-X-Received: by 2002:a62:a50b:: with SMTP id v11mr12690945pfm.164.1571857827268; 
- Wed, 23 Oct 2019 12:10:27 -0700 (PDT)
-Received: from Asurada-Nvidia.nvidia.com (thunderhill.nvidia.com.
- [216.228.112.22])
- by smtp.gmail.com with ESMTPSA id m102sm52695pje.5.2019.10.23.12.10.26
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Wed, 23 Oct 2019 12:10:26 -0700 (PDT)
-Date: Wed, 23 Oct 2019 12:10:06 -0700
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: "S.j. Wang" <shengjiu.wang@nxp.com>
-Subject: Re: [PATCH] ASoC: fsl_asrc: refine the setting of internal clock
- divider
-Message-ID: <20191023191002.GB16043@Asurada-Nvidia.nvidia.com>
-References: <VE1PR04MB647949BE7BDB9CD2B1B2C521E36B0@VE1PR04MB6479.eurprd04.prod.outlook.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46z1ch2mTKzDqQS
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Oct 2019 07:07:11 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=HavgujDjrOJaUDO/kjV29ZFyxa48586+e+olwiBRD0KGfzR52XIMixIaBAx+YrmyLaHjkjM0bbp6tWEK1PXWmRtVCYbQfrlLcXlqleUj9q0vk10+8LOMUiZtsx8I2jX7QgZgBuNYtuN/iVfxU8CaT4HuRUOOXHLChfFiKb6bSXpQZM8EBjwAL5BOLfbUgSa3tAXiwOoNKP3JpeznSpaZXBBzu5Wbdzzc/1OOtalb8ZDoibvWM/Lu0wYxnruqeVtzCyCP9xkmsbudtAesrBgQjVuacVUmGTPWj2mut6EDST8Nk2N9Y6GSwFY9FnWQ+CgrbxvDMjq4m6wkkeBOUX7asg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=btlRay3yp9k/vMTHvGvVM5ycBW7OvOsN5xwkzn1H+v8=;
+ b=G4Him6BKajnKsZ9kKZC6grfF7AT+jV8G6J1L708Fuu2NHzmeLVULJp49mah3n9rfNgF3TMc02CUXAlNuI+Wsf728Z2/tp1ZhMPfmZkVC/uZXaKbbDgA1uUmr91M61uZefRPXwQXLkxZAI13tb/9asiIHHbyfG5134qmvu0v4Kn37Wu+dC3ytLP/QP1eLsIfwZsQkEToYGznSyynFA6tSwqcTOd933YICG6QXipjtV5DClbh1FsFKPRFgPEYSN31Z5itLj8++2d33owM4jeFIq+nYmExD7rsrEsRnb1kZ5t03KG5yNS7/1o6a727hvulA5r3agCDzKrFPL+vWUm2LXg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=btlRay3yp9k/vMTHvGvVM5ycBW7OvOsN5xwkzn1H+v8=;
+ b=SlGscV6umKHhArMOVP73SRAVDdMC9z+oS0OeerUe4vfOXyPgdR+FVQBKbbISxsSFjjRXBTFCmEfsX4OJQSYMbEi4kqtg3WVAAPFx2Mewa8ySfxuCYJ8EiDFZ8jsT+yARKFTGl2vSvJ5ATlBJiEpPkucNJpz4jyR4wHgk61YduOg=
+Received: from VE1PR04MB6687.eurprd04.prod.outlook.com (20.179.234.30) by
+ VE1PR04MB6687.eurprd04.prod.outlook.com (20.179.234.30) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.2387.20; Wed, 23 Oct 2019 20:07:05 +0000
+Received: from VE1PR04MB6687.eurprd04.prod.outlook.com
+ ([fe80::c93:c279:545b:b6b6]) by VE1PR04MB6687.eurprd04.prod.outlook.com
+ ([fe80::c93:c279:545b:b6b6%3]) with mapi id 15.20.2387.019; Wed, 23 Oct 2019
+ 20:07:05 +0000
+From: Leo Li <leoyang.li@nxp.com>
+To: Ran Wang <ran.wang_1@nxp.com>, "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: RE: [PATCH v9 1/3] PM: wakeup: Add routine to help fetch wakeup
+ source object.
+Thread-Topic: [PATCH v9 1/3] PM: wakeup: Add routine to help fetch wakeup
+ source object.
+Thread-Index: AQHViXs7pjvy0YmnJESZ+DezIHv14qdn72mAgAAM0YCAAKtBgA==
+Date: Wed, 23 Oct 2019 20:07:05 +0000
+Message-ID: <VE1PR04MB6687A70243B9764F1356442C8F6B0@VE1PR04MB6687.eurprd04.prod.outlook.com>
+References: <20191023082423.12569-1-ran.wang_1@nxp.com>
+ <CAJZ5v0jvQaREhg94f-COdYTt58gMP7YvqdEH0oYiS9Z56tg-XQ@mail.gmail.com>
+ <DB8PR04MB68261D8B18D39DF170ECC7C8F16B0@DB8PR04MB6826.eurprd04.prod.outlook.com>
+In-Reply-To: <DB8PR04MB68261D8B18D39DF170ECC7C8F16B0@DB8PR04MB6826.eurprd04.prod.outlook.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=leoyang.li@nxp.com; 
+x-originating-ip: [64.157.242.222]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-ht: Tenant
+x-ms-office365-filtering-correlation-id: 9e96d190-6828-418a-7fbe-08d757f493cf
+x-ms-traffictypediagnostic: VE1PR04MB6687:|VE1PR04MB6687:
+x-ms-exchange-transport-forked: True
+x-microsoft-antispam-prvs: <VE1PR04MB6687EA5F673D647B8B2839D98F6B0@VE1PR04MB6687.eurprd04.prod.outlook.com>
+x-ms-oob-tlc-oobclassifiers: OLM:8882;
+x-forefront-prvs: 019919A9E4
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10009020)(4636009)(396003)(39860400002)(376002)(346002)(136003)(366004)(51914003)(199004)(13464003)(189003)(55016002)(476003)(186003)(71190400001)(71200400001)(256004)(14454004)(6436002)(446003)(26005)(7696005)(5660300002)(52536014)(478600001)(66946007)(14444005)(53546011)(11346002)(54906003)(76116006)(102836004)(25786009)(99286004)(66476007)(64756008)(8676002)(8936002)(81156014)(66556008)(66446008)(110136005)(81166006)(9686003)(305945005)(6246003)(86362001)(7736002)(229853002)(4326008)(316002)(33656002)(3846002)(6116002)(6506007)(76176011)(486006)(2906002)(7416002)(74316002)(66066001);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:VE1PR04MB6687;
+ H:VE1PR04MB6687.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; A:1; MX:1; 
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: OO6dGbREqJKG2+d0hxBuOb4FGQa2VqQOCXMD1cYaEZxkpcDhYQlNdHsK0RvR7EGt7WAlXbOY3iqHOBY47Zohy2wTwA018vu3g0jhgwMse1zUsQ+26QhV04mp9x1EHrTSUyFK/fadosrqo90PbDAWcZRmM7wBzAvsMUqFRn9jHOL5X9cSDzSlMcROteYXwyOlWbpKMA47ggBog4axZgTfIxP2uwuCexRr6fRsrEbf0OiIRyczp8dCY35/BzBc5C7Fs70IP8HzKfkrcVKLBnm2PaQFgf5Ya7Lz2yMIde1uiPBQr2iz56eh8mCAZymri8y/6FIwZZOP+UJbn9uZ7bB1vYXSldfaTzT0Unj2HwMSg2LQ4qK0xD2aZJcjZ7P1TKchRig01jOTfL7gdhxYPuCbeu15YWOmj4rbaQBCsOz43oFMU0S4g8KbU0EmKSifHePa
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <VE1PR04MB647949BE7BDB9CD2B1B2C521E36B0@VE1PR04MB6479.eurprd04.prod.outlook.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 9e96d190-6828-418a-7fbe-08d757f493cf
+X-MS-Exchange-CrossTenant-originalarrivaltime: 23 Oct 2019 20:07:05.8581 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: uTzE0P3KOt4dSHYh0h8rQSpS+5NMzbTXut0jK51yIPTM1gZAEvvgellZmsYOW/QSdVfREHtTQ799fqkHqB6YXA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VE1PR04MB6687
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,201 +119,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "timur@kernel.org" <timur@kernel.org>,
- "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "tiwai@suse.com" <tiwai@suse.com>, "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
- "perex@perex.cz" <perex@perex.cz>, "broonie@kernel.org" <broonie@kernel.org>,
- "festevam@gmail.com" <festevam@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Biwen Li <biwen.li@nxp.com>,
+ Anson Huang <anson.huang@nxp.com>, Len Brown <len.brown@intel.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Linux PM <linux-pm@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Oct 23, 2019 at 06:25:20AM +0000, S.j. Wang wrote:
-> > On Thu, Oct 17, 2019 at 02:21:08PM +0800, Shengjiu Wang wrote:
-> > > For P2P output, the output divider should align with the output sample
-> > 
-> > I think we should avoid "P2P" (or "M2M") keyword in the mainline code as
-> > we know M2M will never get merged while somebody working with the
-> > mainline and caring about new feature might be confused.
-> 
-> Ok. But we still curious that is there a way to upstream m2m?
-
-Hmm..I would love to see that happening. Here is an old discussion
-that you may want to take a look:
-https://mailman.alsa-project.org/pipermail/alsa-devel/2014-May/076797.html
-
-> > It makes sense to me, yet I feel that the delay at the beginning of the audio
-> > playback might be longer as a compromise. I am okay with this decision
-> > though...
-> > 
-> > > The maximum divider of asrc clock is 1024, but there is no judgement
-> > > for this limitaion in driver, which may cause the divider setting not
-> > > correct.
-> > >
-> > > For non-ideal ratio mode, the clock rate should divide the sample rate
-> > > with no remainder, and the quotient should be less than 1024.
-> > >
-> > > Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-
-> > > @@ -351,7 +352,9 @@ static int fsl_asrc_config_pair(struct fsl_asrc_pair
-> > *pair)
-> > >       /* We only have output clock for ideal ratio mode */
-> > >       clk = asrc_priv->asrck_clk[clk_index[ideal ? OUT : IN]];
-> > >
-> > > -     div[IN] = clk_get_rate(clk) / inrate;
-> > > +     clk_rate = clk_get_rate(clk);
-> > 
-> > The fsl_asrc.c file has config.inclk being set to INCLK_NONE and this sets the
-> > "ideal" in this function to true. So, although we tend to not use ideal ratio
-> > setting for p2p cases, yet the input clock is still not physically connected, so
-> > we still use output clock for div[IN] calculation?
-> 
-> For p2p case, it can be ideal or non-ideal.  For non-ideal, we still use
-> Output clock for div calculation.
-> 
-> > 
-> > I am thinking something simplier: if we decided not to use ideal ratio for
-> > "P2P", instead of adding "bool p2p" with the confusing "ideal" in this
-> > function, could we just set config.inclk to the same clock as the output one
-> > for "P2P"? By doing so, "P2P" won't go through ideal ratio mode while still
-> > having a clock rate from the output clock for div[IN] calculation here.
-> 
-> Bool p2p is to force output rate to be sample rate, no impact to ideal
-> Ratio mode.
-
-I just realized that the function has a bottom part for ideal mode
-exclusively -- if we treat p2p as !ideal, those configurations will
-be missing. So you're right, should have an extra boolean variable.
-
-> > 
-> > > +     rem[IN] = do_div(clk_rate, inrate);
-> > > +     div[IN] = (u32)clk_rate;
-> > >       if (div[IN] == 0) {
-> > 
-> > Could we check div[IN] and rem[IN] here? Like:
-> >         if (div[IN] == 0 || div[IN] > 1024) {
-> >                 pair_err();
-> >                 goto out;
-> >         }
-> > 
-> >         if (!ideal && rem[IN]) {
-> >                 pair_err();
-> >                 goto out;
-> >         }
-> > 
-> > According to your commit log, I think the max-1024 limitation should be
-> > applied to all cases, not confined to "!ideal" cases right? And we should
-> > add some comments also, indicating it is limited by hardware.
-> 
-> For ideal mode,  my test result is  the divider not impact the output result.
-> Which means it is ok for ideal mode even divider is not correct... 
-
-OK.
-
-> > 
-> > >               pair_err("failed to support input sample rate %dHz by
-> > asrck_%x\n",
-> > >                               inrate, clk_index[ideal ? OUT : IN]); @@
-> > > -360,11 +363,20 @@ static int fsl_asrc_config_pair(struct
-> > > fsl_asrc_pair *pair)
-> > >
-> > >       clk = asrc_priv->asrck_clk[clk_index[OUT]];
-> > >
-> > > -     /* Use fixed output rate for Ideal Ratio mode (INCLK_NONE) */
-> > > -     if (ideal)
-> > > -             div[OUT] = clk_get_rate(clk) / IDEAL_RATIO_RATE;
-> > > -     else
-> > > -             div[OUT] = clk_get_rate(clk) / outrate;
-> > > +     /*
-> > > +      * When P2P mode, output rate should align with the out samplerate.
-> > > +      * if set too high output rate, there will be lots of Overload.
-> > > +      * When M2M mode, output rate should also need to align with the
-> > > + out
-> > 
-> > For this "should", do you actually mean "M2M could also"? Sorry, I'm just
-> > trying to understand everyting here, not intentionally being picky at words.
-> > My understanding is that we still keep the ideal ratio setting because
-> > "M2M" still uses it.
-> 
-> We use IDEAL_RATIO_RATE as output rate for m2m mode, it likes a
-> Tricky operation, in order to improve the performance. I think
-> The correct operation is to use the real output rate, but the performance
-> Is bad.  So it is a compromise.
-
-I see.
-
-> > 
-> > > +      * samplerate, but M2M must use less time to achieve good
-> > performance.
-> > > +      */
-> > > +     clk_rate = clk_get_rate(clk);
-> > > +     if (p2p || !ideal) {
-> > > +             rem[OUT] = do_div(clk_rate, outrate);
-> > > +             div[OUT] = clk_rate;
-> > > +     } else {
-> > > +             rem[OUT] = do_div(clk_rate, IDEAL_RATIO_RATE);
-> > > +             div[OUT] = clk_rate;
-> > > +     }
-> > >
-> > >       if (div[OUT] == 0) {
-> > >               pair_err("failed to support output sample rate %dHz by
-> > > asrck_%x\n", @@ -372,6 +384,16 @@ static int fsl_asrc_config_pair(struct
-> > fsl_asrc_pair *pair)
-> > >               return -EINVAL;
-> > >       }
-> > >
-> > > +     if (!ideal && (div[IN] > 1024 || div[OUT] > 1024 ||
-> > > +                    rem[IN] != 0 || rem[OUT] != 0)) {
-> > > +     if (!ideal && (div[IN] > 1024 || div[OUT] > 1024 || rem[IN] ||
-> > > + rem[OUT] != 0)) {
-> > 
-> > So for ideal == true, these limitaions are not applied any more?
-> > Remember that the "ideal" is true for "p2p == true" cases here.
-> 
-> No, not applied.  for ideal, the div don't impact the output result
-> Even it is not accurate.
-
-I see.
-
-> > 
-> > > +             pair_err("The divider can't be used for non ideal mode\n");
-> > > +             return -EINVAL;
-> > > +     }
-> > > +
-> > > +     /* Divider range is [1, 1024] */
-> > > +     div[IN] = min_t(u32, 1024, div[IN]);
-> > > +     div[OUT] = min_t(u32, 1024, div[OUT]);
-> > 
-> > Hmm, this looks like we want to allow ideal ratio cases and p2p cases to
-> > operate any way, even if the divider wasn't within the range to get the
-> > in/out rates from the output clock?
-> 
-> Yes. We still allow the p2p = true,  ideal = false.  Note that p2p is not
-> Equal to ideal.
-
-Got it.
-
-Overall, I feel it's better to have a naming to state the purpose
-of using ideal configurations without the IDEAL_RATIO_RATE setup.
-	bool use_ideal_rate;
-And we can put into the asrc_config structure if there's no major
-problem.
-
-So the condition check for the calculation would be:
-+	if (ideal && config->use_ideal_rate)
-+		rem[OUT] = do_div(clk_rate, IDEAL_RATIO_RATE);
-+	else
-+		rem[OUT] = do_div(clk_rate, outrate);
-+	div[OUT] = clk_rate;
-
-And for that if (!ideal && div[IN]....rem[OUT]), I feel it would
-be clear to have them separately, as the existing "div[IN] == 0"
-and "div[OUT] == 0" checks, so that we can tell users which side
-of the divider is out of range and what the sample rate and clock
-rate are.
-
-Thanks
-Nicolin
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUmFuIFdhbmcgPHJhbi53
+YW5nXzFAbnhwLmNvbT4NCj4gU2VudDogV2VkbmVzZGF5LCBPY3RvYmVyIDIzLCAyMDE5IDQ6NTMg
+QU0NCj4gVG86IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWxAa2VybmVsLm9yZz4NCj4gQ2M6IFJh
+ZmFlbCBKIC4gV3lzb2NraSA8cmp3QHJqd3lzb2NraS5uZXQ+OyBSb2IgSGVycmluZw0KPiA8cm9i
+aCtkdEBrZXJuZWwub3JnPjsgTGVvIExpIDxsZW95YW5nLmxpQG54cC5jb20+OyBNYXJrIFJ1dGxh
+bmQNCj4gPG1hcmsucnV0bGFuZEBhcm0uY29tPjsgUGF2ZWwgTWFjaGVrIDxwYXZlbEB1Y3cuY3o+
+OyBBbnNvbiBIdWFuZw0KPiA8YW5zb24uaHVhbmdAbnhwLmNvbT47IEJpd2VuIExpIDxiaXdlbi5s
+aUBueHAuY29tPjsgTGVuIEJyb3duDQo+IDxsZW4uYnJvd25AaW50ZWwuY29tPjsgR3JlZyBLcm9h
+aC1IYXJ0bWFuDQo+IDxncmVna2hAbGludXhmb3VuZGF0aW9uLm9yZz47IGxpbnV4cHBjLWRldiA8
+bGludXhwcGMtDQo+IGRldkBsaXN0cy5vemxhYnMub3JnPjsgTGludXggQVJNIDxsaW51eC1hcm0t
+a2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc+Ow0KPiBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9y
+ZzsgTGludXggS2VybmVsIE1haWxpbmcgTGlzdCA8bGludXgtDQo+IGtlcm5lbEB2Z2VyLmtlcm5l
+bC5vcmc+OyBMaW51eCBQTSA8bGludXgtcG1Admdlci5rZXJuZWwub3JnPg0KPiBTdWJqZWN0OiBS
+RTogW1BBVENIIHY5IDEvM10gUE06IHdha2V1cDogQWRkIHJvdXRpbmUgdG8gaGVscCBmZXRjaCB3
+YWtldXANCj4gc291cmNlIG9iamVjdC4NCj4gDQo+IEhpIFJhZmFlbCwNCj4gDQo+IE9uIFdlZG5l
+c2RheSwgT2N0b2JlciAyMywgMjAxOSAxNzowNywgUmFmYWVsIEouIFd5c29ja2kgd3JvdGU6DQo+
+ID4NCj4gPiBPbiBXZWQsIE9jdCAyMywgMjAxOSBhdCAxMDoyNCBBTSBSYW4gV2FuZyA8cmFuLndh
+bmdfMUBueHAuY29tPg0KPiB3cm90ZToNCj4gPiA+DQo+ID4gPiBTb21lIHVzZXIgbWlnaHQgd2Fu
+dCB0byBnbyB0aHJvdWdoIGFsbCByZWdpc3RlcmVkIHdha2V1cCBzb3VyY2VzIGFuZA0KPiA+ID4g
+ZG9pbmcgdGhpbmdzIGFjY29yZGluZ2x5LiBGb3IgZXhhbXBsZSwgU29DIFBNIGRyaXZlciBtaWdo
+dCBuZWVkIHRvDQo+ID4gPiBkbyBIVyBwcm9ncmFtbWluZyB0byBwcmV2ZW50IHBvd2VyaW5nIGRv
+d24gc3BlY2lmaWMgSVAgd2hpY2ggd2FrZXVwDQo+ID4gPiBzb3VyY2UgZGVwZW5kaW5nIG9uLiBT
+byBhZGQgdGhpcyBBUEkgdG8gaGVscCB3YWxrIHRocm91Z2ggYWxsDQo+ID4gPiByZWdpc3RlcmVk
+IHdha2V1cCBzb3VyY2Ugb2JqZWN0cyBvbiB0aGF0IGxpc3QgYW5kIHJldHVybiB0aGVtIG9uZSBi
+eQ0KPiBvbmUuDQo+ID4gPg0KPiA+ID4gU2lnbmVkLW9mZi1ieTogUmFuIFdhbmcgPHJhbi53YW5n
+XzFAbnhwLmNvbT4NCj4gPiA+IFRlc3RlZC1ieTogTGVvbmFyZCBDcmVzdGV6IDxsZW9uYXJkLmNy
+ZXN0ZXpAbnhwLmNvbT4NCj4gPg0KPiA+IE9LLCB0aGFua3MgZm9yIG1ha2luZyBhbGwgb2YgdGhl
+IHJlcXVlc3RlZCBjaGFuZ2VzOg0KPiANCj4gVGhhbmtzIGZvciB5b3VyIHBhdGllbnQgZGlyZWN0
+aW9uIDopDQo+IEFjdHVhbGx5IExlbyBhbmQgbWUgcGxhbmVkIHRvIGhhdmUgYSBmMmYgZGlzY3Vz
+c2lvbiB3aXRoIHlvdSBhYm91dCB0aGlzIHBhdGNoDQo+IG9uIExQQyAyMDE5IGJ1dCB1bmZvcnR1
+bmF0ZWx5IG1pc3NlZCB0aGUgb3Bwb3J0dW5pdHkgZmluYWxseSAodjYgcmV2aWV3IHdhcw0KPiBw
+ZW5kaW5nIGF0IHRpbWUpLg0KPiANCj4gPiBSZXZpZXdlZC1ieTogUmFmYWVsIEouIFd5c29ja2kg
+PHJhZmFlbC5qLnd5c29ja2lAaW50ZWwuY29tPg0KDQpUaGFua3MgZm9yIHRoZSByZXZpZXcuDQoN
+Cj4gPg0KPiA+IGFuZCBwbGVhc2UgZmVlbCBmcmVlIHRvIHB1c2ggdGhpcyB0aHJvdWdoIHRoZSBh
+cHByb3ByaWF0ZSBhcmNoL3BsYXRmb3JtDQo+IHRyZWUuDQo+IA0KPiBZZXMsIHdlIHdpbGwgZG8g
+dGhpcyBsYXRlci4NCj4gDQo+ID4gQWx0ZXJuYXRpdmVseSwgcGxlYXNlIGxldCBtZSBrbm93IGlm
+IHlvdSB3YW50IG1lIHRvIHRha2UgdGhpcyBzZXJpZXMsDQo+ID4gYnV0IHRoZW4gSSBuZWVkIGFu
+IEFDSyBmcm9tIHRoZSBhcHByb3ByaWF0ZQ0KPiA+IG1haW50YWluZXIocykgb24gcGF0Y2ggMy4N
+Cj4gDQo+IFRoYW5rcyBhZ2FpbiwgSSB3aWxsIHdhaXQgTGVvJ3MgY29tbWVudCBvbiBwYXRjaCAz
+Lg0KDQpJIHdpbGwgZG8gYW5vdGhlciByZXZpZXcgb24gcGF0Y2ggMyBhbmQgYXBwbHkgdGhlIHNl
+cmllcyB0aHJvdWdoIG15IHNvYy9mc2wgdHJlZS4NCg0KUmVnYXJkcywNCkxlbw0K
