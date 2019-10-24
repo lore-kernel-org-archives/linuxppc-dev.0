@@ -2,50 +2,81 @@ Return-Path: <SRS0=A5Gh=YR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A4A7CA9EAF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 09:46:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 40A7BCA9EAF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 10:16:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3F98820856
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 09:46:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3F98820856
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3D3A820684
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 10:16:14 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=monstr-eu.20150623.gappssmtp.com header.i=@monstr-eu.20150623.gappssmtp.com header.b="cTWe2LNo"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3D3A820684
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xilinx.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46zMp21jvPzDqC5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 20:46:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46zNSC49KSzDqSm
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 21:16:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=steven.price@arm.com; receiver=<UNKNOWN>)
+ spf=none (no SPF record) smtp.mailfrom=monstr.eu
+ (client-ip=2a00:1450:4864:20::442; helo=mail-wr1-x442.google.com;
+ envelope-from=monstr@monstr.eu; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 46zMby101LzDqTZ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Oct 2019 20:37:48 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2710F493;
- Thu, 24 Oct 2019 02:37:46 -0700 (PDT)
-Received: from e112269-lin.cambridge.arm.com (e112269-lin.cambridge.arm.com
- [10.1.194.43])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 093F53F71F;
- Thu, 24 Oct 2019 02:37:42 -0700 (PDT)
-From: Steven Price <steven.price@arm.com>
-To: linux-mm@kvack.org
-Subject: [PATCH v13 06/22] powerpc: mm: Add p?d_leaf() definitions
-Date: Thu, 24 Oct 2019 10:37:00 +0100
-Message-Id: <20191024093716.49420-7-steven.price@arm.com>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20191024093716.49420-1-steven.price@arm.com>
-References: <20191024093716.49420-1-steven.price@arm.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ dmarc=none (p=none dis=none) header.from=xilinx.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=monstr-eu.20150623.gappssmtp.com
+ header.i=@monstr-eu.20150623.gappssmtp.com header.b="cTWe2LNo"; 
+ dkim-atps=neutral
+Received: from mail-wr1-x442.google.com (mail-wr1-x442.google.com
+ [IPv6:2a00:1450:4864:20::442])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46zNP23HDmzDqSQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Oct 2019 21:13:25 +1100 (AEDT)
+Received: by mail-wr1-x442.google.com with SMTP id s1so16635434wro.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Oct 2019 03:13:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=monstr-eu.20150623.gappssmtp.com; s=20150623;
+ h=sender:from:to:cc:subject:date:message-id;
+ bh=4e4CMe8f6py1Yt2lWLrn331C7GRW8uLQcBzyGRI9nf4=;
+ b=cTWe2LNoVh1mOyCENVn7zpGv3Jprre8rDXIaPx76j+yvm1hAVwpu6ypxuWj/UlDG97
+ I2oGLcNkL8BrxO7xHx2/ggo3DF85rMITBcd3ReMP4P9wlSe/Km4gkC2pZ+KiWQRbD1Ub
+ oUOBZe7O6NpUfMuls2FITbvA/QIqoL2gGBGoTs3Sn6F5kl9WU1rliddwVhPBlkqkn9m1
+ Lphmv7GnryVkgYA2cAn/Us7kHpjQ0Omkljg9UkRBs0ezBVER1StVBdwBnkO4Pzx7gs//
+ 2BwDWL51kb6jgX/pMfJ4olGJpU45RWhG1faxx4yo1ZoMybOydnuSGIvh54WChKjDxe8h
+ lKFQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:sender:from:to:cc:subject:date:message-id;
+ bh=4e4CMe8f6py1Yt2lWLrn331C7GRW8uLQcBzyGRI9nf4=;
+ b=RZMTQSsH4+eEnzcyv0PRrKPXvWEuskQrAtGWbG3ckJGnYXyaabkjdtDJaYOtExfkCI
+ hABTBGG4sV1mvP98jMBfgM6rizJS2fHI3fAQUPBqwL7q0rkzIzEzpjpWUT53xrnC66Is
+ vbDaekTg9aymPSLB84WqYoE8t0nv3hlGvDIiM54ki6wu7v3Oi9ejrbo5Zj+ZgnOoFD1y
+ 3hTYXgETLNiXFaPwojdo1TwzRkm13eVgR0kD1x05prxa9FDW9AFxMYLUbJyQ47/fjUzG
+ 8RhMGP/9hnqsg4LAzAC0DYE6m08corGD+2ZxfBJKM71J+F3X30dFr+wFnX5tHIN5BmIh
+ CUYQ==
+X-Gm-Message-State: APjAAAXr+OJtjmpW9gTzGt5oDHlnsrbJ608e6FIWeqIgcHj679yUkVFk
+ uNpSVrBmesrnvdWRQdkFjtzB/Q==
+X-Google-Smtp-Source: APXvYqwcFnA4ofb/Q4g7Tcra8udIzZaJReC4T76gGILoFLWpLp7LWZeYpE1c6/ZFH9jYdiQyaQs7MQ==
+X-Received: by 2002:adf:92a5:: with SMTP id 34mr2881720wrn.337.1571911998458; 
+ Thu, 24 Oct 2019 03:13:18 -0700 (PDT)
+Received: from localhost (nat-35.starnet.cz. [178.255.168.35])
+ by smtp.gmail.com with ESMTPSA id i3sm20429658wrw.69.2019.10.24.03.13.17
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Thu, 24 Oct 2019 03:13:17 -0700 (PDT)
+From: Michal Simek <michal.simek@xilinx.com>
+To: linux-kernel@vger.kernel.org, monstr@monstr.eu, michal.simek@xilinx.com,
+ git@xilinx.com, palmer@sifive.com, hch@infradead.org, longman@redhat.com,
+ helgaas@kernel.org
+Subject: [PATCH 0/2] Enabling MSI for Microblaze
+Date: Thu, 24 Oct 2019 12:13:10 +0200
+Message-Id: <cover.1571911976.git.michal.simek@xilinx.com>
+X-Mailer: git-send-email 2.17.1
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,104 +88,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <Mark.Rutland@arm.com>, Peter Zijlstra <peterz@infradead.org>,
- Dave Hansen <dave.hansen@linux.intel.com>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Will Deacon <will@kernel.org>, "Liang,
- Kan" <kan.liang@linux.intel.com>, x86@kernel.org,
- Steven Price <steven.price@arm.com>, Ingo Molnar <mingo@redhat.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Arnd Bergmann <arnd@arndb.de>,
- kvm-ppc@vger.kernel.org,
- =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>,
- Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>, linux-kernel@vger.kernel.org,
- James Morse <james.morse@arm.com>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+ Eric Biggers <ebiggers@google.com>,
+ "Peter Zijlstra \(Intel\)" <peterz@infradead.org>, linux-pci@vger.kernel.org,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
+ linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>,
+ Ingo Molnar <mingo@kernel.org>, linux-arch@vger.kernel.org,
+ Herbert Xu <herbert@gondor.apana.org.au>, Jackie Liu <liuyun01@kylinos.cn>,
+ Russell King <linux@armlinux.org.uk>, Firoz Khan <firoz.khan@linaro.org>,
+ Wesley Terpstra <wesley@sifive.com>, James Hogan <jhogan@kernel.org>,
+ linux-snps-arc@lists.infradead.org, Albert Ou <aou@eecs.berkeley.edu>,
+ Arnd Bergmann <arnd@arndb.de>, Paul Walmsley <paul.walmsley@sifive.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, linux-arm-kernel@lists.infradead.org,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Cornelia Huck <cohuck@redhat.com>, linux-mips@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>,
+ Vineet Gupta <vgupta@synopsys.com>, Paolo Bonzini <pbonzini@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-walk_page_range() is going to be allowed to walk page tables other than
-those of user space. For this it needs to know when it has reached a
-'leaf' entry in the page tables. This information is provided by the
-p?d_leaf() functions/macros.
+Hi,
 
-For powerpc pmd_large() already exists and does what we want, so hoist
-it out of the CONFIG_TRANSPARENT_HUGEPAGE condition and implement the
-other levels. Macros are used to provide the generic p?d_leaf() names.
+these two patches come from discussion with Christoph, Bjorn, Palmer and
+Waiman. The first patch was suggestion by Christoph here
+https://lore.kernel.org/linux-riscv/20191008154604.GA7903@infradead.org/
+The second part was discussed
+https://lore.kernel.org/linux-pci/mhng-5d9bcb53-225e-441f-86cc-b335624b3e7c@palmer-si-x1e/
+and
+https://lore.kernel.org/linux-pci/20191017181937.7004-1-palmer@sifive.com/
 
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Paul Mackerras <paulus@samba.org>
-CC: Michael Ellerman <mpe@ellerman.id.au>
-CC: linuxppc-dev@lists.ozlabs.org
-CC: kvm-ppc@vger.kernel.org
-Signed-off-by: Steven Price <steven.price@arm.com>
----
- arch/powerpc/include/asm/book3s/64/pgtable.h | 30 ++++++++++++++------
- 1 file changed, 21 insertions(+), 9 deletions(-)
+Thanks,
+Michal
 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index b01624e5c467..3dd7b6f5edd0 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -923,6 +923,12 @@ static inline int pud_present(pud_t pud)
- 	return !!(pud_raw(pud) & cpu_to_be64(_PAGE_PRESENT));
- }
- 
-+#define pud_leaf	pud_large
-+static inline int pud_large(pud_t pud)
-+{
-+	return !!(pud_raw(pud) & cpu_to_be64(_PAGE_PTE));
-+}
-+
- extern struct page *pud_page(pud_t pud);
- extern struct page *pmd_page(pmd_t pmd);
- static inline pte_t pud_pte(pud_t pud)
-@@ -966,6 +972,12 @@ static inline int pgd_present(pgd_t pgd)
- 	return !!(pgd_raw(pgd) & cpu_to_be64(_PAGE_PRESENT));
- }
- 
-+#define pgd_leaf	pgd_large
-+static inline int pgd_large(pgd_t pgd)
-+{
-+	return !!(pgd_raw(pgd) & cpu_to_be64(_PAGE_PTE));
-+}
-+
- static inline pte_t pgd_pte(pgd_t pgd)
- {
- 	return __pte_raw(pgd_raw(pgd));
-@@ -1133,6 +1145,15 @@ static inline bool pmd_access_permitted(pmd_t pmd, bool write)
- 	return pte_access_permitted(pmd_pte(pmd), write);
- }
- 
-+#define pmd_leaf	pmd_large
-+/*
-+ * returns true for pmd migration entries, THP, devmap, hugetlb
-+ */
-+static inline int pmd_large(pmd_t pmd)
-+{
-+	return !!(pmd_raw(pmd) & cpu_to_be64(_PAGE_PTE));
-+}
-+
- #ifdef CONFIG_TRANSPARENT_HUGEPAGE
- extern pmd_t pfn_pmd(unsigned long pfn, pgprot_t pgprot);
- extern pmd_t mk_pmd(struct page *page, pgprot_t pgprot);
-@@ -1159,15 +1180,6 @@ pmd_hugepage_update(struct mm_struct *mm, unsigned long addr, pmd_t *pmdp,
- 	return hash__pmd_hugepage_update(mm, addr, pmdp, clr, set);
- }
- 
--/*
-- * returns true for pmd migration entries, THP, devmap, hugetlb
-- * But compile time dependent on THP config
-- */
--static inline int pmd_large(pmd_t pmd)
--{
--	return !!(pmd_raw(pmd) & cpu_to_be64(_PAGE_PTE));
--}
--
- static inline pmd_t pmd_mknotpresent(pmd_t pmd)
- {
- 	return __pmd(pmd_val(pmd) & ~_PAGE_PRESENT);
+
+Michal Simek (1):
+  asm-generic: Make msi.h a mandatory include/asm header
+
+Palmer Dabbelt (1):
+  pci: Default to PCI_MSI_IRQ_DOMAIN
+
+ arch/arc/include/asm/Kbuild     | 1 -
+ arch/arm/include/asm/Kbuild     | 1 -
+ arch/arm64/include/asm/Kbuild   | 1 -
+ arch/mips/include/asm/Kbuild    | 1 -
+ arch/powerpc/include/asm/Kbuild | 1 -
+ arch/riscv/include/asm/Kbuild   | 1 -
+ arch/sparc/include/asm/Kbuild   | 1 -
+ drivers/pci/Kconfig             | 2 +-
+ include/asm-generic/Kbuild      | 1 +
+ 9 files changed, 2 insertions(+), 8 deletions(-)
+
 -- 
-2.20.1
+2.17.1
 
