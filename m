@@ -4,57 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AFDD2CA9EAF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 18:40:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 453C9CA9EAF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 18:42:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5E60521906
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 18:40:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A9D65205F4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 18:42:57 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="XruQ3mxs"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5E60521906
+	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="hNsfoI1t"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A9D65205F4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=yadro.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46zbfR758jzDqbX
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 05:40:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46zbhv32P1zDqTG
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 05:42:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=yadro.com (client-ip=89.207.88.252; helo=mta-01.yadro.com;
  envelope-from=s.miroshnichenko@yadro.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=yadro.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=yadro.com header.i=@yadro.com header.b="XruQ3mxs"; 
+ unprotected) header.d=yadro.com header.i=@yadro.com header.b="hNsfoI1t"; 
  dkim-atps=neutral
 Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46zYvm3vBYzDqVq
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 04:22:12 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46zYvn0VktzDqW0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 04:22:13 +1100 (AEDT)
 Received: from localhost (unknown [127.0.0.1])
- by mta-01.yadro.com (Postfix) with ESMTP id 8357742F15;
- Thu, 24 Oct 2019 17:22:09 +0000 (UTC)
+ by mta-01.yadro.com (Postfix) with ESMTP id 819B2437F3;
+ Thu, 24 Oct 2019 17:22:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
  content-type:content-type:content-transfer-encoding:mime-version
  :references:in-reply-to:x-mailer:message-id:date:date:subject
  :subject:from:from:received:received:received; s=mta-01; t=
- 1571937728; x=1573752129; bh=9SNqmukav0eCCSo00z1QsS5PHaStBZ2+oc5
- w2+I+b5Q=; b=XruQ3mxswY0DbF3dYfH6GQJ4WVJoHwn8c8MgMm/k/MgwDm2+teV
- LO3gPPEODb9ATg6Sjvaw20ZkfX0XYvcthw9xMoqAb0SRrDzt9HQS5J/RDzfRu5lq
- g9WbmT0hBEDVi9S/5NZW9RPz/BeciL6k4rVVWoommOBfIh5SR1VSNpK0=
+ 1571937727; x=1573752128; bh=kHULJzUrp5uU1XsnC8WoUR2mO6BxtaquZFh
+ WerC3HdM=; b=hNsfoI1tpqvKWmqxXS2WIT10KEFRtCDmOwC8LjrHIyoSVe//WFz
+ UJ2TxFjriJpuWOm4ImXVgBPNvVNlm9xprPelUCIUnU1FTNun5kx6mFUsZ/uZjc+H
+ qs8zVV6k11CZLqR2FPc0M4I/RZG6g/1QauYjZbYBoX827enQYw2BBWIM=
 X-Virus-Scanned: amavisd-new at yadro.com
 Received: from mta-01.yadro.com ([127.0.0.1])
  by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id LvjXVHojmpkz; Thu, 24 Oct 2019 20:22:08 +0300 (MSK)
+ with ESMTP id fv6MHD-zjc6U; Thu, 24 Oct 2019 20:22:07 +0300 (MSK)
 Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
  [172.17.10.102])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by mta-01.yadro.com (Postfix) with ESMTPS id 00664437FA;
+ by mta-01.yadro.com (Postfix) with ESMTPS id 8F30A42F14;
  Thu, 24 Oct 2019 20:22:05 +0300 (MSK)
 Received: from NB-148.yadro.com (172.17.15.136) by T-EXCH-02.corp.yadro.com
  (172.17.10.102) with Microsoft SMTP Server (version=TLS1_2,
@@ -62,9 +62,10 @@ Received: from NB-148.yadro.com (172.17.15.136) by T-EXCH-02.corp.yadro.com
  Oct 2019 20:22:05 +0300
 From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 To: <linux-pci@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH RFC 08/11] PCI: Allow expanding the bridges
-Date: Thu, 24 Oct 2019 20:21:54 +0300
-Message-ID: <20191024172157.878735-9-s.miroshnichenko@yadro.com>
+Subject: [PATCH RFC 06/11] powerpc/pci: Enable assigning bus numbers instead
+ of reading them from DT
+Date: Thu, 24 Oct 2019 20:21:52 +0300
+Message-ID: <20191024172157.878735-7-s.miroshnichenko@yadro.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191024172157.878735-1-s.miroshnichenko@yadro.com>
 References: <20191024172157.878735-1-s.miroshnichenko@yadro.com>
@@ -91,57 +92,50 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When hotplugging a bridge, the parent bus may not have [enough] reserved
-bus numbers. So before rescanning the bus, set its subordinate number to
-the maximum possible value: it is 255 when there is only one root bridge
-in the domain.
+If the firmware indicates support of reassigning bus numbers via the PHB's
+"ibm,supported-movable-bdfs" property in DT, PowerNV will not depend on PCI
+topology info from DT anymore.
 
-During the PCI rescan, the subordinate bus number of every bus will be
-contracted to the actual value.
+This makes possible to re-enumerate the fabric, assign the new bus numbers
+and switch from the pnv_php module to the standard pciehp driver for PCI
+hotplug functionality.
 
 Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 ---
- drivers/pci/probe.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/pci_dn.c                 | 5 +++++
+ arch/powerpc/platforms/powernv/eeh-powernv.c | 3 ++-
+ 2 files changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index 539f5d39bb6d..3494b5d265d5 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -3195,20 +3195,22 @@ static unsigned int pci_dev_count_res_mask(struct pci_dev *dev)
- 	return res_mask;
- }
+diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
+index ad0ecf48e943..b9b7518eb2b4 100644
+--- a/arch/powerpc/kernel/pci_dn.c
++++ b/arch/powerpc/kernel/pci_dn.c
+@@ -559,6 +559,11 @@ void pci_devs_phb_init_dynamic(struct pci_controller *phb)
+ 		phb->pci_data = pdn;
+ 	}
  
--static void pci_bus_rescan_prepare(struct pci_bus *bus)
-+static void pci_bus_rescan_prepare(struct pci_bus *bus, int last_bus_number)
- {
- 	struct pci_dev *dev;
- 
- 	if (bus->self)
- 		pci_config_pm_runtime_get(bus->self);
- 
-+	bus->busn_res.end = last_bus_number;
++	if (of_get_property(dn, "ibm,supported-movable-bdfs", NULL)) {
++		pci_add_flags(PCI_REASSIGN_ALL_BUS);
++		return;
++	}
 +
- 	list_for_each_entry(dev, &bus->devices, bus_list) {
- 		struct pci_bus *child = dev->subordinate;
+ 	/* Update dn->phb ptrs for new phb and children devices */
+ 	pci_traverse_device_nodes(dn, add_pdn, phb);
+ }
+diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+index 6bc24a47e9ef..6c126aa2a6b7 100644
+--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
++++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+@@ -42,7 +42,8 @@ void pnv_pcibios_bus_add_device(struct pci_dev *pdev)
+ {
+ 	struct pci_dn *pdn = pci_get_pdn(pdev);
  
- 		dev->res_mask = pci_dev_count_res_mask(dev);
+-	if (eeh_has_flag(EEH_FORCE_DISABLED))
++	if (eeh_has_flag(EEH_FORCE_DISABLED) ||
++	    !pci_has_flag(PCI_REASSIGN_ALL_BUS))
+ 		return;
  
- 		if (child)
--			pci_bus_rescan_prepare(child);
-+			pci_bus_rescan_prepare(child, last_bus_number);
- 
- 		if (dev->driver &&
- 		    dev->driver->rescan_prepare)
-@@ -3439,7 +3441,7 @@ unsigned int pci_rescan_bus(struct pci_bus *bus)
- 
- 	if (pci_can_move_bars) {
- 		pcibios_root_bus_rescan_prepare(root);
--		pci_bus_rescan_prepare(root);
-+		pci_bus_rescan_prepare(root, root->busn_res.end);
- 		pci_bus_update_immovable_range(root);
- 		pci_bus_release_root_bridge_resources(root);
- 
+ 	dev_dbg(&pdev->dev, "EEH: Setting up device\n");
 -- 
 2.23.0
 
