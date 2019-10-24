@@ -2,76 +2,79 @@ Return-Path: <SRS0=A5Gh=YR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2BFCCCA9EBD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 19:47:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 05021CA9EAF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 19:48:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6031B2070B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 19:47:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A297E2070B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 19:48:52 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Mphi4odU"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6031B2070B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="Aec2M9vn"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A297E2070B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.microsoft.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46zd6q20LQzDqcM
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 06:46:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=205.139.110.61;
- helo=us-smtp-delivery-1.mimecast.com; envelope-from=david@redhat.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 46zd8y3T04zDqVQ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 06:48:50 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46zWC83VxtzDq6y
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 02:20:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
+ header.from=linux.microsoft.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.b="Mphi4odU"; 
- dkim-atps=neutral
-Received: from us-smtp-delivery-1.mimecast.com (us-smtp-1.mimecast.com
- [205.139.110.61])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46zR0b0LdKzDqHv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Oct 2019 23:10:54 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1571919052;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=qUw+4OUStTuaq5ok3fmgq6nv+XIwZUDTl4O246f/KSo=;
- b=Mphi4odUz6rpOo7NfySpzAq1zpgNhKwMBhQoLlCqnbY2G01htLXPEwLdGshy6syP9B2P5U
- jsYZp33qMxwNjyrCNQ9Xhz+t3t4YgMDOGwpirF/Ha+jU+fryTpfjPbfhlC2IlpyhMAt0gM
- iHO6pBUIpg3bFN/yOVzeO/Ow/rmq04w=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-44-KwvfWgdbN8Olk7KAgSZhkg-1; Thu, 24 Oct 2019 08:10:50 -0400
-Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
- [10.5.11.23])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 274885E4;
- Thu, 24 Oct 2019 12:10:43 +0000 (UTC)
-Received: from t460s.redhat.com (ovpn-116-141.ams2.redhat.com [10.36.116.141])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 70C261C93D;
- Thu, 24 Oct 2019 12:10:23 +0000 (UTC)
-From: David Hildenbrand <david@redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v1 02/10] KVM: x86/mmu: Prepare kvm_is_mmio_pfn() for
- PG_reserved changes
-Date: Thu, 24 Oct 2019 14:09:30 +0200
-Message-Id: <20191024120938.11237-3-david@redhat.com>
-In-Reply-To: <20191024120938.11237-1-david@redhat.com>
-References: <20191024120938.11237-1-david@redhat.com>
+ unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com
+ header.b="Aec2M9vn"; dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 46zWC806Czz8vKD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 02:20:20 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 46zWC76mjvz9sQv; Fri, 25 Oct 2019 02:20:19 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182;
+ helo=linux.microsoft.com; envelope-from=nramas@linux.microsoft.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=pass (p=none dis=none)
+ header.from=linux.microsoft.com
+Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com
+ header.b="Aec2M9vn"; dkim-atps=neutral
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+ by ozlabs.org (Postfix) with ESMTP id 46zWC71fgdz9sQr;
+ Fri, 25 Oct 2019 02:20:18 +1100 (AEDT)
+Received: from [10.137.112.108] (unknown [131.107.174.108])
+ by linux.microsoft.com (Postfix) with ESMTPSA id 650BD20106BE;
+ Thu, 24 Oct 2019 08:20:17 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 650BD20106BE
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+ s=default; t=1571930417;
+ bh=fOMyGZiF2U/ZovXZCK4NxXGRhszfJdpIiYVpPS9my4M=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=Aec2M9vnd4bkFq+YJyfVqt/f6e6cTCfnbLFWz6VXmyIfPtpveq4FRmSkcxURnmukq
+ yc5P586Y1pzliC68WKrbH+wbgqDa7TwK90cxmoKM7Pcp1YO/7hI0hzZNTw+cVejRq1
+ 3bYYgWQLDV+AOyZqQHWlEumXZxWRsb4zKUtge8tM=
+Subject: Re: [PATCH v9 5/8] ima: make process_buffer_measurement() generic
+To: Nayna Jain <nayna@linux.ibm.com>, linuxppc-dev@ozlabs.org,
+ linux-efi@vger.kernel.org, linux-integrity@vger.kernel.org
+References: <20191024034717.70552-1-nayna@linux.ibm.com>
+ <20191024034717.70552-6-nayna@linux.ibm.com>
+From: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
+Message-ID: <1ae56786-4d5c-ba8e-e30c-ced1e15ccb9c@linux.microsoft.com>
+Date: Thu, 24 Oct 2019 08:20:17 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
 MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
-X-MC-Unique: KwvfWgdbN8Olk7KAgSZhkg-1
-X-Mimecast-Spam-Score: 0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20191024034717.70552-6-nayna@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-Mailman-Approved-At: Fri, 25 Oct 2019 06:41:16 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -84,120 +87,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-hyperv@vger.kernel.org, Michal Hocko <mhocko@suse.com>,
- =?UTF-8?q?Radim=20Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@redhat.com>,
- kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>,
- KarimAllah Ahmed <karahmed@amazon.de>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- Alexander Duyck <alexander.duyck@gmail.com>, Michal Hocko <mhocko@kernel.org>,
- linux-mm@kvack.org, Pavel Tatashin <pavel.tatashin@microsoft.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Wanpeng Li <wanpengli@tencent.com>,
- Alexander Duyck <alexander.h.duyck@linux.intel.com>,
- "K. Y. Srinivasan" <kys@microsoft.com>,
- Dan Williams <dan.j.williams@intel.com>, Kees Cook <keescook@chromium.org>,
- devel@driverdev.osuosl.org, Stefano Stabellini <sstabellini@kernel.org>,
- Stephen Hemminger <sthemmin@microsoft.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Joerg Roedel <joro@8bytes.org>, x86@kernel.org,
- YueHaibing <yuehaibing@huawei.com>,
- "Matthew Wilcox \(Oracle\)" <willy@infradead.org>,
- Mike Rapoport <rppt@linux.ibm.com>, Peter Zijlstra <peterz@infradead.org>,
- Ingo Molnar <mingo@redhat.com>, Vlastimil Babka <vbabka@suse.cz>,
- Anthony Yznaga <anthony.yznaga@oracle.com>, Oscar Salvador <osalvador@suse.de>,
- "Isaac J. Manjarres" <isaacm@codeaurora.org>,
- Matt Sickler <Matt.Sickler@daktronics.com>, Juergen Gross <jgross@suse.com>,
- Anshuman Khandual <anshuman.khandual@arm.com>,
- Haiyang Zhang <haiyangz@microsoft.com>, Sasha Levin <sashal@kernel.org>,
- kvm-ppc@vger.kernel.org, Qian Cai <cai@lca.pw>,
- Alex Williamson <alex.williamson@redhat.com>,
- Mike Rapoport <rppt@linux.vnet.ibm.com>, Borislav Petkov <bp@alien8.de>,
- Nicholas Piggin <npiggin@gmail.com>, Andy Lutomirski <luto@kernel.org>,
- xen-devel@lists.xenproject.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Vitaly Kuznetsov <vkuznets@redhat.com>, Allison Randal <allison@lohutok.net>,
- Jim Mattson <jmattson@google.com>, Mel Gorman <mgorman@techsingularity.net>,
- Cornelia Huck <cohuck@redhat.com>, Pavel Tatashin <pasha.tatashin@soleen.com>,
- Sean Christopherson <sean.j.christopherson@intel.com>,
- Thomas Gleixner <tglx@linutronix.de>, Johannes Weiner <hannes@cmpxchg.org>,
- Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Eric Ricther <erichte@linux.ibm.com>, Prakhar Srivastava <prsriva02@gmail.com>,
+ linux-kernel@vger.kernel.org, Mimi Zohar <zohar@linux.ibm.com>,
+ Claudio Carvalho <cclaudio@linux.ibm.com>,
+ Matthew Garret <matthew.garret@nebula.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Paul Mackerras <paulus@samba.org>, Jeremy Kerr <jk@ozlabs.org>,
+ Elaine Palmer <erpalmer@us.ibm.com>, Oliver O'Halloran <oohall@gmail.com>,
+ George Wilson <gcwilson@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Right now, ZONE_DEVICE memory is always set PG_reserved. We want to
-change that.
+On 10/23/19 8:47 PM, Nayna Jain wrote:
 
-KVM has this weird use case that you can map anything from /dev/mem
-into the guest. pfn_valid() is not a reliable check whether the memmap
-was initialized and can be touched. pfn_to_online_page() makes sure
-that we have an initialized memmap (and don't have ZONE_DEVICE memory).
+Hi Nayna,
 
-Rewrite kvm_is_mmio_pfn() to make sure the function produces the
-same result once we stop setting ZONE_DEVICE pages PG_reserved.
+> +void process_buffer_measurement(const void *buf, int size,
+> +				const char *eventname, enum ima_hooks func,
+> +				int pcr)
+>   {
+>   	int ret = 0;
+>   	struct ima_template_entry *entry = NULL;
 
-Cc: Paolo Bonzini <pbonzini@redhat.com>
-Cc: "Radim Kr=C4=8Dm=C3=A1=C5=99" <rkrcmar@redhat.com>
-Cc: Sean Christopherson <sean.j.christopherson@intel.com>
-Cc: Vitaly Kuznetsov <vkuznets@redhat.com>
-Cc: Wanpeng Li <wanpengli@tencent.com>
-Cc: Jim Mattson <jmattson@google.com>
-Cc: Joerg Roedel <joro@8bytes.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: KarimAllah Ahmed <karahmed@amazon.de>
-Cc: Michal Hocko <mhocko@kernel.org>
-Cc: Dan Williams <dan.j.williams@intel.com>
-Signed-off-by: David Hildenbrand <david@redhat.com>
----
- arch/x86/kvm/mmu.c | 29 +++++++++++++++++------------
- 1 file changed, 17 insertions(+), 12 deletions(-)
+> +	if (func) {
+> +		security_task_getsecid(current, &secid);
+> +		action = ima_get_action(NULL, current_cred(), secid, 0, func,
+> +					&pcr, &template);
+> +		if (!(action & IMA_MEASURE))
+> +			return;
+> +	}
 
-diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-index 24c23c66b226..f03089a336de 100644
---- a/arch/x86/kvm/mmu.c
-+++ b/arch/x86/kvm/mmu.c
-@@ -2962,20 +2962,25 @@ static bool mmu_need_write_protect(struct kvm_vcpu =
-*vcpu, gfn_t gfn,
-=20
- static bool kvm_is_mmio_pfn(kvm_pfn_t pfn)
- {
-+=09struct page *page =3D pfn_to_online_page(pfn);
-+
-+=09/*
-+=09 * ZONE_DEVICE pages are never online. Online pages that are reserved
-+=09 * either indicate the zero page or MMIO pages.
-+=09 */
-+=09if (page)
-+=09=09return !is_zero_pfn(pfn) && PageReserved(pfn_to_page(pfn));
-+
-+=09/*
-+=09 * Anything with a valid (but not online) memmap could be ZONE_DEVICE.
-+=09 * Treat only UC/UC-/WC pages as MMIO.
-+=09 */
- =09if (pfn_valid(pfn))
--=09=09return !is_zero_pfn(pfn) && PageReserved(pfn_to_page(pfn)) &&
--=09=09=09/*
--=09=09=09 * Some reserved pages, such as those from NVDIMM
--=09=09=09 * DAX devices, are not for MMIO, and can be mapped
--=09=09=09 * with cached memory type for better performance.
--=09=09=09 * However, the above check misconceives those pages
--=09=09=09 * as MMIO, and results in KVM mapping them with UC
--=09=09=09 * memory type, which would hurt the performance.
--=09=09=09 * Therefore, we check the host memory type in addition
--=09=09=09 * and only treat UC/UC-/WC pages as MMIO.
--=09=09=09 */
--=09=09=09(!pat_enabled() || pat_pfn_immune_to_uc_mtrr(pfn));
-+=09=09return !pat_enabled() || pat_pfn_immune_to_uc_mtrr(pfn);
-=20
-+=09/*
-+=09 * Any RAM that has no memmap (e.g., mapped via /dev/mem) is not MMIO.
-+=09 */
- =09return !e820__mapped_raw_any(pfn_to_hpa(pfn),
- =09=09=09=09     pfn_to_hpa(pfn + 1) - 1,
- =09=09=09=09     E820_TYPE_RAM);
---=20
-2.21.0
+In your change set process_buffer_measurement is called with NONE for 
+the parameter func. So ima_get_action (the above if block) will not be 
+executed.
 
+Wouldn't it better to update ima_get_action (and related functions) to 
+handle the ima policy (func param)?
+
+thanks,
+  -lakshmi
