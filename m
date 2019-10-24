@@ -7,64 +7,64 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 95752CA9EAF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 18:36:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7ACC3CA9EAF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 18:38:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4001221906
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 18:36:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2755F21925
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 18:38:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="ElPypuDL"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4001221906
+	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="h1IYYAAh"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2755F21925
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=yadro.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46zbYf17tzzDqD5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 05:36:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46zbbw1QhjzDqWS
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 05:38:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=yadro.com (client-ip=89.207.88.252; helo=mta-01.yadro.com;
  envelope-from=s.miroshnichenko@yadro.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=yadro.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=yadro.com header.i=@yadro.com header.b="ElPypuDL"; 
+ unprotected) header.d=yadro.com header.i=@yadro.com header.b="h1IYYAAh"; 
  dkim-atps=neutral
 Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46zYvm1qLBzDqPm
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46zYvm1RqTzDqNf
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 04:22:12 +1100 (AEDT)
 Received: from localhost (unknown [127.0.0.1])
- by mta-01.yadro.com (Postfix) with ESMTP id A5F5A42F14;
- Thu, 24 Oct 2019 17:22:08 +0000 (UTC)
+ by mta-01.yadro.com (Postfix) with ESMTP id AC4C643611;
+ Thu, 24 Oct 2019 17:22:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
  content-type:content-type:content-transfer-encoding:mime-version
  :references:in-reply-to:x-mailer:message-id:date:date:subject
  :subject:from:from:received:received:received; s=mta-01; t=
- 1571937727; x=1573752128; bh=vyz6eYyJqPZgaHNDYBpoQrHsS/fKfuLAlcp
- X0Sq71NU=; b=ElPypuDLevzApI78T+K1DC4GjG51NTtHTt/SNfSqqOvzu8epBxy
- Pku+3CdZVD79pWi4jXHfSTZ1ueZhtWg7m+5Sk3QgHqvFhQqt1o+pW7Gdn7PeNmZm
- 8SUl4AbPtS8XXylbVBVeJzns7mHlGDAXNzaRVGiJ8D0ePcizPVMXTiaE=
+ 1571937726; x=1573752127; bh=eHqgWH9ZxunWE5MhXiwL2peaSl4Z3p2nDgb
+ +A8AwzR8=; b=h1IYYAAhmzdEJ4iO1jxvHzRpyGgHnEb646OL1IDdL8fZL3Ot1qF
+ mfAWo2xdMlh/t/ZLPI6h1etCPA0kshzS2xjav+PUNw/NhBRwrxyn77v+epozHAfr
+ wTSte2ojerGHthP/YM6nf0bdswwWnw7FcVXhVZlL+qoSExKUilujG9ro=
 X-Virus-Scanned: amavisd-new at yadro.com
 Received: from mta-01.yadro.com ([127.0.0.1])
  by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id QGi8usQSkGY4; Thu, 24 Oct 2019 20:22:07 +0300 (MSK)
+ with ESMTP id LWlc-liwhjX3; Thu, 24 Oct 2019 20:22:06 +0300 (MSK)
 Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
  [172.17.10.102])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by mta-01.yadro.com (Postfix) with ESMTPS id BB9F042F15;
+ by mta-01.yadro.com (Postfix) with ESMTPS id 61031437F3;
  Thu, 24 Oct 2019 20:22:05 +0300 (MSK)
 Received: from NB-148.yadro.com (172.17.15.136) by T-EXCH-02.corp.yadro.com
  (172.17.10.102) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Thu, 24
- Oct 2019 20:22:05 +0300
+ Oct 2019 20:22:04 +0300
 From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 To: <linux-pci@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH RFC 07/11] powerpc/pci: Don't reduce the host bridge bus range
-Date: Thu, 24 Oct 2019 20:21:53 +0300
-Message-ID: <20191024172157.878735-8-s.miroshnichenko@yadro.com>
+Subject: [PATCH RFC 05/11] drivers: base: Add bus_disconnect_device()
+Date: Thu, 24 Oct 2019 20:21:51 +0300
+Message-ID: <20191024172157.878735-6-s.miroshnichenko@yadro.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191024172157.878735-1-s.miroshnichenko@yadro.com>
 References: <20191024172157.878735-1-s.miroshnichenko@yadro.com>
@@ -91,29 +91,84 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently the last possible bus number of the PHB is set to the last
-used bus number during the boot. So when hotplugging a bridge later,
-no new buses can be allocated because they are limited by this value.
+Add bus_disconnect_device(), which is similar to bus_remove_device(), but
+it doesn't detach the device from its driver, so it can be reconnected to
+the same or another bus later.
 
-Let the host bridge contain any number of buses up to 255.
+This is a yet another preparation to hotplugging large PCIe bridges, which
+may entail changes in BDF addresses of working devices due to movable bus
+numbers. Changed addresses require rebuilding the affected entries in
+/sys/bus/pci and /proc/bus/pci.
+
+Using bus_disconnect_device()+bus_add_device() during PCI rescan allows the
+drivers to work with their devices uninterruptedly, regardless of changes
+in PCI addresses.
 
 Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 ---
- arch/powerpc/kernel/pci-common.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/base/bus.c     | 36 ++++++++++++++++++++++++++++++++++++
+ include/linux/device.h |  1 +
+ 2 files changed, 37 insertions(+)
 
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 1c448cf25506..5877ef7a39a0 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -1631,7 +1631,6 @@ void pcibios_scan_phb(struct pci_controller *hose)
- 	if (mode == PCI_PROBE_NORMAL) {
- 		pci_bus_update_busn_res_end(bus, 255);
- 		hose->last_busno = pci_scan_child_bus(bus);
--		pci_bus_update_busn_res_end(bus, hose->last_busno);
- 	}
+diff --git a/drivers/base/bus.c b/drivers/base/bus.c
+index 8f3445cc533e..52d77fb90218 100644
+--- a/drivers/base/bus.c
++++ b/drivers/base/bus.c
+@@ -497,6 +497,42 @@ void bus_probe_device(struct device *dev)
+ 	mutex_unlock(&bus->p->mutex);
+ }
  
- 	/* Platform gets a chance to do some global fixups before
++/**
++ * bus_disconnect_device - disconnect device from bus,
++ * but don't detach it from driver
++ * @dev: device to be disconnected
++ *
++ * - Remove device from all interfaces.
++ * - Remove symlink from bus' directory.
++ * - Delete device from bus's list.
++ */
++void bus_disconnect_device(struct device *dev)
++{
++	struct bus_type *bus = dev->bus;
++	struct subsys_interface *sif;
++
++	if (!bus)
++		return;
++
++	mutex_lock(&bus->p->mutex);
++	list_for_each_entry(sif, &bus->p->interfaces, node)
++		if (sif->remove_dev)
++			sif->remove_dev(dev, sif);
++	mutex_unlock(&bus->p->mutex);
++
++	sysfs_remove_link(&dev->kobj, "subsystem");
++	sysfs_remove_link(&dev->bus->p->devices_kset->kobj,
++			  dev_name(dev));
++	device_remove_groups(dev, dev->bus->dev_groups);
++	if (klist_node_attached(&dev->p->knode_bus))
++		klist_del(&dev->p->knode_bus);
++
++	pr_debug("bus: '%s': remove device %s\n",
++		 dev->bus->name, dev_name(dev));
++	bus_put(dev->bus);
++}
++EXPORT_SYMBOL_GPL(bus_disconnect_device);
++
+ /**
+  * bus_remove_device - remove device from bus
+  * @dev: device to be removed
+diff --git a/include/linux/device.h b/include/linux/device.h
+index 420228ab9c4b..9f098c32a4ad 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -268,6 +268,7 @@ void bus_sort_breadthfirst(struct bus_type *bus,
+ 			   int (*compare)(const struct device *a,
+ 					  const struct device *b));
+ extern int bus_add_device(struct device *dev);
++extern void bus_disconnect_device(struct device *dev);
+ extern int device_add_class_symlinks(struct device *dev);
+ extern void device_remove_class_symlinks(struct device *dev);
+ 
 -- 
 2.23.0
 
