@@ -4,67 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7ACC3CA9EAF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 18:38:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AFDD2CA9EAF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 18:40:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2755F21925
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 18:38:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5E60521906
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 18:40:50 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="h1IYYAAh"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2755F21925
+	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="XruQ3mxs"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5E60521906
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=yadro.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46zbbw1QhjzDqWS
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 05:38:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46zbfR758jzDqbX
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 05:40:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=yadro.com (client-ip=89.207.88.252; helo=mta-01.yadro.com;
  envelope-from=s.miroshnichenko@yadro.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=yadro.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=yadro.com header.i=@yadro.com header.b="h1IYYAAh"; 
+ unprotected) header.d=yadro.com header.i=@yadro.com header.b="XruQ3mxs"; 
  dkim-atps=neutral
 Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46zYvm1RqTzDqNf
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46zYvm3vBYzDqVq
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 04:22:12 +1100 (AEDT)
 Received: from localhost (unknown [127.0.0.1])
- by mta-01.yadro.com (Postfix) with ESMTP id AC4C643611;
- Thu, 24 Oct 2019 17:22:07 +0000 (UTC)
+ by mta-01.yadro.com (Postfix) with ESMTP id 8357742F15;
+ Thu, 24 Oct 2019 17:22:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
  content-type:content-type:content-transfer-encoding:mime-version
  :references:in-reply-to:x-mailer:message-id:date:date:subject
  :subject:from:from:received:received:received; s=mta-01; t=
- 1571937726; x=1573752127; bh=eHqgWH9ZxunWE5MhXiwL2peaSl4Z3p2nDgb
- +A8AwzR8=; b=h1IYYAAhmzdEJ4iO1jxvHzRpyGgHnEb646OL1IDdL8fZL3Ot1qF
- mfAWo2xdMlh/t/ZLPI6h1etCPA0kshzS2xjav+PUNw/NhBRwrxyn77v+epozHAfr
- wTSte2ojerGHthP/YM6nf0bdswwWnw7FcVXhVZlL+qoSExKUilujG9ro=
+ 1571937728; x=1573752129; bh=9SNqmukav0eCCSo00z1QsS5PHaStBZ2+oc5
+ w2+I+b5Q=; b=XruQ3mxswY0DbF3dYfH6GQJ4WVJoHwn8c8MgMm/k/MgwDm2+teV
+ LO3gPPEODb9ATg6Sjvaw20ZkfX0XYvcthw9xMoqAb0SRrDzt9HQS5J/RDzfRu5lq
+ g9WbmT0hBEDVi9S/5NZW9RPz/BeciL6k4rVVWoommOBfIh5SR1VSNpK0=
 X-Virus-Scanned: amavisd-new at yadro.com
 Received: from mta-01.yadro.com ([127.0.0.1])
  by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id LWlc-liwhjX3; Thu, 24 Oct 2019 20:22:06 +0300 (MSK)
+ with ESMTP id LvjXVHojmpkz; Thu, 24 Oct 2019 20:22:08 +0300 (MSK)
 Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
  [172.17.10.102])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by mta-01.yadro.com (Postfix) with ESMTPS id 61031437F3;
+ by mta-01.yadro.com (Postfix) with ESMTPS id 00664437FA;
  Thu, 24 Oct 2019 20:22:05 +0300 (MSK)
 Received: from NB-148.yadro.com (172.17.15.136) by T-EXCH-02.corp.yadro.com
  (172.17.10.102) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Thu, 24
- Oct 2019 20:22:04 +0300
+ Oct 2019 20:22:05 +0300
 From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 To: <linux-pci@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH RFC 05/11] drivers: base: Add bus_disconnect_device()
-Date: Thu, 24 Oct 2019 20:21:51 +0300
-Message-ID: <20191024172157.878735-6-s.miroshnichenko@yadro.com>
+Subject: [PATCH RFC 08/11] PCI: Allow expanding the bridges
+Date: Thu, 24 Oct 2019 20:21:54 +0300
+Message-ID: <20191024172157.878735-9-s.miroshnichenko@yadro.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191024172157.878735-1-s.miroshnichenko@yadro.com>
 References: <20191024172157.878735-1-s.miroshnichenko@yadro.com>
@@ -91,83 +91,56 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add bus_disconnect_device(), which is similar to bus_remove_device(), but
-it doesn't detach the device from its driver, so it can be reconnected to
-the same or another bus later.
+When hotplugging a bridge, the parent bus may not have [enough] reserved
+bus numbers. So before rescanning the bus, set its subordinate number to
+the maximum possible value: it is 255 when there is only one root bridge
+in the domain.
 
-This is a yet another preparation to hotplugging large PCIe bridges, which
-may entail changes in BDF addresses of working devices due to movable bus
-numbers. Changed addresses require rebuilding the affected entries in
-/sys/bus/pci and /proc/bus/pci.
-
-Using bus_disconnect_device()+bus_add_device() during PCI rescan allows the
-drivers to work with their devices uninterruptedly, regardless of changes
-in PCI addresses.
+During the PCI rescan, the subordinate bus number of every bus will be
+contracted to the actual value.
 
 Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 ---
- drivers/base/bus.c     | 36 ++++++++++++++++++++++++++++++++++++
- include/linux/device.h |  1 +
- 2 files changed, 37 insertions(+)
+ drivers/pci/probe.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/base/bus.c b/drivers/base/bus.c
-index 8f3445cc533e..52d77fb90218 100644
---- a/drivers/base/bus.c
-+++ b/drivers/base/bus.c
-@@ -497,6 +497,42 @@ void bus_probe_device(struct device *dev)
- 	mutex_unlock(&bus->p->mutex);
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 539f5d39bb6d..3494b5d265d5 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -3195,20 +3195,22 @@ static unsigned int pci_dev_count_res_mask(struct pci_dev *dev)
+ 	return res_mask;
  }
  
-+/**
-+ * bus_disconnect_device - disconnect device from bus,
-+ * but don't detach it from driver
-+ * @dev: device to be disconnected
-+ *
-+ * - Remove device from all interfaces.
-+ * - Remove symlink from bus' directory.
-+ * - Delete device from bus's list.
-+ */
-+void bus_disconnect_device(struct device *dev)
-+{
-+	struct bus_type *bus = dev->bus;
-+	struct subsys_interface *sif;
+-static void pci_bus_rescan_prepare(struct pci_bus *bus)
++static void pci_bus_rescan_prepare(struct pci_bus *bus, int last_bus_number)
+ {
+ 	struct pci_dev *dev;
+ 
+ 	if (bus->self)
+ 		pci_config_pm_runtime_get(bus->self);
+ 
++	bus->busn_res.end = last_bus_number;
 +
-+	if (!bus)
-+		return;
-+
-+	mutex_lock(&bus->p->mutex);
-+	list_for_each_entry(sif, &bus->p->interfaces, node)
-+		if (sif->remove_dev)
-+			sif->remove_dev(dev, sif);
-+	mutex_unlock(&bus->p->mutex);
-+
-+	sysfs_remove_link(&dev->kobj, "subsystem");
-+	sysfs_remove_link(&dev->bus->p->devices_kset->kobj,
-+			  dev_name(dev));
-+	device_remove_groups(dev, dev->bus->dev_groups);
-+	if (klist_node_attached(&dev->p->knode_bus))
-+		klist_del(&dev->p->knode_bus);
-+
-+	pr_debug("bus: '%s': remove device %s\n",
-+		 dev->bus->name, dev_name(dev));
-+	bus_put(dev->bus);
-+}
-+EXPORT_SYMBOL_GPL(bus_disconnect_device);
-+
- /**
-  * bus_remove_device - remove device from bus
-  * @dev: device to be removed
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 420228ab9c4b..9f098c32a4ad 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -268,6 +268,7 @@ void bus_sort_breadthfirst(struct bus_type *bus,
- 			   int (*compare)(const struct device *a,
- 					  const struct device *b));
- extern int bus_add_device(struct device *dev);
-+extern void bus_disconnect_device(struct device *dev);
- extern int device_add_class_symlinks(struct device *dev);
- extern void device_remove_class_symlinks(struct device *dev);
+ 	list_for_each_entry(dev, &bus->devices, bus_list) {
+ 		struct pci_bus *child = dev->subordinate;
+ 
+ 		dev->res_mask = pci_dev_count_res_mask(dev);
+ 
+ 		if (child)
+-			pci_bus_rescan_prepare(child);
++			pci_bus_rescan_prepare(child, last_bus_number);
+ 
+ 		if (dev->driver &&
+ 		    dev->driver->rescan_prepare)
+@@ -3439,7 +3441,7 @@ unsigned int pci_rescan_bus(struct pci_bus *bus)
+ 
+ 	if (pci_can_move_bars) {
+ 		pcibios_root_bus_rescan_prepare(root);
+-		pci_bus_rescan_prepare(root);
++		pci_bus_rescan_prepare(root, root->busn_res.end);
+ 		pci_bus_update_immovable_range(root);
+ 		pci_bus_release_root_bridge_resources(root);
  
 -- 
 2.23.0
