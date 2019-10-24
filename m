@@ -4,57 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 29859CA9EAF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 17:36:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E85BCA9EAF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 17:38:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CCE1E205C9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 17:36:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 01AAC205ED
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 17:38:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="oxA9MLy6"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CCE1E205C9
+	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="GKuAxZVH"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 01AAC205ED
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=yadro.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46zZCl52SpzDqBS
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 04:36:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46zZGJ5c03zDqP5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 04:38:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=yadro.com (client-ip=89.207.88.252; helo=mta-01.yadro.com;
  envelope-from=s.miroshnichenko@yadro.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=yadro.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=yadro.com header.i=@yadro.com header.b="oxA9MLy6"; 
+ unprotected) header.d=yadro.com header.i=@yadro.com header.b="GKuAxZVH"; 
  dkim-atps=neutral
 Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46zYhz3LMLzDqNt
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46zYhz4kv9zDqQ6
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 04:12:51 +1100 (AEDT)
 Received: from localhost (unknown [127.0.0.1])
- by mta-01.yadro.com (Postfix) with ESMTP id 1AF3A437FA;
+ by mta-01.yadro.com (Postfix) with ESMTP id D651A438CE;
  Thu, 24 Oct 2019 17:12:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
  content-type:content-type:content-transfer-encoding:mime-version
  :references:in-reply-to:x-mailer:message-id:date:date:subject
  :subject:from:from:received:received:received; s=mta-01; t=
- 1571937165; x=1573751566; bh=urtJdFbNTBYXQ8HBtx644qczAPU//SKLRkO
- DXd6fGkw=; b=oxA9MLy6/Z3u6KfAohuQCQVJBwhND1MhWTMPnLHibsy0gEEyUp0
- ZZ3Mjaoo2O7V3pKXh6YArRhzJapbsqkSzvv5nF/gIGPZ8hc510xbIN1WNF/9lTAL
- yX/h8GqBEWb6dlUAI44ppcsfdzfja5tafXOhDelXq0SDI6w0bUoOfxzM=
+ 1571937165; x=1573751566; bh=Ay54PSF1F0jBkianHUfRLKAtYZp036FG1+X
+ ImCOLkNA=; b=GKuAxZVH5Hu//GymgpYzy1uhYmT57w0I6z5koQ1Y0+KT8Q7aykk
+ 7n1FPSPoxVD9iAMFC8LuxjBIzJcDvaFNq9zaL5jgsjU8uc/3AdAx0d+5l6GOtA/z
+ L8fPRJQGUkCVHs5Ei16M8qg5JrWZCfLhvHyg4XzC2M+to34J0bas0hzo=
 X-Virus-Scanned: amavisd-new at yadro.com
 Received: from mta-01.yadro.com ([127.0.0.1])
  by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id NS9LPbWAOIig; Thu, 24 Oct 2019 20:12:45 +0300 (MSK)
+ with ESMTP id w401pJkLQ2_F; Thu, 24 Oct 2019 20:12:45 +0300 (MSK)
 Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
  [172.17.10.102])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by mta-01.yadro.com (Postfix) with ESMTPS id 2DF8F438CE;
+ by mta-01.yadro.com (Postfix) with ESMTPS id 31EFC438D1;
  Thu, 24 Oct 2019 20:12:41 +0300 (MSK)
 Received: from NB-148.yadro.com (172.17.15.136) by T-EXCH-02.corp.yadro.com
  (172.17.10.102) with Microsoft SMTP Server (version=TLS1_2,
@@ -62,10 +62,10 @@ Received: from NB-148.yadro.com (172.17.15.136) by T-EXCH-02.corp.yadro.com
  Oct 2019 20:12:40 +0300
 From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 To: <linux-pci@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v6 09/30] PCI: Include fixed and immovable BARs into the bus
- size calculating
-Date: Thu, 24 Oct 2019 20:12:07 +0300
-Message-ID: <20191024171228.877974-10-s.miroshnichenko@yadro.com>
+Subject: [PATCH v6 10/30] PCI: Prohibit assigning BARs and bridge windows to
+ non-direct parents
+Date: Thu, 24 Oct 2019 20:12:08 +0300
+Message-ID: <20191024171228.877974-11-s.miroshnichenko@yadro.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191024171228.877974-1-s.miroshnichenko@yadro.com>
 References: <20191024171228.877974-1-s.miroshnichenko@yadro.com>
@@ -92,44 +92,53 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The only difference between the fixed/immovable and movable BARs is a size
-and offset preservation after they are released (the corresponding struct
-resource* detached from a bridge window for a while during a bus rescan).
-
-Include fixed/immovable BARs into result of pbus_size_mem() and prohibit
-assigning them to non-direct parents.
+When movable BARs are enabled, the feature of resource relocating from
+commit 2bbc6942273b5 ("PCI : ability to relocate assigned pci-resources")
+is not used. Instead, inability to assign a resource is used as a signal
+to retry BAR assignment with other configuration of bridge windows.
 
 Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 ---
- drivers/pci/setup-bus.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+ drivers/pci/setup-bus.c |  2 ++
+ drivers/pci/setup-res.c | 12 ++++++++++++
+ 2 files changed, 14 insertions(+)
 
 diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-index 4b538d132958..ff33b47b1bb7 100644
+index ff33b47b1bb7..cf325daae1b1 100644
 --- a/drivers/pci/setup-bus.c
 +++ b/drivers/pci/setup-bus.c
-@@ -1011,12 +1011,20 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
- 			struct resource *r = &dev->resource[i];
- 			resource_size_t r_size;
+@@ -1355,6 +1355,8 @@ static void pdev_assign_fixed_resources(struct pci_dev *dev)
+ 		while (b && !r->parent) {
+ 			assign_fixed_resource_on_bus(b, r);
+ 			b = b->parent;
++			if (!r->parent && pci_can_move_bars)
++				break;
+ 		}
+ 	}
+ }
+diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
+index d8ca40a97693..a1657a8bf93d 100644
+--- a/drivers/pci/setup-res.c
++++ b/drivers/pci/setup-res.c
+@@ -298,6 +298,18 @@ static int _pci_assign_resource(struct pci_dev *dev, int resno,
  
--			if (r->parent || (r->flags & IORESOURCE_PCI_FIXED) ||
-+			if (r->parent ||
- 			    ((r->flags & mask) != type &&
- 			     (r->flags & mask) != type2 &&
- 			     (r->flags & mask) != type3))
- 				continue;
- 			r_size = resource_size(r);
+ 	bus = dev->bus;
+ 	while ((ret = __pci_assign_resource(bus, dev, resno, size, min_align))) {
++		if (pci_can_move_bars) {
++			if (resno >= PCI_BRIDGE_RESOURCES &&
++			    resno <= PCI_BRIDGE_RESOURCE_END) {
++				struct resource *res = dev->resource + resno;
 +
-+			if (!pci_dev_bar_movable(dev, r)) {
-+				if (pci_can_move_bars)
-+					size += r_size;
-+
-+				continue;
++				res->start = 0;
++				res->end = 0;
++				res->flags = 0;
 +			}
++			break;
++		}
 +
- #ifdef CONFIG_PCI_IOV
- 			/* Put SRIOV requested res to the optional list */
- 			if (realloc_head && i >= PCI_IOV_RESOURCES &&
+ 		if (!bus->parent || !bus->self->transparent)
+ 			break;
+ 		bus = bus->parent;
 -- 
 2.23.0
 
