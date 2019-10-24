@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 223DECA9EAF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 09:42:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A397CCA9EAF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 09:44:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D0EE820684
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 09:42:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D0EE820684
+	by mail.kernel.org (Postfix) with ESMTPS id 244C820684
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 09:44:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 244C820684
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46zMjC3JX1zDqTW
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 20:42:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46zMlg1X1NzDqRq
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 20:44:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
@@ -29,51 +29,51 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46zMYr3C4RzDqKs
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46zMYr33QqzDqKq
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Oct 2019 20:36:00 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x9O9VgUi105197; Thu, 24 Oct 2019 05:35:53 -0400
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x9O9VgfO090830; Thu, 24 Oct 2019 05:35:52 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2vu9avrb0h-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2vu71qdkhd-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 24 Oct 2019 05:35:53 -0400
-Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x9O9W6Am106477;
- Thu, 24 Oct 2019 05:35:53 -0400
-Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
- [169.63.121.186])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2vu9avrb0a-1
+ Thu, 24 Oct 2019 05:35:51 -0400
+Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x9O9W8Xx092304;
+ Thu, 24 Oct 2019 05:35:51 -0400
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2vu71qdkh1-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 24 Oct 2019 05:35:53 -0400
-Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
- by ppma03wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x9O9ZBc7031960;
- Thu, 24 Oct 2019 09:35:52 GMT
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24]) by ppma03wdc.us.ibm.com with ESMTP id 2vqt47fm50-1
+ Thu, 24 Oct 2019 05:35:51 -0400
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x9O9ZBMZ011502;
+ Thu, 24 Oct 2019 09:35:50 GMT
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29]) by ppma03dal.us.ibm.com with ESMTP id 2vqt47ukfd-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 24 Oct 2019 09:35:52 +0000
+ Thu, 24 Oct 2019 09:35:50 +0000
 Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
  [9.57.199.111])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x9O9Zqdu49021232
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x9O9ZoQ953084662
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 24 Oct 2019 09:35:52 GMT
+ Thu, 24 Oct 2019 09:35:50 GMT
 Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E93D8AC062;
- Thu, 24 Oct 2019 09:35:51 +0000 (GMT)
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6A083AC05E;
+ by IMSVA (Postfix) with ESMTP id 028F6AC05B;
  Thu, 24 Oct 2019 09:35:50 +0000 (GMT)
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 76BF6AC060;
+ Thu, 24 Oct 2019 09:35:48 +0000 (GMT)
 Received: from skywalker.in.ibm.com (unknown [9.124.35.127])
  by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Thu, 24 Oct 2019 09:35:50 +0000 (GMT)
+ Thu, 24 Oct 2019 09:35:48 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: npiggin@gmail.com, paulus@samba.org, mpe@ellerman.id.au
-Subject: [PATCH v2 3/3] powerpc/book3s64/hash: Use secondary hash for bolted
- mapping if the primary is full
-Date: Thu, 24 Oct 2019 15:05:42 +0530
-Message-Id: <20191024093542.29777-3-aneesh.kumar@linux.ibm.com>
+Subject: [PATCH v2 2/3] powerpc/pseries: Don't fail hash page table insert for
+ bolted mapping
+Date: Thu, 24 Oct 2019 15:05:41 +0530
+Message-Id: <20191024093542.29777-2-aneesh.kumar@linux.ibm.com>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20191024093542.29777-1-aneesh.kumar@linux.ibm.com>
 References: <20191024093542.29777-1-aneesh.kumar@linux.ibm.com>
@@ -105,155 +105,60 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-With bolted hash page table entry, kernel currently only use primary hash group
-when inserting the hash page table entry. In the rare case where kernel find all the
-8 primary hash slot occupied by bolted entries, this can result in hash page
-table insert failure for bolted entries. Avoid this by using the secondary hash
-group.
+If the hypervisor returned H_PTEG_FULL for H_ENTER hcall, retry a hash page table
+insert by removing a random entry from the group.
 
-This is different from what kernel does for the non-bolted mapping. With
-non-bolted entries kernel will try secondary before removing an existing entry
-from hash page table group. With bolted prefer primary hash group and hence
-try to insert the page table entry by removing a slot from primary before trying
-the secondary hash group.
+After some runtime, it is very well possible to find all the 8 hash page table
+entry slot in the hpte group used for mapping. Don't fail a bolted entry insert
+in that case. With Storage class memory a user can find this error easily since
+a namespace enable/disable is equivalent to memory add/remove.
+
+This results in failures as reported below:
+
+$ ndctl create-namespace -r region1 -t pmem -m devdax -a 65536 -s 100M
+libndctl: ndctl_dax_enable: dax1.3: failed to enable
+  Error: namespace1.2: failed to enable
+
+failed to create namespace: No such device or address
+
+In kernel log we find the details as below:
+
+Unable to create mapping for hot added memory 0xc000042006000000..0xc00004200d000000: -1
+dax_pmem: probe of dax1.3 failed with error -14
+
+This indicates that we failed to create a bolted hash table entry for direct-map
+address backing the namespace.
+
+We also observe failures such that not all namespaces will be enabled with
+ndctl enable-namespace all command.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
 Changes from v1:
 * update commit message
 
- arch/powerpc/mm/book3s64/hash_native.c | 38 ++++++++++++++++++++------
- arch/powerpc/mm/book3s64/hash_utils.c  | 13 ++++++++-
- arch/powerpc/platforms/pseries/lpar.c  | 14 ++++++++--
- 3 files changed, 52 insertions(+), 13 deletions(-)
+ arch/powerpc/mm/book3s64/hash_utils.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/mm/book3s64/hash_native.c b/arch/powerpc/mm/book3s64/hash_native.c
-index 523e42eb11da..d2d8237ea9d5 100644
---- a/arch/powerpc/mm/book3s64/hash_native.c
-+++ b/arch/powerpc/mm/book3s64/hash_native.c
-@@ -482,19 +482,12 @@ static long native_hpte_updatepp(unsigned long slot, unsigned long newpp,
- 	return ret;
- }
- 
--static long native_hpte_find(unsigned long vpn, int psize, int ssize)
-+static long __native_hpte_find(unsigned long want_v, unsigned long slot)
- {
- 	struct hash_pte *hptep;
--	unsigned long hash;
-+	unsigned long hpte_v;
- 	unsigned long i;
--	long slot;
--	unsigned long want_v, hpte_v;
- 
--	hash = hpt_hash(vpn, mmu_psize_defs[psize].shift, ssize);
--	want_v = hpte_encode_avpn(vpn, psize, ssize);
--
--	/* Bolted mappings are only ever in the primary group */
--	slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
- 	for (i = 0; i < HPTES_PER_GROUP; i++) {
- 
- 		hptep = htab_address + slot;
-@@ -508,6 +501,33 @@ static long native_hpte_find(unsigned long vpn, int psize, int ssize)
- 	return -1;
- }
- 
-+static long native_hpte_find(unsigned long vpn, int psize, int ssize)
-+{
-+	unsigned long hpte_group;
-+	unsigned long want_v;
-+	unsigned long hash;
-+	long slot;
-+
-+	hash = hpt_hash(vpn, mmu_psize_defs[psize].shift, ssize);
-+	want_v = hpte_encode_avpn(vpn, psize, ssize);
-+
-+	/*
-+	 * We try to keep bolted entries always in primary hash
-+	 * But in some case we can find them in secondary too.
-+	 */
-+	hpte_group = (hash & htab_hash_mask) * HPTES_PER_GROUP;
-+	slot = __native_hpte_find(want_v, hpte_group);
-+	if (slot < 0) {
-+		/* Try in secondary */
-+		hpte_group = (~hash & htab_hash_mask) * HPTES_PER_GROUP;
-+		slot = __native_hpte_find(want_v, hpte_group);
-+		if (slot < 0)
-+			return -1;
-+	}
-+
-+	return slot;
-+}
-+
- /*
-  * Update the page protection bits. Intended to be used to create
-  * guard pages for kernel data structures on pages which are bolted
 diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
-index 6e5a769ebcb8..a9d1f72de848 100644
+index 6c123760164e..6e5a769ebcb8 100644
 --- a/arch/powerpc/mm/book3s64/hash_utils.c
 +++ b/arch/powerpc/mm/book3s64/hash_utils.c
-@@ -263,6 +263,7 @@ int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
- 		unsigned long vsid = get_kernel_vsid(vaddr, ssize);
- 		unsigned long vpn  = hpt_vpn(vaddr, vsid, ssize);
- 		unsigned long tprot = prot;
-+		bool secondary_hash = false;
- 
- 		/*
- 		 * If we hit a bad address return error.
-@@ -291,17 +292,27 @@ int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
- 		hpteg = ((hash & htab_hash_mask) * HPTES_PER_GROUP);
- 
- 		BUG_ON(!mmu_hash_ops.hpte_insert);
-+repeat:
+@@ -294,7 +294,14 @@ int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
  		ret = mmu_hash_ops.hpte_insert(hpteg, vpn, paddr, tprot,
  					       HPTE_V_BOLTED, psize, psize,
  					       ssize);
- 		if (ret == -1) {
--			/* Try to remove a non bolted entry */
-+			/*
-+			 * Try to to keep bolted entries in primary.
-+			 * Remove non bolted entries and try insert again
-+			 */
- 			ret = mmu_hash_ops.hpte_remove(hpteg);
- 			if (ret != -1)
- 				ret = mmu_hash_ops.hpte_insert(hpteg, vpn, paddr, tprot,
- 							       HPTE_V_BOLTED, psize, psize,
- 							       ssize);
-+			if (ret == -1 && !secondary_hash) {
-+				secondary_hash = true;
-+				hpteg = ((~hash & htab_hash_mask) * HPTES_PER_GROUP);
-+				goto repeat;
-+			}
- 		}
-+
+-
++		if (ret == -1) {
++			/* Try to remove a non bolted entry */
++			ret = mmu_hash_ops.hpte_remove(hpteg);
++			if (ret != -1)
++				ret = mmu_hash_ops.hpte_insert(hpteg, vpn, paddr, tprot,
++							       HPTE_V_BOLTED, psize, psize,
++							       ssize);
++		}
  		if (ret < 0)
  			break;
- 
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 3126fc02e50b..74c59a1e9627 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -938,11 +938,19 @@ static long pSeries_lpar_hpte_find(unsigned long vpn, int psize, int ssize)
- 	hash = hpt_hash(vpn, mmu_psize_defs[psize].shift, ssize);
- 	want_v = hpte_encode_avpn(vpn, psize, ssize);
- 
--	/* Bolted entries are always in the primary group */
-+	/*
-+	 * We try to keep bolted entries always in primary hash
-+	 * But in some case we can find them in secondary too.
-+	 */
- 	hpte_group = (hash & htab_hash_mask) * HPTES_PER_GROUP;
- 	slot = __pSeries_lpar_hpte_find(want_v, hpte_group);
--	if (slot < 0)
--		return -1;
-+	if (slot < 0) {
-+		/* Try in secondary */
-+		hpte_group = (~hash & htab_hash_mask) * HPTES_PER_GROUP;
-+		slot = __pSeries_lpar_hpte_find(want_v, hpte_group);
-+		if (slot < 0)
-+			return -1;
-+	}
- 	return hpte_group + slot;
- }
  
 -- 
 2.21.0
