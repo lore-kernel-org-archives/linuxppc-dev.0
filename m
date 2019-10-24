@@ -2,81 +2,79 @@ Return-Path: <SRS0=A5Gh=YR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DF73CA9EAF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 17:06:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 508E4CA9EAF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 17:15:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E44A720650
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 17:06:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0065320650
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 17:15:14 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="MCqDGEx5"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E44A720650
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="lcHr7bQ7"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0065320650
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=yadro.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46zYYC2qSnzDqVm
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 04:06:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46zYlh2sk7zDqWS
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 04:15:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=207.211.31.120;
- helo=us-smtp-1.mimecast.com; envelope-from=longman@redhat.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=yadro.com (client-ip=89.207.88.252; helo=mta-01.yadro.com;
+ envelope-from=s.miroshnichenko@yadro.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
+ dmarc=pass (p=none dis=none) header.from=yadro.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.b="MCqDGEx5"; 
+ unprotected) header.d=yadro.com header.i=@yadro.com header.b="lcHr7bQ7"; 
  dkim-atps=neutral
-Received: from us-smtp-1.mimecast.com (us-smtp-delivery-1.mimecast.com
- [207.211.31.120])
+Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46zYVV5THszDqSk
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 04:03:43 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1571936620;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=KPuVZSjsJby28GYRrSW7KOOUQEyPDIp7ehYqx2CiMW8=;
- b=MCqDGEx5d1nmpaGulY9oWAEWrOOdd6AH1FeAb8dSjLPEPOtIJ5T4gFJv4uf+ge5ex/xAd7
- 5KbJgA4REyWouZKqZK/+KnUb8TcBJIDiyd8V5SyW3JvUWbt47uTMSwE8q+6aFZdZOMXRSg
- keJL4NMVRDp6DA47ZQWtkAZEs3Pdsp4=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-305-4DGjzRdVOO-j_UhaexIoDw-1; Thu, 24 Oct 2019 13:03:34 -0400
-Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.phx2.redhat.com
- [10.5.11.11])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46zYhv1NFQzDqMK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 04:12:46 +1100 (AEDT)
+Received: from localhost (unknown [127.0.0.1])
+ by mta-01.yadro.com (Postfix) with ESMTP id 3FA2443A25;
+ Thu, 24 Oct 2019 17:12:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
+ content-type:content-type:content-transfer-encoding:mime-version
+ :references:in-reply-to:x-mailer:message-id:date:date:subject
+ :subject:from:from:received:received:received; s=mta-01; t=
+ 1571937159; x=1573751560; bh=vnznP9M/yXFK8xAfMbW3HwbTFc8jiZDqHgo
+ k8mI6Vk0=; b=lcHr7bQ7em0nBm6AkKQFc1v6rXOyiQS3wXP+2aMZrIH9m6NhLXA
+ E8OUtS9XcCBv5KqtBpfZr3aeRPY9axoBt+DyURPP7iu7oO/QNzQN2RN4rGXVk7C+
+ vcBLbQh20S1JUNvsJYOdJFuTe+PoIVv46/Sty4NyzR+IMRlbdrDBpQgk=
+X-Virus-Scanned: amavisd-new at yadro.com
+Received: from mta-01.yadro.com ([127.0.0.1])
+ by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id tj-3jK_noj57; Thu, 24 Oct 2019 20:12:39 +0300 (MSK)
+Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
+ [172.17.10.102])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 1CED11800DFB;
- Thu, 24 Oct 2019 17:03:22 +0000 (UTC)
-Received: from llong.remote.csb (dhcp-17-59.bos.redhat.com [10.18.17.59])
- by smtp.corp.redhat.com (Postfix) with ESMTP id EA8096012E;
- Thu, 24 Oct 2019 17:03:16 +0000 (UTC)
-Subject: Re: [PATCH 0/2] Enabling MSI for Microblaze
-To: Michal Simek <michal.simek@xilinx.com>, linux-kernel@vger.kernel.org,
- monstr@monstr.eu, git@xilinx.com, palmer@sifive.com, hch@infradead.org,
- helgaas@kernel.org
-References: <cover.1571911976.git.michal.simek@xilinx.com>
-From: Waiman Long <longman@redhat.com>
-Organization: Red Hat
-Message-ID: <e9feafd1-8497-025b-e81d-f0e974038f3c@redhat.com>
-Date: Thu, 24 Oct 2019 13:03:16 -0400
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.7.2
+ by mta-01.yadro.com (Postfix) with ESMTPS id 3C40042F15;
+ Thu, 24 Oct 2019 20:12:39 +0300 (MSK)
+Received: from NB-148.yadro.com (172.17.15.136) by T-EXCH-02.corp.yadro.com
+ (172.17.10.102) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Thu, 24
+ Oct 2019 20:12:38 +0300
+From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
+To: <linux-pci@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v6 01/30] PCI: Fix race condition in
+ pci_enable/disable_device()
+Date: Thu, 24 Oct 2019 20:11:59 +0300
+Message-ID: <20191024171228.877974-2-s.miroshnichenko@yadro.com>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20191024171228.877974-1-s.miroshnichenko@yadro.com>
+References: <20191024171228.877974-1-s.miroshnichenko@yadro.com>
 MIME-Version: 1.0
-In-Reply-To: <cover.1571911976.git.michal.simek@xilinx.com>
-Content-Language: en-US
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.11
-X-MC-Unique: 4DGjzRdVOO-j_UhaexIoDw-1
-X-Mimecast-Spam-Score: 0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [172.17.15.136]
+X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
+ T-EXCH-02.corp.yadro.com (172.17.10.102)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,64 +86,168 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Catalin Marinas <catalin.marinas@arm.com>,
- Eric Biggers <ebiggers@google.com>,
- "Peter Zijlstra \(Intel\)" <peterz@infradead.org>, linux-pci@vger.kernel.org,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
- linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>,
- Ingo Molnar <mingo@kernel.org>, linux-arch@vger.kernel.org,
- Herbert Xu <herbert@gondor.apana.org.au>, Jackie Liu <liuyun01@kylinos.cn>,
- Russell King <linux@armlinux.org.uk>, Firoz Khan <firoz.khan@linaro.org>,
- Wesley Terpstra <wesley@sifive.com>, James Hogan <jhogan@kernel.org>,
- linux-snps-arc@lists.infradead.org, Albert Ou <aou@eecs.berkeley.edu>,
- Arnd Bergmann <arnd@arndb.de>, Paul Walmsley <paul.walmsley@sifive.com>,
- Bjorn Helgaas <bhelgaas@google.com>, linux-arm-kernel@lists.infradead.org,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Cornelia Huck <cohuck@redhat.com>, linux-mips@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>,
- Vineet Gupta <vgupta@synopsys.com>, Paolo Bonzini <pbonzini@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: Marta Rybczynska <mrybczyn@kalray.eu>,
+ Sergey Miroshnichenko <s.miroshnichenko@yadro.com>,
+ Srinath Mannam <srinath.mannam@broadcom.com>,
+ Bjorn Helgaas <helgaas@kernel.org>, linux@yadro.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 10/24/19 6:13 AM, Michal Simek wrote:
-> Hi,
->
-> these two patches come from discussion with Christoph, Bjorn, Palmer and
-> Waiman. The first patch was suggestion by Christoph here
-> https://lore.kernel.org/linux-riscv/20191008154604.GA7903@infradead.org/
-> The second part was discussed
-> https://lore.kernel.org/linux-pci/mhng-5d9bcb53-225e-441f-86cc-b335624b3e=
-7c@palmer-si-x1e/
-> and
-> https://lore.kernel.org/linux-pci/20191017181937.7004-1-palmer@sifive.com=
-/
->
-> Thanks,
-> Michal
->
->
-> Michal Simek (1):
->   asm-generic: Make msi.h a mandatory include/asm header
->
-> Palmer Dabbelt (1):
->   pci: Default to PCI_MSI_IRQ_DOMAIN
->
->  arch/arc/include/asm/Kbuild     | 1 -
->  arch/arm/include/asm/Kbuild     | 1 -
->  arch/arm64/include/asm/Kbuild   | 1 -
->  arch/mips/include/asm/Kbuild    | 1 -
->  arch/powerpc/include/asm/Kbuild | 1 -
->  arch/riscv/include/asm/Kbuild   | 1 -
->  arch/sparc/include/asm/Kbuild   | 1 -
->  drivers/pci/Kconfig             | 2 +-
->  include/asm-generic/Kbuild      | 1 +
->  9 files changed, 2 insertions(+), 8 deletions(-)
->
-That looks OK.
+This is a yet another approach to fix an old [1-2] concurrency issue, when:
+ - two or more devices are being hot-added into a bridge which was
+   initially empty;
+ - a bridge with two or more devices is being hot-added;
+ - during boot, if BIOS/bootloader/firmware doesn't pre-enable bridges.
 
-Acked-by: Waiman Long <longman@redhat.com>
+The problem is that a bridge is reported as enabled before the MEM/IO bits
+are actually written to the PCI_COMMAND register, so another driver thread
+starts memory requests through the not-yet-enabled bridge:
+
+ CPU0                                        CPU1
+
+ pci_enable_device_mem()                     pci_enable_device_mem()
+   pci_enable_bridge()                         pci_enable_bridge()
+     pci_is_enabled()
+       return false;
+     atomic_inc_return(enable_cnt)
+     Start actual enabling the bridge
+     ...                                         pci_is_enabled()
+     ...                                           return true;
+     ...                                     Start memory requests <-- FAIL
+     ...
+     Set the PCI_COMMAND_MEMORY bit <-- Must wait for this
+
+Protect the pci_enable/disable_device() and pci_enable_bridge(), which is
+similar to the previous solution from commit 40f11adc7cd9 ("PCI: Avoid race
+while enabling upstream bridges"), but adding a per-device mutexes and
+preventing the dev->enable_cnt from from incrementing early.
+
+CC: Srinath Mannam <srinath.mannam@broadcom.com>
+CC: Marta Rybczynska <mrybczyn@kalray.eu>
+Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
+
+[1] https://lore.kernel.org/linux-pci/1501858648-22228-1-git-send-email-srinath.mannam@broadcom.com/T/#u
+    [RFC PATCH v3] pci: Concurrency issue during pci enable bridge
+
+[2] https://lore.kernel.org/linux-pci/744877924.5841545.1521630049567.JavaMail.zimbra@kalray.eu/T/#u
+    [RFC PATCH] nvme: avoid race-conditions when enabling devices
+---
+ drivers/pci/pci.c   | 26 ++++++++++++++++++++++----
+ drivers/pci/probe.c |  1 +
+ include/linux/pci.h |  1 +
+ 3 files changed, 24 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index a97e2571a527..44d0d12c80cf 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -1643,6 +1643,8 @@ static void pci_enable_bridge(struct pci_dev *dev)
+ 	struct pci_dev *bridge;
+ 	int retval;
+ 
++	mutex_lock(&dev->enable_mutex);
++
+ 	bridge = pci_upstream_bridge(dev);
+ 	if (bridge)
+ 		pci_enable_bridge(bridge);
+@@ -1650,6 +1652,7 @@ static void pci_enable_bridge(struct pci_dev *dev)
+ 	if (pci_is_enabled(dev)) {
+ 		if (!dev->is_busmaster)
+ 			pci_set_master(dev);
++		mutex_unlock(&dev->enable_mutex);
+ 		return;
+ 	}
+ 
+@@ -1658,11 +1661,14 @@ static void pci_enable_bridge(struct pci_dev *dev)
+ 		pci_err(dev, "Error enabling bridge (%d), continuing\n",
+ 			retval);
+ 	pci_set_master(dev);
++	mutex_unlock(&dev->enable_mutex);
+ }
+ 
+ static int pci_enable_device_flags(struct pci_dev *dev, unsigned long flags)
+ {
+ 	struct pci_dev *bridge;
++	/* Enable-locking of bridges is performed within the pci_enable_bridge() */
++	bool need_lock = !dev->subordinate;
+ 	int err;
+ 	int i, bars = 0;
+ 
+@@ -1678,8 +1684,13 @@ static int pci_enable_device_flags(struct pci_dev *dev, unsigned long flags)
+ 		dev->current_state = (pmcsr & PCI_PM_CTRL_STATE_MASK);
+ 	}
+ 
+-	if (atomic_inc_return(&dev->enable_cnt) > 1)
++	if (need_lock)
++		mutex_lock(&dev->enable_mutex);
++	if (pci_is_enabled(dev)) {
++		if (need_lock)
++			mutex_unlock(&dev->enable_mutex);
+ 		return 0;		/* already enabled */
++	}
+ 
+ 	bridge = pci_upstream_bridge(dev);
+ 	if (bridge)
+@@ -1694,8 +1705,10 @@ static int pci_enable_device_flags(struct pci_dev *dev, unsigned long flags)
+ 			bars |= (1 << i);
+ 
+ 	err = do_pci_enable_device(dev, bars);
+-	if (err < 0)
+-		atomic_dec(&dev->enable_cnt);
++	if (err >= 0)
++		atomic_inc(&dev->enable_cnt);
++	if (need_lock)
++		mutex_unlock(&dev->enable_mutex);
+ 	return err;
+ }
+ 
+@@ -1939,15 +1952,20 @@ void pci_disable_device(struct pci_dev *dev)
+ 	if (dr)
+ 		dr->enabled = 0;
+ 
++	mutex_lock(&dev->enable_mutex);
+ 	dev_WARN_ONCE(&dev->dev, atomic_read(&dev->enable_cnt) <= 0,
+ 		      "disabling already-disabled device");
+ 
+-	if (atomic_dec_return(&dev->enable_cnt) != 0)
++	if (atomic_dec_return(&dev->enable_cnt) != 0) {
++		mutex_unlock(&dev->enable_mutex);
+ 		return;
++	}
+ 
+ 	do_pci_disable_device(dev);
+ 
+ 	dev->is_busmaster = 0;
++
++	mutex_unlock(&dev->enable_mutex);
+ }
+ EXPORT_SYMBOL(pci_disable_device);
+ 
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 3d5271a7a849..d4f21e413638 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -2158,6 +2158,7 @@ struct pci_dev *pci_alloc_dev(struct pci_bus *bus)
+ 	INIT_LIST_HEAD(&dev->bus_list);
+ 	dev->dev.type = &pci_dev_type;
+ 	dev->bus = pci_bus_get(bus);
++	mutex_init(&dev->enable_mutex);
+ 
+ 	return dev;
+ }
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index f9088c89a534..525140e3a460 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -425,6 +425,7 @@ struct pci_dev {
+ 	unsigned int	no_vf_scan:1;		/* Don't scan for VFs after IOV enablement */
+ 	pci_dev_flags_t dev_flags;
+ 	atomic_t	enable_cnt;	/* pci_enable_device has been called */
++	struct mutex	enable_mutex;
+ 
+ 	u32		saved_config_space[16]; /* Config space saved at suspend time */
+ 	struct hlist_head saved_cap_space;
+-- 
+2.23.0
 
