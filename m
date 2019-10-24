@@ -2,79 +2,77 @@ Return-Path: <SRS0=A5Gh=YR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E56D6CA9EAF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 19:57:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F2F2CA9EAF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 19:59:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 296F62070B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 19:57:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D5A692070B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 19:59:07 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="oq7uLOnC"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 296F62070B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.microsoft.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="J8XNYJWR"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D5A692070B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46zdLg0FsRzDqXb
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 06:57:15 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46zZJj6ZKxzDqQw
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 04:40:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
- header.from=linux.microsoft.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com
- header.b="oq7uLOnC"; dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 46zZJh3hdPz8vLT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 04:40:20 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 46zZJh2Sbbz9sPl; Fri, 25 Oct 2019 04:40:20 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182;
- helo=linux.microsoft.com; envelope-from=nramas@linux.microsoft.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 46zdNn50WszDqW7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 06:59:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=redhat.com (client-ip=205.139.110.61;
+ helo=us-smtp-delivery-1.mimecast.com; envelope-from=david@redhat.com;
  receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org; dmarc=pass (p=none dis=none)
- header.from=linux.microsoft.com
-Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com
- header.b="oq7uLOnC"; dkim-atps=neutral
-Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
- by ozlabs.org (Postfix) with ESMTP id 46zZJg6411z9sP3;
- Fri, 25 Oct 2019 04:40:19 +1100 (AEDT)
-Received: from [10.137.112.111] (unknown [131.107.147.111])
- by linux.microsoft.com (Postfix) with ESMTPSA id C0E872010AC3;
- Thu, 24 Oct 2019 10:40:18 -0700 (PDT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com C0E872010AC3
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
- s=default; t=1571938819;
- bh=IDatuhvAIUC8shfzil97Wc2552dWcbQTynpu3KtnO84=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=oq7uLOnCiIJzJwKl9UtoSEsELanj0SNiNpRNkf9QVKFoTu6UFAw3U0jslONs7uWcF
- A+Pl8F79LgCQ4zHWSptkJGYeWpxb+b8VfxcAT/agpYuQRQJYOtZ5Q/F0REVjtsus4B
- ynwZmDSY2ruTgnlJoEsiy8VF3xAHRuXX28ZWXfi4=
-Subject: Re: [PATCH v9 4/8] powerpc/ima: define trusted boot policy
-To: Nayna Jain <nayna@linux.ibm.com>, linuxppc-dev@ozlabs.org,
- linux-efi@vger.kernel.org, linux-integrity@vger.kernel.org
-References: <20191024034717.70552-1-nayna@linux.ibm.com>
- <20191024034717.70552-5-nayna@linux.ibm.com>
-From: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
-Message-ID: <3e36c14f-d4bb-5da5-b188-ca84bc282f0d@linux.microsoft.com>
-Date: Thu, 24 Oct 2019 10:40:36 -0700
-User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.1.2
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.b="J8XNYJWR"; 
+ dkim-atps=neutral
+Received: from us-smtp-delivery-1.mimecast.com (us-smtp-1.mimecast.com
+ [205.139.110.61])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46zR0z6H7HzDqHv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Oct 2019 23:11:15 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1571919073;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=Snv/eN2JSs1CKovdcEZrKtv3120OMPYnvMUKCAi50+E=;
+ b=J8XNYJWRWQRNddlk0fbrEmhxGj3H4TXpUcBXAKchMcMV+JKZssNgeZKUmjwpQLK6IYldCJ
+ 4ZK1cMzkkOgBP3D2tOT2X7BfQkCoddlrrR2/aWO+9ifPLDrufbu632xjVW3Nj9IZCftGQi
+ hVrMoh/avbCjWD389HmGFY8CPBv16jU=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-78-XqXphJdGOZKQf4BuJSlwgQ-1; Thu, 24 Oct 2019 08:11:10 -0400
+Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
+ [10.5.11.23])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 040841005500;
+ Thu, 24 Oct 2019 12:11:04 +0000 (UTC)
+Received: from t460s.redhat.com (ovpn-116-141.ams2.redhat.com [10.36.116.141])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 7E74A166A0;
+ Thu, 24 Oct 2019 12:10:43 +0000 (UTC)
+From: David Hildenbrand <david@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v1 03/10] KVM: Prepare kvm_is_reserved_pfn() for PG_reserved
+ changes
+Date: Thu, 24 Oct 2019 14:09:31 +0200
+Message-Id: <20191024120938.11237-4-david@redhat.com>
+In-Reply-To: <20191024120938.11237-1-david@redhat.com>
+References: <20191024120938.11237-1-david@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <20191024034717.70552-5-nayna@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
+X-MC-Unique: XqXphJdGOZKQf4BuJSlwgQ-1
+X-Mimecast-Spam-Score: 0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-Mailman-Approved-At: Fri, 25 Oct 2019 06:41:16 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -87,37 +85,91 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Eric Ricther <erichte@linux.ibm.com>, Prakhar Srivastava <prsriva02@gmail.com>,
- linux-kernel@vger.kernel.org, Mimi Zohar <zohar@linux.ibm.com>,
- Claudio Carvalho <cclaudio@linux.ibm.com>,
- Matthew Garret <matthew.garret@nebula.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Paul Mackerras <paulus@samba.org>, Jeremy Kerr <jk@ozlabs.org>,
- Elaine Palmer <erpalmer@us.ibm.com>, Oliver O'Halloran <oohall@gmail.com>,
- George Wilson <gcwilson@linux.ibm.com>
+Cc: linux-hyperv@vger.kernel.org, Michal Hocko <mhocko@suse.com>,
+ =?UTF-8?q?Radim=20Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@redhat.com>,
+ kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>,
+ KarimAllah Ahmed <karahmed@amazon.de>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Alexander Duyck <alexander.duyck@gmail.com>, Michal Hocko <mhocko@kernel.org>,
+ linux-mm@kvack.org, Pavel Tatashin <pavel.tatashin@microsoft.com>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ Wanpeng Li <wanpengli@tencent.com>,
+ Alexander Duyck <alexander.h.duyck@linux.intel.com>,
+ "K. Y. Srinivasan" <kys@microsoft.com>,
+ Dan Williams <dan.j.williams@intel.com>, Kees Cook <keescook@chromium.org>,
+ devel@driverdev.osuosl.org, Stefano Stabellini <sstabellini@kernel.org>,
+ Stephen Hemminger <sthemmin@microsoft.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Joerg Roedel <joro@8bytes.org>, x86@kernel.org,
+ YueHaibing <yuehaibing@huawei.com>,
+ "Matthew Wilcox \(Oracle\)" <willy@infradead.org>,
+ Mike Rapoport <rppt@linux.ibm.com>, Peter Zijlstra <peterz@infradead.org>,
+ Ingo Molnar <mingo@redhat.com>, Vlastimil Babka <vbabka@suse.cz>,
+ Anthony Yznaga <anthony.yznaga@oracle.com>, Oscar Salvador <osalvador@suse.de>,
+ "Isaac J. Manjarres" <isaacm@codeaurora.org>,
+ Matt Sickler <Matt.Sickler@daktronics.com>, Juergen Gross <jgross@suse.com>,
+ Anshuman Khandual <anshuman.khandual@arm.com>,
+ Haiyang Zhang <haiyangz@microsoft.com>, Sasha Levin <sashal@kernel.org>,
+ kvm-ppc@vger.kernel.org, Qian Cai <cai@lca.pw>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Mike Rapoport <rppt@linux.vnet.ibm.com>, Borislav Petkov <bp@alien8.de>,
+ Nicholas Piggin <npiggin@gmail.com>, Andy Lutomirski <luto@kernel.org>,
+ xen-devel@lists.xenproject.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ Vitaly Kuznetsov <vkuznets@redhat.com>, Allison Randal <allison@lohutok.net>,
+ Jim Mattson <jmattson@google.com>, Mel Gorman <mgorman@techsingularity.net>,
+ Cornelia Huck <cohuck@redhat.com>, Pavel Tatashin <pasha.tatashin@soleen.com>,
+ Sean Christopherson <sean.j.christopherson@intel.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Johannes Weiner <hannes@cmpxchg.org>,
+ Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 10/23/2019 8:47 PM, Nayna Jain wrote:
+Right now, ZONE_DEVICE memory is always set PG_reserved. We want to
+change that.
 
-> +/*
-> + * The "secure_and_trusted_rules" contains rules for both the secure boot and
-> + * trusted boot. The "template=ima-modsig" option includes the appended
-> + * signature, when available, in the IMA measurement list.
-> + */
-> +static const char *const secure_and_trusted_rules[] = {
-> +	"measure func=KEXEC_KERNEL_CHECK template=ima-modsig",
-> +	"measure func=MODULE_CHECK template=ima-modsig",
-> +	"appraise func=KEXEC_KERNEL_CHECK appraise_type=imasig|modsig",
-> +#ifndef CONFIG_MODULE_SIG_FORCE
-> +	"appraise func=MODULE_CHECK appraise_type=imasig|modsig",
-> +#endif
-> +	NULL
-> +};
+KVM has this weird use case that you can map anything from /dev/mem
+into the guest. pfn_valid() is not a reliable check whether the memmap
+was initialized and can be touched. pfn_to_online_page() makes sure
+that we have an initialized memmap (and don't have ZONE_DEVICE memory).
 
-Same comment as earlier - any way to avoid using conditional compilation 
-in C file?
+Rewrite kvm_is_reserved_pfn() to make sure the function produces the
+same result once we stop setting ZONE_DEVICE pages PG_reserved.
 
-  -lakshmi
+Cc: Paolo Bonzini <pbonzini@redhat.com>
+Cc: "Radim Kr=C4=8Dm=C3=A1=C5=99" <rkrcmar@redhat.com>
+Cc: Michal Hocko <mhocko@kernel.org>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: KarimAllah Ahmed <karahmed@amazon.de>
+Signed-off-by: David Hildenbrand <david@redhat.com>
+---
+ virt/kvm/kvm_main.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index e9eb666eb6e8..9d18cc67d124 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -151,9 +151,15 @@ __weak int kvm_arch_mmu_notifier_invalidate_range(stru=
+ct kvm *kvm,
+=20
+ bool kvm_is_reserved_pfn(kvm_pfn_t pfn)
+ {
+-=09if (pfn_valid(pfn))
+-=09=09return PageReserved(pfn_to_page(pfn));
++=09struct page *page =3D pfn_to_online_page(pfn);
+=20
++=09/*
++=09 * We treat any pages that are not online (not managed by the buddy)
++=09 * as reserved - this includes ZONE_DEVICE pages and pages without
++=09 * a memmap (e.g., mapped via /dev/mem).
++=09 */
++=09if (page)
++=09=09return PageReserved(page);
+ =09return true;
+ }
+=20
+--=20
+2.21.0
+
