@@ -7,54 +7,54 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E85BCA9EAF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 17:38:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F0767CA9EAF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 17:40:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 01AAC205ED
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 17:38:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9F70B205ED
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 17:40:09 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="GKuAxZVH"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 01AAC205ED
+	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="sO4L9j9E"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F70B205ED
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=yadro.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46zZGJ5c03zDqP5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 04:38:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46zZJR453rzDqBS
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 04:40:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=yadro.com (client-ip=89.207.88.252; helo=mta-01.yadro.com;
  envelope-from=s.miroshnichenko@yadro.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=yadro.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=yadro.com header.i=@yadro.com header.b="GKuAxZVH"; 
+ unprotected) header.d=yadro.com header.i=@yadro.com header.b="sO4L9j9E"; 
  dkim-atps=neutral
 Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46zYhz4kv9zDqQ6
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46zYhz5f09zDqN7
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 04:12:51 +1100 (AEDT)
 Received: from localhost (unknown [127.0.0.1])
- by mta-01.yadro.com (Postfix) with ESMTP id D651A438CE;
- Thu, 24 Oct 2019 17:12:46 +0000 (UTC)
+ by mta-01.yadro.com (Postfix) with ESMTP id 2C296438D1;
+ Thu, 24 Oct 2019 17:12:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
  content-type:content-type:content-transfer-encoding:mime-version
  :references:in-reply-to:x-mailer:message-id:date:date:subject
  :subject:from:from:received:received:received; s=mta-01; t=
- 1571937165; x=1573751566; bh=Ay54PSF1F0jBkianHUfRLKAtYZp036FG1+X
- ImCOLkNA=; b=GKuAxZVH5Hu//GymgpYzy1uhYmT57w0I6z5koQ1Y0+KT8Q7aykk
- 7n1FPSPoxVD9iAMFC8LuxjBIzJcDvaFNq9zaL5jgsjU8uc/3AdAx0d+5l6GOtA/z
- L8fPRJQGUkCVHs5Ei16M8qg5JrWZCfLhvHyg4XzC2M+to34J0bas0hzo=
+ 1571937166; x=1573751567; bh=A4K/ih2Q0DIWGW/e6i8C//zd89CA+2ig2e3
+ 2P47HEwA=; b=sO4L9j9EgvHCcoJUaKYcmwl3BWWQAqmZ8R4eigQi0CvMnC+ST1g
+ F1FdW5SSjx7H/2zV0uBcB75mpmgFlqFqA8c4fnKKQjPKu4vrfXaLioc+3VxMzwXV
+ hkkb3naIubtyb49gPJ9T80auakBIQ35vffYnAC3FUEPC6hvcJmWMxkaE=
 X-Virus-Scanned: amavisd-new at yadro.com
 Received: from mta-01.yadro.com ([127.0.0.1])
  by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id w401pJkLQ2_F; Thu, 24 Oct 2019 20:12:45 +0300 (MSK)
+ with ESMTP id nE71faLzyPT8; Thu, 24 Oct 2019 20:12:46 +0300 (MSK)
 Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
  [172.17.10.102])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by mta-01.yadro.com (Postfix) with ESMTPS id 31EFC438D1;
+ by mta-01.yadro.com (Postfix) with ESMTPS id 352FE439EC;
  Thu, 24 Oct 2019 20:12:41 +0300 (MSK)
 Received: from NB-148.yadro.com (172.17.15.136) by T-EXCH-02.corp.yadro.com
  (172.17.10.102) with Microsoft SMTP Server (version=TLS1_2,
@@ -62,10 +62,10 @@ Received: from NB-148.yadro.com (172.17.15.136) by T-EXCH-02.corp.yadro.com
  Oct 2019 20:12:40 +0300
 From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 To: <linux-pci@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v6 10/30] PCI: Prohibit assigning BARs and bridge windows to
- non-direct parents
-Date: Thu, 24 Oct 2019 20:12:08 +0300
-Message-ID: <20191024171228.877974-11-s.miroshnichenko@yadro.com>
+Subject: [PATCH v6 11/30] PCI: hotplug: movable BARs: Try to assign unassigned
+ resources only once
+Date: Thu, 24 Oct 2019 20:12:09 +0300
+Message-ID: <20191024171228.877974-12-s.miroshnichenko@yadro.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191024171228.877974-1-s.miroshnichenko@yadro.com>
 References: <20191024171228.877974-1-s.miroshnichenko@yadro.com>
@@ -92,53 +92,37 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When movable BARs are enabled, the feature of resource relocating from
-commit 2bbc6942273b5 ("PCI : ability to relocate assigned pci-resources")
-is not used. Instead, inability to assign a resource is used as a signal
-to retry BAR assignment with other configuration of bridge windows.
+With enabled BAR movement, BARs and bridge windows can only be assigned to
+their direct parents, so there can be only one variant of resource tree,
+thus every retry within the pci_assign_unassigned_root_bus_resources() will
+result in the same tree, and it is enough to try just once.
+
+In case of failures the pci_reassign_root_bus_resources() disables BARs for
+one of the hotplugged devices and tries the assignment again.
 
 Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 ---
- drivers/pci/setup-bus.c |  2 ++
- drivers/pci/setup-res.c | 12 ++++++++++++
- 2 files changed, 14 insertions(+)
+ drivers/pci/setup-bus.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
 diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-index ff33b47b1bb7..cf325daae1b1 100644
+index cf325daae1b1..3deb1c343e89 100644
 --- a/drivers/pci/setup-bus.c
 +++ b/drivers/pci/setup-bus.c
-@@ -1355,6 +1355,8 @@ static void pdev_assign_fixed_resources(struct pci_dev *dev)
- 		while (b && !r->parent) {
- 			assign_fixed_resource_on_bus(b, r);
- 			b = b->parent;
-+			if (!r->parent && pci_can_move_bars)
-+				break;
- 		}
- 	}
- }
-diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
-index d8ca40a97693..a1657a8bf93d 100644
---- a/drivers/pci/setup-res.c
-+++ b/drivers/pci/setup-res.c
-@@ -298,6 +298,18 @@ static int _pci_assign_resource(struct pci_dev *dev, int resno,
+@@ -1819,6 +1819,13 @@ void pci_assign_unassigned_root_bus_resources(struct pci_bus *bus)
+ 	int pci_try_num = 1;
+ 	enum enable_type enable_local;
  
- 	bus = dev->bus;
- 	while ((ret = __pci_assign_resource(bus, dev, resno, size, min_align))) {
-+		if (pci_can_move_bars) {
-+			if (resno >= PCI_BRIDGE_RESOURCES &&
-+			    resno <= PCI_BRIDGE_RESOURCE_END) {
-+				struct resource *res = dev->resource + resno;
++	if (pci_can_move_bars) {
++		__pci_bus_size_bridges(bus, NULL);
++		__pci_bus_assign_resources(bus, NULL, NULL);
 +
-+				res->start = 0;
-+				res->end = 0;
-+				res->flags = 0;
-+			}
-+			break;
-+		}
++		goto dump;
++	}
 +
- 		if (!bus->parent || !bus->self->transparent)
- 			break;
- 		bus = bus->parent;
+ 	/* Don't realloc if asked to do so */
+ 	enable_local = pci_realloc_detect(bus, pci_realloc_enable);
+ 	if (pci_realloc_enabled(enable_local)) {
 -- 
 2.23.0
 
