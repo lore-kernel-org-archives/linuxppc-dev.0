@@ -2,79 +2,67 @@ Return-Path: <SRS0=A5Gh=YR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B6E0CA9EAF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 18:48:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 33DF9CA9EAF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 18:55:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F0C7020659
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 18:48:45 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="t0h6bpSC"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F0C7020659
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=yadro.com
+	by mail.kernel.org (Postfix) with ESMTPS id BD25C2054F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 18:55:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BD25C2054F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46zbqc1vD4zDqSD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 05:48:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=yadro.com (client-ip=89.207.88.252; helo=mta-01.yadro.com;
- envelope-from=s.miroshnichenko@yadro.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=yadro.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=yadro.com header.i=@yadro.com header.b="t0h6bpSC"; 
- dkim-atps=neutral
-Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 46zbzG3HcYzDqVZ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 05:55:22 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46zYvp0C3QzDqNL
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 04:22:14 +1100 (AEDT)
-Received: from localhost (unknown [127.0.0.1])
- by mta-01.yadro.com (Postfix) with ESMTP id 34FB9437FA;
- Thu, 24 Oct 2019 17:22:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
- content-type:content-type:content-transfer-encoding:mime-version
- :references:in-reply-to:x-mailer:message-id:date:date:subject
- :subject:from:from:received:received:received; s=mta-01; t=
- 1571937730; x=1573752131; bh=wLWcatK3Zquun9QrjH55cMJhLIQuWciJ0cq
- tFux4U8c=; b=t0h6bpSCgAfWXWvMbWWGS7UDVN70Ciq4XQPLPI8UC1PvS9nINSG
- 765WSU8R2in9u7r7g78phnPFRIvjrm3VJzKvBTtyChxAZyjDYXk/g255KezR6Iqh
- T3jjDCoBK+DFLLjkTo910ynzMpiouia7MzLeTbC3N5nVpR0MGiTggswo=
-X-Virus-Scanned: amavisd-new at yadro.com
-Received: from mta-01.yadro.com ([127.0.0.1])
- by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id naVwxlIoW55m; Thu, 24 Oct 2019 20:22:10 +0300 (MSK)
-Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
- [172.17.10.102])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46zZ3g6T4JzDqWt
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 04:29:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=kernel.crashing.org
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 46zZ3g2hlfz8svl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 04:29:03 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 46zZ3g1tz1z9sPL; Fri, 25 Oct 2019 04:29:03 +1100 (AEDT)
+Authentication-Results: ozlabs.org;
+ spf=permerror (SPF Permanent Error: Unknown mechanism
+ found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
+ (client-ip=63.228.1.57; helo=gate.crashing.org;
+ envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=kernel.crashing.org
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mta-01.yadro.com (Postfix) with ESMTPS id 8953243130;
- Thu, 24 Oct 2019 20:22:06 +0300 (MSK)
-Received: from NB-148.yadro.com (172.17.15.136) by T-EXCH-02.corp.yadro.com
- (172.17.10.102) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Thu, 24
- Oct 2019 20:22:06 +0300
-From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
-To: <linux-pci@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH RFC 11/11] PCI: hotplug: movable bus numbers: compact the gaps
- in numbering
-Date: Thu, 24 Oct 2019 20:21:57 +0300
-Message-ID: <20191024172157.878735-12-s.miroshnichenko@yadro.com>
-X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20191024172157.878735-1-s.miroshnichenko@yadro.com>
-References: <20191024172157.878735-1-s.miroshnichenko@yadro.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [172.17.15.136]
-X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
- T-EXCH-02.corp.yadro.com (172.17.10.102)
+ by ozlabs.org (Postfix) with ESMTPS id 46zZ3f1VZFz9sCJ;
+ Fri, 25 Oct 2019 04:29:01 +1100 (AEDT)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id x9OHSvHK008954;
+ Thu, 24 Oct 2019 12:28:58 -0500
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id x9OHSvit008953;
+ Thu, 24 Oct 2019 12:28:57 -0500
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Thu, 24 Oct 2019 12:28:57 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/tools: Don't quote $objdump in scripts
+Message-ID: <20191024172857.GS28442@gate.crashing.org>
+References: <20191024004730.32135-1-mpe@ellerman.id.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20191024004730.32135-1-mpe@ellerman.id.au>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,71 +74,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>,
- Bjorn Helgaas <helgaas@kernel.org>, linux@yadro.com
+Cc: linuxppc-dev@ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-If bus numbers are distributed sparsely and there are lot of devices in the
-tree, hotplugging a bridge into the end of the tree may fail even if it has
-less slots then the total number of unused bus numbers.
+On Thu, Oct 24, 2019 at 11:47:30AM +1100, Michael Ellerman wrote:
+> Some of our scripts are passed $objdump and then call it as
+> "$objdump". This doesn't work if it contains spaces because we're
+> using ccache, for example you get errors such as:
+> 
+>   ./arch/powerpc/tools/relocs_check.sh: line 48: ccache ppc64le-objdump: No such file or directory
+>   ./arch/powerpc/tools/unrel_branch_check.sh: line 26: ccache ppc64le-objdump: No such file or directory
+> 
+> Fix it by not quoting the string when we expand it, allowing the shell
+> to do the right thing for us.
 
-Thus, the feature of bus renaming relies on the continuity of bus numbers,
-so if a bridge was unplugged, the gap in bus numbers must be compacted.
+This breaks things for people with spaces in their paths.  Why doesn't your
+user use something like  alias objdump="ccache ppc64le-objdump"  , instead?
 
-Let's densify the bus numbering at the beginning of a next PCI rescan.
 
-Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
----
- drivers/pci/probe.c | 27 +++++++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
-
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index fe9bf012ef33..0c91b9d453dd 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -1319,6 +1319,30 @@ static bool pci_new_bus_needed(struct pci_bus *bus, const struct pci_dev *self)
- 	return true;
- }
- 
-+static void pci_compact_bus_numbers(const int domain, const struct resource *valid_range)
-+{
-+	int busnr_p1 = valid_range->start;
-+
-+	while (busnr_p1 < valid_range->end) {
-+		int busnr_p2 = busnr_p1 + 1;
-+		struct pci_bus *bus_p2;
-+		int delta;
-+
-+		while (busnr_p2 <= valid_range->end &&
-+		       !(bus_p2 = pci_find_bus(domain, busnr_p2)))
-+			++busnr_p2;
-+
-+		if (!bus_p2 || busnr_p2 > valid_range->end)
-+			break;
-+
-+		delta = busnr_p1 - busnr_p2 + 1;
-+		if (delta)
-+			pci_move_buses(domain, busnr_p2, delta, valid_range);
-+
-+		++busnr_p1;
-+	}
-+}
-+
- static unsigned int pci_scan_child_bus_extend(struct pci_bus *bus,
- 					      unsigned int available_buses);
- /**
-@@ -3691,6 +3715,9 @@ unsigned int pci_rescan_bus(struct pci_bus *bus)
- 		pci_bus_update_immovable_range(root);
- 		pci_bus_release_root_bridge_resources(root);
- 
-+		pci_compact_bus_numbers(pci_domain_nr(bus),
-+					&root->busn_res);
-+
- 		max = pci_scan_child_bus(root);
- 
- 		pci_reassign_root_bus_resources(root);
--- 
-2.23.0
-
+Segher
