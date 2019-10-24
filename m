@@ -2,66 +2,56 @@ Return-Path: <SRS0=A5Gh=YR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.2 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 33DF9CA9EAF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 18:55:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C53A3CA9EAF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 19:00:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BD25C2054F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 18:55:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BD25C2054F
+	by mail.kernel.org (Postfix) with ESMTPS id 2F0DF2166E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 19:00:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2F0DF2166E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46zbzG3HcYzDqVZ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 05:55:22 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46zZ3g6T4JzDqWt
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 04:29:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 46zZ3g2hlfz8svl
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 04:29:03 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 46zZ3g1tz1z9sPL; Fri, 25 Oct 2019 04:29:03 +1100 (AEDT)
-Authentication-Results: ozlabs.org;
+	by lists.ozlabs.org (Postfix) with ESMTP id 46zc5H24MdzDqZX
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 06:00:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
  spf=permerror (SPF Permanent Error: Unknown mechanism
  found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
  (client-ip=63.228.1.57; helo=gate.crashing.org;
  envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=kernel.crashing.org
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 46zZ3f1VZFz9sCJ;
- Fri, 25 Oct 2019 04:29:01 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46zZR40bwQzDqQw
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 04:45:51 +1100 (AEDT)
 Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id x9OHSvHK008954;
- Thu, 24 Oct 2019 12:28:58 -0500
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id x9OHjkAJ010080;
+ Thu, 24 Oct 2019 12:45:46 -0500
 Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id x9OHSvit008953;
- Thu, 24 Oct 2019 12:28:57 -0500
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id x9OHjjCA010079;
+ Thu, 24 Oct 2019 12:45:45 -0500
 X-Authentication-Warning: gate.crashing.org: segher set sender to
  segher@kernel.crashing.org using -f
-Date: Thu, 24 Oct 2019 12:28:57 -0500
+Date: Thu, 24 Oct 2019 12:45:45 -0500
 From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/tools: Don't quote $objdump in scripts
-Message-ID: <20191024172857.GS28442@gate.crashing.org>
-References: <20191024004730.32135-1-mpe@ellerman.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH] powerpc/boot: Fix the initrd being overwritten under qemu
+Message-ID: <20191024174545.GT28442@gate.crashing.org>
+References: <20191023013635.2512-1-oohall@gmail.com>
+ <20191023112102.GN28442@gate.crashing.org>
+ <90a0f702-6891-cd14-f190-5682d7c3778e@ozlabs.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20191024004730.32135-1-mpe@ellerman.id.au>
+In-Reply-To: <90a0f702-6891-cd14-f190-5682d7c3778e@ozlabs.ru>
 User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -74,24 +64,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, Oliver O'Halloran <oohall@gmail.com>,
+ stable@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Oct 24, 2019 at 11:47:30AM +1100, Michael Ellerman wrote:
-> Some of our scripts are passed $objdump and then call it as
-> "$objdump". This doesn't work if it contains spaces because we're
-> using ccache, for example you get errors such as:
+On Thu, Oct 24, 2019 at 12:31:24PM +1100, Alexey Kardashevskiy wrote:
 > 
->   ./arch/powerpc/tools/relocs_check.sh: line 48: ccache ppc64le-objdump: No such file or directory
->   ./arch/powerpc/tools/unrel_branch_check.sh: line 26: ccache ppc64le-objdump: No such file or directory
 > 
-> Fix it by not quoting the string when we expand it, allowing the shell
-> to do the right thing for us.
+> On 23/10/2019 22:21, Segher Boessenkool wrote:
+> > On Wed, Oct 23, 2019 at 12:36:35PM +1100, Oliver O'Halloran wrote:
+> >> When booting under OF the zImage expects the initrd address and size to be
+> >> passed to it using registers r3 and r4. SLOF (guest firmware used by QEMU)
+> >> currently doesn't do this so the zImage is not aware of the initrd
+> >> location.  This can result in initrd corruption either though the zImage
+> >> extracting the vmlinux over the initrd, or by the vmlinux overwriting the
+> >> initrd when relocating itself.
+> >>
+> >> QEMU does put the linux,initrd-start and linux,initrd-end properties into
+> >> the devicetree to vmlinux to find the initrd. We can work around the SLOF
+> >> bug by also looking those properties in the zImage.
+> > 
+> > This is not a bug.  What boot protocol requires passing the initrd start
+> > and size in GPR3, GPR4?
+> 
+> So far I was unable to identify it...
 
-This breaks things for people with spaces in their paths.  Why doesn't your
-user use something like  alias objdump="ccache ppc64le-objdump"  , instead?
+Maybe this comes from yaboot?
+https://git.ozlabs.org/?p=yaboot.git;a=blob;f=second/yaboot.c;h=9b66ab44e1be0ee82b88e386a5d0358428766e73;hb=HEAD#l1186
+
+> > The CHRP binding (what SLOF implements) requires passing two zeroes here.
+> > And ePAPR requires passing the address of a device tree and a zero, plus
+> > something in GPR6 to allow distinguishing what it does.
+> > 
+> > As Alexey says, initramfs works just fine, so please use that?  initrd was
+> > deprecated when this code was written already.
+> 
+> I did not say about anything working fine :)
+
+Yeah, I read that from your words, wrong it seems.  Sorry.  I often used
+INITRAMFS_SOURCE for kernels for use with SLOF, it's just so convenient.
+
+> In my case I was using a new QEMU which does full FDT on client-arch-support and that thing would put the original
+> linux,initrd-start/end to the FDT even though the initrd was unpacked and the properties were changes in SLOF. With that
+> fixed, this is an alternative fix for SLOF but I am not pushing it out as I have no idea about the bindings and this
+> also breaks "vmlinux".
+> 
+> 
+> diff --git a/slof/fs/client.fs b/slof/fs/client.fs
+> index 8a7f6ac4326d..138177e4c2a3 100644
+> --- a/slof/fs/client.fs
+> +++ b/slof/fs/client.fs
+> @@ -45,6 +45,17 @@ VARIABLE  client-callback \ Address of client's callback function
+>    >r  ciregs >r7 !  ciregs >r6 !  client-entry-point @ ciregs >r5 !
+>    \ Initialise client-stack-pointer
+>    cistack ciregs >r1 !
+> +
+> +  s" linux,initrd-end" get-chosen IF decode-int -rot 2drop ELSE 0 THEN
+> +  s" linux,initrd-start" get-chosen IF decode-int -rot 2drop ELSE 0 THEN
+> +  2dup - dup IF
+> +    ciregs >r4 !
+> +    ciregs >r3 !
+> +    drop
+> +  ELSE
+> +    3drop
+> +  THEN
+
+Something like that should work fine.  Do it in go-32 and go-64 though?
+Or is that the wrong spot?
 
 
 Segher
