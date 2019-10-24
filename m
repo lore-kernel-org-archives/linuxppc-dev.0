@@ -2,92 +2,50 @@ Return-Path: <SRS0=A5Gh=YR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A397CCA9EAF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 09:44:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A4A7CA9EAF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 09:46:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 244C820684
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 09:44:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 244C820684
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3F98820856
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 09:46:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3F98820856
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46zMlg1X1NzDqRq
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 20:44:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46zMp21jvPzDqC5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 20:46:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46zMYr33QqzDqKq
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Oct 2019 20:36:00 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x9O9VgfO090830; Thu, 24 Oct 2019 05:35:52 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2vu71qdkhd-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 24 Oct 2019 05:35:51 -0400
-Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x9O9W8Xx092304;
- Thu, 24 Oct 2019 05:35:51 -0400
-Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.11])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2vu71qdkh1-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 24 Oct 2019 05:35:51 -0400
-Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
- by ppma03dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x9O9ZBMZ011502;
- Thu, 24 Oct 2019 09:35:50 GMT
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29]) by ppma03dal.us.ibm.com with ESMTP id 2vqt47ukfd-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 24 Oct 2019 09:35:50 +0000
-Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
- [9.57.199.111])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x9O9ZoQ953084662
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 24 Oct 2019 09:35:50 GMT
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 028F6AC05B;
- Thu, 24 Oct 2019 09:35:50 +0000 (GMT)
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 76BF6AC060;
- Thu, 24 Oct 2019 09:35:48 +0000 (GMT)
-Received: from skywalker.in.ibm.com (unknown [9.124.35.127])
- by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Thu, 24 Oct 2019 09:35:48 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: npiggin@gmail.com, paulus@samba.org, mpe@ellerman.id.au
-Subject: [PATCH v2 2/3] powerpc/pseries: Don't fail hash page table insert for
- bolted mapping
-Date: Thu, 24 Oct 2019 15:05:41 +0530
-Message-Id: <20191024093542.29777-2-aneesh.kumar@linux.ibm.com>
-X-Mailer: git-send-email 2.21.0
-In-Reply-To: <20191024093542.29777-1-aneesh.kumar@linux.ibm.com>
-References: <20191024093542.29777-1-aneesh.kumar@linux.ibm.com>
+ spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
+ (client-ip=217.140.110.172; helo=foss.arm.com;
+ envelope-from=steven.price@arm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+ by lists.ozlabs.org (Postfix) with ESMTP id 46zMby101LzDqTZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Oct 2019 20:37:48 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2710F493;
+ Thu, 24 Oct 2019 02:37:46 -0700 (PDT)
+Received: from e112269-lin.cambridge.arm.com (e112269-lin.cambridge.arm.com
+ [10.1.194.43])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 093F53F71F;
+ Thu, 24 Oct 2019 02:37:42 -0700 (PDT)
+From: Steven Price <steven.price@arm.com>
+To: linux-mm@kvack.org
+Subject: [PATCH v13 06/22] powerpc: mm: Add p?d_leaf() definitions
+Date: Thu, 24 Oct 2019 10:37:00 +0100
+Message-Id: <20191024093716.49420-7-steven.price@arm.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20191024093716.49420-1-steven.price@arm.com>
+References: <20191024093716.49420-1-steven.price@arm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-10-24_06:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1908290000 definitions=main-1910240094
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,67 +57,104 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+Cc: Mark Rutland <Mark.Rutland@arm.com>, Peter Zijlstra <peterz@infradead.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Will Deacon <will@kernel.org>, "Liang,
+ Kan" <kan.liang@linux.intel.com>, x86@kernel.org,
+ Steven Price <steven.price@arm.com>, Ingo Molnar <mingo@redhat.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Arnd Bergmann <arnd@arndb.de>,
+ kvm-ppc@vger.kernel.org,
+ =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>, linux-kernel@vger.kernel.org,
+ James Morse <james.morse@arm.com>, Andrew Morton <akpm@linux-foundation.org>,
  linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-If the hypervisor returned H_PTEG_FULL for H_ENTER hcall, retry a hash page table
-insert by removing a random entry from the group.
+walk_page_range() is going to be allowed to walk page tables other than
+those of user space. For this it needs to know when it has reached a
+'leaf' entry in the page tables. This information is provided by the
+p?d_leaf() functions/macros.
 
-After some runtime, it is very well possible to find all the 8 hash page table
-entry slot in the hpte group used for mapping. Don't fail a bolted entry insert
-in that case. With Storage class memory a user can find this error easily since
-a namespace enable/disable is equivalent to memory add/remove.
+For powerpc pmd_large() already exists and does what we want, so hoist
+it out of the CONFIG_TRANSPARENT_HUGEPAGE condition and implement the
+other levels. Macros are used to provide the generic p?d_leaf() names.
 
-This results in failures as reported below:
-
-$ ndctl create-namespace -r region1 -t pmem -m devdax -a 65536 -s 100M
-libndctl: ndctl_dax_enable: dax1.3: failed to enable
-  Error: namespace1.2: failed to enable
-
-failed to create namespace: No such device or address
-
-In kernel log we find the details as below:
-
-Unable to create mapping for hot added memory 0xc000042006000000..0xc00004200d000000: -1
-dax_pmem: probe of dax1.3 failed with error -14
-
-This indicates that we failed to create a bolted hash table entry for direct-map
-address backing the namespace.
-
-We also observe failures such that not all namespaces will be enabled with
-ndctl enable-namespace all command.
-
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Paul Mackerras <paulus@samba.org>
+CC: Michael Ellerman <mpe@ellerman.id.au>
+CC: linuxppc-dev@lists.ozlabs.org
+CC: kvm-ppc@vger.kernel.org
+Signed-off-by: Steven Price <steven.price@arm.com>
 ---
-Changes from v1:
-* update commit message
+ arch/powerpc/include/asm/book3s/64/pgtable.h | 30 ++++++++++++++------
+ 1 file changed, 21 insertions(+), 9 deletions(-)
 
- arch/powerpc/mm/book3s64/hash_utils.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
-index 6c123760164e..6e5a769ebcb8 100644
---- a/arch/powerpc/mm/book3s64/hash_utils.c
-+++ b/arch/powerpc/mm/book3s64/hash_utils.c
-@@ -294,7 +294,14 @@ int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
- 		ret = mmu_hash_ops.hpte_insert(hpteg, vpn, paddr, tprot,
- 					       HPTE_V_BOLTED, psize, psize,
- 					       ssize);
--
-+		if (ret == -1) {
-+			/* Try to remove a non bolted entry */
-+			ret = mmu_hash_ops.hpte_remove(hpteg);
-+			if (ret != -1)
-+				ret = mmu_hash_ops.hpte_insert(hpteg, vpn, paddr, tprot,
-+							       HPTE_V_BOLTED, psize, psize,
-+							       ssize);
-+		}
- 		if (ret < 0)
- 			break;
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index b01624e5c467..3dd7b6f5edd0 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -923,6 +923,12 @@ static inline int pud_present(pud_t pud)
+ 	return !!(pud_raw(pud) & cpu_to_be64(_PAGE_PRESENT));
+ }
  
++#define pud_leaf	pud_large
++static inline int pud_large(pud_t pud)
++{
++	return !!(pud_raw(pud) & cpu_to_be64(_PAGE_PTE));
++}
++
+ extern struct page *pud_page(pud_t pud);
+ extern struct page *pmd_page(pmd_t pmd);
+ static inline pte_t pud_pte(pud_t pud)
+@@ -966,6 +972,12 @@ static inline int pgd_present(pgd_t pgd)
+ 	return !!(pgd_raw(pgd) & cpu_to_be64(_PAGE_PRESENT));
+ }
+ 
++#define pgd_leaf	pgd_large
++static inline int pgd_large(pgd_t pgd)
++{
++	return !!(pgd_raw(pgd) & cpu_to_be64(_PAGE_PTE));
++}
++
+ static inline pte_t pgd_pte(pgd_t pgd)
+ {
+ 	return __pte_raw(pgd_raw(pgd));
+@@ -1133,6 +1145,15 @@ static inline bool pmd_access_permitted(pmd_t pmd, bool write)
+ 	return pte_access_permitted(pmd_pte(pmd), write);
+ }
+ 
++#define pmd_leaf	pmd_large
++/*
++ * returns true for pmd migration entries, THP, devmap, hugetlb
++ */
++static inline int pmd_large(pmd_t pmd)
++{
++	return !!(pmd_raw(pmd) & cpu_to_be64(_PAGE_PTE));
++}
++
+ #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+ extern pmd_t pfn_pmd(unsigned long pfn, pgprot_t pgprot);
+ extern pmd_t mk_pmd(struct page *page, pgprot_t pgprot);
+@@ -1159,15 +1180,6 @@ pmd_hugepage_update(struct mm_struct *mm, unsigned long addr, pmd_t *pmdp,
+ 	return hash__pmd_hugepage_update(mm, addr, pmdp, clr, set);
+ }
+ 
+-/*
+- * returns true for pmd migration entries, THP, devmap, hugetlb
+- * But compile time dependent on THP config
+- */
+-static inline int pmd_large(pmd_t pmd)
+-{
+-	return !!(pmd_raw(pmd) & cpu_to_be64(_PAGE_PTE));
+-}
+-
+ static inline pmd_t pmd_mknotpresent(pmd_t pmd)
+ {
+ 	return __pmd(pmd_val(pmd) & ~_PAGE_PRESENT);
 -- 
-2.21.0
+2.20.1
 
