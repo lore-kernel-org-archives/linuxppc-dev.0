@@ -4,68 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 30DB0CA9EAF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 17:51:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D643ACA9EAF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 17:53:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CC4F720659
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 17:51:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 83D1620659
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 17:53:04 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="vYq/kGxz"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CC4F720659
+	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="loKE7TRM"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 83D1620659
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=yadro.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46zZXz6xCfzDqDX
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 04:50:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46zZbL25RszDqWp
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 04:53:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=yadro.com (client-ip=89.207.88.252; helo=mta-01.yadro.com;
  envelope-from=s.miroshnichenko@yadro.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=yadro.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=yadro.com header.i=@yadro.com header.b="vYq/kGxz"; 
+ unprotected) header.d=yadro.com header.i=@yadro.com header.b="loKE7TRM"; 
  dkim-atps=neutral
 Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46zYj23tSzzDqW4
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46zYj25m6kzDqWN
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 04:12:54 +1100 (AEDT)
 Received: from localhost (unknown [127.0.0.1])
- by mta-01.yadro.com (Postfix) with ESMTP id AF3DB43B45;
+ by mta-01.yadro.com (Postfix) with ESMTP id D805C43B4E;
  Thu, 24 Oct 2019 17:12:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
  content-type:content-type:content-transfer-encoding:mime-version
  :references:in-reply-to:x-mailer:message-id:date:date:subject
  :subject:from:from:received:received:received; s=mta-01; t=
- 1571937170; x=1573751571; bh=nwRlUMAhBu6065MIPo0iWQpzSMgerOXg0Y1
- REgkLLP0=; b=vYq/kGxzNUW7colvoS3WIq6dvHWZ6VJ5yVOfTa6Pdx0fNVKhb26
- gJdCgSLxY/+HC0j93JjkaRbtHp6+YrQFoaFe7mzPOHeoOdKuI3GbITOZAJLGkh1e
- tLLqgvje0NORcbYSqxnqMDUOQK3BzP5GgCKfyslhea3j/KU52l1YGyoI=
+ 1571937170; x=1573751571; bh=s0nvaOPonFwNp+PkAekMHzoECVHtPLrWKHG
+ g079gQ1c=; b=loKE7TRMwq6xvQTef6FsEMihuPxcKdB0wgT//YmWyv19Z50aUai
+ 01L0XKTLpBkjnqVdB2rp1c+BWYXeWkpCyTyaEP5w08AuprHmk4OAD16Eqjr7hLQL
+ /Q8vm1bi7clvN5n6RW28GXRQldddTdOoW7T3o0UrE+whLa6Ls/VCH9KA=
 X-Virus-Scanned: amavisd-new at yadro.com
 Received: from mta-01.yadro.com ([127.0.0.1])
  by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id PF6N3UKHVgpS; Thu, 24 Oct 2019 20:12:50 +0300 (MSK)
+ with ESMTP id WMely41yv-iE; Thu, 24 Oct 2019 20:12:50 +0300 (MSK)
 Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
  [172.17.10.102])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by mta-01.yadro.com (Postfix) with ESMTPS id AFBDB43D12;
- Thu, 24 Oct 2019 20:12:42 +0300 (MSK)
+ by mta-01.yadro.com (Postfix) with ESMTPS id 2BD8F43597;
+ Thu, 24 Oct 2019 20:12:43 +0300 (MSK)
 Received: from NB-148.yadro.com (172.17.15.136) by T-EXCH-02.corp.yadro.com
  (172.17.10.102) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Thu, 24
  Oct 2019 20:12:42 +0300
 From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 To: <linux-pci@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v6 18/30] PCI: hotplug: Configure MPS for hot-added bridges
- during bus rescan
-Date: Thu, 24 Oct 2019 20:12:16 +0300
-Message-ID: <20191024171228.877974-19-s.miroshnichenko@yadro.com>
+Subject: [PATCH v6 19/30] PCI: hotplug: movable BARs: Ignore the MEM BAR
+ offsets from bootloader
+Date: Thu, 24 Oct 2019 20:12:17 +0300
+Message-ID: <20191024171228.877974-20-s.miroshnichenko@yadro.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191024171228.877974-1-s.miroshnichenko@yadro.com>
 References: <20191024171228.877974-1-s.miroshnichenko@yadro.com>
@@ -92,39 +92,45 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Assure that MPS settings are set up for bridges which are discovered during
-manually triggered rescan via sysfs. This sequence of bridge init (using
-pci_rescan_bus()) will be used for pciehp hot-add events when BARs are
-movable.
+BAR allocation by BIOS/UEFI/bootloader/firmware may be non-optimal and
+it may even clash with the kernel's BAR assignment algorithm.
+
+For example, if no space was reserved for SR-IOV BARs, and this bridge
+window is packed between immovable BARs (so it is unable to extend),
+and if this window can't be moved, the next PCI rescan will fail, as
+the kernel tries to find a space for all the BARs, including SR-IOV.
+
+With this patch the kernel will use its own methods of BAR allocating
+when possible, increasing the chances of successful hotplug.
+
+Also add a workaround for implicitly used video BARs on x86.
 
 Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 ---
- drivers/pci/probe.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/pci/probe.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
 diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index d0d00cb3e965..94bbdf9b9dc1 100644
+index 94bbdf9b9dc1..73452aa81417 100644
 --- a/drivers/pci/probe.c
 +++ b/drivers/pci/probe.c
-@@ -3414,7 +3414,7 @@ static void pci_reassign_root_bus_resources(struct pci_bus *root)
- unsigned int pci_rescan_bus(struct pci_bus *bus)
- {
- 	unsigned int max;
--	struct pci_bus *root = bus;
-+	struct pci_bus *root = bus, *child;
- 
- 	while (!pci_is_root_bus(root))
- 		root = root->parent;
-@@ -3435,6 +3435,9 @@ unsigned int pci_rescan_bus(struct pci_bus *bus)
- 		pci_assign_unassigned_bus_resources(bus);
+@@ -305,6 +305,16 @@ int __pci_read_base(struct pci_dev *dev, enum pci_bar_type type,
+ 			 pos, (unsigned long long)region.start);
  	}
  
-+	list_for_each_entry(child, &root->children, node)
-+		pcie_bus_configure_settings(child);
++	if (pci_can_move_bars &&
++	    !(res->flags & IORESOURCE_IO) &&
++	    (dev->class >> 8) != PCI_CLASS_DISPLAY_VGA) {
++		pci_warn(dev, "ignore the current offset of BAR %llx-%llx\n",
++			 l64, l64 + sz64 - 1);
++		res->start = 0;
++		res->end = sz64 - 1;
++		res->flags |= IORESOURCE_SIZEALIGN;
++	}
 +
- 	pci_bus_add_devices(bus);
+ 	goto out;
  
- 	return max;
+ 
 -- 
 2.23.0
 
