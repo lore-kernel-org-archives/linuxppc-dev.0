@@ -7,65 +7,65 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D9610CA9EAF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 17:33:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29859CA9EAF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 17:36:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 85C2C205C9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 17:33:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id CCE1E205C9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 17:36:08 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="JufeTIOh"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 85C2C205C9
+	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="oxA9MLy6"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CCE1E205C9
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=yadro.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46zZ903m6hzDqWr
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 04:33:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46zZCl52SpzDqBS
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 04:36:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=yadro.com (client-ip=89.207.88.252; helo=mta-01.yadro.com;
  envelope-from=s.miroshnichenko@yadro.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=yadro.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=yadro.com header.i=@yadro.com header.b="JufeTIOh"; 
+ unprotected) header.d=yadro.com header.i=@yadro.com header.b="oxA9MLy6"; 
  dkim-atps=neutral
 Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46zYhz01GwzDqL5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 04:12:50 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46zYhz3LMLzDqNt
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 04:12:51 +1100 (AEDT)
 Received: from localhost (unknown [127.0.0.1])
- by mta-01.yadro.com (Postfix) with ESMTP id 47FE543E0C;
- Thu, 24 Oct 2019 17:12:44 +0000 (UTC)
+ by mta-01.yadro.com (Postfix) with ESMTP id 1AF3A437FA;
+ Thu, 24 Oct 2019 17:12:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
  content-type:content-type:content-transfer-encoding:mime-version
  :references:in-reply-to:x-mailer:message-id:date:date:subject
  :subject:from:from:received:received:received; s=mta-01; t=
- 1571937163; x=1573751564; bh=HZgKRN6tOARhBhsn62fHxtGaNd6lFwfoMrp
- mmOp4nHk=; b=JufeTIOh4c1paPuUJzwoxcjqL4K+SaQHIDLSG6cdHDq2FJOPBw/
- PU04gXr+syBke6E5pte7aHrew35gmJ7954CCFu2CriOXcT6hNCIYvZL/T03NibvM
- 9t3H/1tUeszIZKjl3YjkEz/y1xeiWJ1N/HAr5MXKQCrpgZQfldMFcWPc=
+ 1571937165; x=1573751566; bh=urtJdFbNTBYXQ8HBtx644qczAPU//SKLRkO
+ DXd6fGkw=; b=oxA9MLy6/Z3u6KfAohuQCQVJBwhND1MhWTMPnLHibsy0gEEyUp0
+ ZZ3Mjaoo2O7V3pKXh6YArRhzJapbsqkSzvv5nF/gIGPZ8hc510xbIN1WNF/9lTAL
+ yX/h8GqBEWb6dlUAI44ppcsfdzfja5tafXOhDelXq0SDI6w0bUoOfxzM=
 X-Virus-Scanned: amavisd-new at yadro.com
 Received: from mta-01.yadro.com ([127.0.0.1])
  by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ocSxCEQygCjp; Thu, 24 Oct 2019 20:12:43 +0300 (MSK)
+ with ESMTP id NS9LPbWAOIig; Thu, 24 Oct 2019 20:12:45 +0300 (MSK)
 Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
  [172.17.10.102])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by mta-01.yadro.com (Postfix) with ESMTPS id 1F8DB437F6;
+ by mta-01.yadro.com (Postfix) with ESMTPS id 2DF8F438CE;
  Thu, 24 Oct 2019 20:12:41 +0300 (MSK)
 Received: from NB-148.yadro.com (172.17.15.136) by T-EXCH-02.corp.yadro.com
  (172.17.10.102) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Thu, 24
- Oct 2019 20:12:39 +0300
+ Oct 2019 20:12:40 +0300
 From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 To: <linux-pci@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v6 06/30] PCI: hotplug: movable BARs: Recalculate all bridge
- windows during rescan
-Date: Thu, 24 Oct 2019 20:12:04 +0300
-Message-ID: <20191024171228.877974-7-s.miroshnichenko@yadro.com>
+Subject: [PATCH v6 09/30] PCI: Include fixed and immovable BARs into the bus
+ size calculating
+Date: Thu, 24 Oct 2019 20:12:07 +0300
+Message-ID: <20191024171228.877974-10-s.miroshnichenko@yadro.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191024171228.877974-1-s.miroshnichenko@yadro.com>
 References: <20191024171228.877974-1-s.miroshnichenko@yadro.com>
@@ -92,105 +92,44 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When the movable BARs feature is enabled and a rescan has been requested,
-release all the bridge windows and recalculate them from scratch, taking
-into account all kinds for BARs: fixed, immovable, movable, new.
+The only difference between the fixed/immovable and movable BARs is a size
+and offset preservation after they are released (the corresponding struct
+resource* detached from a bridge window for a while during a bus rescan).
 
-This increases the chances to find a memory space to fit BARs for newly
-hotplugged devices, especially if no/not enough gaps were reserved by the
-BIOS/bootloader/firmware.
-
-The last step of writing the recalculated windows to the bridges is done
-by the new pci_setup_bridges() function.
+Include fixed/immovable BARs into result of pbus_size_mem() and prohibit
+assigning them to non-direct parents.
 
 Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 ---
- drivers/pci/pci.h       |  1 +
- drivers/pci/probe.c     | 22 ++++++++++++++++++++++
- drivers/pci/setup-bus.c | 16 ++++++++++++++++
- 3 files changed, 39 insertions(+)
+ drivers/pci/setup-bus.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index 19bc50597d12..4a3f2b69285b 100644
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -280,6 +280,7 @@ void __pci_bus_assign_resources(const struct pci_bus *bus,
- 				struct list_head *realloc_head,
- 				struct list_head *fail_head);
- bool pci_bus_clip_resource(struct pci_dev *dev, int idx);
-+void pci_bus_release_root_bridge_resources(struct pci_bus *bus);
- 
- void pci_reassigndev_resource_alignment(struct pci_dev *dev);
- void pci_disable_bridge_window(struct pci_dev *dev);
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index 3d8c0f653378..d2dbec51c4df 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -3200,6 +3200,25 @@ static void pci_bus_rescan_done(struct pci_bus *bus)
- 		pci_config_pm_runtime_put(bus->self);
- }
- 
-+static void pci_setup_bridges(struct pci_bus *bus)
-+{
-+	struct pci_dev *dev;
-+
-+	list_for_each_entry(dev, &bus->devices, bus_list) {
-+		struct pci_bus *child;
-+
-+		if (!pci_dev_is_added(dev))
-+			continue;
-+
-+		child = dev->subordinate;
-+		if (child)
-+			pci_setup_bridges(child);
-+	}
-+
-+	if (bus->self)
-+		pci_setup_bridge(bus);
-+}
-+
- /**
-  * pci_rescan_bus - Scan a PCI bus for devices
-  * @bus: PCI bus to scan
-@@ -3221,8 +3240,11 @@ unsigned int pci_rescan_bus(struct pci_bus *bus)
- 		pci_bus_rescan_prepare(root);
- 
- 		max = pci_scan_child_bus(root);
-+
-+		pci_bus_release_root_bridge_resources(root);
- 		pci_assign_unassigned_root_bus_resources(root);
- 
-+		pci_setup_bridges(root);
- 		pci_bus_rescan_done(root);
- 	} else {
- 		max = pci_scan_child_bus(bus);
 diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-index f2f02e6c9000..075e8185b936 100644
+index 4b538d132958..ff33b47b1bb7 100644
 --- a/drivers/pci/setup-bus.c
 +++ b/drivers/pci/setup-bus.c
-@@ -1635,6 +1635,22 @@ static void pci_bus_release_bridge_resources(struct pci_bus *bus,
- 		pci_bridge_release_resources(bus, type);
- }
+@@ -1011,12 +1011,20 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
+ 			struct resource *r = &dev->resource[i];
+ 			resource_size_t r_size;
  
-+void pci_bus_release_root_bridge_resources(struct pci_bus *root_bus)
-+{
-+	int i;
-+	struct resource *r;
+-			if (r->parent || (r->flags & IORESOURCE_PCI_FIXED) ||
++			if (r->parent ||
+ 			    ((r->flags & mask) != type &&
+ 			     (r->flags & mask) != type2 &&
+ 			     (r->flags & mask) != type3))
+ 				continue;
+ 			r_size = resource_size(r);
 +
-+	pci_bus_release_bridge_resources(root_bus, IORESOURCE_IO, whole_subtree);
-+	pci_bus_release_bridge_resources(root_bus, IORESOURCE_MEM, whole_subtree);
-+	pci_bus_release_bridge_resources(root_bus,
-+					 IORESOURCE_MEM_64 | IORESOURCE_PREFETCH,
-+					 whole_subtree);
++			if (!pci_dev_bar_movable(dev, r)) {
++				if (pci_can_move_bars)
++					size += r_size;
 +
-+	pci_bus_for_each_resource(root_bus, r, i) {
-+		pci_release_child_resources(root_bus, r);
-+	}
-+}
++				continue;
++			}
 +
- static void pci_bus_dump_res(struct pci_bus *bus)
- {
- 	struct resource *res;
+ #ifdef CONFIG_PCI_IOV
+ 			/* Put SRIOV requested res to the optional list */
+ 			if (realloc_head && i >= PCI_IOV_RESOURCES &&
 -- 
 2.23.0
 
