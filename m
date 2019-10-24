@@ -2,73 +2,69 @@ Return-Path: <SRS0=A5Gh=YR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EA96CA9EAF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 18:20:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 86DB2CA9EAF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 18:25:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 11F3320684
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 18:20:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id EC73021872
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2019 18:25:52 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="sSU16cwM"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 11F3320684
+	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="ilVoazVC"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC73021872
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=yadro.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46zbBy5HcZzDqdl
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 05:20:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46zbK95sz0zDqhY
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 05:25:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=yadro.com (client-ip=89.207.88.252; helo=mta-01.yadro.com;
  envelope-from=s.miroshnichenko@yadro.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=yadro.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=yadro.com header.i=@yadro.com header.b="sSU16cwM"; 
+ unprotected) header.d=yadro.com header.i=@yadro.com header.b="ilVoazVC"; 
  dkim-atps=neutral
 Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46zYjD6x6QzDqWS
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 04:13:04 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46zYvh28fmzDqPm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 04:22:08 +1100 (AEDT)
 Received: from localhost (unknown [127.0.0.1])
- by mta-01.yadro.com (Postfix) with ESMTP id 2337043611;
- Thu, 24 Oct 2019 17:13:02 +0000 (UTC)
+ by mta-01.yadro.com (Postfix) with ESMTP id 73722437F6;
+ Thu, 24 Oct 2019 17:22:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
  content-type:content-type:content-transfer-encoding:mime-version
- :references:in-reply-to:x-mailer:message-id:date:date:subject
- :subject:from:from:received:received:received; s=mta-01; t=
- 1571937177; x=1573751578; bh=Ly1PnEFeD8eqUYeDGQz6RzFYm/+hza4Wmd7
- 9/emghxo=; b=sSU16cwMIvKkPcKFHziNyzbW4yXBUTk0MhmVLo4MN+CF6CHc1zs
- NxMJNhKC6BQt1ypZ5RIexaxkLKgsFYwLH1issHPKIToBcCEi2oTkCFzxXlE/+QGP
- 9/FdDUn9qFrLjHiWPYKlO459o1qhf3Iu4KYM38A4JDmvTg4qurLb1VFQ=
+ :x-mailer:message-id:date:date:subject:subject:from:from
+ :received:received:received; s=mta-01; t=1571937724; x=
+ 1573752125; bh=KbOhoBktNOYFqC4XkNgg32MLMMlZE2VoUNP5zAtqikY=; b=i
+ lVoazVCisQOc0Hi9mJdIB4qpZaXMFFpRnR/NckzU+IZKXMjMOqtur9bZAjSo4PZh
+ Db/eYtwoLMqCXIq0cMnOYbAw80QDTWydXkjGh7KRqh6OrSr+nICQvWFyYWEiw22S
+ kujQYXjqAalzwHFeh7DGLBysDnJ1L4NANqOIaUP2xY=
 X-Virus-Scanned: amavisd-new at yadro.com
 Received: from mta-01.yadro.com ([127.0.0.1])
  by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id adOlb3e024Bv; Thu, 24 Oct 2019 20:12:57 +0300 (MSK)
+ with ESMTP id JN_zb6lUCFs6; Thu, 24 Oct 2019 20:22:04 +0300 (MSK)
 Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
  [172.17.10.102])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by mta-01.yadro.com (Postfix) with ESMTPS id 44CD1437F8;
- Thu, 24 Oct 2019 20:12:45 +0300 (MSK)
+ by mta-01.yadro.com (Postfix) with ESMTPS id 4BF7E42F14;
+ Thu, 24 Oct 2019 20:22:04 +0300 (MSK)
 Received: from NB-148.yadro.com (172.17.15.136) by T-EXCH-02.corp.yadro.com
  (172.17.10.102) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Thu, 24
- Oct 2019 20:12:44 +0300
+ Oct 2019 20:22:03 +0300
 From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 To: <linux-pci@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v6 29/30] PCI: pciehp: movable BARs: Trigger a domain rescan
- on hp events
-Date: Thu, 24 Oct 2019 20:12:27 +0300
-Message-ID: <20191024171228.877974-30-s.miroshnichenko@yadro.com>
+Subject: [PATCH RFC 00/11] PCI: hotplug: Movable bus numbers
+Date: Thu, 24 Oct 2019 20:21:46 +0300
+Message-ID: <20191024172157.878735-1-s.miroshnichenko@yadro.com>
 X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20191024171228.877974-1-s.miroshnichenko@yadro.com>
-References: <20191024171228.877974-1-s.miroshnichenko@yadro.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -87,45 +83,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>,
- Lukas Wunner <lukas@wunner.de>, Bjorn Helgaas <helgaas@kernel.org>,
- linux@yadro.com
+ Bjorn Helgaas <helgaas@kernel.org>, linux@yadro.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-With movable BARs, adding a hotplugged device is not local to its bridge
-anymore, but it affects the whole domain: BARs, bridge windows and bus
-numbers can be substantially rearranged. So instead of trying to fit the
-new devices into preallocated reserved gaps, initiate a full domain rescan.
+To allow hotplugging bridges, the kernel or BIOS/bootloader/firmware add
+extra bus numbers per slot, but this range may be not enough for a large
+bridge and/or nested bridges when hot-adding a chassis full of devices.
 
-The pci_rescan_bus() covers all the operations of the replaced functions:
- - assigning new bus numbers, as the pci_hp_add_bridge() does it;
- - allocating BARs (pci_assign_unassigned_bridge_resources());
- - cofiguring MPS settings (pcie_bus_configure_settings());
- - binding devices to their drivers (pci_bus_add_devices()).
+This patchset proposes an approach similar to movable BARs: bus numbers are
+not reserved anymore, instead the kernel moves the "tail" of the PCI tree
+by one, when needed a new bus.
 
-CC: Lukas Wunner <lukas@wunner.de>
-Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
----
- drivers/pci/hotplug/pciehp_pci.c | 5 +++++
- 1 file changed, 5 insertions(+)
+When something like this is going to happen:
+                                                                   *LARGE*
+ +-[0020:00]---00.0-[01-20]--+-00.0-[02-08]--+-00.0-[03]--   <--  *NESTED*
+ |                           |               +-01.0-[04]--        *BRIDGE*
+ |                           |               +-02.0-[05]--
+ |                           |               +-03.0-[06]--
+ |                           |               +-04.0-[07]--
+ |                           |               \-05.0-[08]--
+ ...
 
-diff --git a/drivers/pci/hotplug/pciehp_pci.c b/drivers/pci/hotplug/pciehp_pci.c
-index d17f3bf36f70..6d4c1ef38210 100644
---- a/drivers/pci/hotplug/pciehp_pci.c
-+++ b/drivers/pci/hotplug/pciehp_pci.c
-@@ -58,6 +58,11 @@ int pciehp_configure_device(struct controller *ctrl)
- 		goto out;
- 	}
- 
-+	if (pci_can_move_bars) {
-+		pci_rescan_bus(parent);
-+		goto out;
-+	}
-+
- 	for_each_pci_bridge(dev, parent)
- 		pci_hp_add_bridge(dev);
- 
+, this will result into the following:
+
+ +-[0020:00]---00.0-[01-22]--+-00.0-[02-22]--+-00.0-[03-1d]----04.0-[04-1d]--+-00.0-[05]--
+ |                           |               |                               +-04.0-[06]--
+ |                           |               |                               +-09.0-[07]--
+ |                           |               |                               +-0c.0-[08-19]----00.0-[09-19]--+-01.0-[0a]--
+ |                           |               |                               |                               ...
+ |                           |               |                               |                               \-11.0-[19]--
+ |                           |               |                               ...
+ |                           |               |                               \-15.0-[1d]--
+ |                           |               +-01.0-[1e]--  <-- Renamed from 04
+ |                           |               +-02.0-[1f]--  <-- Renamed from 05
+ |                           |               +-03.0-[20]--  <-- Renamed from 06
+ |                           |               +-04.0-[21]--  <-- Renamed from 07
+ |                           |               \-05.0-[22]--  <-- Renamed from 08
+ ...
+
+
+This looks to be safe in the kernel, because drivers don't use the raw PCI
+BDF ID, and we've tested that on our x86 and PowerNV machines: mass storage
+with roots and network adapters just continue their work while their bus
+numbers had moved.
+
+But here comes the userspace:
+
+ - procfs entries:
+
+    % ls -la /proc/bus/pci/*
+    /proc/bus/pci/00:
+    00.0
+    02.0
+    ...
+    1f.4
+    1f.6
+
+    /proc/bus/pci/04:
+    00.0
+
+    /proc/bus/pci/40:
+    00.0
+
+ - sysfs entries:
+
+    % ls -la /sys/devices/pci0000:00/
+    0000:00:00.0
+    0000:00:02.0
+    ...
+    0000:00:1f.3
+    0000:00:1f.4
+    0000:00:1f.6
+
+    % ls -la /sys/devices/pci0000:00/0000:00:1c.6/0000:04:00.0/driver
+    driver -> ../../../../bus/pci/drivers/iwlwifi
+
+ - sysfs symlinks:
+
+    % ls -la /sys/bus/pci/devices
+    0000:00:00.0 -> ../../../devices/pci0000:00/0000:00:00.0
+    0000:00:02.0 -> ../../../devices/pci0000:00/0000:00:02.0
+    ...
+    0000:04:00.0 -> ../../../devices/pci0000:00/0000:00:1c.6/0000:04:00.0
+    0000:40:00.0 -> ../../../devices/pci0000:00/0000:00:1d.2/0000:40:00.0
+
+
+These patches alter the kernel public API and some internals to be able to
+remove these files before changing a bus number, and create new versions
+of them after device has changed its BDF.
+
+On one hand, this makes the hotplug predictable, independent of non-kernel
+program components (BIOS, bootloader, etc.) and cross-platform, but this is
+also a severe ABI violation.
+
+Probably, the udev should have a new action like "rename" in addition to
+"add" and "remove".
+
+Is it feasible to have this feature disabled by default, but with a chance
+to enable by a kernel command line argument like this:
+
+  pci=realloc,movable_buses
+
+?
+
+This code is follow-up of the "PCI: Allow BAR movement during hotplug"
+series (v6).
+
+Sergey Miroshnichenko (11):
+  PCI: sysfs: Nullify freed pointers
+  PCI: proc: Nullify a freed pointer
+  drivers: base: Make bus_add_device() public
+  drivers: base: Make device_{add|remove}_class_symlinks() public
+  drivers: base: Add bus_disconnect_device()
+  powerpc/pci: Enable assigning bus numbers instead of reading them from
+    DT
+  powerpc/pci: Don't reduce the host bridge bus range
+  PCI: Allow expanding the bridges
+  PCI: hotplug: Add initial support for movable bus numbers
+  PCI: hotplug: movable bus numbers: rename proc and sysfs entries
+  PCI: hotplug: movable bus numbers: compact the gaps in numbering
+
+ .../admin-guide/kernel-parameters.txt         |   3 +
+ arch/powerpc/kernel/pci-common.c              |   1 -
+ arch/powerpc/kernel/pci_dn.c                  |   5 +
+ arch/powerpc/platforms/powernv/eeh-powernv.c  |   3 +-
+ drivers/base/base.h                           |   1 -
+ drivers/base/bus.c                            |  37 +++
+ drivers/base/core.c                           |   6 +-
+ drivers/pci/pci-sysfs.c                       |   7 +-
+ drivers/pci/pci.c                             |   3 +
+ drivers/pci/pci.h                             |   2 +
+ drivers/pci/probe.c                           | 291 +++++++++++++++++-
+ drivers/pci/proc.c                            |   1 +
+ include/linux/device.h                        |   5 +
+ 13 files changed, 351 insertions(+), 14 deletions(-)
+
 -- 
 2.23.0
 
