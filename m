@@ -2,63 +2,55 @@ Return-Path: <SRS0=byMz=YS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C314CA9EA0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 11:06:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 14906CA9EA0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 11:11:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 92EC72084C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 11:06:53 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="femDesdz"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 92EC72084C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id C60A62064A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 11:11:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C60A62064A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=glider.be
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4701XC0B8kzDqkT
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 22:06:51 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4701dw4yxLzDqg9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 22:11:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=linux-m68k.org
+ (client-ip=195.130.137.77; helo=leibniz.telenet-ops.be;
+ envelope-from=geert@linux-m68k.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=glider.be
+Received: from leibniz.telenet-ops.be (leibniz.telenet-ops.be [195.130.137.77])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4701Sn1CyjzDqgN
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 22:03:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.b="femDesdz"; dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4701Sm2xxqz9sPK;
- Fri, 25 Oct 2019 22:03:52 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1572001432;
- bh=zR2+Wwbibdf/2nUQuITloJZKmPyWJx1+odpdcK+KecM=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=femDesdzuQMKmpeQquHw9TYWi2ahr/MEHHgZP72991U55pcEPgkOtaw7UktH8gHSH
- t8mxNFAm01wWMBTHub3OozAc2CiVlBYzz7RBav3esumybZNTyXi35rORWAL+aR7OwD
- Lc9ZaoKGGRAds/fPXStuUdq5HyP78jR4ZEA2NdFwVA9LczvXt0Kk5P4NykZquk8lOf
- /GNTHjPRYJi61LSBo2e7nDfFjWpVwSexgkjbJUPAiNt1F/v1BqAM1m1fyAwpZyPY8M
- 7dbC0jyQ0TlLa9qKy3C9J1rUfAVV9VzS5QC5GjfZn92quJPJ3Fii8c1tMU8vbveF7q
- 7ggeAwqpuQOxA==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Thiago Jung Bauermann <bauerman@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/prom_init: Undo relocation before entering secure
- mode
-In-Reply-To: <20190911163433.12822-1-bauerman@linux.ibm.com>
-References: <20190911163433.12822-1-bauerman@linux.ibm.com>
-Date: Fri, 25 Oct 2019 22:03:51 +1100
-Message-ID: <87o8y5dr3c.fsf@mpe.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4701ZP70YzzDqCh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 22:08:43 +1100 (AEDT)
+Received: from andre.telenet-ops.be (andre.telenet-ops.be
+ [IPv6:2a02:1800:120:4::f00:15])
+ by leibniz.telenet-ops.be (Postfix) with ESMTPS id 4701ZF5L2pzMrDJT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 13:08:37 +0200 (CEST)
+Received: from ramsan ([84.195.182.253]) by andre.telenet-ops.be with bizsmtp
+ id Hn8b2100S5USYZQ01n8bdN; Fri, 25 Oct 2019 13:08:36 +0200
+Received: from rox.of.borg ([192.168.97.57]) by ramsan with esmtp (Exim 4.90_1)
+ (envelope-from <geert@linux-m68k.org>)
+ id 1iNxSN-0003rD-Lf; Fri, 25 Oct 2019 13:08:35 +0200
+Received: from geert by rox.of.borg with local (Exim 4.90_1)
+ (envelope-from <geert@linux-m68k.org>)
+ id 1iNvu3-0006Or-Vv; Fri, 25 Oct 2019 11:29:04 +0200
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Jiri Kosina <trivial@kernel.org>, Scott Wood <oss@buserror.net>
+Subject: [PATCH trivial resend] powerpc/booke: Spelling s/date/data/
+Date: Fri, 25 Oct 2019 11:29:01 +0200
+Message-Id: <20191025092901.24560-1-geert+renesas@glider.be>
+X-Mailer: git-send-email 2.17.1
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,33 +62,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ram Pai <linuxram@us.ibm.com>, Mike Anderson <andmike@linux.ibm.com>,
- Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
- Thiago Jung Bauermann <bauerman@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Geert Uytterhoeven <geert+renesas@glider.be>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Thiago Jung Bauermann <bauerman@linux.ibm.com> writes:
-> The ultravisor will do an integrity check of the kernel image but we
-> relocated it so the check will fail. Restore the original image by
-> relocating it back to the kernel virtual base address.
->
-> This works because during build vmlinux is linked with an expected virtual
-> runtime address of KERNELBASE.
->
-> Fixes: 6a9c930bd775 ("powerpc/prom_init: Add the ESM call to prom_init")
-> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-> ---
->  arch/powerpc/include/asm/elf.h         |  3 +++
->  arch/powerpc/kernel/prom_init.c        | 11 +++++++++++
->  arch/powerpc/kernel/prom_init_check.sh |  3 ++-
->  3 files changed, 16 insertions(+), 1 deletion(-)
+Caching dates is never a good idea ;-)
 
-This breaks the build when CONFIG_RELOCATABLE=n:
+Fixes: e7affb1dba0e9068 ("powerpc/cache: add cache flush operation for various e500")
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+ arch/powerpc/kernel/cpu_setup_fsl_booke.S | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-    prom_init.c:(.init.text+0x3160): undefined reference to `relocate'
+diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+index 2b4f3ec0acf7d988..1d308780e0d31eb9 100644
+--- a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
++++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+@@ -231,7 +231,7 @@ _GLOBAL(__setup_cpu_e5500)
+ 	blr
+ #endif
+ 
+-/* flush L1 date cache, it can apply to e500v2, e500mc and e5500 */
++/* flush L1 data cache, it can apply to e500v2, e500mc and e5500 */
+ _GLOBAL(flush_dcache_L1)
+ 	mfmsr	r10
+ 	wrteei	0
+-- 
+2.17.1
 
-See http://kisskb.ellerman.id.au/kisskb/buildresult/14004234/
-
-cheers
