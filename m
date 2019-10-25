@@ -2,80 +2,82 @@ Return-Path: <SRS0=byMz=YS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F1D36CA9EA0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 12:45:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18247CA9EA0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 12:51:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A0F4021D71
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 12:45:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id BBE4F21929
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 12:51:14 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="gr43qyfK"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A0F4021D71
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="GU8kE9rm"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BBE4F21929
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rasmusvillemoes.dk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4703jy0SnxzDqbF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 23:45:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4703rc4FclzDqFt
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 23:51:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::143;
- helo=mail-lf1-x143.google.com; envelope-from=linux@rasmusvillemoes.dk;
+ smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::141;
+ helo=mail-lf1-x141.google.com; envelope-from=linux@rasmusvillemoes.dk;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=rasmusvillemoes.dk
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk
- header.b="gr43qyfK"; dkim-atps=neutral
-Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com
- [IPv6:2a00:1450:4864:20::143])
+ header.b="GU8kE9rm"; dkim-atps=neutral
+Received: from mail-lf1-x141.google.com (mail-lf1-x141.google.com
+ [IPv6:2a00:1450:4864:20::141])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4703d13sCFzDqSk
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4703d148VzzDqbF
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 23:41:08 +1100 (AEDT)
-Received: by mail-lf1-x143.google.com with SMTP id g3so1607751lfb.11
+Received: by mail-lf1-x141.google.com with SMTP id t8so1599127lfc.13
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 05:41:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=rasmusvillemoes.dk; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=nNhTW3U2Xf+f8X6ztyGJ0vdPsrVEzgnkoLb09kGESGY=;
- b=gr43qyfKeoGH65CYsJHoPG+YL9Tx4hVUZVoQzYzb9XsMqHySY57WJtUCKdPh98abFb
- 978lBekDEIJw3ctIHrCrHNrnVte3xIHmGJW9xZwa+BVM8YrwNCtva1EUvT8mgMQ0+NIk
- RMH0xuXFjObqrkldH+wRmh6xxURbjD8yMaUAw=
+ bh=7uK8xEnPEigQ7dFIza6M7Wg35/gDKz/RHXvPNwcggqY=;
+ b=GU8kE9rmw7CxmGB90Y5Izc7LWqXMzqEnx4cZC7e5Ef+6pwtiG9RcGqXUnIzFpZ3t3U
+ CU97Xc1WhzK+r82cnyFDuq5P1B/vMhbnBN/N6tdvSoWnVlIh44HGIJ8cZesgveR3SkSo
+ M0pyyG+OPVFfGCQHHHNBUGHUCNNPbe9T16/FI=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=nNhTW3U2Xf+f8X6ztyGJ0vdPsrVEzgnkoLb09kGESGY=;
- b=kTp8VByZP7bnM4ZSDbj8wsRB45/nKFLhO2e4Y2zusMCXEcrQZ4UAYLkTWh+As0V5KE
- miv+iaxao41yCsG2u6cxT6IM6j6ecxCD8VG4MpEXeZDT++2uP85ub7Yb0dLxL1QezlEx
- hLmPpvsyLUphydQRP8CsNNFlKVfzkrNeio26czX2jkKN2LQo5LQrfceMsNGEO3U5M/F0
- FRl8aEcnP+pQS7/xq71ArCPj+Brl1Uk5g4XhRrDtKzfzyrTUiyxsGcbqVYCf0Mrr42t4
- JlnTvnnfT7xVIOoR4TH6ZrbDO+2mzKG1E9qjSPnzPVBroGAyI0YroVQ74/rcR09/6U9R
- +g2g==
-X-Gm-Message-State: APjAAAXhvVYR22MEzj3HgzU2vGyGQpfxgyCEyFJT1bSg9gPPywLeDNbj
- OaTSB9qhTXnlbLQl78mviFuYhg==
-X-Google-Smtp-Source: APXvYqzI54y0qXty0REj/t8bh97dPNgFy2YQ0TG2aFgxJMZvmcPNDi0C+wUJpvWYRj3db7mvv6qlJw==
-X-Received: by 2002:ac2:4d04:: with SMTP id r4mr2706461lfi.136.1572007262270; 
- Fri, 25 Oct 2019 05:41:02 -0700 (PDT)
+ bh=7uK8xEnPEigQ7dFIza6M7Wg35/gDKz/RHXvPNwcggqY=;
+ b=WJGVjkP5XQoahZRVrOU1Ks39QBqZq8MAxQa2MqhAFAhR9eXrmM5yiFgZa3WucIgpT+
+ bJyYJRHZT2K/HaTvqdO/Lt6YmuX8+itgiybsPj9OPAM+wg1YRaJ9+gd1sWfwEnsdA1pe
+ 1EI/+2S/Ul8wPhGVIV552bOMIBz8i/zInE8ecqQL4M51nLiBabo3DvKWxs9FRwwneXf4
+ 0LYxp5jdDel7X2fY/5EpI2iOeX7+N08FhreYhAjub6m32pvt3QAXQLlMah2jxDkt3hvg
+ CRbFIoPlM2TtmeKrMFAcmG0cthDEi/6SAj3jomyQUbLK/qmu9hRIpO5lC7RKeCqVz+2k
+ g3wA==
+X-Gm-Message-State: APjAAAULCYib94WZ85kthyU4GKpUoM/aHVN4AZ0VYSMoQEtBntvKyh0n
+ EFEyy9Rm0UOVwFohGbvwh5r0aA==
+X-Google-Smtp-Source: APXvYqxqw6qAfANRoZ0GsCSZE1jfgTS6RZBtUbzWdgUXaR/01NaSFiZAQl3jp8GRzrDs35V36nIV4Q==
+X-Received: by 2002:a19:8c1c:: with SMTP id o28mr2606108lfd.105.1572007263499; 
+ Fri, 25 Oct 2019 05:41:03 -0700 (PDT)
 Received: from prevas-ravi.prevas.se ([81.216.59.226])
- by smtp.gmail.com with ESMTPSA id 10sm821028lfy.57.2019.10.25.05.41.00
+ by smtp.gmail.com with ESMTPSA id 10sm821028lfy.57.2019.10.25.05.41.02
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 25 Oct 2019 05:41:01 -0700 (PDT)
+ Fri, 25 Oct 2019 05:41:02 -0700 (PDT)
 From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 To: Qiang Zhao <qiang.zhao@nxp.com>, Li Yang <leoyang.li@nxp.com>,
  Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 00/23] QUICC Engine support on ARM
-Date: Fri, 25 Oct 2019 14:40:35 +0200
-Message-Id: <20191025124058.22580-1-linux@rasmusvillemoes.dk>
+Subject: [PATCH v2 01/23] soc: fsl: qe: remove space-before-tab
+Date: Fri, 25 Oct 2019 14:40:36 +0200
+Message-Id: <20191025124058.22580-2-linux@rasmusvillemoes.dk>
 X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20191018125234.21825-1-linux@rasmusvillemoes.dk>
+In-Reply-To: <20191025124058.22580-1-linux@rasmusvillemoes.dk>
 References: <20191018125234.21825-1-linux@rasmusvillemoes.dk>
+ <20191025124058.22580-1-linux@rasmusvillemoes.dk>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -97,78 +99,26 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There have been several attempts in the past few years to allow
-building the QUICC engine drivers for platforms other than PPC. This
-is yet another attempt.
+Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+---
+ drivers/soc/fsl/qe/qe.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-In v2, I've fixed a few style issues. But more importantly, it now
-contains enough to actually remove the PPC32 dependency from
-CONFIG_QUICC_ENGINE, so that's what the last patch does.
-
-I haven't found a way to address Christophe's concern over the
-performance impact of using the (on powerpc) out-of-line iowrite32be
-instead of out_be32. I could of course introduce some qe_ prefixed
-helpers (similar to the already added qe_clrsetbits ones) and make
-their definition dependent on PPC32 or not, but that seems to be a bit
-ugly.
-
-Rasmus Villemoes (23):
-  soc: fsl: qe: remove space-before-tab
-  soc: fsl: qe: drop volatile qualifier of struct qe_ic::regs
-  soc: fsl: qe: avoid ppc-specific io accessors
-  soc: fsl: qe: replace spin_event_timeout by readx_poll_timeout_atomic
-  soc: fsl: qe: qe.c: guard use of pvr_version_is() with CONFIG_PPC32
-  soc: fsl: qe: avoid tail comments in qe_ic.h
-  soc: fsl: qe: merge qe_ic.h into qe_ic.c
-  soc: fsl: qe: drop unneeded #includes
-  soc: fsl: qe: move qe_ic_cascade_* functions to qe_ic.c
-  soc: fsl: qe: use qe_ic_cascade_{low,high}_mpic also on 83xx
-  soc: fsl: qe: rename qe_ic_cascade_low_mpic -> qe_ic_cascade_low
-  soc: fsl: qe: drop assign-only high_active in qe_ic_init
-  soc: fsl: qe: remove pointless sysfs registration in qe_ic.c
-  soc: fsl: qe: move calls of qe_ic_init out of arch/powerpc/
-  powerpc/83xx: remove mpc83xx_ipic_and_qe_init_IRQ
-  powerpc/85xx: remove mostly pointless mpc85xx_qe_init()
-  soc: fsl: qe: make qe_ic_cascade_* static
-  soc: fsl: qe: remove unused qe_ic_set_* functions
-  net: ethernet: freescale: make UCC_GETH explicitly depend on PPC32
-  serial: make SERIAL_QE depend on PPC32
-  serial: ucc_uart.c: explicitly include asm/cpm.h
-  soc/fsl/qe/qe.h: remove include of asm/cpm.h
-  soc: fsl: qe: remove PPC32 dependency from CONFIG_QUICC_ENGINE
-
- arch/powerpc/platforms/83xx/km83xx.c          |   3 +-
- arch/powerpc/platforms/83xx/misc.c            |  23 --
- arch/powerpc/platforms/83xx/mpc832x_mds.c     |   3 +-
- arch/powerpc/platforms/83xx/mpc832x_rdb.c     |   3 +-
- arch/powerpc/platforms/83xx/mpc836x_mds.c     |   3 +-
- arch/powerpc/platforms/83xx/mpc836x_rdk.c     |   3 +-
- arch/powerpc/platforms/83xx/mpc83xx.h         |   7 -
- arch/powerpc/platforms/85xx/common.c          |  23 --
- arch/powerpc/platforms/85xx/corenet_generic.c |  12 -
- arch/powerpc/platforms/85xx/mpc85xx.h         |   2 -
- arch/powerpc/platforms/85xx/mpc85xx_mds.c     |  28 --
- arch/powerpc/platforms/85xx/mpc85xx_rdb.c     |  18 --
- arch/powerpc/platforms/85xx/twr_p102x.c       |  16 -
- drivers/net/ethernet/freescale/Kconfig        |   1 +
- drivers/soc/fsl/qe/Kconfig                    |   2 +-
- drivers/soc/fsl/qe/gpio.c                     |  30 +-
- drivers/soc/fsl/qe/qe.c                       |  59 ++--
- drivers/soc/fsl/qe/qe_ic.c                    | 289 ++++++++++--------
- drivers/soc/fsl/qe/qe_ic.h                    |  99 ------
- drivers/soc/fsl/qe/qe_io.c                    |  42 ++-
- drivers/soc/fsl/qe/qe_tdm.c                   |   8 +-
- drivers/soc/fsl/qe/ucc.c                      |  16 +-
- drivers/soc/fsl/qe/ucc_fast.c                 |  70 ++---
- drivers/soc/fsl/qe/ucc_slow.c                 |  38 +--
- drivers/soc/fsl/qe/usb.c                      |   2 +-
- drivers/tty/serial/Kconfig                    |   1 +
- drivers/tty/serial/ucc_uart.c                 |   1 +
- include/soc/fsl/qe/qe.h                       |   1 -
- include/soc/fsl/qe/qe_ic.h                    |  69 -----
- 29 files changed, 299 insertions(+), 573 deletions(-)
- delete mode 100644 drivers/soc/fsl/qe/qe_ic.h
-
+diff --git a/drivers/soc/fsl/qe/qe.c b/drivers/soc/fsl/qe/qe.c
+index 417df7e19281..2a0e6e642776 100644
+--- a/drivers/soc/fsl/qe/qe.c
++++ b/drivers/soc/fsl/qe/qe.c
+@@ -378,8 +378,8 @@ static int qe_sdma_init(void)
+ 	}
+ 
+ 	out_be32(&sdma->sdebcr, (u32) sdma_buf_offset & QE_SDEBCR_BA_MASK);
+- 	out_be32(&sdma->sdmr, (QE_SDMR_GLB_1_MSK |
+- 					(0x1 << QE_SDMR_CEN_SHIFT)));
++	out_be32(&sdma->sdmr, (QE_SDMR_GLB_1_MSK |
++		 (0x1 << QE_SDMR_CEN_SHIFT)));
+ 
+ 	return 0;
+ }
 -- 
 2.23.0
 
