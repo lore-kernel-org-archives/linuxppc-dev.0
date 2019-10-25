@@ -7,73 +7,75 @@ X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03FF6CA9EA0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 13:49:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AA93ACA9EA0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 13:53:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A6C6620679
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 13:49:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 587302084C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 13:53:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="J6UXGh2w"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A6C6620679
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="e1DVB6RZ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 587302084C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rasmusvillemoes.dk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4705872WxvzDqnc
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Oct 2019 00:49:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4705F05T4HzDqnx
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Oct 2019 00:53:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::241;
- helo=mail-lj1-x241.google.com; envelope-from=linux@rasmusvillemoes.dk;
+ smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::243;
+ helo=mail-lj1-x243.google.com; envelope-from=linux@rasmusvillemoes.dk;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=rasmusvillemoes.dk
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk
- header.b="J6UXGh2w"; dkim-atps=neutral
-Received: from mail-lj1-x241.google.com (mail-lj1-x241.google.com
- [IPv6:2a00:1450:4864:20::241])
+ header.b="e1DVB6RZ"; dkim-atps=neutral
+Received: from mail-lj1-x243.google.com (mail-lj1-x243.google.com
+ [IPv6:2a00:1450:4864:20::243])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4703dQ0zXgzDqd3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 23:41:30 +1100 (AEDT)
-Received: by mail-lj1-x241.google.com with SMTP id c4so2516293lja.11
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 05:41:29 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4703dS2KNSzDqd3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 23:41:32 +1100 (AEDT)
+Received: by mail-lj1-x243.google.com with SMTP id a22so2575686ljd.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 05:41:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=rasmusvillemoes.dk; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=R3SaCctQ33G0LqzlxkoZQqgVXIOLmGcZ9QAc4BskcDk=;
- b=J6UXGh2wqwAc/+LZXDTKvF+WwOwD8qwr2FNWm47poYQ8yc8qW2mTPT0FRMZguXjutf
- c8DuE0S0rSMO8D8ykEDKzSp+ZeTtkwJJx2JS6QDezvAfV+MvPc4M3VUtiDWMtzXvxVFn
- +oi5/ChWZGObNUyC4Kq+YiDjBVfDbrRcmEavk=
+ bh=hZ80kzn0Gvq+HATqtue47iWJ3txb4sckDQxEWou7YbE=;
+ b=e1DVB6RZEIL83T6n/wBWlDoSAGhgc43PWtNmqC+8x8knw1OPJuHYkFi6EckaV0yl50
+ 3NosFnZQLJRuhrGVXGt9YAJsZfBzRMZwHn8bQXhFdHCQpU+CKevYxKU3bP6j/l2J0a5v
+ 7J4JQLigfgV2yB+YvMuOIhkA821Cd+cf8A0IM=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=R3SaCctQ33G0LqzlxkoZQqgVXIOLmGcZ9QAc4BskcDk=;
- b=UTtH8uwOWLyHG4n5/hEfZcpmQtVREORndE3hvJFtG9AHluLaly72GAyHBEYAEsaHoL
- zu1jH3GIeyPayajI5uRzLrOyl/x2b6io4+KxQDWHfdTNxfJJOKv7dW4oSeFSgH0ZHeXa
- FLvQSKZRGsjLt9gA53vRknM697J5n3g4DyRo4i2jJtuZlmWhIjVVYS6M6yoKQDTFzMrL
- dCqbI1B6HEfegTczog8fM+e2rVGPv5shQxghFgQzlD7ceXlYzfmvzqrIgSZ/rSxe5NuA
- cFgYK6bGOf1iOiCY834KoD4W//9LdAjiRn4JAXIFmTeTmv1RXiLBc+DOJ9xEfOektKlH
- lxiA==
-X-Gm-Message-State: APjAAAVZQXq2StRNYkxZmyMXFMj2GEIGDgevfBe893y0YfOpnTsVt8mS
- qzkk/L6hyi+PT+kUUAwBCMCUBw==
-X-Google-Smtp-Source: APXvYqxP7naa1DeBshE45tVgmMrsPdv0NnSq2X2IndFsFfhsb895JAiwuYIede4Uh4vXem9QRAO5EQ==
-X-Received: by 2002:a2e:9117:: with SMTP id m23mr2391175ljg.82.1572007284671; 
- Fri, 25 Oct 2019 05:41:24 -0700 (PDT)
+ bh=hZ80kzn0Gvq+HATqtue47iWJ3txb4sckDQxEWou7YbE=;
+ b=EI/qMn0EbqmBZMz79mdNz5W1ViODvfwAcxb47rUPwYoAvgSpAkQt1IkdF3ApIAq+91
+ HVmL+3mtYt5HS3E9Yv/lDQpRQUW4GOnLGfjkg+LnsVUCUwVWWh28TWeAV1+YXRtaeLSb
+ 2ynoIh1NfEK+ErgthmKKKJLf9npwuv26crwklwkIAf7ht1YmhO2Fv2ri/ddfvytIrjFU
+ 4mG2NVAsYUxio9f3Cd2nF7aUEWXEWlDe3637erwix0D/ThkSaDJThlG2DaKd9H8wZYhz
+ 8Bbyry9A0tilZ83Il1BdQn/Hpm5SUDUXi59+Nq3KUo95oxf0E2T9pXqhVUC4FlPuwnUU
+ ZnwQ==
+X-Gm-Message-State: APjAAAXGEl369O///Ii0u4G1mcHzeduwpiXIMdsGGZisRkGFUmY3viU+
+ PcYF3VCnJFhwo4+8+GVyEkb9zA==
+X-Google-Smtp-Source: APXvYqzWrsLr+TldTrlwBZiQV+Lk357fJEtEmfSVzLgRlqUQdBGnYmw9pDFh/e+z/41+RxJtA1JaXQ==
+X-Received: by 2002:a05:651c:120f:: with SMTP id
+ i15mr2442422lja.144.1572007287647; 
+ Fri, 25 Oct 2019 05:41:27 -0700 (PDT)
 Received: from prevas-ravi.prevas.se ([81.216.59.226])
- by smtp.gmail.com with ESMTPSA id 10sm821028lfy.57.2019.10.25.05.41.23
+ by smtp.gmail.com with ESMTPSA id 10sm821028lfy.57.2019.10.25.05.41.26
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 25 Oct 2019 05:41:24 -0700 (PDT)
+ Fri, 25 Oct 2019 05:41:27 -0700 (PDT)
 From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 To: Qiang Zhao <qiang.zhao@nxp.com>, Li Yang <leoyang.li@nxp.com>,
  Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 17/23] soc: fsl: qe: make qe_ic_cascade_* static
-Date: Fri, 25 Oct 2019 14:40:52 +0200
-Message-Id: <20191025124058.22580-18-linux@rasmusvillemoes.dk>
+Subject: [PATCH v2 19/23] net: ethernet: freescale: make UCC_GETH explicitly
+ depend on PPC32
+Date: Fri, 25 Oct 2019 14:40:54 +0200
+Message-Id: <20191025124058.22580-20-linux@rasmusvillemoes.dk>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191025124058.22580-1-linux@rasmusvillemoes.dk>
 References: <20191018125234.21825-1-linux@rasmusvillemoes.dk>
@@ -91,7 +93,7 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Valentin Longchamp <valentin.longchamp@keymile.com>,
+Cc: Valentin Longchamp <valentin.longchamp@keymile.com>, netdev@vger.kernel.org,
  Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-kernel@vger.kernel.org,
  Scott Wood <oss@buserror.net>, linuxppc-dev@lists.ozlabs.org,
  linux-arm-kernel@lists.infradead.org
@@ -99,59 +101,28 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Now that the references from arch/powerpc/ are gone, these are only
-referenced from inside qe_ic.c, so make them static.
+Currently, QUICC_ENGINE depends on PPC32, so this in itself does not
+change anything. In order to allow removing the PPC32 dependency from
+QUICC_ENGINE and avoid allmodconfig build failures, add this explicit
+dependency.
 
 Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 ---
- drivers/soc/fsl/qe/qe_ic.c | 6 +++---
- include/soc/fsl/qe/qe_ic.h | 4 ----
- 2 files changed, 3 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/freescale/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/soc/fsl/qe/qe_ic.c b/drivers/soc/fsl/qe/qe_ic.c
-index 545eb67094d1..e20f1205c0df 100644
---- a/drivers/soc/fsl/qe/qe_ic.c
-+++ b/drivers/soc/fsl/qe/qe_ic.c
-@@ -402,7 +402,7 @@ unsigned int qe_ic_get_high_irq(struct qe_ic *qe_ic)
- 	return irq_linear_revmap(qe_ic->irqhost, irq);
- }
- 
--void qe_ic_cascade_low(struct irq_desc *desc)
-+static void qe_ic_cascade_low(struct irq_desc *desc)
- {
- 	struct qe_ic *qe_ic = irq_desc_get_handler_data(desc);
- 	unsigned int cascade_irq = qe_ic_get_low_irq(qe_ic);
-@@ -415,7 +415,7 @@ void qe_ic_cascade_low(struct irq_desc *desc)
- 		chip->irq_eoi(&desc->irq_data);
- }
- 
--void qe_ic_cascade_high(struct irq_desc *desc)
-+static void qe_ic_cascade_high(struct irq_desc *desc)
- {
- 	struct qe_ic *qe_ic = irq_desc_get_handler_data(desc);
- 	unsigned int cascade_irq = qe_ic_get_high_irq(qe_ic);
-@@ -428,7 +428,7 @@ void qe_ic_cascade_high(struct irq_desc *desc)
- 		chip->irq_eoi(&desc->irq_data);
- }
- 
--void qe_ic_cascade_muxed_mpic(struct irq_desc *desc)
-+static void qe_ic_cascade_muxed_mpic(struct irq_desc *desc)
- {
- 	struct qe_ic *qe_ic = irq_desc_get_handler_data(desc);
- 	unsigned int cascade_irq;
-diff --git a/include/soc/fsl/qe/qe_ic.h b/include/soc/fsl/qe/qe_ic.h
-index 8ec21a3bd859..43e4ce95c6a0 100644
---- a/include/soc/fsl/qe/qe_ic.h
-+++ b/include/soc/fsl/qe/qe_ic.h
-@@ -67,8 +67,4 @@ void qe_ic_set_highest_priority(unsigned int virq, int high);
- int qe_ic_set_priority(unsigned int virq, unsigned int priority);
- int qe_ic_set_high_priority(unsigned int virq, unsigned int priority, int high);
- 
--void qe_ic_cascade_low(struct irq_desc *desc);
--void qe_ic_cascade_high(struct irq_desc *desc);
--void qe_ic_cascade_muxed_mpic(struct irq_desc *desc);
--
- #endif /* _ASM_POWERPC_QE_IC_H */
+diff --git a/drivers/net/ethernet/freescale/Kconfig b/drivers/net/ethernet/freescale/Kconfig
+index 6a7e8993119f..97d27c7740d4 100644
+--- a/drivers/net/ethernet/freescale/Kconfig
++++ b/drivers/net/ethernet/freescale/Kconfig
+@@ -75,6 +75,7 @@ config FSL_XGMAC_MDIO
+ config UCC_GETH
+ 	tristate "Freescale QE Gigabit Ethernet"
+ 	depends on QUICC_ENGINE
++	depends on PPC32
+ 	select FSL_PQ_MDIO
+ 	select PHYLIB
+ 	---help---
 -- 
 2.23.0
 
