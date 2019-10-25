@@ -2,61 +2,54 @@ Return-Path: <SRS0=byMz=YS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 51D28CA9EA0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 08:06:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DE6EACA9EA0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 08:26:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 02266206DD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 08:06:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 02266206DD
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 038AE21872
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 08:26:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 038AE21872
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46zxWn5LlszDqjL
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 19:06:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=srs0=toue=ys=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=bugzilla.kernel.org
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46zxTJ665ZzDqf6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 19:04:04 +1100 (AEDT)
-From: bugzilla-daemon@bugzilla.kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 205303] Compilation for PPC64 fails on warning in watchdog.o
-Date: Fri, 25 Oct 2019 08:04:01 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Product: Platform Specific/Hardware
-X-Bugzilla-Component: PPC-64
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: blocking
-X-Bugzilla-Who: awilfox@adelielinux.org
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: cc
-Message-ID: <bug-205303-206035-HbaFFSGX1n@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-205303-206035@https.bugzilla.kernel.org/>
-References: <bug-205303-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+	by lists.ozlabs.org (Postfix) with ESMTP id 46zxz865PczDqjd
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 19:26:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
+ (client-ip=217.140.110.172; helo=foss.arm.com;
+ envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+ by lists.ozlabs.org (Postfix) with ESMTP id 46zxwM2H6QzDqjd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 19:24:00 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id DF61228;
+ Fri, 25 Oct 2019 01:23:57 -0700 (PDT)
+Received: from [10.162.41.137] (p8cg001049571a15.blr.arm.com [10.162.41.137])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id
+ 8D6FC3F718; Fri, 25 Oct 2019 01:23:44 -0700 (PDT)
+Subject: Re: [PATCH V7] mm/debug: Add tests validating architecture page table
+ helpers
+To: Christophe Leroy <christophe.leroy@c-s.fr>, Qian Cai <cai@lca.pw>
+References: <ccdd4f7a-c7dc-ca10-d30c-0bc05c7136c7@arm.com>
+ <69256008-2235-4AF1-A3BA-0146C82CCB93@lca.pw>
+ <3cfec421-4006-4159-ca32-313ff5196ff9@c-s.fr>
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+Message-ID: <763d58b4-f532-0bba-bf2b-71433ac514fb@arm.com>
+Date: Fri, 25 Oct 2019 13:54:14 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
+In-Reply-To: <3cfec421-4006-4159-ca32-313ff5196ff9@c-s.fr>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,29 +61,88 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Mark Rutland <Mark.Rutland@arm.com>, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ James Hogan <jhogan@kernel.org>,
+ Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Michal Hocko <mhocko@kernel.org>,
+ linux-mm@kvack.org, Dave Hansen <dave.hansen@intel.com>,
+ Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>, linux-s390@vger.kernel.org,
+ x86@kernel.org, Russell King - ARM Linux <linux@armlinux.org.uk>,
+ Matthew Wilcox <willy@infradead.org>, Steven Price <Steven.Price@arm.com>,
+ Jason Gunthorpe <jgg@ziepe.ca>, Gerald Schaefer <gerald.schaefer@de.ibm.com>,
+ linux-snps-arc@lists.infradead.org, Ingo Molnar <mingo@kernel.org>,
+ Kees Cook <keescook@chromium.org>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Mark Brown <broonie@kernel.org>, "Kirill A . Shutemov" <kirill@shutemov.name>,
+ Dan Williams <dan.j.williams@intel.com>, Vlastimil Babka <vbabka@suse.cz>,
+ linux-arm-kernel@lists.infradead.org,
+ Sri Krishna chowdary <schowdary@nvidia.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-mips@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, linux-kernel@vger.kernel.org,
+ Paul Burton <paul.burton@mips.com>, Mike Rapoport <rppt@linux.vnet.ibm.com>,
+ Vineet Gupta <vgupta@synopsys.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>,
+ Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D205303
 
-A. Wilcox (awilfox@adelielinux.org) changed:
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |awilfox@adelielinux.org
+On 10/25/2019 12:41 PM, Christophe Leroy wrote:
+> 
+> 
+> Le 25/10/2019 à 07:52, Qian Cai a écrit :
+>>
+>>
+>>> On Oct 24, 2019, at 11:45 PM, Anshuman Khandual <Anshuman.Khandual@arm.com> wrote:
+>>>
+>>> Nothing specific. But just tested this with x86 defconfig with relevant configs
+>>> which are required for this test. Not sure if it involved W=1.
+>>
+>> No, it will not. It needs to run like,
+>>
+>> make W=1 -j 64 2>/tmp/warns
+>>
+> 
+> Are we talking about this peace of code ?
+> 
+> +static unsigned long __init get_random_vaddr(void)
+> +{
+> +    unsigned long random_vaddr, random_pages, total_user_pages;
+> +
+> +    total_user_pages = (TASK_SIZE - FIRST_USER_ADDRESS) / PAGE_SIZE;
+> +
+> +    random_pages = get_random_long() % total_user_pages;
+> +    random_vaddr = FIRST_USER_ADDRESS + random_pages * PAGE_SIZE;
+> +
+> +    WARN_ON((random_vaddr > TASK_SIZE) ||
+> +        (random_vaddr < FIRST_USER_ADDRESS));
+> +    return random_vaddr;
+> +}
+> +
+> 
+> ramdom_vaddr is unsigned,
+> random_pages is unsigned and lower than total_user_pages
+> 
+> So the max value random_vaddr can get is FIRST_USER_ADDRESS + ((TASK_SIZE - FIRST_USER_ADDRESS - 1) / PAGE_SIZE) * PAGE_SIZE = TASK_SIZE - 1
+> And the min value random_vaddr can get is FIRST_USER_ADDRESS (that's when random_pages = 0)
 
---- Comment #2 from A. Wilcox (awilfox@adelielinux.org) ---
-This is because CONFIG_HARDLOCK_DETECTOR is on and CONFIG_NMI_IPI is off.
+That's right.
 
-CONFIG_HARDLOCK_DETECTOR pulls in CONFIG_PPC_WATCHDOG, which unconditionally
-uses smp_send_nmi_ipi (and I believe requires such to work properly).=20
-CONFIG_PPC_WATCHDOG doesn't depend on CONFIG_NMI_IPI which it probably shou=
-ld.=20
-And then CONFIG_HARDLOCK_DETECTOR_ARCH should probably depend on CONFIG_NMI=
-_IPI
-or CONFIG_PPC_WATCHDOG.
+> 
+> So the WARN_ON() is just unneeded, isn't it ?
 
---=20
-You are receiving this mail because:
-You are watching the assignee of the bug.=
+It is just a sanity check on possible vaddr values before it's corresponding
+page table mappings could be created. If it's worth to drop this in favor of
+avoiding these unwanted warning messages on x86, will go ahead with it as it
+is not super important.
+
+> 
+> Christophe
+> 
