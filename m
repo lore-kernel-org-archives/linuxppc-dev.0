@@ -2,79 +2,52 @@ Return-Path: <SRS0=byMz=YS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 56661CA9EBD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 14:58:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FAE4CA9EA0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 15:25:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 085D721929
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 14:58:12 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="aXVD993E"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 085D721929
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1CAA921D82
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 15:25:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1CAA921D82
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gondor.apana.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4706g65fXQzDqs8
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Oct 2019 01:58:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4707G7438bzDqjk
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Oct 2019 02:25:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b43;
- helo=mail-yb1-xb43.google.com; envelope-from=carlojpisani@gmail.com;
+ smtp.mailfrom=gondor.apana.org.au (client-ip=216.24.177.18;
+ helo=deadmen.hmeau.com; envelope-from=herbert@gondor.apana.org.au;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="aXVD993E"; 
- dkim-atps=neutral
-Received: from mail-yb1-xb43.google.com (mail-yb1-xb43.google.com
- [IPv6:2607:f8b0:4864:20::b43])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=gondor.apana.org.au
+Received: from deadmen.hmeau.com (helcar.hmeau.com [216.24.177.18])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47066c3TbMzDqhK
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Oct 2019 01:33:27 +1100 (AEDT)
-Received: by mail-yb1-xb43.google.com with SMTP id h202so911088ybg.13
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 07:33:27 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=VpLlVrXP050XVnJUIXmpDOE06SBLEojfDEDD5nCjdx8=;
- b=aXVD993EyjjlRE/4BDk931Uo2YpeNAtohcIStuXUMcmzwU+3gUHAQ4nJNTBSUOl3Wx
- MtFmyLreQ2tZgFvlv3aHSJwLX/pGtK1hyPvgo8dHWq0N1bryYpE+0ETxi2FOx2Zw4drr
- EHSBUhlfZRLBBemzPkSNwDJvLoSTvNlmdgI9YKkfADWJ8Xoe17ybwfHB5MiVAVKHBtDj
- pxGksbzwxkZtcSBNMa9SW5gnP2EGR+R2I/naLTVQ9AtEU/8h/mXV+EYxNQgVWqiFJVk9
- V0wxUIEoSuh8nrZWqW3GZ6Sc7E+HpibYvJw/Sxsho+NWasKJW5RUNR96elbrbSuVlWqo
- y2Dg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=VpLlVrXP050XVnJUIXmpDOE06SBLEojfDEDD5nCjdx8=;
- b=EW189oQy5VfgosOsE/cRB9Sl17W7Gl4ufh7gg3kHuKhmZVl2v4aelnb2fqXePKwyCU
- NtTTdNNnkd4GZldSuQScAmBY3mAU3JX4Ikbcj/KmRbsM0J8RflA4LGQnOBH11eOyLISQ
- E/74X10NJj82nHYVd0HBRiaUxlGR30vmhZOQWpukcLHnmvzHTafobrxewMysR3mHfzDP
- A9yZjmxUn7gFkJrOhPE7CKNIc49rgjasYR/WQdm+0qcGdvmrEg3zQILRgDEem2p0GGau
- 7bSTQ6q8LVmFShAe/D/O04Rqj7023rWhheiUHsz7iTzvSzR7jtq9ynq3XA7maOrnEFnx
- GL3g==
-X-Gm-Message-State: APjAAAVBnyZ2huZDj+VDyj1gMt+4S3ObXmCX9ouO5nuBa16XVKMAFElL
- GPHzBEHq8ZEmuuSOofPE8pmqgaFsDbKgdorKYjA=
-X-Google-Smtp-Source: APXvYqzUyqixnUEX3eyIPitt4o6OCLL0sX0/q8zK369OM2OxCQgq4yNTFjgQQMYY155qq7w/cN7UgykWwp6YvnltHHc=
-X-Received: by 2002:a25:30d5:: with SMTP id w204mr3459375ybw.382.1572014002286; 
- Fri, 25 Oct 2019 07:33:22 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4707C91n7WzDqgx
+ for <linuxppc-dev@lists.ozlabs.orG>; Sat, 26 Oct 2019 02:21:08 +1100 (AEDT)
+Received: from gondobar.mordor.me.apana.org.au ([192.168.128.4] helo=gondobar)
+ by deadmen.hmeau.com with esmtps (Exim 4.89 #2 (Debian))
+ id 1iO1OE-0001hu-6D; Fri, 25 Oct 2019 23:20:34 +0800
+Received: from herbert by gondobar with local (Exim 4.89)
+ (envelope-from <herbert@gondor.apana.org.au>)
+ id 1iO1O5-0007pN-BO; Fri, 25 Oct 2019 23:20:25 +0800
+Date: Fri, 25 Oct 2019 23:20:25 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: YueHaibing <yuehaibing@huawei.com>
+Subject: Re: [PATCH -next 00/13] hwrng: use devm_platform_ioremap_resource()
+ to simplify code
+Message-ID: <20191025152025.qudqaupecsgwkn32@gondor.apana.org.au>
+References: <20191016104621.26056-1-yuehaibing@huawei.com>
 MIME-Version: 1.0
-References: <20191024171228.877974-1-s.miroshnichenko@yadro.com>
- <20191024171228.877974-2-s.miroshnichenko@yadro.com>
-In-Reply-To: <20191024171228.877974-2-s.miroshnichenko@yadro.com>
-From: Carlo Pisani <carlojpisani@gmail.com>
-Date: Fri, 25 Oct 2019 16:33:13 +0200
-Message-ID: <CA+QBN9AR+drU0zC2-C2zVetTv0GxNs0KRF1BG51mwcRyu=TxpA@mail.gmail.com>
-Subject: Oxford Semiconductor Ltd OX16PCI954 - weird dmesg
-To: linux-pci@vger.kernel.org, Bjorn Helgaas <helgaas@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20191016104621.26056-1-yuehaibing@huawei.com>
+User-Agent: NeoMutt/20170113 (1.7.2)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,119 +59,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux@yadro.com
+Cc: alexandre.belloni@bootlin.com, nicolas.ferre@microchip.com, eric@anholt.net,
+ f.fainelli@gmail.com, khilman@baylibre.com, krzk@kernel.org,
+ ludovic.desroches@microchip.com, kgene@kernel.org,
+ bcm-kernel-feedback-list@broadcom.com, linux-crypto@vger.kernel.org,
+ dsaxena@plexity.net, arnd@arndb.de, rjui@broadcom.com, l.stelmach@samsung.com,
+ linux-samsung-soc@vger.kernel.org, linux-rpi-kernel@lists.infradead.org,
+ mpm@selenic.com, linux-amlogic@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, sbranden@broadcom.com,
+ gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
+ patrice.chotard@st.com, wahrenst@gmx.net, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-pci_bus 0000:00: root bus resource [mem 0x50000000-0x5fffffff]
-pci_bus 0000:00: root bus resource [io  0x18800000-0x188fffff]
-pci_bus 0000:00: root bus resource [??? 0x00000000 flags 0x0]
-pci_bus 0000:00: No busn resource found for root bus, will use [bus 00-ff]
-pci 0000:00:00.0: [Firmware Bug]: reg 0x14: invalid BAR (can't size)
-pci 0000:00:00.0: [Firmware Bug]: reg 0x18: invalid BAR (can't size)
-pci 0000:00:04.0: BAR 0: assigned [mem 0x50000000-0x5000ffff]
-pci 0000:00:05.0: BAR 1: assigned [mem 0x50010000-0x50010fff]
-pci 0000:00:05.0: BAR 3: assigned [mem 0x50011000-0x50011fff]
-pci 0000:00:0a.0: BAR 1: assigned [mem 0x50012000-0x50012fff]
-pci 0000:00:0a.0: BAR 3: assigned [mem 0x50013000-0x50013fff]
-pci 0000:00:02.0: BAR 0: assigned [io  0x18800000-0x188000ff]
-pci 0000:00:02.0: BAR 1: assigned [mem 0x50014000-0x500140ff]
-pci 0000:00:03.0: BAR 0: assigned [io  0x18800400-0x188004ff]
-pci 0000:00:03.0: BAR 1: assigned [mem 0x50014100-0x500141ff]
-pci 0000:00:05.0: BAR 0: assigned [io  0x18800800-0x1880081f]
-pci 0000:00:05.0: BAR 2: assigned [io  0x18800820-0x1880083f]
-pci 0000:00:0a.0: BAR 0: assigned [io  0x18800840-0x1880085f]
-pci 0000:00:0a.0: BAR 2: assigned [io  0x18800860-0x1880087f]
+On Wed, Oct 16, 2019 at 06:46:08PM +0800, YueHaibing wrote:
+> devm_platform_ioremap_resource() internally have platform_get_resource()
+> and devm_ioremap_resource() in it. So instead of calling them separately
+> use devm_platform_ioremap_resource() directly.
+> 
+> YueHaibing (13):
+>   hwrng: atmel - use devm_platform_ioremap_resource() to simplify code
+>   hwrng: bcm2835 - use devm_platform_ioremap_resource() to simplify code
+>   hwrng: exynos - use devm_platform_ioremap_resource() to simplify code
+>   hwrng: hisi - use devm_platform_ioremap_resource() to simplify code
+>   hwrng: ks-sa - use devm_platform_ioremap_resource() to simplify code
+>   hwrng: meson - use devm_platform_ioremap_resource() to simplify code
+>   hwrng: npcm - use devm_platform_ioremap_resource() to simplify code
+>   hwrng: omap - use devm_platform_ioremap_resource() to simplify code
+>   hwrng: pasemi - use devm_platform_ioremap_resource() to simplify code
+>   hwrng: pic32 - use devm_platform_ioremap_resource() to simplify code
+>   hwrng: st - use devm_platform_ioremap_resource() to simplify code
+>   hwrng: tx4939 - use devm_platform_ioremap_resource() to simplify code
+>   hwrng: xgene - use devm_platform_ioremap_resource() to simplify code
+> 
+>  drivers/char/hw_random/atmel-rng.c   | 4 +---
+>  drivers/char/hw_random/bcm2835-rng.c | 5 +----
+>  drivers/char/hw_random/exynos-trng.c | 4 +---
+>  drivers/char/hw_random/hisi-rng.c    | 4 +---
+>  drivers/char/hw_random/ks-sa-rng.c   | 4 +---
+>  drivers/char/hw_random/meson-rng.c   | 4 +---
+>  drivers/char/hw_random/npcm-rng.c    | 4 +---
+>  drivers/char/hw_random/omap-rng.c    | 4 +---
+>  drivers/char/hw_random/pasemi-rng.c  | 4 +---
+>  drivers/char/hw_random/pic32-rng.c   | 4 +---
+>  drivers/char/hw_random/st-rng.c      | 4 +---
+>  drivers/char/hw_random/tx4939-rng.c  | 4 +---
+>  drivers/char/hw_random/xgene-rng.c   | 4 +---
+>  13 files changed, 13 insertions(+), 40 deletions(-)
 
-
-00:00.0 Non-VGA unclassified device: Integrated Device Technology,
-Inc. Device 0000
-        Subsystem: Device 0214:011d
-        Flags: bus master, 66MHz, medium devsel, latency 60, IRQ 140
-        Memory at <unassigned> (32-bit, prefetchable)
-        I/O ports at <ignored>
-        I/O ports at <ignored>
-
-00:02.0 Ethernet controller: VIA Technologies, Inc. VT6105/VT6106S
-[Rhine-III] (rev 86)
-        Subsystem: AST Research Inc Device 086c
-        Flags: bus master, stepping, medium devsel, latency 64, IRQ 142
-        I/O ports at 18800000 [size=256]
-        Memory at 50014000 (32-bit, non-prefetchable) [size=256]
-        Capabilities: [40] Power Management version 2
-        Kernel driver in use: via-rhine
-
-00:03.0 Ethernet controller: VIA Technologies, Inc. VT6105/VT6106S
-[Rhine-III] (rev 86)
-        Subsystem: AST Research Inc Device 086c
-        Flags: bus master, stepping, medium devsel, latency 64, IRQ 143
-        I/O ports at 18800400 [size=256]
-        Memory at 50014100 (32-bit, non-prefetchable) [size=256]
-        Capabilities: [40] Power Management version 2
-        Kernel driver in use: via-rhine
-
-00:04.0 Network controller: Atheros Communications Inc. Device 0029 (rev 01)
-        Subsystem: Atheros Communications Inc. Device 2091
-        Flags: bus master, 66MHz, medium devsel, latency 168, IRQ 142
-        Memory at 50000000 (32-bit, non-prefetchable) [size=64K]
-        Capabilities: [44] Power Management version 2
-        Kernel driver in use: ath9k
-
-00:05.0 Serial controller: Oxford Semiconductor Ltd OX16PCI954 (Quad
-16950 UART) function 0 (Uart) (rev 01) (prog-if 06 [)
-        Subsystem: Oxford Semiconductor Ltd Device 0000
-        Flags: medium devsel, IRQ 143
-        I/O ports at 18800800 [size=32]
-        Memory at 50010000 (32-bit, non-prefetchable) [size=4K]
-        I/O ports at 18800820 [size=32]
-        Memory at 50011000 (32-bit, non-prefetchable) [size=4K]
-        Capabilities: [40] Power Management version 2
-        Kernel driver in use: serial
-
-00:05.1 Non-VGA unclassified device: Oxford Semiconductor Ltd
-OX16PCI954 (Quad 16950 UART) function 0 (Disabled) (rev 01)
-        Subsystem: Oxford Semiconductor Ltd Device 0000
-        Flags: medium devsel, IRQ 143
-        I/O ports at <unassigned> [disabled]
-        I/O ports at <unassigned> [disabled]
-        I/O ports at <unassigned> [disabled]
-        Capabilities: [40] Power Management version 2
-
-00:0a.0 Serial controller: Oxford Semiconductor Ltd OX16PCI954 (Quad
-16950 UART) function 0 (Uart) (rev 01) (prog-if 06 [)
-        Subsystem: Oxford Semiconductor Ltd Device 0000
-        Flags: medium devsel, IRQ 140
-        I/O ports at 18800840 [size=32]
-        Memory at 50012000 (32-bit, non-prefetchable) [size=4K]
-        I/O ports at 18800860 [size=32]
-        Memory at 50013000 (32-bit, non-prefetchable) [size=4K]
-        Capabilities: [40] Power Management version 2
-        Kernel driver in use: serial
-
-00:0a.1 Non-VGA unclassified device: Oxford Semiconductor Ltd
-OX16PCI954 (Quad 16950 UART) function 0 (Disabled) (rev 01)
-        Subsystem: Oxford Semiconductor Ltd Device 0000
-        Flags: medium devsel, IRQ 140
-        I/O ports at <unassigned> [disabled]
-        I/O ports at <unassigned> [disabled]
-        I/O ports at <unassigned> [disabled]
-        Capabilities: [40] Power Management version 2
-
-
-hi guys
-I have a couple of miniPCI Oxford Semiconductor Ltd OX16PCI954 cards
-installed, and the dmesg looks weird
-
-espeially these lines
-pci_bus 0000:00: root bus resource [mem 0x50000000-0x5fffffff]
-pci_bus 0000:00: root bus resource [io  0x18800000-0x188fffff]
-pci_bus 0000:00: root bus resource [??? 0x00000000 flags 0x0]
-pci_bus 0000:00: No busn resource found for root bus, will use [bus 00-ff]
-pci 0000:00:00.0: [Firmware Bug]: reg 0x14: invalid BAR (can't size)
-pci 0000:00:00.0: [Firmware Bug]: reg 0x18: invalid BAR (can't size)
-
-besides, I am experimenting crashes happening in burn-in tests, and I
-do suspect it's something related to the newly added cards
-
-any enlightenment?
+All applied.  Thanks.
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
