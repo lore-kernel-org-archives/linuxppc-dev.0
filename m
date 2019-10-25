@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FAE4CA9EA0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 15:25:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 55096CA9EA0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 15:30:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1CAA921D82
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 15:25:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1CAA921D82
+	by mail.kernel.org (Postfix) with ESMTPS id 6AD4120679
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 15:30:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6AD4120679
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gondor.apana.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4707G7438bzDqjk
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Oct 2019 02:25:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4707My5LrLzDqq3
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Oct 2019 02:30:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=gondor.apana.org.au (client-ip=216.24.177.18;
  helo=deadmen.hmeau.com; envelope-from=herbert@gondor.apana.org.au;
@@ -28,25 +28,25 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from deadmen.hmeau.com (helcar.hmeau.com [216.24.177.18])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4707C91n7WzDqgx
- for <linuxppc-dev@lists.ozlabs.orG>; Sat, 26 Oct 2019 02:21:08 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4707C95d9SzDqjR
+ for <linuxppc-dev@lists.ozlabs.orG>; Sat, 26 Oct 2019 02:19:44 +1100 (AEDT)
 Received: from gondobar.mordor.me.apana.org.au ([192.168.128.4] helo=gondobar)
  by deadmen.hmeau.com with esmtps (Exim 4.89 #2 (Debian))
- id 1iO1OE-0001hu-6D; Fri, 25 Oct 2019 23:20:34 +0800
+ id 1iO1N3-0001fp-1E; Fri, 25 Oct 2019 23:19:21 +0800
 Received: from herbert by gondobar with local (Exim 4.89)
  (envelope-from <herbert@gondor.apana.org.au>)
- id 1iO1O5-0007pN-BO; Fri, 25 Oct 2019 23:20:25 +0800
-Date: Fri, 25 Oct 2019 23:20:25 +0800
+ id 1iO1Mw-0007o6-Gy; Fri, 25 Oct 2019 23:19:14 +0800
+Date: Fri, 25 Oct 2019 23:19:14 +0800
 From: Herbert Xu <herbert@gondor.apana.org.au>
-To: YueHaibing <yuehaibing@huawei.com>
-Subject: Re: [PATCH -next 00/13] hwrng: use devm_platform_ioremap_resource()
- to simplify code
-Message-ID: <20191025152025.qudqaupecsgwkn32@gondor.apana.org.au>
-References: <20191016104621.26056-1-yuehaibing@huawei.com>
+To: Eric Biggers <ebiggers@kernel.org>
+Subject: Re: [PATCH v2 0/3] crypto: powerpc - convert SPE AES algorithms to
+ skcipher API
+Message-ID: <20191025151914.4qxbl4at6cfwtj2n@gondor.apana.org.au>
+References: <20191015024517.52790-1-ebiggers@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20191016104621.26056-1-yuehaibing@huawei.com>
+In-Reply-To: <20191015024517.52790-1-ebiggers@kernel.org>
 User-Agent: NeoMutt/20170113 (1.7.2)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -59,54 +59,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alexandre.belloni@bootlin.com, nicolas.ferre@microchip.com, eric@anholt.net,
- f.fainelli@gmail.com, khilman@baylibre.com, krzk@kernel.org,
- ludovic.desroches@microchip.com, kgene@kernel.org,
- bcm-kernel-feedback-list@broadcom.com, linux-crypto@vger.kernel.org,
- dsaxena@plexity.net, arnd@arndb.de, rjui@broadcom.com, l.stelmach@samsung.com,
- linux-samsung-soc@vger.kernel.org, linux-rpi-kernel@lists.infradead.org,
- mpm@selenic.com, linux-amlogic@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, sbranden@broadcom.com,
- gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
- patrice.chotard@st.com, wahrenst@gmx.net, linuxppc-dev@lists.ozlabs.org
+Cc: Markus Stockhausen <stockhausen@collogia.de>, linux-crypto@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Oct 16, 2019 at 06:46:08PM +0800, YueHaibing wrote:
-> devm_platform_ioremap_resource() internally have platform_get_resource()
-> and devm_ioremap_resource() in it. So instead of calling them separately
-> use devm_platform_ioremap_resource() directly.
+On Mon, Oct 14, 2019 at 07:45:14PM -0700, Eric Biggers wrote:
+> This series converts the glue code for the PowerPC SPE implementations
+> of AES-ECB, AES-CBC, AES-CTR, and AES-XTS from the deprecated
+> "blkcipher" API to the "skcipher" API.  This is needed in order for the
+> blkcipher API to be removed.
 > 
-> YueHaibing (13):
->   hwrng: atmel - use devm_platform_ioremap_resource() to simplify code
->   hwrng: bcm2835 - use devm_platform_ioremap_resource() to simplify code
->   hwrng: exynos - use devm_platform_ioremap_resource() to simplify code
->   hwrng: hisi - use devm_platform_ioremap_resource() to simplify code
->   hwrng: ks-sa - use devm_platform_ioremap_resource() to simplify code
->   hwrng: meson - use devm_platform_ioremap_resource() to simplify code
->   hwrng: npcm - use devm_platform_ioremap_resource() to simplify code
->   hwrng: omap - use devm_platform_ioremap_resource() to simplify code
->   hwrng: pasemi - use devm_platform_ioremap_resource() to simplify code
->   hwrng: pic32 - use devm_platform_ioremap_resource() to simplify code
->   hwrng: st - use devm_platform_ioremap_resource() to simplify code
->   hwrng: tx4939 - use devm_platform_ioremap_resource() to simplify code
->   hwrng: xgene - use devm_platform_ioremap_resource() to simplify code
+> Patch 1-2 are fixes.  Patch 3 is the actual conversion.
 > 
->  drivers/char/hw_random/atmel-rng.c   | 4 +---
->  drivers/char/hw_random/bcm2835-rng.c | 5 +----
->  drivers/char/hw_random/exynos-trng.c | 4 +---
->  drivers/char/hw_random/hisi-rng.c    | 4 +---
->  drivers/char/hw_random/ks-sa-rng.c   | 4 +---
->  drivers/char/hw_random/meson-rng.c   | 4 +---
->  drivers/char/hw_random/npcm-rng.c    | 4 +---
->  drivers/char/hw_random/omap-rng.c    | 4 +---
->  drivers/char/hw_random/pasemi-rng.c  | 4 +---
->  drivers/char/hw_random/pic32-rng.c   | 4 +---
->  drivers/char/hw_random/st-rng.c      | 4 +---
->  drivers/char/hw_random/tx4939-rng.c  | 4 +---
->  drivers/char/hw_random/xgene-rng.c   | 4 +---
->  13 files changed, 13 insertions(+), 40 deletions(-)
+> Tested with:
+> 
+> 	export ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu-
+> 	make mpc85xx_defconfig
+> 	cat >> .config << EOF
+> 	# CONFIG_MODULES is not set
+> 	# CONFIG_CRYPTO_MANAGER_DISABLE_TESTS is not set
+> 	CONFIG_DEBUG_KERNEL=y
+> 	CONFIG_CRYPTO_MANAGER_EXTRA_TESTS=y
+> 	CONFIG_CRYPTO_AES=y
+> 	CONFIG_CRYPTO_CBC=y
+> 	CONFIG_CRYPTO_CTR=y
+> 	CONFIG_CRYPTO_ECB=y
+> 	CONFIG_CRYPTO_XTS=y
+> 	CONFIG_CRYPTO_AES_PPC_SPE=y
+> 	EOF
+> 	make olddefconfig
+> 	make -j32
+> 	qemu-system-ppc -M mpc8544ds -cpu e500 -nographic \
+> 		-kernel arch/powerpc/boot/zImage \
+> 		-append cryptomgr.fuzz_iterations=1000
+> 
+> Note that xts-ppc-spe still fails the comparison tests due to the lack
+> of ciphertext stealing support.  This is not addressed by this series.
+> 
+> Changed since v1:
+> 
+> - Split fixes into separate patches.
+> 
+> - Made ppc_aes_setkey_skcipher() call ppc_aes_setkey(), rather than
+>   creating a separate expand_key() function.  This keeps the code
+>   shorter.
+> 
+> Eric Biggers (3):
+>   crypto: powerpc - don't unnecessarily use atomic scatterwalk
+>   crypto: powerpc - don't set ivsize for AES-ECB
+>   crypto: powerpc - convert SPE AES algorithms to skcipher API
+> 
+>  arch/powerpc/crypto/aes-spe-glue.c | 389 ++++++++++++-----------------
+>  crypto/Kconfig                     |   1 +
+>  2 files changed, 166 insertions(+), 224 deletions(-)
 
 All applied.  Thanks.
 -- 
