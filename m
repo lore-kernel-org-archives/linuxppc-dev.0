@@ -2,81 +2,131 @@ Return-Path: <SRS0=byMz=YS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-2.2 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C4C75CA9EA0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 06:15:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D1F5CA9EA0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 06:17:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 71B3420867
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 06:15:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0DB0E21929
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 06:17:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=monstr-eu.20150623.gappssmtp.com header.i=@monstr-eu.20150623.gappssmtp.com header.b="QrKWgESw"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 71B3420867
+	dkim=pass (1024-bit key) header.d=xilinx.onmicrosoft.com header.i=@xilinx.onmicrosoft.com header.b="Prd8BMMT"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0DB0E21929
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xilinx.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 46zv3x3r7CzDqgW
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 17:15:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=monstr.eu
- (client-ip=2a00:1450:4864:20::341; helo=mail-wm1-x341.google.com;
- envelope-from=monstr@monstr.eu; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 46zv6N016JzDqjb
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2019 17:17:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=xilinx.com (client-ip=40.107.73.89;
+ helo=nam05-dm3-obe.outbound.protection.outlook.com;
+ envelope-from=michals@xilinx.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=xilinx.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=monstr-eu.20150623.gappssmtp.com
- header.i=@monstr-eu.20150623.gappssmtp.com header.b="QrKWgESw"; 
- dkim-atps=neutral
-Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com
- [IPv6:2a00:1450:4864:20::341])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=xilinx.onmicrosoft.com header.i=@xilinx.onmicrosoft.com
+ header.b="Prd8BMMT"; dkim-atps=neutral
+Received: from NAM05-DM3-obe.outbound.protection.outlook.com
+ (mail-eopbgr730089.outbound.protection.outlook.com [40.107.73.89])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46ztyk13fmzDqYk
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 17:10:51 +1100 (AEDT)
-Received: by mail-wm1-x341.google.com with SMTP id w9so689221wmm.5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Oct 2019 23:10:51 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46zv0l3CWpzDqYk
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2019 17:12:39 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=M8XI5yhtglCYuIfY2ASMll/7LVU2DLqp2T6mm8/7xZzdTqwDW4ilapWVwMlguRQV548GBZhl0DNQJa2TWIe3+TOBXDtqk+pX7qbsQz4YZ3NYNLlsiTUgxaezJXdQrpW70BGUp46N0bIdmKUivtIbikVdpsuiP20JW2R261k9hNPOmlNgkq8MnYqTpwb6VUWZ989an0vsIPdMt/M66CJMzsj84Vrh1cu1bH0GLHIlB9ZhabQGaqG22cEuLuBjjM6ltxQbnr3lnzJN+ikPY2MJAU2KRqX01jghYL+l9NiXnKGydt0aypyvqsy1D8YltuZxv4XxWEl9x/hnjBjWSmsx0w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=0JHotugWXnKMqHBEUS9ou6QEtsSKsW6nGO9hidSCr3A=;
+ b=SLxL0EMDXK7+NP63AM2fPMqdY7odQh1GwstSGAeQ4glmTfuWzdfA6296rIbtyy1U9qNEWqBTqV3gB/d7LW9ZuXskhcRkLNEZOtXGlbjZf7AoEj+Qzh88solWu3egBpCPIDcTazbG79PZxnBcEyRlshYNBe2dq1uDLGTxSvMSg7MpMlKjMbFvsyay8/KZlVADlHqN768nrtFhMKOiooWjL+aGdh2OLn3SgUBeP4xhQ33sqZpWKZd5FCQweVsg1m/3NWKY19mhVfKVfn3iiq6dbqT7kqytuUUA3b4lIresfEJThnPhkHIxALaFQMEKx6MDn0X3KZEGAQ5GWSpJRf61/A==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 149.199.60.83) smtp.rcpttodomain=lists.ozlabs.org smtp.mailfrom=xilinx.com;
+ dmarc=bestguesspass action=none header.from=xilinx.com; dkim=none (message
+ not signed); arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=monstr-eu.20150623.gappssmtp.com; s=20150623;
- h=sender:from:to:cc:subject:date:message-id;
- bh=UZtQcpZNm2bgRElTtB0/YYRtxpmigD0UWuciJCpp5gM=;
- b=QrKWgESwGfrtCnkB4ANF4RDTIvZX+3mgrn+F048ehqIGeg2PIMapuhi5B29YdIPJRF
- OuF/1XgB1E3hujF7fmLSGOWHCpq+9DlFVEduBO8ipDdnjmiangiskHjwO3FsA7j8x1KD
- 1Smuo6qnW1seJDFFROI5kLkQKHJzW7j8nL7QRsx6D6T92OoNZE6hSbJWqfQ2kzquPzUV
- EGGwKGRq2Dt/b39DcGka7dZFK17Wt7MIOIDReJEBLetmCZXSMWSBNVp4MthobvqT9E3G
- LimR87SPwJ5FuFVOpPQc3/2WoUZLiJcnk52cJ7R4bO2cA7rCH/FuOM9im/yZQR0mR3/u
- 6apw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:sender:from:to:cc:subject:date:message-id;
- bh=UZtQcpZNm2bgRElTtB0/YYRtxpmigD0UWuciJCpp5gM=;
- b=cuj+Cv89k8TsCy5lHVOCdTP8/lQibuhO51PPtjzmyPbjm/KNJsxKDv1Op49xRgVWT+
- cGmbaAmCirbvd4klAGKfnyVPH3U7c3Ge7hD/X5+9MZuG/ZLVdyWiPK8MeoHDWLD3cIcp
- gK7W5Gs4p8pMkKuW4RmEhe26rQ0tf286VHLJPBRXLW6kQuvd3//P+EihSM4i1ryMMzAB
- W8yDnQrixniQvLKGoom+1utrc2KkyVBK2knhyxwRal31eZDunye4Csgm32LwGBVc/B1h
- fK/FtfjxrRyygszUdOcsxGsIl3uN/qcD56aMnrI/TrkuXIhNvOmkSBOetdeFXM0zOjjl
- wVvQ==
-X-Gm-Message-State: APjAAAWXlEeXjlNNXp2rdMEAu4Dvq4JeACom6yaYcpepxq+stZcpM9Qy
- NFZy0xtx9oAiEzDVlgQgYw/q5A==
-X-Google-Smtp-Source: APXvYqwEgYO6Ro5u2lCKSVB90BazD7V/pF/lyQv5RjmcJQ3shOXOE39URbi4sRXKy/2ygEnJau+JXA==
-X-Received: by 2002:a7b:c924:: with SMTP id h4mr1846926wml.46.1571983844471;
- Thu, 24 Oct 2019 23:10:44 -0700 (PDT)
-Received: from localhost (nat-35.starnet.cz. [178.255.168.35])
- by smtp.gmail.com with ESMTPSA id k24sm6458006wmi.1.2019.10.24.23.10.43
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 24 Oct 2019 23:10:43 -0700 (PDT)
+ d=xilinx.onmicrosoft.com; s=selector2-xilinx-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=0JHotugWXnKMqHBEUS9ou6QEtsSKsW6nGO9hidSCr3A=;
+ b=Prd8BMMTPVwOefZJIdRXho1DaN2BLzJrAy+Ymlg0+1QYsKXhFCSB12C0OvVb8muM+k6W0KtHTZD0fAZkA3jPqLDKq3GytdAYDzF1cihagRgc0vZZVwvYrkj2DTkWtp5GuEB0pTmhtMUdUGFJooXss9lI2B7AZikV/aZNYTdcDkM=
+Received: from MWHPR02CA0013.namprd02.prod.outlook.com (2603:10b6:300:4b::23)
+ by BYAPR02MB5672.namprd02.prod.outlook.com (2603:10b6:a03:97::19)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.2387.23; Fri, 25 Oct
+ 2019 06:12:32 +0000
+Received: from CY1NAM02FT060.eop-nam02.prod.protection.outlook.com
+ (2a01:111:f400:7e45::209) by MWHPR02CA0013.outlook.office365.com
+ (2603:10b6:300:4b::23) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.20.2387.20 via Frontend
+ Transport; Fri, 25 Oct 2019 06:12:32 +0000
+Authentication-Results: spf=pass (sender IP is 149.199.60.83)
+ smtp.mailfrom=xilinx.com; lists.ozlabs.org; dkim=none (message not signed)
+ header.d=none;lists.ozlabs.org; dmarc=bestguesspass action=none
+ header.from=xilinx.com;
+Received-SPF: Pass (protection.outlook.com: domain of xilinx.com designates
+ 149.199.60.83 as permitted sender) receiver=protection.outlook.com;
+ client-ip=149.199.60.83; helo=xsj-pvapsmtpgw01;
+Received: from xsj-pvapsmtpgw01 (149.199.60.83) by
+ CY1NAM02FT060.mail.protection.outlook.com (10.152.74.252) with Microsoft SMTP
+ Server (version=TLS1_0, cipher=TLS_RSA_WITH_AES_256_CBC_SHA) id 15.20.2387.20
+ via Frontend Transport; Fri, 25 Oct 2019 06:12:31 +0000
+Received: from unknown-38-66.xilinx.com ([149.199.38.66] helo=xsj-pvapsmtp01)
+ by xsj-pvapsmtpgw01 with esmtp (Exim 4.63)
+ (envelope-from <michal.simek@xilinx.com>)
+ id 1iNspr-00005K-BR; Thu, 24 Oct 2019 23:12:31 -0700
+Received: from [127.0.0.1] (helo=localhost)
+ by xsj-pvapsmtp01 with smtp (Exim 4.63)
+ (envelope-from <michal.simek@xilinx.com>)
+ id 1iNspm-0000Fy-7j; Thu, 24 Oct 2019 23:12:26 -0700
+Received: from [172.30.17.123] by xsj-pvapsmtp01 with esmtp (Exim 4.63)
+ (envelope-from <michals@xilinx.com>)
+ id 1iNspj-0000EL-58; Thu, 24 Oct 2019 23:12:24 -0700
+Subject: Re: [PATCH 1/2] asm-generic: Make msi.h a mandatory include/asm header
+To: Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Michal Simek <michal.simek@xilinx.com>
+References: <cover.1571911976.git.michal.simek@xilinx.com>
+ <a021f232968cfffe3f2d838da47214c6bbdeeedb.1571911976.git.michal.simek@xilinx.com>
+ <CAK7LNAQvZr48zXkyhii6E-wckYfakhh9gVD=DoBOt++TtPFEaw@mail.gmail.com>
 From: Michal Simek <michal.simek@xilinx.com>
-To: linux-kernel@vger.kernel.org, monstr@monstr.eu, michal.simek@xilinx.com,
- git@xilinx.com, palmer@sifive.com, hch@infradead.org, longman@redhat.com,
- helgaas@kernel.org
-Subject: [PATCH v2 0/2] Enabling MSI for Microblaze
-Date: Fri, 25 Oct 2019 08:10:36 +0200
-Message-Id: <cover.1571983829.git.michal.simek@xilinx.com>
-X-Mailer: git-send-email 2.17.1
+Message-ID: <33e46e4b-cfe4-db2f-02e1-0164327bcecc@xilinx.com>
+Date: Fri, 25 Oct 2019 08:12:14 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
+MIME-Version: 1.0
+In-Reply-To: <CAK7LNAQvZr48zXkyhii6E-wckYfakhh9gVD=DoBOt++TtPFEaw@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-Product-Ver: IMSS-7.1.0.1224-8.2.0.1013-23620.005
+X-TM-AS-User-Approved-Sender: Yes;Yes
+X-EOPAttributedMessage: 0
+X-MS-Office365-Filtering-HT: Tenant
+X-Forefront-Antispam-Report: CIP:149.199.60.83; IPV:NLI; CTRY:US; EFV:NLI;
+ SFV:NSPM;
+ SFS:(10009020)(1496009)(4636009)(136003)(376002)(39860400002)(346002)(396003)(52314003)(199004)(189003)(6246003)(446003)(50466002)(356004)(6666004)(230700001)(58126008)(110136005)(54906003)(478600001)(486006)(5660300002)(44832011)(36386004)(4744005)(316002)(31696002)(31686004)(2906002)(476003)(2616005)(9786002)(106002)(36756003)(126002)(426003)(11346002)(81166006)(81156014)(186003)(4326008)(8936002)(8676002)(65956001)(76176011)(70206006)(229853002)(53546011)(65806001)(47776003)(2486003)(23676004)(26005)(305945005)(7406005)(7416002)(70586007)(336012)(41533002);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:BYAPR02MB5672; H:xsj-pvapsmtpgw01; FPR:;
+ SPF:Pass; LANG:en; PTR:unknown-60-83.xilinx.com; A:1; MX:1; 
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: 00540cd9-42e1-4b1d-5a59-08d759125257
+X-MS-TrafficTypeDiagnostic: BYAPR02MB5672:
+X-Microsoft-Antispam-PRVS: <BYAPR02MB5672716AD1E11AAE5793BB2AC6650@BYAPR02MB5672.namprd02.prod.outlook.com>
+X-Auto-Response-Suppress: DR, RN, NRN, OOF, AutoReply
+X-MS-Oob-TLC-OOBClassifiers: OLM:7219;
+X-Forefront-PRVS: 02015246A9
+X-MS-Exchange-SenderADCheck: 1
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: W26rSgbnBt0jt4ftISPhNMiWkJNEIONYyGVbrWw4DHjVZe34lWBYM61YskDjnoJ8FQ82uirPKA31RYp+qrem0BhZRvTqSC2N/XXkAxlVMgnDz3A1H0uHSLZA0pj0T/WMRv2go6zs/aw/hRYpu8Od49/wjrJnv9gmifPlWfHwpiE5DrQPQzY+04RZ9ouE2omxHPppajmsd2TUD//wa+eQFQrp97xh7gyFoLLRyLnMBzoQYZmIDxvZSXUAjBqcl8R+og4HbTMRqtx5xDjt2AEpRtdN5Llnrb7TM02sYErliJAWR+NhfVhGYCjTl5ZQ6aqOH0gMpZo8LrKl6EGMYkBRnugvRLalhpTl+H5Mojm9FwXc9AuJmFIDlMfi7WdzbyOc5x+nk5uI7oTxvZKKgUs+Pr1O4UpEmgCeqNt/tyh5WO+9/g4clhteNuIl3AUWtCFw
+X-OriginatorOrg: xilinx.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Oct 2019 06:12:31.9902 (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 00540cd9-42e1-4b1d-5a59-08d759125257
+X-MS-Exchange-CrossTenant-Id: 657af505-d5df-48d0-8300-c31994686c5c
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=657af505-d5df-48d0-8300-c31994686c5c; Ip=[149.199.60.83];
+ Helo=[xsj-pvapsmtpgw01]
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BYAPR02MB5672
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,62 +138,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Catalin Marinas <catalin.marinas@arm.com>,
- Eric Biggers <ebiggers@google.com>,
- "Peter Zijlstra \(Intel\)" <peterz@infradead.org>, linux-pci@vger.kernel.org,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
+Cc: Eric Biggers <ebiggers@google.com>,
+ "Peter Zijlstra \(Intel\)" <peterz@infradead.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Palmer Dabbelt <palmer@sifive.com>,
+ linux-mips@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ longman@redhat.com, sparclinux <sparclinux@vger.kernel.org>,
  linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>,
- Greg Ungerer <gerg@linux-m68k.org>, linux-arch@vger.kernel.org,
+ Ingo Molnar <mingo@kernel.org>, linux-arch <linux-arch@vger.kernel.org>,
  Herbert Xu <herbert@gondor.apana.org.au>, Jackie Liu <liuyun01@kylinos.cn>,
- Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@kernel.org>,
+ Russell King <linux@armlinux.org.uk>, Christoph Hellwig <hch@infradead.org>,
  Firoz Khan <firoz.khan@linaro.org>, Wesley Terpstra <wesley@sifive.com>,
- James Hogan <jhogan@kernel.org>, linux-snps-arc@lists.infradead.org,
- Albert Ou <aou@eecs.berkeley.edu>, Arnd Bergmann <arnd@arndb.de>,
- Paul Walmsley <paul.walmsley@sifive.com>, Bjorn Helgaas <bhelgaas@google.com>,
- linux-arm-kernel@lists.infradead.org,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-mips@vger.kernel.org,
+ James Hogan <jhogan@kernel.org>, Bjorn Helgaas <helgaas@kernel.org>,
+ arcml <linux-snps-arc@lists.infradead.org>, Albert Ou <aou@eecs.berkeley.edu>,
+ Arnd Bergmann <arnd@arndb.de>, git@xilinx.com,
+ Paul Walmsley <paul.walmsley@sifive.com>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>, Vineet Gupta <vgupta@synopsys.com>,
+ Cornelia Huck <cohuck@redhat.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
  Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>,
- Vineet Gupta <vgupta@synopsys.com>, linuxppc-dev@lists.ozlabs.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Paolo Bonzini <pbonzini@redhat.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
  "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+On 24. 10. 19 16:44, Masahiro Yamada wrote:
+> On Thu, Oct 24, 2019 at 7:13 PM Michal Simek <michal.simek@xilinx.com> wrote:
+>>
+>> msi.h is generic for all architectures expect of x86 which has own version.
+> 
+> Maybe a typo?  "except"
 
-these two patches come from discussion with Christoph, Bjorn, Palmer and
-Waiman. The first patch was suggestion by Christoph here
-https://lore.kernel.org/linux-riscv/20191008154604.GA7903@infradead.org/
-The second part was discussed
-https://lore.kernel.org/linux-pci/mhng-5d9bcb53-225e-441f-86cc-b335624b3e7c@palmer-si-x1e/
-and
-https://lore.kernel.org/linux-pci/20191017181937.7004-1-palmer@sifive.com/
+unfortunately yes.
+
+> 
+> 
+> Anyway, the code looks good to me.
+> 
+> Reviewed-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+
+I have sent v2.
+Who should be taking these patches?
 
 Thanks,
 Michal
-
-Changes in v2:
-- Fix typo in commit message s/expect/except/ - Reported-by: Masahiro
-
-Michal Simek (1):
-  asm-generic: Make msi.h a mandatory include/asm header
-
-Palmer Dabbelt (1):
-  pci: Default to PCI_MSI_IRQ_DOMAIN
-
- arch/arc/include/asm/Kbuild     | 1 -
- arch/arm/include/asm/Kbuild     | 1 -
- arch/arm64/include/asm/Kbuild   | 1 -
- arch/mips/include/asm/Kbuild    | 1 -
- arch/powerpc/include/asm/Kbuild | 1 -
- arch/riscv/include/asm/Kbuild   | 1 -
- arch/sparc/include/asm/Kbuild   | 1 -
- drivers/pci/Kconfig             | 2 +-
- include/asm-generic/Kbuild      | 1 +
- 9 files changed, 2 insertions(+), 8 deletions(-)
-
--- 
-2.17.1
-
