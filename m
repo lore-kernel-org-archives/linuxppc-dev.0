@@ -2,71 +2,56 @@ Return-Path: <SRS0=5lCP=YT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 32083CA9EB9
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Oct 2019 14:00:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 14E12CA9EB9
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Oct 2019 15:56:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 84D0F214DA
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Oct 2019 14:00:34 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="UdKa/EIa"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 84D0F214DA
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 662F62070B
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Oct 2019 15:56:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 662F62070B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 470jL74ZHmzDqr6
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Oct 2019 01:00:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=luto@kernel.org; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 470lvK3MwZzDqn1
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Oct 2019 02:55:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="UdKa/EIa"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=none (no SPF record) smtp.mailfrom=linutronix.de
+ (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
+ envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linutronix.de
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a0a:51c0:0:12e:550::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 470jDb5PSLzDqlj
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Oct 2019 00:55:43 +1100 (AEDT)
-Received: from mail-wr1-f49.google.com (mail-wr1-f49.google.com
- [209.85.221.49])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id B69AA214DA
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Oct 2019 13:55:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1572098141;
- bh=oS8AafU4UoR1Cdt5q1QkipV0ZVxN87r+AIY8DNgHUts=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=UdKa/EIasgUwWUWKLVUZjsocCCXKaIIKQvHCKkWsta4ac76dgl2yQ/T8MABrC3sI7
- QT4WVsaHMploW8g3OvhBvq4nUFVqX2zrXBy68w8n3je7YCvffgOqbOQqcXWLA2hKIV
- C5TuFXmNCXo9w+NkE8kU8xCo3ymWDEd1iMs2nCNo=
-Received: by mail-wr1-f49.google.com with SMTP id r1so5325512wrs.9
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Oct 2019 06:55:40 -0700 (PDT)
-X-Gm-Message-State: APjAAAVKaWJkodVSubGObc6izjEr9ykOCG1XiZcUY1C/0a0Qf+ZmixJu
- fSKDSEpHwr2UUa3gDHokUvhVJ4V4guHGLuLCsiJtuQ==
-X-Google-Smtp-Source: APXvYqwvksRrIQEjjgyaaAImviBGypA0F9sRduelJfzhcIHS0Kqw9RdPhWtrIf2y553xqjuua9wmwExmrcJ/9/9X9zs=
-X-Received: by 2002:adf:f04e:: with SMTP id t14mr7762143wro.106.1572098139231; 
- Sat, 26 Oct 2019 06:55:39 -0700 (PDT)
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 470lrx0DSXzDqmd
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Oct 2019 02:53:52 +1100 (AEDT)
+Received: from p5b06da22.dip0.t-ipconnect.de ([91.6.218.34] helo=nanos)
+ by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
+ (Exim 4.80) (envelope-from <tglx@linutronix.de>)
+ id 1iOONj-0005yK-PO; Sat, 26 Oct 2019 17:53:35 +0200
+Date: Sat, 26 Oct 2019 17:53:34 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: Re: [RFC PATCH] powerpc/32: Switch VDSO to C implementation.
+In-Reply-To: <95bd2367-8edc-29db-faa3-7729661e05f2@c-s.fr>
+Message-ID: <alpine.DEB.2.21.1910261751140.10190@nanos.tec.linutronix.de>
 References: <8ce3582f7f7da9ff0286ced857e5aa2e5ae6746e.1571662378.git.christophe.leroy@c-s.fr>
  <alpine.DEB.2.21.1910212312520.2078@nanos.tec.linutronix.de>
  <f4486e86-3c0c-0eec-1639-0e5956cdb8f1@c-s.fr>
  <95bd2367-8edc-29db-faa3-7729661e05f2@c-s.fr>
-In-Reply-To: <95bd2367-8edc-29db-faa3-7729661e05f2@c-s.fr>
-From: Andy Lutomirski <luto@kernel.org>
-Date: Sat, 26 Oct 2019 06:55:28 -0700
-X-Gmail-Original-Message-ID: <CALCETrWEKrE6nhu2F9+V_8EhWKqyuq5Qit05Uj9V_TeBKZNJsw@mail.gmail.com>
-Message-ID: <CALCETrWEKrE6nhu2F9+V_8EhWKqyuq5Qit05Uj9V_TeBKZNJsw@mail.gmail.com>
-Subject: Re: [RFC PATCH] powerpc/32: Switch VDSO to C implementation.
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="8323329-537953535-1572105215=:10190"
+X-Linutronix-Spam-Score: -1.0
+X-Linutronix-Spam-Level: -
+X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required, ALL_TRUSTED=-1,
+ SHORTCIRCUIT=-0.0001
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,34 +63,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
- Andrew Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- Vincenzo Frascino <vincenzo.frascino@arm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ luto@kernel.org, vincenzo.frascino@arm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Oct 22, 2019 at 6:56 AM Christophe Leroy
-<christophe.leroy@c-s.fr> wrote:
->
->
-> >>> The performance is rather disappoiting. That's most likely all
-> >>> calculation in the C implementation are based on 64 bits math and
-> >>> converted to 32 bits at the very end. I guess C implementation should
-> >>> use 32 bits math like the assembly VDSO does as of today.
-> >>
-> >>> gettimeofday:    vdso: 750 nsec/call
-> >>>
-> >>> gettimeofday:    vdso: 1533 nsec/call
-> >
-> > Small improvement (3%) with the proposed change:
-> >
-> > gettimeofday:    vdso: 1485 nsec/call
->
-> By inlining do_hres() I get the following:
->
-> gettimeofday:    vdso: 1072 nsec/call
->
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-A perf report might be informative.
+--8323329-537953535-1572105215=:10190
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+
+On Tue, 22 Oct 2019, Christophe Leroy wrote:
+> Le 22/10/2019 à 11:01, Christophe Leroy a écrit :
+> > Le 21/10/2019 à 23:29, Thomas Gleixner a écrit :
+> > > On Mon, 21 Oct 2019, Christophe Leroy wrote:
+> > > 
+> > > > This is a tentative to switch powerpc/32 vdso to generic C
+> > > > implementation.
+> > > > It will likely not work on 64 bits or even build properly at the moment.
+> > > > 
+> > > > powerpc is a bit special for VDSO as well as system calls in the
+> > > > way that it requires setting CR SO bit which cannot be done in C.
+> > > > Therefore, entry/exit and fallback needs to be performed in ASM.
+> > > > 
+> > > > To allow that, C fallbacks just return -1 and the ASM entry point
+> > > > performs the system call when the C function returns -1.
+> > > > 
+> > > > The performance is rather disappoiting. That's most likely all
+> > > > calculation in the C implementation are based on 64 bits math and
+> > > > converted to 32 bits at the very end. I guess C implementation should
+> > > > use 32 bits math like the assembly VDSO does as of today.
+> > > 
+> > > > gettimeofday:    vdso: 750 nsec/call
+> > > > 
+> > > > gettimeofday:    vdso: 1533 nsec/call
+> > 
+> > Small improvement (3%) with the proposed change:
+> > 
+> > gettimeofday:    vdso: 1485 nsec/call
+> 
+> By inlining do_hres() I get the following:
+> 
+> gettimeofday:    vdso: 1072 nsec/call
+
+What's the effect for clock_gettime()?
+
+gettimeofday() is suboptimal vs. the PPC ASM variant due to an extra
+division, but clock_gettime() should be 1:1 comparable.
+
+Thanks,
+
+	tglx
+--8323329-537953535-1572105215=:10190--
