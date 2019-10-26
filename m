@@ -3,59 +3,110 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A502CA9EB9
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Oct 2019 23:08:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 13790CA9EB9
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Oct 2019 23:54:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B196D20863
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Oct 2019 23:08:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B196D20863
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id 7C95A206BF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Oct 2019 23:54:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7C95A206BF
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 470xVM5xX0zDqsw
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Oct 2019 10:08:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=permerror (SPF Permanent Error: Unknown mechanism
- found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
- (client-ip=63.228.1.57; helo=gate.crashing.org;
- envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 470yW26M69zDqtp
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Oct 2019 10:54:06 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 470xSK59qRzDqs1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Oct 2019 10:06:40 +1100 (AEDT)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id x9QN6B4B014950;
- Sat, 26 Oct 2019 18:06:11 -0500
-Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id x9QN69JB014947;
- Sat, 26 Oct 2019 18:06:09 -0500
-X-Authentication-Warning: gate.crashing.org: segher set sender to
- segher@kernel.crashing.org using -f
-Date: Sat, 26 Oct 2019 18:06:09 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC PATCH] powerpc/32: Switch VDSO to C implementation.
-Message-ID: <20191026230609.GY28442@gate.crashing.org>
-References: <8ce3582f7f7da9ff0286ced857e5aa2e5ae6746e.1571662378.git.christophe.leroy@c-s.fr>
- <alpine.DEB.2.21.1910212312520.2078@nanos.tec.linutronix.de>
- <f4486e86-3c0c-0eec-1639-0e5956cdb8f1@c-s.fr>
- <95bd2367-8edc-29db-faa3-7729661e05f2@c-s.fr>
- <alpine.DEB.2.21.1910261751140.10190@nanos.tec.linutronix.de>
- <439bce37-9c2c-2afe-9c9e-2f500472f9f8@c-s.fr>
- <alpine.DEB.2.21.1910262026340.10190@nanos.tec.linutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 470yT24QynzDqWd
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Oct 2019 10:52:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 470yT21VrZz8t2S
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Oct 2019 10:52:22 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 470yT20BwLz9sPT; Sun, 27 Oct 2019 10:52:22 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=zohar@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 470yT135dZz9sPK
+ for <linuxppc-dev@ozlabs.org>; Sun, 27 Oct 2019 10:52:21 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x9QNqH0c007794
+ for <linuxppc-dev@ozlabs.org>; Sat, 26 Oct 2019 19:52:18 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2vvj10t06k-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Sat, 26 Oct 2019 19:52:18 -0400
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <zohar@linux.ibm.com>;
+ Sun, 27 Oct 2019 00:52:13 +0100
+Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Sun, 27 Oct 2019 00:52:08 +0100
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id x9QNpXdj32964864
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Sat, 26 Oct 2019 23:51:33 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id CD47CA404D;
+ Sat, 26 Oct 2019 23:52:06 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6C60FA4040;
+ Sat, 26 Oct 2019 23:52:04 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.85.187.251])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Sat, 26 Oct 2019 23:52:04 +0000 (GMT)
+Subject: Re: [PATCH v9 2/8] powerpc/ima: add support to initialize ima
+ policy rules
+From: Mimi Zohar <zohar@linux.ibm.com>
+To: Nayna Jain <nayna@linux.vnet.ibm.com>, Lakshmi Ramasubramanian
+ <nramas@linux.microsoft.com>,
+ Nayna Jain <nayna@linux.ibm.com>, linuxppc-dev@ozlabs.org,
+ linux-efi@vger.kernel.org, linux-integrity@vger.kernel.org
+Date: Sat, 26 Oct 2019 19:52:03 -0400
+In-Reply-To: <27dbe08e-5473-4dd0-d2ad-2df591e23f5e@linux.vnet.ibm.com>
+References: <20191024034717.70552-1-nayna@linux.ibm.com>
+ <20191024034717.70552-3-nayna@linux.ibm.com>
+ <dd7e04fc-25e8-280f-b565-bdb031939655@linux.microsoft.com>
+ <27dbe08e-5473-4dd0-d2ad-2df591e23f5e@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.20.5 (3.20.5-1.fc24) 
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.21.1910262026340.10190@nanos.tec.linutronix.de>
-User-Agent: Mutt/1.4.2.3i
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19102623-0016-0000-0000-000002BDEF8C
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19102623-0017-0000-0000-0000331F3CD7
+Message-Id: <1572133923.4532.79.camel@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-10-26_07:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=937 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1908290000 definitions=main-1910260247
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,55 +118,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- luto@kernel.org, vincenzo.frascino@arm.com, linuxppc-dev@lists.ozlabs.org
+Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Eric Ricther <erichte@linux.ibm.com>, Prakhar Srivastava <prsriva02@gmail.com>,
+ linux-kernel@vger.kernel.org, Claudio Carvalho <cclaudio@linux.ibm.com>,
+ Matthew Garret <matthew.garret@nebula.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Paul Mackerras <paulus@samba.org>, Jeremy Kerr <jk@ozlabs.org>,
+ Elaine Palmer <erpalmer@us.ibm.com>, Oliver
+ O'Halloran <oohall@gmail.com>, George Wilson <gcwilson@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Oct 26, 2019 at 08:48:27PM +0200, Thomas Gleixner wrote:
-> On Sat, 26 Oct 2019, Christophe Leroy wrote:
-> Let's look at the code:
+On Fri, 2019-10-25 at 12:02 -0500, Nayna Jain wrote:
+> On 10/24/19 12:35 PM, Lakshmi Ramasubramanian wrote:
+> > On 10/23/2019 8:47 PM, Nayna Jain wrote:
+> >
+> >> +/*
+> >> + * The "secure_rules" are enabled only on "secureboot" enabled systems.
+> >> + * These rules verify the file signatures against known good values.
+> >> + * The "appraise_type=imasig|modsig" option allows the known good 
+> >> signature
+> >> + * to be stored as an xattr or as an appended signature.
+> >> + *
+> >> + * To avoid duplicate signature verification as much as possible, 
+> >> the IMA
+> >> + * policy rule for module appraisal is added only if 
+> >> CONFIG_MODULE_SIG_FORCE
+> >> + * is not enabled.
+> >> + */
+> >> +static const char *const secure_rules[] = {
+> >> +    "appraise func=KEXEC_KERNEL_CHECK appraise_type=imasig|modsig",
+> >> +#ifndef CONFIG_MODULE_SIG_FORCE
+> >> +    "appraise func=MODULE_CHECK appraise_type=imasig|modsig",
+> >> +#endif
+> >> +    NULL
+> >> +};
+> >
+> > Is there any way to not use conditional compilation in the above array 
+> > definition? Maybe define different functions to get "secure_rules" for 
+> > when CONFIG_MODULE_SIG_FORCE is defined and when it is not defined.
 > 
-> __cvdso_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz)
-> {
->         const struct vdso_data *vd = __arch_get_vdso_data();
-> 
->         if (likely(tv != NULL)) {
-> 		struct __kernel_timespec ts;
-> 
->                 if (do_hres(&vd[CS_HRES_COARSE], CLOCK_REALTIME, &ts))
->                         return gettimeofday_fallback(tv, tz);
-> 
->                 tv->tv_sec = ts.tv_sec;
->                 tv->tv_usec = (u32)ts.tv_nsec / NSEC_PER_USEC;
-> 
-> IIRC PPC did some magic math tricks to avoid that. Could you just for the
-> fun of it replace this division with
-> 
->        (u32)ts.tv_nsec >> 10;
+> How will you decide which function to be called ?
 
-On this particular CPU (the 885, right?) a division by 1000 is just 9
-cycles.  On other CPUs it can be more, say 19 cycles like on the 750; not
-cheap at all, but not hugely expensive either, comparatively.
+You could call "is_module_sig_enforced()".
 
-(A 64/32->32 division is expensive on all 32-bit PowerPC: there is no
-hardware help for it at all, so it's all done in software.)
+Mimi
 
-Of course the compiler won't do a division by a constant with a division
-instruction at all, so it's somewhat cheaper even, 5 or 6 cycles or so.
-
-> One thing which might be worth to try as well is to mark all functions in
-> that file as inline. The speedup by the do_hres() inlining was impressive
-> on PPC.
-
-The hand-optimised asm code will pretty likely win handsomely, whatever
-you do.  Especially on cores like the 885 (no branch prediction, single
-issue, small caches, etc.: every instruction counts).
-
-Is there any reason to replace this hand-optimised code?  It was written
-for exacty this reason?  These functions are critical and should be as
-fast as possible.
-
-
-Segher
