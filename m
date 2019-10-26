@@ -4,59 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9748CCA9EBD
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Oct 2019 13:23:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D29C7C47E49
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Oct 2019 13:29:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E24C020867
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Oct 2019 13:23:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 840FB206DD
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Oct 2019 13:29:04 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="s6YAPDEO"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E24C020867
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="yr3beEE3"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 840FB206DD
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 470hW868MLzDqs8
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Oct 2019 00:23:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 470hdn3Ny2zDqgF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Oct 2019 00:29:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="s6YAPDEO"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="yr3beEE3"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 470hNw2JchzDqmq
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Oct 2019 00:17:51 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 470hS23B5nzDqq7
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Oct 2019 00:20:34 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id C2BB221D81;
- Sat, 26 Oct 2019 13:17:47 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 496DD206DD;
+ Sat, 26 Oct 2019 13:20:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1572095868;
- bh=2IDKfjUQ8KiFiVXJR6D3b6GiSh0OQrxFdYB8PP8LW4I=;
+ s=default; t=1572096030;
+ bh=NLVxnA/jHpWXgDZIgCV3DQoDe2i1QLshxr5PWmUYvwY=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=s6YAPDEO0ZW4N2k5me8ENYQnVlJoBNno1ULYzEpPFoPNkS4S5pTJaeas8eu/RuTRX
- qQYqo5vzcBiBgHR6bJnLuPT9Bg/q66YtAoM+IiZ5H+LeXZb2uVLO8b+y3kIeFqWxXz
- iXAjYfCkPwGRiuMrW5gari29RbyEeY0/D0y5+5YQ=
+ b=yr3beEE3oP5QW/WdGPJeIIB5vq33sTsvbb4WMLFuVLHFRBQtGdAAyzHJYIkjAKGsH
+ iEz1/HT7IFe0Cj0LTjmjSI5v3KLnkPPQV7PmU2Q5kvt9egOvnfEDG7GpfQQwog8OrK
+ 9sX1ILUx+4BGnc2yyY0C1Z5PXKZ6S1nGdkVkuXys=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.3 58/99] net/ibmvnic: Fix EOI when running in XIVE
+Subject: [PATCH AUTOSEL 4.19 40/59] net/ibmvnic: Fix EOI when running in XIVE
  mode.
-Date: Sat, 26 Oct 2019 09:15:19 -0400
-Message-Id: <20191026131600.2507-58-sashal@kernel.org>
+Date: Sat, 26 Oct 2019 09:18:51 -0400
+Message-Id: <20191026131910.3435-40-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20191026131600.2507-1-sashal@kernel.org>
-References: <20191026131600.2507-1-sashal@kernel.org>
+In-Reply-To: <20191026131910.3435-1-sashal@kernel.org>
+References: <20191026131910.3435-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 X-stable: review
@@ -103,10 +104,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 3 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-index 5cb55ea671e35..964e7d62f4b13 100644
+index aa067a7a72d40..8fa14736449bc 100644
 --- a/drivers/net/ethernet/ibm/ibmvnic.c
 +++ b/drivers/net/ethernet/ibm/ibmvnic.c
-@@ -2772,12 +2772,10 @@ static int enable_scrq_irq(struct ibmvnic_adapter *adapter,
+@@ -2731,12 +2731,10 @@ static int enable_scrq_irq(struct ibmvnic_adapter *adapter,
  
  	if (adapter->resetting &&
  	    adapter->reset_reason == VNIC_RESET_MOBILITY) {
