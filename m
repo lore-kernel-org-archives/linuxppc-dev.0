@@ -1,4 +1,4 @@
-Return-Path: <SRS0=5lCP=YT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=ts5e=YU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
@@ -6,32 +6,32 @@ X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13790CA9EB9
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Oct 2019 23:54:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E996CCA9EB9
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Oct 2019 00:15:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7C95A206BF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Oct 2019 23:54:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7C95A206BF
+	by mail.kernel.org (Postfix) with ESMTPS id 480F220863
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Oct 2019 00:15:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 480F220863
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 470yW26M69zDqtp
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Oct 2019 10:54:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 470yzh71xtzDqsm
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Oct 2019 11:15:28 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 470yT24QynzDqWd
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Oct 2019 10:52:22 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 470yxZ4Dg9zDqrV
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Oct 2019 11:13:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 470yT21VrZz8t2S
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Oct 2019 10:52:22 +1100 (AEDT)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 470yxY62Hkz8t1l
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Oct 2019 11:13:37 +1100 (AEDT)
 Received: by ozlabs.org (Postfix)
- id 470yT20BwLz9sPT; Sun, 27 Oct 2019 10:52:22 +1100 (AEDT)
+ id 470yxY5RvXz9sPZ; Sun, 27 Oct 2019 11:13:37 +1100 (AEDT)
 Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=zohar@linux.ibm.com;
@@ -42,71 +42,71 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 470yT135dZz9sPK
- for <linuxppc-dev@ozlabs.org>; Sun, 27 Oct 2019 10:52:21 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x9QNqH0c007794
- for <linuxppc-dev@ozlabs.org>; Sat, 26 Oct 2019 19:52:18 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2vvj10t06k-1
+ by ozlabs.org (Postfix) with ESMTPS id 470yxY1cCLz9sPT
+ for <linuxppc-dev@ozlabs.org>; Sun, 27 Oct 2019 11:13:37 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x9R06smI109480
+ for <linuxppc-dev@ozlabs.org>; Sat, 26 Oct 2019 20:13:34 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2vvfruwhe0-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Sat, 26 Oct 2019 19:52:18 -0400
+ for <linuxppc-dev@ozlabs.org>; Sat, 26 Oct 2019 20:13:33 -0400
 Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <zohar@linux.ibm.com>;
- Sun, 27 Oct 2019 00:52:13 +0100
-Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Sun, 27 Oct 2019 01:13:32 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Sun, 27 Oct 2019 00:52:08 +0100
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id x9QNpXdj32964864
+ Sun, 27 Oct 2019 01:13:27 +0100
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x9R0DPid18350156
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Sat, 26 Oct 2019 23:51:33 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id CD47CA404D;
- Sat, 26 Oct 2019 23:52:06 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6C60FA4040;
- Sat, 26 Oct 2019 23:52:04 +0000 (GMT)
+ Sun, 27 Oct 2019 00:13:25 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A612E4C04A;
+ Sun, 27 Oct 2019 00:13:25 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 720E34C040;
+ Sun, 27 Oct 2019 00:13:23 +0000 (GMT)
 Received: from localhost.localdomain (unknown [9.85.187.251])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Sat, 26 Oct 2019 23:52:04 +0000 (GMT)
-Subject: Re: [PATCH v9 2/8] powerpc/ima: add support to initialize ima
- policy rules
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Sun, 27 Oct 2019 00:13:23 +0000 (GMT)
+Subject: Re: [PATCH v9 5/8] ima: make process_buffer_measurement() generic
 From: Mimi Zohar <zohar@linux.ibm.com>
-To: Nayna Jain <nayna@linux.vnet.ibm.com>, Lakshmi Ramasubramanian
- <nramas@linux.microsoft.com>,
+To: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>, Nayna Jain
+ <nayna@linux.vnet.ibm.com>,
  Nayna Jain <nayna@linux.ibm.com>, linuxppc-dev@ozlabs.org,
  linux-efi@vger.kernel.org, linux-integrity@vger.kernel.org
-Date: Sat, 26 Oct 2019 19:52:03 -0400
-In-Reply-To: <27dbe08e-5473-4dd0-d2ad-2df591e23f5e@linux.vnet.ibm.com>
+Date: Sat, 26 Oct 2019 20:13:22 -0400
+In-Reply-To: <8a97301a-0e25-2718-bd81-d778cb58e1d3@linux.microsoft.com>
 References: <20191024034717.70552-1-nayna@linux.ibm.com>
- <20191024034717.70552-3-nayna@linux.ibm.com>
- <dd7e04fc-25e8-280f-b565-bdb031939655@linux.microsoft.com>
- <27dbe08e-5473-4dd0-d2ad-2df591e23f5e@linux.vnet.ibm.com>
+ <20191024034717.70552-6-nayna@linux.ibm.com>
+ <1ae56786-4d5c-ba8e-e30c-ced1e15ccb9c@linux.microsoft.com>
+ <24cf44d5-a1f0-f59e-9884-c026b1ee2d3b@linux.vnet.ibm.com>
+ <8a97301a-0e25-2718-bd81-d778cb58e1d3@linux.microsoft.com>
 Content-Type: text/plain; charset="UTF-8"
 X-Mailer: Evolution 3.20.5 (3.20.5-1.fc24) 
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19102623-0016-0000-0000-000002BDEF8C
+x-cbid: 19102700-0020-0000-0000-0000037EF37D
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19102623-0017-0000-0000-0000331F3CD7
-Message-Id: <1572133923.4532.79.camel@linux.ibm.com>
+x-cbparentid: 19102700-0021-0000-0000-000021D54469
+Message-Id: <1572135202.4532.88.camel@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-10-26_07:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=937 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1908290000 definitions=main-1910260247
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1908290000 definitions=main-1910270000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -130,38 +130,59 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2019-10-25 at 12:02 -0500, Nayna Jain wrote:
-> On 10/24/19 12:35 PM, Lakshmi Ramasubramanian wrote:
-> > On 10/23/2019 8:47 PM, Nayna Jain wrote:
-> >
-> >> +/*
-> >> + * The "secure_rules" are enabled only on "secureboot" enabled systems.
-> >> + * These rules verify the file signatures against known good values.
-> >> + * The "appraise_type=imasig|modsig" option allows the known good 
-> >> signature
-> >> + * to be stored as an xattr or as an appended signature.
-> >> + *
-> >> + * To avoid duplicate signature verification as much as possible, 
-> >> the IMA
-> >> + * policy rule for module appraisal is added only if 
-> >> CONFIG_MODULE_SIG_FORCE
-> >> + * is not enabled.
-> >> + */
-> >> +static const char *const secure_rules[] = {
-> >> +    "appraise func=KEXEC_KERNEL_CHECK appraise_type=imasig|modsig",
-> >> +#ifndef CONFIG_MODULE_SIG_FORCE
-> >> +    "appraise func=MODULE_CHECK appraise_type=imasig|modsig",
-> >> +#endif
-> >> +    NULL
-> >> +};
-> >
-> > Is there any way to not use conditional compilation in the above array 
-> > definition? Maybe define different functions to get "secure_rules" for 
-> > when CONFIG_MODULE_SIG_FORCE is defined and when it is not defined.
+On Fri, 2019-10-25 at 10:32 -0700, Lakshmi Ramasubramanian wrote:
 > 
-> How will you decide which function to be called ?
+> On 10/25/2019 10:24 AM, Nayna Jain wrote:
+> > 
+> > On 10/24/19 10:20 AM, Lakshmi Ramasubramanian wrote:
+> >> On 10/23/19 8:47 PM, Nayna Jain wrote:
+> >>
+> >> Hi Nayna,
+> >>
+> >>> +void process_buffer_measurement(const void *buf, int size,
+> >>> +                const char *eventname, enum ima_hooks func,
+> >>> +                int pcr)
+> >>>   {
+> >>>       int ret = 0;
+> >>>       struct ima_template_entry *entry = NULL;
+> >>
+> >>> +    if (func) {
 
-You could call "is_module_sig_enforced()".
+Let's comment this line.  Perhaps something like /*Unnecessary for
+auxiliary buffer measurements */
+> >>> +        security_task_getsecid(current, &secid);
+> >>> +        action = ima_get_action(NULL, current_cred(), secid, 0, func,
+> >>> +                    &pcr, &template);
+> >>> +        if (!(action & IMA_MEASURE))
+> >>> +            return;
+> >>> +    }
+> >>
+> >> In your change set process_buffer_measurement is called with NONE for 
+> >> the parameter func. So ima_get_action (the above if block) will not be 
+> >> executed.
+> >>
+> >> Wouldn't it better to update ima_get_action (and related functions) to 
+> >> handle the ima policy (func param)?
+> > 
+> > 
+> > The idea is to use ima-buf template for the auxiliary measurement 
+> > record. The auxiliary measurement record is an additional record to the 
+> > one already created based on the existing policy. When func is passed as 
+> > NONE, it represents it is an additional record. I am not sure what you 
+> > mean by updating ima_get_action, it is already handling the ima policy.
+> >
+> 
+> I was referring to using "func" in process_buffer_measurement to 
+> determine ima action. In my opinion, process_buffer_measurement should 
+> be generic.
+> 
+> ima_get_action() should instead determine the required ima action, 
+> template, pcr, etc. based on "func" passed to it.
 
-Mimi
+Nayna's original patch moved ima_get_action() into the caller, but
+that resulted in code duplication in each of the callers.  This
+solution differentiates between the initial, which requires calling
+ima_get_action(), and auxiliary buffer measurement records.
+
+Mimi 
 
