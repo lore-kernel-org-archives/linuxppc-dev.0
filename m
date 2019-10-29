@@ -2,78 +2,86 @@ Return-Path: <SRS0=NKNt=YW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5796BCA9EAE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 21:57:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DAC3DCA9EAE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 22:00:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0191021721
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 21:57:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 843BE21721
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 22:00:00 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="E6/biqz3"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0191021721
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="I8U+d2V8"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 843BE21721
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 472lmW2xmnzF3Db
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 08:56:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 472lqy2k4HzF3Pb
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 08:59:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::542;
- helo=mail-pg1-x542.google.com; envelope-from=keescook@chromium.org;
+ smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::643;
+ helo=mail-pl1-x643.google.com; envelope-from=keescook@chromium.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.b="E6/biqz3";
+ unprotected) header.d=chromium.org header.i=@chromium.org header.b="I8U+d2V8";
  dkim-atps=neutral
-Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
- [IPv6:2607:f8b0:4864:20::542])
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 472kqP1TzLzF34Z
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2019 08:14:25 +1100 (AEDT)
-Received: by mail-pg1-x542.google.com with SMTP id f19so10480914pgn.13
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2019 14:14:25 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 472krw2flGzF34g
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2019 08:15:44 +1100 (AEDT)
+Received: by mail-pl1-x643.google.com with SMTP id w8so8313055plq.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2019 14:15:44 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
- h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=8/x+eaVk+ss1aFRFRC2BuuTBFLP58LLEcIBPNJoL2cs=;
- b=E6/biqz3RgqOQZPzeBNo/5tlnkftQUoW2mf9CE298XsO5001NCPklzzOKT7E9Bm3jX
- WYxXOa5pUZ578xzGENT4FOXN1yp+4ICP9ASH5NBrudMTG4WbEhivqJqu8m13wiyzO8yL
- cP3ipZ2zK8zGQCNcxdhBWtwypbIJDVwNy8VIA=
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to;
+ bh=4W0RQy7L8eh7pRvWVxgcmtPohgICmGJuDBiUC3OtQXc=;
+ b=I8U+d2V8b9DcvszTpNkYzx8YDIuowvCEAN8/hq06mWUBrW1C9IFc9zOdTV8NmetYIx
+ XdchWOKTprtzj7BrCs1SWXwtizr/5Svkqrapz3CRCsQMazLT/znGCXGXfPoHk47uKD4s
+ H8DeqA+Bp69QYF4iTcRYw2od2qrlqFz95t1aQ=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references;
- bh=8/x+eaVk+ss1aFRFRC2BuuTBFLP58LLEcIBPNJoL2cs=;
- b=DxFvwpPKDYQR23vKvBwKLwTzMZLHQ63zsnadQvVB5/BpwDeHTqV/+VZAt014rMyq4k
- bTRLNHX235LH0hHVITZivbotOZ6P0gK1g2bs6lAg5LLiWUo2/AuUBNNx6YmBLctgVHAE
- cvFFfF4Oraq2wFVclTGexwZdIYFPvArB0T2utBCtnL9SwWMBJLUqbjCim5jnPwgJRxAQ
- BGf2/PabOREyjg+4q30vzevvmPaTS2hgb+bllx+0GX/5TL36f7wyCxMPlAWXsFE+1ckI
- bnLP8fqUEjJOZnvzNfy166tGiSOSbxPWa11+ss2HTNCLHe1Rj2iAci0RZOv0XqqyFQ09
- UAvA==
-X-Gm-Message-State: APjAAAXoXhuBRJBCMonI7TU0sETPrQ/voqxaw7WWGbs5otCK/oYB/iqw
- IxwDfr2w8c4FTMZpT/qsVDAtPg==
-X-Google-Smtp-Source: APXvYqwo2RcUgs96Fy+CgTCDcRMaQZuOmvdYyYfnGkyPMENywMQNuhVEa5HaEFheZlG3BkJsaVvKAw==
-X-Received: by 2002:a62:5442:: with SMTP id i63mr29128680pfb.220.1572383662624; 
- Tue, 29 Oct 2019 14:14:22 -0700 (PDT)
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to;
+ bh=4W0RQy7L8eh7pRvWVxgcmtPohgICmGJuDBiUC3OtQXc=;
+ b=dAhg9/pplSboY54iYXHqf/FvKDHhleh6Ni+GDqsCYcM7DPPXhcnHa3V8Q97CHxpDdW
+ YfI1eGDTQE/byQdHtcbtu9Qgd5BXyycoiJioWoXsNBBUY5L1n4gAQ6bvou7fyirpQ3S4
+ DYYGVw52DqBZ2uLke2M/nfTbniRWlUiHEKarhQVZqvxrG10bPYJGMPLYkitOTLHd80mg
+ D0sdkdBicc0CXWJiZIkywUcbpK6iyXSPy2k4CqfDuOPBFSTCVzwy56k6j0cZXAsmB+Ut
+ 24TGDTzwAEmvFpjuiYG/PTpnbke6hBsevw1A2FPZNo/AkvOo2fANnZt/mMEMg3loBAwQ
+ zNgw==
+X-Gm-Message-State: APjAAAVOgnmwlkHxH1XZgq++wuSVlVZlIZOvTskHafHNbRSJOkweRlZq
+ gZnAY29Lj70p3+yvnQoxo3BhBg==
+X-Google-Smtp-Source: APXvYqxcKsW5UISFe0oAVMX295CcWwGO1CFi+pF1WGPYr1NNtMArlvLHufwgOSgweI/u+V6GrCnhCQ==
+X-Received: by 2002:a17:902:a98c:: with SMTP id
+ bh12mr723589plb.289.1572383741354; 
+ Tue, 29 Oct 2019 14:15:41 -0700 (PDT)
 Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id d14sm48547pfh.36.2019.10.29.14.14.10
+ by smtp.gmail.com with ESMTPSA id z18sm27341pfq.182.2019.10.29.14.15.40
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 29 Oct 2019 14:14:20 -0700 (PDT)
+ Tue, 29 Oct 2019 14:15:40 -0700 (PDT)
+Date: Tue, 29 Oct 2019 14:15:39 -0700
 From: Kees Cook <keescook@chromium.org>
 To: Borislav Petkov <bp@alien8.de>
-Subject: [PATCH v3 26/29] x86/mm: Remove redundant &s on addresses
-Date: Tue, 29 Oct 2019 14:13:48 -0700
-Message-Id: <20191029211351.13243-27-keescook@chromium.org>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20191029211351.13243-1-keescook@chromium.org>
-References: <20191029211351.13243-1-keescook@chromium.org>
+Subject: Re: [PATCH v2 01/29] powerpc: Rename "notes" PT_NOTE to "note"
+Message-ID: <201910291414.F29F738B7@keescook>
+References: <20191011000609.29728-1-keescook@chromium.org>
+ <20191011000609.29728-2-keescook@chromium.org>
+ <20191011082519.GI9749@gate.crashing.org>
+ <201910110910.48270FC97@keescook>
+ <20191011162552.GK9749@gate.crashing.org>
+ <20191015165412.GD596@zn.tnic>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20191015165412.GD596@zn.tnic>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,43 +94,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- Michal Simek <monstr@monstr.eu>, linux-ia64@vger.kernel.org,
- Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
- Dave Hansen <dave.hansen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Andy Lutomirski <luto@kernel.org>,
- linux-alpha@vger.kernel.org, Rick Edgecombe <rick.p.edgecombe@intel.com>,
- Will Deacon <will@kernel.org>, linux-arm-kernel@lists.infradead.org,
- linux-c6x-dev@linux-c6x.org
+ Michal Simek <monstr@monstr.eu>, Dave Hansen <dave.hansen@linux.intel.com>,
+ linux-ia64@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+ linux-xtensa@linux-xtensa.org, Will Deacon <will@kernel.org>, x86@kernel.org,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, linux-parisc@vger.kernel.org,
+ Andy Lutomirski <luto@kernel.org>, linux-alpha@vger.kernel.org,
+ Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, linux-c6x-dev@linux-c6x.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The &s on addresses are redundant. Remove them to match all the other
-similar functions.
+On Tue, Oct 15, 2019 at 06:54:13PM +0200, Borislav Petkov wrote:
+> On Fri, Oct 11, 2019 at 11:25:52AM -0500, Segher Boessenkool wrote:
+> > Names *matter*, internal names doubly so.  So why replace a good name with
+> > a worse name?  Because it is slightly less work for you?
+> 
+> So if we agree on the name "notes" and we decide to rename the other
+> arches, this should all be done in a separate patchset anyway, and ontop
+> of this one. And I believe Kees wouldn't mind doing it ontop since he's
+> gotten his hands dirty already. :-P
 
-Signed-off-by: Kees Cook <keescook@chromium.org>
----
- arch/x86/mm/init_64.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+I've added more rationale to patch #1 in the just-sent v3 of this
+series. If I still can't convince you Segher, I'm happy to send "patch
+30/29" to do a bulk rename to "notes". Let me know. :)
 
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 26299e9ce6da..e67ddca8b7a8 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -1300,9 +1300,9 @@ void mark_rodata_ro(void)
- {
- 	unsigned long start = PFN_ALIGN(_text);
- 	unsigned long rodata_start = PFN_ALIGN(__start_rodata);
--	unsigned long end = (unsigned long) &__end_rodata_hpage_align;
--	unsigned long text_end = PFN_ALIGN(&_etext);
--	unsigned long rodata_end = PFN_ALIGN(&__end_rodata);
-+	unsigned long end = (unsigned long)__end_rodata_hpage_align;
-+	unsigned long text_end = PFN_ALIGN(_etext);
-+	unsigned long rodata_end = PFN_ALIGN(__end_rodata);
- 	unsigned long all_end;
- 
- 	printk(KERN_INFO "Write protecting the kernel read-only data: %luk\n",
 -- 
-2.17.1
-
+Kees Cook
