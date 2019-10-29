@@ -2,79 +2,74 @@ Return-Path: <SRS0=NKNt=YW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 820BECA9EAE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 21:20:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FB5BCA9EC3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 21:23:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2AE762087F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 21:20:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3AF572087F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 21:23:39 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="LQy1Olzq"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2AE762087F
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="kjmJ2PRc"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3AF572087F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 472kyB1yy2zF36B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 08:20:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 472l1z6TvBzF385
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 08:23:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::541;
- helo=mail-pg1-x541.google.com; envelope-from=keescook@chromium.org;
+ smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::42e;
+ helo=mail-pf1-x42e.google.com; envelope-from=keescook@chromium.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.b="LQy1Olzq";
+ unprotected) header.d=chromium.org header.i=@chromium.org header.b="kjmJ2PRc";
  dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
+Received: from mail-pf1-x42e.google.com (mail-pf1-x42e.google.com
+ [IPv6:2607:f8b0:4864:20::42e])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 472kq15Nx1zF34M
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2019 08:14:04 +1100 (AEDT)
-Received: by mail-pg1-x541.google.com with SMTP id l24so10490447pgh.10
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2019 14:14:04 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 472kq15gFRzF34T
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2019 08:14:05 +1100 (AEDT)
+Received: by mail-pf1-x42e.google.com with SMTP id b128so2568pfa.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2019 14:14:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
- h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=7MxClQbH59XRrbTRajW1Gh8uACzcU2+htsVcXyM7D1g=;
- b=LQy1OlzqoHregmX7oWg1J+GCiPB+DnhcNeAFzNXO6O9s9wLhpCBsF0jSKzXlK9lP/k
- SDnj0o9+xZ39dyE9cCQWqZxyjuoHNyl3rdCu/xiTRCFpDNUVVX7tFk5VZETqdUPMammV
- NH8kU7Tb11dukK+QDn0fvxLsZMYk5M8Ahi8aU=
+ h=from:to:cc:subject:date:message-id;
+ bh=tvuo3Ns0E4Fiim71b6F+/V34tv+uW7W3PecAxYDk1kI=;
+ b=kjmJ2PRco2QbnnQ6/Lb5HykXKFCW8bMSMkr+JBAd0YCZqAHZUBgyl2XlQchiLsBsZA
+ VWyGFqzEFLvF5puyLHdyKCM+5hmQj5PuueBjIKUK8Jn2QPWeJZWfexDjBm6I6dRaBLQj
+ uENAgaybqP2QWV47BGcYFOi14iqWSDuRPGxb4=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references;
- bh=7MxClQbH59XRrbTRajW1Gh8uACzcU2+htsVcXyM7D1g=;
- b=uGm7hBVnY4GiYQ3U1xkqjt0MYYPHPEWnC1DdSQtyGuWEi091vMZmvQgBeRe+FMbeNm
- PnWC199/oa6vAj5FcWQ7dQ6I/JYRZyN1GJKazwWTRHqR16iJWDYLNMKirgZkNc6onsAT
- 0+l2prjLGzRcwfZgnp+bcTHIy+ldCreBvgsS+TZrhgV5ktZicVMeOamMmeh+FOBiQYr/
- zkjupPyf6/b895gCyxQ7pzrHxP2Lg2ekbI9B/rb4Moz+EsAOiw0vMS6Sq2fEEapOQVKj
- MXumwLW7jLFrqXkQWNLyDvOeBDzDOlZ8cI+OLPqsse4AobLoR9gpPfGbcxAUCa4eBbH/
- cshQ==
-X-Gm-Message-State: APjAAAUB8/j+WbgxexCgQm0UqtBZGH3sGb9kG5D/mkt8rodnpO18YVZy
- NT/iYLZzzHJ/4ojgYO4hczd7rA==
-X-Google-Smtp-Source: APXvYqzb5TnssM+4Kax/lIY7+ocxpNqcjOJlOJ6nd7kpeZ9S4qL0Qt7FLOUhwi50TM1MUY+x1dQPhQ==
-X-Received: by 2002:a63:3f8e:: with SMTP id
- m136mr30665411pga.213.1572383641052; 
- Tue, 29 Oct 2019 14:14:01 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=tvuo3Ns0E4Fiim71b6F+/V34tv+uW7W3PecAxYDk1kI=;
+ b=iT5knx2fMzn1knmhYQXULKqmKodsTQykiUhv/FAOMps+igaPwybtnetDweaaW0zHC+
+ XDc8hma+FxQJOO6pGKDZMQnqUtJNPXMHXgtjaDLtTlkj1bcI9ZfclNzZR1rSyZoxz+Is
+ rAFBfjghcVDcEu7SPYnnzwOvafWbK+muDKFyQxxoMuKipidv3ltjXCOzeTLvOKyeR2x1
+ KN4qxwy1ElZsAXojfb5WZ6bk/sk9AKn5S4tW+9fTBj9Kz4r0E51qhsEjrCg2JqGYlKA5
+ o9L8g/fDM1WofxcKKTIuHJNFzsy5qj69C/ghh59uWATDhSkZM68ABqayVVtnFSkopdPr
+ RLaw==
+X-Gm-Message-State: APjAAAVXh2AJCc67N9zF9jp3pCraMAb1wnZwt9I1l6TiAsf+JcXOkACB
+ SCUMWG4BJT70Eqmlh+ay8shAEg==
+X-Google-Smtp-Source: APXvYqxG6K5OnJmD5FS0dzSHIwPfA6+/IkLP3MyheBThwDhBc+0h1IEDuELusvnpNyG3iWLjyHi91w==
+X-Received: by 2002:a63:471b:: with SMTP id u27mr28891174pga.96.1572383642989; 
+ Tue, 29 Oct 2019 14:14:02 -0700 (PDT)
 Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id i126sm47757pfc.29.2019.10.29.14.13.59
+ by smtp.gmail.com with ESMTPSA id x7sm51799pff.0.2019.10.29.14.13.59
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
  Tue, 29 Oct 2019 14:14:00 -0700 (PDT)
 From: Kees Cook <keescook@chromium.org>
 To: Borislav Petkov <bp@alien8.de>
-Subject: [PATCH v3 04/29] alpha: Rename PT_LOAD identifier "kernel" to "text"
-Date: Tue, 29 Oct 2019 14:13:26 -0700
-Message-Id: <20191029211351.13243-5-keescook@chromium.org>
+Subject: [PATCH v3 00/29] vmlinux.lds.h: Refactor EXCEPTION_TABLE and NOTES
+Date: Tue, 29 Oct 2019 14:13:22 -0700
+Message-Id: <20191029211351.13243-1-keescook@chromium.org>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20191029211351.13243-1-keescook@chromium.org>
-References: <20191029211351.13243-1-keescook@chromium.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,46 +94,113 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In preparation for moving NOTES into RO_DATA, rename the linker script
-internal identifier for the PT_LOAD Program Header from "kernel" to
-"text" to match other architectures.
+Arch maintainers: please send Acks (if you haven't already) for your
+respective linker script changes; the intention is for this series to land
+via -tip. See patch #1 for an extended rationale for the "note" vs "notes"
+naming. If "notes" is strongly desired, we can perform that change on
+top of this series. For now, I prefer to leave things as they were in v2.
 
-Signed-off-by: Kees Cook <keescook@chromium.org>
----
- arch/alpha/kernel/vmlinux.lds.S | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+v3: Add new Acks, clarify "note" vs "notes" renaming
+v2: https://lore.kernel.org/lkml/20191011000609.29728-1-keescook@chromium.org
+v1: https://lore.kernel.org/lkml/20190926175602.33098-1-keescook@chromium.org
 
-diff --git a/arch/alpha/kernel/vmlinux.lds.S b/arch/alpha/kernel/vmlinux.lds.S
-index c4b5ceceab52..781090cacc96 100644
---- a/arch/alpha/kernel/vmlinux.lds.S
-+++ b/arch/alpha/kernel/vmlinux.lds.S
-@@ -8,7 +8,7 @@
- OUTPUT_FORMAT("elf64-alpha")
- OUTPUT_ARCH(alpha)
- ENTRY(__start)
--PHDRS { kernel PT_LOAD; note PT_NOTE; }
-+PHDRS { text PT_LOAD; note PT_NOTE; }
- jiffies = jiffies_64;
- SECTIONS
- {
-@@ -27,14 +27,14 @@ SECTIONS
- 		LOCK_TEXT
- 		*(.fixup)
- 		*(.gnu.warning)
--	} :kernel
-+	} :text
- 	swapper_pg_dir = SWAPPER_PGD;
- 	_etext = .;	/* End of text section */
- 
--	NOTES :kernel :note
-+	NOTES :text :note
- 	.dummy : {
- 		*(.dummy)
--	} :kernel
-+	} :text
- 
- 	RODATA
- 	EXCEPTION_TABLE(16)
+
+This series works to move the linker sections for NOTES and
+EXCEPTION_TABLE into the RO_DATA area, where they belong on most
+(all?) architectures. The problem being addressed was the discovery
+by Rick Edgecombe that the exception table was accidentally marked
+executable while he was developing his execute-only-memory series. When
+permissions were flipped from readable-and-executable to only-executable,
+the exception table became unreadable, causing things to explode rather
+badly. :)
+
+Roughly speaking, the steps are:
+
+- regularize the linker names for PT_NOTE and PT_LOAD program headers
+  (to "note" and "text" respectively)
+- regularize restoration of linker section to program header assignment
+  (when PT_NOTE exists)
+- move NOTES into RO_DATA
+- finish macro naming conversions for RO_DATA and RW_DATA
+- move EXCEPTION_TABLE into RO_DATA on architectures where this is clear
+- clean up some x86-specific reporting of kernel memory resources
+- switch x86 linker fill byte from x90 (NOP) to 0xcc (INT3), just because
+  I finally realized what that trailing ": 0x9090" meant -- and we should
+  trap, not slide, if execution lands in section padding
+
+Thanks!
+
+-Kees
+
+
+Kees Cook (29):
+  powerpc: Rename "notes" PT_NOTE to "note"
+  powerpc: Remove PT_NOTE workaround
+  powerpc: Rename PT_LOAD identifier "kernel" to "text"
+  alpha: Rename PT_LOAD identifier "kernel" to "text"
+  ia64: Rename PT_LOAD identifier "code" to "text"
+  s390: Move RO_DATA into "text" PT_LOAD Program Header
+  x86: Restore "text" Program Header with dummy section
+  vmlinux.lds.h: Provide EMIT_PT_NOTE to indicate export of .notes
+  vmlinux.lds.h: Move Program Header restoration into NOTES macro
+  vmlinux.lds.h: Move NOTES into RO_DATA
+  vmlinux.lds.h: Replace RODATA with RO_DATA
+  vmlinux.lds.h: Replace RO_DATA_SECTION with RO_DATA
+  vmlinux.lds.h: Replace RW_DATA_SECTION with RW_DATA
+  vmlinux.lds.h: Allow EXCEPTION_TABLE to live in RO_DATA
+  x86: Actually use _etext for end of text segment
+  x86: Move EXCEPTION_TABLE to RO_DATA segment
+  alpha: Move EXCEPTION_TABLE to RO_DATA segment
+  arm64: Move EXCEPTION_TABLE to RO_DATA segment
+  c6x: Move EXCEPTION_TABLE to RO_DATA segment
+  h8300: Move EXCEPTION_TABLE to RO_DATA segment
+  ia64: Move EXCEPTION_TABLE to RO_DATA segment
+  microblaze: Move EXCEPTION_TABLE to RO_DATA segment
+  parisc: Move EXCEPTION_TABLE to RO_DATA segment
+  powerpc: Move EXCEPTION_TABLE to RO_DATA segment
+  xtensa: Move EXCEPTION_TABLE to RO_DATA segment
+  x86/mm: Remove redundant &s on addresses
+  x86/mm: Report which part of kernel image is freed
+  x86/mm: Report actual image regions in /proc/iomem
+  x86: Use INT3 instead of NOP for linker fill bytes
+
+ arch/alpha/kernel/vmlinux.lds.S      | 18 +++++-----
+ arch/arc/kernel/vmlinux.lds.S        |  6 ++--
+ arch/arm/kernel/vmlinux-xip.lds.S    |  4 +--
+ arch/arm/kernel/vmlinux.lds.S        |  4 +--
+ arch/arm64/kernel/vmlinux.lds.S      | 10 +++---
+ arch/c6x/kernel/vmlinux.lds.S        |  8 ++---
+ arch/csky/kernel/vmlinux.lds.S       |  5 ++-
+ arch/h8300/kernel/vmlinux.lds.S      |  9 ++---
+ arch/hexagon/kernel/vmlinux.lds.S    |  5 ++-
+ arch/ia64/kernel/vmlinux.lds.S       | 20 +++++------
+ arch/m68k/kernel/vmlinux-nommu.lds   |  4 +--
+ arch/m68k/kernel/vmlinux-std.lds     |  2 +-
+ arch/m68k/kernel/vmlinux-sun3.lds    |  2 +-
+ arch/microblaze/kernel/vmlinux.lds.S |  8 ++---
+ arch/mips/kernel/vmlinux.lds.S       | 15 ++++----
+ arch/nds32/kernel/vmlinux.lds.S      |  5 ++-
+ arch/nios2/kernel/vmlinux.lds.S      |  5 ++-
+ arch/openrisc/kernel/vmlinux.lds.S   |  7 ++--
+ arch/parisc/kernel/vmlinux.lds.S     | 11 +++---
+ arch/powerpc/kernel/vmlinux.lds.S    | 37 ++++---------------
+ arch/riscv/kernel/vmlinux.lds.S      |  5 ++-
+ arch/s390/kernel/vmlinux.lds.S       | 12 +++----
+ arch/sh/kernel/vmlinux.lds.S         |  3 +-
+ arch/sparc/kernel/vmlinux.lds.S      |  3 +-
+ arch/um/include/asm/common.lds.S     |  3 +-
+ arch/unicore32/kernel/vmlinux.lds.S  |  5 ++-
+ arch/x86/include/asm/processor.h     |  2 +-
+ arch/x86/include/asm/sections.h      |  1 -
+ arch/x86/kernel/setup.c              | 12 ++++++-
+ arch/x86/kernel/vmlinux.lds.S        | 16 ++++-----
+ arch/x86/mm/init.c                   |  8 ++---
+ arch/x86/mm/init_64.c                | 16 +++++----
+ arch/x86/mm/pti.c                    |  2 +-
+ arch/xtensa/kernel/vmlinux.lds.S     |  8 ++---
+ include/asm-generic/vmlinux.lds.h    | 53 ++++++++++++++++++++--------
+ 35 files changed, 159 insertions(+), 175 deletions(-)
+
 -- 
 2.17.1
 
