@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E635CA9EAE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 10:10:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B5BAACA9EC4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 10:12:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DF9A320830
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 10:10:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2A79221479
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 10:12:51 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="vYC9XHXm"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF9A320830
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="XNGB0ddy"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2A79221479
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 472S540n34zF2Dd
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 21:10:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 472S8070PgzF2Dy
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 21:12:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,53 +29,53 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="vYC9XHXm"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="XNGB0ddy"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 472RjS0n1PzF1RV
+ by lists.ozlabs.org (Postfix) with ESMTPS id 472RjS2QkdzF1cP
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2019 20:53:16 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 472RjM0wwlz9tysl;
- Tue, 29 Oct 2019 10:53:11 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 472RjN13hxz9tysm;
+ Tue, 29 Oct 2019 10:53:12 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=vYC9XHXm; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=XNGB0ddy; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id JGh0JQub58ey; Tue, 29 Oct 2019 10:53:11 +0100 (CET)
+ with ESMTP id 81R-kucN2VBK; Tue, 29 Oct 2019 10:53:12 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 472RjL6spdz9tysj;
- Tue, 29 Oct 2019 10:53:10 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1572342791; bh=xWV6oWfFLWcIyU80fN4O23Nj6FAqGh/qPC9Al+Nw1Uc=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=vYC9XHXmPZrA3UkXsOOOpZe4CFgLCZ6Rq/2+3JJxBX7hldNMzBACB7+orHvaC8p/A
- vLksRlPeLB7BksI3DdDTVAbMfh8eWnwZFj+ncyFMMD2WD7sWBfMFn5rzSAXO6ILX/B
- unAWUsJIwo9IJCTgkLewkzuIcSzNO8RYuXeDKZXk=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id F11DF8B84E;
+ by pegase1.c-s.fr (Postfix) with ESMTP id 472RjM71Rcz9tysj;
  Tue, 29 Oct 2019 10:53:11 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1572342792; bh=gp9eHVQXcmLGsiCH27WLeZfCu7vE82qJv2qSCrrxkhE=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=XNGB0ddylbSaBhNVaOKEKt/o6x+5IRYgtOeM3wbz4HNhQxAm8/dRdRilbLY6c9RZu
+ //1on9g6idWgAwhVgSqv4zC6vR0bkaCMF8HMQbl5X8Sz3c7Qj3TKwsDQkV7I0zULb3
+ ZauDjjsWgcOS3p5bbXYxKHVJjMHrypkL0ZbBwjOI=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E58B48B84C;
+ Tue, 29 Oct 2019 10:53:12 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id u8IokpS-Zt5O; Tue, 29 Oct 2019 10:53:11 +0100 (CET)
+ with ESMTP id wZQmnHkwCTtx; Tue, 29 Oct 2019 10:53:12 +0100 (CET)
 Received: from localhost.localdomain (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B10468B755;
- Tue, 29 Oct 2019 10:53:11 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B602C8B755;
+ Tue, 29 Oct 2019 10:53:12 +0100 (CET)
 Received: by localhost.localdomain (Postfix, from userid 0)
- id 7C5866B6FD; Tue, 29 Oct 2019 09:53:11 +0000 (UTC)
-Message-Id: <9ce0a935385af6ecb3325961d4894b16627ec1ae.1572342582.git.christophe.leroy@c-s.fr>
+ id 823176B6FD; Tue, 29 Oct 2019 09:53:12 +0000 (UTC)
+Message-Id: <9e82b282e67e4355cbe3d1732684b3e85605d5b2.1572342582.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1572342582.git.christophe.leroy@c-s.fr>
 References: <cover.1572342582.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 6/8] powerpc/vdso32: use LOAD_REG_IMMEDIATE()
+Subject: [PATCH v3 7/8] powerpc/vdso32: implement clock_getres entirely
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue, 29 Oct 2019 09:53:11 +0000 (UTC)
+Date: Tue, 29 Oct 2019 09:53:12 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,37 +92,77 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use LOAD_REG_IMMEDIATE() to load registers with immediate value.
+clock_getres returns hrtimer_res for all clocks but coarse ones
+for which it returns KTIME_LOW_RES.
+
+return EINVAL for unknown clocks.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/vdso32/gettimeofday.S | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ arch/powerpc/kernel/asm-offsets.c         |  3 +++
+ arch/powerpc/kernel/vdso32/gettimeofday.S | 19 +++++++++++--------
+ 2 files changed, 14 insertions(+), 8 deletions(-)
 
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 07d5596ff646..4879c41ed5d0 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -417,7 +417,10 @@ int main(void)
+ 	DEFINE(CLOCK_MONOTONIC, CLOCK_MONOTONIC);
+ 	DEFINE(CLOCK_REALTIME_COARSE, CLOCK_REALTIME_COARSE);
+ 	DEFINE(CLOCK_MONOTONIC_COARSE, CLOCK_MONOTONIC_COARSE);
++	DEFINE(CLOCK_MAX, CLOCK_TAI);
+ 	DEFINE(NSEC_PER_SEC, NSEC_PER_SEC);
++	DEFINE(EINVAL, EINVAL);
++	DEFINE(KTIME_LOW_RES, KTIME_LOW_RES);
+ 
+ #ifdef CONFIG_BUG
+ 	DEFINE(BUG_ENTRY_SIZE, sizeof(struct bug_entry));
 diff --git a/arch/powerpc/kernel/vdso32/gettimeofday.S b/arch/powerpc/kernel/vdso32/gettimeofday.S
-index 9867c7b9a25a..ff431482739c 100644
+index ff431482739c..181e66a15fe2 100644
 --- a/arch/powerpc/kernel/vdso32/gettimeofday.S
 +++ b/arch/powerpc/kernel/vdso32/gettimeofday.S
-@@ -39,8 +39,7 @@ V_FUNCTION_BEGIN(__kernel_gettimeofday)
- 	get_datapage	r9, r0
- 	cmplwi	r10,0			/* check if tv is NULL */
- 	beq	3f
--	lis	r7,1000000@ha		/* load up USEC_PER_SEC */
--	addi	r7,r7,1000000@l		/* so we get microseconds in r4 */
-+	LOAD_REG_IMMEDIATE(r7, 1000000)	/* load up USEC_PER_SEC */
- 	bl	__do_get_tspec@local	/* get sec/usec from tb & kernel */
- 	stw	r3,TVAL32_TV_SEC(r10)
- 	stw	r4,TVAL32_TV_USEC(r10)
-@@ -83,8 +82,7 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
+@@ -198,17 +198,20 @@ V_FUNCTION_END(__kernel_clock_gettime)
+ V_FUNCTION_BEGIN(__kernel_clock_getres)
+   .cfi_startproc
+ 	/* Check for supported clock IDs */
+-	cmpwi	cr0,r3,CLOCK_REALTIME
+-	cmpwi	cr1,r3,CLOCK_MONOTONIC
+-	cror	cr0*4+eq,cr0*4+eq,cr1*4+eq
+-	bne	cr0,99f
++	cmplwi	cr0, r3, CLOCK_MAX
++	cmpwi	cr1, r3, CLOCK_REALTIME_COARSE
++	cmpwi	cr7, r3, CLOCK_MONOTONIC_COARSE
++	bgt	cr0, 99f
++	LOAD_REG_IMMEDIATE(r5, KTIME_LOW_RES)
++	beq	cr1, 1f
++	beq	cr7, 1f
+ 
+ 	mflr	r12
    .cfi_register lr,r12
- 	mr	r11,r4			/* r11 saves tp */
- 	get_datapage	r9, r0
--	lis	r7,NSEC_PER_SEC@h	/* want nanoseconds */
--	ori	r7,r7,NSEC_PER_SEC@l
-+	LOAD_REG_IMMEDIATE(r7, NSEC_PER_SEC)	/* load up NSEC_PER_SEC */
- 	beq	cr5, .Lcoarse_clocks
- .Lprecise_clocks:
- 	bl	__do_get_tspec@local	/* get sec/nsec from tb & kernel */
+ 	get_datapage	r3, r0
+ 	lwz	r5, CLOCK_HRTIMER_RES(r3)
+ 	mtlr	r12
+-	li	r3,0
++1:	li	r3,0
+ 	cmpli	cr0,r4,0
+ 	crclr	cr0*4+so
+ 	beqlr
+@@ -217,11 +220,11 @@ V_FUNCTION_BEGIN(__kernel_clock_getres)
+ 	blr
+ 
+ 	/*
+-	 * syscall fallback
++	 * invalid clock
+ 	 */
+ 99:
+-	li	r0,__NR_clock_getres
+-	sc
++	li	r3, EINVAL
++	crset	so
+ 	blr
+   .cfi_endproc
+ V_FUNCTION_END(__kernel_clock_getres)
 -- 
 2.13.3
 
