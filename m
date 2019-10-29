@@ -2,87 +2,90 @@ Return-Path: <SRS0=NKNt=YW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A4432CA9EAE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 08:28:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36BF5CA9EAE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 08:46:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 45EF520717
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 08:28:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9B42920663
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 08:46:34 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="sjkBTnV7"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 45EF520717
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="RB8kpGeg"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9B42920663
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rasmusvillemoes.dk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 472Pqd1v8MzF1g1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 19:28:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 472QDS0KQ6zDrgQ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 19:46:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::641;
- helo=mail-pl1-x641.google.com; envelope-from=saurav.girepunje@gmail.com;
+ smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::244;
+ helo=mail-lj1-x244.google.com; envelope-from=linux@rasmusvillemoes.dk;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="sjkBTnV7"; 
- dkim-atps=neutral
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=rasmusvillemoes.dk
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk
+ header.b="RB8kpGeg"; dkim-atps=neutral
+Received: from mail-lj1-x244.google.com (mail-lj1-x244.google.com
+ [IPv6:2a00:1450:4864:20::244])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 472Pj00fzszF1XC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2019 19:22:43 +1100 (AEDT)
-Received: by mail-pl1-x641.google.com with SMTP id v5so7193781ply.10
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2019 01:22:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:mime-version:content-disposition
- :user-agent; bh=zXO/8cyF+ovBR8syYWZ7NPcga9VHQrumYWTLb4MSqY0=;
- b=sjkBTnV7Guvfs+Z8OZf0gV7sHV3mo4ataXjg0YyLe1icOgl0DkniiSCNJ9V3IUcH7K
- fDFkRuE1KtzGNnXClFSVBF+ZRLIRakPwsg9U6BDigR98Z+IWEPxZk/AliCJA3zZtnTol
- 8kBjbRKHAxRFUYThH6CB6iJooVE91bUhtoeXrlmF1XyBALfxMxtySwM58KldQDvWGmsq
- bz/fUqKhQCATsh7d23i3aPV79mnPqfTb8UJSVsiLWAqaXj0iip5f0KrKzFQvGFZALHGd
- D9o7WzTGcm0xcaoIsnnXIbJd/yVllqBCrCxhEid+ITY+3y9Lwrk2eXVYGyDhgwP9rh6V
- xI4w==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 472Q945PJMzF1MD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2019 19:43:35 +1100 (AEDT)
+Received: by mail-lj1-x244.google.com with SMTP id v2so44955lji.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2019 01:43:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=rasmusvillemoes.dk; s=google;
+ h=subject:to:cc:references:from:message-id:date:user-agent
+ :mime-version:in-reply-to:content-language:content-transfer-encoding;
+ bh=HGXd6rlxFLbtpjrAQ8G1Qtj9aAnpBTx6NO8SjG7PtjI=;
+ b=RB8kpGegZFDbX4ehO3+DnkUXso3PSM4ypigva4bxla2UhzbfYW3VFanbaz6VAqTIp9
+ vC4VW/N/DNc5sYKbDVzBAZWHMwSNqKbSozM7z9NZGI9mkDa0OXo0Om0mCpyDwNoaV8lk
+ b3mRrhW7uAmiDR3MvGYepqftbS6Qixnz1xrt0=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:mime-version
- :content-disposition:user-agent;
- bh=zXO/8cyF+ovBR8syYWZ7NPcga9VHQrumYWTLb4MSqY0=;
- b=L07YBkyrdJr/+CYnj/mfLkTHM+7ev9IKS3ETBNKFoNuXvOAyeDCtr3DHiQG4Z4DVU2
- l6aNGJPcRFy/0Y2w95tmb7qjh80aMU49S5YcPdRDKULZs1e3jtBsF1YAChy8Tsuprs7f
- xLVjFvvrj4lmssndkXzldlxtVu2eLwZR9l5/lfKWzKvdXgyRQJs9MPyCw6uggr8Pgcuf
- AccHbq3lYaD1hDSwEJzAw39RrPzRg58P0xx4o0lkXU9JPxCayGsu2TBbIpV2EK/LappO
- PHRNqXHgYmIlgGtrEHebwrZvymqiO7pgBQjfsfSXtqLlrUuY94YAtusfD3K8/XEoJnxw
- FuOA==
-X-Gm-Message-State: APjAAAWABdqkFQnEkWAdUovjpRU58sAENSx79X/k4tGpQFfoWQT7Eekh
- 2MW1r+VKPtcJsi105v9BhCw=
-X-Google-Smtp-Source: APXvYqyx4LMCvmSv6QXJ6Ogdrxw4bFy8T8q1hPnjUl3fZmaGvH4aDCo3IRGLQ5KdvFJiL6INIU9xCA==
-X-Received: by 2002:a17:902:7c07:: with SMTP id
- x7mr2717230pll.210.1572337359983; 
- Tue, 29 Oct 2019 01:22:39 -0700 (PDT)
-Received: from saurav ([27.62.167.137])
- by smtp.gmail.com with ESMTPSA id c69sm11848071pga.69.2019.10.29.01.22.35
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 29 Oct 2019 01:22:39 -0700 (PDT)
-Date: Tue, 29 Oct 2019 13:52:16 +0530
-From: Saurav Girepunje <saurav.girepunje@gmail.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- groug@kaod.org, clg@kaod.org, christophe.jaillet@wanadoo.fr,
- saurav.girepunje@gmail.com, tglx@linutronix.de,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc: sysdev: xive: Use true/false for bool type
-Message-ID: <20191029082215.GA7160@saurav>
+ h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=HGXd6rlxFLbtpjrAQ8G1Qtj9aAnpBTx6NO8SjG7PtjI=;
+ b=OXF86vzbvk2FLqbyHm6II8Syr2fpg19zxbk6qMqOQXGyf2SYGNJ2/be6XhIkOEI42Q
+ 2XpQvVVZQnOkt6izoGcZf1O7GlQ5W9wpijNyH9zREQJ/bjAGMsYxN/CKA79obUD5rjph
+ CC/8gy2BbKqBoSXC70Sn+YP2xXjGPwRV9EVoq5WMwexMF5roZWrMYlbKtha+UWDz2kUh
+ rMoP4a39oOVx+ROo1B+hvBbNdgmyFmQPumLWFOJ/GzMDPZvbR4Yk1/CPw3L5CRoU3qTY
+ bI9wCpSQIypYQb4qwTDf4AGQpq5pFOjaKpe22s5gZAO0Ob8oXp5w18Z3u0hhzehGewJn
+ hmPQ==
+X-Gm-Message-State: APjAAAXjM8QaAnFZ+JrXMqncWganbQbZvUKGXsEMOKJAaQKXEeGMTSuN
+ cotJtsppsMzRDn7XhtlePfM3cg==
+X-Google-Smtp-Source: APXvYqzEDMxdj01ErGn8mE4rCnBBCxTZ6HkGNRiI9Uh8UyBsOyPj0DTCwoKDupc4z5w1cSudjzX3Qg==
+X-Received: by 2002:a2e:4751:: with SMTP id u78mr1617787lja.210.1572338611332; 
+ Tue, 29 Oct 2019 01:43:31 -0700 (PDT)
+Received: from [172.16.11.28] ([81.216.59.226])
+ by smtp.gmail.com with ESMTPSA id 77sm13198495lfj.41.2019.10.29.01.43.29
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Tue, 29 Oct 2019 01:43:30 -0700 (PDT)
+Subject: ppc: inlining iowrite32be and friends (was: Re: [PATCH v2 03/23] soc:
+ fsl: qe: avoid ppc-specific io accessors)
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Qiang Zhao <qiang.zhao@nxp.com>, Li Yang <leoyang.li@nxp.com>
+References: <20191018125234.21825-1-linux@rasmusvillemoes.dk>
+ <20191025124058.22580-1-linux@rasmusvillemoes.dk>
+ <20191025124058.22580-4-linux@rasmusvillemoes.dk>
+ <886d5218-6d6b-824c-3ab9-63aafe41ff40@c-s.fr>
+From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Message-ID: <02a8a449-e421-f70f-4bf9-50a94324834b@rasmusvillemoes.dk>
+Date: Tue, 29 Oct 2019 09:43:28 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <886d5218-6d6b-824c-3ab9-63aafe41ff40@c-s.fr>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,32 +97,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: saurav.girepunje@hotmail.com
+Cc: linux-kernel@vger.kernel.org, Scott Wood <oss@buserror.net>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use true/false for bool return type in xive_spapr_cleanup_queue
-function. issue found using coccicheck .
+On 29/10/2019 08.43, Christophe Leroy wrote:
+> 
+> 
+> Le 25/10/2019 à 14:40, Rasmus Villemoes a écrit :
+>> In preparation for allowing to build QE support for architectures
+>> other than PPC, replace the ppc-specific io accessors. Done via
+>>
+>> $ spatch --sp-file io.cocci --in-place drivers/soc/fsl/qe/
+>>
 
-Signed-off-by: Saurav Girepunje <saurav.girepunje@gmail.com>
----
- arch/powerpc/sysdev/xive/spapr.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> As discussed already, this patch changes io accesors from inline to
+> outline, this has a performance impact on powerpc32 like 83xx.
+> 
+> Could you please include in your series before this patch a patch to
+> change generic io accessors to inline on powerpc ?
 
-diff --git a/arch/powerpc/sysdev/xive/spapr.c b/arch/powerpc/sysdev/xive/spapr.c
-index 33c10749edec..74e3ffae0be6 100644
---- a/arch/powerpc/sysdev/xive/spapr.c
-+++ b/arch/powerpc/sysdev/xive/spapr.c
-@@ -533,7 +533,7 @@ static void xive_spapr_cleanup_queue(unsigned int cpu, struct xive_cpu *xc,
- static bool xive_spapr_match(struct device_node *node)
- {
- 	/* Ignore cascaded controllers for the moment */
--	return 1;
-+	return true;
- }
- 
- #ifdef CONFIG_SMP
--- 
-2.20.1
+Well, it's complicated. I was hoping someone could explain why those are
+OOL in the first place. The history of arch/powerpc/kernel/iomap.c and
+the makefile fragment including it is a bit messy - first of all, the
+file itself talks about "ppc64 implementation" but is obviously used for
+all ppc32 (while the ppc64 platforms that set PPC_INDIRECT_PIO also get
+GENERIC_IOMAP, i.e. lib/iomap.c).
 
+So, what I wanted to do was to make the accessors inline when
+!PPC_INDIRECT_PIO && !PPC_INDIRECT_MMIO. But then I need to avoid
+including asm-generic/iomap.h, because that declares these as extern.
+OTOH, I think I do need some of the declarations from that file, e.g. at
+least pci_iounmap, and perhaps also the *_rep versions, unless they
+should also be inlined.
+
+I'm happy to give it a try, but I think that belongs in a separate
+series. The first few attempts are almost certain to generate some 0day
+reports.
+
+Question for powerpc maintainers: Is there a fundamental reason
+iowrite32be and friends are out-of-line on PPC32 (more generally, the
+PPC platforms that set neither PPC_INDIRECT_PIO or PPC_INDIRECT_MMIO)?
+If so, there's no point trying to make them inline, and I'd have to
+address Christophe's concern by introducing private qe_iowrite32be()
+etc. wrappers.
+
+Thanks,
+Rasmus
