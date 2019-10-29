@@ -2,90 +2,145 @@ Return-Path: <SRS0=NKNt=YW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2490FCA9EB9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 04:41:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B967CA9EB9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 04:43:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D3E0C20862
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 04:41:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D3E0C20862
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 2717320663
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 04:43:43 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=embeddedor.com header.i=@embeddedor.com header.b="LeiLiNSm"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2717320663
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=embeddedor.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 472Jnj5kQYzDrBw
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 15:41:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 472JrD4TcPzF1QG
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 15:43:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ smtp.mailfrom=embeddedor.com (client-ip=192.185.144.98;
+ helo=gateway32.websitewelcome.com; envelope-from=gustavo@embeddedor.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=embeddedor.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=embeddedor.com header.i=@embeddedor.com
+ header.b="LeiLiNSm"; dkim-atps=neutral
+X-Greylist: delayed 1416 seconds by postgrey-1.36 at bilbo;
+ Tue, 29 Oct 2019 15:40:54 AEDT
+Received: from gateway32.websitewelcome.com (gateway32.websitewelcome.com
+ [192.185.144.98])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 472JfP0LhBzF12D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2019 15:35:08 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x9T3IRRO098805; Tue, 29 Oct 2019 00:35:00 -0400
-Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.27])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2vxbdsw1xe-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 29 Oct 2019 00:35:00 -0400
-Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
- by ppma05wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x9T4Ylqc011496;
- Tue, 29 Oct 2019 04:35:00 GMT
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by ppma05wdc.us.ibm.com with ESMTP id 2vvds6r57e-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 29 Oct 2019 04:34:59 +0000
-Received: from b03ledav003.gho.boulder.ibm.com
- (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x9T4YvRX59310470
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 29 Oct 2019 04:34:57 GMT
-Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6E20D6A051;
- Tue, 29 Oct 2019 04:34:57 +0000 (GMT)
-Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A91A36A04F;
- Tue, 29 Oct 2019 04:34:55 +0000 (GMT)
-Received: from [9.204.200.92] (unknown [9.204.200.92])
- by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP;
- Tue, 29 Oct 2019 04:34:55 +0000 (GMT)
-Subject: Re: [RFC PATCH 1/4] libnvdimm/namespace: Make namespace size
- validation arch dependent
-To: Ira Weiny <ira.weiny@intel.com>
-References: <20191028094825.21448-1-aneesh.kumar@linux.ibm.com>
- <20191028212142.GB9826@iweiny-DESK2.sc.intel.com>
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Message-ID: <cfb6cd96-3f81-7ee8-150f-69924d446540@linux.ibm.com>
-Date: Tue, 29 Oct 2019 10:04:54 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.1.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 472Jn22BSLzF1LQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2019 15:40:53 +1100 (AEDT)
+Received: from cm10.websitewelcome.com (cm10.websitewelcome.com [100.42.49.4])
+ by gateway32.websitewelcome.com (Postfix) with ESMTP id EDCEB7F4091
+ for <linuxppc-dev@lists.ozlabs.org>;
+ Mon, 28 Oct 2019 23:17:13 -0500 (CDT)
+Received: from gator4166.hostgator.com ([108.167.133.22]) by cmsmtp with SMTP
+ id PIwTihiWRHunhPIwTiBnBp; Mon, 28 Oct 2019 23:17:13 -0500
+X-Authority-Reason: nr=8
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=embeddedor.com; s=default; h=Content-Transfer-Encoding:Content-Type:
+ In-Reply-To:MIME-Version:Date:Message-ID:Subject:From:References:Cc:To:Sender
+ :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+ Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+ List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=lEg/oM5SucuiXfeCKgoTcpzVKGMmKNrKswd9kWJjG6c=; b=LeiLiNSmT5qaU5JVzquhIHKQjM
+ 8RbDa28EPKsMTaUkd0GVmX8kwOPme5doKcqir2aZB59QgYR2J9qVmpstsTd0e/FHkMf9oMb/aKHZ0
+ 7GYcARbo6CTbdJzvhfrdNS5mef+6jyzSoGbF0OkNfdFQ/BGuP9j+0wg6xH8HYcvbrkGO5NHYr9VqL
+ YwK7no4LM5QXhfSmnCSg2OjL9/soo0E07VOIsND5/N8ZdpBYhnQlYCMT8nEhMEdAcIZitMridHjnH
+ uZs/h64YdnzUaKn2+ll6nhJcBiC7Ewo0mKYbG7FMZf2/7Dr4lZE/bO3bii7a57OkjtQc/oWs+O1NQ
+ 4A+486Eg==;
+Received: from [187.192.2.30] (port=54532 helo=[192.168.43.131])
+ by gator4166.hostgator.com with esmtpsa
+ (TLSv1.2:ECDHE-RSA-AES128-GCM-SHA256:128) (Exim 4.92)
+ (envelope-from <gustavo@embeddedor.com>)
+ id 1iPIwT-002w7F-Dk; Mon, 28 Oct 2019 23:17:13 -0500
+To: Saurav Girepunje <saurav.girepunje@gmail.com>, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au, groug@kaod.org, clg@kaod.org,
+ christophe.jaillet@wanadoo.fr, tglx@linutronix.de,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20191029034027.GA7226@saurav>
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Openpgp: preference=signencrypt
+Autocrypt: addr=gustavo@embeddedor.com; keydata=
+ mQINBFssHAwBEADIy3ZoPq3z5UpsUknd2v+IQud4TMJnJLTeXgTf4biSDSrXn73JQgsISBwG
+ 2Pm4wnOyEgYUyJd5tRWcIbsURAgei918mck3tugT7AQiTUN3/5aAzqe/4ApDUC+uWNkpNnSV
+ tjOx1hBpla0ifywy4bvFobwSh5/I3qohxDx+c1obd8Bp/B/iaOtnq0inli/8rlvKO9hp6Z4e
+ DXL3PlD0QsLSc27AkwzLEc/D3ZaqBq7ItvT9Pyg0z3Q+2dtLF00f9+663HVC2EUgP25J3xDd
+ 496SIeYDTkEgbJ7WYR0HYm9uirSET3lDqOVh1xPqoy+U9zTtuA9NQHVGk+hPcoazSqEtLGBk
+ YE2mm2wzX5q2uoyptseSNceJ+HE9L+z1KlWW63HhddgtRGhbP8pj42bKaUSrrfDUsicfeJf6
+ m1iJRu0SXYVlMruGUB1PvZQ3O7TsVfAGCv85pFipdgk8KQnlRFkYhUjLft0u7CL1rDGZWDDr
+ NaNj54q2CX9zuSxBn9XDXvGKyzKEZ4NY1Jfw+TAMPCp4buawuOsjONi2X0DfivFY+ZsjAIcx
+ qQMglPtKk/wBs7q2lvJ+pHpgvLhLZyGqzAvKM1sVtRJ5j+ARKA0w4pYs5a5ufqcfT7dN6TBk
+ LXZeD9xlVic93Ju08JSUx2ozlcfxq+BVNyA+dtv7elXUZ2DrYwARAQABtCxHdXN0YXZvIEEu
+ IFIuIFNpbHZhIDxndXN0YXZvQGVtYmVkZGVkb3IuY29tPokCPQQTAQgAJwUCWywcDAIbIwUJ
+ CWYBgAULCQgHAgYVCAkKCwIEFgIDAQIeAQIXgAAKCRBHBbTLRwbbMZ6tEACk0hmmZ2FWL1Xi
+ l/bPqDGFhzzexrdkXSfTTZjBV3a+4hIOe+jl6Rci/CvRicNW4H9yJHKBrqwwWm9fvKqOBAg9
+ obq753jydVmLwlXO7xjcfyfcMWyx9QdYLERTeQfDAfRqxir3xMeOiZwgQ6dzX3JjOXs6jHBP
+ cgry90aWbaMpQRRhaAKeAS14EEe9TSIly5JepaHoVdASuxklvOC0VB0OwNblVSR2S5i5hSsh
+ ewbOJtwSlonsYEj4EW1noQNSxnN/vKuvUNegMe+LTtnbbocFQ7dGMsT3kbYNIyIsp42B5eCu
+ JXnyKLih7rSGBtPgJ540CjoPBkw2mCfhj2p5fElRJn1tcX2McsjzLFY5jK9RYFDavez5w3lx
+ JFgFkla6sQHcrxH62gTkb9sUtNfXKucAfjjCMJ0iuQIHRbMYCa9v2YEymc0k0RvYr43GkA3N
+ PJYd/vf9vU7VtZXaY4a/dz1d9dwIpyQARFQpSyvt++R74S78eY/+lX8wEznQdmRQ27kq7BJS
+ R20KI/8knhUNUJR3epJu2YFT/JwHbRYC4BoIqWl+uNvDf+lUlI/D1wP+lCBSGr2LTkQRoU8U
+ 64iK28BmjJh2K3WHmInC1hbUucWT7Swz/+6+FCuHzap/cjuzRN04Z3Fdj084oeUNpP6+b9yW
+ e5YnLxF8ctRAp7K4yVlvA7kCDQRbLBwMARAAsHCE31Ffrm6uig1BQplxMV8WnRBiZqbbsVJB
+ H1AAh8tq2ULl7udfQo1bsPLGGQboJSVN9rckQQNahvHAIK8ZGfU4Qj8+CER+fYPp/MDZj+t0
+ DbnWSOrG7z9HIZo6PR9z4JZza3Hn/35jFggaqBtuydHwwBANZ7A6DVY+W0COEU4of7CAahQo
+ 5NwYiwS0lGisLTqks5R0Vh+QpvDVfuaF6I8LUgQR/cSgLkR//V1uCEQYzhsoiJ3zc1HSRyOP
+ otJTApqGBq80X0aCVj1LOiOF4rrdvQnj6iIlXQssdb+WhSYHeuJj1wD0ZlC7ds5zovXh+FfF
+ l5qH5RFY/qVn3mNIVxeO987WSF0jh+T5ZlvUNdhedGndRmwFTxq2Li6GNMaolgnpO/CPcFpD
+ jKxY/HBUSmaE9rNdAa1fCd4RsKLlhXda+IWpJZMHlmIKY8dlUybP+2qDzP2lY7kdFgPZRU+e
+ zS/pzC/YTzAvCWM3tDgwoSl17vnZCr8wn2/1rKkcLvTDgiJLPCevqpTb6KFtZosQ02EGMuHQ
+ I6Zk91jbx96nrdsSdBLGH3hbvLvjZm3C+fNlVb9uvWbdznObqcJxSH3SGOZ7kCHuVmXUcqoz
+ ol6ioMHMb+InrHPP16aVDTBTPEGwgxXI38f7SUEn+NpbizWdLNz2hc907DvoPm6HEGCanpcA
+ EQEAAYkCJQQYAQgADwUCWywcDAIbDAUJCWYBgAAKCRBHBbTLRwbbMdsZEACUjmsJx2CAY+QS
+ UMebQRFjKavwXB/xE7fTt2ahuhHT8qQ/lWuRQedg4baInw9nhoPE+VenOzhGeGlsJ0Ys52sd
+ XvUjUocKgUQq6ekOHbcw919nO5L9J2ejMf/VC/quN3r3xijgRtmuuwZjmmi8ct24TpGeoBK4
+ WrZGh/1hAYw4ieARvKvgjXRstcEqM5thUNkOOIheud/VpY+48QcccPKbngy//zNJWKbRbeVn
+ imua0OpqRXhCrEVm/xomeOvl1WK1BVO7z8DjSdEBGzbV76sPDJb/fw+y+VWrkEiddD/9CSfg
+ fBNOb1p1jVnT2mFgGneIWbU0zdDGhleI9UoQTr0e0b/7TU+Jo6TqwosP9nbk5hXw6uR5k5PF
+ 8ieyHVq3qatJ9K1jPkBr8YWtI5uNwJJjTKIA1jHlj8McROroxMdI6qZ/wZ1ImuylpJuJwCDC
+ ORYf5kW61fcrHEDlIvGc371OOvw6ejF8ksX5+L2zwh43l/pKkSVGFpxtMV6d6J3eqwTafL86
+ YJWH93PN+ZUh6i6Rd2U/i8jH5WvzR57UeWxE4P8bQc0hNGrUsHQH6bpHV2lbuhDdqo+cM9eh
+ GZEO3+gCDFmKrjspZjkJbB5Gadzvts5fcWGOXEvuT8uQSvl+vEL0g6vczsyPBtqoBLa9SNrS
+ VtSixD1uOgytAP7RWS474w==
+Subject: Re: [PATCH] powerpc: sysdev: xive: Fix use true/false for bool type
+Message-ID: <0f9297fc-a18e-d382-c7fc-a7e2600efc5e@embeddedor.com>
+Date: Mon, 28 Oct 2019 23:17:10 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
 MIME-Version: 1.0
-In-Reply-To: <20191028212142.GB9826@iweiny-DESK2.sc.intel.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <20191029034027.GA7226@saurav>
+Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-10-28_07:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=888 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1908290000 definitions=main-1910290027
+Content-Transfer-Encoding: 8bit
+X-AntiAbuse: This header was added to track abuse,
+ please include it with any abuse report
+X-AntiAbuse: Primary Hostname - gator4166.hostgator.com
+X-AntiAbuse: Original Domain - lists.ozlabs.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - embeddedor.com
+X-BWhitelist: no
+X-Source-IP: 187.192.2.30
+X-Source-L: No
+X-Exim-ID: 1iPIwT-002w7F-Dk
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
+X-Source-Sender: ([192.168.43.131]) [187.192.2.30]:54532
+X-Source-Auth: gustavo@embeddedor.com
+X-Email-Count: 9
+X-Source-Cap: Z3V6aWRpbmU7Z3V6aWRpbmU7Z2F0b3I0MTY2Lmhvc3RnYXRvci5jb20=
+X-Local-Domain: yes
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,29 +152,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dan.j.williams@intel.com, linuxppc-dev@lists.ozlabs.org,
- linux-nvdimm@lists.01.org
+Cc: saurav.girepunje@hotmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 10/29/19 2:51 AM, Ira Weiny wrote:
->> diff --git a/arch/powerpc/lib/pmem.c b/arch/powerpc/lib/pmem.c
->> index 377712e85605..2e661a08dae5 100644
->> --- a/arch/powerpc/lib/pmem.c
->> +++ b/arch/powerpc/lib/pmem.c
->> @@ -17,14 +17,31 @@ void arch_wb_cache_pmem(void *addr, size_t size)
->>   	unsigned long start = (unsigned long) addr;
->>   	flush_dcache_range(start, start + size);
->>   }
->> -EXPORT_SYMBOL(arch_wb_cache_pmem);
->> +EXPORT_SYMBOL_GPL(arch_wb_cache_pmem);
+
+This is not actually a 'fix'
+
+I suggest you to rephrase the subject in a different way and
+remove the word 'fix' from it.
+
+On 10/28/19 22:40, Saurav Girepunje wrote:
+> Use true/false for bool return type in xive_spapr_cleanup_queue
+> function.
 > 
-> Unrelated change?
+
+How do you find this?
+
+If you used a tool to find this, please mention it.
+
+Thanks
+--
+Gustavo
+
+> Signed-off-by: Saurav Girepunje <saurav.girepunje@gmail.com>
+> ---
+>  arch/powerpc/sysdev/xive/spapr.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
->
-
-Yes, will split that as a separate patch.
-
--aneesh
-
+> diff --git a/arch/powerpc/sysdev/xive/spapr.c b/arch/powerpc/sysdev/xive/spapr.c
+> index 33c10749edec..74e3ffae0be6 100644
+> --- a/arch/powerpc/sysdev/xive/spapr.c
+> +++ b/arch/powerpc/sysdev/xive/spapr.c
+> @@ -533,7 +533,7 @@ static void xive_spapr_cleanup_queue(unsigned int cpu, struct xive_cpu *xc,
+>  static bool xive_spapr_match(struct device_node *node)
+>  {
+>  	/* Ignore cascaded controllers for the moment */
+> -	return 1;
+> +	return true;
+>  }
+>  
+>  #ifdef CONFIG_SMP
+> 
