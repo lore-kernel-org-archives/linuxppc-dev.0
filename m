@@ -4,74 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9721ACA9EAE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 22:12:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 74A7FCA9EAE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 22:14:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 439472054F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 22:12:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 1EF5C2054F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 22:14:10 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="Oul5joLm"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 439472054F
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="hhCoQlU/"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1EF5C2054F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 472m5r45RmzF1NN
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 09:12:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 472m8J0QGqzF3Vd
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 09:14:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::541;
- helo=mail-pg1-x541.google.com; envelope-from=keescook@chromium.org;
+ smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::644;
+ helo=mail-pl1-x644.google.com; envelope-from=keescook@chromium.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.b="Oul5joLm";
+ unprotected) header.d=chromium.org header.i=@chromium.org header.b="hhCoQlU/";
  dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
+Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
+ [IPv6:2607:f8b0:4864:20::644])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 472kyd6QwSzF35w
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2019 08:20:41 +1100 (AEDT)
-Received: by mail-pg1-x541.google.com with SMTP id r1so10497550pgj.12
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2019 14:20:41 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 472kyg1hHFzF36H
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2019 08:20:42 +1100 (AEDT)
+Received: by mail-pl1-x644.google.com with SMTP id c16so8309519plz.9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2019 14:20:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=BONbSwO3yUZE8RnSGxOUsa1O5SfUej1bEo+UUtcRz+8=;
- b=Oul5joLmyxQTlWFJ6A+hcl/iw8HGyCj6DCkGeyjgSJdywZcIXcCkpDkg/j5crt4EDF
- bhYDAsbHELzhL0Rn6NEATnn7EYUCy83UJjn7yKHmtUT0TnhtwYnlsa6tIjmvmGJHa6km
- Wea7MJXRJYBJmpaXEbKQvVL7Q/hNvQrtuzUmo=
+ bh=NdxCafKKRqXAoKJS3a+7E7MX2efPsfhraTr7Vwa5zkA=;
+ b=hhCoQlU/RqWYXSDAgYDtKFJXYKcb6qrbw7jBqPb2fpXCNS/P4SloLxb2oxafKyWrIF
+ GX2Ot3WmEW9lQeaBfn0szm1nDvHZNofcDLvnvXdaDntDWUzpodPTd3ih+raPbjPXxcxM
+ WgkYtZ3rXDIzN73cHQs6xO88GMbYTnIRrCvGQ=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=BONbSwO3yUZE8RnSGxOUsa1O5SfUej1bEo+UUtcRz+8=;
- b=aeCg5wvZU0GST3yi273eDB19l411kar3hZZLUT/TyvkytJQstMziCvfC2vBRC3vo3W
- YFG3joH3HzmnTq3bcMHa1S3Cr2jPtQ3pYdqWr98l8HjbeE/rV5usEnWNcMG7+0EwGXNJ
- Pbku+z7NYLvmTEQk+I1AnXIFsyza/J6Kxsrp0OmnqRrkuGSq3+BzAsY42tuyXoSi9Q9u
- BslNrp5naVM7vuacF/pKTF/0xmcLqU1RqrfOPA+/hmmLNs3rvZC+B+pQMzPDSp7QTefK
- 7A6ElOLHWnl9WcEyCcdfZLEqtrReTUiCURqCNXHIqlbUfAV5Z8pD1dsA7XwSWhenrIhs
- uZ8Q==
-X-Gm-Message-State: APjAAAUSQzy6WMawYeR1um40KMVQN7jl30qQ5hG7eB06vmigXHl2FOFl
- bqSh8G8LxIv7NrLKk442Sarbtg==
-X-Google-Smtp-Source: APXvYqz1twxon/z5BlGEFoacQMYfl65IbbG8RzpA+ar3THOn4qavQ6gQvOM8c2UD/C5N90cAfco2AQ==
-X-Received: by 2002:a17:90a:858a:: with SMTP id
- m10mr9848748pjn.128.1572384036327; 
- Tue, 29 Oct 2019 14:20:36 -0700 (PDT)
+ bh=NdxCafKKRqXAoKJS3a+7E7MX2efPsfhraTr7Vwa5zkA=;
+ b=SFvaNxa7XbebdznD8JomF5DZSqBMCupv44PKh0CN+L1V/7+J7vOEIS1iBAs4nP8BFJ
+ alnJO63g909GqO3BcAd5uFEFL2K/os5L/db/EQqwg+T8xgCNigXyUf0Yt/3FUvxb8Fl+
+ HRfAwhHMi67T6MF7kLYxYBAa6zWelCkzPvnb+i80Ogc3aY0lKBJAd0tabuMvgJQbO8ca
+ LoO6DiGw+luy2MTeh70L50Iu0FiaTsvEfd71RoBjCIxJ+pe+WeIuQKz3sO4CgHZ++yBg
+ N34tnlDKqwcUcoqXfq1lKVaWOdRRvzoa7MCewDYH7mPtZEw6suzzTHq0FVFT3K3Y0hwU
+ cYXw==
+X-Gm-Message-State: APjAAAUPNQqIap4XAkveJLqG8sYA3pGXhEKWL6bMmPK/w3rgPlmnYbSt
+ xgLHmQFG6++JdhA2hpKscrWcVA==
+X-Google-Smtp-Source: APXvYqxq7MA+00PHoEN1PSXXlIGJme1iQdbf14Kx3IMK7u8g4eayCObjCuHqRWWMsmJ4J2bnyVMPWQ==
+X-Received: by 2002:a17:902:d90f:: with SMTP id
+ c15mr751124plz.157.1572384037729; 
+ Tue, 29 Oct 2019 14:20:37 -0700 (PDT)
 Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id a5sm34040pfk.172.2019.10.29.14.20.32
+ by smtp.gmail.com with ESMTPSA id c9sm41937pfb.114.2019.10.29.14.20.32
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
  Tue, 29 Oct 2019 14:20:32 -0700 (PDT)
 From: Kees Cook <keescook@chromium.org>
 To: Borislav Petkov <bp@alien8.de>
-Subject: [PATCH v3 21/29] ia64: Move EXCEPTION_TABLE to RO_DATA segment
-Date: Tue, 29 Oct 2019 14:13:43 -0700
-Message-Id: <20191029211351.13243-22-keescook@chromium.org>
+Subject: [PATCH v3 11/29] vmlinux.lds.h: Replace RODATA with RO_DATA
+Date: Tue, 29 Oct 2019 14:13:33 -0700
+Message-Id: <20191029211351.13243-12-keescook@chromium.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20191029211351.13243-1-keescook@chromium.org>
 References: <20191029211351.13243-1-keescook@chromium.org>
@@ -99,33 +99,113 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Since the EXCEPTION_TABLE is read-only, collapse it into RO_DATA.
+There's no reason to keep the RODATA macro: replace the callers with
+the expected RO_DATA macro.
 
 Signed-off-by: Kees Cook <keescook@chromium.org>
 ---
- arch/ia64/kernel/vmlinux.lds.S | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/alpha/kernel/vmlinux.lds.S      | 2 +-
+ arch/ia64/kernel/vmlinux.lds.S       | 2 +-
+ arch/microblaze/kernel/vmlinux.lds.S | 2 +-
+ arch/mips/kernel/vmlinux.lds.S       | 2 +-
+ arch/um/include/asm/common.lds.S     | 2 +-
+ arch/xtensa/kernel/vmlinux.lds.S     | 2 +-
+ include/asm-generic/vmlinux.lds.h    | 4 +---
+ 7 files changed, 7 insertions(+), 9 deletions(-)
 
+diff --git a/arch/alpha/kernel/vmlinux.lds.S b/arch/alpha/kernel/vmlinux.lds.S
+index bf28043485f6..af411817dd7d 100644
+--- a/arch/alpha/kernel/vmlinux.lds.S
++++ b/arch/alpha/kernel/vmlinux.lds.S
+@@ -34,7 +34,7 @@ SECTIONS
+ 	swapper_pg_dir = SWAPPER_PGD;
+ 	_etext = .;	/* End of text section */
+ 
+-	RODATA
++	RO_DATA(4096)
+ 	EXCEPTION_TABLE(16)
+ 
+ 	/* Will be freed after init */
 diff --git a/arch/ia64/kernel/vmlinux.lds.S b/arch/ia64/kernel/vmlinux.lds.S
-index 11d5115bc44d..1ec6b703c5b4 100644
+index fae077595756..11d5115bc44d 100644
 --- a/arch/ia64/kernel/vmlinux.lds.S
 +++ b/arch/ia64/kernel/vmlinux.lds.S
-@@ -6,6 +6,7 @@
- #include <asm/thread_info.h>
+@@ -104,7 +104,7 @@ SECTIONS {
+ 	code_continues2 : {
+ 	} :text
  
- #define EMITS_PT_NOTE
-+#define RO_EXCEPTION_TABLE_ALIGN	16
+-	RODATA
++	RO_DATA(4096)
  
- #include <asm-generic/vmlinux.lds.h>
+ 	.opd : AT(ADDR(.opd) - LOAD_OFFSET) {
+ 		__start_opd = .;
+diff --git a/arch/microblaze/kernel/vmlinux.lds.S b/arch/microblaze/kernel/vmlinux.lds.S
+index d008e50bb212..2299694748ea 100644
+--- a/arch/microblaze/kernel/vmlinux.lds.S
++++ b/arch/microblaze/kernel/vmlinux.lds.S
+@@ -51,7 +51,7 @@ SECTIONS {
+ 	}
  
-@@ -70,7 +71,6 @@ SECTIONS {
- 	/*
- 	 * Read-only data
- 	 */
--	EXCEPTION_TABLE(16)
- 
- 	/* MCA table */
  	. = ALIGN(16);
+-	RODATA
++	RO_DATA(4096)
+ 	EXCEPTION_TABLE(16)
+ 
+ 	/*
+diff --git a/arch/mips/kernel/vmlinux.lds.S b/arch/mips/kernel/vmlinux.lds.S
+index 91e566defc16..a5f00ec73ea6 100644
+--- a/arch/mips/kernel/vmlinux.lds.S
++++ b/arch/mips/kernel/vmlinux.lds.S
+@@ -82,7 +82,7 @@ SECTIONS
+ 	}
+ 
+ 	_sdata = .;			/* Start of data section */
+-	RODATA
++	RO_DATA(4096)
+ 
+ 	/* writeable */
+ 	.data : {	/* Data */
+diff --git a/arch/um/include/asm/common.lds.S b/arch/um/include/asm/common.lds.S
+index 91aca356095f..7145ce699982 100644
+--- a/arch/um/include/asm/common.lds.S
++++ b/arch/um/include/asm/common.lds.S
+@@ -9,7 +9,7 @@
+   _sdata = .;
+   PROVIDE (sdata = .);
+ 
+-  RODATA
++  RO_DATA(4096)
+ 
+   .unprotected : { *(.unprotected) }
+   . = ALIGN(4096);
+diff --git a/arch/xtensa/kernel/vmlinux.lds.S b/arch/xtensa/kernel/vmlinux.lds.S
+index a0a843745695..b97e5798b9cf 100644
+--- a/arch/xtensa/kernel/vmlinux.lds.S
++++ b/arch/xtensa/kernel/vmlinux.lds.S
+@@ -124,7 +124,7 @@ SECTIONS
+ 
+   . = ALIGN(16);
+ 
+-  RODATA
++  RO_DATA(4096)
+ 
+   /*  Relocation table */
+ 
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index dc3390ec6b60..a0a989fbe411 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -518,9 +518,7 @@
+ 	. = ALIGN((align));						\
+ 	__end_rodata = .;
+ 
+-/* RODATA & RO_DATA provided for backward compatibility.
+- * All archs are supposed to use RO_DATA() */
+-#define RODATA          RO_DATA_SECTION(4096)
++/* All archs are supposed to use RO_DATA() */
+ #define RO_DATA(align)  RO_DATA_SECTION(align)
+ 
+ /*
 -- 
 2.17.1
 
