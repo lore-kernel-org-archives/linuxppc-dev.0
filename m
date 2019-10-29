@@ -7,71 +7,71 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B4984CA9EAE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 22:22:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7ADD0CA9EAE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 22:24:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5F2DE20717
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 22:22:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 1C72220717
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 22:24:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="eUd4sJyu"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5F2DE20717
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="dNy1CZ6L"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1C72220717
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 472mLJ2lwdzF3X5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 09:22:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 472mNL37kHzF3W3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 09:24:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::441;
- helo=mail-pf1-x441.google.com; envelope-from=keescook@chromium.org;
+ smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::542;
+ helo=mail-pg1-x542.google.com; envelope-from=keescook@chromium.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.b="eUd4sJyu";
+ unprotected) header.d=chromium.org header.i=@chromium.org header.b="dNy1CZ6L";
  dkim-atps=neutral
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
- [IPv6:2607:f8b0:4864:20::441])
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
+ [IPv6:2607:f8b0:4864:20::542])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 472kyh03ZXzF37D
+ by lists.ozlabs.org (Postfix) with ESMTPS id 472kyj00nHzF35Q
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2019 08:20:44 +1100 (AEDT)
-Received: by mail-pf1-x441.google.com with SMTP id r4so4875940pfl.7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2019 14:20:43 -0700 (PDT)
+Received: by mail-pg1-x542.google.com with SMTP id r1so10497791pgj.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2019 14:20:44 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=bvYKnL/TaFkIaenIAvKRMlAb1gjfrMgYQ33pk+cyLNw=;
- b=eUd4sJyuTxgb840F9yzQhnhrVaW7UlInFUEaGLHC1o+XiNP1nT/Ur++05DeF2BOEy1
- B62m8k8aGhQzoIv1kV+qUa/1jSYvGM+XuBBi2YZI/Sqw728eeJNak1/uE8PFXjImt3OF
- 0AKvdtizmmUcAZkSIZCgqYnSyMgJK/Tq10Dl8=
+ bh=6NYi1SpcPEk1nAcODb6GN96JVcdeHOxwVojV0owHqow=;
+ b=dNy1CZ6LVOC5Xwy361W5/FOiLjIeZ1a3UnC8UVfqNFHlsVQ8qbaqjGnKLGJCwZ4kjW
+ R9OofJoUgLk3AYwWdNoTsAeWT8lvKhX3jyPzcDsVrpYn7dDwO7ngiDpQ9N4Jp5AybLbF
+ IvOGqmpRh0nWfHe5uyqSfrp6ttnHKPg3vSxs8=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=bvYKnL/TaFkIaenIAvKRMlAb1gjfrMgYQ33pk+cyLNw=;
- b=ZZalFqpabTOIrkPIrTLt4Q4CXwQRSvF8Bjw++a5DpAzT5wRjoFTa+qTXmdN0vGVd7P
- xL2+dweH0NuZuPwJhDhsKDOYnKGoQLGeDtgpXQBHhCfrkDA4+gHOtYI6hEgjScFcOMf7
- lSdBFpbz3lRpVP8zV47r4D1XWy5YXejFhWwQWurDls0tQX3CvHxT+c0uEnbUxY+g0H5z
- 2e4F9xDy5AIx74fkhfGDhbf4/K+De24AujtvuRLXAmrgGCIaorQY+9Cc2vaDR/2kmsx7
- FPyWD79zkdBsgOxoY00hlLUIdT2B849fXCBwYtVZFMVArbCHreuJ7Rm5o1kVwgqA83t6
- HrLw==
-X-Gm-Message-State: APjAAAUC2+4Mbm9HQGF0Kr+0z149tH0YAXJ5QIm1GFg0IqqNRHmJd/gj
- Inc23sULF140Oi03O9XNVCYQaA==
-X-Google-Smtp-Source: APXvYqwwc1LDGwYBzq0oCKE2jPQZSBhTqIM79blAEpYmjFxE7wS/lF6/Gpxpu2EeXpX55BTOzgQThA==
-X-Received: by 2002:a63:29c1:: with SMTP id
- p184mr25932369pgp.174.1572384041825; 
- Tue, 29 Oct 2019 14:20:41 -0700 (PDT)
+ bh=6NYi1SpcPEk1nAcODb6GN96JVcdeHOxwVojV0owHqow=;
+ b=sbTHW+A9oTkT3WyZaRSxwG7A9eYysGQUFS0aXret12msOTVJ3ljQxJKqRhQXZhHoZs
+ 4maY7dFhs5wIZYszRty82lRZasLCQDrTNJOLWbneoMaoltdQD5AaJ+wtrevEMEqEzSka
+ 7SQCOZlgNkxsUrOo+TukdwvrpOj2CaKIX0rGjoq4yEj4uFdVgfEeomfZBIpWFuPtD2CY
+ vT8kmZc3Eb4A+hE1wlagySJtvkhdEcilnReu/h7uOkI2sC3loCCQkI8VagL54U/iOugs
+ iLSFFt0dsQccwYSV/b5TAs9iktAXccMsMe2YOnKaKhlUAEktcbYyO13VB3RUpSHpyOxU
+ m+Bg==
+X-Gm-Message-State: APjAAAWj0Jn7+GaYIHebUM+7QtNZxwuweQ0W8LLr1BVQDKEaJygtWohx
+ MBxQgkKbzUdDHBf9wJnzrjFlqA==
+X-Google-Smtp-Source: APXvYqwXkyOdxRjPJDw9RQKLanWP+r60JXUsvq8Thfmh0vWjgoChchb/tzi5pjG59oK1fgBkYf+n6Q==
+X-Received: by 2002:a17:90a:7bcc:: with SMTP id
+ d12mr9331544pjl.63.1572384042527; 
+ Tue, 29 Oct 2019 14:20:42 -0700 (PDT)
 Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id c66sm55210pfb.25.2019.10.29.14.20.34
+ by smtp.gmail.com with ESMTPSA id v25sm47257pfn.78.2019.10.29.14.20.34
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
  Tue, 29 Oct 2019 14:20:38 -0700 (PDT)
 From: Kees Cook <keescook@chromium.org>
 To: Borislav Petkov <bp@alien8.de>
-Subject: [PATCH v3 22/29] microblaze: Move EXCEPTION_TABLE to RO_DATA segment
-Date: Tue, 29 Oct 2019 14:13:44 -0700
-Message-Id: <20191029211351.13243-23-keescook@chromium.org>
+Subject: [PATCH v3 25/29] xtensa: Move EXCEPTION_TABLE to RO_DATA segment
+Date: Tue, 29 Oct 2019 14:13:47 -0700
+Message-Id: <20191029211351.13243-26-keescook@chromium.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20191029211351.13243-1-keescook@chromium.org>
 References: <20191029211351.13243-1-keescook@chromium.org>
@@ -102,31 +102,32 @@ Sender: "Linuxppc-dev"
 Since the EXCEPTION_TABLE is read-only, collapse it into RO_DATA.
 
 Signed-off-by: Kees Cook <keescook@chromium.org>
+Acked-by: Max Filippov <jcmvbkbc@gmail.com>
 ---
- arch/microblaze/kernel/vmlinux.lds.S | 3 ++-
+ arch/xtensa/kernel/vmlinux.lds.S | 3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/microblaze/kernel/vmlinux.lds.S b/arch/microblaze/kernel/vmlinux.lds.S
-index b8efb08204a1..760cac41cbfe 100644
---- a/arch/microblaze/kernel/vmlinux.lds.S
-+++ b/arch/microblaze/kernel/vmlinux.lds.S
-@@ -11,6 +11,8 @@
- OUTPUT_ARCH(microblaze)
- ENTRY(microblaze_start)
+diff --git a/arch/xtensa/kernel/vmlinux.lds.S b/arch/xtensa/kernel/vmlinux.lds.S
+index bdbd7c4056c1..0043d5858f14 100644
+--- a/arch/xtensa/kernel/vmlinux.lds.S
++++ b/arch/xtensa/kernel/vmlinux.lds.S
+@@ -14,6 +14,8 @@
+  * Joe Taylor <joe@tensilica.com, joetylr@yahoo.com>
+  */
  
 +#define RO_EXCEPTION_TABLE_ALIGN	16
 +
- #include <asm/page.h>
  #include <asm-generic/vmlinux.lds.h>
+ #include <asm/page.h>
  #include <asm/thread_info.h>
-@@ -52,7 +54,6 @@ SECTIONS {
+@@ -130,7 +132,6 @@ SECTIONS
  
- 	. = ALIGN(16);
- 	RO_DATA(4096)
--	EXCEPTION_TABLE(16)
+   .fixup   : { *(.fixup) }
  
- 	/*
- 	 * sdata2 section can go anywhere, but must be word aligned
+-  EXCEPTION_TABLE(16)
+   /* Data section */
+ 
+   _sdata = .;
 -- 
 2.17.1
 
