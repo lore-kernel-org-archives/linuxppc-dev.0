@@ -7,70 +7,70 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6254ACA9EAE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 21:27:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E805CA9EAE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 21:29:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 067542087F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 21:27:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B601B2087F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 21:29:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="Mf8D0sae"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 067542087F
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="VJKPZjg5"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B601B2087F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 472l6p6P6nzF3Bj
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 08:27:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 472l8w1g25zF3Cr
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 08:29:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::541;
- helo=mail-pg1-x541.google.com; envelope-from=keescook@chromium.org;
+ smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::442;
+ helo=mail-pf1-x442.google.com; envelope-from=keescook@chromium.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.b="Mf8D0sae";
+ unprotected) header.d=chromium.org header.i=@chromium.org header.b="VJKPZjg5";
  dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 472kq25F7yzF34X
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2019 08:14:06 +1100 (AEDT)
-Received: by mail-pg1-x541.google.com with SMTP id l3so10493183pgr.8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2019 14:14:06 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 472kq64mtMzF34M
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2019 08:14:10 +1100 (AEDT)
+Received: by mail-pf1-x442.google.com with SMTP id c184so7141pfb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2019 14:14:10 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=IUB0MN6IjH7KcACf0jON8xeDsmoKIFP2Ldh5d1L6UPI=;
- b=Mf8D0saeSN+0m1YpxFdkmvjwDLF69xca5s60V1U26r/aG9tDbY+KmdSEZ+ycIlGrdm
- fJay3bujo2c2izvt9E/Xr7795kKH5LjAp715+5k8tVYty/z0ImtxaP1C8iM07/GXFMce
- avtalpOy9rw451gCCfHNsjmH0eMt4o1fE+6Ws=
+ bh=9QIZQEEx86BzYrPbnl0U6tW2XkUfCUBHfootbZQ3f/s=;
+ b=VJKPZjg5h5gIb74ChOF4ZrXYYhfiSwHea2i8hHsp07EIPVVXHD8rJMUqhwk1sE/z0k
+ hBdmEZ2eVq3eJ4nxcE1nQ08scid6AV39pHBxxM+ioMPALnIdJ4Bsh/9B8mj3a1kPr2u3
+ 4UcyG5T8BsKDyw0SPatdMBiPtbEEJi6vDNyiQ=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=IUB0MN6IjH7KcACf0jON8xeDsmoKIFP2Ldh5d1L6UPI=;
- b=gK+ts6Z+3I7vsZ/ffdMS0MG/+Djg0KZGfLm962EGe4ROc4MwDsNHMWxT0W+TYcYXv7
- OC589QeokE5vE88Mv+SrfRjRg+fNT55nV3Ah5K0lGJYyAsGpEwNAj6V8CpzV64yfnZBR
- T925eYunTlGjv7kX0Ta844bwR0xv5T7RrBS6m40gFw/tlkNsCAwWmTFbvb6OmTYXQIvH
- jWHvGDwKT/odemTrLv30ClHv3UgjVrefOIwAG622rFlpu9prOY0DYZ+UCxhaALf1DGB/
- QMXX4DUA8bq9k8G3w+pnQXrhIAtqQoE1dZ3ZmCElXEe2TLlMC2QkuVbUZY/xjCgphXY0
- 9sxQ==
-X-Gm-Message-State: APjAAAU2kCJGHG9qmKOos2T1P12PnwgbqypKkWaVOz8X1O5QgUtPTe96
- Y4LREmJVZFaMUNPLZXkzH/q7NQ==
-X-Google-Smtp-Source: APXvYqyam6Nj/3qGHt41KW7lrAi/B4rZMlVCWM/rpmjyHxsuoq9yc40ldr6w0Vf1EPp7DW/iR8X5qQ==
-X-Received: by 2002:aa7:9157:: with SMTP id 23mr3843926pfi.73.1572383644781;
- Tue, 29 Oct 2019 14:14:04 -0700 (PDT)
+ bh=9QIZQEEx86BzYrPbnl0U6tW2XkUfCUBHfootbZQ3f/s=;
+ b=IbK2P+H7361L4hyOuTgSYO/75R+f/Vzzs9Cljz1jW6PkTmSphd8N2IhIsDE3h+vF/P
+ vlzHJ/yx7Mumcqq+Pt6I51OAzjMhecDXwewCJgwE/6Ypqbbho0HBU+cwjZ/f1Kw5nCCH
+ u0nJN9e09afaRO2JW6zY4lAAn8bmLdQkniZegSR4yvFJQpoInitX4KGD9p/MBUa/ZE64
+ /eMZ7gU2W8P8fvVwbskvxVk441JdO7G9mtHxrvTB1i7GW6C20Uj427cTybIaZDdZAU7D
+ fbqYDKw361DuSVe6HguLWHWPSvlwQmmhKQVELqpKO3Y6+N1Mx2cz/4ynOpeVyFx5SH9+
+ pzdA==
+X-Gm-Message-State: APjAAAXCIT+Nm2adfoOiLewscOE/fr0D0WOjiyOvw8ObTa6vKPaQbo4e
+ jl6aifWHvcar1PTpj8/PFVBuaA==
+X-Google-Smtp-Source: APXvYqxFjQ0J1oEh3GsydIUe8Mnx6PYm+2ICQsvndatm2xSff7UaaV/GBwyJtelYDI9HsI8eY0NLwA==
+X-Received: by 2002:a63:e509:: with SMTP id r9mr20185029pgh.431.1572383647938; 
+ Tue, 29 Oct 2019 14:14:07 -0700 (PDT)
 Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id c26sm25490pfo.173.2019.10.29.14.13.59
+ by smtp.gmail.com with ESMTPSA id n23sm31540pff.137.2019.10.29.14.14.01
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 29 Oct 2019 14:14:00 -0700 (PDT)
+ Tue, 29 Oct 2019 14:14:04 -0700 (PDT)
 From: Kees Cook <keescook@chromium.org>
 To: Borislav Petkov <bp@alien8.de>
-Subject: [PATCH v3 02/29] powerpc: Remove PT_NOTE workaround
-Date: Tue, 29 Oct 2019 14:13:24 -0700
-Message-Id: <20191029211351.13243-3-keescook@chromium.org>
+Subject: [PATCH v3 05/29] ia64: Rename PT_LOAD identifier "code" to "text"
+Date: Tue, 29 Oct 2019 14:13:27 -0700
+Message-Id: <20191029211351.13243-6-keescook@chromium.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20191029211351.13243-1-keescook@chromium.org>
 References: <20191029211351.13243-1-keescook@chromium.org>
@@ -98,57 +98,70 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In preparation for moving NOTES into RO_DATA, remove the PT_NOTE
-workaround since the kernel requires at least gcc 4.6 now.
+In preparation for moving NOTES into RO_DATA, rename the linker script
+internal identifier for the PT_LOAD Program Header from "code" to "text"
+to match other architectures.
 
 Signed-off-by: Kees Cook <keescook@chromium.org>
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/vmlinux.lds.S | 24 ++----------------------
- 1 file changed, 2 insertions(+), 22 deletions(-)
+ arch/ia64/kernel/vmlinux.lds.S | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 81e672654789..a3c8492b2b19 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -20,20 +20,6 @@ ENTRY(_stext)
+diff --git a/arch/ia64/kernel/vmlinux.lds.S b/arch/ia64/kernel/vmlinux.lds.S
+index d9d4e21107cd..2c4f23c390ad 100644
+--- a/arch/ia64/kernel/vmlinux.lds.S
++++ b/arch/ia64/kernel/vmlinux.lds.S
+@@ -13,7 +13,7 @@ ENTRY(phys_start)
+ jiffies = jiffies_64;
+ 
  PHDRS {
- 	kernel PT_LOAD FLAGS(7); /* RWX */
- 	note PT_NOTE FLAGS(0);
--	dummy PT_NOTE FLAGS(0);
--
--	/* binutils < 2.18 has a bug that makes it misbehave when taking an
--	   ELF file with all segments at load address 0 as input.  This
--	   happens when running "strip" on vmlinux, because of the AT() magic
--	   in this linker script.  People using GCC >= 4.2 won't run into
--	   this problem, because the "build-id" support will put some data
--	   into the "notes" segment (at a non-zero load address).
--
--	   To work around this, we force some data into both the "dummy"
--	   segment and the kernel segment, so the dummy segment will get a
--	   non-zero load address.  It's not enough to always create the
--	   "notes" segment, since if nothing gets assigned to it, its load
--	   address will be zero.  */
- }
+-	code   PT_LOAD;
++	text   PT_LOAD;
+ 	percpu PT_LOAD;
+ 	data   PT_LOAD;
+ 	note   PT_NOTE;
+@@ -36,7 +36,7 @@ SECTIONS {
+ 	phys_start = _start - LOAD_OFFSET;
  
- #ifdef CONFIG_PPC64
-@@ -178,14 +164,8 @@ SECTIONS
- 	EXCEPTION_TABLE(0)
+ 	code : {
+-	} :code
++	} :text
+ 	. = KERNEL_START;
  
- 	NOTES :kernel :note
--
--	/* The dummy segment contents for the bug workaround mentioned above
--	   near PHDRS.  */
--	.dummy : AT(ADDR(.dummy) - LOAD_OFFSET) {
--		LONG(0)
--		LONG(0)
--		LONG(0)
--	} :kernel :dummy
-+	/* Restore program header away from PT_NOTE. */
-+	.dummy : { *(.dummy) } :kernel
+ 	_text = .;
+@@ -68,9 +68,9 @@ SECTIONS {
+ 	/*
+ 	 * Read-only data
+ 	 */
+-	NOTES :code :note       /* put .notes in text and mark in PT_NOTE  */
++	NOTES :text :note       /* put .notes in text and mark in PT_NOTE  */
+ 	code_continues : {
+-	} : code               /* switch back to regular program...  */
++	} :text                /* switch back to regular program...  */
  
- /*
-  * Init sections discarded at runtime
+ 	EXCEPTION_TABLE(16)
+ 
+@@ -102,9 +102,9 @@ SECTIONS {
+ 		__start_unwind = .;
+ 		*(.IA_64.unwind*)
+ 		__end_unwind = .;
+-	} :code :unwind
++	} :text :unwind
+ 	code_continues2 : {
+-	} : code
++	} :text
+ 
+ 	RODATA
+ 
+@@ -214,7 +214,7 @@ SECTIONS {
+ 	_end = .;
+ 
+ 	code : {
+-	} :code
++	} :text
+ 
+ 	STABS_DEBUG
+ 	DWARF_DEBUG
 -- 
 2.17.1
 
