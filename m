@@ -2,23 +2,23 @@ Return-Path: <SRS0=NKNt=YW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62A91CA9EAE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 17:23:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7834CCA9EAE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 17:37:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 114AB20830
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 17:23:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 114AB20830
+	by mail.kernel.org (Postfix) with ESMTPS id 2FA8420856
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 17:37:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2FA8420856
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=virtuozzo.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 472dht26WYzF318
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 04:23:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 472f1Q6wVbzF3Db
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 04:37:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=virtuozzo.com (client-ip=185.231.240.75; helo=relay.sw.ru;
  envelope-from=aryabinin@virtuozzo.com; receiver=<UNKNOWN>)
@@ -27,25 +27,26 @@ Authentication-Results: lists.ozlabs.org;
 Received: from relay.sw.ru (relay.sw.ru [185.231.240.75])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 472dfZ4pqlzDrPZ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2019 04:21:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 472dyV4S97zF394
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2019 04:35:13 +1100 (AEDT)
 Received: from [172.16.25.5] by relay.sw.ru with esmtp (Exim 4.92.2)
  (envelope-from <aryabinin@virtuozzo.com>)
- id 1iPVBI-0006h5-VT; Tue, 29 Oct 2019 20:21:21 +0300
-Subject: Re: [PATCH v10 4/5] x86/kasan: support KASAN_VMALLOC
+ id 1iPVOe-0006jr-U1; Tue, 29 Oct 2019 20:35:09 +0300
+Subject: Re: [PATCH v10 5/5] kasan debug: track pages allocated for vmalloc
+ shadow
 To: Daniel Axtens <dja@axtens.net>, kasan-dev@googlegroups.com,
  linux-mm@kvack.org, x86@kernel.org, glider@google.com, luto@kernel.org,
  linux-kernel@vger.kernel.org, mark.rutland@arm.com, dvyukov@google.com,
  christophe.leroy@c-s.fr
 References: <20191029042059.28541-1-dja@axtens.net>
- <20191029042059.28541-5-dja@axtens.net>
+ <20191029042059.28541-6-dja@axtens.net>
 From: Andrey Ryabinin <aryabinin@virtuozzo.com>
-Message-ID: <a144eaca-d7e1-1a18-5975-bd0bfdb9450e@virtuozzo.com>
-Date: Tue, 29 Oct 2019 20:21:03 +0300
+Message-ID: <79d1efdc-5f11-1c20-9906-0f3cdcd60c20@virtuozzo.com>
+Date: Tue, 29 Oct 2019 20:34:50 +0300
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.9.0
 MIME-Version: 1.0
-In-Reply-To: <20191029042059.28541-5-dja@axtens.net>
+In-Reply-To: <20191029042059.28541-6-dja@axtens.net>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
@@ -66,37 +67,11 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
 On 10/29/19 7:20 AM, Daniel Axtens wrote:
-> In the case where KASAN directly allocates memory to back vmalloc
-> space, don't map the early shadow page over it.
+> Provide the current number of vmalloc shadow pages in
+> /sys/kernel/debug/kasan/vmalloc_shadow_pages.
 > 
-> We prepopulate pgds/p4ds for the range that would otherwise be empty.
-> This is required to get it synced to hardware on boot, allowing the
-> lower levels of the page tables to be filled dynamically.
-> 
-> Acked-by: Dmitry Vyukov <dvyukov@google.com>
-> Signed-off-by: Daniel Axtens <dja@axtens.net>
-> 
-> ---
 
-> +static void __init kasan_shallow_populate_pgds(void *start, void *end)
-> +{
-> +	unsigned long addr, next;
-> +	pgd_t *pgd;
-> +	void *p;
-> +	int nid = early_pfn_to_nid((unsigned long)start);
-
-This doesn't make sense. start is not even a pfn. With linear mapping 
-we try to identify nid to have the shadow on the same node as memory. But 
-in this case we don't have memory or the corresponding shadow (yet),
-we only install pgd/p4d.
-I guess we could just use NUMA_NO_NODE.
-
-The rest looks ok, so with that fixed:
-
-Reviewed-by: Andrey Ryabinin <aryabinin@virtuozzo.com>
-
-
-
+I wouldn't merge this. I don't see use-case for this, besides
+testing this patch set. And I think that number should be possible to
+extract via page_owner mechanism.
