@@ -2,84 +2,87 @@ Return-Path: <SRS0=NKNt=YW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B685EC47E49
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 04:34:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 72B23CA9EB9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 04:36:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 67FF72087E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 04:34:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D1F4820862
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 04:36:47 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="q37hvvFE"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 67FF72087E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="uayqepFL"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D1F4820862
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 472Jdt1YR0zF152
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 15:34:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 472JhF4hsRzDqHl
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2019 15:36:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::441;
- helo=mail-pf1-x441.google.com; envelope-from=dja@axtens.net;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::441;
+ helo=mail-pf1-x441.google.com; envelope-from=saurav.girepunje@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=axtens.net
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=axtens.net header.i=@axtens.net header.b="q37hvvFE"; 
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="uayqepFL"; 
  dkim-atps=neutral
 Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
  [IPv6:2607:f8b0:4864:20::441])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 472JLg2hHwzDsVH
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2019 15:21:31 +1100 (AEDT)
-Received: by mail-pf1-x441.google.com with SMTP id u9so3854184pfn.4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Oct 2019 21:21:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=E6G/cbdwI55VRIDPH2MzPtSSwLNnlVDKj+xUqyB9XvU=;
- b=q37hvvFEaBAuDhdw8f9RGZPAKbEe6zMTpH1vieG+zpL2j/QDs8RghoIx9JE+q4QWze
- TAruY1QMB+c1d5affF47SiBVcB02uLSf31ZZ6pl18sMLuLqjyMUqrZhipq3ZGdu16JlP
- nJAdQq+06ElZPTzvTwKeK7V2Y0q4KaKOeZi5s=
+ by lists.ozlabs.org (Postfix) with ESMTPS id 472HRb1lgrzDsTW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2019 14:40:37 +1100 (AEDT)
+Received: by mail-pf1-x441.google.com with SMTP id c13so8512686pfp.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Oct 2019 20:40:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:mime-version:content-disposition
+ :user-agent; bh=cTJ/5ueE8SvgUdZQJcjb9C4BjM0/MnFjXu7d16hPfEE=;
+ b=uayqepFLEbT17OItKInIgyzSaTQTIU3+znFT/Q6z1MZIPCyS7kpDuUrQDiwgsYXecG
+ OWhMrS50AGiSKNP/pVNclWclacE0R+YH/aIeDbS3T2jompGDdJVW0wHSEQ3VMgrBFZit
+ uj21rhz/iBfP7emBcKGLuoyXjimJbIbpjqt515gEowuzwqNVx1oG7sdp0kliDyaQr8Ja
+ 8FnZ+O3+/IGjSFRzI3cV8PxzPiCcMUvvnCZ6Wt8R2DoE2JqtD+h/4kPN5+KdhVaQVfmA
+ GLMA9aVzLCuYh9pHSe5X0VMd54qRAR11Prf9uRq9gWq0MBSJPPRHoTeN3U8QJzTKFRhS
+ EuGg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=E6G/cbdwI55VRIDPH2MzPtSSwLNnlVDKj+xUqyB9XvU=;
- b=B29pCFYuWL65Z2R7ZSRpdZMmsMbPPaTLYoWMV0tmwdUIpJbVyb9/+x0YOpLEPYhZrT
- Y9ALz6WOgihBPk0uGP5bgEGozc5pvjfUzkzbhGvUYXTkOohoKhPoQaMhWIYq/CqNOmqf
- LhYPJV0dmmYirWsV6eWkviAXVumd3Taxk3NOu+bm8dCsCCeSl0pyffbIR+dTOcFfMAqj
- kmMzRek37Cs9E5ggSWXSwpvGOEgxOCnq01lnxl3b8k8ZyA/wbX3dnnsoPTX+fRv+6bEZ
- zHe/Q6F+sVPTXRBlx13zr9AJaN4YNb7JSAG92dyrVJpBOuyIO+npRyg592C4RYLNZeMI
- sTgA==
-X-Gm-Message-State: APjAAAVKr1NPIbCwiKoGlU8iBwVN1hEH7BuKgqUf7TWqvjIl5vHPUKmE
- RcjF6eSKN//CwHZiU+KDMvj6rA==
-X-Google-Smtp-Source: APXvYqxNDS1dIEPkNBGrfTraoXwMKGGsjqxNiWzOEOkJlq5Mx5SitV2hc6VnXEFqIfQN/nkn2AOfVQ==
-X-Received: by 2002:a63:e60b:: with SMTP id g11mr23118732pgh.119.1572322888371; 
- Mon, 28 Oct 2019 21:21:28 -0700 (PDT)
-Received: from localhost ([2001:44b8:802:1120:783a:2bb9:f7cb:7c3c])
- by smtp.gmail.com with ESMTPSA id z4sm957607pjt.20.2019.10.28.21.21.26
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:mime-version
+ :content-disposition:user-agent;
+ bh=cTJ/5ueE8SvgUdZQJcjb9C4BjM0/MnFjXu7d16hPfEE=;
+ b=nD15Wik24Xd0llU+/M/wkz+wRRTAPorwirrMrtwGxLPn0BZEOUEbBWtyqCdWAbMHKP
+ U8GzTRkoKxH0miW6sbni5ylHWYu99cWC6npkkjbe9n+/TdAqvYEtdMkov4UiCzIMZPB/
+ zihlgKxIPXf8x1eZcOSGgA5F/Q+bi/5m1vvfW0C1BcauQraHMsnyPim1ar8d14mTYEUa
+ s1aWsH74GB2e286XA/fWF3pZQFgJA6sKn/Kxa+Ad4sNoVOu7uu0dbKG3h+KJ/c7PstGA
+ OyxI2l92uVGaJOOFWj/W5UQMY1WZMzq4kJs/zEU26lj+ckEyqpXhhY/095XeNlpzQfUL
+ rngA==
+X-Gm-Message-State: APjAAAUo823K2KdUvGa+BFrEGLzorlt12w0UoZT3fAkUTy9FARazG0L1
+ ddUK/qaaofX210QszrV3JYk=
+X-Google-Smtp-Source: APXvYqwnKoU9U846A1HWXHnbxkTSiV3L1FbA3LwJy2VUUEt7swz4KjWlyX6zJbeAP06Tfd4x/oM5dQ==
+X-Received: by 2002:a63:9543:: with SMTP id t3mr24798812pgn.350.1572320435280; 
+ Mon, 28 Oct 2019 20:40:35 -0700 (PDT)
+Received: from saurav ([27.62.167.137])
+ by smtp.gmail.com with ESMTPSA id l11sm13911499pgf.73.2019.10.28.20.40.31
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 28 Oct 2019 21:21:27 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: kasan-dev@googlegroups.com, linux-mm@kvack.org, x86@kernel.org,
- aryabinin@virtuozzo.com, glider@google.com, luto@kernel.org,
- linux-kernel@vger.kernel.org, mark.rutland@arm.com, dvyukov@google.com,
- christophe.leroy@c-s.fr
-Subject: [PATCH v10 5/5] kasan debug: track pages allocated for vmalloc shadow
-Date: Tue, 29 Oct 2019 15:20:59 +1100
-Message-Id: <20191029042059.28541-6-dja@axtens.net>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20191029042059.28541-1-dja@axtens.net>
-References: <20191029042059.28541-1-dja@axtens.net>
+ Mon, 28 Oct 2019 20:40:34 -0700 (PDT)
+Date: Tue, 29 Oct 2019 09:10:27 +0530
+From: Saurav Girepunje <saurav.girepunje@gmail.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ groug@kaod.org, clg@kaod.org, christophe.jaillet@wanadoo.fr,
+ tglx@linutronix.de, saurav.girepunje@gmail.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc: sysdev: xive: Fix use true/false for bool type
+Message-ID: <20191029034027.GA7226@saurav>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.10.1 (2018-07-13)
+X-Mailman-Approved-At: Tue, 29 Oct 2019 15:32:59 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,103 +94,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, gor@linux.ibm.com,
- Daniel Axtens <dja@axtens.net>
+Cc: saurav.girepunje@hotmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Provide the current number of vmalloc shadow pages in
-/sys/kernel/debug/kasan/vmalloc_shadow_pages.
+Use true/false for bool return type in xive_spapr_cleanup_queue
+function.
 
-Signed-off-by: Daniel Axtens <dja@axtens.net>
-
+Signed-off-by: Saurav Girepunje <saurav.girepunje@gmail.com>
 ---
+ arch/powerpc/sysdev/xive/spapr.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-v10: rebase on linux-next/master.
-
-v8: rename kasan_vmalloc/shadow_pages -> kasan/vmalloc_shadow_pages
-
-On v4 (no dynamic freeing), I saw the following approximate figures
-on my test VM:
-
- - fresh boot: 720
- - after test_vmalloc: ~14000
-
-With v5 (lazy dynamic freeing):
-
- - boot: ~490-500
- - running modprobe test_vmalloc pushes the figures up to sometimes
-    as high as ~14000, but they drop down to ~560 after the test ends.
-    I'm not sure where the extra sixty pages are from, but running the
-    test repeately doesn't cause the number to keep growing, so I don't
-    think we're leaking.
- - with vmap_stack, spawning tasks pushes the figure up to ~4200, then
-    some clearing kicks in and drops it down to previous levels again.
----
- mm/kasan/common.c | 23 +++++++++++++++++++++++
- 1 file changed, 23 insertions(+)
-
-diff --git a/mm/kasan/common.c b/mm/kasan/common.c
-index 6e7bc5d3fa83..a4b5c64da16f 100644
---- a/mm/kasan/common.c
-+++ b/mm/kasan/common.c
-@@ -35,6 +35,7 @@
- #include <linux/vmalloc.h>
- #include <linux/bug.h>
- #include <linux/uaccess.h>
-+#include <linux/debugfs.h>
- 
- #include <asm/tlbflush.h>
- 
-@@ -750,6 +751,8 @@ core_initcall(kasan_memhotplug_init);
- #endif
- 
- #ifdef CONFIG_KASAN_VMALLOC
-+static u64 vmalloc_shadow_pages;
-+
- static int kasan_populate_vmalloc_pte(pte_t *ptep, unsigned long addr,
- 				      void *unused)
+diff --git a/arch/powerpc/sysdev/xive/spapr.c b/arch/powerpc/sysdev/xive/spapr.c
+index 33c10749edec..74e3ffae0be6 100644
+--- a/arch/powerpc/sysdev/xive/spapr.c
++++ b/arch/powerpc/sysdev/xive/spapr.c
+@@ -533,7 +533,7 @@ static void xive_spapr_cleanup_queue(unsigned int cpu, struct xive_cpu *xc,
+ static bool xive_spapr_match(struct device_node *node)
  {
-@@ -770,6 +773,7 @@ static int kasan_populate_vmalloc_pte(pte_t *ptep, unsigned long addr,
- 	if (likely(pte_none(*ptep))) {
- 		set_pte_at(&init_mm, addr, ptep, pte);
- 		page = 0;
-+		vmalloc_shadow_pages++;
- 	}
- 	spin_unlock(&init_mm.page_table_lock);
- 	if (page)
-@@ -858,6 +862,7 @@ static int kasan_depopulate_vmalloc_pte(pte_t *ptep, unsigned long addr,
- 	if (likely(!pte_none(*ptep))) {
- 		pte_clear(&init_mm, addr, ptep);
- 		free_page(page);
-+		vmalloc_shadow_pages--;
- 	}
- 	spin_unlock(&init_mm.page_table_lock);
- 
-@@ -974,4 +979,22 @@ void kasan_release_vmalloc(unsigned long start, unsigned long end,
- 				       (unsigned long)shadow_end);
- 	}
+ 	/* Ignore cascaded controllers for the moment */
+-	return 1;
++	return true;
  }
-+
-+static __init int kasan_init_debugfs(void)
-+{
-+	struct dentry *root;
-+
-+	root = debugfs_create_dir("kasan", NULL);
-+	if (IS_ERR(root)) {
-+		if (PTR_ERR(root) == -ENODEV)
-+			return 0;
-+		return PTR_ERR(root);
-+	}
-+
-+	debugfs_create_u64("vmalloc_shadow_pages", 0444, root,
-+			   &vmalloc_shadow_pages);
-+
-+	return 0;
-+}
-+late_initcall(kasan_init_debugfs);
- #endif
+ 
+ #ifdef CONFIG_SMP
 -- 
 2.20.1
 
