@@ -2,55 +2,87 @@ Return-Path: <SRS0=1fX1=YX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B141ECA9EC5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 14:17:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E3CEECA9EC5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 14:27:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2C26120578
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 14:17:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2C26120578
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=virtuozzo.com
+	by mail.kernel.org (Postfix) with ESMTPS id 39A8C20656
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 14:27:48 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="qwVsaT6C"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 39A8C20656
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4739WQ2Rl4zF3hh
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Oct 2019 01:17:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4739lc62wzzDqHH
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Oct 2019 01:27:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=virtuozzo.com (client-ip=185.231.240.75; helo=relay.sw.ru;
- envelope-from=aryabinin@virtuozzo.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::641;
+ helo=mail-pl1-x641.google.com; envelope-from=dja@axtens.net;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=virtuozzo.com
-Received: from relay.sw.ru (relay.sw.ru [185.231.240.75])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=axtens.net
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=axtens.net header.i=@axtens.net header.b="qwVsaT6C"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
+ [IPv6:2607:f8b0:4864:20::641])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4739Q80rrfzF4Lr
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2019 01:12:29 +1100 (AEDT)
-Received: from [172.16.25.5] by relay.sw.ru with esmtp (Exim 4.92.2)
- (envelope-from <aryabinin@virtuozzo.com>)
- id 1iPohu-0005hC-HE; Wed, 30 Oct 2019 17:12:18 +0300
-Subject: Re: [PATCH v10 4/5] x86/kasan: support KASAN_VMALLOC
-To: Daniel Axtens <dja@axtens.net>, kasan-dev@googlegroups.com,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4739cK1BqRzDqTn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2019 01:21:20 +1100 (AEDT)
+Received: by mail-pl1-x641.google.com with SMTP id x6so1066647pln.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2019 07:21:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
+ h=from:to:cc:subject:in-reply-to:references:date:message-id
+ :mime-version; bh=lLBDwfjg5YnQXNE+xQ4JmNR71OHaPXxKWZ+MT4DW3/A=;
+ b=qwVsaT6Cw4Ycn/P/j7rzKjSzfApSkeaGvKWAkHM/AoJ0x7w8gndNK3s7Etg8RRAxdM
+ dJrZ61KmDDSt6pgTwvga1te1T0yseF+wo8rR0CZAnXvXPZmyS0ogKROK46Oehne5rc//
+ DMWh8+9qmkJfrb4qW2K18Bcyf+/n6OHl40DOk=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
+ :message-id:mime-version;
+ bh=lLBDwfjg5YnQXNE+xQ4JmNR71OHaPXxKWZ+MT4DW3/A=;
+ b=fTwKCC7B6PYq4U6TWbYaYRHqXa8o06ZdvNrqKluveGuLTCnT6qiStgT5vT/3dSL2Tc
+ Er0LvNHU9N0HzuBo7U6rquzlwcJJHSzY5/CY48VYSiHh6B/iX++QFYYfG+DkVNVDZIL1
+ Qj/VevXeSUP8y83aIw0N7gxxBaRf0gj16wrbvmZC/JeDdGvqxVLFobdc9d+sD+AEPYMi
+ LzjNw80ueNgGgPjOKO8HqvZWfyW0kmUQ0C4VSB7bY4u90mk0nhmzRgQWZ9z2kuREypA1
+ WmkRvuxF/VmMXh4nry5ZnnjcF1nFSh95uoEG9rg6KW+hdrt5fZRq6sq1kfq+X+hSdC4Q
+ 7Yqg==
+X-Gm-Message-State: APjAAAWAxb74NeKXwHst+1AEoLdmbcW7JGlvKT08Uesp9HP1UMc5XRAB
+ 9xWYQOlJiNPUzdwWvdSKlrlW9g==
+X-Google-Smtp-Source: APXvYqwMC7s8c7Hz5nvb/Nz/tGRMlobeX2sZ75mjj1c4WbVrvDU+HedG/Uqdzo2fEk41IYyK90rWig==
+X-Received: by 2002:a17:902:44d:: with SMTP id 71mr241216ple.274.1572445277919; 
+ Wed, 30 Oct 2019 07:21:17 -0700 (PDT)
+Received: from localhost
+ (2001-44b8-1113-6700-783a-2bb9-f7cb-7c3c.static.ipv6.internode.on.net.
+ [2001:44b8:1113:6700:783a:2bb9:f7cb:7c3c])
+ by smtp.gmail.com with ESMTPSA id q6sm75232pgn.44.2019.10.30.07.21.16
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 30 Oct 2019 07:21:17 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: Andrey Ryabinin <aryabinin@virtuozzo.com>, kasan-dev@googlegroups.com,
  linux-mm@kvack.org, x86@kernel.org, glider@google.com, luto@kernel.org,
  linux-kernel@vger.kernel.org, mark.rutland@arm.com, dvyukov@google.com,
  christophe.leroy@c-s.fr
+Subject: Re: [PATCH v10 4/5] x86/kasan: support KASAN_VMALLOC
+In-Reply-To: <ff1c2089-9404-21f6-dac6-661917e47181@virtuozzo.com>
 References: <20191029042059.28541-1-dja@axtens.net>
  <20191029042059.28541-5-dja@axtens.net>
  <a144eaca-d7e1-1a18-5975-bd0bfdb9450e@virtuozzo.com>
  <87sgnamjg2.fsf@dja-thinkpad.axtens.net>
-From: Andrey Ryabinin <aryabinin@virtuozzo.com>
-Message-ID: <ff1c2089-9404-21f6-dac6-661917e47181@virtuozzo.com>
-Date: Wed, 30 Oct 2019 17:12:00 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.9.0
+ <ff1c2089-9404-21f6-dac6-661917e47181@virtuozzo.com>
+Date: Thu, 31 Oct 2019 01:21:13 +1100
+Message-ID: <87mudimi06.fsf@dja-thinkpad.axtens.net>
 MIME-Version: 1.0
-In-Reply-To: <87sgnamjg2.fsf@dja-thinkpad.axtens.net>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,88 +100,97 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Andrey Ryabinin <aryabinin@virtuozzo.com> writes:
 
-
-On 10/30/19 4:50 PM, Daniel Axtens wrote:
-> Andrey Ryabinin <aryabinin@virtuozzo.com> writes:
-> 
->> On 10/29/19 7:20 AM, Daniel Axtens wrote:
->>> In the case where KASAN directly allocates memory to back vmalloc
->>> space, don't map the early shadow page over it.
+> On 10/30/19 4:50 PM, Daniel Axtens wrote:
+>> Andrey Ryabinin <aryabinin@virtuozzo.com> writes:
+>> 
+>>> On 10/29/19 7:20 AM, Daniel Axtens wrote:
+>>>> In the case where KASAN directly allocates memory to back vmalloc
+>>>> space, don't map the early shadow page over it.
+>>>>
+>>>> We prepopulate pgds/p4ds for the range that would otherwise be empty.
+>>>> This is required to get it synced to hardware on boot, allowing the
+>>>> lower levels of the page tables to be filled dynamically.
+>>>>
+>>>> Acked-by: Dmitry Vyukov <dvyukov@google.com>
+>>>> Signed-off-by: Daniel Axtens <dja@axtens.net>
+>>>>
+>>>> ---
 >>>
->>> We prepopulate pgds/p4ds for the range that would otherwise be empty.
->>> This is required to get it synced to hardware on boot, allowing the
->>> lower levels of the page tables to be filled dynamically.
+>>>> +static void __init kasan_shallow_populate_pgds(void *start, void *end)
+>>>> +{
+>>>> +	unsigned long addr, next;
+>>>> +	pgd_t *pgd;
+>>>> +	void *p;
+>>>> +	int nid = early_pfn_to_nid((unsigned long)start);
 >>>
->>> Acked-by: Dmitry Vyukov <dvyukov@google.com>
->>> Signed-off-by: Daniel Axtens <dja@axtens.net>
+>>> This doesn't make sense. start is not even a pfn. With linear mapping 
+>>> we try to identify nid to have the shadow on the same node as memory. But 
+>>> in this case we don't have memory or the corresponding shadow (yet),
+>>> we only install pgd/p4d.
+>>> I guess we could just use NUMA_NO_NODE.
+>> 
+>> Ah wow, that's quite the clanger on my part.
+>> 
+>> There are a couple of other invocations of early_pfn_to_nid in that file
+>> that use an address directly, but at least they reference actual memory.
+>> I'll send a separate patch to fix those up.
+>
+> I see only one incorrect, in kasan_init(): early_pfn_to_nid(__pa(_stext))
+> It should be wrapped with PFN_DOWN().
+> Other usages in map_range() seems to be correct, range->start,end is pfns.
+>
+
+Oh, right, I didn't realise map_range was already using pfns.
+
+>
+>> 
+>>> The rest looks ok, so with that fixed:
 >>>
->>> ---
->>
->>> +static void __init kasan_shallow_populate_pgds(void *start, void *end)
->>> +{
->>> +	unsigned long addr, next;
->>> +	pgd_t *pgd;
->>> +	void *p;
->>> +	int nid = early_pfn_to_nid((unsigned long)start);
->>
->> This doesn't make sense. start is not even a pfn. With linear mapping 
->> we try to identify nid to have the shadow on the same node as memory. But 
->> in this case we don't have memory or the corresponding shadow (yet),
->> we only install pgd/p4d.
->> I guess we could just use NUMA_NO_NODE.
-> 
-> Ah wow, that's quite the clanger on my part.
-> 
-> There are a couple of other invocations of early_pfn_to_nid in that file
-> that use an address directly, but at least they reference actual memory.
-> I'll send a separate patch to fix those up.
+>>> Reviewed-by: Andrey Ryabinin <aryabinin@virtuozzo.com>
+>> 
+>> Thanks heaps! I've fixed up the nit you identifed in the first patch,
+>> and I agree that the last patch probably isn't needed. I'll respin the
+>> series shortly.
+>> 
+>
+> Hold on a sec, just spotted another thing to fix.
+>
+>> @@ -352,9 +397,24 @@ void __init kasan_init(void)
+>>  	shadow_cpu_entry_end = (void *)round_up(
+>>  			(unsigned long)shadow_cpu_entry_end, PAGE_SIZE);
+>>  
+>> +	/*
+>> +	 * If we're in full vmalloc mode, don't back vmalloc space with early
+>> +	 * shadow pages. Instead, prepopulate pgds/p4ds so they are synced to
+>> +	 * the global table and we can populate the lower levels on demand.
+>> +	 */
+>> +#ifdef CONFIG_KASAN_VMALLOC
+>> +	kasan_shallow_populate_pgds(
+>> +		kasan_mem_to_shadow((void *)PAGE_OFFSET + MAXMEM),
+>
+> This should be VMALLOC_START, there is no point to allocate pgds for the hole between linear mapping
+> and vmalloc, just waste of memory. It make sense to map early shadow for that hole, because if code
+> dereferences address in that hole we will see the page fault on that address instead of fault on the shadow.
+>
+> So something like this might work:
+>
+> 	kasan_populate_early_shadow(
+> 		kasan_mem_to_shadow((void *)PAGE_OFFSET + MAXMEM),
+> 		kasan_mem_to_shadow((void *)VMALLOC_START));
+>
+> 	if (IS_ENABLED(CONFIG_KASAN_VMALLOC)
+> 		kasan_shallow_populate_pgds(kasan_mem_to_shadow(VMALLOC_START), kasan_mem_to_shadow((void *)VMALLOC_END))
+> 	else
+> 		kasan_populate_early_shadow(kasan_mem_to_shadow(VMALLOC_START), kasan_mem_to_shadow((void *)VMALLOC_END));
+>
+> 	kasan_populate_early_shadow(
+> 		kasan_mem_to_shadow((void *)VMALLOC_END + 1),
+> 		shadow_cpu_entry_begin);
 
-I see only one incorrect, in kasan_init(): early_pfn_to_nid(__pa(_stext))
-It should be wrapped with PFN_DOWN().
-Other usages in map_range() seems to be correct, range->start,end is pfns.
+Sounds good. It's getting late for me so I'll change and test that and
+send a respin tomorrow my time.
 
-
-> 
->> The rest looks ok, so with that fixed:
->>
->> Reviewed-by: Andrey Ryabinin <aryabinin@virtuozzo.com>
-> 
-> Thanks heaps! I've fixed up the nit you identifed in the first patch,
-> and I agree that the last patch probably isn't needed. I'll respin the
-> series shortly.
-> 
-
-Hold on a sec, just spotted another thing to fix.
-
-> @@ -352,9 +397,24 @@ void __init kasan_init(void)
->  	shadow_cpu_entry_end = (void *)round_up(
->  			(unsigned long)shadow_cpu_entry_end, PAGE_SIZE);
->  
-> +	/*
-> +	 * If we're in full vmalloc mode, don't back vmalloc space with early
-> +	 * shadow pages. Instead, prepopulate pgds/p4ds so they are synced to
-> +	 * the global table and we can populate the lower levels on demand.
-> +	 */
-> +#ifdef CONFIG_KASAN_VMALLOC
-> +	kasan_shallow_populate_pgds(
-> +		kasan_mem_to_shadow((void *)PAGE_OFFSET + MAXMEM),
-
-This should be VMALLOC_START, there is no point to allocate pgds for the hole between linear mapping
-and vmalloc, just waste of memory. It make sense to map early shadow for that hole, because if code
-dereferences address in that hole we will see the page fault on that address instead of fault on the shadow.
-
-So something like this might work:
-
-	kasan_populate_early_shadow(
-		kasan_mem_to_shadow((void *)PAGE_OFFSET + MAXMEM),
-		kasan_mem_to_shadow((void *)VMALLOC_START));
-
-	if (IS_ENABLED(CONFIG_KASAN_VMALLOC)
-		kasan_shallow_populate_pgds(kasan_mem_to_shadow(VMALLOC_START), kasan_mem_to_shadow((void *)VMALLOC_END))
-	else
-		kasan_populate_early_shadow(kasan_mem_to_shadow(VMALLOC_START), kasan_mem_to_shadow((void *)VMALLOC_END));
-
-	kasan_populate_early_shadow(
-		kasan_mem_to_shadow((void *)VMALLOC_END + 1),
-		shadow_cpu_entry_begin);
+Regards,
+Daniel
