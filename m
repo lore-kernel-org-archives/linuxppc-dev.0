@@ -2,108 +2,91 @@ Return-Path: <SRS0=1fX1=YX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C439CA9EC6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 16:38:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C4F9BCA9EC5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 17:02:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BA8D9208E3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 16:38:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BA8D9208E3
+	by mail.kernel.org (Postfix) with ESMTPS id 24C8420650
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 17:02:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 24C8420650
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 473Dfn3NPGzF4SF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Oct 2019 03:38:41 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 473Dbv5qhfzDqCH
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2019 03:36:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 473FBL57X5zF3KQ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Oct 2019 04:02:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=arbab@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 473Dbv2MH5z8swG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2019 03:36:11 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 473Dbv1XCTz9sQn; Thu, 31 Oct 2019 03:36:11 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=zohar@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 473Dbt4mT1z9sPq
- for <linuxppc-dev@ozlabs.org>; Thu, 31 Oct 2019 03:36:09 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 473F7h5p26zF4R0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2019 04:00:16 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x9UGU3C3109033
- for <linuxppc-dev@ozlabs.org>; Wed, 30 Oct 2019 12:36:05 -0400
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2vye3d05hp-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 30 Oct 2019 12:36:05 -0400
-Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <zohar@linux.ibm.com>;
- Wed, 30 Oct 2019 16:36:03 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 30 Oct 2019 16:35:57 -0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x9UGZtxl35848306
+ x9UGfoIR128525; Wed, 30 Oct 2019 13:00:05 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2vyd8durjv-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 30 Oct 2019 13:00:04 -0400
+Received: from m0098394.ppops.net (m0098394.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x9UGhZWP145293;
+ Wed, 30 Oct 2019 13:00:04 -0400
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2vyd8durgs-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 30 Oct 2019 13:00:04 -0400
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x9UGwdIm007765;
+ Wed, 30 Oct 2019 17:00:02 GMT
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25]) by ppma03dal.us.ibm.com with ESMTP id 2vxwh61b9j-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 30 Oct 2019 17:00:02 +0000
+Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
+ [9.57.199.107])
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x9UH01nq44892468
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 30 Oct 2019 16:35:55 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BD11AA405B;
- Wed, 30 Oct 2019 16:35:55 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0B9C6A4054;
- Wed, 30 Oct 2019 16:35:53 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.85.134.98])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 30 Oct 2019 16:35:52 +0000 (GMT)
-Subject: Re: [PATCH v9 5/8] ima: make process_buffer_measurement() generic
-From: Mimi Zohar <zohar@linux.ibm.com>
-To: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>, Nayna Jain
- <nayna@linux.ibm.com>, linuxppc-dev@ozlabs.org,
- linux-efi@vger.kernel.org, linux-integrity@vger.kernel.org
-Date: Wed, 30 Oct 2019 12:35:52 -0400
-In-Reply-To: <6c94bfc0-d3ce-202b-6927-f664ee513fa9@linux.microsoft.com>
-References: <20191024034717.70552-1-nayna@linux.ibm.com>
- <20191024034717.70552-6-nayna@linux.ibm.com>
- <6c94bfc0-d3ce-202b-6927-f664ee513fa9@linux.microsoft.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.20.5 (3.20.5-1.fc24) 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ Wed, 30 Oct 2019 17:00:01 GMT
+Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B6D1B124060;
+ Wed, 30 Oct 2019 17:00:01 +0000 (GMT)
+Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A366712405A;
+ Wed, 30 Oct 2019 17:00:01 +0000 (GMT)
+Received: from arbab-laptop.localdomain (unknown [9.53.179.210])
+ by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP;
+ Wed, 30 Oct 2019 17:00:01 +0000 (GMT)
+Received: by arbab-laptop.localdomain (Postfix, from userid 152845)
+ id 5FBCC4654AB; Wed, 30 Oct 2019 12:00:00 -0500 (CDT)
+From: Reza Arbab <arbab@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 06/11] powerpc/powernv: Remove intermediate variable
+Date: Wed, 30 Oct 2019 11:59:55 -0500
+Message-Id: <1572454800-17976-7-git-send-email-arbab@linux.ibm.com>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1572454800-17976-1-git-send-email-arbab@linux.ibm.com>
+References: <1572454800-17976-1-git-send-email-arbab@linux.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 19103016-0028-0000-0000-000003B12C1E
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19103016-0029-0000-0000-00002473720A
-Message-Id: <1572453352.5707.3.camel@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-10-30_07:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=638 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1908290000 definitions=main-1910300149
+ mlxlogscore=951 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1908290000 definitions=main-1910300150
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -115,51 +98,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Eric Ricther <erichte@linux.ibm.com>, Prakhar Srivastava <prsriva02@gmail.com>,
- linux-kernel@vger.kernel.org, Claudio Carvalho <cclaudio@linux.ibm.com>,
- Matthew Garret <matthew.garret@nebula.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Paul Mackerras <paulus@samba.org>, Jeremy Kerr <jk@ozlabs.org>,
- Elaine Palmer <erpalmer@us.ibm.com>, Oliver
- O'Halloran <oohall@gmail.com>, George Wilson <gcwilson@linux.ibm.com>
+Cc: Andrew Donnellan <ajd@linux.ibm.com>, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Oliver O'Halloran <oohall@gmail.com>, Alistair Popple <alistair@popple.id.au>,
+ Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2019-10-30 at 08:22 -0700, Lakshmi Ramasubramanian wrote:
-> On 10/23/19 8:47 PM, Nayna Jain wrote:
-> 
-> Hi Nayna,
-> 
-> > process_buffer_measurement() is limited to measuring the kexec boot
-> > command line. This patch makes process_buffer_measurement() more
-> > generic, allowing it to measure other types of buffer data (e.g.
-> > blacklisted binary hashes or key hashes).
-> 
-> Now that process_buffer_measurement() is being made generic to measure 
-> any buffer, it would be good to add a tag to indicate what type of 
-> buffer is being measured.
-> 
-> For example, if the buffer is kexec command line the log could look like:
-> 
->   "kexec_cmdline: <command line data>"
-> 
-> Similarly, if the buffer is blacklisted binary hash:
-> 
->   "blacklist hash: <data>".
-> 
-> If the buffer is key hash:
-> 
->   "<name of the keyring>: key data".
-> 
-> This would greatly help the consumer of the IMA log to know the type of 
-> data represented in each IMA log entry.
+Trim the pointless temporary variable.
 
-Both the existing kexec command line and the new blacklist buffer
-measurement pass that information in the eventname.   The [PATCH 7/8]
-"ima: check against blacklisted hashes for files with modsig" patch
-description includes an example.
+Signed-off-by: Reza Arbab <arbab@linux.ibm.com>
+---
+ arch/powerpc/platforms/powernv/pci-ioda.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Mimi
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index b78b5e81f941..319152d30bc3 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1854,9 +1854,9 @@ static bool pnv_pci_ioda_iommu_bypass_supported(struct pci_dev *pdev,
+ 	    (pe->device_count == 1 || !pe->pbus) &&
+ 	    phb->model == PNV_PHB_MODEL_PHB3) {
+ 		/* Configure the bypass mode */
+-		s64 rc = pnv_pci_ioda_dma_64bit_bypass(pe);
+-		if (rc)
++		if (pnv_pci_ioda_dma_64bit_bypass(pe))
+ 			return false;
++
+ 		/* 4GB offset bypasses 32-bit space */
+ 		pdev->dev.archdata.dma_offset = (1ULL << 32);
+ 
+-- 
+1.8.3.1
 
