@@ -2,79 +2,61 @@ Return-Path: <SRS0=1fX1=YX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EA4FCA9EC5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 10:30:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BAAC9CA9EC5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 10:37:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 07BF120874
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 10:30:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0974B204FD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 10:37:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="TTZFxiKp"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 07BF120874
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="QqJNQWV+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0974B204FD
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4734V768dvzF40f
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 21:30:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
- envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="TTZFxiKp"; dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4734f05f6SzDqbt
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 21:37:28 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4734Rn5xfXzF3x7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2019 21:28:37 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=+iN3V487rLzT6LAFR1lzAXcK6hHjNNfijwtxuSgahPs=; b=TTZFxiKpbgiZniSx8bKJLugvS
- OC2zXy5c+p6FtvBkyb3BecvsK5LyHyquAbLYzb2lPhR53c8294ub4Gw8FB9HlpLKkYSrKD/QZrJ41
- 8+0hg7SzG5mNB9ioHbCpVpPxxfuG/efYdDcDuuV8BPA8VNijtdrHBwFqxseWrFuZdqn9y2lItlShZ
- Ow99esDEZpnLKXV/aD+uqeIO/vQTiY9XyVVKzJ9VV+yRQkKpRO/a6K+Tm3BHosnK9D+xC42zG51Ob
- IG/Ao62HuZeuXpUoKF6v2tov3gFSeHA0oYTo/X1IpRjjjOeQmFS5hR8CtaxIa1bgup+FMSaKmWEkE
- K2LC03wzA==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100]
- helo=noisy.programming.kicks-ass.net)
- by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1iPlCw-0000Ux-HX; Wed, 30 Oct 2019 10:28:06 +0000
-Received: from hirez.programming.kicks-ass.net
- (hirez.programming.kicks-ass.net [192.168.1.225])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id CC14F300596;
- Wed, 30 Oct 2019 11:26:59 +0100 (CET)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
- id E85FD2B437E86; Wed, 30 Oct 2019 11:28:00 +0100 (CET)
-Date: Wed, 30 Oct 2019 11:28:00 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Michal Hocko <mhocko@kernel.org>
-Subject: Re: [PATCH v7] numa: make node_to_cpumask_map() NUMA_NO_NODE aware
-Message-ID: <20191030102800.GX4097@hirez.programming.kicks-ass.net>
-References: <1572428068-180880-1-git-send-email-linyunsheng@huawei.com>
- <20191030101449.GW4097@hirez.programming.kicks-ass.net>
- <20191030102229.GY31513@dhcp22.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4734bN0G3hzF3yn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2019 21:35:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.b="QqJNQWV+"; dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4734bL4bqkz9sPJ;
+ Wed, 30 Oct 2019 21:35:10 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1572431711;
+ bh=WmtX+xAbYWaAbWorI0MYAttJQLuDF1ZuIP0rN4t19I0=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=QqJNQWV+M+xtPfWh3QSjZ/IXALxkPJ6eN4NSrLxoYUPzowgXqqVyyJni/2RY7uCXA
+ oaHsjkf2fE8GEgwFaxTExQBji18BbVLN9yChBAJXmudBZ0+dN586yNhcPR2/eFqm6/
+ iT6C9vZyNC+3M1FqrcoGv/5NvTvlr4vlr1KpTKpKxc5Sa3JM7Z0zKzQVJc80XT2z5B
+ Dm00Ujq7n4lvh3uXdPpCYMOsZ6scz9pGOPLxu1eD0Ekt9PlIGRagXnx1YsTyqDWkVI
+ UwDA9mdEIrIRVrY5f9rfIu8a3mQfLZTZ5r0RL1rPw6E+72ENOknYR7SSC8YmETnD+s
+ HYFzp1vND1mNg==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: KyleMahlkuch <kmahlkuc@linux.vnet.ibm.com>, alexander.deucher@amd.com
+Subject: Re: [PATCH v3] drm/radeon: Fix EEH during kexec
+In-Reply-To: <1572036050-18945-1-git-send-email-kmahlkuc@linux.vnet.ibm.com>
+References: <1572036050-18945-1-git-send-email-kmahlkuc@linux.vnet.ibm.com>
+Date: Wed, 30 Oct 2019 21:35:10 +1100
+Message-ID: <87o8xyfrmp.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20191030102229.GY31513@dhcp22.suse.cz>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,67 +68,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dalias@libc.org, linux-sh@vger.kernel.org, catalin.marinas@arm.com,
- dave.hansen@linux.intel.com, heiko.carstens@de.ibm.com,
- jiaxun.yang@flygoat.com, linux-mips@vger.kernel.org, mwb@linux.vnet.ibm.com,
- paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org, chenhc@lemote.com,
- will@kernel.org, cai@lca.pw, linux-s390@vger.kernel.org,
- ysato@users.sourceforge.jp, linux-acpi@vger.kernel.org, x86@kernel.org,
- Yunsheng Lin <linyunsheng@huawei.com>, rppt@linux.ibm.com,
- borntraeger@de.ibm.com, dledford@redhat.com, mingo@redhat.com,
- jeffrey.t.kirsher@intel.com, jhogan@kernel.org, mattst88@gmail.com,
- lenb@kernel.org, len.brown@intel.com, gor@linux.ibm.com,
- anshuman.khandual@arm.com, gregkh@linuxfoundation.org, bp@alien8.de,
- luto@kernel.org, bhelgaas@google.com, tglx@linutronix.de,
- naveen.n.rao@linux.vnet.ibm.com, linux-arm-kernel@lists.infradead.org,
- rth@twiddle.net, axboe@kernel.dk, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org,
- ralf@linux-mips.org, tbogendoerfer@suse.de, paul.burton@mips.com,
- linux-alpha@vger.kernel.org, rafael@kernel.org, ink@jurassic.park.msu.ru,
- akpm@linux-foundation.org, robin.murphy@arm.com, davem@davemloft.net
+Cc: linuxppc-dev@lists.ozlabs.org, Kyle Mahlkuch <kmahlkuc@linux.vnet.ibm.com>,
+ amd-gfx@lists.freedesktop.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Oct 30, 2019 at 11:22:29AM +0100, Michal Hocko wrote:
-> On Wed 30-10-19 11:14:49, Peter Zijlstra wrote:
-> > On Wed, Oct 30, 2019 at 05:34:28PM +0800, Yunsheng Lin wrote:
-> > > When passing the return value of dev_to_node() to cpumask_of_node()
-> > > without checking if the device's node id is NUMA_NO_NODE, there is
-> > > global-out-of-bounds detected by KASAN.
-> > > 
-> > > From the discussion [1], NUMA_NO_NODE really means no node affinity,
-> > > which also means all cpus should be usable. So the cpumask_of_node()
-> > > should always return all cpus online when user passes the node id as
-> > > NUMA_NO_NODE, just like similar semantic that page allocator handles
-> > > NUMA_NO_NODE.
-> > > 
-> > > But we cannot really copy the page allocator logic. Simply because the
-> > > page allocator doesn't enforce the near node affinity. It just picks it
-> > > up as a preferred node but then it is free to fallback to any other numa
-> > > node. This is not the case here and node_to_cpumask_map will only restrict
-> > > to the particular node's cpus which would have really non deterministic
-> > > behavior depending on where the code is executed. So in fact we really
-> > > want to return cpu_online_mask for NUMA_NO_NODE.
-> > > 
-> > > Also there is a debugging version of node_to_cpumask_map() for x86 and
-> > > arm64, which is only used when CONFIG_DEBUG_PER_CPU_MAPS is defined, this
-> > > patch changes it to handle NUMA_NO_NODE as normal node_to_cpumask_map().
-> > > 
-> > > [1] https://lkml.org/lkml/2019/9/11/66
-> > > Signed-off-by: Yunsheng Lin <linyunsheng@huawei.com>
-> > > Suggested-by: Michal Hocko <mhocko@kernel.org>
-> > > Acked-by: Michal Hocko <mhocko@suse.com>
-> > > Acked-by: Paul Burton <paul.burton@mips.com> # MIPS bits
-> > 
-> > Still:
-> > 
-> > Nacked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-> 
-> Do you have any other proposal that doesn't make any wild guesses about
-> which node to use instead of the undefined one?
+Hi Kyle,
 
-It only makes 'wild' guesses when the BIOS is shit and it complains
-about that.
+KyleMahlkuch <kmahlkuc@linux.vnet.ibm.com> writes:
+> From: Kyle Mahlkuch <kmahlkuc@linux.vnet.ibm.com>
+>
+> During kexec some adapters hit an EEH since they are not properly
+> shut down in the radeon_pci_shutdown() function. Adding
+> radeon_suspend_kms() fixes this issue.
+> Enabled only on PPC because this patch causes issues on some other
+> boards.
 
-Or do you like you BIOS broken?
+Which adapters hit the issues?
+
+And do we know why they're not shut down correctly in
+radeon_pci_shutdown()? That seems like the root cause no?
+
+
+> diff --git a/drivers/gpu/drm/radeon/radeon_drv.c b/drivers/gpu/drm/radeon/radeon_drv.c
+> index 9e55076..4528f4d 100644
+> --- a/drivers/gpu/drm/radeon/radeon_drv.c
+> +++ b/drivers/gpu/drm/radeon/radeon_drv.c
+> @@ -379,11 +379,25 @@ static int radeon_pci_probe(struct pci_dev *pdev,
+>  static void
+>  radeon_pci_shutdown(struct pci_dev *pdev)
+>  {
+> +#ifdef CONFIG_PPC64
+> +	struct drm_device *ddev = pci_get_drvdata(pdev);
+> +#endif
+
+This local serves no real purpose and could be avoided, which would also
+avoid this ifdef.
+
+>  	/* if we are running in a VM, make sure the device
+>  	 * torn down properly on reboot/shutdown
+>  	 */
+>  	if (radeon_device_is_virtual())
+>  		radeon_pci_remove(pdev);
+> +
+> +#ifdef CONFIG_PPC64
+> +	/* Some adapters need to be suspended before a
+
+AFAIK drm uses normal kernel comment style, so this should be:
+
+	/*
+	 * Some adapters need to be suspended before a
+> +	 * shutdown occurs in order to prevent an error
+> +	 * during kexec.
+> +	 * Make this power specific becauase it breaks
+> +	 * some non-power boards.
+> +	 */
+> +	radeon_suspend_kms(ddev, true, true, false);
+
+ie, instead do:
+
+	radeon_suspend_kms(pci_get_drvdata(pdev), true, true, false);
+
+> +#endif
+>  }
+>  
+>  static int radeon_pmops_suspend(struct device *dev)
+> -- 
+> 1.8.3.1
+
+cheers
