@@ -2,64 +2,44 @@ Return-Path: <SRS0=1fX1=YX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 607F9CA9EC5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 11:58:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C87F9CA9EC5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 12:17:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CDCD42080F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 11:58:02 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="Q3bsOd5p"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CDCD42080F
+	by mail.kernel.org (Postfix) with ESMTPS id 36E7D2083E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 12:17:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 36E7D2083E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4736Qv6SyCzF4B7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 22:57:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4736s82NVSzF3Xr
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 23:17:16 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4736MX5nz8zF49M
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2019 22:55:04 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4736nf0kxhzF4BM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2019 23:14:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.b="Q3bsOd5p"; dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 4736MX2lz9z9sPw; Wed, 30 Oct 2019 22:55:04 +1100 (AEDT)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4736MW6WP6z9sPd;
- Wed, 30 Oct 2019 22:55:03 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1572436504;
- bh=SLT7y8UdRpUyT909kJw913q4F0LcCtwq2prDk7artXs=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=Q3bsOd5pD7yCyf7FI4mpg4KnbIw1FQrRMoGbANaESDmNsyIi54cg6fIwlhZUwf3/E
- aUWjrOJpiGfz8Qr6bh7qbusiCajuFl9kibwmX6CCxSyHS7kcpz3zNeoufxZOJEJVZZ
- 4AqOaI5PhT9lIJlyzkChyLurFicTHFZxfuXocQaaQ4IgRWxMZUMgw50uMCIrVQsT8a
- POn+4pS8uVLLnlYSi9FWVESugbkaKjFSiTSkJDbZF2JAoogwfeMbaGZHl8FoJ+Swt0
- KWoPwn3yg7juQNMXEJ0sQ8XRCcc8SHLXgutsZhQI1T5Af2tu86w8G7lRaELVygsJGn
- 96FSflb0lQDAQ==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/tools: Don't quote $objdump in scripts
-In-Reply-To: <20191024172857.GS28442@gate.crashing.org>
-References: <20191024004730.32135-1-mpe@ellerman.id.au>
- <20191024172857.GS28442@gate.crashing.org>
-Date: Wed, 30 Oct 2019 22:55:03 +1100
-Message-ID: <87sgnabg88.fsf@mpe.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ id 4736nd6yvvz9sPd; Wed, 30 Oct 2019 23:14:13 +1100 (AEDT)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 4736nd60Fzz9sPj; Wed, 30 Oct 2019 23:14:13 +1100 (AEDT)
+X-powerpc-patch-notification: thanks
+X-powerpc-patch-commit: 58b12eb28e34d3dd8a2d6743c26bf941ca1fbf37
+In-Reply-To: <20190528081614.26096-1-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/configs: Rename foo_basic_defconfig to
+ foo_base.config
+Message-Id: <4736nd60Fzz9sPj@ozlabs.org>
+Date: Wed, 30 Oct 2019 23:14:13 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,32 +51,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Segher Boessenkool <segher@kernel.crashing.org> writes:
-> On Thu, Oct 24, 2019 at 11:47:30AM +1100, Michael Ellerman wrote:
->> Some of our scripts are passed $objdump and then call it as
->> "$objdump". This doesn't work if it contains spaces because we're
->> using ccache, for example you get errors such as:
->> 
->>   ./arch/powerpc/tools/relocs_check.sh: line 48: ccache ppc64le-objdump: No such file or directory
->>   ./arch/powerpc/tools/unrel_branch_check.sh: line 26: ccache ppc64le-objdump: No such file or directory
->> 
->> Fix it by not quoting the string when we expand it, allowing the shell
->> to do the right thing for us.
->
-> This breaks things for people with spaces in their paths.
+On Tue, 2019-05-28 at 08:16:14 UTC, Michael Ellerman wrote:
+> We have several "defconfigs" that are not actually full defconfigs
+> they are just a base set of options which are then merged with other
+> fragments to produce a working defconfig.
+> 
+> The most obvious example is corenet_basic_defconfig which only
+> contains one symbol CONFIG_CORENET_GENERIC=y. But there is also
+> mpc85xx_base_defconfig which doesn't actually enable CONFIG_PPC_85xx.
+> 
+> To avoid confusion, rename these config fragments to "foo_base.config"
+> to make it clearer that they are not full defconfigs.
+> 
+> Reported-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Spaces in their what? Who does that? :)
+Applied to powerpc next.
 
-Also we don't support it:
-
-  $ pwd
-  $ /home/michael/foo bar
-  $ make clean
-  Makefile:147: *** source directory cannot contain spaces or colons.  Stop.
+https://git.kernel.org/powerpc/c/58b12eb28e34d3dd8a2d6743c26bf941ca1fbf37
 
 cheers
