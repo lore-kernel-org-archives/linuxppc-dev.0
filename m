@@ -3,42 +3,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 31988CA9EC5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 12:28:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 69704CA9EC5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 12:31:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E46B4208C0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 12:28:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E46B4208C0
+	by mail.kernel.org (Postfix) with ESMTPS id 2876F2080F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 12:31:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2876F2080F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4737691pDFzF4GX
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 23:28:33 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 47379w3k2JzF2R8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 23:31:48 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4736nj6T3qzF4BQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2019 23:14:17 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4736nk61MfzF4BX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2019 23:14:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4736nj4LQdz9sQq; Wed, 30 Oct 2019 23:14:17 +1100 (AEDT)
+ id 4736nk4Wzwz9sPj; Wed, 30 Oct 2019 23:14:18 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 5f5d6e40a01e70b731df843d8b5a61b4b28b19d9
-In-Reply-To: <20190917123851.22553-1-aneesh.kumar@linux.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, npiggin@gmail.com,
- paulus@samba.org, dan.j.williams@intel.com
+X-powerpc-patch-commit: 29674a1c71be710f8418468aa6a8addd6d1aba1c
+In-Reply-To: <1568733750-14580-1-git-send-email-cai@lca.pw>
+To: Qian Cai <cai@lca.pw>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH v2] powerpc/nvdimm: Update vmemmap_populated to check
- sub-section range
-Message-Id: <4736nj4LQdz9sQq@ozlabs.org>
-Date: Wed, 30 Oct 2019 23:14:17 +1100 (AEDT)
+Subject: Re: [PATCH] powerpc/pkeys: remove unused pkey_allows_readwrite
+Message-Id: <4736nk4Wzwz9sPj@ozlabs.org>
+Date: Wed, 30 Oct 2019 23:14:18 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,34 +48,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Qian Cai <cai@lca.pw>, linuxppc-dev@lists.ozlabs.org, linuxram@us.ibm.com,
+ linux-kernel@vger.kernel.org, paulus@samba.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2019-09-17 at 12:38:51 UTC, "Aneesh Kumar K.V" wrote:
-> With commit: 7cc7867fb061 ("mm/devm_memremap_pages: enable sub-section remap")
-> pmem namespaces are remapped in 2M chunks. On architectures like ppc64 we
-> can map the memmap area using 16MB hugepage size and that can cover
-> a memory range of 16G.
+On Tue, 2019-09-17 at 15:22:30 UTC, Qian Cai wrote:
+> pkey_allows_readwrite() was first introduced in the commit 5586cf61e108
+> ("powerpc: introduce execute-only pkey"), but the usage was removed
+> entirely in the commit a4fcc877d4e1 ("powerpc/pkeys: Preallocate
+> execute-only key").
 > 
-> While enabling new pmem namespaces, since memory is added in sub-section chunks,
-> before creating a new memmap mapping, kernel should check whether there is an
-> existing memmap mapping covering the new pmem namespace. Currently, this is
-> validated by checking whether the section covering the range is already
-> initialized or not. Considering there can be multiple namespaces in the same
-> section this can result in wrong validation. Update this to check for
-> sub-sections in the range. This is done by checking for all pfns in the range we
-> are mapping.
+> Found by the "-Wunused-function" compiler warning flag.
 > 
-> We could optimize this by checking only just one pfn in each sub-section. But
-> since this is not fast-path we keep this simple.
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> Fixes: a4fcc877d4e1 ("powerpc/pkeys: Preallocate execute-only key")
+> Signed-off-by: Qian Cai <cai@lca.pw>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/5f5d6e40a01e70b731df843d8b5a61b4b28b19d9
+https://git.kernel.org/powerpc/c/29674a1c71be710f8418468aa6a8addd6d1aba1c
 
 cheers
