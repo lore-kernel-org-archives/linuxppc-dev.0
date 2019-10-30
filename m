@@ -3,40 +3,43 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 69704CA9EC5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 12:31:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C52D0CA9EC5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 12:34:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2876F2080F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 12:31:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2876F2080F
+	by mail.kernel.org (Postfix) with ESMTPS id 4C7A72080F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 12:34:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4C7A72080F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47379w3k2JzF2R8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 23:31:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4737FF6MS0zF4Hd
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 23:34:41 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4736nk61MfzF4BX
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2019 23:14:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4736nn45c0zF4Bc
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2019 23:14:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix)
+ id 4736nm3gTsz9sR3; Wed, 30 Oct 2019 23:14:20 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4736nk4Wzwz9sPj; Wed, 30 Oct 2019 23:14:18 +1100 (AEDT)
+ id 4736nm2FWLz9sQv; Wed, 30 Oct 2019 23:14:19 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 29674a1c71be710f8418468aa6a8addd6d1aba1c
-In-Reply-To: <1568733750-14580-1-git-send-email-cai@lca.pw>
-To: Qian Cai <cai@lca.pw>
+X-powerpc-patch-commit: aaa351504449c4babb80753c72920e4b25fbd8a9
+In-Reply-To: <157062986936.23016.10146169203560084401.stgit@hbathini.in.ibm.com>
+To: Hari Bathini <hbathini@linux.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/pkeys: remove unused pkey_allows_readwrite
-Message-Id: <4736nk4Wzwz9sPj@ozlabs.org>
-Date: Wed, 30 Oct 2019 23:14:18 +1100 (AEDT)
+Subject: Re: [PATCH] powerpc/configs: add FADump awareness to skiroot_defconfig
+Message-Id: <4736nm2FWLz9sQv@ozlabs.org>
+Date: Wed, 30 Oct 2019 23:14:19 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,25 +51,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Qian Cai <cai@lca.pw>, linuxppc-dev@lists.ozlabs.org, linuxram@us.ibm.com,
- linux-kernel@vger.kernel.org, paulus@samba.org
+Cc: joel@jms.id.au, Vasant Hegde <hegdevasant@linux.ibm.com>,
+ Mahesh J Salgaonkar <mahesh@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2019-09-17 at 15:22:30 UTC, Qian Cai wrote:
-> pkey_allows_readwrite() was first introduced in the commit 5586cf61e108
-> ("powerpc: introduce execute-only pkey"), but the usage was removed
-> entirely in the commit a4fcc877d4e1 ("powerpc/pkeys: Preallocate
-> execute-only key").
+On Wed, 2019-10-09 at 14:04:29 UTC, Hari Bathini wrote:
+> FADump is supported on PowerNV platform. To fulfill this support, the
+> petitboot kernel must be FADump aware. Enable config PRESERVE_FA_DUMP
+> to make the petitboot kernel FADump aware.
 > 
-> Found by the "-Wunused-function" compiler warning flag.
-> 
-> Fixes: a4fcc877d4e1 ("powerpc/pkeys: Preallocate execute-only key")
-> Signed-off-by: Qian Cai <cai@lca.pw>
+> Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/29674a1c71be710f8418468aa6a8addd6d1aba1c
+https://git.kernel.org/powerpc/c/aaa351504449c4babb80753c72920e4b25fbd8a9
 
 cheers
