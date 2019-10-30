@@ -4,64 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D1026CA9EAF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 06:48:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C466ACA9EC4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 07:33:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7D72C20874
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 06:48:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 38D012054F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 07:33:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="TM26i1eu"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7D72C20874
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="fUbva0VU";
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="ddwjSpVs"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 38D012054F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 472zZ76LpCzF3ms
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 17:48:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=softfail (domain owner discourages use of this
- host) smtp.mailfrom=socionext.com (client-ip=210.131.2.79;
- helo=conuserg-12.nifty.com; envelope-from=yamada.masahiro@socionext.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4730Z96L3kzF3TB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 18:33:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=russell.cc (client-ip=64.147.123.19;
+ helo=wout3-smtp.messagingengine.com; envelope-from=ruscur@russell.cc;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=socionext.com
+ dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="TM26i1eu"; 
- dkim-atps=neutral
-Received: from conuserg-12.nifty.com (conuserg-12.nifty.com [210.131.2.79])
+ unprotected) header.d=russell.cc header.i=@russell.cc header.b="fUbva0VU"; 
+ dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.b="ddwjSpVs"; dkim-atps=neutral
+Received: from wout3-smtp.messagingengine.com (unknown [64.147.123.19])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 472zMn6FlFzF3m0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2019 17:39:48 +1100 (AEDT)
-Received: from localhost.localdomain (p14092-ipngnfx01kyoto.kyoto.ocn.ne.jp
- [153.142.97.92]) (authenticated)
- by conuserg-12.nifty.com with ESMTP id x9U6d6lu008465;
- Wed, 30 Oct 2019 15:39:06 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-12.nifty.com x9U6d6lu008465
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1572417548;
- bh=erN8NTfq9fWEVgi8xPhCmDbhwPzMq4qz2bhybl41Cg0=;
- h=From:To:Cc:Subject:Date:From;
- b=TM26i1euSoeVGaEdy8R0NzTO1o4dQUOca5dvyYGaDnBx4xbW535BbcaPPU+o5qIRH
- yv8o+Zx61AU21FB4Hk49ttXCxyvjnEtuMMaF/9lCOhe/R4mlpTb5ZFv1dX/xOzn7AW
- vfczyxVvM6R8F48f5bgm/myaNsAnXbudj2UcGxafO3Rdsz29HV+yrShO0sIN0MyKvC
- /MJcXMy2OlRmIh3mqBHm1elaix77JuGRYb3KQSDlYzTuF5sipdizh8/+v4T6SDB5T3
- g2xqzkzP1TXUHJvZhlZmJBVzDNMHfa2p2szAuUliCtIW6ITi3wmMG8++rL9kWD1Fh/
- Q+Kiz4ZxG+x5A==
-X-Nifty-SrcIP: [153.142.97.92]
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
- linux-arch <linux-arch@vger.kernel.org>
-Subject: [PATCH 1/3] arch: ipcbuf.h: make uapi asm/ipcbuf.h self-contained
-Date: Wed, 30 Oct 2019 15:38:53 +0900
-Message-Id: <20191030063855.9989-1-yamada.masahiro@socionext.com>
-X-Mailer: git-send-email 2.17.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4730Wr5sgFzF1n5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2019 18:31:52 +1100 (AEDT)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
+ by mailout.west.internal (Postfix) with ESMTP id ED21B483;
+ Wed, 30 Oct 2019 03:31:39 -0400 (EDT)
+Received: from mailfrontend1 ([10.202.2.162])
+ by compute6.internal (MEProxy); Wed, 30 Oct 2019 03:31:40 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=
+ from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding; s=fm3; bh=PStFRxzl4Zn7i
+ 9v7bh9ypxBUch/1PPtigM566gooksQ=; b=fUbva0VUoW4csLSpYm3mhaiivuyMW
+ 8sRt1lYCXXnTTZXLkB5LnsRQpohIp+jOLZ7G8E/khms2c6mDCQciP53vZ5ECyykB
+ XAXuhSKE/wGmk6vovf5uWpg+w0YvGFPQUhAuTkhJaGZULmeIqvOUtlhw2nzsSfi1
+ mZ4IctumSoCBczPZPGmFWV8MtVHfkrK8cTInKsJiv0HjX5tiywY4WPaHJFevt6le
+ ew40J9cOoLOJ0z2e49gUlW6lzmk3xY36cgNEQAvTscu5GUeGNkTNOpwCo76vzF52
+ ZlA+hgxRPIh7xYHAZQOp7OLJJI0iUN7od84406T22WCgBzcno/xt35Q8w==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:content-transfer-encoding:date:from
+ :in-reply-to:message-id:mime-version:references:subject:to
+ :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+ fm1; bh=PStFRxzl4Zn7i9v7bh9ypxBUch/1PPtigM566gooksQ=; b=ddwjSpVs
+ LKw6xFqSdtKm03wzi8XylLn+hmh8zexrnB/8UyWyn/dQjOQyYdjkYws6VEHaUf7Q
+ /lOYNCoYzSArMuDq90/AkPIbDlN08ULCmT1U2Qjflpg4B8PZcnjbJfa5JxI83vRm
+ NJM0VrWB/pzCv3iXAimWOJogfwF2A2liXElzTADN3M29W9eg9+O2RvpkBC3An205
+ Y5evhL9SfXgKclnlVkMbauOfB5R5p5z/biylFgN0I0rbsxW4x1qHBKO5jtYk7tor
+ JEROSdBWvMk7dsoaIKQU6To+cnPNMqsA4DhWnXIUY8uGd5EmT0poPvyrsXdCXTbv
+ oCr9hGuKhQlx8A==
+X-ME-Sender: <xms:Wzy5XUtUpGh_J3tFRNuk685KcAFHDfUnJ2ZbpS1SbbCQMhmBMigntw>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedufedruddtvddguddtlecutefuodetggdotefrod
+ ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfgh
+ necuuegrihhlohhuthemuceftddtnecufghrlhcuvffnffculdeftddmnecujfgurhephf
+ fvufffkffojghfggfgsedtkeertdertddtnecuhfhrohhmpeftuhhsshgvlhhlucevuhhr
+ rhgvhicuoehruhhstghurhesrhhushhsvghllhdrtggtqeenucfkphepuddvvddrleelrd
+ ekvddruddtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehruhhstghurhesrhhushhsvghl
+ lhdrtggtnecuvehluhhsthgvrhfuihiivgepud
+X-ME-Proxy: <xmx:Wzy5XbQKNx2Z1lMoi3eTW7w0IVPhbQmyOcPRLI6uhECqGej3G-gQdw>
+ <xmx:Wzy5XcXOXuazJwufNpq4mmsDkUf06qNhC6DEf3d6AIJB4he6art3kQ>
+ <xmx:Wzy5XUmCB9BiYtsUUUFi71_lo-zcDGkim07Dn4aJ9UjHkkiUZpZN3A>
+ <xmx:Wzy5XZer6bJTupmDmacat4XrGphrb760Doh0XT65wVBBbtYljXoz9w>
+Received: from crackle.ozlabs.ibm.com (unknown [122.99.82.10])
+ by mail.messagingengine.com (Postfix) with ESMTPA id 7817480059;
+ Wed, 30 Oct 2019 03:31:36 -0400 (EDT)
+From: Russell Currey <ruscur@russell.cc>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v5 2/5] powerpc/kprobes: Mark newly allocated probes as RO
+Date: Wed, 30 Oct 2019 18:31:08 +1100
+Message-Id: <20191030073111.140493-3-ruscur@russell.cc>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20191030073111.140493-1-ruscur@russell.cc>
+References: <20191030073111.140493-1-ruscur@russell.cc>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -74,127 +100,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, x86@kernel.org,
- linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org,
- Masahiro Yamada <yamada.masahiro@socionext.com>, sparclinux@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: ajd@linux.ibm.com, kernel-hardening@lists.openwall.com, npiggin@gmail.com,
+ joel@jms.id.au, Russell Currey <ruscur@russell.cc>, dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The user-space cannot compile <asm/ipcbuf.h> due to some missing type
-definitions. For example, building it for x86 fails as follows:
+With CONFIG_STRICT_KERNEL_RWX=y and CONFIG_KPROBES=y, there will be one
+W+X page at boot by default.  This can be tested with
+CONFIG_PPC_PTDUMP=y and CONFIG_PPC_DEBUG_WX=y set, and checking the
+kernel log during boot.
 
-  CC      usr/include/asm/ipcbuf.h.s
-In file included from ./usr/include/asm/ipcbuf.h:1:0,
-                 from <command-line>:32:
-./usr/include/asm-generic/ipcbuf.h:21:2: error: unknown type name ‘__kernel_key_t’
-  __kernel_key_t  key;
-  ^~~~~~~~~~~~~~
-./usr/include/asm-generic/ipcbuf.h:22:2: error: unknown type name ‘__kernel_uid32_t’
-  __kernel_uid32_t uid;
-  ^~~~~~~~~~~~~~~~
-./usr/include/asm-generic/ipcbuf.h:23:2: error: unknown type name ‘__kernel_gid32_t’
-  __kernel_gid32_t gid;
-  ^~~~~~~~~~~~~~~~
-./usr/include/asm-generic/ipcbuf.h:24:2: error: unknown type name ‘__kernel_uid32_t’
-  __kernel_uid32_t cuid;
-  ^~~~~~~~~~~~~~~~
-./usr/include/asm-generic/ipcbuf.h:25:2: error: unknown type name ‘__kernel_gid32_t’
-  __kernel_gid32_t cgid;
-  ^~~~~~~~~~~~~~~~
-./usr/include/asm-generic/ipcbuf.h:26:2: error: unknown type name ‘__kernel_mode_t’
-  __kernel_mode_t  mode;
-  ^~~~~~~~~~~~~~~
-./usr/include/asm-generic/ipcbuf.h:28:35: error: ‘__kernel_mode_t’ undeclared here (not in a function)
-  unsigned char  __pad1[4 - sizeof(__kernel_mode_t)];
-                                   ^~~~~~~~~~~~~~~
-./usr/include/asm-generic/ipcbuf.h:31:2: error: unknown type name ‘__kernel_ulong_t’
-  __kernel_ulong_t __unused1;
-  ^~~~~~~~~~~~~~~~
-./usr/include/asm-generic/ipcbuf.h:32:2: error: unknown type name ‘__kernel_ulong_t’
-  __kernel_ulong_t __unused2;
-  ^~~~~~~~~~~~~~~~
+powerpc doesn't implement its own alloc() for kprobes like other
+architectures do, but we couldn't immediately mark RO anyway since we do
+a memcpy to the page we allocate later.  After that, nothing should be
+allowed to modify the page, and write permissions are removed well
+before the kprobe is armed.
 
-It is just a matter of missing include directive.
+Thus mark newly allocated probes as read-only once it's safe to do so.
 
-Include <asm/posix_types.h> to make it self-contained, and add it to
-the compile-test coverage.
-
-Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+Signed-off-by: Russell Currey <ruscur@russell.cc>
 ---
+ arch/powerpc/kernel/kprobes.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
- arch/s390/include/uapi/asm/ipcbuf.h   | 2 ++
- arch/sparc/include/uapi/asm/ipcbuf.h  | 2 ++
- arch/xtensa/include/uapi/asm/ipcbuf.h | 2 ++
- include/uapi/asm-generic/ipcbuf.h     | 2 ++
- usr/include/Makefile                  | 1 -
- 5 files changed, 8 insertions(+), 1 deletion(-)
-
-diff --git a/arch/s390/include/uapi/asm/ipcbuf.h b/arch/s390/include/uapi/asm/ipcbuf.h
-index 5b1c4f47c656..1030cd186899 100644
---- a/arch/s390/include/uapi/asm/ipcbuf.h
-+++ b/arch/s390/include/uapi/asm/ipcbuf.h
-@@ -2,6 +2,8 @@
- #ifndef __S390_IPCBUF_H__
- #define __S390_IPCBUF_H__
+diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
+index 2d27ec4feee4..2610496de7c7 100644
+--- a/arch/powerpc/kernel/kprobes.c
++++ b/arch/powerpc/kernel/kprobes.c
+@@ -24,6 +24,7 @@
+ #include <asm/sstep.h>
+ #include <asm/sections.h>
+ #include <linux/uaccess.h>
++#include <linux/set_memory.h>
  
-+#include <linux/posix_types.h>
-+
- /*
-  * The user_ipc_perm structure for S/390 architecture.
-  * Note extra padding because this structure is passed back and forth
-diff --git a/arch/sparc/include/uapi/asm/ipcbuf.h b/arch/sparc/include/uapi/asm/ipcbuf.h
-index 9d0d125500e2..5b933a598a33 100644
---- a/arch/sparc/include/uapi/asm/ipcbuf.h
-+++ b/arch/sparc/include/uapi/asm/ipcbuf.h
-@@ -2,6 +2,8 @@
- #ifndef __SPARC_IPCBUF_H
- #define __SPARC_IPCBUF_H
+ DEFINE_PER_CPU(struct kprobe *, current_kprobe) = NULL;
+ DEFINE_PER_CPU(struct kprobe_ctlblk, kprobe_ctlblk);
+@@ -131,6 +132,8 @@ int arch_prepare_kprobe(struct kprobe *p)
+ 			(unsigned long)p->ainsn.insn + sizeof(kprobe_opcode_t));
+ 	}
  
-+#include <linux/posix_types.h>
++	set_memory_ro((unsigned long)p->ainsn.insn, 1);
 +
- /*
-  * The ipc64_perm structure for sparc/sparc64 architecture.
-  * Note extra padding because this structure is passed back and forth
-diff --git a/arch/xtensa/include/uapi/asm/ipcbuf.h b/arch/xtensa/include/uapi/asm/ipcbuf.h
-index a57afa0b606f..3bd0642f6660 100644
---- a/arch/xtensa/include/uapi/asm/ipcbuf.h
-+++ b/arch/xtensa/include/uapi/asm/ipcbuf.h
-@@ -12,6 +12,8 @@
- #ifndef _XTENSA_IPCBUF_H
- #define _XTENSA_IPCBUF_H
- 
-+#include <linux/posix_types.h>
-+
- /*
-  * Pad space is left for:
-  * - 32-bit mode_t and seq
-diff --git a/include/uapi/asm-generic/ipcbuf.h b/include/uapi/asm-generic/ipcbuf.h
-index 7d80dbd336fb..41a01b494fc7 100644
---- a/include/uapi/asm-generic/ipcbuf.h
-+++ b/include/uapi/asm-generic/ipcbuf.h
-@@ -2,6 +2,8 @@
- #ifndef __ASM_GENERIC_IPCBUF_H
- #define __ASM_GENERIC_IPCBUF_H
- 
-+#include <linux/posix_types.h>
-+
- /*
-  * The generic ipc64_perm structure:
-  * Note extra padding because this structure is passed back and forth
-diff --git a/usr/include/Makefile b/usr/include/Makefile
-index 57b20f7b6729..70f8fe256aed 100644
---- a/usr/include/Makefile
-+++ b/usr/include/Makefile
-@@ -16,7 +16,6 @@ override c_flags = $(UAPI_CFLAGS) -Wp,-MD,$(depfile) -I$(objtree)/usr/include
- # Please consider to fix the header first.
- #
- # Sorted alphabetically.
--header-test- += asm/ipcbuf.h
- header-test- += asm/msgbuf.h
- header-test- += asm/sembuf.h
- header-test- += asm/shmbuf.h
+ 	p->ainsn.boostable = 0;
+ 	return ret;
+ }
 -- 
-2.17.1
+2.23.0
 
