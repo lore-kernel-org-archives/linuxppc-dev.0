@@ -7,57 +7,56 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A45C3CA9EC7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 23:29:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 49C8ACA9EC7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 23:31:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 50BC92087E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 23:29:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C063420874
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 23:31:13 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="qG/d8CXm"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 50BC92087E
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="Vl2WHa6m"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C063420874
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nvidia.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 473PmH5d4RzF50P
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Oct 2019 10:29:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 473Ppm0283zDqWQ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Oct 2019 10:31:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=nvidia.com (client-ip=216.228.121.65; helo=hqemgate16.nvidia.com;
  envelope-from=jhubbard@nvidia.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="qG/d8CXm"; 
+ unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="Vl2WHa6m"; 
  dkim-atps=neutral
 Received: from hqemgate16.nvidia.com (hqemgate16.nvidia.com [216.228.121.65])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 473NvH3h91zF4nP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 473NvH6lfdzF4mr
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2019 09:50:03 +1100 (AEDT)
 Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by
  hqemgate16.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
- id <B5dba13970000>; Wed, 30 Oct 2019 15:49:59 -0700
+ id <B5dba139c0000>; Wed, 30 Oct 2019 15:50:04 -0700
 Received: from hqmail.nvidia.com ([172.20.161.6])
  by hqpgpgate101.nvidia.com (PGP Universal service);
- Wed, 30 Oct 2019 15:49:53 -0700
+ Wed, 30 Oct 2019 15:49:58 -0700
 X-PGP-Universal: processed;
- by hqpgpgate101.nvidia.com on Wed, 30 Oct 2019 15:49:53 -0700
-Received: from HQMAIL107.nvidia.com (172.20.187.13) by HQMAIL107.nvidia.com
- (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Wed, 30 Oct
- 2019 22:49:53 +0000
-Received: from rnnvemgw01.nvidia.com (10.128.109.123) by HQMAIL107.nvidia.com
- (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via
- Frontend Transport; Wed, 30 Oct 2019 22:49:52 +0000
+ by hqpgpgate101.nvidia.com on Wed, 30 Oct 2019 15:49:58 -0700
+Received: from HQMAIL111.nvidia.com (172.20.187.18) by HQMAIL105.nvidia.com
+ (172.20.187.12) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Wed, 30 Oct
+ 2019 22:49:57 +0000
+Received: from rnnvemgw01.nvidia.com (10.128.109.123) by HQMAIL111.nvidia.com
+ (172.20.187.18) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via
+ Frontend Transport; Wed, 30 Oct 2019 22:49:57 +0000
 Received: from blueforge.nvidia.com (Not Verified[10.110.48.28]) by
  rnnvemgw01.nvidia.com with Trustwave SEG (v7, 5, 8, 10121)
- id <B5dba138e0000>; Wed, 30 Oct 2019 15:49:51 -0700
+ id <B5dba13930001>; Wed, 30 Oct 2019 15:49:57 -0700
 From: John Hubbard <jhubbard@nvidia.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 15/19] powerpc: book3s64: convert to pin_longterm_pages() and
- put_user_page()
-Date: Wed, 30 Oct 2019 15:49:26 -0700
-Message-ID: <20191030224930.3990755-16-jhubbard@nvidia.com>
+Subject: [PATCH 19/19] Documentation/vm: add pin_user_pages.rst
+Date: Wed, 30 Oct 2019 15:49:30 -0700
+Message-ID: <20191030224930.3990755-20-jhubbard@nvidia.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191030224930.3990755-1-jhubbard@nvidia.com>
 References: <20191030224930.3990755-1-jhubbard@nvidia.com>
@@ -66,16 +65,16 @@ X-NVConfidentiality: public
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
- t=1572475799; bh=s7fqcPpOnu8FKfGfhgVfAy1waz0rDtbaZTRbQ6blVPc=;
+ t=1572475804; bh=yoaqiDn2Wzt6dGe1BeoJvdxEEws1E68S1Y9yB9OGMfU=;
  h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
  In-Reply-To:References:MIME-Version:X-NVConfidentiality:
  Content-Transfer-Encoding:Content-Type;
- b=qG/d8CXmRQ3gipI0xCfB+AF3znMbqRBtbSrisMFG1hBwHCaDuQihEdYQXf92GADhH
- B41r++nRUhS/uyHiDctaxr/nWwnnjUfVqpQfQ4CBEyBBBtDteiqxkjaEBUZJqY60Lj
- SS1qgoVbIY5nTAejmtzMmICWY3ghFXEyJU00G62teGtMWxf8NFehGpVcye+uQlZJ4X
- JnKM7x/JtU5w0ztu1osW2m2Oqhx5b0oExjXmdcbqkc51A7xA5/TLwBY3o0eEeCmors
- FD4vqZjDiCUjsW29+iE0+XfDhX7lYIKV/FGY1ocD0YKU7Gdajz+/xjx0JUrhy+/QrV
- NtT8saGwtAXhw==
+ b=Vl2WHa6moN80c7LJGMn7iu18Qr+/T3JkBI9wfKiTKbOL4/ZPR/aLLGMH30RuT55Qq
+ Q4bcaWyn43jChG3r5S5iL/0s/rdHfd1WT4xIwhJHHYEuIZM9HEyuRGV399H2ugyCfC
+ KH68iqap+bJDbHZy+J7cc63wAij9Or5EhcDV1zatA69hspEHrvpyOILDhgo+wxffjz
+ HrjRAT+eE5ftqn18EEbTrZ+bVeOqRqMaIkbseGWTN+nsjKNuLMROznKs686wPHjYKO
+ VsKdDU62rZPEdAtwmfBj/ZN5nHLjOS6jSiASRPIUssa1DfpWJx6BOFscfy9IXsaBXD
+ FhwSiOqM5FkUA==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,75 +111,321 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-1. Convert from get_user_pages(FOLL_LONGTERM) to pin_longterm_pages().
+Document the new pin_user_pages() and related calls
+and behavior.
 
-2. As required by pin_user_pages(), release these pages via
-put_user_page(). In this case, do so via put_user_pages_dirty_lock().
+Thanks to Jan Kara and Vlastimil Babka for explaining the 4 cases
+in this documentation. (I've reworded it and expanded on it slightly.)
 
-That has the side effect of calling set_page_dirty_lock(), instead
-of set_page_dirty(). This is probably more accurate.
-
-As Christoph Hellwig put it, "set_page_dirty() is only safe if we are
-dealing with a file backed page where we have reference on the inode it
-hangs off." [1]
-
-3. Release each page in mem->hpages[] (instead of mem->hpas[]), because
-that is the array that pin_longterm_pages() filled in. This is more
-accurate and should be a little safer from a maintenance point of
-view.
-
-[1] https://lore.kernel.org/r/20190723153640.GB720@lst.de
-
+Cc: Jonathan Corbet <corbet@lwn.net>
 Signed-off-by: John Hubbard <jhubbard@nvidia.com>
 ---
- arch/powerpc/mm/book3s64/iommu_api.c | 15 ++++++---------
- 1 file changed, 6 insertions(+), 9 deletions(-)
+ Documentation/vm/index.rst          |   1 +
+ Documentation/vm/pin_user_pages.rst | 213 ++++++++++++++++++++++++++++
+ 2 files changed, 214 insertions(+)
+ create mode 100644 Documentation/vm/pin_user_pages.rst
 
-diff --git a/arch/powerpc/mm/book3s64/iommu_api.c b/arch/powerpc/mm/book3s6=
-4/iommu_api.c
-index 56cc84520577..69d79cb50d47 100644
---- a/arch/powerpc/mm/book3s64/iommu_api.c
-+++ b/arch/powerpc/mm/book3s64/iommu_api.c
-@@ -103,9 +103,8 @@ static long mm_iommu_do_alloc(struct mm_struct *mm, uns=
-igned long ua,
- 	for (entry =3D 0; entry < entries; entry +=3D chunk) {
- 		unsigned long n =3D min(entries - entry, chunk);
-=20
--		ret =3D get_user_pages(ua + (entry << PAGE_SHIFT), n,
--				FOLL_WRITE | FOLL_LONGTERM,
--				mem->hpages + entry, NULL);
-+		ret =3D pin_longterm_pages(ua + (entry << PAGE_SHIFT), n,
-+					 FOLL_WRITE, mem->hpages + entry, NULL);
- 		if (ret =3D=3D n) {
- 			pinned +=3D n;
- 			continue;
-@@ -167,9 +166,8 @@ static long mm_iommu_do_alloc(struct mm_struct *mm, uns=
-igned long ua,
- 	return 0;
-=20
- free_exit:
--	/* free the reference taken */
--	for (i =3D 0; i < pinned; i++)
--		put_page(mem->hpages[i]);
-+	/* free the references taken */
-+	put_user_pages(mem->hpages, pinned);
-=20
- 	vfree(mem->hpas);
- 	kfree(mem);
-@@ -212,10 +210,9 @@ static void mm_iommu_unpin(struct mm_iommu_table_group=
-_mem_t *mem)
- 		if (!page)
- 			continue;
-=20
--		if (mem->hpas[i] & MM_IOMMU_TABLE_GROUP_PAGE_DIRTY)
--			SetPageDirty(page);
-+		put_user_pages_dirty_lock(&mem->hpages[i], 1,
-+					  MM_IOMMU_TABLE_GROUP_PAGE_DIRTY);
-=20
--		put_page(page);
- 		mem->hpas[i] =3D 0;
- 	}
- }
+diff --git a/Documentation/vm/index.rst b/Documentation/vm/index.rst
+index e8d943b21cf9..7194efa3554a 100644
+--- a/Documentation/vm/index.rst
++++ b/Documentation/vm/index.rst
+@@ -44,6 +44,7 @@ descriptions of data structures and algorithms.
+    page_migration
+    page_frags
+    page_owner
++   pin_user_pages
+    remap_file_pages
+    slub
+    split_page_table_lock
+diff --git a/Documentation/vm/pin_user_pages.rst b/Documentation/vm/pin_use=
+r_pages.rst
+new file mode 100644
+index 000000000000..7110bca3f188
+--- /dev/null
++++ b/Documentation/vm/pin_user_pages.rst
+@@ -0,0 +1,213 @@
++.. SPDX-License-Identifier: GPL-2.0
++
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D
++pin_user_pages() and related calls
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D
++
++.. contents:: :local:
++
++Overview
++=3D=3D=3D=3D=3D=3D=3D=3D
++
++This document describes the following functions: ::
++
++ pin_user_pages
++ pin_user_pages_fast
++ pin_user_pages_remote
++
++ pin_longterm_pages
++ pin_longterm_pages_fast
++ pin_longterm_pages_remote
++
++Basic description of FOLL_PIN
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D
++
++A new flag for get_user_pages ("gup") has been added: FOLL_PIN. FOLL_PIN h=
+as
++significant interactions and interdependencies with FOLL_LONGTERM, so both=
+ are
++covered here.
++
++Both FOLL_PIN and FOLL_LONGTERM are "internal" to gup, meaning that neithe=
+r
++FOLL_PIN nor FOLL_LONGTERM should not appear at the gup call sites. This a=
+llows
++the associated wrapper functions  (pin_user_pages and others) to set the c=
+orrect
++combination of these flags, and to check for problems as well.
++
++FOLL_PIN and FOLL_GET are mutually exclusive for a given gup call. However=
+,
++multiple threads and call sites are free to pin the same struct pages, via=
+ both
++FOLL_PIN and FOLL_GET. It's just the call site that needs to choose one or=
+ the
++other, not the struct page(s).
++
++The FOLL_PIN implementation is nearly the same as FOLL_GET, except that FO=
+LL_PIN
++uses a different reference counting technique.
++
++FOLL_PIN is a prerequisite to FOLL_LONGTGERM. Another way of saying that i=
+s,
++FOLL_LONGTERM is a specific case, more restrictive case of FOLL_PIN.
++
++Which flags are set by each wrapper
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
++
++Only FOLL_PIN and FOLL_LONGTERM are covered here. These flags are added to
++whatever flags the caller provides::
++
++ Function                    gup flags (FOLL_PIN or FOLL_LONGTERM only)
++ --------                    ------------------------------------------
++ pin_user_pages              FOLL_PIN
++ pin_user_pages_fast         FOLL_PIN
++ pin_user_pages_remote       FOLL_PIN
++
++ pin_longterm_pages          FOLL_PIN | FOLL_LONGTERM
++ pin_longterm_pages_fast     FOLL_PIN | FOLL_LONGTERM
++ pin_longterm_pages_remote   FOLL_PIN | FOLL_LONGTERM
++
++Tracking dma-pinned pages
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D
++
++Some of the key design constraints, and solutions, for tracking dma-pinned
++pages:
++
++* An actual reference count, per struct page, is required. This is because
++  multiple processes may pin and unpin a page.
++
++* False positives (reporting that a page is dma-pinned, when in fact it is=
+ not)
++  are acceptable, but false negatives are not.
++
++* struct page may not be increased in size for this, and all fields are al=
+ready
++  used.
++
++* Given the above, we can overload the page->_refcount field by using, sor=
+t of,
++  the upper bits in that field for a dma-pinned count. "Sort of", means th=
+at,
++  rather than dividing page->_refcount into bit fields, we simple add a me=
+dium-
++  large value (GUP_PIN_COUNTING_BIAS, initially chosen to be 1024: 10 bits=
+) to
++  page->_refcount. This provides fuzzy behavior: if a page has get_page() =
+called
++  on it 1024 times, then it will appear to have a single dma-pinned count.
++  And again, that's acceptable.
++
++This also leads to limitations: there are only 32-10=3D=3D22 bits availabl=
+e for a
++counter that increments 10 bits at a time.
++
++TODO: for 1GB and larger huge pages, this is cutting it close. That's beca=
+use
++when pin_user_pages() follows such pages, it increments the head page by "=
+1"
++(where "1" used to mean "+1" for get_user_pages(), but now means "+1024" f=
+or
++pin_user_pages()) for each tail page. So if you have a 1GB huge page:
++
++* There are 256K (18 bits) worth of 4 KB tail pages.
++* There are 22 bits available to count up via GUP_PIN_COUNTING_BIAS (that =
+is,
++  10 bits at a time)
++* There are 22 - 18 =3D=3D 4 bits available to count. Except that there ar=
+en't,
++  because you need to allow for a few normal get_page() calls on the head =
+page,
++  as well. Fortunately, the approach of using addition, rather than "hard"
++  bitfields, within page->_refcount, allows for sharing these bits gracefu=
+lly.
++  But we're still looking at about 16 references.
++
++This, however, is a missing feature more than anything else, because it's =
+easily
++solved by addressing an obvious inefficiency in the original get_user_page=
+s()
++approach of retrieving pages: stop treating all the pages as if they were
++PAGE_SIZE. Retrieve huge pages as huge pages. The callers need to be aware=
+ of
++this, so some work is required. Once that's in place, this limitation most=
+ly
++disappears from view, because there will be ample refcounting range availa=
+ble.
++
++* Callers must specifically request "dma-pinned tracking of pages". In oth=
+er
++  words, just calling get_user_pages() will not suffice; a new set of func=
+tions,
++  pin_user_page() and related, must be used.
++
++FOLL_PIN, FOLL_GET, FOLL_LONGTERM: when to use which flags
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D
++
++Thanks to Jan Kara, Vlastimil Babka and several other -mm people, for desc=
+ribing
++these categories:
++
++CASE 1: Direct IO (DIO)
++-----------------------
++There are GUP references to pages that are serving
++as DIO buffers. These buffers are needed for a relatively short time (so t=
+hey
++are not "long term"). No special synchronization with page_mkclean() or
++munmap() is provided. Therefore, flags to set at the call site are: ::
++
++    FOLL_PIN
++
++...but rather than setting FOLL_PIN directly, call sites should use one of
++the pin_user_pages*() routines that set FOLL_PIN.
++
++CASE 2: RDMA
++------------
++There are GUP references to pages that are serving as DMA
++buffers. These buffers are needed for a long time ("long term"). No specia=
+l
++synchronization with page_mkclean() or munmap() is provided. Therefore, fl=
+ags
++to set at the call site are: ::
++
++    FOLL_PIN | FOLL_LONGTERM
++
++TODO: There is also a special case when the pages are DAX pages: in additi=
+on to
++the above flags, the caller needs something like a layout lease on the
++associated file. This is yet to be implemented. When it is implemented, it=
+'s
++expected that the lease will be a prerequisite to setting FOLL_LONGTERM.
++
++CASE 3: ODP
++-----------
++(Mellanox/Infiniband On Demand Paging: the hardware supports
++replayable page faulting). There are GUP references to pages serving as DM=
+A
++buffers. For ODP, MMU notifiers are used to synchronize with page_mkclean(=
+)
++and munmap(). Therefore, normal GUP calls are sufficient, so neither flag
++needs to be set.
++
++CASE 4: Pinning for struct page manipulation only
++-------------------------------------------------
++Here, normal GUP calls are sufficient, so neither flag needs to be set.
++
++page_dma_pinned(): the whole point of pinning
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
++
++The whole point of marking pages as "DMA-pinned" or "gup-pinned" is to be =
+able
++to query, "is this page DMA-pinned?" That allows code such as page_mkclean=
+()
++(and file system writeback code in general) to make informed decisions abo=
+ut
++what to do when a page cannot be unmapped due to such pins.
++
++What to do in those cases is the subject of a years-long series of discuss=
+ions
++and debates (see the References at the end of this document). It's a TODO =
+item
++here: fill in the details once that's worked out. Meanwhile, it's safe to =
+say
++that having this available: ::
++
++        static inline bool page_dma_pinned(struct page *page)
++
++...is a prerequisite to solving the long-running gup+DMA problem.
++
++Another way of thinking about FOLL_GET, FOLL_PIN, and FOLL_LONGTERM
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
++
++Another way of thinking about these flags is as a progression of restricti=
+ons:
++FOLL_GET is for struct page manipulation, without affecting the data that =
+the
++struct page refers to. FOLL_PIN is a *replacement* for FOLL_GET, and is fo=
+r
++short term pins on pages whose data *will* get accessed. As such, FOLL_PIN=
+ is
++a "more severe" form of pinning. And finally, FOLL_LONGTERM is an even mor=
+e
++restrictive case that has FOLL_PIN as a prerequisite: this is for pages th=
+at
++will be pinned longterm, and whose data will be accessed.
++
++Unit testing
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
++This file::
++
++ tools/testing/selftests/vm/gup_benchmark.c
++
++has the following new calls to exercise the new pin*() wrapper functions:
++
++* PIN_FAST_BENCHMARK (./gup_benchmark -a)
++* PIN_LONGTERM_BENCHMARK (./gup_benchmark -a)
++* PIN_BENCHMARK (./gup_benchmark -a)
++
++You can monitor how many total dma-pinned pages have been acquired and rel=
+eased
++since the system was booted, via two new /proc/vmstat entries: ::
++
++    /proc/vmstat/nr_foll_pin_requested
++    /proc/vmstat/nr_foll_pin_requested
++
++Those are both going to show zero, unless CONFIG_DEBUG_VM is set. This is
++because there is a noticeable performance drop in put_user_page(), when th=
+ey
++are activated.
++
++References
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
++
++* `Some slow progress on get_user_pages() (Apr 2, 2019) <https://lwn.net/A=
+rticles/784574/>`_
++* `DMA and get_user_pages() (LPC: Dec 12, 2018) <https://lwn.net/Articles/=
+774411/>`_
++* `The trouble with get_user_pages() (Apr 30, 2018) <https://lwn.net/Artic=
+les/753027/>`_
++
++John Hubbard, October, 2019
 --=20
 2.23.0
 
