@@ -2,84 +2,80 @@ Return-Path: <SRS0=1fX1=YX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AFD99CA9EC5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 17:23:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80133CA9EC5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 17:25:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6A85E2173E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 17:23:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6A85E2173E
+	by mail.kernel.org (Postfix) with ESMTPS id 5655D2173E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 17:25:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5655D2173E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 473Fdz0qRszF4Zs
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Oct 2019 04:23:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 473Fhg5NhXzF4bY
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Oct 2019 04:25:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=arbab@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 473F7n170wzF4RL
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2019 04:00:20 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x9UGdkJs039957; Wed, 30 Oct 2019 13:00:06 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 473F7p00lBzF4R7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2019 04:00:21 +1100 (AEDT)
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x9UGctwC018944; Wed, 30 Oct 2019 13:00:15 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2vydvs9u4w-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2vxwmqn6un-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 30 Oct 2019 13:00:05 -0400
-Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x9UGlf79072448;
- Wed, 30 Oct 2019 13:00:05 -0400
-Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
- [169.63.121.186])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2vydvs9u4c-1
+ Wed, 30 Oct 2019 13:00:10 -0400
+Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id x9UGdlDg021229;
+ Wed, 30 Oct 2019 13:00:07 -0400
+Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
+ [169.55.91.170])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2vxwmqn6qy-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 30 Oct 2019 13:00:05 -0400
-Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
- by ppma03wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x9UGpUam026236;
- Wed, 30 Oct 2019 17:00:04 GMT
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by ppma03wdc.us.ibm.com with ESMTP id 2vxwh57h2j-1
+ Wed, 30 Oct 2019 13:00:07 -0400
+Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
+ by ppma02wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id x9UGxOY4025823;
+ Wed, 30 Oct 2019 17:00:02 GMT
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28]) by ppma02wdc.us.ibm.com with ESMTP id 2vxwh5qgfy-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 30 Oct 2019 17:00:04 +0000
-Received: from b03ledav004.gho.boulder.ibm.com
- (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x9UH03vA61014364
+ Wed, 30 Oct 2019 17:00:02 +0000
+Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
+ [9.57.199.111])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x9UH01a145220278
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 30 Oct 2019 17:00:03 GMT
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C7ABD78085;
+ Wed, 30 Oct 2019 17:00:01 GMT
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 575A1AC067;
  Wed, 30 Oct 2019 17:00:01 +0000 (GMT)
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B739E78079;
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 30D51AC066;
  Wed, 30 Oct 2019 17:00:01 +0000 (GMT)
 Received: from arbab-laptop.localdomain (unknown [9.53.179.210])
- by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
+ by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
  Wed, 30 Oct 2019 17:00:01 +0000 (GMT)
 Received: by arbab-laptop.localdomain (Postfix, from userid 152845)
- id 71B7E4654AF; Wed, 30 Oct 2019 12:00:00 -0500 (CDT)
+ id 408904654A3; Wed, 30 Oct 2019 12:00:00 -0500 (CDT)
 From: Reza Arbab <arbab@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 09/11] Revert "powerpc/pci: remove the dma_set_mask
- pci_controller ops methods"
-Date: Wed, 30 Oct 2019 11:59:58 -0500
-Message-Id: <1572454800-17976-10-git-send-email-arbab@linux.ibm.com>
+Subject: [PATCH 00/11] powerpv/powernv: Restore pnv_npu_try_dma_set_bypass()
+Date: Wed, 30 Oct 2019 11:59:49 -0500
+Message-Id: <1572454800-17976-1-git-send-email-arbab@linux.ibm.com>
 X-Mailer: git-send-email 1.8.3.1
-In-Reply-To: <1572454800-17976-1-git-send-email-arbab@linux.ibm.com>
-References: <1572454800-17976-1-git-send-email-arbab@linux.ibm.com>
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-10-30_07:, , signatures=0
@@ -87,7 +83,7 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=744 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1908290000 definitions=main-1910300150
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -108,58 +104,48 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Bring back the pci controller based hook in dma_set_mask(), as it will
-have a user again.
+With recent kernels, TCE tables for NPU devices are no longer being
+configured. That task was performed by pnv_npu_try_dma_set_bypass(), a
+function that got swept away in recent overhauling of dma code.
 
-This reverts commit 662acad4067a ("powerpc/pci: remove the dma_set_mask
-pci_controller ops methods"). The callback signature has been adjusted
-with void return to fit its caller.
+Patches 1-4 here bring the lost function back and reintegrate it with
+the updated generic iommu bypass infrastructure.
 
-Signed-off-by: Reza Arbab <arbab@linux.ibm.com>
-Cc: Christoph Hellwig <hch@lst.de>
----
- arch/powerpc/include/asm/pci-bridge.h | 2 ++
- arch/powerpc/kernel/dma-mask.c        | 9 +++++++++
- 2 files changed, 11 insertions(+)
+Patch 5 fixes a regression in behavior when a requested dma mask can not
+be fulfilled.
 
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index ea6ec65970ef..8512dcd053c5 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -43,6 +43,8 @@ struct pci_controller_ops {
- 	void		(*teardown_msi_irqs)(struct pci_dev *pdev);
- #endif
- 
-+	void		(*dma_set_mask)(struct pci_dev *pdev, u64 dma_mask);
-+
- 	void		(*shutdown)(struct pci_controller *hose);
- };
- 
-diff --git a/arch/powerpc/kernel/dma-mask.c b/arch/powerpc/kernel/dma-mask.c
-index ffbbbc432612..35b5fd1b03a6 100644
---- a/arch/powerpc/kernel/dma-mask.c
-+++ b/arch/powerpc/kernel/dma-mask.c
-@@ -2,11 +2,20 @@
- 
- #include <linux/dma-mapping.h>
- #include <linux/export.h>
-+#include <linux/pci.h>
- #include <asm/machdep.h>
- 
- void arch_dma_set_mask(struct device *dev, u64 dma_mask)
- {
- 	if (ppc_md.dma_set_mask)
- 		ppc_md.dma_set_mask(dev, dma_mask);
-+
-+	if (dev_is_pci(dev)) {
-+		struct pci_dev *pdev = to_pci_dev(dev);
-+		struct pci_controller *phb = pci_bus_to_host(pdev->bus);
-+
-+		if (phb->controller_ops.dma_set_mask)
-+			phb->controller_ops.dma_set_mask(pdev, dma_mask);
-+	}
- }
- EXPORT_SYMBOL(arch_dma_set_mask);
+Patches 6-8 are cleanup. I put these later in the set because they
+aren't bisectable until after the restored code is wired back in.
+
+Patches 9-11 refactor pnv_pci_ioda_iommu_bypass_supported(). It seems
+wrong for a boolean *_supported() function to have side effects. They
+reintroduce a pci controller based dma_set_mask() hook. If that's
+undesirable, these last three patches can be dropped.
+
+Reza Arbab (11):
+  Revert "powerpc/powernv: Remove unused pnv_npu_try_dma_set_bypass()
+    function"
+  powerpc/powernv: Add pnv_ioda_pe_iommu_bypass_supported()
+  powerpc/powernv/npu: Change pnv_npu_try_dma_set_bypass() argument
+  powerpc/powernv/npu: Wire up pnv_npu_try_dma_set_bypass()
+  powerpc/powernv: Return failure for some uses of dma_set_mask()
+  powerpc/powernv: Remove intermediate variable
+  powerpc/powernv/npu: Simplify pnv_npu_try_dma_set_bypass() loop
+  powerpc/powernv: Replace open coded pnv_ioda_get_pe()s
+  Revert "powerpc/pci: remove the dma_set_mask pci_controller ops
+    methods"
+  powerpc/powernv: Add pnv_phb3_iommu_bypass_supported()
+  powerpc/powernv: Add pnv_pci_ioda_dma_set_mask()
+
+ arch/powerpc/include/asm/pci-bridge.h     |   2 +
+ arch/powerpc/kernel/dma-iommu.c           |  19 ++++--
+ arch/powerpc/kernel/dma-mask.c            |   9 +++
+ arch/powerpc/platforms/powernv/Kconfig    |   1 +
+ arch/powerpc/platforms/powernv/npu-dma.c  | 106 +++++++++++++++++++++++++++---
+ arch/powerpc/platforms/powernv/pci-ioda.c |  71 ++++++++++++--------
+ arch/powerpc/platforms/powernv/pci.h      |  10 ++-
+ 7 files changed, 177 insertions(+), 41 deletions(-)
+
 -- 
 1.8.3.1
 
