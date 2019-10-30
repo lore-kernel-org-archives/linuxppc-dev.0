@@ -2,95 +2,69 @@ Return-Path: <SRS0=1fX1=YX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 122A8CA9EC0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 04:14:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 895BDCA9EAF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 06:44:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 609B520866
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 04:14:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3860320874
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 06:44:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NlVcq7fl"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 609B520866
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="AB5pRE1Y"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3860320874
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 472w7w71FpzF3m1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 15:14:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::241;
- helo=mail-oi1-x241.google.com; envelope-from=natechancellor@gmail.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 472zTB6n2pzF3l1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 17:44:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=softfail (domain owner discourages use of this
+ host) smtp.mailfrom=socionext.com (client-ip=210.131.2.79;
+ helo=conuserg-12.nifty.com; envelope-from=yamada.masahiro@socionext.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+ dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="NlVcq7fl"; 
+ unprotected) header.d=nifty.com header.i=@nifty.com header.b="AB5pRE1Y"; 
  dkim-atps=neutral
-Received: from mail-oi1-x241.google.com (mail-oi1-x241.google.com
- [IPv6:2607:f8b0:4864:20::241])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from conuserg-12.nifty.com (conuserg-12.nifty.com [210.131.2.79])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 472w5j16GvzF3Xm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2019 15:12:24 +1100 (AEDT)
-Received: by mail-oi1-x241.google.com with SMTP id c2so792770oic.13
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2019 21:12:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=q8SBmE+8CAuRsopHcvNfJ0iOGe3QE73CA4UWHXUOwzo=;
- b=NlVcq7fl9famiHFwVuXroRWduNF6YzH/4yHGpXWGNk+n1bQ4bvpjQCiEgUhbhk3mPO
- 9IQaYBsuiz4qQWkVyMbfR379LhuuUs5OLKHBEhrqS7R77grOSQ5TK/b9ec1xu9JMbciY
- q4SvSpPDfoZOHMB/wiwAxLPSHHndu3xnpfwwgIIF8S6myDXUgwH6tB5HawuxGXGexwDn
- AyhsgCsoYV5GwdLBR7tQH7u2Tyr+T2VwgKooE6sztkuOu30ZRd7kgAI2O3QWVLUY2ogx
- xBeFY11McksdtVcE2QO0uNO+mDhhbsA4BtdLVWZRUTdDISkY1P8Gh21QTVXEuYslV5af
- VHwQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=q8SBmE+8CAuRsopHcvNfJ0iOGe3QE73CA4UWHXUOwzo=;
- b=qdpbJD3q2c60DNnffl5HeGUI0gSXIWuvpJITuq7GKsITqCu5fkMu7jFqi5qssHStyc
- hb/gOwq1sizkXisrpqD7Bnh5mwzUez4bHcd8XswjKE5rNwPvgAGsHPvJZvmxtCI3Xpbk
- Zzg/TnfeBKid3SOuOLiLNW9hl+IEqkgwewdXsxUh6KMSIm3j51f07p6bh/jlgvpjjiT9
- 6PVvpNrRGZMH9eSBpkvvH+JRnjhqPjtlnmHq4pCZsHPvBl/8AlWK+NwzFVlrBN+OXnW3
- P1aEqQeOn2R6j84FN4671/+nbiBZLw5lSEbljkHkFVPccmyplz84sE85uLv9gjbnFZ77
- YyVg==
-X-Gm-Message-State: APjAAAX1y6yOh01bxVaxkrZNkPW68EnuZ19pR1JdUr+RTEmpBPGHLo+0
- dOaZ3Y+XDZX1LfSx9qteKxU=
-X-Google-Smtp-Source: APXvYqyxpEloNeg8lmz1nQNKAJqcYExDQ+n8NNJFQFby1voWeWfahZNM3WEyFGqPgTisHyRJNox65g==
-X-Received: by 2002:aca:fc11:: with SMTP id a17mr6995309oii.59.1572408741122; 
- Tue, 29 Oct 2019 21:12:21 -0700 (PDT)
-Received: from ubuntu-m2-xlarge-x86 ([2604:1380:4111:8b00::1])
- by smtp.gmail.com with ESMTPSA id z4sm300942oix.17.2019.10.29.21.12.19
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Tue, 29 Oct 2019 21:12:20 -0700 (PDT)
-Date: Tue, 29 Oct 2019 21:12:18 -0700
-From: Nathan Chancellor <natechancellor@gmail.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v4 3/3] powerpc/prom_init: Use -ffreestanding to avoid a
- reference to bcmp
-Message-ID: <20191030041218.GB14630@ubuntu-m2-xlarge-x86>
-References: <20190911182049.77853-1-natechancellor@gmail.com>
- <20191014025101.18567-1-natechancellor@gmail.com>
- <20191014025101.18567-4-natechancellor@gmail.com>
- <20191014093501.GE28442@gate.crashing.org>
- <CAKwvOdmcUT2A9FG0JD9jd0s=gAavRc_h+RLG6O3mBz4P1FfF8w@mail.gmail.com>
- <20191014191141.GK28442@gate.crashing.org>
- <20191018190022.GA1292@ubuntu-m2-xlarge-x86>
- <20191018200210.GR28442@gate.crashing.org>
- <20191022051529.GA44041@ubuntu-m2-xlarge-x86>
- <20191022085709.GI28442@gate.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 472zMn5gRnzF3lR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2019 17:39:47 +1100 (AEDT)
+Received: from localhost.localdomain (p14092-ipngnfx01kyoto.kyoto.ocn.ne.jp
+ [153.142.97.92]) (authenticated)
+ by conuserg-12.nifty.com with ESMTP id x9U6d6lv008465;
+ Wed, 30 Oct 2019 15:39:08 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-12.nifty.com x9U6d6lv008465
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
+ s=dec2015msa; t=1572417549;
+ bh=2GktbG0AX5EtCMHePWHIbE0q7mnCifLYNvh9ZJFHfvs=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=AB5pRE1Y3NFeLYxFjunbmdeVQpZ+Rf7stI8M0RDP/Ph+dAukxSOblJVGK9stHr6sL
+ w7f/sEk1cdnHuGkMVjoBaasv02Eei75cCzREIovtTn8UGedX6/3gt+dobUqQKoyV/V
+ vRM0vHaFoDIECj+TK4eafRR3gud/gqFlyXwOIVd5tvoDNPgB4a+MmWWy+wcMjfXt0y
+ VUmzpNl9ZY347AiReQZmZKHbc46t7cBvzubiz9f+92QiGHZWTd5/irFaHWscaNlTXT
+ vZ60Av9A2CfEKqsSIB6yxtqylLp6dhof/z7SJ6wYF4g+YlpEatU+keTy5swzES6xuu
+ ofHSXCu7Nyr7w==
+X-Nifty-SrcIP: [153.142.97.92]
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+ linux-arch <linux-arch@vger.kernel.org>
+Subject: [PATCH 2/3] arch: msgbuf.h: make uapi asm/msgbuf.h self-contained
+Date: Wed, 30 Oct 2019 15:38:54 +0900
+Message-Id: <20191030063855.9989-2-yamada.masahiro@socionext.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20191030063855.9989-1-yamada.masahiro@socionext.com>
+References: <20191030063855.9989-1-yamada.masahiro@socionext.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20191022085709.GI28442@gate.crashing.org>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,52 +76,159 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nick Desaulniers <ndesaulniers@google.com>,
- LKML <linux-kernel@vger.kernel.org>,
- clang-built-linux <clang-built-linux@googlegroups.com>,
- Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-s390@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, x86@kernel.org,
+ linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org,
+ Masahiro Yamada <yamada.masahiro@socionext.com>, sparclinux@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Oct 22, 2019 at 03:57:09AM -0500, Segher Boessenkool wrote:
-> On Mon, Oct 21, 2019 at 10:15:29PM -0700, Nathan Chancellor wrote:
-> > On Fri, Oct 18, 2019 at 03:02:10PM -0500, Segher Boessenkool wrote:
-> > > I think the proper solution is for the kernel to *do* use -ffreestanding,
-> > > and then somehow tell the kernel that memcpy etc. are the standard
-> > > functions.  A freestanding GCC already requires memcpy, memmove, memset,
-> > > memcmp, and sometimes abort to exist and do the standard thing; why cannot
-> > > programs then also rely on it to be the standard functions.
-> > > 
-> > > What exact functions are the reason the kernel does not use -ffreestanding?
-> > > Is it just memcpy?  Is more wanted?
-> > 
-> > I think Linus summarized it pretty well here:
-> > 
-> > https://lore.kernel.org/lkml/CAHk-=wi-epJZfBHDbKKDZ64us7WkF=LpUfhvYBmZSteO8Q0RAg@mail.gmail.com/
-> 
-> GCC recognises __builtin_memcpy (or any other __builtin) just fine even
-> with -ffreestanding.
-> 
-> So the kernel wants a warning (or error) whenever a call to one of these
-> library functions is generated by the compiler without the user asking
-> for it directly (via a __builtin)?  And that is all that is needed for
-> the kernel to use -ffreestanding?
-> 
-> That shouldn't be hard.  Anything missing here?
-> 
-> 
-> Segher
+The user-space cannot compile <asm/msgbuf.h> due to some missing type
+definitions. For example, building it for x86 fails as follows:
 
-Yes, I suppose that would be good enough.
+  CC      usr/include/asm/msgbuf.h.s
+In file included from ./usr/include/asm/msgbuf.h:6:0,
+                 from <command-line>:32:
+./usr/include/asm-generic/msgbuf.h:25:20: error: field ‘msg_perm’ has incomplete type
+  struct ipc64_perm msg_perm;
+                    ^~~~~~~~
+./usr/include/asm-generic/msgbuf.h:27:2: error: unknown type name ‘__kernel_time_t’
+  __kernel_time_t msg_stime; /* last msgsnd time */
+  ^~~~~~~~~~~~~~~
+./usr/include/asm-generic/msgbuf.h:28:2: error: unknown type name ‘__kernel_time_t’
+  __kernel_time_t msg_rtime; /* last msgrcv time */
+  ^~~~~~~~~~~~~~~
+./usr/include/asm-generic/msgbuf.h:29:2: error: unknown type name ‘__kernel_time_t’
+  __kernel_time_t msg_ctime; /* last change time */
+  ^~~~~~~~~~~~~~~
+./usr/include/asm-generic/msgbuf.h:41:2: error: unknown type name ‘__kernel_pid_t’
+  __kernel_pid_t msg_lspid; /* pid of last msgsnd */
+  ^~~~~~~~~~~~~~
+./usr/include/asm-generic/msgbuf.h:42:2: error: unknown type name ‘__kernel_pid_t’
+  __kernel_pid_t msg_lrpid; /* last receive pid */
+  ^~~~~~~~~~~~~~
 
-I don't know if there are any other optimizations that are missed out on
-by using -ffreestanding. It would probably be worth asking other kernel
-developers on a separate thread (or the one I linked above).
+It is just a matter of missing include directive.
 
-Would be nice to get this shored up soon since our PowerPC builds have
-been broken since the beginning of August :/
+Include <asm/ipcbuf.h> to make it self-contained, and add it to
+the compile-test coverage.
 
-Cheers,
-Nathan
+Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+---
+
+ arch/mips/include/uapi/asm/msgbuf.h    | 1 +
+ arch/parisc/include/uapi/asm/msgbuf.h  | 1 +
+ arch/powerpc/include/uapi/asm/msgbuf.h | 2 ++
+ arch/sparc/include/uapi/asm/msgbuf.h   | 2 ++
+ arch/x86/include/uapi/asm/msgbuf.h     | 3 +++
+ arch/xtensa/include/uapi/asm/msgbuf.h  | 2 ++
+ include/uapi/asm-generic/msgbuf.h      | 2 ++
+ usr/include/Makefile                   | 1 -
+ 8 files changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/arch/mips/include/uapi/asm/msgbuf.h b/arch/mips/include/uapi/asm/msgbuf.h
+index 46aa15b13e4e..2722f9b82cf2 100644
+--- a/arch/mips/include/uapi/asm/msgbuf.h
++++ b/arch/mips/include/uapi/asm/msgbuf.h
+@@ -2,6 +2,7 @@
+ #ifndef _ASM_MSGBUF_H
+ #define _ASM_MSGBUF_H
+ 
++#include <asm/ipcbuf.h>
+ 
+ /*
+  * The msqid64_ds structure for the MIPS architecture.
+diff --git a/arch/parisc/include/uapi/asm/msgbuf.h b/arch/parisc/include/uapi/asm/msgbuf.h
+index 6a2e9ab2ef8d..02ae1f616347 100644
+--- a/arch/parisc/include/uapi/asm/msgbuf.h
++++ b/arch/parisc/include/uapi/asm/msgbuf.h
+@@ -3,6 +3,7 @@
+ #define _PARISC_MSGBUF_H
+ 
+ #include <asm/bitsperlong.h>
++#include <asm/ipcbuf.h>
+ 
+ /* 
+  * The msqid64_ds structure for parisc architecture, copied from sparc.
+diff --git a/arch/powerpc/include/uapi/asm/msgbuf.h b/arch/powerpc/include/uapi/asm/msgbuf.h
+index 2b1b37797a47..30d5e1b45553 100644
+--- a/arch/powerpc/include/uapi/asm/msgbuf.h
++++ b/arch/powerpc/include/uapi/asm/msgbuf.h
+@@ -2,6 +2,8 @@
+ #ifndef _ASM_POWERPC_MSGBUF_H
+ #define _ASM_POWERPC_MSGBUF_H
+ 
++#include <asm/ipcbuf.h>
++
+ /*
+  * The msqid64_ds structure for the PowerPC architecture.
+  * Note extra padding because this structure is passed back and forth
+diff --git a/arch/sparc/include/uapi/asm/msgbuf.h b/arch/sparc/include/uapi/asm/msgbuf.h
+index ffc46c211d6d..81a8460fdd67 100644
+--- a/arch/sparc/include/uapi/asm/msgbuf.h
++++ b/arch/sparc/include/uapi/asm/msgbuf.h
+@@ -2,6 +2,8 @@
+ #ifndef _SPARC_MSGBUF_H
+ #define _SPARC_MSGBUF_H
+ 
++#include <asm/ipcbuf.h>
++
+ /*
+  * The msqid64_ds structure for sparc64 architecture.
+  * Note extra padding because this structure is passed back and forth
+diff --git a/arch/x86/include/uapi/asm/msgbuf.h b/arch/x86/include/uapi/asm/msgbuf.h
+index 90ab9a795b49..e09fd2363300 100644
+--- a/arch/x86/include/uapi/asm/msgbuf.h
++++ b/arch/x86/include/uapi/asm/msgbuf.h
+@@ -5,6 +5,9 @@
+ #if !defined(__x86_64__) || !defined(__ILP32__)
+ #include <asm-generic/msgbuf.h>
+ #else
++
++#include <asm/ipcbuf.h>
++
+ /*
+  * The msqid64_ds structure for x86 architecture with x32 ABI.
+  *
+diff --git a/arch/xtensa/include/uapi/asm/msgbuf.h b/arch/xtensa/include/uapi/asm/msgbuf.h
+index d6915e9f071c..1ed2c85b693a 100644
+--- a/arch/xtensa/include/uapi/asm/msgbuf.h
++++ b/arch/xtensa/include/uapi/asm/msgbuf.h
+@@ -17,6 +17,8 @@
+ #ifndef _XTENSA_MSGBUF_H
+ #define _XTENSA_MSGBUF_H
+ 
++#include <asm/ipcbuf.h>
++
+ struct msqid64_ds {
+ 	struct ipc64_perm msg_perm;
+ #ifdef __XTENSA_EB__
+diff --git a/include/uapi/asm-generic/msgbuf.h b/include/uapi/asm-generic/msgbuf.h
+index 9fe4881557cb..7cdc7e52490d 100644
+--- a/include/uapi/asm-generic/msgbuf.h
++++ b/include/uapi/asm-generic/msgbuf.h
+@@ -3,6 +3,8 @@
+ #define __ASM_GENERIC_MSGBUF_H
+ 
+ #include <asm/bitsperlong.h>
++#include <asm/ipcbuf.h>
++
+ /*
+  * generic msqid64_ds structure.
+  *
+diff --git a/usr/include/Makefile b/usr/include/Makefile
+index 70f8fe256aed..099d7401aa23 100644
+--- a/usr/include/Makefile
++++ b/usr/include/Makefile
+@@ -16,7 +16,6 @@ override c_flags = $(UAPI_CFLAGS) -Wp,-MD,$(depfile) -I$(objtree)/usr/include
+ # Please consider to fix the header first.
+ #
+ # Sorted alphabetically.
+-header-test- += asm/msgbuf.h
+ header-test- += asm/sembuf.h
+ header-test- += asm/shmbuf.h
+ header-test- += asm/signal.h
+-- 
+2.17.1
+
