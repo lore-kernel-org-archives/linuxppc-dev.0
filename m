@@ -2,92 +2,91 @@ Return-Path: <SRS0=1fX1=YX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 265BDCA9EAF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 07:42:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7AA63CA9EAF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 07:45:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CBBA42054F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 07:42:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2E2F720663
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 07:45:05 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="wQqtnQ5H";
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="TFH+9GaA"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CBBA42054F
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="sqo0sz7g";
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="UlU/1t96"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E2F720663
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4730mJ63vTzF3pY
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 18:42:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4730q30s76zF3sL
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 18:45:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=russell.cc (client-ip=64.147.123.19;
- helo=wout3-smtp.messagingengine.com; envelope-from=ruscur@russell.cc;
+ smtp.mailfrom=russell.cc (client-ip=64.147.123.18;
+ helo=wnew4-smtp.messagingengine.com; envelope-from=ruscur@russell.cc;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=russell.cc header.i=@russell.cc header.b="wQqtnQ5H"; 
+ unprotected) header.d=russell.cc header.i=@russell.cc header.b="sqo0sz7g"; 
  dkim=pass (2048-bit key;
  unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.b="TFH+9GaA"; dkim-atps=neutral
-Received: from wout3-smtp.messagingengine.com (wout3-smtp.messagingengine.com
- [64.147.123.19])
+ header.b="UlU/1t96"; dkim-atps=neutral
+X-Greylist: delayed 555 seconds by postgrey-1.36 at bilbo;
+ Wed, 30 Oct 2019 18:41:03 AEDT
+Received: from wnew4-smtp.messagingengine.com (wnew4-smtp.messagingengine.com
+ [64.147.123.18])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4730Wx0bffzF32J
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2019 18:31:56 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4730kR3R4KzF3qk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2019 18:41:03 +1100 (AEDT)
 Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
- by mailout.west.internal (Postfix) with ESMTP id 8D664467;
- Wed, 30 Oct 2019 03:31:46 -0400 (EDT)
+ by mailnew.west.internal (Postfix) with ESMTP id 7A7C144F;
+ Wed, 30 Oct 2019 03:31:34 -0400 (EDT)
 Received: from mailfrontend1 ([10.202.2.162])
- by compute6.internal (MEProxy); Wed, 30 Oct 2019 03:31:47 -0400
+ by compute6.internal (MEProxy); Wed, 30 Oct 2019 03:31:35 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=
- from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding; s=fm3; bh=WVehznCtMHUGH
- kkWKbgrT+yshqhj8IDof9KJa08Bq0M=; b=wQqtnQ5HYN2HhoT1Mr87LlzHxpDs7
- OMsTrzNUySexfr30//65eaX8cpiOXynT2XstIB7xpO9nDKCYhGmr4Dn20QbNrHwF
- bwOeY3brgkuk0LMOPVHmDWy+vw29Z/QqEqkIjhmEBHwKIj5kq+5emLcws1Sg+MQV
- m9b3AUY1SmWZRDPrkmHZJ6l/nXucf7c1riUjOFGSrxmjpiSNnjFpoIVgJ+hQvInW
- ks8h83RzQXMYM6bADNP5kWgntJHeVY7bjuT9Z5+ueZ7fLps/pxd6p2YXdN7DgDVn
- Ceh2utf81BEp/+TdoDIxWLBVq3lidTFgcW9ckA8zQYLrU4juPD+yJ8aQg==
+ from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding; s=fm3; bh=mssX/JsM5ogaFI8hQrBomCiQNI
+ 6JK2VPU5sG5BOkvxU=; b=sqo0sz7g86Zgw122bLtbPZXSyq+qdB54dZkslVfD9g
+ oIiPN29EbfFRX837pTasKQ4ODTfrbbliCT00RMBZt4auyNeQVfF866uiPflgZjdn
+ I5ZilGYgkoXdxJ/dtn1zUwLeo4h03we7HS2681l1PPp4GS4ZhK0rxV2NUX/kP5ap
+ Wf+BTHdFTx84gDHFRJf1tmLFIITFMGrz9PSSMjX9M6tYonFNuL1gCa5sYMxRbB4Q
+ ORzOjQWT5z4apZ48HV9dflAa+IpfIUWwo5yYkPiwTKDFxB71xQcxZrooLeZT6W81
+ OsDnySJEBguMBbABub3vwxRXoLyb4Mh0X/KgwfNAu3ag==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
  messagingengine.com; h=cc:content-transfer-encoding:date:from
- :in-reply-to:message-id:mime-version:references:subject:to
- :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
- fm1; bh=WVehznCtMHUGHkkWKbgrT+yshqhj8IDof9KJa08Bq0M=; b=TFH+9GaA
- 0fjJovwpMWyMGSwcxoYcAkWolg1X1ViCME68QalsBhlA61Ln4C+ViZqrWDY/ojw/
- sM+Zt5IGQorEFngxAzVETzbMT976Uq4MKfJAqQ48M6WpEnv0VwHtnAVi55X1tmOA
- 4mbmbUnHefBbu+akPM5BmrleJKw6sW8r3SgBpToCpBMnmxa/0CYz9JDPi1Rko5Q+
- RJCRgpcnpON1FsCp/Akomz+oA/Uf80LfdAFHRiiFaTEKbn8ENhQt+FC6Qdb3SbvU
- nQ6SmqtKNxS+vrV0pbs0LM/iXekAMHrABRayVvntgy1rlMF0CAcUIAGYvIPvNDTy
- nLlHbbkcj0CT9A==
-X-ME-Sender: <xms:Yjy5XUSOURbOoxgqz9nzV3yHTBYxWD7R1_4uC-dQ_nLUOvA6kt8C6g>
+ :message-id:mime-version:subject:to:x-me-proxy:x-me-proxy
+ :x-me-sender:x-me-sender:x-sasl-enc; s=fm1; bh=mssX/JsM5ogaFI8hQ
+ rBomCiQNI6JK2VPU5sG5BOkvxU=; b=UlU/1t96timajT615rqwG5vx1QR/ipwar
+ GTfCWVCfmMC3vqzxfgb+h4/+yxATsglYSul146vmEt2PNJP4rT8548Gi6r2UFjOE
+ +/E2xClckV/BJdNsLRpicDTjJFItktu1DahPipNvLcUUG2RLJ9oqjNhDtck/zhXW
+ ZAfROFeQvMHJA4S+YhWYfGAXObcJ1FsoGQYiTAFiYh3b2m3Wl32dBxcXJPRqRXkq
+ BJLwT/pyJDL+CKwSGuo6XwytfS+UY8P2RG2fGyoiJH/dGgEQHtXtYoJlCQZtCocc
+ fJ1QHPn7py9Vz0pq0bu4SQ2TiWCL1GFIap85wxzty8PqY+FjOICDw==
+X-ME-Sender: <xms:VDy5XW7ZHKuyUF5PiPYbrX0pTPXYtKhNHi0LXCBbVSbPhTQsDPJmng>
 X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedufedruddtvddguddtlecutefuodetggdotefrod
  ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfgh
- necuuegrihhlohhuthemuceftddtnecufghrlhcuvffnffculdeftddmnecujfgurhephf
- fvufffkffojghfggfgsedtkeertdertddtnecuhfhrohhmpeftuhhsshgvlhhlucevuhhr
- rhgvhicuoehruhhstghurhesrhhushhsvghllhdrtggtqeenucfkphepuddvvddrleelrd
- ekvddruddtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehruhhstghurhesrhhushhsvghl
- lhdrtggtnecuvehluhhsthgvrhfuihiivgepfe
-X-ME-Proxy: <xmx:Yjy5XcYDuDWKlDaq-lkoHIkasBC5ZlDCwiOIoYX75FinQY5X5xyVUA>
- <xmx:Yjy5XV5qqio72KccJdwCtev6sVlLqp3BYeMGy6m0VCQUDMiDiUtRRg>
- <xmx:Yjy5XdRCPs1UvZMNxNCYEYSUcq_7K_dFviKfCs_SyEXN-NgZLg571w>
- <xmx:Yjy5XfcnKqa4sGizMtQ1eUn6CbK-3xVhYQKCaAwAFdgx47LK5rCRQQ>
+ necuuegrihhlohhuthemuceftddtnecufghrlhcuvffnffculdduhedmnegovehorghsth
+ grlhdqhfeguddvqddtvdculdduhedtmdenucfjughrpefhvffufffkofgggfestdekredt
+ redttdenucfhrhhomheptfhushhsvghllhcuvehurhhrvgihuceorhhushgtuhhrsehruh
+ hsshgvlhhlrdgttgeqnecuffhomhgrihhnpehoiihlrggsshdrohhrghenucfkphepuddv
+ vddrleelrdekvddruddtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehruhhstghurhesrh
+ hushhsvghllhdrtggtnecuvehluhhsthgvrhfuihiivgeptd
+X-ME-Proxy: <xmx:VDy5XRG7LNlcjNlLQVPdXUF0pdPwMu-WL54eoXPcISXCJUIYzWEB7A>
+ <xmx:VDy5XV7Wg77pnKBwN-vJVMjT15YB1gScIeRyXhRcsZ6k044sQs5ITQ>
+ <xmx:VDy5Xcg9ri8eJDLSrSK3VvSdYDHg8zOZrjkzNu2K4q5yHrENS2z-jw>
+ <xmx:Vjy5XY01lPbca6uwyt4o5O3TJRH5t2KUIeLjCw_4g-5LUf9icc5d_drLuxQ>
 Received: from crackle.ozlabs.ibm.com (unknown [122.99.82.10])
- by mail.messagingengine.com (Postfix) with ESMTPA id 305BF80062;
- Wed, 30 Oct 2019 03:31:42 -0400 (EDT)
+ by mail.messagingengine.com (Postfix) with ESMTPA id 8B2E880059;
+ Wed, 30 Oct 2019 03:31:29 -0400 (EDT)
 From: Russell Currey <ruscur@russell.cc>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v5 4/5] powerpc: Set ARCH_HAS_STRICT_MODULE_RWX
-Date: Wed, 30 Oct 2019 18:31:10 +1100
-Message-Id: <20191030073111.140493-5-ruscur@russell.cc>
+Subject: [PATCH v5 0/5] Implement STRICT_MODULE_RWX for powerpc
+Date: Wed, 30 Oct 2019 18:31:06 +1100
+Message-Id: <20191030073111.140493-1-ruscur@russell.cc>
 X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20191030073111.140493-1-ruscur@russell.cc>
-References: <20191030073111.140493-1-ruscur@russell.cc>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -107,44 +106,41 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-To enable strict module RWX on powerpc, set:
+v4 cover letter: https://lists.ozlabs.org/pipermail/linuxppc-dev/2019-October/198268.html
+v3 cover letter: https://lists.ozlabs.org/pipermail/linuxppc-dev/2019-October/198023.html
 
-    CONFIG_STRICT_MODULE_RWX=y
+Changes since v4:
+	[1/5]: Addressed review comments from Michael Ellerman (thanks!)
+	[4/5]: make ARCH_HAS_STRICT_MODULE_RWX depend on
+	       ARCH_HAS_STRICT_KERNEL_RWX to simplify things and avoid
+	       STRICT_MODULE_RWX being *on by default* in cases where
+	       STRICT_KERNEL_RWX is *unavailable*
+	[5/5]: split skiroot_defconfig changes out into its own patch
 
-You should also have CONFIG_STRICT_KERNEL_RWX=y set to have any real
-security benefit.
+The whole Kconfig situation is really weird and confusing, I believe the
+correct resolution is to change arch/Kconfig but the consequences are so
+minor that I don't think it's worth it, especially given that I expect
+powerpc to have mandatory strict RWX Soon(tm).
 
-ARCH_HAS_STRICT_MODULE_RWX is set to require ARCH_HAS_STRICT_KERNEL_RWX.
-This is due to a quirk in arch/Kconfig and arch/powerpc/Kconfig that
-makes STRICT_MODULE_RWX *on by default* in configurations where
-STRICT_KERNEL_RWX is *unavailable*.
+Russell Currey (5):
+  powerpc/mm: Implement set_memory() routines
+  powerpc/kprobes: Mark newly allocated probes as RO
+  powerpc/mm/ptdump: debugfs handler for W+X checks at runtime
+  powerpc: Set ARCH_HAS_STRICT_MODULE_RWX
+  powerpc/configs: Enable STRICT_MODULE_RWX in skiroot_defconfig
 
-Since this doesn't make much sense, and module RWX without kernel RWX
-doesn't make much sense, having the same dependencies as kernel RWX
-works around this problem.
+ arch/powerpc/Kconfig                   |  2 +
+ arch/powerpc/Kconfig.debug             |  6 +-
+ arch/powerpc/configs/skiroot_defconfig |  1 +
+ arch/powerpc/include/asm/set_memory.h  | 32 +++++++++++
+ arch/powerpc/kernel/kprobes.c          |  3 +
+ arch/powerpc/mm/Makefile               |  1 +
+ arch/powerpc/mm/pageattr.c             | 77 ++++++++++++++++++++++++++
+ arch/powerpc/mm/ptdump/ptdump.c        | 21 ++++++-
+ 8 files changed, 140 insertions(+), 3 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/set_memory.h
+ create mode 100644 arch/powerpc/mm/pageattr.c
 
-Signed-off-by: Russell Currey <ruscur@russell.cc>
----
-This means that Daniel's test on book3e64 is pretty useless since we've
-gone from being unable to turn it *off* to being unable to turn it *on*.
-
-I think this is the right course of action for now.
-
- arch/powerpc/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 8f7005f0d097..52028e27f2d3 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -135,6 +135,7 @@ config PPC
- 	select ARCH_HAS_SCALED_CPUTIME		if VIRT_CPU_ACCOUNTING_NATIVE && PPC_BOOK3S_64
- 	select ARCH_HAS_SET_MEMORY
- 	select ARCH_HAS_STRICT_KERNEL_RWX	if ((PPC_BOOK3S_64 || PPC32) && !RELOCATABLE && !HIBERNATION)
-+	select ARCH_HAS_STRICT_MODULE_RWX	if ARCH_HAS_STRICT_KERNEL_RWX
- 	select ARCH_HAS_TICK_BROADCAST		if GENERIC_CLOCKEVENTS_BROADCAST
- 	select ARCH_HAS_UACCESS_FLUSHCACHE
- 	select ARCH_HAS_UACCESS_MCSAFE		if PPC64
 -- 
 2.23.0
 
