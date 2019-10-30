@@ -2,52 +2,64 @@ Return-Path: <SRS0=1fX1=YX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62396CA9EC5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 11:36:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AE83BCA9EC5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 11:39:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D639B2083E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 11:36:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D639B2083E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 2F92A2083E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 11:39:41 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="JcbMjt25"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2F92A2083E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4735xn1ZPnzDqTW
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 22:36:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=softfail (domain owner discourages use of this
- host) smtp.mailfrom=kernel.org (client-ip=195.135.220.15; helo=mx1.suse.de;
- envelope-from=mhocko@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 47361k259tzF47Z
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2019 22:39:38 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4735tm3Qd8zF3xh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2019 22:33:36 +1100 (AEDT)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id 09DEAADDD;
- Wed, 30 Oct 2019 11:33:32 +0000 (UTC)
-Date: Wed, 30 Oct 2019 12:33:28 +0100
-From: Michal Hocko <mhocko@kernel.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v7] numa: make node_to_cpumask_map() NUMA_NO_NODE aware
-Message-ID: <20191030113328.GA31513@dhcp22.suse.cz>
-References: <1572428068-180880-1-git-send-email-linyunsheng@huawei.com>
- <20191030101449.GW4097@hirez.programming.kicks-ass.net>
- <20191030102229.GY31513@dhcp22.suse.cz>
- <20191030102800.GX4097@hirez.programming.kicks-ass.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4735yn2ppmzF3YD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2019 22:37:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.b="JcbMjt25"; dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4735ym2XKNz9sPL;
+ Wed, 30 Oct 2019 22:37:04 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1572435424;
+ bh=Ukmow9kPMiVR7CRBSSLkfrTkYl/luRkDY70O/Ez8ScE=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=JcbMjt25mjAa/p5TQmHhbYsbMDLQNAWLBgG+KisPaucipwHOlReXn1BMxdr8jiuF/
+ TQEhrhfC6nyl4bbiSf04t8hQnvbWd1H4WYlJbNB+6bCe8Xjl1a5dHMhJVaA95XvaTa
+ Ctkb/6vSdbVW+3EVC6zycS/u152N053ziA5BCVcW/Mvl0h8h2tEoAjTpvVgorhkZp8
+ 2Ap8Eh1+sYtQBgpbanoEYCf1FXizsuVA7Iqet41OaDAY0WovQWeV9v+oCfpkBPC9v3
+ H4A2rbF05lv18BITDGxmR8CpVkPcCXCSePbv9QWGgcskjrfXANv0wPUA2DKxHv0ONE
+ 8COwKqErc3MZQ==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Richard Henderson <richard.henderson@linaro.org>,
+ linux-arch@vger.kernel.org
+Subject: Re: [PATCH 5/6] powerpc: Mark archrandom.h functions __must_check
+In-Reply-To: <20191028210559.8289-6-rth@twiddle.net>
+References: <20191028210559.8289-1-rth@twiddle.net>
+ <20191028210559.8289-6-rth@twiddle.net>
+Date: Wed, 30 Oct 2019 22:37:01 +1100
+Message-ID: <87v9s6bh2a.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20191030102800.GX4097@hirez.programming.kicks-ass.net>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,87 +71,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dalias@libc.org, linux-sh@vger.kernel.org, catalin.marinas@arm.com,
- dave.hansen@linux.intel.com, heiko.carstens@de.ibm.com,
- jiaxun.yang@flygoat.com, linux-mips@vger.kernel.org, mwb@linux.vnet.ibm.com,
- paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org, chenhc@lemote.com,
- will@kernel.org, cai@lca.pw, linux-s390@vger.kernel.org,
- ysato@users.sourceforge.jp, linux-acpi@vger.kernel.org, x86@kernel.org,
- Yunsheng Lin <linyunsheng@huawei.com>, rppt@linux.ibm.com,
- borntraeger@de.ibm.com, dledford@redhat.com, mingo@redhat.com,
- jeffrey.t.kirsher@intel.com, jhogan@kernel.org, mattst88@gmail.com,
- lenb@kernel.org, len.brown@intel.com, gor@linux.ibm.com,
- anshuman.khandual@arm.com, gregkh@linuxfoundation.org, bp@alien8.de,
- luto@kernel.org, bhelgaas@google.com, tglx@linutronix.de,
- naveen.n.rao@linux.vnet.ibm.com, linux-arm-kernel@lists.infradead.org,
- rth@twiddle.net, axboe@kernel.dk, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org,
- ralf@linux-mips.org, tbogendoerfer@suse.de, paul.burton@mips.com,
- linux-alpha@vger.kernel.org, rafael@kernel.org, ink@jurassic.park.msu.ru,
- akpm@linux-foundation.org, robin.murphy@arm.com, davem@davemloft.net
+Cc: linux-s390@vger.kernel.org, x86@kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed 30-10-19 11:28:00, Peter Zijlstra wrote:
-> On Wed, Oct 30, 2019 at 11:22:29AM +0100, Michal Hocko wrote:
-> > On Wed 30-10-19 11:14:49, Peter Zijlstra wrote:
-> > > On Wed, Oct 30, 2019 at 05:34:28PM +0800, Yunsheng Lin wrote:
-> > > > When passing the return value of dev_to_node() to cpumask_of_node()
-> > > > without checking if the device's node id is NUMA_NO_NODE, there is
-> > > > global-out-of-bounds detected by KASAN.
-> > > > 
-> > > > From the discussion [1], NUMA_NO_NODE really means no node affinity,
-> > > > which also means all cpus should be usable. So the cpumask_of_node()
-> > > > should always return all cpus online when user passes the node id as
-> > > > NUMA_NO_NODE, just like similar semantic that page allocator handles
-> > > > NUMA_NO_NODE.
-> > > > 
-> > > > But we cannot really copy the page allocator logic. Simply because the
-> > > > page allocator doesn't enforce the near node affinity. It just picks it
-> > > > up as a preferred node but then it is free to fallback to any other numa
-> > > > node. This is not the case here and node_to_cpumask_map will only restrict
-> > > > to the particular node's cpus which would have really non deterministic
-> > > > behavior depending on where the code is executed. So in fact we really
-> > > > want to return cpu_online_mask for NUMA_NO_NODE.
-> > > > 
-> > > > Also there is a debugging version of node_to_cpumask_map() for x86 and
-> > > > arm64, which is only used when CONFIG_DEBUG_PER_CPU_MAPS is defined, this
-> > > > patch changes it to handle NUMA_NO_NODE as normal node_to_cpumask_map().
-> > > > 
-> > > > [1] https://lkml.org/lkml/2019/9/11/66
-> > > > Signed-off-by: Yunsheng Lin <linyunsheng@huawei.com>
-> > > > Suggested-by: Michal Hocko <mhocko@kernel.org>
-> > > > Acked-by: Michal Hocko <mhocko@suse.com>
-> > > > Acked-by: Paul Burton <paul.burton@mips.com> # MIPS bits
-> > > 
-> > > Still:
-> > > 
-> > > Nacked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-> > 
-> > Do you have any other proposal that doesn't make any wild guesses about
-> > which node to use instead of the undefined one?
-> 
-> It only makes 'wild' guesses when the BIOS is shit and it complains
-> about that.
+Richard Henderson <richard.henderson@linaro.org> writes:
+> We cannot use the pointer output without validating the
+> success of the random read.
 
-I really do not see how this is any better than simply using the online
-cpu mask in the same "broken" situation. We are effectivelly talking
-about a suboptimal path for suboptimal setups. I haven't heard any
-actual technical argument why cpu_online_mask is any worse than adding
-some sort of failover guessing which node to use as a replacement.
+You _can_, but you must not. </pedant>
 
-I completely do you point about complaining loud about broken BIOS/fw.
-It seems we just disagree where we should workaround those issues
-because as of now we simply do generate semi random behavior because of
-an uninitialized memory access.
+> Signed-off-by: Richard Henderson <rth@twiddle.net>
+> ---
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  arch/powerpc/include/asm/archrandom.h | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
 
-> Or do you like you BIOS broken?
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
-I do not see anything like that in my response nor in my previous
-communication. Moreover a patch to warn about this should be on the way
-to get merged AFAIK.
+cheers
 
--- 
-Michal Hocko
-SUSE Labs
+> diff --git a/arch/powerpc/include/asm/archrandom.h b/arch/powerpc/include/asm/archrandom.h
+> index f8a887c8b7f8..ee214b153a71 100644
+> --- a/arch/powerpc/include/asm/archrandom.h
+> +++ b/arch/powerpc/include/asm/archrandom.h
+> @@ -6,17 +6,17 @@
+>  
+>  #include <asm/machdep.h>
+>  
+> -static inline bool arch_get_random_long(unsigned long *v)
+> +static inline bool __must_check arch_get_random_long(unsigned long *v)
+>  {
+>  	return false;
+>  }
+>  
+> -static inline bool arch_get_random_int(unsigned int *v)
+> +static inline bool __must_check arch_get_random_int(unsigned int *v)
+>  {
+>  	return false;
+>  }
+>  
+> -static inline bool arch_get_random_seed_long(unsigned long *v)
+> +static inline bool __must_check arch_get_random_seed_long(unsigned long *v)
+>  {
+>  	if (ppc_md.get_random_seed)
+>  		return ppc_md.get_random_seed(v);
+> @@ -24,7 +24,7 @@ static inline bool arch_get_random_seed_long(unsigned long *v)
+>  	return false;
+>  }
+>  
+> -static inline bool arch_get_random_seed_int(unsigned int *v)
+> +static inline bool __must_check arch_get_random_seed_int(unsigned int *v)
+>  {
+>  	unsigned long val;
+>  	bool rc;
+> -- 
+> 2.17.1
