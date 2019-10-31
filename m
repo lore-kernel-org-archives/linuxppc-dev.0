@@ -2,76 +2,75 @@ Return-Path: <SRS0=EHb9=YY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F3E8CA9ECB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Oct 2019 14:05:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD51CCA9ECB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Oct 2019 14:39:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3BC10208E3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Oct 2019 14:05:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3BC10208E3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
+	by mail.kernel.org (Postfix) with ESMTPS id 2286120873
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Oct 2019 14:39:51 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="dxUVa7Go"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2286120873
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 473nCn4DQkzF5nh
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 01:05:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 473nz919BkzF5hy
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 01:39:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=redhat.com (client-ip=207.211.31.81; helo=us-smtp-1.mimecast.com;
+ envelope-from=david@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=arndb.de
- (client-ip=217.72.192.73; helo=mout.kundenserver.de;
- envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arndb.de
-X-Greylist: delayed 791 seconds by postgrey-1.36 at bilbo;
- Fri, 01 Nov 2019 01:00:22 AEDT
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.b="dxUVa7Go"; 
+ dkim-atps=neutral
+Received: from us-smtp-1.mimecast.com (us-smtp-2.mimecast.com [207.211.31.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 473nlp1cTyzF5nL
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2019 01:29:57 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1572532194;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=5P7I/G/c69OPjbakvWV4bkQcdrPM+r0Yk0Byj4hhrDo=;
+ b=dxUVa7GogaG6YGkRr6TzUoFoHFNZqfJQsc13J0tJS8YIVQmSIdWrKqaMd0K3Z43YRHfH4D
+ p9JAcvLk+iZGZB4tDXsyba+J7CoN3Z1IwUMAmjIFkTpfX6+jGA/nXYEYuz8GiXgxxm3t31
+ c+lCvSSpbTvJuFL11wv66jpT3jRbkN0=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-15-1ewAaRgoNHaIcomH8UFr9A-1; Thu, 31 Oct 2019 10:29:50 -0400
+Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com
+ [10.5.11.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 473n5f3vtdzF5m9
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2019 01:00:20 +1100 (AEDT)
-Received: from mail-qk1-f171.google.com ([209.85.222.171]) by
- mrelayeu.kundenserver.de (mreue109 [212.227.15.145]) with ESMTPSA (Nemesis)
- id 1M8hMt-1iM43D2tY9-004lga for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct
- 2019 14:47:02 +0100
-Received: by mail-qk1-f171.google.com with SMTP id m125so7018629qkd.8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2019 06:47:02 -0700 (PDT)
-X-Gm-Message-State: APjAAAXwVqM5ZYBWYJV0pineOIO32nH/Ipj1/Iycx92rL6Hx7Rp5CWc5
- ZSCDZj0+0MMqgbjPJ49FdBDNUTsEcknLr8Rqd6k=
-X-Google-Smtp-Source: APXvYqwYoQTEthtnSTVFwt/kx2esJ5/VAbLAMZ9ee49FdSHuytOsmyxwwNYKV3cufux6mKtj2roQiWuAZmQk9D9c/Io=
-X-Received: by 2002:a37:4f0a:: with SMTP id d10mr586266qkb.286.1572529621308; 
- Thu, 31 Oct 2019 06:47:01 -0700 (PDT)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 300F71800D6B;
+ Thu, 31 Oct 2019 14:29:48 +0000 (UTC)
+Received: from t460s.redhat.com (unknown [10.36.118.44])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 6DBF15D70E;
+ Thu, 31 Oct 2019 14:29:45 +0000 (UTC)
+From: David Hildenbrand <david@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v1 01/12] powerpc/pseries: CMM: Implement release() function
+ for sysfs device
+Date: Thu, 31 Oct 2019 15:29:22 +0100
+Message-Id: <20191031142933.10779-2-david@redhat.com>
+In-Reply-To: <20191031142933.10779-1-david@redhat.com>
+References: <20191031142933.10779-1-david@redhat.com>
 MIME-Version: 1.0
-References: <20191031003154.21969-1-linux@rasmusvillemoes.dk>
- <04799503-b423-6bc8-71cd-bee54e45883e@rasmusvillemoes.dk>
-In-Reply-To: <04799503-b423-6bc8-71cd-bee54e45883e@rasmusvillemoes.dk>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 31 Oct 2019 14:46:41 +0100
-X-Gmail-Original-Message-ID: <CAK8P3a17NbSuWzvjKSJiUkxPLhKbqnAEzJLBKuHkPGGjDA6QtQ@mail.gmail.com>
-Message-ID: <CAK8P3a17NbSuWzvjKSJiUkxPLhKbqnAEzJLBKuHkPGGjDA6QtQ@mail.gmail.com>
-Subject: Re: [RFC PATCH 0/5] powerpc: make iowrite32be etc. inline
-To: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Content-Type: text/plain; charset="UTF-8"
-X-Provags-ID: V03:K1:eP3H5OIoTr1tYd9PwEfmrUvEQANHBEX/u/SP8r5b/taupNQ91CK
- Fy7PuoRU7MLG73vXXo50lBjsm33LGIpHSy6XWzsSgE1AQf/FSHiYSmoNtQq3otM5CFCDV4T
- GcjCGdYufkAZ+Yj3aRGUTq56icUR9t/21170NVFVXXCUiqjkhF90ZIlwWCML36YsTejxA28
- RVfcFT99ZKNWvOj7kBcvA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:M36treOxLEk=:JG72xETODy0tbKmsNgGOUE
- M0lqWPO7nccPu79qKY1Wk4PJkpO/AVL0oZR5DNBYsV7x23KePn6fAJYqOXzkPQT8X6DYU++zf
- VyTaDW2uvRV1EKtqggEUxThHOtnNIVVLE69+roCD83NtcOcA5uDP7TtkYg+2n4+5EiN+HPi1t
- e4gJlefG6M6XhObDwLQrkYEQ05vqdZux39j8sGw42REo/U8fQ/zZ381lZ9E7vWeRwS5nzZe5o
- TbUMdCrZlxzaHn5R+RFGPg27ul3VBVHXrQuPEUHHDljUL3k+zNYN1S/UW2MiOwoM8pbRQ43LZ
- dPjJ5WhUKem5KWYoEsEWxuCeSZNbhppgVmQAQMACEFZa/8I1Dx7Al9t4Jif0U/2g1BiZpp387
- 21J0mHsBTZ4H6/rE2f9SYJ7PGnVWPZM2JZJy4kKOsDsip0w4g0UpFf5jvahvsMyOumnMZxvJT
- wyj//boX5yZ8+PuXHrWbhEKcMJNyrFq89+1vVqpHLdJw2kbgkz4mFu+zBsBhicVNVgPP3mMiH
- 9lUvqfw0JXJLF9/HRB/iOvCBkoPQOvctkqSUjPCMaFoXUgLztZ9EsiiBKLUTSvRgtH/EA40bY
- Honp4/JEdteEe4WwqZBzQ1JrF49wScYR2+rM8+SJTt5xke7/9ef+pCkqbeTvqsPKCxRKyfVdd
- Fd5Ttxufvsc+E1Cco/tc1gr1ipr32wtAcAagyB14P6UJVGSsxEf4XM7Pcrm2o/jHK3G8jR7Ca
- SFcNnm2x2j0pDYIRVODnnzQuhMT52/UYo4YUr9sCmdhAzKbYSNrcL19WHFM4u2L4UIUJ9LA0f
- s5apnItRFQi91KiH5VmND5wUOeqjdwBdKq5P4aFNJJPxYlpMZinyY6Xad+Dy5elwV/ACmqKyF
- 9aMVxcbTNq3tcThq2aKA==
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.15
+X-MC-Unique: 1ewAaRgoNHaIcomH8UFr9A-1
+X-Mimecast-Spam-Score: 0
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,25 +82,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch <linux-arch@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: David Hildenbrand <david@redhat.com>,
+ Konstantin Khlebnikov <khlebnikov@yandex-team.ru>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-mm@kvack.org,
+ Paul Mackerras <paulus@samba.org>, Allison Randal <allison@lohutok.net>,
+ Arun KS <arunks@codeaurora.org>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
+ Vlastimil Babka <vbabka@suse.cz>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Oct 31, 2019 at 8:39 AM Rasmus Villemoes
-<linux@rasmusvillemoes.dk> wrote:
-> On 31/10/2019 01.31, Rasmus Villemoes wrote:
->
-> So sorry for the noise. Maybe I'll just have to bite the bullet and
-> introduce private qe_iowrite32be etc. and define them based on $ARCH.
-> Any better ideas would be much appreciated.
+When unloading the module, one gets
+[  548.188594] ------------[ cut here ]------------
+[  548.188596] Device 'cmm0' does not have a release() function, it is brok=
+en and must be fixed. See Documentation/kobject.txt.
+[  548.188622] WARNING: CPU: 0 PID: 19308 at drivers/base/core.c:1244 .devi=
+ce_release+0xcc/0xf0
+...
 
-We use that approach in a number of drivers already, I think it's ok to add it
-to another driver. Just make the powerpc case use out_be32 and everything
-else use iowrite32_be. You may also be able to enable the driver for
-CONFIG_COMPILE_TEST after that.
+We only have on static fake device. There is nothing to do when
+releasing the device (via cmm_exit).
 
-     Arnd
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
+Cc: Allison Randal <allison@lohutok.net>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Arun KS <arunks@codeaurora.org>
+Signed-off-by: David Hildenbrand <david@redhat.com>
+---
+ arch/powerpc/platforms/pseries/cmm.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/arch/powerpc/platforms/pseries/cmm.c b/arch/powerpc/platforms/=
+pseries/cmm.c
+index b33251d75927..572651a5c87b 100644
+--- a/arch/powerpc/platforms/pseries/cmm.c
++++ b/arch/powerpc/platforms/pseries/cmm.c
+@@ -411,6 +411,10 @@ static struct bus_type cmm_subsys =3D {
+ =09.dev_name =3D "cmm",
+ };
+=20
++static void cmm_release_device(struct device *dev)
++{
++}
++
+ /**
+  * cmm_sysfs_register - Register with sysfs
+  *
+@@ -426,6 +430,7 @@ static int cmm_sysfs_register(struct device *dev)
+=20
+ =09dev->id =3D 0;
+ =09dev->bus =3D &cmm_subsys;
++=09dev->release =3D cmm_release_device;
+=20
+ =09if ((rc =3D device_register(dev)))
+ =09=09goto subsys_unregister;
+--=20
+2.21.0
+
