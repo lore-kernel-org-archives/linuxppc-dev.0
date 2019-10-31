@@ -2,85 +2,86 @@ Return-Path: <SRS0=EHb9=YY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E204CCA9EC3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Oct 2019 06:33:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 74F58CA9EC3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Oct 2019 07:41:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 90F362087F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Oct 2019 06:33:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D72E920862
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Oct 2019 07:41:28 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=intel-com.20150623.gappssmtp.com header.i=@intel-com.20150623.gappssmtp.com header.b="1iqBC0jz"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 90F362087F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="V6fRNYMg"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D72E920862
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rasmusvillemoes.dk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 473b9T0FybzF5Wn
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Oct 2019 17:33:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 473chQ5DZmzF3ZM
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Oct 2019 18:41:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=2607:f8b0:4864:20::344;
- helo=mail-ot1-x344.google.com; envelope-from=dan.j.williams@intel.com;
+ smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::241;
+ helo=mail-lj1-x241.google.com; envelope-from=linux@rasmusvillemoes.dk;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=intel-com.20150623.gappssmtp.com
- header.i=@intel-com.20150623.gappssmtp.com header.b="1iqBC0jz"; 
- dkim-atps=neutral
-Received: from mail-ot1-x344.google.com (mail-ot1-x344.google.com
- [IPv6:2607:f8b0:4864:20::344])
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=rasmusvillemoes.dk
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk
+ header.b="V6fRNYMg"; dkim-atps=neutral
+Received: from mail-lj1-x241.google.com (mail-lj1-x241.google.com
+ [IPv6:2a00:1450:4864:20::241])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 473b6f54kbzF4KY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2019 17:30:33 +1100 (AEDT)
-Received: by mail-ot1-x344.google.com with SMTP id t8so4416026otl.6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2019 23:30:33 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 473cdj14zkzF5Y0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2019 18:39:04 +1100 (AEDT)
+Received: by mail-lj1-x241.google.com with SMTP id v2so5523506lji.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2019 00:39:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=intel-com.20150623.gappssmtp.com; s=20150623;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=/qgpzQ0JhjLVnJIOjjWL6Mowx327SPlx5pn1SoNDC+c=;
- b=1iqBC0jzqdA13DrnN43K3m1+K1ZNqhq6x3w5m8hY9nmbnUHOC0YmFxMimWdsAHYbnI
- Ft3Rhnr8sPfxIofC44Z/7Qrj4UgcXvACmnJp8eml2arLILt+rcSesmzbCxOvC50+LHHO
- DRsbi1+URJb3jRF4UQ489hhz9yx/vlAHsDk1NJuVPeke2fBxAofoORk7sCTY86yK9iov
- oI+I2WxAr10EvAm4jP5oXZzbFKSp1ClKqT3PJvht0xi7G3Ah9qNlEuxnXG/frHYS0Rzn
- nBdTpaYB4akqfyViaE/3xWJe1VWVmWbjSHsDKvUMpr5f1CosZc8fd527iFHZbuXM/3Mi
- 1cMg==
+ d=rasmusvillemoes.dk; s=google;
+ h=subject:to:cc:references:from:message-id:date:user-agent
+ :mime-version:in-reply-to:content-language:content-transfer-encoding;
+ bh=XYiEiAeXhzSNlTeZVtybpT8lclKkW3XtSx+iKVkW34s=;
+ b=V6fRNYMgoB8Pzl1XrdHlLWkDp21wb/ZAO1KlZ7rzpLCgOKB+cLTIKkhzxBjKnpaTRq
+ wg/s5Fs8T97v4nps20HK5RGnMMQyCoRPJTQ1WSk7qZGXAWoSpTN1wt/mdQcRW0iqvpyg
+ dx5JXOcfg8IV2iczVB2WVlj1Lz68hY/phZ2co=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=/qgpzQ0JhjLVnJIOjjWL6Mowx327SPlx5pn1SoNDC+c=;
- b=JffWOUEUMKfem3++yjdaIMxoQOba7gDUh9tPQVbOoslnuurkVzqVPz2LCKtnCFys4U
- NmJsw3vl7WZPzgvSzpuj382hORLmo1R1w5hLgW0Uphx1DsHi7k9pOzTikkBfyy00ppsy
- rALCk85aP1hHmGh71kpsGzM+Mf9ZbsfygDW6FJ+SnWG5OlGaiDrLHxSSlUtcr/lVtEi0
- 9paLAWkckrAx9VQtmM6qL99RHBv9Tgszz0yRmh+qYzjF9d9b7A0ODkxwsoqPPDjM+u7p
- kqcnQa20a/4uaN5dvDgB6Ptot/AxQd3NDpec0DlpbJBha3iUQq7nvg0D4QC+sM3tkpTO
- FrGg==
-X-Gm-Message-State: APjAAAUcXRkbITUakSTrC9g17tWFdFBGk0AEResqZzQ8lz92IwEUwYfI
- fOpUrOSwoeunfErtMfmtc3kU1enbeKHR+qMZv3H0dw==
-X-Google-Smtp-Source: APXvYqwsCcmEYbccy1+yhmtPx5o8k4Qn3ow1DuGI5ZSJal+v+fE3sTW9IHilS6kah7NkRLnkK2a0NND6knXg87rdbe4=
-X-Received: by 2002:a05:6830:18d1:: with SMTP id
- v17mr2928239ote.71.1572503430036; 
- Wed, 30 Oct 2019 23:30:30 -0700 (PDT)
+ h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=XYiEiAeXhzSNlTeZVtybpT8lclKkW3XtSx+iKVkW34s=;
+ b=ZbI2fzcVpu3yuD07M2DEEeXUTvjIzElJLBJbTNgt8Lk7kwuLe4gY1bVFPbjU+gbd5S
+ 5C2OTEz/liGOWR2DlIYWbhLgKTPmKLBEsLfkxassPEwbptK0OldoeBEE+XpuMGLC99d6
+ bXNl4f6cp/u99fj9MR9Udw9bpuekiSHAEaRAn4jA86XZ1KAln17xzJN3L7yMj5EDBX8j
+ dreFAcYYHu2kpw9u8VNdd4xgu8sBY5rTPtdTJjgx1S8heRt9frEWDSiCgho6ia9m5/Ya
+ i7pOTVN3WsuHh+Phy3eKf8ARlOmwuxwhfzSPy7hzdB7zGOxN4mcqyQf08M+Ow2sDktny
+ D0ug==
+X-Gm-Message-State: APjAAAWuc7jNZ9dBZKEmStm+ClsqlZuBhSmnu/kFCcUp4KGWJGf7afyS
+ 69KFVGEPKUNmCKrpbAfAVPqxpA==
+X-Google-Smtp-Source: APXvYqxT3T6cYOhnMq3nmTYG/Ls910R5ah/jwnD3vDOz9VZu/fzXJoKKzY8NQwSmVmS5/uHcXqfAmA==
+X-Received: by 2002:a2e:7815:: with SMTP id t21mr2927502ljc.149.1572507537180; 
+ Thu, 31 Oct 2019 00:38:57 -0700 (PDT)
+Received: from [172.16.11.28] ([81.216.59.226])
+ by smtp.gmail.com with ESMTPSA id n11sm1422892lfd.88.2019.10.31.00.38.55
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Thu, 31 Oct 2019 00:38:56 -0700 (PDT)
+Subject: Re: [RFC PATCH 0/5] powerpc: make iowrite32be etc. inline
+To: Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-arch@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+References: <20191031003154.21969-1-linux@rasmusvillemoes.dk>
+From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Message-ID: <04799503-b423-6bc8-71cd-bee54e45883e@rasmusvillemoes.dk>
+Date: Thu, 31 Oct 2019 08:38:54 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
 MIME-Version: 1.0
-References: <20191028094825.21448-1-aneesh.kumar@linux.ibm.com>
- <CAPcyv4gZ=wKzwscu_nch8VUtNTHusKzjmMhYZWo+Se=BPO9q8g@mail.gmail.com>
- <6f85f4af-788d-aaef-db64-ab8d3faf6b1b@linux.ibm.com>
- <CAPcyv4gMnSe26QfSBABx0zj3XuFqy=K1XaGnmE3h3sP3Y76nRw@mail.gmail.com>
- <4c6e5743-663e-853b-2203-15c809965965@linux.ibm.com>
-In-Reply-To: <4c6e5743-663e-853b-2203-15c809965965@linux.ibm.com>
-From: Dan Williams <dan.j.williams@intel.com>
-Date: Wed, 30 Oct 2019 23:30:19 -0700
-Message-ID: <CAPcyv4h42_1deZDaaW1RqX0Ls+maiFO_1e=6xJuHTa3wdWvVvA@mail.gmail.com>
-Subject: Re: [RFC PATCH 1/4] libnvdimm/namespace: Make namespace size
- validation arch dependent
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20191031003154.21969-1-linux@rasmusvillemoes.dk>
+Content-Type: text/plain; charset=windows-1252
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,55 +93,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-nvdimm <linux-nvdimm@lists.01.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Oct 30, 2019 at 10:35 PM Aneesh Kumar K.V
-<aneesh.kumar@linux.ibm.com> wrote:
-[..]
-> > True, for the pfn device and the device-dax mapping size, but I'm
-> > suggesting adding another instance of alignment control at the raw
-> > namespace level. That would need to be disconnected from the
-> > device-dax page mapping granularity.
-> >
->
-> Can you explain what you mean by raw namespace level ? We don't have
-> multiple values against which we need to check the alignment of
-> namespace start and namespace size.
->
-> If you can outline how and where you would like to enforce that check I
-> can start working on it.
->
+On 31/10/2019 01.31, Rasmus Villemoes wrote:
 
-What I mean is that the process of setting up a pfn namespace goes
-something like this in shell script form:
+> At first I tried something that wouldn't need to touch anything
+> outside arch/powerpc/, but I ended up with conditional inclusion of
+> asm-generic headers and/or duplicating a lot of their contents.
 
-1/ echo $size > /sys/bus/nd/devices/$namespace/size
-2/ echo $namespace > /sys/bus/nd/devices/$pfn/namespace
-3/ echo $pfn_align > /sys/bus/nd/devices/$pfn/align
+Urrgh, this is much worse than I feared. Already 1/5 is broken because
+asm-generic.h includes asm-generic/iomap.h conditionally, but
+asm-generic/pci_iomap.h unconditionally, so now users of io.h with
+CONFIG_PCI and !CONFIG_GENERIC_IOMAP get an external declaration of
+pci_iounmap they didn't use to, in addition to the static inline defined
+in io.h.
 
-What I'm suggesting is add an optional 0th step that does:
+And I didn't think 2/5 could break anything - on the premise that if
+somebody already have a non-trivial define of ioread16, they couldn't
+possibly also include asm-generic/iomap.h. alpha proves me wrong; as
+long as one doesn't define ioread16 until after iomap.h has been parsed,
+there's no problem (well, except of course if some static inline that
+uses ioread16 got parsed between the compiler seeing the extern
+declaration and alpha then defining the ioread16 macro, but apparently
+that doesn't happen).
 
-echo $raw_align > /sys/bus/nd/devices/$namespace/align
+So sorry for the noise. Maybe I'll just have to bite the bullet and
+introduce private qe_iowrite32be etc. and define them based on $ARCH.
+Any better ideas would be much appreciated.
 
-Where the raw align needs to be needs to be max($pfn_align,
-arch_mapping_granulariy).
-
-So on powerpc where PAGE_SIZE < arch_mapping_granulariy, the following:
-
-cat /sys/bus/nd/devices/$namespace/supported_aligns
-
-...would show the same output as:
-
-cat /sys/bus/nd/devices/$pfn/align
-
-...but with any alignment choice less than arch_mapping_granulariy removed.
-
-
-
-All that said, the x86 vmemmap_populate() falls back to use small
-pages in some case to get around this constraint. Can't powerpc do the
-same? It would seem to be less work than the above proposal.
+Thanks,
+Rasmus
