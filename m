@@ -6,75 +6,76 @@ X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A2D00CA9ECB
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 00:04:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D404CA9ECB
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 00:50:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 502312086D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 00:04:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C65DA2086D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 00:50:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="huUn94OR"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 502312086D
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="jb4OmT2U"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C65DA2086D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nvidia.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4742VJ6flGzF6TB
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 11:04:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4743X20wkmzF6T1
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 11:50:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=nvidia.com (client-ip=216.228.121.65; helo=hqemgate16.nvidia.com;
+ smtp.mailfrom=nvidia.com (client-ip=216.228.121.64; helo=hqemgate15.nvidia.com;
  envelope-from=jhubbard@nvidia.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="huUn94OR"; 
+ unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="jb4OmT2U"; 
  dkim-atps=neutral
-Received: from hqemgate16.nvidia.com (hqemgate16.nvidia.com [216.228.121.65])
+Received: from hqemgate15.nvidia.com (hqemgate15.nvidia.com [216.228.121.64])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4742GK5JmZzF5k1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2019 10:53:45 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4743Tk0PB8zF5p9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2019 11:48:41 +1100 (AEDT)
 Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by
- hqemgate16.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
- id <B5dbb74090000>; Thu, 31 Oct 2019 16:53:46 -0700
+ hqemgate15.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+ id <B5dbb80eb0000>; Thu, 31 Oct 2019 17:48:43 -0700
 Received: from hqmail.nvidia.com ([172.20.161.6])
  by hqpgpgate101.nvidia.com (PGP Universal service);
- Thu, 31 Oct 2019 16:53:40 -0700
+ Thu, 31 Oct 2019 17:48:37 -0700
 X-PGP-Universal: processed;
- by hqpgpgate101.nvidia.com on Thu, 31 Oct 2019 16:53:40 -0700
+ by hqpgpgate101.nvidia.com on Thu, 31 Oct 2019 17:48:37 -0700
 Received: from [10.110.48.28] (10.124.1.5) by HQMAIL107.nvidia.com
- (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Thu, 31 Oct
- 2019 23:53:39 +0000
+ (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Fri, 1 Nov
+ 2019 00:48:36 +0000
 Subject: Re: [PATCH 19/19] Documentation/vm: add pin_user_pages.rst
 To: Ira Weiny <ira.weiny@intel.com>
 References: <20191030224930.3990755-1-jhubbard@nvidia.com>
  <20191030224930.3990755-20-jhubbard@nvidia.com>
  <20191031234922.GM14771@iweiny-DESK2.sc.intel.com>
+X-Nvconfidentiality: public
 From: John Hubbard <jhubbard@nvidia.com>
-Message-ID: <85de5845-d403-dc31-4f3b-f006c4a7b2a2@nvidia.com>
-Date: Thu, 31 Oct 2019 16:53:39 -0700
+Message-ID: <8f92713c-7df8-9463-93f2-40967eba27b5@nvidia.com>
+Date: Thu, 31 Oct 2019 17:48:36 -0700
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.8.0
 MIME-Version: 1.0
 In-Reply-To: <20191031234922.GM14771@iweiny-DESK2.sc.intel.com>
 X-Originating-IP: [10.124.1.5]
-X-ClientProxiedBy: HQMAIL105.nvidia.com (172.20.187.12) To
+X-ClientProxiedBy: HQMAIL101.nvidia.com (172.20.187.10) To
  HQMAIL107.nvidia.com (172.20.187.13)
 Content-Type: text/plain; charset="utf-8"
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
- t=1572566026; bh=vjWEFq7fNfPLFBVwJSkbaC93kNFVP4oSS83LfHWMvq4=;
- h=X-PGP-Universal:Subject:To:CC:References:From:Message-ID:Date:
- User-Agent:MIME-Version:In-Reply-To:X-Originating-IP:
- X-ClientProxiedBy:Content-Type:Content-Language:
+ t=1572569323; bh=5RHzCGcb3FFZzaA/uQgYrgLcorAAk8gLyrsrWdqCg0c=;
+ h=X-PGP-Universal:Subject:To:CC:References:X-Nvconfidentiality:From:
+ Message-ID:Date:User-Agent:MIME-Version:In-Reply-To:
+ X-Originating-IP:X-ClientProxiedBy:Content-Type:Content-Language:
  Content-Transfer-Encoding;
- b=huUn94OR5NVpnI/NdJ3vTkz0Aags6KkZKFci9Fz5nHWE/pFd85Cktt11D1CQUWnOi
- UTPR4qv0QPFgv/ONDQLcPNmALzbnAKqxnplv+MLSg0Lt5g7PakxG9E1PUBNwTzA4dg
- k5IpEf3tN9qoIDtETnu//UzIRidkW3Ptv7qB5nHQktouL6xNQxT4kKgi3v8i+IvKdv
- ffAJkGbaVSplOPwrv6cDHUyGv5RC9JGCEhmv/YdTyy6OAb8LAtR2JiVi7nJzrIOI/o
- Ji4iiKunwQFUjG8sIvZShB4w9wwsMfCPKf36InyfzANf6JSqnPhJXe3qBOy7AOjUTp
- IqJ2SDnd3CyHg==
+ b=jb4OmT2UIK+29Kq6gyh3/B0GMYEYeQey6Q7av8aHODFF7iM3g87GXz+0+crrEhDuP
+ ES91FHKZ2TRd6nelEsvX1Ees+632xFVXWCQcNiNfBlThFOHS+Mq1DZ+VJ6HtPA43u6
+ Ynb5UhoXiX2+2DJcjRCsgJU7otXcWVOJr09yZe43vdQrzd13x1b0cKY4hBXDGaRMUL
+ j+EkbcXcmrT2jSkaz6YzKoEolu/+k4osy9BAQew7kbxk+1/wC4eflk8358pt5RFQn7
+ yh6waII5ieUtayl8B5UKc7eHNJXPir5mjj/cq3SpudLXylqcwjl1IrKdwtTrjKlzPg
+ OjOeqmfrEDTrQ==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,18 +113,6 @@ Sender: "Linuxppc-dev"
 
 On 10/31/19 4:49 PM, Ira Weiny wrote:
 > On Wed, Oct 30, 2019 at 03:49:30PM -0700, John Hubbard wrote:
->> Document the new pin_user_pages() and related calls
->> and behavior.
->>
->> Thanks to Jan Kara and Vlastimil Babka for explaining the 4 cases
->> in this documentation. (I've reworded it and expanded on it slightly.)
-> 
-> As I said before I think this may be better in a previous patch where you
-> reference it.
-
-Yes, I'll merge this in with patch #5 ("mm/gup: introduce pin_user_pages*()
-and FOLL_PIN").
-
 ...
 >> +TODO: There is also a special case when the pages are DAX pages: in addition to
 >> +the above flags, the caller needs something like a layout lease on the
@@ -137,7 +126,11 @@ and FOLL_PIN").
 > fail.
 > 
 
-OK, that is better, I'll use that instead of the "TODO".
+OK, I have this wording queued up for the v2 patch:
+
+NOTE: Some pages, such as DAX pages, cannot be pinned with longterm pins. That's
+because DAX pages do not have a separate page cache, and so "pinning" implies
+locking down file system blocks, which is not (yet) supported in that way.
 
 
 thanks,
