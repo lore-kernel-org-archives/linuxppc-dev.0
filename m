@@ -4,24 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63338CA9EC9
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 08:15:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 23951C47E49
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 08:17:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CD575208E3
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 08:15:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C2CBE208CB
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 08:17:50 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="OWwQEmBq"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CD575208E3
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="24wqhJT7"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C2CBE208CB
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 474FPX5wTYzF6W0
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 19:15:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 474FRw3PHHzF5qw
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 19:17:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
  host) smtp.mailfrom=socionext.com (client-ip=210.131.2.79;
@@ -30,35 +30,35 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="OWwQEmBq"; 
+ unprotected) header.d=nifty.com header.i=@nifty.com header.b="24wqhJT7"; 
  dkim-atps=neutral
 Received: from conuserg-12.nifty.com (conuserg-12.nifty.com [210.131.2.79])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 474FLL3F4mzF5qK
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2019 19:12:57 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 474FLm5NtNzF6SG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2019 19:13:19 +1100 (AEDT)
 Received: from localhost.localdomain (p14092-ipngnfx01kyoto.kyoto.ocn.ne.jp
  [153.142.97.92]) (authenticated)
- by conuserg-12.nifty.com with ESMTP id xA18BsBO023869;
- Fri, 1 Nov 2019 17:11:55 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-12.nifty.com xA18BsBO023869
+ by conuserg-12.nifty.com with ESMTP id xA18BsBQ023869;
+ Fri, 1 Nov 2019 17:11:59 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-12.nifty.com xA18BsBQ023869
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1572595916;
- bh=k87jkR6FkJFPOR/z5eR3eSaQD14H4HrO88Los1fgxD4=;
+ s=dec2015msa; t=1572595923;
+ bh=dMOvEpUrv3gUpGiwcs/+Eb8AZVQbVFB1v4ogmdr2bko=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=OWwQEmBqJtBONHOI+kqzoJQI4R+sA7iR9sb2oScPbRgvf6U28x2BNYAEr4jzQR9Ax
- 5ltA/eXOJUZvjCgF4FGNElAjNbbG7nJQ5A+H9/r20jiz6a3zC9OVYzd1oAb1/njDYK
- yrrDm305qM1vx/9jL0j1DYToeZ3In9qwNG0F5pnwrM/kJ9sI+YCEndtsEv+B4a8Nk6
- wdtXzJ9kcqgBG+e6wJTgotLqbjCpPZVrJksALYACl5uUoARP6dqxcVaO5XbbMKEQcO
- Ip61PjA/oZLV9q40iQoPVYx4uOvuC33hWzya8yguDuSICi4tsaA51w6SRZcEjs8wQd
- xgBT+fTTh/VLA==
+ b=24wqhJT7RJMf50vgPNVtuOw7sfdCTIBCGMN1/+85H2fjdBWjCBMgKq4Gi/Zo8KO2Y
+ VlgD461HyHetk8JzsJ7Ekalb9WtIQBjoIaG78+XXVkIjX89OQ/6jth0bvnMY7mY/Zy
+ kZ1FsZLs884Twsxjffd5wE/JArN05kQGyzXNHNkQnzTcfwsuqyMuM02JwDm5mdrvDY
+ 5imCL2rnn/7JQ+QTDtFB+kbwLTgcoxcrAjnIIPElUvBT0solhQTWvr+EhskjVm4OS1
+ vqipju34mMQPwLWkDveV8HSaTxr8C3ugI1gbtT2+b+racWCIlXeZnHt+T/q7S8T8kL
+ VV3/6jEArBPKQ==
 X-Nifty-SrcIP: [153.142.97.92]
 From: Masahiro Yamada <yamada.masahiro@socionext.com>
 To: devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
  Frank Rowand <frowand.list@gmail.com>
-Subject: [PATCH v2 1/3] libfdt: add SPDX-License-Identifier to libfdt wrappers
-Date: Fri,  1 Nov 2019 17:11:46 +0900
-Message-Id: <20191101081148.23274-2-yamada.masahiro@socionext.com>
+Subject: [PATCH v2 3/3] libfdt: define INT32_MAX and UINT32_MAX in libfdt_env.h
+Date: Fri,  1 Nov 2019 17:11:48 +0900
+Message-Id: <20191101081148.23274-4-yamada.masahiro@socionext.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20191101081148.23274-1-yamada.masahiro@socionext.com>
 References: <20191101081148.23274-1-yamada.masahiro@socionext.com>
@@ -73,89 +73,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Masahiro Yamada <yamada.masahiro@socionext.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+Cc: linux-kernel@vger.kernel.org,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
  linux-arm-kernel@lists.infradead.org,
  David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-These are kernel source code even though they are just two-line wrappers.
+The libfdt in the upstream DTC project added references to (U)INT32_MAX
+by the following commits:
 
-Files without explicit license information fall back to GPL-2.0-only,
-which is the project default.
+  Commit 812b1956a076 ("libfdt: Tweak data handling to satisfy Coverity")
+  Commit 7fcf8208b8a9 ("libfdt: add fdt_append_addrrange()")
+
+The kernel needs to adjust libfdt_env.h before pulling in the changes.
+
+As for the user-space programs, <stdint.h> defines (U)INT32_MAX along
+with (u)int32_t.
+
+In the kernel, on the other hand, we usually use s32 / u32 instead of
+(u)int32_t for the fixed-width types.
+
+Accordingly, we already have S32_MAX / U32_MAX for their max values.
+So, we won't add (U)INT32_MAX to <linux/limits.h> any more.
+
+Instead, add them to the in-kernel libfdt_env.h to compile fdt.c and
+fdt_addresses.c
 
 Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
 ---
 
-Changes in v2: None
+Changes in v2:
+ - Fix ppc libfdt_env.h
 
- lib/fdt.c            | 1 +
- lib/fdt_empty_tree.c | 1 +
- lib/fdt_ro.c         | 1 +
- lib/fdt_rw.c         | 1 +
- lib/fdt_strerror.c   | 1 +
- lib/fdt_sw.c         | 1 +
- lib/fdt_wip.c        | 1 +
- 7 files changed, 7 insertions(+)
+ arch/powerpc/boot/libfdt_env.h | 2 ++
+ include/linux/libfdt_env.h     | 3 +++
+ 2 files changed, 5 insertions(+)
 
-diff --git a/lib/fdt.c b/lib/fdt.c
-index 97f20069fc37..041f8922a23c 100644
---- a/lib/fdt.c
-+++ b/lib/fdt.c
-@@ -1,2 +1,3 @@
-+// SPDX-License-Identifier: GPL-2.0-only
- #include <linux/libfdt_env.h>
- #include "../scripts/dtc/libfdt/fdt.c"
-diff --git a/lib/fdt_empty_tree.c b/lib/fdt_empty_tree.c
-index 5d30c58150ad..452221227bf3 100644
---- a/lib/fdt_empty_tree.c
-+++ b/lib/fdt_empty_tree.c
-@@ -1,2 +1,3 @@
-+// SPDX-License-Identifier: GPL-2.0-only
- #include <linux/libfdt_env.h>
- #include "../scripts/dtc/libfdt/fdt_empty_tree.c"
-diff --git a/lib/fdt_ro.c b/lib/fdt_ro.c
-index f73c04ea7be4..9f696d19f060 100644
---- a/lib/fdt_ro.c
-+++ b/lib/fdt_ro.c
-@@ -1,2 +1,3 @@
-+// SPDX-License-Identifier: GPL-2.0-only
- #include <linux/libfdt_env.h>
- #include "../scripts/dtc/libfdt/fdt_ro.c"
-diff --git a/lib/fdt_rw.c b/lib/fdt_rw.c
-index 0c1f0f4a4b13..2a61e9c6dd44 100644
---- a/lib/fdt_rw.c
-+++ b/lib/fdt_rw.c
-@@ -1,2 +1,3 @@
-+// SPDX-License-Identifier: GPL-2.0-only
- #include <linux/libfdt_env.h>
- #include "../scripts/dtc/libfdt/fdt_rw.c"
-diff --git a/lib/fdt_strerror.c b/lib/fdt_strerror.c
-index 8713e3ff4707..4554e5fdac12 100644
---- a/lib/fdt_strerror.c
-+++ b/lib/fdt_strerror.c
-@@ -1,2 +1,3 @@
-+// SPDX-License-Identifier: GPL-2.0-only
- #include <linux/libfdt_env.h>
- #include "../scripts/dtc/libfdt/fdt_strerror.c"
-diff --git a/lib/fdt_sw.c b/lib/fdt_sw.c
-index 9ac7e50c76ce..d3345ca399cf 100644
---- a/lib/fdt_sw.c
-+++ b/lib/fdt_sw.c
-@@ -1,2 +1,3 @@
-+// SPDX-License-Identifier: GPL-2.0-only
- #include <linux/libfdt_env.h>
- #include "../scripts/dtc/libfdt/fdt_sw.c"
-diff --git a/lib/fdt_wip.c b/lib/fdt_wip.c
-index 45b3fc3d3ba1..9674d4c3b115 100644
---- a/lib/fdt_wip.c
-+++ b/lib/fdt_wip.c
-@@ -1,2 +1,3 @@
-+// SPDX-License-Identifier: GPL-2.0-only
- #include <linux/libfdt_env.h>
- #include "../scripts/dtc/libfdt/fdt_wip.c"
+diff --git a/arch/powerpc/boot/libfdt_env.h b/arch/powerpc/boot/libfdt_env.h
+index 2abc8e83b95e..9757d4f6331e 100644
+--- a/arch/powerpc/boot/libfdt_env.h
++++ b/arch/powerpc/boot/libfdt_env.h
+@@ -6,6 +6,8 @@
+ #include <string.h>
+ 
+ #define INT_MAX			((int)(~0U>>1))
++#define UINT32_MAX		((u32)~0U)
++#define INT32_MAX		((s32)(UINT32_MAX >> 1))
+ 
+ #include "of.h"
+ 
+diff --git a/include/linux/libfdt_env.h b/include/linux/libfdt_env.h
+index edb0f0c30904..0bd83bdb2482 100644
+--- a/include/linux/libfdt_env.h
++++ b/include/linux/libfdt_env.h
+@@ -11,6 +11,9 @@ typedef __be16 fdt16_t;
+ typedef __be32 fdt32_t;
+ typedef __be64 fdt64_t;
+ 
++#define INT32_MAX	S32_MAX
++#define UINT32_MAX	U32_MAX
++
+ #define fdt32_to_cpu(x) be32_to_cpu(x)
+ #define cpu_to_fdt32(x) cpu_to_be32(x)
+ #define fdt64_to_cpu(x) be64_to_cpu(x)
 -- 
 2.17.1
 
