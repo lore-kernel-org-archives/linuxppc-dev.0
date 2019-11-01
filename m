@@ -7,73 +7,74 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A2581CA9ECF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 14:28:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DE79FCA9ECF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 14:32:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4F0432085B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 14:28:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 93A302085B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 14:32:16 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="Jrlj7HYi"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4F0432085B
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="ChWgoM+R"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 93A302085B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rasmusvillemoes.dk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 474Pgt2wt7zF5Wk
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Nov 2019 01:28:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 474Ply1dpczF40M
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Nov 2019 01:32:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::241;
- helo=mail-lj1-x241.google.com; envelope-from=linux@rasmusvillemoes.dk;
+ smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::242;
+ helo=mail-lj1-x242.google.com; envelope-from=linux@rasmusvillemoes.dk;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=rasmusvillemoes.dk
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk
- header.b="Jrlj7HYi"; dkim-atps=neutral
-Received: from mail-lj1-x241.google.com (mail-lj1-x241.google.com
- [IPv6:2a00:1450:4864:20::241])
+ header.b="ChWgoM+R"; dkim-atps=neutral
+Received: from mail-lj1-x242.google.com (mail-lj1-x242.google.com
+ [IPv6:2a00:1450:4864:20::242])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 474MKn36FdzF5CZ
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2019 23:42:53 +1100 (AEDT)
-Received: by mail-lj1-x241.google.com with SMTP id s4so10091394ljj.10
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Nov 2019 05:42:53 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 474MKt0HQnzF5Fk
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2019 23:42:58 +1100 (AEDT)
+Received: by mail-lj1-x242.google.com with SMTP id q2so3562389ljg.7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Nov 2019 05:42:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=rasmusvillemoes.dk; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=N4h2w9DiO+4P3jPc0w1TT3xARdv8ATB93lgz8xw4vxA=;
- b=Jrlj7HYitgBzLfyKtrx/OO0IF424h6yFkDFrbEjosMTDF2aA+PaLiTLLafQdKZ3QMX
- 5C6WwVKKXs3sGTYF7gik1JvKKrJkzNqF4vqrXVPLMoJUendQcB74HwPti5RNGmw3iPPm
- CvYF9p7XwadVMz+uKIdVanO9hfElGuWD/OUr8=
+ bh=D4oV4L5jtcWTxjf1oA8VyXP7dsMMZPn/dF9MUNC7L/c=;
+ b=ChWgoM+RZleyCLooBGG2A1JvdWWg6KMP8RrMTmsVo3TAQDAVvhTW+C5mRqEot+jHi/
+ SpxZ2ZUc39mTWbzjkLRZGYunWjGAYS6JuGkoqFkg0FqFDlarhRUUYfgczq8HLtQp+2NR
+ tk0eB+HTSnnLKRnKAxtdhZqDz3PFucHnDy6rI=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=N4h2w9DiO+4P3jPc0w1TT3xARdv8ATB93lgz8xw4vxA=;
- b=JoyyDVRZ5m7gndpr2iRmsf9i4cAK7MJIH/fin/UajlKUCQVdqXmqR4YwxeccTF/2iB
- DOpQx7hDSxgv6RDIaAxRJyTUdecWv0H0+ocwAGSY8m42zjK+84Kwj2kc115GrGsX5sbi
- Zp603MdAlf4Mk2C0Kqj+ypEwLaanyie4zQ3gOE4rH5eXQf86GTJ0QHK8SrvVSBiOhT5+
- dhIIwpxSRbJ5sK/XZiwGE2YtsvPaPGMroSAO+bQtAWlATMmY4BWmKWPxELWZ0BtFVxgA
- ZyaZJgjPK4uBI3Ns0+nM5/x1KZ1r+YpLcB2VoUsSShh4PcxtF0FyV97Vg5Vw+2aJkUVQ
- YYJw==
-X-Gm-Message-State: APjAAAWPHhxaOHOJ+QlSUugpW4YlxRGKv6mYwy/Eh1DCXABT3v2FieVg
- K2cV5h024HOsj8589Elh6TOlOA==
-X-Google-Smtp-Source: APXvYqx8zrBcMLn5RPWXrg0GJJr4NEf4Bg+m/CRYcm4FtBa1jW4/OjCkrBiVlZ45AD2xz7SMOL17vQ==
-X-Received: by 2002:a2e:a0c9:: with SMTP id f9mr8265025ljm.77.1572612168478;
- Fri, 01 Nov 2019 05:42:48 -0700 (PDT)
+ bh=D4oV4L5jtcWTxjf1oA8VyXP7dsMMZPn/dF9MUNC7L/c=;
+ b=KPl3yvHsuR30Yp/fSQmKvvOc1IwTO+s5v7VyKO6+tmOoAbtTmR9qntPILnq8QT+NwJ
+ G1qFErgvzFtNJdoFwGZaeCaYugUsuayeShXOJUHopshRb2AIGwVbYQFyHSVpElETfTfG
+ 3ijjZMjlgfrwYnjRCU14ZHkQ2oxI8iOzDoe+Z3J59iVgjNEMGmvjMme2vfLaY9bePs7S
+ a/zs1sZQgQ+zeRwbADqaoSSq1Tp1WungoljuRjXpqz8CKT5nb0+RHLEzFDPzZkTEhF5Q
+ x2PBY3oNZ607dIwXjiwVG2q+xKkYeqjwCay5qWYrzbce8m6FL0B/D8a6yYodhIySoJxD
+ XGvQ==
+X-Gm-Message-State: APjAAAWv6VCpV3zl7Ym6eEdxEiE39rqbZZbPwm8XQHnB8QUYZF5NiQFL
+ XyAG1lIbaeJcUh4SIR8MapVtIg==
+X-Google-Smtp-Source: APXvYqxVbSqp5kPPNVKutOzvam5gITHLA7sjIHP3EZEUUIO07QhZSO60B4aKNJx9iWIs4WaLlt4NVw==
+X-Received: by 2002:a2e:96cb:: with SMTP id d11mr1392868ljj.82.1572612174201; 
+ Fri, 01 Nov 2019 05:42:54 -0700 (PDT)
 Received: from prevas-ravi.prevas.se ([81.216.59.226])
- by smtp.gmail.com with ESMTPSA id o26sm2458540lfi.57.2019.11.01.05.42.47
+ by smtp.gmail.com with ESMTPSA id o26sm2458540lfi.57.2019.11.01.05.42.53
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 01 Nov 2019 05:42:48 -0700 (PDT)
+ Fri, 01 Nov 2019 05:42:53 -0700 (PDT)
 From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 To: Qiang Zhao <qiang.zhao@nxp.com>, Li Yang <leoyang.li@nxp.com>,
  Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 27/36] soc/fsl/qe/qe.h: update include path for cpm.h
-Date: Fri,  1 Nov 2019 13:42:01 +0100
-Message-Id: <20191101124210.14510-28-linux@rasmusvillemoes.dk>
+Subject: [PATCH v3 32/36] serial: ucc_uart: use of_property_read_u32() in
+ ucc_uart_probe()
+Date: Fri,  1 Nov 2019 13:42:06 +0100
+Message-Id: <20191101124210.14510-33-linux@rasmusvillemoes.dk>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191101124210.14510-1-linux@rasmusvillemoes.dk>
 References: <20191018125234.21825-1-linux@rasmusvillemoes.dk>
@@ -91,35 +92,124 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Scott Wood <oss@buserror.net>, Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org
+Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-kernel@vger.kernel.org,
+ Scott Wood <oss@buserror.net>, linux-serial@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-asm/cpm.h under arch/powerpc is now just a wrapper for including
-soc/fsl/cpm.h. In order to make the qe.h header usable on other
-architectures, use the latter path directly.
+For this to work correctly on little-endian hosts, don't access the
+device-tree properties directly in native endianness, but use the
+of_property_read_u32() helper.
 
 Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 ---
- include/soc/fsl/qe/qe.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/tty/serial/ucc_uart.c | 41 +++++++++++++++--------------------
+ 1 file changed, 17 insertions(+), 24 deletions(-)
 
-diff --git a/include/soc/fsl/qe/qe.h b/include/soc/fsl/qe/qe.h
-index 9cac04c692fd..521fa3a177e0 100644
---- a/include/soc/fsl/qe/qe.h
-+++ b/include/soc/fsl/qe/qe.h
-@@ -17,7 +17,7 @@
- #include <linux/spinlock.h>
- #include <linux/errno.h>
- #include <linux/err.h>
--#include <asm/cpm.h>
-+#include <soc/fsl/cpm.h>
- #include <soc/fsl/qe/immap_qe.h>
- #include <linux/of.h>
- #include <linux/of_address.h>
+diff --git a/drivers/tty/serial/ucc_uart.c b/drivers/tty/serial/ucc_uart.c
+index 313697842e24..f5ea84928a3b 100644
+--- a/drivers/tty/serial/ucc_uart.c
++++ b/drivers/tty/serial/ucc_uart.c
+@@ -1256,10 +1256,10 @@ static int soft_uart_init(struct platform_device *ofdev)
+ static int ucc_uart_probe(struct platform_device *ofdev)
+ {
+ 	struct device_node *np = ofdev->dev.of_node;
+-	const unsigned int *iprop;      /* Integer OF properties */
+ 	const char *sprop;      /* String OF properties */
+ 	struct uart_qe_port *qe_port = NULL;
+ 	struct resource res;
++	u32 val;
+ 	int ret;
+ 
+ 	/*
+@@ -1290,23 +1290,19 @@ static int ucc_uart_probe(struct platform_device *ofdev)
+ 
+ 	/* Get the UCC number (device ID) */
+ 	/* UCCs are numbered 1-7 */
+-	iprop = of_get_property(np, "cell-index", NULL);
+-	if (!iprop) {
+-		iprop = of_get_property(np, "device-id", NULL);
+-		if (!iprop) {
+-			dev_err(&ofdev->dev, "UCC is unspecified in "
+-				"device tree\n");
+-			ret = -EINVAL;
+-			goto out_free;
+-		}
++	if (of_property_read_u32(np, "cell-index", &val) &&
++	    of_property_read_u32(np, "device-id", &val)) {
++		dev_err(&ofdev->dev, "UCC is unspecified in device tree\n");
++		ret = -EINVAL;
++		goto out_free;
+ 	}
+ 
+-	if ((*iprop < 1) || (*iprop > UCC_MAX_NUM)) {
+-		dev_err(&ofdev->dev, "no support for UCC%u\n", *iprop);
++	if (val < 1 || val > UCC_MAX_NUM) {
++		dev_err(&ofdev->dev, "no support for UCC%u\n", val);
+ 		ret = -ENODEV;
+ 		goto out_free;
+ 	}
+-	qe_port->ucc_num = *iprop - 1;
++	qe_port->ucc_num = val - 1;
+ 
+ 	/*
+ 	 * In the future, we should not require the BRG to be specified in the
+@@ -1350,13 +1346,12 @@ static int ucc_uart_probe(struct platform_device *ofdev)
+ 	}
+ 
+ 	/* Get the port number, numbered 0-3 */
+-	iprop = of_get_property(np, "port-number", NULL);
+-	if (!iprop) {
++	if (of_property_read_u32(np, "port-number", &val)) {
+ 		dev_err(&ofdev->dev, "missing port-number in device tree\n");
+ 		ret = -EINVAL;
+ 		goto out_free;
+ 	}
+-	qe_port->port.line = *iprop;
++	qe_port->port.line = val;
+ 	if (qe_port->port.line >= UCC_MAX_UART) {
+ 		dev_err(&ofdev->dev, "port-number must be 0-%u\n",
+ 			UCC_MAX_UART - 1);
+@@ -1386,31 +1381,29 @@ static int ucc_uart_probe(struct platform_device *ofdev)
+ 		}
+ 	}
+ 
+-	iprop = of_get_property(np, "brg-frequency", NULL);
+-	if (!iprop) {
++	if (of_property_read_u32(np, "brg-frequency", &val)) {
+ 		dev_err(&ofdev->dev,
+ 		       "missing brg-frequency in device tree\n");
+ 		ret = -EINVAL;
+ 		goto out_np;
+ 	}
+ 
+-	if (*iprop)
+-		qe_port->port.uartclk = *iprop;
++	if (val)
++		qe_port->port.uartclk = val;
+ 	else {
+ 		/*
+ 		 * Older versions of U-Boot do not initialize the brg-frequency
+ 		 * property, so in this case we assume the BRG frequency is
+ 		 * half the QE bus frequency.
+ 		 */
+-		iprop = of_get_property(np, "bus-frequency", NULL);
+-		if (!iprop) {
++		if (of_property_read_u32(np, "bus-frequency", &val)) {
+ 			dev_err(&ofdev->dev,
+ 				"missing QE bus-frequency in device tree\n");
+ 			ret = -EINVAL;
+ 			goto out_np;
+ 		}
+-		if (*iprop)
+-			qe_port->port.uartclk = *iprop / 2;
++		if (val)
++			qe_port->port.uartclk = val / 2;
+ 		else {
+ 			dev_err(&ofdev->dev,
+ 				"invalid QE bus-frequency in device tree\n");
 -- 
 2.23.0
 
