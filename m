@@ -2,83 +2,80 @@ Return-Path: <SRS0=PnYa=YZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8794CCA9ECF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 12:55:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 117DACA9ECF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 13:02:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 38C58208E3
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 12:55:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B6C73217D9
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 13:02:09 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="EBWLnh2g"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 38C58208E3
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="IdTl1JZl"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B6C73217D9
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rasmusvillemoes.dk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 474McP1JX2zF6RW
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 23:55:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 474Mly6p56zF146
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Nov 2019 00:02:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::142;
- helo=mail-lf1-x142.google.com; envelope-from=linux@rasmusvillemoes.dk;
+ smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::133;
+ helo=mail-lf1-x133.google.com; envelope-from=linux@rasmusvillemoes.dk;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=rasmusvillemoes.dk
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk
- header.b="EBWLnh2g"; dkim-atps=neutral
-Received: from mail-lf1-x142.google.com (mail-lf1-x142.google.com
- [IPv6:2a00:1450:4864:20::142])
+ header.b="IdTl1JZl"; dkim-atps=neutral
+Received: from mail-lf1-x133.google.com (mail-lf1-x133.google.com
+ [IPv6:2a00:1450:4864:20::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 474MKD1HjHzF4nT
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2019 23:42:21 +1100 (AEDT)
-Received: by mail-lf1-x142.google.com with SMTP id a6so3735008lfo.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Nov 2019 05:42:21 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 474MKD1MLVzF4nw
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2019 23:42:20 +1100 (AEDT)
+Received: by mail-lf1-x133.google.com with SMTP id b20so7144721lfp.4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Nov 2019 05:42:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=rasmusvillemoes.dk; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=IwcdyWxRDO/TUjQjvqfZVlSTaDYPWlQZLs741mWfW6c=;
- b=EBWLnh2gewMrrOR7Ur4LtjqcL3qopz+JE1MaR/3SxQxLBmY2+j/GbFh12o1lOdzalc
- ZRBnxmxYZCyK/rBsgZu94RdJDHriGBjSx7Za5We9/D7NfeWht012JDaNZ7n9PZuuewps
- BAJRmnhCZcl0RMHcCXhFwHJnb4m8Sqwg157Iw=
+ bh=12SepDs6/FSflannDoWCyxi6C7tLQuH0xm/jM6LnU3g=;
+ b=IdTl1JZl2Sowp/CbFfHVjBvj+ZNIOJhJcsZVu5j4ngE7H8QtjC9lfpfMVMKQwG1SRl
+ RaOVI23pzPqAMol8XCO8qVHxMQ3KgFWhy12T90k72rofCGkA0WwAYL0hmluuk7yS3WAN
+ Oaim1pVJnpfFfye8kGM2J63GHb6wKtChR5uWI=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=IwcdyWxRDO/TUjQjvqfZVlSTaDYPWlQZLs741mWfW6c=;
- b=X/yfvcsFKtXGIXjIYl68CbCNzga6k2AMmwNnA9f6q9CliWErnw3cB0vr7JgkN1AyqC
- gI5R6yYoP2fxcD4Y56xSylGNLPlBPCkdZUs/23ebHQofSQK9DpQ76EWkIztBVz39cgzT
- sp6rK7L4j0S9n/0JF5UqQlj5P3tTggFuATdlKLD8G5xu5PiqsIk7BheS6kqGysYLHzK0
- fI5a67omM4CFKvAkePy87MB5dQT2ocm9zvUbrst9P+bN5eKutxyNsRDFN+accjJsB3A2
- XRzadGZpYtALFE7n32gjQpIg+UB/gIXyQQ6l2w96dQJzMaQ7XVGVjs/ijO3XL2uATa8n
- nyRA==
-X-Gm-Message-State: APjAAAVSLg4d0/A6iX+Fz7ZR6gP5Kjta0zBRINAPfsXI69diWdMRlTXK
- syngBbsRpgIpVS9RNjRakgpsCg==
-X-Google-Smtp-Source: APXvYqxzoeTf3Ohah/Hpr41qNMeO2Vmhemx5HLuusE1IMFHrUr2Wo8tZj5QwdBFSwyhHAjtrni+Ssw==
-X-Received: by 2002:ac2:5295:: with SMTP id q21mr7028523lfm.93.1572612137175; 
- Fri, 01 Nov 2019 05:42:17 -0700 (PDT)
+ bh=12SepDs6/FSflannDoWCyxi6C7tLQuH0xm/jM6LnU3g=;
+ b=t9MyWqSEZYVtaByZUw0C4YvYJu8yjYn8ewJoYKxbSuHUyLXXWfvFnDDgXXzUm1w3OZ
+ EKXkw2rVK6iIjdX/DQS9UJMH7jwbwt9sIdDGTnM+W4npS2/K/QKyC+w2Ngc0WUO77BG7
+ UXP+9xOeOcPSjXpM52r5UoBFdcrnNNxBVJJjiZW5lg02fJCfE+KO7U6ENhyqPpJYas/D
+ 6v+54sxqjuZkpXHi+p3Ph+xqxU10fLjBfxafQ5yNGIzDdejxggqG1EqxwZP3cLJaeV1h
+ 7/LZly4Yi5Nkx+y5qMqZ50j5DOrPL+udLCfc0EXPTc0HBgcwwIViRl7bydGd10RFIVp3
+ YpLA==
+X-Gm-Message-State: APjAAAU2oqoU9GFZZMQe15qMbrB+Os9+In8nvsLpEms0vB5LxqxBROBM
+ 6hfZ5UnU264mR/MpPb6g0qgV6g==
+X-Google-Smtp-Source: APXvYqyiWfNPCkE6rwOxYzYsiGbZYM7XmHPALK2+Uq1oKakULYdJwJJRnIu5ucPt8Lmpb7MKrL7Rtw==
+X-Received: by 2002:a19:655b:: with SMTP id c27mr7112242lfj.122.1572612134709; 
+ Fri, 01 Nov 2019 05:42:14 -0700 (PDT)
 Received: from prevas-ravi.prevas.se ([81.216.59.226])
- by smtp.gmail.com with ESMTPSA id o26sm2458540lfi.57.2019.11.01.05.42.16
+ by smtp.gmail.com with ESMTPSA id o26sm2458540lfi.57.2019.11.01.05.42.12
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 01 Nov 2019 05:42:16 -0700 (PDT)
+ Fri, 01 Nov 2019 05:42:13 -0700 (PDT)
 From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 To: Qiang Zhao <qiang.zhao@nxp.com>, Li Yang <leoyang.li@nxp.com>,
  Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 02/36] soc: fsl: qe: drop volatile qualifier of struct
- qe_ic::regs
-Date: Fri,  1 Nov 2019 13:41:36 +0100
-Message-Id: <20191101124210.14510-3-linux@rasmusvillemoes.dk>
+Subject: [PATCH v3 00/36] QUICC Engine support on ARM
+Date: Fri,  1 Nov 2019 13:41:34 +0100
+Message-Id: <20191101124210.14510-1-linux@rasmusvillemoes.dk>
 X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20191101124210.14510-1-linux@rasmusvillemoes.dk>
+In-Reply-To: <20191018125234.21825-1-linux@rasmusvillemoes.dk>
 References: <20191018125234.21825-1-linux@rasmusvillemoes.dk>
- <20191101124210.14510-1-linux@rasmusvillemoes.dk>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -99,49 +96,120 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The actual io accessors (e.g. in_be32) implicitly add a volatile
-qualifier to their address argument. Remove volatile from the struct
-definition and the qe_ic_(read/write) helpers, in preparation for
-switching from the ppc-specific io accessors to generic ones.
+There have been several attempts in the past few years to allow
+building the QUICC engine drivers for platforms other than PPC. This
+is yet another attempt.
 
-Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
----
- drivers/soc/fsl/qe/qe_ic.c | 4 ++--
- drivers/soc/fsl/qe/qe_ic.h | 2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+Changes in v3:
 
-diff --git a/drivers/soc/fsl/qe/qe_ic.c b/drivers/soc/fsl/qe/qe_ic.c
-index 9bac546998d3..791adcd121d1 100644
---- a/drivers/soc/fsl/qe/qe_ic.c
-+++ b/drivers/soc/fsl/qe/qe_ic.c
-@@ -171,12 +171,12 @@ static struct qe_ic_info qe_ic_info[] = {
- 		},
- };
- 
--static inline u32 qe_ic_read(volatile __be32  __iomem * base, unsigned int reg)
-+static inline u32 qe_ic_read(__be32  __iomem *base, unsigned int reg)
- {
- 	return in_be32(base + (reg >> 2));
- }
- 
--static inline void qe_ic_write(volatile __be32  __iomem * base, unsigned int reg,
-+static inline void qe_ic_write(__be32  __iomem *base, unsigned int reg,
- 			       u32 value)
- {
- 	out_be32(base + (reg >> 2), value);
-diff --git a/drivers/soc/fsl/qe/qe_ic.h b/drivers/soc/fsl/qe/qe_ic.h
-index 08c695672a03..9420378d9b6b 100644
---- a/drivers/soc/fsl/qe/qe_ic.h
-+++ b/drivers/soc/fsl/qe/qe_ic.h
-@@ -72,7 +72,7 @@
- 
- struct qe_ic {
- 	/* Control registers offset */
--	volatile u32 __iomem *regs;
-+	u32 __iomem *regs;
- 
- 	/* The remapper for this QEIC */
- 	struct irq_domain *irqhost;
+- Address the performance impact on ppc from replacing out_be32 by
+  iowrite32be by instead introducing a qe_iowrite32be wrapper and
+  using that - patches 3 and 4 in this series.
+
+- Extend the series so that both the QE core as well as ucc_uart
+  builds for ARM - patches 26-33.
+
+- Reorganize things a bit to avoid touching code that gets killed
+  anyway in a later patch.
+
+Also the patches are now better grouped:
+
+1-5 are about replacing in_be32 etc. in the core QE code (drivers/soc/fsl/qe).
+
+6-8 handle miscellaneous other ppcisms.
+
+9-21 deal with qe_ic: Simplifying the driver significantly by removing
+unused code, and removing the platform-specific initialization from
+arch/powerpc/.
+
+22-25 deal with raw access to devicetree properties in native endianness.
+
+26-33 makes drivers/tty/serial/ucc_uart.c (CONFIG_SERIAL_QE) ready to build on arm.
+
+34-36 remove the PPC32 dependency from QUICC_ENGINE. Two drivers that
+depend on QUICC_ENGINE get an explicit PPC32 dependency to prevent
+allmodconfig build failures.
+
+The series has been built and booted on both an mpc8309-based platform
+(ppc) as well as an ls1021a-based platform (arm). The core QE code is
+exercised on both, while I could only test the ucc_uart on arm, since
+the uarts are not wired up on our mpc8309 board.
+
+Rasmus Villemoes (36):
+  soc: fsl: qe: remove space-before-tab
+  soc: fsl: qe: drop volatile qualifier of struct qe_ic::regs
+  soc: fsl: qe: rename qe_(clr/set/clrset)bit* helpers
+  soc: fsl: qe: introduce qe_io{read,write}* wrappers
+  soc: fsl: qe: avoid ppc-specific io accessors
+  soc: fsl: qe: replace spin_event_timeout by readx_poll_timeout_atomic
+  soc: fsl: qe: qe.c: guard use of pvr_version_is() with CONFIG_PPC32
+  soc: fsl: qe: drop unneeded #includes
+  soc: fsl: qe: drop assign-only high_active in qe_ic_init
+  soc: fsl: qe: remove pointless sysfs registration in qe_ic.c
+  soc: fsl: qe: use qe_ic_cascade_{low,high}_mpic also on 83xx
+  soc: fsl: qe: move calls of qe_ic_init out of arch/powerpc/
+  powerpc/83xx: remove mpc83xx_ipic_and_qe_init_IRQ
+  powerpc/85xx: remove mostly pointless mpc85xx_qe_init()
+  soc: fsl: qe: move qe_ic_cascade_* functions to qe_ic.c
+  soc: fsl: qe: rename qe_ic_cascade_low_mpic -> qe_ic_cascade_low
+  soc: fsl: qe: remove unused qe_ic_set_* functions
+  soc: fsl: qe: don't use NO_IRQ in qe_ic.c
+  soc: fsl: qe: make qe_ic_get_{low,high}_irq static
+  soc: fsl: qe: simplify qe_ic_init()
+  soc: fsl: qe: merge qe_ic.h headers into qe_ic.c
+  soc: fsl: qe: qe.c: use of_property_read_* helpers
+  soc: fsl: qe: qe_io.c: don't open-code of_parse_phandle()
+  soc: fsl: qe: qe_io.c: access device tree property using be32_to_cpu
+  soc: fsl: qe: qe_io.c: use of_property_read_u32() in par_io_init()
+  soc: fsl: move cpm.h from powerpc/include/asm to include/soc/fsl
+  soc/fsl/qe/qe.h: update include path for cpm.h
+  serial: ucc_uart: explicitly include soc/fsl/cpm.h
+  serial: ucc_uart: replace ppc-specific IO accessors
+  serial: ucc_uart: factor out soft_uart initialization
+  serial: ucc_uart: stub out soft_uart_init for !CONFIG_PPC32
+  serial: ucc_uart: use of_property_read_u32() in ucc_uart_probe()
+  serial: ucc_uart: access __be32 field using be32_to_cpu
+  net: ethernet: freescale: make UCC_GETH explicitly depend on PPC32
+  net/wan: make FSL_UCC_HDLC explicitly depend on PPC32
+  soc: fsl: qe: remove PPC32 dependency from CONFIG_QUICC_ENGINE
+
+ arch/powerpc/include/asm/cpm.h                | 172 +-------
+ arch/powerpc/platforms/83xx/km83xx.c          |   3 +-
+ arch/powerpc/platforms/83xx/misc.c            |  23 --
+ arch/powerpc/platforms/83xx/mpc832x_mds.c     |   3 +-
+ arch/powerpc/platforms/83xx/mpc832x_rdb.c     |   3 +-
+ arch/powerpc/platforms/83xx/mpc836x_mds.c     |   3 +-
+ arch/powerpc/platforms/83xx/mpc836x_rdk.c     |   3 +-
+ arch/powerpc/platforms/83xx/mpc83xx.h         |   7 -
+ arch/powerpc/platforms/85xx/common.c          |  23 --
+ arch/powerpc/platforms/85xx/corenet_generic.c |  12 -
+ arch/powerpc/platforms/85xx/mpc85xx.h         |   2 -
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c     |  28 --
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c     |  18 -
+ arch/powerpc/platforms/85xx/twr_p102x.c       |  16 -
+ drivers/net/ethernet/freescale/Kconfig        |   2 +-
+ drivers/net/wan/Kconfig                       |   2 +-
+ drivers/net/wan/fsl_ucc_hdlc.c                |   4 +-
+ drivers/soc/fsl/qe/Kconfig                    |   2 +-
+ drivers/soc/fsl/qe/gpio.c                     |  34 +-
+ drivers/soc/fsl/qe/qe.c                       |  95 ++---
+ drivers/soc/fsl/qe/qe_ic.c                    | 285 ++++++-------
+ drivers/soc/fsl/qe/qe_ic.h                    |  99 -----
+ drivers/soc/fsl/qe/qe_io.c                    |  70 ++--
+ drivers/soc/fsl/qe/qe_tdm.c                   |   8 +-
+ drivers/soc/fsl/qe/ucc.c                      |  26 +-
+ drivers/soc/fsl/qe/ucc_fast.c                 |  71 ++--
+ drivers/soc/fsl/qe/ucc_slow.c                 |  38 +-
+ drivers/soc/fsl/qe/usb.c                      |   2 +-
+ drivers/tty/serial/ucc_uart.c                 | 383 +++++++++---------
+ include/soc/fsl/cpm.h                         | 171 ++++++++
+ include/soc/fsl/qe/qe.h                       |  42 +-
+ include/soc/fsl/qe/qe_ic.h                    | 135 ------
+ 32 files changed, 701 insertions(+), 1084 deletions(-)
+ delete mode 100644 drivers/soc/fsl/qe/qe_ic.h
+ create mode 100644 include/soc/fsl/cpm.h
+ delete mode 100644 include/soc/fsl/qe/qe_ic.h
+
 -- 
 2.23.0
 
