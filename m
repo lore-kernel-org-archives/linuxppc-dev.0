@@ -2,66 +2,85 @@ Return-Path: <SRS0=PnYa=YZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EB02FCA9EC9
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 08:22:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2439FCA9ECF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 08:57:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9B6FC208CB
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 08:22:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 76A05204FD
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 08:57:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="p+lZLhCI"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9B6FC208CB
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="rCLqc/w0"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 76A05204FD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 474FXw6t2yzF3rF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 19:22:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=softfail (domain owner discourages use of this
- host) smtp.mailfrom=socionext.com (client-ip=210.131.2.79;
- helo=conuserg-12.nifty.com; envelope-from=yamada.masahiro@socionext.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 474GL84wGkzF5Qr
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 19:57:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::544;
+ helo=mail-pg1-x544.google.com; envelope-from=oohall@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=socionext.com
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="p+lZLhCI"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="rCLqc/w0"; 
  dkim-atps=neutral
-Received: from conuserg-12.nifty.com (conuserg-12.nifty.com [210.131.2.79])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
+ [IPv6:2607:f8b0:4864:20::544])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 474FMD0vWYzF6Zs
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2019 19:13:43 +1100 (AEDT)
-Received: from localhost.localdomain (p14092-ipngnfx01kyoto.kyoto.ocn.ne.jp
- [153.142.97.92]) (authenticated)
- by conuserg-12.nifty.com with ESMTP id xA18BsBP023869;
- Fri, 1 Nov 2019 17:11:59 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-12.nifty.com xA18BsBP023869
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1572595919;
- bh=DKT4oSakV7/N8zOuTi41t5buaEiHmVd7tLzjZjmza/c=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=p+lZLhCIGNRrhqAVFCd4/+xWCG0VsMH/8bnzDKcUTnmj9pdpm+/pphxn+sgtHJ4Po
- kXgppL5ksqa87WfyKlm6sHsuZDMmC28gCCT+xrzoIqF/sCw+cw5dmxDg7sO/eI6kJk
- Whv9Mo/sJ3q1SenXgmW8EmgGfZ/E0kURYOCDRWWx22erdYJa/U/Ygp9cTYE2+EWh57
- sWY+Y0zds89mWG2sD5TEN1qc11Lj6OqYHlyArtQ856eBhpaVs8aXoUrsBbAKzeAY13
- xDlIFDW+uE76tkZSVgWCX0WlT+BbIqNZwKXhbhIjpv/X80bvh04p63u3nspYZJqXRs
- hkKfNiugxQbsw==
-X-Nifty-SrcIP: [153.142.97.92]
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-To: devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
- Frank Rowand <frowand.list@gmail.com>
-Subject: [PATCH v2 2/3] ARM: decompressor: simplify libfdt builds
-Date: Fri,  1 Nov 2019 17:11:47 +0900
-Message-Id: <20191101081148.23274-3-yamada.masahiro@socionext.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20191101081148.23274-1-yamada.masahiro@socionext.com>
-References: <20191101081148.23274-1-yamada.masahiro@socionext.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 474GHc0H80zF6bN
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2019 19:55:39 +1100 (AEDT)
+Received: by mail-pg1-x544.google.com with SMTP id e10so6063506pgd.11
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Nov 2019 01:55:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=3+a+qBWAZsjwzvXaMRj6M3/WGWi2/Gc6GIleBXJ1TTc=;
+ b=rCLqc/w0sHbUDuBnNQ/RX8czNCP2OOJn9HIh21yNDI0HQXZvqsudafEhFgCdQFzWMS
+ NSGqma/ugQm4RjQ2n6fd4JNT3pyJqQH0YWLxXT3SOLXp5aj8PKbUiEIu/9Vt+NAhBTFz
+ y+5feFpCsQAEjobeM24rEGQgM3wZE9hOGvmfnMWuPLNYYtYw40LHnYIgRNUHTQpUR7mg
+ ESk6w9wO95r6TCGQ8mZI8lS53RJA1POxBgQtV6ASgL7Anp0krmXbZl/VbFJ7EvIwNdzF
+ z+IL4Zdr6bLcWbkdWFHgdnOjIA9V9YWBKU41eZTMQ5AzrcVDtAJ857ReoYoD7yz1Yw1u
+ 4mAQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=3+a+qBWAZsjwzvXaMRj6M3/WGWi2/Gc6GIleBXJ1TTc=;
+ b=JDc9Ucl8ZYNu8q0HlMruR8HwaQ835MHaFTlv9+WiLPoIc+GeCGxeefjVj7sGIIWKXt
+ 68tVo0OyYqsntjWol2HSPEJvWQF8lWOXXS9wX2GdcnYUFrT1J1G0VlrMF8gIXzwtEwMA
+ mBjrYCjSbFxYaE7ffBEneOBICqtQU4NMwoezqlHptAPlMnq9DmPNht42TP8G8zGrv6HM
+ bIcZb5FhwcD4kmj90AljodTsyJt1+QUX3CDv0MUf2u7nFUoBJ8ir3GX8AVMMLBatBpBm
+ gHbetPELQB75HtgnoV4iVcU4+FxVx2ftys0MBLrSQFZtK83De7WMSY67GSYBUJ7jhcDn
+ TNww==
+X-Gm-Message-State: APjAAAVzNSbcCoUNZOiw6h+ofTW5QWrip+DTYtjS3YI+vu2UfMDrQ2Z/
+ pm35S2PeHUju0RqOrBpqWZyBbj9zeWs=
+X-Google-Smtp-Source: APXvYqzS6WmQHZDKeuG9WO6s1ktScQj+4xUJ/oKQghwisunajB6N8eEKiHgiBgenj77fHS+XzqrXwQ==
+X-Received: by 2002:a17:90a:ba89:: with SMTP id
+ t9mr3945639pjr.29.1572598535470; 
+ Fri, 01 Nov 2019 01:55:35 -0700 (PDT)
+Received: from wafer.ozlabs.ibm.com ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id q15sm5596078pff.155.2019.11.01.01.55.33
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 01 Nov 2019 01:55:34 -0700 (PDT)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/2] powerpc/xmon: Allow passing an argument to
+ ppc_md.restart()
+Date: Fri,  1 Nov 2019 19:55:21 +1100
+Message-Id: <20191101085522.3055-1-oohall@gmail.com>
+X-Mailer: git-send-email 2.21.0
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,193 +92,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, Russell King <linux@armlinux.org.uk>,
- Masahiro Yamada <yamada.masahiro@socionext.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: Oliver O'Halloran <oohall@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Copying source files during the build time may not end up with
-as clean code as you expect.
+On PowerNV a few different kinds of reboot are supported. We'd like to be
+able to exercise these from xmon so allow 'zr' to take an argument, and
+pass that to the ppc_md.restart() function.
 
-lib/fdt*.c simply wrap scripts/dtc/libfdt/fdt*.c, and it works
-nicely. Let's follow that approach for the arm decompressor, too.
-
-Add four wrappers, arch/arm/boot/compressed/fdt*.c and remove the
-Makefile messes.
-
-Another nice thing is we no longer need to maintain the separate
-libfdt_env.h since we can include <linux/libfdt_env.h>, and the
-diff stat also looks nice.
-
-Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 ---
+ arch/powerpc/xmon/xmon.c | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
-Changes in v2: None
-
- arch/arm/boot/compressed/.gitignore     |  9 -------
- arch/arm/boot/compressed/Makefile       | 33 +++++++------------------
- arch/arm/boot/compressed/atags_to_fdt.c |  1 +
- arch/arm/boot/compressed/fdt.c          |  2 ++
- arch/arm/boot/compressed/fdt_ro.c       |  2 ++
- arch/arm/boot/compressed/fdt_rw.c       |  2 ++
- arch/arm/boot/compressed/fdt_wip.c      |  2 ++
- arch/arm/boot/compressed/libfdt_env.h   | 22 -----------------
- 8 files changed, 18 insertions(+), 55 deletions(-)
- create mode 100644 arch/arm/boot/compressed/fdt.c
- create mode 100644 arch/arm/boot/compressed/fdt_ro.c
- create mode 100644 arch/arm/boot/compressed/fdt_rw.c
- create mode 100644 arch/arm/boot/compressed/fdt_wip.c
- delete mode 100644 arch/arm/boot/compressed/libfdt_env.h
-
-diff --git a/arch/arm/boot/compressed/.gitignore b/arch/arm/boot/compressed/.gitignore
-index 86b2f5d28240..2fdb4885846b 100644
---- a/arch/arm/boot/compressed/.gitignore
-+++ b/arch/arm/boot/compressed/.gitignore
-@@ -6,12 +6,3 @@ hyp-stub.S
- piggy_data
- vmlinux
- vmlinux.lds
--
--# borrowed libfdt files
--fdt.c
--fdt.h
--fdt_ro.c
--fdt_rw.c
--fdt_wip.c
--libfdt.h
--libfdt_internal.h
-diff --git a/arch/arm/boot/compressed/Makefile b/arch/arm/boot/compressed/Makefile
-index 9219389bbe61..a0d645c66980 100644
---- a/arch/arm/boot/compressed/Makefile
-+++ b/arch/arm/boot/compressed/Makefile
-@@ -76,29 +76,23 @@ compress-$(CONFIG_KERNEL_LZMA) = lzma
- compress-$(CONFIG_KERNEL_XZ)   = xzkern
- compress-$(CONFIG_KERNEL_LZ4)  = lz4
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index d83364e..6a6f675 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -1147,16 +1147,19 @@ static int do_step(struct pt_regs *regs)
  
--# Borrowed libfdt files for the ATAG compatibility mode
--
--libfdt		:= fdt_rw.c fdt_ro.c fdt_wip.c fdt.c
--libfdt_hdrs	:= fdt.h libfdt.h libfdt_internal.h
--
--libfdt_objs	:= $(addsuffix .o, $(basename $(libfdt)))
--
--$(addprefix $(obj)/,$(libfdt) $(libfdt_hdrs)): $(obj)/%: $(srctree)/scripts/dtc/libfdt/%
--	$(call cmd,shipped)
-+ifeq ($(CONFIG_ARM_ATAG_DTB_COMPAT),y)
-+libfdt_objs = fdt_rw.o fdt_ro.o fdt_wip.o fdt.o atags_to_fdt.o
+ static void bootcmds(void)
+ {
++	char tmp[64];
+ 	int cmd;
  
--$(addprefix $(obj)/,$(libfdt_objs) atags_to_fdt.o): \
--	$(addprefix $(obj)/,$(libfdt_hdrs))
-+OBJS	+= $(libfdt_objs)
+ 	cmd = inchar();
+-	if (cmd == 'r')
+-		ppc_md.restart(NULL);
+-	else if (cmd == 'h')
++	if (cmd == 'r') {
++		getstring(tmp, 64);
++		ppc_md.restart(tmp);
++	} else if (cmd == 'h') {
+ 		ppc_md.halt();
+-	else if (cmd == 'p')
++	} else if (cmd == 'p') {
+ 		if (pm_power_off)
+ 			pm_power_off();
++	}
+ }
  
--ifeq ($(CONFIG_ARM_ATAG_DTB_COMPAT),y)
--OBJS	+= $(libfdt_objs) atags_to_fdt.o
-+# -fstack-protector-strong triggers protection checks in this code,
-+# but it is being used too early to link to meaningful stack_chk logic.
-+nossp_flags := $(call cc-option, -fno-stack-protector)
-+$(foreach o, $(libfdt_objs), \
-+	$(eval CFLAGS_$(o) := -I $(srctree)/scripts/dtc/libfdt) $(nossp_flags))
- endif
- 
- targets       := vmlinux vmlinux.lds piggy_data piggy.o \
- 		 lib1funcs.o ashldi3.o bswapsdi2.o \
- 		 head.o $(OBJS)
- 
--clean-files += piggy_data lib1funcs.S ashldi3.S bswapsdi2.S \
--		$(libfdt) $(libfdt_hdrs) hyp-stub.S
-+clean-files += piggy_data lib1funcs.S ashldi3.S bswapsdi2.S hyp-stub.S
- 
- KBUILD_CFLAGS += -DDISABLE_BRANCH_PROFILING
- KBUILD_CFLAGS += $(DISABLE_ARM_SSP_PER_TASK_PLUGIN)
-@@ -108,15 +102,6 @@ ORIG_CFLAGS := $(KBUILD_CFLAGS)
- KBUILD_CFLAGS = $(subst -pg, , $(ORIG_CFLAGS))
- endif
- 
--# -fstack-protector-strong triggers protection checks in this code,
--# but it is being used too early to link to meaningful stack_chk logic.
--nossp_flags := $(call cc-option, -fno-stack-protector)
--CFLAGS_atags_to_fdt.o := $(nossp_flags)
--CFLAGS_fdt.o := $(nossp_flags)
--CFLAGS_fdt_ro.o := $(nossp_flags)
--CFLAGS_fdt_rw.o := $(nossp_flags)
--CFLAGS_fdt_wip.o := $(nossp_flags)
--
- ccflags-y := -fpic $(call cc-option,-mno-single-pic-base,) -fno-builtin -I$(obj)
- asflags-y := -DZIMAGE
- 
-diff --git a/arch/arm/boot/compressed/atags_to_fdt.c b/arch/arm/boot/compressed/atags_to_fdt.c
-index 330cd3c2eae5..53a60ba066a1 100644
---- a/arch/arm/boot/compressed/atags_to_fdt.c
-+++ b/arch/arm/boot/compressed/atags_to_fdt.c
-@@ -1,4 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0
-+#include <linux/libfdt_env.h>
- #include <asm/setup.h>
- #include <libfdt.h>
- 
-diff --git a/arch/arm/boot/compressed/fdt.c b/arch/arm/boot/compressed/fdt.c
-new file mode 100644
-index 000000000000..f8ea7a201ab1
---- /dev/null
-+++ b/arch/arm/boot/compressed/fdt.c
-@@ -0,0 +1,2 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+#include "../../../../lib/fdt.c"
-diff --git a/arch/arm/boot/compressed/fdt_ro.c b/arch/arm/boot/compressed/fdt_ro.c
-new file mode 100644
-index 000000000000..93970a4ad5ae
---- /dev/null
-+++ b/arch/arm/boot/compressed/fdt_ro.c
-@@ -0,0 +1,2 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+#include "../../../../lib/fdt_ro.c"
-diff --git a/arch/arm/boot/compressed/fdt_rw.c b/arch/arm/boot/compressed/fdt_rw.c
-new file mode 100644
-index 000000000000..f7c6b8b7e01c
---- /dev/null
-+++ b/arch/arm/boot/compressed/fdt_rw.c
-@@ -0,0 +1,2 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+#include "../../../../lib/fdt_rw.c"
-diff --git a/arch/arm/boot/compressed/fdt_wip.c b/arch/arm/boot/compressed/fdt_wip.c
-new file mode 100644
-index 000000000000..048d2c7a088d
---- /dev/null
-+++ b/arch/arm/boot/compressed/fdt_wip.c
-@@ -0,0 +1,2 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+#include "../../../../lib/fdt_wip.c"
-diff --git a/arch/arm/boot/compressed/libfdt_env.h b/arch/arm/boot/compressed/libfdt_env.h
-deleted file mode 100644
-index b36c0289a308..000000000000
---- a/arch/arm/boot/compressed/libfdt_env.h
-+++ /dev/null
-@@ -1,22 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0 */
--#ifndef _ARM_LIBFDT_ENV_H
--#define _ARM_LIBFDT_ENV_H
--
--#include <linux/types.h>
--#include <linux/string.h>
--#include <asm/byteorder.h>
--
--#define INT_MAX			((int)(~0U>>1))
--
--typedef __be16 fdt16_t;
--typedef __be32 fdt32_t;
--typedef __be64 fdt64_t;
--
--#define fdt16_to_cpu(x)		be16_to_cpu(x)
--#define cpu_to_fdt16(x)		cpu_to_be16(x)
--#define fdt32_to_cpu(x)		be32_to_cpu(x)
--#define cpu_to_fdt32(x)		cpu_to_be32(x)
--#define fdt64_to_cpu(x)		be64_to_cpu(x)
--#define cpu_to_fdt64(x)		cpu_to_be64(x)
--
--#endif
+ static int cpu_cmd(void)
 -- 
-2.17.1
+2.9.5
 
