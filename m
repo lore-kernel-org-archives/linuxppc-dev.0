@@ -2,63 +2,87 @@ Return-Path: <SRS0=PnYa=YZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E63CCA9EC9
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 06:24:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB085CA9EC9
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 06:29:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B141C20656
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 06:24:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 66E022080F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 06:29:04 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="2LEyL1aA"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B141C20656
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="F4P6Kk6t"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 66E022080F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 474Bwb0nZmzF6Bm
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 17:23:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=softfail (domain owner discourages use of this
- host) smtp.mailfrom=socionext.com (client-ip=210.131.2.76;
- helo=conuserg-09.nifty.com; envelope-from=yamada.masahiro@socionext.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 474C2P6YqgzF6bd
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 17:29:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::644;
+ helo=mail-pl1-x644.google.com; envelope-from=oohall@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=socionext.com
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="2LEyL1aA"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="F4P6Kk6t"; 
  dkim-atps=neutral
-Received: from conuserg-09.nifty.com (conuserg-09.nifty.com [210.131.2.76])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
+ [IPv6:2607:f8b0:4864:20::644])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 474BlZ5lbszDqt0
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2019 17:16:10 +1100 (AEDT)
-Received: from localhost.localdomain (p14092-ipngnfx01kyoto.kyoto.ocn.ne.jp
- [153.142.97.92]) (authenticated)
- by conuserg-09.nifty.com with ESMTP id xA16ELBc016348;
- Fri, 1 Nov 2019 15:14:22 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-09.nifty.com xA16ELBc016348
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1572588862;
- bh=pGYwt8aksICDvlfvWj0tCkyuHYQwW0lnnIiz1OylTcI=;
- h=From:To:Cc:Subject:Date:From;
- b=2LEyL1aAf04dKzfo3G9K86up2BmcPt/JstqCUtoJLk02MXaqrTW2WCd7ZztvVKMci
- 6ppe5upzfBLZZiHGY1Dqe0D/K+HksAM7zA/EpQouymBiw10cn2BioTABxASWR60hqj
- HHMOi9eEjk5rFEvUxS2H6fFJ+nSD5tw/6A73Ct+7tpkrTXEw6P+l/qLzNsCXW9+a6W
- SN06S6NH39f52zTMVPcCrqrMNTijLq14u+I6NZ+cinTJeciVQV8nzBtxISTvaTKpU4
- A/3DTOPAyvWAC5IXMGxN88SERT9Fj1HDyF9cNHz+MUUnLGgHhpIqCkwmXDiYAVRhif
- FyeF756FCdaeg==
-X-Nifty-SrcIP: [153.142.97.92]
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-To: devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
- Frank Rowand <frowand.list@gmail.com>
-Subject: [PATCH 0/3] libfdt: prepare for (U)INT32_MAX addition
-Date: Fri,  1 Nov 2019 15:14:08 +0900
-Message-Id: <20191101061411.16988-1-yamada.masahiro@socionext.com>
-X-Mailer: git-send-email 2.17.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 474BzS0ZP9zF440
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2019 17:26:27 +1100 (AEDT)
+Received: by mail-pl1-x644.google.com with SMTP id q21so3899447plr.13
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2019 23:26:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=UNQgjlNrbhy2abB8GmydbZUElcbqCcNHp92SJQGa3WI=;
+ b=F4P6Kk6tNFcBQvcX/s1dZZlwdx95q2b6CbHB0v2fgiMw24fsDfaNWW4/NCQfPrEq5Q
+ mgpmpdK2lxAgX8PODWABvYZ+DNYZJD003B6N5EJHuoSDB6MtiamGpNZ6ekY9GjArk0rD
+ LYWDtzDFRIxfj0Xud/R3ktY0t+LrG3QsqJeLOhotJ/L6I3cxun1y7J0FjnsaxgBndDI3
+ /X8unlvS/v4XZIpY8JswsAoVfiDai8PSMgS9/b6U7XUlWQ1x2pQXK8feBGm3bhulAGHU
+ J2oRZKpbR+zAyHM0q37geAKBGBmeaVU/IdPKdTFbi2fEtHJ21yNH78lh+x+O/Ny5rt3n
+ qhjg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=UNQgjlNrbhy2abB8GmydbZUElcbqCcNHp92SJQGa3WI=;
+ b=S/EwQM6AvjGuBnYo9AbQUxU+kfRYvV2NmtC/eSHpo8E+AEiQVz72FE96EPoIF01J+R
+ xp2NSQCSJkCPXYStMbciaeEMpbwIwwvZpb1kl+0EBpk/Y9eRYl53bxGkzfhc2vOQq8e9
+ Efnt56LKz2KyehFy0Zdl2qIw9cCtDZlmFFaPJHHIfITXNPRckZ5xM2RmqAQXrULrwo2J
+ yVIoYfvth4p+WV6S+2CcGTuB8kE0IRg8HF5Eq2PpufpuD9rJ/0ecVu40EqDu1Pl89oLG
+ bQUMemwaobb4NDbR7lFX3oCEx4TNNM1KHPkojsUO5bx8b+giNfUEl7lA0bE3Nc1uydBv
+ V/0w==
+X-Gm-Message-State: APjAAAXG5CjUbBMbk+cJN+D6gFSvFTkjcGQ2pTHRLDCNwO4wiBVn/gbB
+ W6lHvBIAFDyfouQoJAajNF+s4hSj+po=
+X-Google-Smtp-Source: APXvYqxPT4wi8S/Q7+KiC2XeuxwO+lOfK/ta4SFkikoc/PnSjYO7O1zC0WeMm/Ie36cMNcpZmiYNmw==
+X-Received: by 2002:a17:902:8a90:: with SMTP id
+ p16mr10938211plo.220.1572589584950; 
+ Thu, 31 Oct 2019 23:26:24 -0700 (PDT)
+Received: from wafer.ozlabs.ibm.com ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id z14sm2495204pfq.66.2019.10.31.23.26.23
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 31 Oct 2019 23:26:24 -0700 (PDT)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 2/2] powerpc/powernv: Use common code for the symbol_map
+ export
+Date: Fri,  1 Nov 2019 17:26:11 +1100
+Message-Id: <20191101062611.32610-2-oohall@gmail.com>
+X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20191101062611.32610-1-oohall@gmail.com>
+References: <20191101062611.32610-1-oohall@gmail.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,66 +94,102 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Russell King <linux@armlinux.org.uk>, linux-kernel@vger.kernel.org,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: Oliver O'Halloran <oohall@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Long before we had a generic way for firmware to export memory ranges of
+interest we added a special case for the skiboot symbol map. The code is
+pretty much identical to the generic export so re-use the code.
 
-As you may know, libfdt in the upstream DTC project
-added referenced to (U)INT32_MAX.
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+---
+v2: Actually compile.
+---
+ arch/powerpc/platforms/powernv/opal.c | 48 ++++++++---------------------------
+ 1 file changed, 10 insertions(+), 38 deletions(-)
 
-The kernel code has three files to adjust:
-
-include/linux/libfdt_env.h
-arch/powerpc/boot/libfdt_env.h
-arch/arm/boot/compressed/libfdt_env.h
-
-Instead of fixing arch/arm/boot/compressed/libfdt_env.h,
-it is pretty easy to refactor the ARM decompressor
-to reuse <linux/lbifdt_env.h>
-So, 2/3 simplifies the Makefile and deletes its own
-libfdt_env.h
-
-On the other hand, the PPC boot-wrapper is a can of worms.
-I give up refactoring it.
-Let's keep it closed, and just update arch/powerpc/boot/libfdt_env.h
-
-
-
-Masahiro Yamada (3):
-  libfdt: add SPDX-License-Identifier to libfdt wrappers
-  ARM: decompressor: simplify libfdt builds
-  libfdt: define INT32_MAX and UINT32_MAX in libfdt_env.h
-
- arch/arm/boot/compressed/.gitignore     |  9 -------
- arch/arm/boot/compressed/Makefile       | 33 +++++++------------------
- arch/arm/boot/compressed/atags_to_fdt.c |  1 +
- arch/arm/boot/compressed/fdt.c          |  2 ++
- arch/arm/boot/compressed/fdt_ro.c       |  2 ++
- arch/arm/boot/compressed/fdt_rw.c       |  2 ++
- arch/arm/boot/compressed/fdt_wip.c      |  2 ++
- arch/arm/boot/compressed/libfdt_env.h   | 22 -----------------
- arch/powerpc/boot/libfdt_env.h          |  2 ++
- include/linux/libfdt_env.h              |  3 +++
- lib/fdt.c                               |  1 +
- lib/fdt_empty_tree.c                    |  1 +
- lib/fdt_ro.c                            |  1 +
- lib/fdt_rw.c                            |  1 +
- lib/fdt_strerror.c                      |  1 +
- lib/fdt_sw.c                            |  1 +
- lib/fdt_wip.c                           |  1 +
- 17 files changed, 30 insertions(+), 55 deletions(-)
- create mode 100644 arch/arm/boot/compressed/fdt.c
- create mode 100644 arch/arm/boot/compressed/fdt_ro.c
- create mode 100644 arch/arm/boot/compressed/fdt_rw.c
- create mode 100644 arch/arm/boot/compressed/fdt_wip.c
- delete mode 100644 arch/arm/boot/compressed/libfdt_env.h
-
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 0373da5..e4ea27d 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -708,42 +708,6 @@ static int opal_sysfs_init(void)
+ 	return 0;
+ }
+ 
+-static ssize_t symbol_map_read(struct file *fp, struct kobject *kobj,
+-			       struct bin_attribute *bin_attr,
+-			       char *buf, loff_t off, size_t count)
+-{
+-	return memory_read_from_buffer(buf, count, &off, bin_attr->private,
+-				       bin_attr->size);
+-}
+-
+-static struct bin_attribute symbol_map_attr = {
+-	.attr = {.name = "symbol_map", .mode = 0400},
+-	.read = symbol_map_read
+-};
+-
+-static void opal_export_symmap(void)
+-{
+-	const __be64 *syms;
+-	unsigned int size;
+-	struct device_node *fw;
+-	int rc;
+-
+-	fw = of_find_node_by_path("/ibm,opal/firmware");
+-	if (!fw)
+-		return;
+-	syms = of_get_property(fw, "symbol-map", &size);
+-	if (!syms || size != 2 * sizeof(__be64))
+-		return;
+-
+-	/* Setup attributes */
+-	symbol_map_attr.private = __va(be64_to_cpu(syms[0]));
+-	symbol_map_attr.size = be64_to_cpu(syms[1]);
+-
+-	rc = sysfs_create_bin_file(opal_kobj, &symbol_map_attr);
+-	if (rc)
+-		pr_warn("Error %d creating OPAL symbols file\n", rc);
+-}
+-
+ static ssize_t export_attr_read(struct file *fp, struct kobject *kobj,
+ 				struct bin_attribute *bin_attr, char *buf,
+ 				loff_t off, size_t count)
+@@ -832,6 +796,7 @@ static void opal_export_attrs(void)
+ {
+ 	struct device_node *np;
+ 	struct kobject *kobj;
++	int rc;
+ 
+ 	np = of_find_node_by_path("/ibm,opal/firmware/exports");
+ 	if (!np)
+@@ -846,6 +811,15 @@ static void opal_export_attrs(void)
+ 
+ 	opal_add_exported_attrs(np, kobj);
+ 
++	/*
++	 * NB: symbol_map existed before the generic export interface so it
++	 * lives under the top level opal_kobj.
++	 */
++	rc = opal_add_one_export(opal_kobj, "symbol_map",
++				 np->parent, "symbol-map");
++	if (rc)
++		pr_warn("Error %d creating OPAL symbols file\n", rc);
++
+ 	of_node_put(np);
+ }
+ 
+@@ -991,8 +965,6 @@ static int __init opal_init(void)
+ 	/* Create "opal" kobject under /sys/firmware */
+ 	rc = opal_sysfs_init();
+ 	if (rc == 0) {
+-		/* Export symbol map to userspace */
+-		opal_export_symmap();
+ 		/* Setup dump region interface */
+ 		opal_dump_region_init();
+ 		/* Setup error log interface */
 -- 
-2.17.1
+2.9.5
 
