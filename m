@@ -2,26 +2,25 @@ Return-Path: <SRS0=PnYa=YZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23951C47E49
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 08:17:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E04D8CA9EC9
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 08:19:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C2CBE208CB
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 08:17:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 908C4208CB
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 08:19:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="24wqhJT7"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C2CBE208CB
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="ULfIUbNv"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 908C4208CB
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 474FRw3PHHzF5qw
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 19:17:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 474FV870l5zF6bW
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Nov 2019 19:19:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
  host) smtp.mailfrom=socionext.com (client-ip=210.131.2.79;
@@ -30,38 +29,36 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="24wqhJT7"; 
+ unprotected) header.d=nifty.com header.i=@nifty.com header.b="ULfIUbNv"; 
  dkim-atps=neutral
 Received: from conuserg-12.nifty.com (conuserg-12.nifty.com [210.131.2.79])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 474FLm5NtNzF6SG
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2019 19:13:19 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 474FLs0Tm2zF6Nr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Nov 2019 19:13:24 +1100 (AEDT)
 Received: from localhost.localdomain (p14092-ipngnfx01kyoto.kyoto.ocn.ne.jp
  [153.142.97.92]) (authenticated)
- by conuserg-12.nifty.com with ESMTP id xA18BsBQ023869;
- Fri, 1 Nov 2019 17:11:59 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-12.nifty.com xA18BsBQ023869
+ by conuserg-12.nifty.com with ESMTP id xA18BsBN023869;
+ Fri, 1 Nov 2019 17:11:54 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-12.nifty.com xA18BsBN023869
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1572595923;
- bh=dMOvEpUrv3gUpGiwcs/+Eb8AZVQbVFB1v4ogmdr2bko=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=24wqhJT7RJMf50vgPNVtuOw7sfdCTIBCGMN1/+85H2fjdBWjCBMgKq4Gi/Zo8KO2Y
- VlgD461HyHetk8JzsJ7Ekalb9WtIQBjoIaG78+XXVkIjX89OQ/6jth0bvnMY7mY/Zy
- kZ1FsZLs884Twsxjffd5wE/JArN05kQGyzXNHNkQnzTcfwsuqyMuM02JwDm5mdrvDY
- 5imCL2rnn/7JQ+QTDtFB+kbwLTgcoxcrAjnIIPElUvBT0solhQTWvr+EhskjVm4OS1
- vqipju34mMQPwLWkDveV8HSaTxr8C3ugI1gbtT2+b+racWCIlXeZnHt+T/q7S8T8kL
- VV3/6jEArBPKQ==
+ s=dec2015msa; t=1572595915;
+ bh=s5TW0F5kiM6Ii1qhgS3EYy+jvOIj8HD4h2NhZklMb0E=;
+ h=From:To:Cc:Subject:Date:From;
+ b=ULfIUbNvYDv8iOxNWNrQODXFHJ4+Xh0h93HMEG2YAkA9aQIpqyPE+lSmIfcmFP1gV
+ LQcduXM9YsFhX3YMdpvz5RNrPHvsT9GB+qC+DuB7saSq7w2Nkzqy5Yqfb6liAIpNdd
+ Q+taUATi98kBcFlhNMQnMGl2oN3kv//phjwjNZqdGTZlh3s/sUOa4tdRyQm6ecdIli
+ b7ObC94Ixlnk3jvUbbQ4Cqht33jsI4gO7zg7PjCM4pzZ2IJLBQTv4nkiGyeu7kKxmT
+ 0MQE8G9t5XcoMxfxIwHGHtmDov2eOBM2HSb1qtRe/HGlfcLXv87vRuF288Y1eMgS7J
+ 8DBgfkRs9abIw==
 X-Nifty-SrcIP: [153.142.97.92]
 From: Masahiro Yamada <yamada.masahiro@socionext.com>
 To: devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
  Frank Rowand <frowand.list@gmail.com>
-Subject: [PATCH v2 3/3] libfdt: define INT32_MAX and UINT32_MAX in libfdt_env.h
-Date: Fri,  1 Nov 2019 17:11:48 +0900
-Message-Id: <20191101081148.23274-4-yamada.masahiro@socionext.com>
+Subject: [PATCH v2 0/3] libfdt: prepare for (U)INT32_MAX addition
+Date: Fri,  1 Nov 2019 17:11:45 +0900
+Message-Id: <20191101081148.23274-1-yamada.masahiro@socionext.com>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20191101081148.23274-1-yamada.masahiro@socionext.com>
-References: <20191101081148.23274-1-yamada.masahiro@socionext.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,7 +70,7 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org,
+Cc: Russell King <linux@armlinux.org.uk>, linux-kernel@vger.kernel.org,
  Masahiro Yamada <yamada.masahiro@socionext.com>,
  Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
  linux-arm-kernel@lists.infradead.org,
@@ -82,63 +79,59 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The libfdt in the upstream DTC project added references to (U)INT32_MAX
-by the following commits:
 
-  Commit 812b1956a076 ("libfdt: Tweak data handling to satisfy Coverity")
-  Commit 7fcf8208b8a9 ("libfdt: add fdt_append_addrrange()")
+As you may know, libfdt in the upstream DTC project
+added referenced to (U)INT32_MAX.
 
-The kernel needs to adjust libfdt_env.h before pulling in the changes.
+The kernel code has three files to adjust:
 
-As for the user-space programs, <stdint.h> defines (U)INT32_MAX along
-with (u)int32_t.
+include/linux/libfdt_env.h
+arch/powerpc/boot/libfdt_env.h
+arch/arm/boot/compressed/libfdt_env.h
 
-In the kernel, on the other hand, we usually use s32 / u32 instead of
-(u)int32_t for the fixed-width types.
+Instead of fixing arch/arm/boot/compressed/libfdt_env.h,
+it is pretty easy to refactor the ARM decompressor
+to reuse <linux/lbifdt_env.h>
+So, 2/3 simplifies the Makefile and deletes its own
+libfdt_env.h
 
-Accordingly, we already have S32_MAX / U32_MAX for their max values.
-So, we won't add (U)INT32_MAX to <linux/limits.h> any more.
+On the other hand, the PPC boot-wrapper is a can of worms.
+I give up refactoring it.
+Let's keep it closed, and just update arch/powerpc/boot/libfdt_env.h
 
-Instead, add them to the in-kernel libfdt_env.h to compile fdt.c and
-fdt_addresses.c
-
-Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
----
 
 Changes in v2:
  - Fix ppc libfdt_env.h
 
- arch/powerpc/boot/libfdt_env.h | 2 ++
- include/linux/libfdt_env.h     | 3 +++
- 2 files changed, 5 insertions(+)
+Masahiro Yamada (3):
+  libfdt: add SPDX-License-Identifier to libfdt wrappers
+  ARM: decompressor: simplify libfdt builds
+  libfdt: define INT32_MAX and UINT32_MAX in libfdt_env.h
 
-diff --git a/arch/powerpc/boot/libfdt_env.h b/arch/powerpc/boot/libfdt_env.h
-index 2abc8e83b95e..9757d4f6331e 100644
---- a/arch/powerpc/boot/libfdt_env.h
-+++ b/arch/powerpc/boot/libfdt_env.h
-@@ -6,6 +6,8 @@
- #include <string.h>
- 
- #define INT_MAX			((int)(~0U>>1))
-+#define UINT32_MAX		((u32)~0U)
-+#define INT32_MAX		((s32)(UINT32_MAX >> 1))
- 
- #include "of.h"
- 
-diff --git a/include/linux/libfdt_env.h b/include/linux/libfdt_env.h
-index edb0f0c30904..0bd83bdb2482 100644
---- a/include/linux/libfdt_env.h
-+++ b/include/linux/libfdt_env.h
-@@ -11,6 +11,9 @@ typedef __be16 fdt16_t;
- typedef __be32 fdt32_t;
- typedef __be64 fdt64_t;
- 
-+#define INT32_MAX	S32_MAX
-+#define UINT32_MAX	U32_MAX
-+
- #define fdt32_to_cpu(x) be32_to_cpu(x)
- #define cpu_to_fdt32(x) cpu_to_be32(x)
- #define fdt64_to_cpu(x) be64_to_cpu(x)
+ arch/arm/boot/compressed/.gitignore     |  9 -------
+ arch/arm/boot/compressed/Makefile       | 33 +++++++------------------
+ arch/arm/boot/compressed/atags_to_fdt.c |  1 +
+ arch/arm/boot/compressed/fdt.c          |  2 ++
+ arch/arm/boot/compressed/fdt_ro.c       |  2 ++
+ arch/arm/boot/compressed/fdt_rw.c       |  2 ++
+ arch/arm/boot/compressed/fdt_wip.c      |  2 ++
+ arch/arm/boot/compressed/libfdt_env.h   | 22 -----------------
+ arch/powerpc/boot/libfdt_env.h          |  2 ++
+ include/linux/libfdt_env.h              |  3 +++
+ lib/fdt.c                               |  1 +
+ lib/fdt_empty_tree.c                    |  1 +
+ lib/fdt_ro.c                            |  1 +
+ lib/fdt_rw.c                            |  1 +
+ lib/fdt_strerror.c                      |  1 +
+ lib/fdt_sw.c                            |  1 +
+ lib/fdt_wip.c                           |  1 +
+ 17 files changed, 30 insertions(+), 55 deletions(-)
+ create mode 100644 arch/arm/boot/compressed/fdt.c
+ create mode 100644 arch/arm/boot/compressed/fdt_ro.c
+ create mode 100644 arch/arm/boot/compressed/fdt_rw.c
+ create mode 100644 arch/arm/boot/compressed/fdt_wip.c
+ delete mode 100644 arch/arm/boot/compressed/libfdt_env.h
+
 -- 
 2.17.1
 
