@@ -2,61 +2,58 @@ Return-Path: <SRS0=7zwc=Y2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PULL_REQUEST,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA6FECA9EC7
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Nov 2019 10:40:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F38B9CA9EC7
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Nov 2019 10:42:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6142620679
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Nov 2019 10:40:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A403920862
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Nov 2019 10:42:52 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="g49lDOe5"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6142620679
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="W1jrLADN"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A403920862
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 474wZQ4hmtzF6pM
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Nov 2019 21:40:46 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 474wcn5q4BzF6GS
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Nov 2019 21:42:49 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 474wWn4xvlzF6Lh
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Nov 2019 21:38:29 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 474wYT407YzF6pQ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Nov 2019 21:39:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.b="g49lDOe5"; dkim-atps=neutral
+ header.b="W1jrLADN"; dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 474wWm5qgPz9sP3;
- Sat,  2 Nov 2019 21:38:28 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 474wYT0lsSz9sP6;
+ Sat,  2 Nov 2019 21:39:56 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1572691109;
- bh=5RClX4y8vcmtSUeclqeO3VGG9Etde6mUrdDpsNuHw9o=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=g49lDOe5eK9pq0FWc6ETtg4jYEqnpnYYFlAujf5WZsem8sr1CRdfBaKKUxyLdLUPH
- VTKjLTS1tx0qXLDjCmqDG8ZW9nT/i8a85/q+bv3TfmTFMDUrZ/tO2UyDotPjED7p9+
- zlXwSmPJqC6/GkYQRYDceLh/Gext+jy49otL3kt1kYzZrg52s2Yo5rQRso3Ry/5Ukj
- JveP7F5T5UDTGMCVzlVip0D4tHRGHDPJeMpUqkzWJGKhnB3kBKLWOcUNlHB2FVsjec
- SRqwqaiW6iPgTHe453Q8BAD5oMt3Yddqyav2Vt0g5zecOJLPcGmYnKezQW853NPg22
- M8Lypo2xP9LJA==
+ s=201909; t=1572691197;
+ bh=Ry79hgUA7ZsMknpBJFNzR+c97YQ0WmZG98BuWT+fhOw=;
+ h=From:To:Cc:Subject:Date:From;
+ b=W1jrLADN7kIcngvDvFe6XiU8v5n8w9YuWDf8+c14Zk3WOTtdOIOEhnwUadnjB4sZS
+ gHDZwHGxlvVPorgjZdwptd9mYjREYzNd0AOE2GimSIH3igd1DlB/lvplXKta6BHBSB
+ oLetbIquvHLzRytppGrJIZSThzYG+CPxz+MvgmMc4qPws4A1j0Tuj+5vKUiNj7i78O
+ lyBX1T97crtUeIAiXrb3CamSEEbEpiZio6xo5s+g0aDerLKx6PTJUcc/EIA7dVj0mw
+ 9Dd4BqHGL9lUEWW2VQskH5X/z37GavfyFKlmRQ9FvalVhTfYvCShs6k6kAculsl+mV
+ /BA4D+6mdnN2g==
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Jason Yan <yanaijie@huawei.com>, Scott Wood <oss@buserror.net>
-Subject: Re: Pull request: scottwood/linux.git next
-In-Reply-To: <935d65ed-526b-2cdc-31e0-d7856e750a04@huawei.com>
-References: <20191022232155.GA26174@home.buserror.net>
- <935d65ed-526b-2cdc-31e0-d7856e750a04@huawei.com>
-Date: Sat, 02 Nov 2019 21:38:24 +1100
-Message-ID: <878soy36n3.fsf@mpe.ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-5.4-4 tag
+Date: Sat, 02 Nov 2019 21:39:56 +1100
+Message-ID: <875zk236kj.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -70,71 +67,85 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, npiggin@gmail.com, fbarrat@linux.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, bauerman@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Jason Yan <yanaijie@huawei.com> writes:
-> Hi Michael, Can you pull this to linux-next so that we can test it on 
-> linux-next for some time?
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
 
-Yes I plan to, I've just been busy doing other things.
+Hi Linus,
 
-As Scott said it's in linux-next anyway.
+Please pull some more powerpc fixes for 5.4:
 
-cheers
+The following changes since commit 2272905a4580f26630f7d652cc33935b59f96d4c:
 
-> On 2019/10/23 7:21, Scott Wood wrote:
->> This contains KASLR support for book3e 32-bit.
->> 
->> The following changes since commit 612ee81b9461475b5a5612c2e8d71559dd3c7920:
->> 
->>    powerpc/papr_scm: Fix an off-by-one check in papr_scm_meta_{get, set} (2019-10-10 20:15:53 +1100)
->> 
->> are available in the Git repository at:
->> 
->>    git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git next
->> 
->> for you to fetch changes up to 9df1ef3f1376ec5d3a1b51a4546c94279bcd88ca:
->> 
->>    powerpc/fsl_booke/32: Document KASLR implementation (2019-10-21 16:09:16 -0500)
->> 
->> ----------------------------------------------------------------
->> Jason Yan (12):
->>        powerpc: unify definition of M_IF_NEEDED
->>        powerpc: move memstart_addr and kernstart_addr to init-common.c
->>        powerpc: introduce kernstart_virt_addr to store the kernel base
->>        powerpc/fsl_booke/32: introduce create_kaslr_tlb_entry() helper
->>        powerpc/fsl_booke/32: introduce reloc_kernel_entry() helper
->>        powerpc/fsl_booke/32: implement KASLR infrastructure
->>        powerpc/fsl_booke/32: randomize the kernel image offset
->>        powerpc/fsl_booke/kaslr: clear the original kernel if randomized
->>        powerpc/fsl_booke/kaslr: support nokaslr cmdline parameter
->>        powerpc/fsl_booke/kaslr: dump out kernel offset information on panic
->>        powerpc/fsl_booke/kaslr: export offset in VMCOREINFO ELF notes
->>        powerpc/fsl_booke/32: Document KASLR implementation
->> 
->>   Documentation/powerpc/kaslr-booke32.rst       |  42 +++
->>   arch/powerpc/Kconfig                          |  11 +
->>   arch/powerpc/include/asm/nohash/mmu-book3e.h  |  11 +-
->>   arch/powerpc/include/asm/page.h               |   7 +
->>   arch/powerpc/kernel/early_32.c                |   5 +-
->>   arch/powerpc/kernel/exceptions-64e.S          |  12 +-
->>   arch/powerpc/kernel/fsl_booke_entry_mapping.S |  25 +-
->>   arch/powerpc/kernel/head_fsl_booke.S          |  61 +++-
->>   arch/powerpc/kernel/machine_kexec.c           |   1 +
->>   arch/powerpc/kernel/misc_64.S                 |   7 +-
->>   arch/powerpc/kernel/setup-common.c            |  20 ++
->>   arch/powerpc/mm/init-common.c                 |   7 +
->>   arch/powerpc/mm/init_32.c                     |   5 -
->>   arch/powerpc/mm/init_64.c                     |   5 -
->>   arch/powerpc/mm/mmu_decl.h                    |  11 +
->>   arch/powerpc/mm/nohash/Makefile               |   1 +
->>   arch/powerpc/mm/nohash/fsl_booke.c            |   8 +-
->>   arch/powerpc/mm/nohash/kaslr_booke.c          | 401 ++++++++++++++++++++++++++
->>   18 files changed, 587 insertions(+), 53 deletions(-)
->>   create mode 100644 Documentation/powerpc/kaslr-booke32.rst
->>   create mode 100644 arch/powerpc/mm/nohash/kaslr_booke.c
->> 
->> 
+  spufs: fix a crash in spufs_create_root() (2019-10-11 16:57:41 +1100)
+
+are available in the git repository at:
+
+  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-5.4-4
+
+for you to fetch changes up to 7d6475051fb3d9339c5c760ed9883bc0a9048b21:
+
+  powerpc/powernv: Fix CPU idle to be called with IRQs disabled (2019-10-29 21:47:01 +1100)
+
+- ------------------------------------------------------------------
+powerpc fixes for 5.4 #4
+
+Our recent cleanup of EEH led to an oops on bare metal machines when the cxl
+(CAPI) driver creates virtual devices for an attached FPGA accelerator.
+
+The "secure virtual machine" support we added in v5.4 had a bug if the kernel
+was relocated (moved during boot), in those cases the signature of the kernel
+text wouldn't verify and the Ultravisor would refuse to run the VM.
+
+A recent change to disable interrupts before calling arch_cpu_idle_dead() caused
+a WARN_ON() in our bare metal CPU offline code to always trigger.
+
+The KUAP (SMAP) support we added for 32-bit Book3S had a bug if the address
+range crossed a segment (256MB) boundary which could lead to spurious faults.
+
+Thanks to:
+  Christophe Leroy, Frederic Barrat, Michael Anderson, Nicholas Piggin, Sam
+  Bobroff, Thiago Jung Bauermann.
+
+- ------------------------------------------------------------------
+Christophe Leroy (1):
+      powerpc/32s: fix allow/prevent_user_access() when crossing segment boundaries.
+
+Frederic Barrat (1):
+      powerpc/powernv/eeh: Fix oops when probing cxl devices
+
+Nicholas Piggin (1):
+      powerpc/powernv: Fix CPU idle to be called with IRQs disabled
+
+Thiago Jung Bauermann (1):
+      powerpc/prom_init: Undo relocation before entering secure mode
+
+
+ arch/powerpc/include/asm/book3s/32/kup.h     |  1 +
+ arch/powerpc/include/asm/elf.h               |  3 ++
+ arch/powerpc/kernel/prom_init.c              | 13 +++++
+ arch/powerpc/kernel/prom_init_check.sh       |  3 +-
+ arch/powerpc/platforms/powernv/eeh-powernv.c |  2 +-
+ arch/powerpc/platforms/powernv/smp.c         | 53 ++++++++++++++------
+ 6 files changed, 57 insertions(+), 18 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEJFGtCPCthwEv2Y/bUevqPMjhpYAFAl29WnoACgkQUevqPMjh
+pYDoog/+MDn3jR/l7fYsUKku6WilXtOUeH9UORfnAOHtiJY7hAjd1kGiLq3iah2Z
+B8yh0z6XCxInRXnfDFnwAQJ6znGnOzZ76wu61Lt+wI6BjxjaN1tgSqfCkhnAPDqu
+JK0/lMte6xjBlCnhwTg6EkELGjPoUNTXbe1qaiGOgnmIJnztYbTE6cjj2uCfBc1z
+FY4BEdR7lddzQGlZa7WDad7imH8T3RWT2QVphSh1qjIMZHMyCtOx7dqUUry0hzJ/
+Ps4Yqsyplmfip1lc6THe94g/fqxZwA7FET7PSbrWViYozNkBF9rSkfhfW7NyCxel
+3nH2gFwnPAEcaHoaELrHLFYcU3yKsja5AyIbujyF2i91rghnaO4jB+qugEiFaTyQ
+QL50igWCtZF0pjIJ7ZHUp2lmN+jERTSenTlhg3jKB0rIgQhHtXAbnHs14wnO4wlB
+OYrk+Z/NnSm57valvISHTDJ7btcstw6q0MbYYl8fxNK1oQ5UdSr9oiidSFAqOecY
+nCKZZI1e7fTQMrJ6tlKA5y+IjM9CiOaSsgvtGzI9Ii1vbqGShV2sJ6xaYCU6sE4t
+lmdlHOPJRqhPnq0xI+Wgs7UuOoY+o8fj61pNogMTdJQhlsRnS3RObeAFT8Gy6OWE
+8bXuAtF71tL5KRC8X1YeI6jEMRKN5jbSiH4d3Qeh3LL6cQ26omo=
+=MGF+
+-----END PGP SIGNATURE-----
