@@ -2,80 +2,81 @@ Return-Path: <SRS0=PBxl=Y3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 22835CA9EB0
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Nov 2019 21:58:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 55DDBCA9EB0
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Nov 2019 23:09:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C419B21655
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Nov 2019 21:58:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A40A92190F
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Nov 2019 23:09:03 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="HJPTdVOA"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C419B21655
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nvidia.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ogr3bRTW"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A40A92190F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 475qZ35dc0zF4kd
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Nov 2019 08:58:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 475s7J753qzF132
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Nov 2019 10:09:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=nvidia.com (client-ip=216.228.121.65; helo=hqemgate16.nvidia.com;
- envelope-from=jhubbard@nvidia.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::d43;
+ helo=mail-io1-xd43.google.com; envelope-from=oohall@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nvidia.com
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="HJPTdVOA"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="Ogr3bRTW"; 
  dkim-atps=neutral
-Received: from hqemgate16.nvidia.com (hqemgate16.nvidia.com [216.228.121.65])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 475pgr2VMKzF4cv
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Nov 2019 08:18:32 +1100 (AEDT)
-Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by
- hqemgate16.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
- id <B5dbf44210001>; Sun, 03 Nov 2019 13:18:25 -0800
-Received: from hqmail.nvidia.com ([172.20.161.6])
- by hqpgpgate101.nvidia.com (PGP Universal service);
- Sun, 03 Nov 2019 13:18:19 -0800
-X-PGP-Universal: processed;
- by hqpgpgate101.nvidia.com on Sun, 03 Nov 2019 13:18:19 -0800
-Received: from HQMAIL101.nvidia.com (172.20.187.10) by HQMAIL101.nvidia.com
- (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Sun, 3 Nov
- 2019 21:18:19 +0000
-Received: from hqnvemgw01.nvidia.com (172.20.150.20) by HQMAIL101.nvidia.com
- (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
- Transport; Sun, 3 Nov 2019 21:18:19 +0000
-Received: from blueforge.nvidia.com (Not Verified[10.110.48.28]) by
- hqnvemgw01.nvidia.com with Trustwave SEG (v7, 5, 8, 10121)
- id <B5dbf441a0002>; Sun, 03 Nov 2019 13:18:18 -0800
-From: John Hubbard <jhubbard@nvidia.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v2 16/18] mm/gup_benchmark: support pin_user_pages() and
- related calls
-Date: Sun, 3 Nov 2019 13:18:11 -0800
-Message-ID: <20191103211813.213227-17-jhubbard@nvidia.com>
-X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20191103211813.213227-1-jhubbard@nvidia.com>
-References: <20191103211813.213227-1-jhubbard@nvidia.com>
+Received: from mail-io1-xd43.google.com (mail-io1-xd43.google.com
+ [IPv6:2607:f8b0:4864:20::d43])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 475s501GvgzF21Y
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Nov 2019 10:06:59 +1100 (AEDT)
+Received: by mail-io1-xd43.google.com with SMTP id c6so16391231ioo.13
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Nov 2019 15:06:59 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc:content-transfer-encoding;
+ bh=eVqB/l9a1uODQEPIKn/PPG0dvGYx8Wnn62KRJDPal58=;
+ b=Ogr3bRTWAqrOfrGyYdV5PvYV3ARdso9WSZmAAWAUVNFf5R6gZVAn2suhmsRBuBLR1/
+ dW53XjheV7my12jMlO6rV5CfQUMf4cXo1wi+k8bzOlFGjEPVpjfrLLMh5vOO0A/6/oXM
+ 3ShKC6jxP6wSfEj0/gsdkFz+ntUu3fEZKB28AwKhWaX+O1nDNypQ6igT58up/K4ghO2l
+ uP/yIgDW/WzOw0tJLko/ylUM2k1qwMkqUx4NczjZppdGzsFkwXV2p8+YCEcQvqqtj99C
+ Ydw086InNypLfzadWcrQP8ewHM8Ag8jkwhzYrF35X5pvfHyBin3yLSe+7iNYRJiOA/QK
+ Znsg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc:content-transfer-encoding;
+ bh=eVqB/l9a1uODQEPIKn/PPG0dvGYx8Wnn62KRJDPal58=;
+ b=b/Q98tFsW/TiFXdRS1zDVYhY2jMfZiIJYF7PjJhVuwHjwc+ExZZ+rXBi95daEo84HL
+ /cboLCJEmZMWonZcUa6mmilAHFWZUwyCblPIYcub5UgdhZirXV6GJtS+tIJgWONBU9k/
+ C8fnAU5Pu2fFQTSK85kUXZtV1cVln2GiIJ2Pvrsjqb/OpxRqBCowrJyl9EEOZ4UHC18w
+ tpp6JS5pFfjmGur50z27yjzCPBGZ31fTUirXIbc6+x1SUPHu7Eo7P0igWC4wZiIdUpXz
+ 9WCqXibx1eTucvat235+NI3ZjRukZHJ8RwCHHl4P/PKmnvqqm6M7oz3thMtFJvZUCQhh
+ lZZQ==
+X-Gm-Message-State: APjAAAU2Z3zmINKzRHWHMRGdpqS60SxqWM7ghNdUcwsPF/BVi0ur59PA
+ JYO5v1pQFdkpDaaF9XRDRzieOHHL0+zBW330rtU=
+X-Google-Smtp-Source: APXvYqz5q7rm3u4DawQENZGNDKe1T9/EKnPlhOlSgXGAtFdFo1uj3sgE+IIUYvtkp3lzE+eEoITqKlfYsqv5wVZb2sA=
+X-Received: by 2002:a02:3903:: with SMTP id l3mr12722619jaa.72.1572822416076; 
+ Sun, 03 Nov 2019 15:06:56 -0800 (PST)
 MIME-Version: 1.0
-X-NVConfidentiality: public
+References: <389022fc-71b0-7952-3404-1da136dbdfd9@web.de>
+In-Reply-To: <389022fc-71b0-7952-3404-1da136dbdfd9@web.de>
+From: "Oliver O'Halloran" <oohall@gmail.com>
+Date: Mon, 4 Nov 2019 10:06:45 +1100
+Message-ID: <CAOSf1CGQ7VdhHQ0L3phRwaT9VcsJaN9E7LsEarvpwZUcL6e7bg@mail.gmail.com>
+Subject: =?UTF-8?Q?Re=3A_=5BPATCH=5D_powerpc=2Fpapr=5Fscm=3A_Delete_unnecessary_ass?=
+ =?UTF-8?Q?ignment_for_the_field_=E2=80=9Cowner=E2=80=9D?=
+To: Markus Elfring <Markus.Elfring@web.de>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
- t=1572815905; bh=NEkIIi5tFETxHd5VvyaR+PvOubiu9ODuVDN+PrzJrb8=;
- h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
- In-Reply-To:References:MIME-Version:X-NVConfidentiality:
- Content-Transfer-Encoding:Content-Type;
- b=HJPTdVOAHIi/w5Wbmc1e/BCYoxRPAY5fl5VGqu8JGWvXvOKEBoLBotVwPT+lmnEO6
- YkXub2gRZQ3InwDfHXynWtVeQQFPTOP6dZZEuNnueESyxRe9mrJRA+R3tDpQ3hYLZ+
- c49M9p+e1BceJK3IwfGLHkooLmB/oD6x5SRIwvyoRxQyvlIx/qSOa+ECYlpzKpmU5O
- UvHA1W4einTzslX0G/jzaNeGmG4M5MmU39Ram6wNYjfXciV8Q8kgegVEr68IqTZRhw
- hw2PUjSVsz+WKT95BBR9SWFjbwJ2Ok3AynH6viGa3mIrOm3xzqKLYn0AZGtfKqIYUw
- YXb6n/15BK5ZQ==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,238 +88,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>,
- kvm@vger.kernel.org, linux-doc@vger.kernel.org,
- David Airlie <airlied@linux.ie>, Dave Chinner <david@fromorbit.com>,
- dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- linux-kselftest@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>,
- Jonathan Corbet <corbet@lwn.net>, linux-rdma@vger.kernel.org,
- Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>,
- Vlastimil Babka <vbabka@suse.cz>,
- =?UTF-8?q?Bj=C3=B6rn=20T=C3=B6pel?= <bjorn.topel@intel.com>,
- linux-media@vger.kernel.org, Shuah Khan <shuah@kernel.org>,
- John Hubbard <jhubbard@nvidia.com>, linux-block@vger.kernel.org,
- =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>,
- Al Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
- Magnus Karlsson <magnus.karlsson@intel.com>, Jens Axboe <axboe@kernel.dk>,
- netdev@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
- Daniel Vetter <daniel@ffwll.ch>, linux-fsdevel@vger.kernel.org,
- bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "David S . Miller" <davem@davemloft.net>,
- Mike Kravetz <mike.kravetz@oracle.com>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Vaibhav Jain <vaibhav@linux.ibm.com>,
+ Dan Williams <dan.j.williams@intel.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Up until now, gup_benchmark supported testing of the
-following kernel functions:
+On Sun, Nov 3, 2019 at 11:31 PM Markus Elfring <Markus.Elfring@web.de> wrot=
+e:
+>
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Sun, 3 Nov 2019 13:23:13 +0100
+>
+> The field =E2=80=9Cowner=E2=80=9D is set by the core.
+> Thus delete an unneeded initialisation.
 
-* get_user_pages(): via the '-U' command line option
-* get_user_pages_longterm(): via the '-L' command line option
-* get_user_pages_fast(): as the default (no options required)
+Acked-by: Oliver O'Halloran <oohall@gmail.com>
 
-Add test coverage for the new corresponding pin_*() functions:
-
-* pin_user_pages(): via the '-c' command line option
-* pin_longterm_pages(): via the '-b' command line option
-* pin_user_pages_fast(): via the '-a' command line option
-
-Also, add an option for clarity: '-u' for what is now (still) the
-default choice: get_user_pages_fast().
-
-Also, for the three commands that set FOLL_PIN, verify that the pages
-really are dma-pinned, via the new is_dma_pinned() routine.
-Those commands are:
-
-    PIN_FAST_BENCHMARK     : calls pin_user_pages_fast()
-    PIN_LONGTERM_BENCHMARK : calls pin_longterm_pages()
-    PIN_BENCHMARK          : calls pin_user_pages()
-
-In between the calls to pin_*() and put_user_pages(),
-check each page: if page_dma_pinned() returns false, then
-WARN and return.
-
-Do this outside of the benchmark timestamps, so that it doesn't
-affect reported times.
-
-Signed-off-by: John Hubbard <jhubbard@nvidia.com>
----
- mm/gup_benchmark.c                         | 74 ++++++++++++++++++++--
- tools/testing/selftests/vm/gup_benchmark.c | 23 ++++++-
- 2 files changed, 91 insertions(+), 6 deletions(-)
-
-diff --git a/mm/gup_benchmark.c b/mm/gup_benchmark.c
-index 7dd602d7f8db..2bb0f5df4803 100644
---- a/mm/gup_benchmark.c
-+++ b/mm/gup_benchmark.c
-@@ -8,6 +8,9 @@
- #define GUP_FAST_BENCHMARK	_IOWR('g', 1, struct gup_benchmark)
- #define GUP_LONGTERM_BENCHMARK	_IOWR('g', 2, struct gup_benchmark)
- #define GUP_BENCHMARK		_IOWR('g', 3, struct gup_benchmark)
-+#define PIN_FAST_BENCHMARK	_IOWR('g', 4, struct gup_benchmark)
-+#define PIN_LONGTERM_BENCHMARK	_IOWR('g', 5, struct gup_benchmark)
-+#define PIN_BENCHMARK		_IOWR('g', 6, struct gup_benchmark)
-=20
- struct gup_benchmark {
- 	__u64 get_delta_usec;
-@@ -19,6 +22,44 @@ struct gup_benchmark {
- 	__u64 expansion[10];	/* For future use */
- };
-=20
-+static void put_back_pages(int cmd, struct page **pages, unsigned long nr_=
-pages)
-+{
-+	int i;
-+
-+	switch (cmd) {
-+	case GUP_FAST_BENCHMARK:
-+	case GUP_LONGTERM_BENCHMARK:
-+	case GUP_BENCHMARK:
-+		for (i =3D 0; i < nr_pages; i++)
-+			put_page(pages[i]);
-+		break;
-+
-+	case PIN_FAST_BENCHMARK:
-+	case PIN_LONGTERM_BENCHMARK:
-+	case PIN_BENCHMARK:
-+		put_user_pages(pages, nr_pages);
-+		break;
-+	}
-+}
-+
-+static void verify_dma_pinned(int cmd, struct page **pages,
-+			      unsigned long nr_pages)
-+{
-+	int i;
-+
-+	switch (cmd) {
-+	case PIN_FAST_BENCHMARK:
-+	case PIN_LONGTERM_BENCHMARK:
-+	case PIN_BENCHMARK:
-+		for (i =3D 0; i < nr_pages; i++) {
-+			if (WARN(!page_dma_pinned(pages[i]),
-+				 "pages[%d] is NOT dma-pinned\n", i))
-+				break;
-+		}
-+		break;
-+	}
-+}
-+
- static int __gup_benchmark_ioctl(unsigned int cmd,
- 		struct gup_benchmark *gup)
- {
-@@ -62,6 +103,19 @@ static int __gup_benchmark_ioctl(unsigned int cmd,
- 			nr =3D get_user_pages(addr, nr, gup->flags & 1, pages + i,
- 					    NULL);
- 			break;
-+		case PIN_FAST_BENCHMARK:
-+			nr =3D pin_user_pages_fast(addr, nr, gup->flags & 1,
-+						 pages + i);
-+			break;
-+		case PIN_LONGTERM_BENCHMARK:
-+			nr =3D pin_longterm_pages(addr, nr,
-+						(gup->flags & 1),
-+						pages + i, NULL);
-+			break;
-+		case PIN_BENCHMARK:
-+			nr =3D pin_user_pages(addr, nr, gup->flags & 1, pages + i,
-+					    NULL);
-+			break;
- 		default:
- 			return -1;
- 		}
-@@ -72,15 +126,22 @@ static int __gup_benchmark_ioctl(unsigned int cmd,
- 	}
- 	end_time =3D ktime_get();
-=20
-+	/* Shifting the meaning of nr_pages: now it is actual number pinned: */
-+	nr_pages =3D i;
-+
- 	gup->get_delta_usec =3D ktime_us_delta(end_time, start_time);
- 	gup->size =3D addr - gup->addr;
-=20
-+	/*
-+	 * Take an un-benchmark-timed moment to verify DMA pinned
-+	 * state: print a warning if any non-dma-pinned pages are found:
-+	 */
-+	verify_dma_pinned(cmd, pages, nr_pages);
-+
- 	start_time =3D ktime_get();
--	for (i =3D 0; i < nr_pages; i++) {
--		if (!pages[i])
--			break;
--		put_page(pages[i]);
--	}
-+
-+	put_back_pages(cmd, pages, nr_pages);
-+
- 	end_time =3D ktime_get();
- 	gup->put_delta_usec =3D ktime_us_delta(end_time, start_time);
-=20
-@@ -98,6 +159,9 @@ static long gup_benchmark_ioctl(struct file *filep, unsi=
-gned int cmd,
- 	case GUP_FAST_BENCHMARK:
- 	case GUP_LONGTERM_BENCHMARK:
- 	case GUP_BENCHMARK:
-+	case PIN_FAST_BENCHMARK:
-+	case PIN_LONGTERM_BENCHMARK:
-+	case PIN_BENCHMARK:
- 		break;
- 	default:
- 		return -EINVAL;
-diff --git a/tools/testing/selftests/vm/gup_benchmark.c b/tools/testing/sel=
-ftests/vm/gup_benchmark.c
-index 485cf06ef013..c5c934c0f402 100644
---- a/tools/testing/selftests/vm/gup_benchmark.c
-+++ b/tools/testing/selftests/vm/gup_benchmark.c
-@@ -18,6 +18,15 @@
- #define GUP_LONGTERM_BENCHMARK	_IOWR('g', 2, struct gup_benchmark)
- #define GUP_BENCHMARK		_IOWR('g', 3, struct gup_benchmark)
-=20
-+/*
-+ * Similar to above, but use FOLL_PIN instead of FOLL_GET. This is done
-+ * by calling pin_user_pages_fast(), pin_longterm_pages(), and pin_user_pa=
-ges(),
-+ * respectively.
-+ */
-+#define PIN_FAST_BENCHMARK	_IOWR('g', 4, struct gup_benchmark)
-+#define PIN_LONGTERM_BENCHMARK	_IOWR('g', 5, struct gup_benchmark)
-+#define PIN_BENCHMARK		_IOWR('g', 6, struct gup_benchmark)
-+
- struct gup_benchmark {
- 	__u64 get_delta_usec;
- 	__u64 put_delta_usec;
-@@ -37,8 +46,17 @@ int main(int argc, char **argv)
- 	char *file =3D "/dev/zero";
- 	char *p;
-=20
--	while ((opt =3D getopt(argc, argv, "m:r:n:f:tTLUwSH")) !=3D -1) {
-+	while ((opt =3D getopt(argc, argv, "m:r:n:f:abctTLUuwSH")) !=3D -1) {
- 		switch (opt) {
-+		case 'a':
-+			cmd =3D PIN_FAST_BENCHMARK;
-+			break;
-+		case 'b':
-+			cmd =3D PIN_LONGTERM_BENCHMARK;
-+			break;
-+		case 'c':
-+			cmd =3D PIN_BENCHMARK;
-+			break;
- 		case 'm':
- 			size =3D atoi(optarg) * MB;
- 			break;
-@@ -60,6 +78,9 @@ int main(int argc, char **argv)
- 		case 'U':
- 			cmd =3D GUP_BENCHMARK;
- 			break;
-+		case 'u':
-+			cmd =3D GUP_FAST_BENCHMARK;
-+			break;
- 		case 'w':
- 			write =3D 1;
- 			break;
---=20
-2.23.0
-
+>
+> Generated by: scripts/coccinelle/api/platform_no_drv_owner.cocci
+>
+> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+> ---
+>  arch/powerpc/platforms/pseries/papr_scm.c | 1 -
+>  1 file changed, 1 deletion(-)
+>
+> diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/pla=
+tforms/pseries/papr_scm.c
+> index ee07d0718bf1..f87b474d25a7 100644
+> --- a/arch/powerpc/platforms/pseries/papr_scm.c
+> +++ b/arch/powerpc/platforms/pseries/papr_scm.c
+> @@ -513,7 +513,6 @@ static struct platform_driver papr_scm_driver =3D {
+>         .remove =3D papr_scm_remove,
+>         .driver =3D {
+>                 .name =3D "papr_scm",
+> -               .owner =3D THIS_MODULE,
+>                 .of_match_table =3D papr_scm_match,
+>         },
+>  };
+> --
+> 2.23.0
+>
