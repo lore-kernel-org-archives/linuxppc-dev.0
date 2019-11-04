@@ -2,70 +2,55 @@ Return-Path: <SRS0=P9+W=Y4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FEEFCA9ECF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Nov 2019 09:01:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1749DCA9ECF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Nov 2019 09:05:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D078C2190F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Nov 2019 09:01:41 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=alien8.de header.i=@alien8.de header.b="mZ979Q+R"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D078C2190F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=alien8.de
+	by mail.kernel.org (Postfix) with ESMTPS id C56D5222CD
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Nov 2019 09:05:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C56D5222CD
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4766H72jP8zDrMW
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Nov 2019 20:01:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=alien8.de (client-ip=5.9.137.197; helo=mail.skyhub.de;
- envelope-from=bp@alien8.de; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4766Mm6py9zF4xM
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Nov 2019 20:05:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=alien8.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=alien8.de header.i=@alien8.de header.b="mZ979Q+R"; 
- dkim-atps=neutral
-Received: from mail.skyhub.de (mail.skyhub.de [5.9.137.197])
+ spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=tiwai@suse.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4766Dh0Z5LzF4NY
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Nov 2019 19:59:29 +1100 (AEDT)
-Received: from zn.tnic (p200300EC2F0AFA00A5208D92F28E6777.dip0.t-ipconnect.de
- [IPv6:2003:ec:2f0a:fa00:a520:8d92:f28e:6777])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id ACC701EC090E;
- Mon,  4 Nov 2019 09:59:23 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
- t=1572857963;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
- bh=3Gglep10uhUlKdGt/9F9KI4CEHNO3URUde1zRbFYs6c=;
- b=mZ979Q+RwEfYln6X7+2rMbzRQnkLl+SkKWMqTuum8Tfx9zcfxzhHK1nSgWY4G/USMPwuyj
- TAvt+OQ42PFam14XDo4uiLhSRHIQatiruA2gvrK8hu1adymNxCtv2b2SHOWgjrd8YbtKXZ
- N++brJBjeqC7MRe0dmxwetGoUBIRqC8=
-Date: Mon, 4 Nov 2019 09:59:18 +0100
-From: Borislav Petkov <bp@alien8.de>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v2 01/29] powerpc: Rename "notes" PT_NOTE to "note"
-Message-ID: <20191104085918.GA7862@zn.tnic>
-References: <20191011000609.29728-1-keescook@chromium.org>
- <20191011000609.29728-2-keescook@chromium.org>
- <20191011082519.GI9749@gate.crashing.org>
- <201910110910.48270FC97@keescook>
- <20191011162552.GK9749@gate.crashing.org>
- <20191015165412.GD596@zn.tnic> <201910291414.F29F738B7@keescook>
- <20191030010117.GJ28442@gate.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20191030010117.GJ28442@gate.crashing.org>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4766KT0pr2zF4tv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Nov 2019 20:03:40 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id E0C8AB4CD;
+ Mon,  4 Nov 2019 09:03:36 +0000 (UTC)
+Date: Mon, 04 Nov 2019 10:03:34 +0100
+Message-ID: <s5hbltsc8t5.wl-tiwai@suse.de>
+From: Takashi Iwai <tiwai@suse.de>
+To: Greg Kroah-Hartman <gregkh@google.com>
+Subject: Re: ALSA: pcm: use dma_can_mmap() to check if a device supports
+ dma_mmap_*
+In-Reply-To: <19c3f0ca-9b21-0c5e-894d-976594f38a86@google.com>
+References: <CAOzgRdYSaaF6OkXGME2=fn1dfTbpyt_GqEs=10oXH=V6SudfyA@mail.gmail.com>
+ <s5himo0cbmm.wl-tiwai@suse.de>
+ <CAOzgRdYTa-nAa7QV6c2aZs910BACg91vAjcjw4V-Oy8KCZVmmQ@mail.gmail.com>
+ <60ee349a-1fe7-46f0-5161-1dcfcb6fbee9@google.com>
+ <19c3f0ca-9b21-0c5e-894d-976594f38a86@google.com>
+User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI/1.14.6 (Maruoka)
+ FLIM/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL/10.8 Emacs/25.3
+ (x86_64-suse-linux-gnu) MULE/6.0 (HANACHIRUSATO)
+MIME-Version: 1.0 (generated by SEMI 1.14.6 - "Maruoka")
+Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,33 +62,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- Michal Simek <monstr@monstr.eu>, Dave Hansen <dave.hansen@linux.intel.com>,
- linux-ia64@vger.kernel.org, Kees Cook <keescook@chromium.org>,
- Arnd Bergmann <arnd@arndb.de>, linux-xtensa@linux-xtensa.org,
- Will Deacon <will@kernel.org>, x86@kernel.org,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
- Yoshinori Sato <ysato@users.sourceforge.jp>, linux-parisc@vger.kernel.org,
- Andy Lutomirski <luto@kernel.org>, linux-alpha@vger.kernel.org,
- Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, linux-c6x-dev@linux-c6x.org
+Cc: linux-xtensa@linux-xtensa.org, youling 257 <youling257@gmail.com>,
+ Vladimir Murzin <vladimir.murzin@arm.com>, linux-parisc@vger.kernel.org,
+ linux-sh@vger.kernel.org, Takashi Iwai <tiwai@suse.de>,
+ Robin Murphy <robin.murphy@arm.com>, Helge Deller <deller@gmx.de>,
+ x86@kernel.org, Michal Simek <monstr@monstr.eu>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.ozlabs.org, hch@lst.de,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Oct 29, 2019 at 08:01:17PM -0500, Segher Boessenkool wrote:
-> I am still not convinced the worse name is a better name, no :-)  But if
-> you don't want to do the work, and instead prefer the much smaller change,
-> that is of course a fine decision.  Thank you!
->
-> (I would be happy with such a 30/29 as well, of course.)
+On Mon, 04 Nov 2019 09:49:43 +0100,
+Greg Kroah-Hartman wrote:
+> 
+> On 11/4/19 9:32 AM, Greg Kroah-Hartman wrote:
+> > On 11/4/19 9:27 AM, youling 257 wrote:
+> >  > This driver
+> > 
+> https://android.googlesource.com/kernel/common/+/refs/heads/android-mainline/drivers/usb/gadget/function/f_audio_source.c 
+> 
+> >
+> >  >
+> >
+> > The driver is broken and needs to be fixed.  Please feel free to submit
+> > patches to AOSP to do so as you can trigger this easily.
+> 
+> Hm, maybe the driver isn't broken...
 
-Ok, thanks.
+It is :)
 
-I'll start picking up the pile and the renaming patch can then go ontop.
+> snd_pcm_lib_preallocate_pages_for_all() is called with
+> SNDRV_DMA_TYPE_DEV set, so that should be fine,
 
--- 
-Regards/Gruss,
-    Boris.
+That's the cause.  It passes NULL to the device object, which is
+incorrect in anyway.  I guess this used to work casually just because
+x86 accepts the NULL device object as if an ISA device.
 
-https://people.kernel.org/tglx/notes-about-netiquette
+> and the only other
+> buffer I can see allocate here is with a call to
+> snd_pcm_lib_alloc_vmalloc_buffer() which _should_ be ok, right?
+
+If the driver allocates the buffer via vmalloc (and the snd_* helper),
+it shouldn't do preallocate in that way.  That is, the correct fix
+would  be simply to drop snd_pcm_lib_preallocate_pages_for_all() call
+from the driver code.
+
+Also, a quick skimming showed that the driver needs to set
+snd_pcm_lib_get_vmalloc_page to the snd_pcm_ops.page ops.
+
+> I don't see any buffers coming off the stack here, unless the gadget
+> controller is the one creating them?
+
+That's the code before actually allocating the buffer itself.  It
+checks the availability of mmap support on the architecture, and the
+helper code assumed a proper device object passed there via the
+preallocation helper.
+
+
+thanks,
+
+Takashi
