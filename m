@@ -2,64 +2,108 @@ Return-Path: <SRS0=UcJ4=Y5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E6BAC5DF60
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2019 22:54:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1DF9FC5DF60
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2019 23:02:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 16E91206BA
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2019 22:54:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 16E91206BA
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 60EA9206BA
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2019 23:02:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 60EA9206BA
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4774jm2flXzF4kC
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 09:54:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.65; helo=mga03.intel.com;
- envelope-from=sean.j.christopherson@intel.com; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4774v82QlzzF5CG
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 10:02:44 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4774rh3zXczF518
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2019 10:00:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 4774rh29tXz8vSX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2019 10:00:36 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 4774rh1G4Qz9sP7; Wed,  6 Nov 2019 10:00:36 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=erichte@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47740Q3Kr8zF576
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2019 09:22:10 +1100 (AEDT)
-X-Amp-Result: UNKNOWN
-X-Amp-Original-Verdict: FILE UNKNOWN
-X-Amp-File-Uploaded: False
-Received: from orsmga005.jf.intel.com ([10.7.209.41])
- by orsmga103.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 05 Nov 2019 14:22:06 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.68,271,1569308400"; d="scan'208";a="376846147"
-Received: from sjchrist-coffee.jf.intel.com (HELO linux.intel.com)
- ([10.54.74.41])
- by orsmga005.jf.intel.com with ESMTP; 05 Nov 2019 14:22:05 -0800
-Date: Tue, 5 Nov 2019 14:22:05 -0800
-From: Sean Christopherson <sean.j.christopherson@intel.com>
-To: David Hildenbrand <david@redhat.com>
-Subject: Re: [PATCH v1 03/10] KVM: Prepare kvm_is_reserved_pfn() for
- PG_reserved changes
-Message-ID: <20191105222205.GA23297@linux.intel.com>
-References: <20191024120938.11237-1-david@redhat.com>
- <20191024120938.11237-4-david@redhat.com>
- <CAPcyv4jyTxEpw5ep5Noy0YRV7Dybzj+8OTVMwRK_zeFigF-LsQ@mail.gmail.com>
- <bbe59155-24ae-f229-e182-107730423c47@redhat.com>
- <01adb4cb-6092-638c-0bab-e61322be7cf5@redhat.com>
- <613f3606-748b-0e56-a3ad-1efaffa1a67b@redhat.com>
- <20191105160000.GC8128@linux.intel.com>
- <ed89cd61-7c45-8c9c-ffeb-f27b1872bd7a@redhat.com>
+ by ozlabs.org (Postfix) with ESMTPS id 4774rg528Cz9sP4
+ for <linuxppc-dev@ozlabs.org>; Wed,  6 Nov 2019 10:00:35 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ xA5MqUft132423
+ for <linuxppc-dev@ozlabs.org>; Tue, 5 Nov 2019 18:00:33 -0500
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2w3fuumqgj-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Tue, 05 Nov 2019 18:00:32 -0500
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <erichte@linux.ibm.com>;
+ Tue, 5 Nov 2019 23:00:30 -0000
+Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 5 Nov 2019 23:00:26 -0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id xA5MxoHu33096076
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 5 Nov 2019 22:59:50 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2876211C052;
+ Tue,  5 Nov 2019 23:00:25 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4423C11C054;
+ Tue,  5 Nov 2019 23:00:23 +0000 (GMT)
+Received: from [9.80.236.186] (unknown [9.80.236.186])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue,  5 Nov 2019 23:00:23 +0000 (GMT)
+Subject: [PATCH v10a 1/9] powerpc: detect the secure boot mode of the system
+To: Mimi Zohar <zohar@linux.ibm.com>, linuxppc-dev@ozlabs.org,
+ linux-efi@vger.kernel.org, linux-integrity@vger.kernel.org
+References: <1572492694-6520-1-git-send-email-zohar@linux.ibm.com>
+ <1572492694-6520-2-git-send-email-zohar@linux.ibm.com>
+From: Eric Richter <erichte@linux.ibm.com>
+Date: Tue, 5 Nov 2019 17:00:22 -0600
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.1.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ed89cd61-7c45-8c9c-ffeb-f27b1872bd7a@redhat.com>
-User-Agent: Mutt/1.5.24 (2015-08-30)
-X-Mailman-Approved-At: Wed, 06 Nov 2019 09:53:06 +1100
+In-Reply-To: <1572492694-6520-2-git-send-email-zohar@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19110523-0016-0000-0000-000002C10CEB
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19110523-0017-0000-0000-00003322862E
+Message-Id: <46b003b9-3225-6bf7-9101-ed6580bb748c@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-11-05_08:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1908290000 definitions=main-1911050187
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,192 +115,143 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-hyperv@vger.kernel.org, Michal Hocko <mhocko@suse.com>,
- Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
- KVM list <kvm@vger.kernel.org>, Pavel Tatashin <pavel.tatashin@microsoft.com>,
- KarimAllah Ahmed <karahmed@amazon.de>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- Alexander Duyck <alexander.duyck@gmail.com>, Michal Hocko <mhocko@kernel.org>,
- Linux MM <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Wanpeng Li <wanpengli@tencent.com>,
- Alexander Duyck <alexander.h.duyck@linux.intel.com>,
- "K. Y. Srinivasan" <kys@microsoft.com>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Kees Cook <keescook@chromium.org>, devel@driverdev.osuosl.org,
- Stefano Stabellini <sstabellini@kernel.org>,
- Stephen Hemminger <sthemmin@microsoft.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Joerg Roedel <joro@8bytes.org>, X86 ML <x86@kernel.org>,
- YueHaibing <yuehaibing@huawei.com>,
- "Matthew Wilcox \(Oracle\)" <willy@infradead.org>,
- Mike Rapoport <rppt@linux.ibm.com>, Peter Zijlstra <peterz@infradead.org>,
- Ingo Molnar <mingo@redhat.com>, Vlastimil Babka <vbabka@suse.cz>,
- Anthony Yznaga <anthony.yznaga@oracle.com>, Oscar Salvador <osalvador@suse.de>,
- "Isaac J. Manjarres" <isaacm@codeaurora.org>,
- Matt Sickler <Matt.Sickler@daktronics.com>, Juergen Gross <jgross@suse.com>,
- Anshuman Khandual <anshuman.khandual@arm.com>,
- Haiyang Zhang <haiyangz@microsoft.com>, Sasha Levin <sashal@kernel.org>,
- kvm-ppc@vger.kernel.org, Qian Cai <cai@lca.pw>,
- Alex Williamson <alex.williamson@redhat.com>,
- Mike Rapoport <rppt@linux.vnet.ibm.com>, Borislav Petkov <bp@alien8.de>,
- Nicholas Piggin <npiggin@gmail.com>, Andy Lutomirski <luto@kernel.org>,
- xen-devel <xen-devel@lists.xenproject.org>,
- Dan Williams <dan.j.williams@intel.com>,
- Vitaly Kuznetsov <vkuznets@redhat.com>, Allison Randal <allison@lohutok.net>,
- Jim Mattson <jmattson@google.com>, Mel Gorman <mgorman@techsingularity.net>,
- Adam Borowski <kilobyte@angband.pl>, Cornelia Huck <cohuck@redhat.com>,
- Pavel Tatashin <pasha.tatashin@soleen.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, Johannes Weiner <hannes@cmpxchg.org>,
- Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Nayna Jain <nayna@linux.ibm.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Jeremy Kerr <jk@ozlabs.org>,
+ Oliver O'Halloran <oohall@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Nov 05, 2019 at 09:30:53PM +0100, David Hildenbrand wrote:
-> >>>I think I know what's going wrong:
-> >>>
-> >>>Pages that are pinned via gfn_to_pfn() and friends take a references,
-> >>>however are often released via
-> >>>kvm_release_pfn_clean()/kvm_release_pfn_dirty()/kvm_release_page_clean()...
-> >>>
-> >>>
-> >>>E.g., in arch/x86/kvm/x86.c:reexecute_instruction()
-> >>>
-> >>>...
-> >>>pfn = gfn_to_pfn(vcpu->kvm, gpa_to_gfn(gpa));
-> >>>...
-> >>>kvm_release_pfn_clean(pfn);
-> >>>
-> >>>
-> >>>
-> >>>void kvm_release_pfn_clean(kvm_pfn_t pfn)
-> >>>{
-> >>>	if (!is_error_noslot_pfn(pfn) && !kvm_is_reserved_pfn(pfn))
-> >>>		put_page(pfn_to_page(pfn));
-> >>>}
-> >>>
-> >>>This function makes perfect sense as the counterpart for kvm_get_pfn():
-> >>>
-> >>>void kvm_get_pfn(kvm_pfn_t pfn)
-> >>>{
-> >>>	if (!kvm_is_reserved_pfn(pfn))
-> >>>		get_page(pfn_to_page(pfn));
-> >>>}
-> >>>
-> >>>
-> >>>As all ZONE_DEVICE pages are currently reserved, pages pinned via
-> >>>gfn_to_pfn() and friends will often not see a put_page() AFAIKS.
-> >
-> >Assuming gup() takes a reference for ZONE_DEVICE pages, yes, this is a
-> >KVM bug.
-> 
-> Yes, it does take a reference AFAIKs. E.g.,
-> 
-> mm/gup.c:gup_pte_range():
-> ...
-> 		if (pte_devmap(pte)) {
-> 			if (unlikely(flags & FOLL_LONGTERM))
-> 				goto pte_unmap;
-> 
-> 			pgmap = get_dev_pagemap(pte_pfn(pte), pgmap);
-> 			if (unlikely(!pgmap)) {
-> 				undo_dev_pagemap(nr, nr_start, pages);
-> 				goto pte_unmap;
-> 			}
-> 		} else if (pte_special(pte))
-> 			goto pte_unmap;
-> 
-> 		VM_BUG_ON(!pfn_valid(pte_pfn(pte)));
-> 		page = pte_page(pte);
-> 
-> 		head = try_get_compound_head(page, 1);
-> 
-> try_get_compound_head() will increment the reference count.
+From: Nayna Jain <nayna@linux.ibm.com>
 
-Doh, I looked right at that code and somehow didn't connect the dots.
-Thanks!
+This patch defines a function to detect the secure boot state of a
+PowerNV system.
 
-> >>>Now, my patch does not change that, the result of
-> >>>kvm_is_reserved_pfn(pfn) will be unchanged. A proper fix for that would
-> >>>probably be
-> >>>
-> >>>a) To drop the reference to ZONE_DEVICE pages in gfn_to_pfn() and
-> >>>friends, after you successfully pinned the pages. (not sure if that's
-> >>>the right thing to do but you're the expert)
-> >>>
-> >>>b) To not use kvm_release_pfn_clean() and friends on pages that were
-> >>>definitely pinned.
-> >
-> >This is already KVM's intent, i.e. the purpose of the PageReserved() check
-> >is simply to avoid putting a non-existent reference.  The problem is that
-> >KVM assumes pages with PG_reserved set are never pinned, which AFAICT was
-> >true when the code was first added.
-> >
-> >>(talking to myself, sorry)
-> >>
-> >>Thinking again, dropping this patch from this series could effectively also
-> >>fix that issue. E.g., kvm_release_pfn_clean() and friends would always do a
-> >>put_page() if "pfn_valid() and !PageReserved()", so after patch 9 also on
-> >>ZONDE_DEVICE pages.
-> >
-> >Yeah, this appears to be the correct fix.
-> >
-> >>But it would have side effects that might not be desired. E.g.,:
-> >>
-> >>1. kvm_pfn_to_page() would also return ZONE_DEVICE pages (might even be the
-> >>right thing to do).
-> >
-> >This should be ok, at least on x86.  There are only three users of
-> >kvm_pfn_to_page().  Two of those are on allocations that are controlled by
-> >KVM and are guaranteed to be vanilla MAP_ANONYMOUS.  The third is on guest
-> >memory when running a nested guest, and in that case supporting ZONE_DEVICE
-> >memory is desirable, i.e. KVM should play nice with a guest that is backed
-> >by ZONE_DEVICE memory.
-> >
-> >>2. kvm_set_pfn_dirty() would also set ZONE_DEVICE pages dirty (might be
-> >>okay)
-> >
-> >This is ok from a KVM perspective.
-> 
-> What about
-> 
-> void kvm_get_pfn(kvm_pfn_t pfn)
-> {
-> 	if (!kvm_is_reserved_pfn(pfn))
-> 		get_page(pfn_to_page(pfn));
-> }
-> 
-> Is a pure get_page() sufficient in case of ZONE_DEVICE?
-> (asking because of the live references obtained via
-> get_dev_pagemap(pte_pfn(pte), pgmap) in mm/gup.c:gup_pte_range() somewhat
-> confuse me :) )
+The PPC_SECURE_BOOT config represents the base enablement of secure boot
+for powerpc.
 
-This ties into my concern with thp_adjust().  On x86, kvm_get_pfn() is
-only used in two flows, to manually get a ref for VM_IO/VM_PFNMAP pages
-and to switch the ref when mapping a non-hugetlbfs compound page, i.e. a
-THP.
+Signed-off-by: Nayna Jain <nayna@linux.ibm.com>
+Signed-off-by: Eric Richter <erichte@linux.ibm.com>
+---
+v10a:
+- moved get_ppc_fw_sb_node to this patch
+- updated based on skiboot device tree changes
+  - os-secure-enforcing was renamed os-secureboot-enforcing
+  - os-secureboot-enforcing was moved to ibm,secureboot
+- removed now unnecessary node availibility check
 
-I assume VM_IO and PFNMAP can't apply to ZONE_DEVICE pages.
+ arch/powerpc/Kconfig                   | 10 ++++++++
+ arch/powerpc/include/asm/secure_boot.h | 23 +++++++++++++++++
+ arch/powerpc/kernel/Makefile           |  2 ++
+ arch/powerpc/kernel/secure_boot.c      | 34 ++++++++++++++++++++++++++
+ 4 files changed, 69 insertions(+)
+ create mode 100644 arch/powerpc/include/asm/secure_boot.h
+ create mode 100644 arch/powerpc/kernel/secure_boot.c
 
-In the thp_adjust() case, when a THP is encountered and the original PFN
-is for a non-PG_head page, KVM transfers the reference to the associated
-PG_head page[*] and maps the associated 2mb chunk/page.  This is where KVM
-uses kvm_get_pfn() and could run afoul of the get_dev_pagemap() refcounts.
-
-
-[*] Technically I don't think it's guaranteed to be a PG_head, e.g. if the
-    THP is a 1gb page, as KVM currently only maps THP as 2mb pages.  But
-    the idea is the same, transfer the refcount the PFN that's actually
-    going into KVM's page tables.
-
-> >
-> >The scarier code (for me) is transparent_hugepage_adjust() and
-> >kvm_mmu_zap_collapsible_spte(), as I don't at all understand the
-> >interaction between THP and _PAGE_DEVMAP.
-> 
-> The x86 KVM MMU code is one of the ugliest code I know (sorry, but it had to
-> be said :/ ). Luckily, this should be independent of the PG_reserved thingy
-> AFAIKs.
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 3e56c9c2f16e..56ea0019b616 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -934,6 +934,16 @@ config PPC_MEM_KEYS
+ 
+ 	  If unsure, say y.
+ 
++config PPC_SECURE_BOOT
++	prompt "Enable secure boot support"
++	bool
++	depends on PPC_POWERNV
++	help
++	  Systems with firmware secure boot enabled need to define security
++	  policies to extend secure boot to the OS. This config allows a user
++	  to enable OS secure boot on systems that have firmware support for
++	  it. If in doubt say N.
++
+ endmenu
+ 
+ config ISA_DMA_API
+diff --git a/arch/powerpc/include/asm/secure_boot.h b/arch/powerpc/include/asm/secure_boot.h
+new file mode 100644
+index 000000000000..07d0fe0ca81f
+--- /dev/null
++++ b/arch/powerpc/include/asm/secure_boot.h
+@@ -0,0 +1,23 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Secure boot definitions
++ *
++ * Copyright (C) 2019 IBM Corporation
++ * Author: Nayna Jain
++ */
++#ifndef _ASM_POWER_SECURE_BOOT_H
++#define _ASM_POWER_SECURE_BOOT_H
++
++#ifdef CONFIG_PPC_SECURE_BOOT
++
++bool is_ppc_secureboot_enabled(void);
++
++#else
++
++static inline bool is_ppc_secureboot_enabled(void)
++{
++	return false;
++}
++
++#endif
++#endif
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index a7ca8fe62368..e2a54fa240ac 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -161,6 +161,8 @@ ifneq ($(CONFIG_PPC_POWERNV)$(CONFIG_PPC_SVM),)
+ obj-y				+= ucall.o
+ endif
+ 
++obj-$(CONFIG_PPC_SECURE_BOOT)	+= secure_boot.o
++
+ # Disable GCOV, KCOV & sanitizers in odd or sensitive code
+ GCOV_PROFILE_prom_init.o := n
+ KCOV_INSTRUMENT_prom_init.o := n
+diff --git a/arch/powerpc/kernel/secure_boot.c b/arch/powerpc/kernel/secure_boot.c
+new file mode 100644
+index 000000000000..3f55be33f5c8
+--- /dev/null
++++ b/arch/powerpc/kernel/secure_boot.c
+@@ -0,0 +1,34 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (C) 2019 IBM Corporation
++ * Author: Nayna Jain
++ */
++#include <linux/types.h>
++#include <linux/of.h>
++#include <asm/secure_boot.h>
++
++static struct device_node *get_ppc_fw_sb_node(void)
++{
++	static const struct of_device_id ids[] = {
++		{ .compatible = "ibm,secureboot-v1", },
++		{ .compatible = "ibm,secureboot-v2", },
++		{},
++	};
++
++	return of_find_matching_node(NULL, ids);
++}
++
++bool is_ppc_secureboot_enabled(void)
++{
++	struct device_node *node;
++	bool enabled = false;
++
++	node = get_ppc_fw_sb_node();
++	enabled = of_property_read_bool(node, "os-secureboot-enforcing");
++
++	of_node_put(node);
++
++	pr_info("Secure boot mode %s\n", enabled ? "enabled" : "disabled");
++
++	return enabled;
++}
+-- 
+2.20.1
 
