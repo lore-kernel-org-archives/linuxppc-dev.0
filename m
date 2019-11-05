@@ -2,65 +2,118 @@ Return-Path: <SRS0=UcJ4=Y5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.7 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 335FAC49EAB
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2019 10:04:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C6BC0C49EAB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2019 10:07:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DFA7721928
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2019 10:04:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DFA7721928
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
+	by mail.kernel.org (Postfix) with ESMTPS id 41C5B21A4A
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2019 10:07:31 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b="KE3dP9Kv"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 41C5B21A4A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ffwll.ch
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 476lcv6YdqzDsRw
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2019 21:04:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 476lhd2zH5zF4fk
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2019 21:07:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=linutronix.de
- (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
- envelope-from=tip-bot2@linutronix.de; receiver=<UNKNOWN>)
+ spf=none (no SPF record) smtp.mailfrom=ffwll.ch
+ (client-ip=2a00:1450:4864:20::341; helo=mail-wm1-x341.google.com;
+ envelope-from=daniel@ffwll.ch; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linutronix.de
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a0a:51c0:0:12e:550::1])
- (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=ffwll.ch
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=ffwll.ch header.i=@ffwll.ch header.b="KE3dP9Kv"; 
+ dkim-atps=neutral
+Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com
+ [IPv6:2a00:1450:4864:20::341])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 476kqG2vnhzDrqh
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Nov 2019 20:28:10 +1100 (AEDT)
-Received: from [5.158.153.53] (helo=tip-bot2.lab.linutronix.de)
- by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
- (Exim 4.80) (envelope-from <tip-bot2@linutronix.de>)
- id 1iRv7l-0007a1-9o; Tue, 05 Nov 2019 10:27:41 +0100
-Received: from [127.0.1.1] (localhost [IPv6:::1])
- by tip-bot2.lab.linutronix.de (Postfix) with ESMTP id BE6161C04E4;
- Tue,  5 Nov 2019 10:27:33 +0100 (CET)
-Date: Tue, 05 Nov 2019 09:27:33 -0000
-From: "tip-bot2 for Kees Cook" <tip-bot2@linutronix.de>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip: x86/build] vmlinux.lds.h: Move Program Header restoration into
- NOTES macro
-In-Reply-To: <20191029211351.13243-10-keescook@chromium.org>
-References: <20191029211351.13243-10-keescook@chromium.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 476lJ93LNxzF3tP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Nov 2019 20:49:44 +1100 (AEDT)
+Received: by mail-wm1-x341.google.com with SMTP id z26so6899873wmi.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Nov 2019 01:49:43 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ffwll.ch; s=google;
+ h=sender:date:from:to:cc:subject:message-id:mail-followup-to
+ :references:mime-version:content-disposition:in-reply-to:user-agent;
+ bh=oRi35sDRRYSuldGaopElz5IjGs2HKuOAcqpcVoq2wdY=;
+ b=KE3dP9KvcLUq0hJbOhSYMXJr4Z1Cuc2Vc3sYtj3A588K1AxiPBhNRv2jLPVvg3HpiB
+ asO9jGRsCrrAGrGXQuynbnaqIOtPdku/48txDbkC3jyEv0zbAYA99l9MmTsEF4lXmu4c
+ UlGTi/e9P81uVhAoSbMh6OU7HFW5tO869wbeU=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:sender:date:from:to:cc:subject:message-id
+ :mail-followup-to:references:mime-version:content-disposition
+ :in-reply-to:user-agent;
+ bh=oRi35sDRRYSuldGaopElz5IjGs2HKuOAcqpcVoq2wdY=;
+ b=ivouc8qBgBRfqLoqcGzHpdPwpowdp8ozNReAkYX4/TumS+e3+4esHP5jywwOKDB279
+ ZuZLw5dVavKewq4prH6dSkuOFuCUZwBDSUocFa1vbHFRqoSNj+H46slKsCIMCD/Fwsgg
+ CJzpl2YCJ2fiCng0fPyJDHob3z2sH1D5vZYUjV47167TYtA2Z/tVd1YfPuZsvaVFRtfu
+ mxk34ZVdLTCA3ehESUDZrVvUvCc/yNDFMTckSdKdjnTHSuUwY76IRR5W78iVdTAwjT4D
+ R4vmxGPwcK3S5SAgUiRzGAfThvLdyN7lUB3sJDbcfg+moRpmsrwfG9KRsiSym11ygrTB
+ 026w==
+X-Gm-Message-State: APjAAAU24QkYIlFSL0Codm43C8Lo2FmL+aRK87DfMzzJhK77BydCIZDk
+ m3Y/ohnFzEsoFOVt/D4YJGGUxw==
+X-Google-Smtp-Source: APXvYqy+m+ZJ5zxOn/Dji3l65qB+TEfMmH5EiR/oP/iFPjGmYGokusjpTK+YoOlM7MNeuKLe8vHIRQ==
+X-Received: by 2002:a7b:c925:: with SMTP id h5mr3591415wml.115.1572947379914; 
+ Tue, 05 Nov 2019 01:49:39 -0800 (PST)
+Received: from phenom.ffwll.local (212-51-149-96.fiber7.init7.net.
+ [212.51.149.96])
+ by smtp.gmail.com with ESMTPSA id j19sm25704277wre.0.2019.11.05.01.49.38
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 05 Nov 2019 01:49:39 -0800 (PST)
+Date: Tue, 5 Nov 2019 10:49:36 +0100
+From: Daniel Vetter <daniel@ffwll.ch>
+To: John Hubbard <jhubbard@nvidia.com>
+Subject: Re: [PATCH 09/19] drm/via: set FOLL_PIN via pin_user_pages_fast()
+Message-ID: <20191105094936.GZ10326@phenom.ffwll.local>
+Mail-Followup-To: John Hubbard <jhubbard@nvidia.com>,
+ Ira Weiny <ira.weiny@intel.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Al Viro <viro@zeniv.linux.org.uk>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ =?iso-8859-1?Q?Bj=F6rn_T=F6pel?= <bjorn.topel@intel.com>,
+ Christoph Hellwig <hch@infradead.org>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Dave Chinner <david@fromorbit.com>, David Airlie <airlied@linux.ie>,
+ "David S . Miller" <davem@davemloft.net>, Jan Kara <jack@suse.cz>,
+ Jason Gunthorpe <jgg@ziepe.ca>, Jens Axboe <axboe@kernel.dk>,
+ Jonathan Corbet <corbet@lwn.net>,
+ =?iso-8859-1?B?Suly9G1l?= Glisse <jglisse@redhat.com>,
+ Magnus Karlsson <magnus.karlsson@intel.com>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Michal Hocko <mhocko@suse.com>,
+ Mike Kravetz <mike.kravetz@oracle.com>,
+ Paul Mackerras <paulus@samba.org>, Shuah Khan <shuah@kernel.org>,
+ Vlastimil Babka <vbabka@suse.cz>, bpf@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, kvm@vger.kernel.org,
+ linux-block@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linux-kselftest@vger.kernel.org,
+ linux-media@vger.kernel.org, linux-rdma@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
+ linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>
+References: <20191030224930.3990755-1-jhubbard@nvidia.com>
+ <20191030224930.3990755-10-jhubbard@nvidia.com>
+ <20191031233628.GI14771@iweiny-DESK2.sc.intel.com>
+ <20191104181055.GP10326@phenom.ffwll.local>
+ <48d22c77-c313-59ff-4847-bc9a9813b8a7@nvidia.com>
 MIME-Version: 1.0
-Message-ID: <157294605350.29376.17430557461465855450.tip-bot2@tip-bot2>
-X-Mailer: tip-git-log-daemon
-Robot-ID: <tip-bot2.linutronix.de>
-Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from
- these emails
-Precedence: bulk
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Linutronix-Spam-Score: -1.0
-X-Linutronix-Spam-Level: -
-X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required, ALL_TRUSTED=-1,
- SHORTCIRCUIT=-0.0001
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48d22c77-c313-59ff-4847-bc9a9813b8a7@nvidia.com>
+X-Operating-System: Linux phenom 5.2.0-3-amd64 
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
+Precedence: list
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -69,187 +122,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: linux-kernel@vger.kernel.org
-Cc: linux-ia64@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Will Deacon <will@kernel.org>,
- Ingo Molnar <mingo@kernel.org>, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
- x86-ml <x86@kernel.org>, Borislav Petkov <bp@suse.de>,
- Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
- Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
- linux-arm-kernel@lists.infradead.org, linux-c6x-dev@linux-c6x.org,
- Michal Simek <monstr@monstr.eu>, linux-kernel@vger.kernel.org,
- linux-alpha@vger.kernel.org, Rick Edgecombe <rick.p.edgecombe@intel.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>,
+ kvm@vger.kernel.org, linux-doc@vger.kernel.org,
+ David Airlie <airlied@linux.ie>, Dave Chinner <david@fromorbit.com>,
+ dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ linux-kselftest@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>,
+ Jonathan Corbet <corbet@lwn.net>, linux-rdma@vger.kernel.org,
+ Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>,
+ Vlastimil Babka <vbabka@suse.cz>,
+ =?iso-8859-1?Q?Bj=F6rn_T=F6pel?= <bjorn.topel@intel.com>,
+ linux-media@vger.kernel.org, Shuah Khan <shuah@kernel.org>,
+ linux-block@vger.kernel.org,
+ =?iso-8859-1?B?Suly9G1l?= Glisse <jglisse@redhat.com>,
+ Al Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>, bpf@vger.kernel.org,
+ Magnus Karlsson <magnus.karlsson@intel.com>, Jens Axboe <axboe@kernel.dk>,
+ netdev@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
+ linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>,
+ Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The following commit has been merged into the x86/build branch of tip:
+On Mon, Nov 04, 2019 at 11:20:38AM -0800, John Hubbard wrote:
+> On 11/4/19 10:10 AM, Daniel Vetter wrote:
+> > On Thu, Oct 31, 2019 at 04:36:28PM -0700, Ira Weiny wrote:
+> >> On Wed, Oct 30, 2019 at 03:49:20PM -0700, John Hubbard wrote:
+> >>> Convert drm/via to use the new pin_user_pages_fast() call, which sets
+> >>> FOLL_PIN. Setting FOLL_PIN is now required for code that requires
+> >>> tracking of pinned pages, and therefore for any code that calls
+> >>> put_user_page().
+> >>>
+> >>
+> >> Reviewed-by: Ira Weiny <ira.weiny@intel.com>
+> > 
+> > No one's touching the via driver anymore, so feel free to merge this
+> > through whatever tree suits best (aka I'll drop this on the floor and
+> > forget about it now).
+> > 
+> > Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+> > 
+> 
+> OK, great. Yes, in fact, I'm hoping Andrew can just push the whole series
+> in through the mm tree, because that would allow it to be done in one 
+> shot, in 5.5
 
-Commit-ID:     fbe6a8e618a2d70621cff277e24f6eb338d3d149
-Gitweb:        https://git.kernel.org/tip/fbe6a8e618a2d70621cff277e24f6eb338d3d149
-Author:        Kees Cook <keescook@chromium.org>
-AuthorDate:    Tue, 29 Oct 2019 14:13:31 -07:00
-Committer:     Borislav Petkov <bp@suse.de>
-CommitterDate: Mon, 04 Nov 2019 15:34:39 +01:00
-
-vmlinux.lds.h: Move Program Header restoration into NOTES macro
-
-In preparation for moving NOTES into RO_DATA, make the Program Header
-assignment restoration be part of the NOTES macro itself.
-
-Signed-off-by: Kees Cook <keescook@chromium.org>
-Signed-off-by: Borislav Petkov <bp@suse.de>
-Acked-by: Heiko Carstens <heiko.carstens@de.ibm.com> # s390
-Cc: Andy Lutomirski <luto@kernel.org>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: linux-alpha@vger.kernel.org
-Cc: linux-arch@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-c6x-dev@linux-c6x.org
-Cc: linux-ia64@vger.kernel.org
-Cc: linux-s390@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Michal Simek <monstr@monstr.eu>
-Cc: Rick Edgecombe <rick.p.edgecombe@intel.com>
-Cc: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Will Deacon <will@kernel.org>
-Cc: x86-ml <x86@kernel.org>
-Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
-Link: https://lkml.kernel.org/r/20191029211351.13243-10-keescook@chromium.org
----
- arch/alpha/kernel/vmlinux.lds.S   |  5 +----
- arch/ia64/kernel/vmlinux.lds.S    |  4 +---
- arch/mips/kernel/vmlinux.lds.S    |  3 +--
- arch/powerpc/kernel/vmlinux.lds.S |  4 +---
- arch/s390/kernel/vmlinux.lds.S    |  4 +---
- arch/x86/kernel/vmlinux.lds.S     |  3 +--
- include/asm-generic/vmlinux.lds.h | 13 +++++++++++--
- 7 files changed, 17 insertions(+), 19 deletions(-)
-
-diff --git a/arch/alpha/kernel/vmlinux.lds.S b/arch/alpha/kernel/vmlinux.lds.S
-index 363a60b..cdfdc91 100644
---- a/arch/alpha/kernel/vmlinux.lds.S
-+++ b/arch/alpha/kernel/vmlinux.lds.S
-@@ -34,10 +34,7 @@ SECTIONS
- 	swapper_pg_dir = SWAPPER_PGD;
- 	_etext = .;	/* End of text section */
- 
--	NOTES :text :note
--	.dummy : {
--		*(.dummy)
--	} :text
-+	NOTES
- 
- 	RODATA
- 	EXCEPTION_TABLE(16)
-diff --git a/arch/ia64/kernel/vmlinux.lds.S b/arch/ia64/kernel/vmlinux.lds.S
-index 7cf4958..bfc937e 100644
---- a/arch/ia64/kernel/vmlinux.lds.S
-+++ b/arch/ia64/kernel/vmlinux.lds.S
-@@ -70,9 +70,7 @@ SECTIONS {
- 	/*
- 	 * Read-only data
- 	 */
--	NOTES :text :note       /* put .notes in text and mark in PT_NOTE  */
--	code_continues : {
--	} :text                /* switch back to regular program...  */
-+	NOTES
- 
- 	EXCEPTION_TABLE(16)
- 
-diff --git a/arch/mips/kernel/vmlinux.lds.S b/arch/mips/kernel/vmlinux.lds.S
-index 1c95612..6a22f53 100644
---- a/arch/mips/kernel/vmlinux.lds.S
-+++ b/arch/mips/kernel/vmlinux.lds.S
-@@ -81,8 +81,7 @@ SECTIONS
- 		__stop___dbe_table = .;
- 	}
- 
--	NOTES NOTES_HEADERS
--	.dummy : { *(.dummy) } :text
-+	NOTES
- 
- 	_sdata = .;			/* Start of data section */
- 	RODATA
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 7e26e20..4f19d81 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -164,9 +164,7 @@ SECTIONS
- #endif
- 	EXCEPTION_TABLE(0)
- 
--	NOTES :text :note
--	/* Restore program header away from PT_NOTE. */
--	.dummy : { *(.dummy) } :text
-+	NOTES
- 
- /*
-  * Init sections discarded at runtime
-diff --git a/arch/s390/kernel/vmlinux.lds.S b/arch/s390/kernel/vmlinux.lds.S
-index 646d939..f88eede 100644
---- a/arch/s390/kernel/vmlinux.lds.S
-+++ b/arch/s390/kernel/vmlinux.lds.S
-@@ -52,9 +52,7 @@ SECTIONS
- 		_etext = .;		/* End of text section */
- 	} :text = 0x0700
- 
--	NOTES :text :note
--
--	.dummy : { *(.dummy) } :text
-+	NOTES
- 
- 	RO_DATA_SECTION(PAGE_SIZE)
- 
-diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
-index 2e18bf5..8be25b0 100644
---- a/arch/x86/kernel/vmlinux.lds.S
-+++ b/arch/x86/kernel/vmlinux.lds.S
-@@ -148,8 +148,7 @@ SECTIONS
- 		_etext = .;
- 	} :text = 0x9090
- 
--	NOTES :text :note
--	.dummy : { *(.dummy) } :text
-+	NOTES
- 
- 	EXCEPTION_TABLE(16)
- 
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index f5dd45c..97d4299 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -56,10 +56,18 @@
- 
- /*
-  * Only some architectures want to have the .notes segment visible in
-- * a separate PT_NOTE ELF Program Header.
-+ * a separate PT_NOTE ELF Program Header. When this happens, it needs
-+ * to be visible in both the kernel text's PT_LOAD and the PT_NOTE
-+ * Program Headers. In this case, though, the PT_LOAD needs to be made
-+ * the default again so that all the following sections don't also end
-+ * up in the PT_NOTE Program Header.
-  */
- #ifdef EMITS_PT_NOTE
- #define NOTES_HEADERS		:text :note
-+#define NOTES_HEADERS_RESTORE	__restore_ph : { *(.__restore_ph) } :text
-+#else
-+#define NOTES_HEADERS
-+#define NOTES_HEADERS_RESTORE
- #endif
- 
- /* Align . to a 8 byte boundary equals to maximum function alignment. */
-@@ -798,7 +806,8 @@
- 		__start_notes = .;					\
- 		KEEP(*(.note.*))					\
- 		__stop_notes = .;					\
--	}
-+	} NOTES_HEADERS							\
-+	NOTES_HEADERS_RESTORE
- 
- #define INIT_SETUP(initsetup_align)					\
- 		. = ALIGN(initsetup_align);				\
+btw is there more? We should have a bunch more userptr stuff in various
+drivers, so was really surprised that drm/via is the only thing in your
+series.
+-Daniel
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch
