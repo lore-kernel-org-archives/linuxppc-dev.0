@@ -6,67 +6,66 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E9AEDC5DF64
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2019 15:40:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F1EDC5DF60
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2019 15:42:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A67332087E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2019 15:40:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A67332087E
+	by mail.kernel.org (Postfix) with ESMTPS id 292D22190F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2019 15:42:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 292D22190F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 476v4G4VNfzF3dG
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 02:39:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 476v6j0lKHzF55f
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 02:42:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 476tkS40ZXzF3pr
+ by lists.ozlabs.org (Postfix) with ESMTPS id 476tkS6YDwzF3n1
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2019 02:24:32 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- xA5F3tkj014105; Tue, 5 Nov 2019 10:24:26 -0500
-Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
- [169.63.121.186])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2w3a4h53y3-1
+ xA5F4SFY029462; Tue, 5 Nov 2019 10:24:27 -0500
+Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.10])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2w3awvtktc-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 05 Nov 2019 10:24:25 -0500
-Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
- by ppma03wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id xA5FCBSI016165;
- Tue, 5 Nov 2019 15:24:24 GMT
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24]) by ppma03wdc.us.ibm.com with ESMTP id 2w11e7eqj6-1
+ Tue, 05 Nov 2019 10:24:26 -0500
+Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
+ by ppma02dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id xA5FLtbr003350;
+ Tue, 5 Nov 2019 15:24:26 GMT
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25]) by ppma02dal.us.ibm.com with ESMTP id 2w11e7eahd-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 05 Nov 2019 15:24:24 +0000
+ Tue, 05 Nov 2019 15:24:26 +0000
 Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
  [9.57.199.106])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xA5FOOBw29884730
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xA5FOPZ954329792
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 5 Nov 2019 15:24:24 GMT
+ Tue, 5 Nov 2019 15:24:25 GMT
 Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1A2352805A;
+ by IMSVA (Postfix) with ESMTP id 3AD862805A;
+ Tue,  5 Nov 2019 15:24:25 +0000 (GMT)
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C509A28058;
  Tue,  5 Nov 2019 15:24:24 +0000 (GMT)
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A4CFC28058;
- Tue,  5 Nov 2019 15:24:23 +0000 (GMT)
 Received: from ltcalpine2-lp18.aus.stglabs.ibm.com (unknown [9.40.195.201])
  by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
- Tue,  5 Nov 2019 15:24:23 +0000 (GMT)
+ Tue,  5 Nov 2019 15:24:24 +0000 (GMT)
 From: Tyrel Datwyler <tyreld@linux.ibm.com>
 To: mpe@ellerman.id.au
-Subject: [PATCH 7/9] PCI: rpaphp: annotate and correctly byte swap DRC
- properties
-Date: Tue,  5 Nov 2019 09:24:11 -0600
-Message-Id: <1572967453-9586-8-git-send-email-tyreld@linux.ibm.com>
+Subject: [PATCH 9/9] powerpc/pseries: Enable support for ibm, drc-info property
+Date: Tue,  5 Nov 2019 09:24:13 -0600
+Message-Id: <1572967453-9586-10-git-send-email-tyreld@linux.ibm.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1572967453-9586-1-git-send-email-tyreld@linux.ibm.com>
 References: <1572967453-9586-1-git-send-email-tyreld@linux.ibm.com>
@@ -96,102 +95,27 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The device tree is in big endian format and any properties directly
-retrieved using OF helpers that don't explicitly byte swap should
-be annotated. In particular there are several places where we grab
-the opaque property value for the old ibm,drc-* properties and the
-ibm,my-drc-index property.
-
-Fix this for better static checking by annotating values we know to
-explicitly big endian, and byte swap where appropriate.
+Advertise client support for the PAPR architected ibm,drc-info device
+tree property during CAS handshake.
 
 Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
 ---
- drivers/pci/hotplug/rpaphp_core.c | 26 +++++++++++++-------------
- 1 file changed, 13 insertions(+), 13 deletions(-)
+ arch/powerpc/kernel/prom_init.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
-index 75d5771..eabc0c51 100644
---- a/drivers/pci/hotplug/rpaphp_core.c
-+++ b/drivers/pci/hotplug/rpaphp_core.c
-@@ -154,9 +154,9 @@ static enum pci_bus_speed get_max_bus_speed(struct slot *slot)
- 	return speed;
- }
- 
--static int get_children_props(struct device_node *dn, const int **drc_indexes,
--		const int **drc_names, const int **drc_types,
--		const int **drc_power_domains)
-+static int get_children_props(struct device_node *dn, const __be32 **drc_indexes,
-+		const __be32 **drc_names, const __be32 **drc_types,
-+		const __be32 **drc_power_domains)
- {
- 	const int *indexes, *names, *types, *domains;
- 
-@@ -194,8 +194,8 @@ static int rpaphp_check_drc_props_v1(struct device_node *dn, char *drc_name,
- 				char *drc_type, unsigned int my_index)
- {
- 	char *name_tmp, *type_tmp;
--	const int *indexes, *names;
--	const int *types, *domains;
-+	const __be32 *indexes, *names;
-+	const __be32 *types, *domains;
- 	int i, rc;
- 
- 	rc = get_children_props(dn->parent, &indexes, &names, &types, &domains);
-@@ -208,7 +208,7 @@ static int rpaphp_check_drc_props_v1(struct device_node *dn, char *drc_name,
- 
- 	/* Iterate through parent properties, looking for my-drc-index */
- 	for (i = 0; i < be32_to_cpu(indexes[0]); i++) {
--		if ((unsigned int) indexes[i + 1] == my_index)
-+		if (be32_to_cpu(indexes[i + 1]) == my_index)
- 			break;
- 
- 		name_tmp += (strlen(name_tmp) + 1);
-@@ -267,7 +267,7 @@ static int rpaphp_check_drc_props_v2(struct device_node *dn, char *drc_name,
- int rpaphp_check_drc_props(struct device_node *dn, char *drc_name,
- 			char *drc_type)
- {
--	const unsigned int *my_index;
-+	const __be32 *my_index;
- 
- 	my_index = of_get_property(dn, "ibm,my-drc-index", NULL);
- 	if (!my_index) {
-@@ -277,10 +277,10 @@ int rpaphp_check_drc_props(struct device_node *dn, char *drc_name,
- 
- 	if (of_find_property(dn->parent, "ibm,drc-info", NULL))
- 		return rpaphp_check_drc_props_v2(dn, drc_name, drc_type,
--						*my_index);
-+						be32_to_cpu(*my_index));
- 	else
- 		return rpaphp_check_drc_props_v1(dn, drc_name, drc_type,
--						*my_index);
-+						be32_to_cpu(*my_index));
- }
- EXPORT_SYMBOL_GPL(rpaphp_check_drc_props);
- 
-@@ -311,10 +311,10 @@ static int is_php_type(char *drc_type)
-  * for built-in pci slots (even when the built-in slots are
-  * dlparable.)
-  */
--static int is_php_dn(struct device_node *dn, const int **indexes,
--		const int **names, const int **types, const int **power_domains)
-+static int is_php_dn(struct device_node *dn, const __be32 **indexes,
-+		const __be32 **names, const __be32 **types, const __be32 **power_domains)
- {
--	const int *drc_types;
-+	const __be32 *drc_types;
- 	int rc;
- 
- 	rc = get_children_props(dn, indexes, names, &drc_types, power_domains);
-@@ -374,7 +374,7 @@ static int rpaphp_drc_add_slot(struct device_node *dn)
- 	struct slot *slot;
- 	int retval = 0;
- 	int i;
--	const int *indexes, *names, *types, *power_domains;
-+	const __be32 *indexes, *names, *types, *power_domains;
- 	char *name, *type;
- 
- 	/* If this is not a hotplug slot, return without doing anything. */
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index a4e7762..2ca9966 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -1053,7 +1053,7 @@ static const struct ibm_arch_vec ibm_architecture_vec_template __initconst = {
+ 		.reserved2 = 0,
+ 		.reserved3 = 0,
+ 		.subprocessors = 1,
+-		.byte22 = OV5_FEAT(OV5_DRMEM_V2),
++		.byte22 = OV5_FEAT(OV5_DRMEM_V2) | OV5_FEAT(OV5_DRC_INFO),
+ 		.intarch = 0,
+ 		.mmu = 0,
+ 		.hash_ext = 0,
 -- 
 2.7.4
 
