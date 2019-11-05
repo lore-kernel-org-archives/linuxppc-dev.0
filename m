@@ -3,21 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D2896C1747C
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2019 14:37:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 23D67C17460
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2019 14:51:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7EA4421928
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2019 14:37:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7EA4421928
+	by mail.kernel.org (Postfix) with ESMTPS id 898FF217F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2019 14:51:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 898FF217F5
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 476shR2cY5zF4yb
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 01:37:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 476szl6RbszF52j
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 01:50:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=srs0=csgb=y5=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
@@ -27,13 +28,13 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 476sdf1d6ZzF4yD
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2019 01:35:17 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 476sxL29dVzF3Nn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2019 01:48:54 +1100 (AEDT)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 205201] Booting halts if Dawicontrol DC-2976 UW SCSI board
  installed, unless RAM size limited to 3500M
-Date: Tue, 05 Nov 2019 14:33:31 +0000
+Date: Tue, 05 Nov 2019 14:47:08 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
@@ -42,14 +43,14 @@ X-Bugzilla-Component: PPC-64
 X-Bugzilla-Version: 2.5
 X-Bugzilla-Keywords: 
 X-Bugzilla-Severity: normal
-X-Bugzilla-Who: chzigotzky@xenosoft.de
+X-Bugzilla-Who: christophe.leroy@c-s.fr
 X-Bugzilla-Status: NEW
 X-Bugzilla-Resolution: 
 X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
 X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-205201-206035-9dUvRE9Wf0@https.bugzilla.kernel.org/>
+Message-ID: <bug-205201-206035-Leh2P4ERs5@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-205201-206035@https.bugzilla.kernel.org/>
 References: <bug-205201-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -74,16 +75,11 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D205201
 
---- Comment #4 from Christian Zigotzky (chzigotzky@xenosoft.de) ---
-Yes, I can. Could you please post the correct commits for starting bisect?
+--- Comment #5 from Christophe Leroy (christophe.leroy@c-s.fr) ---
+I guess:
 
-git bisect start
-
-git bisect good ?
-
-git bisect bad ?
-
-Thanks
+git bisect bad 8d6973327
+git bisect good v4.20
 
 --=20
 You are receiving this mail because:
