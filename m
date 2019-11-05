@@ -2,64 +2,87 @@ Return-Path: <SRS0=UcJ4=Y5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.7 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64E2EC010A3
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2019 10:47:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2AF55C010A2
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2019 10:49:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1AB592190F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2019 10:47:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1AB592190F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
+	by mail.kernel.org (Postfix) with ESMTPS id C6FB82190F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2019 10:49:53 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="b6DH0v8G"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C6FB82190F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 476mZX0JyhzF4sY
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2019 21:47:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 476mdW4W2vzF4QK
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2019 21:49:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=redhat.com (client-ip=207.211.31.81;
+ helo=us-smtp-delivery-1.mimecast.com; envelope-from=david@redhat.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=linutronix.de
- (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
- envelope-from=tip-bot2@linutronix.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linutronix.de
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a0a:51c0:0:12e:550::1])
- (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.b="b6DH0v8G"; 
+ dkim-atps=neutral
+Received: from us-smtp-delivery-1.mimecast.com (us-smtp-1.mimecast.com
+ [207.211.31.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 476lr756CCzF3H8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Nov 2019 21:13:59 +1100 (AEDT)
-Received: from [5.158.153.53] (helo=tip-bot2.lab.linutronix.de)
- by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
- (Exim 4.80) (envelope-from <tip-bot2@linutronix.de>)
- id 1iRv7Z-0007In-QN; Tue, 05 Nov 2019 10:27:29 +0100
-Received: from [127.0.1.1] (localhost [IPv6:::1])
- by tip-bot2.lab.linutronix.de (Postfix) with ESMTP id 694AC1C0324;
- Tue,  5 Nov 2019 10:27:29 +0100 (CET)
-Date: Tue, 05 Nov 2019 09:27:29 -0000
-From: "tip-bot2 for Kees Cook" <tip-bot2@linutronix.de>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip: x86/build] h8300: Move EXCEPTION_TABLE to RO_DATA segment
-In-Reply-To: <20191029211351.13243-21-keescook@chromium.org>
-References: <20191029211351.13243-21-keescook@chromium.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 476kc43r2ZzF1LP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Nov 2019 20:18:28 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1572945505;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=fsUg4V2hCRqokDEt6EDiLa/nWjJkgCxKTlTyYOik09s=;
+ b=b6DH0v8GS26OpMHXc7M+R6iK1WWnEegVfyYJG/4L8sm+b14ZLK0wnTWOjm237KU+DYsZ/m
+ VelgWfhEb9mNBeq1mrYyd1KsrBLpp/y4ZPWReg2b6RWcC+QMOhrwC3n17Dv+AYAWHtpIuE
+ AW3FH4I9u5ySBfXd5kxzmj6CkUp7ayM=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-265-wRX3ELHkOxy3Ag2rKnjLCA-1; Tue, 05 Nov 2019 04:18:24 -0500
+Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com
+ [10.5.11.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 90226477;
+ Tue,  5 Nov 2019 09:18:16 +0000 (UTC)
+Received: from [10.36.117.253] (ovpn-117-253.ams2.redhat.com [10.36.117.253])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id E1D465D70D;
+ Tue,  5 Nov 2019 09:17:55 +0000 (UTC)
+Subject: Re: [PATCH v1 03/10] KVM: Prepare kvm_is_reserved_pfn() for
+ PG_reserved changes
+To: Dan Williams <dan.j.williams@intel.com>
+References: <20191024120938.11237-1-david@redhat.com>
+ <20191024120938.11237-4-david@redhat.com>
+ <CAPcyv4jyTxEpw5ep5Noy0YRV7Dybzj+8OTVMwRK_zeFigF-LsQ@mail.gmail.com>
+From: David Hildenbrand <david@redhat.com>
+Organization: Red Hat GmbH
+Message-ID: <bbe59155-24ae-f229-e182-107730423c47@redhat.com>
+Date: Tue, 5 Nov 2019 10:17:54 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.1.1
 MIME-Version: 1.0
-Message-ID: <157294604912.29376.17605792463446039356.tip-bot2@tip-bot2>
-X-Mailer: tip-git-log-daemon
-Robot-ID: <tip-bot2.linutronix.de>
-Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from
- these emails
-Precedence: bulk
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Linutronix-Spam-Score: -1.0
-X-Linutronix-Spam-Level: -
-X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required, ALL_TRUSTED=-1,
- SHORTCIRCUIT=-0.0001
+In-Reply-To: <CAPcyv4jyTxEpw5ep5Noy0YRV7Dybzj+8OTVMwRK_zeFigF-LsQ@mail.gmail.com>
+Content-Language: en-US
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.15
+X-MC-Unique: wRX3ELHkOxy3Ag2rKnjLCA-1
+X-Mimecast-Spam-Score: 0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Mailman-Approved-At: Tue, 05 Nov 2019 21:46:21 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
+Precedence: list
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -68,80 +91,118 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: linux-kernel@vger.kernel.org
-Cc: linux-ia64@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Will Deacon <will@kernel.org>,
- Ingo Molnar <mingo@kernel.org>, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
- x86-ml <x86@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Borislav Petkov <bp@suse.de>, uclinux-h8-devel@lists.sourceforge.jp,
- Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
- Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
- linux-arm-kernel@lists.infradead.org, linux-c6x-dev@linux-c6x.org,
- Michal Simek <monstr@monstr.eu>, linux-kernel@vger.kernel.org,
- linux-alpha@vger.kernel.org, Rick Edgecombe <rick.p.edgecombe@intel.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linux-hyperv@vger.kernel.org, Michal Hocko <mhocko@suse.com>,
+ =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+ KVM list <kvm@vger.kernel.org>, Pavel Tatashin <pavel.tatashin@microsoft.com>,
+ KarimAllah Ahmed <karahmed@amazon.de>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Alexander Duyck <alexander.duyck@gmail.com>, Michal Hocko <mhocko@kernel.org>,
+ Linux MM <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Wanpeng Li <wanpengli@tencent.com>,
+ Alexander Duyck <alexander.h.duyck@linux.intel.com>,
+ "K. Y. Srinivasan" <kys@microsoft.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Kees Cook <keescook@chromium.org>, devel@driverdev.osuosl.org,
+ Stefano Stabellini <sstabellini@kernel.org>,
+ Stephen Hemminger <sthemmin@microsoft.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Joerg Roedel <joro@8bytes.org>, X86 ML <x86@kernel.org>,
+ YueHaibing <yuehaibing@huawei.com>,
+ "Matthew Wilcox \(Oracle\)" <willy@infradead.org>,
+ Mike Rapoport <rppt@linux.ibm.com>, Peter Zijlstra <peterz@infradead.org>,
+ Ingo Molnar <mingo@redhat.com>, Vlastimil Babka <vbabka@suse.cz>,
+ Anthony Yznaga <anthony.yznaga@oracle.com>, Oscar Salvador <osalvador@suse.de>,
+ "Isaac J. Manjarres" <isaacm@codeaurora.org>,
+ Matt Sickler <Matt.Sickler@daktronics.com>, Juergen Gross <jgross@suse.com>,
+ Anshuman Khandual <anshuman.khandual@arm.com>,
+ Haiyang Zhang <haiyangz@microsoft.com>, Sasha Levin <sashal@kernel.org>,
+ kvm-ppc@vger.kernel.org, Qian Cai <cai@lca.pw>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Mike Rapoport <rppt@linux.vnet.ibm.com>, Borislav Petkov <bp@alien8.de>,
+ Nicholas Piggin <npiggin@gmail.com>, Andy Lutomirski <luto@kernel.org>,
+ xen-devel <xen-devel@lists.xenproject.org>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ Vitaly Kuznetsov <vkuznets@redhat.com>, Allison Randal <allison@lohutok.net>,
+ Jim Mattson <jmattson@google.com>, Mel Gorman <mgorman@techsingularity.net>,
+ Adam Borowski <kilobyte@angband.pl>, Cornelia Huck <cohuck@redhat.com>,
+ Pavel Tatashin <pasha.tatashin@soleen.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Sean Christopherson <sean.j.christopherson@intel.com>,
+ Johannes Weiner <hannes@cmpxchg.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The following commit has been merged into the x86/build branch of tip:
+On 05.11.19 05:38, Dan Williams wrote:
+> On Thu, Oct 24, 2019 at 5:11 AM David Hildenbrand <david@redhat.com> wrot=
+e:
+>>
+>> Right now, ZONE_DEVICE memory is always set PG_reserved. We want to
+>> change that.
+>>
+>> KVM has this weird use case that you can map anything from /dev/mem
+>> into the guest. pfn_valid() is not a reliable check whether the memmap
+>> was initialized and can be touched. pfn_to_online_page() makes sure
+>> that we have an initialized memmap (and don't have ZONE_DEVICE memory).
+>>
+>> Rewrite kvm_is_reserved_pfn() to make sure the function produces the
+>> same result once we stop setting ZONE_DEVICE pages PG_reserved.
+>>
+>> Cc: Paolo Bonzini <pbonzini@redhat.com>
+>> Cc: "Radim Kr=C4=8Dm=C3=A1=C5=99" <rkrcmar@redhat.com>
+>> Cc: Michal Hocko <mhocko@kernel.org>
+>> Cc: Dan Williams <dan.j.williams@intel.com>
+>> Cc: KarimAllah Ahmed <karahmed@amazon.de>
+>> Signed-off-by: David Hildenbrand <david@redhat.com>
+>> ---
+>>   virt/kvm/kvm_main.c | 10 ++++++++--
+>>   1 file changed, 8 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+>> index e9eb666eb6e8..9d18cc67d124 100644
+>> --- a/virt/kvm/kvm_main.c
+>> +++ b/virt/kvm/kvm_main.c
+>> @@ -151,9 +151,15 @@ __weak int kvm_arch_mmu_notifier_invalidate_range(s=
+truct kvm *kvm,
+>>
+>>   bool kvm_is_reserved_pfn(kvm_pfn_t pfn)
+>>   {
+>> -       if (pfn_valid(pfn))
+>> -               return PageReserved(pfn_to_page(pfn));
+>> +       struct page *page =3D pfn_to_online_page(pfn);
+>>
+>> +       /*
+>> +        * We treat any pages that are not online (not managed by the bu=
+ddy)
+>> +        * as reserved - this includes ZONE_DEVICE pages and pages witho=
+ut
+>> +        * a memmap (e.g., mapped via /dev/mem).
+>> +        */
+>> +       if (page)
+>> +               return PageReserved(page);
+>>          return true;
+>>   }
+>=20
+> So after this all the pfn_valid() usage in kvm_main.c is replaced with
+> pfn_to_online_page()? Looks correct to me.
+>=20
+> However, I'm worried that kvm is taking reference on ZONE_DEVICE pages
+> through some other path resulting in this:
+>=20
+>      https://lore.kernel.org/linux-nvdimm/20190919154708.GA24650@angband.=
+pl/
+>=20
+> I'll see if this patch set modulates or maintains that failure mode.
+>=20
 
-Commit-ID:     380e57e2d41e9631132beccac30058228dfd376f
-Gitweb:        https://git.kernel.org/tip/380e57e2d41e9631132beccac30058228dfd376f
-Author:        Kees Cook <keescook@chromium.org>
-AuthorDate:    Tue, 29 Oct 2019 14:13:42 -07:00
-Committer:     Borislav Petkov <bp@suse.de>
-CommitterDate: Mon, 04 Nov 2019 18:12:55 +01:00
+I'd assume that the behavior is unchanged. Ithink we get a reference to=20
+these ZONE_DEVICE pages via __get_user_pages_fast() and friends in=20
+hva_to_pfn_fast() and friends in virt/kvm/kvm_main.c
 
-h8300: Move EXCEPTION_TABLE to RO_DATA segment
+--=20
 
-Since the EXCEPTION_TABLE is read-only, collapse it into RO_DATA.
+Thanks,
 
-Signed-off-by: Kees Cook <keescook@chromium.org>
-Signed-off-by: Borislav Petkov <bp@suse.de>
-Cc: Andy Lutomirski <luto@kernel.org>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: linux-alpha@vger.kernel.org
-Cc: linux-arch@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-c6x-dev@linux-c6x.org
-Cc: linux-ia64@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-s390@vger.kernel.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Michal Simek <monstr@monstr.eu>
-Cc: Rick Edgecombe <rick.p.edgecombe@intel.com>
-Cc: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: uclinux-h8-devel@lists.sourceforge.jp
-Cc: Will Deacon <will@kernel.org>
-Cc: x86-ml <x86@kernel.org>
-Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
-Link: https://lkml.kernel.org/r/20191029211351.13243-21-keescook@chromium.org
----
- arch/h8300/kernel/vmlinux.lds.S | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+David / dhildenb
 
-diff --git a/arch/h8300/kernel/vmlinux.lds.S b/arch/h8300/kernel/vmlinux.lds.S
-index 2ac7bdc..6b1afc2 100644
---- a/arch/h8300/kernel/vmlinux.lds.S
-+++ b/arch/h8300/kernel/vmlinux.lds.S
-@@ -1,4 +1,7 @@
- /* SPDX-License-Identifier: GPL-2.0 */
-+
-+#define RO_EXCEPTION_TABLE_ALIGN	16
-+
- #include <asm-generic/vmlinux.lds.h>
- #include <asm/page.h>
- #include <asm/thread_info.h>
-@@ -37,7 +40,6 @@ SECTIONS
- #endif
- 	_etext = . ;
- 	}
--	EXCEPTION_TABLE(16)
- 	RO_DATA(4)
- 	ROMEND = .;
- #if defined(CONFIG_ROMKERNEL)
