@@ -2,81 +2,92 @@ Return-Path: <SRS0=UcJ4=Y5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_2
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8CEFC5DF60
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2019 19:02:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10E25C5DF60
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2019 19:39:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 37C22217F4
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2019 19:02:22 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="BS0Skgz5"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 37C22217F4
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nvidia.com
+	by mail.kernel.org (Postfix) with ESMTPS id 591DB21882
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2019 19:39:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 591DB21882
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=de.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 476zYl5mcNzF4dx
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 06:02:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4770N36h9CzF2FX
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 06:38:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=nvidia.com (client-ip=216.228.121.64; helo=hqemgate15.nvidia.com;
- envelope-from=jhubbard@nvidia.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=de.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=gerald.schaefer@de.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nvidia.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="BS0Skgz5"; 
- dkim-atps=neutral
-Received: from hqemgate15.nvidia.com (hqemgate15.nvidia.com [216.228.121.64])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 476zWJ64R2zF4Rt
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2019 06:00:12 +1100 (AEDT)
-Received: from hqpgpgate102.nvidia.com (Not Verified[216.228.121.13]) by
- hqemgate15.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
- id <B5dc1c6bc0000>; Tue, 05 Nov 2019 11:00:12 -0800
-Received: from hqmail.nvidia.com ([172.20.161.6])
- by hqpgpgate102.nvidia.com (PGP Universal service);
- Tue, 05 Nov 2019 11:00:07 -0800
-X-PGP-Universal: processed;
- by hqpgpgate102.nvidia.com on Tue, 05 Nov 2019 11:00:07 -0800
-Received: from [10.110.48.28] (10.124.1.5) by HQMAIL107.nvidia.com
- (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Tue, 5 Nov
- 2019 19:00:07 +0000
-Subject: Re: [PATCH v2 05/18] mm/gup: introduce pin_user_pages*() and FOLL_PIN
-To: Mike Rapoport <rppt@kernel.org>
-References: <20191103211813.213227-1-jhubbard@nvidia.com>
- <20191103211813.213227-6-jhubbard@nvidia.com>
- <20191105131032.GG25005@rapoport-lnx>
-X-Nvconfidentiality: public
-From: John Hubbard <jhubbard@nvidia.com>
-Message-ID: <9ac948a4-59bf-2427-2007-e460aad2848a@nvidia.com>
-Date: Tue, 5 Nov 2019 11:00:06 -0800
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.8.0
+ dmarc=none (p=none dis=none) header.from=de.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4770Kq3f70zF4fg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2019 06:36:59 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ xA5JXq4b117658
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Nov 2019 14:36:54 -0500
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2w3cnapr5j-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Nov 2019 14:36:54 -0500
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gerald.schaefer@de.ibm.com>;
+ Tue, 5 Nov 2019 19:36:50 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 5 Nov 2019 19:36:41 -0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xA5JaeNI31719424
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 5 Nov 2019 19:36:40 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6370DAE057;
+ Tue,  5 Nov 2019 19:36:40 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 43F44AE056;
+ Tue,  5 Nov 2019 19:36:39 +0000 (GMT)
+Received: from thinkpad (unknown [9.152.97.32])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue,  5 Nov 2019 19:36:39 +0000 (GMT)
+Date: Tue, 5 Nov 2019 20:36:38 +0100
+From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+To: Anshuman Khandual <anshuman.khandual@arm.com>
+Subject: Re: [PATCH V8] mm/debug: Add tests validating architecture page
+ table helpers
+In-Reply-To: <1572240562-23630-1-git-send-email-anshuman.khandual@arm.com>
+References: <1572240562-23630-1-git-send-email-anshuman.khandual@arm.com>
+X-Mailer: Claws Mail 3.17.4 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
-In-Reply-To: <20191105131032.GG25005@rapoport-lnx>
-X-Originating-IP: [10.124.1.5]
-X-ClientProxiedBy: HQMAIL105.nvidia.com (172.20.187.12) To
- HQMAIL107.nvidia.com (172.20.187.13)
-Content-Type: text/plain; charset="utf-8"
-Content-Language: en-US
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
- t=1572980412; bh=ojXJL7Jf2vtMqYP0b7gLz2fp+ItJt4NPdkhylbujo04=;
- h=X-PGP-Universal:Subject:To:CC:References:X-Nvconfidentiality:From:
- Message-ID:Date:User-Agent:MIME-Version:In-Reply-To:
- X-Originating-IP:X-ClientProxiedBy:Content-Type:Content-Language:
- Content-Transfer-Encoding;
- b=BS0Skgz5RbNv7FRT3SjRhdwpwr0ecQ8AOgMazMsduNtoC93TjDB3sb+UV4BVm8kS1
- e2YIxx2R9GvEAZtEOkrlW3cAbcdFl/wyRSANMj//120w5PZgTkX7MC1O13jzRSXm0k
- KFRmKs+Z0OYFmlbRMapMiylU4RVjtXOt6K/rgWvnwLDQgPciqV1nCOSRX3qgMUJrsh
- MPxa2/es4pKZhwzhaTFebsG3i4fLxzYnNXRQBChEYKYp2xONV3pwMnS3x1UJtQUm9p
- dbWIIJyjFTTd1aKcwIBzPf2GKUh34tHy3QJ9j5720Clm3FqPmta2g3ZZa8fKcxJoAO
- rGK6L5pnX3YOQ==
+X-TM-AS-GCONF: 00
+x-cbid: 19110519-0020-0000-0000-00000382D869
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19110519-0021-0000-0000-000021D903DD
+Message-Id: <20191105203638.6889a994@thinkpad>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-11-05_07:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1908290000 definitions=main-1911050162
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,119 +99,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>,
- kvm@vger.kernel.org, linux-doc@vger.kernel.org,
- David Airlie <airlied@linux.ie>, Dave Chinner <david@fromorbit.com>,
- dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- linux-kselftest@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>,
- Jonathan Corbet <corbet@lwn.net>, linux-rdma@vger.kernel.org,
- Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>,
- Vlastimil Babka <vbabka@suse.cz>,
- =?UTF-8?B?QmrDtnJuIFTDtnBlbA==?= <bjorn.topel@intel.com>,
- linux-media@vger.kernel.org, Shuah Khan <shuah@kernel.org>,
- linux-block@vger.kernel.org,
- =?UTF-8?B?SsOpcsO0bWUgR2xpc3Nl?= <jglisse@redhat.com>,
- Al Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>,
- Mauro Carvalho Chehab <mchehab@kernel.org>, bpf@vger.kernel.org,
- Magnus Karlsson <magnus.karlsson@intel.com>, Jens Axboe <axboe@kernel.dk>,
- netdev@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
- Daniel Vetter <daniel@ffwll.ch>, linux-fsdevel@vger.kernel.org,
+Cc: Mark Rutland <mark.rutland@arm.com>, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ James Hogan <jhogan@kernel.org>,
+ Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Michal Hocko <mhocko@kernel.org>,
+ linux-mm@kvack.org, Dave Hansen <dave.hansen@intel.com>,
+ Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>, linux-s390@vger.kernel.org,
+ x86@kernel.org, Russell King - ARM Linux <linux@armlinux.org.uk>,
+ Matthew Wilcox <willy@infradead.org>, Steven Price <Steven.Price@arm.com>,
+ Jason Gunthorpe <jgg@ziepe.ca>, linux-arm-kernel@lists.infradead.org,
+ linux-snps-arc@lists.infradead.org, Ingo Molnar <mingo@kernel.org>,
+ Kees Cook <keescook@chromium.org>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Mark Brown <broonie@kernel.org>, "Kirill A . Shutemov" <kirill@shutemov.name>,
+ Dan Williams <dan.j.williams@intel.com>, Vlastimil Babka <vbabka@suse.cz>,
+ Sri Krishna chowdary <schowdary@nvidia.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-mips@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, linux-kernel@vger.kernel.org,
+ Paul Burton <paul.burton@mips.com>, Mike Rapoport <rppt@linux.vnet.ibm.com>,
+ Vineet Gupta <vgupta@synopsys.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
  Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S . Miller" <davem@davemloft.net>,
- Mike Kravetz <mike.kravetz@oracle.com>
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 11/5/19 5:10 AM, Mike Rapoport wrote:
-...
->> ---
->>  Documentation/vm/index.rst          |   1 +
->>  Documentation/vm/pin_user_pages.rst | 212 ++++++++++++++++++++++
+On Mon, 28 Oct 2019 10:59:22 +0530
+Anshuman Khandual <anshuman.khandual@arm.com> wrote:
+
+> This adds tests which will validate architecture page table helpers and
+> other accessors in their compliance with expected generic MM semantics.
+> This will help various architectures in validating changes to existing
+> page table helpers or addition of new ones.
 > 
-> I think it belongs to Documentation/core-api.
-
-Done:
-
-diff --git a/Documentation/core-api/index.rst b/Documentation/core-api/index.rst
-index ab0eae1c153a..413f7d7c8642 100644
---- a/Documentation/core-api/index.rst
-+++ b/Documentation/core-api/index.rst
-@@ -31,6 +31,7 @@ Core utilities
-    generic-radix-tree
-    memory-allocation
-    mm-api
-+   pin_user_pages
-    gfp_mask-from-fs-io
-    timekeeping
-    boot-time-mm
-
-
-...
->> diff --git a/Documentation/vm/pin_user_pages.rst b/Documentation/vm/pin_user_pages.rst
->> new file mode 100644
->> index 000000000000..3910f49ca98c
->> --- /dev/null
->> +++ b/Documentation/vm/pin_user_pages.rst
->> @@ -0,0 +1,212 @@
->> +.. SPDX-License-Identifier: GPL-2.0
->> +
->> +====================================================
->> +pin_user_pages() and related calls
->> +====================================================
+> This test covers basic page table entry transformations including but not
+> limited to old, young, dirty, clean, write, write protect etc at various
+> level along with populating intermediate entries with next page table page
+> and validating them.
 > 
-> I know this is too much to ask, but having pin_user_pages() a part of more
-> general GUP description would be really great :)
+> Test page table pages are allocated from system memory with required size
+> and alignments. The mapped pfns at page table levels are derived from a
+> real pfn representing a valid kernel text symbol. This test gets called
+> right after page_alloc_init_late().
 > 
+> This gets build and run when CONFIG_DEBUG_VM_PGTABLE is selected along with
+> CONFIG_VM_DEBUG. Architectures willing to subscribe this test also need to
+> select CONFIG_ARCH_HAS_DEBUG_VM_PGTABLE which for now is limited to x86 and
+> arm64. Going forward, other architectures too can enable this after fixing
+> build or runtime problems (if any) with their page table helpers.
 
-Yes, definitely. But until I saw the reaction to the pin_user_pages() API
-family, I didn't want to write too much--it could have all been tossed out
-in favor of a whole different API. But now that we've had some initial
-reviews, I'm much more confident in being able to write about the larger 
-API set.
+I've prepared a couple of commits to our arch code to make this work on s390,
+they will go upstream in the next merge window. After that, we can add s390
+to the supported architectures.
 
-So yes, I'll put that on my pending list.
+We had some issues, e.g. because we do not report large entries as bad in
+pxd_bad(), do not check for folded page tables in pxd_free(), or assume
+that primitives like pmd_mkdirty() will only be called after pmd_mkhuge().
+None of those should have any impact on current code, but your test module
+revealed that we do not behave like other architectures in some aspects,
+and it's good to find and fix such things to prevent possible future issues.
 
+Thanks a lot for the effort!
 
-...
->> +This document describes the following functions: ::
->> +
->> + pin_user_pages
->> + pin_user_pages_fast
->> + pin_user_pages_remote
->> +
->> + pin_longterm_pages
->> + pin_longterm_pages_fast
->> + pin_longterm_pages_remote
->> +
->> +Basic description of FOLL_PIN
->> +=============================
->> +
->> +A new flag for get_user_pages ("gup") has been added: FOLL_PIN. FOLL_PIN has
-> 
-> Consider reading this after, say, half a year ;-)
-> 
+Regards,
+Gerald
 
-OK, OK. I knew when I wrote that that it was not going to stay new forever, but
-somehow failed to write the right thing anyway. :) 
-
-Here's a revised set of paragraphs:
-
-Basic description of FOLL_PIN
-=============================
-
-FOLL_PIN and FOLL_LONGTERM are flags that can be passed to the get_user_pages*()
-("gup") family of functions. FOLL_PIN has significant interactions and
-interdependencies with FOLL_LONGTERM, so both are covered here.
-
-Both FOLL_PIN and FOLL_LONGTERM are internal to gup, meaning that neither
-FOLL_PIN nor FOLL_LONGTERM should not appear at the gup call sites. This allows
-the associated wrapper functions  (pin_user_pages() and others) to set the
-correct combination of these flags, and to check for problems as well.
-
-
-thanks,
-
-John Hubbard
-NVIDIA
