@@ -2,66 +2,90 @@ Return-Path: <SRS0=rI0D=Y6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04C00C5DF63
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 19:58:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 363CFC5DF63
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 20:00:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B16912075C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 19:58:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B16912075C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id B21002075C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 20:00:50 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=arista.com header.i=@arista.com header.b="MpZHturj"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B21002075C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=arista.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 477clz00B0zF3Kq
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 06:58:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 477cpm2npWzF5l5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 07:00:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.120; helo=mga04.intel.com;
- envelope-from=sean.j.christopherson@intel.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=arista.com (client-ip=2607:f8b0:4864:20::543;
+ helo=mail-pg1-x543.google.com; envelope-from=dima@arista.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none)
+ header.from=arista.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=arista.com header.i=@arista.com header.b="MpZHturj"; 
+ dkim-atps=neutral
+Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
+ [IPv6:2607:f8b0:4864:20::543])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 477Wgh6fkhzF3Ys
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2019 03:09:18 +1100 (AEDT)
-X-Amp-Result: UNKNOWN
-X-Amp-Original-Verdict: FILE UNKNOWN
-X-Amp-File-Uploaded: False
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
- by fmsmga104.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 06 Nov 2019 08:09:15 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.68,275,1569308400"; d="scan'208";a="200752952"
-Received: from sjchrist-coffee.jf.intel.com (HELO linux.intel.com)
- ([10.54.74.41])
- by fmsmga008.fm.intel.com with ESMTP; 06 Nov 2019 08:09:13 -0800
-Date: Wed, 6 Nov 2019 08:09:13 -0800
-From: Sean Christopherson <sean.j.christopherson@intel.com>
-To: David Hildenbrand <david@redhat.com>
-Subject: Re: [PATCH v1 03/10] KVM: Prepare kvm_is_reserved_pfn() for
- PG_reserved changes
-Message-ID: <20191106160913.GD16249@linux.intel.com>
-References: <613f3606-748b-0e56-a3ad-1efaffa1a67b@redhat.com>
- <20191105160000.GC8128@linux.intel.com>
- <ed89cd61-7c45-8c9c-ffeb-f27b1872bd7a@redhat.com>
- <CAPcyv4htPCeui80fOOno+7AFo3V-=VEiWkAv8j+-Kkad+UnFGQ@mail.gmail.com>
- <20191105231316.GE23297@linux.intel.com>
- <CAPcyv4iRP0Sz=mcT+iuoVaD4-o2q1nCH2Hixc5OkfWu+SBQmkg@mail.gmail.com>
- <CAPcyv4i7tnjyghYhSjK8fxUu8Qkdc2RuD9kUwJcKEMDzOf51ng@mail.gmail.com>
- <20191106000315.GI23297@linux.intel.com>
- <CAPcyv4hppbefem9pHiQV5-djriGrzcuo0hxVnJwqB=+2iuOh2w@mail.gmail.com>
- <694202e7-d8e6-6ac8-6e47-3553b298bbcc@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 477Wl902FWzF4Pk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2019 03:12:20 +1100 (AEDT)
+Received: by mail-pg1-x543.google.com with SMTP id h27so508560pgn.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Nov 2019 08:12:20 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=arista.com; s=googlenew;
+ h=subject:to:cc:references:from:message-id:date:user-agent
+ :mime-version:in-reply-to:content-language:content-transfer-encoding;
+ bh=6YKC1kJOcWpyD+8pjGdr6zJNIwDWfqyBu/N6KBSP97U=;
+ b=MpZHturjPCBg33iU1ozhAjvA8LCtPPFI3DR58OYlFEaUZGZqfEzhUtttDDrlEOGegQ
+ 4vDex9qExlxkA9WH33d8HwoxTLWivc69W/6aer4DXfteqgbtXwv3cNxCcRds4ZAMweGX
+ 5ZXj+X+FYkL8t+hZqh4LwhZRZNRrqod+Up3sqXtFrQSRV7C3Y69W33Z8X4jj1Fl7gbuY
+ R6u824u7CLy//WZ/duinZirY1ifbAiK575WJqRiWdVx2qkiQPu6t7SWS7JDhyX5hOHLe
+ oe8RLdwEfd46kke7TKQhcEtTSIZl2oUQhbinVc7bj3yYIQzIfU4ltgAEvZlXwG6aLosM
+ UhRA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=6YKC1kJOcWpyD+8pjGdr6zJNIwDWfqyBu/N6KBSP97U=;
+ b=aQThQnilMc1Yhj3AII4+G8Vr4uKdOLjvk94yDo3KDCBZMN1u881otVM32l2z+9ORli
+ 1TvBnsFAMEoh9ii4IaNVxSVvtjHmGJfMpEIocLQmunt9TA75UtcAh88IOffoQAtVvgAu
+ u+vppgsxuFuNf/qswPETAMdEGH5/pMjfFs6rsNWiEMVOJ+5CdJp8GChCGHB/ubgnQWSv
+ 0xQOf7gAJOmOiCQVcH8G8+GEIeS0P37s+MU0DoPD2L0/dVmvduRuvCNGWDhYCg5UQoFp
+ qYtux+TqbX+pCvdmL3C3RAP2O111YLXqkCmfZ2Rtz0N1wuRdZ7iKCZb1CvNA3gEv4VKE
+ lf7g==
+X-Gm-Message-State: APjAAAVJrl1wWSAtLdsg5NyqiuNgmTmsL+1hOMpdf2TUm6RZEs84msAz
+ NIRq2dtIF6WraplwTHFT7wGR2g==
+X-Google-Smtp-Source: APXvYqwR0pSNn59pPusYKfkpnLRmR/vqqpv4L3qv+M0Onv9D6hRgWRQkxTVXtCrUTdykmM2sB1/Rnw==
+X-Received: by 2002:aa7:908b:: with SMTP id i11mr4396653pfa.140.1573056738752; 
+ Wed, 06 Nov 2019 08:12:18 -0800 (PST)
+Received: from [10.83.36.153] ([217.173.96.166])
+ by smtp.gmail.com with ESMTPSA id j4sm5535967pjf.25.2019.11.06.08.12.03
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Wed, 06 Nov 2019 08:12:17 -0800 (PST)
+Subject: Re: [PATCH 00/50] Add log level to show_stack()
+To: Petr Mladek <pmladek@suse.com>
+References: <20191106030542.868541-1-dima@arista.com>
+ <20191106083538.z5nlpuf64cigxigh@pathway.suse.cz>
+From: Dmitry Safonov <dima@arista.com>
+Message-ID: <de8a397d-8660-4ace-9626-127debcf43a7@arista.com>
+Date: Wed, 6 Nov 2019 16:12:01 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.1.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <694202e7-d8e6-6ac8-6e47-3553b298bbcc@redhat.com>
-User-Agent: Mutt/1.5.24 (2015-08-30)
-X-Mailman-Approved-At: Thu, 07 Nov 2019 06:55:50 +1100
+In-Reply-To: <20191106083538.z5nlpuf64cigxigh@pathway.suse.cz>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Mailman-Approved-At: Thu, 07 Nov 2019 06:55:51 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,137 +97,120 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-hyperv@vger.kernel.org, Michal Hocko <mhocko@suse.com>,
- Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
- KVM list <kvm@vger.kernel.org>, Pavel Tatashin <pavel.tatashin@microsoft.com>,
- KarimAllah Ahmed <karahmed@amazon.de>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- Alexander Duyck <alexander.duyck@gmail.com>, Michal Hocko <mhocko@kernel.org>,
- Linux MM <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Wanpeng Li <wanpengli@tencent.com>,
- Alexander Duyck <alexander.h.duyck@linux.intel.com>,
- "K. Y. Srinivasan" <kys@microsoft.com>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Kees Cook <keescook@chromium.org>, devel@driverdev.osuosl.org,
- Stefano Stabellini <sstabellini@kernel.org>,
- Stephen Hemminger <sthemmin@microsoft.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Joerg Roedel <joro@8bytes.org>, X86 ML <x86@kernel.org>,
- YueHaibing <yuehaibing@huawei.com>,
- "Matthew Wilcox \(Oracle\)" <willy@infradead.org>,
- Mike Rapoport <rppt@linux.ibm.com>, Peter Zijlstra <peterz@infradead.org>,
- Ingo Molnar <mingo@redhat.com>, Vlastimil Babka <vbabka@suse.cz>,
- Anthony Yznaga <anthony.yznaga@oracle.com>, Oscar Salvador <osalvador@suse.de>,
- "Isaac J. Manjarres" <isaacm@codeaurora.org>,
- Matt Sickler <Matt.Sickler@daktronics.com>, Juergen Gross <jgross@suse.com>,
- Anshuman Khandual <anshuman.khandual@arm.com>,
- Haiyang Zhang <haiyangz@microsoft.com>, Sasha Levin <sashal@kernel.org>,
- kvm-ppc@vger.kernel.org, Qian Cai <cai@lca.pw>,
- Alex Williamson <alex.williamson@redhat.com>,
- Mike Rapoport <rppt@linux.vnet.ibm.com>, Borislav Petkov <bp@alien8.de>,
- Nicholas Piggin <npiggin@gmail.com>, Andy Lutomirski <luto@kernel.org>,
- xen-devel <xen-devel@lists.xenproject.org>,
- Dan Williams <dan.j.williams@intel.com>,
- Vitaly Kuznetsov <vkuznets@redhat.com>, Allison Randal <allison@lohutok.net>,
- Jim Mattson <jmattson@google.com>, Mel Gorman <mgorman@techsingularity.net>,
- Adam Borowski <kilobyte@angband.pl>, Cornelia Huck <cohuck@redhat.com>,
- Pavel Tatashin <pasha.tatashin@soleen.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, Johannes Weiner <hannes@cmpxchg.org>,
- Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Juri Lelli <juri.lelli@redhat.com>, linux-sh@vger.kernel.org,
+ Catalin Marinas <catalin.marinas@arm.com>, Ben Segall <bsegall@google.com>,
+ Guo Ren <guoren@kernel.org>, Pavel Machek <pavel@ucw.cz>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Paul Burton <paulburton@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Mel Gorman <mgorman@suse.de>, Jiri Slaby <jslaby@suse.com>,
+ Matt Turner <mattst88@gmail.com>, uclinux-h8-devel@lists.sourceforge.jp,
+ Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-um@lists.infradead.org,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Dietmar Eggemann <dietmar.eggemann@arm.com>,
+ Richard Henderson <rth@twiddle.net>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, Paul Mackerras <paulus@samba.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linux-ia64@vger.kernel.org,
+ Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+ James Hogan <jhogan@kernel.org>,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Max Filippov <jcmvbkbc@gmail.com>, Vincent Chen <deanbo422@gmail.com>,
+ Ingo Molnar <mingo@kernel.org>, linux-s390@vger.kernel.org,
+ linux-c6x-dev@linux-c6x.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ linux-hexagon@vger.kernel.org, Helge Deller <deller@gmx.de>,
+ linux-xtensa@linux-xtensa.org, Vasily Gorbik <gor@linux.ibm.com>,
+ Aurelien Jacquiot <jacquiot.aurelien@gmail.com>,
+ linux-m68k@lists.linux-m68k.org, Stafford Horne <shorne@gmail.com>,
+ linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>,
+ Tony Luck <tony.luck@intel.com>, Douglas Anderson <dianders@chromium.org>,
+ Dmitry Safonov <0x7f454c46@gmail.com>, Will Deacon <will@kernel.org>,
+ Daniel Thompson <daniel.thompson@linaro.org>,
+ Brian Cain <bcain@codeaurora.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ kgdb-bugreport@lists.sourceforge.net, linux-snps-arc@lists.infradead.org,
+ Fenghua Yu <fenghua.yu@intel.com>, Borislav Petkov <bp@alien8.de>,
+ Jeff Dike <jdike@addtoit.com>, Steven Rostedt <rostedt@goodmis.org>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greentime Hu <green.hu@gmail.com>,
+ Guan Xuetao <gxt@pku.edu.cn>, linux-parisc@vger.kernel.org,
+ linux-alpha@vger.kernel.org, Ley Foon Tan <lftan@altera.com>,
+ "David S. Miller" <davem@davemloft.net>, Rich Felker <dalias@libc.org>,
+ Peter Zijlstra <peterz@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
+ Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+ Jonas Bonn <jonas@southpole.se>, Richard Weinberger <richard@nod.at>,
+ x86@kernel.org, Russell King <linux@armlinux.org.uk>,
+ clang-built-linux@googlegroups.com, Ingo Molnar <mingo@redhat.com>,
+ Mark Salter <msalter@redhat.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ openrisc@lists.librecores.org, Paul Walmsley <paul.walmsley@sifive.com>,
+ Michal Simek <monstr@monstr.eu>, Vineet Gupta <vgupta@synopsys.com>,
+ linux-mips@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Jason Wessel <jason.wessel@windriver.com>,
+ nios2-dev@lists.rocketboards.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Nov 06, 2019 at 07:56:34AM +0100, David Hildenbrand wrote:
-> On 06.11.19 01:08, Dan Williams wrote:
-> >On Tue, Nov 5, 2019 at 4:03 PM Sean Christopherson
-> >>But David's proposed fix for the above refcount bug is to omit the patch
-> >>so that KVM no longer treats ZONE_DEVICE pages as reserved.  That seems
-> >>like the right thing to do, including for thp_adjust(), e.g. it would
-> >>naturally let KVM use 2mb pages for the guest when a ZONE_DEVICE page is
-> >>mapped with a huge page (2mb or above) in the host.  The only hiccup is
-> >>figuring out how to correctly transfer the reference.
-> >
-> >That might not be the only hiccup. There's currently no such thing as
-> >huge pages for ZONE_DEVICE, there are huge *mappings* (pmd and pud),
-> >but the result of pfn_to_page() on such a mapping does not yield a
-> >huge 'struct page'. It seems there are other paths in KVM that assume
-> >that more typical page machinery is active like SetPageDirty() based
-> >on kvm_is_reserved_pfn(). While I told David that I did not want to
-> >see more usage of is_zone_device_page(), this patch below (untested)
-> >seems a cleaner path with less surprises:
-> >
-> >diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> >index 4df0aa6b8e5c..fbea17c1810c 100644
-> >--- a/virt/kvm/kvm_main.c
-> >+++ b/virt/kvm/kvm_main.c
-> >@@ -1831,7 +1831,8 @@ EXPORT_SYMBOL_GPL(kvm_release_page_clean);
-> >
-> >  void kvm_release_pfn_clean(kvm_pfn_t pfn)
-> >  {
-> >-       if (!is_error_noslot_pfn(pfn) && !kvm_is_reserved_pfn(pfn))
-> >+       if ((!is_error_noslot_pfn(pfn) && !kvm_is_reserved_pfn(pfn)) ||
+On 11/6/19 8:35 AM, Petr Mladek wrote:
+> On Wed 2019-11-06 03:04:51, Dmitry Safonov wrote:
+>> Add log level argument to show_stack().
+>> Done in three stages:
+>> 1. Introducing show_stack_loglvl() for every architecture
+>> 2. Migrating old users with an explicit log level
+>> 3. Renaming show_stack_loglvl() into show_stack()
+>>
+>> Justification:
+>> o It's a design mistake to move a business-logic decision
+>>   into platform realization detail.
+>> o I have currently two patches sets that would benefit from this work:
+>>   Removing console_loglevel jumps in sysrq driver [1]
+> 
+> Just to clarify. The problem in sysrq driver is a bit different.
+> It modifies console_loglevel to show even less important message
+> on the console.
+> 
+> IMHO, it should be solved by printing the header line with pr_error().
+> It is not ideal. A cleaner solution might be to introduce another
+> loglevel that will always get pushed to the console. But I am
+> not sure if it is worth this single line.
 
-The is_error_noslot_pfn() check shouldn't be overriden by zone_device.
+I believe why it's not done - there is a comment in sysrq code that said
+the userspace relies on the loglevel of sysrq messages (and may trigger
+alerts from emerg/err log level):
+  * Raise the apparent loglevel to maximum so that the sysrq header
+  * is shown to provide the user with positive feedback.  We do not
+  * simply emit this at KERN_EMERG as that would change message
+  * routing in the consumers of /proc/kmsg.
 
-> >+           (pfn_valid(pfn) && is_zone_device_page(pfn_to_page(pfn))))
+But I don't mind any solution.
 
-But rather than special case kvm_release_pfn_clean(), I'd rather KVM
-explicitly handle ZONE_DEVICE pages, there are other flows where KVM
-really should be aware of ZONE_DEVICE pages, e.g. for sanity checks and
-whatnot.  There are surprisingly few callers of kvm_is_reserved_pfn(), so
-it's actually not too big of a change. 
+>>   Hung task warning before panic [2] - suggested by Tetsuo (but he
+>>   probably didn't realise what it would involve).
+>> o While doing (1), (2) the backtraces were adjusted to headers
+>>   and other messages for each situation - so there won't be a situation
+>>   when the backtrace is printed, but the headers are missing because
+>>   they have lesser log level (or the reverse).
+>> o As the result in (2) plays with console_loglevel for kdb are removed.
+> 
+>> The least important for upstream, but maybe still worth to note that
+>> every company I've worked in so far had an off-list patch to print
+>> backtrace with the needed log level (but only for the architecture they
+>> cared about).
+>> If you have other ideas how you will benefit from show_stack() with
+>> a log level - please, reply to this cover letter.
+> 
+> I agree with all the other justification.
+> 
+> I would add. The backtrace is really useful for debugging. It should
+> be possible to print it even in less critical situations.
+> 
+> I am afraid that many people use WARN() for this purpose. But WARN()
+> is not always appropriate. WARN() misuse huts when panic_on_warn
+> option is used.
 
-> >                 put_page(pfn_to_page(pfn));
-> >  }
-> >  EXPORT_SYMBOL_GPL(kvm_release_pfn_clean);
-> 
-> I had the same thought, but I do wonder about the kvm_get_pfn() users,
-> e.g.,:
-> 
-> hva_to_pfn_remapped():
-> 	r = follow_pfn(vma, addr, &pfn);
-> 	...
-> 	kvm_get_pfn(pfn);
-> 	...
-> 
-> We would not take a reference for ZONE_DEVICE, but later drop one reference
-> via kvm_release_pfn_clean(). IOW, kvm_get_pfn() gets *really* dangerous to
-> use. I can't tell if this can happen right now.
-> 
-> We do have 3 users of kvm_get_pfn() that we have to audit before this
-> change. Also, we should add a comment to kvm_get_pfn() that it should never
-> be used with possible ZONE_DEVICE pages.
-> 
-> Also, we should add a comment to kvm_release_pfn_clean(), describing why we
-> treat ZONE_DEVICE in a special way here.
-> 
-> 
-> We can then progress like this
-> 
-> 1. Get this fix upstream, it's somewhat unrelated to this series.
-> 2. This patch here remains as is in this series (+/- documentation update)
-> 3. Long term, rework KVM to not have to not treat ZONE_DEVICE like reserved
-> pages. E.g., get rid of kvm_get_pfn(). Then, this special zone check can go.
+Thanks, Petr.
 
-Dropping kvm_get_pfn() is less than ideal, and at this point unnecessary.
-I'm 99% sure the existing call sites for kvm_get_pfn() can never be
-reached with ZONE_DEVICE pages.  I think we can do:
-
-  1. Get a fix upstream to have KVM stop treating ZONE_DEVICE pages as
-     reserved PFNs, i.e. exempt them in kvm_is_reserved_pfn() and change
-     the callers of kvm_is_reserved_pfn() to handle ZONE_DEVICE pages.
-  2. Drop this patch from the series, and instead remove the special
-     treatment of ZONE_DEVICE pages from kvm_is_reserved_pfn().
-
-Give me a few minutes to prep a patch.
-
-> 
-> -- 
-> 
-> Thanks,
-> 
-> David / dhildenb
-> 
+-- 
+          Dmitry
