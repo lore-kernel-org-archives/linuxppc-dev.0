@@ -2,45 +2,41 @@ Return-Path: <SRS0=rI0D=Y6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D07AC5DF62
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 09:59:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E9A8EC5DF62
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 10:02:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A08BC217F4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 09:59:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A08BC217F4
+	by mail.kernel.org (Postfix) with ESMTPS id 9DE262173B
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 10:02:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9DE262173B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=sang-engineering.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 477MTM6Gc7zF4XW
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 20:59:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 477MXf4R5MzF5mG
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 21:02:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.helo=pokefinder.org (client-ip=88.99.104.3; helo=pokefinder.org;
  envelope-from=wsa+renesas@sang-engineering.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=sang-engineering.com
-X-Greylist: delayed 424 seconds by postgrey-1.36 at bilbo;
- Wed, 06 Nov 2019 20:57:45 AEDT
 Received: from pokefinder.org (sauhun.de [88.99.104.3])
- by lists.ozlabs.org (Postfix) with ESMTP id 477MQy01h9zF3Vx
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2019 20:57:45 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 477MQy0gTnzF5kK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2019 20:57:46 +1100 (AEDT)
 Received: from localhost (p54B33505.dip0.t-ipconnect.de [84.179.53.5])
- by pokefinder.org (Postfix) with ESMTPSA id 591002C054A;
- Wed,  6 Nov 2019 10:50:35 +0100 (CET)
+ by pokefinder.org (Postfix) with ESMTPSA id 65D0A2C053B;
+ Wed,  6 Nov 2019 10:50:33 +0100 (CET)
 From: Wolfram Sang <wsa+renesas@sang-engineering.com>
 To: linux-i2c@vger.kernel.org
-Subject: [RFC PATCH 03/12] macintosh: convert to i2c_new_scanned_device
-Date: Wed,  6 Nov 2019 10:50:21 +0100
-Message-Id: <20191106095033.25182-4-wsa+renesas@sang-engineering.com>
+Subject: [RFC PATCH 00/12] i2c: replace i2c_new_probed_device with an ERR_PTR
+ variant
+Date: Wed,  6 Nov 2019 10:50:18 +0100
+Message-Id: <20191106095033.25182-1-wsa+renesas@sang-engineering.com>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20191106095033.25182-1-wsa+renesas@sang-engineering.com>
-References: <20191106095033.25182-1-wsa+renesas@sang-engineering.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -54,40 +50,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, Wolfram Sang <wsa@the-dreams.de>,
+ linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-input@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-media@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Move from the deprecated i2c_new_probed_device() to the new
-i2c_new_scanned_device(). Make use of the new ERRPTR if suitable.
+From: Wolfram Sang <wsa@the-dreams.de>
 
-Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
----
+In the on-going mission to let i2c_new_* calls return an ERR_PTR instead
+of NULL, here is a series converting i2c_new_probed_device(). A new
+function called i2c_new_scanned_device() is introduced with the new
+retval, but for now, a compatibility helper is provided until all users
+are converted. The rest of the patches convert all current in-tree
+users.
 
-Build tested only. RFC, please comment and/or ack, but don't apply yet.
+Note that these patches are RFC because I want feedback on the approach
+and hopefully collect acks on the driver conversions. If all goes well,
+I'll apply the first two patches for the next merge window. Then, once
+this dependency is upstream, I'll resend this series with all issues
+fixed and acks collected.
 
- drivers/macintosh/therm_windtunnel.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Core changes tested on a Renesas Salvator-XS board (R-Car M3-N), driver
+patches build tested by me and buildbot.
 
-diff --git a/drivers/macintosh/therm_windtunnel.c b/drivers/macintosh/therm_windtunnel.c
-index 8c744578122a..f15fec5e1cb6 100644
---- a/drivers/macintosh/therm_windtunnel.c
-+++ b/drivers/macintosh/therm_windtunnel.c
-@@ -321,10 +321,10 @@ do_attach( struct i2c_adapter *adapter )
- 
- 		memset(&info, 0, sizeof(struct i2c_board_info));
- 		strlcpy(info.type, "therm_ds1775", I2C_NAME_SIZE);
--		i2c_new_probed_device(adapter, &info, scan_ds1775, NULL);
-+		i2c_new_scanned_device(adapter, &info, scan_ds1775, NULL);
- 
- 		strlcpy(info.type, "therm_adm1030", I2C_NAME_SIZE);
--		i2c_new_probed_device(adapter, &info, scan_adm1030, NULL);
-+		i2c_new_scanned_device(adapter, &info, scan_adm1030, NULL);
- 
- 		if( x.thermostat && x.fan ) {
- 			x.running = 1;
+Wolfram Sang (12):
+  i2c: replace i2c_new_probed_device with an ERR_PTR variant
+  i2c: icy: convert to i2c_new_scanned_device
+  macintosh: convert to i2c_new_scanned_device
+  platform: chrome: convert to i2c_new_scanned_device
+  video: fbdev: matrox: convert to i2c_new_scanned_device
+  input: mouse: convert to i2c_new_scanned_device
+  media: pci: cx23885: convert to i2c_new_scanned_device
+  media: pci: cx88: convert to i2c_new_scanned_device
+  media: pci: bt8xx: convert to i2c_new_scanned_device
+  media: pci: cx18: convert to i2c_new_scanned_device
+  media: pci: ivtv: convert to i2c_new_scanned_device
+  media: v4l2-core: convert to i2c_new_scanned_device
+
+ Documentation/i2c/instantiating-devices.rst | 10 ++++-----
+ Documentation/i2c/writing-clients.rst       |  8 +++----
+ drivers/i2c/busses/i2c-icy.c                |  8 +++----
+ drivers/i2c/i2c-core-base.c                 | 25 ++++++++++++++++-----
+ drivers/input/mouse/psmouse-smbus.c         |  8 ++++---
+ drivers/macintosh/therm_windtunnel.c        |  4 ++--
+ drivers/media/pci/bt8xx/bttv-input.c        |  6 ++---
+ drivers/media/pci/cx18/cx18-i2c.c           |  2 +-
+ drivers/media/pci/cx23885/cx23885-i2c.c     |  4 ++--
+ drivers/media/pci/cx88/cx88-input.c         |  2 +-
+ drivers/media/pci/ivtv/ivtv-i2c.c           |  6 ++---
+ drivers/media/pci/ivtv/ivtv-i2c.h           |  2 +-
+ drivers/media/v4l2-core/v4l2-i2c.c          | 10 ++++-----
+ drivers/platform/chrome/chromeos_laptop.c   | 18 ++++++++-------
+ drivers/video/fbdev/matrox/i2c-matroxfb.c   |  4 ++--
+ include/linux/i2c.h                         | 12 +++++++---
+ 16 files changed, 76 insertions(+), 53 deletions(-)
+
 -- 
 2.20.1
 
