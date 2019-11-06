@@ -2,62 +2,66 @@ Return-Path: <SRS0=rI0D=Y6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8017C5DF63
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 19:39:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 04C00C5DF63
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 19:58:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8186B20869
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 19:39:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8186B20869
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id B16912075C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 19:58:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B16912075C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 477cKq0qmYzF3d9
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 06:39:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 477clz00B0zF3Kq
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 06:58:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=srs0=ypyy=y6=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=bugzilla.kernel.org
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ smtp.mailfrom=intel.com (client-ip=192.55.52.120; helo=mga04.intel.com;
+ envelope-from=sean.j.christopherson@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 477cHT4dlBzF5gd
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2019 06:37:09 +1100 (AEDT)
-From: bugzilla-daemon@bugzilla.kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 205201] Booting halts if Dawicontrol DC-2976 UW SCSI board
- installed, unless RAM size limited to 3500M
-Date: Wed, 06 Nov 2019 19:36:15 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Product: Platform Specific/Hardware
-X-Bugzilla-Component: PPC-64
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: chzigotzky@xenosoft.de
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-205201-206035-9IdykV1CIH@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-205201-206035@https.bugzilla.kernel.org/>
-References: <bug-205201-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+ by lists.ozlabs.org (Postfix) with ESMTPS id 477Wgh6fkhzF3Ys
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2019 03:09:18 +1100 (AEDT)
+X-Amp-Result: UNKNOWN
+X-Amp-Original-Verdict: FILE UNKNOWN
+X-Amp-File-Uploaded: False
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+ by fmsmga104.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 06 Nov 2019 08:09:15 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.68,275,1569308400"; d="scan'208";a="200752952"
+Received: from sjchrist-coffee.jf.intel.com (HELO linux.intel.com)
+ ([10.54.74.41])
+ by fmsmga008.fm.intel.com with ESMTP; 06 Nov 2019 08:09:13 -0800
+Date: Wed, 6 Nov 2019 08:09:13 -0800
+From: Sean Christopherson <sean.j.christopherson@intel.com>
+To: David Hildenbrand <david@redhat.com>
+Subject: Re: [PATCH v1 03/10] KVM: Prepare kvm_is_reserved_pfn() for
+ PG_reserved changes
+Message-ID: <20191106160913.GD16249@linux.intel.com>
+References: <613f3606-748b-0e56-a3ad-1efaffa1a67b@redhat.com>
+ <20191105160000.GC8128@linux.intel.com>
+ <ed89cd61-7c45-8c9c-ffeb-f27b1872bd7a@redhat.com>
+ <CAPcyv4htPCeui80fOOno+7AFo3V-=VEiWkAv8j+-Kkad+UnFGQ@mail.gmail.com>
+ <20191105231316.GE23297@linux.intel.com>
+ <CAPcyv4iRP0Sz=mcT+iuoVaD4-o2q1nCH2Hixc5OkfWu+SBQmkg@mail.gmail.com>
+ <CAPcyv4i7tnjyghYhSjK8fxUu8Qkdc2RuD9kUwJcKEMDzOf51ng@mail.gmail.com>
+ <20191106000315.GI23297@linux.intel.com>
+ <CAPcyv4hppbefem9pHiQV5-djriGrzcuo0hxVnJwqB=+2iuOh2w@mail.gmail.com>
+ <694202e7-d8e6-6ac8-6e47-3553b298bbcc@redhat.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <694202e7-d8e6-6ac8-6e47-3553b298bbcc@redhat.com>
+User-Agent: Mutt/1.5.24 (2015-08-30)
+X-Mailman-Approved-At: Thu, 07 Nov 2019 06:55:50 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,73 +73,137 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linux-hyperv@vger.kernel.org, Michal Hocko <mhocko@suse.com>,
+ Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+ KVM list <kvm@vger.kernel.org>, Pavel Tatashin <pavel.tatashin@microsoft.com>,
+ KarimAllah Ahmed <karahmed@amazon.de>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Alexander Duyck <alexander.duyck@gmail.com>, Michal Hocko <mhocko@kernel.org>,
+ Linux MM <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Wanpeng Li <wanpengli@tencent.com>,
+ Alexander Duyck <alexander.h.duyck@linux.intel.com>,
+ "K. Y. Srinivasan" <kys@microsoft.com>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ Kees Cook <keescook@chromium.org>, devel@driverdev.osuosl.org,
+ Stefano Stabellini <sstabellini@kernel.org>,
+ Stephen Hemminger <sthemmin@microsoft.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Joerg Roedel <joro@8bytes.org>, X86 ML <x86@kernel.org>,
+ YueHaibing <yuehaibing@huawei.com>,
+ "Matthew Wilcox \(Oracle\)" <willy@infradead.org>,
+ Mike Rapoport <rppt@linux.ibm.com>, Peter Zijlstra <peterz@infradead.org>,
+ Ingo Molnar <mingo@redhat.com>, Vlastimil Babka <vbabka@suse.cz>,
+ Anthony Yznaga <anthony.yznaga@oracle.com>, Oscar Salvador <osalvador@suse.de>,
+ "Isaac J. Manjarres" <isaacm@codeaurora.org>,
+ Matt Sickler <Matt.Sickler@daktronics.com>, Juergen Gross <jgross@suse.com>,
+ Anshuman Khandual <anshuman.khandual@arm.com>,
+ Haiyang Zhang <haiyangz@microsoft.com>, Sasha Levin <sashal@kernel.org>,
+ kvm-ppc@vger.kernel.org, Qian Cai <cai@lca.pw>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Mike Rapoport <rppt@linux.vnet.ibm.com>, Borislav Petkov <bp@alien8.de>,
+ Nicholas Piggin <npiggin@gmail.com>, Andy Lutomirski <luto@kernel.org>,
+ xen-devel <xen-devel@lists.xenproject.org>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Vitaly Kuznetsov <vkuznets@redhat.com>, Allison Randal <allison@lohutok.net>,
+ Jim Mattson <jmattson@google.com>, Mel Gorman <mgorman@techsingularity.net>,
+ Adam Borowski <kilobyte@angband.pl>, Cornelia Huck <cohuck@redhat.com>,
+ Pavel Tatashin <pasha.tatashin@soleen.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Johannes Weiner <hannes@cmpxchg.org>,
+ Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D205201
+On Wed, Nov 06, 2019 at 07:56:34AM +0100, David Hildenbrand wrote:
+> On 06.11.19 01:08, Dan Williams wrote:
+> >On Tue, Nov 5, 2019 at 4:03 PM Sean Christopherson
+> >>But David's proposed fix for the above refcount bug is to omit the patch
+> >>so that KVM no longer treats ZONE_DEVICE pages as reserved.  That seems
+> >>like the right thing to do, including for thp_adjust(), e.g. it would
+> >>naturally let KVM use 2mb pages for the guest when a ZONE_DEVICE page is
+> >>mapped with a huge page (2mb or above) in the host.  The only hiccup is
+> >>figuring out how to correctly transfer the reference.
+> >
+> >That might not be the only hiccup. There's currently no such thing as
+> >huge pages for ZONE_DEVICE, there are huge *mappings* (pmd and pud),
+> >but the result of pfn_to_page() on such a mapping does not yield a
+> >huge 'struct page'. It seems there are other paths in KVM that assume
+> >that more typical page machinery is active like SetPageDirty() based
+> >on kvm_is_reserved_pfn(). While I told David that I did not want to
+> >see more usage of is_zone_device_page(), this patch below (untested)
+> >seems a cleaner path with less surprises:
+> >
+> >diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+> >index 4df0aa6b8e5c..fbea17c1810c 100644
+> >--- a/virt/kvm/kvm_main.c
+> >+++ b/virt/kvm/kvm_main.c
+> >@@ -1831,7 +1831,8 @@ EXPORT_SYMBOL_GPL(kvm_release_page_clean);
+> >
+> >  void kvm_release_pfn_clean(kvm_pfn_t pfn)
+> >  {
+> >-       if (!is_error_noslot_pfn(pfn) && !kvm_is_reserved_pfn(pfn))
+> >+       if ((!is_error_noslot_pfn(pfn) && !kvm_is_reserved_pfn(pfn)) ||
 
---- Comment #6 from Christian Zigotzky (chzigotzky@xenosoft.de) ---
-FYI because of the issue with some PCI cards (SCSI, TV cards etc):
+The is_error_noslot_pfn() check shouldn't be overriden by zone_device.
 
-Christoph Hellwig wrote:
-Can you send me the .config and a dmesg?  And in the meantime try the patch
-below?
+> >+           (pfn_valid(pfn) && is_zone_device_page(pfn_to_page(pfn))))
 
-From 4d659b7311bd4141fdd3eeeb80fa2d7602ea01d4 Mon Sep 17 00:00:00 2001
-From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Date: Fri, 18 Oct 2019 13:00:43 +0200
-Subject: dma-direct: check for overflows on 32 bit DMA addresses
+But rather than special case kvm_release_pfn_clean(), I'd rather KVM
+explicitly handle ZONE_DEVICE pages, there are other flows where KVM
+really should be aware of ZONE_DEVICE pages, e.g. for sanity checks and
+whatnot.  There are surprisingly few callers of kvm_is_reserved_pfn(), so
+it's actually not too big of a change. 
 
-As seen on the new Raspberry Pi 4 and sta2x11's DMA implementation it is
-possible for a device configured with 32 bit DMA addresses and a partial
-DMA mapping located at the end of the address space to overflow. It
-happens when a higher physical address, not DMAable, is translated to
-it's DMA counterpart.
+> >                 put_page(pfn_to_page(pfn));
+> >  }
+> >  EXPORT_SYMBOL_GPL(kvm_release_pfn_clean);
+> 
+> I had the same thought, but I do wonder about the kvm_get_pfn() users,
+> e.g.,:
+> 
+> hva_to_pfn_remapped():
+> 	r = follow_pfn(vma, addr, &pfn);
+> 	...
+> 	kvm_get_pfn(pfn);
+> 	...
+> 
+> We would not take a reference for ZONE_DEVICE, but later drop one reference
+> via kvm_release_pfn_clean(). IOW, kvm_get_pfn() gets *really* dangerous to
+> use. I can't tell if this can happen right now.
+> 
+> We do have 3 users of kvm_get_pfn() that we have to audit before this
+> change. Also, we should add a comment to kvm_get_pfn() that it should never
+> be used with possible ZONE_DEVICE pages.
+> 
+> Also, we should add a comment to kvm_release_pfn_clean(), describing why we
+> treat ZONE_DEVICE in a special way here.
+> 
+> 
+> We can then progress like this
+> 
+> 1. Get this fix upstream, it's somewhat unrelated to this series.
+> 2. This patch here remains as is in this series (+/- documentation update)
+> 3. Long term, rework KVM to not have to not treat ZONE_DEVICE like reserved
+> pages. E.g., get rid of kvm_get_pfn(). Then, this special zone check can go.
 
-For example the Raspberry Pi 4, configurable up to 4 GB of memory, has
-an interconnect capable of addressing the lower 1 GB of physical memory
-with a DMA offset of 0xc0000000. It transpires that, any attempt to
-translate physical addresses higher than the first GB will result in an
-overflow which dma_capable() can't detect as it only checks for
-addresses bigger then the maximum allowed DMA address.
+Dropping kvm_get_pfn() is less than ideal, and at this point unnecessary.
+I'm 99% sure the existing call sites for kvm_get_pfn() can never be
+reached with ZONE_DEVICE pages.  I think we can do:
 
-Fix this by verifying in dma_capable() if the DMA address range provided
-is at any point lower than the minimum possible DMA address on the bus.
+  1. Get a fix upstream to have KVM stop treating ZONE_DEVICE pages as
+     reserved PFNs, i.e. exempt them in kvm_is_reserved_pfn() and change
+     the callers of kvm_is_reserved_pfn() to handle ZONE_DEVICE pages.
+  2. Drop this patch from the series, and instead remove the special
+     treatment of ZONE_DEVICE pages from kvm_is_reserved_pfn().
 
-Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
----
-include/linux/dma-direct.h | 8 ++++++++
-1 file changed, 8 insertions(+)
+Give me a few minutes to prep a patch.
 
-diff --git a/include/linux/dma-direct.h b/include/linux/dma-direct.h
-index adf993a3bd58..6ad9e9ea7564 100644
---- a/include/linux/dma-direct.h
-+++ b/include/linux/dma-direct.h
-@@ -3,6 +3,7 @@
-#define _LINUX_DMA_DIRECT_H 1
-
-#include <linux/dma-mapping.h>
-+#include <linux/memblock.h> /* for min_low_pfn */
-#include <linux/mem_encrypt.h>
-
-#ifdef CONFIG_ARCH_HAS_PHYS_TO_DMA
-@@ -27,6 +28,13 @@ static inline bool dma_capable(struct device *dev,
-dma_addr_t addr, size_t size)
-   if (!dev->dma_mask)
-       return false;
-
-+#ifndef CONFIG_ARCH_DMA_ADDR_T_64BIT
-+    /* Check if DMA address overflowed */
-+    if (min(addr, addr + size - 1) <
-+        __phys_to_dma(dev, (phys_addr_t)(min_low_pfn << PAGE_SHIFT)))
-+        return false;
-+#endif
-+
-   return addr + size - 1 <=3D
-       min_not_zero(*dev->dma_mask, dev->bus_dma_mask);
-}
-
---=20
-You are receiving this mail because:
-You are watching the assignee of the bug.=
+> 
+> -- 
+> 
+> Thanks,
+> 
+> David / dhildenb
+> 
