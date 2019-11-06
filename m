@@ -6,53 +6,54 @@ X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 65436C5DF62
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 06:00:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0AD1BC5DF62
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 06:02:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F2A402075C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 06:00:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 985FE214D8
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 06:02:48 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="YSGwBlFf"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F2A402075C
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="CYz/tUuX"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 985FE214D8
 Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 477G9L1HgBzF5V2
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 17:00:38 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 477GCp2zkXzF5ZD
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 17:02:46 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 477G6q3KFqzF3jG
+ by lists.ozlabs.org (Postfix) with ESMTPS id 477G6q64l0zF3wl
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2019 16:58:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="YSGwBlFf"; 
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="CYz/tUuX"; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix, from userid 1003)
- id 477G6q0k0vz9sPF; Wed,  6 Nov 2019 16:58:26 +1100 (AEDT)
+ id 477G6q4LWfz9sPv; Wed,  6 Nov 2019 16:58:27 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1573019907; bh=56y9/gEaDzQmeKp9iXKr2ut32/omIfnBdtSxBPQKzkQ=;
+ t=1573019907; bh=qi+bi8MVZoNDV18JpOPasJiz17z6ctI9/w/JfB9116Y=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=YSGwBlFfFtQL4eL2wF4UIeyChrpdMx5L4IUbxmr/LjnZOVz2ZGoNtyB+yYlJ6NtA2
- BeiWR2+BwJtRlAFJrHh8lmPqOVgoYHtG0PfPjtM+e0PeWvuqkDpPGr/usj1GDyfEfe
- v1g/aAkoeln+bBZwG8gP542+NfUDHOPkANX9UwdtqbLw+Qk7muJ+fjhgRTTIashezE
- YasQaF3hsR+LdzQHDsUrLk2WFEphkX6v8Sl/K5HoygKmAeqgteBfTNiOwlS/jcYEcs
- yBeX2BAOvFfASn2EVcrYBWyqM7kW5RvCdTgYnw6cxkN0oc4oBVajsfezPoNdhnmrbm
- SJqhWdJMjCEZw==
-Date: Wed, 6 Nov 2019 15:30:58 +1100
+ b=CYz/tUuXCmy6vBZ6hJN1l6iLFQ0ubQUmYKLik3gSraoou1tPe7wu+yYwuJ8fD9jbX
+ c31BBrd+vXDBwWO19GvgVFQtA0hLdcCK+jkpdcRHH/z/UPpMziyXFvT/le5vMTpowQ
+ Mt91jTijH39WVp8VweQDXJiLsC7A1b9qxURh0mlK4Ksldg6v3iPNPNmaXummCzs664
+ DAVi66wTllKw/ok+EJVMgVRKAnG6o2i9bdX9pKTGAsb9EIrb8twFuiqyeTxNS0SZaH
+ oCoS6kJZaBQidJAeF5lvSopmrhFJqzTUQ0qLoosonMQFbse4NlGr4riXisiWaDPQtg
+ 50iFa8T/7W67w==
+Date: Wed, 6 Nov 2019 15:52:38 +1100
 From: Paul Mackerras <paulus@ozlabs.org>
 To: Bharata B Rao <bharata@linux.ibm.com>
-Subject: Re: [PATCH v10 0/8] KVM: PPC: Driver to manage pages of secure guest
-Message-ID: <20191106043058.GA12069@oak.ozlabs.ibm.com>
+Subject: Re: [PATCH v10 3/8] KVM: PPC: Shared pages support for secure guests
+Message-ID: <20191106045238.GD12069@oak.ozlabs.ibm.com>
 References: <20191104041800.24527-1-bharata@linux.ibm.com>
+ <20191104041800.24527-4-bharata@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20191104041800.24527-1-bharata@linux.ibm.com>
+In-Reply-To: <20191104041800.24527-4-bharata@linux.ibm.com>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -73,44 +74,70 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Nov 04, 2019 at 09:47:52AM +0530, Bharata B Rao wrote:
-> Hi,
+On Mon, Nov 04, 2019 at 09:47:55AM +0530, Bharata B Rao wrote:
+> A secure guest will share some of its pages with hypervisor (Eg. virtio
+> bounce buffers etc). Support sharing of pages between hypervisor and
+> ultravisor.
 > 
-> This is the next version of the patchset that adds required support
-> in the KVM hypervisor to run secure guests on PEF-enabled POWER platforms.
-> 
-> The major change in this version is about not using kvm.arch->rmap[]
-> array to store device PFNs, thus not depending on the memslot availability
-> to reach to the device PFN from the fault path. Instead of rmap[], we
-> now have a different array which gets created and destroyed along with
-> memslot creation and deletion. These arrays hang off from kvm.arch and
-> are arragned in a simple linked list for now. We could move to some other
-> data structure in future if walking of linked list becomes an overhead
-> due to large number of memslots.
+> Shared page is reachable via both HV and UV side page tables. Once a
+> secure page is converted to shared page, the device page that represents
+> the secure page is unmapped from the HV side page tables.
 
-Thanks.  This is looking really close now.
+I'd like to understand a little better what's going on - see below...
 
-> Other changes include:
-> 
-> - Rearranged/Merged/Cleaned up patches, removed all Acks/Reviewed-by since
->   all the patches have changed.
-> - Added a new patch to support H_SVM_INIT_ABORT hcall (From Suka)
-> - Added KSM unmerge support so that VMAs that have device PFNs don't
->   participate in KSM merging and eventually crash in KSM code.
-> - Release device pages during unplug (Paul) and ensure that memory
->   hotplug and unplug works correctly.
-> - Let kvm-hv module to load on PEF-disabled platforms (Ram) when
->   CONFIG_PPC_UV is enabled allowing regular non-secure guests
->   to still run.
-> - Support guest reset when swithing to secure is in progress.
-> - Check if page is already secure in kvmppc_send_page_to_uv() before
->   sending it to UV.
-> - Fixed sentinal for header file kvm_book3s_uvmem.h (Jason)
-> 
-> Now, all the dependencies required by this patchset are in powerpc/next
-> on which this patchset is based upon.
+> +/*
+> + * Shares the page with HV, thus making it a normal page.
+> + *
+> + * - If the page is already secure, then provision a new page and share
+> + * - If the page is a normal page, share the existing page
+> + *
+> + * In the former case, uses dev_pagemap_ops.migrate_to_ram handler
+> + * to unmap the device page from QEMU's page tables.
+> + */
+> +static unsigned long
+> +kvmppc_share_page(struct kvm *kvm, unsigned long gpa, unsigned long page_shift)
+> +{
+> +
+> +	int ret = H_PARAMETER;
+> +	struct page *uvmem_page;
+> +	struct kvmppc_uvmem_page_pvt *pvt;
+> +	unsigned long pfn;
+> +	unsigned long gfn = gpa >> page_shift;
+> +	int srcu_idx;
+> +	unsigned long uvmem_pfn;
+> +
+> +	srcu_idx = srcu_read_lock(&kvm->srcu);
+> +	mutex_lock(&kvm->arch.uvmem_lock);
+> +	if (kvmppc_gfn_is_uvmem_pfn(gfn, kvm, &uvmem_pfn)) {
+> +		uvmem_page = pfn_to_page(uvmem_pfn);
+> +		pvt = uvmem_page->zone_device_data;
+> +		pvt->skip_page_out = true;
+> +	}
+> +
+> +retry:
+> +	mutex_unlock(&kvm->arch.uvmem_lock);
+> +	pfn = gfn_to_pfn(kvm, gfn);
 
-Can you tell me what patches that are in powerpc/next but not upstream
-this depends on?
+At this point, pfn is the value obtained from the page table for
+userspace (e.g. QEMU), right?  I would think it should be equal to
+uvmem_pfn in most cases, shouldn't it?  If not, what is it going to
+be?
+
+> +	if (is_error_noslot_pfn(pfn))
+> +		goto out;
+> +
+> +	mutex_lock(&kvm->arch.uvmem_lock);
+> +	if (kvmppc_gfn_is_uvmem_pfn(gfn, kvm, &uvmem_pfn)) {
+> +		uvmem_page = pfn_to_page(uvmem_pfn);
+> +		pvt = uvmem_page->zone_device_data;
+> +		pvt->skip_page_out = true;
+> +		kvm_release_pfn_clean(pfn);
+
+This is going to do a put_page(), unless pfn is a reserved pfn.  If it
+does a put_page(), where did we do the corresponding get_page()?
+However, since kvmppc_gfn_is_uvmem_pfn() returned true, doesn't that
+mean that pfn here should be a device pfn, and in fact should be the
+same as uvmem_pfn (possibly with some extra bit(s) set)?  What does
+kvm_is_reserved_pfn() return for a device pfn?
 
 Paul.
