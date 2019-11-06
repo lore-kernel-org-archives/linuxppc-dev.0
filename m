@@ -3,49 +3,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2035AC5DF62
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 10:16:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 97C87C5DF62
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 10:28:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 80AA120869
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 10:16:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 80AA120869
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=mess.org
+	by mail.kernel.org (Postfix) with ESMTPS id 416DB217F4
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 10:28:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 416DB217F4
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 477Mqy3KX5zF5nY
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 21:15:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 477N690wQyzDrfc
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 21:28:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=mess.org (client-ip=2a02:8011:d000:212::1; helo=gofer.mess.org;
- envelope-from=sean@mess.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=suse.com (client-ip=195.135.220.15; helo=mx1.suse.de;
+ envelope-from=pmladek@suse.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=mess.org
-X-Greylist: delayed 381 seconds by postgrey-1.36 at bilbo;
- Wed, 06 Nov 2019 21:13:36 AEDT
-Received: from gofer.mess.org (gofer.mess.org [IPv6:2a02:8011:d000:212::1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ dmarc=none (p=none dis=none) header.from=suse.com
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 477MnD6FbBzF1RP
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2019 21:13:36 +1100 (AEDT)
-Received: by gofer.mess.org (Postfix, from userid 1000)
- id 5EF88C635F; Wed,  6 Nov 2019 10:06:55 +0000 (GMT)
-Date: Wed, 6 Nov 2019 10:06:55 +0000
-From: Sean Young <sean@mess.org>
-To: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Subject: Re: [RFC PATCH 00/12] i2c: replace i2c_new_probed_device with an
- ERR_PTR variant
-Message-ID: <20191106100655.GA2743@gofer.mess.org>
-References: <20191106095033.25182-1-wsa+renesas@sang-engineering.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 477KcS2cs3zF5Zh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2019 19:35:50 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id 19FADAE65;
+ Wed,  6 Nov 2019 08:35:47 +0000 (UTC)
+Date: Wed, 6 Nov 2019 09:35:38 +0100
+From: Petr Mladek <pmladek@suse.com>
+To: Dmitry Safonov <dima@arista.com>
+Subject: Re: [PATCH 00/50] Add log level to show_stack()
+Message-ID: <20191106083538.z5nlpuf64cigxigh@pathway.suse.cz>
+References: <20191106030542.868541-1-dima@arista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20191106095033.25182-1-wsa+renesas@sang-engineering.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20191106030542.868541-1-dima@arista.com>
+User-Agent: NeoMutt/20170912 (1.9.0)
+X-Mailman-Approved-At: Wed, 06 Nov 2019 21:25:52 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,70 +56,107 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-fbdev@vger.kernel.org, Wolfram Sang <wsa@the-dreams.de>,
- linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-i2c@vger.kernel.org, linux-input@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-media@vger.kernel.org
+Cc: Juri Lelli <juri.lelli@redhat.com>, linux-sh@vger.kernel.org,
+ Catalin Marinas <catalin.marinas@arm.com>, Ben Segall <bsegall@google.com>,
+ Guo Ren <guoren@kernel.org>, Pavel Machek <pavel@ucw.cz>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Paul Burton <paulburton@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Mel Gorman <mgorman@suse.de>, Jiri Slaby <jslaby@suse.com>,
+ Matt Turner <mattst88@gmail.com>, uclinux-h8-devel@lists.sourceforge.jp,
+ Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-um@lists.infradead.org,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Dietmar Eggemann <dietmar.eggemann@arm.com>,
+ Richard Henderson <rth@twiddle.net>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, Paul Mackerras <paulus@samba.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linux-ia64@vger.kernel.org,
+ Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+ James Hogan <jhogan@kernel.org>,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Max Filippov <jcmvbkbc@gmail.com>, Vincent Chen <deanbo422@gmail.com>,
+ Ingo Molnar <mingo@kernel.org>, linux-s390@vger.kernel.org,
+ linux-c6x-dev@linux-c6x.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ linux-hexagon@vger.kernel.org, Helge Deller <deller@gmx.de>,
+ linux-xtensa@linux-xtensa.org, Vasily Gorbik <gor@linux.ibm.com>,
+ Aurelien Jacquiot <jacquiot.aurelien@gmail.com>,
+ linux-m68k@lists.linux-m68k.org, Stafford Horne <shorne@gmail.com>,
+ linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>,
+ Tony Luck <tony.luck@intel.com>, Douglas Anderson <dianders@chromium.org>,
+ Dmitry Safonov <0x7f454c46@gmail.com>, Will Deacon <will@kernel.org>,
+ Daniel Thompson <daniel.thompson@linaro.org>,
+ Brian Cain <bcain@codeaurora.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ kgdb-bugreport@lists.sourceforge.net, linux-snps-arc@lists.infradead.org,
+ Fenghua Yu <fenghua.yu@intel.com>, Borislav Petkov <bp@alien8.de>,
+ Jeff Dike <jdike@addtoit.com>, Steven Rostedt <rostedt@goodmis.org>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greentime Hu <green.hu@gmail.com>,
+ Guan Xuetao <gxt@pku.edu.cn>, linux-parisc@vger.kernel.org,
+ linux-alpha@vger.kernel.org, Ley Foon Tan <lftan@altera.com>,
+ "David S. Miller" <davem@davemloft.net>, Rich Felker <dalias@libc.org>,
+ Peter Zijlstra <peterz@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
+ Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+ Jonas Bonn <jonas@southpole.se>, Richard Weinberger <richard@nod.at>,
+ x86@kernel.org, Russell King <linux@armlinux.org.uk>,
+ clang-built-linux@googlegroups.com, Ingo Molnar <mingo@redhat.com>,
+ Mark Salter <msalter@redhat.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ openrisc@lists.librecores.org, Paul Walmsley <paul.walmsley@sifive.com>,
+ Michal Simek <monstr@monstr.eu>, Vineet Gupta <vgupta@synopsys.com>,
+ linux-mips@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Jason Wessel <jason.wessel@windriver.com>,
+ nios2-dev@lists.rocketboards.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Nov 06, 2019 at 10:50:18AM +0100, Wolfram Sang wrote:
-> From: Wolfram Sang <wsa@the-dreams.de>
+On Wed 2019-11-06 03:04:51, Dmitry Safonov wrote:
+> Add log level argument to show_stack().
+> Done in three stages:
+> 1. Introducing show_stack_loglvl() for every architecture
+> 2. Migrating old users with an explicit log level
+> 3. Renaming show_stack_loglvl() into show_stack()
 > 
-> In the on-going mission to let i2c_new_* calls return an ERR_PTR instead
-> of NULL, here is a series converting i2c_new_probed_device(). A new
-> function called i2c_new_scanned_device() is introduced with the new
-> retval, but for now, a compatibility helper is provided until all users
-> are converted. The rest of the patches convert all current in-tree
-> users.
-> 
-> Note that these patches are RFC because I want feedback on the approach
-> and hopefully collect acks on the driver conversions. If all goes well,
-> I'll apply the first two patches for the next merge window. Then, once
-> this dependency is upstream, I'll resend this series with all issues
-> fixed and acks collected.
+> Justification:
+> o It's a design mistake to move a business-logic decision
+>   into platform realization detail.
+> o I have currently two patches sets that would benefit from this work:
+>   Removing console_loglevel jumps in sysrq driver [1]
 
-The patches to drivers/media/pci/* are all IR related which have touched
-on/read over the years. So, for those:
+Just to clarify. The problem in sysrq driver is a bit different.
+It modifies console_loglevel to show even less important message
+on the console.
 
-Acked-by: Sean Young <sean@mess.org>
+IMHO, it should be solved by printing the header line with pr_error().
+It is not ideal. A cleaner solution might be to introduce another
+loglevel that will always get pushed to the console. But I am
+not sure if it is worth this single line.
 
-> 
-> Core changes tested on a Renesas Salvator-XS board (R-Car M3-N), driver
-> patches build tested by me and buildbot.
-> 
-> Wolfram Sang (12):
->   i2c: replace i2c_new_probed_device with an ERR_PTR variant
->   i2c: icy: convert to i2c_new_scanned_device
->   macintosh: convert to i2c_new_scanned_device
->   platform: chrome: convert to i2c_new_scanned_device
->   video: fbdev: matrox: convert to i2c_new_scanned_device
->   input: mouse: convert to i2c_new_scanned_device
->   media: pci: cx23885: convert to i2c_new_scanned_device
->   media: pci: cx88: convert to i2c_new_scanned_device
->   media: pci: bt8xx: convert to i2c_new_scanned_device
->   media: pci: cx18: convert to i2c_new_scanned_device
->   media: pci: ivtv: convert to i2c_new_scanned_device
->   media: v4l2-core: convert to i2c_new_scanned_device
-> 
->  Documentation/i2c/instantiating-devices.rst | 10 ++++-----
->  Documentation/i2c/writing-clients.rst       |  8 +++----
->  drivers/i2c/busses/i2c-icy.c                |  8 +++----
->  drivers/i2c/i2c-core-base.c                 | 25 ++++++++++++++++-----
->  drivers/input/mouse/psmouse-smbus.c         |  8 ++++---
->  drivers/macintosh/therm_windtunnel.c        |  4 ++--
->  drivers/media/pci/bt8xx/bttv-input.c        |  6 ++---
->  drivers/media/pci/cx18/cx18-i2c.c           |  2 +-
->  drivers/media/pci/cx23885/cx23885-i2c.c     |  4 ++--
->  drivers/media/pci/cx88/cx88-input.c         |  2 +-
->  drivers/media/pci/ivtv/ivtv-i2c.c           |  6 ++---
->  drivers/media/pci/ivtv/ivtv-i2c.h           |  2 +-
->  drivers/media/v4l2-core/v4l2-i2c.c          | 10 ++++-----
->  drivers/platform/chrome/chromeos_laptop.c   | 18 ++++++++-------
->  drivers/video/fbdev/matrox/i2c-matroxfb.c   |  4 ++--
->  include/linux/i2c.h                         | 12 +++++++---
->  16 files changed, 76 insertions(+), 53 deletions(-)
-> 
-> -- 
-> 2.20.1
+>   Hung task warning before panic [2] - suggested by Tetsuo (but he
+>   probably didn't realise what it would involve).
+> o While doing (1), (2) the backtraces were adjusted to headers
+>   and other messages for each situation - so there won't be a situation
+>   when the backtrace is printed, but the headers are missing because
+>   they have lesser log level (or the reverse).
+> o As the result in (2) plays with console_loglevel for kdb are removed.
+
+> The least important for upstream, but maybe still worth to note that
+> every company I've worked in so far had an off-list patch to print
+> backtrace with the needed log level (but only for the architecture they
+> cared about).
+> If you have other ideas how you will benefit from show_stack() with
+> a log level - please, reply to this cover letter.
+
+I agree with all the other justification.
+
+I would add. The backtrace is really useful for debugging. It should
+be possible to print it even in less critical situations.
+
+I am afraid that many people use WARN() for this purpose. But WARN()
+is not always appropriate. WARN() misuse huts when panic_on_warn
+option is used.
+
+Best Regards,
+Petr
