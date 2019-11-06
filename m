@@ -2,48 +2,73 @@ Return-Path: <SRS0=rI0D=Y6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97C87C5DF62
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 10:28:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B16EFC5DF62
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 10:30:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 416DB217F4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 10:28:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 416DB217F4
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.com
+	by mail.kernel.org (Postfix) with ESMTPS id 95DC8217F4
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 10:30:24 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="ChIeMW0I"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 95DC8217F4
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 477N690wQyzDrfc
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 21:28:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=suse.com (client-ip=195.135.220.15; helo=mx1.suse.de;
- envelope-from=pmladek@suse.com; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 477N8Z3VwTzF5qD
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 21:30:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=suse.com
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
+ envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 477KcS2cs3zF5Zh
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2019 19:35:50 +1100 (AEDT)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id 19FADAE65;
- Wed,  6 Nov 2019 08:35:47 +0000 (UTC)
-Date: Wed, 6 Nov 2019 09:35:38 +0100
-From: Petr Mladek <pmladek@suse.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 477Lcb0vVbzF4nd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2019 20:21:02 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
+ :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=XC4fPCw3J3i5aH6OXgVy9H1qRwbB/y9LePlmMadDkeQ=; b=ChIeMW0IZbNT7DDWy38jbL0ti
+ o3kdjyNHnjm8CZpcaqKlsG3bH6W2x8fORIgfBYfmM7e5nS0piuqmqum28O0zH/5977tOw4px+tdeS
+ oTR+oQSX5ZlLLCwbPSqWqFbvOrVdrNZQaG6kPwneTb7qqLVv0nfzlXYK0ztdA5NXh1Sq3O0rh2L7t
+ 3kF6Hs7vAdiIgMe4W9PbjKANnM5eic3qCufRluAtUmPDlbf/PoOH4pP8V97waGVRV2PiwFuD7mO5V
+ DbuXHw4dzseLAoH/5uIRR0LLRcVINkzsLiGoRAGsofVWC7f1rZCmkGeTl/XGifnDxZqPsBDQ9OfnO
+ +Z33+sWYQ==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100]
+ helo=noisy.programming.kicks-ass.net)
+ by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+ id 1iSHUe-00058d-4m; Wed, 06 Nov 2019 09:20:48 +0000
+Received: from hirez.programming.kicks-ass.net
+ (hirez.programming.kicks-ass.net [192.168.1.225])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id A681A301A79;
+ Wed,  6 Nov 2019 10:19:35 +0100 (CET)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+ id 9F3F529A4C2C6; Wed,  6 Nov 2019 10:20:39 +0100 (CET)
+Date: Wed, 6 Nov 2019 10:20:39 +0100
+From: Peter Zijlstra <peterz@infradead.org>
 To: Dmitry Safonov <dima@arista.com>
 Subject: Re: [PATCH 00/50] Add log level to show_stack()
-Message-ID: <20191106083538.z5nlpuf64cigxigh@pathway.suse.cz>
+Message-ID: <20191106092039.GT4131@hirez.programming.kicks-ass.net>
 References: <20191106030542.868541-1-dima@arista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <20191106030542.868541-1-dima@arista.com>
-User-Agent: NeoMutt/20170912 (1.9.0)
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-Mailman-Approved-At: Wed, 06 Nov 2019 21:25:52 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -95,7 +120,7 @@ Cc: Juri Lelli <juri.lelli@redhat.com>, linux-sh@vger.kernel.org,
  Guan Xuetao <gxt@pku.edu.cn>, linux-parisc@vger.kernel.org,
  linux-alpha@vger.kernel.org, Ley Foon Tan <lftan@altera.com>,
  "David S. Miller" <davem@davemloft.net>, Rich Felker <dalias@libc.org>,
- Peter Zijlstra <peterz@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ Petr Mladek <pmladek@suse.com>, "H. Peter Anvin" <hpa@zytor.com>,
  sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
  Anton Ivanov <anton.ivanov@cambridgegreys.com>,
  Jonas Bonn <jonas@southpole.se>, Richard Weinberger <richard@nod.at>,
@@ -112,7 +137,7 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed 2019-11-06 03:04:51, Dmitry Safonov wrote:
+On Wed, Nov 06, 2019 at 03:04:51AM +0000, Dmitry Safonov wrote:
 > Add log level argument to show_stack().
 > Done in three stages:
 > 1. Introducing show_stack_loglvl() for every architecture
@@ -124,16 +149,6 @@ On Wed 2019-11-06 03:04:51, Dmitry Safonov wrote:
 >   into platform realization detail.
 > o I have currently two patches sets that would benefit from this work:
 >   Removing console_loglevel jumps in sysrq driver [1]
-
-Just to clarify. The problem in sysrq driver is a bit different.
-It modifies console_loglevel to show even less important message
-on the console.
-
-IMHO, it should be solved by printing the header line with pr_error().
-It is not ideal. A cleaner solution might be to introduce another
-loglevel that will always get pushed to the console. But I am
-not sure if it is worth this single line.
-
 >   Hung task warning before panic [2] - suggested by Tetsuo (but he
 >   probably didn't realise what it would involve).
 > o While doing (1), (2) the backtraces were adjusted to headers
@@ -142,21 +157,4 @@ not sure if it is worth this single line.
 >   they have lesser log level (or the reverse).
 > o As the result in (2) plays with console_loglevel for kdb are removed.
 
-> The least important for upstream, but maybe still worth to note that
-> every company I've worked in so far had an off-list patch to print
-> backtrace with the needed log level (but only for the architecture they
-> cared about).
-> If you have other ideas how you will benefit from show_stack() with
-> a log level - please, reply to this cover letter.
-
-I agree with all the other justification.
-
-I would add. The backtrace is really useful for debugging. It should
-be possible to print it even in less critical situations.
-
-I am afraid that many people use WARN() for this purpose. But WARN()
-is not always appropriate. WARN() misuse huts when panic_on_warn
-option is used.
-
-Best Regards,
-Petr
+I really don't understand that word salad. Why are you doing this?
