@@ -2,86 +2,110 @@ Return-Path: <SRS0=rI0D=Y6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 76CB5C5DF62
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 03:41:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DC52EC5DF62
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 03:43:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 11E39206A3
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 03:41:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 704B3206A3
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 03:43:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=arista.com header.i=@arista.com header.b="Nf5JGZ/v"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 11E39206A3
-Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=arista.com
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="M1Ul3n1c"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 704B3206A3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 477C4c0GymzF5QQ
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 14:41:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=arista.com (client-ip=2607:f8b0:4864:20::542;
- helo=mail-pg1-x542.google.com; envelope-from=dima@arista.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none)
- header.from=arista.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=arista.com header.i=@arista.com header.b="Nf5JGZ/v"; 
+	by lists.ozlabs.org (Postfix) with ESMTP id 477C7d43f8zF3Kj
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 14:43:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=40.107.2.84; helo=eur02-ve1-obe.outbound.protection.outlook.com;
+ envelope-from=xiaowei.bao@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=nxp.com header.i=@nxp.com header.b="M1Ul3n1c"; 
  dkim-atps=neutral
-Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
- [IPv6:2607:f8b0:4864:20::542])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from EUR02-VE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr20084.outbound.protection.outlook.com [40.107.2.84])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 477BKy6DmnzDqs1
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2019 14:07:50 +1100 (AEDT)
-Received: by mail-pg1-x542.google.com with SMTP id l3so16113385pgr.8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Nov 2019 19:07:50 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=arista.com; s=googlenew;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=A42sQfdtZGvvJpni2Nb7vaaL0m1YMvpAbCmvF65Mdzo=;
- b=Nf5JGZ/vip8cpITlSsoBa9786IxBla7auOYhFREcClO6iKKT0OjXzSwHV59fzD+2Q6
- IwhkOWOPi1FNiR7brBxHFfA5Gt5QzN/Ya6VO9thrccpKgCTEhXAkgo3DZYsuMpQZcGzs
- G8YqmUbK2DK5MP6l8MQnlNMehEezmP6Ik/aZ7fNZLZfFztlw1377d8iPpShLfE/YZWiT
- FH0GzxhdW/A87Vvoou9rZogo+0Qf+2Bc3CFe8gVTYDG9YUnHsq29MTelAUchDsuxGsqs
- H+kFsPZl+HrcubwVXzmT7oN/6EIH/+hj+0O/VTARA3tsUpOhKjdZrGmM+5chI2gxr7QX
- ee6g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=A42sQfdtZGvvJpni2Nb7vaaL0m1YMvpAbCmvF65Mdzo=;
- b=bOutvi+LPmRBtoIcO9fIvejVa16+zzZQPUpOiO97ByD/aGpDbJXfpB8qmO5JNVcX6O
- u4rR2Q2ZmZ9T1ZWkwtYZqZg5jB/6k3wCOTyUOh7ZBH0UgY4gJ1+/inFCqUANG3zEpfZM
- /qRZyR+ZhIBzHAhnVbGq+vm28RaVogLgoGSmF0Pl+E/bYi9tnwrAQQSCAa+9dHQbE9Ut
- jq61/vxD8ztPg2b93r8DJTjVphHXSHhVLe+aLW5WDKkBo2E66hAE/DMhhnN8lS8iuSD7
- yOqEve2gdKG0MueWUZc7f81NFB7eCjAnAWejyIgeFiVgArmOMSNbVxwYy6RAF7F32hkJ
- 6yeg==
-X-Gm-Message-State: APjAAAXaX2Eoxa9AIOzLHvDKnI3JA2Dq8xMiipB+swvFMiNeRlF4Naq0
- iPPNNIZ78P+DdkkThE0Kv2JXfg==
-X-Google-Smtp-Source: APXvYqyYY7aG4uJ1aEuuexdWlbBTCRur/Byf7xyppq3DhY1cc29CyH3Dmh0y0d0cvxhW2psMqzHzrQ==
-X-Received: by 2002:a65:49c7:: with SMTP id t7mr161066pgs.431.1573009668489;
- Tue, 05 Nov 2019 19:07:48 -0800 (PST)
-Received: from Mindolluin.ire.aristanetworks.com ([217.173.96.166])
- by smtp.gmail.com with ESMTPSA id k24sm19570487pgl.6.2019.11.05.19.07.44
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 05 Nov 2019 19:07:47 -0800 (PST)
-From: Dmitry Safonov <dima@arista.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 26/50] powerpc: Add show_stack_loglvl()
-Date: Wed,  6 Nov 2019 03:05:17 +0000
-Message-Id: <20191106030542.868541-27-dima@arista.com>
-X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20191106030542.868541-1-dima@arista.com>
-References: <20191106030542.868541-1-dima@arista.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 477By95ldyzF5Lh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2019 14:35:42 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=oVRbKHsUQsoLNPxHiK3xQpxq/7ecg4F4aK/uHp5pF/zDSaVKDLP5znyWMcr6VCBw6Md3orb5EDgh6IgVfecH4uv3docvFRiVTJOooDN1mdW20ecJE/fW5SALCwbjJCVoAyVercKsJezWEAb7ORjPIzjjSeuNgq6G4N68YeQcHBWCnkIDiM0Haozyui8MnDA9EXiak6BJ1TaXR/VqN5anTf5XvKe8p+NfiEVw+m19zbjNCvLcLrpqIQoqIHxqW3tGKjMoPFsECdbqpcxlCgLrg9aNESjXlu+h7dS0OMtyh1gUPT/+zAncb9B9COUGgrZnzkQynQsvd92HKXGn7ZZshA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=CHPi9eqeDDxQbUo2ToZpOvNibNXbQ3Rbrihq2faQP7E=;
+ b=DqBM8cHYhJ/lzLUnk3g3YZY+FZvAFnixbP6eMCUHJa9R2B2PPPqsKTzqNYBePrlF79/Yp6OzNSw96aqJ6rMi+Nzbi/X5txaV4GS7QjZkeWgoyKSudowuZVg2wbEf7qjbVoHTJzZe6aTl+Vy0uHF4+JcktFwLQjBa0qFIgBGymXSKQF4oRdPYl5w+nHOYKC9/fxaiI0wG5NB24eZCTMR1UxTpWu/LK2A/0/zZfc25CyZkh2ONiWsazjvu2FzymBimdSnlyV7fXFN37TGU7y909DFPhYqW7a1LzbrJco5HhXn1P941Y1r0dr/8iBeigN/LxwL/mOb9WC9ebJHygI4DKA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=CHPi9eqeDDxQbUo2ToZpOvNibNXbQ3Rbrihq2faQP7E=;
+ b=M1Ul3n1cNZv8ljoIN/1C0TbaZldh2FuFg5GZ8JC2cWMNishze+9VVs0HoHkOKuQio2CIZj4VgjMwLsx6yLXqpo90mvK/d1xZyLN50Xafcu8SVbkQf6lxxjAlLYjeFXbGeHMs2cAlEitkEniwlXvI8mupjEJhFKYhv5EV2088QFU=
+Received: from AM5PR04MB3299.eurprd04.prod.outlook.com (10.173.255.158) by
+ AM5PR04MB3106.eurprd04.prod.outlook.com (10.167.170.145) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.2408.24; Wed, 6 Nov 2019 03:35:36 +0000
+Received: from AM5PR04MB3299.eurprd04.prod.outlook.com
+ ([fe80::8ce8:9eaf:3916:4bc9]) by AM5PR04MB3299.eurprd04.prod.outlook.com
+ ([fe80::8ce8:9eaf:3916:4bc9%6]) with mapi id 15.20.2408.024; Wed, 6 Nov 2019
+ 03:35:36 +0000
+From: Xiaowei Bao <xiaowei.bao@nxp.com>
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: RE: [PATCH v6 3/3] PCI: layerscape: Add LS1028a support
+Thread-Topic: [PATCH v6 3/3] PCI: layerscape: Add LS1028a support
+Thread-Index: AQHVYUIADtGnPn3wtky/OvhdSoTT96d857UAgAD6lQA=
+Date: Wed, 6 Nov 2019 03:35:36 +0000
+Message-ID: <AM5PR04MB32999C59EE51DACC030E13D7F5790@AM5PR04MB3299.eurprd04.prod.outlook.com>
+References: <20190902034319.14026-1-xiaowei.bao@nxp.com>
+ <20190902034319.14026-3-xiaowei.bao@nxp.com>
+ <20191105123233.GA26960@e121166-lin.cambridge.arm.com>
+In-Reply-To: <20191105123233.GA26960@e121166-lin.cambridge.arm.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=xiaowei.bao@nxp.com; 
+x-originating-ip: [119.31.174.73]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-ht: Tenant
+x-ms-office365-filtering-correlation-id: 99f897e0-8870-4da9-975c-08d7626a6321
+x-ms-traffictypediagnostic: AM5PR04MB3106:|AM5PR04MB3106:
+x-ms-exchange-transport-forked: True
+x-microsoft-antispam-prvs: <AM5PR04MB3106B52341838483163AE3AFF5790@AM5PR04MB3106.eurprd04.prod.outlook.com>
+x-ms-oob-tlc-oobclassifiers: OLM:8273;
+x-forefront-prvs: 02135EB356
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10009020)(4636009)(136003)(346002)(396003)(376002)(39860400002)(366004)(13464003)(189003)(199004)(6916009)(6506007)(66066001)(74316002)(446003)(66446008)(3846002)(2906002)(305945005)(14444005)(478600001)(9686003)(99286004)(6246003)(6116002)(25786009)(33656002)(14454004)(4326008)(256004)(71200400001)(52536014)(5660300002)(71190400001)(76176011)(64756008)(76116006)(26005)(53546011)(8676002)(7696005)(81166006)(476003)(11346002)(7416002)(81156014)(55016002)(86362001)(486006)(54906003)(44832011)(316002)(8936002)(186003)(66476007)(66556008)(66946007)(6436002)(7736002)(102836004)(229853002);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:AM5PR04MB3106;
+ H:AM5PR04MB3299.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; MX:1; A:1; 
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: f5ahmGEd/sNWba0MA9NlMTXxkrTp//wP0Pt6WIDrr1bKO14RpsWOddUkuURxuaHVGFJGMX8bTNM4YosVac8lvCAh8/3YWLaTCjmZFAKEJT/I138Bm4sqwmx2d2BrnWF1F38mglcjB8rGU62axI3E2txxe22RjFc40dEgAKyDMZQj7uGvTwrKIEmA4CFMg8fQEW8ynmY+JLzp5pu2jbJcAalOPOaIww3Tq5pTyNlk8w7l1uRY/oHKynpbSSgoqX7MDq1fjVEaHWl1NaMxjPSt7wVStSFAPPTEuLCrgmo69E3GoNbMMinGZnnOR/j5dBAu/OnDhW3VhCBvxkk+ZEWfWrKTHOSqLFCDUEhMaCFbQTeRDuWU+SA/mF5ftok9m3isvLztyHGK1GxvEWZ2AFrs6KN2qwJZWi7+ybsSWpZknmvI3Hs+0tNs7msdv/j3zsr9
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Wed, 06 Nov 2019 14:35:14 +1100
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 99f897e0-8870-4da9-975c-08d7626a6321
+X-MS-Exchange-CrossTenant-originalarrivaltime: 06 Nov 2019 03:35:36.4676 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: 28ZEX/yzG5QCgwrOwSfqc9etq7/R2dmw2HPgQMsPqu3RPPwWfX+NShaeZqOBW3CvktHuOIWELp+VWlBXzb6l5A==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM5PR04MB3106
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,104 +117,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Petr Mladek <pmladek@suse.com>, Dmitry Safonov <dima@arista.com>,
- Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Dmitry Safonov <0x7f454c46@gmail.com>, Steven Rostedt <rostedt@goodmis.org>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Paul Mackerras <paulus@samba.org>, Jiri Slaby <jslaby@suse.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>, Roy Zang <roy.zang@nxp.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "Z.q. Hou" <zhiqiang.hou@nxp.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Leo Li <leoyang.li@nxp.com>, "M.h. Lian" <minghuan.lian@nxp.com>,
+ "robh+dt@kernel.org" <robh+dt@kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "bhelgaas@google.com" <bhelgaas@google.com>,
+ "shawnguo@kernel.org" <shawnguo@kernel.org>, Mingkai Hu <mingkai.hu@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently, the log-level of show_stack() depends on a platform
-realization. It creates situations where the headers are printed with
-lower log level or higher than the stacktrace (depending on
-a platform or user).
-
-Furthermore, it forces the logic decision from user to an architecture
-side. In result, some users as sysrq/kdb/etc are doing tricks with
-temporary rising console_loglevel while printing their messages.
-And in result it not only may print unwanted messages from other CPUs,
-but also omit printing at all in the unlucky case where the printk()
-was deferred.
-
-Introducing log-level parameter and KERN_UNSUPPRESSED [1] seems
-an easier approach than introducing more printk buffers.
-Also, it will consolidate printings with headers.
-
-Introduce show_stack_loglvl(), that eventually will substitute
-show_stack().
-
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-[1]: https://lore.kernel.org/lkml/20190528002412.1625-1-dima@arista.com/T/#u
-Signed-off-by: Dmitry Safonov <dima@arista.com>
----
- arch/powerpc/kernel/process.c | 18 +++++++++++++-----
- 1 file changed, 13 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 639ceae7da9d..34b46680a196 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -2028,7 +2028,8 @@ unsigned long get_wchan(struct task_struct *p)
- 
- static int kstack_depth_to_print = CONFIG_PRINT_STACK_DEPTH;
- 
--void show_stack(struct task_struct *tsk, unsigned long *stack)
-+void show_stack_loglvl(struct task_struct *tsk, unsigned long *stack,
-+		       const char *loglvl)
- {
- 	unsigned long sp, ip, lr, newsp;
- 	int count = 0;
-@@ -2053,7 +2054,7 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
- 	}
- 
- 	lr = 0;
--	printk("Call Trace:\n");
-+	printk("%sCall Trace:\n", loglvl);
- 	do {
- 		if (!validate_sp(sp, tsk, STACK_FRAME_OVERHEAD))
- 			break;
-@@ -2062,7 +2063,8 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
- 		newsp = stack[0];
- 		ip = stack[STACK_FRAME_LR_SAVE];
- 		if (!firstframe || ip != lr) {
--			printk("["REG"] ["REG"] %pS", sp, ip, (void *)ip);
-+			printk("%s["REG"] ["REG"] %pS",
-+				loglvl, sp, ip, (void *)ip);
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
- 			ret_addr = ftrace_graph_ret_addr(current,
- 						&ftrace_idx, ip, stack);
-@@ -2084,8 +2086,9 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
- 			struct pt_regs *regs = (struct pt_regs *)
- 				(sp + STACK_FRAME_OVERHEAD);
- 			lr = regs->link;
--			printk("--- interrupt: %lx at %pS\n    LR = %pS\n",
--			       regs->trap, (void *)regs->nip, (void *)lr);
-+			printk("%s--- interrupt: %lx at %pS\n    LR = %pS\n",
-+			       loglvl, regs->trap,
-+			       (void *)regs->nip, (void *)lr);
- 			firstframe = 1;
- 		}
- 
-@@ -2095,6 +2098,11 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
- 	put_task_stack(tsk);
- }
- 
-+void show_stack(struct task_struct *tsk, unsigned long *stack)
-+{
-+	show_stack_loglvl(tsk, stack, KERN_DEFAULT);
-+}
-+
- #ifdef CONFIG_PPC64
- /* Called with hard IRQs off */
- void notrace __ppc64_runlatch_on(void)
--- 
-2.23.0
-
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogTG9yZW56byBQaWVyYWxp
+c2kgPGxvcmVuem8ucGllcmFsaXNpQGFybS5jb20+DQo+IFNlbnQ6IDIwMTnE6jEx1MI1yNUgMjA6
+MzMNCj4gVG86IFhpYW93ZWkgQmFvIDx4aWFvd2VpLmJhb0BueHAuY29tPg0KPiBDYzogcm9iaCtk
+dEBrZXJuZWwub3JnOyBtYXJrLnJ1dGxhbmRAYXJtLmNvbTsgc2hhd25ndW9Aa2VybmVsLm9yZzsg
+TGVvDQo+IExpIDxsZW95YW5nLmxpQG54cC5jb20+OyBNLmguIExpYW4gPG1pbmdodWFuLmxpYW5A
+bnhwLmNvbT47IE1pbmdrYWkgSHUNCj4gPG1pbmdrYWkuaHVAbnhwLmNvbT47IFJveSBaYW5nIDxy
+b3kuemFuZ0BueHAuY29tPjsNCj4gbGludXgtcGNpQHZnZXIua2VybmVsLm9yZzsgZGV2aWNldHJl
+ZUB2Z2VyLmtlcm5lbC5vcmc7DQo+IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4
+LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZzsNCj4gbGludXhwcGMtZGV2QGxpc3RzLm96
+bGFicy5vcmc7IGJoZWxnYWFzQGdvb2dsZS5jb207IFoucS4gSG91DQo+IDx6aGlxaWFuZy5ob3VA
+bnhwLmNvbT4NCj4gU3ViamVjdDogUmU6IFtQQVRDSCB2NiAzLzNdIFBDSTogbGF5ZXJzY2FwZTog
+QWRkIExTMTAyOGEgc3VwcG9ydA0KPiANCj4gT24gTW9uLCBTZXAgMDIsIDIwMTkgYXQgMTE6NDM6
+MTlBTSArMDgwMCwgWGlhb3dlaSBCYW8gd3JvdGU6DQo+ID4gQWRkIHN1cHBvcnQgZm9yIHRoZSBM
+UzEwMjhhIFBDSWUgY29udHJvbGxlci4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFhpYW93ZWkg
+QmFvIDx4aWFvd2VpLmJhb0BueHAuY29tPg0KPiA+IFNpZ25lZC1vZmYtYnk6IEhvdSBaaGlxaWFu
+ZyA8WmhpcWlhbmcuSG91QG54cC5jb20+DQo+ID4gLS0tDQo+ID4gdjI6DQo+ID4gIC0gTm8gY2hh
+bmdlLg0KPiA+IHYzOg0KPiA+ICAtIFJldXNlIHRoZSBsczIwODggZHJpdmVyIGRhdGEgc3RydWN0
+dXJ0Lg0KPiA+IHY0Og0KPiA+ICAtIE5vIGNoYW5nZS4NCj4gPiB2NToNCj4gPiAgLSBObyBjaGFu
+Z2UuDQo+ID4gdjY6DQo+ID4gIC0gTm8gY2hhbmdlLg0KPiA+DQo+ID4gIGRyaXZlcnMvcGNpL2Nv
+bnRyb2xsZXIvZHdjL3BjaS1sYXllcnNjYXBlLmMgfCAxICsNCj4gPiAgMSBmaWxlIGNoYW5nZWQs
+IDEgaW5zZXJ0aW9uKCspDQo+IA0KPiBJIGhhdmUgbm90IHNlZW4gYW55IGNvbW1lbnQgb24gYW55
+IGxheWVyc2NhcGUgZHJpdmVyIHBhdGNoZXMgY29taW5nIGZyb20NCj4gdGhlIG1haW50YWluZXJz
+IGFzIGxpc3RlZCBpbiB0aGUgTUFJTlRBSU5FUlMgZmlsZSAoYW5kIENDZWQgaW4gdGhpcyBzZXJp
+ZXMpLg0KPiANCj4gSSByZXF1ZXN0IG1haW50YWluZXJzIEFDSyBvbiB0aGVzZSBwYXRjaGVzIGFu
+ZCBJIGV4cGVjdCB0aGVtIHRvIHN0YXJ0DQo+IHJldmlld2luZyB5b3VyIGNvZGUgaWYgdGhleSB3
+YW50IHRvIGJlIHN0aWxsIGNvbnNpZGVyZWQgbWFpbnRhaW5lcnMgZm9yIHRoaXMNCj4gZHJpdmVy
+Lg0KPiANCj4gVGhlIGNoYW5nZXMgbG9vayBPSyBtaW51cyBTaGF3bidzIHJlbWFyayBvbiBjb21w
+YXRpYmxlIHN0cmluZyB0aGF0IHdhcw0KPiBpZ25vcmVkLg0KDQpIaSBMb3JlbnpvLA0KDQpUaGFu
+a3MgZm9yIHlvdXIgY29tbWVudHMuDQoNCkluIGZhY3QsIHRoZSBwYXRjaGVzIGhhdmUgcmV2aWV3
+ZWQgaW4gb3VyIGludGVybmFsIG1haWwgbGlzdCwgYWZ0ZXIgdGhlIHJldmlldyBieSBNaW5naHVh
+biANCmFuZCBNaW5na2FpLCBJIHdpbGwgc2VuZCB0aGVzZSBwYXRjaGVzIHRvIG9wZW5zb3VyY2Us
+IHRoZXkgd2lsbCBnaXZlIHRoZSBBQ0sgd2hlbiB0aGVzZQ0KcGF0Y2hlcyBzZWVtcyBpcyBPSyBh
+bmQgbm8gY29tbWVudHMgb24gdGhpcy4NCiAgIA0KVGhhbmtzIA0KWGlhb3dlaQ0KDQo+IA0KPiBU
+aGFua3MsDQo+IExvcmVuem8NCj4gDQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvcGNpL2NvbnRy
+b2xsZXIvZHdjL3BjaS1sYXllcnNjYXBlLmMNCj4gPiBiL2RyaXZlcnMvcGNpL2NvbnRyb2xsZXIv
+ZHdjL3BjaS1sYXllcnNjYXBlLmMNCj4gPiBpbmRleCAzYTVmYTI2Li5mMjRmNzlhIDEwMDY0NA0K
+PiA+IC0tLSBhL2RyaXZlcnMvcGNpL2NvbnRyb2xsZXIvZHdjL3BjaS1sYXllcnNjYXBlLmMNCj4g
+PiArKysgYi9kcml2ZXJzL3BjaS9jb250cm9sbGVyL2R3Yy9wY2ktbGF5ZXJzY2FwZS5jDQo+ID4g
+QEAgLTI2Myw2ICsyNjMsNyBAQCBzdGF0aWMgY29uc3Qgc3RydWN0IGxzX3BjaWVfZHJ2ZGF0YSBs
+czIwODhfZHJ2ZGF0YQ0KPiA+ID0geyAgc3RhdGljIGNvbnN0IHN0cnVjdCBvZl9kZXZpY2VfaWQg
+bHNfcGNpZV9vZl9tYXRjaFtdID0gew0KPiA+ICAJeyAuY29tcGF0aWJsZSA9ICJmc2wsbHMxMDEy
+YS1wY2llIiwgLmRhdGEgPSAmbHMxMDQ2X2RydmRhdGEgfSwNCj4gPiAgCXsgLmNvbXBhdGlibGUg
+PSAiZnNsLGxzMTAyMWEtcGNpZSIsIC5kYXRhID0gJmxzMTAyMV9kcnZkYXRhIH0sDQo+ID4gKwl7
+IC5jb21wYXRpYmxlID0gImZzbCxsczEwMjhhLXBjaWUiLCAuZGF0YSA9ICZsczIwODhfZHJ2ZGF0
+YSB9LA0KPiA+ICAJeyAuY29tcGF0aWJsZSA9ICJmc2wsbHMxMDQzYS1wY2llIiwgLmRhdGEgPSAm
+bHMxMDQzX2RydmRhdGEgfSwNCj4gPiAgCXsgLmNvbXBhdGlibGUgPSAiZnNsLGxzMTA0NmEtcGNp
+ZSIsIC5kYXRhID0gJmxzMTA0Nl9kcnZkYXRhIH0sDQo+ID4gIAl7IC5jb21wYXRpYmxlID0gImZz
+bCxsczIwODBhLXBjaWUiLCAuZGF0YSA9ICZsczIwODBfZHJ2ZGF0YSB9LA0KPiA+IC0tDQo+ID4g
+Mi45LjUNCj4gPg0K
