@@ -2,74 +2,91 @@ Return-Path: <SRS0=rI0D=Y6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B16EFC5DF62
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 10:30:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B2D2BC5DF62
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 10:46:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 95DC8217F4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 10:30:24 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="ChIeMW0I"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 95DC8217F4
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id 62B96207FA
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 10:46:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 62B96207FA
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 477N8Z3VwTzF5qD
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 21:30:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 477NWf0FGPzF5rd
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2019 21:46:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
- envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 477Lcb0vVbzF4nd
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2019 20:21:02 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=XC4fPCw3J3i5aH6OXgVy9H1qRwbB/y9LePlmMadDkeQ=; b=ChIeMW0IZbNT7DDWy38jbL0ti
- o3kdjyNHnjm8CZpcaqKlsG3bH6W2x8fORIgfBYfmM7e5nS0piuqmqum28O0zH/5977tOw4px+tdeS
- oTR+oQSX5ZlLLCwbPSqWqFbvOrVdrNZQaG6kPwneTb7qqLVv0nfzlXYK0ztdA5NXh1Sq3O0rh2L7t
- 3kF6Hs7vAdiIgMe4W9PbjKANnM5eic3qCufRluAtUmPDlbf/PoOH4pP8V97waGVRV2PiwFuD7mO5V
- DbuXHw4dzseLAoH/5uIRR0LLRcVINkzsLiGoRAGsofVWC7f1rZCmkGeTl/XGifnDxZqPsBDQ9OfnO
- +Z33+sWYQ==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100]
- helo=noisy.programming.kicks-ass.net)
- by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1iSHUe-00058d-4m; Wed, 06 Nov 2019 09:20:48 +0000
-Received: from hirez.programming.kicks-ass.net
- (hirez.programming.kicks-ass.net [192.168.1.225])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id A681A301A79;
- Wed,  6 Nov 2019 10:19:35 +0100 (CET)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
- id 9F3F529A4C2C6; Wed,  6 Nov 2019 10:20:39 +0100 (CET)
-Date: Wed, 6 Nov 2019 10:20:39 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Dmitry Safonov <dima@arista.com>
-Subject: Re: [PATCH 00/50] Add log level to show_stack()
-Message-ID: <20191106092039.GT4131@hirez.programming.kicks-ass.net>
-References: <20191106030542.868541-1-dima@arista.com>
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 477NTF0sKPzF5SL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2019 21:44:48 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ xA6Ac2uL112917; Wed, 6 Nov 2019 05:44:41 -0500
+Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
+ [169.55.91.170])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2w3u9vb5en-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 06 Nov 2019 05:44:40 -0500
+Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
+ by ppma02wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id xA6AZNY0018157;
+ Wed, 6 Nov 2019 10:44:38 GMT
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by ppma02wdc.us.ibm.com with ESMTP id 2w11e7erej-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 06 Nov 2019 10:44:38 +0000
+Received: from b03ledav001.gho.boulder.ibm.com
+ (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xA6AibgI61604294
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 6 Nov 2019 10:44:37 GMT
+Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C29876E052;
+ Wed,  6 Nov 2019 10:44:37 +0000 (GMT)
+Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E58DE6E054;
+ Wed,  6 Nov 2019 10:44:33 +0000 (GMT)
+Received: from skywalker.linux.ibm.com (unknown [9.199.40.235])
+ by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Wed,  6 Nov 2019 10:44:32 +0000 (GMT)
+X-Mailer: emacs 26.2 (via feedmail 11-beta-1 I)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: Dan Williams <dan.j.williams@intel.com>
+Subject: Re: [RFC PATCH 1/4] libnvdimm/namespace: Make namespace size
+ validation arch dependent
+In-Reply-To: <CAPcyv4h42_1deZDaaW1RqX0Ls+maiFO_1e=6xJuHTa3wdWvVvA@mail.gmail.com>
+References: <20191028094825.21448-1-aneesh.kumar@linux.ibm.com>
+ <CAPcyv4gZ=wKzwscu_nch8VUtNTHusKzjmMhYZWo+Se=BPO9q8g@mail.gmail.com>
+ <6f85f4af-788d-aaef-db64-ab8d3faf6b1b@linux.ibm.com>
+ <CAPcyv4gMnSe26QfSBABx0zj3XuFqy=K1XaGnmE3h3sP3Y76nRw@mail.gmail.com>
+ <4c6e5743-663e-853b-2203-15c809965965@linux.ibm.com>
+ <CAPcyv4h42_1deZDaaW1RqX0Ls+maiFO_1e=6xJuHTa3wdWvVvA@mail.gmail.com>
+Date: Wed, 06 Nov 2019 16:14:22 +0530
+Message-ID: <87o8xp5lo9.fsf@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20191106030542.868541-1-dima@arista.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-Mailman-Approved-At: Wed, 06 Nov 2019 21:25:52 +1100
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-11-06_02:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1908290000 definitions=main-1911060110
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,80 +98,80 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Juri Lelli <juri.lelli@redhat.com>, linux-sh@vger.kernel.org,
- Catalin Marinas <catalin.marinas@arm.com>, Ben Segall <bsegall@google.com>,
- Guo Ren <guoren@kernel.org>, Pavel Machek <pavel@ucw.cz>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- Paul Burton <paulburton@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Mel Gorman <mgorman@suse.de>, Jiri Slaby <jslaby@suse.com>,
- Matt Turner <mattst88@gmail.com>, uclinux-h8-devel@lists.sourceforge.jp,
- Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-um@lists.infradead.org,
- Thomas Gleixner <tglx@linutronix.de>,
- Dietmar Eggemann <dietmar.eggemann@arm.com>,
- Richard Henderson <rth@twiddle.net>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, Paul Mackerras <paulus@samba.org>,
- Andrew Morton <akpm@linux-foundation.org>, linux-ia64@vger.kernel.org,
- Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
- James Hogan <jhogan@kernel.org>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Max Filippov <jcmvbkbc@gmail.com>, Vincent Chen <deanbo422@gmail.com>,
- Ingo Molnar <mingo@kernel.org>, linux-s390@vger.kernel.org,
- linux-c6x-dev@linux-c6x.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
- linux-hexagon@vger.kernel.org, Helge Deller <deller@gmx.de>,
- linux-xtensa@linux-xtensa.org, Vasily Gorbik <gor@linux.ibm.com>,
- Aurelien Jacquiot <jacquiot.aurelien@gmail.com>,
- linux-m68k@lists.linux-m68k.org, Stafford Horne <shorne@gmail.com>,
- linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>,
- Tony Luck <tony.luck@intel.com>, Douglas Anderson <dianders@chromium.org>,
- Dmitry Safonov <0x7f454c46@gmail.com>, Will Deacon <will@kernel.org>,
- Daniel Thompson <daniel.thompson@linaro.org>,
- Brian Cain <bcain@codeaurora.org>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- kgdb-bugreport@lists.sourceforge.net, linux-snps-arc@lists.infradead.org,
- Fenghua Yu <fenghua.yu@intel.com>, Borislav Petkov <bp@alien8.de>,
- Jeff Dike <jdike@addtoit.com>, Steven Rostedt <rostedt@goodmis.org>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greentime Hu <green.hu@gmail.com>,
- Guan Xuetao <gxt@pku.edu.cn>, linux-parisc@vger.kernel.org,
- linux-alpha@vger.kernel.org, Ley Foon Tan <lftan@altera.com>,
- "David S. Miller" <davem@davemloft.net>, Rich Felker <dalias@libc.org>,
- Petr Mladek <pmladek@suse.com>, "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
- Anton Ivanov <anton.ivanov@cambridgegreys.com>,
- Jonas Bonn <jonas@southpole.se>, Richard Weinberger <richard@nod.at>,
- x86@kernel.org, Russell King <linux@armlinux.org.uk>,
- clang-built-linux@googlegroups.com, Ingo Molnar <mingo@redhat.com>,
- Mark Salter <msalter@redhat.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- openrisc@lists.librecores.org, Paul Walmsley <paul.walmsley@sifive.com>,
- Michal Simek <monstr@monstr.eu>, Vineet Gupta <vgupta@synopsys.com>,
- linux-mips@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Palmer Dabbelt <palmer@dabbelt.com>, Jason Wessel <jason.wessel@windriver.com>,
- nios2-dev@lists.rocketboards.org, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-nvdimm <linux-nvdimm@lists.01.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Nov 06, 2019 at 03:04:51AM +0000, Dmitry Safonov wrote:
-> Add log level argument to show_stack().
-> Done in three stages:
-> 1. Introducing show_stack_loglvl() for every architecture
-> 2. Migrating old users with an explicit log level
-> 3. Renaming show_stack_loglvl() into show_stack()
-> 
-> Justification:
-> o It's a design mistake to move a business-logic decision
->   into platform realization detail.
-> o I have currently two patches sets that would benefit from this work:
->   Removing console_loglevel jumps in sysrq driver [1]
->   Hung task warning before panic [2] - suggested by Tetsuo (but he
->   probably didn't realise what it would involve).
-> o While doing (1), (2) the backtraces were adjusted to headers
->   and other messages for each situation - so there won't be a situation
->   when the backtrace is printed, but the headers are missing because
->   they have lesser log level (or the reverse).
-> o As the result in (2) plays with console_loglevel for kdb are removed.
+Dan Williams <dan.j.williams@intel.com> writes:
 
-I really don't understand that word salad. Why are you doing this?
+> On Wed, Oct 30, 2019 at 10:35 PM Aneesh Kumar K.V
+> <aneesh.kumar@linux.ibm.com> wrote:
+> [..]
+>> > True, for the pfn device and the device-dax mapping size, but I'm
+>> > suggesting adding another instance of alignment control at the raw
+>> > namespace level. That would need to be disconnected from the
+>> > device-dax page mapping granularity.
+>> >
+>>
+>> Can you explain what you mean by raw namespace level ? We don't have
+>> multiple values against which we need to check the alignment of
+>> namespace start and namespace size.
+>>
+>> If you can outline how and where you would like to enforce that check I
+>> can start working on it.
+>>
+>
+> What I mean is that the process of setting up a pfn namespace goes
+> something like this in shell script form:
+>
+> 1/ echo $size > /sys/bus/nd/devices/$namespace/size
+> 2/ echo $namespace > /sys/bus/nd/devices/$pfn/namespace
+> 3/ echo $pfn_align > /sys/bus/nd/devices/$pfn/align
+>
+> What I'm suggesting is add an optional 0th step that does:
+>
+> echo $raw_align > /sys/bus/nd/devices/$namespace/align
+>
+> Where the raw align needs to be needs to be max($pfn_align,
+> arch_mapping_granulariy).
+
+
+I started looking at this and was wondering about userspace being aware
+of the direct-map mapping size. We can figure that out by parsing kernel
+log
+
+[    0.000000] Page orders: linear mapping = 24, virtual = 16, io = 16, vmemmap = 24
+
+
+But I am not sure we want to do that. There is not set of raw_align
+value to select. What we need to make sure is the below.
+
+1) While creating a namespace we need to make sure that namespace size
+is multiple of direct-map mapping size. If we ensure that
+size is aligned, we should also get the namespace start to be aligned?
+
+2) While initialzing a namespace by scanning label area, we need to make
+sure every namespace in the region satisfy the above requirement. If not
+we should mark the region disabled. 
+
+
+>
+> So on powerpc where PAGE_SIZE < arch_mapping_granulariy, the following:
+>
+> cat /sys/bus/nd/devices/$namespace/supported_aligns
+>
+> ...would show the same output as:
+>
+> cat /sys/bus/nd/devices/$pfn/align
+>
+> ...but with any alignment choice less than arch_mapping_granulariy removed.
+>
+
+I am not sure why we need to do that. For example: even if we have
+direct-map mapping size as PAGE_SIZE (64K), we still should allow an user
+mapping with hugepage size (16M)?
+
+
+-aneesh
