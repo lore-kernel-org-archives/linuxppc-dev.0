@@ -2,82 +2,61 @@ Return-Path: <SRS0=Sk7F=Y7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83C61C5DF61
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 07:57:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 21BFFC5DF61
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 08:00:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2D80421D6C
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 07:57:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id AB8BF21D7E
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 08:00:12 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="VIsH2seR"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2D80421D6C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="btTM+JO9"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AB8BF21D7E
+Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 477wk61tGgzF34F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 18:57:50 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 477wmp62DFzF3DD
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 19:00:10 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 477wd748XtzF16G
+ by lists.ozlabs.org (Postfix) with ESMTPS id 477wd72sTHzF15Z
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2019 18:53:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="VIsH2seR"; 
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=ozlabs.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="btTM+JO9"; 
  dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 477wd73HQPz8wT2
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2019 18:53:31 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 477wLB6hjmzB3wd; Thu,  7 Nov 2019 18:40:34 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
- receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linuxfoundation.org
-Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="VIsH2seR"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 477wLB2WDzzB3wb;
- Thu,  7 Nov 2019 18:40:33 +1100 (AEDT)
-Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
- [83.86.89.107])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 89A1F21882;
- Thu,  7 Nov 2019 07:40:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1573112431;
- bh=2BS/rZTDi9unuwVB4ZB/ZFB0VRPqy6bNAF0+4AEjkB4=;
+Received: by ozlabs.org (Postfix, from userid 1003)
+ id 477snc6KMbz9sWx; Thu,  7 Nov 2019 16:45:40 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
+ t=1573105540; bh=v04gpqPuQsMYJe1XTEi01nFH99poTytMgQDqvHAql10=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=VIsH2seRUopDCpGxze0tP8nLOavOd8Olsk/SzRo+wyGTV878I/91nbOenJQnfGE21
- 8qvEcbbZyqSAIPrJ0WqpT2v8eD0nzmQAOtNsa5ALw5lU/y36328yxfz6BZPVx74Qyl
- hLDwB+7OeuYNFgnYzDQGpQOb+qyBhGZA/PhBktqM=
-Date: Thu, 7 Nov 2019 08:40:28 +0100
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Eric Richter <erichte@linux.ibm.com>
-Subject: Re: [PATCH v7 2/4] powerpc: expose secure variables to userspace via
- sysfs
-Message-ID: <20191107074028.GA1118867@kroah.com>
-References: <20191107042205.13710-1-erichte@linux.ibm.com>
- <20191107042205.13710-3-erichte@linux.ibm.com>
+ b=btTM+JO9ec0tnAra1rxspTAzuX4dmHSwx5F3iPKpRDE1Dyy7H2lCI89oVQBvfAAQ6
+ ur1klG5Ekm5jzpUWTLAyOyJfJYPs4n1XrxybuX7LMqvepoNxTZMhhRZjboNtJJLraS
+ L3rUCeqJ/N28fmgLbr+39yfvgI3hDzdJJEeHAEzXTsWT67aUSTjT2TrM9FRmsb2ZX+
+ Dz+9847F24kuYlHhFHYRBvoYF5KLRww2/hDpxO5JiiYWtSEecVc8c34OzzZdGNegYn
+ v0ZcRc24HBfiQUQXgmKhdq5Xpou5e2aLTaQ7WnAZ4YuiA/kofjJz6JiuTee/DVEPZ2
+ FauPmtkkfgc8g==
+Date: Thu, 7 Nov 2019 16:45:35 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Bharata B Rao <bharata@linux.ibm.com>
+Subject: Re: [PATCH v10 1/8] mm: ksm: Export ksm_madvise()
+Message-ID: <20191107054535.GA2882@oak.ozlabs.ibm.com>
+References: <20191104041800.24527-1-bharata@linux.ibm.com>
+ <20191104041800.24527-2-bharata@linux.ibm.com>
+ <20191106043329.GB12069@oak.ozlabs.ibm.com>
+ <20191106064542.GB21634@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20191107042205.13710-3-erichte@linux.ibm.com>
-User-Agent: Mutt/1.12.2 (2019-09-21)
+In-Reply-To: <20191106064542.GB21634@in.ibm.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,189 +68,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-efi@vger.kernel.org, Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Nayna Jain <nayna@linux.ibm.com>, linux-kernel@vger.kernel.org,
- Mimi Zohar <zohar@linux.ibm.com>, Claudio Carvalho <cclaudio@linux.ibm.com>,
- Matthew Garret <matthew.garret@nebula.com>, linuxppc-dev@ozlabs.org,
- Paul Mackerras <paulus@samba.org>, Jeremy Kerr <jk@ozlabs.org>,
- Elaine Palmer <erpalmer@us.ibm.com>, Oliver O'Halloran <oohall@gmail.com>,
- linux-integrity@vger.kernel.org, George Wilson <gcwilson@linux.ibm.com>
+Cc: linuxram@us.ibm.com, cclaudio@linux.ibm.com, kvm-ppc@vger.kernel.org,
+ linux-mm@kvack.org, jglisse@redhat.com, aneesh.kumar@linux.vnet.ibm.com,
+ paulus@au1.ibm.com, sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ hch@lst.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Nov 06, 2019 at 10:22:03PM -0600, Eric Richter wrote:
-> From: Nayna Jain <nayna@linux.ibm.com>
+On Wed, Nov 06, 2019 at 12:15:42PM +0530, Bharata B Rao wrote:
+> On Wed, Nov 06, 2019 at 03:33:29PM +1100, Paul Mackerras wrote:
+> > On Mon, Nov 04, 2019 at 09:47:53AM +0530, Bharata B Rao wrote:
+> > > KVM PPC module needs ksm_madvise() for supporting secure guests.
+> > > Guest pages that become secure are represented as device private
+> > > pages in the host. Such pages shouldn't participate in KSM merging.
+> > 
+> > If we don't do the ksm_madvise call, then as far as I can tell, it
+> > should all still work correctly, but we might have KSM pulling pages
+> > in unnecessarily, causing a reduction in performance.  Is that right?
 > 
-> PowerNV secure variables, which store the keys used for OS kernel
-> verification, are managed by the firmware. These secure variables need to
-> be accessed by the userspace for addition/deletion of the certificates.
+> I thought so too. When KSM tries to merge a secure page, it should
+> cause a fault resulting in page-out the secure page. However I see
+> the below crash when KSM is enabled and KSM scan tries to kmap and
+> memcmp the device private page.
 > 
-> This patch adds the sysfs interface to expose secure variables for PowerNV
-> secureboot. The users shall use this interface for manipulating
-> the keys stored in the secure variables.
-> 
-> Signed-off-by: Nayna Jain <nayna@linux.ibm.com>
-> Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Signed-off-by: Eric Richter <erichte@linux.ibm.com>
-> ---
->  Documentation/ABI/testing/sysfs-secvar |  46 +++++
->  arch/powerpc/Kconfig                   |  11 ++
->  arch/powerpc/kernel/Makefile           |   1 +
->  arch/powerpc/kernel/secvar-sysfs.c     | 247 +++++++++++++++++++++++++
->  4 files changed, 305 insertions(+)
->  create mode 100644 Documentation/ABI/testing/sysfs-secvar
->  create mode 100644 arch/powerpc/kernel/secvar-sysfs.c
-> 
-> diff --git a/Documentation/ABI/testing/sysfs-secvar b/Documentation/ABI/testing/sysfs-secvar
-> new file mode 100644
-> index 000000000000..911b89cc6957
-> --- /dev/null
-> +++ b/Documentation/ABI/testing/sysfs-secvar
-> @@ -0,0 +1,46 @@
-> +What:		/sys/firmware/secvar
-> +Date:		August 2019
-> +Contact:	Nayna Jain <nayna@linux.ibm.com>
-> +Description:	This directory is created if the POWER firmware supports OS
-> +		secureboot, thereby secure variables. It exposes interface
-> +		for reading/writing the secure variables
-> +
-> +What:		/sys/firmware/secvar/vars
-> +Date:		August 2019
-> +Contact:	Nayna Jain <nayna@linux.ibm.com>
-> +Description:	This directory lists all the secure variables that are supported
-> +		by the firmware.
-> +
-> +What:		/sys/firmware/secvar/backend
-> +Date:		August 2019
-> +Contact:	Nayna Jain <nayna@linux.ibm.com>
-> +Description:	A string indicating which backend is in use by the firmware.
-> +		This determines the format of the variable and the accepted
-> +		format of variable updates.
-> +
-> +What:		/sys/firmware/secvar/vars/<variable name>
-> +Date:		August 2019
-> +Contact:	Nayna Jain <nayna@linux.ibm.com>
-> +Description:	Each secure variable is represented as a directory named as
-> +		<variable_name>. The variable name is unique and is in ASCII
-> +		representation. The data and size can be determined by reading
-> +		their respective attribute files.
-> +
-> +What:		/sys/firmware/secvar/vars/<variable_name>/size
-> +Date:		August 2019
-> +Contact:	Nayna Jain <nayna@linux.ibm.com>
-> +Description:	An integer representation of the size of the content of the
-> +		variable. In other words, it represents the size of the data.
-> +
-> +What:		/sys/firmware/secvar/vars/<variable_name>/data
-> +Date:		August 2019
-> +Contact:	Nayna Jain h<nayna@linux.ibm.com>
-> +Description:	A read-only file containing the value of the variable. The size
-> +		of the file represents the maximum size of the variable data.
-> +
-> +What:		/sys/firmware/secvar/vars/<variable_name>/update
-> +Date:		August 2019
-> +Contact:	Nayna Jain <nayna@linux.ibm.com>
-> +Description:	A write-only file that is used to submit the new value for the
-> +		variable. The size of the file represents the maximum size of
-> +		the variable data that can be written.
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index c795039bdc73..cabc091f3fe1 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -945,6 +945,17 @@ config PPC_SECURE_BOOT
->  	  to enable OS secure boot on systems that have firmware support for
->  	  it. If in doubt say N.
->  
-> +config PPC_SECVAR_SYSFS
-> +	bool "Enable sysfs interface for POWER secure variables"
-> +	default y
-> +	depends on PPC_SECURE_BOOT
-> +	depends on SYSFS
-> +	help
-> +	  POWER secure variables are managed and controlled by firmware.
-> +	  These variables are exposed to userspace via sysfs to enable
-> +	  read/write operations on these variables. Say Y if you have
-> +	  secure boot enabled and want to expose variables to userspace.
-> +
->  endmenu
->  
->  config ISA_DMA_API
-> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-> index 3cf26427334f..b216e9f316ee 100644
-> --- a/arch/powerpc/kernel/Makefile
-> +++ b/arch/powerpc/kernel/Makefile
-> @@ -162,6 +162,7 @@ obj-y				+= ucall.o
->  endif
->  
->  obj-$(CONFIG_PPC_SECURE_BOOT)	+= secure_boot.o ima_arch.o secvar-ops.o
-> +obj-$(CONFIG_PPC_SECVAR_SYSFS)	+= secvar-sysfs.o
->  
->  # Disable GCOV, KCOV & sanitizers in odd or sensitive code
->  GCOV_PROFILE_prom_init.o := n
-> diff --git a/arch/powerpc/kernel/secvar-sysfs.c b/arch/powerpc/kernel/secvar-sysfs.c
-> new file mode 100644
-> index 000000000000..a3ba58ee4285
-> --- /dev/null
-> +++ b/arch/powerpc/kernel/secvar-sysfs.c
-> @@ -0,0 +1,247 @@
-> +// SPDX-License-Identifier: GPL-2.0+
-> +/*
-> + * Copyright (C) 2019 IBM Corporation <nayna@linux.ibm.com>
-> + *
-> + * This code exposes secure variables to user via sysfs
-> + */
-> +
-> +#define pr_fmt(fmt) "secvar-sysfs: "fmt
-> +
-> +#include <linux/slab.h>
-> +#include <linux/compat.h>
-> +#include <linux/string.h>
-> +#include <linux/of.h>
-> +#include <asm/secvar.h>
-> +
-> +#define NAME_MAX_SIZE	   1024
-> +
-> +static struct kobject *secvar_kobj;
-> +static struct kset *secvar_kset;
-> +
-> +static ssize_t backend_show(struct kobject *kobj, struct kobj_attribute *attr,
-> +			    char *buf)
-> +{
-> +	ssize_t ret = 0;
-> +	struct device_node *node;
-> +	const char *compatible;
-> +
-> +	node = of_find_node_by_name(NULL, "secvar");
-> +	if (!of_device_is_available(node))
-> +		return -ENODEV;
-> +
-> +	ret = of_property_read_string(node, "compatible", &compatible);
-> +	if (ret)
-> +		return ret;
-> +
-> +	ret = sprintf(buf, "%s\n", compatible);
-> +
-> +	of_node_put(node);
-> +
-> +	return ret;
-> +}
-> +
-> +
-> +static ssize_t size_show(struct kobject *kobj, struct kobj_attribute *attr,
-> +			 char *buf)
-> +{
-> +	uint64_t dsize;
-> +	int rc;
-> +
-> +	rc = secvar_ops->get(kobj->name, strlen(kobj->name) + 1, NULL, &dsize);
-> +	if (rc) {
-> +		pr_err("Error retrieving variable size %d\n", rc);
+> BUG: Unable to handle kernel data access at 0xc007fffe00010000
+> Faulting instruction address: 0xc0000000000ab5a0
+> Oops: Kernel access of bad area, sig: 11 [#1]
+> LE PAGE_SIZE=64K MMU=Radix MMU=Hash SMP NR_CPUS=2048 NUMA PowerNV
+> Modules linked in:
+> CPU: 0 PID: 22 Comm: ksmd Not tainted 5.4.0-rc2-00026-g2249c0ae4a53-dirty #376
+> NIP:  c0000000000ab5a0 LR: c0000000003d7c3c CTR: 0000000000000004
+> REGS: c0000001c85d79b0 TRAP: 0300   Not tainted  (5.4.0-rc2-00026-g2249c0ae4a53-dirty)
+> MSR:  900000000280b033 <SF,HV,VEC,VSX,EE,FP,ME,IR,DR,RI,LE>  CR: 24002242  XER: 20040000
+> CFAR: c0000000000ab3d0 DAR: c007fffe00010000 DSISR: 40000000 IRQMASK: 0 
+> GPR00: 0000000000000004 c0000001c85d7c40 c0000000018ce000 c0000001c3880000 
+> GPR04: c007fffe00010000 0000000000010000 0000000000000000 ffffffffffffffff 
+> GPR08: c000000001992298 0000603820002138 ffffffffffffffff ffffffff00003a69 
+> GPR12: 0000000024002242 c000000002550000 c0000001c8700000 c00000000179b728 
+> GPR16: c00c01ffff800040 c00000000179b5b8 c00c00000070e200 ffffffffffffffff 
+> GPR20: 0000000000000000 0000000000000000 fffffffffffff000 c00000000179b648 
+> GPR24: c0000000024464a0 c00000000249f568 c000000001118918 0000000000000000 
+> GPR28: c0000001c804c590 c00000000249f518 0000000000000000 c0000001c8700000 
+> NIP [c0000000000ab5a0] memcmp+0x320/0x6a0
+> LR [c0000000003d7c3c] memcmp_pages+0x8c/0xe0
+> Call Trace:
+> [c0000001c85d7c40] [c0000001c804c590] 0xc0000001c804c590 (unreliable)
+> [c0000001c85d7c70] [c0000000004591d0] ksm_scan_thread+0x960/0x21b0
+> [c0000001c85d7db0] [c0000000001bf328] kthread+0x198/0x1a0
+> [c0000001c85d7e20] [c00000000000bfbc] ret_from_kernel_thread+0x5c/0x80
+> Instruction dump:
+> ebc1fff0 eba1ffe8 eb81ffe0 eb61ffd8 4e800020 38600001 4d810020 3860ffff 
+> 4e800020 38000004 7c0903a6 7d201c28 <7d402428> 7c295040 38630008 38840008 
 
-For this, and the other errors in the show/store functions, you might
-want to print the kobject name as well, so that userspace has a hint as
-to what variable is the one having problems.
+Hmmm, that seems like a bug in the ZONE_DEVICE stuff generally.  All
+that ksm is doing as far as I can see is follow_page() and
+kmap_atomic().  I wonder how many other places in the kernel might
+also be prone to crashing if they try to touch device pages?
 
-thanks,
+> In anycase, we wouldn't want secure guests pages to be pulled out due
+> to KSM, hence disabled merging.
 
-greg k-h
+Sure, I don't disagree with that, but I worry that we are papering
+over a bug here.
+
+Paul.
