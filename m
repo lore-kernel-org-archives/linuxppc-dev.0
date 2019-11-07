@@ -2,59 +2,105 @@ Return-Path: <SRS0=Sk7F=Y7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A9D82C5DF61
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 08:06:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 275A2C5DF61
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 08:09:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C9487206DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 08:06:07 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="nGEZ4HST"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C9487206DF
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id A512C2077C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 08:09:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A512C2077C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 477wvd2bzJzF3nc
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 19:06:05 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 477wzc2l12zF4H5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 19:09:32 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 477wd72WsxzF15M
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2019 18:53:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.b="nGEZ4HST"; dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 477qhh1Mjhz9sSZ;
- Thu,  7 Nov 2019 15:11:16 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1573099877;
- bh=jm+Vmz+Pe7sP6gnY/53imRBZ6Tetxa/ULKWT1LQn32s=;
- h=From:To:Cc:Subject:Date:From;
- b=nGEZ4HSTIgls3CXaH1R45tNp1G2bg8tkVvtlcpeSIfLUtD5OacZlsKhOdD1Ah17UQ
- bBsQAoFnSZvqLWXFbDk0cKgJp6EBi7eytHRbm7UfTei8PuVnMjKzaxB8TONbnIGNNN
- N7IGsFNfl6qqIdqPgZTtatB0zDhjUwfNQBNJssxVO4WBVRkC5898TJ4D1wpjiYLeYt
- 7Dk3E5B0Jvp2CST7nOThi6BCxwPh0lkYLdyXT00PVJhXXbuOhrEjNEC6TKNkGKWYc+
- hgOba/wksd6OuWw0k5D/ajIoH6NTRdo4mle0T4b6fX3+R2n5EF4wuAo3xTalLBD3zK
- 5f+x1pwWBpUww==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au> 
-Subject: Please add powerpc topic/kasan-bitops branch to linux-next
-Date: Thu, 07 Nov 2019 15:11:12 +1100
-Message-ID: <87r22k5nrz.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 477wdB6H3pzF1BS
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2019 18:53:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 477wd90sVWz8xLS
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2019 18:53:33 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 477qxY1xq1z9sSw; Thu,  7 Nov 2019 15:22:25 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=erichte@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 477qxX4NBqz9sT3
+ for <linuxppc-dev@ozlabs.org>; Thu,  7 Nov 2019 15:22:24 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ xA74Lwav066386
+ for <linuxppc-dev@ozlabs.org>; Wed, 6 Nov 2019 23:22:22 -0500
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2w48xy5xwe-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Wed, 06 Nov 2019 23:22:22 -0500
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <erichte@linux.ibm.com>;
+ Thu, 7 Nov 2019 04:22:20 -0000
+Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 7 Nov 2019 04:22:17 -0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id xA74LerL14287350
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 7 Nov 2019 04:21:40 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 84F15AE051;
+ Thu,  7 Nov 2019 04:22:15 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 10975AE045;
+ Thu,  7 Nov 2019 04:22:13 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.40.192.65])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu,  7 Nov 2019 04:22:12 +0000 (GMT)
+From: Eric Richter <erichte@linux.ibm.com>
+To: linuxppc-dev@ozlabs.org, linux-efi@vger.kernel.org,
+ linux-integrity@vger.kernel.org
+Subject: [PATCH v7 2/4] powerpc: expose secure variables to userspace via sysfs
+Date: Wed,  6 Nov 2019 22:22:03 -0600
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20191107042205.13710-1-erichte@linux.ibm.com>
+References: <20191107042205.13710-1-erichte@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19110704-0016-0000-0000-000002C17157
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19110704-0017-0000-0000-00003322F078
+Message-Id: <20191107042205.13710-3-erichte@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-11-06_09:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1910280000 definitions=main-1911070044
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,24 +112,380 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, x86@kernel.org, kasan-dev@googlegroups.com,
- linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Daniel Axtens <dja@axtens.net>
+Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Eric Ricther <erichte@linux.ibm.com>, Nayna Jain <nayna@linux.ibm.com>,
+ linux-kernel@vger.kernel.org, Mimi Zohar <zohar@linux.ibm.com>,
+ Claudio Carvalho <cclaudio@linux.ibm.com>,
+ Matthew Garret <matthew.garret@nebula.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Paul Mackerras <paulus@samba.org>, Jeremy Kerr <jk@ozlabs.org>,
+ Elaine Palmer <erpalmer@us.ibm.com>, Oliver O'Halloran <oohall@gmail.com>,
+ George Wilson <gcwilson@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Stephen,
+From: Nayna Jain <nayna@linux.ibm.com>
 
-Can you please add the topic/kasan-bitops tree of the powerpc repository
-to linux-next.
+PowerNV secure variables, which store the keys used for OS kernel
+verification, are managed by the firmware. These secure variables need to
+be accessed by the userspace for addition/deletion of the certificates.
 
-powerpc         git     git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git#topic/kasan-bitops
+This patch adds the sysfs interface to expose secure variables for PowerNV
+secureboot. The users shall use this interface for manipulating
+the keys stored in the secure variables.
 
-See:
-  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/log/?h=topic/kasan-bitops
+Signed-off-by: Nayna Jain <nayna@linux.ibm.com>
+Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Eric Richter <erichte@linux.ibm.com>
+---
+ Documentation/ABI/testing/sysfs-secvar |  46 +++++
+ arch/powerpc/Kconfig                   |  11 ++
+ arch/powerpc/kernel/Makefile           |   1 +
+ arch/powerpc/kernel/secvar-sysfs.c     | 247 +++++++++++++++++++++++++
+ 4 files changed, 305 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-secvar
+ create mode 100644 arch/powerpc/kernel/secvar-sysfs.c
 
-This will be a (hopefully) short lived branch to carry some cross
-architecture KASAN related patches for v5.5.
+diff --git a/Documentation/ABI/testing/sysfs-secvar b/Documentation/ABI/testing/sysfs-secvar
+new file mode 100644
+index 000000000000..911b89cc6957
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-secvar
+@@ -0,0 +1,46 @@
++What:		/sys/firmware/secvar
++Date:		August 2019
++Contact:	Nayna Jain <nayna@linux.ibm.com>
++Description:	This directory is created if the POWER firmware supports OS
++		secureboot, thereby secure variables. It exposes interface
++		for reading/writing the secure variables
++
++What:		/sys/firmware/secvar/vars
++Date:		August 2019
++Contact:	Nayna Jain <nayna@linux.ibm.com>
++Description:	This directory lists all the secure variables that are supported
++		by the firmware.
++
++What:		/sys/firmware/secvar/backend
++Date:		August 2019
++Contact:	Nayna Jain <nayna@linux.ibm.com>
++Description:	A string indicating which backend is in use by the firmware.
++		This determines the format of the variable and the accepted
++		format of variable updates.
++
++What:		/sys/firmware/secvar/vars/<variable name>
++Date:		August 2019
++Contact:	Nayna Jain <nayna@linux.ibm.com>
++Description:	Each secure variable is represented as a directory named as
++		<variable_name>. The variable name is unique and is in ASCII
++		representation. The data and size can be determined by reading
++		their respective attribute files.
++
++What:		/sys/firmware/secvar/vars/<variable_name>/size
++Date:		August 2019
++Contact:	Nayna Jain <nayna@linux.ibm.com>
++Description:	An integer representation of the size of the content of the
++		variable. In other words, it represents the size of the data.
++
++What:		/sys/firmware/secvar/vars/<variable_name>/data
++Date:		August 2019
++Contact:	Nayna Jain h<nayna@linux.ibm.com>
++Description:	A read-only file containing the value of the variable. The size
++		of the file represents the maximum size of the variable data.
++
++What:		/sys/firmware/secvar/vars/<variable_name>/update
++Date:		August 2019
++Contact:	Nayna Jain <nayna@linux.ibm.com>
++Description:	A write-only file that is used to submit the new value for the
++		variable. The size of the file represents the maximum size of
++		the variable data that can be written.
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index c795039bdc73..cabc091f3fe1 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -945,6 +945,17 @@ config PPC_SECURE_BOOT
+ 	  to enable OS secure boot on systems that have firmware support for
+ 	  it. If in doubt say N.
+ 
++config PPC_SECVAR_SYSFS
++	bool "Enable sysfs interface for POWER secure variables"
++	default y
++	depends on PPC_SECURE_BOOT
++	depends on SYSFS
++	help
++	  POWER secure variables are managed and controlled by firmware.
++	  These variables are exposed to userspace via sysfs to enable
++	  read/write operations on these variables. Say Y if you have
++	  secure boot enabled and want to expose variables to userspace.
++
+ endmenu
+ 
+ config ISA_DMA_API
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 3cf26427334f..b216e9f316ee 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -162,6 +162,7 @@ obj-y				+= ucall.o
+ endif
+ 
+ obj-$(CONFIG_PPC_SECURE_BOOT)	+= secure_boot.o ima_arch.o secvar-ops.o
++obj-$(CONFIG_PPC_SECVAR_SYSFS)	+= secvar-sysfs.o
+ 
+ # Disable GCOV, KCOV & sanitizers in odd or sensitive code
+ GCOV_PROFILE_prom_init.o := n
+diff --git a/arch/powerpc/kernel/secvar-sysfs.c b/arch/powerpc/kernel/secvar-sysfs.c
+new file mode 100644
+index 000000000000..a3ba58ee4285
+--- /dev/null
++++ b/arch/powerpc/kernel/secvar-sysfs.c
+@@ -0,0 +1,247 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * Copyright (C) 2019 IBM Corporation <nayna@linux.ibm.com>
++ *
++ * This code exposes secure variables to user via sysfs
++ */
++
++#define pr_fmt(fmt) "secvar-sysfs: "fmt
++
++#include <linux/slab.h>
++#include <linux/compat.h>
++#include <linux/string.h>
++#include <linux/of.h>
++#include <asm/secvar.h>
++
++#define NAME_MAX_SIZE	   1024
++
++static struct kobject *secvar_kobj;
++static struct kset *secvar_kset;
++
++static ssize_t backend_show(struct kobject *kobj, struct kobj_attribute *attr,
++			    char *buf)
++{
++	ssize_t ret = 0;
++	struct device_node *node;
++	const char *compatible;
++
++	node = of_find_node_by_name(NULL, "secvar");
++	if (!of_device_is_available(node))
++		return -ENODEV;
++
++	ret = of_property_read_string(node, "compatible", &compatible);
++	if (ret)
++		return ret;
++
++	ret = sprintf(buf, "%s\n", compatible);
++
++	of_node_put(node);
++
++	return ret;
++}
++
++
++static ssize_t size_show(struct kobject *kobj, struct kobj_attribute *attr,
++			 char *buf)
++{
++	uint64_t dsize;
++	int rc;
++
++	rc = secvar_ops->get(kobj->name, strlen(kobj->name) + 1, NULL, &dsize);
++	if (rc) {
++		pr_err("Error retrieving variable size %d\n", rc);
++		return rc;
++	}
++
++	return sprintf(buf, "%llu\n", dsize);
++}
++
++static ssize_t data_read(struct file *filep, struct kobject *kobj,
++			 struct bin_attribute *attr, char *buf, loff_t off,
++			 size_t count)
++{
++	uint64_t dsize;
++	char *data;
++	int rc;
++
++	rc = secvar_ops->get(kobj->name, strlen(kobj->name) + 1, NULL, &dsize);
++	if (rc) {
++		pr_err("Error getting variable size %d\n", rc);
++		return rc;
++	}
++	pr_debug("dsize is %llu\n", dsize);
++
++	data = kzalloc(dsize, GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	rc = secvar_ops->get(kobj->name, strlen(kobj->name)+1, data, &dsize);
++	if (rc) {
++		pr_err("Error getting variable %d\n", rc);
++		goto data_fail;
++	}
++
++	rc = memory_read_from_buffer(buf, count, &off, data, dsize);
++
++data_fail:
++	kfree(data);
++	return rc;
++}
++
++static ssize_t update_write(struct file *filep, struct kobject *kobj,
++			    struct bin_attribute *attr, char *buf, loff_t off,
++			    size_t count)
++{
++	int rc;
++
++	pr_debug("count is %ld\n", count);
++	rc = secvar_ops->set(kobj->name, strlen(kobj->name)+1, buf, count);
++	if (rc) {
++		pr_err("Error setting the variable %s\n", kobj->name);
++		return rc;
++	}
++
++	return count;
++}
++
++static struct kobj_attribute backend_attr = __ATTR_RO(backend);
++
++static struct kobj_attribute size_attr = __ATTR_RO(size);
++
++static struct bin_attribute data_attr = __BIN_ATTR_RO(data, 0);
++
++static struct bin_attribute update_attr = __BIN_ATTR_WO(update, 0);
++
++static struct bin_attribute  *secvar_bin_attrs[] = {
++	&data_attr,
++	&update_attr,
++	NULL,
++};
++
++static struct attribute *secvar_attrs[] = {
++	&size_attr.attr,
++	NULL,
++};
++
++static const struct attribute_group secvar_attr_group = {
++	.attrs = secvar_attrs,
++	.bin_attrs = secvar_bin_attrs,
++};
++__ATTRIBUTE_GROUPS(secvar_attr);
++
++static struct kobj_type secvar_ktype = {
++	.sysfs_ops	= &kobj_sysfs_ops,
++	.default_groups = secvar_attr_groups,
++};
++
++static int update_kobj_size(void)
++{
++
++	struct device_node *node;
++	u64 varsize;
++	int rc = 0;
++
++	node = of_find_compatible_node(NULL, NULL, "ibm,edk2-compat-v1");
++	if (!of_device_is_available(node)) {
++		rc = -ENODEV;
++		goto out;
++	}
++
++	rc = of_property_read_u64(node, "max-var-size", &varsize);
++	if (rc)
++		goto out;
++
++	data_attr.size = varsize;
++	update_attr.size = varsize;
++
++out:
++	of_node_put(node);
++
++	return rc;
++}
++
++static int secvar_sysfs_load(void)
++{
++	char *name;
++	uint64_t namesize = 0;
++	struct kobject *kobj;
++	int rc;
++
++	name = kzalloc(NAME_MAX_SIZE, GFP_KERNEL);
++	if (!name)
++		return -ENOMEM;
++
++	do {
++		rc = secvar_ops->get_next(name, &namesize, NAME_MAX_SIZE);
++		if (rc) {
++			if (rc != -ENOENT)
++				pr_err("error getting secvar from firmware %d\n",
++					rc);
++			break;
++		}
++
++		kobj = kzalloc(sizeof(*kobj), GFP_KERNEL);
++		if (!kobj) {
++			rc = -ENOMEM;
++			break;
++		}
++
++		kobject_init(kobj, &secvar_ktype);
++
++		rc = kobject_add(kobj, &secvar_kset->kobj, "%s", name);
++		if (rc) {
++			pr_warn("kobject_add error %d for attribute: %s\n", rc,
++				name);
++			kobject_put(kobj);
++			kobj = NULL;
++		}
++
++		if (kobj)
++			kobject_uevent(kobj, KOBJ_ADD);
++
++	} while (!rc);
++
++	kfree(name);
++	return rc;
++}
++
++static int secvar_sysfs_init(void)
++{
++	int rc;
++
++	if (!secvar_ops) {
++		pr_warn("secvar: failed to retrieve secvar operations.\n");
++		return -ENODEV;
++	}
++
++	secvar_kobj = kobject_create_and_add("secvar", firmware_kobj);
++	if (!secvar_kobj) {
++		pr_err("secvar: Failed to create firmware kobj\n");
++		return -ENOMEM;
++	}
++
++	rc = sysfs_create_file(secvar_kobj, &backend_attr.attr);
++	if (rc) {
++		kobject_put(secvar_kobj);
++		return -ENOMEM;
++	}
++
++	secvar_kset = kset_create_and_add("vars", NULL, secvar_kobj);
++	if (!secvar_kset) {
++		pr_err("secvar: sysfs kobject registration failed.\n");
++		kobject_put(secvar_kobj);
++		return -ENOMEM;
++	}
++
++	rc = update_kobj_size();
++	if (rc) {
++		pr_err("Cannot read the size of the attribute\n");
++		return rc;
++	}
++
++	secvar_sysfs_load();
++
++	return 0;
++}
++
++late_initcall(secvar_sysfs_init);
+-- 
+2.20.1
 
-cheers
