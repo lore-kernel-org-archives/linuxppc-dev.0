@@ -2,41 +2,63 @@ Return-Path: <SRS0=Sk7F=Y7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D6DF8C5DF60
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 03:52:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1286C5DF61
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 07:55:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 89C2920869
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 03:52:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 89C2920869
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 202ED2178F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 07:55:57 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="l5EM9iXC"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 202ED2178F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 477qGr2LW8zF604
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 14:52:20 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 477wgt0LRlzF1ys
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 18:55:54 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 477q734KTkzF5wY
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2019 14:45:35 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 477wd72pz0zF15Q
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2019 18:53:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 477q730DhKz9sR3; Thu,  7 Nov 2019 14:45:35 +1100 (AEDT)
-X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 5c74f79958682fccd82a6029c53859d1dab3b239
-In-Reply-To: <20181208154624.6504-1-malat@debian.org>
-To: Mathieu Malaterre <malat@debian.org>
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/ptrace: Add prototype for function pt_regs_check
-Message-Id: <477q730DhKz9sR3@ozlabs.org>
-Date: Thu,  7 Nov 2019 14:45:35 +1100 (AEDT)
+ header.from=canb.auug.org.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
+ header.b="l5EM9iXC"; dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 477ttV3Hh4zB3tP;
+ Thu,  7 Nov 2019 17:34:58 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
+ s=201702; t=1573108500;
+ bh=8QWFC8ATOW/EWg2Fx4XSxd/+I6wxAZCxEEB8iiH/Ywo=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=l5EM9iXCztIvbZInfj1ruXyv6YaYOKS3Ef5x5s+/TphU4cBRKtqq+6aNQgGvgkGZR
+ 7nfbzNySMTkA6jJftTOwd7SmXLtFsum33xOsHfu678QnYkL5hzuBaNx+qYZKqy+GG4
+ BnrmvPa6HCOqYavtI0Rpo5NEhMA7K/2RwHhOKpDqbysn0s7e5B0cxRRDcCVwpwD5Qj
+ wjnJUB930g+Z89iEqjr10awoXsZsRiV9eQgHCPCu1RsyXF7srI03RWgHBr9E7TMzVK
+ KWPIf4bYo0KxNlOFVMBCVXIg8uQOqmOEHCAvA0SG5soPbvZWU+i2HozMyKmcy7maTf
+ wPA0Su1RnUitw==
+Date: Thu, 7 Nov 2019 17:34:51 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: Please add powerpc topic/kasan-bitops branch to linux-next
+Message-ID: <20191107173451.6be74953@canb.auug.org.au>
+In-Reply-To: <87r22k5nrz.fsf@mpe.ellerman.id.au>
+References: <87r22k5nrz.fsf@mpe.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_/QLj.mRHKb6JGbFGyiT8jLoU";
+ protocol="application/pgp-signature"; micalg=pgp-sha256
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,29 +70,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mathieu Malaterre <malat@debian.org>, linuxppc-dev@lists.ozlabs.org,
- Paul Mackerras <paulus@samba.org>, Oleg Nesterov <oleg@redhat.com>,
- linux-kernel@vger.kernel.org
+Cc: linux-s390@vger.kernel.org, x86@kernel.org, kasan-dev@googlegroups.com,
+ linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 2018-12-08 at 15:46:23 UTC, Mathieu Malaterre wrote:
-> `pt_regs_check` is a dummy function, its purpose is to break the build
-> if struct pt_regs and struct user_pt_regs don't match.
-> 
-> This function has no functionnal purpose, and will get eliminated at
-> link time or after init depending on CONFIG_LD_DEAD_CODE_DATA_ELIMINATION
-> 
-> This commit adds a prototype to fix warning at W=1:
-> 
->   arch/powerpc/kernel/ptrace.c:3339:13: error: no previous prototype for ‘pt_regs_check’ [-Werror=missing-prototypes]
-> 
-> Suggested-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> Signed-off-by: Mathieu Malaterre <malat@debian.org>
+--Sig_/QLj.mRHKb6JGbFGyiT8jLoU
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Applied to powerpc next, thanks.
+Hi Michael,
 
-https://git.kernel.org/powerpc/c/5c74f79958682fccd82a6029c53859d1dab3b239
+On Thu, 07 Nov 2019 15:11:12 +1100 Michael Ellerman <mpe@ellerman.id.au> wr=
+ote:
+>
+> Can you please add the topic/kasan-bitops tree of the powerpc repository
+> to linux-next.
+>=20
+> powerpc         git     git://git.kernel.org/pub/scm/linux/kernel/git/pow=
+erpc/linux.git#topic/kasan-bitops
+>=20
+> See:
+>   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/log/?=
+h=3Dtopic/kasan-bitops
+>=20
+> This will be a (hopefully) short lived branch to carry some cross
+> architecture KASAN related patches for v5.5.
 
-cheers
+Added from today.
+
+Thanks for adding your subsystem tree as a participant of linux-next.  As
+you may know, this is not a judgement of your code.  The purpose of
+linux-next is for integration testing and to lower the impact of
+conflicts between subsystems in the next merge window.=20
+
+You will need to ensure that the patches/commits in your tree/series have
+been:
+     * submitted under GPL v2 (or later) and include the Contributor's
+        Signed-off-by,
+     * posted to the relevant mailing list,
+     * reviewed by you (or another maintainer of your subsystem tree),
+     * successfully unit tested, and=20
+     * destined for the current or next Linux merge window.
+
+Basically, this should be just what you would send to Linus (or ask him
+to fetch).  It is allowed to be rebased if you deem it necessary.
+
+--=20
+Cheers,
+Stephen Rothwell=20
+sfr@canb.auug.org.au
+
+--Sig_/QLj.mRHKb6JGbFGyiT8jLoU
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAl3DuwsACgkQAVBC80lX
+0Gx+nQf+Kb9/DdUAxGd+w9sWu1q0Z+Hiq9qD8vwzOM0/tFtNdMhWLOJRM0idUy9Q
+NHHN0yi54olE5bolHbOqmXXITBE+Dy7RyRUchaPSMkUgAAI8n+iteHy4/ZakmJr+
+6lYeGHjGzM9+9q5eYl6yD7hj6cAAyI4wBUu0fMYBcuWix/xOImWZAe/6iGRhgRLf
+UAzDGUbnyqpox0S0v10SJjbTkGXyuvaxzs27pGUBZbRODNPbZYEX7hpo5TnQxzBq
+ZMkJaRdxAKi0szigouKz9d75XPKNmc4zz5tY9gCShmBlE6bjJHzVF0ntNGrge78W
+mMgfvcvatGMcL/fbSn8nu3+vqMnFpg==
+=XNA5
+-----END PGP SIGNATURE-----
+
+--Sig_/QLj.mRHKb6JGbFGyiT8jLoU--
