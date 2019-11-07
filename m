@@ -2,167 +2,97 @@ Return-Path: <SRS0=Sk7F=Y7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 14C1EC5DF60
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 08:46:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 073B8FA372C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 08:49:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B7CE52077C
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 08:46:33 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="jVJtjknC"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B7CE52077C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by mail.kernel.org (Postfix) with ESMTPS id B8B4C2077C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 08:49:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B8B4C2077C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 477xpG2s1wzF6Dt
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 19:46:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.ru (client-ip=2607:f8b0:4864:20::443;
- helo=mail-pf1-x443.google.com; envelope-from=aik@ozlabs.ru;
+	by lists.ozlabs.org (Postfix) with ESMTP id 477xsF20x1zF6Fk
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 19:49:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=clombard@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
- header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="jVJtjknC"; 
- dkim-atps=neutral
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
- [IPv6:2607:f8b0:4864:20::443])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 477xjY6pqkzF6Cs
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2019 19:42:25 +1100 (AEDT)
-Received: by mail-pf1-x443.google.com with SMTP id x28so2096101pfo.6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Nov 2019 00:42:25 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
- h=subject:to:cc:references:from:autocrypt:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=jEZVUx0Bokdy5jQIiZllK6O5/e8/p0QuHbwHLeGIlr4=;
- b=jVJtjknCwoos57ZJWQVhH/BNsxOzmfC6fszZ9TdQsy0Wh32Fb7mWOETl5iJjLrAvvh
- 9C7KbbxXqRIHuPBo5o8KO+sgLcRTMgraKOCtIyCGKBV/f6gTFgeX0G2j8sCi21hLMY8x
- kLv8uRN7C7m0RPo0dFu9ITVWdm0JXcjJpllEl3xpdiYr6rmlUkiyQzm/85IQFwQbUDWR
- awmsIO2MFItlTwd9T6CCXA/1HLhNAKHu/NVVk54PS58TCDbSYGjUza3X7RtrsyterJMo
- 1xMyg5ykKLgFeTYuRxatG2vgsSPyqM2kfoc6nn//Kh3Lw3ffB5GKq95+jRg/1/UXbsfh
- 1Pzg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:autocrypt
- :message-id:date:user-agent:mime-version:in-reply-to
- :content-language:content-transfer-encoding;
- bh=jEZVUx0Bokdy5jQIiZllK6O5/e8/p0QuHbwHLeGIlr4=;
- b=VCViqZY9jF0d0icEe3kgZZkIZVeOS7conUM4LK1y1qWcGBk+q14uh2SqgR3ycXti1i
- wCtFBPfb0NGajeCRFlU/jGtI5Qqlq2Anz8nbf4HQzANOzDg1ia2oP2AZTG8CysE6SzG1
- x6BQszCGXgQ8IH8kroIRDVoaUHRDykXpC5qqLv3P0i3FuPdky0RUgRzkZHlYXPw7fPiy
- S223HpMm7CwnGroCPf/Od/omJohZRsZUD/w/z3RBx+OZCZAa7kHanEKbwIHGP/W0PRyM
- 4aNShoQa2VU+GmST6HLq5XYsFlJiPORPn4pviMqbNrnMVPIL1r3/9LdIb+3FIfCrBMps
- MMKw==
-X-Gm-Message-State: APjAAAUw15l6Iy6Pe+iWEjayXPTJ6tM/xyS+g2pEPnla1ZnI7atkWFAQ
- mlfTeyGerHL11mUs1D4+k4qZVm+GCvs=
-X-Google-Smtp-Source: APXvYqxx0EI5xrvDN32EQtXf6Dzvur0I3s23OvbPFG7lFSGdt6+yLU1fqzdTqCZ6g/43e/RAfmWPhA==
-X-Received: by 2002:a63:2e01:: with SMTP id u1mr2381713pgu.25.1573106343962;
- Wed, 06 Nov 2019 21:59:03 -0800 (PST)
-Received: from [10.61.2.175] ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id 65sm1383578pff.2.2019.11.06.21.58.58
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Wed, 06 Nov 2019 21:59:02 -0800 (PST)
-Subject: Re: [RFC v1 1/2] powerpc/pseries/iommu: Share the per-cpu TCE page
- with the hypervisor.
-To: Ram Pai <linuxram@us.ibm.com>
-References: <1572902923-8096-1-git-send-email-linuxram@us.ibm.com>
- <1572902923-8096-2-git-send-email-linuxram@us.ibm.com>
- <af0a236f-37b2-ee16-0ebd-576b4e12d8cd@ozlabs.ru>
- <20191106170153.GC5201@oc0525413822.ibm.com>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Autocrypt: addr=aik@ozlabs.ru; keydata=
- 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
-Message-ID: <6c367fc2-03f5-3ea4-3cd7-9c4af1df1d4c@ozlabs.ru>
-Date: Thu, 7 Nov 2019 16:58:55 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 477xpW2mvQzF6DG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2019 19:46:42 +1100 (AEDT)
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ xA78cNYe094150
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Nov 2019 03:46:40 -0500
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2w41w50x5u-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Nov 2019 03:46:39 -0500
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
+ Thu, 7 Nov 2019 08:46:30 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 7 Nov 2019 08:46:27 -0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xA78kQ6752428958
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 7 Nov 2019 08:46:26 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 67446A405B;
+ Thu,  7 Nov 2019 08:46:26 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 34F97A4060;
+ Thu,  7 Nov 2019 08:46:26 +0000 (GMT)
+Received: from [9.134.167.121] (unknown [9.134.167.121])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu,  7 Nov 2019 08:46:26 +0000 (GMT)
+Subject: Re: [PATCH 3/3] powerpc/pseries: Fixup config space size of OpenCAPI
+ devices
+To: Andrew Donnellan <ajd@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ fbarrat@linux.vnet.ibm.com, groug@kaod.org
+References: <20191022075247.16266-1-clombard@linux.vnet.ibm.com>
+ <20191022075247.16266-4-clombard@linux.vnet.ibm.com>
+ <f80de6db-cfea-5897-288f-64d002b25d8d@linux.ibm.com>
+From: christophe lombard <clombard@linux.vnet.ibm.com>
+Date: Thu, 7 Nov 2019 09:46:25 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.2.1
+ Thunderbird/68.1.1
 MIME-Version: 1.0
-In-Reply-To: <20191106170153.GC5201@oc0525413822.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <f80de6db-cfea-5897-288f-64d002b25d8d@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19110708-0016-0000-0000-000002C18215
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19110708-0017-0000-0000-000033230239
+Message-Id: <35141b5c-a48c-d0c8-a566-cd3e36121c59@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-11-07_02:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1910280000 definitions=main-1911070087
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -174,105 +104,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: andmike@us.ibm.com, mst@redhat.com, mdroth@linux.vnet.ibm.com,
- linux-kernel@vger.kernel.org, ram.n.pai@gmail.com, cai@lca.pw,
- tglx@linutronix.de, sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- hch@lst.de, bauerman@linux.ibm.com, david@gibson.dropbear.id.au
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-On 07/11/2019 04:01, Ram Pai wrote:
-> On Wed, Nov 06, 2019 at 12:58:50PM +1100, Alexey Kardashevskiy wrote:
->>
->>
->> On 05/11/2019 08:28, Ram Pai wrote:
->>> The hypervisor needs to access the contents of the page holding the TCE
->>> entries while setting up the TCE entries in the IOMMU's TCE table. For
->>> SecureVMs, since this page is encrypted, the hypervisor cannot access
->>> valid entries. Share the page with the hypervisor. This ensures that the
->>> hypervisor sees the valid entries.
->>>
->>> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
->>> ---
->>>  arch/powerpc/platforms/pseries/iommu.c | 20 +++++++++++++++++---
->>>  1 file changed, 17 insertions(+), 3 deletions(-)
->>>
->>> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
->>> index 8d9c2b1..07f0847 100644
->>> --- a/arch/powerpc/platforms/pseries/iommu.c
->>> +++ b/arch/powerpc/platforms/pseries/iommu.c
->>> @@ -37,6 +37,7 @@
->>>  #include <asm/mmzone.h>
->>>  #include <asm/plpar_wrappers.h>
->>>  #include <asm/svm.h>
->>> +#include <asm/ultravisor.h>
->>>  
->>>  #include "pseries.h"
->>>  
->>> @@ -179,6 +180,19 @@ static int tce_build_pSeriesLP(struct iommu_table *tbl, long tcenum,
->>>  
->>>  static DEFINE_PER_CPU(__be64 *, tce_page);
->>>  
->>> +/*
->>> + * Allocate a tce page.  If secure VM, share the page with the hypervisor.
->>> + */
->>> +static __be64 *alloc_tce_page(void)
->>> +{
->>> +	__be64 *tcep = (__be64 *)__get_free_page(GFP_ATOMIC);
->>> +
->>> +	if (tcep && is_secure_guest())
->>> +		uv_share_page(PHYS_PFN(__pa(tcep)), 1);
->>
->>
->> There is no matching unshare in this patch.
+On 05/11/2019 06:01, Andrew Donnellan wrote:
+> On 22/10/19 6:52 pm, christophe lombard wrote:
+>> Fix up the pci config size of the OpenCAPI PCIe devices in the pseries
+>> environment.
+>> Most of OpenCAPI PCIe devices have 4096 bytes of configuration space.
 > 
-> The page is allocated and shared, and stays that way for the life of the
-> kernel. It is not explicitly unshared or freed.
-
-
-Ah, fair enough, I missed that, strange that we do not free it but ok. Thanks,
-
-
->  It is however
-> implicitly unshared by the guest kernel, through a UV_UNSHARE_ALL_PAGES ucall
-> when the guest kernel reboots. And it also gets implicitly unshared by
-> the Ultravisor/Hypervisor, if the SVM abruptly terminates.
+> It's not "most of", it's "all" - the OpenCAPI Discovery and 
+> Configuration Spec requires the use of extended capabilities that fall 
+> in the 0x100-0xFFF range.
 > 
 >>
+>> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+>> ---
+>>   arch/powerpc/platforms/pseries/pci.c | 9 +++++++++
+>>   1 file changed, 9 insertions(+)
 >>
->>> +
->>> +	return tcep;
->>> +}
->>> +
->>>  static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
->>>  				     long npages, unsigned long uaddr,
->>>  				     enum dma_data_direction direction,
->>> @@ -206,8 +220,7 @@ static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
->>>  	 * from iommu_alloc{,_sg}()
->>>  	 */
->>>  	if (!tcep) {
->>> -		tcep = (__be64 *)__get_free_page(GFP_ATOMIC);
->>> -		/* If allocation fails, fall back to the loop implementation */
->>> +		tcep = alloc_tce_page();
->>>  		if (!tcep) {
->>>  			local_irq_restore(flags);
->>>  			return tce_build_pSeriesLP(tbl, tcenum, npages, uaddr,
->>> @@ -391,6 +404,7 @@ static int tce_clearrange_multi_pSeriesLP(unsigned long start_pfn,
->>>  	return rc;
->>>  }
->>>  
->>> +
->>
->> Unrelated.
+>> diff --git a/arch/powerpc/platforms/pseries/pci.c 
+>> b/arch/powerpc/platforms/pseries/pci.c
+>> index 1eae1d09980c..3397784767b0 100644
+>> --- a/arch/powerpc/platforms/pseries/pci.c
+>> +++ b/arch/powerpc/platforms/pseries/pci.c
+>> @@ -291,6 +291,15 @@ static void fixup_winbond_82c105(struct pci_dev* 
+>> dev)
+>>   DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_WINBOND, 
+>> PCI_DEVICE_ID_WINBOND_82C105,
+>>                fixup_winbond_82c105);
+>> +static void fixup_opencapi_cfg_size(struct pci_dev *pdev)
+>> +{
+>> +    if (!machine_is(pseries))
+>> +        return;
+>> +
+>> +    pdev->cfg_size = PCI_CFG_SPACE_EXP_SIZE;
+>> +}
+>> +DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_IBM, 0x062b, 
+>> fixup_opencapi_cfg_size);
 > 
-> yes. will fix it.
-> 
-> Thanks,
-> RP
+> An OpenCAPI device can have any PCI ID, is there a particular reason 
+> we're limiting this to 1014:062b? On PowerNV, we check the PHB type to 
+> determine whether the device is OpenCAPI or not, what's the equivalent 
+> for pseries?
 > 
 
--- 
-Alexey
+Thanks for the review. For pseries, there is no specific OpenCapi PHB 
+type which constraints this kind of request.
+We are working to found an other solution.
+
+>> +
+>>   int pseries_root_bridge_prepare(struct pci_host_bridge *bridge)
+>>   {
+>>       struct device_node *dn, *pdn;
+>>
+> 
+
