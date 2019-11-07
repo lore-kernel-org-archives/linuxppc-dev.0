@@ -3,22 +3,21 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 98414C5DF61
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 09:16:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4343AC5DF61
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 09:21:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 47E732166E
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 09:16:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 47E732166E
+	by mail.kernel.org (Postfix) with ESMTPS id E51042166E
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 09:21:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E51042166E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 477ySd3rBjzF3hN
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 20:16:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 477yZy6TNNzF4JV
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 20:21:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=srs0=wsnh=y7=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
@@ -28,13 +27,13 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 477yQ669NVzF3Sy
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2019 20:14:06 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 477yXC4kGnzF45Y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2019 20:19:23 +1100 (AEDT)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 205201] Booting halts if Dawicontrol DC-2976 UW SCSI board
  installed, unless RAM size limited to 3500M
-Date: Thu, 07 Nov 2019 09:13:38 +0000
+Date: Thu, 07 Nov 2019 09:18:54 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
@@ -50,7 +49,7 @@ X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
 X-Bugzilla-Changed-Fields: attachments.created
-Message-ID: <bug-205201-206035-JnsXVyQDvB@https.bugzilla.kernel.org/>
+Message-ID: <bug-205201-206035-9kCqKHVPVq@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-205201-206035@https.bugzilla.kernel.org/>
 References: <bug-205201-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -75,10 +74,12 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D205201
 
---- Comment #9 from Christian Zigotzky (chzigotzky@xenosoft.de) ---
-Created attachment 285813
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D285813&action=3Dedit
-dmesg fsl p5040
+--- Comment #10 from Christian Zigotzky (chzigotzky@xenosoft.de) ---
+Created attachment 285815
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D285815&action=3Dedit
+Kernel 5.4-rc6 config for the Cyrus+ board and for the QEMU ppce500 board (=
+CPU:
+P5040 and P5020)
 
 --=20
 You are receiving this mail because:
