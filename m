@@ -6,58 +6,57 @@ X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
 	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5DC0FC5DF61
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 10:28:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CCEF5C5DF60
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 10:32:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BFE97214D8
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 10:28:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7B92E2178F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 10:32:32 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="gb5wc+hW"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BFE97214D8
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="Ez26eB0/"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7B92E2178F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47803q3G47zF3pG
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 21:28:23 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 47808Y5nJkzF6HY
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 21:32:29 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47801g5G74zF68m
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2019 21:26:31 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47805b72zJzF453
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2019 21:29:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.b="gb5wc+hW"; dkim-atps=neutral
+ header.b="Ez26eB0/"; dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 47801f5SWCz9sPT;
- Thu,  7 Nov 2019 21:26:30 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 47805b3GX7z9sPT;
+ Thu,  7 Nov 2019 21:29:55 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1573122391;
- bh=ubT6PqHfq+AeskgzniFZvOikXlHxhlqZ5cQjsrS0lnQ=;
+ s=201909; t=1573122595;
+ bh=a4m1nWotTG2jewKpNRdw9eW8MeOxKL/KXr8bS4jNwEw=;
  h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=gb5wc+hWL6b3Ya0OtGZix/sJtUue+204GeoQas8US15HICstxZ6MRb2umgOieCFtU
- tWQs99Bxp0Yj0OgxFyw4ItXJq4B85MoXu32FHmXJJtfQiAdj9aPEQuBwaVDllUDxP9
- MlFZLvd+TSUoWnRv7YTnrRClNDLH+hhP9lW0oGcog0c7uzG6s7VUjNqKW16QFJzZz4
- Un9NpYnNSvlucUMGeg00xE+Az8F/e3URCB2Vmrgw9mC+/DpXJ4g6RLVQUSmjbstMi8
- Q1ima+wUoaMn0mwroazcEZk4jB2LBbwIrH7yCZRdQn4SD1BvK3hc26dAmxSnzbKCP8
- xJKrpXUcxgaIg==
+ b=Ez26eB0/Hao264oY8mdCEcLSGzesBH8ckKBuWVZsrTh7FwY+3G0FRpQcMW8t07TIL
+ GxNEm5xTZqeXEz/Oge1/J59c/E03qxZuVJKwy5G52tt5n75byMSGD078yUa5X+WFeU
+ jDJXX5hY6t9FhEANapoy+TL4hGXNpYWoe7eiypzProrFH+5clfz5BLdQgJOdh6jWTp
+ uShCQT5qGdJROGj3Yv4OrneWx0IRvISROWJ7LC0GVYLQ/sqZiVa6FkMAFyCIW2DdVN
+ /tk6hZpqkJw9/rPKaKSxObLxRbuQ7EDWVWPouPRR6KrI63QH1o8ucesuGyBhHK//Z0
+ 8Yqlq6lO/s81g==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Ram Pai <linuxram@us.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC v1 2/2] powerpc/pseries/iommu: Use dma_iommu_ops for Secure
- VMs aswell.
-In-Reply-To: <1572902923-8096-3-git-send-email-linuxram@us.ibm.com>
+Subject: Re: [RFC v1 1/2] powerpc/pseries/iommu: Share the per-cpu TCE page
+ with the hypervisor.
+In-Reply-To: <1572902923-8096-2-git-send-email-linuxram@us.ibm.com>
 References: <1572902923-8096-1-git-send-email-linuxram@us.ibm.com>
  <1572902923-8096-2-git-send-email-linuxram@us.ibm.com>
- <1572902923-8096-3-git-send-email-linuxram@us.ibm.com>
-Date: Thu, 07 Nov 2019 21:26:28 +1100
-Message-ID: <87k18c56ej.fsf@mpe.ellerman.id.au>
+Date: Thu, 07 Nov 2019 21:29:54 +1100
+Message-ID: <87h83g568t.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -80,40 +79,77 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 Ram Pai <linuxram@us.ibm.com> writes:
-> This enables IOMMU support for pseries Secure VMs.
+> The hypervisor needs to access the contents of the page holding the TCE
+> entries while setting up the TCE entries in the IOMMU's TCE table. For
+> SecureVMs, since this page is encrypted, the hypervisor cannot access
+> valid entries. Share the page with the hypervisor. This ensures that the
+> hypervisor sees the valid entries.
 
-Can you give us some more explanation please?
-
-This is basically a revert of commit:
-  edea902c1c1e ("powerpc/pseries/iommu: Don't use dma_iommu_ops on secure guests")
-
-But neglects to remove the now unnecessary include of svm.h.
-
-> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-> index 07f0847..189717b 100644
-> --- a/arch/powerpc/platforms/pseries/iommu.c
-> +++ b/arch/powerpc/platforms/pseries/iommu.c
-> @@ -1333,15 +1333,7 @@ void iommu_init_early_pSeries(void)
->  	of_reconfig_notifier_register(&iommu_reconfig_nb);
->  	register_memory_notifier(&iommu_mem_nb);
->  
-> -	/*
-> -	 * Secure guest memory is inacessible to devices so regular DMA isn't
-> -	 * possible.
-> -	 *
-> -	 * In that case keep devices' dma_map_ops as NULL so that the generic
-> -	 * DMA code path will use SWIOTLB to bounce buffers for DMA.
-
-Please explain what has changed to make this no longer necessary.
+Can you please give people some explanation of why this is safe. After
+all the point of the Ultravisor is to protect the guest from a malicious
+hypervisor. Giving the hypervisor access to a page of TCEs sounds
+dangerous, so please explain why it's not.
 
 cheers
 
-> -	 */
-> -	if (!is_secure_guest())
-> -		set_pci_dma_ops(&dma_iommu_ops);
-> +	set_pci_dma_ops(&dma_iommu_ops);
+> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+> index 8d9c2b1..07f0847 100644
+> --- a/arch/powerpc/platforms/pseries/iommu.c
+> +++ b/arch/powerpc/platforms/pseries/iommu.c
+> @@ -37,6 +37,7 @@
+>  #include <asm/mmzone.h>
+>  #include <asm/plpar_wrappers.h>
+>  #include <asm/svm.h>
+> +#include <asm/ultravisor.h>
+>  
+>  #include "pseries.h"
+>  
+> @@ -179,6 +180,19 @@ static int tce_build_pSeriesLP(struct iommu_table *tbl, long tcenum,
+>  
+>  static DEFINE_PER_CPU(__be64 *, tce_page);
+>  
+> +/*
+> + * Allocate a tce page.  If secure VM, share the page with the hypervisor.
+> + */
+> +static __be64 *alloc_tce_page(void)
+> +{
+> +	__be64 *tcep = (__be64 *)__get_free_page(GFP_ATOMIC);
+> +
+> +	if (tcep && is_secure_guest())
+> +		uv_share_page(PHYS_PFN(__pa(tcep)), 1);
+> +
+> +	return tcep;
+> +}
+> +
+>  static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
+>  				     long npages, unsigned long uaddr,
+>  				     enum dma_data_direction direction,
+> @@ -206,8 +220,7 @@ static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
+>  	 * from iommu_alloc{,_sg}()
+>  	 */
+>  	if (!tcep) {
+> -		tcep = (__be64 *)__get_free_page(GFP_ATOMIC);
+> -		/* If allocation fails, fall back to the loop implementation */
+> +		tcep = alloc_tce_page();
+>  		if (!tcep) {
+>  			local_irq_restore(flags);
+>  			return tce_build_pSeriesLP(tbl, tcenum, npages, uaddr,
+> @@ -391,6 +404,7 @@ static int tce_clearrange_multi_pSeriesLP(unsigned long start_pfn,
+>  	return rc;
 >  }
 >  
->  static int __init disable_multitce(char *str)
+> +
+>  static int tce_setrange_multi_pSeriesLP(unsigned long start_pfn,
+>  					unsigned long num_pfn, const void *arg)
+>  {
+> @@ -405,7 +419,7 @@ static int tce_setrange_multi_pSeriesLP(unsigned long start_pfn,
+>  	tcep = __this_cpu_read(tce_page);
+>  
+>  	if (!tcep) {
+> -		tcep = (__be64 *)__get_free_page(GFP_ATOMIC);
+> +		tcep = alloc_tce_page();
+>  		if (!tcep) {
+>  			local_irq_enable();
+>  			return -ENOMEM;
 > -- 
 > 1.8.3.1
