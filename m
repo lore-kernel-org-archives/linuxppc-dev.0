@@ -2,23 +2,23 @@ Return-Path: <SRS0=Sk7F=Y7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8B94C43331
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 16:45:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 171A7C5DF60
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 16:50:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 54B4B2085B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 16:45:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 54B4B2085B
+	by mail.kernel.org (Postfix) with ESMTPS id C65522085B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 16:49:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C65522085B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4788Qf2hbxzF68K
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 03:45:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4788X53KYNzF6W4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 03:49:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
  (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=msuchanek@suse.de;
@@ -28,27 +28,23 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4788N11QL8zF4Wk
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Nov 2019 03:42:55 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4788Tx6W57zF62s
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Nov 2019 03:48:05 +1100 (AEDT)
 X-Virus-Scanned: by amavisd-new at test-mx.suse.de
 Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id A2760AE6F;
- Thu,  7 Nov 2019 16:42:49 +0000 (UTC)
-Date: Thu, 7 Nov 2019 17:42:48 +0100
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: Hari Bathini <hbathini@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/fadump: Remove duplicate message.
-Message-ID: <20191107164248.GZ1384@kitsune.suse.cz>
-References: <20190923075406.5854-1-msuchanek@suse.de>
- <20191023175651.24833-1-msuchanek@suse.de>
- <aa26db2d-48b5-5825-81ab-12ca491a9971@linux.ibm.com>
- <20191024111651.GL938@kitsune.suse.cz>
+ by mx1.suse.de (Postfix) with ESMTP id BBAA5AE2D;
+ Thu,  7 Nov 2019 16:48:02 +0000 (UTC)
+From: Michal Suchanek <msuchanek@suse.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3] powerpc/fadump: when fadump is supported register the
+ fadump sysfs files.
+Date: Thu,  7 Nov 2019 17:47:57 +0100
+Message-Id: <20191107164757.15140-1-msuchanek@suse.de>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20191023175651.24833-1-msuchanek@suse.de>
+References: <20191023175651.24833-1-msuchanek@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20191024111651.GL938@kitsune.suse.cz>
-User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,37 +56,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>
+Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Michal Suchanek <msuchanek@suse.de>,
+ Hari Bathini <hbathini@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Oct 24, 2019 at 01:16:51PM +0200, Michal Suchánek wrote:
-> On Thu, Oct 24, 2019 at 04:08:08PM +0530, Hari Bathini wrote:
-> > 
-> > Michal, thanks for looking into this.
-> > 
-> > On 23/10/19 11:26 PM, Michal Suchanek wrote:
-> > > There is duplicate message about lack of support by firmware in
-> > > fadump_reserve_mem and setup_fadump. Due to different capitalization it
-> > > is clear that the one in setup_fadump is shown on boot. Remove the
-> > > duplicate that is not shown.
-> > 
-> > Actually, the message in fadump_reserve_mem() is logged. fadump_reserve_mem()
-> > executes first and sets fw_dump.fadump_enabled to `0`, if fadump is not supported.
-> > So, the other message in setup_fadump() doesn't get logged anymore with recent
-> > changes. The right thing to do would be to remove similar message in setup_fadump() instead.
-> 
-> I need to re-check with a recent kernel build. I saw the message from
-> setup_fadump and not the one from fadump_reserve_mem but not sure what
-> the platform init code looked like in the kernel I tested with.
+Currently it is not possible to distinguish the case when fadump is
+supported by firmware and disabled in kernel and completely unsupported
+using the kernel sysfs interface. User can investigate the devicetree
+but it is more reasonable to provide sysfs files in case we get some
+fadumpv2 in the future.
 
-Indeed, I was missing the patch that changes the capitalization in
-fadump_reserve_mem. In my kernel both messages are the same and the one
-from fadump_reserve_mem is displayed.
+With this patch sysfs files are available whenever fadump is supported
+by firmware.
 
-Thanks
+There is duplicate message about lack of support by firmware in
+fadump_reserve_mem and setup_fadump. Remove the duplicate message in
+setup_fadump.
 
-Michal
+Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+---
+v2: move the sysfs initialization earlier to avoid condition nesting
+v3: remove duplicate message
+---
+ arch/powerpc/kernel/fadump.c | 15 ++++++---------
+ 1 file changed, 6 insertions(+), 9 deletions(-)
+
+diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+index ed59855430b9..ff0114aeba9b 100644
+--- a/arch/powerpc/kernel/fadump.c
++++ b/arch/powerpc/kernel/fadump.c
+@@ -1466,16 +1466,15 @@ static void fadump_init_files(void)
+  */
+ int __init setup_fadump(void)
+ {
+-	if (!fw_dump.fadump_enabled)
+-		return 0;
+-
+-	if (!fw_dump.fadump_supported) {
+-		printk(KERN_ERR "Firmware-assisted dump is not supported on"
+-			" this hardware\n");
++	if (!fw_dump.fadump_supported)
+ 		return 0;
+-	}
+ 
++	fadump_init_files();
+ 	fadump_show_config();
++
++	if (!fw_dump.fadump_enabled)
++		return 1;
++
+ 	/*
+ 	 * If dump data is available then see if it is valid and prepare for
+ 	 * saving it to the disk.
+@@ -1492,8 +1491,6 @@ int __init setup_fadump(void)
+ 	else if (fw_dump.reserve_dump_area_size)
+ 		fw_dump.ops->fadump_init_mem_struct(&fw_dump);
+ 
+-	fadump_init_files();
+-
+ 	return 1;
+ }
+ subsys_initcall(setup_fadump);
+-- 
+2.23.0
+
