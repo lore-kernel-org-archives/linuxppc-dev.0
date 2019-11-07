@@ -2,77 +2,87 @@ Return-Path: <SRS0=Sk7F=Y7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EA0FC5DF60
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 17:14:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E9C7C5DF60
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 17:59:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EBC4F206BA
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 17:14:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EBC4F206BA
+	by mail.kernel.org (Postfix) with ESMTPS id EA0F02178F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2019 17:59:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EA0F02178F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47894D27PlzF1rV
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 04:14:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 478B4L2YKwzF6ZB
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 04:59:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=leonardo@linux.ibm.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=fbarrat@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4788qj3SFhzF6TV
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Nov 2019 04:03:29 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- xA7GslkH043032; Thu, 7 Nov 2019 12:03:23 -0500
-Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
- [169.55.91.170])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2w4pdejt6b-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 07 Nov 2019 12:03:22 -0500
-Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
- by ppma02wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id xA7H1Ye1006107;
- Thu, 7 Nov 2019 17:03:07 GMT
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29]) by ppma02wdc.us.ibm.com with ESMTP id 2w41ujt4mx-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 07 Nov 2019 17:03:07 +0000
-Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
- [9.57.199.110])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xA7H36o525166144
+ by lists.ozlabs.org (Postfix) with ESMTPS id 478B1f6LXqzF6Jl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Nov 2019 04:57:10 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ xA7HlcOH077177
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Nov 2019 12:57:08 -0500
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2w4pgdmh9h-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Nov 2019 12:57:07 -0500
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
+ Thu, 7 Nov 2019 17:57:05 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 7 Nov 2019 17:56:57 -0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xA7Huun262324934
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 7 Nov 2019 17:03:06 GMT
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C2781AE05F;
- Thu,  7 Nov 2019 17:03:06 +0000 (GMT)
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A8342AE060;
- Thu,  7 Nov 2019 17:03:05 +0000 (GMT)
-Received: from LeoBras.br.ibm.com (unknown [9.18.235.40])
- by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
- Thu,  7 Nov 2019 17:03:05 +0000 (GMT)
-From: Leonardo Bras <leonardo@linux.ibm.com>
-To: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH v2 3/4] powerpc/kvm/book3e: Replace current->mm by kvm->mm
-Date: Thu,  7 Nov 2019 14:02:57 -0300
-Message-Id: <20191107170258.36379-4-leonardo@linux.ibm.com>
-X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20191107170258.36379-1-leonardo@linux.ibm.com>
-References: <20191107170258.36379-1-leonardo@linux.ibm.com>
+ Thu, 7 Nov 2019 17:56:56 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 228554C044;
+ Thu,  7 Nov 2019 17:56:56 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 097A24C046;
+ Thu,  7 Nov 2019 17:56:55 +0000 (GMT)
+Received: from pic2.home (unknown [9.145.15.120])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu,  7 Nov 2019 17:56:54 +0000 (GMT)
+Subject: Re: [PATCH 02/10] nvdimm: remove prototypes for nonexistent functions
+To: "Alastair D'Silva" <alastair@au1.ibm.com>, alastair@d-silva.org
+References: <20191025044721.16617-1-alastair@au1.ibm.com>
+ <20191025044721.16617-3-alastair@au1.ibm.com>
+From: Frederic Barrat <fbarrat@linux.ibm.com>
+Date: Thu, 7 Nov 2019 18:56:54 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.1.1
 MIME-Version: 1.0
+In-Reply-To: <20191025044721.16617-3-alastair@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
+x-cbid: 19110717-0008-0000-0000-0000032C7E84
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19110717-0009-0000-0000-00004A4B84B8
+Message-Id: <5da350ac-42a2-6614-7f1c-e8b4b17d3906@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-11-07_05:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -80,7 +90,7 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
  mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1910280000 definitions=main-1911070159
+ scancount=1 engine=8.0.1-1910280000 definitions=main-1911070165
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,41 +102,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Leonardo Bras <leonardo@linux.ibm.com>
+Cc: Oscar Salvador <osalvador@suse.com>, Michal Hocko <mhocko@suse.com>,
+ Geert Uytterhoeven <geert+renesas@glider.be>,
+ David Hildenbrand <david@redhat.com>, Wei Yang <richard.weiyang@gmail.com>,
+ Keith Busch <keith.busch@intel.com>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Paul Mackerras <paulus@samba.org>, Ira Weiny <ira.weiny@intel.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Pavel Tatashin <pasha.tatashin@soleen.com>, Dave Jiang <dave.jiang@intel.com>,
+ linux-nvdimm@lists.01.org, Vishal Verma <vishal.l.verma@intel.com>,
+ Krzysztof Kozlowski <krzk@kernel.org>,
+ Anju T Sudhakar <anju@linux.vnet.ibm.com>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kurz <groug@kaod.org>, Qian Cai <cai@lca.pw>,
+ =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>,
+ Dan Williams <dan.j.williams@intel.com>, Hari Bathini <hbathini@linux.ibm.com>,
+ David Gibson <david@gibson.dropbear.id.au>, linux-mm@kvack.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Given that in kvm_create_vm() there is:
-kvm->mm = current->mm;
 
-And that on every kvm_*_ioctl we have:
-if (kvm->mm != current->mm)
-	return -EIO;
 
-I see no reason to keep using current->mm instead of kvm->mm.
+Le 25/10/2019 à 06:46, Alastair D'Silva a écrit :
+> From: Alastair D'Silva <alastair@d-silva.org>
+> 
+> These functions don't exist, so remove the prototypes for them.
+> 
+> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+> ---
 
-By doing so, we would reduce the use of 'global' variables on code, relying
-more in the contents of kvm struct.
 
-Signed-off-by: Leonardo Bras <leonardo@linux.ibm.com>
----
- arch/powerpc/kvm/booke.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Reviewed-by: Frederic Barrat <fbarrat@linux.ibm.com>
 
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index be9a45874194..fd7bdb4f8f87 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -775,7 +775,7 @@ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
- 	debug = current->thread.debug;
- 	current->thread.debug = vcpu->arch.dbg_reg;
- 
--	vcpu->arch.pgdir = current->mm->pgd;
-+	vcpu->arch.pgdir = vcpu->kvm->mm->pgd;
- 	kvmppc_fix_ee_before_entry();
- 
- 	ret = __kvmppc_vcpu_run(kvm_run, vcpu);
--- 
-2.23.0
+
+>   drivers/nvdimm/nd-core.h | 4 ----
+>   1 file changed, 4 deletions(-)
+> 
+> diff --git a/drivers/nvdimm/nd-core.h b/drivers/nvdimm/nd-core.h
+> index 25fa121104d0..9f121a6aeb02 100644
+> --- a/drivers/nvdimm/nd-core.h
+> +++ b/drivers/nvdimm/nd-core.h
+> @@ -124,11 +124,7 @@ void nd_region_create_dax_seed(struct nd_region *nd_region);
+>   int nvdimm_bus_create_ndctl(struct nvdimm_bus *nvdimm_bus);
+>   void nvdimm_bus_destroy_ndctl(struct nvdimm_bus *nvdimm_bus);
+>   void nd_synchronize(void);
+> -int nvdimm_bus_register_dimms(struct nvdimm_bus *nvdimm_bus);
+> -int nvdimm_bus_register_regions(struct nvdimm_bus *nvdimm_bus);
+> -int nvdimm_bus_init_interleave_sets(struct nvdimm_bus *nvdimm_bus);
+>   void __nd_device_register(struct device *dev);
+> -int nd_match_dimm(struct device *dev, void *data);
+>   struct nd_label_id;
+>   char *nd_label_gen_id(struct nd_label_id *label_id, u8 *uuid, u32 flags);
+>   bool nd_is_uuid_unique(struct device *dev, u8 *uuid);
+> 
 
