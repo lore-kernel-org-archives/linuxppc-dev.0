@@ -2,67 +2,95 @@ Return-Path: <SRS0=q/i5=ZA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C5404FA372C
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 11:40:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D5544FC6196
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 11:44:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7972220869
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 11:40:21 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="iWFuYTQc"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7972220869
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id 52A51222D1
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 11:44:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 52A51222D1
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 478dcL5TL8zF3FB
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 22:40:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 478dj51KMbzF6vG
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 22:44:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="iWFuYTQc"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 478dXl0x6TzF6rs
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Nov 2019 22:37:10 +1100 (AEDT)
-Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
- [83.86.89.107])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id C480320869;
- Fri,  8 Nov 2019 11:37:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1573213028;
- bh=G5j+RwShAgrettv3VQJ2Hzibs0yOoFaJu63CqOxn8Oo=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=iWFuYTQcqXM/DR65wCIopKLQsBH2V3ve8n4fUHcE6O0QCwEWq5LcBR7HT3UYbVuXy
- LLH+DzR/qTOHmtgWKoaaTL5pocOV+6Wehrg/cMS5rr/2mDYoYQbR8bXug4dIKrlFDH
- izPZgMynJUZ3fTgx+ygLAuT+nnb+N95WoPMCQjcs=
-Date: Fri, 8 Nov 2019 12:37:05 +0100
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 4/5] power: avs: smartreflex: Remove superfluous cast in
- debugfs_create_file() call
-Message-ID: <20191108113705.GA721212@kroah.com>
-References: <20191021145149.31657-1-geert+renesas@glider.be>
- <20191021145149.31657-5-geert+renesas@glider.be>
- <4367615.jSCgeRn5tF@kreacher>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 478db23PTtzF6t5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Nov 2019 22:39:09 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ xA8Bcjxv184702
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Nov 2019 06:39:06 -0500
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2w57p0r0cg-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Nov 2019 06:39:06 -0500
+Received: from localhost
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hbathini@linux.ibm.com>;
+ Fri, 8 Nov 2019 11:39:04 -0000
+Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 8 Nov 2019 11:39:01 -0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id xA8BcP8R38994364
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 8 Nov 2019 11:38:25 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id F0B8E11C05C;
+ Fri,  8 Nov 2019 11:39:00 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B2D7311C04A;
+ Fri,  8 Nov 2019 11:38:59 +0000 (GMT)
+Received: from [9.184.183.121] (unknown [9.184.183.121])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri,  8 Nov 2019 11:38:59 +0000 (GMT)
+Subject: Re: [PATCH v3] powerpc/fadump: when fadump is supported register the
+ fadump sysfs files.
+To: Michal Suchanek <msuchanek@suse.de>, linuxppc-dev@lists.ozlabs.org
+References: <20191023175651.24833-1-msuchanek@suse.de>
+ <20191107164757.15140-1-msuchanek@suse.de>
+From: Hari Bathini <hbathini@linux.ibm.com>
+Date: Fri, 8 Nov 2019 17:08:58 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4367615.jSCgeRn5tF@kreacher>
-User-Agent: Mutt/1.12.2 (2019-09-21)
+In-Reply-To: <20191107164757.15140-1-msuchanek@suse.de>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19110811-0012-0000-0000-00000361DDEF
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19110811-0013-0000-0000-0000219D424D
+Message-Id: <119d91aa-57d4-00db-054c-60769b309c8d@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-11-08_03:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1910280000 definitions=main-1911080114
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,33 +102,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nishanth Menon <nm@ti.com>, Geert Uytterhoeven <geert+renesas@glider.be>,
- David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org,
- Paul Mackerras <paulus@samba.org>,
- Breno =?iso-8859-1?Q?Leit=E3o?= <leitao@debian.org>, David@rox.of.borg,
- Herbert Xu <herbert@gondor.apana.org.au>, Kevin Hilman <khilman@kernel.org>,
- Nayna Jain <nayna@linux.ibm.com>, amd-gfx@lists.freedesktop.org,
- Casey Leedom <leedom@chelsio.com>, linux-pm@vger.kernel.org,
- Pensando Drivers <drivers@pensando.io>, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, "David S . Miller" <davem@davemloft.net>,
- linux-crypto@vger.kernel.org, Daniel Vetter <daniel@ffwll.ch>,
- Alex Deucher <alexander.deucher@amd.com>,
- Paulo Flabiano Smorigo <pfsmorigo@gmail.com>,
- Shannon Nelson <snelson@pensando.io>, linuxppc-dev@lists.ozlabs.org,
- Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>
+Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Nov 08, 2019 at 12:24:42PM +0100, Rafael J. Wysocki wrote:
-> On Monday, October 21, 2019 4:51:48 PM CET Geert Uytterhoeven wrote:
-> > There is no need to cast a typed pointer to a void pointer when calling
-> > a function that accepts the latter.  Remove it, as the cast prevents
-> > further compiler checks.
-> > 
-> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> 
-> Greg, have you taken this one by any chance?
 
-Nope, it's all yours!  :)
+
+On 07/11/19 10:17 PM, Michal Suchanek wrote:
+> Currently it is not possible to distinguish the case when fadump is
+> supported by firmware and disabled in kernel and completely unsupported
+> using the kernel sysfs interface. User can investigate the devicetree
+> but it is more reasonable to provide sysfs files in case we get some
+> fadumpv2 in the future.
+> 
+> With this patch sysfs files are available whenever fadump is supported
+> by firmware.
+> 
+> There is duplicate message about lack of support by firmware in
+> fadump_reserve_mem and setup_fadump. Remove the duplicate message in
+> setup_fadump.
+
+Thanks for doing this, Michal.
+Exporting the node will be helpful in finding if FADump is supported,
+given FADump is now supported on two different platforms...
+
+Reviewed-by: Hari Bathini <hbathini@linux.ibm.com>
+
+> 
+> Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+> ---
+> v2: move the sysfs initialization earlier to avoid condition nesting
+> v3: remove duplicate message
+> ---
+>  arch/powerpc/kernel/fadump.c | 15 ++++++---------
+>  1 file changed, 6 insertions(+), 9 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+> index ed59855430b9..ff0114aeba9b 100644
+> --- a/arch/powerpc/kernel/fadump.c
+> +++ b/arch/powerpc/kernel/fadump.c
+> @@ -1466,16 +1466,15 @@ static void fadump_init_files(void)
+>   */
+>  int __init setup_fadump(void)
+>  {
+> -	if (!fw_dump.fadump_enabled)
+> -		return 0;
+> -
+> -	if (!fw_dump.fadump_supported) {
+> -		printk(KERN_ERR "Firmware-assisted dump is not supported on"
+> -			" this hardware\n");
+> +	if (!fw_dump.fadump_supported)
+>  		return 0;
+> -	}
+>  
+> +	fadump_init_files();
+>  	fadump_show_config();
+> +
+> +	if (!fw_dump.fadump_enabled)
+> +		return 1;
+> +
+>  	/*
+>  	 * If dump data is available then see if it is valid and prepare for
+>  	 * saving it to the disk.
+> @@ -1492,8 +1491,6 @@ int __init setup_fadump(void)
+>  	else if (fw_dump.reserve_dump_area_size)
+>  		fw_dump.ops->fadump_init_mem_struct(&fw_dump);
+>  
+> -	fadump_init_files();
+> -
+>  	return 1;
+>  }
+>  subsys_initcall(setup_fadump);
+> 
+
+-- 
+- Hari
 
