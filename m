@@ -6,56 +6,56 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 92339FC6194
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 12:00:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE49BC5DF60
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 12:06:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0BC2B207FA
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 12:00:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A26DE21D6C
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 12:06:04 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="PuF3IvBg"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0BC2B207FA
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="lH9Tz2mI"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A26DE21D6C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 478f3P53BVzF3Pb
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 23:00:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 478fB12M6zzF3Nc
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 23:06:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="PuF3IvBg"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="lH9Tz2mI"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 478dmC6Vg2zF6vC
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Nov 2019 22:47:07 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 478dnd23RKzDqw6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Nov 2019 22:48:21 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 2C5A7218AE;
- Fri,  8 Nov 2019 11:47:05 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 2CA6121924;
+ Fri,  8 Nov 2019 11:48:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1573213625;
- bh=fCHwIOGu3unDcLR2KdVSgi3LcxKQ2gDJuYvU66MMI3g=;
+ s=default; t=1573213698;
+ bh=gOF/g1JGF/2ta+CRXg0IuDDeSmSxHnfLjPshvyA+44c=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=PuF3IvBgvvCpjOno+OZ2ZMssAh7bz7eTB9cbKVL9ihEgBDD9ET46lGx5Gy7xcY0E/
- qkup5hCNps8+GPIOw+HpO/VpurTwDRw1p22McM53yDz1nj4jI4VMWjUWBkBb4+MrBG
- +tNnWGZYGm0Vknr/fywf5DcjFL+xH3ZijACns5Hk=
+ b=lH9Tz2mIkbR3vFrHMIAmDg4r7I+YzfnvBaGXzkmMXtWjbiqqr6auzldcpyI66UjBd
+ Fls/BeMCU83KBycBWUguvGZO6W0R0Rz9aWyGRZQnkU/jbedOfYfb9ZiywqAGIB7UxD
+ rZyedvBNjZz0cn6gBnHu7UV1r7LRfeDKsFNkd9uE=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 53/64] powerpc/vdso: Correct call frame information
-Date: Fri,  8 Nov 2019 06:45:34 -0500
-Message-Id: <20191108114545.15351-53-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.4 38/44] powerpc/vdso: Correct call frame information
+Date: Fri,  8 Nov 2019 06:47:14 -0500
+Message-Id: <20191108114721.15944-38-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20191108114545.15351-1-sashal@kernel.org>
-References: <20191108114545.15351-1-sashal@kernel.org>
+In-Reply-To: <20191108114721.15944-1-sashal@kernel.org>
+References: <20191108114721.15944-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -122,7 +122,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  4 files changed, 4 insertions(+)
 
 diff --git a/arch/powerpc/kernel/vdso32/datapage.S b/arch/powerpc/kernel/vdso32/datapage.S
-index 3745113fcc652..2a7eb5452aba7 100644
+index 59cf5f452879b..9d112e1b31b8b 100644
 --- a/arch/powerpc/kernel/vdso32/datapage.S
 +++ b/arch/powerpc/kernel/vdso32/datapage.S
 @@ -37,6 +37,7 @@ data_page_branch:
@@ -146,7 +146,7 @@ index 6b2b69616e776..7b341b86216c2 100644
  	blr
    .cfi_endproc
 diff --git a/arch/powerpc/kernel/vdso64/datapage.S b/arch/powerpc/kernel/vdso64/datapage.S
-index abf17feffe404..bf96686915116 100644
+index 7612eeb31da14..6832e41c372b0 100644
 --- a/arch/powerpc/kernel/vdso64/datapage.S
 +++ b/arch/powerpc/kernel/vdso64/datapage.S
 @@ -37,6 +37,7 @@ data_page_branch:
