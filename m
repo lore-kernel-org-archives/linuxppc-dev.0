@@ -2,65 +2,66 @@ Return-Path: <SRS0=q/i5=ZA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 948CCC5DF60
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 19:08:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 19495FC619A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 20:38:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 45BF621D7B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 19:08:07 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="AM/XJyhA"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 45BF621D7B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id 8A727215EA
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 20:38:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A727215EA
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 478qY04Gw3zF3Lm
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Nov 2019 06:08:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="AM/XJyhA"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by lists.ozlabs.org (Postfix) with ESMTP id 478sXj0npHzF4PG
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Nov 2019 07:37:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=arndb.de
+ (client-ip=217.72.192.75; helo=mout.kundenserver.de;
+ envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arndb.de
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 478qN440YZzF6sw
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Nov 2019 06:00:20 +1100 (AEDT)
-Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
- [83.86.89.107])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id D1B9520865;
- Fri,  8 Nov 2019 19:00:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1573239618;
- bh=4YCugTghXdsjPoygDx9TfWL2nvIAxyKGM8jT3HDHLoM=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=AM/XJyhAvDTZx3XMD+v4ckk2R11bBcS+V2q9ID2jp5AGNMXGRBmE3DmAlSUlRVWoo
- o19mcfc4VBBP69ckG5Os34TtGHzQqjegW8/96KBAmlv6AHU/uI7gQ1A5PuW8Dj3AgD
- U7x0ID9D17XNbazFx4574UCY6Pj79hWkUKpE1A+w=
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 4.14 57/62] powerpc/mm: Fixup tlbie vs store ordering issue on
- POWER9
-Date: Fri,  8 Nov 2019 19:50:45 +0100
-Message-Id: <20191108174759.879781213@linuxfoundation.org>
-X-Mailer: git-send-email 2.24.0
-In-Reply-To: <20191108174719.228826381@linuxfoundation.org>
-References: <20191108174719.228826381@linuxfoundation.org>
-User-Agent: quilt/0.66
+ by lists.ozlabs.org (Postfix) with ESMTPS id 478sVH5hpFzF7YW
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Nov 2019 07:35:51 +1100 (AEDT)
+Received: from threadripper.lan ([149.172.19.189]) by mrelayeu.kundenserver.de
+ (mreue107 [212.227.15.145]) with ESMTPA (Nemesis) id
+ 1MK3mS-1iDApS0zHy-00LVEV; Fri, 08 Nov 2019 21:35:36 +0100
+From: Arnd Bergmann <arnd@arndb.de>
+To: y2038@lists.linaro.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH 3/8] powerpc: fix vdso32 for ppc64le
+Date: Fri,  8 Nov 2019 21:34:26 +0100
+Message-Id: <20191108203435.112759-4-arnd@arndb.de>
+X-Mailer: git-send-email 2.20.0
+In-Reply-To: <20191108203435.112759-1-arnd@arndb.de>
+References: <20191108203435.112759-1-arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-Provags-ID: V03:K1:Dqnz/eT1SOuWZ6Nsk7jZrA5JIgvW92857XvPyhhu/MApAgKJOA1
+ BSqzR9cR49iuc78Q1Wuwf0uc2LqdFCeF+GpSJDDSjMlUcug174u1+56gDh9aoAZMx1YjAwO
+ T8m537fFb4GJkW3yVU2NiAIGc/zHBxrA4aQsCblV6As0b/E7RzWZwmp+Wb67zGD7CJn4a29
+ jQARD8KRNeNNsdWXsPuDw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:z9DAEWseD6Q=:XDnU256Cf828kWUYInolSf
+ bjsDcH8IUWm6SRtKEzuDz1LNDsxNapd9Js8NqFeXQKodJibBTVt1CWq3I+eWNf5bEWjqg6Bmo
+ GMRgQQ5xAisfdxwtgul9EA23xU+fhq5Xi5w9dj+iS1+k8UVSpB3aGo7foX+IPnXesLPuIsaVS
+ Tbkhx7lFVDphXU3OjDCsgfpLKWJ3FZejSwj0JU02BnVeDUFVBGgt7OKzDZILi+NMzFLP4WKiB
+ /n9rYAobaDLX01SFxoDZL6gZVkj3ukciNAr/Ctm3TPX9ZBkUK2OyqDEar647XxbJUKLTFu1Hb
+ dO+rUeLw1GvDTkjCMJqWKCGY69Tun2ST/EpCSR4ZhHiyb3oFeYH2w4C6G4arYssqHhT/OB2kh
+ P0J3cFD5fIwNZ4iqcXrcEI0ytM5HXkkzzrSI+/uzTVmBXuvetwPDzPXUWQ3BhgwYiFavMfkuT
+ z+b46AtrRDtvbj0RDFRlkc3DFuutWONgCFmzxY9K5YJenzjYZ0u7LTxWE/xre4O6OLdkEaFFi
+ laUvtad1/MwgCwkwsPih8PEvQMcfW3kZw3hISsye7koVjIxZ1wVKPJyaES1yt+yntwlE3qEJ6
+ r7AhhCO4cz4rDSDMnjefhHmeFJ9pU0Pb3l4VCVqRtBuUY4PbDibshG30vvhugGw3etkVvG3jI
+ OovmDiBnYdLO9/0oE6Y3LFJGHdURs9hFRqdmaDbGDd/FqRCqY9CsuzUpoZpnb8lJEsSk2l3FU
+ kDlE+IIQ1Y+GcegVCucCsFjPbmwGw7QN7AxkUc3csQoJue134oShcFM9CUmeUVJeQYKxm9Xcs
+ UazpL9KIPfxjFxgJiJFG737jeYRHzVkMr+auvjQQ9FGwwPU0njhI40fbbvHhXLsryweDTofgV
+ T+mGT+LC/mQ5+VZnB5kg==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,230 +73,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aneesh.kumar@linux.ibm.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- stable@vger.kernel.org, "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Sandipan Das <sandipan@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Arnd Bergmann <arnd@arndb.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+On little-endian 32-bit application running on 64-bit kernels,
+the current vdso would read the wrong half of the xtime seconds
+field. Change it to return the lower half like it does on
+big-endian.
 
-commit a5d4b5891c2f1f865a2def1eb0030f534e77ff86 upstream.
-
-On POWER9, under some circumstances, a broadcast TLB invalidation
-might complete before all previous stores have drained, potentially
-allowing stale stores from becoming visible after the invalidation.
-This works around it by doubling up those TLB invalidations which was
-verified by HW to be sufficient to close the risk window.
-
-This will be documented in a yet-to-be-published errata.
-
-Cc: stable@vger.kernel.org # v4.14
-Fixes: 1a472c9dba6b ("powerpc/mm/radix: Add tlbflush routines")
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-[mpe: Enable the feature in the DT CPU features code for all Power9,
-      rename the feature to CPU_FTR_P9_TLBIE_BUG per benh.]
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Link: https://lore.kernel.org/r/20180323045627.16800-3-aneesh.kumar@linux.vnet.ibm.com/
-[sandipan: Backported to v4.14]
-Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/powerpc/include/asm/cputable.h    |    4 ++-
- arch/powerpc/kernel/dt_cpu_ftrs.c      |    3 ++
- arch/powerpc/kvm/book3s_64_mmu_radix.c |    3 ++
- arch/powerpc/kvm/book3s_hv_rm_mmu.c    |   11 ++++++++
- arch/powerpc/mm/hash_native_64.c       |   16 ++++++++++++
- arch/powerpc/mm/pgtable_64.c           |    1 
- arch/powerpc/mm/tlb-radix.c            |   41 ++++++++++++++++++++++++---------
- 7 files changed, 66 insertions(+), 13 deletions(-)
+ arch/powerpc/kernel/vdso32/gettimeofday.S | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -215,6 +215,7 @@ enum {
- #define CPU_FTR_DAWR			LONG_ASM_CONST(0x0400000000000000)
- #define CPU_FTR_DABRX			LONG_ASM_CONST(0x0800000000000000)
- #define CPU_FTR_PMAO_BUG		LONG_ASM_CONST(0x1000000000000000)
-+#define CPU_FTR_P9_TLBIE_BUG		LONG_ASM_CONST(0x2000000000000000)
- #define CPU_FTR_POWER9_DD1		LONG_ASM_CONST(0x4000000000000000)
+diff --git a/arch/powerpc/kernel/vdso32/gettimeofday.S b/arch/powerpc/kernel/vdso32/gettimeofday.S
+index becd9f8767ed..4327665ad86f 100644
+--- a/arch/powerpc/kernel/vdso32/gettimeofday.S
++++ b/arch/powerpc/kernel/vdso32/gettimeofday.S
+@@ -13,7 +13,7 @@
+ #include <asm/unistd.h>
  
- #ifndef __ASSEMBLY__
-@@ -475,7 +476,8 @@ enum {
- 	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
- 	    CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY | \
- 	    CPU_FTR_DBELL | CPU_FTR_HAS_PPR | CPU_FTR_DAWR | \
--	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP | CPU_FTR_ARCH_300)
-+	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP | CPU_FTR_ARCH_300 | \
-+	    CPU_FTR_P9_TLBIE_BUG)
- #define CPU_FTRS_POWER9_DD1 ((CPU_FTRS_POWER9 | CPU_FTR_POWER9_DD1) & \
- 			     (~CPU_FTR_SAO))
- #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
---- a/arch/powerpc/kernel/dt_cpu_ftrs.c
-+++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
-@@ -742,6 +742,9 @@ static __init void cpufeatures_cpu_quirk
- 	 */
- 	if ((version & 0xffffff00) == 0x004e0100)
- 		cur_cpu_spec->cpu_features |= CPU_FTR_POWER9_DD1;
-+
-+	if ((version & 0xffff0000) == 0x004e0000)
-+		cur_cpu_spec->cpu_features |= CPU_FTR_P9_TLBIE_BUG;
- }
- 
- static void __init cpufeatures_setup_finished(void)
---- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-@@ -160,6 +160,9 @@ static void kvmppc_radix_tlbie_page(stru
- 	asm volatile("ptesync": : :"memory");
- 	asm volatile(PPC_TLBIE_5(%0, %1, 0, 0, 1)
- 		     : : "r" (addr), "r" (kvm->arch.lpid) : "memory");
-+	if (cpu_has_feature(CPU_FTR_P9_TLBIE_BUG))
-+		asm volatile(PPC_TLBIE_5(%0, %1, 0, 0, 1)
-+			     : : "r" (addr), "r" (kvm->arch.lpid) : "memory");
- 	asm volatile("ptesync": : :"memory");
- }
- 
---- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-+++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-@@ -448,6 +448,17 @@ static void do_tlbies(struct kvm *kvm, u
- 			asm volatile(PPC_TLBIE_5(%0,%1,0,0,0) : :
- 				     "r" (rbvalues[i]), "r" (kvm->arch.lpid));
- 		}
-+
-+		if (cpu_has_feature(CPU_FTR_P9_TLBIE_BUG)) {
-+			/*
-+			 * Need the extra ptesync to make sure we don't
-+			 * re-order the tlbie
-+			 */
-+			asm volatile("ptesync": : :"memory");
-+			asm volatile(PPC_TLBIE_5(%0,%1,0,0,0) : :
-+				     "r" (rbvalues[0]), "r" (kvm->arch.lpid));
-+		}
-+
- 		asm volatile("eieio; tlbsync; ptesync" : : : "memory");
- 		kvm->arch.tlbie_lock = 0;
- 	} else {
---- a/arch/powerpc/mm/hash_native_64.c
-+++ b/arch/powerpc/mm/hash_native_64.c
-@@ -104,6 +104,15 @@ static inline unsigned long  ___tlbie(un
- 	return va;
- }
- 
-+static inline void fixup_tlbie(unsigned long vpn, int psize, int apsize, int ssize)
-+{
-+	if (cpu_has_feature(CPU_FTR_P9_TLBIE_BUG)) {
-+		/* Need the extra ptesync to ensure we don't reorder tlbie*/
-+		asm volatile("ptesync": : :"memory");
-+		___tlbie(vpn, psize, apsize, ssize);
-+	}
-+}
-+
- static inline void __tlbie(unsigned long vpn, int psize, int apsize, int ssize)
- {
- 	unsigned long rb;
-@@ -181,6 +190,7 @@ static inline void tlbie(unsigned long v
- 		asm volatile("ptesync": : :"memory");
- 	} else {
- 		__tlbie(vpn, psize, apsize, ssize);
-+		fixup_tlbie(vpn, psize, apsize, ssize);
- 		asm volatile("eieio; tlbsync; ptesync": : :"memory");
- 	}
- 	if (lock_tlbie && !use_local)
-@@ -674,7 +684,7 @@ static void native_hpte_clear(void)
-  */
- static void native_flush_hash_range(unsigned long number, int local)
- {
--	unsigned long vpn;
-+	unsigned long vpn = 0;
- 	unsigned long hash, index, hidx, shift, slot;
- 	struct hash_pte *hptep;
- 	unsigned long hpte_v;
-@@ -746,6 +756,10 @@ static void native_flush_hash_range(unsi
- 				__tlbie(vpn, psize, psize, ssize);
- 			} pte_iterate_hashed_end();
- 		}
-+		/*
-+		 * Just do one more with the last used values.
-+		 */
-+		fixup_tlbie(vpn, psize, psize, ssize);
- 		asm volatile("eieio; tlbsync; ptesync":::"memory");
- 
- 		if (lock_tlbie)
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -491,6 +491,7 @@ void mmu_partition_table_set_entry(unsig
- 			     "r" (TLBIEL_INVAL_SET_LPID), "r" (lpid));
- 		trace_tlbie(lpid, 0, TLBIEL_INVAL_SET_LPID, lpid, 2, 0, 0);
- 	}
-+	/* do we need fixup here ?*/
- 	asm volatile("eieio; tlbsync; ptesync" : : : "memory");
- }
- EXPORT_SYMBOL_GPL(mmu_partition_table_set_entry);
---- a/arch/powerpc/mm/tlb-radix.c
-+++ b/arch/powerpc/mm/tlb-radix.c
-@@ -23,6 +23,33 @@
- #define RIC_FLUSH_PWC 1
- #define RIC_FLUSH_ALL 2
- 
-+static inline void __tlbie_va(unsigned long va, unsigned long pid,
-+			      unsigned long ap, unsigned long ric)
-+{
-+	unsigned long rb,rs,prs,r;
-+
-+	rb = va & ~(PPC_BITMASK(52, 63));
-+	rb |= ap << PPC_BITLSHIFT(58);
-+	rs = pid << PPC_BITLSHIFT(31);
-+	prs = 1; /* process scoped */
-+	r = 1;   /* raidx format */
-+
-+	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
-+		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
-+	trace_tlbie(0, 0, rb, rs, ric, prs, r);
-+}
-+
-+static inline void fixup_tlbie(void)
-+{
-+	unsigned long pid = 0;
-+	unsigned long va = ((1UL << 52) - 1);
-+
-+	if (cpu_has_feature(CPU_FTR_P9_TLBIE_BUG)) {
-+		asm volatile("ptesync": : :"memory");
-+		__tlbie_va(va, pid, mmu_get_ap(MMU_PAGE_64K), RIC_FLUSH_TLB);
-+	}
-+}
-+
- static inline void __tlbiel_pid(unsigned long pid, int set,
- 				unsigned long ric)
- {
-@@ -80,6 +107,7 @@ static inline void _tlbie_pid(unsigned l
- 	asm volatile("ptesync": : :"memory");
- 	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
- 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
-+	fixup_tlbie();
- 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
- 	trace_tlbie(0, 0, rb, rs, ric, prs, r);
- }
-@@ -105,19 +133,10 @@ static inline void _tlbiel_va(unsigned l
- static inline void _tlbie_va(unsigned long va, unsigned long pid,
- 			     unsigned long ap, unsigned long ric)
- {
--	unsigned long rb,rs,prs,r;
--
--	rb = va & ~(PPC_BITMASK(52, 63));
--	rb |= ap << PPC_BITLSHIFT(58);
--	rs = pid << PPC_BITLSHIFT(31);
--	prs = 1; /* process scoped */
--	r = 1;   /* raidx format */
--
- 	asm volatile("ptesync": : :"memory");
--	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
--		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
-+	__tlbie_va(va, pid, ap, ric);
-+	fixup_tlbie();
- 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
--	trace_tlbie(0, 0, rb, rs, ric, prs, r);
- }
- 
- /*
-
+ /* Offset for the low 32-bit part of a field of long type */
+-#ifdef CONFIG_PPC64
++#if defined(CONFIG_PPC64) && defined(CONFIG_CPU_BIG_ENDIAN)
+ #define LOPART	4
+ #define TSPEC_TV_SEC	TSPC64_TV_SEC+LOPART
+ #else
+-- 
+2.20.0
 
