@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BAEE9C5DF60
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 13:11:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A0A2FA372C
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 13:16:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6F459206A3
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 13:11:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E8C972087E
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 13:16:02 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="TILqTlkB"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6F459206A3
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="B/xZo0Rr"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E8C972087E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rasmusvillemoes.dk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 478gdt1LPqzF6lM
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Nov 2019 00:11:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 478gkj4DSJzF6PF
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Nov 2019 00:15:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::241;
  helo=mail-lj1-x241.google.com; envelope-from=linux@rasmusvillemoes.dk;
@@ -30,50 +30,50 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=rasmusvillemoes.dk
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk
- header.b="TILqTlkB"; dkim-atps=neutral
+ header.b="B/xZo0Rr"; dkim-atps=neutral
 Received: from mail-lj1-x241.google.com (mail-lj1-x241.google.com
  [IPv6:2a00:1450:4864:20::241])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 478gQ75xmCzF6t6
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Nov 2019 00:01:32 +1100 (AEDT)
-Received: by mail-lj1-x241.google.com with SMTP id r7so6145828ljg.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Nov 2019 05:01:32 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 478gQ75wJqzF6sj
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Nov 2019 00:01:34 +1100 (AEDT)
+Received: by mail-lj1-x241.google.com with SMTP id p18so6128209ljc.6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Nov 2019 05:01:34 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=rasmusvillemoes.dk; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=7uK8xEnPEigQ7dFIza6M7Wg35/gDKz/RHXvPNwcggqY=;
- b=TILqTlkBAuI6LOruaKTEZxzFTZzeG4DApGwSCJnlKakYgy7KP0WRPjM1EGJV2b3OJD
- T8LUksBB2SOF1ipjFU8+h3T3RVUq3rPmEAI4MLhbWoap/mLn0Zb2aMx+Wo4G8VaJCWHr
- zhOuihFDFHqD+4SnIA6zEd5vQn63cVeNEZE8M=
+ bh=ZekbabXCPgDix0mV9AcQnO633/TLQ+c6dMS4dOgnB5g=;
+ b=B/xZo0RrHCJyuvVZivt2CjwHFp/RR66mRkGQgHnOynN41VAmVQ3pl1D/E66J+ArKGL
+ Gfyb0DEzvNycushflGaz+pEn1sxlOzX7sHsRCL1LiVYG/on1mH3xhc+kbmGVl4LeO5V0
+ df1bV9WCV4KW8U/dTC+tlVjDuAR5cCH+el02s=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=7uK8xEnPEigQ7dFIza6M7Wg35/gDKz/RHXvPNwcggqY=;
- b=CMdFEjD1u2aok66mY+ZqLCKRykt+czb7uq0GWUzfUxUeYsh3+Vhytg8pNAwR25sywS
- rY3/yTb2Rnsp6mTfLZZOStxnDKd4nHWZ6+Lw1U7iS6XdB7PjADCAgmIBSSzsgj0LiP4i
- uzCpzY9uhm+DtP37rP5j33yqODzElRmDHUPcQy0UCLIjfBV672NNeizM9L7Sq69M9KEi
- QCBVIioMx/S9VQOlf3hxVGTvhbsS4nNz1EZTUFoq+plyO7eBJvEwYQocmWRqNnLhulRH
- YzVGOm0eLzYL2Gw3dr9DL/u41eYqxlimvqjCWHzByGgbtjmsTOas5uQpLtbBYx2TiHW2
- 1+FA==
-X-Gm-Message-State: APjAAAWjeyujzrkuQTPx+1CyE4jkxeJOTUpLJ+aoMbmyTY6gFzaAeJqU
- beGmMAvHLI5optI873xuxqwCig==
-X-Google-Smtp-Source: APXvYqx/4gr4npNtwela02AaJ5wBwQ4mC75A3/zTLGhWUSCRRkJJXBY71RvLrCS3I1ZkuT+Gn/IwPA==
-X-Received: by 2002:a2e:9a53:: with SMTP id k19mr5918980ljj.246.1573218089195; 
- Fri, 08 Nov 2019 05:01:29 -0800 (PST)
+ bh=ZekbabXCPgDix0mV9AcQnO633/TLQ+c6dMS4dOgnB5g=;
+ b=VBUqAtxTloeI41l0OsE2b4rxK0Ph/U6cBBgD8//zLhMwhdWWUJN1aGNP9VtM8j9p2+
+ rukhXnq6YUIjZKIUrEyOMnppE0YafA65XYW2pdJ6fXc2IuJv02SMSzKZILKpk7ZMHA6i
+ HJE7ZEqhYG3RwXnl+Od96ufh+kXRst8UyA/4ywAJvxYYF+/ORRGITB8qoYVtPWDNwJkk
+ MnLZsA+DQ/WMvEsWNg3j754wSj6NKSFJMOhR0MX4EpeepYbexbdyTc/Oc4im74iaZVX2
+ dO8WxO18ZEWI7caLcWw9lx5zkz7wf8H5P5isYNFNxz4+GqnbN2CWpU0XWVrbOkDVNbd8
+ cEKg==
+X-Gm-Message-State: APjAAAW784R3B+lRka2l20sDaJUAT6EEQl+4/bbJu0sDVPQhf2RYSspZ
+ fNr4Q1or2TgcEngvI7ORLMVTYEFsGE1MWehA
+X-Google-Smtp-Source: APXvYqwHe/94bHQUIiS2PHM5f7Vm4tOkuQQeHPPg8bsOABWlpDnKO27QowlfW02ScK7V7DeZLJYQpw==
+X-Received: by 2002:a2e:3805:: with SMTP id f5mr6440382lja.220.1573218091677; 
+ Fri, 08 Nov 2019 05:01:31 -0800 (PST)
 Received: from prevas-ravi.prevas.se ([81.216.59.226])
- by smtp.gmail.com with ESMTPSA id d28sm2454725lfn.33.2019.11.08.05.01.28
+ by smtp.gmail.com with ESMTPSA id d28sm2454725lfn.33.2019.11.08.05.01.30
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 08 Nov 2019 05:01:28 -0800 (PST)
+ Fri, 08 Nov 2019 05:01:31 -0800 (PST)
 From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 To: Qiang Zhao <qiang.zhao@nxp.com>, Li Yang <leoyang.li@nxp.com>,
  Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v4 01/47] soc: fsl: qe: remove space-before-tab
-Date: Fri,  8 Nov 2019 14:00:37 +0100
-Message-Id: <20191108130123.6839-2-linux@rasmusvillemoes.dk>
+Subject: [PATCH v4 03/47] soc: fsl: qe: rename qe_(clr/set/clrset)bit* helpers
+Date: Fri,  8 Nov 2019 14:00:39 +0100
+Message-Id: <20191108130123.6839-4-linux@rasmusvillemoes.dk>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191108130123.6839-1-linux@rasmusvillemoes.dk>
 References: <20191108130123.6839-1-linux@rasmusvillemoes.dk>
@@ -90,33 +90,101 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Scott Wood <oss@buserror.net>, Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org
+Cc: netdev@vger.kernel.org, Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ linux-kernel@vger.kernel.org, Scott Wood <oss@buserror.net>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Make it clear that these operate on big-endian registers (i.e. use the
+iowrite*be primitives) before we introduce more uses of them and allow
+the QE drivers to be built for platforms other than ppc32.
+
 Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 ---
- drivers/soc/fsl/qe/qe.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/wan/fsl_ucc_hdlc.c |  4 ++--
+ drivers/soc/fsl/qe/ucc.c       | 10 +++++-----
+ include/soc/fsl/qe/qe.h        | 18 +++++++++---------
+ 3 files changed, 16 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/soc/fsl/qe/qe.c b/drivers/soc/fsl/qe/qe.c
-index 417df7e19281..2a0e6e642776 100644
---- a/drivers/soc/fsl/qe/qe.c
-+++ b/drivers/soc/fsl/qe/qe.c
-@@ -378,8 +378,8 @@ static int qe_sdma_init(void)
+diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
+index ca0f3be2b6bf..ce6af7d5380f 100644
+--- a/drivers/net/wan/fsl_ucc_hdlc.c
++++ b/drivers/net/wan/fsl_ucc_hdlc.c
+@@ -623,8 +623,8 @@ static int ucc_hdlc_poll(struct napi_struct *napi, int budget)
+ 
+ 	if (howmany < budget) {
+ 		napi_complete_done(napi, howmany);
+-		qe_setbits32(priv->uccf->p_uccm,
+-			     (UCCE_HDLC_RX_EVENTS | UCCE_HDLC_TX_EVENTS) << 16);
++		qe_setbits_be32(priv->uccf->p_uccm,
++				(UCCE_HDLC_RX_EVENTS | UCCE_HDLC_TX_EVENTS) << 16);
  	}
  
- 	out_be32(&sdma->sdebcr, (u32) sdma_buf_offset & QE_SDEBCR_BA_MASK);
-- 	out_be32(&sdma->sdmr, (QE_SDMR_GLB_1_MSK |
-- 					(0x1 << QE_SDMR_CEN_SHIFT)));
-+	out_be32(&sdma->sdmr, (QE_SDMR_GLB_1_MSK |
-+		 (0x1 << QE_SDMR_CEN_SHIFT)));
+ 	return howmany;
+diff --git a/drivers/soc/fsl/qe/ucc.c b/drivers/soc/fsl/qe/ucc.c
+index 024d239ac1e1..ae9f2cf560cb 100644
+--- a/drivers/soc/fsl/qe/ucc.c
++++ b/drivers/soc/fsl/qe/ucc.c
+@@ -540,8 +540,8 @@ int ucc_set_tdm_rxtx_clk(u32 tdm_num, enum qe_clock clock,
+ 	cmxs1cr = (tdm_num < 4) ? &qe_mux_reg->cmxsi1cr_l :
+ 				  &qe_mux_reg->cmxsi1cr_h;
+ 
+-	qe_clrsetbits32(cmxs1cr, QE_CMXUCR_TX_CLK_SRC_MASK << shift,
+-			clock_bits << shift);
++	qe_clrsetbits_be32(cmxs1cr, QE_CMXUCR_TX_CLK_SRC_MASK << shift,
++			   clock_bits << shift);
  
  	return 0;
  }
+@@ -650,9 +650,9 @@ int ucc_set_tdm_rxtx_sync(u32 tdm_num, enum qe_clock clock,
+ 
+ 	shift = ucc_get_tdm_sync_shift(mode, tdm_num);
+ 
+-	qe_clrsetbits32(&qe_mux_reg->cmxsi1syr,
+-			QE_CMXUCR_TX_CLK_SRC_MASK << shift,
+-			source << shift);
++	qe_clrsetbits_be32(&qe_mux_reg->cmxsi1syr,
++			   QE_CMXUCR_TX_CLK_SRC_MASK << shift,
++			   source << shift);
+ 
+ 	return 0;
+ }
+diff --git a/include/soc/fsl/qe/qe.h b/include/soc/fsl/qe/qe.h
+index c1036d16ed03..a1aa4eb28f0c 100644
+--- a/include/soc/fsl/qe/qe.h
++++ b/include/soc/fsl/qe/qe.h
+@@ -241,20 +241,20 @@ static inline int qe_alive_during_sleep(void)
+ #define qe_muram_offset cpm_muram_offset
+ #define qe_muram_dma cpm_muram_dma
+ 
+-#define qe_setbits32(_addr, _v) iowrite32be(ioread32be(_addr) |  (_v), (_addr))
+-#define qe_clrbits32(_addr, _v) iowrite32be(ioread32be(_addr) & ~(_v), (_addr))
++#define qe_setbits_be32(_addr, _v) iowrite32be(ioread32be(_addr) |  (_v), (_addr))
++#define qe_clrbits_be32(_addr, _v) iowrite32be(ioread32be(_addr) & ~(_v), (_addr))
+ 
+-#define qe_setbits16(_addr, _v) iowrite16be(ioread16be(_addr) |  (_v), (_addr))
+-#define qe_clrbits16(_addr, _v) iowrite16be(ioread16be(_addr) & ~(_v), (_addr))
++#define qe_setbits_be16(_addr, _v) iowrite16be(ioread16be(_addr) |  (_v), (_addr))
++#define qe_clrbits_be16(_addr, _v) iowrite16be(ioread16be(_addr) & ~(_v), (_addr))
+ 
+-#define qe_setbits8(_addr, _v) iowrite8(ioread8(_addr) |  (_v), (_addr))
+-#define qe_clrbits8(_addr, _v) iowrite8(ioread8(_addr) & ~(_v), (_addr))
++#define qe_setbits_8(_addr, _v) iowrite8(ioread8(_addr) |  (_v), (_addr))
++#define qe_clrbits_8(_addr, _v) iowrite8(ioread8(_addr) & ~(_v), (_addr))
+ 
+-#define qe_clrsetbits32(addr, clear, set) \
++#define qe_clrsetbits_be32(addr, clear, set) \
+ 	iowrite32be((ioread32be(addr) & ~(clear)) | (set), (addr))
+-#define qe_clrsetbits16(addr, clear, set) \
++#define qe_clrsetbits_be16(addr, clear, set) \
+ 	iowrite16be((ioread16be(addr) & ~(clear)) | (set), (addr))
+-#define qe_clrsetbits8(addr, clear, set) \
++#define qe_clrsetbits_8(addr, clear, set) \
+ 	iowrite8((ioread8(addr) & ~(clear)) | (set), (addr))
+ 
+ /* Structure that defines QE firmware binary files.
 -- 
 2.23.0
 
