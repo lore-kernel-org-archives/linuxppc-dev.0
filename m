@@ -7,74 +7,74 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46959C5DF60
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 15:15:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 438B2FA372C
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 15:21:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E71E3214DB
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 15:15:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E7D5F21882
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 15:21:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="RkUIYnXt"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E71E3214DB
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="E2itMeYz"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E7D5F21882
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rasmusvillemoes.dk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 478kP46Gf8zF79d
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Nov 2019 02:15:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 478kWH331KzF6Sm
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Nov 2019 02:21:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::142;
- helo=mail-lf1-x142.google.com; envelope-from=linux@rasmusvillemoes.dk;
+ smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::243;
+ helo=mail-lj1-x243.google.com; envelope-from=linux@rasmusvillemoes.dk;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=rasmusvillemoes.dk
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk
- header.b="RkUIYnXt"; dkim-atps=neutral
-Received: from mail-lf1-x142.google.com (mail-lf1-x142.google.com
- [IPv6:2a00:1450:4864:20::142])
+ header.b="E2itMeYz"; dkim-atps=neutral
+Received: from mail-lj1-x243.google.com (mail-lj1-x243.google.com
+ [IPv6:2a00:1450:4864:20::243])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 478gQy0Kn9zF6tB
+ by lists.ozlabs.org (Postfix) with ESMTPS id 478gQy25trzF6tH
  for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Nov 2019 00:02:18 +1100 (AEDT)
-Received: by mail-lf1-x142.google.com with SMTP id d6so4018899lfc.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Nov 2019 05:02:17 -0800 (PST)
+Received: by mail-lj1-x243.google.com with SMTP id l20so6127704lje.4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Nov 2019 05:02:18 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=rasmusvillemoes.dk; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=hiVnbA+aLQJgHhafT97yYdRXOf2rz2/qkrRHHeVl/y0=;
- b=RkUIYnXtYtHoaluers5poWFKyA9z83YZFiREEHR69eo9ytnTPqRk666oOcDh796rt5
- W1SjnIiqgz5KNK11xLTj256um9u/k4+/5+8GSUUNS1JotuxHOPV7fZbIa/ZjkUpQA3ac
- P0TDnhp2ooUva3vHkfByfLzAZyZAhhEcqhIuE=
+ bh=nGAR/RezFR3p4yZ/WuemAtPhyGpYuWvNUP10WcDqxdQ=;
+ b=E2itMeYzpcpcvPiEYcR7QgT0vf86pgTt+txJLe4ypE1iKN4ygJjlMfIdTBHaIbca7l
+ 8TpMr7BlmS1pHXW8Lc8yrYYMbrYpZ6OWxpbB6h/El0hJa3CJ4u+D0CSxshybjUOT8noF
+ QvazWxYu0noVka+ujfegXunMpmQNGUILv+4L4=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=hiVnbA+aLQJgHhafT97yYdRXOf2rz2/qkrRHHeVl/y0=;
- b=aJUXrd2LsShfttE7VtuTyU1FkcBspo29phHyzfj17NPDohFC0/+6RZgBsxUysA9Z6/
- RofpFyllBdHVCziz0UFHDC8o2KeLgB2QAukNO8qK5GxSE3lhojo/L0i15H2AgY8VwLBY
- czudHWaWjd2rpvU4dgAfm5vHnY/iuXiqhIWlpWFOdOaCgAZ7bbw77IwOo9kSbKXPCcYH
- FhK1UABe3cigIwQlm90eWtP+gLfRCq/qYENiNO148HDSyATIfiG6yfKZgFff6JavCTTt
- B91OYs8kfCQtSMiTfIG18PDEbGIwvY0yf+iYTEx4wAggtYI4Q7LqTs3YZyGOLmamoY6P
- ghSA==
-X-Gm-Message-State: APjAAAVIJnJXPTfWmZCZY3tUAGefe4kdYii9SBnJUNbNhbrRU6oY0CiS
- 4CC3gQjH0ePriwzwupV5I1tO7Q==
-X-Google-Smtp-Source: APXvYqyY1XtYAXaxuUxr5OqGf/UpqCH4S0tKcnokVcpJWs4tNPMtCmYKxFMQ4t+72vh1UpmamXg+gA==
-X-Received: by 2002:ac2:5635:: with SMTP id b21mr6601913lff.89.1573218133640; 
- Fri, 08 Nov 2019 05:02:13 -0800 (PST)
+ bh=nGAR/RezFR3p4yZ/WuemAtPhyGpYuWvNUP10WcDqxdQ=;
+ b=ahA1W6rYkeG7xJMC+GP4HbP+hxGDOhPi5P/aj3TILH8jxG1x/vm/ag+B7P2aTzWQkB
+ WMJi7LkMSwe0UefBPhKT1+ofSwNlAirUd0EM9/d7Jh+oi0NLOGJ/VXEC2wXcplji+LPD
+ OWu8s4bOxCeQjz1NZJQk35jD3151gYepFHTtdt/0vAsAslvzWrBNiTGUmEOTkb4l3/1D
+ m9TVG2HT6y6hjsCVRyd9npRRSq/LZJOUvCsRPT9lZN2FSNPHYBJtdcyCZ2/BDTkmQqeI
+ rZXFUaPYkw0Igci+5QUcCcYcVAPvnGGxCCgC+ylWxW2emFCQcRjxAoVnYT7KHEHkrUZp
+ txOA==
+X-Gm-Message-State: APjAAAVD1T9v+SF774DZt+YVUtGc4RFKSYsvHtK6bW/W9tAtHmRYRgBJ
+ le/R0Ha8OoAzyTGmWlUoB+t9Zg==
+X-Google-Smtp-Source: APXvYqxRVlzGHosXYr2fWpCL9TuHFktXGiL0j9+nCag9bKeXu8pwMfcJUWqBOjQJYoqb1ThzLR2FBQ==
+X-Received: by 2002:a2e:9b4b:: with SMTP id o11mr6798538ljj.252.1573218134744; 
+ Fri, 08 Nov 2019 05:02:14 -0800 (PST)
 Received: from prevas-ravi.prevas.se ([81.216.59.226])
- by smtp.gmail.com with ESMTPSA id d28sm2454725lfn.33.2019.11.08.05.02.12
+ by smtp.gmail.com with ESMTPSA id d28sm2454725lfn.33.2019.11.08.05.02.13
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 08 Nov 2019 05:02:13 -0800 (PST)
+ Fri, 08 Nov 2019 05:02:14 -0800 (PST)
 From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 To: Qiang Zhao <qiang.zhao@nxp.com>, Li Yang <leoyang.li@nxp.com>,
  Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v4 36/47] soc: fsl: qe: make cpm_muram_free() ignore a
- negative offset
-Date: Fri,  8 Nov 2019 14:01:12 +0100
-Message-Id: <20191108130123.6839-37-linux@rasmusvillemoes.dk>
+Subject: [PATCH v4 37/47] soc: fsl: qe: drop broken lazy call of
+ cpm_muram_init()
+Date: Fri,  8 Nov 2019 14:01:13 +0100
+Message-Id: <20191108130123.6839-38-linux@rasmusvillemoes.dk>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191108130123.6839-1-linux@rasmusvillemoes.dk>
 References: <20191108130123.6839-1-linux@rasmusvillemoes.dk>
@@ -98,30 +98,44 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This allows one to simplify callers since they can store a negative
-value as a sentinel to indicate "this was never allocated" (or store
-the -ENOMEM from an allocation failure) and then call cpm_muram_free()
-unconditionally.
+cpm_muram_alloc_common() tries to support a kind of lazy
+initialization - if the muram_pool has not been created yet, it calls
+cpm_muram_init(). Now, cpm_muram_alloc_common() is always called under
+
+	spin_lock_irqsave(&cpm_muram_lock, flags);
+
+and cpm_muram_init() does gen_pool_create() (which implies a
+GFP_KERNEL allocation) and ioremap(), not to mention the fun that
+ensues from cpm_muram_init() doing
+
+	spin_lock_init(&cpm_muram_lock);
+
+In other words, this has never worked, so nobody can have been relying
+on it.
+
+cpm_muram_init() is called from a subsys_initcall (either from
+cpm_init() in arch/powerpc/sysdev/cpm_common.c or, via qe_reset(),
+from qe_init() in drivers/soc/fsl/qe/qe.c).
 
 Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 ---
- drivers/soc/fsl/qe/qe_common.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/soc/fsl/qe/qe_common.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
 diff --git a/drivers/soc/fsl/qe/qe_common.c b/drivers/soc/fsl/qe/qe_common.c
-index ea9bef1d2c77..4437f4e14d2c 100644
+index 4437f4e14d2c..feb33ec1c3d6 100644
 --- a/drivers/soc/fsl/qe/qe_common.c
 +++ b/drivers/soc/fsl/qe/qe_common.c
-@@ -176,6 +176,9 @@ void cpm_muram_free(s32 offset)
- 	int size;
- 	struct muram_block *tmp;
+@@ -119,9 +119,6 @@ static s32 cpm_muram_alloc_common(unsigned long size,
+ 	struct muram_block *entry;
+ 	s32 start;
  
-+	if (offset < 0)
-+		return;
-+
- 	size = 0;
- 	spin_lock_irqsave(&cpm_muram_lock, flags);
- 	list_for_each_entry(tmp, &muram_block_list, head) {
+-	if (!muram_pool && cpm_muram_init())
+-		goto out2;
+-
+ 	start = gen_pool_alloc_algo(muram_pool, size, algo, data);
+ 	if (!start)
+ 		goto out2;
 -- 
 2.23.0
 
