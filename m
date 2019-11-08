@@ -2,78 +2,82 @@ Return-Path: <SRS0=q/i5=ZA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 37CA4C5DF60
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 13:24:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 91B33FA372C
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 13:27:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 82BB92178F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 13:24:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3FD7B2178F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 13:27:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="EuLkizYp"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 82BB92178F
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="jCP7ncOr"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3FD7B2178F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rasmusvillemoes.dk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 478gx05XYnzF4Bk
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Nov 2019 00:24:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 478h002hVWzF4p5
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Nov 2019 00:27:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::241;
- helo=mail-lj1-x241.google.com; envelope-from=linux@rasmusvillemoes.dk;
+ smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::242;
+ helo=mail-lj1-x242.google.com; envelope-from=linux@rasmusvillemoes.dk;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=rasmusvillemoes.dk
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk
- header.b="EuLkizYp"; dkim-atps=neutral
-Received: from mail-lj1-x241.google.com (mail-lj1-x241.google.com
- [IPv6:2a00:1450:4864:20::241])
+ header.b="jCP7ncOr"; dkim-atps=neutral
+Received: from mail-lj1-x242.google.com (mail-lj1-x242.google.com
+ [IPv6:2a00:1450:4864:20::242])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 478gQ75sP9zF6qJ
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Nov 2019 00:01:32 +1100 (AEDT)
-Received: by mail-lj1-x241.google.com with SMTP id e9so6088530ljp.13
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Nov 2019 05:01:32 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 478gQB44z9zF6qJ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Nov 2019 00:01:38 +1100 (AEDT)
+Received: by mail-lj1-x242.google.com with SMTP id p18so6128454ljc.6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Nov 2019 05:01:38 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=rasmusvillemoes.dk; s=google;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=aUppc8s9ASNOkI1o9K2Lst5r5H5VsXnRIIZWwBaqYfY=;
- b=EuLkizYpSTSpkEM/mr4dp4416n7C84jLEe7ecnYWXenwWBfBjfuZjQkGtV2mKXjz9c
- ogoQ26VX01jwwPCVADFRvB7P1ASwck5FxA69ozpKQTHSsBRd3AuuWEtwHYSMgsojM4ft
- J8aS+vpG8YrG+9l2s0YpXT78y34oXKvng8ggs=
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=KLof2Ot2O0jJsk//b5zfFITAj/UOtVeGro1UsWAolSk=;
+ b=jCP7ncOrlS9V+R3cn5ptO3MSbytb9V/nOEyYaHDdTAuICV+rBxthP4W2CHez0HZDiS
+ Yx5Ju4fDxbp0NxnFiHEjo5QTOyvtFvHRctjxQAvjU2l7kKTy29JWehdL20U6Iybx6HD2
+ osrcSPnJAZYtH6b9nc/143h02+9RvjyefOv2Q=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=aUppc8s9ASNOkI1o9K2Lst5r5H5VsXnRIIZWwBaqYfY=;
- b=Gu0jfn29sMqEVKW+UnLhGREat9k7Nk2CINhEECG2WhfzI6PxvcJghI2Yt1zSuA3BCi
- kVOixK2/LdvcUo1XCuXC0ZzWHkqiWXNXyxZKui3crPDlhWnk6KB5Aap3g7gZdVATQQX3
- KHnDXhP5cmz1CkWQNMYIXFhTIvqQ+G8ndCg4+I4I7ZByt5raohRR47WrPmbreGj9YfRW
- /2OTZzqstYbIcHTANZpxGsPtqOC6PGv/TF3fQfy6r/IdWskd9R+8SeD2p7cS47ekhsHD
- 7HpfM6v/VaPRrs0tmFYEg+ZS6vXL53fICdxfp8jOpEjR8dAhY2nsnqCsI0u9Kb3lWHSC
- YFUw==
-X-Gm-Message-State: APjAAAXnbHORTA1+ulSqdkdxhs+lQK523Pu3qqyi6gzwebPEIZ+wLhyH
- U8lBGyevfwb8EGji4DuA/GL+kg==
-X-Google-Smtp-Source: APXvYqw70GWgApN/AKmwBluJVMe7caQs3n1BnH98B/kLOROrcwFQYbVeqQkPiMWuAbM8jPxziHrQFg==
-X-Received: by 2002:a2e:94d6:: with SMTP id r22mr6704965ljh.7.1573218087978;
- Fri, 08 Nov 2019 05:01:27 -0800 (PST)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=KLof2Ot2O0jJsk//b5zfFITAj/UOtVeGro1UsWAolSk=;
+ b=qg9qlCUSnPLFPEQ6fWlMyXCTZldub8i9ilyxNl+xuDIgZRWEySU6qP9bCrxzUkG4li
+ qNZDMGZNpq09nnyBpFcuhzvyXO91Yd7ViaWXP/7AdRexVO/3swy4wyXbEXqTCLloQHmT
+ cMECFqAO7e9JkyMjCa5Yixgn4mJX9ZgDRhUAVeNormNjrsGHCn+FZu9hjmqQ3m0nIRE9
+ XHnpehqumlYds6Twfr7mcBzMn2F4R5XvRWrKNiUwOiGgUzXmaAsJWcAnFRYT9aerSon+
+ K+yft2ZQ7KaKEysfUYK6nZZJZd7HbIj94KXfmxKTnuWJ8t3ZgrqAHGrREziWj+H8jRVR
+ e7PA==
+X-Gm-Message-State: APjAAAUBoxLDy+wc5AhjSOglk7FwcFhVAc35+ynNBq/Y391Kbd2gjIF7
+ r6UotMrz405tJVrhcBUZyUoDoQ==
+X-Google-Smtp-Source: APXvYqwznZFGp1Fw3DbicIfyzdwRL4WKmsCqwntFcEZldqkryvHNh+dxThjls+WNtclCmbq6A/BMZw==
+X-Received: by 2002:a2e:9610:: with SMTP id v16mr6626644ljh.219.1573218095535; 
+ Fri, 08 Nov 2019 05:01:35 -0800 (PST)
 Received: from prevas-ravi.prevas.se ([81.216.59.226])
- by smtp.gmail.com with ESMTPSA id d28sm2454725lfn.33.2019.11.08.05.01.26
+ by smtp.gmail.com with ESMTPSA id d28sm2454725lfn.33.2019.11.08.05.01.34
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 08 Nov 2019 05:01:27 -0800 (PST)
+ Fri, 08 Nov 2019 05:01:35 -0800 (PST)
 From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 To: Qiang Zhao <qiang.zhao@nxp.com>, Li Yang <leoyang.li@nxp.com>,
  Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v4 00/47] QUICC Engine support on ARM and ARM64
-Date: Fri,  8 Nov 2019 14:00:36 +0100
-Message-Id: <20191108130123.6839-1-linux@rasmusvillemoes.dk>
+Subject: [PATCH v4 06/47] soc: fsl: qe: replace spin_event_timeout by
+ readx_poll_timeout_atomic
+Date: Fri,  8 Nov 2019 14:00:42 +0100
+Message-Id: <20191108130123.6839-7-linux@rasmusvillemoes.dk>
 X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20191108130123.6839-1-linux@rasmusvillemoes.dk>
+References: <20191108130123.6839-1-linux@rasmusvillemoes.dk>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -94,149 +98,55 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There have been several attempts in the past few years to allow
-building the QUICC engine drivers for platforms other than PPC. This
-is yet another attempt.
+In preparation for allowing QE to be built for architectures other
+than ppc, use the generic readx_poll_timeout_atomic() helper from
+iopoll.h rather than the ppc-only spin_event_timeout().
 
-v3 can be found here: https://lore.kernel.org/lkml/20191101124210.14510-1-linux@rasmusvillemoes.dk/
+Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+---
+ drivers/soc/fsl/qe/qe.c | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
-v4 adds a some patches to fix (ab)use of IS_ERR_VALUE which fails when
-sizeof(u32) != sizeof(long), i.e. on 64-bit platforms. Freescale
-drivers are some of the last holdouts using that macro (outside of
-arch/ and core mm code), so I decided trying to simply get rid of it
-instead of papering over it by using a temporary long to store the
-result in. Doing that I stumbled on some other things that should be
-fixed. These are the new patches 34-45.
-
-Patch 35 from v3 (which added a PPC32 dependency to FSL_UCC_HDLC) is
-gone from this version, so that that driver can indeed now be built
-for arm and arm64.
-
-1-5 are about replacing in_be32 etc. in the core QE code (drivers/soc/fsl/qe).
-
-6-8 handle miscellaneous other ppcisms.
-
-9-21 deal with qe_ic: Simplifying the driver significantly by removing
-unused code, and removing the platform-specific initialization from
-arch/powerpc/.
-
-22-25 deal with raw access to devicetree properties in native endianness.
-
-26-33 makes drivers/tty/serial/ucc_uart.c (CONFIG_SERIAL_QE) ready to build on arm.
-
-34-45 deal with IS_ERR_VALUE() and some other things found while
-digging around that part of the code.
-
-46 adds a PPC32 dependency to UCC_GETH - it has some of the same
-issues that have been fixed in the ucc_uart and ucc_hdlc cases. Nobody
-has requested that I allow that driver to be built for arm{,64}, so
-instead of growing this series even bigger, I kept that addition. It's
-trivial to remove if somebody cares enough to fix the build
-errors/warnings and actually has a platform to test the result on.
-
-Finally patch 47 lifts the PPC32 restriction from QUICC_ENGINE. At the
-request of Li Yang, it doesn't remove the PPC32 dependency but instead
-changes it to PPC32 || ARM || ARM64 (or COMPILE_TEST), i.e. listing
-the platforms that may have a QE.
-
-The series has been built and booted on both an mpc8309-based platform
-(ppc) as well as an ls1021a-based platform (arm). The core QE code is
-exercised on both, while I could only test the ucc_uart on arm, since
-the uarts are not wired up on our mpc8309 board. Qiang Zhao reports
-that the ucc_hdlc driver does indeed work on a ls1043ardb (arm64)
-board, I hope he'll formally add a Tested-by: to the relevant patches
-since I don't have any arm64 board with QE.
-
-Rasmus Villemoes (47):
-  soc: fsl: qe: remove space-before-tab
-  soc: fsl: qe: drop volatile qualifier of struct qe_ic::regs
-  soc: fsl: qe: rename qe_(clr/set/clrset)bit* helpers
-  soc: fsl: qe: introduce qe_io{read,write}* wrappers
-  soc: fsl: qe: avoid ppc-specific io accessors
-  soc: fsl: qe: replace spin_event_timeout by readx_poll_timeout_atomic
-  soc: fsl: qe: qe.c: guard use of pvr_version_is() with CONFIG_PPC32
-  soc: fsl: qe: drop unneeded #includes
-  soc: fsl: qe: drop assign-only high_active in qe_ic_init
-  soc: fsl: qe: remove pointless sysfs registration in qe_ic.c
-  soc: fsl: qe: use qe_ic_cascade_{low,high}_mpic also on 83xx
-  soc: fsl: qe: move calls of qe_ic_init out of arch/powerpc/
-  powerpc/83xx: remove mpc83xx_ipic_and_qe_init_IRQ
-  powerpc/85xx: remove mostly pointless mpc85xx_qe_init()
-  soc: fsl: qe: move qe_ic_cascade_* functions to qe_ic.c
-  soc: fsl: qe: rename qe_ic_cascade_low_mpic -> qe_ic_cascade_low
-  soc: fsl: qe: remove unused qe_ic_set_* functions
-  soc: fsl: qe: don't use NO_IRQ in qe_ic.c
-  soc: fsl: qe: make qe_ic_get_{low,high}_irq static
-  soc: fsl: qe: simplify qe_ic_init()
-  soc: fsl: qe: merge qe_ic.h headers into qe_ic.c
-  soc: fsl: qe: qe.c: use of_property_read_* helpers
-  soc: fsl: qe: qe_io.c: don't open-code of_parse_phandle()
-  soc: fsl: qe: qe_io.c: access device tree property using be32_to_cpu
-  soc: fsl: qe: qe_io.c: use of_property_read_u32() in par_io_init()
-  soc: fsl: move cpm.h from powerpc/include/asm to include/soc/fsl
-  soc/fsl/qe/qe.h: update include path for cpm.h
-  serial: ucc_uart: explicitly include soc/fsl/cpm.h
-  serial: ucc_uart: replace ppc-specific IO accessors
-  serial: ucc_uart: factor out soft_uart initialization
-  serial: ucc_uart: stub out soft_uart_init for !CONFIG_PPC32
-  serial: ucc_uart: use of_property_read_u32() in ucc_uart_probe()
-  serial: ucc_uart: access __be32 field using be32_to_cpu
-  soc: fsl: qe: change return type of cpm_muram_alloc() to s32
-  soc: fsl: qe: make cpm_muram_free() return void
-  soc: fsl: qe: make cpm_muram_free() ignore a negative offset
-  soc: fsl: qe: drop broken lazy call of cpm_muram_init()
-  soc: fsl: qe: refactor cpm_muram_alloc_common to prevent BUG on error
-    path
-  soc: fsl: qe: avoid IS_ERR_VALUE in ucc_slow.c
-  soc: fsl: qe: drop use of IS_ERR_VALUE in qe_sdma_init()
-  soc: fsl: qe: drop pointless check in qe_sdma_init()
-  soc: fsl: qe: avoid IS_ERR_VALUE in ucc_fast.c
-  net/wan/fsl_ucc_hdlc: avoid use of IS_ERR_VALUE()
-  net/wan/fsl_ucc_hdlc: fix reading of __be16 registers
-  net/wan/fsl_ucc_hdlc: reject muram offsets above 64K
-  net: ethernet: freescale: make UCC_GETH explicitly depend on PPC32
-  soc: fsl: qe: remove PPC32 dependency from CONFIG_QUICC_ENGINE
-
- arch/powerpc/include/asm/cpm.h                | 172 +-------
- arch/powerpc/platforms/83xx/km83xx.c          |   3 +-
- arch/powerpc/platforms/83xx/misc.c            |  23 --
- arch/powerpc/platforms/83xx/mpc832x_mds.c     |   3 +-
- arch/powerpc/platforms/83xx/mpc832x_rdb.c     |   3 +-
- arch/powerpc/platforms/83xx/mpc836x_mds.c     |   3 +-
- arch/powerpc/platforms/83xx/mpc836x_rdk.c     |   3 +-
- arch/powerpc/platforms/83xx/mpc83xx.h         |   7 -
- arch/powerpc/platforms/85xx/common.c          |  23 --
- arch/powerpc/platforms/85xx/corenet_generic.c |  12 -
- arch/powerpc/platforms/85xx/mpc85xx.h         |   2 -
- arch/powerpc/platforms/85xx/mpc85xx_mds.c     |  28 --
- arch/powerpc/platforms/85xx/mpc85xx_rdb.c     |  18 -
- arch/powerpc/platforms/85xx/twr_p102x.c       |  16 -
- drivers/net/ethernet/freescale/Kconfig        |   2 +-
- drivers/net/wan/fsl_ucc_hdlc.c                |  23 +-
- drivers/net/wan/fsl_ucc_hdlc.h                |   2 +-
- drivers/soc/fsl/qe/Kconfig                    |   3 +-
- drivers/soc/fsl/qe/gpio.c                     |  34 +-
- drivers/soc/fsl/qe/qe.c                       | 104 ++---
- drivers/soc/fsl/qe/qe_common.c                |  50 +--
- drivers/soc/fsl/qe/qe_ic.c                    | 285 ++++++-------
- drivers/soc/fsl/qe/qe_ic.h                    |  99 -----
- drivers/soc/fsl/qe/qe_io.c                    |  70 ++--
- drivers/soc/fsl/qe/qe_tdm.c                   |   8 +-
- drivers/soc/fsl/qe/ucc.c                      |  26 +-
- drivers/soc/fsl/qe/ucc_fast.c                 |  86 ++--
- drivers/soc/fsl/qe/ucc_slow.c                 |  60 ++-
- drivers/soc/fsl/qe/usb.c                      |   2 +-
- drivers/tty/serial/ucc_uart.c                 | 383 +++++++++---------
- include/soc/fsl/cpm.h                         | 171 ++++++++
- include/soc/fsl/qe/qe.h                       |  59 ++-
- include/soc/fsl/qe/qe_ic.h                    | 135 ------
- include/soc/fsl/qe/ucc_fast.h                 |   4 +-
- include/soc/fsl/qe/ucc_slow.h                 |   6 +-
- 35 files changed, 770 insertions(+), 1158 deletions(-)
- delete mode 100644 drivers/soc/fsl/qe/qe_ic.h
- create mode 100644 include/soc/fsl/cpm.h
- delete mode 100644 include/soc/fsl/qe/qe_ic.h
-
+diff --git a/drivers/soc/fsl/qe/qe.c b/drivers/soc/fsl/qe/qe.c
+index 456bd7416876..85737e6f5b62 100644
+--- a/drivers/soc/fsl/qe/qe.c
++++ b/drivers/soc/fsl/qe/qe.c
+@@ -22,6 +22,7 @@
+ #include <linux/module.h>
+ #include <linux/delay.h>
+ #include <linux/ioport.h>
++#include <linux/iopoll.h>
+ #include <linux/crc32.h>
+ #include <linux/mod_devicetable.h>
+ #include <linux/of_platform.h>
+@@ -108,7 +109,8 @@ int qe_issue_cmd(u32 cmd, u32 device, u8 mcn_protocol, u32 cmd_input)
+ {
+ 	unsigned long flags;
+ 	u8 mcn_shift = 0, dev_shift = 0;
+-	u32 ret;
++	u32 val;
++	int ret;
+ 
+ 	spin_lock_irqsave(&qe_lock, flags);
+ 	if (cmd == QE_RESET) {
+@@ -135,13 +137,12 @@ int qe_issue_cmd(u32 cmd, u32 device, u8 mcn_protocol, u32 cmd_input)
+ 	}
+ 
+ 	/* wait for the QE_CR_FLG to clear */
+-	ret = spin_event_timeout((qe_ioread32be(&qe_immr->cp.cecr) & QE_CR_FLG) == 0,
+-				 100, 0);
+-	/* On timeout (e.g. failure), the expression will be false (ret == 0),
+-	   otherwise it will be true (ret == 1). */
++	ret = readx_poll_timeout_atomic(qe_ioread32be, &qe_immr->cp.cecr, val,
++					(val & QE_CR_FLG) == 0, 0, 100);
++	/* On timeout, ret is -ETIMEDOUT, otherwise it will be 0. */
+ 	spin_unlock_irqrestore(&qe_lock, flags);
+ 
+-	return ret == 1;
++	return ret == 0;
+ }
+ EXPORT_SYMBOL(qe_issue_cmd);
+ 
 -- 
 2.23.0
 
