@@ -1,78 +1,52 @@
-Return-Path: <SRS0=q/i5=ZA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=cDdz=ZB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1ED03C17441
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 23:51:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B6DEC17440
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Nov 2019 01:21:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 868A020865
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 23:51:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 868A020865
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id E549B21019
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Nov 2019 01:21:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E549B21019
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 478xqY4TRrzF7fh
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Nov 2019 10:51:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 478zrJ0wXczF7d8
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Nov 2019 12:21:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.210.67; helo=mail-ot1-f67.google.com;
- envelope-from=pku.leo@gmail.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=suse.com (client-ip=195.135.220.15; helo=mx1.suse.de;
+ envelope-from=pmladek@suse.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=nxp.com
-Received: from mail-ot1-f67.google.com (mail-ot1-f67.google.com
- [209.85.210.67])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=suse.com
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 478xn63NqvzF3qw
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Nov 2019 10:48:58 +1100 (AEDT)
-Received: by mail-ot1-f67.google.com with SMTP id t4so6720613otr.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Nov 2019 15:48:58 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=XMVjsfRFCMgyyIBo6SJuyhGa3vmCkYAAcBk1J2DsBuY=;
- b=Nk3vy/i0ZctKSrZDaQ3b64Po1Y0puQ3QQhjo9MIbphV4ldppTxNEZ/7Nc3pvqex7rB
- 4xnCO+b6V2DvdxBOvFfZFhTMI1I/vbCHOgyYhmscrpZGxgQj0Jf2Y3xVCya0cDKluzYi
- 0eBGabrLnnGtIcp0oRwhnyjdmDQsMRBc5CidoGZncf2BcDDCrsrnrXNux74VTayxoA85
- dVtTp1CZ6bLb9cmQFv1On6430A0QQklK8ERmnxkuHYqbfCf05VQY8D0UZYZinr/2Pp1w
- th6bh3wyYpdl+1btzHFeUNC3ntMI2cIYitxHIHo+srchU4o4ClmZhUu/dTs7jOpkjd4q
- +39A==
-X-Gm-Message-State: APjAAAUBymtt+YrKssRjZgBD4WSOrj4o6ps05fX5GokwrPPTrbfZL8vM
- hNwvZSN4VhKfQeyved16NUc16O9LudQ=
-X-Google-Smtp-Source: APXvYqwsZ+qLHxHdgL2cYYEvqRX3SKANfuXV9NF5IGRTa4GC1iUFPO0PMb6O8a4zNu+EBfT9bVJXNw==
-X-Received: by 2002:a05:6830:224c:: with SMTP id
- t12mr10500742otd.299.1573256935564; 
- Fri, 08 Nov 2019 15:48:55 -0800 (PST)
-Received: from mail-ot1-f49.google.com (mail-ot1-f49.google.com.
- [209.85.210.49])
- by smtp.gmail.com with ESMTPSA id j8sm2447169otj.42.2019.11.08.15.48.54
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Fri, 08 Nov 2019 15:48:55 -0800 (PST)
-Received: by mail-ot1-f49.google.com with SMTP id z6so6706294otb.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Nov 2019 15:48:54 -0800 (PST)
-X-Received: by 2002:a05:6830:17c2:: with SMTP id
- p2mr11400428ota.74.1573256934498; 
- Fri, 08 Nov 2019 15:48:54 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 478gV571T0zF4VW
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Nov 2019 00:05:00 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id 4150BABE8;
+ Fri,  8 Nov 2019 13:04:55 +0000 (UTC)
+Date: Fri, 8 Nov 2019 14:04:47 +0100
+From: Petr Mladek <pmladek@suse.com>
+To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Subject: Re: [PATCH 00/50] Add log level to show_stack()
+Message-ID: <20191108130447.h3wfgo4efjkto56f@pathway.suse.cz>
+References: <20191106030542.868541-1-dima@arista.com>
+ <20191106083538.z5nlpuf64cigxigh@pathway.suse.cz>
+ <20191108103719.GB175344@google.com>
 MIME-Version: 1.0
-References: <20191108130123.6839-1-linux@rasmusvillemoes.dk>
- <20191108130123.6839-48-linux@rasmusvillemoes.dk>
-In-Reply-To: <20191108130123.6839-48-linux@rasmusvillemoes.dk>
-From: Li Yang <leoyang.li@nxp.com>
-Date: Fri, 8 Nov 2019 17:48:43 -0600
-X-Gmail-Original-Message-ID: <CADRPPNQwnmPCh8nzQ5vBTLoieO-r2u0huh17mwcinhfhNgo04A@mail.gmail.com>
-Message-ID: <CADRPPNQwnmPCh8nzQ5vBTLoieO-r2u0huh17mwcinhfhNgo04A@mail.gmail.com>
-Subject: Re: [PATCH v4 47/47] soc: fsl: qe: remove PPC32 dependency from
- CONFIG_QUICC_ENGINE
-To: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20191108103719.GB175344@google.com>
+User-Agent: NeoMutt/20170912 (1.9.0)
+X-Mailman-Approved-At: Sat, 09 Nov 2019 12:19:43 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,51 +58,90 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: lkml <linux-kernel@vger.kernel.org>, Scott Wood <oss@buserror.net>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>, Qiang Zhao <qiang.zhao@nxp.com>
+Cc: Juri Lelli <juri.lelli@redhat.com>, linux-sh@vger.kernel.org,
+ Catalin Marinas <catalin.marinas@arm.com>, Ben Segall <bsegall@google.com>,
+ Guo Ren <guoren@kernel.org>, Pavel Machek <pavel@ucw.cz>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Paul Burton <paulburton@kernel.org>, Dmitry Safonov <dima@arista.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Mel Gorman <mgorman@suse.de>,
+ Jiri Slaby <jslaby@suse.com>, Matt Turner <mattst88@gmail.com>,
+ uclinux-h8-devel@lists.sourceforge.jp, Len Brown <len.brown@intel.com>,
+ linux-pm@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ linux-um@lists.infradead.org, Thomas Gleixner <tglx@linutronix.de>,
+ Dietmar Eggemann <dietmar.eggemann@arm.com>,
+ Richard Henderson <rth@twiddle.net>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, Paul Mackerras <paulus@samba.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linux-ia64@vger.kernel.org,
+ Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+ James Hogan <jhogan@kernel.org>,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Max Filippov <jcmvbkbc@gmail.com>, Vincent Chen <deanbo422@gmail.com>,
+ Ingo Molnar <mingo@kernel.org>, linux-s390@vger.kernel.org,
+ linux-c6x-dev@linux-c6x.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ linux-hexagon@vger.kernel.org, Helge Deller <deller@gmx.de>,
+ linux-xtensa@linux-xtensa.org, Vasily Gorbik <gor@linux.ibm.com>,
+ Aurelien Jacquiot <jacquiot.aurelien@gmail.com>,
+ linux-m68k@lists.linux-m68k.org, Stafford Horne <shorne@gmail.com>,
+ linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>,
+ Tony Luck <tony.luck@intel.com>, Douglas Anderson <dianders@chromium.org>,
+ Dmitry Safonov <0x7f454c46@gmail.com>, Will Deacon <will@kernel.org>,
+ Daniel Thompson <daniel.thompson@linaro.org>,
+ Brian Cain <bcain@codeaurora.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ kgdb-bugreport@lists.sourceforge.net, linux-snps-arc@lists.infradead.org,
+ Fenghua Yu <fenghua.yu@intel.com>, Borislav Petkov <bp@alien8.de>,
+ Jeff Dike <jdike@addtoit.com>, Steven Rostedt <rostedt@goodmis.org>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greentime Hu <green.hu@gmail.com>,
+ Guan Xuetao <gxt@pku.edu.cn>, linux-parisc@vger.kernel.org,
+ linux-alpha@vger.kernel.org, Ley Foon Tan <lftan@altera.com>,
+ "David S. Miller" <davem@davemloft.net>, Rich Felker <dalias@libc.org>,
+ Peter Zijlstra <peterz@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
+ Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+ Jonas Bonn <jonas@southpole.se>, Richard Weinberger <richard@nod.at>,
+ x86@kernel.org, Russell King <linux@armlinux.org.uk>,
+ clang-built-linux@googlegroups.com, Ingo Molnar <mingo@redhat.com>,
+ Mark Salter <msalter@redhat.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ openrisc@lists.librecores.org, Paul Walmsley <paul.walmsley@sifive.com>,
+ Michal Simek <monstr@monstr.eu>, Vineet Gupta <vgupta@synopsys.com>,
+ linux-mips@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Jason Wessel <jason.wessel@windriver.com>,
+ nios2-dev@lists.rocketboards.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Nov 8, 2019 at 7:05 AM Rasmus Villemoes
-<linux@rasmusvillemoes.dk> wrote:
->
-> There are also ARM and ARM64 based SOCs with a QUICC Engine, and the
-> core QE code as well as net/wan/fsl_ucc_hdlc and tty/serial/ucc_uart
-> has now been modified to not rely on ppcisms.
->
-> So extend the architectures that can select QUICC_ENGINE, and add the
-> rather modest requirements of OF && HAS_IOMEM.
->
-> The core code as well as the ucc_uart driver has been tested on an
-> LS1021A (arm), and it has also been tested that the QE code still
-> works on an mpc8309 (ppc).
->
-> Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-> ---
->  drivers/soc/fsl/qe/Kconfig | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/soc/fsl/qe/Kconfig b/drivers/soc/fsl/qe/Kconfig
-> index cfa4b2939992..f1974f811572 100644
-> --- a/drivers/soc/fsl/qe/Kconfig
-> +++ b/drivers/soc/fsl/qe/Kconfig
-> @@ -5,7 +5,8 @@
->
->  config QUICC_ENGINE
->         bool "QUICC Engine (QE) framework support"
-> -       depends on FSL_SOC && PPC32
-> +       depends on OF && HAS_IOMEM
-> +       depends on PPC32 || ARM || ARM64 || COMPILE_TEST
+On Fri 2019-11-08 19:37:19, Sergey Senozhatsky wrote:
+> On (19/11/06 09:35), Petr Mladek wrote:
+> > I agree with all the other justification.
+> > 
+> > I would add. The backtrace is really useful for debugging. It should
+> > be possible to print it even in less critical situations.
+> 
+> Hmm, I don't know.
+> Do we really need debug/info level backtraces?
 
-Can you also add PPC64?  It is also used on some PPC64 platforms
-(QorIQ T series).
+debug is exactly the loglevel where registry content and backtrace
+might be very useful. It is not always important to reach the console.
 
->         select GENERIC_ALLOCATOR
->         select CRC32
->         help
-> --
-> 2.23.0
->
+
+> May be all backtraces can be converted to something more severe
+> (so we can stop playing games with loglvl) and then we can
+> clean up "(ab)users"?
+
+IMHO, we should distinguish warning, error, crit, alert, emerg
+situations. Backtraces and any related messages should be
+filtered the same way. Any information might be useless without
+the context.
+
+I agree that it is complicated to pass the loglevel as
+a parameter. It would be better define the default
+log level for a given code section. It might be stored
+in task_struct for the normal context and in per-CPU
+variables for interrupt contexts.
+
+Best Regards,
+Petr
