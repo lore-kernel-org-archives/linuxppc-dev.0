@@ -2,63 +2,83 @@ Return-Path: <SRS0=q/i5=ZA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EE49BC5DF60
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 12:06:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56A5DFA372C
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 13:07:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A26DE21D6C
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 12:06:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id BEA18206A3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 13:07:35 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="lH9Tz2mI"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A26DE21D6C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="Il3DCL7v"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BEA18206A3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rasmusvillemoes.dk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 478fB12M6zzF3Nc
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 23:06:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 478gY01dV9zF6x4
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Nov 2019 00:07:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
+ smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::242;
+ helo=mail-lj1-x242.google.com; envelope-from=linux@rasmusvillemoes.dk;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=rasmusvillemoes.dk
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="lH9Tz2mI"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk
+ header.b="Il3DCL7v"; dkim-atps=neutral
+Received: from mail-lj1-x242.google.com (mail-lj1-x242.google.com
+ [IPv6:2a00:1450:4864:20::242])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 478dnd23RKzDqw6
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Nov 2019 22:48:21 +1100 (AEDT)
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
- [73.47.72.35])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 2CA6121924;
- Fri,  8 Nov 2019 11:48:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1573213698;
- bh=gOF/g1JGF/2ta+CRXg0IuDDeSmSxHnfLjPshvyA+44c=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=lH9Tz2mIkbR3vFrHMIAmDg4r7I+YzfnvBaGXzkmMXtWjbiqqr6auzldcpyI66UjBd
- Fls/BeMCU83KBycBWUguvGZO6W0R0Rz9aWyGRZQnkU/jbedOfYfb9ZiywqAGIB7UxD
- rZyedvBNjZz0cn6gBnHu7UV1r7LRfeDKsFNkd9uE=
-From: Sasha Levin <sashal@kernel.org>
-To: linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.4 38/44] powerpc/vdso: Correct call frame information
-Date: Fri,  8 Nov 2019 06:47:14 -0500
-Message-Id: <20191108114721.15944-38-sashal@kernel.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20191108114721.15944-1-sashal@kernel.org>
-References: <20191108114721.15944-1-sashal@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 478gQ75tv3zF6qp
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Nov 2019 00:01:33 +1100 (AEDT)
+Received: by mail-lj1-x242.google.com with SMTP id l20so6125091lje.4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Nov 2019 05:01:33 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=rasmusvillemoes.dk; s=google;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=IwcdyWxRDO/TUjQjvqfZVlSTaDYPWlQZLs741mWfW6c=;
+ b=Il3DCL7vnUfDWk2t/dT7/uKy401t+E+TEtTumQV7aGFBMSqoz6kukNHfbvmCHSIxMK
+ /rjkT3HHQ6iR29tHP+WnfsMgbjiel7Xdx3fOgzUS6UsDe/1qYDJMkQYd0Q/dL26XEB28
+ /roXQK+QbBY6A5W42j+SwAhdORazO7kdTzDWo=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=IwcdyWxRDO/TUjQjvqfZVlSTaDYPWlQZLs741mWfW6c=;
+ b=AHYn5zKFWu0ddc8yxk/U9oa0MrFGvBwFbosQFG27B54kY4W5zlFdx/lCc7lo1AIUS1
+ sc/o/GN6u3BS0RBiOPW+KYI6IdwkRIByk1/F08gKBvBP8sgd1EVhKIcQGy2unHmKd/wx
+ EeHJu/YxZhz0F+I3K6WBG/1La+mIwplM6eiehL6ot393z6LFJwb2rMeH5D74nmAx+VQi
+ ShCX9iS61mBC7BItNz5hov6D2BUzjTOpBJkwor8IRGnxm//Nud9sGOAmhPKUt47cmXqY
+ iWfdbvbGau8Y0z5zSPyJGWU2ldK9tUCeIj+pOJzIeErM/OKE8YcJgbkKgCtZetpzF6C+
+ cwqw==
+X-Gm-Message-State: APjAAAUhAc/NvVt/ABcNMzS/+GLBolWW4Mbi16WWXQSBGnTvhkOLcuVh
+ diQARTVEdoxZqYNYcER1YbTTzw==
+X-Google-Smtp-Source: APXvYqwQjL+XRBKvPBVlIVCDZcxIlePYwv4P23TGc8rNS3Ec1QKm2jAO9MNSrExrOF8chImjosB07Q==
+X-Received: by 2002:a2e:8601:: with SMTP id a1mr6905527lji.159.1573218090373; 
+ Fri, 08 Nov 2019 05:01:30 -0800 (PST)
+Received: from prevas-ravi.prevas.se ([81.216.59.226])
+ by smtp.gmail.com with ESMTPSA id d28sm2454725lfn.33.2019.11.08.05.01.29
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 08 Nov 2019 05:01:29 -0800 (PST)
+From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+To: Qiang Zhao <qiang.zhao@nxp.com>, Li Yang <leoyang.li@nxp.com>,
+ Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v4 02/47] soc: fsl: qe: drop volatile qualifier of struct
+ qe_ic::regs
+Date: Fri,  8 Nov 2019 14:00:38 +0100
+Message-Id: <20191108130123.6839-3-linux@rasmusvillemoes.dk>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20191108130123.6839-1-linux@rasmusvillemoes.dk>
+References: <20191108130123.6839-1-linux@rasmusvillemoes.dk>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -71,104 +91,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, Reza Arbab <arbab@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Alan Modra <amodra@gmail.com>
+Cc: Scott Wood <oss@buserror.net>, Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Alan Modra <amodra@gmail.com>
+The actual io accessors (e.g. in_be32) implicitly add a volatile
+qualifier to their address argument. Remove volatile from the struct
+definition and the qe_ic_(read/write) helpers, in preparation for
+switching from the ppc-specific io accessors to generic ones.
 
-[ Upstream commit 56d20861c027498b5a1112b4f9f05b56d906fdda ]
-
-Call Frame Information is used by gdb for back-traces and inserting
-breakpoints on function return for the "finish" command.  This failed
-when inside __kernel_clock_gettime.  More concerning than difficulty
-debugging is that CFI is also used by stack frame unwinding code to
-implement exceptions.  If you have an app that needs to handle
-asynchronous exceptions for some reason, and you are unlucky enough to
-get one inside the VDSO time functions, your app will crash.
-
-What's wrong:  There is control flow in __kernel_clock_gettime that
-reaches label 99 without saving lr in r12.  CFI info however is
-interpreted by the unwinder without reference to control flow: It's a
-simple matter of "Execute all the CFI opcodes up to the current
-address".  That means the unwinder thinks r12 contains the return
-address at label 99.  Disabuse it of that notion by resetting CFI for
-the return address at label 99.
-
-Note that the ".cfi_restore lr" could have gone anywhere from the
-"mtlr r12" a few instructions earlier to the instruction at label 99.
-I put the CFI as late as possible, because in general that's best
-practice (and if possible grouped with other CFI in order to reduce
-the number of CFI opcodes executed when unwinding).  Using r12 as the
-return address is perfectly fine after the "mtlr r12" since r12 on
-that code path still contains the return address.
-
-__get_datapage also has a CFI error.  That function temporarily saves
-lr in r0, and reflects that fact with ".cfi_register lr,r0".  A later
-use of r0 means the CFI at that point isn't correct, as r0 no longer
-contains the return address.  Fix that too.
-
-Signed-off-by: Alan Modra <amodra@gmail.com>
-Tested-by: Reza Arbab <arbab@linux.ibm.com>
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 ---
- arch/powerpc/kernel/vdso32/datapage.S     | 1 +
- arch/powerpc/kernel/vdso32/gettimeofday.S | 1 +
- arch/powerpc/kernel/vdso64/datapage.S     | 1 +
- arch/powerpc/kernel/vdso64/gettimeofday.S | 1 +
- 4 files changed, 4 insertions(+)
+ drivers/soc/fsl/qe/qe_ic.c | 4 ++--
+ drivers/soc/fsl/qe/qe_ic.h | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/vdso32/datapage.S b/arch/powerpc/kernel/vdso32/datapage.S
-index 59cf5f452879b..9d112e1b31b8b 100644
---- a/arch/powerpc/kernel/vdso32/datapage.S
-+++ b/arch/powerpc/kernel/vdso32/datapage.S
-@@ -37,6 +37,7 @@ data_page_branch:
- 	mtlr	r0
- 	addi	r3, r3, __kernel_datapage_offset-data_page_branch
- 	lwz	r0,0(r3)
-+  .cfi_restore lr
- 	add	r3,r0,r3
- 	blr
-   .cfi_endproc
-diff --git a/arch/powerpc/kernel/vdso32/gettimeofday.S b/arch/powerpc/kernel/vdso32/gettimeofday.S
-index 6b2b69616e776..7b341b86216c2 100644
---- a/arch/powerpc/kernel/vdso32/gettimeofday.S
-+++ b/arch/powerpc/kernel/vdso32/gettimeofday.S
-@@ -139,6 +139,7 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
- 	 */
- 99:
- 	li	r0,__NR_clock_gettime
-+  .cfi_restore lr
- 	sc
- 	blr
-   .cfi_endproc
-diff --git a/arch/powerpc/kernel/vdso64/datapage.S b/arch/powerpc/kernel/vdso64/datapage.S
-index 7612eeb31da14..6832e41c372b0 100644
---- a/arch/powerpc/kernel/vdso64/datapage.S
-+++ b/arch/powerpc/kernel/vdso64/datapage.S
-@@ -37,6 +37,7 @@ data_page_branch:
- 	mtlr	r0
- 	addi	r3, r3, __kernel_datapage_offset-data_page_branch
- 	lwz	r0,0(r3)
-+  .cfi_restore lr
- 	add	r3,r0,r3
- 	blr
-   .cfi_endproc
-diff --git a/arch/powerpc/kernel/vdso64/gettimeofday.S b/arch/powerpc/kernel/vdso64/gettimeofday.S
-index 3820213248836..09b2a49f6dd53 100644
---- a/arch/powerpc/kernel/vdso64/gettimeofday.S
-+++ b/arch/powerpc/kernel/vdso64/gettimeofday.S
-@@ -124,6 +124,7 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
- 	 */
- 99:
- 	li	r0,__NR_clock_gettime
-+  .cfi_restore lr
- 	sc
- 	blr
-   .cfi_endproc
+diff --git a/drivers/soc/fsl/qe/qe_ic.c b/drivers/soc/fsl/qe/qe_ic.c
+index 9bac546998d3..791adcd121d1 100644
+--- a/drivers/soc/fsl/qe/qe_ic.c
++++ b/drivers/soc/fsl/qe/qe_ic.c
+@@ -171,12 +171,12 @@ static struct qe_ic_info qe_ic_info[] = {
+ 		},
+ };
+ 
+-static inline u32 qe_ic_read(volatile __be32  __iomem * base, unsigned int reg)
++static inline u32 qe_ic_read(__be32  __iomem *base, unsigned int reg)
+ {
+ 	return in_be32(base + (reg >> 2));
+ }
+ 
+-static inline void qe_ic_write(volatile __be32  __iomem * base, unsigned int reg,
++static inline void qe_ic_write(__be32  __iomem *base, unsigned int reg,
+ 			       u32 value)
+ {
+ 	out_be32(base + (reg >> 2), value);
+diff --git a/drivers/soc/fsl/qe/qe_ic.h b/drivers/soc/fsl/qe/qe_ic.h
+index 08c695672a03..9420378d9b6b 100644
+--- a/drivers/soc/fsl/qe/qe_ic.h
++++ b/drivers/soc/fsl/qe/qe_ic.h
+@@ -72,7 +72,7 @@
+ 
+ struct qe_ic {
+ 	/* Control registers offset */
+-	volatile u32 __iomem *regs;
++	u32 __iomem *regs;
+ 
+ 	/* The remapper for this QEIC */
+ 	struct irq_domain *irqhost;
 -- 
-2.20.1
+2.23.0
 
