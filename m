@@ -6,71 +6,67 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F152FFC6196
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 21:21:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6EFEEFC6197
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 21:27:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7F4D7207FA
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 21:21:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7F4D7207FA
+	by mail.kernel.org (Postfix) with ESMTPS id 274182084D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Nov 2019 21:27:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 274182084D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 478tW41zmKzF7s4
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Nov 2019 08:21:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 478tf74CWmzF7tK
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Nov 2019 08:27:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=arndb.de
- (client-ip=212.227.17.10; helo=mout.kundenserver.de;
+ (client-ip=217.72.192.74; helo=mout.kundenserver.de;
  envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=arndb.de
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.74])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 478tK74MBwzF12G
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Nov 2019 08:12:59 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 478tMy6zHVzF667
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Nov 2019 08:15:24 +1100 (AEDT)
 Received: from threadripper.lan ([149.172.19.189]) by mrelayeu.kundenserver.de
- (mreue108 [212.227.15.145]) with ESMTPA (Nemesis) id
- 1Mt71D-1he6Ia3jLN-00tVVi; Fri, 08 Nov 2019 22:12:02 +0100
+ (mreue107 [212.227.15.145]) with ESMTPA (Nemesis) id
+ 1M2ON6-1iUpU10hYc-003rip; Fri, 08 Nov 2019 22:14:55 +0100
 From: Arnd Bergmann <arnd@arndb.de>
-To: y2038@lists.linaro.org, Ralf Baechle <ralf@linux-mips.org>,
- Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Helge Deller <deller@gmx.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+To: y2038@lists.linaro.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "David S. Miller" <davem@davemloft.net>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, x86@kernel.org,
- Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH 08/23] y2038: ipc: remove __kernel_time_t reference from
- headers
-Date: Fri,  8 Nov 2019 22:07:28 +0100
-Message-Id: <20191108210824.1534248-8-arnd@arndb.de>
+ Alexander Viro <viro@zeniv.linux.org.uk>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>,
+ Len Brown <len.brown@intel.com>, John Stultz <john.stultz@linaro.org>,
+ Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH 12/23] y2038: syscalls: change remaining timeval to
+ __kernel_old_timeval
+Date: Fri,  8 Nov 2019 22:12:11 +0100
+Message-Id: <20191108211323.1806194-3-arnd@arndb.de>
 X-Mailer: git-send-email 2.20.0
 In-Reply-To: <20191108210236.1296047-1-arnd@arndb.de>
 References: <20191108210236.1296047-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Provags-ID: V03:K1:Ovo0znhTfBciqHb5dk0y9f3n8qBGpYoN5a+fnOutVi0zwjP5IUw
- HjIVyFgCbCf58CGn4gwb5GNQIGmRVw5mMk8UaHe2qlr3ru5M8GkK4eRrsN2PFQIfGyB1mmZ
- nxJu8Pco7TO8N2iXYpgX8cHBRts25B+w8zGGR49P65oOsNPllFUrHlwNLsnOMRJh3vZ5gZn
- vGIyiYPc0ivZ7E/oWr5Rg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:EknCUVeDeik=:kFs35h3Qt8AyXZ2wLRCzrT
- YmJt6ugFf5BcZj0XVNSYiCfXF2ZKLKP597Bd2wzHGFLq2sJ7DZV79y4hPpYmK0HLEqR+4bUDo
- 2IrKvgJRSEDI7Y3XEidmjGen8tcGv/fr+x30rF7r+ZAQheq2HdsdfDojlmkDUegAnwv205p9J
- Gl3FGYDv1U+SQQhvzTlQFZ16AombosrEgM6SIAy+vL3oxygTzXrsOEHpHHw3R1PAjLFMKh3kY
- bCVuJ9JJEf2ypKk9q8KeJ9EjOZux0gGtaLmL5AJzUEY88C5Td6Lt/Pjn8H1sEcepIKpZXANlK
- YHTWE+3gmeMwsHoVO0UdLkX9iwJNbQwLVIabxORRj/p9/GIz7JEOHdd0wwjUhHpzV3Aq9pRse
- hWp7CEiBUvo+eQrHAhsA/5mD5WzRjVV9omb+QCWDzvyJ+RSEbiPEg5vCdpb2fQaJEPk5GxvTu
- iqu2lwYjL7rzSvZnnOPhAXuyWZdwsb7+GaYiR+woosbqPbUlRBpBjahjxqVUogx8l0y9/9x6q
- Yc+3T3lEuiX2Om2g9dt5lqFof2y519ROqQfcFkp9+e1tFTxSY0OyNnr8UGQ3hBOOGV1pOc8qg
- rKkhlOwNMMhf2ZfJb0Yj44txpMD/P5rCgADdR+jPj5dH8cP+6PtStusgw8h88iDe7EGQ6dDnK
- adJMPF6VF3ecWYvZ+lg9aD331VzTIKEy8Uv+6T0zMt3hAQQB9ZeWW9SoqUCtGOexgZb4hYtw2
- RF2mIWtYV+RAkc/0XWTAKKbQLKGCvizAft3ZrkQ3TILY9WzIiY+WiJQKeLo5BpsAPucT+WhKn
- 8DIRQ/j+I+dkO/biVhC5KG5tcHGW1p7hcaeCuPKiTtZAyFKpfD/jm2Q6iKnEyYfx5wfzxVP3E
- ERJYOUdYmAa4C2oTobnQ==
+X-Provags-ID: V03:K1:L5MXbYk31wOXwoBz972x9kuLeZIEuu+iSFnMEMxFsvJUSyMZcA5
+ KJDBtqG97dBLfawBhDt9kcwvJVvuwOQ596SiSyGadN0etYEY4mHIcslPBMvhPxUeiASTwtE
+ 4HuvheJuT5lTmRZ2iJaCMwpj7E00u6pChQLfyfcNCai0JwzuRda/z3lx8uBV/SGvrx3+2hE
+ v3L/VsxyHbSgyY9NiNRbA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:vzi6yde6b/Y=:ccalfERfsUEw5gS+vbBk40
+ 2pXxs9573zedbV97jmVac2Hd1aJR6bl5MYGgvW2fYC9hDjckcs4/aqqNfk4Mty8m6lYfGAHO6
+ 5js6bYy+kzIpVkubVkF9YsvcO3ZZHee5W4p2c9Ysx8xD9jjQpDoqBDPEyJbcwiHVaomVoj4bE
+ 0WD+6FuQCdvgxREISAkqwJlb7+QF/dBFT5Q6/ZyOfOqXzoH71fKgCQj7KwaSCEuuGd/A4h0aY
+ 6Px9rTYGebyI6et4h4wCRgTVuMjRrFPuLUQVKDm7opN+aIJUKcMLqYzSwcycK6xPujokgupip
+ UXhzNc46PDF4VGfT0TFv05d/rkqfwnz6IMvFI43cxdKN2jBDCPHqDYaF4IHjuLLfS8epEvDca
+ dW+YWaydV+DP4dNGpCCUMQ69Gry4TGR1rdE9Hv2g3+tgymMpoiN+PFS7yccDBHBtFgWMhB7uD
+ nRUGZXnkIc6ZlbhTmgTEDHv923hP6eoj461EDqMH6o17vOdPIUYLbRBEZdaWpppISWbfNJHFy
+ o+CsXM9xLVJ41r2GUsD3OlN9wDF57IkUMTdSP1TPHpLTg8tQt1KSx0liPDIBCsBjmOS27/8Gy
+ YgGivN27m6iSpVffP4eDtveIo4c6TU77s/QCmzH6pGzD8y/KWU0GmXMaOCWYHQLrZK4zuAMD2
+ +MbnM1nHjqbdI/+v4TPx6KLmftPRa6CP/2wO63/IlA1+yYihaDygxL7/ut0w6qZP/pcCHnD+P
+ 76rVbneRg0ADgYWIhuBGfGV4KDJJFcgrX/+bta7Ng8mQNlm2w5i0AvGMpldh8EN8mGS0OfNcU
+ mEmUPpx/EDdJ828L7cfx83d8ZMGPIKWUYJgwb5MpOxSoVtQw/G3/nESpKWbxtGOyPejhCQcmE
+ 1qC5qhTto/Pmq0rO3eWQ==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,384 +78,211 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-parisc@vger.kernel.org,
- linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org,
+ Stephen Boyd <sboyd@kernel.org>, linux-api@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Christian Brauner <christian@brauner.io>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There are two structures based on time_t that conflict between libc and
-kernel: timeval and timespec. Both are now renamed to __kernel_old_timeval
-and __kernel_old_timespec.
-
-For time_t, the old typedef is still __kernel_time_t. There is nothing
-wrong with that name, but it would be nice to not use that going forward
-as this type is used almost only in deprecated interfaces because of
-the y2038 overflow.
-
-In the IPC headers (msgbuf.h, sembuf.h, shmbuf.h), __kernel_time_t is only
-used for the 64-bit variants, which are not deprecated.
-
-Change these to a plain 'long', which is the same type as __kernel_time_t
-on all 64-bit architectures anyway, to reduce the number of users of the
-old type.
+All of the remaining syscalls that pass a timeval (gettimeofday, utime,
+futimesat) can trivially be changed to pass a __kernel_old_timeval
+instead, which has a compatible layout, but avoids ambiguity with
+the timeval type in user space.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/mips/include/uapi/asm/msgbuf.h    |  6 +++---
- arch/mips/include/uapi/asm/sembuf.h    |  4 ++--
- arch/mips/include/uapi/asm/shmbuf.h    |  6 +++---
- arch/parisc/include/uapi/asm/msgbuf.h  |  6 +++---
- arch/parisc/include/uapi/asm/sembuf.h  |  4 ++--
- arch/parisc/include/uapi/asm/shmbuf.h  |  6 +++---
- arch/powerpc/include/uapi/asm/msgbuf.h |  6 +++---
- arch/powerpc/include/uapi/asm/sembuf.h |  4 ++--
- arch/powerpc/include/uapi/asm/shmbuf.h |  6 +++---
- arch/sparc/include/uapi/asm/msgbuf.h   |  6 +++---
- arch/sparc/include/uapi/asm/sembuf.h   |  4 ++--
- arch/sparc/include/uapi/asm/shmbuf.h   |  6 +++---
- arch/x86/include/uapi/asm/msgbuf.h     |  6 +++---
- arch/x86/include/uapi/asm/sembuf.h     |  4 ++--
- arch/x86/include/uapi/asm/shmbuf.h     |  6 +++---
- include/uapi/asm-generic/msgbuf.h      | 12 ++++++------
- include/uapi/asm-generic/sembuf.h      |  7 +++----
- include/uapi/asm-generic/shmbuf.h      | 12 ++++++------
- 18 files changed, 55 insertions(+), 56 deletions(-)
+ arch/powerpc/include/asm/asm-prototypes.h |  3 ++-
+ arch/powerpc/kernel/syscalls.c            |  4 ++--
+ fs/select.c                               | 10 +++++-----
+ fs/utimes.c                               |  8 ++++----
+ include/linux/syscalls.h                  | 10 +++++-----
+ kernel/power/power.h                      |  2 +-
+ kernel/time/time.c                        |  2 +-
+ 7 files changed, 20 insertions(+), 19 deletions(-)
 
-diff --git a/arch/mips/include/uapi/asm/msgbuf.h b/arch/mips/include/uapi/asm/msgbuf.h
-index 46aa15b13e4e..9e0c2e230274 100644
---- a/arch/mips/include/uapi/asm/msgbuf.h
-+++ b/arch/mips/include/uapi/asm/msgbuf.h
-@@ -15,9 +15,9 @@
- #if defined(__mips64)
- struct msqid64_ds {
- 	struct ipc64_perm msg_perm;
--	__kernel_time_t msg_stime;	/* last msgsnd time */
--	__kernel_time_t msg_rtime;	/* last msgrcv time */
--	__kernel_time_t msg_ctime;	/* last change time */
-+	long msg_stime;			/* last msgsnd time */
-+	long msg_rtime;			/* last msgrcv time */
-+	long msg_ctime;			/* last change time */
- 	unsigned long  msg_cbytes;	/* current number of bytes on queue */
- 	unsigned long  msg_qnum;	/* number of messages in queue */
- 	unsigned long  msg_qbytes;	/* max number of bytes on queue */
-diff --git a/arch/mips/include/uapi/asm/sembuf.h b/arch/mips/include/uapi/asm/sembuf.h
-index 60c89e6cb25b..43e1b4a2f68a 100644
---- a/arch/mips/include/uapi/asm/sembuf.h
-+++ b/arch/mips/include/uapi/asm/sembuf.h
-@@ -14,8 +14,8 @@
- #ifdef __mips64
- struct semid64_ds {
- 	struct ipc64_perm sem_perm;		/* permissions .. see ipc.h */
--	__kernel_time_t sem_otime;		/* last semop time */
--	__kernel_time_t sem_ctime;		/* last change time */
-+	long		 sem_otime;		/* last semop time */
-+	long		 sem_ctime;		/* last change time */
- 	unsigned long	sem_nsems;		/* no. of semaphores in array */
- 	unsigned long	__unused1;
- 	unsigned long	__unused2;
-diff --git a/arch/mips/include/uapi/asm/shmbuf.h b/arch/mips/include/uapi/asm/shmbuf.h
-index 9b9bba3401f2..680bb95b2240 100644
---- a/arch/mips/include/uapi/asm/shmbuf.h
-+++ b/arch/mips/include/uapi/asm/shmbuf.h
-@@ -17,9 +17,9 @@
- struct shmid64_ds {
- 	struct ipc64_perm	shm_perm;	/* operation perms */
- 	size_t			shm_segsz;	/* size of segment (bytes) */
--	__kernel_time_t		shm_atime;	/* last attach time */
--	__kernel_time_t		shm_dtime;	/* last detach time */
--	__kernel_time_t		shm_ctime;	/* last change time */
-+	long			shm_atime;	/* last attach time */
-+	long			shm_dtime;	/* last detach time */
-+	long			shm_ctime;	/* last change time */
- 	__kernel_pid_t		shm_cpid;	/* pid of creator */
- 	__kernel_pid_t		shm_lpid;	/* pid of last operator */
- 	unsigned long		shm_nattch;	/* no. of current attaches */
-diff --git a/arch/parisc/include/uapi/asm/msgbuf.h b/arch/parisc/include/uapi/asm/msgbuf.h
-index 6a2e9ab2ef8d..3b877335da38 100644
---- a/arch/parisc/include/uapi/asm/msgbuf.h
-+++ b/arch/parisc/include/uapi/asm/msgbuf.h
-@@ -16,9 +16,9 @@
- struct msqid64_ds {
- 	struct ipc64_perm msg_perm;
- #if __BITS_PER_LONG == 64
--	__kernel_time_t msg_stime;	/* last msgsnd time */
--	__kernel_time_t msg_rtime;	/* last msgrcv time */
--	__kernel_time_t msg_ctime;	/* last change time */
-+	long		 msg_stime;	/* last msgsnd time */
-+	long		 msg_rtime;	/* last msgrcv time */
-+	long		 msg_ctime;	/* last change time */
- #else
- 	unsigned long	msg_stime_high;
- 	unsigned long	msg_stime;	/* last msgsnd time */
-diff --git a/arch/parisc/include/uapi/asm/sembuf.h b/arch/parisc/include/uapi/asm/sembuf.h
-index 3c31163b1241..8241cf126018 100644
---- a/arch/parisc/include/uapi/asm/sembuf.h
-+++ b/arch/parisc/include/uapi/asm/sembuf.h
-@@ -16,8 +16,8 @@
- struct semid64_ds {
- 	struct ipc64_perm sem_perm;		/* permissions .. see ipc.h */
- #if __BITS_PER_LONG == 64
--	__kernel_time_t	sem_otime;		/* last semop time */
--	__kernel_time_t	sem_ctime;		/* last change time */
-+	long		sem_otime;		/* last semop time */
-+	long		sem_ctime;		/* last change time */
- #else
- 	unsigned long	sem_otime_high;
- 	unsigned long	sem_otime;		/* last semop time */
-diff --git a/arch/parisc/include/uapi/asm/shmbuf.h b/arch/parisc/include/uapi/asm/shmbuf.h
-index c89b3dd8db21..5da3089be65e 100644
---- a/arch/parisc/include/uapi/asm/shmbuf.h
-+++ b/arch/parisc/include/uapi/asm/shmbuf.h
-@@ -16,9 +16,9 @@
- struct shmid64_ds {
- 	struct ipc64_perm	shm_perm;	/* operation perms */
- #if __BITS_PER_LONG == 64
--	__kernel_time_t		shm_atime;	/* last attach time */
--	__kernel_time_t		shm_dtime;	/* last detach time */
--	__kernel_time_t		shm_ctime;	/* last change time */
-+	long			shm_atime;	/* last attach time */
-+	long			shm_dtime;	/* last detach time */
-+	long			shm_ctime;	/* last change time */
- #else
- 	unsigned long		shm_atime_high;
- 	unsigned long		shm_atime;	/* last attach time */
-diff --git a/arch/powerpc/include/uapi/asm/msgbuf.h b/arch/powerpc/include/uapi/asm/msgbuf.h
-index 2b1b37797a47..969bd83e4d3d 100644
---- a/arch/powerpc/include/uapi/asm/msgbuf.h
-+++ b/arch/powerpc/include/uapi/asm/msgbuf.h
-@@ -11,9 +11,9 @@
- struct msqid64_ds {
- 	struct ipc64_perm msg_perm;
- #ifdef __powerpc64__
--	__kernel_time_t msg_stime;	/* last msgsnd time */
--	__kernel_time_t msg_rtime;	/* last msgrcv time */
--	__kernel_time_t msg_ctime;	/* last change time */
-+	long		 msg_stime;	/* last msgsnd time */
-+	long		 msg_rtime;	/* last msgrcv time */
-+	long		 msg_ctime;	/* last change time */
- #else
- 	unsigned long  msg_stime_high;
- 	unsigned long  msg_stime;	/* last msgsnd time */
-diff --git a/arch/powerpc/include/uapi/asm/sembuf.h b/arch/powerpc/include/uapi/asm/sembuf.h
-index 3f60946f77e3..008ae77c6746 100644
---- a/arch/powerpc/include/uapi/asm/sembuf.h
-+++ b/arch/powerpc/include/uapi/asm/sembuf.h
-@@ -26,8 +26,8 @@ struct semid64_ds {
- 	unsigned long	sem_ctime_high;
- 	unsigned long	sem_ctime;	/* last change time */
- #else
--	__kernel_time_t	sem_otime;	/* last semop time */
--	__kernel_time_t	sem_ctime;	/* last change time */
-+	long		sem_otime;	/* last semop time */
-+	long		sem_ctime;	/* last change time */
+diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
+index 8561498e653c..2c25dc079cb9 100644
+--- a/arch/powerpc/include/asm/asm-prototypes.h
++++ b/arch/powerpc/include/asm/asm-prototypes.h
+@@ -92,7 +92,8 @@ long sys_swapcontext(struct ucontext __user *old_ctx,
+ long sys_debug_setcontext(struct ucontext __user *ctx,
+ 			  int ndbg, struct sig_dbg_op __user *dbg);
+ int
+-ppc_select(int n, fd_set __user *inp, fd_set __user *outp, fd_set __user *exp, struct timeval __user *tvp);
++ppc_select(int n, fd_set __user *inp, fd_set __user *outp, fd_set __user *exp,
++	   struct __kernel_old_timeval __user *tvp);
+ unsigned long __init early_init(unsigned long dt_ptr);
+ void __init machine_init(u64 dt_ptr);
  #endif
- 	unsigned long	sem_nsems;	/* no. of semaphores in array */
- 	unsigned long	__unused3;
-diff --git a/arch/powerpc/include/uapi/asm/shmbuf.h b/arch/powerpc/include/uapi/asm/shmbuf.h
-index b591c4d7e4c5..00422b2f3c63 100644
---- a/arch/powerpc/include/uapi/asm/shmbuf.h
-+++ b/arch/powerpc/include/uapi/asm/shmbuf.h
-@@ -22,9 +22,9 @@
- struct shmid64_ds {
- 	struct ipc64_perm	shm_perm;	/* operation perms */
- #ifdef __powerpc64__
--	__kernel_time_t		shm_atime;	/* last attach time */
--	__kernel_time_t		shm_dtime;	/* last detach time */
--	__kernel_time_t		shm_ctime;	/* last change time */
-+	long		shm_atime;	/* last attach time */
-+	long		shm_dtime;	/* last detach time */
-+	long		shm_ctime;	/* last change time */
- #else
- 	unsigned long		shm_atime_high;
- 	unsigned long		shm_atime;	/* last attach time */
-diff --git a/arch/sparc/include/uapi/asm/msgbuf.h b/arch/sparc/include/uapi/asm/msgbuf.h
-index ffc46c211d6d..eeeb91933280 100644
---- a/arch/sparc/include/uapi/asm/msgbuf.h
-+++ b/arch/sparc/include/uapi/asm/msgbuf.h
-@@ -13,9 +13,9 @@
- struct msqid64_ds {
- 	struct ipc64_perm msg_perm;
- #if defined(__sparc__) && defined(__arch64__)
--	__kernel_time_t msg_stime;	/* last msgsnd time */
--	__kernel_time_t msg_rtime;	/* last msgrcv time */
--	__kernel_time_t msg_ctime;	/* last change time */
-+	long msg_stime;			/* last msgsnd time */
-+	long msg_rtime;			/* last msgrcv time */
-+	long msg_ctime;			/* last change time */
- #else
- 	unsigned long msg_stime_high;
- 	unsigned long msg_stime;	/* last msgsnd time */
-diff --git a/arch/sparc/include/uapi/asm/sembuf.h b/arch/sparc/include/uapi/asm/sembuf.h
-index f3d309c2e1cd..cbcbaa4e7128 100644
---- a/arch/sparc/include/uapi/asm/sembuf.h
-+++ b/arch/sparc/include/uapi/asm/sembuf.h
-@@ -14,8 +14,8 @@
- struct semid64_ds {
- 	struct ipc64_perm sem_perm;		/* permissions .. see ipc.h */
- #if defined(__sparc__) && defined(__arch64__)
--	__kernel_time_t	sem_otime;		/* last semop time */
--	__kernel_time_t	sem_ctime;		/* last change time */
-+	long		sem_otime;		/* last semop time */
-+	long		sem_ctime;		/* last change time */
- #else
- 	unsigned long	sem_otime_high;
- 	unsigned long	sem_otime;		/* last semop time */
-diff --git a/arch/sparc/include/uapi/asm/shmbuf.h b/arch/sparc/include/uapi/asm/shmbuf.h
-index 06618b84822d..a5d7d8d681c4 100644
---- a/arch/sparc/include/uapi/asm/shmbuf.h
-+++ b/arch/sparc/include/uapi/asm/shmbuf.h
-@@ -14,9 +14,9 @@
- struct shmid64_ds {
- 	struct ipc64_perm	shm_perm;	/* operation perms */
- #if defined(__sparc__) && defined(__arch64__)
--	__kernel_time_t		shm_atime;	/* last attach time */
--	__kernel_time_t		shm_dtime;	/* last detach time */
--	__kernel_time_t		shm_ctime;	/* last change time */
-+	long			shm_atime;	/* last attach time */
-+	long			shm_dtime;	/* last detach time */
-+	long			shm_ctime;	/* last change time */
- #else
- 	unsigned long		shm_atime_high;
- 	unsigned long		shm_atime;	/* last attach time */
-diff --git a/arch/x86/include/uapi/asm/msgbuf.h b/arch/x86/include/uapi/asm/msgbuf.h
-index 90ab9a795b49..7c5bb43ed8af 100644
---- a/arch/x86/include/uapi/asm/msgbuf.h
-+++ b/arch/x86/include/uapi/asm/msgbuf.h
-@@ -15,9 +15,9 @@
+diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
+index 3bfb3888e897..078608ec2e92 100644
+--- a/arch/powerpc/kernel/syscalls.c
++++ b/arch/powerpc/kernel/syscalls.c
+@@ -79,7 +79,7 @@ SYSCALL_DEFINE6(mmap, unsigned long, addr, size_t, len,
+  * sys_select() with the appropriate args. -- Cort
+  */
+ int
+-ppc_select(int n, fd_set __user *inp, fd_set __user *outp, fd_set __user *exp, struct timeval __user *tvp)
++ppc_select(int n, fd_set __user *inp, fd_set __user *outp, fd_set __user *exp, struct __kernel_old_timeval __user *tvp)
+ {
+ 	if ( (unsigned long)n >= 4096 )
+ 	{
+@@ -89,7 +89,7 @@ ppc_select(int n, fd_set __user *inp, fd_set __user *outp, fd_set __user *exp, s
+ 		    || __get_user(inp, ((fd_set __user * __user *)(buffer+1)))
+ 		    || __get_user(outp, ((fd_set  __user * __user *)(buffer+2)))
+ 		    || __get_user(exp, ((fd_set  __user * __user *)(buffer+3)))
+-		    || __get_user(tvp, ((struct timeval  __user * __user *)(buffer+4))))
++		    || __get_user(tvp, ((struct __kernel_old_timeval  __user * __user *)(buffer+4))))
+ 			return -EFAULT;
+ 	}
+ 	return sys_select(n, inp, outp, exp, tvp);
+diff --git a/fs/select.c b/fs/select.c
+index 53a0c149f528..11d0285d46b7 100644
+--- a/fs/select.c
++++ b/fs/select.c
+@@ -321,7 +321,7 @@ static int poll_select_finish(struct timespec64 *end_time,
+ 	switch (pt_type) {
+ 	case PT_TIMEVAL:
+ 		{
+-			struct timeval rtv;
++			struct __kernel_old_timeval rtv;
  
- struct msqid64_ds {
- 	struct ipc64_perm msg_perm;
--	__kernel_time_t msg_stime;	/* last msgsnd time */
--	__kernel_time_t msg_rtime;	/* last msgrcv time */
--	__kernel_time_t msg_ctime;	/* last change time */
-+	__kernel_long_t msg_stime;	/* last msgsnd time */
-+	__kernel_long_t msg_rtime;	/* last msgrcv time */
-+	__kernel_long_t msg_ctime;	/* last change time */
- 	__kernel_ulong_t msg_cbytes;	/* current number of bytes on queue */
- 	__kernel_ulong_t msg_qnum;	/* number of messages in queue */
- 	__kernel_ulong_t msg_qbytes;	/* max number of bytes on queue */
-diff --git a/arch/x86/include/uapi/asm/sembuf.h b/arch/x86/include/uapi/asm/sembuf.h
-index 89de6cd9f0a7..7c1b156695ba 100644
---- a/arch/x86/include/uapi/asm/sembuf.h
-+++ b/arch/x86/include/uapi/asm/sembuf.h
-@@ -21,9 +21,9 @@ struct semid64_ds {
- 	unsigned long	sem_ctime;	/* last change time */
- 	unsigned long	sem_ctime_high;
- #else
--	__kernel_time_t	sem_otime;	/* last semop time */
-+	long		sem_otime;	/* last semop time */
- 	__kernel_ulong_t __unused1;
--	__kernel_time_t	sem_ctime;	/* last change time */
-+	long		sem_ctime;	/* last change time */
- 	__kernel_ulong_t __unused2;
+ 			if (sizeof(rtv) > sizeof(rtv.tv_sec) + sizeof(rtv.tv_usec))
+ 				memset(&rtv, 0, sizeof(rtv));
+@@ -698,10 +698,10 @@ int core_sys_select(int n, fd_set __user *inp, fd_set __user *outp,
+ }
+ 
+ static int kern_select(int n, fd_set __user *inp, fd_set __user *outp,
+-		       fd_set __user *exp, struct timeval __user *tvp)
++		       fd_set __user *exp, struct __kernel_old_timeval __user *tvp)
+ {
+ 	struct timespec64 end_time, *to = NULL;
+-	struct timeval tv;
++	struct __kernel_old_timeval tv;
+ 	int ret;
+ 
+ 	if (tvp) {
+@@ -720,7 +720,7 @@ static int kern_select(int n, fd_set __user *inp, fd_set __user *outp,
+ }
+ 
+ SYSCALL_DEFINE5(select, int, n, fd_set __user *, inp, fd_set __user *, outp,
+-		fd_set __user *, exp, struct timeval __user *, tvp)
++		fd_set __user *, exp, struct __kernel_old_timeval __user *, tvp)
+ {
+ 	return kern_select(n, inp, outp, exp, tvp);
+ }
+@@ -810,7 +810,7 @@ SYSCALL_DEFINE6(pselect6_time32, int, n, fd_set __user *, inp, fd_set __user *,
+ struct sel_arg_struct {
+ 	unsigned long n;
+ 	fd_set __user *inp, *outp, *exp;
+-	struct timeval __user *tvp;
++	struct __kernel_old_timeval __user *tvp;
+ };
+ 
+ SYSCALL_DEFINE1(old_select, struct sel_arg_struct __user *, arg)
+diff --git a/fs/utimes.c b/fs/utimes.c
+index 1ba3f7883870..c952b6b3d8a0 100644
+--- a/fs/utimes.c
++++ b/fs/utimes.c
+@@ -161,9 +161,9 @@ SYSCALL_DEFINE4(utimensat, int, dfd, const char __user *, filename,
+  * utimensat() instead.
+  */
+ static long do_futimesat(int dfd, const char __user *filename,
+-			 struct timeval __user *utimes)
++			 struct __kernel_old_timeval __user *utimes)
+ {
+-	struct timeval times[2];
++	struct __kernel_old_timeval times[2];
+ 	struct timespec64 tstimes[2];
+ 
+ 	if (utimes) {
+@@ -190,13 +190,13 @@ static long do_futimesat(int dfd, const char __user *filename,
+ 
+ 
+ SYSCALL_DEFINE3(futimesat, int, dfd, const char __user *, filename,
+-		struct timeval __user *, utimes)
++		struct __kernel_old_timeval __user *, utimes)
+ {
+ 	return do_futimesat(dfd, filename, utimes);
+ }
+ 
+ SYSCALL_DEFINE2(utimes, char __user *, filename,
+-		struct timeval __user *, utimes)
++		struct __kernel_old_timeval __user *, utimes)
+ {
+ 	return do_futimesat(AT_FDCWD, filename, utimes);
+ }
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index 2f27bc9d5ef0..e665920fa359 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -51,7 +51,7 @@ struct statx;
+ struct __sysctl_args;
+ struct sysinfo;
+ struct timespec;
+-struct timeval;
++struct __kernel_old_timeval;
+ struct __kernel_timex;
+ struct timezone;
+ struct tms;
+@@ -732,7 +732,7 @@ asmlinkage long sys_prctl(int option, unsigned long arg2, unsigned long arg3,
+ asmlinkage long sys_getcpu(unsigned __user *cpu, unsigned __user *node, struct getcpu_cache __user *cache);
+ 
+ /* kernel/time.c */
+-asmlinkage long sys_gettimeofday(struct timeval __user *tv,
++asmlinkage long sys_gettimeofday(struct __kernel_old_timeval __user *tv,
+ 				struct timezone __user *tz);
+ asmlinkage long sys_settimeofday(struct timeval __user *tv,
+ 				struct timezone __user *tz);
+@@ -1082,9 +1082,9 @@ asmlinkage long sys_time32(old_time32_t __user *tloc);
+ asmlinkage long sys_utime(char __user *filename,
+ 				struct utimbuf __user *times);
+ asmlinkage long sys_utimes(char __user *filename,
+-				struct timeval __user *utimes);
++				struct __kernel_old_timeval __user *utimes);
+ asmlinkage long sys_futimesat(int dfd, const char __user *filename,
+-			      struct timeval __user *utimes);
++			      struct __kernel_old_timeval __user *utimes);
  #endif
- 	__kernel_ulong_t sem_nsems;	/* no. of semaphores in array */
-diff --git a/arch/x86/include/uapi/asm/shmbuf.h b/arch/x86/include/uapi/asm/shmbuf.h
-index 644421f3823b..f0305dc660c9 100644
---- a/arch/x86/include/uapi/asm/shmbuf.h
-+++ b/arch/x86/include/uapi/asm/shmbuf.h
-@@ -16,9 +16,9 @@
- struct shmid64_ds {
- 	struct ipc64_perm	shm_perm;	/* operation perms */
- 	size_t			shm_segsz;	/* size of segment (bytes) */
--	__kernel_time_t		shm_atime;	/* last attach time */
--	__kernel_time_t		shm_dtime;	/* last detach time */
--	__kernel_time_t		shm_ctime;	/* last change time */
-+	__kernel_long_t		shm_atime;	/* last attach time */
-+	__kernel_long_t		shm_dtime;	/* last detach time */
-+	__kernel_long_t		shm_ctime;	/* last change time */
- 	__kernel_pid_t		shm_cpid;	/* pid of creator */
- 	__kernel_pid_t		shm_lpid;	/* pid of last operator */
- 	__kernel_ulong_t	shm_nattch;	/* no. of current attaches */
-diff --git a/include/uapi/asm-generic/msgbuf.h b/include/uapi/asm-generic/msgbuf.h
-index 9fe4881557cb..af95aa89012e 100644
---- a/include/uapi/asm-generic/msgbuf.h
-+++ b/include/uapi/asm-generic/msgbuf.h
-@@ -13,9 +13,9 @@
-  * everyone just ended up making identical copies without specific
-  * optimizations, so we may just as well all use the same one.
-  *
-- * 64 bit architectures typically define a 64 bit __kernel_time_t,
-- * so they do not need the first three padding words.
-- * On big-endian systems, the padding is in the wrong place.
-+ * 64 bit architectures use a 64-bit long time field here, while
-+ * 32 bit architectures have a pair of unsigned long values.
-+ * On big-endian systems, the lower half is in the wrong place.
-  *
-  * Pad space is left for:
-  * - 2 miscellaneous 32-bit values
-@@ -24,9 +24,9 @@
- struct msqid64_ds {
- 	struct ipc64_perm msg_perm;
- #if __BITS_PER_LONG == 64
--	__kernel_time_t msg_stime;	/* last msgsnd time */
--	__kernel_time_t msg_rtime;	/* last msgrcv time */
--	__kernel_time_t msg_ctime;	/* last change time */
-+	long		 msg_stime;	/* last msgsnd time */
-+	long		 msg_rtime;	/* last msgrcv time */
-+	long		 msg_ctime;	/* last change time */
- #else
- 	unsigned long	msg_stime;	/* last msgsnd time */
- 	unsigned long	msg_stime_high;
-diff --git a/include/uapi/asm-generic/sembuf.h b/include/uapi/asm-generic/sembuf.h
-index 0bae010f1b64..137606018c6a 100644
---- a/include/uapi/asm-generic/sembuf.h
-+++ b/include/uapi/asm-generic/sembuf.h
-@@ -13,9 +13,8 @@
-  * everyone just ended up making identical copies without specific
-  * optimizations, so we may just as well all use the same one.
-  *
-- * 64 bit architectures use a 64-bit __kernel_time_t here, while
-+ * 64 bit architectures use a 64-bit long time field here, while
-  * 32 bit architectures have a pair of unsigned long values.
-- * so they do not need the first two padding words.
-  *
-  * On big-endian systems, the padding is in the wrong place for
-  * historic reasons, so user space has to reconstruct a time_t
-@@ -29,8 +28,8 @@
- struct semid64_ds {
- 	struct ipc64_perm sem_perm;	/* permissions .. see ipc.h */
- #if __BITS_PER_LONG == 64
--	__kernel_time_t	sem_otime;	/* last semop time */
--	__kernel_time_t	sem_ctime;	/* last change time */
-+	long		sem_otime;	/* last semop time */
-+	long		sem_ctime;	/* last change time */
- #else
- 	unsigned long	sem_otime;	/* last semop time */
- 	unsigned long	sem_otime_high;
-diff --git a/include/uapi/asm-generic/shmbuf.h b/include/uapi/asm-generic/shmbuf.h
-index e504422fc501..2bab955e0fed 100644
---- a/include/uapi/asm-generic/shmbuf.h
-+++ b/include/uapi/asm-generic/shmbuf.h
-@@ -13,9 +13,9 @@
-  * everyone just ended up making identical copies without specific
-  * optimizations, so we may just as well all use the same one.
-  *
-- * 64 bit architectures typically define a 64 bit __kernel_time_t,
-- * so they do not need the first two padding words.
-- * On big-endian systems, the padding is in the wrong place.
-+ * 64 bit architectures use a 64-bit long time field here, while
-+ * 32 bit architectures have a pair of unsigned long values.
-+ * On big-endian systems, the lower half is in the wrong place.
-  *
-  *
-  * Pad space is left for:
-@@ -26,9 +26,9 @@ struct shmid64_ds {
- 	struct ipc64_perm	shm_perm;	/* operation perms */
- 	size_t			shm_segsz;	/* size of segment (bytes) */
- #if __BITS_PER_LONG == 64
--	__kernel_time_t		shm_atime;	/* last attach time */
--	__kernel_time_t		shm_dtime;	/* last detach time */
--	__kernel_time_t		shm_ctime;	/* last change time */
-+	long			shm_atime;	/* last attach time */
-+	long			shm_dtime;	/* last detach time */
-+	long			shm_ctime;	/* last change time */
- #else
- 	unsigned long		shm_atime;	/* last attach time */
- 	unsigned long		shm_atime_high;
+ asmlinkage long sys_futimesat_time32(unsigned int dfd,
+ 				     const char __user *filename,
+@@ -1098,7 +1098,7 @@ asmlinkage long sys_getdents(unsigned int fd,
+ 				struct linux_dirent __user *dirent,
+ 				unsigned int count);
+ asmlinkage long sys_select(int n, fd_set __user *inp, fd_set __user *outp,
+-			fd_set __user *exp, struct timeval __user *tvp);
++			fd_set __user *exp, struct __kernel_old_timeval __user *tvp);
+ asmlinkage long sys_poll(struct pollfd __user *ufds, unsigned int nfds,
+ 				int timeout);
+ asmlinkage long sys_epoll_wait(int epfd, struct epoll_event __user *events,
+diff --git a/kernel/power/power.h b/kernel/power/power.h
+index 44bee462ff57..7cdc64dc2373 100644
+--- a/kernel/power/power.h
++++ b/kernel/power/power.h
+@@ -179,7 +179,7 @@ extern void swsusp_close(fmode_t);
+ extern int swsusp_unmark(void);
+ #endif
+ 
+-struct timeval;
++struct __kernel_old_timeval;
+ /* kernel/power/swsusp.c */
+ extern void swsusp_show_speed(ktime_t, ktime_t, unsigned int, char *);
+ 
+diff --git a/kernel/time/time.c b/kernel/time/time.c
+index 7eba7c9a7e3e..bc114f0be8f1 100644
+--- a/kernel/time/time.c
++++ b/kernel/time/time.c
+@@ -137,7 +137,7 @@ SYSCALL_DEFINE1(stime32, old_time32_t __user *, tptr)
+ #endif /* __ARCH_WANT_SYS_TIME32 */
+ #endif
+ 
+-SYSCALL_DEFINE2(gettimeofday, struct timeval __user *, tv,
++SYSCALL_DEFINE2(gettimeofday, struct __kernel_old_timeval __user *, tv,
+ 		struct timezone __user *, tz)
+ {
+ 	if (likely(tv != NULL)) {
 -- 
 2.20.0
 
