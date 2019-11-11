@@ -6,74 +6,74 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DC222C43331
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 05:38:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1849C43331
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 05:40:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 90D4A2084F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 05:38:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 90D4A2084F
+	by mail.kernel.org (Postfix) with ESMTPS id 2AEA02084F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 05:40:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2AEA02084F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47BKRY3B1VzF3Bk
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 16:38:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47BKTj6x7jzF4cX
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 16:40:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47BK4Y56QXzF3T4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2019 16:22:05 +1100 (AEDT)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- xAB5HXlU171141; Mon, 11 Nov 2019 00:21:51 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47BK4Z3689zF38H
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2019 16:22:06 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ xAB5HZFT155708; Mon, 11 Nov 2019 00:21:56 -0500
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2w5s551q76-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2w70vt91va-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 11 Nov 2019 00:21:51 -0500
-Received: from m0127361.ppops.net (m0127361.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id xAB5HZiJ171257;
- Mon, 11 Nov 2019 00:21:50 -0500
-Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.27])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2w5s551q6m-1
+ Mon, 11 Nov 2019 00:21:56 -0500
+Received: from m0098416.ppops.net (m0098416.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id xAB5HaKu155789;
+ Mon, 11 Nov 2019 00:21:55 -0500
+Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
+ [169.63.214.131])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2w70vt91ur-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 11 Nov 2019 00:21:50 -0500
-Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
- by ppma05wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id xAB5K6oM005493;
- Mon, 11 Nov 2019 05:21:48 GMT
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24]) by ppma05wdc.us.ibm.com with ESMTP id 2w5n35t78t-1
+ Mon, 11 Nov 2019 00:21:55 -0500
+Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
+ by ppma01dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id xAB5K6PD020147;
+ Mon, 11 Nov 2019 05:21:54 GMT
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29]) by ppma01dal.us.ibm.com with ESMTP id 2w5n35xs6a-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 11 Nov 2019 05:21:48 +0000
+ Mon, 11 Nov 2019 05:21:54 +0000
 Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
  [9.57.199.106])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xAB5LmS238732234
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xAB5Lss838207838
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 11 Nov 2019 05:21:48 GMT
+ Mon, 11 Nov 2019 05:21:54 GMT
 Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 394702805E;
- Mon, 11 Nov 2019 05:21:48 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id F161828058;
+ Mon, 11 Nov 2019 05:21:53 +0000 (GMT)
 Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 849DE2805C;
- Mon, 11 Nov 2019 05:21:47 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 4933128059;
+ Mon, 11 Nov 2019 05:21:53 +0000 (GMT)
 Received: from ltcalpine2-lp18.aus.stglabs.ibm.com (unknown [9.40.195.201])
  by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
- Mon, 11 Nov 2019 05:21:47 +0000 (GMT)
+ Mon, 11 Nov 2019 05:21:53 +0000 (GMT)
 From: Tyrel Datwyler <tyreld@linux.ibm.com>
 To: mpe@ellerman.id.au
-Subject: [PATCH v2 2/9] powerpc/pseries: Fix drc-info mappings of logical cpus
- to drc-index
-Date: Sun, 10 Nov 2019 23:21:29 -0600
-Message-Id: <1573449697-5448-3-git-send-email-tyreld@linux.ibm.com>
+Subject: [PATCH v2 8/9] PCI: rpaphp: Correctly match ibm,
+ my-drc-index to drc-name when using drc-info
+Date: Sun, 10 Nov 2019 23:21:36 -0600
+Message-Id: <1573449697-5448-10-git-send-email-tyreld@linux.ibm.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1573449697-5448-1-git-send-email-tyreld@linux.ibm.com>
 References: <1573449697-5448-1-git-send-email-tyreld@linux.ibm.com>
@@ -104,107 +104,40 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There are a couple subtle errors in the mapping between cpu-ids and a
-cpus associated drc-index when using the new ibm,drc-info property.
+The newer ibm,drc-info property is a condensed description of the old
+ibm,drc-* properties (ie. names, types, indexes, and power-domains).
+When matching a drc-index to a drc-name we need to verify that the
+index is within the start and last drc-index range and map it to a
+drc-name using the drc-name-prefix and logical index.
 
-The first is that while drc-info may have been a supported firmware
-feature at boot it is possible we have migrated to a CEC with older
-firmware that doesn't support the ibm,drc-info property. In that case
-the device tree would have been updated after migration to remove the
-ibm,drc-info property and replace it with the older style ibm,drc-*
-properties for types, indexes, names, and power-domains. PAPR even
-goes as far as dictating that if we advertise support for drc-info
-that we are capable of supporting either property type at runtime.
-
-The second is that the first value of the ibm,drc-info property is
-the int encoded count of drc-info entries. As such "value" returned
-by of_prop_next_u32() is pointing at that count, and not the first
-element of the first drc-info entry as is expected by the
-of_read_drc_info_cell() helper.
-
-Fix the first by ignoring DRC-INFO firmware feature and instead
-testing directly for ibm,drc-info, and then falling back to the
-old style ibm,drc-indexes in the case it doesn't exit.
-
-Fix the second by incrementing value to the next element prior to
-parsing drc-info entries.
+Fix the mapping by checking that the index is within the range of the
+current drc-info entry, and build the name from the drc-name-prefix
+concatenated with the starting drc-name-suffix value and the sequential
+index obtained by subtracting ibm,my-drc-index from this entries
+drc-start-index.
 
 Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
 ---
- arch/powerpc/platforms/pseries/pseries_energy.c | 23 ++++++++++-------------
- 1 file changed, 10 insertions(+), 13 deletions(-)
+ drivers/pci/hotplug/rpaphp_core.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/pseries_energy.c b/arch/powerpc/platforms/pseries/pseries_energy.c
-index a96874f..09e98d3 100644
---- a/arch/powerpc/platforms/pseries/pseries_energy.c
-+++ b/arch/powerpc/platforms/pseries/pseries_energy.c
-@@ -36,6 +36,7 @@ static int sysfs_entries;
- static u32 cpu_to_drc_index(int cpu)
- {
- 	struct device_node *dn = NULL;
-+	struct property *info;
- 	int thread_index;
- 	int rc = 1;
- 	u32 ret = 0;
-@@ -47,20 +48,18 @@ static u32 cpu_to_drc_index(int cpu)
- 	/* Convert logical cpu number to core number */
- 	thread_index = cpu_core_index_of_thread(cpu);
+diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
+index 129534c..951f7f2 100644
+--- a/drivers/pci/hotplug/rpaphp_core.c
++++ b/drivers/pci/hotplug/rpaphp_core.c
+@@ -248,9 +248,10 @@ static int rpaphp_check_drc_props_v2(struct device_node *dn, char *drc_name,
+ 		/* Should now know end of current entry */
  
--	if (firmware_has_feature(FW_FEATURE_DRC_INFO)) {
--		struct property *info = NULL;
-+	info = of_find_property(dn, "ibm,drc-info", NULL);
-+	if (info) {
- 		struct of_drc_info drc;
- 		int j;
- 		u32 num_set_entries;
- 		const __be32 *value;
- 
--		info = of_find_property(dn, "ibm,drc-info", NULL);
--		if (info == NULL)
--			goto err_of_node_put;
--
- 		value = of_prop_next_u32(info, NULL, &num_set_entries);
- 		if (!value)
- 			goto err_of_node_put;
-+		else
-+			value++;
- 
- 		for (j = 0; j < num_set_entries; j++) {
- 
-@@ -110,6 +109,7 @@ static u32 cpu_to_drc_index(int cpu)
- static int drc_index_to_cpu(u32 drc_index)
- {
- 	struct device_node *dn = NULL;
-+	struct property *info;
- 	const int *indexes;
- 	int thread_index = 0, cpu = 0;
- 	int rc = 1;
-@@ -117,21 +117,18 @@ static int drc_index_to_cpu(u32 drc_index)
- 	dn = of_find_node_by_path("/cpus");
- 	if (dn == NULL)
- 		goto err;
--
--	if (firmware_has_feature(FW_FEATURE_DRC_INFO)) {
--		struct property *info = NULL;
-+	info = of_find_property(dn, "ibm,drc-info", NULL);
-+	if (info) {
- 		struct of_drc_info drc;
- 		int j;
- 		u32 num_set_entries;
- 		const __be32 *value;
- 
--		info = of_find_property(dn, "ibm,drc-info", NULL);
--		if (info == NULL)
--			goto err_of_node_put;
--
- 		value = of_prop_next_u32(info, NULL, &num_set_entries);
- 		if (!value)
- 			goto err_of_node_put;
-+		else
-+			value++;
- 
- 		for (j = 0; j < num_set_entries; j++) {
- 
+ 		/* Found it */
+-		if (my_index <= drc.last_drc_index) {
++		if (my_index >= drc.drc_index_start && my_index <= drc.last_drc_index) {
++			int index = my_index - drc.drc_index_start;
+ 			sprintf(cell_drc_name, "%s%d", drc.drc_name_prefix,
+-				my_index);
++				drc.drc_name_suffix_start + index);
+ 			break;
+ 		}
+ 	}
 -- 
 2.7.4
 
