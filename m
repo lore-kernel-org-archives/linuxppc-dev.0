@@ -2,59 +2,103 @@ Return-Path: <SRS0=mxpJ=ZD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 461E0C43331
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 04:26:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A4715C43331
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 04:31:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E472420818
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 04:26:47 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="n2sIvMiP"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E472420818
-Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
+	by mail.kernel.org (Postfix) with ESMTPS id CB41720856
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 04:31:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CB41720856
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47BHrj658pzF3fL
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 15:26:45 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47BHpS4m7PzF363
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2019 15:24:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47BHxY54YJzF4Cm
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 15:30:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=ozlabs.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="n2sIvMiP"; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1003)
- id 47BHpS2k5Nz9sQw; Mon, 11 Nov 2019 15:24:48 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1573446288; bh=nOjRCApbbLW3ygZm3Duw/OcFxSDsQlgMg9b2UyyPd2M=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=n2sIvMiPlwtkspPnzggF2f2pHlkVxKzwWV5++ePfcohaqzAz4TdGnSlvy/kpwkgle
- e+GuFJEZTb8n2GC40b6OODmqjS0VA5HBBc/bkfw1mdeoI+tbG78HApErLIH/z/fmzW
- W4AyBHx7crQsGTADwlAfs7Ig3d42vavbAyky11PfXEZXXuWPRl4Yx6ipOnHKyGzL/b
- mYSxxU0P0K8x/FJ7/PFpPh3iHPGkPlhQGpxWrjZ5d70HSO4ob6i5KvQknpBHNftUyN
- 5VLnxWU1YOcTiaZYcdADpGOSz2GSkj1kO3AGt1xIOeD2xoZoOLybf/bvQPzfIEvUSz
- 5IoXEwLtzDzXQ==
-Date: Mon, 11 Nov 2019 15:19:24 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Bharata B Rao <bharata@linux.ibm.com>
-Subject: Re: [PATCH v10 7/8] KVM: PPC: Implement H_SVM_INIT_ABORT hcall
-Message-ID: <20191111041924.GA4017@oak.ozlabs.ibm.com>
-References: <20191104041800.24527-1-bharata@linux.ibm.com>
- <20191104041800.24527-8-bharata@linux.ibm.com>
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47BHvL3pKBzF3DV
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2019 15:29:01 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ xAB4M4lC031871
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Nov 2019 23:28:58 -0500
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2w6ua20jh0-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Nov 2019 23:28:58 -0500
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ajd@linux.ibm.com>;
+ Mon, 11 Nov 2019 04:28:56 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 11 Nov 2019 04:28:53 -0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xAB4Sq5M46399722
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 11 Nov 2019 04:28:52 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6506CAE053;
+ Mon, 11 Nov 2019 04:28:52 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 1530CAE04D;
+ Mon, 11 Nov 2019 04:28:52 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon, 11 Nov 2019 04:28:52 +0000 (GMT)
+Received: from [10.61.2.125] (haven.au.ibm.com [9.192.254.114])
+ (using TLSv1.2 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id D4CC2A0194;
+ Mon, 11 Nov 2019 15:28:49 +1100 (AEDT)
+Subject: Re: [PATCH 2/2] vfio/pci: Introduce OpenCAPI devices support.
+To: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ christophe lombard <clombard@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
+ groug@kaod.org, clg@kaod.org
+References: <20191024132805.30701-1-clombard@linux.vnet.ibm.com>
+ <20191024132805.30701-3-clombard@linux.vnet.ibm.com>
+ <10424e1f-1b65-9ce7-a690-efaa3ccc5b37@ozlabs.ru>
+From: Andrew Donnellan <ajd@linux.ibm.com>
+Date: Mon, 11 Nov 2019 15:28:50 +1100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20191104041800.24527-8-bharata@linux.ibm.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <10424e1f-1b65-9ce7-a690-efaa3ccc5b37@ozlabs.ru>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-AU
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19111104-0008-0000-0000-0000032D5B2F
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19111104-0009-0000-0000-00004A4C6887
+Message-Id: <7376a8e2-262f-49a8-ba5a-8c9d1f2d09a1@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-11-10_08:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=847 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1910280000 definitions=main-1911110041
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,37 +110,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sukadev Bhattiprolu <sukadev@linux.ibm.com>, linuxram@us.ibm.com,
- cclaudio@linux.ibm.com, kvm-ppc@vger.kernel.org, linux-mm@kvack.org,
- jglisse@redhat.com, Ram Pai <linuxram@linux.ibm.com>,
- aneesh.kumar@linux.vnet.ibm.com, paulus@au1.ibm.com,
- sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, hch@lst.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Nov 04, 2019 at 09:47:59AM +0530, Bharata B Rao wrote:
-> From: Sukadev Bhattiprolu <sukadev@linux.ibm.com>
-> 
-> Implement the H_SVM_INIT_ABORT hcall which the Ultravisor can use to
-> abort an SVM after it has issued the H_SVM_INIT_START and before the
-> H_SVM_INIT_DONE hcalls. This hcall could be used when Ultravisor
-> encounters security violations or other errors when starting an SVM.
-> 
-> Note that this hcall is different from UV_SVM_TERMINATE ucall which
-> is used by HV to terminate/cleanup an SVM.
-> 
-> In case of H_SVM_INIT_ABORT, we should page-out all the pages back to
-> HV (i.e., we should not skip the page-out). Otherwise the VM's pages,
-> possibly including its text/data would be stuck in secure memory.
-> Since the SVM did not go secure, its MSR_S bit will be clear and the
-> VM wont be able to access its pages even to do a clean exit.
+On 11/11/19 3:17 pm, Alexey Kardashevskiy wrote:
+> What driver do you expect to work with this in the guest?
+> arch/powerpc/platforms/powernv/ocxl.c is a powernv-tied driver which
+> calls into OPAL so it won't work on pseries.
 
-It seems fragile to me to have one more transfer back into the
-ultravisor after this call.  Why does the UV need to do this call and
-then get control back again one more time?  Why can't the UV defer
-doing this call until it can do it without expecting to see a return
-from the hcall?  And if it does need to see a return from the hcall,
-what would happen if a malicious hypervisor doesn't do the return?
+https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=135087&state=*
 
-Paul.
+https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=137704&state=*
+
+for context
+
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+ajd@linux.ibm.com             IBM Australia Limited
+
