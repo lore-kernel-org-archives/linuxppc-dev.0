@@ -2,90 +2,59 @@ Return-Path: <SRS0=mxpJ=ZD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C8B00C43331
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 05:44:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BC13C43331
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 05:47:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7BD30206A3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 05:44:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7BD30206A3
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 42DFD206C3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 05:47:38 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="tzO9kkm+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 42DFD206C3
+Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47BKZD4JChzF3RQ
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 16:44:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 47BKf00rdRzF4gq
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 16:47:36 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47BK4Z3H07zF3c1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2019 16:22:06 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- xAB5HYik155517; Mon, 11 Nov 2019 00:21:54 -0500
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2w70vt91ua-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 11 Nov 2019 00:21:54 -0500
-Received: from m0098416.ppops.net (m0098416.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id xAB5HaEm155785;
- Mon, 11 Nov 2019 00:21:54 -0500
-Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
- [169.53.41.122])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2w70vt91tv-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 11 Nov 2019 00:21:54 -0500
-Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
- by ppma04dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id xAB5K7kd015867;
- Mon, 11 Nov 2019 05:21:53 GMT
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27]) by ppma04dal.us.ibm.com with ESMTP id 2w5n35xqcf-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 11 Nov 2019 05:21:53 +0000
-Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
- [9.57.199.106])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xAB5LqLS26804484
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 11 Nov 2019 05:21:52 GMT
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5F3CC2805A;
- Mon, 11 Nov 2019 05:21:52 +0000 (GMT)
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id AAD2628058;
- Mon, 11 Nov 2019 05:21:51 +0000 (GMT)
-Received: from ltcalpine2-lp18.aus.stglabs.ibm.com (unknown [9.40.195.201])
- by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
- Mon, 11 Nov 2019 05:21:51 +0000 (GMT)
-From: Tyrel Datwyler <tyreld@linux.ibm.com>
-To: mpe@ellerman.id.au
-Subject: [PATCH v2 7/9] PCI: rpaphp: annotate and correctly byte swap DRC
- properties
-Date: Sun, 10 Nov 2019 23:21:34 -0600
-Message-Id: <1573449697-5448-8-git-send-email-tyreld@linux.ibm.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1573449697-5448-1-git-send-email-tyreld@linux.ibm.com>
-References: <1573449697-5448-1-git-send-email-tyreld@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-11-10_08:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1910280000 definitions=main-1911110051
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47BKCb6NwMzF1bv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2019 16:28:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=ozlabs.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="tzO9kkm+"; 
+ dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1003)
+ id 47BKCY6XtWz9sPn; Mon, 11 Nov 2019 16:28:09 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
+ t=1573450089; bh=Gk49bVSafO6qIOkqpX6nJCaX1ioKZx1OXiY1Eid0yQc=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=tzO9kkm++WvSl259JyipYeMhoPff9fwIU5yZswgTFotSFTW8+QyqmIoXIsPh8/GWx
+ C1d7HZsIxm7gjhzHagA36jMYph6dSnsKJu4vtzSQpp/NvijxvGXUd14h13HucKCJnV
+ P/Y+PyMcPtwNQr2pqrJgmCD9OmL7bQaTwBiW+p3Lne0GkchrCKb6S2sP+Je+g3YgQp
+ 1zMuYge180wtE6ElW8JGmUgzb6CjWrpCCFL4TD1w6KshiemCO4opWIUzd6F+TVNquI
+ qvtQ5FLv7KjaWBTKtAVWDy9a5bbcZCaJp1jxbphDRimvSNLEWgwj8xGkbf7PM+HiaL
+ aS+a880rDPU/Q==
+Date: Mon, 11 Nov 2019 16:28:06 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Bharata B Rao <bharata@linux.ibm.com>
+Subject: Re: [PATCH v10 6/8] KVM: PPC: Support reset of secure guest
+Message-ID: <20191111052806.GC4017@oak.ozlabs.ibm.com>
+References: <20191104041800.24527-1-bharata@linux.ibm.com>
+ <20191104041800.24527-7-bharata@linux.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20191104041800.24527-7-bharata@linux.ibm.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,113 +66,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nathanl@linux.ibm.com, Tyrel Datwyler <tyreld@linux.ibm.com>,
- tlfalcon@linux.ibm.com, linux-pci@vger.kernel.org, bhelgaas@google.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxram@us.ibm.com, cclaudio@linux.ibm.com, kvm-ppc@vger.kernel.org,
+ linux-mm@kvack.org, jglisse@redhat.com, aneesh.kumar@linux.vnet.ibm.com,
+ paulus@au1.ibm.com, sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ hch@lst.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The device tree is in big endian format and any properties directly
-retrieved using OF helpers that don't explicitly byte swap should
-be annotated. In particular there are several places where we grab
-the opaque property value for the old ibm,drc-* properties and the
-ibm,my-drc-index property.
+On Mon, Nov 04, 2019 at 09:47:58AM +0530, Bharata B Rao wrote:
+> Add support for reset of secure guest via a new ioctl KVM_PPC_SVM_OFF.
+> This ioctl will be issued by QEMU during reset and includes the
+> the following steps:
+> 
+> - Ask UV to terminate the guest via UV_SVM_TERMINATE ucall
+> - Unpin the VPA pages so that they can be migrated back to secure
+>   side when guest becomes secure again. This is required because
+>   pinned pages can't be migrated.
 
-Fix this for better static checking by annotating values we know to
-explicitly big endian, and byte swap where appropriate.
+Unpinning the VPA pages is normally handled during VM reset by QEMU
+doing set_one_reg operations to set the values for the
+KVM_REG_PPC_VPA_ADDR, KVM_REG_PPC_VPA_SLB and KVM_REG_PPC_VPA_DTL
+pseudo-registers to zero.  Is there some reason why this isn't
+happening for a secure VM, and if so, what is that reason?
+If it is happening, then why do we need to unpin the pages explicitly
+here?
 
-Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
----
- drivers/pci/hotplug/rpaphp_core.c | 29 +++++++++++++++--------------
- 1 file changed, 15 insertions(+), 14 deletions(-)
+> - Reinitialize guest's partitioned scoped page tables. These are
+>   freed when guest becomes secure (H_SVM_INIT_DONE)
 
-diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
-index 75d5771..129534c 100644
---- a/drivers/pci/hotplug/rpaphp_core.c
-+++ b/drivers/pci/hotplug/rpaphp_core.c
-@@ -154,11 +154,11 @@ static enum pci_bus_speed get_max_bus_speed(struct slot *slot)
- 	return speed;
- }
- 
--static int get_children_props(struct device_node *dn, const int **drc_indexes,
--		const int **drc_names, const int **drc_types,
--		const int **drc_power_domains)
-+static int get_children_props(struct device_node *dn, const __be32 **drc_indexes,
-+			      const __be32 **drc_names, const __be32 **drc_types,
-+			      const __be32 **drc_power_domains)
- {
--	const int *indexes, *names, *types, *domains;
-+	const __be32 *indexes, *names, *types, *domains;
- 
- 	indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
- 	names = of_get_property(dn, "ibm,drc-names", NULL);
-@@ -194,8 +194,8 @@ static int rpaphp_check_drc_props_v1(struct device_node *dn, char *drc_name,
- 				char *drc_type, unsigned int my_index)
- {
- 	char *name_tmp, *type_tmp;
--	const int *indexes, *names;
--	const int *types, *domains;
-+	const __be32 *indexes, *names;
-+	const __be32 *types, *domains;
- 	int i, rc;
- 
- 	rc = get_children_props(dn->parent, &indexes, &names, &types, &domains);
-@@ -208,7 +208,7 @@ static int rpaphp_check_drc_props_v1(struct device_node *dn, char *drc_name,
- 
- 	/* Iterate through parent properties, looking for my-drc-index */
- 	for (i = 0; i < be32_to_cpu(indexes[0]); i++) {
--		if ((unsigned int) indexes[i + 1] == my_index)
-+		if (be32_to_cpu(indexes[i + 1]) == my_index)
- 			break;
- 
- 		name_tmp += (strlen(name_tmp) + 1);
-@@ -267,7 +267,7 @@ static int rpaphp_check_drc_props_v2(struct device_node *dn, char *drc_name,
- int rpaphp_check_drc_props(struct device_node *dn, char *drc_name,
- 			char *drc_type)
- {
--	const unsigned int *my_index;
-+	const __be32 *my_index;
- 
- 	my_index = of_get_property(dn, "ibm,my-drc-index", NULL);
- 	if (!my_index) {
-@@ -277,10 +277,10 @@ int rpaphp_check_drc_props(struct device_node *dn, char *drc_name,
- 
- 	if (of_find_property(dn->parent, "ibm,drc-info", NULL))
- 		return rpaphp_check_drc_props_v2(dn, drc_name, drc_type,
--						*my_index);
-+						be32_to_cpu(*my_index));
- 	else
- 		return rpaphp_check_drc_props_v1(dn, drc_name, drc_type,
--						*my_index);
-+						be32_to_cpu(*my_index));
- }
- EXPORT_SYMBOL_GPL(rpaphp_check_drc_props);
- 
-@@ -311,10 +311,11 @@ static int is_php_type(char *drc_type)
-  * for built-in pci slots (even when the built-in slots are
-  * dlparable.)
-  */
--static int is_php_dn(struct device_node *dn, const int **indexes,
--		const int **names, const int **types, const int **power_domains)
-+static int is_php_dn(struct device_node *dn, const __be32 **indexes,
-+		     const __be32 **names, const __be32 **types,
-+		     const __be32 **power_domains)
- {
--	const int *drc_types;
-+	const __be32 *drc_types;
- 	int rc;
- 
- 	rc = get_children_props(dn, indexes, names, &drc_types, power_domains);
-@@ -374,7 +375,7 @@ static int rpaphp_drc_add_slot(struct device_node *dn)
- 	struct slot *slot;
- 	int retval = 0;
- 	int i;
--	const int *indexes, *names, *types, *power_domains;
-+	const __be32 *indexes, *names, *types, *power_domains;
- 	char *name, *type;
- 
- 	/* If this is not a hotplug slot, return without doing anything. */
--- 
-2.7.4
+It doesn't seem particularly useful to me to free the partition-scoped
+page tables when the guest becomes secure, and it feels like it makes
+things more fragile.  If you don't free them then, then you don't need
+to reallocate them now.
 
+> - Release all device pages of the secure guest.
+> 
+> After these steps, guest is ready to issue UV_ESM call once again
+> to switch to secure mode.
+
+Paul.
