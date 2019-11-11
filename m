@@ -2,92 +2,85 @@ Return-Path: <SRS0=mxpJ=ZD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C7D9AC43331
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 11:05:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EF5D9C43331
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 11:36:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 35942214DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 11:05:37 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="CxpkZizN"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 35942214DB
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 388DF21655
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 11:36:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 388DF21655
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47BShs6qXrzF3wQ
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 22:05:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47BTN574mYzF43L
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 22:36:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=205.139.110.61;
- helo=us-smtp-delivery-1.mimecast.com; envelope-from=bhsharma@redhat.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.b="CxpkZizN"; 
- dkim-atps=neutral
-Received: from us-smtp-delivery-1.mimecast.com (us-smtp-2.mimecast.com
- [205.139.110.61])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47BSfZ72GCzDqvl
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2019 22:03:34 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1573470211;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=/y8p7TWJ4+9dx0qZYntYI0vqqca78jHSFlqFEn+6Y9I=;
- b=CxpkZizNkV3iIjlPIF8m0iAl/PSBwLDfvdzWdroSQf3UYptIETu512VHVoHQocvY+8PUe2
- 60vwVpyi0hexNGYLdX83w6UyIACyMBm97ZC2Sa2XjyPXrQ2CsAyjQxV2rWmP9GWEGlwylg
- yXJ5guAC1Rv6hTZz/Cmqx/b9/9fc20A=
-Received: from mail-pf1-f198.google.com (mail-pf1-f198.google.com
- [209.85.210.198]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-397-6HpxqJn3Mo-4zxwZqIjciA-1; Mon, 11 Nov 2019 03:01:43 -0500
-Received: by mail-pf1-f198.google.com with SMTP id a1so12068281pfn.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2019 00:01:43 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references;
- bh=D7Q1sNAJK7KGCeC1/osi4u/yd8LMbojW2DcAg7eyhwk=;
- b=iMXmAZBZMh+h+o5XWHZU20JYScX++SGNuus5fMgmPSHXWtVdFeAemjfyxWtQuA/0p0
- PXFZEABzhpbpo0GWSFXB3WBtpZLlDJyjlDTSQuYF2HnBmIgGvrLxbIElO0r2ao6cEW9f
- WwD8mr5VjzVCsoxK0Ln7Bhlq72OC79fGT+Px6JT6SRiAAz9KCC6L+/oH+klbruvSyZkc
- 1xCJR0Bb3vzfHBucEypdo7RvTVJyXiZmFPYCdsCdPiI9ZrMUdAakK0w3absbLtHVdL0t
- fAmlJaNszLDVHN6svp2YV3yLCY0Y+3CyTs6bWIeOqQht8lr/eEcOUz9P/Z2DcKJu9BWI
- dYow==
-X-Gm-Message-State: APjAAAVlzQL1J+6XVkLlf5Jf4ZMDWCcGgkd0AlaVG4OoFRwSBdC8mhM9
- fnnR3cnwaBMPh290HB5yV2P5W0CorRYwaBw5HgOGa57SUxL5jjH9cTNSKG0ACH1Z/Omug/J8wW6
- i8a6oWtUhl2QDP4Cqik49RivYoQ==
-X-Received: by 2002:a62:fcd2:: with SMTP id e201mr404504pfh.52.1573459301444; 
- Mon, 11 Nov 2019 00:01:41 -0800 (PST)
-X-Google-Smtp-Source: APXvYqw/PM/uE1YEEDp1OQcYhDW64ur/c96jF9ficCBtta087Mx43bjXxmhjovhzV8sTDdZdS3kXpw==
-X-Received: by 2002:a62:fcd2:: with SMTP id e201mr404459pfh.52.1573459301055; 
- Mon, 11 Nov 2019 00:01:41 -0800 (PST)
-Received: from localhost ([122.177.0.15])
- by smtp.gmail.com with ESMTPSA id r33sm12736180pjb.5.2019.11.11.00.01.38
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 11 Nov 2019 00:01:39 -0800 (PST)
-From: Bhupesh Sharma <bhsharma@redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v4 1/3] crash_core,
- vmcoreinfo: Append 'MAX_PHYSMEM_BITS' to vmcoreinfo
-Date: Mon, 11 Nov 2019 13:31:20 +0530
-Message-Id: <1573459282-26989-2-git-send-email-bhsharma@redhat.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1573459282-26989-1-git-send-email-bhsharma@redhat.com>
-References: <1573459282-26989-1-git-send-email-bhsharma@redhat.com>
-X-MC-Unique: 6HpxqJn3Mo-4zxwZqIjciA-1
-X-Mimecast-Spam-Score: 0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47BTJk6JCFzF1QM
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2019 22:33:10 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ xABBX4mA106683; Mon, 11 Nov 2019 06:33:05 -0500
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
+ [169.53.41.122])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2w75csknve-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 11 Nov 2019 06:33:05 -0500
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+ by ppma04dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id xABBUr2u002969;
+ Mon, 11 Nov 2019 11:33:03 GMT
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24]) by ppma04dal.us.ibm.com with ESMTP id 2w5n361ptc-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 11 Nov 2019 11:33:03 +0000
+Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
+ [9.57.199.111])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xABBX1Xl53674440
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 11 Nov 2019 11:33:01 GMT
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 91314AC060;
+ Mon, 11 Nov 2019 11:33:01 +0000 (GMT)
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0B391AC059;
+ Mon, 11 Nov 2019 11:32:59 +0000 (GMT)
+Received: from skywalker.linux.ibm.com (unknown [9.199.36.163])
+ by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
+ Mon, 11 Nov 2019 11:32:58 +0000 (GMT)
+X-Mailer: emacs 26.2 (via feedmail 11-beta-1 Q)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: "Alastair D'Silva" <alastair@au1.ibm.com>
+Subject: Re: [PATCH 04/10] powerpc: Map & release OpenCAPI LPC memory
+In-Reply-To: <20191025044721.16617-5-alastair@au1.ibm.com>
+References: <20191025044721.16617-1-alastair@au1.ibm.com>
+ <20191025044721.16617-5-alastair@au1.ibm.com>
+Date: Mon, 11 Nov 2019 15:04:26 +0530
+Message-ID: <8736euycwt.fsf@linux.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-11-11_03:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=980 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1910280000 definitions=main-1911110109
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,84 +92,130 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Kazuhito Hagio <k-hagio@ab.jp.nec.com>,
- Steve Capper <steve.capper@arm.com>, Catalin Marinas <catalin.marinas@arm.com>,
- bhsharma@redhat.com, Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- kexec@lists.infradead.org, x86@kernel.org, linuxppc-dev@lists.ozlabs.org,
- James Morse <james.morse@arm.com>, linux-arm-kernel@lists.infradead.org,
- Boris Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
- bhupesh.linux@gmail.com, Will Deacon <will@kernel.org>,
- Ingo Molnar <mingo@kernel.org>, Paul Mackerras <paulus@samba.org>,
- Dave Anderson <anderson@redhat.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-nvdimm@lists.01.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Right now user-space tools like 'makedumpfile' and 'crash' need to rely
-on a best-guess method of determining value of 'MAX_PHYSMEM_BITS'
-supported by underlying kernel.
+"Alastair D'Silva" <alastair@au1.ibm.com> writes:
 
-This value is used in user-space code to calculate the bit-space
-required to store a section for SPARESMEM (similar to the existing
-calculation method used in the kernel implementation):
+> From: Alastair D'Silva <alastair@d-silva.org>
+>
+> This patch adds platform support to map & release LPC memory.
+>
+> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+> ---
+>  arch/powerpc/include/asm/pnv-ocxl.h   |  2 ++
+>  arch/powerpc/platforms/powernv/ocxl.c | 41 +++++++++++++++++++++++++++
+>  include/linux/memory_hotplug.h        |  5 ++++
+>  mm/memory_hotplug.c                   |  3 +-
+>  4 files changed, 50 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/include/asm/pnv-ocxl.h b/arch/powerpc/include/asm/pnv-ocxl.h
+> index 7de82647e761..f8f8ffb48aa8 100644
+> --- a/arch/powerpc/include/asm/pnv-ocxl.h
+> +++ b/arch/powerpc/include/asm/pnv-ocxl.h
+> @@ -32,5 +32,7 @@ extern int pnv_ocxl_spa_remove_pe_from_cache(void *platform_data, int pe_handle)
+>  
+>  extern int pnv_ocxl_alloc_xive_irq(u32 *irq, u64 *trigger_addr);
+>  extern void pnv_ocxl_free_xive_irq(u32 irq);
+> +extern u64 pnv_ocxl_platform_lpc_setup(struct pci_dev *pdev, u64 size);
+> +extern void pnv_ocxl_platform_lpc_release(struct pci_dev *pdev);
+>  
+>  #endif /* _ASM_PNV_OCXL_H */
+> diff --git a/arch/powerpc/platforms/powernv/ocxl.c b/arch/powerpc/platforms/powernv/ocxl.c
+> index 8c65aacda9c8..c6d4234e0aba 100644
+> --- a/arch/powerpc/platforms/powernv/ocxl.c
+> +++ b/arch/powerpc/platforms/powernv/ocxl.c
+> @@ -475,6 +475,47 @@ void pnv_ocxl_spa_release(void *platform_data)
+>  }
+>  EXPORT_SYMBOL_GPL(pnv_ocxl_spa_release);
+>  
+> +u64 pnv_ocxl_platform_lpc_setup(struct pci_dev *pdev, u64 size)
+> +{
+> +	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
+> +	struct pnv_phb *phb = hose->private_data;
+> +	u32 bdfn = (pdev->bus->number << 8) | pdev->devfn;
+> +	u64 base_addr = 0;
+> +	int rc;
+> +
+> +	rc = opal_npu_mem_alloc(phb->opal_id, bdfn, size, &base_addr);
+> +	if (rc) {
+> +		dev_warn(&pdev->dev,
+> +			 "OPAL could not allocate LPC memory, rc=%d\n", rc);
+> +		return 0;
+> +	}
+> +
+> +	base_addr = be64_to_cpu(base_addr);
+> +
+> +	rc = check_hotplug_memory_addressable(base_addr >> PAGE_SHIFT,
+> +					      size >> PAGE_SHIFT);
+> +	if (rc)
+> +		return 0;
+> +
+> +	return base_addr;
+> +}
+> +EXPORT_SYMBOL_GPL(pnv_ocxl_platform_lpc_setup);
+> +
+> +void pnv_ocxl_platform_lpc_release(struct pci_dev *pdev)
+> +{
+> +	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
+> +	struct pnv_phb *phb = hose->private_data;
+> +	u32 bdfn = (pdev->bus->number << 8) | pdev->devfn;
+> +	int rc;
+> +
+> +	rc = opal_npu_mem_release(phb->opal_id, bdfn);
+> +	if (rc)
+> +		dev_warn(&pdev->dev,
+> +			 "OPAL reported rc=%d when releasing LPC memory\n", rc);
+> +}
+> +EXPORT_SYMBOL_GPL(pnv_ocxl_platform_lpc_release);
+> +
+> +
+>  int pnv_ocxl_spa_remove_pe_from_cache(void *platform_data, int pe_handle)
+>  {
+>  	struct spa_data *data = (struct spa_data *) platform_data;
+> diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
+> index f46ea71b4ffd..3f5f1a642abe 100644
+> --- a/include/linux/memory_hotplug.h
+> +++ b/include/linux/memory_hotplug.h
+> @@ -339,6 +339,11 @@ static inline int remove_memory(int nid, u64 start, u64 size)
+>  static inline void __remove_memory(int nid, u64 start, u64 size) {}
+>  #endif /* CONFIG_MEMORY_HOTREMOVE */
+>  
+> +#if CONFIG_MEMORY_HOTPLUG_SPARSE
+> +int check_hotplug_memory_addressable(unsigned long pfn,
+> +		unsigned long nr_pages);
+> +#endif /* CONFIG_MEMORY_HOTPLUG_SPARSE */
+> +
+>  extern void __ref free_area_init_core_hotplug(int nid);
+>  extern int __add_memory(int nid, u64 start, u64 size);
+>  extern int add_memory(int nid, u64 start, u64 size);
+> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+> index 2cecf07b396f..b39827dbd071 100644
+> --- a/mm/memory_hotplug.c
+> +++ b/mm/memory_hotplug.c
+> @@ -278,7 +278,7 @@ static int check_pfn_span(unsigned long pfn, unsigned long nr_pages,
+>  	return 0;
+>  }
+>  
+> -static int check_hotplug_memory_addressable(unsigned long pfn,
+> +int check_hotplug_memory_addressable(unsigned long pfn,
+>  					    unsigned long nr_pages)
+>  {
+>  	const u64 max_addr = PFN_PHYS(pfn + nr_pages) - 1;
+> @@ -294,6 +294,7 @@ static int check_hotplug_memory_addressable(unsigned long pfn,
+>  
+>  	return 0;
+>  }
+> +EXPORT_SYMBOL_GPL(check_hotplug_memory_addressable);
+>  
+>  /*
+>   * Reasonably generic function for adding memory.  It is
+> -- 
+> 2.21.0
 
-  #define SECTIONS_SHIFT    (MAX_PHYSMEM_BITS - SECTION_SIZE_BITS)
+If you can rearrange the patch to show the callers in this same patch
+that would make it easy to follow.
 
-Now, regressions have been reported in user-space utilities
-like 'makedumpfile' and 'crash' on arm64, with the recently added
-kernel support for 52-bit physical address space, as there is
-no clear method of determining this value in user-space
-(other than reading kernel CONFIG flags).
-
-As per suggestion from makedumpfile maintainer (Kazu), it makes more
-sense to append 'MAX_PHYSMEM_BITS' to vmcoreinfo in the core code itself
-rather than in arch-specific code, so that the user-space code for other
-archs can also benefit from this addition to the vmcoreinfo and use it
-as a standard way of determining 'SECTIONS_SHIFT' value in user-land.
-
-A reference 'makedumpfile' implementation which reads the
-'MAX_PHYSMEM_BITS' value from vmcoreinfo in a arch-independent fashion
-is available here:
-
-[0]. https://github.com/bhupesh-sharma/makedumpfile/blob/remove-max-phys-me=
-m-bit-v1/arch/ppc64.c#L471
-
-Cc: Boris Petkov <bp@alien8.de>
-Cc: Ingo Molnar <mingo@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: James Morse <james.morse@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Will Deacon <will@kernel.org>
-Cc: Steve Capper <steve.capper@arm.com>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Dave Anderson <anderson@redhat.com>
-Cc: Kazuhito Hagio <k-hagio@ab.jp.nec.com>
-Cc: x86@kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org
-Cc: kexec@lists.infradead.org
-Signed-off-by: Bhupesh Sharma <bhsharma@redhat.com>
----
- kernel/crash_core.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/kernel/crash_core.c b/kernel/crash_core.c
-index 9f1557b98468..18175687133a 100644
---- a/kernel/crash_core.c
-+++ b/kernel/crash_core.c
-@@ -413,6 +413,7 @@ static int __init crash_save_vmcoreinfo_init(void)
- =09VMCOREINFO_LENGTH(mem_section, NR_SECTION_ROOTS);
- =09VMCOREINFO_STRUCT_SIZE(mem_section);
- =09VMCOREINFO_OFFSET(mem_section, section_mem_map);
-+=09VMCOREINFO_NUMBER(MAX_PHYSMEM_BITS);
- #endif
- =09VMCOREINFO_STRUCT_SIZE(page);
- =09VMCOREINFO_STRUCT_SIZE(pglist_data);
---=20
-2.7.4
-
+-aneesh
