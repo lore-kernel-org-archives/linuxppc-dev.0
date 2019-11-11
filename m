@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8386AC43331
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 05:42:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C8B00C43331
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 05:44:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3AAB9206A3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 05:42:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3AAB9206A3
+	by mail.kernel.org (Postfix) with ESMTPS id 7BD30206A3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 05:44:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7BD30206A3
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47BKX13z52zF4cG
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 16:42:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47BKZD4JChzF3RQ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 16:44:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com;
@@ -29,51 +29,51 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47BK4Z37cxzF3YQ
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47BK4Z3H07zF3c1
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2019 16:22:06 +1100 (AEDT)
 Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- xAB5HZAT155722; Mon, 11 Nov 2019 00:21:51 -0500
+ xAB5HYik155517; Mon, 11 Nov 2019 00:21:54 -0500
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2w70vt91sd-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2w70vt91ua-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 11 Nov 2019 00:21:51 -0500
+ Mon, 11 Nov 2019 00:21:54 -0500
 Received: from m0098416.ppops.net (m0098416.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id xAB5HYar155526;
- Mon, 11 Nov 2019 00:21:50 -0500
-Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.10])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2w70vt91rr-1
+ by pps.reinject (8.16.0.27/8.16.0.27) with SMTP id xAB5HaEm155785;
+ Mon, 11 Nov 2019 00:21:54 -0500
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
+ [169.53.41.122])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2w70vt91tv-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 11 Nov 2019 00:21:50 -0500
-Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
- by ppma02dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id xAB5K7gv012861;
- Mon, 11 Nov 2019 05:21:49 GMT
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25]) by ppma02dal.us.ibm.com with ESMTP id 2w5n35prwp-1
+ Mon, 11 Nov 2019 00:21:54 -0500
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+ by ppma04dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id xAB5K7kd015867;
+ Mon, 11 Nov 2019 05:21:53 GMT
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27]) by ppma04dal.us.ibm.com with ESMTP id 2w5n35xqcf-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 11 Nov 2019 05:21:49 +0000
+ Mon, 11 Nov 2019 05:21:53 +0000
 Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
  [9.57.199.106])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xAB5LntO49021190
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xAB5LqLS26804484
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 11 Nov 2019 05:21:49 GMT
+ Mon, 11 Nov 2019 05:21:52 GMT
 Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 11CAE28059;
- Mon, 11 Nov 2019 05:21:49 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 5F3CC2805A;
+ Mon, 11 Nov 2019 05:21:52 +0000 (GMT)
 Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5CCC828058;
- Mon, 11 Nov 2019 05:21:48 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id AAD2628058;
+ Mon, 11 Nov 2019 05:21:51 +0000 (GMT)
 Received: from ltcalpine2-lp18.aus.stglabs.ibm.com (unknown [9.40.195.201])
  by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
- Mon, 11 Nov 2019 05:21:48 +0000 (GMT)
+ Mon, 11 Nov 2019 05:21:51 +0000 (GMT)
 From: Tyrel Datwyler <tyreld@linux.ibm.com>
 To: mpe@ellerman.id.au
-Subject: [PATCH v2 3/9] powerpc/pseries: Add cpu DLPAR support for drc-info
- property
-Date: Sun, 10 Nov 2019 23:21:30 -0600
-Message-Id: <1573449697-5448-4-git-send-email-tyreld@linux.ibm.com>
+Subject: [PATCH v2 7/9] PCI: rpaphp: annotate and correctly byte swap DRC
+ properties
+Date: Sun, 10 Nov 2019 23:21:34 -0600
+Message-Id: <1573449697-5448-8-git-send-email-tyreld@linux.ibm.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1573449697-5448-1-git-send-email-tyreld@linux.ibm.com>
 References: <1573449697-5448-1-git-send-email-tyreld@linux.ibm.com>
@@ -104,211 +104,106 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Older firmwares provided information about Dynamic Reconfig
-Connectors (DRC) through several device tree properties, namely
-ibm,drc-types, ibm,drc-indexes, ibm,drc-names, and
-ibm,drc-power-domains. New firmwares have the ability to present this
-same information in a much condensed format through a device tree
-property called ibm,drc-info.
+The device tree is in big endian format and any properties directly
+retrieved using OF helpers that don't explicitly byte swap should
+be annotated. In particular there are several places where we grab
+the opaque property value for the old ibm,drc-* properties and the
+ibm,my-drc-index property.
 
-The existing cpu DLPAR hotplug code only understands the older DRC
-property format when validating the drc-index of a cpu during a
-hotplug add. This updates those code paths to use the ibm,drc-info
-property, when present, instead for validation.
+Fix this for better static checking by annotating values we know to
+explicitly big endian, and byte swap where appropriate.
 
 Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
 ---
- arch/powerpc/platforms/pseries/hotplug-cpu.c | 127 +++++++++++++++++++++++----
- 1 file changed, 112 insertions(+), 15 deletions(-)
+ drivers/pci/hotplug/rpaphp_core.c | 29 +++++++++++++++--------------
+ 1 file changed, 15 insertions(+), 14 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index bbda646..967c5e1 100644
---- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -407,17 +407,67 @@ static bool dlpar_cpu_exists(struct device_node *parent, u32 drc_index)
- 	return found;
+diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
+index 75d5771..129534c 100644
+--- a/drivers/pci/hotplug/rpaphp_core.c
++++ b/drivers/pci/hotplug/rpaphp_core.c
+@@ -154,11 +154,11 @@ static enum pci_bus_speed get_max_bus_speed(struct slot *slot)
+ 	return speed;
  }
  
-+static bool drc_info_valid_index(struct device_node *parent, u32 drc_index)
-+{
-+	struct property *info;
-+	struct of_drc_info drc;
-+	const __be32 *value;
-+	u32 index;
-+	int count, i, j;
-+
-+	info = of_find_property(parent, "ibm,drc-info", NULL);
-+	if (!info)
-+		return false;
-+
-+	value = of_prop_next_u32(info, NULL, &count);
-+
-+	/* First value of ibm,drc-info is number of drc-info records */
-+	if (value)
-+		value++;
-+	else
-+		return false;
-+
-+	for (i = 0; i < count; i++) {
-+		if (of_read_drc_info_cell(&info, &value, &drc))
-+			return false;
-+
-+		if (strncmp(drc.drc_type, "CPU", 3))
-+			break;
-+
-+		if (drc_index > drc.last_drc_index)
-+			continue;
-+
-+		index = drc.drc_index_start;
-+		for (j = 0; j < drc.num_sequential_elems; j++) {
-+			if (drc_index == index)
-+				return true;
-+
-+			index += drc.sequential_inc;
-+		}
-+	}
-+
-+	return false;
-+}
-+
- static bool valid_cpu_drc_index(struct device_node *parent, u32 drc_index)
+-static int get_children_props(struct device_node *dn, const int **drc_indexes,
+-		const int **drc_names, const int **drc_types,
+-		const int **drc_power_domains)
++static int get_children_props(struct device_node *dn, const __be32 **drc_indexes,
++			      const __be32 **drc_names, const __be32 **drc_types,
++			      const __be32 **drc_power_domains)
  {
- 	bool found = false;
- 	int rc, index;
+-	const int *indexes, *names, *types, *domains;
++	const __be32 *indexes, *names, *types, *domains;
  
--	index = 0;
-+	if (of_find_property(parent, "ibm,drc-info", NULL))
-+		return drc_info_valid_index(parent, drc_index);
-+
-+	/* Note that the format of the ibm,drc-indexes array is
-+	 * the number of entries in the array followed by the array
-+	 * of drc values so we start looking at index = 1.
-+	 */
-+	index = 1;
- 	while (!found) {
- 		u32 drc;
+ 	indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
+ 	names = of_get_property(dn, "ibm,drc-names", NULL);
+@@ -194,8 +194,8 @@ static int rpaphp_check_drc_props_v1(struct device_node *dn, char *drc_name,
+ 				char *drc_type, unsigned int my_index)
+ {
+ 	char *name_tmp, *type_tmp;
+-	const int *indexes, *names;
+-	const int *types, *domains;
++	const __be32 *indexes, *names;
++	const __be32 *types, *domains;
+ 	int i, rc;
  
- 		rc = of_property_read_u32_index(parent, "ibm,drc-indexes",
- 						index++, &drc);
-+
- 		if (rc)
+ 	rc = get_children_props(dn->parent, &indexes, &names, &types, &domains);
+@@ -208,7 +208,7 @@ static int rpaphp_check_drc_props_v1(struct device_node *dn, char *drc_name,
+ 
+ 	/* Iterate through parent properties, looking for my-drc-index */
+ 	for (i = 0; i < be32_to_cpu(indexes[0]); i++) {
+-		if ((unsigned int) indexes[i + 1] == my_index)
++		if (be32_to_cpu(indexes[i + 1]) == my_index)
  			break;
  
-@@ -717,19 +767,52 @@ static int dlpar_cpu_remove_by_count(u32 cpus_to_remove)
- 	return rc;
- }
- 
--static int find_dlpar_cpus_to_add(u32 *cpu_drcs, u32 cpus_to_add)
-+static int find_drc_info_cpus_to_add(struct device_node *cpus,
-+				     struct property *info,
-+				     u32 *cpu_drcs, u32 cpus_to_add)
+ 		name_tmp += (strlen(name_tmp) + 1);
+@@ -267,7 +267,7 @@ static int rpaphp_check_drc_props_v2(struct device_node *dn, char *drc_name,
+ int rpaphp_check_drc_props(struct device_node *dn, char *drc_name,
+ 			char *drc_type)
  {
--	struct device_node *parent;
-+	struct of_drc_info drc;
-+	const __be32 *value;
-+	u32 count, drc_index;
- 	int cpus_found = 0;
--	int index, rc;
-+	int i, j;
+-	const unsigned int *my_index;
++	const __be32 *my_index;
  
--	parent = of_find_node_by_path("/cpus");
--	if (!parent) {
--		pr_warn("Could not find CPU root node in device tree\n");
--		kfree(cpu_drcs);
-+	if (!info)
- 		return -1;
-+
-+	value = of_prop_next_u32(info, NULL, &count);
-+	if (value)
-+		value++;
-+
-+	for (i = 0; i < count; i++) {
-+		of_read_drc_info_cell(&info, &value, &drc);
-+		if (strncmp(drc.drc_type, "CPU", 3))
-+			break;
-+
-+		drc_index = drc.drc_index_start;
-+		for (j = 0; j < drc.num_sequential_elems; j++) {
-+			if (dlpar_cpu_exists(cpus, drc_index))
-+				continue;
-+
-+			cpu_drcs[cpus_found++] = drc_index;
-+
-+			if (cpus_found == cpus_to_add)
-+				return cpus_found;
-+
-+			drc_index += drc.sequential_inc;
-+		}
- 	}
+ 	my_index = of_get_property(dn, "ibm,my-drc-index", NULL);
+ 	if (!my_index) {
+@@ -277,10 +277,10 @@ int rpaphp_check_drc_props(struct device_node *dn, char *drc_name,
  
-+	return cpus_found;
-+}
-+
-+static int find_drc_index_cpus_to_add(struct device_node *cpus,
-+				      u32 *cpu_drcs, u32 cpus_to_add)
-+{
-+	int cpus_found = 0;
-+	int index, rc;
-+	u32 drc_index;
-+
- 	/* Search the ibm,drc-indexes array for possible CPU drcs to
- 	 * add. Note that the format of the ibm,drc-indexes array is
- 	 * the number of entries in the array followed by the array
-@@ -737,25 +820,25 @@ static int find_dlpar_cpus_to_add(u32 *cpu_drcs, u32 cpus_to_add)
- 	 */
- 	index = 1;
- 	while (cpus_found < cpus_to_add) {
--		u32 drc;
-+		rc = of_property_read_u32_index(cpus, "ibm,drc-indexes",
-+						index++, &drc_index);
- 
--		rc = of_property_read_u32_index(parent, "ibm,drc-indexes",
--						index++, &drc);
- 		if (rc)
- 			break;
- 
--		if (dlpar_cpu_exists(parent, drc))
-+		if (dlpar_cpu_exists(cpus, drc_index))
- 			continue;
- 
--		cpu_drcs[cpus_found++] = drc;
-+		cpu_drcs[cpus_found++] = drc_index;
- 	}
- 
--	of_node_put(parent);
- 	return cpus_found;
+ 	if (of_find_property(dn->parent, "ibm,drc-info", NULL))
+ 		return rpaphp_check_drc_props_v2(dn, drc_name, drc_type,
+-						*my_index);
++						be32_to_cpu(*my_index));
+ 	else
+ 		return rpaphp_check_drc_props_v1(dn, drc_name, drc_type,
+-						*my_index);
++						be32_to_cpu(*my_index));
  }
+ EXPORT_SYMBOL_GPL(rpaphp_check_drc_props);
  
- static int dlpar_cpu_add_by_count(u32 cpus_to_add)
+@@ -311,10 +311,11 @@ static int is_php_type(char *drc_type)
+  * for built-in pci slots (even when the built-in slots are
+  * dlparable.)
+  */
+-static int is_php_dn(struct device_node *dn, const int **indexes,
+-		const int **names, const int **types, const int **power_domains)
++static int is_php_dn(struct device_node *dn, const __be32 **indexes,
++		     const __be32 **names, const __be32 **types,
++		     const __be32 **power_domains)
  {
-+	struct device_node *parent;
-+	struct property *info;
- 	u32 *cpu_drcs;
- 	int cpus_added = 0;
- 	int cpus_found;
-@@ -767,7 +850,21 @@ static int dlpar_cpu_add_by_count(u32 cpus_to_add)
- 	if (!cpu_drcs)
- 		return -EINVAL;
+-	const int *drc_types;
++	const __be32 *drc_types;
+ 	int rc;
  
--	cpus_found = find_dlpar_cpus_to_add(cpu_drcs, cpus_to_add);
-+	parent = of_find_node_by_path("/cpus");
-+	if (!parent) {
-+		pr_warn("Could not find CPU root node in device tree\n");
-+		kfree(cpu_drcs);
-+		return -1;
-+	}
-+
-+	info = of_find_property(parent, "ibm,drc-info", NULL);
-+	if (info)
-+		cpus_found = find_drc_info_cpus_to_add(parent, info, cpu_drcs, cpus_to_add);
-+	else
-+		cpus_found = find_drc_index_cpus_to_add(parent, cpu_drcs, cpus_to_add);
-+
-+	of_node_put(parent);
-+
- 	if (cpus_found < cpus_to_add) {
- 		pr_warn("Failed to find enough CPUs (%d of %d) to add\n",
- 			cpus_found, cpus_to_add);
+ 	rc = get_children_props(dn, indexes, names, &drc_types, power_domains);
+@@ -374,7 +375,7 @@ static int rpaphp_drc_add_slot(struct device_node *dn)
+ 	struct slot *slot;
+ 	int retval = 0;
+ 	int i;
+-	const int *indexes, *names, *types, *power_domains;
++	const __be32 *indexes, *names, *types, *power_domains;
+ 	char *name, *type;
+ 
+ 	/* If this is not a hotplug slot, return without doing anything. */
 -- 
 2.7.4
 
