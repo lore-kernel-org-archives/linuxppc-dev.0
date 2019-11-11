@@ -1,61 +1,61 @@
-Return-Path: <SRS0=1oEm=ZC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=mxpJ=ZD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DEBBC43331
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Nov 2019 21:13:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E50DC43331
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 01:41:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 29D73206C3
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Nov 2019 21:13:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 799B3206DF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 01:41:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="GXUH/Zuc"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 29D73206C3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="k7U0p6SX"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 799B3206DF
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47B6F34mDzzF1KS
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 08:13:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47BD9l4kX8zDqlh
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 12:41:15 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47B69h2LjvzF10f
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2019 08:10:48 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47BD7b3jxgzDqkW
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2019 12:39:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gibson.dropbear.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="GXUH/Zuc"; dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 47B69g21Jbz9sPK; Mon, 11 Nov 2019 08:10:46 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1573420247;
- bh=sgl6XwaqQKuWwNLFcxgCVCJd1ny8a3Y5WhLWIZgRB+w=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=GXUH/ZucMTSO8lUMwgX4o1MuQVS9+ZQ/DD/1O8usLKlRKOyhuj/4hI8/57w/C9XLP
- SnmdxtnIbeEhqXifQjE5gJSakdwrJwzIk2m0e2GOxJZ7fI2ctXgvC+WP6SVSAFn6M4
- Rwg/wedGqEhGy8Ca+ER2oTOv+sJZHGOBeMj9j3os=
-Date: Sun, 10 Nov 2019 19:40:06 +0000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Ram Pai <linuxram@us.ibm.com>
-Subject: Re: [RFC v2 1/2] powerpc/pseries/iommu: Share the per-cpu TCE page
- with the hypervisor.
-Message-ID: <20191110194006.GQ2461@umbus.Home>
-References: <1573254011-1604-1-git-send-email-linuxram@us.ibm.com>
- <1573254011-1604-2-git-send-email-linuxram@us.ibm.com>
+ header.from=canb.auug.org.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
+ header.b="k7U0p6SX"; dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 47BD7b0NqVz9s4Y;
+ Mon, 11 Nov 2019 12:39:22 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
+ s=201702; t=1573436363;
+ bh=AuDaBqMuB8YubdI3py2WhU7Li+8/PG+7HZ/4VOX2HnA=;
+ h=Date:From:To:Cc:Subject:From;
+ b=k7U0p6SXwZk/q8bu8b1ogCWIDgEMACuwxHCNAXQewobz5E1AwkLCWdsjKcY1LuRhn
+ r2fqPu5raFH4i9nsV3Ixc+SLcF4tOsXDkoK43ieWLiRRZM2B+f5F1woaGj0Qy+Hz4X
+ pj06pmo4YMKHjkT36XkW4S9ZEuOOxZWQe/9RTx6vGeV91nfKaPoowCvuZNnktFwx7K
+ iRsZqk07aEP1rl85ArHNloyMqZbyymArZtzAtGzC1s22jNckBiYuV8clMo5KWdoGaJ
+ coc0uCbGLKwDt+xEAHiup3X+B9qm7Gf1HmH5uZCa/lV5hQuAKactfz+Puun5UMArCt
+ ngH2XkK1oic8g==
+Date: Mon, 11 Nov 2019 12:39:22 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>, Networking <netdev@vger.kernel.org>
+Subject: linux-next: build warning after merge of the net-next tree
+Message-ID: <20191111123922.540319a2@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="63aIh6YiuHX+oBFP"
-Content-Disposition: inline
-In-Reply-To: <1573254011-1604-2-git-send-email-linuxram@us.ibm.com>
-User-Agent: Mutt/1.12.1 (2019-06-15)
+Content-Type: multipart/signed; boundary="Sig_/6QAr0o=pU5/YGTHjeWYMaeP";
+ protocol="application/pgp-signature"; micalg=pgp-sha256
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,135 +67,109 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: andmike@us.ibm.com, mst@redhat.com, aik@ozlabs.ru,
- mdroth@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, ram.n.pai@gmail.com,
- cai@lca.pw, tglx@linutronix.de, sukadev@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, hch@lst.de, bauerman@linux.ibm.com
+Cc: Eric Dumazet <edumazet@google.com>,
+ Linux Next Mailing List <linux-next@vger.kernel.org>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
---63aIh6YiuHX+oBFP
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--Sig_/6QAr0o=pU5/YGTHjeWYMaeP
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Nov 08, 2019 at 03:00:10PM -0800, Ram Pai wrote:
-> The hypervisor needs to access the contents of the page holding the TCE
-> entries while setting up the TCE entries in the IOMMU's TCE table.
->=20
-> For SecureVMs, since this page is encrypted, the hypervisor cannot
-> access valid entries. Share the page with the hypervisor. This ensures
-> that the hypervisor sees those valid entries.
->=20
-> Why is this safe?
->    The page contains only TCE entries; not any sensitive data
->    belonging to the Secure VM. The hypervisor has a genuine need to know
->    the value of the TCE entries, without which it will not be able to
->    DMA to/from the pages pointed to by the TCE entries. In a Secure
->    VM the TCE entries point to pages that are also shared with the
->    hypervisor; example: pages containing bounce buffers.
+Hi all,
 
-The bit that may not be obvious to reviewers from the above is this:
+After merging the net-next tree, today's linux-next build (powerpc
+ppc64_defconfig) produced this warning:
 
-This is *not* a page of "live" TCEs which are actively used for
-translation.  Instead this is just a transient buffer with a batch of
-TCEs to set, passed to the hypervisor with the H_PUT_TCE_INDIRECT call.
+In file included from ./arch/powerpc/include/generated/asm/local64.h:1,
+                 from include/linux/u64_stats_sync.h:72,
+                 from include/linux/cgroup-defs.h:20,
+                 from include/linux/cgroup.h:28,
+                 from include/linux/memcontrol.h:13,
+                 from include/linux/swap.h:9,
+                 from include/linux/suspend.h:5,
+                 from arch/powerpc/kernel/asm-offsets.c:23:
+include/linux/u64_stats_sync.h: In function 'u64_stats_read':
+include/asm-generic/local64.h:30:37: warning: passing argument 1 of 'local_=
+read' discards 'const' qualifier from pointer target type [-Wdiscarded-qual=
+ifiers]
+   30 | #define local64_read(l)  local_read(&(l)->a)
+      |                                     ^~~~~~~
+include/linux/u64_stats_sync.h:80:9: note: in expansion of macro 'local64_r=
+ead'
+   80 |  return local64_read(&p->v);
+      |         ^~~~~~~~~~~~
+In file included from include/asm-generic/local64.h:22,
+                 from ./arch/powerpc/include/generated/asm/local64.h:1,
+                 from include/linux/u64_stats_sync.h:72,
+                 from include/linux/cgroup-defs.h:20,
+                 from include/linux/cgroup.h:28,
+                 from include/linux/memcontrol.h:13,
+                 from include/linux/swap.h:9,
+                 from include/linux/suspend.h:5,
+                 from arch/powerpc/kernel/asm-offsets.c:23:
+arch/powerpc/include/asm/local.h:20:44: note: expected 'local_t *' {aka 'st=
+ruct <anonymous> *'} but argument is of type 'const local_t *' {aka 'const =
+struct <anonymous> *'}
+   20 | static __inline__ long local_read(local_t *l)
+      |                                   ~~~~~~~~~^
 
->=20
-> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-> ---
->  arch/powerpc/platforms/pseries/iommu.c | 23 ++++++++++++++++++++---
->  1 file changed, 20 insertions(+), 3 deletions(-)
->=20
-> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platfo=
-rms/pseries/iommu.c
-> index 8d9c2b1..a302aaa 100644
-> --- a/arch/powerpc/platforms/pseries/iommu.c
-> +++ b/arch/powerpc/platforms/pseries/iommu.c
-> @@ -37,6 +37,7 @@
->  #include <asm/mmzone.h>
->  #include <asm/plpar_wrappers.h>
->  #include <asm/svm.h>
-> +#include <asm/ultravisor.h>
-> =20
->  #include "pseries.h"
-> =20
-> @@ -179,6 +180,23 @@ static int tce_build_pSeriesLP(struct iommu_table *t=
-bl, long tcenum,
-> =20
->  static DEFINE_PER_CPU(__be64 *, tce_page);
-> =20
-> +/*
-> + * Allocate a tce page.  If secure VM, share the page with the hyperviso=
-r.
-> + *
-> + * NOTE: the TCE page is shared with the hypervisor explicitly and remai=
-ns
-> + * shared for the lifetime of the kernel. It is implicitly unshared at k=
-ernel
-> + * shutdown through a UV_UNSHARE_ALL_PAGES ucall.
-> + */
-> +static __be64 *alloc_tce_page(void)
-> +{
-> +	__be64 *tcep =3D (__be64 *)__get_free_page(GFP_ATOMIC);
-> +
-> +	if (tcep && is_secure_guest())
-> +		uv_share_page(PHYS_PFN(__pa(tcep)), 1);
-> +
-> +	return tcep;
-> +}
-> +
->  static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
->  				     long npages, unsigned long uaddr,
->  				     enum dma_data_direction direction,
-> @@ -206,8 +224,7 @@ static int tce_buildmulti_pSeriesLP(struct iommu_tabl=
-e *tbl, long tcenum,
->  	 * from iommu_alloc{,_sg}()
->  	 */
->  	if (!tcep) {
-> -		tcep =3D (__be64 *)__get_free_page(GFP_ATOMIC);
-> -		/* If allocation fails, fall back to the loop implementation */
-> +		tcep =3D alloc_tce_page();
->  		if (!tcep) {
->  			local_irq_restore(flags);
->  			return tce_build_pSeriesLP(tbl, tcenum, npages, uaddr,
-> @@ -405,7 +422,7 @@ static int tce_setrange_multi_pSeriesLP(unsigned long=
- start_pfn,
->  	tcep =3D __this_cpu_read(tce_page);
-> =20
->  	if (!tcep) {
-> -		tcep =3D (__be64 *)__get_free_page(GFP_ATOMIC);
-> +		tcep =3D alloc_tce_page();
->  		if (!tcep) {
->  			local_irq_enable();
->  			return -ENOMEM;
+Introduced by commit
+
+  316580b69d0a ("u64_stats: provide u64_stats_t type")
+
+Powerpc folks: is there some reason that local_read() cannot take a
+const argument?
+
+I have added this patch (which builds fine) for today:
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Mon, 11 Nov 2019 12:32:24 +1100
+Subject: [PATCH] powerpc: local_read() should take a const local_t argument
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/include/asm/local.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/include/asm/local.h b/arch/powerpc/include/asm/lo=
+cal.h
+index fdd00939270b..bc4bd19b7fc2 100644
+--- a/arch/powerpc/include/asm/local.h
++++ b/arch/powerpc/include/asm/local.h
+@@ -17,7 +17,7 @@ typedef struct
+=20
+ #define LOCAL_INIT(i)	{ (i) }
+=20
+-static __inline__ long local_read(local_t *l)
++static __inline__ long local_read(const local_t *l)
+ {
+ 	return READ_ONCE(l->v);
+ }
+--=20
+2.23.0
 
 --=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Cheers,
+Stephen Rothwell
 
---63aIh6YiuHX+oBFP
-Content-Type: application/pgp-signature; name="signature.asc"
+--Sig_/6QAr0o=pU5/YGTHjeWYMaeP
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAl3IZ5MACgkQbDjKyiDZ
-s5K+kQ/+PKlvYDKC8LlZl7hGJs9oVVlDQG/Q3tWSAsQWzhygYK+NhJxNT1t0AF0I
-0HnXRPw673myMED+6+j/cIS6zKg3N9GoOwBnaIxh+CzpsbzGtG+4XpCPcrAVO5+k
-9vBX6Bhr+UmvI4V1tfW6Q3c7MEMEtH4VX57ZSZe9Poq5p39NVyX3nggrIZxlsgjC
-SI90Vj/iGgfs3lyT+bIq9TU9N7pduaW6+JvNArThePpmUMgwc+EbVSGEh851wsGe
-Uav8B7Axg8ZlKsA1XSf+WfHU4Z+/fsYYOBMSfecs1SvyxizGaWoGXayKe1aaGWSj
-amPV9YZYecLkDPZG558cvT20KGnJ6JpJwebhVVzKIv8b/oLOzIjrHEku7Jy1OR+o
-PfYzfpt2Ddc2NGQjsq8ppB6FuAAMRcn5FXtXnxWqS0AbIo+nJ7r9R2gYk1TD+VF7
-S/7LmPh1Cd/xBZyxJFruj0qL21lGA9J0ff1MY7/qZ/8tySd0qJ4ehfQElJAFGSQC
-4JFQFXrC6GLyHdAgF3jCr7AVIcSEy7Zwt4ueNYtPoFFXYqR29UXzGngVUXSb1+90
-nZ9AJDRbFwtQo0ySgMYrchZw9ZOcRkDVuU730lwznf9+n0XpEdBjCauCuV0AK4PY
-yrrBbg8WWdqOYmtgafVuQmUQhX2NFMVYx98wTFJWLT9FaJVBoo4=
-=zGQn
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAl3Iu8oACgkQAVBC80lX
+0GxUrAf/eOFpcteYsF7eO+8QSB+grDoR0uBOiJ/e64gcbJxIz20N7h7isi2cqpeU
+ldqfFFEW0oZlFWk4CknC/cBnW+fTu2NwZSguJTvYpXRpPcfaH1F0jJJey+EeQY0E
+6z1ffv/8HemmfZeQqv99ZnBdZkO7Wy4RC33/l1ullGpc0TCHzuJDnA143Uj97VqV
+aXiNHSPufe9/6a/mkh9idVoJxvyy0HpSxmB6xZi0m8S5btcyU13vt7yTVVWxBd0q
+G/h4HdyqH7Z6/PRFqjkbT7G7pMvy/WGfGNUBvRLYEqsCQfBGuAj8lMUURetrqgKx
+7vgQIpeRGNmNmuT7oTaEwQohj5//tw==
+=WNa5
 -----END PGP SIGNATURE-----
 
---63aIh6YiuHX+oBFP--
+--Sig_/6QAr0o=pU5/YGTHjeWYMaeP--
