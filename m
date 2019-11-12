@@ -2,83 +2,54 @@ Return-Path: <SRS0=XoDG=ZE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 27E2EC43331
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 23:04:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59943C43331
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 23:10:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CA94C21925
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 23:04:02 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="c4HijsXE"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CA94C21925
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
+	by mail.kernel.org (Postfix) with ESMTPS id 10EBF21925
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 23:10:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 10EBF21925
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ubuntu.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47CNbN5ss1zF3Xy
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 10:04:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::643;
- helo=mail-pl1-x643.google.com; envelope-from=keescook@chromium.org;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47CNkH2PzBzF45W
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 10:09:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.b="c4HijsXE";
- dkim-atps=neutral
-Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
- [IPv6:2607:f8b0:4864:20::643])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=none (no SPF record) smtp.mailfrom=ubuntu.com
+ (client-ip=91.189.89.112; helo=youngberry.canonical.com;
+ envelope-from=christian.brauner@ubuntu.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=ubuntu.com
+Received: from youngberry.canonical.com (youngberry.canonical.com
+ [91.189.89.112])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47CNXX1VkLzF5nf
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 10:01:32 +1100 (AEDT)
-Received: by mail-pl1-x643.google.com with SMTP id l4so150897plt.13
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2019 15:01:32 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to;
- bh=nExhpa8NtyhyvUyh20F6httON+9jpHubOC8X4R1/1QI=;
- b=c4HijsXEjZGJqE7HF/OLTdBXGVnY9qLmNBULMzMpbSwMDUdlWMyYkBAj7Jv9KvJQq9
- uQ/fhhX6CbwBVqkc6vhI0J9bVR6S+eypweTAwvYsABomRnDDk1wGcU2hJ/fV4/K6uu+1
- c9+G8zkVxO8gfkNV8xNJ/wUCIdP5veO1BJPEs=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=nExhpa8NtyhyvUyh20F6httON+9jpHubOC8X4R1/1QI=;
- b=Qu5oNI/okkvc7hnP6US+5CWozt2un03fTpS0251kRQYrjWFavWgHUyt8OLtlqNxxI5
- nbFcAe8rkMisGiZad0xfcjr2krfv3F81RNsPlzBJAv/BxTHbVTqYXHagHiLc0y31jSGv
- rSYcgu2kE8SvG0dFAcBxnHU6J5brn2zL6SXKlMajMZ/BkIV8eeR2yv60F7fIbEgp1Cqd
- CmknEmneqAsOyfOhkYD0zOje+h3k7jb1sG3/OUWbRnjum3BtLT2mc/KoFNrCpYMLKrYu
- FMMFW6aMK4KUku3Muwa+L7rd2jSBpzsaFm3iFEdcCE2FQkqkSDW+mqLWYQXSNW+0ZAJ8
- bWEg==
-X-Gm-Message-State: APjAAAVorbhagIfX9hP8u0j6yYex+FTDnF04qhL71qI0fe15lJoaDPsm
- 8sl2n87cnWzc2PR2NqfiWfXb2w==
-X-Google-Smtp-Source: APXvYqy/dNw+1S0sgv4o54+xgQ9m/sDAbXJguDm6De1m1sF3Ucjez84Z50LDqlIQCV97XGMiY2eUjw==
-X-Received: by 2002:a17:902:b282:: with SMTP id
- u2mr266015plr.301.1573599688858; 
- Tue, 12 Nov 2019 15:01:28 -0800 (PST)
-Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id em16sm159840pjb.21.2019.11.12.15.01.27
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 12 Nov 2019 15:01:27 -0800 (PST)
-Date: Tue, 12 Nov 2019 15:01:26 -0800
-From: Kees Cook <keescook@chromium.org>
-To: Aleksa Sarai <cyphar@cyphar.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47CNgS2BcvzF5q1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 10:07:31 +1100 (AEDT)
+Received: from [213.220.153.21] (helo=wittgenstein)
+ by youngberry.canonical.com with esmtpsa
+ (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128) (Exim 4.86_2)
+ (envelope-from <christian.brauner@ubuntu.com>)
+ id 1iUfFK-0004Af-EX; Tue, 12 Nov 2019 23:06:50 +0000
+Date: Wed, 13 Nov 2019 00:06:48 +0100
+From: Christian Brauner <christian.brauner@ubuntu.com>
+To: Kees Cook <keescook@chromium.org>, Al Viro <viro@zeniv.linux.org.uk>,
+ Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: [PATCH v15 0/9] open: introduce openat2(2) syscall
-Message-ID: <201911121457.7D02692@keescook>
+Message-ID: <20191112230646.47dgr6bbnjv7vkrk@wittgenstein>
 References: <20191105090553.6350-1-cyphar@cyphar.com>
  <20191111132404.y523iqicbn6fivx5@yavin.dot.cyphar.com>
+ <201911121457.7D02692@keescook>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20191111132404.y523iqicbn6fivx5@yavin.dot.cyphar.com>
+In-Reply-To: <201911121457.7D02692@keescook>
+User-Agent: NeoMutt/20180716
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,44 +74,48 @@ Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
  Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infradead.org,
  linux-mips@vger.kernel.org, linux-xtensa@linux-xtensa.org,
  Arnd Bergmann <arnd@arndb.de>, Jann Horn <jannh@google.com>,
- linuxppc-dev@lists.ozlabs.org, linux-m68k@lists.linux-m68k.org,
- Al Viro <viro@zeniv.linux.org.uk>, Andy Lutomirski <luto@kernel.org>,
+ Aleksa Sarai <cyphar@cyphar.com>, Andy Lutomirski <luto@kernel.org>,
  Shuah Khan <skhan@linuxfoundation.org>, Namhyung Kim <namhyung@kernel.org>,
  David Drysdale <drysdale@google.com>, Christian Brauner <christian@brauner.io>,
  "J. Bruce Fields" <bfields@fieldses.org>, libc-alpha@sourceware.org,
- linux-parisc@vger.kernel.org, linux-api@vger.kernel.org,
- Chanho Min <chanho.min@lge.com>, Jeff Layton <jlayton@kernel.org>,
- Oleg Nesterov <oleg@redhat.com>, Eric Biederman <ebiederm@xmission.com>,
- linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- containers@lists.linux-foundation.org
+ linux-parisc@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+ linux-api@vger.kernel.org, Chanho Min <chanho.min@lge.com>,
+ Jeff Layton <jlayton@kernel.org>, Oleg Nesterov <oleg@redhat.com>,
+ Eric Biederman <ebiederm@xmission.com>, linux-alpha@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, containers@lists.linux-foundation.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Nov 12, 2019 at 12:24:04AM +1100, Aleksa Sarai wrote:
-> On 2019-11-05, Aleksa Sarai <cyphar@cyphar.com> wrote:
-> > This patchset is being developed here:
-> >   <https://github.com/cyphar/linux/tree/openat2/master>
+On Tue, Nov 12, 2019 at 03:01:26PM -0800, Kees Cook wrote:
+> On Tue, Nov 12, 2019 at 12:24:04AM +1100, Aleksa Sarai wrote:
+> > On 2019-11-05, Aleksa Sarai <cyphar@cyphar.com> wrote:
+> > > This patchset is being developed here:
+> > >   <https://github.com/cyphar/linux/tree/openat2/master>
+> > > 
+> > > Patch changelog:
+> > >  v15:
+> > >   * Fix code style for LOOKUP_IN_ROOT handling in path_init(). [Linus Torvalds]
+> > >   * Split out patches for each individual LOOKUP flag.
+> > >   * Reword commit messages to give more background information about the
+> > >     series, as well as mention the semantics of each flag in more detail.
+> > > [...]
 > > 
-> > Patch changelog:
-> >  v15:
-> >   * Fix code style for LOOKUP_IN_ROOT handling in path_init(). [Linus Torvalds]
-> >   * Split out patches for each individual LOOKUP flag.
-> >   * Reword commit messages to give more background information about the
-> >     series, as well as mention the semantics of each flag in more detail.
-> > [...]
+> > Ping -- this patch hasn't been touched for a week. Thanks.
 > 
-> Ping -- this patch hasn't been touched for a week. Thanks.
+> If I've been following correctly, everyone is happy with this series.
+> (i.e. Linus's comment appear to have been addressed.)
+> 
+> Perhaps the next question is should this go via a pull request by you to
+> Linus directly during the v5.5 merge window, via akpm, via akpm, via
+> Christian, or some other path? Besides Linus, it's not been clear who
+> should "claim" this series. :)
 
-If I've been following correctly, everyone is happy with this series.
-(i.e. Linus's comment appear to have been addressed.)
+I like this series and the same with the copy_struct_from_user() part of
+it I've taken I'm happy to stuff this into a dedicated branch, merge it
+into my for-next and send it for v5.5.
+Though I'd _much_ rather see Al pick this up or have him give his
+blessing first.
 
-Perhaps the next question is should this go via a pull request by you to
-Linus directly during the v5.5 merge window, via akpm, via akpm, via
-Christian, or some other path? Besides Linus, it's not been clear who
-should "claim" this series. :)
-
--- 
-Kees Cook
+Christian
