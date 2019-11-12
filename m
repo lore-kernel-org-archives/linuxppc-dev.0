@@ -3,63 +3,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
 	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F0D4C43331
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 12:42:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 725AAC43331
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 12:49:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 00E1120818
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 12:42:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 202D4206A3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 12:49:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="T71/JYX7"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 00E1120818
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="cPULhkSf"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 202D4206A3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47C6pj6WKXzDqGM
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 23:42:53 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 47C6yZ4h7TzF4ry
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 23:49:42 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47C6jn71b2zF1wX
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2019 23:38:37 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47C6rV1YW0zF3QL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2019 23:44:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.b="T71/JYX7"; dkim-atps=neutral
+ header.b="cPULhkSf"; dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 47C6jn2Mfzz9sP4;
- Tue, 12 Nov 2019 23:38:37 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 47C6rT1WXSz9sNT;
+ Tue, 12 Nov 2019 23:44:25 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1573562317;
- bh=u8PtPdFwh6LAkLykCtMHOtF4IC6sKGnHKS1uCNqFdgk=;
+ s=201909; t=1573562665;
+ bh=RUd68kxm240D9gUh61XMXgyLiDeb91CPvTcPzAdkZ1w=;
  h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=T71/JYX7DYIoe2lbsDhSPD1fndBLi6rmHtQjFTM6k641QvTtfn3dOXvJ/Z8AhneVW
- YIrfMlJ5yjPHwRor6bIE7SQTii7K1erPk2+BG4hsU0xYZLmI4u/xp/ft4m5YOakohT
- tGTsMvY8Q4f6wkjYjUxqZTTaQhkLWNOxjqKTPyjPvs4qkiq+eEL0fqa0ZJ9QtoN3y+
- j0MvHZwmpLCI/6FbJqRhhC5EyvlKxgNDWxCUOE87OJc1BJSlZrPMfQQ8IoaI5AL19K
- H71JTjg+U+VU30hSBijuFfLmoGpAV7oQhaEpItB4eYaR3dgiocypNWVZpj8mnfCZKX
- /cndjiUgkMQ6g==
+ b=cPULhkSfUg/RtpCBZPljztB5e8oWJ97XWfWrWcPxrOurPiBEyaLBsSLrv/CKCeoAQ
+ zHEqq0Pfs/vxMEOXxrN7P5U4mORRqF7fJc3jBsUN/my5IctesxQXwSq8f2YfsiMTXD
+ ceReDVdWKapCRqpY6P+YCRyFqaMNEnX3TAeo39g3vg6ZlshNule71wJJSpgCecBwFx
+ uQoCQyvuls63tXSNm2lJFpb3TM6F1v5pZl4mpBLJHjk1puctp2rDKUF5T6I5PlDCiJ
+ 0kR7h5SV0iWzlCZ7F66xpd+teAuVK1AWq2GMVWwXqoSAyfahQqDAnd2TR7TN0rYMha
+ QU/J37r2V6zFQ==
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: Re: [PATCH 03/34 v3] powerpc: Use CONFIG_PREEMPTION
-In-Reply-To: <20191024160458.vlnf3wlcyjl2ich7@linutronix.de>
-References: <20191015191821.11479-1-bigeasy@linutronix.de>
- <20191015191821.11479-4-bigeasy@linutronix.de>
- <156db456-af80-1f5e-6234-2e78283569b6@c-s.fr>
- <87d0ext4q3.fsf@mpe.ellerman.id.au>
- <20191024135920.cp673ivbcomu2bgy@linutronix.de>
- <20191024160458.vlnf3wlcyjl2ich7@linutronix.de>
-Date: Tue, 12 Nov 2019 23:38:33 +1100
-Message-ID: <874kz92rsm.fsf@mpe.ellerman.id.au>
+To: =?utf-8?Q?C=C3=A9dric?= Le Goater <clg@kaod.org>
+Subject: Re: [PATCH] powerpc/xive: Prevent page fault issues in the machine
+ crash handler
+In-Reply-To: <20191031063100.3864-1-clg@kaod.org>
+References: <20191031063100.3864-1-clg@kaod.org>
+Date: Tue, 12 Nov 2019 23:44:24 +1100
+Message-ID: <871rud2riv.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
@@ -74,32 +70,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Mackerras <paulus@samba.org>, tglx@linutronix.de,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, Greg Kurz <groug@kaod.org>,
+ =?utf-8?Q?C=C3=A9dric?= Le Goater <clg@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Sebastian Andrzej Siewior <bigeasy@linutronix.de> writes:
-> From: Thomas Gleixner <tglx@linutronix.de>
->
-> CONFIG_PREEMPTION is selected by CONFIG_PREEMPT and by CONFIG_PREEMPT_RT.
-> Both PREEMPT and PREEMPT_RT require the same functionality which today
-> depends on CONFIG_PREEMPT.
->
-> Switch the entry code over to use CONFIG_PREEMPTION.
->
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> [bigeasy: +Kconfig]
-> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-> ---
-> v2=E2=80=A6v3: Don't mention die.c changes in the description.
-> v1=E2=80=A6v2: Remove the changes to die.c.
+C=C3=A9dric Le Goater <clg@kaod.org> writes:
+> When the machine crash handler is invoked, all interrupts are masked
+> but interrupts which have not been started yet do not have an ESB page
+> mapped in the Linux address space. This crashes the 'crash kexec'
+> sequence on sPAPR guests.
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+This sounds like it needs a Fixes/stable tag?
+
+I used these:
+
+  Fixes: 243e25112d06 ("powerpc/xive: Native exploitation of the XIVE inter=
+rupt controller")
+  Cc: stable@vger.kernel.org # v4.12+
+
+Please tell me if you think that's wrong.
 
 cheers
+
+
+> diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive=
+/common.c
+> index df832b09e3e9..f5fadbd2533a 100644
+> --- a/arch/powerpc/sysdev/xive/common.c
+> +++ b/arch/powerpc/sysdev/xive/common.c
+> @@ -1035,6 +1035,15 @@ static int xive_irq_alloc_data(unsigned int virq, =
+irq_hw_number_t hw)
+>  	xd->target =3D XIVE_INVALID_TARGET;
+>  	irq_set_handler_data(virq, xd);
+>=20=20
+> +	/*
+> +	 * Turn OFF by default the interrupt being mapped. A side
+> +	 * effect of this check is the mapping the ESB page of the
+> +	 * interrupt in the Linux address space. This prevents page
+> +	 * fault issues in the crash handler which masks all
+> +	 * interrupts.
+> +	 */
+> +	xive_esb_read(xd, XIVE_ESB_SET_PQ_01);
+> +
+>  	return 0;
+>  }
+>=20=20
+> --=20
+> 2.21.0
