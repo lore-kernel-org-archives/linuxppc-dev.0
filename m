@@ -2,78 +2,80 @@ Return-Path: <SRS0=XoDG=ZE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BCFBEC43331
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 00:17:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E5073C43331
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 00:19:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3D15821872
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 00:17:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8E4A420840
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 00:19:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="o9SF4xl6"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3D15821872
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="adfHMgrN"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8E4A420840
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nvidia.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47BpGb0yp1zF4WR
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 11:17:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47BpK22FPkzF3M0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 11:19:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=nvidia.com (client-ip=216.228.121.143;
- helo=hqemgate14.nvidia.com; envelope-from=jhubbard@nvidia.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=nvidia.com (client-ip=216.228.121.64; helo=hqemgate15.nvidia.com;
+ envelope-from=jhubbard@nvidia.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="o9SF4xl6"; 
+ unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="adfHMgrN"; 
  dkim-atps=neutral
-Received: from hqemgate14.nvidia.com (hqemgate14.nvidia.com [216.228.121.143])
+Received: from hqemgate15.nvidia.com (hqemgate15.nvidia.com [216.228.121.64])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47Bp2l1wNczF1Qk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2019 11:07:09 +1100 (AEDT)
-Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by
- hqemgate14.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
- id <B5dc9f7aa0001>; Mon, 11 Nov 2019 16:07:06 -0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47Bp2n1zWHzF1Qk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2019 11:07:12 +1100 (AEDT)
+Received: from hqpgpgate102.nvidia.com (Not Verified[216.228.121.13]) by
+ hqemgate15.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+ id <B5dc9f76f0000>; Mon, 11 Nov 2019 16:06:07 -0800
 Received: from hqmail.nvidia.com ([172.20.161.6])
- by hqpgpgate101.nvidia.com (PGP Universal service);
- Mon, 11 Nov 2019 16:07:04 -0800
+ by hqpgpgate102.nvidia.com (PGP Universal service);
+ Mon, 11 Nov 2019 16:07:09 -0800
 X-PGP-Universal: processed;
- by hqpgpgate101.nvidia.com on Mon, 11 Nov 2019 16:07:04 -0800
-Received: from HQMAIL107.nvidia.com (172.20.187.13) by HQMAIL107.nvidia.com
+ by hqpgpgate102.nvidia.com on Mon, 11 Nov 2019 16:07:09 -0800
+Received: from HQMAIL111.nvidia.com (172.20.187.18) by HQMAIL107.nvidia.com
  (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Tue, 12 Nov
- 2019 00:07:03 +0000
-Received: from rnnvemgw01.nvidia.com (10.128.109.123) by HQMAIL107.nvidia.com
- (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via
- Frontend Transport; Tue, 12 Nov 2019 00:07:02 +0000
+ 2019 00:07:08 +0000
+Received: from rnnvemgw01.nvidia.com (10.128.109.123) by HQMAIL111.nvidia.com
+ (172.20.187.18) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via
+ Frontend Transport; Tue, 12 Nov 2019 00:07:07 +0000
 Received: from blueforge.nvidia.com (Not Verified[10.110.48.28]) by
  rnnvemgw01.nvidia.com with Trustwave SEG (v7, 5, 8, 10121)
- id <B5dc9f7a50005>; Mon, 11 Nov 2019 16:07:02 -0800
+ id <B5dc9f7aa0000>; Mon, 11 Nov 2019 16:07:07 -0800
 From: John Hubbard <jhubbard@nvidia.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v3 00/23] mm/gup: track dma-pinned pages: FOLL_PIN,
- FOLL_LONGTERM
-Date: Mon, 11 Nov 2019 16:06:37 -0800
-Message-ID: <20191112000700.3455038-1-jhubbard@nvidia.com>
+Subject: [PATCH v3 04/23] mm: devmap: refactor 1-based refcounting for
+ ZONE_DEVICE pages
+Date: Mon, 11 Nov 2019 16:06:41 -0800
+Message-ID: <20191112000700.3455038-5-jhubbard@nvidia.com>
 X-Mailer: git-send-email 2.24.0
+In-Reply-To: <20191112000700.3455038-1-jhubbard@nvidia.com>
+References: <20191112000700.3455038-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
 X-NVConfidentiality: public
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
- t=1573517227; bh=JNzo7F9Uhd78yzMBde3KTfKR6QFKvOysu7c55VwbHak=;
+ t=1573517167; bh=eh5PKTqFnv3H2C1oWk46Hm4jlzYBaiSiPR2xbAo8/Xk=;
  h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
- MIME-Version:X-NVConfidentiality:Content-Type:
- Content-Transfer-Encoding;
- b=o9SF4xl64HRgEPHvkHoWRVd6NPoz/55me3p6LoD2kIji1LweghyUDktb6XSAQ3iJ3
- cfhFxMryHc9DJrJcCIFZ3iGqYwt2ssscfuhFFw/XpSbJT58EIt8L9y6LerhnrPSHE3
- EdEpFQ6NH4d8IOKai6LAR4Axw5mIKHuTnBygTtUlZdZPySg+d0A3Oy0fKaInMWyT9J
- SvANrkrJ9clhDPNVmeNO+XuHM5bjvqzzMZ/NiVknqIu7c9yXMCGlTlzlbPMzqDPBT5
- jrQ55E6H2Wxm3RXAN8Ep0kb7yVwABixc+8zsJQbE9QB8LK08Q0+uUWO2trTbA96gmB
- /2JmtFtig54FQ==
+ In-Reply-To:References:MIME-Version:X-NVConfidentiality:
+ Content-Type:Content-Transfer-Encoding;
+ b=adfHMgrN5jjkYVKLpULgMMWgAAyNhWrnIEq2gG0krc84wIe5DqW2HFzzxJxJzHIrG
+ Q4SMQIqJPunErE+KDabNclG7+yPRQM1rbHN9kjnmobU9luoWgogwM08Ig6xBrYzT+8
+ M1Otb8NEwlqrd2K6zNLVLcuzFS2o3KsS+mlQYJu4TNJt8AxTcIQk5KKm3GEA97K6Qs
+ Gnl5NOdsaNBoy4dPOubgCBkbhuzz6aSRrdwtKi2YFqtByoOat5K4PpX4+mgTYRZFJz
+ kwO8BxgUl0DLC6pXM0I8aGV+8wGdM57g3KJobQK8NnZciawV1jrn2TFZRg9Xau0MTU
+ ONfrW7dMbEHRQ==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,255 +112,174 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+An upcoming patch changes and complicates the refcounting and
+especially the "put page" aspects of it. In order to keep
+everything clean, refactor the devmap page release routines:
 
-The cover letter is long, so the more important stuff is first:
+* Rename put_devmap_managed_page() to page_is_devmap_managed(),
+  and limit the functionality to "read only": return a bool,
+  with no side effects.
 
-* Jason, if you or someone could look at the the VFIO cleanup (patch 8)
-  and conversion to FOLL_PIN (patch 18), to make sure it's use of
-  remote and longterm gup matches what we discussed during the review
-  of v2, I'd appreciate it.
+* Add a new routine, put_devmap_managed_page(), to handle checking
+  what kind of page it is, and what kind of refcount handling it
+  requires.
 
-* Also for Jason and IB: as noted below, in patch 11, I am (too?) boldly
-  converting from put_user_pages() to release_pages().
+* Rename __put_devmap_managed_page() to free_devmap_managed_page(),
+  and limit the functionality to unconditionally freeing a devmap
+  page.
 
-* Jerome, I am going to take a look at doing your FOLL_GET change idea
-  (some callers should set FOLL_GET) separately, because it blew up "a
-  little bit" in my face. It's definitely a separate--tiny, but risky--proj=
-ect.
-  It also looks more reasonable when applied on top of this series here
-  (and it conflicts a lot), so I'm going to send it as a follow-up.
+This is originally based on a separate patch by Ira Weiny, which
+applied to an early version of the put_user_page() experiments.
+Since then, J=C3=A9r=C3=B4me Glisse suggested the refactoring described abo=
+ve.
 
-Changes since v2:
+Suggested-by: J=C3=A9r=C3=B4me Glisse <jglisse@redhat.com>
+Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+---
+ include/linux/mm.h | 27 ++++++++++++++++---
+ mm/memremap.c      | 67 ++++++++++++++++++++--------------------------
+ 2 files changed, 53 insertions(+), 41 deletions(-)
 
-* Added a patch to convert IB/umem from normal gup, to gup_fast(). This
-  is also posted separately, in order to hopefully get some runtime
-  testing.
-
-* Changed the page devmap code to be a little clearer,
-  thanks to Jerome for that.
-
-* Split out the page devmap changes into a separate patch (and moved
-  Ira's Signed-off-by to that patch).
-
-* Fixed my bug in IB: ODP code does not require pin_user_pages()
-  semantics. Therefore, revert the put_user_page() calls to put_page(),
-  and leave the get_user_pages() call as-is.
-
-      * As part of the revert, I am proposing here a change directly
-        from put_user_pages(), to release_pages(). I'd feel better if
-        someone agrees that this is the best way. It uses the more
-        efficient release_pages(), instead of put_page() in a loop,
-        and keep the change to just a few character on one line,
-        but OTOH it is not a pure revert.
-
-* Loosened the FOLL_LONGTERM restrictions in the
-  __get_user_pages_locked() implementation, and used that in order
-  to fix up a VFIO bug. Thanks to Jason for that idea.
-
-    * Note the use of release_pages() in IB: is that OK?
-
-* Added a few more WARN's and clarifying comments nearby.
-
-* Many documentation improvements in various comments.
-
-* Moved the new pin_user_pages.rst from Documentation/vm/ to
-  Documentation/core-api/ .
-
-* Commit descriptions: added clarifying notes to the three patches
-  (drm/via, fs/io_uring, net/xdp) that already had put_user_page()
-  calls in place.
-
-* Collected all pending Reviewed-by and Acked-by tags, from v1 and v2
-  email threads.
-
-* Lot of churn from v2 --> v3, so it's possible that new bugs
-  sneaked in.
-
-NOT DONE: separate patchset is required:
-
-* __get_user_pages_locked(): stop compensating for
-  buggy callers who failed to set FOLL_GET. Instead, assert
-  that FOLL_GET is set (and fail if it's not).
-
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-Original cover letter (edited to fix up the patch description numbers)
-
-This applies cleanly to linux-next and mmotm, and also to linux.git if
-linux-next's commit 20cac10710c9 ("mm/gup_benchmark: fix MAP_HUGETLB
-case") is first applied there.
-
-This provides tracking of dma-pinned pages. This is a prerequisite to
-solving the larger problem of proper interactions between file-backed
-pages, and [R]DMA activities, as discussed in [1], [2], [3], and in
-a remarkable number of email threads since about 2017. :)
-
-A new internal gup flag, FOLL_PIN is introduced, and thoroughly
-documented in the last patch's Documentation/vm/pin_user_pages.rst.
-
-I believe that this will provide a good starting point for doing the
-layout lease work that Ira Weiny has been working on. That's because
-these new wrapper functions provide a clean, constrained, systematically
-named set of functionality that, again, is required in order to even
-know if a page is "dma-pinned".
-
-In contrast to earlier approaches, the page tracking can be
-incrementally applied to the kernel call sites that, until now, have
-been simply calling get_user_pages() ("gup"). In other words, opt-in by
-changing from this:
-
-    get_user_pages() (sets FOLL_GET)
-    put_page()
-
-to this:
-    pin_user_pages() (sets FOLL_PIN)
-    put_user_page()
-
-Because there are interdependencies with FOLL_LONGTERM, a similar
-conversion as for FOLL_PIN, was applied. The change was from this:
-
-    get_user_pages(FOLL_LONGTERM) (also sets FOLL_GET)
-    put_page()
-
-to this:
-    pin_longterm_pages() (sets FOLL_PIN | FOLL_LONGTERM)
-    put_user_page()
-
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-Patch summary:
-
-* Patches 1-8: refactoring and preparatory cleanup, independent fixes
-
-* Patch 9: introduce pin_user_pages(), FOLL_PIN, but no functional
-           changes yet
-* Patches 10-15: Convert existing put_user_page() callers, to use the
-                new pin*()
-* Patch 16: Activate tracking of FOLL_PIN pages.
-* Patches 17-19: convert FOLL_LONGTERM callers
-* Patches: 20-22: gup_benchmark and run_vmtests support
-* Patch 23: enforce FOLL_LONGTERM as a gup-internal (only) flag
-
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-Testing:
-
-* I've done some overall kernel testing (LTP, and a few other goodies),
-  and some directed testing to exercise some of the changes. And as you
-  can see, gup_benchmark is enhanced to exercise this. Basically, I've been
-  able to runtime test the core get_user_pages() and pin_user_pages() and
-  related routines, but not so much on several of the call sites--but those
-  are generally just a couple of lines changed, each.
-
-  Not much of the kernel is actually using this, which on one hand
-  reduces risk quite a lot. But on the other hand, testing coverage
-  is low. So I'd love it if, in particular, the Infiniband and PowerPC
-  folks could do a smoke test of this series for me.
-
-  Also, my runtime testing for the call sites so far is very weak:
-
-    * io_uring: Some directed tests from liburing exercise this, and they p=
-ass.
-    * process_vm_access.c: A small directed test passes.
-    * gup_benchmark: the enhanced version hits the new gup.c code, and pass=
-es.
-    * infiniband (still only have crude "IB pingpong" working, on a
-                  good day: it's not exercising my conversions at runtime..=
-.)
-    * VFIO: compiles (I'm vowing to set up a run time test soon, but it's
-                      not ready just yet)
-    * powerpc: it compiles...
-    * drm/via: compiles...
-    * goldfish: compiles...
-    * net/xdp: compiles...
-    * media/v4l2: compiles...
-
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-Next:
-
-* Get the block/bio_vec sites converted to use pin_user_pages().
-
-* Work with Ira and Dave Chinner to weave this together with the
-  layout lease stuff.
-
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-
-[1] Some slow progress on get_user_pages() (Apr 2, 2019): https://lwn.net/A=
-rticles/784574/
-[2] DMA and get_user_pages() (LPC: Dec 12, 2018): https://lwn.net/Articles/=
-774411/
-[3] The trouble with get_user_pages() (Apr 30, 2018): https://lwn.net/Artic=
-les/753027/
-
-John Hubbard (23):
-  mm/gup: pass flags arg to __gup_device_* functions
-  mm/gup: factor out duplicate code from four routines
-  mm/gup: move try_get_compound_head() to top, fix minor issues
-  mm: devmap: refactor 1-based refcounting for ZONE_DEVICE pages
-  goldish_pipe: rename local pin_user_pages() routine
-  IB/umem: use get_user_pages_fast() to pin DMA pages
-  media/v4l2-core: set pages dirty upon releasing DMA buffers
-  vfio, mm: fix get_user_pages_remote() and FOLL_LONGTERM
-  mm/gup: introduce pin_user_pages*() and FOLL_PIN
-  goldish_pipe: convert to pin_user_pages() and put_user_page()
-  IB/{core,hw,umem}: set FOLL_PIN, FOLL_LONGTERM via
-    pin_longterm_pages*()
-  mm/process_vm_access: set FOLL_PIN via pin_user_pages_remote()
-  drm/via: set FOLL_PIN via pin_user_pages_fast()
-  fs/io_uring: set FOLL_PIN via pin_user_pages()
-  net/xdp: set FOLL_PIN via pin_user_pages()
-  mm/gup: track FOLL_PIN pages
-  media/v4l2-core: pin_longterm_pages (FOLL_PIN) and put_user_page()
-    conversion
-  vfio, mm: pin_longterm_pages (FOLL_PIN) and put_user_page() conversion
-  powerpc: book3s64: convert to pin_longterm_pages() and put_user_page()
-  mm/gup_benchmark: use proper FOLL_WRITE flags instead of hard-coding
-    "1"
-  mm/gup_benchmark: support pin_user_pages() and related calls
-  selftests/vm: run_vmtests: invoke gup_benchmark with basic FOLL_PIN
-    coverage
-  mm/gup: remove support for gup(FOLL_LONGTERM)
-
- Documentation/core-api/index.rst            |   1 +
- Documentation/core-api/pin_user_pages.rst   | 218 +++++++
- arch/powerpc/mm/book3s64/iommu_api.c        |  15 +-
- drivers/gpu/drm/via/via_dmablit.c           |   2 +-
- drivers/infiniband/core/umem.c              |  17 +-
- drivers/infiniband/core/umem_odp.c          |  24 +-
- drivers/infiniband/hw/hfi1/user_pages.c     |   4 +-
- drivers/infiniband/hw/mthca/mthca_memfree.c |   3 +-
- drivers/infiniband/hw/qib/qib_user_pages.c  |   8 +-
- drivers/infiniband/hw/qib/qib_user_sdma.c   |   2 +-
- drivers/infiniband/hw/usnic/usnic_uiom.c    |   9 +-
- drivers/infiniband/sw/siw/siw_mem.c         |   5 +-
- drivers/media/v4l2-core/videobuf-dma-sg.c   |  10 +-
- drivers/platform/goldfish/goldfish_pipe.c   |  35 +-
- drivers/vfio/vfio_iommu_type1.c             |  35 +-
- fs/io_uring.c                               |   5 +-
- include/linux/mm.h                          | 164 +++++-
- include/linux/mmzone.h                      |   2 +
- include/linux/page_ref.h                    |  10 +
- mm/gup.c                                    | 608 ++++++++++++++++----
- mm/gup_benchmark.c                          |  87 ++-
- mm/huge_memory.c                            |  54 +-
- mm/hugetlb.c                                |  39 +-
- mm/memremap.c                               |  67 +--
- mm/process_vm_access.c                      |  28 +-
- mm/vmstat.c                                 |   2 +
- net/xdp/xdp_umem.c                          |   4 +-
- tools/testing/selftests/vm/gup_benchmark.c  |  34 +-
- tools/testing/selftests/vm/run_vmtests      |  22 +
- 29 files changed, 1180 insertions(+), 334 deletions(-)
- create mode 100644 Documentation/core-api/pin_user_pages.rst
-
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index a2adf95b3f9c..96228376139c 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -967,9 +967,10 @@ static inline bool is_zone_device_page(const struct pa=
+ge *page)
+ #endif
+=20
+ #ifdef CONFIG_DEV_PAGEMAP_OPS
+-void __put_devmap_managed_page(struct page *page);
++void free_devmap_managed_page(struct page *page);
+ DECLARE_STATIC_KEY_FALSE(devmap_managed_key);
+-static inline bool put_devmap_managed_page(struct page *page)
++
++static inline bool page_is_devmap_managed(struct page *page)
+ {
+ 	if (!static_branch_unlikely(&devmap_managed_key))
+ 		return false;
+@@ -978,7 +979,6 @@ static inline bool put_devmap_managed_page(struct page =
+*page)
+ 	switch (page->pgmap->type) {
+ 	case MEMORY_DEVICE_PRIVATE:
+ 	case MEMORY_DEVICE_FS_DAX:
+-		__put_devmap_managed_page(page);
+ 		return true;
+ 	default:
+ 		break;
+@@ -986,6 +986,27 @@ static inline bool put_devmap_managed_page(struct page=
+ *page)
+ 	return false;
+ }
+=20
++static inline bool put_devmap_managed_page(struct page *page)
++{
++	bool is_devmap =3D page_is_devmap_managed(page);
++
++	if (is_devmap) {
++		int count =3D page_ref_dec_return(page);
++
++		/*
++		 * devmap page refcounts are 1-based, rather than 0-based: if
++		 * refcount is 1, then the page is free and the refcount is
++		 * stable because nobody holds a reference on the page.
++		 */
++		if (count =3D=3D 1)
++			free_devmap_managed_page(page);
++		else if (!count)
++			__put_page(page);
++	}
++
++	return is_devmap;
++}
++
+ #else /* CONFIG_DEV_PAGEMAP_OPS */
+ static inline bool put_devmap_managed_page(struct page *page)
+ {
+diff --git a/mm/memremap.c b/mm/memremap.c
+index 03ccbdfeb697..bc7e2a27d025 100644
+--- a/mm/memremap.c
++++ b/mm/memremap.c
+@@ -410,48 +410,39 @@ struct dev_pagemap *get_dev_pagemap(unsigned long pfn=
+,
+ EXPORT_SYMBOL_GPL(get_dev_pagemap);
+=20
+ #ifdef CONFIG_DEV_PAGEMAP_OPS
+-void __put_devmap_managed_page(struct page *page)
++void free_devmap_managed_page(struct page *page)
+ {
+-	int count =3D page_ref_dec_return(page);
++	/* Clear Active bit in case of parallel mark_page_accessed */
++	__ClearPageActive(page);
++	__ClearPageWaiters(page);
++
++	mem_cgroup_uncharge(page);
+=20
+ 	/*
+-	 * If refcount is 1 then page is freed and refcount is stable as nobody
+-	 * holds a reference on the page.
++	 * When a device_private page is freed, the page->mapping field
++	 * may still contain a (stale) mapping value. For example, the
++	 * lower bits of page->mapping may still identify the page as
++	 * an anonymous page. Ultimately, this entire field is just
++	 * stale and wrong, and it will cause errors if not cleared.
++	 * One example is:
++	 *
++	 *  migrate_vma_pages()
++	 *    migrate_vma_insert_page()
++	 *      page_add_new_anon_rmap()
++	 *        __page_set_anon_rmap()
++	 *          ...checks page->mapping, via PageAnon(page) call,
++	 *            and incorrectly concludes that the page is an
++	 *            anonymous page. Therefore, it incorrectly,
++	 *            silently fails to set up the new anon rmap.
++	 *
++	 * For other types of ZONE_DEVICE pages, migration is either
++	 * handled differently or not done at all, so there is no need
++	 * to clear page->mapping.
+ 	 */
+-	if (count =3D=3D 1) {
+-		/* Clear Active bit in case of parallel mark_page_accessed */
+-		__ClearPageActive(page);
+-		__ClearPageWaiters(page);
+-
+-		mem_cgroup_uncharge(page);
+-
+-		/*
+-		 * When a device_private page is freed, the page->mapping field
+-		 * may still contain a (stale) mapping value. For example, the
+-		 * lower bits of page->mapping may still identify the page as
+-		 * an anonymous page. Ultimately, this entire field is just
+-		 * stale and wrong, and it will cause errors if not cleared.
+-		 * One example is:
+-		 *
+-		 *  migrate_vma_pages()
+-		 *    migrate_vma_insert_page()
+-		 *      page_add_new_anon_rmap()
+-		 *        __page_set_anon_rmap()
+-		 *          ...checks page->mapping, via PageAnon(page) call,
+-		 *            and incorrectly concludes that the page is an
+-		 *            anonymous page. Therefore, it incorrectly,
+-		 *            silently fails to set up the new anon rmap.
+-		 *
+-		 * For other types of ZONE_DEVICE pages, migration is either
+-		 * handled differently or not done at all, so there is no need
+-		 * to clear page->mapping.
+-		 */
+-		if (is_device_private_page(page))
+-			page->mapping =3D NULL;
++	if (is_device_private_page(page))
++		page->mapping =3D NULL;
+=20
+-		page->pgmap->ops->page_free(page);
+-	} else if (!count)
+-		__put_page(page);
++	page->pgmap->ops->page_free(page);
+ }
+-EXPORT_SYMBOL(__put_devmap_managed_page);
++EXPORT_SYMBOL(free_devmap_managed_page);
+ #endif /* CONFIG_DEV_PAGEMAP_OPS */
 --=20
 2.24.0
 
