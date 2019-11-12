@@ -2,67 +2,61 @@ Return-Path: <SRS0=XoDG=ZE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CFD61C43331
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 12:58:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15001C43331
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 13:09:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2BCD3206A3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 12:58:52 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="kPMSVVQH"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2BCD3206A3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id C350F2084E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 13:09:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C350F2084E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47C7954MQ9zF1Yp
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 23:58:49 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47C6xm2qfMzF3Wj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2019 23:49:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.b="kPMSVVQH"; dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 47C6xl61Bmz9sNT;
- Tue, 12 Nov 2019 23:48:59 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1573562940;
- bh=0H2ckzenIEUdMeCuWV8YnQ3qDS5tDmmeebFIVA9G0MI=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=kPMSVVQHO2yuVbDjgLxrErywmOK9wydgd407kEodq/NWXkZX01saj/9m1RMJGkBzO
- 3hxIZ9nC/rE8GCWjMeISUpaQittbwWBLoKY+vbH1BttdhuBxAl5zTGUyOyODQXSZ0c
- vZlaxdsCVD6EkPewb9AxsaydNG17vqVzA7fteb2Q4j6ErkI2ui7LXS5Xgd2bjutVmI
- pasyZ1azAOahGlSTs4qf12ch64aVtzoY3DI+Xl1IrWdcYnNXn6F//Q19j9J+QJMk1U
- 0O+uPTWcbDNl2nMuJNU8N4DCFX9S9UfEu2z3DNYdl43ga/fHQ3qH5TCojGVfHfZ0n2
- qA6di46GG0ApA==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Andrew Murray <andrew.murray@arm.com>, Rob Herring <robh+dt@kernel.org>,
- Mark Rutland <mark.rutland@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH v1 6/7] powerpc: dts: Use IRQ flags for legacy PCI IRQ
- interrupts
-In-Reply-To: <20191104163834.8932-7-andrew.murray@arm.com>
-References: <20191104163834.8932-1-andrew.murray@arm.com>
- <20191104163834.8932-7-andrew.murray@arm.com>
-Date: Tue, 12 Nov 2019 23:48:58 +1100
-Message-ID: <87v9rp1cqt.fsf@mpe.ellerman.id.au>
+	by lists.ozlabs.org (Postfix) with ESMTP id 47C7Nt0RMZzF38Y
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 00:09:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kaod.org (client-ip=87.98.165.38; helo=6.mo2.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=kaod.org
+X-Greylist: delayed 599 seconds by postgrey-1.36 at bilbo;
+ Wed, 13 Nov 2019 00:05:18 AEDT
+Received: from 6.mo2.mail-out.ovh.net (6.mo2.mail-out.ovh.net [87.98.165.38])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47C7JZ3g0WzF56D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 00:05:15 +1100 (AEDT)
+Received: from player774.ha.ovh.net (unknown [10.109.143.24])
+ by mo2.mail-out.ovh.net (Postfix) with ESMTP id 363F71B4DED
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2019 13:48:18 +0100 (CET)
+Received: from kaod.org (lfbn-1-2229-223.w90-76.abo.wanadoo.fr [90.76.50.223])
+ (Authenticated sender: clg@kaod.org)
+ by player774.ha.ovh.net (Postfix) with ESMTPSA id 06558BFF7DCC;
+ Tue, 12 Nov 2019 12:48:14 +0000 (UTC)
+Subject: Re: [PATCH] powerpc/xive: Prevent page fault issues in the machine
+ crash handler
+To: Michael Ellerman <mpe@ellerman.id.au>
+References: <20191031063100.3864-1-clg@kaod.org>
+ <871rud2riv.fsf@mpe.ellerman.id.au>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <96933f3e-d3a6-0763-869e-f5172e5b38af@kaod.org>
+Date: Tue, 12 Nov 2019 13:48:13 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.1.1
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <871rud2riv.fsf@mpe.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 12254857536652282813
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedufedruddvledggeehucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdqfffguegfifdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepuffvfhfhkffffgggjggtgfesthekredttdefjeenucfhrhhomhepveorughrihgtpgfnvggpifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucfkpheptddrtddrtddrtddpledtrdejiedrhedtrddvvdefnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehplhgrhigvrhejjeegrdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrghenucevlhhushhtvghrufhiiigvpedt
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,55 +68,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, Greg Kurz <groug@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Andrew Murray <andrew.murray@arm.com> writes:
-> Replace magic numbers used to describe legacy PCI IRQ interrupts
-> with #define.
+On 12/11/2019 13:44, Michael Ellerman wrote:
+> Cédric Le Goater <clg@kaod.org> writes:
+>> When the machine crash handler is invoked, all interrupts are masked
+>> but interrupts which have not been started yet do not have an ESB page
+>> mapped in the Linux address space. This crashes the 'crash kexec'
+>> sequence on sPAPR guests.
+> 
+> This sounds like it needs a Fixes/stable tag?
+
+yes.
+
+> I used these:
+> 
+>   Fixes: 243e25112d06 ("powerpc/xive: Native exploitation of the XIVE interrupt controller")
+>   Cc: stable@vger.kernel.org # v4.12+
 >
-> Signed-off-by: Andrew Murray <andrew.murray@arm.com>
-> ---
->  arch/powerpc/boot/dts/bluestone.dts       | 12 +++--
->  arch/powerpc/boot/dts/charon.dts          | 12 +++--
->  arch/powerpc/boot/dts/digsy_mtc.dts       | 12 +++--
->  arch/powerpc/boot/dts/haleakala.dts       | 12 +++--
->  arch/powerpc/boot/dts/holly.dts           | 42 ++++++++--------
->  arch/powerpc/boot/dts/hotfoot.dts         | 12 +++--
->  arch/powerpc/boot/dts/kuroboxHD.dts       | 28 ++++++-----
->  arch/powerpc/boot/dts/kuroboxHG.dts       | 28 ++++++-----
->  arch/powerpc/boot/dts/lite5200.dts        | 12 +++--
->  arch/powerpc/boot/dts/lite5200b.dts       | 22 +++++----
->  arch/powerpc/boot/dts/media5200.dts       | 26 +++++-----
->  arch/powerpc/boot/dts/mpc5121ads.dts      | 20 ++++----
->  arch/powerpc/boot/dts/mpc8308rdb.dts      | 12 +++--
->  arch/powerpc/boot/dts/mpc8313erdb.dts     | 20 ++++----
->  arch/powerpc/boot/dts/mpc832x_mds.dts     | 60 ++++++++++++-----------
->  arch/powerpc/boot/dts/mpc832x_rdb.dts     | 22 +++++----
->  arch/powerpc/boot/dts/mpc8349emitxgp.dts  |  8 +--
->  arch/powerpc/boot/dts/mpc836x_mds.dts     | 60 ++++++++++++-----------
->  arch/powerpc/boot/dts/mpc836x_rdk.dts     | 16 +++---
->  arch/powerpc/boot/dts/mucmc52.dts         | 12 +++--
->  arch/powerpc/boot/dts/mvme5100.dts        | 48 +++++++++---------
->  arch/powerpc/boot/dts/pcm030.dts          | 22 +++++----
->  arch/powerpc/boot/dts/pcm032.dts          | 22 +++++----
->  arch/powerpc/boot/dts/pq2fads.dts         | 28 ++++++-----
->  arch/powerpc/boot/dts/socrates.dts        |  8 +--
->  arch/powerpc/boot/dts/storcenter.dts      | 28 ++++++-----
->  arch/powerpc/boot/dts/stx_gp3_8560.dts    | 36 +++++++-------
->  arch/powerpc/boot/dts/taishan.dts         | 20 ++++----
->  arch/powerpc/boot/dts/tqm5200.dts         | 12 +++--
->  arch/powerpc/boot/dts/tqm8540.dts         | 16 +++---
->  arch/powerpc/boot/dts/tqm8541.dts         | 16 +++---
->  arch/powerpc/boot/dts/tqm8555.dts         | 16 +++---
->  arch/powerpc/boot/dts/tqm8560.dts         | 16 +++---
->  arch/powerpc/boot/dts/virtex440-ml510.dts | 43 ++++++++--------
->  arch/powerpc/boot/dts/xcalibur1501.dts    | 13 +++--
->  arch/powerpc/boot/dts/xpedite5200.dts     |  8 +--
->  36 files changed, 437 insertions(+), 363 deletions(-)
+> Please tell me if you think that's wrong.
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+Looks OK to me. 
 
-cheers
+Thanks,
+
+C. 
+
+
+ 
+> cheers
+> 
+> 
+>> diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
+>> index df832b09e3e9..f5fadbd2533a 100644
+>> --- a/arch/powerpc/sysdev/xive/common.c
+>> +++ b/arch/powerpc/sysdev/xive/common.c
+>> @@ -1035,6 +1035,15 @@ static int xive_irq_alloc_data(unsigned int virq, irq_hw_number_t hw)
+>>  	xd->target = XIVE_INVALID_TARGET;
+>>  	irq_set_handler_data(virq, xd);
+>>  
+>> +	/*
+>> +	 * Turn OFF by default the interrupt being mapped. A side
+>> +	 * effect of this check is the mapping the ESB page of the
+>> +	 * interrupt in the Linux address space. This prevents page
+>> +	 * fault issues in the crash handler which masks all
+>> +	 * interrupts.
+>> +	 */
+>> +	xive_esb_read(xd, XIVE_ESB_SET_PQ_01);
+>> +
+>>  	return 0;
+>>  }
+>>  
+>> -- 
+>> 2.21.0
+
