@@ -7,75 +7,75 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 20206C43331
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 00:21:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BEDFDC43331
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 00:23:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BFFB820650
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 00:21:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 669A321872
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 00:23:57 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="V83Mm/mg"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BFFB820650
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="SJ2uh291"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 669A321872
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nvidia.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47BpMg5s1jzF4b1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 11:21:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47BpQ25TKzzF3M8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 11:23:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=nvidia.com (client-ip=216.228.121.143;
- helo=hqemgate14.nvidia.com; envelope-from=jhubbard@nvidia.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=nvidia.com (client-ip=216.228.121.65; helo=hqemgate16.nvidia.com;
+ envelope-from=jhubbard@nvidia.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="V83Mm/mg"; 
+ unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="SJ2uh291"; 
  dkim-atps=neutral
-Received: from hqemgate14.nvidia.com (hqemgate14.nvidia.com [216.228.121.143])
+Received: from hqemgate16.nvidia.com (hqemgate16.nvidia.com [216.228.121.65])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47Bp2q12NNzF4Lw
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2019 11:07:14 +1100 (AEDT)
-Received: from hqpgpgate102.nvidia.com (Not Verified[216.228.121.13]) by
- hqemgate14.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
- id <B5dc9f7b00000>; Mon, 11 Nov 2019 16:07:13 -0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47Bp2r1mb5zF4Lw
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2019 11:07:15 +1100 (AEDT)
+Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by
+ hqemgate16.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+ id <B5dc9f7780003>; Mon, 11 Nov 2019 16:06:16 -0800
 Received: from hqmail.nvidia.com ([172.20.161.6])
- by hqpgpgate102.nvidia.com (PGP Universal service);
- Mon, 11 Nov 2019 16:07:10 -0800
+ by hqpgpgate101.nvidia.com (PGP Universal service);
+ Mon, 11 Nov 2019 16:07:12 -0800
 X-PGP-Universal: processed;
- by hqpgpgate102.nvidia.com on Mon, 11 Nov 2019 16:07:10 -0800
-Received: from HQMAIL107.nvidia.com (172.20.187.13) by HQMAIL101.nvidia.com
- (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Tue, 12 Nov
- 2019 00:07:09 +0000
+ by hqpgpgate101.nvidia.com on Mon, 11 Nov 2019 16:07:12 -0800
+Received: from HQMAIL107.nvidia.com (172.20.187.13) by HQMAIL105.nvidia.com
+ (172.20.187.12) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Tue, 12 Nov
+ 2019 00:07:12 +0000
 Received: from rnnvemgw01.nvidia.com (10.128.109.123) by HQMAIL107.nvidia.com
  (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via
- Frontend Transport; Tue, 12 Nov 2019 00:07:08 +0000
+ Frontend Transport; Tue, 12 Nov 2019 00:07:11 +0000
 Received: from blueforge.nvidia.com (Not Verified[10.110.48.28]) by
  rnnvemgw01.nvidia.com with Trustwave SEG (v7, 5, 8, 10121)
- id <B5dc9f7ab0000>; Mon, 11 Nov 2019 16:07:08 -0800
+ id <B5dc9f7ae0000>; Mon, 11 Nov 2019 16:07:11 -0800
 From: John Hubbard <jhubbard@nvidia.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v3 05/23] goldish_pipe: rename local pin_user_pages() routine
-Date: Mon, 11 Nov 2019 16:06:42 -0800
-Message-ID: <20191112000700.3455038-6-jhubbard@nvidia.com>
+Subject: [PATCH v3 08/23] vfio,
+ mm: fix get_user_pages_remote() and FOLL_LONGTERM
+Date: Mon, 11 Nov 2019 16:06:45 -0800
+Message-ID: <20191112000700.3455038-9-jhubbard@nvidia.com>
 X-Mailer: git-send-email 2.24.0
 In-Reply-To: <20191112000700.3455038-1-jhubbard@nvidia.com>
 References: <20191112000700.3455038-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
 X-NVConfidentiality: public
-Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
- t=1573517233; bh=OvCIL0+nr8EQ3ucOYL7z+Bd4Y3AXJzaosdg9/Wp2t2k=;
+ t=1573517177; bh=LHd6nlstYt/+WO2arS2xO7M4BDaQ4oXhsosl4/alSFg=;
  h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
  In-Reply-To:References:MIME-Version:X-NVConfidentiality:
- Content-Type:Content-Transfer-Encoding;
- b=V83Mm/mgD13wOskCVUg3jXnnwavnPQ3ylc/JhyLve0YbkPqUMMHZTXt9R3Coa9qBI
- 80xP6p17NB70zDrJDKM0H06sAl8/jk3I6sztgeF1r+2JvnRlR/gRrgYjRd7k2qYRvF
- +etmspepNCoSfoh6DuJ9/Tl8quVDHw6f0ZMNYbPHAmdMqdIErdjTDHj7kfctfYwHYJ
- JrQM4B4WS9e1j6/4cRSDe44i8Ut0ljDfyI3fIr7hg3xeYD37/uLAn+pj5hfJLOPdfS
- YfZPx8xiCB4HatUs9wFbCohJOTXKLLcrnHTUpGh/cMLJ3coAlt4cJM6JmF3rNz8d1h
- pWma1MKSn5Urw==
+ Content-Transfer-Encoding:Content-Type;
+ b=SJ2uh291o0n2KAathWWaARa6MvN+m/A73UL04mBGFpYz9dwZwEu2YOKZK/z6oR36f
+ S4MmrBohFcW7M4U4sGwLAQQaa4ErNxr5zszFsv1ppGBtK5nFe0oidXZ1r/1d+C5hHD
+ 7OdWLPmiW5F6FVC/3nIr5wwa+GbS2yQdK9nseWpjIMdx642Wxvb5Kkid/PLVxBV3h0
+ OGPpdpsgYBaWnEIgbpCi7rX0MmoFtgOyBhqm3y6VOtt9bGAvDRddLo4gcp8LgfWb9W
+ RGx06m/cZaFaW7nNL6zPl1lRK04yV8Qj7tUjurbVty1S8No3Te9OtVs5tQeXtoroeI
+ mB7ag0CyWpHAw==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,57 +112,101 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-1. Avoid naming conflicts: rename local static function from
-"pin_user_pages()" to "pin_goldfish_pages()".
+As it says in the updated comment in gup.c: current FOLL_LONGTERM
+behavior is incompatible with FAULT_FLAG_ALLOW_RETRY because of the
+FS DAX check requirement on vmas.
 
-An upcoming patch will introduce a global pin_user_pages()
-function.
+However, the corresponding restriction in get_user_pages_remote() was
+slightly stricter than is actually required: it forbade all
+FOLL_LONGTERM callers, but we can actually allow FOLL_LONGTERM callers
+that do not set the "locked" arg.
 
-Reviewed-by: J=C3=A9r=C3=B4me Glisse <jglisse@redhat.com>
-Reviewed-by: Ira Weiny <ira.weiny@intel.com>
+Update the code and comments accordingly, and update the VFIO caller
+to take advantage of this, fixing a bug as a result: the VFIO caller
+is logically a FOLL_LONGTERM user.
+
+Thanks to Jason Gunthorpe for pointing out a clean way to fix this.
+
+Suggested-by: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: Jerome Glisse <jglisse@redhat.com>
+Cc: Ira Weiny <ira.weiny@intel.com>
 Signed-off-by: John Hubbard <jhubbard@nvidia.com>
 ---
- drivers/platform/goldfish/goldfish_pipe.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+ drivers/vfio/vfio_iommu_type1.c | 30 +++++++++++++-----------------
+ mm/gup.c                        | 13 ++++++++-----
+ 2 files changed, 21 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/platform/goldfish/goldfish_pipe.c b/drivers/platform/g=
-oldfish/goldfish_pipe.c
-index cef0133aa47a..7ed2a21a0bac 100644
---- a/drivers/platform/goldfish/goldfish_pipe.c
-+++ b/drivers/platform/goldfish/goldfish_pipe.c
-@@ -257,12 +257,12 @@ static int goldfish_pipe_error_convert(int status)
+diff --git a/drivers/vfio/vfio_iommu_type1.c b/drivers/vfio/vfio_iommu_type=
+1.c
+index d864277ea16f..017689b7c32b 100644
+--- a/drivers/vfio/vfio_iommu_type1.c
++++ b/drivers/vfio/vfio_iommu_type1.c
+@@ -348,24 +348,20 @@ static int vaddr_get_pfn(struct mm_struct *mm, unsign=
+ed long vaddr,
+ 		flags |=3D FOLL_WRITE;
+=20
+ 	down_read(&mm->mmap_sem);
+-	if (mm =3D=3D current->mm) {
+-		ret =3D get_user_pages(vaddr, 1, flags | FOLL_LONGTERM, page,
+-				     vmas);
+-	} else {
+-		ret =3D get_user_pages_remote(NULL, mm, vaddr, 1, flags, page,
+-					    vmas, NULL);
+-		/*
+-		 * The lifetime of a vaddr_get_pfn() page pin is
+-		 * userspace-controlled. In the fs-dax case this could
+-		 * lead to indefinite stalls in filesystem operations.
+-		 * Disallow attempts to pin fs-dax pages via this
+-		 * interface.
+-		 */
+-		if (ret > 0 && vma_is_fsdax(vmas[0])) {
+-			ret =3D -EOPNOTSUPP;
+-			put_page(page[0]);
+-		}
++	ret =3D get_user_pages_remote(NULL, mm, vaddr, 1, flags | FOLL_LONGTERM,
++				    page, vmas, NULL);
++	/*
++	 * The lifetime of a vaddr_get_pfn() page pin is
++	 * userspace-controlled. In the fs-dax case this could
++	 * lead to indefinite stalls in filesystem operations.
++	 * Disallow attempts to pin fs-dax pages via this
++	 * interface.
++	 */
++	if (ret > 0 && vma_is_fsdax(vmas[0])) {
++		ret =3D -EOPNOTSUPP;
++		put_page(page[0]);
  	}
- }
++
+ 	up_read(&mm->mmap_sem);
 =20
--static int pin_user_pages(unsigned long first_page,
--			  unsigned long last_page,
--			  unsigned int last_page_size,
--			  int is_write,
--			  struct page *pages[MAX_BUFFERS_PER_COMMAND],
--			  unsigned int *iter_last_page_size)
-+static int pin_goldfish_pages(unsigned long first_page,
-+			      unsigned long last_page,
-+			      unsigned int last_page_size,
-+			      int is_write,
-+			      struct page *pages[MAX_BUFFERS_PER_COMMAND],
-+			      unsigned int *iter_last_page_size)
+ 	if (ret =3D=3D 1) {
+diff --git a/mm/gup.c b/mm/gup.c
+index 933524de6249..cfe6dc5fc343 100644
+--- a/mm/gup.c
++++ b/mm/gup.c
+@@ -1167,13 +1167,16 @@ long get_user_pages_remote(struct task_struct *tsk,=
+ struct mm_struct *mm,
+ 		struct vm_area_struct **vmas, int *locked)
  {
- 	int ret;
- 	int requested_pages =3D ((last_page - first_page) >> PAGE_SHIFT) + 1;
-@@ -354,9 +354,9 @@ static int transfer_max_buffers(struct goldfish_pipe *p=
-ipe,
- 	if (mutex_lock_interruptible(&pipe->lock))
- 		return -ERESTARTSYS;
+ 	/*
+-	 * FIXME: Current FOLL_LONGTERM behavior is incompatible with
++	 * Current FOLL_LONGTERM behavior is incompatible with
+ 	 * FAULT_FLAG_ALLOW_RETRY because of the FS DAX check requirement on
+-	 * vmas.  As there are no users of this flag in this call we simply
+-	 * disallow this option for now.
++	 * vmas. However, this only comes up if locked is set, and there are
++	 * callers that do request FOLL_LONGTERM, but do not set locked. So,
++	 * allow what we can.
+ 	 */
+-	if (WARN_ON_ONCE(gup_flags & FOLL_LONGTERM))
+-		return -EINVAL;
++	if (gup_flags & FOLL_LONGTERM) {
++		if (WARN_ON_ONCE(locked))
++			return -EINVAL;
++	}
 =20
--	pages_count =3D pin_user_pages(first_page, last_page,
--				     last_page_size, is_write,
--				     pipe->pages, &iter_last_page_size);
-+	pages_count =3D pin_goldfish_pages(first_page, last_page,
-+					 last_page_size, is_write,
-+					 pipe->pages, &iter_last_page_size);
- 	if (pages_count < 0) {
- 		mutex_unlock(&pipe->lock);
- 		return pages_count;
+ 	return __get_user_pages_locked(tsk, mm, start, nr_pages, pages, vmas,
+ 				       locked,
 --=20
 2.24.0
 
