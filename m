@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 29FFAC43331
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 18:26:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A3F9C43331
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 18:28:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D750D206B6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 18:26:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D750D206B6
+	by mail.kernel.org (Postfix) with ESMTPS id 1582C206BA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 18:28:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1582C206BA
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47CGRG04xnzF5Vp
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 05:26:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47CGTw1jhjzF3qQ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 05:28:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
  (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=msuchanek@suse.de;
@@ -29,17 +29,17 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47CDNR65vJzF31s
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 03:53:59 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47CDNT16tPzF3By
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 03:54:01 +1100 (AEDT)
 X-Virus-Scanned: by amavisd-new at test-mx.suse.de
 Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id 6A4C3B132;
- Tue, 12 Nov 2019 16:53:56 +0000 (UTC)
+ by mx1.suse.de (Postfix) with ESMTP id DEBDFB133;
+ Tue, 12 Nov 2019 16:53:57 +0000 (UTC)
 From: Michal Suchanek <msuchanek@suse.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 28/33] powerpc/perf: consolidate read_user_stack_32
-Date: Tue, 12 Nov 2019 17:52:26 +0100
-Message-Id: <ceedc876813c9419bb834380b5340abba9bd8606.1573576649.git.msuchanek@suse.de>
+Subject: [PATCH 29/33] powerpc/perf: consolidate valid_user_sp
+Date: Tue, 12 Nov 2019 17:52:27 +0100
+Message-Id: <ba56f4270e5e2b0832367d3a045f1306c116c215.1573576649.git.msuchanek@suse.de>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <cover.1573576649.git.msuchanek@suse.de>
 References: <cover.1573576649.git.msuchanek@suse.de>
@@ -86,105 +86,76 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There are two almost identical copies for 32bit and 64bit.
+Merge the 32bit and 64bit version.
 
-The function is used only in 32bit code which will be split out in next
-patch so consolidate to one function.
+Halve the check constants on 32bit.
+
+Use STACK_TOP since it is defined.
+
+This removes a page from the valid 32bit area on 64bit:
+ #define TASK_SIZE_USER32 (0x0000000100000000UL - (1 * PAGE_SIZE))
+ #define STACK_TOP_USER32 TASK_SIZE_USER32
 
 Signed-off-by: Michal Suchanek <msuchanek@suse.de>
-Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
-v6: new patch
-v8: move the consolidated function out of the ifdef block.
+v8: new patch
 ---
- arch/powerpc/perf/callchain.c | 59 +++++++++++++++--------------------
- 1 file changed, 25 insertions(+), 34 deletions(-)
+ arch/powerpc/perf/callchain.c | 28 ++++++++++++++--------------
+ 1 file changed, 14 insertions(+), 14 deletions(-)
 
 diff --git a/arch/powerpc/perf/callchain.c b/arch/powerpc/perf/callchain.c
-index c84bbd4298a0..d86bdbffda9e 100644
+index d86bdbffda9e..7863ee0a0e69 100644
 --- a/arch/powerpc/perf/callchain.c
 +++ b/arch/powerpc/perf/callchain.c
-@@ -165,22 +165,6 @@ static int read_user_stack_64(unsigned long __user *ptr, unsigned long *ret)
+@@ -102,6 +102,20 @@ perf_callchain_kernel(struct perf_callchain_entry_ctx *entry, struct pt_regs *re
+ 	}
+ }
+ 
++static inline int valid_user_sp(unsigned long sp, int is_64)
++{
++	unsigned long stack_top;
++
++	if (IS_ENABLED(CONFIG_PPC32))
++		stack_top = STACK_TOP;
++	else    /* STACK_TOP uses is_32bit_task() but we want is_64 */
++		stack_top = is_64 ? STACK_TOP_USER64 : STACK_TOP_USER32;
++
++	if (!sp || (sp & (is_64 ? 7 : 3)) || sp > stack_top - (is_64 ? 32 : 16))
++		return 0;
++	return 1;
++}
++
+ #ifdef CONFIG_PPC64
+ /*
+  * On 64-bit we don't want to invoke hash_page on user addresses from
+@@ -165,13 +179,6 @@ static int read_user_stack_64(unsigned long __user *ptr, unsigned long *ret)
  	return read_user_stack_slow(ptr, ret, 8);
  }
  
--static int read_user_stack_32(unsigned int __user *ptr, unsigned int *ret)
+-static inline int valid_user_sp(unsigned long sp, int is_64)
 -{
--	if ((unsigned long)ptr > TASK_SIZE - sizeof(unsigned int) ||
--	    ((unsigned long)ptr & 3))
--		return -EFAULT;
--
--	pagefault_disable();
--	if (!__get_user_inatomic(*ret, ptr)) {
--		pagefault_enable();
+-	if (!sp || (sp & 7) || sp > (is_64 ? TASK_SIZE : 0x100000000UL) - 32)
 -		return 0;
--	}
--	pagefault_enable();
--
--	return read_user_stack_slow(ptr, ret, 4);
+-	return 1;
 -}
 -
- static inline int valid_user_sp(unsigned long sp, int is_64)
- {
- 	if (!sp || (sp & 7) || sp > (is_64 ? TASK_SIZE : 0x100000000UL) - 32)
-@@ -295,25 +279,9 @@ static inline int current_is_64bit(void)
- }
- 
- #else  /* CONFIG_PPC64 */
--/*
-- * On 32-bit we just access the address and let hash_page create a
-- * HPTE if necessary, so there is no need to fall back to reading
-- * the page tables.  Since this is called at interrupt level,
-- * do_page_fault() won't treat a DSI as a page fault.
-- */
--static int read_user_stack_32(unsigned int __user *ptr, unsigned int *ret)
-+static int read_user_stack_slow(void __user *ptr, void *buf, int nb)
- {
--	int rc;
--
--	if ((unsigned long)ptr > TASK_SIZE - sizeof(unsigned int) ||
--	    ((unsigned long)ptr & 3))
--		return -EFAULT;
--
--	pagefault_disable();
--	rc = __get_user_inatomic(*ret, ptr);
--	pagefault_enable();
--
--	return rc;
-+	return 0;
- }
- 
- static inline void perf_callchain_user_64(struct perf_callchain_entry_ctx *entry,
-@@ -341,6 +309,29 @@ static inline int valid_user_sp(unsigned long sp, int is_64)
- 
- #endif /* CONFIG_PPC64 */
- 
-+/*
-+ * On 32-bit we just access the address and let hash_page create a
-+ * HPTE if necessary, so there is no need to fall back to reading
-+ * the page tables.  Since this is called at interrupt level,
-+ * do_page_fault() won't treat a DSI as a page fault.
-+ */
-+static int read_user_stack_32(unsigned int __user *ptr, unsigned int *ret)
-+{
-+	int rc;
-+
-+	if ((unsigned long)ptr > TASK_SIZE - sizeof(unsigned int) ||
-+	    ((unsigned long)ptr & 3))
-+		return -EFAULT;
-+
-+	pagefault_disable();
-+	rc = __get_user_inatomic(*ret, ptr);
-+	pagefault_enable();
-+
-+	if (IS_ENABLED(CONFIG_PPC64) && rc)
-+		return read_user_stack_slow(ptr, ret, 4);
-+	return rc;
-+}
-+
  /*
-  * Layout for non-RT signal frames
+  * 64-bit user processes use the same stack frame for RT and non-RT signals.
   */
+@@ -294,13 +301,6 @@ static inline int current_is_64bit(void)
+ 	return 0;
+ }
+ 
+-static inline int valid_user_sp(unsigned long sp, int is_64)
+-{
+-	if (!sp || (sp & 7) || sp > TASK_SIZE - 32)
+-		return 0;
+-	return 1;
+-}
+-
+ #define __SIGNAL_FRAMESIZE32	__SIGNAL_FRAMESIZE
+ #define sigcontext32		sigcontext
+ #define mcontext32		mcontext
 -- 
 2.23.0
 
