@@ -7,57 +7,58 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3122AC43331
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 00:44:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A7C16C43331
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 00:46:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9627621D7F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 00:44:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5685421D7F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 00:46:31 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="j23aF6SR"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9627621D7F
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="kyMiML3+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5685421D7F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nvidia.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47BpsV5VVJzF3jh
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 11:44:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47Bpw52skmzF4qk
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 11:46:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=nvidia.com (client-ip=216.228.121.65; helo=hqemgate16.nvidia.com;
- envelope-from=jhubbard@nvidia.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=nvidia.com (client-ip=216.228.121.143;
+ helo=hqemgate14.nvidia.com; envelope-from=jhubbard@nvidia.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="j23aF6SR"; 
+ unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="kyMiML3+"; 
  dkim-atps=neutral
-Received: from hqemgate16.nvidia.com (hqemgate16.nvidia.com [216.228.121.65])
+Received: from hqemgate14.nvidia.com (hqemgate14.nvidia.com [216.228.121.143])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47Bp375sdvzF4Lv
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47Bp3812x0zF4MD
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2019 11:07:31 +1100 (AEDT)
-Received: from hqpgpgate102.nvidia.com (Not Verified[216.228.121.13]) by
- hqemgate16.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
- id <B5dc9f7840000>; Mon, 11 Nov 2019 16:06:28 -0800
+Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by
+ hqemgate14.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+ id <B5dc9f7c00000>; Mon, 11 Nov 2019 16:07:28 -0800
 Received: from hqmail.nvidia.com ([172.20.161.6])
- by hqpgpgate102.nvidia.com (PGP Universal service);
- Mon, 11 Nov 2019 16:07:24 -0800
+ by hqpgpgate101.nvidia.com (PGP Universal service);
+ Mon, 11 Nov 2019 16:07:25 -0800
 X-PGP-Universal: processed;
- by hqpgpgate102.nvidia.com on Mon, 11 Nov 2019 16:07:24 -0800
-Received: from HQMAIL109.nvidia.com (172.20.187.15) by HQMAIL105.nvidia.com
- (172.20.187.12) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Tue, 12 Nov
- 2019 00:07:23 +0000
-Received: from rnnvemgw01.nvidia.com (10.128.109.123) by HQMAIL109.nvidia.com
- (172.20.187.15) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via
- Frontend Transport; Tue, 12 Nov 2019 00:07:22 +0000
+ by hqpgpgate101.nvidia.com on Mon, 11 Nov 2019 16:07:25 -0800
+Received: from HQMAIL101.nvidia.com (172.20.187.10) by HQMAIL111.nvidia.com
+ (172.20.187.18) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Tue, 12 Nov
+ 2019 00:07:25 +0000
+Received: from rnnvemgw01.nvidia.com (10.128.109.123) by HQMAIL101.nvidia.com
+ (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via
+ Frontend Transport; Tue, 12 Nov 2019 00:07:24 +0000
 Received: from blueforge.nvidia.com (Not Verified[10.110.48.28]) by
  rnnvemgw01.nvidia.com with Trustwave SEG (v7, 5, 8, 10121)
- id <B5dc9f7b90002>; Mon, 11 Nov 2019 16:07:22 -0800
+ id <B5dc9f7bb0005>; Mon, 11 Nov 2019 16:07:24 -0800
 From: John Hubbard <jhubbard@nvidia.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v3 17/23] media/v4l2-core: pin_longterm_pages (FOLL_PIN) and
- put_user_page() conversion
-Date: Mon, 11 Nov 2019 16:06:54 -0800
-Message-ID: <20191112000700.3455038-18-jhubbard@nvidia.com>
+Subject: [PATCH v3 19/23] powerpc: book3s64: convert to pin_longterm_pages()
+ and put_user_page()
+Date: Mon, 11 Nov 2019 16:06:56 -0800
+Message-ID: <20191112000700.3455038-20-jhubbard@nvidia.com>
 X-Mailer: git-send-email 2.24.0
 In-Reply-To: <20191112000700.3455038-1-jhubbard@nvidia.com>
 References: <20191112000700.3455038-1-jhubbard@nvidia.com>
@@ -66,16 +67,16 @@ X-NVConfidentiality: public
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
- t=1573517188; bh=GEhpFyTQIibXhYqN9YRdzJtS2txKyU2Kys/WSrzZyBk=;
+ t=1573517248; bh=jP0+G7EUrJzRbss/H6wqbMhvj/DAmG+WrBPGAFIWqJ8=;
  h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
  In-Reply-To:References:MIME-Version:X-NVConfidentiality:
  Content-Transfer-Encoding:Content-Type;
- b=j23aF6SRUen0YpYJHRc36hCPrcNFmaf1Sspp55AxN7SrAQXXqax6dRUmy0JvmNGRc
- u0MpdS14Jm9miNTgK1wzXZoX/13Y0bhlLKhQukrla4DOeLuT1Nr4mzyuJ7BVAnOTED
- LygPYrmrpoaDCaQGcXGHUTvJE30JgnWmJvVlF0ZaqTVe3HnBGGg86evwpinm/nBx7C
- RpSufllOzuEu+h3RY867f0PdpSIjlCRZHPg2cpFFtVIB1kage+mtuUAEYfgeoz+kPf
- iYZIsm8irI4/Q4QdeZUDeJCAg2aZN4dNQPnSF/5rDeBhJgXMx0L8QPm3tDbSBFCFEC
- tUgkh4YaE/z/Q==
+ b=kyMiML3+GMLGq0Jv8bzwxVi25OB/SoujLSswefLksQp3ZYNqPbwpIUlskN/5gXMJo
+ 26zMPqilhOk76CMwC3yRdMDpAzKIXkR0MEZJVdSMBwH38lXkHGYuQNlpuu/zKcaG9V
+ ZZ5dx5Uf/LSacxxcsBDJQcJh5HzLRrF5DoR8v3ofQxvmJtGshRKxXs2+NLPnf1hh1C
+ nSOTCA5dYrBdyoZTK2x/8i2jFIC6tjMGwEeGYeRaD0BpdcEpWAE/3p1ssCsEJFlDxU
+ GgshMWpoo5oW+vfQNOaVL4vvpLAP6wqv2Utz57IJTsBvBpV+JgLGtYR13mWIjoDhUP
+ n604LsOZc9T0A==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,7 +100,6 @@ Cc: Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>,
  =?UTF-8?q?Bj=C3=B6rn=20T=C3=B6pel?= <bjorn.topel@intel.com>,
  linux-media@vger.kernel.org, Shuah Khan <shuah@kernel.org>,
  John Hubbard <jhubbard@nvidia.com>, linux-block@vger.kernel.org,
- Hans Verkuil <hverkuil-cisco@xs4all.nl>,
  =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>,
  Al Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>,
  Mauro Carvalho Chehab <mchehab@kernel.org>,
@@ -113,57 +113,75 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-1. Change v4l2 from get_user_pages(FOLL_LONGTERM), to
-pin_longterm_pages(), which sets both FOLL_LONGTERM and FOLL_PIN.
+1. Convert from get_user_pages(FOLL_LONGTERM) to pin_longterm_pages().
 
-2. Because all FOLL_PIN-acquired pages must be released via
-put_user_page(), also convert the put_page() call over to
-put_user_pages_dirty_lock().
+2. As required by pin_user_pages(), release these pages via
+put_user_page(). In this case, do so via put_user_pages_dirty_lock().
 
-Acked-by: Hans Verkuil <hverkuil-cisco@xs4all.nl>
-Reviewed-by: Ira Weiny <ira.weiny@intel.com>
-Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
+That has the side effect of calling set_page_dirty_lock(), instead
+of set_page_dirty(). This is probably more accurate.
+
+As Christoph Hellwig put it, "set_page_dirty() is only safe if we are
+dealing with a file backed page where we have reference on the inode it
+hangs off." [1]
+
+3. Release each page in mem->hpages[] (instead of mem->hpas[]), because
+that is the array that pin_longterm_pages() filled in. This is more
+accurate and should be a little safer from a maintenance point of
+view.
+
+[1] https://lore.kernel.org/r/20190723153640.GB720@lst.de
+
 Signed-off-by: John Hubbard <jhubbard@nvidia.com>
 ---
- drivers/media/v4l2-core/videobuf-dma-sg.c | 13 +++++--------
- 1 file changed, 5 insertions(+), 8 deletions(-)
+ arch/powerpc/mm/book3s64/iommu_api.c | 15 ++++++---------
+ 1 file changed, 6 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/media/v4l2-core/videobuf-dma-sg.c b/drivers/media/v4l2=
--core/videobuf-dma-sg.c
-index 28262190c3ab..9b9c5b37bf59 100644
---- a/drivers/media/v4l2-core/videobuf-dma-sg.c
-+++ b/drivers/media/v4l2-core/videobuf-dma-sg.c
-@@ -183,12 +183,12 @@ static int videobuf_dma_init_user_locked(struct video=
-buf_dmabuf *dma,
- 	dprintk(1, "init user [0x%lx+0x%lx =3D> %d pages]\n",
- 		data, size, dma->nr_pages);
+diff --git a/arch/powerpc/mm/book3s64/iommu_api.c b/arch/powerpc/mm/book3s6=
+4/iommu_api.c
+index 56cc84520577..69d79cb50d47 100644
+--- a/arch/powerpc/mm/book3s64/iommu_api.c
++++ b/arch/powerpc/mm/book3s64/iommu_api.c
+@@ -103,9 +103,8 @@ static long mm_iommu_do_alloc(struct mm_struct *mm, uns=
+igned long ua,
+ 	for (entry =3D 0; entry < entries; entry +=3D chunk) {
+ 		unsigned long n =3D min(entries - entry, chunk);
 =20
--	err =3D get_user_pages(data & PAGE_MASK, dma->nr_pages,
--			     flags | FOLL_LONGTERM, dma->pages, NULL);
-+	err =3D pin_longterm_pages(data & PAGE_MASK, dma->nr_pages,
-+				 flags, dma->pages, NULL);
+-		ret =3D get_user_pages(ua + (entry << PAGE_SHIFT), n,
+-				FOLL_WRITE | FOLL_LONGTERM,
+-				mem->hpages + entry, NULL);
++		ret =3D pin_longterm_pages(ua + (entry << PAGE_SHIFT), n,
++					 FOLL_WRITE, mem->hpages + entry, NULL);
+ 		if (ret =3D=3D n) {
+ 			pinned +=3D n;
+ 			continue;
+@@ -167,9 +166,8 @@ static long mm_iommu_do_alloc(struct mm_struct *mm, uns=
+igned long ua,
+ 	return 0;
 =20
- 	if (err !=3D dma->nr_pages) {
- 		dma->nr_pages =3D (err >=3D 0) ? err : 0;
--		dprintk(1, "get_user_pages: err=3D%d [%d]\n", err,
-+		dprintk(1, "pin_longterm_pages: err=3D%d [%d]\n", err,
- 			dma->nr_pages);
- 		return err < 0 ? err : -EINVAL;
+ free_exit:
+-	/* free the reference taken */
+-	for (i =3D 0; i < pinned; i++)
+-		put_page(mem->hpages[i]);
++	/* free the references taken */
++	put_user_pages(mem->hpages, pinned);
+=20
+ 	vfree(mem->hpas);
+ 	kfree(mem);
+@@ -212,10 +210,9 @@ static void mm_iommu_unpin(struct mm_iommu_table_group=
+_mem_t *mem)
+ 		if (!page)
+ 			continue;
+=20
+-		if (mem->hpas[i] & MM_IOMMU_TABLE_GROUP_PAGE_DIRTY)
+-			SetPageDirty(page);
++		put_user_pages_dirty_lock(&mem->hpages[i], 1,
++					  MM_IOMMU_TABLE_GROUP_PAGE_DIRTY);
+=20
+-		put_page(page);
+ 		mem->hpas[i] =3D 0;
  	}
-@@ -349,11 +349,8 @@ int videobuf_dma_free(struct videobuf_dmabuf *dma)
- 	BUG_ON(dma->sglen);
-=20
- 	if (dma->pages) {
--		for (i =3D 0; i < dma->nr_pages; i++) {
--			if (dma->direction =3D=3D DMA_FROM_DEVICE)
--				set_page_dirty_lock(dma->pages[i]);
--			put_page(dma->pages[i]);
--		}
-+		put_user_pages_dirty_lock(dma->pages, dma->nr_pages,
-+					  dma->direction =3D=3D DMA_FROM_DEVICE);
- 		kfree(dma->pages);
- 		dma->pages =3D NULL;
- 	}
+ }
 --=20
 2.24.0
 
