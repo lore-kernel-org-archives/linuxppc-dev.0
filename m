@@ -2,61 +2,34 @@ Return-Path: <SRS0=Rs50=ZE=vger.kernel.org=linux-m68k-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A14CAC43331
-	for <linux-m68k@archiver.kernel.org>; Tue, 12 Nov 2019 23:01:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17DD0C17440
+	for <linux-m68k@archiver.kernel.org>; Tue, 12 Nov 2019 23:07:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 7593E20674
-	for <linux-m68k@archiver.kernel.org>; Tue, 12 Nov 2019 23:01:30 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="c4HijsXE"
+	by mail.kernel.org (Postfix) with ESMTP id E7E2821D7F
+	for <linux-m68k@archiver.kernel.org>; Tue, 12 Nov 2019 23:07:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727178AbfKLXBa (ORCPT <rfc822;linux-m68k@archiver.kernel.org>);
-        Tue, 12 Nov 2019 18:01:30 -0500
-Received: from mail-pl1-f196.google.com ([209.85.214.196]:44076 "EHLO
-        mail-pl1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727074AbfKLXB3 (ORCPT
+        id S1726991AbfKLXHZ (ORCPT <rfc822;linux-m68k@archiver.kernel.org>);
+        Tue, 12 Nov 2019 18:07:25 -0500
+Received: from youngberry.canonical.com ([91.189.89.112]:40361 "EHLO
+        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726932AbfKLXHZ (ORCPT
         <rfc822;linux-m68k@lists.linux-m68k.org>);
-        Tue, 12 Nov 2019 18:01:29 -0500
-Received: by mail-pl1-f196.google.com with SMTP id az9so152870plb.11
-        for <linux-m68k@lists.linux-m68k.org>; Tue, 12 Nov 2019 15:01:29 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=nExhpa8NtyhyvUyh20F6httON+9jpHubOC8X4R1/1QI=;
-        b=c4HijsXEjZGJqE7HF/OLTdBXGVnY9qLmNBULMzMpbSwMDUdlWMyYkBAj7Jv9KvJQq9
-         uQ/fhhX6CbwBVqkc6vhI0J9bVR6S+eypweTAwvYsABomRnDDk1wGcU2hJ/fV4/K6uu+1
-         c9+G8zkVxO8gfkNV8xNJ/wUCIdP5veO1BJPEs=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=nExhpa8NtyhyvUyh20F6httON+9jpHubOC8X4R1/1QI=;
-        b=RaQDUCo9Z3syPSPJVCm1cY0eFCo0kq49hh2MHakWJ13hOXSdvrQCj7WWRtazT/bexX
-         /GVgMr4Okm5ngEOA9hmCS9UAhJGybXYj7qTRlebS3gcGHBH4T4OkytHEjFagVKprRKTr
-         5SQUnqbv0hqagQUzAxuaR3iwCmmX0Hcs5l3CCw+KSGNI/Rc8/+hp7Sd35AW9/EN5ZMf6
-         G1GKUVZynVbt1M6PhI7FpscwRdlp3yoc8fKjftkuviyf+KRv6lkbbig9NHr2598wbLSh
-         Pw+E8dSFoi30UHDmdxg533VBg/th0uT6cgDQB47OEAV3wQqh09XQ6tQnlqwmF+n5Tu2t
-         XQMQ==
-X-Gm-Message-State: APjAAAUtLq3i8ieVzPXKJ0Rkbec2zkmRoYffIZnPYoH5FTmC5A7pU4qY
-        oD+n6ri5/z8nO8+y5PRLZ4HfJg==
-X-Google-Smtp-Source: APXvYqy/dNw+1S0sgv4o54+xgQ9m/sDAbXJguDm6De1m1sF3Ucjez84Z50LDqlIQCV97XGMiY2eUjw==
-X-Received: by 2002:a17:902:b282:: with SMTP id u2mr266015plr.301.1573599688858;
-        Tue, 12 Nov 2019 15:01:28 -0800 (PST)
-Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
-        by smtp.gmail.com with ESMTPSA id em16sm159840pjb.21.2019.11.12.15.01.27
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 12 Nov 2019 15:01:27 -0800 (PST)
-Date:   Tue, 12 Nov 2019 15:01:26 -0800
-From:   Kees Cook <keescook@chromium.org>
-To:     Aleksa Sarai <cyphar@cyphar.com>
-Cc:     Al Viro <viro@zeniv.linux.org.uk>,
-        Jeff Layton <jlayton@kernel.org>,
+        Tue, 12 Nov 2019 18:07:25 -0500
+Received: from [213.220.153.21] (helo=wittgenstein)
+        by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
+        (Exim 4.86_2)
+        (envelope-from <christian.brauner@ubuntu.com>)
+        id 1iUfFK-0004Af-EX; Tue, 12 Nov 2019 23:06:50 +0000
+Date:   Wed, 13 Nov 2019 00:06:48 +0100
+From:   Christian Brauner <christian.brauner@ubuntu.com>
+To:     Kees Cook <keescook@chromium.org>,
+        Al Viro <viro@zeniv.linux.org.uk>,
+        Linus Torvalds <torvalds@linux-foundation.org>
+Cc:     Aleksa Sarai <cyphar@cyphar.com>, Jeff Layton <jlayton@kernel.org>,
         "J. Bruce Fields" <bfields@fieldses.org>,
         Arnd Bergmann <arnd@arndb.de>,
         David Howells <dhowells@redhat.com>,
@@ -78,7 +51,6 @@ Cc:     Al Viro <viro@zeniv.linux.org.uk>,
         Namhyung Kim <namhyung@kernel.org>,
         Christian Brauner <christian@brauner.io>,
         Aleksa Sarai <asarai@suse.de>,
-        Linus Torvalds <torvalds@linux-foundation.org>,
         containers@lists.linux-foundation.org, linux-alpha@vger.kernel.org,
         linux-api@vger.kernel.org, libc-alpha@sourceware.org,
         linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
@@ -89,41 +61,49 @@ Cc:     Al Viro <viro@zeniv.linux.org.uk>,
         linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
         linux-xtensa@linux-xtensa.org, sparclinux@vger.kernel.org
 Subject: Re: [PATCH v15 0/9] open: introduce openat2(2) syscall
-Message-ID: <201911121457.7D02692@keescook>
+Message-ID: <20191112230646.47dgr6bbnjv7vkrk@wittgenstein>
 References: <20191105090553.6350-1-cyphar@cyphar.com>
  <20191111132404.y523iqicbn6fivx5@yavin.dot.cyphar.com>
+ <201911121457.7D02692@keescook>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20191111132404.y523iqicbn6fivx5@yavin.dot.cyphar.com>
+In-Reply-To: <201911121457.7D02692@keescook>
+User-Agent: NeoMutt/20180716
 Sender: linux-m68k-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-m68k.vger.kernel.org>
 X-Mailing-List: linux-m68k@vger.kernel.org
-Message-ID: <20191112230126.fB6tgZWuPfytE2mByhRZoPC7CCs14ObIOeCrnAjR5yo@z>
+Message-ID: <20191112230648.IB8RTVe7hwxk1Qefylk44dx_yg8MTTL7wOIff591w8s@z>
 
-On Tue, Nov 12, 2019 at 12:24:04AM +1100, Aleksa Sarai wrote:
-> On 2019-11-05, Aleksa Sarai <cyphar@cyphar.com> wrote:
-> > This patchset is being developed here:
-> >   <https://github.com/cyphar/linux/tree/openat2/master>
+On Tue, Nov 12, 2019 at 03:01:26PM -0800, Kees Cook wrote:
+> On Tue, Nov 12, 2019 at 12:24:04AM +1100, Aleksa Sarai wrote:
+> > On 2019-11-05, Aleksa Sarai <cyphar@cyphar.com> wrote:
+> > > This patchset is being developed here:
+> > >   <https://github.com/cyphar/linux/tree/openat2/master>
+> > > 
+> > > Patch changelog:
+> > >  v15:
+> > >   * Fix code style for LOOKUP_IN_ROOT handling in path_init(). [Linus Torvalds]
+> > >   * Split out patches for each individual LOOKUP flag.
+> > >   * Reword commit messages to give more background information about the
+> > >     series, as well as mention the semantics of each flag in more detail.
+> > > [...]
 > > 
-> > Patch changelog:
-> >  v15:
-> >   * Fix code style for LOOKUP_IN_ROOT handling in path_init(). [Linus Torvalds]
-> >   * Split out patches for each individual LOOKUP flag.
-> >   * Reword commit messages to give more background information about the
-> >     series, as well as mention the semantics of each flag in more detail.
-> > [...]
+> > Ping -- this patch hasn't been touched for a week. Thanks.
 > 
-> Ping -- this patch hasn't been touched for a week. Thanks.
+> If I've been following correctly, everyone is happy with this series.
+> (i.e. Linus's comment appear to have been addressed.)
+> 
+> Perhaps the next question is should this go via a pull request by you to
+> Linus directly during the v5.5 merge window, via akpm, via akpm, via
+> Christian, or some other path? Besides Linus, it's not been clear who
+> should "claim" this series. :)
 
-If I've been following correctly, everyone is happy with this series.
-(i.e. Linus's comment appear to have been addressed.)
+I like this series and the same with the copy_struct_from_user() part of
+it I've taken I'm happy to stuff this into a dedicated branch, merge it
+into my for-next and send it for v5.5.
+Though I'd _much_ rather see Al pick this up or have him give his
+blessing first.
 
-Perhaps the next question is should this go via a pull request by you to
-Linus directly during the v5.5 merge window, via akpm, via akpm, via
-Christian, or some other path? Besides Linus, it's not been clear who
-should "claim" this series. :)
-
--- 
-Kees Cook
+Christian
