@@ -1,78 +1,80 @@
-Return-Path: <SRS0=mxpJ=ZD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=XoDG=ZE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AF11EC43331
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 23:42:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 343B5C17448
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 00:11:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0201A214DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2019 23:42:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0201A214DB
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9F647222BD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 00:11:10 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="BrEsyttE"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F647222BD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nvidia.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47BnVH6MFTzF4MF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 10:42:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47Bp7J1tLJzF4MS
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Nov 2019 11:11:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.167.196;
- helo=mail-oi1-f196.google.com; envelope-from=pku.leo@gmail.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=nvidia.com (client-ip=216.228.121.65; helo=hqemgate16.nvidia.com;
+ envelope-from=jhubbard@nvidia.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=nxp.com
-Received: from mail-oi1-f196.google.com (mail-oi1-f196.google.com
- [209.85.167.196])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47BnRT2QZ3zF4C7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2019 10:40:04 +1100 (AEDT)
-Received: by mail-oi1-f196.google.com with SMTP id e9so13118426oif.8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2019 15:40:04 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=rYJ3hr5T5tZC4vSB8BbaPI2/bk6dIa1jNkM2nXBTPBI=;
- b=Vc3Sf5hGMdsgU1GAIcm86z6x5s/jWMGuB53P8w/VANQEfyI4nDCpBBOKs3fALaOeex
- OhwdTop6b5e0Z9doRr0+kLCdjKGgGzhpty5QDW24BBGJNxzV+Grp/sMlifZukyyNQq5m
- Ucsz/gP10kn3Mu7rGALbKMOnNLdMC4RMZu224rgSziXdwQTGNvSmVG84r+ncCb4PwcS4
- MEGxEWKQvJMePrHtXtgnHgx/Xrib+Msbw+uyJahA4li5HC0rARwLpZRfq2qyKN5ERXAC
- aUA+JDr3WtlwYzzYuvgP0sj9kWJE7ruKG1OIv+zD/4ZdZT5vMRm4EfXU6BaNWEMaOu7e
- gttA==
-X-Gm-Message-State: APjAAAVXvRhnzumGTMLsy8ZtVtVkp0CxwO0jofdnKwOsqtCgqQp9up06
- iDN9660cT6wRCJvVQRIkRaGW3bCQ
-X-Google-Smtp-Source: APXvYqyo2F10B/gLcw7T7ORtYHo74MROU+IzZG6rAxHMl0RFMsXfUfgwt/o0jQ9OWpCN1onIAS08tA==
-X-Received: by 2002:aca:5585:: with SMTP id j127mr1366646oib.133.1573515602239; 
- Mon, 11 Nov 2019 15:40:02 -0800 (PST)
-Received: from mail-oi1-f173.google.com (mail-oi1-f173.google.com.
- [209.85.167.173])
- by smtp.gmail.com with ESMTPSA id i195sm5547812oib.55.2019.11.11.15.40.01
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Mon, 11 Nov 2019 15:40:01 -0800 (PST)
-Received: by mail-oi1-f173.google.com with SMTP id n16so13138090oig.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2019 15:40:01 -0800 (PST)
-X-Received: by 2002:aca:1205:: with SMTP id 5mr1320355ois.51.1573515600853;
- Mon, 11 Nov 2019 15:40:00 -0800 (PST)
+ dmarc=pass (p=none dis=none) header.from=nvidia.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="BrEsyttE"; 
+ dkim-atps=neutral
+Received: from hqemgate16.nvidia.com (hqemgate16.nvidia.com [216.228.121.65])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47Bp2l3SGBzF4Lw
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2019 11:07:11 +1100 (AEDT)
+Received: from hqpgpgate102.nvidia.com (Not Verified[216.228.121.13]) by
+ hqemgate16.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+ id <B5dc9f7720000>; Mon, 11 Nov 2019 16:06:10 -0800
+Received: from hqmail.nvidia.com ([172.20.161.6])
+ by hqpgpgate102.nvidia.com (PGP Universal service);
+ Mon, 11 Nov 2019 16:07:06 -0800
+X-PGP-Universal: processed;
+ by hqpgpgate102.nvidia.com on Mon, 11 Nov 2019 16:07:06 -0800
+Received: from HQMAIL107.nvidia.com (172.20.187.13) by HQMAIL107.nvidia.com
+ (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Tue, 12 Nov
+ 2019 00:07:05 +0000
+Received: from rnnvemgw01.nvidia.com (10.128.109.123) by HQMAIL107.nvidia.com
+ (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via
+ Frontend Transport; Tue, 12 Nov 2019 00:07:05 +0000
+Received: from blueforge.nvidia.com (Not Verified[10.110.48.28]) by
+ rnnvemgw01.nvidia.com with Trustwave SEG (v7, 5, 8, 10121)
+ id <B5dc9f7a70008>; Mon, 11 Nov 2019 16:07:05 -0800
+From: John Hubbard <jhubbard@nvidia.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v3 02/23] mm/gup: factor out duplicate code from four routines
+Date: Mon, 11 Nov 2019 16:06:39 -0800
+Message-ID: <20191112000700.3455038-3-jhubbard@nvidia.com>
+X-Mailer: git-send-email 2.24.0
+In-Reply-To: <20191112000700.3455038-1-jhubbard@nvidia.com>
+References: <20191112000700.3455038-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
-References: <20191108130123.6839-1-linux@rasmusvillemoes.dk>
-In-Reply-To: <20191108130123.6839-1-linux@rasmusvillemoes.dk>
-From: Li Yang <leoyang.li@nxp.com>
-Date: Mon, 11 Nov 2019 17:39:49 -0600
-X-Gmail-Original-Message-ID: <CADRPPNSeEvFnVzGeZW6RPo_LP8mq14G2ZmmDAuwNdC3hT8Ekcg@mail.gmail.com>
-Message-ID: <CADRPPNSeEvFnVzGeZW6RPo_LP8mq14G2ZmmDAuwNdC3hT8Ekcg@mail.gmail.com>
-Subject: Re: [PATCH v4 00/47] QUICC Engine support on ARM and ARM64
-To: Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- David Miller <davem@davemloft.net>, 
- Scott Wood <oss@buserror.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Timur Tabi <timur@kernel.org>, Qiang Zhao <qiang.zhao@nxp.com>
+X-NVConfidentiality: public
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
+ t=1573517170; bh=kJfdBwtxV0Xf/7sPEfLRjg5QuIfiLXYo87o9tgl9dSA=;
+ h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
+ In-Reply-To:References:MIME-Version:X-NVConfidentiality:
+ Content-Type:Content-Transfer-Encoding;
+ b=BrEsyttE6RAmwKB2dP7t/hBES/LaE75S+oPLzu5r7Y/kro8+cn3Newv+8jmhnecuh
+ M8pIqjj1obr+Rk//EYouq3SWQOmaPTVaz/JRvgWyHkvjTy13z1nMPs1kDmMbzyjy4i
+ B2DtnxHMFX/uC7ck8Y+TAzvF3XL88SsmUr7NyzOGpy0u7RUKqOUw8eOx5DcCuBfGqG
+ sotzZd7RDCoVqxqBS/corUzcJ6EVGB7oX93vLKNtalUTMugHKtxPEADexZRDM+fkzO
+ BcA7dsCfwX4C8fZC3v4YoCmiwJmXmqAvlc0PzjO8cVkU+tfPIs2yiWH/W+Fuvfe7k0
+ LC9kAMJdb6nyA==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,181 +86,243 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- lkml <linux-kernel@vger.kernel.org>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>
+Cc: Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>,
+ kvm@vger.kernel.org, linux-doc@vger.kernel.org,
+ David Airlie <airlied@linux.ie>, Dave Chinner <david@fromorbit.com>,
+ dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ linux-kselftest@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>,
+ Christoph Hellwig <hch@lst.de>, Jonathan Corbet <corbet@lwn.net>,
+ linux-rdma@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+ Jason Gunthorpe <jgg@ziepe.ca>, Vlastimil Babka <vbabka@suse.cz>,
+ =?UTF-8?q?Bj=C3=B6rn=20T=C3=B6pel?= <bjorn.topel@intel.com>,
+ linux-media@vger.kernel.org, Shuah Khan <shuah@kernel.org>,
+ John Hubbard <jhubbard@nvidia.com>, linux-block@vger.kernel.org,
+ =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>,
+ Al Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>,
+ Magnus Karlsson <magnus.karlsson@intel.com>, Jens Axboe <axboe@kernel.dk>,
+ netdev@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
+ Daniel Vetter <daniel@ffwll.ch>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>,
+ Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Nov 8, 2019 at 7:05 AM Rasmus Villemoes
-<linux@rasmusvillemoes.dk> wrote:
->
+There are four locations in gup.c that have a fair amount of code
+duplication. This means that changing one requires making the same
+changes in four places, not to mention reading the same code four
+times, and wondering if there are subtle differences.
 
-I'm generally ok with these enhencements and cleanups.  But as the
-whole patch series touched multiple subsystems, I would like to
-collect the Acked-by from Scott, Greg and David if we want the whole
-series to go through the fsl/soc tree.
+Factor out the common code into static functions, thus reducing the
+overall line count and the code's complexity.
 
-Also Qiang, can you help to test the latest version and provide you
-Tested-by?  Thanks.
+Also, take the opportunity to slightly improve the efficiency of the
+error cases, by doing a mass subtraction of the refcount, surrounded
+by get_page()/put_page().
 
-> There have been several attempts in the past few years to allow
-> building the QUICC engine drivers for platforms other than PPC. This
-> is yet another attempt.
->
-> v3 can be found here: https://lore.kernel.org/lkml/20191101124210.14510-1-linux@rasmusvillemoes.dk/
->
-> v4 adds a some patches to fix (ab)use of IS_ERR_VALUE which fails when
-> sizeof(u32) != sizeof(long), i.e. on 64-bit platforms. Freescale
-> drivers are some of the last holdouts using that macro (outside of
-> arch/ and core mm code), so I decided trying to simply get rid of it
-> instead of papering over it by using a temporary long to store the
-> result in. Doing that I stumbled on some other things that should be
-> fixed. These are the new patches 34-45.
->
-> Patch 35 from v3 (which added a PPC32 dependency to FSL_UCC_HDLC) is
-> gone from this version, so that that driver can indeed now be built
-> for arm and arm64.
->
-> 1-5 are about replacing in_be32 etc. in the core QE code (drivers/soc/fsl/qe).
->
-> 6-8 handle miscellaneous other ppcisms.
->
-> 9-21 deal with qe_ic: Simplifying the driver significantly by removing
-> unused code, and removing the platform-specific initialization from
-> arch/powerpc/.
->
-> 22-25 deal with raw access to devicetree properties in native endianness.
->
-> 26-33 makes drivers/tty/serial/ucc_uart.c (CONFIG_SERIAL_QE) ready to build on arm.
->
-> 34-45 deal with IS_ERR_VALUE() and some other things found while
-> digging around that part of the code.
->
-> 46 adds a PPC32 dependency to UCC_GETH - it has some of the same
-> issues that have been fixed in the ucc_uart and ucc_hdlc cases. Nobody
-> has requested that I allow that driver to be built for arm{,64}, so
-> instead of growing this series even bigger, I kept that addition. It's
-> trivial to remove if somebody cares enough to fix the build
-> errors/warnings and actually has a platform to test the result on.
->
-> Finally patch 47 lifts the PPC32 restriction from QUICC_ENGINE. At the
-> request of Li Yang, it doesn't remove the PPC32 dependency but instead
-> changes it to PPC32 || ARM || ARM64 (or COMPILE_TEST), i.e. listing
-> the platforms that may have a QE.
->
-> The series has been built and booted on both an mpc8309-based platform
-> (ppc) as well as an ls1021a-based platform (arm). The core QE code is
-> exercised on both, while I could only test the ucc_uart on arm, since
-> the uarts are not wired up on our mpc8309 board. Qiang Zhao reports
-> that the ucc_hdlc driver does indeed work on a ls1043ardb (arm64)
-> board, I hope he'll formally add a Tested-by: to the relevant patches
-> since I don't have any arm64 board with QE.
->
-> Rasmus Villemoes (47):
->   soc: fsl: qe: remove space-before-tab
->   soc: fsl: qe: drop volatile qualifier of struct qe_ic::regs
->   soc: fsl: qe: rename qe_(clr/set/clrset)bit* helpers
->   soc: fsl: qe: introduce qe_io{read,write}* wrappers
->   soc: fsl: qe: avoid ppc-specific io accessors
->   soc: fsl: qe: replace spin_event_timeout by readx_poll_timeout_atomic
->   soc: fsl: qe: qe.c: guard use of pvr_version_is() with CONFIG_PPC32
->   soc: fsl: qe: drop unneeded #includes
->   soc: fsl: qe: drop assign-only high_active in qe_ic_init
->   soc: fsl: qe: remove pointless sysfs registration in qe_ic.c
->   soc: fsl: qe: use qe_ic_cascade_{low,high}_mpic also on 83xx
->   soc: fsl: qe: move calls of qe_ic_init out of arch/powerpc/
->   powerpc/83xx: remove mpc83xx_ipic_and_qe_init_IRQ
->   powerpc/85xx: remove mostly pointless mpc85xx_qe_init()
+Also, further simplify (slightly), by waiting until the the successful
+end of each routine, to increment *nr.
 
-Scott,
-What do you think about the PPC changes?
+Reviewed-by: J=C3=A9r=C3=B4me Glisse <jglisse@redhat.com>
+Cc: Ira Weiny <ira.weiny@intel.com>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+---
+ mm/gup.c | 104 ++++++++++++++++++++++++-------------------------------
+ 1 file changed, 45 insertions(+), 59 deletions(-)
 
->   soc: fsl: qe: move qe_ic_cascade_* functions to qe_ic.c
->   soc: fsl: qe: rename qe_ic_cascade_low_mpic -> qe_ic_cascade_low
->   soc: fsl: qe: remove unused qe_ic_set_* functions
->   soc: fsl: qe: don't use NO_IRQ in qe_ic.c
->   soc: fsl: qe: make qe_ic_get_{low,high}_irq static
->   soc: fsl: qe: simplify qe_ic_init()
->   soc: fsl: qe: merge qe_ic.h headers into qe_ic.c
->   soc: fsl: qe: qe.c: use of_property_read_* helpers
->   soc: fsl: qe: qe_io.c: don't open-code of_parse_phandle()
->   soc: fsl: qe: qe_io.c: access device tree property using be32_to_cpu
->   soc: fsl: qe: qe_io.c: use of_property_read_u32() in par_io_init()
->   soc: fsl: move cpm.h from powerpc/include/asm to include/soc/fsl
->   soc/fsl/qe/qe.h: update include path for cpm.h
->   serial: ucc_uart: explicitly include soc/fsl/cpm.h
->   serial: ucc_uart: replace ppc-specific IO accessors
->   serial: ucc_uart: factor out soft_uart initialization
->   serial: ucc_uart: stub out soft_uart_init for !CONFIG_PPC32
->   serial: ucc_uart: use of_property_read_u32() in ucc_uart_probe()
->   serial: ucc_uart: access __be32 field using be32_to_cpu
+diff --git a/mm/gup.c b/mm/gup.c
+index 85caf76b3012..199da99e8ffc 100644
+--- a/mm/gup.c
++++ b/mm/gup.c
+@@ -1969,6 +1969,34 @@ static int __gup_device_huge_pud(pud_t pud, pud_t *p=
+udp, unsigned long addr,
+ }
+ #endif
+=20
++static int __record_subpages(struct page *page, unsigned long addr,
++			     unsigned long end, struct page **pages, int nr)
++{
++	int nr_recorded_pages =3D 0;
++
++	do {
++		pages[nr] =3D page;
++		nr++;
++		page++;
++		nr_recorded_pages++;
++	} while (addr +=3D PAGE_SIZE, addr !=3D end);
++	return nr_recorded_pages;
++}
++
++static void put_compound_head(struct page *page, int refs)
++{
++	/* Do a get_page() first, in case refs =3D=3D page->_refcount */
++	get_page(page);
++	page_ref_sub(page, refs);
++	put_page(page);
++}
++
++static void __huge_pt_done(struct page *head, int nr_recorded_pages, int *=
+nr)
++{
++	*nr +=3D nr_recorded_pages;
++	SetPageReferenced(head);
++}
++
+ #ifdef CONFIG_ARCH_HAS_HUGEPD
+ static unsigned long hugepte_addr_end(unsigned long addr, unsigned long en=
+d,
+ 				      unsigned long sz)
+@@ -1998,33 +2026,20 @@ static int gup_hugepte(pte_t *ptep, unsigned long s=
+z, unsigned long addr,
+ 	/* hugepages are never "special" */
+ 	VM_BUG_ON(!pfn_valid(pte_pfn(pte)));
+=20
+-	refs =3D 0;
+ 	head =3D pte_page(pte);
+-
+ 	page =3D head + ((addr & (sz-1)) >> PAGE_SHIFT);
+-	do {
+-		VM_BUG_ON(compound_head(page) !=3D head);
+-		pages[*nr] =3D page;
+-		(*nr)++;
+-		page++;
+-		refs++;
+-	} while (addr +=3D PAGE_SIZE, addr !=3D end);
++	refs =3D __record_subpages(page, addr, end, pages, *nr);
+=20
+ 	head =3D try_get_compound_head(head, refs);
+-	if (!head) {
+-		*nr -=3D refs;
++	if (!head)
+ 		return 0;
+-	}
+=20
+ 	if (unlikely(pte_val(pte) !=3D pte_val(*ptep))) {
+-		/* Could be optimized better */
+-		*nr -=3D refs;
+-		while (refs--)
+-			put_page(head);
++		put_compound_head(head, refs);
+ 		return 0;
+ 	}
+=20
+-	SetPageReferenced(head);
++	__huge_pt_done(head, refs, nr);
+ 	return 1;
+ }
+=20
+@@ -2071,29 +2086,19 @@ static int gup_huge_pmd(pmd_t orig, pmd_t *pmdp, un=
+signed long addr,
+ 					     pages, nr);
+ 	}
+=20
+-	refs =3D 0;
+ 	page =3D pmd_page(orig) + ((addr & ~PMD_MASK) >> PAGE_SHIFT);
+-	do {
+-		pages[*nr] =3D page;
+-		(*nr)++;
+-		page++;
+-		refs++;
+-	} while (addr +=3D PAGE_SIZE, addr !=3D end);
++	refs =3D __record_subpages(page, addr, end, pages, *nr);
+=20
+ 	head =3D try_get_compound_head(pmd_page(orig), refs);
+-	if (!head) {
+-		*nr -=3D refs;
++	if (!head)
+ 		return 0;
+-	}
+=20
+ 	if (unlikely(pmd_val(orig) !=3D pmd_val(*pmdp))) {
+-		*nr -=3D refs;
+-		while (refs--)
+-			put_page(head);
++		put_compound_head(head, refs);
+ 		return 0;
+ 	}
+=20
+-	SetPageReferenced(head);
++	__huge_pt_done(head, refs, nr);
+ 	return 1;
+ }
+=20
+@@ -2114,29 +2119,19 @@ static int gup_huge_pud(pud_t orig, pud_t *pudp, un=
+signed long addr,
+ 					     pages, nr);
+ 	}
+=20
+-	refs =3D 0;
+ 	page =3D pud_page(orig) + ((addr & ~PUD_MASK) >> PAGE_SHIFT);
+-	do {
+-		pages[*nr] =3D page;
+-		(*nr)++;
+-		page++;
+-		refs++;
+-	} while (addr +=3D PAGE_SIZE, addr !=3D end);
++	refs =3D __record_subpages(page, addr, end, pages, *nr);
+=20
+ 	head =3D try_get_compound_head(pud_page(orig), refs);
+-	if (!head) {
+-		*nr -=3D refs;
++	if (!head)
+ 		return 0;
+-	}
+=20
+ 	if (unlikely(pud_val(orig) !=3D pud_val(*pudp))) {
+-		*nr -=3D refs;
+-		while (refs--)
+-			put_page(head);
++		put_compound_head(head, refs);
+ 		return 0;
+ 	}
+=20
+-	SetPageReferenced(head);
++	__huge_pt_done(head, refs, nr);
+ 	return 1;
+ }
+=20
+@@ -2151,29 +2146,20 @@ static int gup_huge_pgd(pgd_t orig, pgd_t *pgdp, un=
+signed long addr,
+ 		return 0;
+=20
+ 	BUILD_BUG_ON(pgd_devmap(orig));
+-	refs =3D 0;
++
+ 	page =3D pgd_page(orig) + ((addr & ~PGDIR_MASK) >> PAGE_SHIFT);
+-	do {
+-		pages[*nr] =3D page;
+-		(*nr)++;
+-		page++;
+-		refs++;
+-	} while (addr +=3D PAGE_SIZE, addr !=3D end);
++	refs =3D __record_subpages(page, addr, end, pages, *nr);
+=20
+ 	head =3D try_get_compound_head(pgd_page(orig), refs);
+-	if (!head) {
+-		*nr -=3D refs;
++	if (!head)
+ 		return 0;
+-	}
+=20
+ 	if (unlikely(pgd_val(orig) !=3D pgd_val(*pgdp))) {
+-		*nr -=3D refs;
+-		while (refs--)
+-			put_page(head);
++		put_compound_head(head, refs);
+ 		return 0;
+ 	}
+=20
+-	SetPageReferenced(head);
++	__huge_pt_done(head, refs, nr);
+ 	return 1;
+ }
+=20
+--=20
+2.24.0
 
-Greg and Timur,
-What do you think about these serial changes.
-
->   soc: fsl: qe: change return type of cpm_muram_alloc() to s32
->   soc: fsl: qe: make cpm_muram_free() return void
->   soc: fsl: qe: make cpm_muram_free() ignore a negative offset
->   soc: fsl: qe: drop broken lazy call of cpm_muram_init()
->   soc: fsl: qe: refactor cpm_muram_alloc_common to prevent BUG on error
->     path
->   soc: fsl: qe: avoid IS_ERR_VALUE in ucc_slow.c
->   soc: fsl: qe: drop use of IS_ERR_VALUE in qe_sdma_init()
->   soc: fsl: qe: drop pointless check in qe_sdma_init()
->   soc: fsl: qe: avoid IS_ERR_VALUE in ucc_fast.c
->   net/wan/fsl_ucc_hdlc: avoid use of IS_ERR_VALUE()
->   net/wan/fsl_ucc_hdlc: fix reading of __be16 registers
->   net/wan/fsl_ucc_hdlc: reject muram offsets above 64K
->   net: ethernet: freescale: make UCC_GETH explicitly depend on PPC32
-
-David and Qiang,
-What do you think of the net changes?
-
->   soc: fsl: qe: remove PPC32 dependency from CONFIG_QUICC_ENGINE
->
->  arch/powerpc/include/asm/cpm.h                | 172 +-------
->  arch/powerpc/platforms/83xx/km83xx.c          |   3 +-
->  arch/powerpc/platforms/83xx/misc.c            |  23 --
->  arch/powerpc/platforms/83xx/mpc832x_mds.c     |   3 +-
->  arch/powerpc/platforms/83xx/mpc832x_rdb.c     |   3 +-
->  arch/powerpc/platforms/83xx/mpc836x_mds.c     |   3 +-
->  arch/powerpc/platforms/83xx/mpc836x_rdk.c     |   3 +-
->  arch/powerpc/platforms/83xx/mpc83xx.h         |   7 -
->  arch/powerpc/platforms/85xx/common.c          |  23 --
->  arch/powerpc/platforms/85xx/corenet_generic.c |  12 -
->  arch/powerpc/platforms/85xx/mpc85xx.h         |   2 -
->  arch/powerpc/platforms/85xx/mpc85xx_mds.c     |  28 --
->  arch/powerpc/platforms/85xx/mpc85xx_rdb.c     |  18 -
->  arch/powerpc/platforms/85xx/twr_p102x.c       |  16 -
->  drivers/net/ethernet/freescale/Kconfig        |   2 +-
->  drivers/net/wan/fsl_ucc_hdlc.c                |  23 +-
->  drivers/net/wan/fsl_ucc_hdlc.h                |   2 +-
->  drivers/soc/fsl/qe/Kconfig                    |   3 +-
->  drivers/soc/fsl/qe/gpio.c                     |  34 +-
->  drivers/soc/fsl/qe/qe.c                       | 104 ++---
->  drivers/soc/fsl/qe/qe_common.c                |  50 +--
->  drivers/soc/fsl/qe/qe_ic.c                    | 285 ++++++-------
->  drivers/soc/fsl/qe/qe_ic.h                    |  99 -----
->  drivers/soc/fsl/qe/qe_io.c                    |  70 ++--
->  drivers/soc/fsl/qe/qe_tdm.c                   |   8 +-
->  drivers/soc/fsl/qe/ucc.c                      |  26 +-
->  drivers/soc/fsl/qe/ucc_fast.c                 |  86 ++--
->  drivers/soc/fsl/qe/ucc_slow.c                 |  60 ++-
->  drivers/soc/fsl/qe/usb.c                      |   2 +-
->  drivers/tty/serial/ucc_uart.c                 | 383 +++++++++---------
->  include/soc/fsl/cpm.h                         | 171 ++++++++
->  include/soc/fsl/qe/qe.h                       |  59 ++-
->  include/soc/fsl/qe/qe_ic.h                    | 135 ------
->  include/soc/fsl/qe/ucc_fast.h                 |   4 +-
->  include/soc/fsl/qe/ucc_slow.h                 |   6 +-
->  35 files changed, 770 insertions(+), 1158 deletions(-)
->  delete mode 100644 drivers/soc/fsl/qe/qe_ic.h
->  create mode 100644 include/soc/fsl/cpm.h
->  delete mode 100644 include/soc/fsl/qe/qe_ic.h
->
-> --
-> 2.23.0
->
