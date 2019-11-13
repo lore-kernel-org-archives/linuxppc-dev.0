@@ -1,177 +1,143 @@
-Return-Path: <SRS0=PO5t=ZF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=9xw0=ZF=vger.kernel.org=linux-m68k-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A56EDC432C3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 21:43:21 +0000 (UTC)
-Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2722A206EE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 21:43:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2722A206EE
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
-Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
-Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47Cylp66yVzF22y
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 08:43:18 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=arndb.de
- (client-ip=217.72.192.74; helo=mout.kundenserver.de;
- envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arndb.de
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.74])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47CyjR5sxDzF72Z
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2019 08:41:14 +1100 (AEDT)
-Received: from mail-qt1-f179.google.com ([209.85.160.179]) by
- mrelayeu.kundenserver.de (mreue106 [212.227.15.145]) with ESMTPSA (Nemesis)
- id 1MVMNF-1iLpoo2OCl-00SQeu for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov
- 2019 22:41:09 +0100
-Received: by mail-qt1-f179.google.com with SMTP id r20so4269507qtp.13
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 13:41:09 -0800 (PST)
-X-Gm-Message-State: APjAAAUsR8/yrC6uaDJXcgIRLnOC932Dz8lGGiCrlszBF8TusIKqtW2E
- ldrie1fpMdy6546v0+lzrjyy88n57smRsR/v1fc=
-X-Google-Smtp-Source: APXvYqyjRd+a6foxC3+k9qUEopPf1CRknFxQHbHw9aZuys53MC+zVt0jx9JeruKLHIsAWsaGcA9LllqlMRQxiR5o4ug=
-X-Received: by 2002:a37:4f0a:: with SMTP id d10mr4703334qkb.286.1573681267104; 
- Wed, 13 Nov 2019 13:41:07 -0800 (PST)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 85804C43331
+	for <linux-m68k@archiver.kernel.org>; Wed, 13 Nov 2019 00:47:10 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
+	by mail.kernel.org (Postfix) with ESMTP id 6496621872
+	for <linux-m68k@archiver.kernel.org>; Wed, 13 Nov 2019 00:47:10 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S1726995AbfKMArK (ORCPT <rfc822;linux-m68k@archiver.kernel.org>);
+        Tue, 12 Nov 2019 19:47:10 -0500
+Received: from mout-p-101.mailbox.org ([80.241.56.151]:17498 "EHLO
+        mout-p-101.mailbox.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726960AbfKMArJ (ORCPT
+        <rfc822;linux-m68k@lists.linux-m68k.org>);
+        Tue, 12 Nov 2019 19:47:09 -0500
+Received: from smtp2.mailbox.org (smtp2.mailbox.org [IPv6:2001:67c:2050:105:465:1:2:0])
+        (using TLSv1.2 with cipher ECDHE-RSA-CHACHA20-POLY1305 (256/256 bits))
+        (No client certificate requested)
+        by mout-p-101.mailbox.org (Postfix) with ESMTPS id 47CQtM1PgvzKm9q;
+        Wed, 13 Nov 2019 01:47:07 +0100 (CET)
+X-Virus-Scanned: amavisd-new at heinlein-support.de
+Received: from smtp2.mailbox.org ([80.241.60.241])
+        by spamfilter04.heinlein-hosting.de (spamfilter04.heinlein-hosting.de [80.241.56.122]) (amavisd-new, port 10030)
+        with ESMTP id rfbcH-n--HBG; Wed, 13 Nov 2019 01:47:00 +0100 (CET)
+Date:   Wed, 13 Nov 2019 11:46:34 +1100
+From:   Aleksa Sarai <cyphar@cyphar.com>
+To:     Kees Cook <keescook@chromium.org>
+Cc:     Al Viro <viro@zeniv.linux.org.uk>,
+        Jeff Layton <jlayton@kernel.org>,
+        "J. Bruce Fields" <bfields@fieldses.org>,
+        Arnd Bergmann <arnd@arndb.de>,
+        David Howells <dhowells@redhat.com>,
+        Shuah Khan <shuah@kernel.org>,
+        Shuah Khan <skhan@linuxfoundation.org>,
+        Ingo Molnar <mingo@redhat.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Eric Biederman <ebiederm@xmission.com>,
+        Andy Lutomirski <luto@kernel.org>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Alexei Starovoitov <ast@kernel.org>,
+        Jann Horn <jannh@google.com>, Tycho Andersen <tycho@tycho.ws>,
+        David Drysdale <drysdale@google.com>,
+        Chanho Min <chanho.min@lge.com>,
+        Oleg Nesterov <oleg@redhat.com>,
+        Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+        Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+        Jiri Olsa <jolsa@redhat.com>,
+        Namhyung Kim <namhyung@kernel.org>,
+        Christian Brauner <christian@brauner.io>,
+        Aleksa Sarai <asarai@suse.de>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        containers@lists.linux-foundation.org, linux-alpha@vger.kernel.org,
+        linux-api@vger.kernel.org, libc-alpha@sourceware.org,
+        linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-fsdevel@vger.kernel.org, linux-ia64@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org,
+        linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
+        linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+        linux-xtensa@linux-xtensa.org, sparclinux@vger.kernel.org
+Subject: Re: [PATCH v15 0/9] open: introduce openat2(2) syscall
+Message-ID: <20191113004634.tz7geloshltkafwj@yavin.dot.cyphar.com>
+References: <20191105090553.6350-1-cyphar@cyphar.com>
+ <20191111132404.y523iqicbn6fivx5@yavin.dot.cyphar.com>
+ <201911121457.7D02692@keescook>
 MIME-Version: 1.0
-References: <20191108210236.1296047-1-arnd@arndb.de>
-In-Reply-To: <20191108210236.1296047-1-arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 13 Nov 2019 22:40:50 +0100
-X-Gmail-Original-Message-ID: <CAK8P3a1CbDaPqNsOVOuq2UDPSOwzd2U_WEmmXBMwCOhv1=iaSQ@mail.gmail.com>
-Message-ID: <CAK8P3a1CbDaPqNsOVOuq2UDPSOwzd2U_WEmmXBMwCOhv1=iaSQ@mail.gmail.com>
-Subject: Re: [PATCH 00/23] y2038 cleanups
-To: y2038 Mailman List <y2038@lists.linaro.org>
-Content-Type: text/plain; charset="UTF-8"
-X-Provags-ID: V03:K1:W3bjDzLZF1tKQIYe9JIKsdzbwIL417VikqiVHsmR8O4T2ax7MV1
- V+oSCkKpf+J4iMBGxbeNSayOknLodWaYeC2yyNh9Z4bJ3Nce5Zrg9KFf2dSiOhRVIr0Fn87
- BHops8fdr4rx8oMXKxTaqQwgHFz3aTZl5jSBLdUR09IhckuNYlvc4YQPVNb3SAleZPXcJ5v
- MU6djQPcG4BkmyHMqtqLw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:g+8iPcENPrk=:S9TCojgPgq2dlzpMsy5RW1
- BkgD0NPWxZDPkw2ERzVe/JFzgg30ALwc04zvDNgLj8De9Nxxrunox3+QURmatDJs3kFLqTErC
- vRq9g+blw3j9ISWpSNb9KXd77wVTi40A8/8PIL/C0EXo/tXHYIvE29QteLmfpbMinauGS5NQA
- 39enBYSKwC94c9lfoCTkRiwPvpUiLRmrlunHUhjn7t6lc5SDooEiB23ns4Ui0rDQ7UbHkpI2H
- 3KxT1p1C3XGK5lB+vQf6SwScLt/c2gyHoivNBG/xldmgsqNGPXArmJfif5pqFK4K6h0/3eEog
- 0FPlhb4tq8hhejxtUrQl+A8aS3tZlYFdJx0yT9zOnoqxqCbwsqYQQeTUOGHUoeS/w5I9gABch
- 5RLAeZ5rTmTXFnbGd/tQekcubZx3d7TwsKpVNXAtViZ5iD8nTa+hGq5rdXL+rZIUPIQHI8VHc
- ubOkVpix0UrdKEbAzp+F4RtQdIOMZW60+W49d1lOEhXOZRNhBEaiVj+guBucYF1+UW/g5432T
- x19zzLxlxRxRe1Cx4Q/Gs14Gip/iFPdubTOiDgzs9MLSTtP0syQx4Yx/iXpkdzVEte4KTESeH
- WWPDics8++MbiBcoMKkRQYssnBwhXyT5Lgims5PzzkwJbYrXISCYhJu2zQjNPNZEsCiUxqNui
- df9hWD71S3Lttdfh1fZCItujFUNnvtl2YD13LmutpUFZeU4aQ1mcvolCEAWOL/t8uOUPkb78y
- ZUMnhTFSKJZ2eTqC6eCEtHPuMv/XdZcJ3s8Pu4GR7wxTE0ZFY+Ry0co+vuC+bIcHfj71Yrhz0
- TvqHRTcuCOodG1GxDLDJmAubmjEPVAC1WQFo6Fq1YDadZ92KANXmrN7SxWSd9XFhdyFTDGgfu
- qoiAaixGZfU2J+m1lCFg==
-X-BeenThere: linuxppc-dev@lists.ozlabs.org
-X-Mailman-Version: 2.1.29
-Precedence: list
-List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-aio <linux-aio@kvack.org>, linux-ia64@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mips@vger.kernel.org,
- Networking <netdev@vger.kernel.org>, Deepa Dinamani <deepa.kernel@gmail.com>,
- sparclinux <sparclinux@vger.kernel.org>,
- Vincenzo Frascino <vincenzo.frascino@arm.com>, Will Deacon <will@kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>, Paul Moore <paul@paul-moore.com>,
- Helge Deller <deller@gmx.de>, the arch/x86 maintainers <x86@kernel.org>,
- Stephen Smalley <sds@tycho.nsa.gov>, SElinux list <selinux@vger.kernel.org>,
- Jeff Dike <jdike@addtoit.com>, alpha <linux-alpha@vger.kernel.org>,
- linux-um@lists.infradead.org, Steven Rostedt <rostedt@goodmis.org>,
- John Stultz <john.stultz@linaro.org>, Al Viro <viro@zeniv.linux.org.uk>,
- Eric Paris <eparis@parisplace.org>, Thomas Gleixner <tglx@linutronix.de>,
- Christian Brauner <christian@brauner.io>, Richard Henderson <rth@twiddle.net>,
- Tony Luck <tony.luck@intel.com>, Parisc List <linux-parisc@vger.kernel.org>,
- Stephen Boyd <sboyd@kernel.org>, Linux API <linux-api@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Paul Burton <paul.burton@mips.com>, Benjamin LaHaise <bcrl@kvack.org>,
- "Eric W . Biederman" <ebiederm@xmission.com>,
- Richard Weinberger <richard@nod.at>,
- Linux FS-devel Mailing List <linux-fsdevel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- David Miller <davem@davemloft.net>, Greentime Hu <green.hu@gmail.com>
-Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="7ndczamgwxls6q65"
+Content-Disposition: inline
+In-Reply-To: <201911121457.7D02692@keescook>
+Sender: linux-m68k-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-m68k.vger.kernel.org>
+X-Mailing-List: linux-m68k@vger.kernel.org
+Message-ID: <20191113004634.9XWpmO8CbBDcZvrele1sg_os6IFR7fV30hl08qmYG8k@z>
 
-On Fri, Nov 8, 2019 at 10:04 PM Arnd Bergmann <arnd@arndb.de> wrote:
->
-> This is a series of cleanups for the y2038 work, mostly intended
-> for namespace cleaning: the kernel defines the traditional
-> time_t, timeval and timespec types that often lead to y2038-unsafe
-> code. Even though the unsafe usage is mostly gone from the kernel,
-> having the types and associated functions around means that we
-> can still grow new users, and that we may be missing conversions
-> to safe types that actually matter.
->
-> As there is no rush on any of these patches, I would either
-> queue them up in linux-next through my y2038 branch, or
-> Thomas could add them to the tip tree if he wants.
->
-> As mentioned in another series, this is part of a larger
-> effort to fix all the remaining bits and pieces that are
-> not completed yet from the y2038 conversion, and the full
-> set can be found at:
->
-> https://git.kernel.org/pub/scm/linux/kernel/git/arnd/playground.git/log/?h=y2038-endgame
->
-> Maintainers, please review and provide Acks.
->
-> Let me know if you have any opinion on whether we should do
-> the include last two patches of this series or not.
->
->      Arnd
->
-> Arnd Bergmann (23):
->   y2038: remove CONFIG_64BIT_TIME
->   y2038: add __kernel_old_timespec and __kernel_old_time_t
->   y2038: vdso: change timeval to __kernel_old_timeval
->   y2038: vdso: change timespec to __kernel_old_timespec
->   y2038: vdso: change time_t to __kernel_old_time_t
->   y2038: vdso: nds32: open-code timespec_add_ns()
->   y2038: vdso: powerpc: avoid timespec references
->   y2038: ipc: remove __kernel_time_t reference from headers
->   y2038: stat: avoid 'time_t' in 'struct stat'
->   y2038: uapi: change __kernel_time_t to __kernel_old_time_t
->   y2038: rusage: use __kernel_old_timeval
->   y2038: syscalls: change remaining timeval to __kernel_old_timeval
->   y2038: socket: remove timespec reference in timestamping
->   y2038: make ns_to_compat_timeval use __kernel_old_timeval
->   y2038: elfcore: Use __kernel_old_timeval for process times
->   y2038: timerfd: Use timespec64 internally
->   y2038: time: avoid timespec usage in settimeofday()
->   y2038: itimer: compat handling to itimer.c
->   y2038: use compat_{get,set}_itimer on alpha
->   y2038: move itimer reset into itimer.c
->   y2038: itimer: change implementation to timespec64
->   [RFC] y2038: itimer: use ktime_t internally
->   y2038: allow disabling time32 system calls
 
-I've dropped the "[RFC] y2038: itimer: use ktime_t internally" patch
-for the moment,
-and added two other patches from other series:
+--7ndczamgwxls6q65
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-y2038: remove CONFIG_64BIT_TIME
-y2038: socket: use __kernel_old_timespec instead of timespec
+On 2019-11-12, Kees Cook <keescook@chromium.org> wrote:
+> On Tue, Nov 12, 2019 at 12:24:04AM +1100, Aleksa Sarai wrote:
+> > On 2019-11-05, Aleksa Sarai <cyphar@cyphar.com> wrote:
+> > > This patchset is being developed here:
+> > >   <https://github.com/cyphar/linux/tree/openat2/master>
+> > >=20
+> > > Patch changelog:
+> > >  v15:
+> > >   * Fix code style for LOOKUP_IN_ROOT handling in path_init(). [Linus=
+ Torvalds]
+> > >   * Split out patches for each individual LOOKUP flag.
+> > >   * Reword commit messages to give more background information about =
+the
+> > >     series, as well as mention the semantics of each flag in more det=
+ail.
+> > > [...]
+> >=20
+> > Ping -- this patch hasn't been touched for a week. Thanks.
+>=20
+> If I've been following correctly, everyone is happy with this series.
+> (i.e. Linus's comment appear to have been addressed.)
+>=20
+> Perhaps the next question is should this go via a pull request by you to
+> Linus directly during the v5.5 merge window, via akpm, via akpm, via
+> Christian, or some other path? Besides Linus, it's not been clear who
+> should "claim" this series. :)
 
-Tentatively pushed out the patches with the Acks I have received so
-far to my y2038 branch on git.kernel.org so it gets included in linux-next.
+Given the namei changes, I wanted to avoid stepping on Al's toes. Though
+he did review the series a few versions ago, the discussion didn't focus
+on the openat2(2) semantics (which have also changed since then). I'm
+not sure whether to interpret the silence to mean he's satisfied with
+things as they are, or if he hasn't had more time to look at the series.
 
-If I hear no complaints, I'll send a pull request for the merge window,
-along with the compat-ioctl series I have already queued up in the same
-branch.
+As for which tree it should be routed to, I don't mind -- Christian is
+the most straight-forward choice (but if Al wants to route it, that's
+fine with me too).
 
-    Arnd
+--=20
+Aleksa Sarai
+Senior Software Engineer (Containers)
+SUSE Linux GmbH
+<https://www.cyphar.com/>
+
+--7ndczamgwxls6q65
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYIAB0WIQSxZm6dtfE8gxLLfYqdlLljIbnQEgUCXctSZgAKCRCdlLljIbnQ
+Ej+PAP0UBMczq8p/OLMeyIryF0EfQ+noWktKHkfgvrRf7bKN7AEAiW1OItA5gtV4
+HiJnADyDHQw1h7livSSrD2X7HKS2BAA=
+=yOzJ
+-----END PGP SIGNATURE-----
+
+--7ndczamgwxls6q65--
