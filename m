@@ -2,83 +2,96 @@ Return-Path: <SRS0=PO5t=ZF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0109EC43331
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 09:44:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56555C43331
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 09:47:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 549EA2196E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 09:44:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0390220818
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 09:47:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Z2XOngh2"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 549EA2196E
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="U+7/ZvVf"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0390220818
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47Cfpc11GZzF50n
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 20:44:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47CftJ3w9zzF7Zq
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 20:47:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::543;
- helo=mail-pg1-x543.google.com; envelope-from=oohall@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::641;
+ helo=mail-pl1-x641.google.com; envelope-from=sergey.senozhatsky.work@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="Z2XOngh2"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="U+7/ZvVf"; 
  dkim-atps=neutral
-Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
- [IPv6:2607:f8b0:4864:20::543])
+Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
+ [IPv6:2607:f8b0:4864:20::641])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47CfkQ38qlzF6nW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 20:40:59 +1100 (AEDT)
-Received: by mail-pg1-x543.google.com with SMTP id f19so1018961pgk.11
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 01:40:59 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47CZZF4GdnzF3nh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 17:33:41 +1100 (AEDT)
+Received: by mail-pl1-x641.google.com with SMTP id ay6so649267plb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2019 22:33:41 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=6x5Ma/2fYehRTG5ezWaSxGaEsScRbdPNlXvlApAmtyE=;
- b=Z2XOngh2lAHBpwR0Oc1QhMrcpxkGjqXQn/4HTOf7Ps5ckQJ6U4Wf8Vdc70VPHQ4xEa
- AEHwAsw47GYMr2vFITmwNt2eZMkHpmgjrfcdnK1+g8Y69P1Eeq2G0iwYdMlF1WzxO2oQ
- oTgKY7Qpu6kuNX7TXwdc8PD0ZUbcinRYepk127lEDCb8TrMELmKcSJqAaBHGNb0kNVMH
- 7mum5jJvv8OGsTnwfxxXPJBRZU+J7ROeSBwsRAExAX7aG3qbGwPaO3JfR8HjOOZdUWO/
- WVA5ifpyELJDGXbKwD4m5XR39PIBtOVK0ntT9o8TS+Yz+pPNJi0vLUqoiMT9FimU8SAK
- qyOw==
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=KPZG4VqXDKJQhwt8QhBKSdwu6zZ1yvGSLXAAovETV8E=;
+ b=U+7/ZvVfxKk+hxsLJDRIKIa9v9E62t1+RHHdRG8fTOKlKCc4Kg8kLlVghoiEvtLKpI
+ pPB/09WWUgNDAvmTd9ZCgUOuDBo7+0/f9WrOXWR2uZQ/aTiznYX6i7YMJNAQqiVBiT9D
+ uNMlkpfHxoC092SA3lqUUmN6Py1jaNvbxPVR7bhPPMcnC5VVTdQfrrvn9g+mwUT9wmS5
+ IpQo+ozODVnxdup9AaHr+12x4K6wNPJd6H6aHacy3JkNKTrjQ9VPgzg12dvkP1Aua/p8
+ JdT9N+L+Gr2JhZIIZgVnzKCc48NZMHSHGJjqaFnpF0Bg0opyuGJWVOEoMHo8Jbl+CwGg
+ Qilw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=6x5Ma/2fYehRTG5ezWaSxGaEsScRbdPNlXvlApAmtyE=;
- b=WIDwV5vKNHxNItNnzj6RWuUMPCIEkNHI5qNMPsNzrMikgw/U3UOwvXY8nDhQW5M67O
- SmATz0K0BTxSUbydZgvoyP/yTIEwYIOKLBAUIhduZT0dzeV4PJMcEM6h+iDEgsN2v7Yi
- Lv4/xHUg0R7IbCU47E6ai3NHjKJezB8NMnB6jHVbGBftBJDQRg8gy+CeRF9rPvYLeamU
- HOSf7Luw1tNMqceepMAXjsTB8SoeLStTndKPJ1GM5tWIZ1EZA17j61mwtkuhamtNZ/eM
- +DKa8+wWHunZuRlc4zriVuXbo05vuWxh6IWvj/of2vT45BWU35UtFoooRQZmPnkP1G+y
- 9m0Q==
-X-Gm-Message-State: APjAAAUYl9y69eVnt+XoFOTlgTvf9i/k2DBRzwPxFE3lVqENjVv6olnP
- 1rE97wWnOQMsLj20MFykJrVY8y2Q1Pw=
-X-Google-Smtp-Source: APXvYqwappcsOkJS+WTdmpv81YLqZONxehLVgBUJrsb7Im2JtGAqkgESh0/vFs2XU5d5nuf96yl+Yw==
-X-Received: by 2002:a63:3281:: with SMTP id y123mr2671190pgy.252.1573638055898; 
- Wed, 13 Nov 2019 01:40:55 -0800 (PST)
-Received: from wafer.ozlabs.ibm.com ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id s202sm2524461pfs.24.2019.11.13.01.40.53
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=KPZG4VqXDKJQhwt8QhBKSdwu6zZ1yvGSLXAAovETV8E=;
+ b=hVSZ27rIlHYkvLqZ5b6ojZdYD3difA/LPMPwXsa0AVAn8MxMItEmTj0oJChmIebd1R
+ vlLLfH3RyQK8RBSGkoSVJ+HGthWU1tRaf4C5jr14eYvA08/BvKbA5RnB3eGS8KI+hj5m
+ bKxD9FvAhdDI27UxNI3mvHu9TnuAqkhN2aF1EMpBVq/1tu6NJLWZ8tlEfkQQIxlu6F0Q
+ i6FYXhv6jRem7yuI9TI9JZE2EgpKxnbjnN+hgrlivldssvonVmIsZF7MIVFSzDS5qVfE
+ /T+bxIe0OrkULS6ee1j/fHyfy9FAiLRXbgi2nR3NWNy3INFhatvKZcgl/kHHE4FUBZnW
+ JM9A==
+X-Gm-Message-State: APjAAAXZU9J/rRTEdd7uXsyW4JKvGO28+KhYZb7pSQdO1ixHwdgOnSBf
+ f98NWHxK+htA29cUzc35WGo=
+X-Google-Smtp-Source: APXvYqw/EXwYt3YxwlYA4wZk8PjZNxrmOm0/6WUJy4pyQbt0uw3oeq/94f1ysfc7w8q8vIp4HTP4BA==
+X-Received: by 2002:a17:902:5a44:: with SMTP id
+ f4mr2028828plm.174.1573626818736; 
+ Tue, 12 Nov 2019 22:33:38 -0800 (PST)
+Received: from localhost ([2401:fa00:8f:203:250d:e71d:5a0a:9afe])
+ by smtp.gmail.com with ESMTPSA id i16sm1209291pfa.184.2019.11.12.22.33.36
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 13 Nov 2019 01:40:55 -0800 (PST)
-From: Oliver O'Halloran <oohall@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/powernv: Disable native PCIe port management
-Date: Wed, 13 Nov 2019 20:40:35 +1100
-Message-Id: <20191113094035.22394-1-oohall@gmail.com>
-X-Mailer: git-send-email 2.21.0
+ Tue, 12 Nov 2019 22:33:37 -0800 (PST)
+Date: Wed, 13 Nov 2019 15:33:34 +0900
+From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+To: Dmitry Safonov <dima@arista.com>
+Subject: Re: [PATCH 00/50] Add log level to show_stack()
+Message-ID: <20191113063334.GA147997@google.com>
+References: <20191108103719.GB175344@google.com>
+ <20191108130447.h3wfgo4efjkto56f@pathway.suse.cz>
+ <20191111012336.GA85185@google.com>
+ <20191111091207.u3lrd6cmumnx4czr@pathway.suse.cz>
+ <20191112044447.GA121272@google.com>
+ <20191112045704.GA138013@google.com>
+ <20191112083509.gmgjpkjffsfaw5lm@pathway.suse.cz>
+ <20191112101229.GA201294@google.com>
+ <20191113012337.GA70781@google.com>
+ <25ff45f0-6420-f660-55a8-637f11ab5ab4@arista.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <25ff45f0-6420-f660-55a8-637f11ab5ab4@arista.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
+X-Mailman-Approved-At: Wed, 13 Nov 2019 20:43:22 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,82 +103,92 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-pci@vger.kernel.org, Oliver O'Halloran <oohall@gmail.com>,
- Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
+Cc: Juri Lelli <juri.lelli@redhat.com>,
+ Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
+ linux-sh@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
+ Ben Segall <bsegall@google.com>, Guo Ren <guoren@kernel.org>,
+ Pavel Machek <pavel@ucw.cz>, Vincent Guittot <vincent.guittot@linaro.org>,
+ Paul Burton <paulburton@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Mel Gorman <mgorman@suse.de>, Jiri Slaby <jslaby@suse.com>,
+ Matt Turner <mattst88@gmail.com>, uclinux-h8-devel@lists.sourceforge.jp,
+ Petr Mladek <pmladek@suse.com>, linux-pm@vger.kernel.org,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-um@lists.infradead.org,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Dietmar Eggemann <dietmar.eggemann@arm.com>,
+ Richard Henderson <rth@twiddle.net>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, Paul Mackerras <paulus@samba.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linux-ia64@vger.kernel.org,
+ Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+ James Hogan <jhogan@kernel.org>,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Max Filippov <jcmvbkbc@gmail.com>, Vincent Chen <deanbo422@gmail.com>,
+ Ingo Molnar <mingo@kernel.org>, linux-s390@vger.kernel.org,
+ linux-c6x-dev@linux-c6x.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ linux-hexagon@vger.kernel.org, Helge Deller <deller@gmx.de>,
+ linux-xtensa@linux-xtensa.org, Vasily Gorbik <gor@linux.ibm.com>,
+ Aurelien Jacquiot <jacquiot.aurelien@gmail.com>,
+ linux-m68k@lists.linux-m68k.org, Stafford Horne <shorne@gmail.com>,
+ linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>,
+ Tony Luck <tony.luck@intel.com>, Douglas Anderson <dianders@chromium.org>,
+ Dmitry Safonov <0x7f454c46@gmail.com>, Will Deacon <will@kernel.org>,
+ Daniel Thompson <daniel.thompson@linaro.org>,
+ Brian Cain <bcain@codeaurora.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ kgdb-bugreport@lists.sourceforge.net, linux-snps-arc@lists.infradead.org,
+ Fenghua Yu <fenghua.yu@intel.com>, Borislav Petkov <bp@alien8.de>,
+ Jeff Dike <jdike@addtoit.com>, Steven Rostedt <rostedt@goodmis.org>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greentime Hu <green.hu@gmail.com>,
+ Guan Xuetao <gxt@pku.edu.cn>, linux-parisc@vger.kernel.org,
+ linux-alpha@vger.kernel.org, Ley Foon Tan <lftan@altera.com>,
+ "David S. Miller" <davem@davemloft.net>, Rich Felker <dalias@libc.org>,
+ Len Brown <len.brown@intel.com>, Peter Zijlstra <peterz@infradead.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ linux-riscv@lists.infradead.org,
+ Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+ Jonas Bonn <jonas@southpole.se>, Richard Weinberger <richard@nod.at>,
+ x86@kernel.org, Russell King <linux@armlinux.org.uk>,
+ clang-built-linux@googlegroups.com, Ingo Molnar <mingo@redhat.com>,
+ Mark Salter <msalter@redhat.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ openrisc@lists.librecores.org, Paul Walmsley <paul.walmsley@sifive.com>,
+ Michal Simek <monstr@monstr.eu>, Vineet Gupta <vgupta@synopsys.com>,
+ linux-mips@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Jason Wessel <jason.wessel@windriver.com>,
+ nios2-dev@lists.rocketboards.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On PowerNV the PCIe topology is (currently) managed the powernv platform
-code in cooperation with firmware. The PCIe-native service drivers bypass
-both and this can cause problems.
+On (19/11/13 02:25), Dmitry Safonov wrote:
+> I guess I've pointed that in my point of view price for one-time testing
+> code is cheaper than adding a new printk feature to swap log levels on
+> the fly.
+[..]
+> I've gone through functions used by sysrq driver and the same changes
+> introducing log level parameter would be needed for: sched_show_task(),
+> debug_show_all_locks(), show_regs(), show_state(), show_mem(). Some of
+> them don't need any platform changes, but at least show_regs() needs.
 
-Historically this hasn't been a big deal since the only port service
-driver that saw much use was the AER driver. The AER driver relies
-a kernel service to report when errors occur rather than acting autonmously
-so it's fairly easy to ignore. On PowerNV (and pseries) AER events are
-handled through EEH, which ignores the AER service, so it's never been
-an issue.
+Good points and nice conclusion.
 
-Unfortunately, the hotplug port service driver (pciehp) does act
-autonomously and conflicts with the platform specific hotplug
-driver (pnv_php). The main issue is that pciehp claims the interrupt
-associated with the PCIe capability which in turn prevents pnv_php from
-claiming it.
+Well, here we go. There is a number of generally useful functions that
+print nice data and where people might want to have better loglevel control
+(for debugging purposes). show_stack() is just one of them. Patching all
+those functions, which you have mentioned above, is hardly a fun task to do.
+Hence the printk() per-CPU per-context loglevel proposition. The code there
+is not clever or complicated and is meant for debugging purposes only, but
+with just 3 lines of code one can do some stuff:
 
-This results in hotplug events being handled by pciehp which does not
-notify firmware when the PCIe topology changes, and does not setup/teardown
-the arch specific PCI device structures (pci_dn) when the topology changes.
-The end result is that hot-added devices cannot be enabled and hot-removed
-devices may not be fully torn-down on removal.
+	/* @BTW you can't do this with "%s" KERN_FOO ;P */
++	printk_emergency_enter(LOGLEVEL_SCHED);
++	debug_show_all_locks();
++	printk_emergency_exit();
 
-We can fix these problems by setting the "pcie_ports_disabled" flag during
-platform initialisation. The flag indicates the platform owns the PCIe
-ports which stops the portbus driver being registered.
+Now...
+I'm not sure if this whole thing is up to "printk maintainers only".
+If no one is going to use "emergency printk contexts" then there is
+no point in having that code in the kernel.
 
-Cc: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
-Fixes: 66725152fb9f ("PCI/hotplug: PowerPC PowerNV PCI hotplug driver")
-Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
----
-Sergey, just FYI. I'll try sort out the rest of the hotplug
-trainwreck in 5.6.
-
-The Fixes: here is for the patch that added pnv_php in 4.8. It's been
-a problem since then, but wasn't noticed until people started testing
-it after the EEH fixes in commit 799abe283e51 ("powerpc/eeh: Clean up
-EEH PEs after recovery finishes") went in earlier in the 5.4 cycle.
----
- arch/powerpc/platforms/powernv/pci.c | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
-
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index 2825d00..ae62583 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -941,6 +941,23 @@ void __init pnv_pci_init(void)
- 
- 	pci_add_flags(PCI_CAN_SKIP_ISA_ALIGN);
- 
-+#ifdef CONFIG_PCIEPORTBUS
-+	/*
-+	 * On PowerNV PCIe devices are (currently) managed in cooperation
-+	 * with firmware. This isn't *strictly* required, but there's enough
-+	 * assumptions baked into both firmware and the platform code that
-+	 * it's unwise to allow the portbus services to be used.
-+	 *
-+	 * We need to fix this eventually, but for now set this flag to disable
-+	 * the portbus driver. The AER service isn't required since that AER
-+	 * events are handled via EEH. The pciehp hotplug driver can't work
-+	 * without kernel changes (and portbus binding breaks pnv_php). The
-+	 * other services also require some thinking about how we're going
-+	 * to integrate them.
-+	 */
-+	pcie_ports_disabled = true;
-+#endif
-+
- 	/* If we don't have OPAL, eg. in sim, just skip PCI probe */
- 	if (!firmware_has_feature(FW_FEATURE_OPAL))
- 		return;
--- 
-2.9.5
-
+	-ss
