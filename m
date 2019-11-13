@@ -2,58 +2,90 @@ Return-Path: <SRS0=PO5t=ZF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D08AC17447
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 09:51:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E91B2C43331
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 09:55:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B1F60222D0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 09:51:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B1F60222D0
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9F90120818
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 09:55:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F90120818
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47Cfy719lnzF6k6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 20:51:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47Cg350zh8zF6kX
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 20:55:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=suse.com (client-ip=195.135.220.15; helo=mx1.suse.de;
- envelope-from=pmladek@suse.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=harish@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=suse.com
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47CdXn39jtzF7Wh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 19:47:35 +1100 (AEDT)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id 06A25AEA4;
- Wed, 13 Nov 2019 08:47:31 +0000 (UTC)
-Date: Wed, 13 Nov 2019 09:47:22 +0100
-From: Petr Mladek <pmladek@suse.com>
-To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Subject: Re: [PATCH 00/50] Add log level to show_stack()
-Message-ID: <20191113084722.emzee7g34zki4kkl@pathway.suse.cz>
-References: <20191108130447.h3wfgo4efjkto56f@pathway.suse.cz>
- <20191111012336.GA85185@google.com>
- <20191111091207.u3lrd6cmumnx4czr@pathway.suse.cz>
- <20191112044447.GA121272@google.com>
- <20191112045704.GA138013@google.com>
- <20191112083509.gmgjpkjffsfaw5lm@pathway.suse.cz>
- <20191112101229.GA201294@google.com>
- <20191113012337.GA70781@google.com>
- <25ff45f0-6420-f660-55a8-637f11ab5ab4@arista.com>
- <20191113063334.GA147997@google.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47CfqM48DPzF5sB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 20:45:12 +1100 (AEDT)
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ xAD9hvd0096292
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 04:45:08 -0500
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2w7qdb84qg-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 04:44:40 -0500
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <harish@linux.ibm.com>;
+ Wed, 13 Nov 2019 09:43:33 -0000
+Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 13 Nov 2019 09:43:30 -0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id xAD9hTUK38207976
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 13 Nov 2019 09:43:29 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 138324C059;
+ Wed, 13 Nov 2019 09:43:29 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 17B9B4C04E;
+ Wed, 13 Nov 2019 09:43:28 +0000 (GMT)
+Received: from dhcp-9-109-245-136.in.ibm.com (unknown [9.109.245.136])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Wed, 13 Nov 2019 09:43:27 +0000 (GMT)
+From: Harish <harish@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Subject: [RESEND PATCH] selftests/powerpc: Handle Makefile for unrecognized
+ option
+Date: Wed, 13 Nov 2019 15:12:19 +0530
+X-Mailer: git-send-email 2.21.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20191113063334.GA147997@google.com>
-User-Agent: NeoMutt/20170912 (1.9.0)
-X-Mailman-Approved-At: Wed, 13 Nov 2019 20:43:21 +1100
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19111309-0020-0000-0000-00000385C808
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19111309-0021-0000-0000-000021DBD60A
+Message-Id: <20191113094219.14946-1-harish@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-11-13_02:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=3 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=909 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1910280000 definitions=main-1911130091
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,106 +97,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Juri Lelli <juri.lelli@redhat.com>, linux-sh@vger.kernel.org,
- Catalin Marinas <catalin.marinas@arm.com>, Ben Segall <bsegall@google.com>,
- Guo Ren <guoren@kernel.org>, Pavel Machek <pavel@ucw.cz>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- Paul Burton <paulburton@kernel.org>, Dmitry Safonov <dima@arista.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>, Mel Gorman <mgorman@suse.de>,
- Jiri Slaby <jslaby@suse.com>, Matt Turner <mattst88@gmail.com>,
- uclinux-h8-devel@lists.sourceforge.jp, Len Brown <len.brown@intel.com>,
- linux-pm@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
- linux-um@lists.infradead.org, Thomas Gleixner <tglx@linutronix.de>,
- Dietmar Eggemann <dietmar.eggemann@arm.com>,
- Richard Henderson <rth@twiddle.net>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, Paul Mackerras <paulus@samba.org>,
- Andrew Morton <akpm@linux-foundation.org>, linux-ia64@vger.kernel.org,
- Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
- James Hogan <jhogan@kernel.org>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Max Filippov <jcmvbkbc@gmail.com>, Vincent Chen <deanbo422@gmail.com>,
- Ingo Molnar <mingo@kernel.org>, linux-s390@vger.kernel.org,
- linux-c6x-dev@linux-c6x.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
- linux-hexagon@vger.kernel.org, Helge Deller <deller@gmx.de>,
- linux-xtensa@linux-xtensa.org, Vasily Gorbik <gor@linux.ibm.com>,
- Aurelien Jacquiot <jacquiot.aurelien@gmail.com>,
- linux-m68k@lists.linux-m68k.org, Stafford Horne <shorne@gmail.com>,
- linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>,
- Tony Luck <tony.luck@intel.com>, Douglas Anderson <dianders@chromium.org>,
- Dmitry Safonov <0x7f454c46@gmail.com>, Will Deacon <will@kernel.org>,
- Daniel Thompson <daniel.thompson@linaro.org>,
- Brian Cain <bcain@codeaurora.org>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- kgdb-bugreport@lists.sourceforge.net, linux-snps-arc@lists.infradead.org,
- Fenghua Yu <fenghua.yu@intel.com>, Borislav Petkov <bp@alien8.de>,
- Jeff Dike <jdike@addtoit.com>, Steven Rostedt <rostedt@goodmis.org>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greentime Hu <green.hu@gmail.com>,
- Guan Xuetao <gxt@pku.edu.cn>, linux-parisc@vger.kernel.org,
- linux-alpha@vger.kernel.org, Ley Foon Tan <lftan@altera.com>,
- "David S. Miller" <davem@davemloft.net>, Rich Felker <dalias@libc.org>,
- Peter Zijlstra <peterz@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
- Anton Ivanov <anton.ivanov@cambridgegreys.com>,
- Jonas Bonn <jonas@southpole.se>, Richard Weinberger <richard@nod.at>,
- x86@kernel.org, Russell King <linux@armlinux.org.uk>,
- clang-built-linux@googlegroups.com, Ingo Molnar <mingo@redhat.com>,
- Mark Salter <msalter@redhat.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- openrisc@lists.librecores.org, Paul Walmsley <paul.walmsley@sifive.com>,
- Michal Simek <monstr@monstr.eu>, Vineet Gupta <vgupta@synopsys.com>,
- linux-mips@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Palmer Dabbelt <palmer@dabbelt.com>, Jason Wessel <jason.wessel@windriver.com>,
- nios2-dev@lists.rocketboards.org, linuxppc-dev@lists.ozlabs.org
+Cc: Harish <harish@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed 2019-11-13 15:33:34, Sergey Senozhatsky wrote:
-> On (19/11/13 02:25), Dmitry Safonov wrote:
-> > I guess I've pointed that in my point of view price for one-time testing
-> > code is cheaper than adding a new printk feature to swap log levels on
-> > the fly.
-> [..]
-> > I've gone through functions used by sysrq driver and the same changes
-> > introducing log level parameter would be needed for: sched_show_task(),
-> > debug_show_all_locks(), show_regs(), show_state(), show_mem(). Some of
-> > them don't need any platform changes, but at least show_regs() needs.
-> 
-> Good points and nice conclusion.
-> 
-> Well, here we go. There is a number of generally useful functions that
-> print nice data and where people might want to have better loglevel control
-> (for debugging purposes). show_stack() is just one of them.
+On older distributions like Sles12SP5 gcc does not recognize
+-no-pie option making the powerpc selftests build to fail
 
-Could you please provide some examples so that we get an idea about
-the scope, usefulness, and requirements?
+Fixes the following:
+gcc: error: unrecognized command line option ‘-no-pie’
 
-> Patching all
-> those functions, which you have mentioned above, is hardly a fun task to do.
-> Hence the printk() per-CPU per-context loglevel proposition. The code there
-> is not clever or complicated and is meant for debugging purposes only, but
-> with just 3 lines of code one can do some stuff:
-> 
-> 	/* @BTW you can't do this with "%s" KERN_FOO ;P */
-> +	printk_emergency_enter(LOGLEVEL_SCHED);
-> +	debug_show_all_locks();
-> +	printk_emergency_exit();
+Signed-off-by: Harish <harish@linux.ibm.com>
+---
+ tools/testing/selftests/powerpc/pmu/ebb/Makefile | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-But this will not solve situations where the original loglevel should
-stay from any reason. It happened in this patchset, see
+diff --git a/tools/testing/selftests/powerpc/pmu/ebb/Makefile b/tools/testing/selftests/powerpc/pmu/ebb/Makefile
+index 23f4caf48ffc..417306353e07 100644
+--- a/tools/testing/selftests/powerpc/pmu/ebb/Makefile
++++ b/tools/testing/selftests/powerpc/pmu/ebb/Makefile
+@@ -1,4 +1,6 @@
+ # SPDX-License-Identifier: GPL-2.0
++include ../../../../../../scripts/Kbuild.include
++
+ noarg:
+ 	$(MAKE) -C ../../
+ 
+@@ -6,7 +8,10 @@ noarg:
+ CFLAGS += -m64
+ 
+ # Toolchains may build PIE by default which breaks the assembly
+-LDFLAGS += -no-pie
++no-pie-option := $(call try-run, echo 'int main() { return 0; }' | \
++        $(CC) -Werror $(KBUILD_CPPFLAGS) $(CC_OPTION_CFLAGS) -no-pie -x c - -o "$$TMP", -no-pie)
++
++LDFLAGS += $(no-pie-option)
+ 
+ TEST_GEN_PROGS := reg_access_test event_attributes_test cycles_test	\
+ 	 cycles_with_freeze_test pmc56_overflow_test		\
+-- 
+2.21.0
 
-https://lkml.kernel.org/r/20191106091258.GS25745@shell.armlinux.org.uk
-https://lkml.kernel.org/r/20191106132516.GC5808@willie-the-truck
-
-We would need to investigate more potential users of this feature to
-see eventual requirements. If there are too many exceptions and modes
-then the generic API might get pretty complicated.
-
-At the moment, I am in favor of this patchset. It is huge and
-needed a lot of manual work. But the result is straightforward and
-easy to understand.
-
-Best Regards,
-Petr
