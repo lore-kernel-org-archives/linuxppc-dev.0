@@ -2,61 +2,56 @@ Return-Path: <SRS0=PO5t=ZF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B93E6C43331
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 11:04:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A82BC17442
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 11:07:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 28523222C1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 11:04:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 28523222C1
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id B2F3E222BD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 11:06:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B2F3E222BD
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47ChZ86mZVzF5TC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 22:04:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=srs0=kxsy=zf=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
+	by lists.ozlabs.org (Postfix) with ESMTP id 47ChdX1vz9zF77w
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 22:06:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lst.de
+ (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=bugzilla.kernel.org
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=lst.de
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47ChVx0RrszF7Yr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 22:01:12 +1100 (AEDT)
-From: bugzilla-daemon@bugzilla.kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 205201] Booting halts if Dawicontrol DC-2976 UW SCSI board
- installed, unless RAM size limited to 3500M
-Date: Wed, 13 Nov 2019 11:01:10 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Product: Platform Specific/Hardware
-X-Bugzilla-Component: PPC-64
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: chzigotzky@xenosoft.de
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: attachments.created
-Message-ID: <bug-205201-206035-TW1Lrkg5mr@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-205201-206035@https.bugzilla.kernel.org/>
-References: <bug-205201-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47ChX82Sn8zF7lP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 22:02:14 +1100 (AEDT)
+Received: by verein.lst.de (Postfix, from userid 2407)
+ id 1BF6268AFE; Wed, 13 Nov 2019 12:02:08 +0100 (CET)
+Date: Wed, 13 Nov 2019 12:02:07 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Christian Zigotzky <chzigotzky@xenosoft.de>
+Subject: Re: Bug 205201 - overflow of DMA mask and bus mask
+Message-ID: <20191113110207.GA7280@lst.de>
+References: <3504ee70-02de-049e-6402-2d530bf55a84@xenosoft.de>
+ <46025f1b-db20-ac23-7dcd-10bc43bbb6ee@xenosoft.de>
+ <20191105162856.GA15402@lst.de>
+ <2f3c81bd-d498-066a-12c0-0a7715cda18f@xenosoft.de>
+ <d2c614ec-c56e-3ec2-12d0-7561cd30c643@xenosoft.de>
+ <af32bfcc-5559-578d-e1f4-75e454c965bf@xenosoft.de>
+ <0c5a8009-d28b-601f-3d1a-9de0e869911c@xenosoft.de>
+ <a794864f-04ae-9b90-50e7-01b416c861fe@xenosoft.de>
+ <20191112144109.GA11805@lst.de>
+ <9b14ca1b-2d5d-52b5-c7b4-0e637dbb1157@xenosoft.de>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9b14ca1b-2d5d-52b5-c7b4-0e637dbb1157@xenosoft.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,38 +63,17 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linux-arch@vger.kernel.org, darren@stevens-zone.net,
+ mad skateman <madskateman@gmail.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, iommu@lists.linux-foundation.org,
+ Rob Herring <robh+dt@kernel.org>, paulus@samba.org, rtd2@xtra.co.nz,
+ "contact@a-eon.com" <contact@a-eon.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Christoph Hellwig <hch@lst.de>,
+ nsaenzjulienne@suse.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D205201
-
---- Comment #14 from Christian Zigotzky (chzigotzky@xenosoft.de) ---
-Created attachment 285889
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D285889&action=3Dedit
-Patch for renaming the GFP_DMA32 to GFP_DMA
-
-Hi All,
-
-The issue with the BT878 TV cards is solved. :-)
-
-GFP_DMA32 was renamed to GFP_DMA in the PowerPC updates 4.21-1 in=20
-December last year.
-
-Some PCI devices still use GFP_DMA32 (grep -r GFP_DMA32 *). I renamed=20
-GFP_DMA32 to GFP_DMA in the file=20
-"drivers/media/v4l2-core/videobuf-dma-sg.c". After compiling the RC7 of=20
-kernel 5.4, my BT878 TV card works again.
-
-I created a patch for renaming GFP_DMA32 to GFP_DMA.
-
-This patch doesn't solve the issue with the Dawicontrol DC-2976 UW SCSI boa=
-rd.
-Please help us to solve the issue with the SCSI board too.
-
-Cheers,
-Christian
-
---=20
-You are receiving this mail because:
-You are watching the assignee of the bug.=
+Interesting.  Give me some time to come up with a real fix, as drivers
+really should not mess with GFP flags for these allocations, and even
+if they did swiotlb is supposed to take care of any resulting problems.
