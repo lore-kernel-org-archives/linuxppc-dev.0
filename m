@@ -2,99 +2,103 @@ Return-Path: <SRS0=PO5t=ZF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8EF42C17447
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 06:35:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1704EC43331
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 06:43:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0B49D222C1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 06:35:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0B49D222C1
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=us.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id B91F8222C6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 06:43:21 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="f/11EP4+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B91F8222C6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47CZbz3xx2zF6kL
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 17:35:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47CZnM41t2zF1QP
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 17:43:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=us.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=linuxram@us.ibm.com;
+ smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::442;
+ helo=mail-pf1-x442.google.com; envelope-from=takahiro.akashi@linaro.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=us.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=linaro.org header.i=@linaro.org header.b="f/11EP4+"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47CZYG60SNzF6lT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 17:32:50 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- xAD6Rsom134456
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 01:32:46 -0500
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2w8byph7ec-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 01:32:46 -0500
-Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Wed, 13 Nov 2019 06:32:44 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 13 Nov 2019 06:32:40 -0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xAD6WdgV24510648
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 13 Nov 2019 06:32:39 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E35C1A4059;
- Wed, 13 Nov 2019 06:32:38 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5DC78A4053;
- Wed, 13 Nov 2019 06:32:36 +0000 (GMT)
-Received: from oc0525413822.ibm.com (unknown [9.85.181.122])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Wed, 13 Nov 2019 06:32:36 +0000 (GMT)
-Date: Tue, 12 Nov 2019 22:32:33 -0800
-From: Ram Pai <linuxram@us.ibm.com>
-To: Paul Mackerras <paulus@ozlabs.org>
-Subject: Re: [PATCH v10 7/8] KVM: PPC: Implement H_SVM_INIT_ABORT hcall
-References: <20191104041800.24527-1-bharata@linux.ibm.com>
- <20191104041800.24527-8-bharata@linux.ibm.com>
- <20191111041924.GA4017@oak.ozlabs.ibm.com>
- <20191112010158.GB5159@oc0525413822.ibm.com>
- <20191112053836.GB10885@oak.ozlabs.ibm.com>
- <20191112075215.GD5159@oc0525413822.ibm.com>
- <20191112113204.GA10178@blackberry>
- <20191112144555.GE5159@oc0525413822.ibm.com>
- <20191113001427.GA17829@oak.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47CZkr0X8NzF7Jx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 17:41:04 +1100 (AEDT)
+Received: by mail-pf1-x442.google.com with SMTP id q13so964126pff.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2019 22:41:04 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
+ h=date:from:to:cc:subject:message-id:mail-followup-to:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=bWvteqn5JmXy65hLFi+ydHqLLpEPnm2bFuPJS7mYS3s=;
+ b=f/11EP4+vTaYywR0gxdn5v+kREW9r0wVaUr9BZc0pmzraw0u3PSkH8khlChdnGsqqn
+ uZUlFRTFg4VK1hFDedbz/TOO18FEwl21IIhfZ2irtsEngcp5LwqwG8BZi62FzAIVclNy
+ /Llie4z01jWcQQyo+tY+g6WnX964J0AlR8/VsyR36u20JFibjXziUsrlW9njo5GTQpS1
+ EvZGYUMC7vZDre9t069coZruyR2xzLPg3pjgAAnGfrBWqUYwRzwSqVOp4S+lgI+/MHwA
+ ZzcVs5SVKEpGHUoYiqamN9X1TPq13n1YJRDgzyvmWLnWVwBPTiX5x7rYAfh5soBpZMDX
+ aEnA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id
+ :mail-followup-to:references:mime-version:content-disposition
+ :in-reply-to:user-agent;
+ bh=bWvteqn5JmXy65hLFi+ydHqLLpEPnm2bFuPJS7mYS3s=;
+ b=jWgxekCprl8lIOo62Bj/B4/pdrgQriMRoAMOtpdmrOBd3KELumUtJtOthr+CEAK5Gy
+ RoQrrdg572ah+/6yGcgqeyAErxs3YdrbGZL/10+yNuIrunIdcIAaoaAlab6yKvpT6+yo
+ XXMzTo4ELoesptGwwoPBWxfjRXXNPNb0fWkBDV08Ns/7wxViWN/SSefvRZ+nuCO2ujUY
+ LwBns7j4tZ1GWBsfc7T5046okbeHL8Ssuw9hL7mTd0UDCJGYXCNfrYqBfP3iKfRxJffp
+ 94KDTIBF41b9VR5mPnnrcvyIRlhxA6Uo1F+dyTpDZSimBmyeKubYpWtQMIjRxOIwr9bc
+ xEAA==
+X-Gm-Message-State: APjAAAVkwjkih7kHU0+7s4Ban4NCJA9rbTO8P5MFvl2jCYIs/kLBg0E/
+ 56zt5KzC3rLQWK4uFhQrB6Es1g==
+X-Google-Smtp-Source: APXvYqxTXSCh3FHiA+NO6rP2y7YECV87KGSm3mqb9W2W+VI5PgMN9OPAzYFRcPzqrWlMsGI7VcSqQg==
+X-Received: by 2002:a62:8495:: with SMTP id k143mr2361055pfd.47.1573627261423; 
+ Tue, 12 Nov 2019 22:41:01 -0800 (PST)
+Received: from linaro.org ([121.95.100.191])
+ by smtp.googlemail.com with ESMTPSA id g20sm1071708pgk.46.2019.11.12.22.40.56
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Tue, 12 Nov 2019 22:41:00 -0800 (PST)
+Date: Wed, 13 Nov 2019 15:39:00 +0900
+From: AKASHI Takahiro <takahiro.akashi@linaro.org>
+To: Bhupesh Sharma <bhsharma@redhat.com>
+Subject: Re: [PATCH v4 0/3] Append new variables to vmcoreinfo (TCR_EL1.T1SZ
+ for arm64 and MAX_PHYSMEM_BITS for all archs)
+Message-ID: <20191113063858.GE22427@linaro.org>
+Mail-Followup-To: AKASHI Takahiro <takahiro.akashi@linaro.org>,
+ Bhupesh Sharma <bhsharma@redhat.com>, linux-kernel@vger.kernel.org,
+ bhupesh.linux@gmail.com, Boris Petkov <bp@alien8.de>,
+ Ingo Molnar <mingo@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Jonathan Corbet <corbet@lwn.net>, James Morse <james.morse@arm.com>,
+ Mark Rutland <mark.rutland@arm.com>, Will Deacon <will@kernel.org>,
+ Steve Capper <steve.capper@arm.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Paul Mackerras <paulus@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Dave Anderson <anderson@redhat.com>,
+ Kazuhito Hagio <k-hagio@ab.jp.nec.com>, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ linux-doc@vger.kernel.org, kexec@lists.infradead.org
+References: <1573459282-26989-1-git-send-email-bhsharma@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20191113001427.GA17829@oak.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.21 (2010-09-15)
-X-TM-AS-GCONF: 00
-x-cbid: 19111306-0028-0000-0000-000003B670B9
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19111306-0029-0000-0000-0000247976B4
-Message-Id: <20191113063233.GF5159@oc0525413822.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-11-13_01:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1910280000 definitions=main-1911130057
+In-Reply-To: <1573459282-26989-1-git-send-email-bhsharma@redhat.com>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,49 +110,114 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-Cc: Sukadev Bhattiprolu <sukadev@linux.ibm.com>, cclaudio@linux.ibm.com,
- kvm-ppc@vger.kernel.org, Bharata B Rao <bharata@linux.ibm.com>,
- linux-mm@kvack.org, jglisse@redhat.com, Ram Pai <linuxram@linux.ibm.com>,
- aneesh.kumar@linux.vnet.ibm.com, paulus@au1.ibm.com,
- sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, hch@lst.de
+Cc: Mark Rutland <mark.rutland@arm.com>, linux-doc@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Will Deacon <will@kernel.org>,
+ Ingo Molnar <mingo@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
+ x86@kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
+ Boris Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
+ bhupesh.linux@gmail.com, linux-arm-kernel@lists.infradead.org,
+ Kazuhito Hagio <k-hagio@ab.jp.nec.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Steve Capper <steve.capper@arm.com>, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, James Morse <james.morse@arm.com>,
+ Dave Anderson <anderson@redhat.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Nov 13, 2019 at 11:14:27AM +1100, Paul Mackerras wrote:
-> On Tue, Nov 12, 2019 at 06:45:55AM -0800, Ram Pai wrote:
-> > On Tue, Nov 12, 2019 at 10:32:04PM +1100, Paul Mackerras wrote:
-> > > On Mon, Nov 11, 2019 at 11:52:15PM -0800, Ram Pai wrote:
-> > > > There is subtle problem removing that code from the assembly.
-> > > > 
-> > > > If the H_SVM_INIT_ABORT hcall returns to the ultravisor without clearing
-> > > > kvm->arch.secure_guest, the hypervisor will continue to think that the
-> > > > VM is a secure VM.   However the primary reason the H_SVM_INIT_ABORT
-> > > > hcall was invoked, was to inform the Hypervisor that it should no longer
-> > > > consider the VM as a Secure VM. So there is a inconsistency there.
-> > > 
-> > > Most of the checks that look at whether a VM is a secure VM use code
-> > > like "if (kvm->arch.secure_guest & KVMPPC_SECURE_INIT_DONE)".  Now
-> > > since KVMPPC_SECURE_INIT_ABORT is 4, an if statement such as that will
-> > > take the false branch once we have set kvm->arch.secure_guest to
-> > > KVMPPC_SECURE_INIT_ABORT in kvmppc_h_svm_init_abort.  So in fact in
-> > > most places we will treat the VM as a normal VM from then on.  If
-> > > there are any places where we still need to treat the VM as a secure
-> > > VM while we are processing the abort we can easily do that too.
-> > 
-> > Is the suggestion --  KVMPPC_SECURE_INIT_ABORT should never return back
-> > to the Ultravisor?   Because removing that assembly code will NOT lead the
+Hi Bhupesh,
+
+Do you have a corresponding patch for userspace tools,
+including crash util and/or makedumpfile?
+Otherwise, we can't verify that a generated core file is
+correctly handled.
+
+Thanks,
+-Takahiro Akashi
+
+On Mon, Nov 11, 2019 at 01:31:19PM +0530, Bhupesh Sharma wrote:
+> Changes since v3:
+> ----------------
+> - v3 can be seen here:
+>   http://lists.infradead.org/pipermail/kexec/2019-March/022590.html
+> - Addressed comments from James and exported TCR_EL1.T1SZ in vmcoreinfo
+>   instead of PTRS_PER_PGD.
+> - Added a new patch (via [PATCH 3/3]), which fixes a simple typo in
+>   'Documentation/arm64/memory.rst'
 > 
-> No.  The suggestion is that vcpu->arch.secure_guest stays set to
-> KVMPPC_SECURE_INIT_ABORT until userspace calls KVM_PPC_SVM_OFF.
-
-In the fast_guest_return path, if it finds 
-(kvm->arch.secure_guest & KVMPPC_SECURE_INIT_ABORT) is true, should it return to
-UV or not?
-
-Ideally it should return back to the ultravisor the first time
-KVMPPC_SECURE_INIT_ABORT is set, and not than onwards.
-
-RP
-
+> Changes since v2:
+> ----------------
+> - v2 can be seen here:
+>   http://lists.infradead.org/pipermail/kexec/2019-March/022531.html
+> - Protected 'MAX_PHYSMEM_BITS' vmcoreinfo variable under CONFIG_SPARSEMEM
+>   ifdef sections, as suggested by Kazu.
+> - Updated vmcoreinfo documentation to add description about
+>   'MAX_PHYSMEM_BITS' variable (via [PATCH 3/3]).
+> 
+> Changes since v1:
+> ----------------
+> - v1 was sent out as a single patch which can be seen here:
+>   http://lists.infradead.org/pipermail/kexec/2019-February/022411.html
+> 
+> - v2 breaks the single patch into two independent patches:
+>   [PATCH 1/2] appends 'PTRS_PER_PGD' to vmcoreinfo for arm64 arch, whereas
+>   [PATCH 2/2] appends 'MAX_PHYSMEM_BITS' to vmcoreinfo in core kernel code (all archs)
+> 
+> This patchset primarily fixes the regression reported in user-space
+> utilities like 'makedumpfile' and 'crash-utility' on arm64 architecture
+> with the availability of 52-bit address space feature in underlying
+> kernel. These regressions have been reported both on CPUs which don't
+> support ARMv8.2 extensions (i.e. LVA, LPA) and are running newer kernels
+> and also on prototype platforms (like ARMv8 FVP simulator model) which
+> support ARMv8.2 extensions and are running newer kernels.
+> 
+> The reason for these regressions is that right now user-space tools
+> have no direct access to these values (since these are not exported
+> from the kernel) and hence need to rely on a best-guess method of
+> determining value of 'vabits_actual' and 'MAX_PHYSMEM_BITS' supported
+> by underlying kernel.
+> 
+> Exporting these values via vmcoreinfo will help user-land in such cases.
+> In addition, as per suggestion from makedumpfile maintainer (Kazu),
+> it makes more sense to append 'MAX_PHYSMEM_BITS' to
+> vmcoreinfo in the core code itself rather than in arm64 arch-specific
+> code, so that the user-space code for other archs can also benefit from
+> this addition to the vmcoreinfo and use it as a standard way of
+> determining 'SECTIONS_SHIFT' value in user-land.
+> 
+> Cc: Boris Petkov <bp@alien8.de>
+> Cc: Ingo Molnar <mingo@kernel.org>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Jonathan Corbet <corbet@lwn.net>
+> Cc: James Morse <james.morse@arm.com>
+> Cc: Mark Rutland <mark.rutland@arm.com>
+> Cc: Will Deacon <will@kernel.org>
+> Cc: Steve Capper <steve.capper@arm.com>
+> Cc: Catalin Marinas <catalin.marinas@arm.com>
+> Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Dave Anderson <anderson@redhat.com>
+> Cc: Kazuhito Hagio <k-hagio@ab.jp.nec.com>
+> Cc: x86@kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-kernel@vger.kernel.org
+> Cc: linux-doc@vger.kernel.org
+> Cc: kexec@lists.infradead.org
+> 
+> Bhupesh Sharma (3):
+>   crash_core, vmcoreinfo: Append 'MAX_PHYSMEM_BITS' to vmcoreinfo
+>   arm64/crash_core: Export TCR_EL1.T1SZ in vmcoreinfo
+>   Documentation/arm64: Fix a simple typo in memory.rst
+> 
+>  Documentation/arm64/memory.rst         | 2 +-
+>  arch/arm64/include/asm/pgtable-hwdef.h | 1 +
+>  arch/arm64/kernel/crash_core.c         | 9 +++++++++
+>  kernel/crash_core.c                    | 1 +
+>  4 files changed, 12 insertions(+), 1 deletion(-)
+> 
+> -- 
+> 2.7.4
+> 
