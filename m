@@ -2,51 +2,82 @@ Return-Path: <SRS0=PO5t=ZF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 403C1C17449
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 08:44:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 07E00C43331
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 09:07:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B2742222D0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 08:44:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B2742222D0
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
+	by mail.kernel.org (Postfix) with ESMTPS id 68F6721A49
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 09:07:18 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="qgoX2qy8"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 68F6721A49
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nvidia.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47CdSj6DxkzF4SM
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 19:44:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47CdzR754TzF7XS
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 20:07:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=nvidia.com (client-ip=216.228.121.64; helo=hqemgate15.nvidia.com;
+ envelope-from=jhubbard@nvidia.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
- (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=msuchanek@suse.de;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=suse.de
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47CdQF00W3zF7NS
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 19:41:55 +1100 (AEDT)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id 2237BB11F;
- Wed, 13 Nov 2019 08:41:49 +0000 (UTC)
-Date: Wed, 13 Nov 2019 09:41:37 +0100
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 31/33] powerpc/64: make buildable without CONFIG_COMPAT
-Message-ID: <20191113084137.GI2770@kitsune.suse.cz>
-References: <cover.1573576649.git.msuchanek@suse.de>
- <13fa324dc879a7f325290bf2e131b87eb491cd7b.1573576649.git.msuchanek@suse.de>
- <1573613683.ylw9dz9mlc.astroid@bobo.none>
+ dmarc=pass (p=none dis=none) header.from=nvidia.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="qgoX2qy8"; 
+ dkim-atps=neutral
+Received: from hqemgate15.nvidia.com (hqemgate15.nvidia.com [216.228.121.64])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47Cdwm0kvnzF62F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 20:04:55 +1100 (AEDT)
+Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by
+ hqemgate15.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+ id <B5dcbc7300000>; Wed, 13 Nov 2019 01:04:48 -0800
+Received: from hqmail.nvidia.com ([172.20.161.6])
+ by hqpgpgate101.nvidia.com (PGP Universal service);
+ Wed, 13 Nov 2019 01:04:48 -0800
+X-PGP-Universal: processed;
+ by hqpgpgate101.nvidia.com on Wed, 13 Nov 2019 01:04:48 -0800
+Received: from [10.2.160.173] (10.124.1.5) by HQMAIL107.nvidia.com
+ (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Wed, 13 Nov
+ 2019 09:04:48 +0000
+Subject: Re: [PATCH v3 00/23] mm/gup: track dma-pinned pages: FOLL_PIN,
+ FOLL_LONGTERM
+To: Daniel Vetter <daniel@ffwll.ch>
+References: <20191112000700.3455038-1-jhubbard@nvidia.com>
+ <20191112203802.GD5584@ziepe.ca>
+ <02fa935c-3469-b766-b691-5660084b60b9@nvidia.com>
+ <CAKMK7uHvk+ti00mCCF2006U003w1dofFg9nSfmZ4bS2Z2pEDNQ@mail.gmail.com>
+X-Nvconfidentiality: public
+From: John Hubbard <jhubbard@nvidia.com>
+Message-ID: <7b671bf9-4d94-f2cc-8453-863acd5a1115@nvidia.com>
+Date: Wed, 13 Nov 2019 01:02:02 -0800
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.8.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1573613683.ylw9dz9mlc.astroid@bobo.none>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <CAKMK7uHvk+ti00mCCF2006U003w1dofFg9nSfmZ4bS2Z2pEDNQ@mail.gmail.com>
+X-Originating-IP: [10.124.1.5]
+X-ClientProxiedBy: HQMAIL101.nvidia.com (172.20.187.10) To
+ HQMAIL107.nvidia.com (172.20.187.13)
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
+ t=1573635888; bh=WuCLw1mNhRSSrQbzE2XtsJC46JZuOt82gJ5Z6A5sU6M=;
+ h=X-PGP-Universal:Subject:To:CC:References:X-Nvconfidentiality:From:
+ Message-ID:Date:User-Agent:MIME-Version:In-Reply-To:
+ X-Originating-IP:X-ClientProxiedBy:Content-Type:Content-Language:
+ Content-Transfer-Encoding;
+ b=qgoX2qy8q+Pz4xwaUpJCPUDYqLc7AOyeowDXx94iSygezEmzpCR7ZZxo0cljsfswu
+ ukE0Cm+f0R483iPntRfn/ABXBRqJdTjYQOd5BMk3/+ahH8sNYpooo8xojMC+j2QKMp
+ YnZN0Muwss41C3UGdYFy5MS6hRmL0789DFptbHHfPd5vitO0CxsRYBJyPt01+pG4cX
+ 6cPdl9NwtrthmFzBA5/mOnD1+FGwYZl+/Gsvcsk8njJ9ZjDk+S/T82e3qWgu+CaLxi
+ GAWOKJgmoqYLWXc9CemtInbG0/tG5R+23jPdDf2TY9FLXzVWhi+Ia12J1oxABZoP9Y
+ i24f/CxZw1J0Q==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,157 +89,87 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- David Hildenbrand <david@redhat.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
- David Howells <dhowells@redhat.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Paul Mackerras <paulus@samba.org>, Breno Leitao <leitao@debian.org>,
- Michael Neuling <mikey@neuling.org>, Nicolai Stange <nstange@suse.de>,
- Allison Randal <allison@lohutok.net>, Diana Craciun <diana.craciun@nxp.com>,
- Firoz Khan <firoz.khan@linaro.org>, Christian Brauner <christian@brauner.io>,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Valentin Schneider <valentin.schneider@arm.com>,
- Jagadeesh Pagadala <jagdsh.linux@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
- Steven Rostedt <rostedt@goodmis.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
- Oleg Nesterov <oleg@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
- Hari Bathini <hbathini@linux.ibm.com>, Daniel Axtens <dja@axtens.net>,
- Gustavo Romero <gromero@linux.ibm.com>, Mathieu Malaterre <malat@debian.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Claudio Carvalho <cclaudio@linux.ibm.com>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Brajeswar Ghosh <brajeswar.linux@gmail.com>,
- Dmitry Vyukov <dvyukov@google.com>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>,
+ kvm@vger.kernel.org, Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+ David Airlie <airlied@linux.ie>, Dave Chinner <david@fromorbit.com>,
+ dri-devel <dri-devel@lists.freedesktop.org>,
+ LKML <linux-kernel@vger.kernel.org>, Linux MM <linux-mm@kvack.org>,
+ Paul Mackerras <paulus@samba.org>, "open
+ list:KERNEL SELFTEST FRAMEWORK" <linux-kselftest@vger.kernel.org>,
+ Ira Weiny <ira.weiny@intel.com>, Jonathan Corbet <corbet@lwn.net>,
+ linux-rdma@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+ Jason Gunthorpe <jgg@ziepe.ca>, Vlastimil Babka <vbabka@suse.cz>,
+ =?UTF-8?B?QmrDtnJuIFTDtnBlbA==?= <bjorn.topel@intel.com>, "open
+ list:DMA BUFFER SHARING FRAMEWORK" <linux-media@vger.kernel.org>,
+ Shuah Khan <shuah@kernel.org>, linux-block@vger.kernel.org,
+ =?UTF-8?B?SsOpcsO0bWUgR2xpc3Nl?= <jglisse@redhat.com>,
+ Al Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>, bpf <bpf@vger.kernel.org>,
+ Magnus Karlsson <magnus.karlsson@intel.com>, Jens Axboe <axboe@kernel.dk>,
+ netdev <netdev@vger.kernel.org>, Alex Williamson <alex.williamson@redhat.com>,
+ linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "David S . Miller" <davem@davemloft.net>,
+ Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Nov 13, 2019 at 01:02:34PM +1000, Nicholas Piggin wrote:
-> Michal Suchanek's on November 13, 2019 2:52 am:
-> > There are numerous references to 32bit functions in generic and 64bit
-> > code so ifdef them out.
-> > 
-> > Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+On 11/13/19 12:22 AM, Daniel Vetter wrote:
+...
+>>> Why are we doing this? I think things got confused here someplace, as
+>>
+>>
+>> Because:
+>>
+>> a) These need put_page() calls,  and
+>>
+>> b) there is no put_pages() call, but there is a release_pages() call that
+>> is, arguably, what put_pages() would be.
+>>
+>>
+>>> the comment still says:
+>>>
+>>> /**
+>>>   * put_user_page() - release a gup-pinned page
+>>>   * @page:            pointer to page to be released
+>>>   *
+>>>   * Pages that were pinned via get_user_pages*() must be released via
+>>>   * either put_user_page(), or one of the put_user_pages*() routines
+>>>   * below.
+>>
+>>
+>> Ohhh, I missed those comments. They need to all be changed over to
+>> say "pages that were pinned via pin_user_pages*() or
+>> pin_longterm_pages*() must be released via put_user_page*()."
+>>
+>> The get_user_pages*() pages must still be released via put_page.
+>>
+>> The churn is due to a fairly significant change in strategy, whis
+>> is: instead of changing all get_user_pages*() sites to call
+>> put_user_page(), change selected sites to call pin_user_pages*() or
+>> pin_longterm_pages*(), plus put_user_page().
 > 
-> For the most part these seem okay to me.
+> Can't we call this unpin_user_page then, for some symmetry? Or is that
+> even more churn?
 > 
-> > diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-> > index 45f1d5e54671..35874119b398 100644
-> > --- a/arch/powerpc/kernel/Makefile
-> > +++ b/arch/powerpc/kernel/Makefile
-> > @@ -44,16 +44,16 @@ CFLAGS_btext.o += -DDISABLE_BRANCH_PROFILING
-> >  endif
-> >  
-> >  obj-y				:= cputable.o ptrace.o syscalls.o \
-> > -				   irq.o align.o signal_32.o pmc.o vdso.o \
-> > +				   irq.o align.o signal_$(BITS).o pmc.o vdso.o \
-> >  				   process.o systbl.o idle.o \
-> >  				   signal.o sysfs.o cacheinfo.o time.o \
-> >  				   prom.o traps.o setup-common.o \
-> >  				   udbg.o misc.o io.o misc_$(BITS).o \
-> >  				   of_platform.o prom_parse.o
-> > -obj-$(CONFIG_PPC64)		+= setup_64.o sys_ppc32.o \
-> > -				   signal_64.o ptrace32.o \
-> > +obj-$(CONFIG_PPC64)		+= setup_64.o \
-> >  				   paca.o nvram_64.o firmware.o note.o \
-> >  				   syscall_64.o
-> > +obj-$(CONFIG_COMPAT)		+= sys_ppc32.o ptrace32.o signal_32.o
-> >  obj-$(CONFIG_VDSO32)		+= vdso32/
-> >  obj-$(CONFIG_PPC_WATCHDOG)	+= watchdog.o
-> >  obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= hw_breakpoint.o
-> > diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-> > index 00173cc904ef..c339a984958f 100644
-> > --- a/arch/powerpc/kernel/entry_64.S
-> > +++ b/arch/powerpc/kernel/entry_64.S
-> > @@ -52,8 +52,10 @@
-> >  SYS_CALL_TABLE:
-> >  	.tc sys_call_table[TC],sys_call_table
-> >  
-> > +#ifdef CONFIG_COMPAT
-> >  COMPAT_SYS_CALL_TABLE:
-> >  	.tc compat_sys_call_table[TC],compat_sys_call_table
-> > +#endif
-> >  
-> >  /* This value is used to mark exception frames on the stack. */
-> >  exception_marker:
-> > diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
-> > index 60436432399f..61678cb0e6a1 100644
-> > --- a/arch/powerpc/kernel/signal.c
-> > +++ b/arch/powerpc/kernel/signal.c
-> > @@ -247,7 +247,6 @@ static void do_signal(struct task_struct *tsk)
-> >  	sigset_t *oldset = sigmask_to_save();
-> >  	struct ksignal ksig = { .sig = 0 };
-> >  	int ret;
-> > -	int is32 = is_32bit_task();
-> >  
-> >  	BUG_ON(tsk != current);
-> >  
-> > @@ -277,7 +276,7 @@ static void do_signal(struct task_struct *tsk)
-> >  
-> >  	rseq_signal_deliver(&ksig, tsk->thread.regs);
-> >  
-> > -	if (is32) {
-> > +	if (is_32bit_task()) {
-> >          	if (ksig.ka.sa.sa_flags & SA_SIGINFO)
-> >  			ret = handle_rt_signal32(&ksig, oldset, tsk);
-> >  		else
-> 
-> This is just a clean up I guess.
+> Looking from afar the naming here seems really confusing.
 
-It also expands directly to if(0) or if(1) for the !COMPAT cases. I am
-not sure how it would work with the intermediate variable.
 
-There was more complex change initially but after some additional
-cleanups removing the variable is the only part left.
+That look from afar is valuable, because I'm too close to the problem to see
+how the naming looks. :)
 
-> 
-> > diff --git a/arch/powerpc/kernel/syscall_64.c b/arch/powerpc/kernel/syscall_64.c
-> > index d00cfc4a39a9..319ebd4f494d 100644
-> > --- a/arch/powerpc/kernel/syscall_64.c
-> > +++ b/arch/powerpc/kernel/syscall_64.c
-> > @@ -17,7 +17,6 @@ typedef long (*syscall_fn)(long, long, long, long, long, long);
-> >  
-> >  long system_call_exception(long r3, long r4, long r5, long r6, long r7, long r8, unsigned long r0, struct pt_regs *regs)
-> >  {
-> > -	unsigned long ti_flags;
-> >  	syscall_fn f;
-> >  
-> >  	if (IS_ENABLED(CONFIG_PPC_BOOK3S))
-> > @@ -64,8 +63,7 @@ long system_call_exception(long r3, long r4, long r5, long r6, long r7, long r8,
-> >  
-> >  	__hard_irq_enable();
-> >  
-> > -	ti_flags = current_thread_info()->flags;
-> > -	if (unlikely(ti_flags & _TIF_SYSCALL_DOTRACE)) {
-> > +	if (unlikely(current_thread_info()->flags & _TIF_SYSCALL_DOTRACE)) {
-> >  		/*
-> >  		 * We use the return value of do_syscall_trace_enter() as the
-> >  		 * syscall number. If the syscall was rejected for any reason
-> > @@ -81,7 +79,7 @@ long system_call_exception(long r3, long r4, long r5, long r6, long r7, long r8,
-> >  	/* May be faster to do array_index_nospec? */
-> >  	barrier_nospec();
-> >  
-> > -	if (unlikely(ti_flags & _TIF_32BIT)) {
-> > +	if (unlikely(is_32bit_task())) {
-> >  		f = (void *)compat_sys_call_table[r0];
-> >  
-> >  		r3 &= 0x00000000ffffffffULL;
-> 
-> I guess this is okay, I did want to be careful about where ti_flags
-> was loaded exactly, but I think DOTRACE and 32BIT are not volatile.
-> Is it possible to define _TIF_32BIT to zero for 64-bit !compat case
-> and have the original branch eliminated, or does that cause other
-> problems?
+unpin_user_page() sounds symmetrical. It's true that it would cause more
+churn (which is why I started off with a proposal that avoids changing the
+names of put_user_page*() APIs). But OTOH, the amount of churn is proportional
+to the change in direction here, and it's really only 10 or 20 lines changed,
+in the end.
 
-is_32bit_task() expands to 0 or 1 constant unless CONFIG_COMPAT is set.
-That's why the test needs replacing here.
+So I'm open to changing to that naming. It would be nice to hear what others
+prefer, too...
 
-Unsetting _TIF_32BIT might also be feasible but it is not necessary.
 
-Thanks
-
-Michal
+thanks,
+-- 
+John Hubbard
+NVIDIA
