@@ -6,53 +6,54 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AE6AAC43331
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 03:17:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 65187C43331
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 03:19:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5D072222BD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 03:17:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 15551222BD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 03:19:32 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="aadU0IQI"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5D072222BD
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="mUx/Twj8"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 15551222BD
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47CVCK4kfKzF6Rv
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 14:17:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47CVG86SMVzF4YF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 14:19:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="aadU0IQI"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="mUx/Twj8"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47CSVY3cjbzF5J7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 13:00:05 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47CSVZ5TmMzF5K2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 13:00:06 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 94098222CF;
- Wed, 13 Nov 2019 02:00:01 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id DB5412053B;
+ Wed, 13 Nov 2019 02:00:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1573610402;
- bh=HbgVx4qjb6kTQShWNZlxWmMuVhrxfteiZTihwmQgvoo=;
+ s=default; t=1573610404;
+ bh=ZxkIgG+Oa+kY1HAulN5VVJ7/HOzwWg4gtRjfk+JdGC0=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=aadU0IQIT+HLt1mKlF9BASIMVAVA5teMW71EQJO79ZBICyyAprVPfxXuMBvoYMTZA
- Ze0Oxh2GeqqMIJZIXtuQkz9mDOFyQegUPkzWPtokwGaFmFiqGxko2x7745en4RZ/hA
- I9XvUCRzyUReXKR45zbWBmPJSJkgO3Tn+VuxElDQ=
+ b=mUx/Twj8ujOA6mNG/pcQLbUGk5gN2SJsuym/ZqF6pTeCZHSGIgFFrs+kingUFarnY
+ WG0wN7X5WL1+EeEUjcilB/SPq4pT9m8C7uLze+ble7xF5uu32b0D7oaJXv3rxwgVZc
+ awo7EQUN4WaItWj8tgdO0vGNTMASi8vu6sN8kZts=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 19/68] powerpc/pseries: Fix DTL buffer registration
-Date: Tue, 12 Nov 2019 20:58:43 -0500
-Message-Id: <20191113015932.12655-19-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 20/68] powerpc/pseries: Fix how we iterate over
+ the DTL entries
+Date: Tue, 12 Nov 2019 20:58:44 -0500
+Message-Id: <20191113015932.12655-20-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20191113015932.12655-1-sashal@kernel.org>
 References: <20191113015932.12655-1-sashal@kernel.org>
@@ -80,18 +81,14 @@ Sender: "Linuxppc-dev"
 
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 
-[ Upstream commit db787af1b8a6b4be428ee2ea7d409dafcaa4a43c ]
+[ Upstream commit 9258227e9dd1da8feddb07ad9702845546a581c9 ]
 
-When CONFIG_VIRT_CPU_ACCOUNTING_NATIVE is not set, we register the DTL
-buffer for a cpu when the associated file under powerpc/dtl in debugfs
-is opened. When doing so, we need to set the size of the buffer being
-registered in the second u32 word of the buffer. This needs to be in big
-endian, but we are not doing the conversion resulting in the below error
-showing up in dmesg:
-
-	dtl_start: DTL registration for cpu 0 (hw 0) failed with -4
-
-Fix this in the obvious manner.
+When CONFIG_VIRT_CPU_ACCOUNTING_NATIVE is not set, we look up dtl_idx in
+the lppaca to determine the number of entries in the buffer. Since
+lppaca is in big endian, we need to do an endian conversion before using
+this in our calculation to determine the number of entries in the
+buffer. Without this, we do not iterate over the existing entries in the
+DTL buffer properly.
 
 Fixes: 7c105b63bd98 ("powerpc: Add CONFIG_CPU_LITTLE_ENDIAN kernel config option.")
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
@@ -102,18 +99,18 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/platforms/pseries/dtl.c b/arch/powerpc/platforms/pseries/dtl.c
-index 39049e4884fbd..37de83c5ef172 100644
+index 37de83c5ef172..7a4d172c93765 100644
 --- a/arch/powerpc/platforms/pseries/dtl.c
 +++ b/arch/powerpc/platforms/pseries/dtl.c
-@@ -150,7 +150,7 @@ static int dtl_start(struct dtl *dtl)
+@@ -185,7 +185,7 @@ static void dtl_stop(struct dtl *dtl)
  
- 	/* Register our dtl buffer with the hypervisor. The HV expects the
- 	 * buffer size to be passed in the second word of the buffer */
--	((u32 *)dtl->buf)[1] = DISPATCH_LOG_BYTES;
-+	((u32 *)dtl->buf)[1] = cpu_to_be32(DISPATCH_LOG_BYTES);
+ static u64 dtl_current_index(struct dtl *dtl)
+ {
+-	return lppaca_of(dtl->cpu).dtl_idx;
++	return be64_to_cpu(lppaca_of(dtl->cpu).dtl_idx);
+ }
+ #endif /* CONFIG_VIRT_CPU_ACCOUNTING_NATIVE */
  
- 	hwcpu = get_hard_smp_processor_id(dtl->cpu);
- 	addr = __pa(dtl->buf);
 -- 
 2.20.1
 
