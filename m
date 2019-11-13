@@ -2,63 +2,62 @@ Return-Path: <SRS0=PO5t=ZF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C2FCC43331
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 05:12:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 68A7BC43331
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 05:14:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DDB3F222D0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 05:12:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0F3FC222D0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 05:14:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="rqPbDZk3"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DDB3F222D0
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="DgsjhdlR"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0F3FC222D0
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nvidia.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47CXmT3pmKzF7Jk
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 16:12:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47CXpz6k6XzF4mF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 16:14:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=nvidia.com (client-ip=216.228.121.143;
- helo=hqemgate14.nvidia.com; envelope-from=jhubbard@nvidia.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=nvidia.com (client-ip=216.228.121.64; helo=hqemgate15.nvidia.com;
+ envelope-from=jhubbard@nvidia.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="rqPbDZk3"; 
+ unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="DgsjhdlR"; 
  dkim-atps=neutral
-Received: from hqemgate14.nvidia.com (hqemgate14.nvidia.com [216.228.121.143])
+Received: from hqemgate15.nvidia.com (hqemgate15.nvidia.com [216.228.121.64])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47CWmf2MvXzF6xD
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47CWmf2MzNzF6xS
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 15:27:28 +1100 (AEDT)
 Received: from hqpgpgate102.nvidia.com (Not Verified[216.228.121.13]) by
- hqemgate14.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
- id <B5dcb86230003>; Tue, 12 Nov 2019 20:27:16 -0800
+ hqemgate15.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+ id <B5dcb86220001>; Tue, 12 Nov 2019 20:27:14 -0800
 Received: from hqmail.nvidia.com ([172.20.161.6])
  by hqpgpgate102.nvidia.com (PGP Universal service);
- Tue, 12 Nov 2019 20:27:13 -0800
+ Tue, 12 Nov 2019 20:27:14 -0800
 X-PGP-Universal: processed;
- by hqpgpgate102.nvidia.com on Tue, 12 Nov 2019 20:27:13 -0800
-Received: from HQMAIL105.nvidia.com (172.20.187.12) by HQMAIL111.nvidia.com
+ by hqpgpgate102.nvidia.com on Tue, 12 Nov 2019 20:27:14 -0800
+Received: from HQMAIL101.nvidia.com (172.20.187.10) by HQMAIL111.nvidia.com
  (172.20.187.18) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Wed, 13 Nov
- 2019 04:27:12 +0000
-Received: from hqnvemgw03.nvidia.com (10.124.88.68) by HQMAIL105.nvidia.com
- (172.20.187.12) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
- Transport; Wed, 13 Nov 2019 04:27:12 +0000
+ 2019 04:27:13 +0000
+Received: from hqnvemgw03.nvidia.com (10.124.88.68) by HQMAIL101.nvidia.com
+ (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
+ Transport; Wed, 13 Nov 2019 04:27:14 +0000
 Received: from blueforge.nvidia.com (Not Verified[10.110.48.28]) by
  hqnvemgw03.nvidia.com with Trustwave SEG (v7, 5, 8, 10121)
- id <B5dcb86200003>; Tue, 12 Nov 2019 20:27:12 -0800
+ id <B5dcb86210008>; Tue, 12 Nov 2019 20:27:13 -0800
 From: John Hubbard <jhubbard@nvidia.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v4 07/23] media/v4l2-core: set pages dirty upon releasing DMA
- buffers
-Date: Tue, 12 Nov 2019 20:26:54 -0800
-Message-ID: <20191113042710.3997854-8-jhubbard@nvidia.com>
+Subject: [PATCH v4 22/23] selftests/vm: run_vmtests: invoke gup_benchmark with
+ basic FOLL_PIN coverage
+Date: Tue, 12 Nov 2019 20:27:09 -0800
+Message-ID: <20191113042710.3997854-23-jhubbard@nvidia.com>
 X-Mailer: git-send-email 2.24.0
 In-Reply-To: <20191113042710.3997854-1-jhubbard@nvidia.com>
 References: <20191113042710.3997854-1-jhubbard@nvidia.com>
@@ -67,16 +66,16 @@ X-NVConfidentiality: public
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
- t=1573619236; bh=baa1oHQC+1Mr0fCveGP8H7qjkYYEgQstEl5cvxrT4lI=;
+ t=1573619234; bh=xFb3SiLgCLKE3iiV7irzvOfCSAuS+AWjP3FT0BNaO3M=;
  h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
  In-Reply-To:References:MIME-Version:X-NVConfidentiality:
  Content-Transfer-Encoding:Content-Type;
- b=rqPbDZk3zy4LQBLyIXs5fuyQYGQc23KDUm7TUpYmT3bviNYSknEOMbdMTOHrSM8mK
- QO/Qb1wH5Y9H/o3GCurd16ZvOrdMmlOmOmpWRmttRKxqT/OrPARwZsn53xGqVHvvTP
- 4DxQmcLgU6Brk7NBkmGbvMufx6oRNc++O6/a0fb0YbZQS7KhlXRcRuXZDXzg0l7Ff1
- NfCbdv7iQz4zlQ1UZPQGzhTJgl85J4w4evCymqMuJLk/0LkKG2XOWrMCdIJGSecZjq
- RoX1Fd2jbuHFZEl2ayL7pm8eVxp2BL8a7UDwcLkH+P4QRMZO8gzQ3f6HwRFdS74WlA
- rzA0TZSyyTENg==
+ b=DgsjhdlReXyuJ0drlL488GUH9xyFOLjXGVKO4gXFtbarzNu1xo25t/005fcj+4p7m
+ ySjMokRrAX3SZl+HnnayIKVbjiGhOL7Wxw5b6E8KjYzar/8MGBjlxSaxIj5anUZWFM
+ iA9YT1KvsatctqTx6Q1RLvSuo5uisTCoUErwdAJ6bx1xua5wbf4pg0XU4jookzpBPQ
+ uBHfOQzggV0YkDuDLmDBHeVLMDctkxkN+TKY8dw3QBjZDCtCdVZIde0yGm2Gs7bWKT
+ 9mDRB+3Sk4prntMDl/+334/QdLI0iWK9RE6lURAr/m/3/qndKw5vqxyIXA8kCwFbqn
+ 23j7SkJAvROWA==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,7 +99,6 @@ Cc: Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>,
  =?UTF-8?q?Bj=C3=B6rn=20T=C3=B6pel?= <bjorn.topel@intel.com>,
  linux-media@vger.kernel.org, Shuah Khan <shuah@kernel.org>,
  John Hubbard <jhubbard@nvidia.com>, linux-block@vger.kernel.org,
- Hans Verkuil <hverkuil-cisco@xs4all.nl>,
  =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>,
  Al Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>,
  Mauro Carvalho Chehab <mchehab@kernel.org>,
@@ -114,39 +112,65 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-After DMA is complete, and the device and CPU caches are synchronized,
-it's still required to mark the CPU pages as dirty, if the data was
-coming from the device. However, this driver was just issuing a
-bare put_page() call, without any set_page_dirty*() call.
+It's good to have basic unit test coverage of the new FOLL_PIN
+behavior. Fortunately, the gup_benchmark unit test is extremely
+fast (a few milliseconds), so adding it the the run_vmtests suite
+is going to cause no noticeable change in running time.
 
-Fix the problem, by calling set_page_dirty_lock() if the CPU pages
-were potentially receiving data from the device.
+So, add two new invocations to run_vmtests:
 
-Acked-by: Hans Verkuil <hverkuil-cisco@xs4all.nl>
-Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
+1) Run gup_benchmark with normal get_user_pages().
+
+2) Run gup_benchmark with pin_user_pages(). This is much like
+the first call, except that it sets FOLL_PIN.
+
+Running these two in quick succession also provide a visual
+comparison of the running times, which is convenient.
+
+The new invocations are fairly early in the run_vmtests script,
+because with test suites, it's usually preferable to put the
+shorter, faster tests first, all other things being equal.
+
 Signed-off-by: John Hubbard <jhubbard@nvidia.com>
 ---
- drivers/media/v4l2-core/videobuf-dma-sg.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ tools/testing/selftests/vm/run_vmtests | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
 
-diff --git a/drivers/media/v4l2-core/videobuf-dma-sg.c b/drivers/media/v4l2=
--core/videobuf-dma-sg.c
-index 66a6c6c236a7..28262190c3ab 100644
---- a/drivers/media/v4l2-core/videobuf-dma-sg.c
-+++ b/drivers/media/v4l2-core/videobuf-dma-sg.c
-@@ -349,8 +349,11 @@ int videobuf_dma_free(struct videobuf_dmabuf *dma)
- 	BUG_ON(dma->sglen);
+diff --git a/tools/testing/selftests/vm/run_vmtests b/tools/testing/selftes=
+ts/vm/run_vmtests
+index 951c507a27f7..93e8dc9a7cad 100755
+--- a/tools/testing/selftests/vm/run_vmtests
++++ b/tools/testing/selftests/vm/run_vmtests
+@@ -104,6 +104,28 @@ echo "NOTE: The above hugetlb tests provide minimal co=
+verage.  Use"
+ echo "      https://github.com/libhugetlbfs/libhugetlbfs.git for"
+ echo "      hugetlb regression testing."
 =20
- 	if (dma->pages) {
--		for (i =3D 0; i < dma->nr_pages; i++)
-+		for (i =3D 0; i < dma->nr_pages; i++) {
-+			if (dma->direction =3D=3D DMA_FROM_DEVICE)
-+				set_page_dirty_lock(dma->pages[i]);
- 			put_page(dma->pages[i]);
-+		}
- 		kfree(dma->pages);
- 		dma->pages =3D NULL;
- 	}
++echo "--------------------------------------------"
++echo "running 'gup_benchmark -U' (normal/slow gup)"
++echo "--------------------------------------------"
++./gup_benchmark -U
++if [ $? -ne 0 ]; then
++	echo "[FAIL]"
++	exitcode=3D1
++else
++	echo "[PASS]"
++fi
++
++echo "------------------------------------------"
++echo "running gup_benchmark -c (pin_user_pages)"
++echo "------------------------------------------"
++./gup_benchmark -c
++if [ $? -ne 0 ]; then
++	echo "[FAIL]"
++	exitcode=3D1
++else
++	echo "[PASS]"
++fi
++
+ echo "-------------------"
+ echo "running userfaultfd"
+ echo "-------------------"
 --=20
 2.24.0
 
