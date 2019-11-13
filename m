@@ -2,77 +2,80 @@ Return-Path: <SRS0=PO5t=ZF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-1.9 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8E5AC43331
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 04:19:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D771CC43331
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 04:21:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 67A60222D0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 04:19:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 86A35222D0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 04:21:29 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=arista.com header.i=@arista.com header.b="httZFalB"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 67A60222D0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=arista.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="XXCh/lzh"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 86A35222D0
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47CWZs1hljzF482
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 15:19:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47CWdg09ggzF6xs
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 15:21:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=arista.com (client-ip=2607:f8b0:4864:20::442;
- helo=mail-pf1-x442.google.com; envelope-from=dima@arista.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::642;
+ helo=mail-pl1-x642.google.com; envelope-from=sergey.senozhatsky.work@gmail.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none)
- header.from=arista.com
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=arista.com header.i=@arista.com header.b="httZFalB"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="XXCh/lzh"; 
  dkim-atps=neutral
-Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
- [IPv6:2607:f8b0:4864:20::442])
+Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
+ [IPv6:2607:f8b0:4864:20::642])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47CTRK643QzF6H6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 13:42:21 +1100 (AEDT)
-Received: by mail-pf1-x442.google.com with SMTP id 3so537983pfb.10
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2019 18:42:21 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=arista.com; s=googlenew;
- h=subject:to:cc:references:from:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=9ewNkq+k7WzF7N7FeKsJZWJsQUcIf4AaWPjf05A0Fco=;
- b=httZFalB2VvN+DAYr6xQfb8CS2lpW4CgtAeEsAWgjkvbyyGvCmjTLAPAEMfF/JCr7/
- c8P9raTPSqNexy65EPzsFOdG6kVk1K592cMDIy0cHhBebJPWF8fQ9egPpzwWXfBWSrCz
- Jk1zAXvG+gTTHY9iuktiuKZH9vWWl//5vaZrlx7ppzhO4sTAZlX2C/T/kVZYDrElUqcN
- VIOq5oDXrk5HHYGKLT0+ff2WZ+LnUZTUWEqoGOOJeX0XdIUXtb1PCt6iQWGnVWpEOeHv
- 9p5PFEhwRvitpIH0ba4n5ClWOCwYigDV+TgMORDfM82fnMfxgxqmD7OSd4a8lnQJEp7K
- YgYw==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47CTfP65JHzF6K9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 13:51:57 +1100 (AEDT)
+Received: by mail-pl1-x642.google.com with SMTP id o9so412424plk.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2019 18:51:57 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=mAEGoUcf015Kc1YtW4ruE+InFHxWlwYn7gbBVyirKYs=;
+ b=XXCh/lzhc9PTzZMC0vGMEKaB6i1csVlUbqsH9rt47YYmIE3wdFLdN1RZ9XLo0Arau9
+ DFSxYtIImotqP13tsBpRhqb8n2/Js3UmCNvM723O76JsU3YeDgNvB62RSmDR472f865P
+ t1QAOVBhx+MjcLVo2R7QGZwppOQAhnDe5pnFM8bcC1mQYP4Xfr9JZq5mLce2CdFOCSHQ
+ 84njoBNSpMDUUGTsuJ77DSMbJh6PdBhKnrYmuC5XmJlJhZH9X7UWxpAWc2QurRhXPwj/
+ RNRLsIyLkoYPXcQN5wrdc5lLemIanQ8txwfErNc3g/3wLnhyIhyW/Sj8BqL1ib+dXaLC
+ deQg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=9ewNkq+k7WzF7N7FeKsJZWJsQUcIf4AaWPjf05A0Fco=;
- b=PzIwazqi3f5tV0aJ3iZjzY5hrBJnTiDwAF9AGJzVVNpbPu0AvZnLvQaEGCJAuPqfx6
- OimMpE5lEQywdagKPC7boXJg2jjo2GevxVYpbFLGY9U4CTkUIyhMkJKWjZEYy4BIoubj
- 9zsaaVUlkfh2K6icUYZIeESzIOGiOlc0MlYRgGS+5X2CAvbJp7gjDGP+LBQRSEyuMyxs
- ewTsOU4srCKy3i+XC0PkG93zsyvN4sHK3C11r8Yq12kQR7esvJdSrytJSsUevLGGXSbW
- zaFIE1OD1aaNVgar+XWjR6UjjGCJgUYteJpPsSZwz28xbLdr7PN4k36xrFCfmaFn8vzi
- t/UQ==
-X-Gm-Message-State: APjAAAV2xNt0cmIVuDDsiYQ8mfkWjT4Elww0nHN0nSNW2mrnzz1gRcxL
- R37s/OC/1En1G/ptVhvYhHtszA==
-X-Google-Smtp-Source: APXvYqyg0YKjFTNIvTLCv1J1tDb1jq98QSviRK57/SbcLNfCJ0c+TDqSL8X9WHbEQTrvYD3q+/dxRw==
-X-Received: by 2002:a63:cb0f:: with SMTP id p15mr887811pgg.81.1573612938430;
- Tue, 12 Nov 2019 18:42:18 -0800 (PST)
-Received: from [10.83.36.153] ([217.173.96.166])
- by smtp.gmail.com with ESMTPSA id r22sm395559pfg.54.2019.11.12.18.41.58
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Tue, 12 Nov 2019 18:42:17 -0800 (PST)
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=mAEGoUcf015Kc1YtW4ruE+InFHxWlwYn7gbBVyirKYs=;
+ b=KD8e6KD5p3lDlLeOb0ba6V8BtwhxrN7dceqaRBjlbN1Z34mIpCWrOd+x1EMPgyROq4
+ ba2EsG0L/c0SqAbXmlAOi1bryW8/b+fynb1t9YEIY7isS6ceErfwL/s5eLwn3QSYqTXH
+ DKrfGNgTGtEx+m0j2fnnD/NVVMquLAf0qMZqL317wwqNkSSg7vcQ0opeLDyhuRzGXdgC
+ i+zIZIJ4vJ1xaABraQW+XitgO/Ks3fo5G0odLnWvw9tNCEOsMqlEk2Sh8KedsCT80/Oj
+ 6VcgPuhi1uakCyPi5VPtblnTel2MU+PRufqOKbdVkH9MIF9V7SuCOMP4BQzj93qrEtZO
+ buqA==
+X-Gm-Message-State: APjAAAW+lnIoXSA62I1Tq3mDnBG28CBnaKc938N7GvOvJdyhlBeKoxYd
+ q1fj6bcZmLDss41X1vdBrsQ=
+X-Google-Smtp-Source: APXvYqyYgp5zwm8PfyC8ptc3y1M5FnRWqZNijSFiWVlVB0inT58a3/TsEELAtnKC4KW8B7tYLJSv2Q==
+X-Received: by 2002:a17:902:fe06:: with SMTP id
+ g6mr1170542plj.159.1573613513522; 
+ Tue, 12 Nov 2019 18:51:53 -0800 (PST)
+Received: from localhost ([2401:fa00:8f:203:250d:e71d:5a0a:9afe])
+ by smtp.gmail.com with ESMTPSA id b1sm463002pjw.19.2019.11.12.18.51.52
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 12 Nov 2019 18:51:52 -0800 (PST)
+Date: Wed, 13 Nov 2019 11:51:50 +0900
+From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+To: Dmitry Safonov <dima@arista.com>
 Subject: Re: [PATCH 00/50] Add log level to show_stack()
-To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Message-ID: <20191113025150.GA101113@google.com>
 References: <20191106030542.868541-1-dima@arista.com>
  <20191106083538.z5nlpuf64cigxigh@pathway.suse.cz>
  <20191108103719.GB175344@google.com>
@@ -82,16 +85,12 @@ References: <20191106030542.868541-1-dima@arista.com>
  <20191112021747.GA68506@google.com>
  <25cb9647-007a-9c18-4784-49c0aef4f54b@arista.com>
  <20191112042546.GA119579@google.com>
-From: Dmitry Safonov <dima@arista.com>
-Message-ID: <d828cb62-aeea-4d67-33ba-b3a93ea10a3d@arista.com>
-Date: Wed, 13 Nov 2019 02:41:50 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.2.2
+ <d828cb62-aeea-4d67-33ba-b3a93ea10a3d@arista.com>
 MIME-Version: 1.0
-In-Reply-To: <20191112042546.GA119579@google.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d828cb62-aeea-4d67-33ba-b3a93ea10a3d@arista.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-Mailman-Approved-At: Wed, 13 Nov 2019 15:12:13 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -104,14 +103,15 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Juri Lelli <juri.lelli@redhat.com>, linux-sh@vger.kernel.org,
- Catalin Marinas <catalin.marinas@arm.com>, Ben Segall <bsegall@google.com>,
- Guo Ren <guoren@kernel.org>, Pavel Machek <pavel@ucw.cz>,
- Vincent Guittot <vincent.guittot@linaro.org>,
+Cc: Juri Lelli <juri.lelli@redhat.com>,
+ Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
+ linux-sh@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
+ Ben Segall <bsegall@google.com>, Guo Ren <guoren@kernel.org>,
+ Pavel Machek <pavel@ucw.cz>, Vincent Guittot <vincent.guittot@linaro.org>,
  Paul Burton <paulburton@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
  Mel Gorman <mgorman@suse.de>, Jiri Slaby <jslaby@suse.com>,
  Matt Turner <mattst88@gmail.com>, uclinux-h8-devel@lists.sourceforge.jp,
- Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org,
+ Petr Mladek <pmladek@suse.com>, linux-pm@vger.kernel.org,
  Heiko Carstens <heiko.carstens@de.ibm.com>, linux-um@lists.infradead.org,
  Thomas Gleixner <tglx@linutronix.de>,
  Dietmar Eggemann <dietmar.eggemann@arm.com>,
@@ -143,7 +143,7 @@ Cc: Juri Lelli <juri.lelli@redhat.com>, linux-sh@vger.kernel.org,
  Guan Xuetao <gxt@pku.edu.cn>, linux-parisc@vger.kernel.org,
  linux-alpha@vger.kernel.org, Ley Foon Tan <lftan@altera.com>,
  "David S. Miller" <davem@davemloft.net>, Rich Felker <dalias@libc.org>,
- Petr Mladek <pmladek@suse.com>, Peter Zijlstra <peterz@infradead.org>,
+ Len Brown <len.brown@intel.com>, Peter Zijlstra <peterz@infradead.org>,
  "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
  linux-riscv@lists.infradead.org,
  Anton Ivanov <anton.ivanov@cambridgegreys.com>,
@@ -161,29 +161,16 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 11/12/19 4:25 AM, Sergey Senozhatsky wrote:
-> On (19/11/12 02:40), Dmitry Safonov wrote:
-> [..]
->> In my point of view the cost of one-time [mostly build] testing every
->> architecture is cheaper than introducing some new smart code that will
->> live forever.
+On (19/11/13 02:41), Dmitry Safonov wrote:
+[..]
 > 
-> Well, there may be the need to pass loglevel deeper due to "hey __show_stack()
-> on that arch invokes bar(), which invokes foo() and now foo() does printk(),
-> but we don't see it". The context which decided to backtaraces decided
-> to do so for a reason, probably, so I guess we can look at it as "a special
-> error reporting code block".
+> I don't strongly disagree, but if you look at those results:
+> git grep 'printk("%s.*", \(lvl\|level\)'
 > 
-> The proposed patch set passes loglevel via slightly unusual channel -
-> via sprintf(). We probably can do it, but I would prefer to minimize
-> the number of such printk-s in the kernel. The code snippet which I
-> posted also does pretty unusual thing w.r.t loglevel. Both approaches
-> are "non-standard" from that POV.
+> it seems to be used in quite a few places.
 
-I don't strongly disagree, but if you look at those results:
-git grep 'printk("%s.*", \(lvl\|level\)'
+Yes, you are right, it is used in some places. That's why I said
+that I'd prefer to keep that number low (minimize it). But it's
+not 0 (that ship has sailed).
 
-it seems to be used in quite a few places.
-
-Thanks,
-          Dmitry
+	-ss
