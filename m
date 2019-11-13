@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B2B0AC43331
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 03:38:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8045EC43331
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 03:40:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 317C7222C1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 03:38:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 317C7222C1
+	by mail.kernel.org (Postfix) with ESMTPS id 20C2F207FC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 03:40:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 20C2F207FC
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47CVgz4VYvzF3TW
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 14:38:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47CVkq0TnHzF6Yr
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 14:40:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=ftp.linux.org.uk (client-ip=195.92.253.2;
  helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk;
@@ -29,22 +29,21 @@ Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47CSjt6tNVzF4lj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 13:09:54 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47CT8x52SJzF4XX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 13:29:52 +1100 (AEDT)
 Received: from viro by ZenIV.linux.org.uk with local (Exim 4.92.3 #3 (Red Hat
- Linux)) id 1iUi5t-0008S0-DR; Wed, 13 Nov 2019 02:09:17 +0000
-Date: Wed, 13 Nov 2019 02:09:17 +0000
+ Linux)) id 1iUiP4-0000ox-FH; Wed, 13 Nov 2019 02:29:06 +0000
+Date: Wed, 13 Nov 2019 02:29:06 +0000
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: Aleksa Sarai <cyphar@cyphar.com>
-Subject: Re: [PATCH v15 6/9] namei: LOOKUP_{IN_ROOT,BENEATH}: permit limited
- ".." resolution
-Message-ID: <20191113020917.GC26530@ZenIV.linux.org.uk>
+Subject: Re: [PATCH v15 7/9] open: introduce openat2(2) syscall
+Message-ID: <20191113022906.GD26530@ZenIV.linux.org.uk>
 References: <20191105090553.6350-1-cyphar@cyphar.com>
- <20191105090553.6350-7-cyphar@cyphar.com>
+ <20191105090553.6350-8-cyphar@cyphar.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20191105090553.6350-7-cyphar@cyphar.com>
+In-Reply-To: <20191105090553.6350-8-cyphar@cyphar.com>
 User-Agent: Mutt/1.12.1 (2019-06-15)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -62,10 +61,10 @@ Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
  Rasmus Villemoes <linux@rasmusvillemoes.dk>,
  Alexei Starovoitov <ast@kernel.org>, linux-kernel@vger.kernel.org,
  David Howells <dhowells@redhat.com>, linux-kselftest@vger.kernel.org,
- sparclinux@vger.kernel.org, Christian Brauner <christian.brauner@ubuntu.com>,
- Shuah Khan <shuah@kernel.org>, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, Tycho Andersen <tycho@tycho.ws>,
- Aleksa Sarai <asarai@suse.de>, Jiri Olsa <jolsa@redhat.com>,
+ sparclinux@vger.kernel.org, Jiri Olsa <jolsa@redhat.com>,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Tycho Andersen <tycho@tycho.ws>, Aleksa Sarai <asarai@suse.de>,
+ Shuah Khan <shuah@kernel.org>,
  Alexander Shishkin <alexander.shishkin@linux.intel.com>,
  Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infradead.org,
  linux-mips@vger.kernel.org, linux-xtensa@linux-xtensa.org,
@@ -86,14 +85,27 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Nov 05, 2019 at 08:05:50PM +1100, Aleksa Sarai wrote:
+On Tue, Nov 05, 2019 at 08:05:51PM +1100, Aleksa Sarai wrote:
+  
+> +/*
+> + * Arguments for how openat2(2) should open the target path. If @resolve is
+> + * zero, then openat2(2) operates very similarly to openat(2).
+> + *
+> + * However, unlike openat(2), unknown bits in @flags result in -EINVAL rather
+> + * than being silently ignored. @mode must be zero unless one of {O_CREAT,
+> + * O_TMPFILE} are set, and @upgrade_mask must be zero unless O_PATH is set.
+> + *
+> + * @flags: O_* flags.
+> + * @mode: O_CREAT/O_TMPFILE file mode.
+> + * @upgrade_mask: UPGRADE_* flags (to restrict O_PATH re-opening).
 
-> One other possible alternative (which previous versions of this patch
-> used) would be to check with path_is_under() if there was a racing
-> rename or mount (after re-taking the relevant seqlocks). While this does
-> work, it results in possible O(n*m) behaviour if there are many renames
-> or mounts occuring *anywhere on the system*.
+???
 
-BTW, do you realize that open-by-fhandle (or working nfsd, for that matter)
-will trigger arseloads of write_seqlock(&rename_lock) simply on d_splice_alias()
-bringing disconnected subtrees in contact with parent?
+> + * @resolve: RESOLVE_* flags.
+> + */
+> +struct open_how {
+> +	__aligned_u64 flags;
+> +	__u16 mode;
+> +	__u16 __padding[3]; /* must be zeroed */
+> +	__aligned_u64 resolve;
+> +};
