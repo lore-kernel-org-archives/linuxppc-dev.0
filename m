@@ -2,90 +2,93 @@ Return-Path: <SRS0=PO5t=ZF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 79F3EC43215
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 16:51:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BFE7C33C9A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 16:51:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CB865206CC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 16:51:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CB865206CC
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id C1F9B22466
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 15:33:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C1F9B22466
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47CrGr5cdfzF6cS
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 03:51:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=softfail (domain owner discourages use of this
- host) smtp.mailfrom=kaod.org (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=groug@kaod.org;
+	by lists.ozlabs.org (Postfix) with ESMTP id 47CpXj50ylzDqsw
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 02:33:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=bharata@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47Cr9L2gjTzF6c1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2019 03:46:30 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- xADGTd37097967
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 11:46:27 -0500
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2w8kmw6cc9-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47CpST6tNWzF5Sv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2019 02:29:29 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ xADFJqcU074937
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 10:29:19 -0500
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2w8kbvuxpe-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 11:46:27 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 10:29:18 -0500
 Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <groug@kaod.org>;
- Wed, 13 Nov 2019 16:46:24 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ for <linuxppc-dev@lists.ozlabs.org> from <bharata@linux.ibm.com>;
+ Wed, 13 Nov 2019 15:29:16 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 13 Nov 2019 16:46:21 -0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xADGkK5f52297870
+ Wed, 13 Nov 2019 15:29:14 -0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xADFTCBO11862262
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 13 Nov 2019 16:46:20 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0CC5552052;
- Wed, 13 Nov 2019 16:46:20 +0000 (GMT)
-Received: from bahia.lan (unknown [9.145.184.11])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 96AE75204F;
- Wed, 13 Nov 2019 16:46:19 +0000 (GMT)
-Subject: [PATCH v2 2/2] KVM: PPC: Book3S HV: XIVE: Fix potential page leak
- on error path
-From: Greg Kurz <groug@kaod.org>
+ Wed, 13 Nov 2019 15:29:12 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A31F9A4069;
+ Wed, 13 Nov 2019 15:29:12 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C2FCCA4040;
+ Wed, 13 Nov 2019 15:29:10 +0000 (GMT)
+Received: from in.ibm.com (unknown [9.199.62.84])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Wed, 13 Nov 2019 15:29:10 +0000 (GMT)
+Date: Wed, 13 Nov 2019 20:59:08 +0530
+From: Bharata B Rao <bharata@linux.ibm.com>
 To: Paul Mackerras <paulus@ozlabs.org>
-Date: Wed, 13 Nov 2019 17:46:19 +0100
-In-Reply-To: <157366357346.1026356.14522564753643067538.stgit@bahia.lan>
-References: <157366357346.1026356.14522564753643067538.stgit@bahia.lan>
-User-Agent: StGit/unknown-version
+Subject: Re: [PATCH v10 6/8] KVM: PPC: Support reset of secure guest
+References: <20191104041800.24527-1-bharata@linux.ibm.com>
+ <20191104041800.24527-7-bharata@linux.ibm.com>
+ <20191112053434.GA10885@oak.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20191112053434.GA10885@oak.ozlabs.ibm.com>
+User-Agent: Mutt/1.12.1 (2019-06-15)
 X-TM-AS-GCONF: 00
-x-cbid: 19111316-0008-0000-0000-0000032EBB34
+x-cbid: 19111315-0028-0000-0000-000003B693FE
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19111316-0009-0000-0000-00004A4DC605
-Message-Id: <157366357929.1026356.18181561111939034621.stgit@bahia.lan>
+x-cbparentid: 19111315-0029-0000-0000-000024799CBD
+Message-Id: <20191113152908.GI21634@in.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-11-13_04:, , signatures=0
+ definitions=2019-11-13_03:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1034 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=863 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1910280000 definitions=main-1911130146
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1910280000 definitions=main-1911130142
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,55 +100,132 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Laurent Vivier <lvivier@redhat.com>, linux-kernel@vger.kernel.org,
- kvm-ppc@vger.kernel.org, Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>,
- =?utf-8?q?C=C3=A9dric?= Le Goater <clg@kaod.org>,
- Lijun Pan <ljp@linux.ibm.com>, stable@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Reply-To: bharata@linux.ibm.com
+Cc: linuxram@us.ibm.com, cclaudio@linux.ibm.com, kvm-ppc@vger.kernel.org,
+ linux-mm@kvack.org, jglisse@redhat.com, aneesh.kumar@linux.vnet.ibm.com,
+ paulus@au1.ibm.com, sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ hch@lst.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We need to check the host page size is big enough to accomodate the
-EQ. Let's do this before taking a reference on the EQ page to avoid
-a potential leak if the check fails.
+On Tue, Nov 12, 2019 at 04:34:34PM +1100, Paul Mackerras wrote:
+> On Mon, Nov 04, 2019 at 09:47:58AM +0530, Bharata B Rao wrote:
+> [snip]
+> > @@ -5442,6 +5471,64 @@ static int kvmhv_store_to_eaddr(struct kvm_vcpu *vcpu, ulong *eaddr, void *ptr,
+> >  	return rc;
+> >  }
+> >  
+> > +/*
+> > + *  IOCTL handler to turn off secure mode of guest
+> > + *
+> > + * - Issue ucall to terminate the guest on the UV side
+> > + * - Unpin the VPA pages (Enables these pages to be migrated back
+> > + *   when VM becomes secure again)
+> > + * - Recreate partition table as the guest is transitioning back to
+> > + *   normal mode
+> > + * - Release all device pages
+> > + */
+> > +static int kvmhv_svm_off(struct kvm *kvm)
+> > +{
+> > +	struct kvm_vcpu *vcpu;
+> > +	int srcu_idx;
+> > +	int ret = 0;
+> > +	int i;
+> > +
+> > +	if (!(kvm->arch.secure_guest & KVMPPC_SECURE_INIT_START))
+> > +		return ret;
+> > +
+> 
+> A further comment on this code: it should check that no vcpus are
+> running and fail if any are running, and it should prevent any vcpus
+> from running until the function is finished, using code like that in
+> kvmhv_configure_mmu().  That is, it should do something like this:
+> 
+> 	mutex_lock(&kvm->arch.mmu_setup_lock);
+> 	mmu_was_ready = kvm->arch.mmu_ready;
+> 	if (kvm->arch.mmu_ready) {
+> 		kvm->arch.mmu_ready = 0;
+> 		/* order mmu_ready vs. vcpus_running */
+> 		smp_mb();
+> 		if (atomic_read(&kvm->arch.vcpus_running)) {
+> 			kvm->arch.mmu_ready = 1;
+> 			ret = -EBUSY;
+> 			goto out_unlock;
+> 		}
+> 	}
+> 
+> and then after clearing kvm->arch.secure_guest below:
+> 
+> > +	srcu_idx = srcu_read_lock(&kvm->srcu);
+> > +	for (i = 0; i < KVM_ADDRESS_SPACE_NUM; i++) {
+> > +		struct kvm_memory_slot *memslot;
+> > +		struct kvm_memslots *slots = __kvm_memslots(kvm, i);
+> > +
+> > +		if (!slots)
+> > +			continue;
+> > +
+> > +		kvm_for_each_memslot(memslot, slots) {
+> > +			kvmppc_uvmem_drop_pages(memslot, kvm, true);
+> > +			uv_unregister_mem_slot(kvm->arch.lpid, memslot->id);
+> > +		}
+> > +	}
+> > +	srcu_read_unlock(&kvm->srcu, srcu_idx);
+> > +
+> > +	ret = uv_svm_terminate(kvm->arch.lpid);
+> > +	if (ret != U_SUCCESS) {
+> > +		ret = -EINVAL;
+> > +		goto out;
+> > +	}
+> > +
+> > +	kvm_for_each_vcpu(i, vcpu, kvm) {
+> > +		spin_lock(&vcpu->arch.vpa_update_lock);
+> > +		unpin_vpa_reset(kvm, &vcpu->arch.dtl);
+> > +		unpin_vpa_reset(kvm, &vcpu->arch.slb_shadow);
+> > +		unpin_vpa_reset(kvm, &vcpu->arch.vpa);
+> > +		spin_unlock(&vcpu->arch.vpa_update_lock);
+> > +	}
+> > +
+> > +	ret = kvmppc_reinit_partition_table(kvm);
+> > +	if (ret)
+> > +		goto out;
+> > +
+> > +	kvm->arch.secure_guest = 0;
+> 
+> you need to do:
+> 
+> 	kvm->arch.mmu_ready = mmu_was_ready;
+>  out_unlock:
+> 	mutex_unlock(&kvm->arch.mmu_setup_lock);
+> 
+> > +out:
+> > +	return ret;
+> > +}
+> > +
+> 
+> With that extra check in place, it should be safe to unpin the vpas if
+> there is a good reason to do so.  ("Userspace has some bug that we
+> haven't found" isn't a good reason to do so.)
 
-Cc: stable@vger.kernel.org # v5.2
-Fixes: 13ce3297c576 ("KVM: PPC: Book3S HV: XIVE: Add controls for the EQ configuration")
-Signed-off-by: Greg Kurz <groug@kaod.org>
----
- arch/powerpc/kvm/book3s_xive_native.c |   13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+QEMU indeed does set_one_reg to reset the VPAs but that only marks
+the VPA update as pending. The actual unpinning happens when vcpu
+gets to run after reset at which time the VPAs are updated after
+any unpinning (if required)
 
-diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/book3s_xive_native.c
-index 0e1fc5a16729..d83adb1e1490 100644
---- a/arch/powerpc/kvm/book3s_xive_native.c
-+++ b/arch/powerpc/kvm/book3s_xive_native.c
-@@ -630,12 +630,6 @@ static int kvmppc_xive_native_set_queue_config(struct kvmppc_xive *xive,
- 
- 	srcu_idx = srcu_read_lock(&kvm->srcu);
- 	gfn = gpa_to_gfn(kvm_eq.qaddr);
--	page = gfn_to_page(kvm, gfn);
--	if (is_error_page(page)) {
--		srcu_read_unlock(&kvm->srcu, srcu_idx);
--		pr_err("Couldn't get queue page %llx!\n", kvm_eq.qaddr);
--		return -EINVAL;
--	}
- 
- 	page_size = kvm_host_page_size(kvm, gfn);
- 	if (1ull << kvm_eq.qshift > page_size) {
-@@ -644,6 +638,13 @@ static int kvmppc_xive_native_set_queue_config(struct kvmppc_xive *xive,
- 		return -EINVAL;
- 	}
- 
-+	page = gfn_to_page(kvm, gfn);
-+	if (is_error_page(page)) {
-+		srcu_read_unlock(&kvm->srcu, srcu_idx);
-+		pr_err("Couldn't get queue page %llx!\n", kvm_eq.qaddr);
-+		return -EINVAL;
-+	}
-+
- 	qaddr = page_to_virt(page) + (kvm_eq.qaddr & ~PAGE_MASK);
- 	srcu_read_unlock(&kvm->srcu, srcu_idx);
- 
+When secure guest reboots, vpu 0 gets to run and does unpin its
+VPA pages and then proceeds with switching to secure. Here UV
+tries to page-in all the guest pages, including the still pinned
+VPA pages corresponding to other vcpus which haven't had a chance
+to run till now. They are all still pinned and hence page-in fails.
+
+To prevent this, we have to explicitly unpin the VPA pages during
+this svm off ioctl. This will ensure that SMP secure guest is able
+to reboot correctly.
+
+So I will incorporate the code chunk you have shown above to fail
+if any vcpu is running and prevent any vcpu from running when
+we unpin VPAs from this ioctl.
+
+Regards,
+Bharata.
 
