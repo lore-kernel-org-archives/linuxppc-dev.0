@@ -2,67 +2,62 @@ Return-Path: <SRS0=PO5t=ZF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B23A0C432C3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 21:20:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 601EDC432C3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 21:27:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 247DA206E3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 21:20:55 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="C/8+1pW8"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 247DA206E3
-Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
+	by mail.kernel.org (Postfix) with ESMTPS id 1FC6A206E3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 21:27:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1FC6A206E3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47CyFv5y8SzF6vw
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 08:20:51 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47CyC71fCDzF3Ns
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2019 08:18:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47CyPY5lCqzF7K1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 08:27:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=ozlabs.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="C/8+1pW8"; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1003)
- id 47CyC674r9z9sPJ; Thu, 14 Nov 2019 08:18:26 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1573679907; bh=lnQ6Uf+6ekcXWBx2OakgOJXk04mhFVIPE8vTPN8XAkY=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=C/8+1pW8cTZWDdvOfW1204W3C5r+j3f93aHOwPELvEGE1CePKcdfrUkx2Fd8jB4D+
- 7j7Q5jrpTXh5fRYalc4Fk8JIJejcr1b/+uN44CdqbuZlMUevmWuQd17Eg8IqBuR8CX
- PfEEaSqCc8nr2JlK3OK6LWhs3/1PRRxcwqmgsCCafuBLzV3UlFtzpfP8XMNm6YkBY8
- JiE94jykz1v+g+J+jXlG/ZEsNY6vaJTPNMAlgt17cxAARGcLlqfogWY/D9yRYGT2gb
- hK/ytDiOa/PdAdMk6B6Hq8O7Ons6GAVxgRLQM9an+Acgws3mJ78VNaQt/15MB7BjSL
- VMcW2I6spK3iQ==
-Date: Thu, 14 Nov 2019 08:18:24 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Ram Pai <linuxram@us.ibm.com>
-Subject: Re: [PATCH v10 7/8] KVM: PPC: Implement H_SVM_INIT_ABORT hcall
-Message-ID: <20191113211824.GA20535@blackberry>
-References: <20191104041800.24527-1-bharata@linux.ibm.com>
- <20191104041800.24527-8-bharata@linux.ibm.com>
- <20191111041924.GA4017@oak.ozlabs.ibm.com>
- <20191112010158.GB5159@oc0525413822.ibm.com>
- <20191112053836.GB10885@oak.ozlabs.ibm.com>
- <20191112075215.GD5159@oc0525413822.ibm.com>
- <20191112113204.GA10178@blackberry>
- <20191112144555.GE5159@oc0525413822.ibm.com>
- <20191113001427.GA17829@oak.ozlabs.ibm.com>
- <20191113063233.GF5159@oc0525413822.ibm.com>
+ spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
+ (client-ip=217.140.110.172; helo=foss.arm.com;
+ envelope-from=robin.murphy@arm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+ by lists.ozlabs.org (Postfix) with ESMTP id 47CyLt0JNfzF6Mp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2019 08:25:08 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 7D87D7A7;
+ Wed, 13 Nov 2019 13:25:06 -0800 (PST)
+Received: from [192.168.1.123] (unknown [172.31.20.19])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id F30ED3F52E;
+ Wed, 13 Nov 2019 13:25:00 -0800 (PST)
+Subject: Re: [PATCH] dma-mapping: treat dev->bus_dma_mask as a DMA limit
+To: Florian Fainelli <f.fainelli@gmail.com>,
+ Nicolas Saenz Julienne <nsaenzjulienne@suse.de>,
+ Dave Hansen <dave.hansen@linux.intel.com>, Andy Lutomirski
+ <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ Hanjun Guo <guohanjun@huawei.com>, Sudeep Holla <sudeep.holla@arm.com>,
+ Jens Axboe <axboe@kernel.dk>, Joerg Roedel <joro@8bytes.org>,
+ Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>,
+ Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>
+References: <20191113161340.27228-1-nsaenzjulienne@suse.de>
+ <f74cd8a6-00bf-46c3-8e2e-d278e72d6e0e@arm.com>
+ <48da05e0-5acf-8ab3-a6c9-be4988a9450b@gmail.com>
+From: Robin Murphy <robin.murphy@arm.com>
+Message-ID: <b8e4d303-f226-53d9-f383-73872e41002b@arm.com>
+Date: Wed, 13 Nov 2019 21:24:52 +0000
+User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101
+ Thunderbird/68.2.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20191113063233.GF5159@oc0525413822.ibm.com>
-User-Agent: Mutt/1.5.24 (2015-08-30)
+In-Reply-To: <48da05e0-5acf-8ab3-a6c9-be4988a9450b@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-GB
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,51 +69,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sukadev Bhattiprolu <sukadev@linux.ibm.com>, cclaudio@linux.ibm.com,
- kvm-ppc@vger.kernel.org, Bharata B Rao <bharata@linux.ibm.com>,
- linux-mm@kvack.org, jglisse@redhat.com, Ram Pai <linuxram@linux.ibm.com>,
- aneesh.kumar@linux.vnet.ibm.com, paulus@au1.ibm.com,
- sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, hch@lst.de
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-ide@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Paul Burton <paulburton@kernel.org>,
+ x86@kernel.org, phil@raspberrypi.org, linux-acpi@vger.kernel.org,
+ Ingo Molnar <mingo@redhat.com>, James Hogan <jhogan@kernel.org>,
+ Len Brown <lenb@kernel.org>, devicetree@vger.kernel.org,
+ Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ linux-mips@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+ iommu@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Nov 12, 2019 at 10:32:33PM -0800, Ram Pai wrote:
-> On Wed, Nov 13, 2019 at 11:14:27AM +1100, Paul Mackerras wrote:
-> > On Tue, Nov 12, 2019 at 06:45:55AM -0800, Ram Pai wrote:
-> > > On Tue, Nov 12, 2019 at 10:32:04PM +1100, Paul Mackerras wrote:
-> > > > On Mon, Nov 11, 2019 at 11:52:15PM -0800, Ram Pai wrote:
-> > > > > There is subtle problem removing that code from the assembly.
-> > > > > 
-> > > > > If the H_SVM_INIT_ABORT hcall returns to the ultravisor without clearing
-> > > > > kvm->arch.secure_guest, the hypervisor will continue to think that the
-> > > > > VM is a secure VM.   However the primary reason the H_SVM_INIT_ABORT
-> > > > > hcall was invoked, was to inform the Hypervisor that it should no longer
-> > > > > consider the VM as a Secure VM. So there is a inconsistency there.
-> > > > 
-> > > > Most of the checks that look at whether a VM is a secure VM use code
-> > > > like "if (kvm->arch.secure_guest & KVMPPC_SECURE_INIT_DONE)".  Now
-> > > > since KVMPPC_SECURE_INIT_ABORT is 4, an if statement such as that will
-> > > > take the false branch once we have set kvm->arch.secure_guest to
-> > > > KVMPPC_SECURE_INIT_ABORT in kvmppc_h_svm_init_abort.  So in fact in
-> > > > most places we will treat the VM as a normal VM from then on.  If
-> > > > there are any places where we still need to treat the VM as a secure
-> > > > VM while we are processing the abort we can easily do that too.
-> > > 
-> > > Is the suggestion --  KVMPPC_SECURE_INIT_ABORT should never return back
-> > > to the Ultravisor?   Because removing that assembly code will NOT lead the
-> > 
-> > No.  The suggestion is that vcpu->arch.secure_guest stays set to
-> > KVMPPC_SECURE_INIT_ABORT until userspace calls KVM_PPC_SVM_OFF.
+On 2019-11-13 8:41 pm, Florian Fainelli wrote:
+> On 11/13/19 12:34 PM, Robin Murphy wrote:
+>> On 13/11/2019 4:13 pm, Nicolas Saenz Julienne wrote:
+>>> Using a mask to represent bus DMA constraints has a set of limitations.
+>>> The biggest one being it can only hold a power of two (minus one). The
+>>> DMA mapping code is already aware of this and treats dev->bus_dma_mask
+>>> as a limit. This quirk is already used by some architectures although
+>>> still rare.
+>>>
+>>> With the introduction of the Raspberry Pi 4 we've found a new contender
+>>> for the use of bus DMA limits, as its PCIe bus can only address the
+>>> lower 3GB of memory (of a total of 4GB). This is impossible to represent
+>>> with a mask. To make things worse the device-tree code rounds non power
+>>> of two bus DMA limits to the next power of two, which is unacceptable in
+>>> this case.
+>>>
+>>> In the light of this, rename dev->bus_dma_mask to dev->bus_dma_limit all
+>>> over the tree and treat it as such. Note that dev->bus_dma_limit is
+>>> meant to contain the higher accesible DMA address.
+>>
+>> Neat, you win a "why didn't I do it that way in the first place?" :)
+>>
+>> Looking at it without all the history of previous attempts, this looks
+>> entirely reasonable, and definitely a step in the right direction.
 > 
-> In the fast_guest_return path, if it finds 
-> (kvm->arch.secure_guest & KVMPPC_SECURE_INIT_ABORT) is true, should it return to
-> UV or not?
-> 
-> Ideally it should return back to the ultravisor the first time
-> KVMPPC_SECURE_INIT_ABORT is set, and not than onwards.
+> And while you are changing those, would it make sense to not only rename
+> the structure member but introduce a getter and setter in order to ease
+> future work where this would no longer be a scalar?
 
-What is ideal about that behavior?  Why would that be a particularly
-good thing to do?
+I doubt it - once we get as a far as supporting multiple DMA ranges, 
+there will be a whole load of infrastructure churn anyway if only to 
+replace dma_pfn_offset, and I'm not sure a simple get/set paradigm would 
+even be viable, so it's probably better to save that until clearly 
+necessary.
 
-Paul.
+Robin.
