@@ -6,54 +6,54 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CA61AC43331
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 02:59:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 58FEDC43331
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 03:04:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 79889204FD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 02:59:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id AD42B21872
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 03:04:47 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="vxZt4NVK"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 79889204FD
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="S6N+cyd+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AD42B21872
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47CTpp4qDnzF4Rp
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 13:59:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47CTx84QBHzF4HF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 14:04:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="vxZt4NVK"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="S6N+cyd+"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47CSRf3skWzF64p
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 12:57:34 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47CSRw0tJ5zF656
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 12:57:48 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id C87342245A;
- Wed, 13 Nov 2019 01:57:31 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 37838222D3;
+ Wed, 13 Nov 2019 01:57:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1573610252;
- bh=tumwbkLJx4WESNM/WDRtCUOjFtxKWYFdxn2zjnFdH44=;
+ s=default; t=1573610265;
+ bh=kk9s2ECVWRZh6QKxhKPAVyCqzJNCNwA+1D7J7+tmnYg=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=vxZt4NVKuErWdh7zySaN28NlQpASci/OqPBOVN+Hv2PxMKjvjVz8U+xDHwVHWXdi8
- YNMMrF3i5NMONdb21mdAFAwPPWBgNDu08KhdIKKIkIBf1lLEIYY7xhfGPVZ7WUCR8q
- 7W7/Vv5HCRB5XqY0NJk5/ZoNaAP2w7dgZqfBTykA=
+ b=S6N+cyd+zaB3G71Fbh4Y7MyGs6M3UdQrymbtpPAPHOc/4aAXn3bKD819x/TKWPabD
+ 3L3t32aBlxTDkSXPJMObs1f+UDU3E8xNnFeJc5+2+w9qPhvEFkXj8OSFB9xz8i+Ese
+ LXO/dh+9V1am/boJWNi48DCDXGitqUZlNCiEGFsE=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 048/115] powerpc/time: Use
- clockevents_register_device(), fixing an issue with large decrementer
-Date: Tue, 12 Nov 2019 20:55:15 -0500
-Message-Id: <20191113015622.11592-48-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 055/115] KVM: PPC: Book3S PR: Exiting split hack
+ mode needs to fixup both PC and LR
+Date: Tue, 12 Nov 2019 20:55:22 -0500
+Message-Id: <20191113015622.11592-55-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20191113015622.11592-1-sashal@kernel.org>
 References: <20191113015622.11592-1-sashal@kernel.org>
@@ -72,64 +72,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ Cameron Kaiser <spectre@floodgap.com>, kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Anton Blanchard <anton@ozlabs.org>
+From: Cameron Kaiser <spectre@floodgap.com>
 
-[ Upstream commit 8b78fdb045de60a4eb35460092bbd3cffa925353 ]
+[ Upstream commit 1006284c5e411872333967b1970c2ca46a9e225f ]
 
-We currently cap the decrementer clockevent at 4 seconds, even on systems
-with large decrementer support. Fix this by converting the code to use
-clockevents_register_device() which calculates the upper bound based on
-the max_delta passed in.
+When an OS (currently only classic Mac OS) is running in KVM-PR and makes a
+linked jump from code with split hack addressing enabled into code that does
+not, LR is not correctly updated and reflects the previously munged PC.
 
-Signed-off-by: Anton Blanchard <anton@ozlabs.org>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+To fix this, this patch undoes the address munge when exiting split
+hack mode so that code relying on LR being a proper address will now
+execute. This does not affect OS X or other operating systems running
+on KVM-PR.
+
+Signed-off-by: Cameron Kaiser <spectre@floodgap.com>
+Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/kernel/time.c | 17 +++--------------
- 1 file changed, 3 insertions(+), 14 deletions(-)
+ arch/powerpc/kvm/book3s.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index fe6f3a2854557..870e75d304591 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -984,10 +984,10 @@ static void register_decrementer_clockevent(int cpu)
- 	*dec = decrementer_clockevent;
- 	dec->cpumask = cpumask_of(cpu);
- 
-+	clockevents_config_and_register(dec, ppc_tb_freq, 2, decrementer_max);
-+
- 	printk_once(KERN_DEBUG "clockevent: %s mult[%x] shift[%d] cpu[%d]\n",
- 		    dec->name, dec->mult, dec->shift, cpu);
--
--	clockevents_register_device(dec);
- }
- 
- static void enable_large_decrementer(void)
-@@ -1035,18 +1035,7 @@ static void __init set_decrementer_max(void)
- 
- static void __init init_decrementer_clockevent(void)
+diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+index d38280b01ef08..1eda812499376 100644
+--- a/arch/powerpc/kvm/book3s.c
++++ b/arch/powerpc/kvm/book3s.c
+@@ -79,8 +79,11 @@ void kvmppc_unfixup_split_real(struct kvm_vcpu *vcpu)
  {
--	int cpu = smp_processor_id();
--
--	clockevents_calc_mult_shift(&decrementer_clockevent, ppc_tb_freq, 4);
--
--	decrementer_clockevent.max_delta_ns =
--		clockevent_delta2ns(decrementer_max, &decrementer_clockevent);
--	decrementer_clockevent.max_delta_ticks = decrementer_max;
--	decrementer_clockevent.min_delta_ns =
--		clockevent_delta2ns(2, &decrementer_clockevent);
--	decrementer_clockevent.min_delta_ticks = 2;
--
--	register_decrementer_clockevent(cpu);
-+	register_decrementer_clockevent(smp_processor_id());
+ 	if (vcpu->arch.hflags & BOOK3S_HFLAG_SPLIT_HACK) {
+ 		ulong pc = kvmppc_get_pc(vcpu);
++		ulong lr = kvmppc_get_lr(vcpu);
+ 		if ((pc & SPLIT_HACK_MASK) == SPLIT_HACK_OFFS)
+ 			kvmppc_set_pc(vcpu, pc & ~SPLIT_HACK_MASK);
++		if ((lr & SPLIT_HACK_MASK) == SPLIT_HACK_OFFS)
++			kvmppc_set_lr(vcpu, lr & ~SPLIT_HACK_MASK);
+ 		vcpu->arch.hflags &= ~BOOK3S_HFLAG_SPLIT_HACK;
+ 	}
  }
- 
- void secondary_cpu_time_init(void)
 -- 
 2.20.1
 
