@@ -6,55 +6,53 @@ X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B0733C43331
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 03:46:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DDF07C43331
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 03:49:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 69075222CF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 03:46:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 69075222CF
+	by mail.kernel.org (Postfix) with ESMTPS id 8B7B1222CE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 03:49:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8B7B1222CE
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=cyphar.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47CVsV1QJmzF6bK
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 14:46:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47CVwj2HJhzDr5D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 14:49:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=cyphar.com (client-ip=2001:67c:2050::465:201;
- helo=mout-p-201.mailbox.org; envelope-from=cyphar@cyphar.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=cyphar.com (client-ip=80.241.56.172; helo=mout-p-202.mailbox.org;
+ envelope-from=cyphar@cyphar.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=cyphar.com
-Received: from mout-p-201.mailbox.org (mout-p-201.mailbox.org
- [IPv6:2001:67c:2050::465:201])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47CTJM6bVtzF5Sp
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 13:36:16 +1100 (AEDT)
-Received: from smtp2.mailbox.org (smtp2.mailbox.org
- [IPv6:2001:67c:2050:105:465:1:2:0])
+Received: from mout-p-202.mailbox.org (mout-p-202.mailbox.org [80.241.56.172])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47CTVB4GmTzF4DM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 13:44:49 +1100 (AEDT)
+Received: from smtp1.mailbox.org (smtp1.mailbox.org [80.241.60.240])
  (using TLSv1.2 with cipher ECDHE-RSA-CHACHA20-POLY1305 (256/256 bits))
  (No client certificate requested)
- by mout-p-201.mailbox.org (Postfix) with ESMTPS id 47CTJ769lnzQlB7;
- Wed, 13 Nov 2019 03:36:07 +0100 (CET)
+ by mout-p-202.mailbox.org (Postfix) with ESMTPS id 47CTV33Jc9zQlBx;
+ Wed, 13 Nov 2019 03:44:43 +0100 (CET)
 X-Virus-Scanned: amavisd-new at heinlein-support.de
-Received: from smtp2.mailbox.org ([80.241.60.241])
- by hefe.heinlein-support.de (hefe.heinlein-support.de [91.198.250.172])
- (amavisd-new, port 10030)
- with ESMTP id wVw8SxpwKUfa; Wed, 13 Nov 2019 03:36:01 +0100 (CET)
-Date: Wed, 13 Nov 2019 13:35:37 +1100
+Received: from smtp1.mailbox.org ([80.241.60.240])
+ by spamfilter04.heinlein-hosting.de (spamfilter04.heinlein-hosting.de
+ [80.241.56.122]) (amavisd-new, port 10030)
+ with ESMTP id LsOzyR1eKTKd; Wed, 13 Nov 2019 03:44:38 +0100 (CET)
+Date: Wed, 13 Nov 2019 13:44:14 +1100
 From: Aleksa Sarai <cyphar@cyphar.com>
 To: Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH v15 7/9] open: introduce openat2(2) syscall
-Message-ID: <20191113023537.epcgw5u2fdbinnyj@yavin.dot.cyphar.com>
+Subject: Re: [PATCH v15 5/9] namei: LOOKUP_IN_ROOT: chroot-like scoped
+ resolution
+Message-ID: <20191113024414.wlmvtjstpnkxa36n@yavin.dot.cyphar.com>
 References: <20191105090553.6350-1-cyphar@cyphar.com>
- <20191105090553.6350-8-cyphar@cyphar.com>
- <20191113022906.GD26530@ZenIV.linux.org.uk>
+ <20191105090553.6350-6-cyphar@cyphar.com>
+ <20191113020307.GB26530@ZenIV.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="ohhoiky5cv3wybqd"
+ protocol="application/pgp-signature"; boundary="zcwix2zvi4el6ukc"
 Content-Disposition: inline
-In-Reply-To: <20191113022906.GD26530@ZenIV.linux.org.uk>
+In-Reply-To: <20191113020307.GB26530@ZenIV.linux.org.uk>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,10 +69,10 @@ Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
  Rasmus Villemoes <linux@rasmusvillemoes.dk>,
  Alexei Starovoitov <ast@kernel.org>, linux-kernel@vger.kernel.org,
  David Howells <dhowells@redhat.com>, linux-kselftest@vger.kernel.org,
- sparclinux@vger.kernel.org, Jiri Olsa <jolsa@redhat.com>,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- Tycho Andersen <tycho@tycho.ws>, Aleksa Sarai <asarai@suse.de>,
- Shuah Khan <shuah@kernel.org>,
+ sparclinux@vger.kernel.org, Christian Brauner <christian.brauner@ubuntu.com>,
+ Jiri Olsa <jolsa@redhat.com>, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, Tycho Andersen <tycho@tycho.ws>,
+ Aleksa Sarai <asarai@suse.de>, Shuah Khan <shuah@kernel.org>,
  Alexander Shishkin <alexander.shishkin@linux.intel.com>,
  Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infradead.org,
  linux-mips@vger.kernel.org, linux-xtensa@linux-xtensa.org,
@@ -96,43 +94,41 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---ohhoiky5cv3wybqd
+--zcwix2zvi4el6ukc
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 On 2019-11-13, Al Viro <viro@zeniv.linux.org.uk> wrote:
-> On Tue, Nov 05, 2019 at 08:05:51PM +1100, Aleksa Sarai wrote:
-> > +/*
-> > + * Arguments for how openat2(2) should open the target path. If @resol=
-ve is
-> > + * zero, then openat2(2) operates very similarly to openat(2).
-> > + *
-> > + * However, unlike openat(2), unknown bits in @flags result in -EINVAL=
- rather
-> > + * than being silently ignored. @mode must be zero unless one of {O_CR=
-EAT,
-> > + * O_TMPFILE} are set, and @upgrade_mask must be zero unless O_PATH is=
- set.
-> > + *
-> > + * @flags: O_* flags.
-> > + * @mode: O_CREAT/O_TMPFILE file mode.
-> > + * @upgrade_mask: UPGRADE_* flags (to restrict O_PATH re-opening).
+> On Tue, Nov 05, 2019 at 08:05:49PM +1100, Aleksa Sarai wrote:
 >=20
-> ???
+> > @@ -2277,12 +2277,20 @@ static const char *path_init(struct nameidata *=
+nd, unsigned flags)
+> > =20
+> >  	nd->m_seq =3D read_seqbegin(&mount_lock);
+> > =20
+> > -	/* Figure out the starting path and root (if needed). */
+> > -	if (*s =3D=3D '/') {
+> > +	/* Absolute pathname -- fetch the root. */
+> > +	if (flags & LOOKUP_IN_ROOT) {
+> > +		/* With LOOKUP_IN_ROOT, act as a relative path. */
+> > +		while (*s =3D=3D '/')
+> > +			s++;
+>=20
+> Er...  Why bother skipping slashes?  I mean, not only link_path_walk()
+> will skip them just fine, you are actually risking breakage in this:
+>                 if (*s && unlikely(!d_can_lookup(dentry))) {
+>                         fdput(f);
+>                         return ERR_PTR(-ENOTDIR);
+>                 }
+> which is downstream from there with you patch, AFAICS.
 
-Sorry, that was left over from a previous revision (where the magic-link
-re-opening restrictions were part of this series).
+I switched to stripping the slashes at your suggestion a few revisions
+ago[1], and had (wrongly) assumed we needed to handle "/" somehow in
+path_init(). But you're quite right about link_path_walk() -- and I'd be
+more than happy to drop it.
 
-> > + * @resolve: RESOLVE_* flags.
-> > + */
-> > +struct open_how {
-> > +	__aligned_u64 flags;
-> > +	__u16 mode;
-> > +	__u16 __padding[3]; /* must be zeroed */
-> > +	__aligned_u64 resolve;
-> > +};
-
+[1]: https://lore.kernel.org/lkml/20190712125552.GL17978@ZenIV.linux.org.uk/
 
 --=20
 Aleksa Sarai
@@ -140,15 +136,15 @@ Senior Software Engineer (Containers)
 SUSE Linux GmbH
 <https://www.cyphar.com/>
 
---ohhoiky5cv3wybqd
+--zcwix2zvi4el6ukc
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iHUEABYIAB0WIQSxZm6dtfE8gxLLfYqdlLljIbnQEgUCXctr9QAKCRCdlLljIbnQ
-Ej91AQDSESPrMbumo+B1bVc2FthUOUuONyqVLG0aRmu7PQjnOgD7BOxMC9suhDip
-ayqrtLJhXKxmKpbFt69x0a97Rx8tGQ8=
-=4v0x
+iHUEABYIAB0WIQSxZm6dtfE8gxLLfYqdlLljIbnQEgUCXctt+gAKCRCdlLljIbnQ
+EtaOAP4wZ6FONr+jCigAii+B0S1x/aNqVoCXGa0s32/c+X1spQEAiLcI0bIEdqjF
+tuAr6TYPTrpe63nhzokAO32LJ1rVrQM=
+=G6qn
 -----END PGP SIGNATURE-----
 
---ohhoiky5cv3wybqd--
+--zcwix2zvi4el6ukc--
