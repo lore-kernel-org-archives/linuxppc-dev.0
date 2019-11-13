@@ -2,62 +2,95 @@ Return-Path: <SRS0=PO5t=ZF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-1.9 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36AAFC43331
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 04:01:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D5238C43331
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 04:14:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E0C2B222C9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 04:01:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E0C2B222C9
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=cyphar.com
+	by mail.kernel.org (Postfix) with ESMTPS id 482D9222CF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 04:14:20 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hPWPZKlq"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 482D9222CF
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47CWBK6RzPzF5qC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 15:01:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47CWTP5LmtzF3YB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Nov 2019 15:14:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=cyphar.com (client-ip=2001:67c:2050::465:201;
- helo=mout-p-201.mailbox.org; envelope-from=cyphar@cyphar.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::644;
+ helo=mail-pl1-x644.google.com; envelope-from=sergey.senozhatsky.work@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=cyphar.com
-Received: from mout-p-201.mailbox.org (mout-p-201.mailbox.org
- [IPv6:2001:67c:2050::465:201])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="hPWPZKlq"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
+ [IPv6:2607:f8b0:4864:20::644])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47CW4s21yjzF6Bg
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 14:56:26 +1100 (AEDT)
-Received: from smtp2.mailbox.org (smtp2.mailbox.org
- [IPv6:2001:67c:2050:105:465:1:2:0])
- (using TLSv1.2 with cipher ECDHE-RSA-CHACHA20-POLY1305 (256/256 bits))
- (No client certificate requested)
- by mout-p-201.mailbox.org (Postfix) with ESMTPS id 47CW4V73MqzQlBG;
- Wed, 13 Nov 2019 04:56:10 +0100 (CET)
-X-Virus-Scanned: amavisd-new at heinlein-support.de
-Received: from smtp2.mailbox.org ([80.241.60.241])
- by spamfilter04.heinlein-hosting.de (spamfilter04.heinlein-hosting.de
- [80.241.56.122]) (amavisd-new, port 10030)
- with ESMTP id ovfePb6AeJGC; Wed, 13 Nov 2019 04:56:05 +0100 (CET)
-Date: Wed, 13 Nov 2019 14:55:42 +1100
-From: Aleksa Sarai <cyphar@cyphar.com>
-To: Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH v15 5/9] namei: LOOKUP_IN_ROOT: chroot-like scoped
- resolution
-Message-ID: <20191113035542.3ckc7oudahn3xtnj@yavin.dot.cyphar.com>
-References: <20191105090553.6350-1-cyphar@cyphar.com>
- <20191105090553.6350-6-cyphar@cyphar.com>
- <20191113020307.GB26530@ZenIV.linux.org.uk>
- <20191113024414.wlmvtjstpnkxa36n@yavin.dot.cyphar.com>
- <20191113025941.GE26530@ZenIV.linux.org.uk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47CRhf0Yt4zF3Ss
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Nov 2019 12:23:44 +1100 (AEDT)
+Received: by mail-pl1-x644.google.com with SMTP id l4so302147plt.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Nov 2019 17:23:43 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=1L7ASzKkM9H3jGXxNBrUB+7DORYDzuzDLILdAI3Iz7A=;
+ b=hPWPZKlqyeQnXDnfKM+yto4tna7/NwAt3iB5d61vGkkJIZuUufxmpnoxkEgePVnej7
+ L3hqEC23l+0zKgGK6W4wPhhfu5rKZowqxPh/46+GMjsQYom9+rxAtKscDZa4tq1EZ716
+ v3E2zlUhIldCXA7DVyUqyyBaEbvglPUOrZExWlUjNqVUbKviWiZ0UqqlQQn5uS5GaAHc
+ mq/bIirdXr39H9gdTuhjl1CNb4pz9u1NyVaytreQwY9zEl/crJdG04QmPFkkR8rnNcTE
+ UvMTM+CfzewoFMwCfZcUTuuW9mgMTzeza8o6UpjTQJvYoUxBVhuX8rWLl3B8wj02ljU3
+ maaw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=1L7ASzKkM9H3jGXxNBrUB+7DORYDzuzDLILdAI3Iz7A=;
+ b=Qqu/uobiKbvNCXq0lNqCoij7gHDXZ8RdIRve+6L9Ypsz3I+WN+nGkTVrUT9nu/+6oY
+ uxJl9adidTDBqf93NW2WSn2JgECPuwrEFPUnIUwGxZPuI9RAM3XXxOcmK2GdKjoSs9gb
+ jRXn11PtVNns2+jI5bXVNbiPM8Yv5JamiUt5c43VefHqjMWZhGJGmbRV3xKljsR6uvwN
+ tIdzNjjoguzHffo7BstSgwcaskc+l2dukVoY6XIUqbh/6B9hI/tMmp8FLbDYvyJk45mh
+ j5Cjyh+JojXLnBDuiMQ/Kj1EsRAuByAuitx72uGb6GlVg9++OVC9hzFVw6JDSud8d1TI
+ JHkQ==
+X-Gm-Message-State: APjAAAW+AQDasRKRypoew5xjZoKDYJGpLvapWUaarZXjkFic8kEy7jHH
+ QMVlQ47G+yv3xGQdu3Nx9Ps=
+X-Google-Smtp-Source: APXvYqyiqUiMRcG57rYhVmi/PN592L9nB6krMmKeStEG0mbc1TStTpGh0xSJ8gvsM3GDADDNTGDfqQ==
+X-Received: by 2002:a17:902:8a83:: with SMTP id p3mr856215plo.79.1573608220830; 
+ Tue, 12 Nov 2019 17:23:40 -0800 (PST)
+Received: from localhost ([2401:fa00:8f:203:250d:e71d:5a0a:9afe])
+ by smtp.gmail.com with ESMTPSA id s3sm304442pjr.13.2019.11.12.17.23.39
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 12 Nov 2019 17:23:39 -0800 (PST)
+Date: Wed, 13 Nov 2019 10:23:37 +0900
+From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+To: Petr Mladek <pmladek@suse.com>, Dmitry Safonov <dima@arista.com>
+Subject: Re: [PATCH 00/50] Add log level to show_stack()
+Message-ID: <20191113012337.GA70781@google.com>
+References: <20191106030542.868541-1-dima@arista.com>
+ <20191106083538.z5nlpuf64cigxigh@pathway.suse.cz>
+ <20191108103719.GB175344@google.com>
+ <20191108130447.h3wfgo4efjkto56f@pathway.suse.cz>
+ <20191111012336.GA85185@google.com>
+ <20191111091207.u3lrd6cmumnx4czr@pathway.suse.cz>
+ <20191112044447.GA121272@google.com>
+ <20191112045704.GA138013@google.com>
+ <20191112083509.gmgjpkjffsfaw5lm@pathway.suse.cz>
+ <20191112101229.GA201294@google.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="j4f7d32jpyqpzflk"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20191113025941.GE26530@ZenIV.linux.org.uk>
+In-Reply-To: <20191112101229.GA201294@google.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
+X-Mailman-Approved-At: Wed, 13 Nov 2019 15:12:13 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,101 +102,100 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>,
- Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- Alexei Starovoitov <ast@kernel.org>, linux-kernel@vger.kernel.org,
- David Howells <dhowells@redhat.com>, linux-kselftest@vger.kernel.org,
- sparclinux@vger.kernel.org, Christian Brauner <christian.brauner@ubuntu.com>,
- Jiri Olsa <jolsa@redhat.com>, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, Tycho Andersen <tycho@tycho.ws>,
- Aleksa Sarai <asarai@suse.de>, Shuah Khan <shuah@kernel.org>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infradead.org,
- linux-mips@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
- Jann Horn <jannh@google.com>, linuxppc-dev@lists.ozlabs.org,
- linux-m68k@lists.linux-m68k.org, Andy Lutomirski <luto@kernel.org>,
- Shuah Khan <skhan@linuxfoundation.org>, Namhyung Kim <namhyung@kernel.org>,
- David Drysdale <drysdale@google.com>, Christian Brauner <christian@brauner.io>,
- "J. Bruce Fields" <bfields@fieldses.org>, libc-alpha@sourceware.org,
- linux-parisc@vger.kernel.org, linux-api@vger.kernel.org,
- Chanho Min <chanho.min@lge.com>, Jeff Layton <jlayton@kernel.org>,
- Oleg Nesterov <oleg@redhat.com>, Eric Biederman <ebiederm@xmission.com>,
- linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- containers@lists.linux-foundation.org
+Cc: Juri Lelli <juri.lelli@redhat.com>,
+ Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
+ linux-sh@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
+ Ben Segall <bsegall@google.com>, Guo Ren <guoren@kernel.org>,
+ Pavel Machek <pavel@ucw.cz>, Vincent Guittot <vincent.guittot@linaro.org>,
+ Paul Burton <paulburton@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Mel Gorman <mgorman@suse.de>, Jiri Slaby <jslaby@suse.com>,
+ Matt Turner <mattst88@gmail.com>, uclinux-h8-devel@lists.sourceforge.jp,
+ Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-um@lists.infradead.org,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Dietmar Eggemann <dietmar.eggemann@arm.com>,
+ Richard Henderson <rth@twiddle.net>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, Paul Mackerras <paulus@samba.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linux-ia64@vger.kernel.org,
+ Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+ James Hogan <jhogan@kernel.org>,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Max Filippov <jcmvbkbc@gmail.com>, Vincent Chen <deanbo422@gmail.com>,
+ Ingo Molnar <mingo@kernel.org>, linux-s390@vger.kernel.org,
+ linux-c6x-dev@linux-c6x.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ linux-hexagon@vger.kernel.org, Helge Deller <deller@gmx.de>,
+ linux-xtensa@linux-xtensa.org, Vasily Gorbik <gor@linux.ibm.com>,
+ Aurelien Jacquiot <jacquiot.aurelien@gmail.com>,
+ linux-m68k@lists.linux-m68k.org, Stafford Horne <shorne@gmail.com>,
+ linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>,
+ Tony Luck <tony.luck@intel.com>, Douglas Anderson <dianders@chromium.org>,
+ Dmitry Safonov <0x7f454c46@gmail.com>, Will Deacon <will@kernel.org>,
+ Daniel Thompson <daniel.thompson@linaro.org>,
+ Brian Cain <bcain@codeaurora.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ kgdb-bugreport@lists.sourceforge.net, linux-snps-arc@lists.infradead.org,
+ Fenghua Yu <fenghua.yu@intel.com>, Borislav Petkov <bp@alien8.de>,
+ Jeff Dike <jdike@addtoit.com>, Steven Rostedt <rostedt@goodmis.org>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greentime Hu <green.hu@gmail.com>,
+ Guan Xuetao <gxt@pku.edu.cn>, linux-parisc@vger.kernel.org,
+ linux-alpha@vger.kernel.org, Ley Foon Tan <lftan@altera.com>,
+ "David S. Miller" <davem@davemloft.net>, Rich Felker <dalias@libc.org>,
+ Peter Zijlstra <peterz@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
+ Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+ Jonas Bonn <jonas@southpole.se>, Richard Weinberger <richard@nod.at>,
+ x86@kernel.org, Russell King <linux@armlinux.org.uk>,
+ clang-built-linux@googlegroups.com, Ingo Molnar <mingo@redhat.com>,
+ Mark Salter <msalter@redhat.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ openrisc@lists.librecores.org, Paul Walmsley <paul.walmsley@sifive.com>,
+ Michal Simek <monstr@monstr.eu>, Vineet Gupta <vgupta@synopsys.com>,
+ linux-mips@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Jason Wessel <jason.wessel@windriver.com>,
+ nios2-dev@lists.rocketboards.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On (19/11/12 19:12), Sergey Senozhatsky wrote:
+> On (19/11/12 09:35), Petr Mladek wrote:
+> [..]
+> > This is getting too complicated. It would introduce too many
+> > hidden rules. While the explicitly passed loglevel parameter
+> > is straightforward and clear.
+>
+> If loglevel is DEFAULT or NOTICE or INFO then we can overwrite it
+> (either downgrade or upgrade). That's one rule, basically. Not too
+> complicated, I guess.
 
---j4f7d32jpyqpzflk
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Can be taken even a bit further than
 
-On 2019-11-13, Al Viro <viro@zeniv.linux.org.uk> wrote:
-> On Wed, Nov 13, 2019 at 01:44:14PM +1100, Aleksa Sarai wrote:
-> > On 2019-11-13, Al Viro <viro@zeniv.linux.org.uk> wrote:
-> > > On Tue, Nov 05, 2019 at 08:05:49PM +1100, Aleksa Sarai wrote:
-> > >=20
-> > > > @@ -2277,12 +2277,20 @@ static const char *path_init(struct nameida=
-ta *nd, unsigned flags)
-> > > > =20
-> > > >  	nd->m_seq =3D read_seqbegin(&mount_lock);
-> > > > =20
-> > > > -	/* Figure out the starting path and root (if needed). */
-> > > > -	if (*s =3D=3D '/') {
-> > > > +	/* Absolute pathname -- fetch the root. */
-> > > > +	if (flags & LOOKUP_IN_ROOT) {
-> > > > +		/* With LOOKUP_IN_ROOT, act as a relative path. */
-> > > > +		while (*s =3D=3D '/')
-> > > > +			s++;
-> > >=20
-> > > Er...  Why bother skipping slashes?  I mean, not only link_path_walk()
-> > > will skip them just fine, you are actually risking breakage in this:
-> > >                 if (*s && unlikely(!d_can_lookup(dentry))) {
-> > >                         fdput(f);
-> > >                         return ERR_PTR(-ENOTDIR);
-> > >                 }
-> > > which is downstream from there with you patch, AFAICS.
-> >=20
-> > I switched to stripping the slashes at your suggestion a few revisions
-> > ago[1], and had (wrongly) assumed we needed to handle "/" somehow in
-> > path_init(). But you're quite right about link_path_walk() -- and I'd be
-> > more than happy to drop it.
->=20
-> That, IIRC, was about untangling the weirdness around multiple calls of
-> dirfd_path_init() and basically went "we might want just strip the slashes
-> in case of that flag very early in the entire thing, so that later the
-> normal logics for absolute/relative would DTRT".
+	show_stack(NULL, NULL, LOGLEVEL_DEBUG);
+or
+	show_stack(NULL, NULL, LOGLEVEL_ERR);
 
-Ah okay, I'd misunderstood the point you were making in that thread.
+For instance,
 
-> Since your check is right next to checking for absolute pathnames (and
-> not in the very beginning of path_init()), we might as well turn the
-> check for absolute pathname into *s =3D=3D '/' && !(flags &
-> LOOKUP_IN_ROOT) and be done with that.
+	spin_lock_irqsave(&rq->lock, flags);
+	printk_emergency_enter(LOGLEVEL_SCHED);
+		...
+		show_stack(...);
+		printk();
+		printk();
+		...
+	spin_unlock_irqrestore(&rq->lock, flags);
 
-Yup, agreed.
+or
 
---=20
-Aleksa Sarai
-Senior Software Engineer (Containers)
-SUSE Linux GmbH
-<https://www.cyphar.com/>
+	spin_lock_irqsave(&uart_port->lock, flags);
+	printk_emergency_enter(LOGLEVEL_SCHED);
+		...
+		printk();
+		printk();
+		...
 
---j4f7d32jpyqpzflk
-Content-Type: application/pgp-signature; name="signature.asc"
+and so on.
 
------BEGIN PGP SIGNATURE-----
-
-iHUEABYIAB0WIQSxZm6dtfE8gxLLfYqdlLljIbnQEgUCXct+uwAKCRCdlLljIbnQ
-EpaMAQCKfJalyFfg/QA8aH/wuTwb0JmHpxt9HKverNfj5BncXAEA8J+s2/4xFPcn
-vy6IqraafPiOMkqsiqA03ofQ3tR8tQ4=
-=Qq3t
------END PGP SIGNATURE-----
-
---j4f7d32jpyqpzflk--
+	-ss
