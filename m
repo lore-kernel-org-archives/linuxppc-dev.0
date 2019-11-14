@@ -6,38 +6,37 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E4CAC432C3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 09:37:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E0140C432C3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 09:39:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BCCCA20709
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 09:37:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BCCCA20709
+	by mail.kernel.org (Postfix) with ESMTPS id 9D8BD20709
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 09:39:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9D8BD20709
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47DGbX5L8nzF4KJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 20:37:12 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 47DGdh5rl2zF7bf
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 20:39:04 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47DFxh73hkzF5CH
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2019 20:07:52 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47DFxm2DfPzF5JP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2019 20:07:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 47DFxg3C3tz9sRR; Thu, 14 Nov 2019 20:07:51 +1100 (AEDT)
+ id 47DFxh45YSz9sRd; Thu, 14 Nov 2019 20:07:52 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 3366ebe9e19ba3c672a00a6fb86f0ac8636ee989
-In-Reply-To: <20191016183611.10867-2-nathanl@linux.ibm.com>
-To: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+X-powerpc-patch-commit: de84ffc3ccbeec3678f95a3d898fc188efa0d9c5
+In-Reply-To: <43817cb6e6631b0828b9a6e266f60d1f8ca8eb22.1571288375.git.sbobroff@linux.ibm.com>
+To: Sam Bobroff <sbobroff@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH v2 1/2] powerpc/pseries: address checkpatch warnings in
- dlpar_offline_cpu
-Message-Id: <47DFxg3C3tz9sRR@ozlabs.org>
-Date: Thu, 14 Nov 2019 20:07:51 +1100 (AEDT)
+Subject: Re: [PATCH 1/1] powerpc/eeh: differentiate duplicate detection message
+Message-Id: <47DFxh45YSz9sRd@ozlabs.org>
+Date: Thu, 14 Nov 2019 20:07:52 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,25 +48,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: tyreld@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2019-10-16 at 18:36:10 UTC, Nathan Lynch wrote:
-> Remove some stray blank lines, convert a printk to pr_warn, and
-> address a line length violation.
+On Thu, 2019-10-17 at 04:59:37 UTC, Sam Bobroff wrote:
+> Currently when an EEH error is detected, the system log receives the
+> same (or almost the same) message twice:
 > 
-> One functional change: use WARN_ON instead of BUG_ON in case H_PROD of
-> a ceded thread yields an unexpected result from the platform. We can
-> expect this code path to get uninterruptibly stuck in __cpu_die() if
-> this happens, but that's more desirable than crashing.
+> EEH: PHB#0 failure detected, location: N/A
+> EEH: PHB#0 failure detected, location: N/A
+> or
+> EEH: eeh_dev_check_failure: Frozen PHB#0-PE#0 detected
+> EEH: Frozen PHB#0-PE#0 detected
 > 
-> Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
-> Fixes: b6db63d1a7f0 ("pseries/pseries: Add code to online/offline CPUs of a DLPAR node")
+> This looks like a bug, but in fact the messages are from different
+> functions and mean slightly different things.  So keep both but change
+> one of the messages slightly, so that it's clear they are different:
+> 
+> EEH: PHB#0 failure detected, location: N/A
+> EEH: Recovering PHB#0, location: N/A
+> or
+> EEH: eeh_dev_check_failure: Frozen PHB#0-PE#0 detected
+> EEH: Recovering PHB#0-PE#0
+> 
+> Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
 
 Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/3366ebe9e19ba3c672a00a6fb86f0ac8636ee989
+https://git.kernel.org/powerpc/c/de84ffc3ccbeec3678f95a3d898fc188efa0d9c5
 
 cheers
