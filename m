@@ -6,46 +6,42 @@ X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 32030C432C3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 10:37:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 75F6BC43215
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 10:39:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DF0FA206D9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 10:37:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF0FA206D9
+	by mail.kernel.org (Postfix) with ESMTPS id 38029206D9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 10:39:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 38029206D9
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47DHwV3F9lzF4lV
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 21:36:58 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 47DHyt17KSzF6cB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 21:39:02 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47DFyX6qr8zF63L
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47DFyY0NPmzF64H
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2019 20:08:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 47DFyT6f97z9sSW; Thu, 14 Nov 2019 20:08:33 +1100 (AEDT)
+ id 47DFyS5DKkz9sRs; Thu, 14 Nov 2019 20:08:32 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: bfa2325e5b8b800cc6720cad8d2f066cd0136bee
-In-Reply-To: <1545705876-63132-1-git-send-email-yuehaibing@huawei.com>
+X-powerpc-patch-commit: 090d5ab93d0b8a079dd516c16649bd00ba4f7302
+In-Reply-To: <1543498518-107601-1-git-send-email-yuehaibing@huawei.com>
 To: YueHaibing <yuehaibing@huawei.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Mike Rapoport <rppt@linux.vnet.ibm.com>,
- Alastair D'Silva <alastair@d-silva.org>,
- "Frederic Barrat" <fbarrat@linux.vnet.ibm.com>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>
+ Paul Mackerras <paulus@samba.org>, Michal Suchanek <msuchanek@suse.de>,
+ Diana Craciun <diana.craciun@nxp.com>,
+ "Mauricio Faria de Oliveira" <mauricfo@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH -next] powerpc/powernv/npu: Fix debugfs_simple_attr.cocci
- warnings
-Message-Id: <47DFyT6f97z9sSW@ozlabs.org>
-Date: Thu, 14 Nov 2019 20:08:33 +1100 (AEDT)
+Subject: Re: [PATCH -next] powerpc/64s: Fix debugfs_simple_attr.cocci warnings
+Message-Id: <47DFyS5DKkz9sRs@ozlabs.org>
+Date: Thu, 14 Nov 2019 20:08:32 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,7 +59,7 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2018-12-25 at 02:44:36 UTC, YueHaibing wrote:
+On Thu, 2018-11-29 at 13:35:18 UTC, YueHaibing wrote:
 > Use DEFINE_DEBUGFS_ATTRIBUTE rather than DEFINE_SIMPLE_ATTRIBUTE
 > for debugfs files.
 > 
@@ -78,6 +74,6 @@ On Tue, 2018-12-25 at 02:44:36 UTC, YueHaibing wrote:
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/bfa2325e5b8b800cc6720cad8d2f066cd0136bee
+https://git.kernel.org/powerpc/c/090d5ab93d0b8a079dd516c16649bd00ba4f7302
 
 cheers
