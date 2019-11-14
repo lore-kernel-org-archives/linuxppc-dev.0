@@ -1,215 +1,149 @@
-Return-Path: <SRS0=fdF7=ZG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=JohQ=ZG=vger.kernel.org=linux-m68k-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
+X-Spam-Status: No, score=-0.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D4D8EC432C3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 18:46:28 +0000 (UTC)
-Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 321BF206CC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 18:46:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 321BF206CC
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
-Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47DVnF6vVxzDrNR
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Nov 2019 05:46:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=leonardo@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47DVkj6tfvzF811
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2019 05:44:13 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- xAEIhiW5041171; Thu, 14 Nov 2019 13:44:05 -0500
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2w9bhcaasm-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 14 Nov 2019 13:44:05 -0500
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id xAEIejrd014729;
- Thu, 14 Nov 2019 18:44:08 GMT
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by ppma01wdc.us.ibm.com with ESMTP id 2w5n373v2n-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 14 Nov 2019 18:44:08 +0000
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xAEIi2jc40173880
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 14 Nov 2019 18:44:03 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BF4C6BE05A;
- Thu, 14 Nov 2019 18:44:02 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 87F83BE051;
- Thu, 14 Nov 2019 18:44:01 +0000 (GMT)
-Received: from leobras.br.ibm.com (unknown [9.18.235.137])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 14 Nov 2019 18:44:01 +0000 (GMT)
-Message-ID: <c792fdc629d87f452d4348d33ab179df01d42017.camel@linux.ibm.com>
-Subject: Re: [PATCH v2 1/4] powerpc/kvm/book3s: Fixes possible 'use after
- release' of kvm
-From: Leonardo Bras <leonardo@linux.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, kvm-ppc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Date: Thu, 14 Nov 2019 15:43:57 -0300
-In-Reply-To: <87mud13d4r.fsf@mpe.ellerman.id.au>
-References: <20191107170258.36379-1-leonardo@linux.ibm.com>
- <20191107170258.36379-2-leonardo@linux.ibm.com>
- <87mud13d4r.fsf@mpe.ellerman.id.au>
-Content-Type: multipart/signed; micalg="pgp-sha256";
- protocol="application/pgp-signature"; boundary="=-zmSym6hLOrd0Lb87qEYc"
-User-Agent: Evolution 3.34.1 (3.34.1-1.fc31) 
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22260C432C3
+	for <linux-m68k@archiver.kernel.org>; Thu, 14 Nov 2019 04:50:20 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
+	by mail.kernel.org (Postfix) with ESMTP id 0D7BF206EC
+	for <linux-m68k@archiver.kernel.org>; Thu, 14 Nov 2019 04:50:19 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S1727064AbfKNEuT (ORCPT <rfc822;linux-m68k@archiver.kernel.org>);
+        Wed, 13 Nov 2019 23:50:19 -0500
+Received: from mout-p-101.mailbox.org ([80.241.56.151]:44208 "EHLO
+        mout-p-101.mailbox.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727063AbfKNEuT (ORCPT
+        <rfc822;linux-m68k@lists.linux-m68k.org>);
+        Wed, 13 Nov 2019 23:50:19 -0500
+Received: from smtp1.mailbox.org (smtp1.mailbox.org [IPv6:2001:67c:2050:105:465:1:1:0])
+        (using TLSv1.2 with cipher ECDHE-RSA-CHACHA20-POLY1305 (256/256 bits))
+        (No client certificate requested)
+        by mout-p-101.mailbox.org (Postfix) with ESMTPS id 47D8DS2831zKmdH;
+        Thu, 14 Nov 2019 05:50:16 +0100 (CET)
+X-Virus-Scanned: amavisd-new at heinlein-support.de
+Received: from smtp1.mailbox.org ([80.241.60.240])
+        by spamfilter04.heinlein-hosting.de (spamfilter04.heinlein-hosting.de [80.241.56.122]) (amavisd-new, port 10030)
+        with ESMTP id GmtrxB8tgNO0; Thu, 14 Nov 2019 05:50:10 +0100 (CET)
+Date:   Thu, 14 Nov 2019 15:49:45 +1100
+From:   Aleksa Sarai <cyphar@cyphar.com>
+To:     Al Viro <viro@zeniv.linux.org.uk>
+Cc:     Jeff Layton <jlayton@kernel.org>,
+        "J. Bruce Fields" <bfields@fieldses.org>,
+        Arnd Bergmann <arnd@arndb.de>,
+        David Howells <dhowells@redhat.com>,
+        Shuah Khan <shuah@kernel.org>,
+        Shuah Khan <skhan@linuxfoundation.org>,
+        Ingo Molnar <mingo@redhat.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Christian Brauner <christian.brauner@ubuntu.com>,
+        David Drysdale <drysdale@google.com>,
+        Andy Lutomirski <luto@kernel.org>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        Eric Biederman <ebiederm@xmission.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Alexei Starovoitov <ast@kernel.org>,
+        Kees Cook <keescook@chromium.org>,
+        Jann Horn <jannh@google.com>, Tycho Andersen <tycho@tycho.ws>,
+        Chanho Min <chanho.min@lge.com>,
+        Oleg Nesterov <oleg@redhat.com>,
+        Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+        Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+        Jiri Olsa <jolsa@redhat.com>,
+        Namhyung Kim <namhyung@kernel.org>,
+        Christian Brauner <christian@brauner.io>,
+        Aleksa Sarai <asarai@suse.de>,
+        containers@lists.linux-foundation.org, linux-alpha@vger.kernel.org,
+        linux-api@vger.kernel.org, libc-alpha@sourceware.org,
+        linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-fsdevel@vger.kernel.org, linux-ia64@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org,
+        linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
+        linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+        linux-xtensa@linux-xtensa.org, sparclinux@vger.kernel.org
+Subject: Re: [PATCH v15 3/9] namei: LOOKUP_NO_XDEV: block mountpoint crossing
+Message-ID: <20191114044945.ldedzjrb4s7i7irr@yavin.dot.cyphar.com>
+References: <20191105090553.6350-1-cyphar@cyphar.com>
+ <20191105090553.6350-4-cyphar@cyphar.com>
+ <20191113013630.GZ26530@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-11-14_05:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1910280000 definitions=main-1911140157
-X-BeenThere: linuxppc-dev@lists.ozlabs.org
-X-Mailman-Version: 2.1.29
-Precedence: list
-List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="rwq4fftbhkszxm4g"
+Content-Disposition: inline
+In-Reply-To: <20191113013630.GZ26530@ZenIV.linux.org.uk>
+Sender: linux-m68k-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-m68k.vger.kernel.org>
+X-Mailing-List: linux-m68k@vger.kernel.org
+Message-ID: <20191114044945.IseGsD5BJzpfl1nRnrCtzGq0g-PcV3w3I_dBE9OZNyA@z>
 
 
---=-zmSym6hLOrd0Lb87qEYc
-Content-Type: text/plain; charset="UTF-8"
+--rwq4fftbhkszxm4g
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 2019-11-12 at 15:57 +1100, Michael Ellerman wrote:
-> Hi Leonardo,
-
-Hello Micheal, thanks for the feedback!
-
+On 2019-11-13, Al Viro <viro@zeniv.linux.org.uk> wrote:
+> On Tue, Nov 05, 2019 at 08:05:47PM +1100, Aleksa Sarai wrote:
 >=20
-> Leonardo Bras <leonardo@linux.ibm.com> writes:
-> > Fixes a possible 'use after free' of kvm variable in
-> > kvm_vm_ioctl_create_spapr_tce, where it does a mutex_unlock(&kvm-
-> > >lock)
-> > after a kvm_put_kvm(kvm).
->=20
-> There is no potential for an actual use after free here AFAICS.
->=20
-> > diff --git a/arch/powerpc/kvm/book3s_64_vio.c
-> > b/arch/powerpc/kvm/book3s_64_vio.c
-> > index 5834db0a54c6..a402ead833b6 100644
-> > --- a/arch/powerpc/kvm/book3s_64_vio.c
-> > +++ b/arch/powerpc/kvm/book3s_64_vio.c
->=20
-> The preceeding context is:
->=20
-> 	mutex_lock(&kvm->lock);
->=20
-> 	/* Check this LIOBN hasn't been previously allocated */
-> 	ret =3D 0;
-> 	list_for_each_entry(siter, &kvm->arch.spapr_tce_tables, list) {
-> 		if (siter->liobn =3D=3D args->liobn) {
-> 			ret =3D -EBUSY;
-> 			break;
-> 		}
-> 	}
->=20
-> 	kvm_get_kvm(kvm);
-> 	if (!ret)
-> 		ret =3D anon_inode_getfd("kvm-spapr-tce",
-> &kvm_spapr_tce_fops,
-> 				       stt, O_RDWR | O_CLOEXEC);
->=20
-> > @@ -316,14 +316,13 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm
-> > *kvm,
+> > @@ -862,6 +870,8 @@ static int nd_jump_root(struct nameidata *nd)
+> >  void nd_jump_link(struct path *path)
+> >  {
+> >  	struct nameidata *nd =3D current->nameidata;
+> > +
+> > +	nd->last_magiclink.same_mnt =3D (nd->path.mnt =3D=3D path->mnt);
+> >  	path_put(&nd->path);
 > > =20
-> >  	if (ret >=3D 0)
-> >  		list_add_rcu(&stt->list, &kvm->arch.spapr_tce_tables);
-> > -	else
-> > -		kvm_put_kvm(kvm);
-> > =20
-> >  	mutex_unlock(&kvm->lock);
-> > =20
-> >  	if (ret >=3D 0)
-> >  		return ret;
-> > =20
-> > +	kvm_put_kvm(kvm);
-> >  	kfree(stt);
-> >   fail_acct:
-> >  	account_locked_vm(current->mm, kvmppc_stt_pages(npages),
-> > false);
+> >  	nd->path =3D *path;
+> > @@ -1082,6 +1092,10 @@ const char *get_link(struct nameidata *nd)
+> >  		if (nd->flags & LOOKUP_MAGICLINK_JUMPED) {
+> >  			if (unlikely(nd->flags & LOOKUP_NO_MAGICLINKS))
+> >  				return ERR_PTR(-ELOOP);
+> > +			if (unlikely(nd->flags & LOOKUP_NO_XDEV)) {
+> > +				if (!nd->last_magiclink.same_mnt)
+> > +					return ERR_PTR(-EXDEV);
+> > +			}
+> >  		}
 >=20
-> If the kvm_put_kvm() you've moved actually caused the last reference
-> to
-> be dropped that would mean that our caller had passed us a kvm struct
-> without holding a reference to it, and that would be a bug in our
-> caller.
->=20
+> Ugh...  Wouldn't it be better to take that logics (some equivalent thereo=
+f)
+> into nd_jump_link()?  Or just have nd_jump_link() return an error...
 
-So, there is no chance that between this function's kvm_get_kvm() and=20
-kvm_put_kvm(), another thread can decrease this reference counter?
+This could be done, but the reason for stashing it away in
+last_magiclink is because of the future magic-link re-opening patches
+which can't be implemented like that without putting the open_flags
+inside nameidata (which was decided to be too ugly a while ago).
 
-> Or put another way, it would mean the mutex_lock() above could
-> already
-> be operating on a freed kvm struct.
->=20
-> The kvm_get_kvm() prior to the anon_inode_getfd() is to account for
-> the
-> reference that's held by the `stt` struct, and dropped in
-> kvm_spapr_tce_release().
->=20
-> So although this patch isn't wrong, the explanation is not accurate.
->=20
-> cheers
+My point being that I could implement it this way for this series, but
+I'd have to implement something like last_magiclink when I end up
+re-posting the magic-link stuff in a few weeks.
 
-Kind regards
+Looking at all the nd_jump_link() users, the other option is to just
+disallow magic-link crossings entirely for LOOKUP_NO_XDEV. The only
+thing allowing them permits is to resolve file descriptors that are
+pointing to the same procfs mount -- and it's unclear to me how useful
+that really is (apparmorfs and nsfs will always give -EXDEV because
+aafs_mnt and nsfs_mnt are internal kernel vfsmounts).
 
---=-zmSym6hLOrd0Lb87qEYc
+--=20
+Aleksa Sarai
+Senior Software Engineer (Containers)
+SUSE Linux GmbH
+<https://www.cyphar.com/>
+
+--rwq4fftbhkszxm4g
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCAAdFiEEMdeUgIzgjf6YmUyOlQYWtz9SttQFAl3NoG0ACgkQlQYWtz9S
-ttT2MBAAw0s38wOkqRjRWeoZ0TV3qd7Gkqzy4gGKHiDNL82fHh6O6X4JSLTYP11u
-co3J9O1jORkIG7AAHQh68iiGJZY6MB5ZUJkUsn3XVH2gMWcQ/547HpcgCCMkrL8k
-keCqL7CKz5B7WxKK+8daUvMaTPAY5AaSEOHIHG/In4vEeHuUWJEgBN60tGxvhc1m
-7VIEBySrLqKeAgs70rThjBVaqg+66SbLZb7ToVIcoRu3Jc/3O4HHG+f6SnD3tqDM
-E3BrLge33ZTBt32TdKyogJ6RMUC+SXQXbXfUeNwjXuQIkH3D/zekc31o1GjcenCU
-Sv0z3Bmcgz2av0FxrA36K7Ch8Mgcnt7Yk5oHwF76kzOMSYyZMw9mJgTwrOHUsxnQ
-pH73v2e9ol1vDD+bdqkGBpusQae25A3/CDLZPXKvRdSqyaaI3yhwNMJ4deh8Glix
-bMpjCaUO+Q1o+VuhujYvmB7+tDYSEjWhOgo7m4yuffBu/MDtbaMkbkuqm66mrqrf
-3582+Kxt8nEWePhyVBKuJTC+IBqqZEIFO7VCR/XPnac7dYhIOUug4hj2QuYuMStF
-Bgsqa9pPIECX07kZR4LUVaEfV+uKadq5DcbdAhfR6NlFBgrJn+XBiuCSIalD7G3D
-bC6v7rRE4tjEoO12FYm165cYeD8I30YqLqkR7/z5OmbB9KkSAj8=
-=alk4
+iHUEABYIAB0WIQSxZm6dtfE8gxLLfYqdlLljIbnQEgUCXczc5gAKCRCdlLljIbnQ
+EspyAQDQkDnU2/CfvkXyKRLh2e7ycT5D4iHdCmBXbx8LlO8DlwD/S5O/FNHgyDdy
+RVaJ7aj0OZAzg7DMx3VZRiI+He4MXw0=
+=71Jv
 -----END PGP SIGNATURE-----
 
---=-zmSym6hLOrd0Lb87qEYc--
-
+--rwq4fftbhkszxm4g--
