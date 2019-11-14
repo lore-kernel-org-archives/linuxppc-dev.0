@@ -4,41 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 536CEC432C3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 10:15:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 061DDC432C3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 10:17:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 107E1206EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 10:15:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 107E1206EF
+	by mail.kernel.org (Postfix) with ESMTPS id 7BCD0206EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 10:17:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7BCD0206EF
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47DHRd2BmSzF7jn
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 21:15:25 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 47DHVS3GjgzF52B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 21:17:52 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47DFyD3FxYzF5lT
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47DFyD3FkSzF5jm
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2019 20:08:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 47DFyC0KRXz9sSW; Thu, 14 Nov 2019 20:08:17 +1100 (AEDT)
+ id 47DFy90198z9sSZ; Thu, 14 Nov 2019 20:08:16 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 9f0acf9f80ad504573e6482fb00b53866a9b9d2f
-In-Reply-To: <20191103233356.5472-1-chris.smart@humanservices.gov.au>
-To: Chris Smart <chris.smart@humanservices.gov.au>,
- <linuxppc-dev@lists.ozlabs.org>
+X-powerpc-patch-commit: 7d8212747435c534c8d564fbef4541a463c976ff
+In-Reply-To: <20191031142933.10779-2-david@redhat.com>
+To: David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH 1/1] powerpc/crypto: Add cond_resched() in crc-vpmsum
- self-test
-Message-Id: <47DFyC0KRXz9sSW@ozlabs.org>
-Date: Thu, 14 Nov 2019 20:08:17 +1100 (AEDT)
+Subject: Re: [PATCH v1 01/12] powerpc/pseries: CMM: Implement release()
+ function for sysfs device
+Message-Id: <47DFy90198z9sSZ@ozlabs.org>
+Date: Thu, 14 Nov 2019 20:08:16 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,23 +49,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: distroguy@gmail.com, Chris Smart <chris.smart@humanservices.gov.au>
+Cc: David Hildenbrand <david@redhat.com>,
+ Konstantin Khlebnikov <khlebnikov@yandex-team.ru>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-mm@kvack.org,
+ Paul Mackerras <paulus@samba.org>, Vlastimil Babka <vbabka@suse.cz>,
+ Arun KS <arunks@codeaurora.org>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
+ Allison Randal <allison@lohutok.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, 2019-11-03 at 23:33:56 UTC, Chris Smart wrote:
-> The stress test for vpmsum implementations executes a long for loop in
-> the kernel. This blocks the scheduler, which prevents other tasks from
-> running, resulting in a warning.
+On Thu, 2019-10-31 at 14:29:22 UTC, David Hildenbrand wrote:
+> When unloading the module, one gets
+> [  548.188594] ------------[ cut here ]------------
+> [  548.188596] Device 'cmm0' does not have a release() function, it is brok=
+> en and must be fixed. See Documentation/kobject.txt.
+> [  548.188622] WARNING: CPU: 0 PID: 19308 at drivers/base/core.c:1244 .devi=
+> ce_release+0xcc/0xf0
+> ...
 > 
-> This fix adds a call to cond_reshed() at the end of each loop, which
-> allows the scheduler to run other tasks as required.
+> We only have on static fake device. There is nothing to do when
+> releasing the device (via cmm_exit).
 > 
-> Signed-off-by: Chris Smart <chris.smart@humanservices.gov.au>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Vlastimil Babka <vbabka@suse.cz>
+> Cc: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
+> Cc: Allison Randal <allison@lohutok.net>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Arun KS <arunks@codeaurora.org>
+> Signed-off-by: David Hildenbrand <david@redhat.com>
 
-Series applied to powerpc next, thanks.
+Patches 1-10 applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/9f0acf9f80ad504573e6482fb00b53866a9b9d2f
+https://git.kernel.org/powerpc/c/7d8212747435c534c8d564fbef4541a463c976ff
 
 cheers
