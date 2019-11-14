@@ -2,45 +2,42 @@ Return-Path: <SRS0=fdF7=ZG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84CC4C432C3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 09:50:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 97B8EC432C3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 09:52:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3DA1720409
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 09:50:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3DA1720409
+	by mail.kernel.org (Postfix) with ESMTPS id 543AD2063A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 09:52:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 543AD2063A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47DGtX69x8zF6kR
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 20:50:12 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 47DGwz0CvnzF4g0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 20:52:19 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47DFxp74FszF5ZD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2019 20:07:58 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47DFxr1DqDzF5ZV
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2019 20:08:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 47DFxp4XN4z9sSK; Thu, 14 Nov 2019 20:07:58 +1100 (AEDT)
+ id 47DFxq68zfz9sRR; Thu, 14 Nov 2019 20:07:59 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: d273fa919c39223a1edd968e82ea88501b63d21a
-In-Reply-To: <20191023134838.21280-1-yuehaibing@huawei.com>
-To: YueHaibing <yuehaibing@huawei.com>, <benh@kernel.crashing.org>,
- <paulus@samba.org>, <mahesh@linux.vnet.ibm.com>, <ganeshgr@linux.ibm.com>,
- <yuehaibing@huawei.com>, <gregkh@linuxfoundation.org>, <npiggin@gmail.com>,
- <tglx@linutronix.de>
+X-powerpc-patch-commit: a42d6ba8c5be5aa597d25dbc15e336a2eca40260
+In-Reply-To: <20191024075801.22434-1-aneesh.kumar@linux.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, npiggin@gmail.com,
+ paulus@samba.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [RESEND][PATCH] powerpc/pseries: Use correct event modifier in
- rtas_parse_epow_errlog()
-Message-Id: <47DFxp4XN4z9sSK@ozlabs.org>
-Date: Thu, 14 Nov 2019 20:07:58 +1100 (AEDT)
+Subject: Re: [PATCH v1 1/3] mm/powerpc/book3s64/radix: Remove unused code.
+Message-Id: <47DFxq68zfz9sRR@ozlabs.org>
+Date: Thu, 14 Nov 2019 20:07:59 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -52,21 +49,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2019-10-23 at 13:48:38 UTC, YueHaibing wrote:
-> rtas_parse_epow_errlog() should pass 'modifier' to
-> handle_system_shutdown, because event modifier only use
-> bottom 4 bits.
+On Thu, 2019-10-24 at 07:57:59 UTC, "Aneesh Kumar K.V" wrote:
+> mm_tlb_flush_nested change was added in the mmu gather tlb flush to handle
+> the case of parallel pte invalidate happening with mmap_sem held in read
+> mode. This fix was done by commit: 02390f66bd23 ("powerpc/64s/radix: Fix
+> MADV_[FREE|DONTNEED] TLB flush miss problem with THP") and the problem is
+> explained in detail in commit: 99baac21e458 ("mm: fix MADV_[FREE|DONTNEED] TLB
+> flush miss problem")
 > 
-> Reviewed-by: Tyrel Datwyler <tyreld@linux.ibm.com>
-> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+> This was later updated by commit: 7a30df49f63a ("mm: mmu_gather: remove
+> __tlb_reset_range() for force flush") to do a full mm flush rather than
+> a range flush. By commit: dd2283f2605e ("mm: mmap: zap pages with read mmap_sem
+> in munmap") we are also now allowing a page table free in mmap_sem read mode
+> which means we should do a PWC flush too. Our current full mm flush imply
+> a PWC flush.
+> 
+> With all the above change the mm_tlb_flush_nested(mm) branch in radix__tlb_flush
+> will never be taken because for the nested case we would have taken the
+> if (tlb->fullmm) branch. This patch removes the unused code. Also, remove the
+> gflush change in __radix__flush_tlb_range that was added to handle the range tlb
+> flush code. We only check for THP there because hugetlb is flushed via a
+> different code path where page size is explicitly specified
+> 
+> This is a partial revert of commit: 02390f66bd23 ("powerpc/64s/radix: Fix
+> MADV_[FREE|DONTNEED] TLB flush miss problem with THP")
+> 
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/d273fa919c39223a1edd968e82ea88501b63d21a
+https://git.kernel.org/powerpc/c/a42d6ba8c5be5aa597d25dbc15e336a2eca40260
 
 cheers
