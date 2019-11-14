@@ -4,42 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 19D20C432C3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 10:26:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF7C9C43215
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 10:28:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C775F20409
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 10:26:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C775F20409
+	by mail.kernel.org (Postfix) with ESMTPS id 6B7FC20409
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 10:28:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6B7FC20409
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47DHhd72k7zF3tV
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 21:26:41 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 47DHl80nYWzF6NX
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 21:28:52 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47DFyQ1yptzF63L
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47DFyQ2ZsPzF5jm
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2019 20:08:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 47DFyL5ppLz9sPf; Thu, 14 Nov 2019 20:08:26 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 47DFyL3KQSz9sSW; Thu, 14 Nov 2019 20:08:26 +1100 (AEDT)
+ id 47DFyP6TQRz9sRm; Thu, 14 Nov 2019 20:08:29 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 6266a4dadb1d0976490fdf5af4f7941e36f64e80
-In-Reply-To: <20191106051129.7626-1-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+X-powerpc-patch-commit: 57409d4fb12c185b2c0689e0496878c8f6bb5b58
+In-Reply-To: <1573449697-5448-2-git-send-email-tyreld@linux.ibm.com>
+To: Tyrel Datwyler <tyreld@linux.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/64s: Always disable branch profiling for
- prom_init.o
-Message-Id: <47DFyL3KQSz9sSW@ozlabs.org>
-Date: Thu, 14 Nov 2019 20:08:26 +1100 (AEDT)
+Subject: Re: [PATCH v2 1/9] powerpc/pseries: Fix bad drc_index_start value
+ parsing of drc-info entry
+Message-Id: <47DFyP6TQRz9sRm@ozlabs.org>
+Date: Thu, 14 Nov 2019 20:08:29 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,21 +49,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: nathanl@linux.ibm.com, Tyrel Datwyler <tyreld@linux.ibm.com>,
+ linux-pci@vger.kernel.org, tlfalcon@linux.ibm.com, bhelgaas@google.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2019-11-06 at 05:11:29 UTC, Michael Ellerman wrote:
-> Otherwise the build fails because prom_init is calling symbols it's
-> not allowed to, eg:
+On Mon, 2019-11-11 at 05:21:28 UTC, Tyrel Datwyler wrote:
+> The ibm,drc-info property is an array property that contains drc-info
+> entries such that each entry is made up of 2 string encoded elements
+> followed by 5 int encoded elements. The of_read_drc_info_cell()
+> helper contains comments that correctly name the expected elements
+> and their encoding. However, the usage of of_prop_next_string() and
+> of_prop_next_u32() introduced a subtle skippage of the first u32.
+> This is a result of of_prop_next_string() returning a pointer to the
+> next property value which is not a string, but actually a (__be32 *).
+> As, a result the following call to of_prop_next_u32() passes over the
+> current int encoded value and actually stores the next one wrongly.
 > 
->   Error: External symbol 'ftrace_likely_update' referenced from prom_init.c
->   make[3]: *** [arch/powerpc/kernel/Makefile:197: arch/powerpc/kernel/prom_init_check] Error 1
+> Simply endian swap the current value in place after reading the first
+> two string values. The remaining int encoded values can then be read
+> correctly using of_prop_next_u32().
 > 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
 
-Applied to powerpc next.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/6266a4dadb1d0976490fdf5af4f7941e36f64e80
+https://git.kernel.org/powerpc/c/57409d4fb12c185b2c0689e0496878c8f6bb5b58
 
 cheers
