@@ -4,40 +4,43 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CCD9CC432C3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 09:54:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ECEE5C432C3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 09:56:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 818942063A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 09:54:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 818942063A
+	by mail.kernel.org (Postfix) with ESMTPS id A8D41206D9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 09:56:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A8D41206D9
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47DGzG2JsPzF7RJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 20:54:18 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 47DH265JgzzF3YZ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2019 20:56:46 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47DFxs4gnyzF5JP
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2019 20:08:01 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47DFxw15jFzF5RB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2019 20:08:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix)
+ id 47DFxv6GS0z9sSN; Thu, 14 Nov 2019 20:08:03 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 47DFxs1J6nz9sSL; Thu, 14 Nov 2019 20:08:00 +1100 (AEDT)
+ id 47DFxv2Jjpz9sRs; Thu, 14 Nov 2019 20:08:02 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 8e6b6da91ac9b9ec5a925b6cb13f287a54bd547d
-In-Reply-To: <20191029190759.84821-1-asteinhauser@google.com>
-To: asteinhauser@google.com, benh@kernel.crashing.org, paulus@samba.org,
- diana.craciun@nxp.com
+X-powerpc-patch-commit: 4238fad366a660cbc6499ca1ea4be42bd4d1ac5b
+In-Reply-To: <1572492694-6520-3-git-send-email-zohar@linux.ibm.com>
+To: Mimi Zohar <zohar@linux.ibm.com>, linuxppc-dev@ozlabs.org,
+ linux-efi@vger.kernel.org, linux-integrity@vger.kernel.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH] L1TF support in PowerPC SYSFS.
-Message-Id: <47DFxs1J6nz9sSL@ozlabs.org>
-Date: Thu, 14 Nov 2019 20:08:00 +1100 (AEDT)
+Subject: Re: [PATCH v10 2/9] powerpc/ima: add support to initialize ima policy
+ rules
+Message-Id: <47DFxv2Jjpz9sRs@ozlabs.org>
+Date: Thu, 14 Nov 2019 20:08:02 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,25 +52,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Anthony Steinhauser <asteinhauser@google.com>
+Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Eric Ricther <erichte@linux.ibm.com>, Nayna Jain <nayna@linux.ibm.com>,
+ linux-kernel@vger.kernel.org, Mimi Zohar <zohar@linux.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, Jeremy Kerr <jk@ozlabs.org>,
+ Oliver O'Halloran <oohall@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2019-10-29 at 19:07:59 UTC, asteinhauser@google.com wrote:
-> From: Anthony Steinhauser <asteinhauser@google.com>
+On Thu, 2019-10-31 at 03:31:27 UTC, Mimi Zohar wrote:
+> From: Nayna Jain <nayna@linux.ibm.com>
 > 
-> PowerPC CPUs are vulnerable to L1TF to the same extent as to Meltdown.
-> It is also mitigated by flushing the L1D on privilege transition.
-> Currently the SYSFS gives a false negative on L1TF on CPUs that I verified
-> to be vulnerable.
-> https://www.ibm.com/blogs/psirt/potential-impact-processors-power-family/
-> https://github.com/google/safeside/pull/52
-> Signed-off-by: Anthony Steinhauser <asteinhauser@google.com>
+> PowerNV systems use a Linux-based bootloader, which rely on the IMA
+> subsystem to enforce different secure boot modes.  Since the verification
+> policy may differ based on the secure boot mode of the system, the
+> policies must be defined at runtime.
+> 
+> This patch implements arch-specific support to define IMA policy
+> rules based on the runtime secure boot mode of the system.
+> 
+> This patch provides arch-specific IMA policies if PPC_SECURE_BOOT
+> config is enabled.
+> 
+> Signed-off-by: Nayna Jain <nayna@linux.ibm.com>
+> Signed-off-by: Mimi Zohar <zohar@linux.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/8e6b6da91ac9b9ec5a925b6cb13f287a54bd547d
+https://git.kernel.org/powerpc/c/4238fad366a660cbc6499ca1ea4be42bd4d1ac5b
 
 cheers
