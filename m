@@ -2,84 +2,90 @@ Return-Path: <SRS0=VpUd=ZH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9EDC7C432C3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Nov 2019 06:50:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6007CC432C3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Nov 2019 06:54:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4E63520723
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Nov 2019 06:50:56 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="WUunCF/2"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4E63520723
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nvidia.com
+	by mail.kernel.org (Postfix) with ESMTPS id 132082072A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Nov 2019 06:54:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 132082072A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47Dps92ZZlzDqdP
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Nov 2019 17:50:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=nvidia.com (client-ip=216.228.121.143;
- helo=hqemgate14.nvidia.com; envelope-from=jhubbard@nvidia.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 47DpxK52KkzF7bp
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Nov 2019 17:54:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=sachinp@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nvidia.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="WUunCF/2"; 
- dkim-atps=neutral
-Received: from hqemgate14.nvidia.com (hqemgate14.nvidia.com [216.228.121.143])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47Dnc16Z54zF7GL
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2019 16:54:25 +1100 (AEDT)
-Received: from hqpgpgate102.nvidia.com (Not Verified[216.228.121.13]) by
- hqemgate14.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
- id <B5dce3d6e0004>; Thu, 14 Nov 2019 21:53:51 -0800
-Received: from hqmail.nvidia.com ([172.20.161.6])
- by hqpgpgate102.nvidia.com (PGP Universal service);
- Thu, 14 Nov 2019 21:53:47 -0800
-X-PGP-Universal: processed;
- by hqpgpgate102.nvidia.com on Thu, 14 Nov 2019 21:53:47 -0800
-Received: from HQMAIL109.nvidia.com (172.20.187.15) by HQMAIL105.nvidia.com
- (172.20.187.12) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Fri, 15 Nov
- 2019 05:53:46 +0000
-Received: from HQMAIL101.nvidia.com (172.20.187.10) by HQMAIL109.nvidia.com
- (172.20.187.15) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Fri, 15 Nov
- 2019 05:53:45 +0000
-Received: from hqnvemgw03.nvidia.com (10.124.88.68) by HQMAIL101.nvidia.com
- (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
- Transport; Fri, 15 Nov 2019 05:53:45 +0000
-Received: from blueforge.nvidia.com (Not Verified[10.110.48.28]) by
- hqnvemgw03.nvidia.com with Trustwave SEG (v7, 5, 8, 10121)
- id <B5dce3d690006>; Thu, 14 Nov 2019 21:53:45 -0800
-From: John Hubbard <jhubbard@nvidia.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v5 23/24] selftests/vm: run_vmtests: invoke gup_benchmark with
- basic FOLL_PIN coverage
-Date: Thu, 14 Nov 2019 21:53:39 -0800
-Message-ID: <20191115055340.1825745-24-jhubbard@nvidia.com>
-X-Mailer: git-send-email 2.24.0
-In-Reply-To: <20191115055340.1825745-1-jhubbard@nvidia.com>
-References: <20191115055340.1825745-1-jhubbard@nvidia.com>
-MIME-Version: 1.0
-X-NVConfidentiality: public
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47Dnsk5Dt6zDrP9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2019 17:06:11 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ xAF5xMNb040837
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2019 01:06:07 -0500
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2w9nux1dn1-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2019 01:06:07 -0500
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sachinp@linux.vnet.ibm.com>;
+ Fri, 15 Nov 2019 06:06:05 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 15 Nov 2019 06:06:03 -0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xAF661AF46137486
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 15 Nov 2019 06:06:01 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id AB088AE051;
+ Fri, 15 Nov 2019 06:06:01 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0AAA8AE053;
+ Fri, 15 Nov 2019 06:06:01 +0000 (GMT)
+Received: from [9.199.197.198] (unknown [9.199.197.198])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri, 15 Nov 2019 06:06:00 +0000 (GMT)
+From: Sachin Sant <sachinp@linux.vnet.ibm.com>
+Content-Type: text/plain;
+	charset=utf-8
 Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
- t=1573797231; bh=/x1TdCiN4AHV7riFBKV40yDsqqnISHzJ+pPbTJijsU0=;
- h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
- In-Reply-To:References:MIME-Version:X-NVConfidentiality:
- Content-Transfer-Encoding:Content-Type;
- b=WUunCF/2BottYAlDcCuCm20owQWL1ByMTQpQ2zlOly+GXipo2PVrbp8e7hs1p9cVS
- pNw3i8S98XfPfEJloNDypS9p3nRCCxSlTHiRMygvX6mLMISCsc7zPWdgVK3TSfe4jL
- lBerTUwF3cFHTUM/Vi1AanKPYVbivFpKvu4/6gntuJBnXivQtvdEy+UVfUWSYClfB6
- cQ3cUTVYvLKUu1tSbA6Fy4kX9e62UPqlIwaWd9mH/lWIwNBRUOuLs5kzHOkJOWjV41
- CWQTJPG6Mepu6T+9gQIMqYeqppPQt/g+ZTPudPyegBzPG6oKK8zIHwcpb1EC1Qs+GD
- m/9wQi7dggQ8A==
+Mime-Version: 1.0 (Mac OS X Mail 12.4 \(3445.104.11\))
+Subject: [-merge] BUG followed by oops running ndctl tests
+Date: Fri, 15 Nov 2019 11:36:00 +0530
+To: linuxppc-dev@lists.ozlabs.org
+X-Mailer: Apple Mail (2.3445.104.11)
+X-TM-AS-GCONF: 00
+x-cbid: 19111506-4275-0000-0000-0000037DE4E8
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19111506-4276-0000-0000-000038914D41
+Message-Id: <B0EBF64C-3B57-4716-BAAF-CBC4CBDF5FBC@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
+ definitions=2019-11-14_07:2019-11-14,2019-11-14 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 bulkscore=0
+ phishscore=0 mlxscore=0 malwarescore=0 spamscore=0 clxscore=1011
+ lowpriorityscore=0 mlxlogscore=650 impostorscore=0 suspectscore=1
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-1910280000 definitions=main-1911150054
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,91 +97,94 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>,
- kvm@vger.kernel.org, linux-doc@vger.kernel.org,
- David Airlie <airlied@linux.ie>, Dave Chinner <david@fromorbit.com>,
- dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>,
- linux-mm@kvack.org, Paul
- Mackerras <paulus@samba.org>, linux-kselftest@vger.kernel.org,
- Ira Weiny <ira.weiny@intel.com>, Jonathan Corbet <corbet@lwn.net>,
- linux-rdma@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
- Jason Gunthorpe <jgg@ziepe.ca>, Vlastimil Babka <vbabka@suse.cz>,
- =?UTF-8?q?Bj=C3=B6rn=20T=C3=B6pel?= <bjorn.topel@intel.com>,
- linux-media@vger.kernel.org, Shuah Khan <shuah@kernel.org>,
- John Hubbard <jhubbard@nvidia.com>, linux-block@vger.kernel.org,
- =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>,
- Al Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
- Magnus Karlsson <magnus.karlsson@intel.com>, Jens Axboe <axboe@kernel.dk>,
- netdev@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
- Daniel Vetter <daniel@ffwll.ch>, linux-fsdevel@vger.kernel.org,
- bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "David S . Miller" <davem@davemloft.net>,
- Mike Kravetz <mike.kravetz@oracle.com>
+Cc: harish@linux.ibm.com, "Aneesh Kumar K. V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-It's good to have basic unit test coverage of the new FOLL_PIN
-behavior. Fortunately, the gup_benchmark unit test is extremely
-fast (a few milliseconds), so adding it the the run_vmtests suite
-is going to cause no noticeable change in running time.
+Following Oops is seen on latest (commit 3b4852888d) powerpc merge =
+branch
+code while running ndctl (test_namespace) tests
 
-So, add two new invocations to run_vmtests:
+85c5b0984e was good.
 
-1) Run gup_benchmark with normal get_user_pages().
+ (06/12) avocado-misc-tests/memory/ndctl.py:NdctlTest.test_namespace:  [ =
+ 213.570536] memmap_init_zone_device initialised 1636608 pages in 10ms
+[  213.570835] pmem0: detected capacity change from 0 to 107256741888
+[  216.488983] BUG: Unable to handle kernel data access at =
+0xc000043900000000
+[  216.488996] Faulting instruction address: 0xc000000000087510
+[  216.489002] Oops: Kernel access of bad area, sig: 11 [#1]
+[  216.489007] LE PAGE_SIZE=3D64K MMU=3DHash SMP NR_CPUS=3D2048 NUMA =
+pSeries
+[  216.489019] Dumping ftrace buffer:
+[  216.489029]    (ftrace buffer empty)
+[  216.489033] Modules linked in: dm_mod nf_conntrack nf_defrag_ipv6 =
+nf_defrag_ipv4 libcrc32c ip6_tables nft_compat ip_set nf_tables =
+nfnetlink sunrpc sg pseries_rng papr_scm uio_pdrv_genirq uio =
+sch_fq_codel ip_tables sd_mod ibmvscsi ibmveth scsi_transport_srp
+[  216.489059] CPU: 8 PID: 17523 Comm: lt-ndctl Not tainted =
+5.4.0-rc7-autotest #1
+[  216.489065] NIP:  c000000000087510 LR: c00000000008752c CTR: =
+01ffffffce800000
+[  216.489071] REGS: c000007ca84a37d0 TRAP: 0300   Not tainted  =
+(5.4.0-rc7-autotest)
+[  216.489076] MSR:  800000000280b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE>  =
+CR: 42048224  XER: 00000000
+[  216.489086] CFAR: c000000000087518 DAR: c000043900000000 DSISR: =
+40000000 IRQMASK: 0=20
+[  216.489086] GPR00: c00000000008752c c000007ca84a3a60 c00000000159bb00 =
+0000000000000000=20
+[  216.489086] GPR04: 40066bdea7010e15 0000605530000194 0000000000000000 =
+0000000000000080=20
+[  216.489086] GPR08: c000043900000000 ffffffffc000007f 01ffffffff800000 =
+0000000000000000=20
+[  216.489086] GPR12: 0000000000008000 c00000001ec5d200 00007ffff897f9e9 =
+000000001002e088=20
+[  216.489086] GPR16: 0000000000000000 0000000010050d88 000000001002f778 =
+000000001002f770=20
+[  216.489086] GPR20: 0000000000000000 000000001002e048 0000000010050e3d =
+0000000010050e40=20
+[  216.489086] GPR24: 0000000000000000 c000007c8d0a6c10 c000007cced28a20 =
+c000000001463048=20
+[  216.489086] GPR28: c000042080000000 c000042040000000 c000043900000000 =
+c000042000000000=20
+[  216.489137] NIP [c000000000087510] arch_remove_memory+0x100/0x1b0
+[  216.489143] LR [c00000000008752c] arch_remove_memory+0x11c/0x1b0
+[  216.489148] Call Trace:
+[  216.489151] [c000007ca84a3a60] [c00000000008752c] =
+arch_remove_memory+0x11c/0x1b0 (unreliable)
+[  216.489159] [c000007ca84a3b00] [c000000000407258] =
+memunmap_pages+0x188/0x2c0
+[  216.489167] [c000007ca84a3b80] [c0000000007b0810] =
+devm_action_release+0x30/0x50
+[  216.489174] [c000007ca84a3ba0] [c0000000007b18f8] =
+release_nodes+0x2f8/0x3e0
+[  216.489180] [c000007ca84a3c50] [c0000000007aa698] =
+device_release_driver_internal+0x168/0x270
+[  216.489187] [c000007ca84a3c90] [c0000000007a6ad0] =
+unbind_store+0x130/0x170
+[  216.489193] [c000007ca84a3cd0] [c0000000007a5c34] =
+drv_attr_store+0x44/0x60
+[  216.489200] [c000007ca84a3cf0] [c0000000004fa0d8] =
+sysfs_kf_write+0x68/0x80
+[  216.489205] [c000007ca84a3d10] [c0000000004f9530] =
+kernfs_fop_write+0xf0/0x270
+[  216.489212] [c000007ca84a3d60] [c00000000040cbdc] =
+__vfs_write+0x3c/0x70
+[  216.489217] [c000007ca84a3d80] [c00000000041052c] =
+vfs_write+0xcc/0x240
+[  216.489223] [c000007ca84a3dd0] [c00000000041090c] =
+ksys_write+0x7c/0x140
+[  216.489229] [c000007ca84a3e20] [c00000000000b278] =
+system_call+0x5c/0x68
+[  216.489233] Instruction dump:
+[  216.489238] 80fb0008 815b000c 7d0700d0 7d08e038 7c0004ac 4c00012c =
+3927ffff 7d29ea14=20
+[  216.489245] 7d284850 7d2a5437 41820014 7d4903a6 <7c0040ac> 7d083a14 =
+4200fff8 7c0004ac=20
+[  216.489254] ---[ end trace d9a4dfc9e158858a ]=E2=80=94
 
-2) Run gup_benchmark with pin_user_pages(). This is much like
-the first call, except that it sets FOLL_PIN.
-
-Running these two in quick succession also provide a visual
-comparison of the running times, which is convenient.
-
-The new invocations are fairly early in the run_vmtests script,
-because with test suites, it's usually preferable to put the
-shorter, faster tests first, all other things being equal.
-
-Reviewed-by: Ira Weiny <ira.weiny@intel.com>
-Signed-off-by: John Hubbard <jhubbard@nvidia.com>
----
- tools/testing/selftests/vm/run_vmtests | 22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
-
-diff --git a/tools/testing/selftests/vm/run_vmtests b/tools/testing/selftes=
-ts/vm/run_vmtests
-index 951c507a27f7..5043347397a6 100755
---- a/tools/testing/selftests/vm/run_vmtests
-+++ b/tools/testing/selftests/vm/run_vmtests
-@@ -104,6 +104,28 @@ echo "NOTE: The above hugetlb tests provide minimal co=
-verage.  Use"
- echo "      https://github.com/libhugetlbfs/libhugetlbfs.git for"
- echo "      hugetlb regression testing."
-=20
-+echo "--------------------------------------------"
-+echo "running 'gup_benchmark -U' (normal/slow gup)"
-+echo "--------------------------------------------"
-+./gup_benchmark -U
-+if [ $? -ne 0 ]; then
-+	echo "[FAIL]"
-+	exitcode=3D1
-+else
-+	echo "[PASS]"
-+fi
-+
-+echo "------------------------------------------"
-+echo "running gup_benchmark -b (pin_user_pages)"
-+echo "------------------------------------------"
-+./gup_benchmark -b
-+if [ $? -ne 0 ]; then
-+	echo "[FAIL]"
-+	exitcode=3D1
-+else
-+	echo "[PASS]"
-+fi
-+
- echo "-------------------"
- echo "running userfaultfd"
- echo "-------------------"
---=20
-2.24.0
+Thanks
+-Sachin=
 
