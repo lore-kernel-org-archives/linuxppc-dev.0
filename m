@@ -2,88 +2,55 @@ Return-Path: <SRS0=VpUd=ZH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 197F3C432C3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Nov 2019 08:13:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 335FFC432C3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Nov 2019 09:13:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BE84620729
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Nov 2019 08:13:57 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="bhvYGZ1l"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BE84620729
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rasmusvillemoes.dk
+	by mail.kernel.org (Postfix) with ESMTPS id 7943820723
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Nov 2019 09:13:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7943820723
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47Drhz5CLNzF6sY
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Nov 2019 19:13:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47Dt230m6PzF6cR
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Nov 2019 20:13:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::141;
- helo=mail-lf1-x141.google.com; envelope-from=linux@rasmusvillemoes.dk;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=rasmusvillemoes.dk
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk
- header.b="bhvYGZ1l"; dkim-atps=neutral
-Received: from mail-lf1-x141.google.com (mail-lf1-x141.google.com
- [IPv6:2a00:1450:4864:20::141])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.32; helo=huawei.com;
+ envelope-from=yanaijie@huawei.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=huawei.com
+Received: from huawei.com (szxga06-in.huawei.com [45.249.212.32])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47DrfX5TgVzF3g2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2019 19:11:47 +1100 (AEDT)
-Received: by mail-lf1-x141.google.com with SMTP id v8so7288509lfa.12
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2019 00:11:47 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=rasmusvillemoes.dk; s=google;
- h=subject:to:cc:references:from:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=cSkg4y8vQ0fWUekpUvYTG37APlVQNKH+BU4UyQZbeZs=;
- b=bhvYGZ1lTQHiSLEBGy316WOg8uJmr19WMwnbnCNIAe+g9dECIpGAveiykIv51Zsp5H
- q5H02EIco+WEDC56pAH5UpavswZnVJ6/TzgN01/XvbZ3WOk6dfiSFEIqLOP91nIopmjO
- i5sekMVyCaqS+WJFufl8nVmciwx4GpUp4vHh4=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=cSkg4y8vQ0fWUekpUvYTG37APlVQNKH+BU4UyQZbeZs=;
- b=j+4GdVFf3tX6VQaPJsGcTvCdHqwnIx8qbPg+54wUpDBugS0TXHML2sui8kLSOV0JAM
- 27sHthut/QwjyHDLjJJeu/xNeQfAjT2iEXPjkg712JM3XnnRB62s9uOAbyotNVOtfFY5
- LKG05BiqjxF2jKXBJO3BBxa3CbeZk3ZPYMcTL2ITGbRcWyfJ1hf3SPvJ5plta0//+gls
- YAErRq9mMVlI/ZAntA2TyfAFDYMSU+zBUiXKA6JhiWRk9wz2ARDowC2N3PdkLfUPGKCi
- c9lkE9hz5xJWeRK3sksdoSR1XNRlU9nouAkOEIqlTF8jqYxptwXR0eQr6ZKfSOnDVgBx
- 7G3Q==
-X-Gm-Message-State: APjAAAUvKN8oRgZB2ySZalr1dadBGde+E4xpMY0qvI/+GnWY4ZSZCyYw
- 06zVl0wK058H96gstUJHb3TMgA==
-X-Google-Smtp-Source: APXvYqx6iGcHvwJhuRwgIveFwGhIs3bltyGjSHCtX4coi17em4/eMuEjk9toc+eYfX3AS6UqL2gs4g==
-X-Received: by 2002:a19:8104:: with SMTP id c4mr317478lfd.165.1573805503320;
- Fri, 15 Nov 2019 00:11:43 -0800 (PST)
-Received: from [172.16.11.28] ([81.216.59.226])
- by smtp.gmail.com with ESMTPSA id m8sm3414243ljj.80.2019.11.15.00.11.42
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 15 Nov 2019 00:11:42 -0800 (PST)
-Subject: Re: [PATCH v4 07/47] soc: fsl: qe: qe.c: guard use of
- pvr_version_is() with CONFIG_PPC32
-To: Timur Tabi <timur@kernel.org>
-References: <20191108130123.6839-1-linux@rasmusvillemoes.dk>
- <20191108130123.6839-8-linux@rasmusvillemoes.dk>
- <CAOZdJXXHK9U_Y7_VgVmuOFKDAh4OqBJ7hZx58hisZZ6Cz6xE2w@mail.gmail.com>
-From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Message-ID: <027c2b7a-a235-cecf-9f08-f71736f2ea55@rasmusvillemoes.dk>
-Date: Fri, 15 Nov 2019 09:11:41 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.9.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47Dsz065bjzF2Wh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2019 20:11:07 +1100 (AEDT)
+Received: from DGGEMS407-HUB.china.huawei.com (unknown [172.30.72.60])
+ by Forcepoint Email with ESMTP id 4112C8B9E5F47883C282;
+ Fri, 15 Nov 2019 17:11:03 +0800 (CST)
+Received: from huawei.com (10.175.124.28) by DGGEMS407-HUB.china.huawei.com
+ (10.3.19.207) with Microsoft SMTP Server id 14.3.439.0; Fri, 15 Nov 2019
+ 17:10:54 +0800
+From: Jason Yan <yanaijie@huawei.com>
+To: <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
+ <diana.craciun@nxp.com>, <christophe.leroy@c-s.fr>,
+ <benh@kernel.crashing.org>, <paulus@samba.org>, <npiggin@gmail.com>,
+ <keescook@chromium.org>, <kernel-hardening@lists.openwall.com>
+Subject: [PATCH 3/6] powerpc/fsl_booke/64: implement KASLR for fsl_booke64
+Date: Fri, 15 Nov 2019 17:32:06 +0800
+Message-ID: <20191115093209.26434-4-yanaijie@huawei.com>
+X-Mailer: git-send-email 2.17.2
+In-Reply-To: <20191115093209.26434-1-yanaijie@huawei.com>
+References: <20191115093209.26434-1-yanaijie@huawei.com>
 MIME-Version: 1.0
-In-Reply-To: <CAOZdJXXHK9U_Y7_VgVmuOFKDAh4OqBJ7hZx58hisZZ6Cz6xE2w@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
+X-Originating-IP: [10.175.124.28]
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,48 +62,158 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: lkml <linux-kernel@vger.kernel.org>, Li Yang <leoyang.li@nxp.com>,
- Scott Wood <oss@buserror.net>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
- Qiang Zhao <qiang.zhao@nxp.com>
+Cc: oss@buserror.net, linux-kernel@vger.kernel.org,
+ Jason Yan <yanaijie@huawei.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 15/11/2019 05.50, Timur Tabi wrote:
-> On Fri, Nov 8, 2019 at 7:04 AM Rasmus Villemoes
-> <linux@rasmusvillemoes.dk> wrote:
->>
->> +static bool qe_general4_errata(void)
->> +{
->> +#ifdef CONFIG_PPC32
->> +       return pvr_version_is(PVR_VER_836x) || pvr_version_is(PVR_VER_832x);
->> +#endif
->> +       return false;
->> +}
->> +
->>  /* Program the BRG to the given sampling rate and multiplier
->>   *
->>   * @brg: the BRG, QE_BRG1 - QE_BRG16
->> @@ -223,7 +231,7 @@ int qe_setbrg(enum qe_clock brg, unsigned int rate, unsigned int multiplier)
->>         /* Errata QE_General4, which affects some MPC832x and MPC836x SOCs, says
->>            that the BRG divisor must be even if you're not using divide-by-16
->>            mode. */
-> 
-> Can you also move this comment (and fix the comment formatting so that
-> it's a proper function comment) to qe_general4_errata()?
-> 
+The implementation for Freescale BookE64 is similar as BookE32. One
+difference is that Freescale BookE64 set up a TLB mapping of 1G during
+booting. Another difference is that ppc64 needs the kernel to be
+64K-aligned. So we can randomize the kernel in this 1G mapping and make
+it 64K-aligned. This can save some code to creat another TLB map at
+early boot. The disadvantage is that we only have about 1G/64K = 16384
+slots to put the kernel in.
 
-I actually thought of doing that, but decided against it because the
-comment not only mentions the SOCs affected, but also explains the
-following math/logic. I mean, without that comment nearby, the code is
+Signed-off-by: Jason Yan <yanaijie@huawei.com>
+Cc: Scott Wood <oss@buserror.net>
+Cc: Diana Craciun <diana.craciun@nxp.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Kees Cook <keescook@chromium.org>
+---
+ arch/powerpc/Kconfig                 |  2 +-
+ arch/powerpc/kernel/setup_64.c       |  4 +++-
+ arch/powerpc/mm/nohash/kaslr_booke.c | 29 ++++++++++++++++++++++++++--
+ 3 files changed, 31 insertions(+), 4 deletions(-)
 
-  if (qe_general4_errata())
-     if (some weird condition)
-        divisor++;
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 4c4a0fcd1674..3e563a07cb67 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -553,7 +553,7 @@ config RELOCATABLE
+ 
+ config RANDOMIZE_BASE
+ 	bool "Randomize the address of the kernel image"
+-	depends on (FSL_BOOKE && FLATMEM && PPC32)
++	depends on (PPC_FSL_BOOK3E && FLATMEM)
+ 	depends on RELOCATABLE
+ 	help
+ 	  Randomizes the virtual address at which the kernel image is
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index d2af4c228970..b7e4f1e92c7e 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -65,7 +65,7 @@
+ #include <asm/hw_irq.h>
+ #include <asm/feature-fixups.h>
+ #include <asm/kup.h>
+-
++#include <mm/mmu_decl.h>
+ #include "setup.h"
+ 
+ int spinning_secondaries;
+@@ -299,6 +299,8 @@ void __init early_setup(unsigned long dt_ptr)
+ 	/* Enable early debugging if any specified (see udbg.h) */
+ 	udbg_early_init();
+ 
++	kaslr_early_init(__va(dt_ptr), 0);
++
+ 	udbg_printf(" -> %s(), dt_ptr: 0x%lx\n", __func__, dt_ptr);
+ 
+ 	/*
+diff --git a/arch/powerpc/mm/nohash/kaslr_booke.c b/arch/powerpc/mm/nohash/kaslr_booke.c
+index 07b036e98353..513f4616e92a 100644
+--- a/arch/powerpc/mm/nohash/kaslr_booke.c
++++ b/arch/powerpc/mm/nohash/kaslr_booke.c
+@@ -265,14 +265,14 @@ static unsigned long __init kaslr_legal_offset(void *dt_ptr, unsigned long rando
+ {
+ 	unsigned long koffset = 0;
+ 	unsigned long start;
+-	unsigned long index;
+ 	unsigned long offset;
+ 
++#ifdef CONFIG_PPC32
+ 	/*
+ 	 * Decide which 64M we want to start
+ 	 * Only use the low 8 bits of the random seed
+ 	 */
+-	index = random & 0xFF;
++	unsigned long index = random & 0xFF;
+ 	index %= regions.linear_sz / SZ_64M;
+ 
+ 	/* Decide offset inside 64M */
+@@ -287,6 +287,15 @@ static unsigned long __init kaslr_legal_offset(void *dt_ptr, unsigned long rando
+ 			break;
+ 		index--;
+ 	}
++#else
++	/* Decide kernel offset inside 1G */
++	offset = random % (SZ_1G - regions.kernel_size);
++	offset = round_down(offset, SZ_64K);
++
++	start = memstart_addr;
++	offset = memstart_addr + offset;
++	koffset = get_usable_address(dt_ptr, start, offset);
++#endif
+ 
+ 	if (koffset != 0)
+ 		koffset -= memstart_addr;
+@@ -325,6 +334,7 @@ static unsigned long __init kaslr_choose_location(void *dt_ptr, phys_addr_t size
+ 	else
+ 		pr_warn("KASLR: No safe seed for randomizing the kernel base.\n");
+ 
++#ifdef CONFIG_PPC32
+ 	ram = min_t(phys_addr_t, __max_low_memory, size);
+ 	ram = map_mem_in_cams(ram, CONFIG_LOWMEM_CAM_NUM, true);
+ 	linear_sz = min_t(unsigned long, ram, SZ_512M);
+@@ -332,6 +342,7 @@ static unsigned long __init kaslr_choose_location(void *dt_ptr, phys_addr_t size
+ 	/* If the linear size is smaller than 64M, do not randmize */
+ 	if (linear_sz < SZ_64M)
+ 		return 0;
++#endif
+ 
+ 	/* check for a reserved-memory node and record its cell sizes */
+ 	regions.reserved_mem = fdt_path_offset(dt_ptr, "/reserved-memory");
+@@ -363,6 +374,18 @@ notrace void __init kaslr_early_init(void *dt_ptr, phys_addr_t size)
+ 	unsigned long offset;
+ 	unsigned long kernel_sz;
+ 
++#ifdef CONFIG_PPC64
++	unsigned int *__run_at_load = (unsigned int *)(KERNELBASE + 0x5c);
++
++	if (*__run_at_load == 1)
++		return;
++
++	*__run_at_load = 1;
++
++	/* Setup flat device-tree pointer */
++	initial_boot_params = dt_ptr;
++#endif
++
+ 	kernel_sz = (unsigned long)_end - (unsigned long)_stext;
+ 
+ 	offset = kaslr_choose_location(dt_ptr, size, kernel_sz);
+@@ -372,6 +395,7 @@ notrace void __init kaslr_early_init(void *dt_ptr, phys_addr_t size)
+ 	kernstart_virt_addr += offset;
+ 	kernstart_addr += offset;
+ 
++#ifdef CONFIG_PPC32
+ 	is_second_reloc = 1;
+ 
+ 	if (offset >= SZ_64M) {
+@@ -381,6 +405,7 @@ notrace void __init kaslr_early_init(void *dt_ptr, phys_addr_t size)
+ 		/* Create kernel map to relocate in */
+ 		create_kaslr_tlb_entry(1, tlb_virt, tlb_phys);
+ 	}
++#endif
+ 
+ 	/* Copy the kernel to it's new location and run */
+ 	memcpy((void *)kernstart_virt_addr, (void *)_stext, kernel_sz);
+-- 
+2.17.2
 
-In contrast, I think the qe_general4_errata() is pretty self-explanatory
-- is this a SOC affected by that errata (whatever that errata may be
-about and what the software workaround is).
-
-Rasmus
