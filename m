@@ -2,62 +2,53 @@ Return-Path: <SRS0=doUU=ZI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.0 required=3.0 tests=MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0328DC432C3
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 06:50:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B7B7BC432C3
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 06:59:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5F7DE206B6
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 06:50:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5F7DE206B6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 1BD8320700
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 06:59:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1BD8320700
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47FQnw0Y1mzF4HR
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 17:50:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47FR0r51CtzF4M6
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 17:59:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=srs0=zvpr=zi=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=bugzilla.kernel.org
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.32; helo=huawei.com;
+ envelope-from=chenwandun@huawei.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=huawei.com
+Received: from huawei.com (szxga06-in.huawei.com [45.249.212.32])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47FQls1PHszF3vN
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2019 17:48:24 +1100 (AEDT)
-From: bugzilla-daemon@bugzilla.kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 205201] Booting halts if Dawicontrol DC-2976 UW SCSI board
- installed, unless RAM size limited to 3500M
-Date: Sat, 16 Nov 2019 06:48:21 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Product: Platform Specific/Hardware
-X-Bugzilla-Component: PPC-64
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: chzigotzky@xenosoft.de
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-205201-206035-vKJLg3si9f@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-205201-206035@https.bugzilla.kernel.org/>
-References: <bug-205201-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47FL3V20ZVzF3qQ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2019 14:16:35 +1100 (AEDT)
+Received: from DGGEMS410-HUB.china.huawei.com (unknown [172.30.72.58])
+ by Forcepoint Email with ESMTP id C094365A3DAFF918123B;
+ Sat, 16 Nov 2019 11:01:03 +0800 (CST)
+Received: from localhost.localdomain (10.90.53.225) by
+ DGGEMS410-HUB.china.huawei.com (10.3.19.210) with Microsoft SMTP Server id
+ 14.3.439.0; Sat, 16 Nov 2019 11:00:52 +0800
+From: Chen Wandun <chenwandun@huawei.com>
+To: <tyreld@linux.ibm.com>, <mpe@ellerman.id.au>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <mahesh@linux.vnet.ibm.com>, <paulus@samba.org>
+Subject: [PATCH] powerpc/pseries: remove variable 'status' set but not used
+Date: Sat, 16 Nov 2019 11:07:30 +0800
+Message-ID: <1573873650-62511-1-git-send-email-chenwandun@huawei.com>
+X-Mailer: git-send-email 2.7.4
 MIME-Version: 1.0
+Content-Type: text/plain
+X-Originating-IP: [10.90.53.225]
+X-CFilter-Loop: Reflected
+X-Mailman-Approved-At: Sat, 16 Nov 2019 17:58:04 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,36 +60,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: chenwandun@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D205201
+Fixes gcc '-Wunused-but-set-variable' warning:
 
---- Comment #15 from Christian Zigotzky (chzigotzky@xenosoft.de) ---
-FYI: Souce files of the Dawicontrol DC 2976 UW SCSI board (PCI):
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/dri=
-vers/scsi/sym53c8xx_2?h=3Dv5.4-rc7
+arch/powerpc/platforms/pseries/ras.c: In function ras_epow_interrupt:
+arch/powerpc/platforms/pseries/ras.c:319:6: warning: variable status set but not used [-Wunused-but-set-variable]
 
-/*
- *  DMA addressing mode.
- *
- *  0 : 32 bit addressing for all chips.
- *  1 : 40 bit addressing when supported by chip.
- *  2 : 64 bit addressing when supported by chip,
- *      limited to 16 segments of 4 GB -> 64 GB max.
- */
-#define   SYM_CONF_DMA_ADDRESSING_MODE
-CONFIG_SCSI_SYM53C8XX_DMA_ADDRESSING_MODE
+Signed-off-by: Chen Wandun <chenwandun@huawei.com>
+---
+ arch/powerpc/platforms/pseries/ras.c | 17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
 
-Cyrus config:
+diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
+index 1d7f973..4a61d0f 100644
+--- a/arch/powerpc/platforms/pseries/ras.c
++++ b/arch/powerpc/platforms/pseries/ras.c
+@@ -316,12 +316,11 @@ static irqreturn_t ras_hotplug_interrupt(int irq, void *dev_id)
+ /* Handle environmental and power warning (EPOW) interrupts. */
+ static irqreturn_t ras_epow_interrupt(int irq, void *dev_id)
+ {
+-	int status;
+ 	int state;
+ 	int critical;
+ 
+-	status = rtas_get_sensor_fast(EPOW_SENSOR_TOKEN, EPOW_SENSOR_INDEX,
+-				      &state);
++	rtas_get_sensor_fast(EPOW_SENSOR_TOKEN, EPOW_SENSOR_INDEX,
++			     &state);
+ 
+ 	if (state > 3)
+ 		critical = 1;		/* Time Critical */
+@@ -330,12 +329,12 @@ static irqreturn_t ras_epow_interrupt(int irq, void *dev_id)
+ 
+ 	spin_lock(&ras_log_buf_lock);
+ 
+-	status = rtas_call(ras_check_exception_token, 6, 1, NULL,
+-			   RTAS_VECTOR_EXTERNAL_INTERRUPT,
+-			   virq_to_hw(irq),
+-			   RTAS_EPOW_WARNING,
+-			   critical, __pa(&ras_log_buf),
+-				rtas_get_error_log_max());
++	rtas_call(ras_check_exception_token, 6, 1, NULL,
++		  RTAS_VECTOR_EXTERNAL_INTERRUPT,
++		  virq_to_hw(irq),
++		  RTAS_EPOW_WARNING,
++		  critical, __pa(&ras_log_buf),
++		  rtas_get_error_log_max());
+ 
+ 	log_error(ras_log_buf, ERR_TYPE_RTAS_LOG, 0);
+ 
+-- 
+2.7.4
 
-CONFIG_SCSI_SYM53C8XX_DMA_ADDRESSING_MODE=3D1
-
-I will configure =E2=80=9C0 : 32 bit addressing for all chips=E2=80=9D for =
-the RC8. Maybe this
-is the solution.
-
---=20
-You are receiving this mail because:
-You are watching the assignee of the bug.=
