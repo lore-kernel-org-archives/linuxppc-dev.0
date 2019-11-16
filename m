@@ -7,53 +7,52 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9448C432C3
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 17:23:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3EBCC432C3
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 17:25:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 658AD216F4
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 17:23:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7AF89216F4
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 17:25:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="v5chSdNm"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 658AD216F4
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="cmVjvydM"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7AF89216F4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47FhrB2ttyzF4Wv
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2019 04:23:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47Fhtq1HKpzF4Xq
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2019 04:25:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="v5chSdNm"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="cmVjvydM"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47Ffp84n3tzDr7L
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2019 02:51:10 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47Ffpq3zcFzF3vN
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2019 02:51:47 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (unknown [50.234.116.4])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 69892208E3;
- Sat, 16 Nov 2019 15:51:07 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 0E56B20859;
+ Sat, 16 Nov 2019 15:51:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1573919467;
- bh=LZp/NX6ULwok7KISCfKKkJI5x6JyKuh3DkWBM1uLWIw=;
+ s=default; t=1573919505;
+ bh=tGyuerj4tgHb0qQhYD5ienk8WW7ZV2NkS0UB4aqLey4=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=v5chSdNmfPhLnlgG/cD2pthSj83qiMUoEd+GXmvn6DUbZ1hx+pypEcHU0bBZ22LO9
- 0Zb9w14/q4s6xS9D0dWwsa6+I/SJP85e1Y+8COh6fC7knW4yOY2R036t6xhvBz/Dbt
- 1rF4KXGdGgg8vrTmKEIRxpyJ8CA4w8maYQGjecTg=
+ b=cmVjvydMFz2JEeQvBZUNL2REv+4XMpbh9/c88ADtbPTGngJCpUS2ZkZam8jo5quau
+ HvdM5Q5ImnKjaX2F/z+HE41Ywdm8NtmDJpxFmvaU6OwCCat8gj5ajz5rSZEpLLC5Qz
+ J+u3krxsi5rm+Uk3bTzkyVo/yBZq1BYdJwCqrSC0=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 05/99] powerpc: Fix signedness bug in
- update_flash_db()
-Date: Sat, 16 Nov 2019 10:49:28 -0500
-Message-Id: <20191116155103.10971-5-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 30/99] macintosh/windfarm_smu_sat: Fix debug output
+Date: Sat, 16 Nov 2019 10:49:53 -0500
+Message-Id: <20191116155103.10971-30-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20191116155103.10971-1-sashal@kernel.org>
 References: <20191116155103.10971-1-sashal@kernel.org>
@@ -72,44 +71,82 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Geoff Levand <geoff@infradead.org>, linuxppc-dev@lists.ozlabs.org,
- Dan Carpenter <dan.carpenter@oracle.com>, Sasha Levin <sashal@kernel.org>
+Cc: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Dan Carpenter <dan.carpenter@oracle.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-[ Upstream commit 014704e6f54189a203cc14c7c0bb411b940241bc ]
+[ Upstream commit fc0c8b36d379a046525eacb9c3323ca635283757 ]
 
-The "count < sizeof(struct os_area_db)" comparison is type promoted to
-size_t so negative values of "count" are treated as very high values
-and we accidentally return success instead of a negative error code.
+There's some antiquated debug output that's trying
+to do a hand-made hexdump and turning into horrible
+1-byte-per-line output these days.
 
-This doesn't really change runtime much but it fixes a static checker
-warning.
+Use print_hex_dump() instead
 
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-Acked-by: Geoff Levand <geoff@infradead.org>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/platforms/ps3/os-area.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/macintosh/windfarm_smu_sat.c | 25 +++++++------------------
+ 1 file changed, 7 insertions(+), 18 deletions(-)
 
-diff --git a/arch/powerpc/platforms/ps3/os-area.c b/arch/powerpc/platforms/ps3/os-area.c
-index 3db53e8aff927..9b2ef76578f06 100644
---- a/arch/powerpc/platforms/ps3/os-area.c
-+++ b/arch/powerpc/platforms/ps3/os-area.c
-@@ -664,7 +664,7 @@ static int update_flash_db(void)
- 	db_set_64(db, &os_area_db_id_rtc_diff, saved_params.rtc_diff);
+diff --git a/drivers/macintosh/windfarm_smu_sat.c b/drivers/macintosh/windfarm_smu_sat.c
+index ad6223e883404..3d310dd60a0be 100644
+--- a/drivers/macintosh/windfarm_smu_sat.c
++++ b/drivers/macintosh/windfarm_smu_sat.c
+@@ -22,14 +22,6 @@
  
- 	count = os_area_flash_write(db, sizeof(struct os_area_db), pos);
--	if (count < sizeof(struct os_area_db)) {
-+	if (count < 0 || count < sizeof(struct os_area_db)) {
- 		pr_debug("%s: os_area_flash_write failed %zd\n", __func__,
- 			 count);
- 		error = count < 0 ? count : -EIO;
+ #define VERSION "1.0"
+ 
+-#define DEBUG
+-
+-#ifdef DEBUG
+-#define DBG(args...)	printk(args)
+-#else
+-#define DBG(args...)	do { } while(0)
+-#endif
+-
+ /* If the cache is older than 800ms we'll refetch it */
+ #define MAX_AGE		msecs_to_jiffies(800)
+ 
+@@ -106,13 +98,10 @@ struct smu_sdbp_header *smu_sat_get_sdb_partition(unsigned int sat_id, int id,
+ 		buf[i+2] = data[3];
+ 		buf[i+3] = data[2];
+ 	}
+-#ifdef DEBUG
+-	DBG(KERN_DEBUG "sat %d partition %x:", sat_id, id);
+-	for (i = 0; i < len; ++i)
+-		DBG(" %x", buf[i]);
+-	DBG("\n");
+-#endif
+ 
++	printk(KERN_DEBUG "sat %d partition %x:", sat_id, id);
++	print_hex_dump(KERN_DEBUG, "  ", DUMP_PREFIX_OFFSET,
++		       16, 1, buf, len, false);
+ 	if (size)
+ 		*size = len;
+ 	return (struct smu_sdbp_header *) buf;
+@@ -132,13 +121,13 @@ static int wf_sat_read_cache(struct wf_sat *sat)
+ 	if (err < 0)
+ 		return err;
+ 	sat->last_read = jiffies;
++
+ #ifdef LOTSA_DEBUG
+ 	{
+ 		int i;
+-		DBG(KERN_DEBUG "wf_sat_get: data is");
+-		for (i = 0; i < 16; ++i)
+-			DBG(" %.2x", sat->cache[i]);
+-		DBG("\n");
++		printk(KERN_DEBUG "wf_sat_get: data is");
++		print_hex_dump(KERN_DEBUG, "  ", DUMP_PREFIX_OFFSET,
++			       16, 1, sat->cache, 16, false);
+ 	}
+ #endif
+ 	return 0;
 -- 
 2.20.1
 
