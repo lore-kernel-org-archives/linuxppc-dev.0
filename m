@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CFE8BC432C3
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 00:59:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89998C432C3
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 01:04:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 880BA206D5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 00:59:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 880BA206D5
+	by mail.kernel.org (Postfix) with ESMTPS id EE04A20715
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 01:04:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EE04A20715
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47FH103tVMzF7w7
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 11:59:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47FH7046t4zF80L
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 12:04:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=ftp.linux.org.uk (client-ip=195.92.253.2;
  helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk;
@@ -29,21 +29,21 @@ Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47FGZG61bQzF7nJ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2019 11:39:32 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47FH4t3cyJzF5kg
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2019 12:02:38 +1100 (AEDT)
 Received: from viro by ZenIV.linux.org.uk with local (Exim 4.92.3 #3 (Red Hat
- Linux)) id 1iVm5G-00041D-QH; Sat, 16 Nov 2019 00:37:02 +0000
-Date: Sat, 16 Nov 2019 00:37:02 +0000
+ Linux)) id 1iVmTA-0004lm-5b; Sat, 16 Nov 2019 01:01:44 +0000
+Date: Sat, 16 Nov 2019 01:01:44 +0000
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: Aleksa Sarai <cyphar@cyphar.com>
-Subject: Re: [PATCH v16 02/12] namei: allow nd_jump_link() to produce errors
-Message-ID: <20191116003702.GX26530@ZenIV.linux.org.uk>
+Subject: Re: [PATCH v16 06/12] namei: LOOKUP_NO_XDEV: block mountpoint crossing
+Message-ID: <20191116010144.GY26530@ZenIV.linux.org.uk>
 References: <20191116002802.6663-1-cyphar@cyphar.com>
- <20191116002802.6663-3-cyphar@cyphar.com>
+ <20191116002802.6663-7-cyphar@cyphar.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20191116002802.6663-3-cyphar@cyphar.com>
+In-Reply-To: <20191116002802.6663-7-cyphar@cyphar.com>
 User-Agent: Mutt/1.12.1 (2019-06-15)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -62,10 +62,10 @@ Cc: Song Liu <songliubraving@fb.com>, linux-ia64@vger.kernel.org,
  Alexei Starovoitov <ast@kernel.org>, linux-kernel@vger.kernel.org,
  David Howells <dhowells@redhat.com>, linux-kselftest@vger.kernel.org,
  sparclinux@vger.kernel.org, containers@lists.linux-foundation.org,
- linux-api@vger.kernel.org, Shuah Khan <shuah@kernel.org>,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- Tycho Andersen <tycho@tycho.ws>, Daniel Borkmann <daniel@iogearbox.net>,
- Jiri Olsa <jolsa@redhat.com>,
+ Christian Brauner <christian.brauner@ubuntu.com>, linux-api@vger.kernel.org,
+ Shuah Khan <shuah@kernel.org>, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, Tycho Andersen <tycho@tycho.ws>,
+ Daniel Borkmann <daniel@iogearbox.net>, Jiri Olsa <jolsa@redhat.com>,
  Alexander Shishkin <alexander.shishkin@linux.intel.com>,
  Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infradead.org,
  Yonghong Song <yhs@fb.com>, linux-mips@vger.kernel.org,
@@ -88,31 +88,30 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Nov 16, 2019 at 11:27:52AM +1100, Aleksa Sarai wrote:
-> +	error = nd_jump_link(&path);
-> +	if (error)
-> +		path_put(&path);
+On Sat, Nov 16, 2019 at 11:27:56AM +1100, Aleksa Sarai wrote:
 
-> +	error = nd_jump_link(&ns_path);
-> +	if (error)
-> +		path_put(&ns_path);
+> @@ -1383,6 +1398,8 @@ static int follow_dotdot_rcu(struct nameidata *nd)
+>  				return -ECHILD;
+>  			if (&mparent->mnt == nd->path.mnt)
+>  				break;
+> +			if (unlikely(nd->flags & LOOKUP_NO_XDEV))
+> +				return -EXDEV;
+>  			/* we know that mountpoint was pinned */
+>  			nd->path.dentry = mountpoint;
+>  			nd->path.mnt = &mparent->mnt;
+> @@ -1397,6 +1414,8 @@ static int follow_dotdot_rcu(struct nameidata *nd)
+>  			return -ECHILD;
+>  		if (!mounted)
+>  			break;
+> +		if (unlikely(nd->flags & LOOKUP_NO_XDEV))
+> +			return -EXDEV;
+>  		nd->path.mnt = &mounted->mnt;
+>  		nd->path.dentry = mounted->mnt.mnt_root;
+>  		inode = nd->path.dentry->d_inode;
 
-> +	error = nd_jump_link(&path);
-> +	if (error)
-> +		path_put(&path);
+I really don't think we should return hard errors from that function.
+Let the caller redo it in refwalk mode.
 
-3 calls.  Exact same boilerplate in each to handle a failure case.
-Which spells "wrong calling conventions"; it's absolutely clear
-that we want that path_put() inside nd_jump_link().
-
-The rule should be this: reference that used to be held in
-*path is consumed in any case.  On success it goes into
-nd->path, on error it's just dropped, but in any case, the
-caller has the same refcounting environment to deal with.
-
-If you need the same boilerplate cleanup on failure again and again,
-the calling conventions are wrong and need to be fixed.
-
-And I'm not sure that int is the right return type here, to be honest.
-void * might be better - return ERR_PTR() or NULL, so that the value
-could be used as return value of ->get_link() that calls that thing.
+It's not the fast path, especially for this kind of errors.  Matter of
+fact, I'm not sure about -ENOENT returned in another failure case
+there - it's probably OK, but again, -ECHILD would be just as good.
