@@ -2,57 +2,58 @@ Return-Path: <SRS0=doUU=ZI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3DD0C43141
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 16:29:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F5EDC432C3
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 16:33:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 985E7216F4
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 16:29:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id DE917208CE
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 16:33:16 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="kRK3ikGv"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 985E7216F4
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="wP1CN14D"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DE917208CE
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47FgfX4GjtzF3L6
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2019 03:29:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47Fgkf57f8zF3Rn
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2019 03:33:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="kRK3ikGv"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="wP1CN14D"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47FffY0YM3zF3sR
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2019 02:44:37 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47FffZ5FnBzF3sR
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2019 02:44:38 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (unknown [50.234.116.4])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id ED3BC2073B;
- Sat, 16 Nov 2019 15:44:33 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id D69572072D;
+ Sat, 16 Nov 2019 15:44:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1573919074;
- bh=mjEAf4IZiaoy69szyp+z+zduvvrVkJ634Pi2kNlx0nY=;
+ s=default; t=1573919076;
+ bh=8NzhWQdmgAYi75Syl7w/F0X2VA0psKoEI0KYAzgnHuw=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=kRK3ikGvxxql0sMSWXYZcYyfrRDkSVBa7AMRBbbfjGz4Ap/Wl25NdyhDOPMBW66q1
- Vy3U8sMZqd7r/2HCkDKzaar+9WKOKfaIbhFtUEDlLMFjyboK4077q+NhZu0kvKDNdk
- Q8pWlFXk1WcYt0jme9rI150AjE9kUMHpUhBfrEeo=
+ b=wP1CN14DuR/OInosbLHgXDP39KEfTauAt26bPWm5p+LR3kI7VE2jbOO/fO/zun0du
+ Hp56NamJRhF3sDFplqkEaBq8L1Y0hcWc77t6KrFHhR6DUts2rb7Vn9wuI6qb3YUdwJ
+ ErLnNV0fGc8tzgeuM/rxqDKuRauK7c1GPvNEgcec=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 143/237] powerpc/xmon: Relax frame size for clang
-Date: Sat, 16 Nov 2019 10:39:38 -0500
-Message-Id: <20191116154113.7417-143-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 144/237] selftests/powerpc/ptrace: Fix
+ out-of-tree build
+Date: Sat, 16 Nov 2019 10:39:39 -0500
+Message-Id: <20191116154113.7417-144-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20191116154113.7417-1-sashal@kernel.org>
 References: <20191116154113.7417-1-sashal@kernel.org>
@@ -72,52 +73,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Joel Stanley <joel@jms.id.au>, clang-built-linux@googlegroups.com
+ Joel Stanley <joel@jms.id.au>, linux-kselftest@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 From: Joel Stanley <joel@jms.id.au>
 
-[ Upstream commit 9c87156cce5a63735d1218f0096a65c50a7a32aa ]
+[ Upstream commit c39b79082a38a4f8c801790edecbbb4d62ed2992 ]
 
-When building with clang (8 trunk, 7.0 release) the frame size limit is
-hit:
+We should use TEST_GEN_PROGS, not TEST_PROGS. That tells the selftests
+makefile (lib.mk) that those tests are generated (built), and so it
+adds the $(OUTPUT) prefix for us, making the out-of-tree build work
+correctly.
 
- arch/powerpc/xmon/xmon.c:452:12: warning: stack frame size of 2576
- bytes in function 'xmon_core' [-Wframe-larger-than=]
+It also means we don't need our own clean rule, lib.mk does it.
 
-Some investigation by Naveen indicates this is due to clang saving the
-addresses to printf format strings on the stack.
+We also have to update the ptrace-pkey and core-pkey rules to use
+$(OUTPUT).
 
-While this issue is investigated, bump up the frame size limit for xmon
-when building with clang.
-
-Link: https://github.com/ClangBuiltLinux/linux/issues/252
 Signed-off-by: Joel Stanley <joel@jms.id.au>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/xmon/Makefile | 6 ++++++
- 1 file changed, 6 insertions(+)
+ tools/testing/selftests/powerpc/ptrace/Makefile | 13 ++++---------
+ 1 file changed, 4 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/xmon/Makefile b/arch/powerpc/xmon/Makefile
-index 9d7d8e6d705c4..9ba44e190e5e4 100644
---- a/arch/powerpc/xmon/Makefile
-+++ b/arch/powerpc/xmon/Makefile
-@@ -13,6 +13,12 @@ UBSAN_SANITIZE := n
- ORIG_CFLAGS := $(KBUILD_CFLAGS)
- KBUILD_CFLAGS = $(subst $(CC_FLAGS_FTRACE),,$(ORIG_CFLAGS))
+diff --git a/tools/testing/selftests/powerpc/ptrace/Makefile b/tools/testing/selftests/powerpc/ptrace/Makefile
+index 923d531265f8c..9f9423430059e 100644
+--- a/tools/testing/selftests/powerpc/ptrace/Makefile
++++ b/tools/testing/selftests/powerpc/ptrace/Makefile
+@@ -1,5 +1,5 @@
+ # SPDX-License-Identifier: GPL-2.0
+-TEST_PROGS := ptrace-gpr ptrace-tm-gpr ptrace-tm-spd-gpr \
++TEST_GEN_PROGS := ptrace-gpr ptrace-tm-gpr ptrace-tm-spd-gpr \
+               ptrace-tar ptrace-tm-tar ptrace-tm-spd-tar ptrace-vsx ptrace-tm-vsx \
+               ptrace-tm-spd-vsx ptrace-tm-spr ptrace-hwbreak ptrace-pkey core-pkey \
+               perf-hwbreak
+@@ -7,14 +7,9 @@ TEST_PROGS := ptrace-gpr ptrace-tm-gpr ptrace-tm-spd-gpr \
+ top_srcdir = ../../../../..
+ include ../../lib.mk
  
-+ifdef CONFIG_CC_IS_CLANG
-+# clang stores addresses on the stack causing the frame size to blow
-+# out. See https://github.com/ClangBuiltLinux/linux/issues/252
-+KBUILD_CFLAGS += -Wframe-larger-than=4096
-+endif
-+
- ccflags-$(CONFIG_PPC64) := $(NO_MINIMAL_TOC)
+-all: $(TEST_PROGS)
+-
+ CFLAGS += -m64 -I../../../../../usr/include -I../tm -mhtm -fno-pie
  
- obj-y			+= xmon.o nonstdio.o spr_access.o
+-ptrace-pkey core-pkey: child.h
+-ptrace-pkey core-pkey: LDLIBS += -pthread
+-
+-$(TEST_PROGS): ../harness.c ../utils.c ../lib/reg.S ptrace.h
++$(OUTPUT)/ptrace-pkey $(OUTPUT)/core-pkey: child.h
++$(OUTPUT)/ptrace-pkey $(OUTPUT)/core-pkey: LDLIBS += -pthread
+ 
+-clean:
+-	rm -f $(TEST_PROGS) *.o
++$(TEST_GEN_PROGS): ../harness.c ../utils.c ../lib/reg.S ptrace.h
 -- 
 2.20.1
 
