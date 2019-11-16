@@ -2,53 +2,73 @@ Return-Path: <SRS0=doUU=ZI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-5.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B7B7BC432C3
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 06:59:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CB4D4C432C3
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 07:08:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1BD8320700
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 06:59:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1BD8320700
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3C282206CC
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 07:08:20 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="EU5T8wFR"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3C282206CC
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47FR0r51CtzF4M6
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 17:59:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47FRBn5fnDzF3C7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 18:08:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.32; helo=huawei.com;
- envelope-from=chenwandun@huawei.com; receiver=<UNKNOWN>)
+ smtp.helo=mo6-p01-ob.smtp.rzone.de (client-ip=2a01:238:20a:202:5301::7;
+ helo=mo6-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga06-in.huawei.com [45.249.212.32])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47FL3V20ZVzF3qQ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2019 14:16:35 +1100 (AEDT)
-Received: from DGGEMS410-HUB.china.huawei.com (unknown [172.30.72.58])
- by Forcepoint Email with ESMTP id C094365A3DAFF918123B;
- Sat, 16 Nov 2019 11:01:03 +0800 (CST)
-Received: from localhost.localdomain (10.90.53.225) by
- DGGEMS410-HUB.china.huawei.com (10.3.19.210) with Microsoft SMTP Server id
- 14.3.439.0; Sat, 16 Nov 2019 11:00:52 +0800
-From: Chen Wandun <chenwandun@huawei.com>
-To: <tyreld@linux.ibm.com>, <mpe@ellerman.id.au>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <mahesh@linux.vnet.ibm.com>, <paulus@samba.org>
-Subject: [PATCH] powerpc/pseries: remove variable 'status' set but not used
-Date: Sat, 16 Nov 2019 11:07:30 +0800
-Message-ID: <1573873650-62511-1-git-send-email-chenwandun@huawei.com>
-X-Mailer: git-send-email 2.7.4
-MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.90.53.225]
-X-CFilter-Loop: Reflected
-X-Mailman-Approved-At: Sat, 16 Nov 2019 17:58:04 +1100
+ dmarc=none (p=none dis=none) header.from=xenosoft.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="EU5T8wFR"; 
+ dkim-atps=neutral
+Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5301::7])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-384) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47FR8j4ystzDrnj
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2019 18:06:29 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1573887981;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=To:Cc:Message-Id:Subject:Date:From:X-RZG-CLASS-ID:X-RZG-AUTH:From:
+ Subject:Sender;
+ bh=zuFc8xULBzIlsh03+xVDOKfPqAywShuzPS+aigybEXY=;
+ b=EU5T8wFRaFldRf1OQsS4WjVJFlQyazzY1pO4jEm5rplCCNBRhm7cczebMKRDQx6TEA
+ 3N+YkdLY638lRrBVZuNYizf2aY6X3IDzd24RZpMz95iPPF5rrz1GOfiK1o4a1CJ3bW6z
+ BCClbOj9pvUHHaaBbVJuDsE4UkwMz7Z0c/uwqPnIyQE9JjCEgUoqKScBxJ4hhGwsjqOW
+ vZsX+Ls6BzQ6fSNM3UjSa+OffEI/WemIh/HmQKloKdK73KGyxVrTUCYhwjvl3zNBq5Ky
+ ob8Deu6b6m83jujGzbk1TIf89tKKcJ4pQB8179+FZvJRLPkwGBb1f/dqog+9F0WRu6Iy
+ g3Cw==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr6KxrfO5Oh7R7NWZ537pkxH6J+aB1+9x3aDxi+HSYc7KsUHFpLrY="
+X-RZG-CLASS-ID: mo00
+Received: from [IPv6:2a01:598:818d:108:b105:ba81:413a:5ece]
+ by smtp.strato.de (RZmta 44.29.0 AUTH)
+ with ESMTPSA id q007c8vAG7667Rt
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
+ 521 ECDH bits, eq. 15360 bits RSA))
+ (Client did not present a certificate);
+ Sat, 16 Nov 2019 08:06:06 +0100 (CET)
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Content-Type: text/plain;
+	charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Mime-Version: 1.0 (1.0)
+Date: Sat, 16 Nov 2019 08:06:05 +0100
+Subject: Bug 205201 - Booting halts if Dawicontrol DC-2976 UW SCSI board
+ installed, unless RAM size limited to 3500M
+Message-Id: <F1EBB706-73DF-430E-9020-C214EC8ED5DA@xenosoft.de>
+To: Christoph Hellwig <hch@lst.de>
+X-Mailer: iPhone Mail (16G102)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,59 +80,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: chenwandun@huawei.com
+Cc: linux-arch@vger.kernel.org, darren@stevens-zone.net,
+ mad skateman <madskateman@gmail.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, iommu@lists.linux-foundation.org,
+ Rob Herring <robh+dt@kernel.org>, paulus@samba.org, rtd2@xtra.co.nz,
+ "contact@a-eon.com" <contact@a-eon.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, nsaenzjulienne@suse.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fixes gcc '-Wunused-but-set-variable' warning:
+FYI: Source files of the Dawicontrol DC 2976 UW SCSI board (PCI): https://gi=
+t.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/scsi/s=
+ym53c8xx_2?h=3Dv5.4-rc7
 
-arch/powerpc/platforms/pseries/ras.c: In function ras_epow_interrupt:
-arch/powerpc/platforms/pseries/ras.c:319:6: warning: variable status set but not used [-Wunused-but-set-variable]
+/*
+ *  DMA addressing mode.
+ *
+ *  0 : 32 bit addressing for all chips.
+ *  1 : 40 bit addressing when supported by chip.
+ *  2 : 64 bit addressing when supported by chip,
+ *      limited to 16 segments of 4 GB -> 64 GB max.
+ */
+#define   SYM_CONF_DMA_ADDRESSING_MODE CONFIG_SCSI_SYM53C8XX_DMA_ADDRESSING_=
+MODE
 
-Signed-off-by: Chen Wandun <chenwandun@huawei.com>
----
- arch/powerpc/platforms/pseries/ras.c | 17 ++++++++---------
- 1 file changed, 8 insertions(+), 9 deletions(-)
+Cyrus config:
 
-diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-index 1d7f973..4a61d0f 100644
---- a/arch/powerpc/platforms/pseries/ras.c
-+++ b/arch/powerpc/platforms/pseries/ras.c
-@@ -316,12 +316,11 @@ static irqreturn_t ras_hotplug_interrupt(int irq, void *dev_id)
- /* Handle environmental and power warning (EPOW) interrupts. */
- static irqreturn_t ras_epow_interrupt(int irq, void *dev_id)
- {
--	int status;
- 	int state;
- 	int critical;
- 
--	status = rtas_get_sensor_fast(EPOW_SENSOR_TOKEN, EPOW_SENSOR_INDEX,
--				      &state);
-+	rtas_get_sensor_fast(EPOW_SENSOR_TOKEN, EPOW_SENSOR_INDEX,
-+			     &state);
- 
- 	if (state > 3)
- 		critical = 1;		/* Time Critical */
-@@ -330,12 +329,12 @@ static irqreturn_t ras_epow_interrupt(int irq, void *dev_id)
- 
- 	spin_lock(&ras_log_buf_lock);
- 
--	status = rtas_call(ras_check_exception_token, 6, 1, NULL,
--			   RTAS_VECTOR_EXTERNAL_INTERRUPT,
--			   virq_to_hw(irq),
--			   RTAS_EPOW_WARNING,
--			   critical, __pa(&ras_log_buf),
--				rtas_get_error_log_max());
-+	rtas_call(ras_check_exception_token, 6, 1, NULL,
-+		  RTAS_VECTOR_EXTERNAL_INTERRUPT,
-+		  virq_to_hw(irq),
-+		  RTAS_EPOW_WARNING,
-+		  critical, __pa(&ras_log_buf),
-+		  rtas_get_error_log_max());
- 
- 	log_error(ras_log_buf, ERR_TYPE_RTAS_LOG, 0);
- 
--- 
-2.7.4
+CONFIG_SCSI_SYM53C8XX_DMA_ADDRESSING_MODE=3D1
 
+I will configure =E2=80=9C0 : 32 bit addressing for all chips=E2=80=9D for t=
+he RC8. Maybe this is the solution.
+
+> On 13. Nov 2019, at 12:02, Christoph Hellwig <hch@lst.de> wrote:
+>=20
+> Interesting.  Give me some time to come up with a real fix, as drivers
+> really should not mess with GFP flags for these allocations, and even
+> if they did swiotlb is supposed to take care of any resulting problems.
