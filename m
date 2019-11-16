@@ -7,53 +7,53 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DBDC5C432C3
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 17:21:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9448C432C3
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 17:23:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8C7C12168B
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 17:21:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 658AD216F4
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 17:23:08 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="C+FwkJW7"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8C7C12168B
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="v5chSdNm"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 658AD216F4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47Fhnz2CM6zF0Bm
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2019 04:21:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47FhrB2ttyzF4Wv
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2019 04:23:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="C+FwkJW7"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="v5chSdNm"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47FfpB3KCGzDr7M
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47Ffp84n3tzDr7L
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2019 02:51:10 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (unknown [50.234.116.4])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 239D9208CE;
- Sat, 16 Nov 2019 15:51:08 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 69892208E3;
+ Sat, 16 Nov 2019 15:51:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1573919468;
- bh=jPgVZdWq1uxqLuuFB4zn5NW/loTd09gJehXLV22OFX8=;
+ s=default; t=1573919467;
+ bh=LZp/NX6ULwok7KISCfKKkJI5x6JyKuh3DkWBM1uLWIw=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=C+FwkJW7PJsxsSVuqnUaA8qk3ZmlKGUW8VvFZqgbCRf+7nAg2nfQELpPXNYl+MVGT
- +VxLP1O1ROsGL25ahZzq60cxv4qON5Pr8gsnsQnjMOMu7D4EJzSezaI11d90/jvai2
- 2wc1zKbYjSqE2Px2Zny7ESQ57EMvUJ8pePNAxtoY=
+ b=v5chSdNmfPhLnlgG/cD2pthSj83qiMUoEd+GXmvn6DUbZ1hx+pypEcHU0bBZ22LO9
+ 0Zb9w14/q4s6xS9D0dWwsa6+I/SJP85e1Y+8COh6fC7knW4yOY2R036t6xhvBz/Dbt
+ 1rF4KXGdGgg8vrTmKEIRxpyJ8CA4w8maYQGjecTg=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 06/99] powerpc/eeh: Fix use of EEH_PE_KEEP on
- wrong field
-Date: Sat, 16 Nov 2019 10:49:29 -0500
-Message-Id: <20191116155103.10971-6-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 05/99] powerpc: Fix signedness bug in
+ update_flash_db()
+Date: Sat, 16 Nov 2019 10:49:28 -0500
+Message-Id: <20191116155103.10971-5-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20191116155103.10971-1-sashal@kernel.org>
 References: <20191116155103.10971-1-sashal@kernel.org>
@@ -72,48 +72,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sam Bobroff <sbobroff@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Sasha Levin <sashal@kernel.org>
+Cc: Geoff Levand <geoff@infradead.org>, linuxppc-dev@lists.ozlabs.org,
+ Dan Carpenter <dan.carpenter@oracle.com>, Sasha Levin <sashal@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Sam Bobroff <sbobroff@linux.ibm.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
 
-[ Upstream commit 473af09b56dc4be68e4af33220ceca6be67aa60d ]
+[ Upstream commit 014704e6f54189a203cc14c7c0bb411b940241bc ]
 
-eeh_add_to_parent_pe() sometimes removes the EEH_PE_KEEP flag, but it
-incorrectly removes it from pe->type, instead of pe->state.
+The "count < sizeof(struct os_area_db)" comparison is type promoted to
+size_t so negative values of "count" are treated as very high values
+and we accidentally return success instead of a negative error code.
 
-However, rather than clearing it from the correct field, remove it.
-Inspection of the code shows that it can't ever have had any effect
-(even if it had been cleared from the correct field), because the
-field is never tested after it is cleared by the statement in
-question.
+This doesn't really change runtime much but it fixes a static checker
+warning.
 
-The clear statement was added by commit 807a827d4e74 ("powerpc/eeh:
-Keep PE during hotplug"), but it didn't explain why it was necessary.
-
-Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+Acked-by: Geoff Levand <geoff@infradead.org>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/kernel/eeh_pe.c | 2 +-
+ arch/powerpc/platforms/ps3/os-area.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
-index 1abd8dd77ec13..eee2131a97e61 100644
---- a/arch/powerpc/kernel/eeh_pe.c
-+++ b/arch/powerpc/kernel/eeh_pe.c
-@@ -370,7 +370,7 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
- 		while (parent) {
- 			if (!(parent->type & EEH_PE_INVALID))
- 				break;
--			parent->type &= ~(EEH_PE_INVALID | EEH_PE_KEEP);
-+			parent->type &= ~EEH_PE_INVALID;
- 			parent = parent->parent;
- 		}
+diff --git a/arch/powerpc/platforms/ps3/os-area.c b/arch/powerpc/platforms/ps3/os-area.c
+index 3db53e8aff927..9b2ef76578f06 100644
+--- a/arch/powerpc/platforms/ps3/os-area.c
++++ b/arch/powerpc/platforms/ps3/os-area.c
+@@ -664,7 +664,7 @@ static int update_flash_db(void)
+ 	db_set_64(db, &os_area_db_id_rtc_diff, saved_params.rtc_diff);
  
+ 	count = os_area_flash_write(db, sizeof(struct os_area_db), pos);
+-	if (count < sizeof(struct os_area_db)) {
++	if (count < 0 || count < sizeof(struct os_area_db)) {
+ 		pr_debug("%s: os_area_flash_write failed %zd\n", __func__,
+ 			 count);
+ 		error = count < 0 ? count : -EIO;
 -- 
 2.20.1
 
