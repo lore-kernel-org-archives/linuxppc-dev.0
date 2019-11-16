@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89998C432C3
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 01:04:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 147A5C432C3
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 01:06:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EE04A20715
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 01:04:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EE04A20715
+	by mail.kernel.org (Postfix) with ESMTPS id BC357205C9
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 01:06:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BC357205C9
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47FH7046t4zF80L
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 12:04:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47FH9T1rXPzDrh7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2019 12:06:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=ftp.linux.org.uk (client-ip=195.92.253.2;
  helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk;
@@ -29,21 +29,22 @@ Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47FH4t3cyJzF5kg
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2019 12:02:38 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47FH6l3BrhzF7yw
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2019 12:04:15 +1100 (AEDT)
 Received: from viro by ZenIV.linux.org.uk with local (Exim 4.92.3 #3 (Red Hat
- Linux)) id 1iVmTA-0004lm-5b; Sat, 16 Nov 2019 01:01:44 +0000
-Date: Sat, 16 Nov 2019 01:01:44 +0000
+ Linux)) id 1iVmUp-0004pt-QX; Sat, 16 Nov 2019 01:03:28 +0000
+Date: Sat, 16 Nov 2019 01:03:27 +0000
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: Aleksa Sarai <cyphar@cyphar.com>
-Subject: Re: [PATCH v16 06/12] namei: LOOKUP_NO_XDEV: block mountpoint crossing
-Message-ID: <20191116010144.GY26530@ZenIV.linux.org.uk>
+Subject: Re: [PATCH v16 09/12] namei: LOOKUP_{IN_ROOT,BENEATH}: permit
+ limited ".." resolution
+Message-ID: <20191116010327.GZ26530@ZenIV.linux.org.uk>
 References: <20191116002802.6663-1-cyphar@cyphar.com>
- <20191116002802.6663-7-cyphar@cyphar.com>
+ <20191116002802.6663-10-cyphar@cyphar.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20191116002802.6663-7-cyphar@cyphar.com>
+In-Reply-To: <20191116002802.6663-10-cyphar@cyphar.com>
 User-Agent: Mutt/1.12.1 (2019-06-15)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -88,30 +89,22 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Nov 16, 2019 at 11:27:56AM +1100, Aleksa Sarai wrote:
+On Sat, Nov 16, 2019 at 11:27:59AM +1100, Aleksa Sarai wrote:
 
-> @@ -1383,6 +1398,8 @@ static int follow_dotdot_rcu(struct nameidata *nd)
->  				return -ECHILD;
->  			if (&mparent->mnt == nd->path.mnt)
->  				break;
-> +			if (unlikely(nd->flags & LOOKUP_NO_XDEV))
-> +				return -EXDEV;
->  			/* we know that mountpoint was pinned */
->  			nd->path.dentry = mountpoint;
->  			nd->path.mnt = &mparent->mnt;
-> @@ -1397,6 +1414,8 @@ static int follow_dotdot_rcu(struct nameidata *nd)
->  			return -ECHILD;
->  		if (!mounted)
->  			break;
-> +		if (unlikely(nd->flags & LOOKUP_NO_XDEV))
-> +			return -EXDEV;
->  		nd->path.mnt = &mounted->mnt;
->  		nd->path.dentry = mounted->mnt.mnt_root;
->  		inode = nd->path.dentry->d_inode;
+> +		if (unlikely(nd->flags & LOOKUP_IS_SCOPED)) {
+> +			bool m_retry = read_seqretry(&mount_lock, nd->m_seq);
+> +			bool r_retry = read_seqretry(&rename_lock, nd->r_seq);
+> +
+> +			/*
+> +			 * If there was a racing rename or mount along our
+> +			 * path, then we can't be sure that ".." hasn't jumped
+> +			 * above nd->root (and so userspace should retry or use
+> +			 * some fallback).
+> +			 */
+> +			if (unlikely(m_retry || r_retry))
+> +				return -EAGAIN;
+> +		}
+>  	}
+>  	return 0;
 
-I really don't think we should return hard errors from that function.
-Let the caller redo it in refwalk mode.
-
-It's not the fast path, especially for this kind of errors.  Matter of
-fact, I'm not sure about -ENOENT returned in another failure case
-there - it's probably OK, but again, -ECHILD would be just as good.
+Elaborate...  Do these boolean variables make any sense now, really?
