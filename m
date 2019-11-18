@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CF34C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Nov 2019 14:13:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39EA9C432C0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Nov 2019 14:16:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CB84B20656
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Nov 2019 14:13:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CB84B20656
+	by mail.kernel.org (Postfix) with ESMTPS id E60DF20656
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Nov 2019 14:16:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E60DF20656
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.cz
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47GrX736qVzDqbh
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Nov 2019 01:13:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47GrbN0hrnzDqLH
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Nov 2019 01:16:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz
  (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=jack@suse.cz;
@@ -29,25 +29,26 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47Gnc84Y5mzDqFB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2019 23:01:28 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47Gnc95rHZzDqQq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2019 23:01:29 +1100 (AEDT)
 X-Virus-Scanned: by amavisd-new at test-mx.suse.de
 Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id E73AFB071;
+ by mx1.suse.de (Postfix) with ESMTP id E731CB061;
  Mon, 18 Nov 2019 12:01:20 +0000 (UTC)
 Received: by quack2.suse.cz (Postfix, from userid 1000)
- id 8AEB01E4B0D; Mon, 18 Nov 2019 11:34:09 +0100 (CET)
-Date: Mon, 18 Nov 2019 11:34:09 +0100
+ id 7EC421E4B09; Mon, 18 Nov 2019 11:16:58 +0100 (CET)
+Date: Mon, 18 Nov 2019 11:16:58 +0100
 From: Jan Kara <jack@suse.cz>
 To: John Hubbard <jhubbard@nvidia.com>
-Subject: Re: [PATCH v5 15/24] fs/io_uring: set FOLL_PIN via pin_user_pages()
-Message-ID: <20191118103409.GI17319@quack2.suse.cz>
+Subject: Re: [PATCH v5 11/24] goldish_pipe: convert to pin_user_pages() and
+ put_user_page()
+Message-ID: <20191118101658.GG17319@quack2.suse.cz>
 References: <20191115055340.1825745-1-jhubbard@nvidia.com>
- <20191115055340.1825745-16-jhubbard@nvidia.com>
+ <20191115055340.1825745-12-jhubbard@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20191115055340.1825745-16-jhubbard@nvidia.com>
+In-Reply-To: <20191115055340.1825745-12-jhubbard@nvidia.com>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -85,18 +86,27 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu 14-11-19 21:53:31, John Hubbard wrote:
-> Convert fs/io_uring to use the new pin_user_pages() call, which sets
-> FOLL_PIN. Setting FOLL_PIN is now required for code that requires
-> tracking of pinned pages, and therefore for any code that calls
-> put_user_page().
+On Thu 14-11-19 21:53:27, John Hubbard wrote:
+> 1. Call the new global pin_user_pages_fast(), from pin_goldfish_pages().
 > 
-> In partial anticipation of this work, the io_uring code was already
-> calling put_user_page() instead of put_page(). Therefore, in order to
-> convert from the get_user_pages()/put_page() model, to the
-> pin_user_pages()/put_user_page() model, the only change required
-> here is to change get_user_pages() to pin_user_pages().
+> 2. As required by pin_user_pages(), release these pages via
+> put_user_page(). In this case, do so via put_user_pages_dirty_lock().
 > 
+> That has the side effect of calling set_page_dirty_lock(), instead
+> of set_page_dirty(). This is probably more accurate.
+> 
+> As Christoph Hellwig put it, "set_page_dirty() is only safe if we are
+> dealing with a file backed page where we have reference on the inode it
+> hangs off." [1]
+> 
+> Another side effect is that the release code is simplified because
+> the page[] loop is now in gup.c instead of here, so just delete the
+> local release_user_pages() entirely, and call
+> put_user_pages_dirty_lock() directly, instead.
+> 
+> [1] https://lore.kernel.org/r/20190723153640.GB720@lst.de
+> 
+> Reviewed-by: Ira Weiny <ira.weiny@intel.com>
 > Signed-off-by: John Hubbard <jhubbard@nvidia.com>
 
 Looks good to me. You can add:
@@ -106,22 +116,51 @@ Reviewed-by: Jan Kara <jack@suse.cz>
 								Honza
 
 > ---
->  fs/io_uring.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/platform/goldfish/goldfish_pipe.c | 17 +++--------------
+>  1 file changed, 3 insertions(+), 14 deletions(-)
 > 
-> diff --git a/fs/io_uring.c b/fs/io_uring.c
-> index f9a38998f2fc..cff64bd00db9 100644
-> --- a/fs/io_uring.c
-> +++ b/fs/io_uring.c
-> @@ -3433,7 +3433,7 @@ static int io_sqe_buffer_register(struct io_ring_ctx *ctx, void __user *arg,
+> diff --git a/drivers/platform/goldfish/goldfish_pipe.c b/drivers/platform/goldfish/goldfish_pipe.c
+> index 7ed2a21a0bac..635a8bc1b480 100644
+> --- a/drivers/platform/goldfish/goldfish_pipe.c
+> +++ b/drivers/platform/goldfish/goldfish_pipe.c
+> @@ -274,7 +274,7 @@ static int pin_goldfish_pages(unsigned long first_page,
+>  		*iter_last_page_size = last_page_size;
+>  	}
 >  
->  		ret = 0;
->  		down_read(&current->mm->mmap_sem);
-> -		pret = get_user_pages(ubuf, nr_pages,
-> +		pret = pin_user_pages(ubuf, nr_pages,
->  				      FOLL_WRITE | FOLL_LONGTERM,
->  				      pages, vmas);
->  		if (pret == nr_pages) {
+> -	ret = get_user_pages_fast(first_page, requested_pages,
+> +	ret = pin_user_pages_fast(first_page, requested_pages,
+>  				  !is_write ? FOLL_WRITE : 0,
+>  				  pages);
+>  	if (ret <= 0)
+> @@ -285,18 +285,6 @@ static int pin_goldfish_pages(unsigned long first_page,
+>  	return ret;
+>  }
+>  
+> -static void release_user_pages(struct page **pages, int pages_count,
+> -			       int is_write, s32 consumed_size)
+> -{
+> -	int i;
+> -
+> -	for (i = 0; i < pages_count; i++) {
+> -		if (!is_write && consumed_size > 0)
+> -			set_page_dirty(pages[i]);
+> -		put_page(pages[i]);
+> -	}
+> -}
+> -
+>  /* Populate the call parameters, merging adjacent pages together */
+>  static void populate_rw_params(struct page **pages,
+>  			       int pages_count,
+> @@ -372,7 +360,8 @@ static int transfer_max_buffers(struct goldfish_pipe *pipe,
+>  
+>  	*consumed_size = pipe->command_buffer->rw_params.consumed_size;
+>  
+> -	release_user_pages(pipe->pages, pages_count, is_write, *consumed_size);
+> +	put_user_pages_dirty_lock(pipe->pages, pages_count,
+> +				  !is_write && *consumed_size > 0);
+>  
+>  	mutex_unlock(&pipe->lock);
+>  	return 0;
 > -- 
 > 2.24.0
 > 
