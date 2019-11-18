@@ -2,85 +2,77 @@ Return-Path: <SRS0=h9PY=ZK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5944C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Nov 2019 13:38:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C9468C432C0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Nov 2019 13:46:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 96F4D20855
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Nov 2019 13:38:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 70E9A20748
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Nov 2019 13:45:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="bV6Z9fOx"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 96F4D20855
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rasmusvillemoes.dk
+	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="E3rZ3vL2"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 70E9A20748
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=yadro.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47GqmC0b6jzDqd0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Nov 2019 00:38:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47Gqwj04DvzDqPy
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Nov 2019 00:45:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::444;
- helo=mail-wr1-x444.google.com; envelope-from=linux@rasmusvillemoes.dk;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=rasmusvillemoes.dk
+ smtp.mailfrom=yadro.com (client-ip=89.207.88.252; helo=mta-01.yadro.com;
+ envelope-from=r.bolshakov@yadro.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=yadro.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk
- header.b="bV6Z9fOx"; dkim-atps=neutral
-Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com
- [IPv6:2a00:1450:4864:20::444])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=yadro.com header.i=@yadro.com header.b="E3rZ3vL2"; 
+ dkim-atps=neutral
+Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47Gmng2Cc8zDqSl
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2019 22:24:39 +1100 (AEDT)
-Received: by mail-wr1-x444.google.com with SMTP id z10so18961012wrs.12
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2019 03:24:39 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=rasmusvillemoes.dk; s=google;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=ZltWz01c8oCLmnoDvGrjVYpDxnidbYU1IX5rZmzZKUE=;
- b=bV6Z9fOx1VItspILAPRI5W8VOzo91dJcPE/eE8sUJW2P4w2Ur80bjp3SPzzP/d4z/E
- MNBEe1oPE/Q4EqZMdrWa8+KFp0Tesxe54lIFXB7D363t3pkjemC+wSS4s6kTqXeCXtQW
- aUbLE4f3qMlzjD6rC/R3oG1YYH6Zub7/X+FKI=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=ZltWz01c8oCLmnoDvGrjVYpDxnidbYU1IX5rZmzZKUE=;
- b=nmSSBQxwRj7mSqnCtN5hf+KszFx8Lby8Nvvdvn3CSNVV1sCLI4Brf6PwfP3QTTtu0N
- DYY4l3hRxEScIbJ2+CjncSxFn72M6wNVA7Wma0B17aaI8XlaXiSFz1gUKXQBRrMOMckv
- 4EqluOFzblBIGyyFS3J9VOhwZXLTLPiDqvi5TtO7MoQBAPYp3QbQbYSzJhYGJaDFHW6T
- cn38V9ZToxfOuOcjeJbtIHj1Yv2Gx+KMM5v/0pWyriZxBhBaoSii2CP8xeyveRDqikQC
- a9Rmv2GNqUZmciLALkE5i78ZQx8pBrz798vZNOKkNOrxdItQ+cvHcK+El406wI34DkMK
- fE9w==
-X-Gm-Message-State: APjAAAVRx4kW1SJIoaCsF5MQrEcmTl7+pA80E3zxXBr74v2YPBsPPEE6
- LMkOpRKAZcM0omFB9sHPFDYgM3Z9K7Cnvw==
-X-Google-Smtp-Source: APXvYqwv5rLwOET/SNGVGrdd9i02wz6KfyE1CgBtoScH76g/+bIKbBO7+P1A77J80UsjXI2JMZ20tQ==
-X-Received: by 2002:adf:ef51:: with SMTP id c17mr16069888wrp.266.1574076274319; 
- Mon, 18 Nov 2019 03:24:34 -0800 (PST)
-Received: from prevas-ravi.prevas.se (ip-5-186-115-54.cgn.fibianet.dk.
- [5.186.115.54])
- by smtp.gmail.com with ESMTPSA id y2sm21140815wmy.2.2019.11.18.03.24.33
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 18 Nov 2019 03:24:33 -0800 (PST)
-From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-To: Qiang Zhao <qiang.zhao@nxp.com>, Li Yang <leoyang.li@nxp.com>,
- Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v5 48/48] soc: fsl: qe: remove PPC32 dependency from
- CONFIG_QUICC_ENGINE
-Date: Mon, 18 Nov 2019 12:23:24 +0100
-Message-Id: <20191118112324.22725-49-linux@rasmusvillemoes.dk>
-X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20191118112324.22725-1-linux@rasmusvillemoes.dk>
-References: <20191118112324.22725-1-linux@rasmusvillemoes.dk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47GnBd32fvzDqWH
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2019 22:42:49 +1100 (AEDT)
+Received: from localhost (unknown [127.0.0.1])
+ by mta-01.yadro.com (Postfix) with ESMTP id D428F42F13;
+ Mon, 18 Nov 2019 11:42:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
+ in-reply-to:content-disposition:content-type:content-type
+ :mime-version:references:message-id:subject:subject:from:from
+ :date:date:received:received:received; s=mta-01; t=1574077364;
+ x=1575891765; bh=vHuDX3sNObLd7t1AgjcCcOeVhTMvo7xIGwP/eiFhCYU=; b=
+ E3rZ3vL2+u6t2k3WErcYSLJaFm6GgrwzGF4iMsjJC/kqRsJd7jksu0Q8Bj2Z66ep
+ p938GePnUfYBJlD3Z2iSWXzRT+JGa7FKoobaT3KCw97cBK5emVXnZgRqDIltmQIK
+ KWIbKR97/DAc8VxXrYf3q139yHwu5Q/zuZbEEek8yZo=
+X-Virus-Scanned: amavisd-new at yadro.com
+Received: from mta-01.yadro.com ([127.0.0.1])
+ by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 9XqyyVC1Uxjd; Mon, 18 Nov 2019 14:42:44 +0300 (MSK)
+Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
+ [172.17.10.102])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mta-01.yadro.com (Postfix) with ESMTPS id 8125942F11;
+ Mon, 18 Nov 2019 14:42:44 +0300 (MSK)
+Received: from localhost (172.17.128.60) by T-EXCH-02.corp.yadro.com
+ (172.17.10.102) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Mon, 18
+ Nov 2019 14:42:44 +0300
+Date: Mon, 18 Nov 2019 14:42:42 +0300
+From: Roman Bolshakov <r.bolshakov@yadro.com>
+To: Daniel Axtens <dja@axtens.net>
+Subject: Re: HPT allocation failures on POWER8 KVM hosts
+Message-ID: <20191118114242.mgv2t6mwc3llepjj@SPB-NB-133.local>
+References: <20191115152826.hvcu3borgx4hp275@SPB-NB-133.local>
+ <874kz2gcx3.fsf@dja-thinkpad.axtens.net>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <874kz2gcx3.fsf@dja-thinkpad.axtens.net>
+X-Originating-IP: [172.17.128.60]
+X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
+ T-EXCH-02.corp.yadro.com (172.17.10.102)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,44 +84,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Timur Tabi <timur@kernel.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- linux-kernel@vger.kernel.org, Scott Wood <oss@buserror.net>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, qemu-ppc@nongnu.org,
+ linuxppc-dev@lists.ozlabs.org, linux@yadro.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There are also PPC64, ARM and ARM64 based SOCs with a QUICC Engine,
-and the core QE code as well as net/wan/fsl_ucc_hdlc and
-tty/serial/ucc_uart has now been modified to not rely on ppcisms.
+On Mon, Nov 18, 2019 at 01:02:00PM +1100, Daniel Axtens wrote:
+> Hi Roman,
+> 
+> > We're running a lot of KVM virtual machines on POWER8 hosts and
+> > sometimes new VMs can't be started because there are no contiguous
+> > regions for HPT because of CMA region fragmentation.
+> >
+> > The issue is covered in the LWN article: https://lwn.net/Articles/684611/
+> > The article points that you raised the problem on LSFMM 2016. However I
+> > couldn't find a follow up article on the issue.
+> >
+> > Looking at the kernel commit log I've identified a few commits that
+> > might reduce CMA fragmentaiton and overcome HPT allocation failure:
+> >   - bd2e75633c801 ("dma-contiguous: use fallback alloc_pages for single pages")
+> >   - 678e174c4c16a ("powerpc/mm/iommu: allow migration of cma allocated
+> >     pages during mm_iommu_do_alloc")
+> >   - 9a4e9f3b2d739 ("mm: update get_user_pages_longterm to migrate pages allocated from
+> >     CMA region")
+> >   - d7fefcc8de914 ("mm/cma: add PF flag to force non cma alloc")
+> >
+> > Are there any other commits that address the issue? What is the first
+> > kernel version that shouldn't have the HPT allocation problem due to CMA
+> > fragmentation?
+> 
+> I've had some success increasing the CMA allocation with the
+> kvm_cma_resv_ratio boot parameter - see
+> arch/powerpc/kvm/book3s_hv_builtin.c
+> 
+> The default is 5%. In a support case in a former job we had a customer
+> who increased this to I think 7 or 8% and saw the symptoms subside
+> dramatically.
+> 
 
-So extend the architectures that can select QUICC_ENGINE, and add the
-rather modest requirements of OF && HAS_IOMEM.
+Hi Daniel,
 
-The core code as well as the ucc_uart driver has been tested on an
-LS1021A (arm), and it has also been tested that the QE code still
-works on an mpc8309 (ppc). Qiang Zhao has tested that the QE-HDLC code
-that gets enabled with this works on ARM64.
+Thank you, I'll try to increase kvm_cma_resv_ratio for now, but even 5%
+CMA reserve should be more than enough, given the size of HPT as 1/128th
+of VM max memory.
 
-Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
----
- drivers/soc/fsl/qe/Kconfig | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+For a 16GB RAM VM without balloon device, only 128MB is going to be
+reserved for HPT using CMA. So, 5% CMA reserve should allow to provision
+VMs with over 1.5TB of RAM on 256GB RAM host. In other words the default
+CMA reserve allows to overprovision 6 times more memory for VMs than
+presented on a host.
 
-diff --git a/drivers/soc/fsl/qe/Kconfig b/drivers/soc/fsl/qe/Kconfig
-index cfa4b2939992..357c5800b112 100644
---- a/drivers/soc/fsl/qe/Kconfig
-+++ b/drivers/soc/fsl/qe/Kconfig
-@@ -5,7 +5,8 @@
- 
- config QUICC_ENGINE
- 	bool "QUICC Engine (QE) framework support"
--	depends on FSL_SOC && PPC32
-+	depends on OF && HAS_IOMEM
-+	depends on PPC || ARM || ARM64 || COMPILE_TEST
- 	select GENERIC_ALLOCATOR
- 	select CRC32
- 	help
--- 
-2.23.0
+We rarely add balloon device and sometimes don't add it at all. Therefore
+I'm still looking for commits that would help to avoid the issue with
+the default CMA reserve.
 
+Thank you,
+Roman
