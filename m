@@ -2,54 +2,53 @@ Return-Path: <SRS0=h9PY=ZK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_2 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 39EA9C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Nov 2019 14:16:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EABC5C432C0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Nov 2019 14:54:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E60DF20656
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Nov 2019 14:16:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E60DF20656
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.cz
+	by mail.kernel.org (Postfix) with ESMTPS id DC42220730
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Nov 2019 14:54:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DC42220730
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=goodmis.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47GrbN0hrnzDqLH
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Nov 2019 01:16:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47GsRP0CfCzDqdb
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Nov 2019 01:54:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=srs0=5krg=zk=goodmis.org=rostedt@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz
- (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=jack@suse.cz;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=suse.cz
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ dmarc=none (p=none dis=none) header.from=goodmis.org
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47Gnc95rHZzDqQq
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2019 23:01:29 +1100 (AEDT)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id E731CB061;
- Mon, 18 Nov 2019 12:01:20 +0000 (UTC)
-Received: by quack2.suse.cz (Postfix, from userid 1000)
- id 7EC421E4B09; Mon, 18 Nov 2019 11:16:58 +0100 (CET)
-Date: Mon, 18 Nov 2019 11:16:58 +0100
-From: Jan Kara <jack@suse.cz>
-To: John Hubbard <jhubbard@nvidia.com>
-Subject: Re: [PATCH v5 11/24] goldish_pipe: convert to pin_user_pages() and
- put_user_page()
-Message-ID: <20191118101658.GG17319@quack2.suse.cz>
-References: <20191115055340.1825745-1-jhubbard@nvidia.com>
- <20191115055340.1825745-12-jhubbard@nvidia.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47GsMx6qNXzDqPN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Nov 2019 01:51:09 +1100 (AEDT)
+Received: from oasis.local.home (cpe-66-24-58-225.stny.res.rr.com
+ [66.24.58.225])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 1607A2071B;
+ Mon, 18 Nov 2019 14:51:06 +0000 (UTC)
+Date: Mon, 18 Nov 2019 09:51:04 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Qian Cai <cai@lca.pw>
+Subject: Re: powerpc ftrace broken due to "manual merge of the ftrace tree
+ with the arm64 tree"
+Message-ID: <20191118095104.0daebbc3@oasis.local.home>
+In-Reply-To: <1573851994.5937.138.camel@lca.pw>
+References: <1573849732.5937.136.camel@lca.pw>
+ <20191115160230.78871d8f@gandalf.local.home>
+ <1573851994.5937.138.camel@lca.pw>
+X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20191115055340.1825745-12-jhubbard@nvidia.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,109 +60,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>,
- kvm@vger.kernel.org, linux-doc@vger.kernel.org,
- David Airlie <airlied@linux.ie>, Dave Chinner <david@fromorbit.com>,
- dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- linux-kselftest@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>,
- Jonathan Corbet <corbet@lwn.net>, linux-rdma@vger.kernel.org,
- Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>,
- Vlastimil Babka <vbabka@suse.cz>,
- =?iso-8859-1?Q?Bj=F6rn_T=F6pel?= <bjorn.topel@intel.com>,
- linux-media@vger.kernel.org, Shuah Khan <shuah@kernel.org>,
- linux-block@vger.kernel.org,
- =?iso-8859-1?B?Suly9G1l?= Glisse <jglisse@redhat.com>,
- Al Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>,
- Mauro Carvalho Chehab <mchehab@kernel.org>, bpf@vger.kernel.org,
- Magnus Karlsson <magnus.karlsson@intel.com>, Jens Axboe <axboe@kernel.dk>,
- netdev@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
- Daniel Vetter <daniel@ffwll.ch>, linux-fsdevel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S . Miller" <davem@davemloft.net>,
- Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu 14-11-19 21:53:27, John Hubbard wrote:
-> 1. Call the new global pin_user_pages_fast(), from pin_goldfish_pages().
-> 
-> 2. As required by pin_user_pages(), release these pages via
-> put_user_page(). In this case, do so via put_user_pages_dirty_lock().
-> 
-> That has the side effect of calling set_page_dirty_lock(), instead
-> of set_page_dirty(). This is probably more accurate.
-> 
-> As Christoph Hellwig put it, "set_page_dirty() is only safe if we are
-> dealing with a file backed page where we have reference on the inode it
-> hangs off." [1]
-> 
-> Another side effect is that the release code is simplified because
-> the page[] loop is now in gup.c instead of here, so just delete the
-> local release_user_pages() entirely, and call
-> put_user_pages_dirty_lock() directly, instead.
-> 
-> [1] https://lore.kernel.org/r/20190723153640.GB720@lst.de
-> 
-> Reviewed-by: Ira Weiny <ira.weiny@intel.com>
-> Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+On Fri, 15 Nov 2019 16:06:34 -0500
+Qian Cai <cai@lca.pw> wrote:
 
-Looks good to me. You can add:
-
-Reviewed-by: Jan Kara <jack@suse.cz>
-
-								Honza
-
-> ---
->  drivers/platform/goldfish/goldfish_pipe.c | 17 +++--------------
->  1 file changed, 3 insertions(+), 14 deletions(-)
+> > Test this commit please: b83b43ffc6e4b514ca034a0fbdee01322e2f7022  
 > 
-> diff --git a/drivers/platform/goldfish/goldfish_pipe.c b/drivers/platform/goldfish/goldfish_pipe.c
-> index 7ed2a21a0bac..635a8bc1b480 100644
-> --- a/drivers/platform/goldfish/goldfish_pipe.c
-> +++ b/drivers/platform/goldfish/goldfish_pipe.c
-> @@ -274,7 +274,7 @@ static int pin_goldfish_pages(unsigned long first_page,
->  		*iter_last_page_size = last_page_size;
->  	}
->  
-> -	ret = get_user_pages_fast(first_page, requested_pages,
-> +	ret = pin_user_pages_fast(first_page, requested_pages,
->  				  !is_write ? FOLL_WRITE : 0,
->  				  pages);
->  	if (ret <= 0)
-> @@ -285,18 +285,6 @@ static int pin_goldfish_pages(unsigned long first_page,
->  	return ret;
->  }
->  
-> -static void release_user_pages(struct page **pages, int pages_count,
-> -			       int is_write, s32 consumed_size)
-> -{
-> -	int i;
-> -
-> -	for (i = 0; i < pages_count; i++) {
-> -		if (!is_write && consumed_size > 0)
-> -			set_page_dirty(pages[i]);
-> -		put_page(pages[i]);
-> -	}
-> -}
-> -
->  /* Populate the call parameters, merging adjacent pages together */
->  static void populate_rw_params(struct page **pages,
->  			       int pages_count,
-> @@ -372,7 +360,8 @@ static int transfer_max_buffers(struct goldfish_pipe *pipe,
->  
->  	*consumed_size = pipe->command_buffer->rw_params.consumed_size;
->  
-> -	release_user_pages(pipe->pages, pages_count, is_write, *consumed_size);
-> +	put_user_pages_dirty_lock(pipe->pages, pages_count,
-> +				  !is_write && *consumed_size > 0);
->  
->  	mutex_unlock(&pipe->lock);
->  	return 0;
-> -- 
-> 2.24.0
+> # git reset --hard b83b43ffc6e4b514ca034a0fbdee01322e2f7022
 > 
--- 
-Jan Kara <jack@suse.com>
-SUSE Labs, CR
+> Yes, that one is bad.
+
+Can you see if this patch fixes the issue for you?
+
+Thanks!
+
+-- Steve
+
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index 0f358be551cd..fd8f4dc661dc 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -109,6 +109,13 @@
+ #define MEM_DISCARD(sec) *(.mem##sec)
+ #endif
+ 
++/* PowerPC defines ftrace_graph_stub in the code */
++#ifndef CONFIG_PPC
++# define DEFINE_FTRACE_GRAPH_STUB	ftrace_graph_stub = ftrace_stub;
++#else
++# define DEFINE_FTRACE_GRAPH_STUB
++#endif
++
+ #ifdef CONFIG_FTRACE_MCOUNT_RECORD
+ #ifdef CC_USING_PATCHABLE_FUNCTION_ENTRY
+ /*
+@@ -120,17 +127,17 @@
+ 			__start_mcount_loc = .;			\
+ 			KEEP(*(__patchable_function_entries))	\
+ 			__stop_mcount_loc = .;			\
+-			ftrace_graph_stub = ftrace_stub;
++			DEFINE_FTRACE_GRAPH_STUB
+ #else
+ #define MCOUNT_REC()	. = ALIGN(8);				\
+ 			__start_mcount_loc = .;			\
+ 			KEEP(*(__mcount_loc))			\
+ 			__stop_mcount_loc = .;			\
+-			ftrace_graph_stub = ftrace_stub;
++			DEFINE_FTRACE_GRAPH_STUB
+ #endif
+ #else
+ # ifdef CONFIG_FUNCTION_TRACER
+-#  define MCOUNT_REC()	ftrace_graph_stub = ftrace_stub;
++#  define MCOUNT_REC()	DEFINE_FTRACE_GRAPH_STUB
+ # else
+ #  define MCOUNT_REC()
+ # endif
