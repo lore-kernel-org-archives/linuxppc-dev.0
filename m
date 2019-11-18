@@ -7,75 +7,75 @@ X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D3926C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Nov 2019 12:29:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B119C432C3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Nov 2019 12:33:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 849122071C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Nov 2019 12:29:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id DE50320730
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Nov 2019 12:33:07 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="TWX9iBpw"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 849122071C
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="CRf+gbRe"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DE50320730
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rasmusvillemoes.dk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47GpF05Z00zDqSd
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Nov 2019 23:29:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47GpJd5ZkJzDqY5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Nov 2019 23:33:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::442;
- helo=mail-wr1-x442.google.com; envelope-from=linux@rasmusvillemoes.dk;
+ smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::443;
+ helo=mail-wr1-x443.google.com; envelope-from=linux@rasmusvillemoes.dk;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=rasmusvillemoes.dk
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk
- header.b="TWX9iBpw"; dkim-atps=neutral
-Received: from mail-wr1-x442.google.com (mail-wr1-x442.google.com
- [IPv6:2a00:1450:4864:20::442])
+ header.b="CRf+gbRe"; dkim-atps=neutral
+Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com
+ [IPv6:2a00:1450:4864:20::443])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47Gmmz5q2wzDqQK
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2019 22:24:03 +1100 (AEDT)
-Received: by mail-wr1-x442.google.com with SMTP id a15so18981355wrf.9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2019 03:24:03 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47Gmn21tkvzDqQH
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2019 22:24:06 +1100 (AEDT)
+Received: by mail-wr1-x443.google.com with SMTP id i12so18993509wro.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2019 03:24:06 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=rasmusvillemoes.dk; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=1C8bi+Glp22eU2mPHcIIhRfHNSQMvhbk1zxbdzRB++Q=;
- b=TWX9iBpwdpSNUgpJ/cUdC3Epzue8lAUKQth8hP+iX2zCk3JnB67JdPmo2cnMyzbduE
- aMo8BAZYKyCe25eCCHhnVtjFsg6NdBfAYdBSLpK6akVSb6dEwTAoUQ0168Nhq2K9wUQW
- zPnEeNERzqbndvpDwZzJpYA4bOmnl+GKVAuj8=
+ bh=/C1Eg1dR+pzbI0uF0+AzerXAuAR/n78tvkDzoMBSgLI=;
+ b=CRf+gbRezpDATz6c9R0mDvANO/QSuegvfk8Tajpqx2H0xRJkQoudvG/k8cPenj1OfF
+ YhcVEbS+mvttjyvlLQ4/bmQnkwvSFsB1/Z2vKohH9lSn3GzuXb6KD2DTi0j+cj+cZ8IE
+ xXF9M2X0cOPy12JeOjAezgGD65VW8DU2AZoKc=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=1C8bi+Glp22eU2mPHcIIhRfHNSQMvhbk1zxbdzRB++Q=;
- b=o8dCk14+i+va2l14KFKtjJ/f6QusZw2DSjb132JLrGi3Z0MCE6e6n8rvZqGa8k7T6B
- zPFyf0hvaCeSXvjtEqKQqEb2Kf6OKuHomfxhph8hzTiCSl5hjbwQtSeYnJnS91/ZsAoy
- 5vF1rYmZYPbImaiItNjRZYlHLFO9EIKP+5YjA17sgJrXM+OgeCtlAQ0lOv5ebRcbm0R4
- mk58iNkz2xEAtnhOcTjUNhmZSSVjOT+xP2HwtXv5YxlmJbVfMeNvO1LYXebIVa/15tFz
- jbkvMuh5AHdv0eZvDJcI/SRiTaPSJSyhobm6Q/V2oGPTENKor1SDsMEAeV17zD6xAvoP
- /rjQ==
-X-Gm-Message-State: APjAAAU81yqtJFmKWadtdMa3OeIbEwsmj0CgVDLk0BSMzrpUuodYs8Ny
- zRfkr/AgX0pdb9EndblVlMMSpw==
-X-Google-Smtp-Source: APXvYqyU40TIEBeeNT1xotdOz5OkMurLXXVSorlX6DaEtGjrmXTvcB0yK0PqCzhmSIW/U7/u5ZYHhA==
-X-Received: by 2002:adf:d091:: with SMTP id y17mr30844295wrh.182.1574076240560; 
- Mon, 18 Nov 2019 03:24:00 -0800 (PST)
+ bh=/C1Eg1dR+pzbI0uF0+AzerXAuAR/n78tvkDzoMBSgLI=;
+ b=jbmM5rD6ZC7ZYC+BkCopifLZQ0hIRjV9zkCg8Jk1mRCqBS7CXEG2FXIiTNwjLQvgKf
+ gOGR2nUbTp3fIMM9I8UnI8IMMHEcNBgv+qi9TfPIdS7xroWrWYpuypYkMJNrygWa8//f
+ aZ/kP0O7iSMDarpqOa9Nv3ZyKRDVUKm/KNqrv08TaqsIibMjo1z3CHkBfx9NJQuPUMGJ
+ OYYkdinAREAfa4Rfvb7vngRIFro6JaxNZHlzf50kuh7+rFA1T7dDgegbUPb38QGbayGV
+ UhxM9gtzqqmvcT4/Qnjl286y3O5THfjmy5UvP/OC6fH2Hp/CnX2WP3mJkrZY8rrgbuP+
+ Ax6w==
+X-Gm-Message-State: APjAAAVtBKkcrd7DYz3d5aDXbcNN26uGLnF5W9Vq2wb04uQC13xmfgqJ
+ Pay9+hURuWQr0/cwVdiRUJxvYA==
+X-Google-Smtp-Source: APXvYqzXsZpamBeEGMUxEhf7zjXrdrLG8X9SsNbwa395AChzzSBkUYi7pScN/Cb75JOsNmN8os6gHg==
+X-Received: by 2002:a5d:55c7:: with SMTP id i7mr30699762wrw.64.1574076242263; 
+ Mon, 18 Nov 2019 03:24:02 -0800 (PST)
 Received: from prevas-ravi.prevas.se (ip-5-186-115-54.cgn.fibianet.dk.
  [5.186.115.54])
- by smtp.gmail.com with ESMTPSA id y2sm21140815wmy.2.2019.11.18.03.23.59
+ by smtp.gmail.com with ESMTPSA id y2sm21140815wmy.2.2019.11.18.03.24.00
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 18 Nov 2019 03:24:00 -0800 (PST)
+ Mon, 18 Nov 2019 03:24:01 -0800 (PST)
 From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 To: Qiang Zhao <qiang.zhao@nxp.com>, Li Yang <leoyang.li@nxp.com>,
  Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v5 23/48] soc: fsl: qe: qe_io.c: don't open-code
- of_parse_phandle()
-Date: Mon, 18 Nov 2019 12:22:59 +0100
-Message-Id: <20191118112324.22725-24-linux@rasmusvillemoes.dk>
+Subject: [PATCH v5 24/48] soc: fsl: qe: qe_io.c: access device tree property
+ using be32_to_cpu
+Date: Mon, 18 Nov 2019 12:23:00 +0100
+Message-Id: <20191118112324.22725-25-linux@rasmusvillemoes.dk>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191118112324.22725-1-linux@rasmusvillemoes.dk>
 References: <20191118112324.22725-1-linux@rasmusvillemoes.dk>
@@ -99,40 +99,46 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+We need to apply be32_to_cpu to make this work correctly on
+little-endian hosts.
+
 Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 ---
- drivers/soc/fsl/qe/qe_io.c | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+ drivers/soc/fsl/qe/qe_io.c | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/soc/fsl/qe/qe_io.c b/drivers/soc/fsl/qe/qe_io.c
-index f6b10f38b2f4..99aeb01586bd 100644
+index 99aeb01586bd..61dd8eb8c0fe 100644
 --- a/drivers/soc/fsl/qe/qe_io.c
 +++ b/drivers/soc/fsl/qe/qe_io.c
-@@ -141,7 +141,6 @@ EXPORT_SYMBOL(par_io_data_set);
- int par_io_of_config(struct device_node *np)
+@@ -142,7 +142,7 @@ int par_io_of_config(struct device_node *np)
  {
  	struct device_node *pio;
--	const phandle *ph;
  	int pio_map_len;
- 	const unsigned int *pio_map;
+-	const unsigned int *pio_map;
++	const __be32 *pio_map;
  
-@@ -150,14 +149,12 @@ int par_io_of_config(struct device_node *np)
- 		return -1;
+ 	if (par_io == NULL) {
+ 		printk(KERN_ERR "par_io not initialized\n");
+@@ -167,9 +167,15 @@ int par_io_of_config(struct device_node *np)
  	}
  
--	ph = of_get_property(np, "pio-handle", NULL);
--	if (ph == NULL) {
-+	pio = of_parse_phandle(np, "pio-handle", 0);
-+	if (pio == NULL) {
- 		printk(KERN_ERR "pio-handle not available\n");
- 		return -1;
+ 	while (pio_map_len > 0) {
+-		par_io_config_pin((u8) pio_map[0], (u8) pio_map[1],
+-				(int) pio_map[2], (int) pio_map[3],
+-				(int) pio_map[4], (int) pio_map[5]);
++		u8 port        = be32_to_cpu(pio_map[0]);
++		u8 pin         = be32_to_cpu(pio_map[1]);
++		int dir        = be32_to_cpu(pio_map[2]);
++		int open_drain = be32_to_cpu(pio_map[3]);
++		int assignment = be32_to_cpu(pio_map[4]);
++		int has_irq    = be32_to_cpu(pio_map[5]);
++
++		par_io_config_pin(port, pin, dir, open_drain,
++				  assignment, has_irq);
+ 		pio_map += 6;
+ 		pio_map_len -= 6;
  	}
- 
--	pio = of_find_node_by_phandle(*ph);
--
- 	pio_map = of_get_property(pio, "pio-map", &pio_map_len);
- 	if (pio_map == NULL) {
- 		printk(KERN_ERR "pio-map is not set!\n");
 -- 
 2.23.0
 
