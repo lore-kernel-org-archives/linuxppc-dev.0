@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84D08C432C3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Nov 2019 17:52:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 860ECC432C0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Nov 2019 17:55:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0CB972231A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Nov 2019 17:52:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0CB972231A
+	by mail.kernel.org (Postfix) with ESMTPS id 45DE621823
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Nov 2019 17:55:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 45DE621823
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47HYL84jRvzDqh3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Nov 2019 04:52:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47HYQ72jLJzDqh2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Nov 2019 04:55:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,31 +28,33 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47HYHh3sKqzDqd9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Nov 2019 04:49:52 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47HYKL1ZtvzDqft
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Nov 2019 04:51:18 +1100 (AEDT)
 Received: from localhost (mailhub1-ext [192.168.12.233])
- by localhost (Postfix) with ESMTP id 47HYHb6zBXz9tyMG;
- Tue, 19 Nov 2019 18:49:47 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 47HYKF0Rqyz9tysr;
+ Tue, 19 Nov 2019 18:51:13 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id XqvRI0tj-P3k; Tue, 19 Nov 2019 18:49:47 +0100 (CET)
+ with ESMTP id GucKk23fozaz; Tue, 19 Nov 2019 18:51:13 +0100 (CET)
 Received: from vm-hermes.si.c-s.fr (vm-hermes.si.c-s.fr [192.168.25.253])
- by pegase1.c-s.fr (Postfix) with ESMTP id 47HYHb5ktBz9tyM0;
- Tue, 19 Nov 2019 18:49:47 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 47HYKD6plKz9ttCN;
+ Tue, 19 Nov 2019 18:51:12 +0100 (CET)
 Received: by vm-hermes.si.c-s.fr (Postfix, from userid 33)
- id AD0F387D; Tue, 19 Nov 2019 18:49:48 +0100 (CET)
+ id 033208B9; Tue, 19 Nov 2019 18:51:13 +0100 (CET)
 Received: from 37-173-93-145.coucou-networks.fr
  (37-173-93-145.coucou-networks.fr [37.173.93.145]) by messagerie.si.c-s.fr
- (Horde Framework) with HTTP; Tue, 19 Nov 2019 18:49:48 +0100
-Date: Tue, 19 Nov 2019 18:49:48 +0100
-Message-ID: <20191119184948.Horde.Roz3CrP_eBhY_YnNAgMQ7w1@messagerie.si.c-s.fr>
+ (Horde Framework) with HTTP; Tue, 19 Nov 2019 18:51:13 +0100
+Date: Tue, 19 Nov 2019 18:51:13 +0100
+Message-ID: <20191119185113.Horde.6OywM5Gmhq3LRZDTsd-7HA1@messagerie.si.c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/8xx: Fix permanently mapped IMMR region.
-References: <ad9d45119a48a92bf122781d0c79c9407baa12d7.1566554026.git.christophe.leroy@c-s.fr>
- <87sgmlcu1x.fsf@mpe.ellerman.id.au>
-In-Reply-To: <87sgmlcu1x.fsf@mpe.ellerman.id.au>
+Subject: Re: [PATCH v4 2/2] powerpc/kexec: move kexec files into a dedicated
+ subdir.
+References: <e235973a1198195763afd3b6baffa548a83f4611.1572351221.git.christophe.leroy@c-s.fr>
+ <afbef97ec6a978574a5cf91a4441000e0a9da42a.1572351221.git.christophe.leroy@c-s.fr>
+ <87pnhpctrn.fsf@mpe.ellerman.id.au>
+In-Reply-To: <87pnhpctrn.fsf@mpe.ellerman.id.au>
 User-Agent: Internet Messaging Program (IMP) H5 (6.2.3)
 Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
 MIME-Version: 1.0
@@ -78,25 +80,80 @@ Sender: "Linuxppc-dev"
 Michael Ellerman <mpe@ellerman.id.au> a =C3=A9crit=C2=A0:
 
 > Christophe Leroy <christophe.leroy@c-s.fr> writes:
->> When not using large TLBs, the IMMR region is still
->> mapped as a whole block in the FIXMAP area.
+>> arch/powerpc/kernel/ contains 8 files dedicated to kexec.
 >>
->> Do not remove pages mapped in the FIXMAP region when
->> initialising paging.
->>
->> Properly report that the IMMR region is block-mapped even
->> when not using large TLBs.
+>> Move them into a dedicated subdirectory.
 >>
 >> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>>
 >> ---
->>  arch/powerpc/mm/mem.c        |  8 --------
->>  arch/powerpc/mm/nohash/8xx.c | 13 +++++++------
->>  2 files changed, 7 insertions(+), 14 deletions(-)
+>> v2: moved crash.c as well as it's part of kexec suite.
+>> v3: renamed files to remove 'kexec' keyword from names.
+>> v4: removed a ifdef in kexec/Makefile
+>> ---
+>>  arch/powerpc/kernel/Makefile                       | 19 +--------------=
+-
+>>  arch/powerpc/kernel/kexec/Makefile                 | 25=20=20
+>>=20++++++++++++++++++++++
+>>  arch/powerpc/kernel/{ =3D> kexec}/crash.c            |  0
+>>  .../kernel/{kexec_elf_64.c =3D> kexec/elf_64.c}      |  0
+>>  arch/powerpc/kernel/{ima_kexec.c =3D> kexec/ima.c}   |  0
+>>  .../kernel/{machine_kexec.c =3D> kexec/machine.c}    |  0
+>>  .../{machine_kexec_32.c =3D> kexec/machine_32.c}     |  0
+>>  .../{machine_kexec_64.c =3D> kexec/machine_64.c}     |  0
+>>  .../machine_file_64.c}                             |  0
+>>  .../{kexec_relocate_32.S =3D> kexec/relocate_32.S}   |  2 +-
+>>  10 files changed, 27 insertions(+), 19 deletions(-)
+>>  create mode 100644 arch/powerpc/kernel/kexec/Makefile
+>>  rename arch/powerpc/kernel/{ =3D> kexec}/crash.c (100%)
+>>  rename arch/powerpc/kernel/{kexec_elf_64.c =3D> kexec/elf_64.c} (100%)
+>>  rename arch/powerpc/kernel/{ima_kexec.c =3D> kexec/ima.c} (100%)
+>>  rename arch/powerpc/kernel/{machine_kexec.c =3D> kexec/machine.c} (100%=
+)
+>>  rename arch/powerpc/kernel/{machine_kexec_32.c =3D>=20=20
+>>=20kexec/machine_32.c} (100%)
+>>  rename arch/powerpc/kernel/{machine_kexec_64.c =3D>=20=20
+>>=20kexec/machine_64.c} (100%)
+>>  rename arch/powerpc/kernel/{machine_kexec_file_64.c =3D>=20=20
+>>=20kexec/machine_file_64.c} (100%)
+>>  rename arch/powerpc/kernel/{kexec_relocate_32.S =3D>=20=20
+>>=20kexec/relocate_32.S} (99%)
 >
-> This blows up pmac32_defconfig + qemu mac99 for me with:
+> I'm inclined to move the directory out of kernel, ie. up a level with mm
+> and so on.
+>
+> And I also don't think the "machine" naming is useful anymore. It comes
+> from the naming of the arch functions, eg. machine_kexec(), which was
+> named to be analogous to machine_restart().
+>
+> So how about:
+>
+>   arch/powerpc/{kernel/machine_kexec.c =3D> kexec/core.c}
+>   arch/powerpc/{kernel/machine_kexec_32.c =3D> kexec/core_32.c}
+>   arch/powerpc/{kernel/machine_kexec_64.c =3D> kexec/core_64.c}
+>   arch/powerpc/{kernel =3D> kexec}/crash.c
+>   arch/powerpc/{kernel/kexec_elf_64.c =3D> kexec/elf_64.c}
+>   arch/powerpc/{kernel/machine_kexec_file_64.c =3D> kexec/file_load.c}
+>   arch/powerpc/{kernel/ima_kexec.c =3D> kexec/ima.c}
+>   arch/powerpc/{kernel/kexec_relocate_32.S =3D> kexec/relocate_32.S}
+>
+> And we end up with:
+>
+>   $ find arch/powerpc/kexec
+>   arch/powerpc/kexec/
+>   arch/powerpc/kexec/file_load.c
+>   arch/powerpc/kexec/relocate_32.S
+>   arch/powerpc/kexec/core_64.c
+>   arch/powerpc/kexec/ima.c
+>   arch/powerpc/kexec/core.c
+>   arch/powerpc/kexec/core_32.c
+>   arch/powerpc/kexec/Makefile
+>   arch/powerpc/kexec/crash.c
+>   arch/powerpc/kexec/elf_64.c
 
-Ok, then there is still something I have not understood about fixmap.=20=20
-I'll=20look at it next week
+That looks good
 
 Christophe
+
+
 
