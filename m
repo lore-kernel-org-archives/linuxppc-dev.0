@@ -2,64 +2,62 @@ Return-Path: <SRS0=BgZL=ZL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8B25C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Nov 2019 06:59:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 91CE4C432C0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Nov 2019 07:02:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2E291208CC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Nov 2019 06:59:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3A25A208CC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Nov 2019 07:02:50 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="oEzgknc7"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E291208CC
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="rqUBxFVH"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3A25A208CC
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47HGsk5DqZzDqf0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Nov 2019 17:59:54 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 47HGx30nzzzDqdc
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Nov 2019 18:02:47 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47HGpY0KfVzDqNx
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Nov 2019 17:57:09 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47HGqr67bfzDqVv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Nov 2019 17:58:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.b="oEzgknc7"; dkim-atps=neutral
+ header.b="rqUBxFVH"; dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 47HGpW0SZfz9sRY;
- Tue, 19 Nov 2019 17:57:07 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 47HGqq4dKcz9sSP;
+ Tue, 19 Nov 2019 17:58:15 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1574146627;
- bh=abFbgG1igsThhgb3dlNVPaVj97B/UnH0/Rzd5PqAH+0=;
+ s=201909; t=1574146696;
+ bh=UJDJAAoM1z5MF3IYbIZX69JmcS9dmQDJlWRDIRsZqlY=;
  h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=oEzgknc7lx7h5mOjZB0zQ3OpkhQjE2o7K2yyBwiUDKIpC76o8tVULItublIoVzqSR
- IdXlpROlMM68c7Ufy69ZgmokqgE4PAe0yrWx53/OeYK+qKsHRJHp/UkbV1I2lYoMvI
- rb+qPgWWCxtRMW2fBV8yrPh+jL9kbZjyCD9Vvu76Ai9NolmcXQahEze5dtjpCfpj3b
- 4p3UjTem+R663qkGKc21teebtxS+C74oXnNYQ4stRAaIdu/bgqzIZ2AJbrJt3+eA1i
- FXSlzh2Chck58Mgg45i3Fe9GR9wP7WCPyGNi2K72I1H9ILsMSqLsVgpsgyvx8k1ksv
- yh0y5KM8NT1Qw==
+ b=rqUBxFVHDz30tTohZ/5o4s0MG6uRLUgC+jddFLvTHOI23O6RYj6iAlN8BM6F/gpYo
+ IOywwfiOTa3ViPBXLipcof5niocJACuF68pJyLl8QpMJwrdlcDTcAqModRec5sYIRl
+ 507+UJ5jZMm2vfIitezy+PzkfrX9WbsX7sAXilKzyR5Uz9pvbM64sIWCDifSo7PofG
+ ugWVXffzUZp+5/GsmKgNDV6c0+ADGddw64qIMeDyZWb9gyTiUhSgwcI2hIuyPi9Ftm
+ F6pvPmWc/7DVqqn2r7/1BSOxpSJHXP3ZncO3HX0BBu9ei54wFIrBMDrmiThfuJUj0i
+ Bnhm25x1zJnuQ==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Christophe Leroy <christophe.leroy@c-s.fr>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, npiggin@gmail.com, dja@axtens.net
 Subject: Re: [PATCH v3 15/15] powerpc/32s: Activate CONFIG_VMAP_STACK
-In-Reply-To: <87v9rhcuc5.fsf@mpe.ellerman.id.au>
+In-Reply-To: <a99bdfb64e287b16b8cd3f7ec1abfdfb50c7cc64.1568106758.git.christophe.leroy@c-s.fr>
 References: <cover.1568106758.git.christophe.leroy@c-s.fr>
  <a99bdfb64e287b16b8cd3f7ec1abfdfb50c7cc64.1568106758.git.christophe.leroy@c-s.fr>
- <87v9rhcuc5.fsf@mpe.ellerman.id.au>
-Date: Tue, 19 Nov 2019 17:57:03 +1100
-Message-ID: <878soccq0w.fsf@mpe.ellerman.id.au>
+Date: Tue, 19 Nov 2019 17:58:14 +1100
+Message-ID: <875zjgcpyx.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -79,53 +77,54 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
+Christophe Leroy <christophe.leroy@c-s.fr> writes:
+> A few changes to retrieve DAR and DSISR from struct regs
+> instead of retrieving them directly, as they may have
+> changed due to a TLB miss.
+>
+> Also modifies hash_page() and friends to work with virtual
+> data addresses instead of physical ones.
+>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+>  arch/powerpc/kernel/entry_32.S         |  4 +++
+>  arch/powerpc/kernel/head_32.S          | 19 +++++++++++---
+>  arch/powerpc/kernel/head_32.h          |  4 ++-
+>  arch/powerpc/mm/book3s32/hash_low.S    | 46 +++++++++++++++++++++-------------
+>  arch/powerpc/mm/book3s32/mmu.c         |  9 +++++--
+>  arch/powerpc/platforms/Kconfig.cputype |  2 ++
+>  6 files changed, 61 insertions(+), 23 deletions(-)
 
-> Christophe Leroy <christophe.leroy@c-s.fr> writes:
->> A few changes to retrieve DAR and DSISR from struct regs
->> instead of retrieving them directly, as they may have
->> changed due to a TLB miss.
->>
->> Also modifies hash_page() and friends to work with virtual
->> data addresses instead of physical ones.
->>
->> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->> ---
->>  arch/powerpc/kernel/entry_32.S         |  4 +++
->>  arch/powerpc/kernel/head_32.S          | 19 +++++++++++---
->>  arch/powerpc/kernel/head_32.h          |  4 ++-
->>  arch/powerpc/mm/book3s32/hash_low.S    | 46 +++++++++++++++++++++-------------
->>  arch/powerpc/mm/book3s32/mmu.c         |  9 +++++--
->>  arch/powerpc/platforms/Kconfig.cputype |  2 ++
->>  6 files changed, 61 insertions(+), 23 deletions(-)
->
-> If I build pmac32_defconfig with KVM enabled this causes a build break:
->
->   arch/powerpc/kernel/head_32.S: Assembler messages:
->   arch/powerpc/kernel/head_32.S:324: Error: attempt to move .org backwards
->   scripts/Makefile.build:357: recipe for target 'arch/powerpc/kernel/head_32.o' failed
->   make[2]: *** [arch/powerpc/kernel/head_32.o] Error 1
->
-> In the interests of getting the series merged I'm inclined to just make
-> VMAP_STACK and KVM incompatible for now with:
->
-> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-> index 15c9097dc4f7..5074fe77af40 100644
-> --- a/arch/powerpc/platforms/Kconfig.cputype
-> +++ b/arch/powerpc/platforms/Kconfig.cputype
-> @@ -31,7 +31,7 @@ config PPC_BOOK3S_6xx
->         select PPC_HAVE_PMU_SUPPORT
->         select PPC_HAVE_KUEP
->         select PPC_HAVE_KUAP
-> -       select HAVE_ARCH_VMAP_STACK
-> +       select HAVE_ARCH_VMAP_STACK if !KVM_BOOK3S_32
+This is faulting with qemu mac99 model:
 
-For some reason this needs to be !KVM.
+  Key type id_resolver registered
+  Key type id_legacy registered
+  BUG: Unable to handle kernel data access on read at 0x2f0db684
+  Faulting instruction address: 0x00004130
+  Oops: Kernel access of bad area, sig: 11 [#1]
+  BE PAGE_SIZE=4K MMU=Hash PowerMac
+  Modules linked in:
+  CPU: 0 PID: 65 Comm: modprobe Not tainted 5.4.0-rc2-gcc49+ #63
+  NIP:  00004130 LR: 000008c8 CTR: b7eb86e0
+  REGS: f106de80 TRAP: 0300   Not tainted  (5.4.0-rc2-gcc49+)
+  MSR:  00003012 <FP,ME,DR,RI>  CR: 4106df38  XER: 20000000
+  DAR: 2f0db684 DSISR: 40000000 
+  GPR00: b7ec5d64 f106df38 00000000 bf988a70 00000000 2f0db540 b7ec3620 bf988d38 
+  GPR08: 10000880 0000d032 72656773 f106df38 b7ed10ec 00000000 b7ed3d38 b7ee8900 
+  GPR16: bf988d10 00000001 00000000 bf988d10 b7ec3620 bf988d50 b7ee76ec b7ee7320 
+  GPR24: 10000878 00000000 b7ee8900 00000000 10029f00 10000879 b7ee7ff4 bf988d30 
+  NIP [00004130] 0x4130
+  LR [000008c8] 0x8c8
+  Call Trace:
+  [f106df38] [c0016224] ret_from_syscall+0x0/0x34 (unreliable)
+  --- interrupt: c01 at 0xb7ed0f50
+      LR = 0xb7ec5d64
+  Instruction dump:
+  db8300e0 XXXXXXXX XXXXXXXX XXXXXXXX fc00048e XXXXXXXX XXXXXXXX XXXXXXXX 
+  60a52000 XXXXXXXX XXXXXXXX XXXXXXXX 80850144 XXXXXXXX XXXXXXXX XXXXXXXX 
+  ---[ end trace 265da51c6d8b86c5 ]---
 
->  config PPC_BOOK3S_601
->         bool "PowerPC 601"
->
->
-> Thoughts?
+
+I think I'll have to drop this series for now.
 
 cheers
