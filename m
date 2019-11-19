@@ -2,65 +2,63 @@ Return-Path: <SRS0=BgZL=ZL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BD3CCC43215
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Nov 2019 05:53:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B242C33C8C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Nov 2019 05:56:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 67D8120721
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Nov 2019 05:53:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6A9FF21850
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Nov 2019 05:56:32 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="BuQc1BM1"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 67D8120721
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
+	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="h7/kk6Zt"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6A9FF21850
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47HFNY1dlPzDqY4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Nov 2019 16:53:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47HFSZ245wzDqLc
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Nov 2019 16:56:30 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47HFP60ZPPzDqBr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Nov 2019 16:53:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="BuQc1BM1"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47HFKd17wSzDqQN
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Nov 2019 16:50:29 +1100 (AEDT)
-Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
- [83.86.89.107])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 8136B214D9;
- Tue, 19 Nov 2019 05:50:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1574142627;
- bh=yd/2s7NgD5N/H4tCXDGVVAgmUhkj7AtVXMSL9P/ctck=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=BuQc1BM1I8/yu19XBJ4e9NwFPz2Etwu7iOf0sPt/oW+xKZ90hVBnV48nUzW8kFmin
- 0c7SRzTHRoeAUFP646uukjTgWH4xjRlKu/FBdzwEn4bdSVfN22y1NLL/VPj2ZgqbJK
- 1IxppL7+D6W6jWYWeM6NZmNh48EoG560b5Eoi3uI=
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 4.14 145/239] libfdt: Ensure INT_MAX is defined in libfdt_env.h
-Date: Tue, 19 Nov 2019 06:19:05 +0100
-Message-Id: <20191119051332.226062838@linuxfoundation.org>
-X-Mailer: git-send-email 2.24.0
-In-Reply-To: <20191119051255.850204959@linuxfoundation.org>
-References: <20191119051255.850204959@linuxfoundation.org>
-User-Agent: quilt/0.66
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.b="h7/kk6Zt"; dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 47HFP53LRMzB3vv;
+ Tue, 19 Nov 2019 16:53:29 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1574142809;
+ bh=jb7dTqxFpJxsRgcQPIuEXZVSto0BIWmREranK2PFIr0=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=h7/kk6ZtFkQRQlA/Ck8jL74zTQ3dP7YYzbWBluWN1D0Vc6khCLw6hNIb3fxTzOppr
+ b0s726Vz/6B3Uc8qvoJLQJEpX0/qLY8v2XaG+TlH3mHSI9j8DtyUxvtgveq3KjfdGA
+ D692bfxUswq69bu33cti14yfMyw7OSFlzw5uuIO7d6M2BPQ3pvEch/3iWWsTkkwZ1s
+ s4XvgCDKSXFdzBZj7ub2HcAQorooC6S5PoueO+7b3qEbUohTko2T5qLgg7+U5/nhOu
+ yl5Y09UN70Y+P0pQpdJ8lDVUcEEe0TdxjcbifQcZ1ipZqjI3CzTgO0BO0FB3gkawVC
+ PeEu3/tSPr6QQ==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Chen Wandun <chenwandun@huawei.com>, tyreld@linux.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ mahesh@linux.vnet.ibm.com, paulus@samba.org
+Subject: Re: [PATCH] powerpc/pseries: remove variable 'status' set but not used
+In-Reply-To: <1573873650-62511-1-git-send-email-chenwandun@huawei.com>
+References: <1573873650-62511-1-git-send-email-chenwandun@huawei.com>
+Date: Tue, 19 Nov 2019 16:53:26 +1100
+Message-ID: <87blt8csyx.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,77 +70,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, Rob Herring <robh@kernel.org>,
- Russell King <linux@armlinux.org.uk>, stable@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: chenwandun@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Rob Herring <robh@kernel.org>
+Chen Wandun <chenwandun@huawei.com> writes:
+> Fixes gcc '-Wunused-but-set-variable' warning:
+>
+> arch/powerpc/platforms/pseries/ras.c: In function ras_epow_interrupt:
+> arch/powerpc/platforms/pseries/ras.c:319:6: warning: variable status set but not used [-Wunused-but-set-variable]
 
-[ Upstream commit 53dd9dce6979bc54d64a3a09a2fb20187a025be7 ]
+Thanks for the patch.
 
-The next update of libfdt has a new dependency on INT_MAX. Update the
-instances of libfdt_env.h in the kernel to either include the necessary
-header with the definition or define it locally.
+But it almost certainly is wrong to not check the status.
 
-Cc: Russell King <linux@armlinux.org.uk>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Rob Herring <robh@kernel.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- arch/arm/boot/compressed/libfdt_env.h | 2 ++
- arch/powerpc/boot/libfdt_env.h        | 2 ++
- include/linux/libfdt_env.h            | 1 +
- 3 files changed, 5 insertions(+)
+It's calling firmware and just assuming that the call succeeded. It then
+goes on to use the result that should have been written by firmware, but
+is now potentially random junk.
 
-diff --git a/arch/arm/boot/compressed/libfdt_env.h b/arch/arm/boot/compressed/libfdt_env.h
-index 07437816e0986..b36c0289a308e 100644
---- a/arch/arm/boot/compressed/libfdt_env.h
-+++ b/arch/arm/boot/compressed/libfdt_env.h
-@@ -6,6 +6,8 @@
- #include <linux/string.h>
- #include <asm/byteorder.h>
- 
-+#define INT_MAX			((int)(~0U>>1))
-+
- typedef __be16 fdt16_t;
- typedef __be32 fdt32_t;
- typedef __be64 fdt64_t;
-diff --git a/arch/powerpc/boot/libfdt_env.h b/arch/powerpc/boot/libfdt_env.h
-index f52c31b1f48fa..39155d3b2cefa 100644
---- a/arch/powerpc/boot/libfdt_env.h
-+++ b/arch/powerpc/boot/libfdt_env.h
-@@ -5,6 +5,8 @@
- #include <types.h>
- #include <string.h>
- 
-+#define INT_MAX			((int)(~0U>>1))
-+
- #include "of.h"
- 
- typedef u32 uint32_t;
-diff --git a/include/linux/libfdt_env.h b/include/linux/libfdt_env.h
-index 14997285e53d3..1aa707ab19bbf 100644
---- a/include/linux/libfdt_env.h
-+++ b/include/linux/libfdt_env.h
-@@ -2,6 +2,7 @@
- #ifndef _LIBFDT_ENV_H
- #define _LIBFDT_ENV_H
- 
-+#include <linux/kernel.h>	/* For INT_MAX */
- #include <linux/string.h>
- 
- #include <asm/byteorder.h>
--- 
-2.20.1
+So I'd much rather a patch to change it to check the status. 
 
+> diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
+> index 1d7f973..4a61d0f 100644
+> --- a/arch/powerpc/platforms/pseries/ras.c
+> +++ b/arch/powerpc/platforms/pseries/ras.c
+> @@ -316,12 +316,11 @@ static irqreturn_t ras_hotplug_interrupt(int irq, void *dev_id)
+>  /* Handle environmental and power warning (EPOW) interrupts. */
+>  static irqreturn_t ras_epow_interrupt(int irq, void *dev_id)
+>  {
+> -	int status;
+>  	int state;
+>  	int critical;
+>  
+> -	status = rtas_get_sensor_fast(EPOW_SENSOR_TOKEN, EPOW_SENSOR_INDEX,
+> -				      &state);
+> +	rtas_get_sensor_fast(EPOW_SENSOR_TOKEN, EPOW_SENSOR_INDEX,
+> +			     &state);
 
+This is calling a helper which already does some translation of the
+return value, any value < 0 indicates an error.
 
+> @@ -330,12 +329,12 @@ static irqreturn_t ras_epow_interrupt(int irq, void *dev_id)
+>  
+>  	spin_lock(&ras_log_buf_lock);
+>  
+> -	status = rtas_call(ras_check_exception_token, 6, 1, NULL,
+> -			   RTAS_VECTOR_EXTERNAL_INTERRUPT,
+> -			   virq_to_hw(irq),
+> -			   RTAS_EPOW_WARNING,
+> -			   critical, __pa(&ras_log_buf),
+> -				rtas_get_error_log_max());
+> +	rtas_call(ras_check_exception_token, 6, 1, NULL,
+> +		  RTAS_VECTOR_EXTERNAL_INTERRUPT,
+> +		  virq_to_hw(irq),
+> +		  RTAS_EPOW_WARNING,
+> +		  critical, __pa(&ras_log_buf),
+> +		  rtas_get_error_log_max());
+
+This is directly calling firmware.
+
+As documented in LoPAPR, a negative status indicates an error, 0
+indicates a new error log was found (ie. the function should continue),
+or 1 there was no error log (ie. nothing to do).
+
+cheers
+
+>  	log_error(ras_log_buf, ERR_TYPE_RTAS_LOG, 0);
+>  
+> -- 
+> 2.7.4
