@@ -4,23 +4,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DE219C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 08:48:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 62D2BC432C0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 08:50:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8C835206EC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 08:48:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 077392089D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 08:50:16 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="fWeW5VfF"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8C835206EC
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="Mafq4UPz"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 077392089D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47JY9y4gFCzDr3P
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 19:48:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47JYD668VQzDr44
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 19:50:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -30,40 +30,40 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="fWeW5VfF"; dkim-atps=neutral
+ header.b="Mafq4UPz"; dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47JXLk3p4bzDqrX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2019 19:10:54 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47JXLm5fw3zDqxh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2019 19:10:56 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
  :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
  Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
  Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
  List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=VjO9eYbS8IFyLCNQdhIWL3IwgO2zhTRITxFTV7Q4ke0=; b=fWeW5VfFSpSocy6gUTyTq7ohZ
- duWI/ht/WJEZCytte4q/OoCO3XHZsxub0zfdWXgJMwm0kxZ4Evu+pSu8vDqAde8NJcekP1KvZWTtD
- xHQFS3QQWbDzJp6QKE6jzpGTkVBlvWLzk+RBcL8X5N1TsvDfMwPHaaBCvtN9JjwQ1rQi+7po+k2A4
- Z39WgOu5ergP2HMb8sGCzyRKDSO/I+mbgAEZqSFGA0pwIVj1Qkrec7CtCQPnXQeGS/IaPqmpnFKNf
- aZrMXAwd8HXogYEVWB+AdeEhKcdzRbKuMoG04Ftic11jIRTcwm+pNK8JK68LoASBzHMxqDwKIt+f7
- gT4vwZRAg==;
+ bh=DZddNdyW5FRrAXgTdc6w5huJMr/L+GTDCsXkrpDZQWE=; b=Mafq4UPzuRzO9+6g0idvgtn8y
+ WcDSiCT7hQFVoaJkaXestyiwMGnqfYjgbEOz0r27XeQ+Y5KvjD4Nuhy0YaDkgeX1N2nHrE2fymh9/
+ Kl6qsPzn8bgO9GwKGkSXLJ6yif29++yxYwWthonAbKTOkkQzaykODs/kBCpIPvEL9IlVjXYjhMRJE
+ HObsxeSD97VjwE1Ac50vXPpo12MNChRAcbknrDS9loF08kQwig/wzQVsPl/cwUiTKkHvJYvfDWnFU
+ FO6tlhkm1YjoPatb8/UhLvWJuQFmCn5wpi+24IGZ7mIRAGQpgH/fHbaZ8f9hs4dGNlP7WUQjseLo0
+ O4T8RJ40Q==;
 Received: from hch by bombadil.infradead.org with local (Exim 4.92.3 #3 (Red
- Hat Linux)) id 1iXhWR-0000HT-5s; Thu, 21 Nov 2019 08:09:03 +0000
-Date: Thu, 21 Nov 2019 00:09:03 -0800
+ Hat Linux)) id 1iXhXf-0001ki-FW; Thu, 21 Nov 2019 08:10:19 +0000
+Date: Thu, 21 Nov 2019 00:10:19 -0800
 From: Christoph Hellwig <hch@infradead.org>
 To: John Hubbard <jhubbard@nvidia.com>
-Subject: Re: [PATCH v7 08/24] media/v4l2-core: set pages dirty upon releasing
- DMA buffers
-Message-ID: <20191121080903.GE30991@infradead.org>
+Subject: Re: [PATCH v7 09/24] vfio, mm: fix get_user_pages_remote() and
+ FOLL_LONGTERM
+Message-ID: <20191121081019.GF30991@infradead.org>
 References: <20191121071354.456618-1-jhubbard@nvidia.com>
- <20191121071354.456618-9-jhubbard@nvidia.com>
+ <20191121071354.456618-10-jhubbard@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20191121071354.456618-9-jhubbard@nvidia.com>
+In-Reply-To: <20191121071354.456618-10-jhubbard@nvidia.com>
 User-Agent: Mutt/1.12.1 (2019-06-15)
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
  bombadil.infradead.org. See http://www.infradead.org/rpr.html
@@ -86,10 +86,10 @@ Cc: Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>,
  linux-kselftest@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>,
  Jonathan Corbet <corbet@lwn.net>, linux-rdma@vger.kernel.org,
  Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>,
- Vlastimil Babka <vbabka@suse.cz>,
+ Jason Gunthorpe <jgg@mellanox.com>, Vlastimil Babka <vbabka@suse.cz>,
  =?iso-8859-1?Q?Bj=F6rn_T=F6pel?= <bjorn.topel@intel.com>,
  linux-media@vger.kernel.org, Shuah Khan <shuah@kernel.org>,
- linux-block@vger.kernel.org, Hans Verkuil <hverkuil-cisco@xs4all.nl>,
+ linux-block@vger.kernel.org,
  =?iso-8859-1?B?Suly9G1l?= Glisse <jglisse@redhat.com>,
  Al Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>,
  Mauro Carvalho Chehab <mchehab@kernel.org>, bpf@vger.kernel.org,
@@ -103,16 +103,5 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Nov 20, 2019 at 11:13:38PM -0800, John Hubbard wrote:
-> After DMA is complete, and the device and CPU caches are synchronized,
-> it's still required to mark the CPU pages as dirty, if the data was
-> coming from the device. However, this driver was just issuing a
-> bare put_page() call, without any set_page_dirty*() call.
-> 
-> Fix the problem, by calling set_page_dirty_lock() if the CPU pages
-> were potentially receiving data from the device.
-
-Looks good, and like a fix that should be queued up through the media
-tree for 5.5 and maybe even added to -stable.
-
-Reviewed-by: Christoph Hellwig <hch@lst.de>
+Should this be two patches, one for th core infrastructure and one for
+the user?  These changes also look like another candidate to pre-load.
