@@ -2,66 +2,80 @@ Return-Path: <SRS0=V+RV=ZN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3847C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 06:16:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 42477C43215
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 07:18:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4EB572089D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 06:16:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9065B20898
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 07:18:02 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="bYt8f7gv"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4EB572089D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="FJsKoBqE"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9065B20898
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nvidia.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47JTpx2pBmzDqwt
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 17:16:41 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47JTmn1z62zDqvj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2019 17:14:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 47JW9f6w7mzDqv2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 18:17:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=nvidia.com (client-ip=216.228.121.65; helo=hqemgate16.nvidia.com;
+ envelope-from=jhubbard@nvidia.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.b="bYt8f7gv"; dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 47JTmm1znCz9sPL;
- Thu, 21 Nov 2019 17:14:48 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1574316888;
- bh=jdKLsx29Q9L7/ElLtLnnBgAqSCKsEsGccFSh1cgYUzQ=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=bYt8f7gvy84TtwIJFpoHoCsN1Ip6mXbPnA3PKhBuLT6ZDv9SABp/q+fdL2ju85J8S
- Unr/SuCxT0jHSOFG1/rcDMDoLCv+0isuRc/8vXUOH691JLFpbuto2U1K2pb7Qh8C9G
- phdT9SUlqtQWry5HZkg4RnA3bOCkoF47YbNzZjSy2hxyFP8W227en1MMQz4q7xziMr
- AKQMbY6db0esZNwhFtUvmIHVEFo7NoDB5Xz52x9RFVtTlcMboj5mdWneAeCHIMdudV
- fRoEK5FDmMUbxXJ9+adoXYs6ipY5sBDtp++6B3x4bWChN70af3/OfG3VvfwZPyBbGZ
- w4Hd8xt01XjLw==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, segher@kernel.crashing.org
-Subject: Re: [PATCH v4 2/2] powerpc/irq: inline call_do_irq() and
- call_do_softirq()
-In-Reply-To: <5ca6639b7c1c21ee4b4138b7cfb31d6245c4195c.1570684298.git.christophe.leroy@c-s.fr>
-References: <f12fb9a6cc52d83ee9ddf15a36ee12ac77e6379f.1570684298.git.christophe.leroy@c-s.fr>
- <5ca6639b7c1c21ee4b4138b7cfb31d6245c4195c.1570684298.git.christophe.leroy@c-s.fr>
-Date: Thu, 21 Nov 2019 17:14:45 +1100
-Message-ID: <877e3tbvsa.fsf@mpe.ellerman.id.au>
+ unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="FJsKoBqE"; 
+ dkim-atps=neutral
+Received: from hqemgate16.nvidia.com (hqemgate16.nvidia.com [216.228.121.65])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47JW554MnPzDqs6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2019 18:14:01 +1100 (AEDT)
+Received: from hqpgpgate102.nvidia.com (Not Verified[216.228.121.13]) by
+ hqemgate16.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+ id <B5dd639350005>; Wed, 20 Nov 2019 23:13:58 -0800
+Received: from hqmail.nvidia.com ([172.20.161.6])
+ by hqpgpgate102.nvidia.com (PGP Universal service);
+ Wed, 20 Nov 2019 23:13:56 -0800
+X-PGP-Universal: processed;
+ by hqpgpgate102.nvidia.com on Wed, 20 Nov 2019 23:13:56 -0800
+Received: from HQMAIL101.nvidia.com (172.20.187.10) by HQMAIL105.nvidia.com
+ (172.20.187.12) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Thu, 21 Nov
+ 2019 07:13:56 +0000
+Received: from hqnvemgw03.nvidia.com (10.124.88.68) by HQMAIL101.nvidia.com
+ (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
+ Transport; Thu, 21 Nov 2019 07:13:56 +0000
+Received: from blueforge.nvidia.com (Not Verified[10.110.48.28]) by
+ hqnvemgw03.nvidia.com with Trustwave SEG (v7, 5, 8, 10121)
+ id <B5dd639340000>; Wed, 20 Nov 2019 23:13:56 -0800
+From: John Hubbard <jhubbard@nvidia.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v7 11/24] goldish_pipe: convert to pin_user_pages() and
+ put_user_page()
+Date: Wed, 20 Nov 2019 23:13:41 -0800
+Message-ID: <20191121071354.456618-12-jhubbard@nvidia.com>
+X-Mailer: git-send-email 2.24.0
+In-Reply-To: <20191121071354.456618-1-jhubbard@nvidia.com>
+References: <20191121071354.456618-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
+X-NVConfidentiality: public
+Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
+ t=1574320438; bh=D0FnBuVDsqs8jHEGK9oTRdYqi2i3EI/a7a1G1r/Hsb0=;
+ h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
+ In-Reply-To:References:MIME-Version:X-NVConfidentiality:
+ Content-Transfer-Encoding:Content-Type;
+ b=FJsKoBqEkW3ESs59qC1IqSfgrVSTVrnh/YYpI98s+c+kigxMHkG12iEPhX01yxVhj
+ XB03IvPOrjL6i3g1JS44UUIpbGXc4ODUk5+brIT53WVBA9zzGusY5JaNLf/0Y7+7H4
+ 2a12uuEvBQtWLdf4Q9mvxXizm8ftNGoC60wm8rm8DirjpavGNso1/fBZgHniOnIGWw
+ ZwOWppDQpqsu0W7HJbASnpF2K+OZJfo7YwNd+m04B3+tLJj30el8YGxW+fCKQHfwt1
+ p08s0SJVsxjzaBZ2am/2SDMafBOxZkawwDFVsMShHYVMp1/fvnDO7znpIlDg+e4Zsz
+ SMqeyfH6NtrjQ==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,69 +87,102 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>,
+ kvm@vger.kernel.org, linux-doc@vger.kernel.org,
+ David Airlie <airlied@linux.ie>, Dave Chinner <david@fromorbit.com>,
+ dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ linux-kselftest@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>,
+ Jonathan Corbet <corbet@lwn.net>, linux-rdma@vger.kernel.org,
+ Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>,
+ Vlastimil Babka <vbabka@suse.cz>,
+ =?UTF-8?q?Bj=C3=B6rn=20T=C3=B6pel?= <bjorn.topel@intel.com>,
+ linux-media@vger.kernel.org, Shuah Khan <shuah@kernel.org>,
+ John Hubbard <jhubbard@nvidia.com>, linux-block@vger.kernel.org,
+ =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>,
+ Al Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>,
+ Magnus Karlsson <magnus.karlsson@intel.com>, Jens Axboe <axboe@kernel.dk>,
+ netdev@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
+ Daniel Vetter <daniel@ffwll.ch>, linux-fsdevel@vger.kernel.org,
+ bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ "David S . Miller" <davem@davemloft.net>,
+ Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
+1. Call the new global pin_user_pages_fast(), from pin_goldfish_pages().
 
-> call_do_irq() and call_do_softirq() are quite similar on PPC32 and
-> PPC64 and are simple enough to be worth inlining.
->
-> Inlining them avoids an mflr/mtlr pair plus a save/reload on stack.
->
-> This is inspired from S390 arch. Several other arches do more or
-> less the same. The way sparc arch does seems odd thought.
->
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> Reviewed-by: Segher Boessenkool <segher@kernel.crashing.org>
->
-> ---
-> v2: no change.
-> v3: no change.
-> v4:
-> - comment reminding the purpose of the inline asm block.
-> - added r2 as clobbered reg
+2. As required by pin_user_pages(), release these pages via
+put_user_page(). In this case, do so via put_user_pages_dirty_lock().
 
-That breaks 64-bit with GCC9:
+That has the side effect of calling set_page_dirty_lock(), instead
+of set_page_dirty(). This is probably more accurate.
 
-  arch/powerpc/kernel/irq.c: In function 'do_IRQ':
-  arch/powerpc/kernel/irq.c:650:2: error: PIC register clobbered by 'r2' in 'asm'
-    650 |  asm volatile(
-        |  ^~~
-  arch/powerpc/kernel/irq.c: In function 'do_softirq_own_stack':
-  arch/powerpc/kernel/irq.c:711:2: error: PIC register clobbered by 'r2' in 'asm'
-    711 |  asm volatile(
-        |  ^~~
+As Christoph Hellwig put it, "set_page_dirty() is only safe if we are
+dealing with a file backed page where we have reference on the inode it
+hangs off." [1]
 
+Another side effect is that the release code is simplified because
+the page[] loop is now in gup.c instead of here, so just delete the
+local release_user_pages() entirely, and call
+put_user_pages_dirty_lock() directly, instead.
 
-> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-> index 04204be49577..d62fe18405a0 100644
-> --- a/arch/powerpc/kernel/irq.c
-> +++ b/arch/powerpc/kernel/irq.c
-> @@ -642,6 +642,22 @@ void __do_irq(struct pt_regs *regs)
->  	irq_exit();
->  }
->  
-> +static inline void call_do_irq(struct pt_regs *regs, void *sp)
-> +{
-> +	register unsigned long r3 asm("r3") = (unsigned long)regs;
-> +
-> +	/* Temporarily switch r1 to sp, call __do_irq() then restore r1 */
-> +	asm volatile(
-> +		"	"PPC_STLU"	1, %2(%1);\n"
-> +		"	mr		1, %1;\n"
-> +		"	bl		%3;\n"
-> +		"	"PPC_LL"	1, 0(1);\n" :
-> +		"+r"(r3) :
-> +		"b"(sp), "i"(THREAD_SIZE - STACK_FRAME_OVERHEAD), "i"(__do_irq) :
-> +		"lr", "xer", "ctr", "memory", "cr0", "cr1", "cr5", "cr6", "cr7",
-> +		"r0", "r2", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11", "r12");
-> +}
+[1] https://lore.kernel.org/r/20190723153640.GB720@lst.de
 
-If we add a nop after the bl, so the linker could insert a TOC restore,
-then I don't think there's any circumstance under which we expect this
-to actually clobber r2, is there?
+Reviewed-by: Jan Kara <jack@suse.cz>
+Reviewed-by: Ira Weiny <ira.weiny@intel.com>
+Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+---
+ drivers/platform/goldfish/goldfish_pipe.c | 17 +++--------------
+ 1 file changed, 3 insertions(+), 14 deletions(-)
 
-cheers
+diff --git a/drivers/platform/goldfish/goldfish_pipe.c b/drivers/platform/g=
+oldfish/goldfish_pipe.c
+index 7ed2a21a0bac..635a8bc1b480 100644
+--- a/drivers/platform/goldfish/goldfish_pipe.c
++++ b/drivers/platform/goldfish/goldfish_pipe.c
+@@ -274,7 +274,7 @@ static int pin_goldfish_pages(unsigned long first_page,
+ 		*iter_last_page_size =3D last_page_size;
+ 	}
+=20
+-	ret =3D get_user_pages_fast(first_page, requested_pages,
++	ret =3D pin_user_pages_fast(first_page, requested_pages,
+ 				  !is_write ? FOLL_WRITE : 0,
+ 				  pages);
+ 	if (ret <=3D 0)
+@@ -285,18 +285,6 @@ static int pin_goldfish_pages(unsigned long first_page=
+,
+ 	return ret;
+ }
+=20
+-static void release_user_pages(struct page **pages, int pages_count,
+-			       int is_write, s32 consumed_size)
+-{
+-	int i;
+-
+-	for (i =3D 0; i < pages_count; i++) {
+-		if (!is_write && consumed_size > 0)
+-			set_page_dirty(pages[i]);
+-		put_page(pages[i]);
+-	}
+-}
+-
+ /* Populate the call parameters, merging adjacent pages together */
+ static void populate_rw_params(struct page **pages,
+ 			       int pages_count,
+@@ -372,7 +360,8 @@ static int transfer_max_buffers(struct goldfish_pipe *p=
+ipe,
+=20
+ 	*consumed_size =3D pipe->command_buffer->rw_params.consumed_size;
+=20
+-	release_user_pages(pipe->pages, pages_count, is_write, *consumed_size);
++	put_user_pages_dirty_lock(pipe->pages, pages_count,
++				  !is_write && *consumed_size > 0);
+=20
+ 	mutex_unlock(&pipe->lock);
+ 	return 0;
+--=20
+2.24.0
+
