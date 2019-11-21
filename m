@@ -2,53 +2,81 @@ Return-Path: <SRS0=V+RV=ZN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	MIME_QP_LONG_LINE,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA5EEC432C0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 18:04:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BBB2C432C0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 18:23:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5163520672
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 18:04:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5163520672
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 121E82067D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 18:23:32 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="RmueoAnx"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 121E82067D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47JnWT2fsRzDr1f
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 05:04:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
+	by lists.ozlabs.org (Postfix) with ESMTP id 47JnxZ0gw8zDr4g
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 05:23:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.helo=mo6-p01-ob.smtp.rzone.de (client-ip=2a01:238:20a:202:5301::3;
+ helo=mo6-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from verein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47JnTP0fhJzDqCT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Nov 2019 05:02:31 +1100 (AEDT)
-Received: by verein.lst.de (Postfix, from userid 2407)
- id 8D95E68BFE; Thu, 21 Nov 2019 19:02:26 +0100 (CET)
-Date: Thu, 21 Nov 2019 19:02:26 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>
-Subject: Re: Bug 205201 - Booting halts if Dawicontrol DC-2976 UW SCSI
- board installed, unless RAM size limited to 3500M
-Message-ID: <20191121180226.GA3852@lst.de>
+ dmarc=none (p=none dis=none) header.from=xenosoft.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="RmueoAnx"; 
+ dkim-atps=neutral
+Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5301::3])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-384) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47JnvD6L9PzDqTq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Nov 2019 05:21:25 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1574360478;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=To:References:Message-Id:Cc:Date:In-Reply-To:From:Subject:
+ X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
+ bh=jNSqqBbrYyqRlctFmIILYVh2+dTk9ekgd8eo+LGizrs=;
+ b=RmueoAnxTadN3RbmKmXIjwWVT8rWIrrkEtlKq3bs8Uw8MfH5gJRfeO9tyadwnKXTUY
+ N4s14i5iUwZszxBxQA/w3msrgiF63kqGt5XsSAUS0/ZTJkhcrGz7li7MRRNhzabyKa8e
+ H8tHrQHlAVIP1L+cMeW3hqSLlG/R3DzYArIYvTo0jI7vbDHbjo0VWc8F3fyTNC9lKQh4
+ vvzwOysY68n0c3Vj2gz5/z1Y+ZgRnGKbxewbDV/UCdxcrysj7124kRJj9oz/JcdYv0iP
+ R55X0QDbaBlUyb6Cf4ndWMmdlRPwqNHQ8jLdqD+9XUpqS34FlwcpOHld2VoEqKzyabvg
+ ZkXw==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr6Kxrf+5Dj7x4QgaM9fNtIXuaJFG8GgaIfjP/sNprV1dfhtth/q6Z5w=="
+X-RZG-CLASS-ID: mo00
+Received: from [IPv6:2a02:8109:89c0:ebfc:31b4:3e86:1da2:8b32]
+ by smtp.strato.de (RZmta 44.29.0 AUTH)
+ with ESMTPSA id q007c8vALIL5lAy
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
+ 521 ECDH bits, eq. 15360 bits RSA))
+ (Client did not present a certificate);
+ Thu, 21 Nov 2019 19:21:05 +0100 (CET)
+Content-Type: text/plain;
+	charset=us-ascii
+Mime-Version: 1.0 (1.0)
+Subject: Re: Bug 205201 - Booting halts if Dawicontrol DC-2976 UW SCSI board
+ installed, unless RAM size limited to 3500M
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+X-Mailer: iPhone Mail (16G102)
+In-Reply-To: <20191121180226.GA3852@lst.de>
+Date: Thu, 21 Nov 2019 19:21:04 +0100
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <0F53CCCE-738C-4024-9C3C-4BDEB0D0728C@xenosoft.de>
 References: <F1EBB706-73DF-430E-9020-C214EC8ED5DA@xenosoft.de>
  <20191121072943.GA24024@lst.de>
  <dbde2252-035e-6183-7897-43348e60647e@xenosoft.de>
  <6eec5c42-019c-a988-fc2a-cb804194683d@xenosoft.de>
  <d0252d29-7a03-20e1-ccd7-e12d906e4bdf@arm.com>
  <b3217742-2c0b-8447-c9ac-608b93265363@xenosoft.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b3217742-2c0b-8447-c9ac-608b93265363@xenosoft.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+ <20191121180226.GA3852@lst.de>
+To: Christoph Hellwig <hch@lst.de>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,18 +93,20 @@ Cc: linux-arch@vger.kernel.org, darren@stevens-zone.net, rtd2@xtra.co.nz,
  linux-mm@kvack.org, iommu@lists.linux-foundation.org,
  Rob Herring <robh+dt@kernel.org>, paulus@samba.org,
  mad skateman <madskateman@gmail.com>, "contact@a-eon.com" <contact@a-eon.com>,
- Robin Murphy <robin.murphy@arm.com>, Christoph Hellwig <hch@lst.de>,
- nsaenzjulienne@suse.de
+ Robin Murphy <robin.murphy@arm.com>, nsaenzjulienne@suse.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On 21. Nov 2019, at 19:02, Christoph Hellwig <hch@lst.de> wrote:
+
 On Thu, Nov 21, 2019 at 05:34:48PM +0100, Christian Zigotzky wrote:
-> I modified the patch and compiled a new RC8 of kernel 5.4 today. (patch 
-> attached)
->
-> We have to wait to Rolands test results with his SCSI PCI card. I tested it 
-> today but my TV card doesn't work with this patch.
+I modified the patch and compiled a new RC8 of kernel 5.4 today. (patch=20
+attached)
+
+We have to wait to Rolands test results with his SCSI PCI card. I tested it=20=
+
+today but my TV card doesn't work with this patch.
 
 I think we have two sorta overlapping issues here.  One is that I think
 we need the bus_dma_limit, which should mostly help for something like
@@ -90,10 +120,17 @@ fact that the bounce buffering itself also fails is even more interesting.
 
 Can you try this git branch:
 
-    git://git.infradead.org/users/hch/misc.git fsl-dma-debugging
+   git://git.infradead.org/users/hch/misc.git fsl-dma-debugging
 
 Gitweb:
 
-    http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/fsl-dma-debugging
+   http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/fsl-dma-d=
+ebugging
 
 and send me the dmesg with that with your TV adapter?
+
+- - -
+
+Yes, I will test it at the weekend. Thanks for your help.
+
+Christian=
