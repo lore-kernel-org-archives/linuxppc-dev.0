@@ -2,23 +2,23 @@ Return-Path: <SRS0=V+RV=ZN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CC725C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 17:20:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DA5EEC432C0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 18:04:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8557820658
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 17:20:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8557820658
+	by mail.kernel.org (Postfix) with ESMTPS id 5163520672
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 18:04:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5163520672
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47JmYK3StCzDr7x
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 04:20:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47JnWT2fsRzDr1f
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 05:04:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=lst.de
  (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
@@ -28,21 +28,26 @@ Authentication-Results: lists.ozlabs.org;
 Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47JmT94m5szDr6D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Nov 2019 04:17:17 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47JnTP0fhJzDqCT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Nov 2019 05:02:31 +1100 (AEDT)
 Received: by verein.lst.de (Postfix, from userid 2407)
- id A77C768BFE; Thu, 21 Nov 2019 18:17:13 +0100 (CET)
-Date: Thu, 21 Nov 2019 18:17:13 +0100
+ id 8D95E68BFE; Thu, 21 Nov 2019 19:02:26 +0100 (CET)
+Date: Thu, 21 Nov 2019 19:02:26 +0100
 From: Christoph Hellwig <hch@lst.de>
-To: Robin Murphy <robin.murphy@arm.com>
-Subject: Re: [PATCH v2] dma-mapping: treat dev->bus_dma_mask as a DMA limit
-Message-ID: <20191121171713.GB2932@lst.de>
-References: <20191121092646.8449-1-nsaenzjulienne@suse.de>
- <c407877d-a812-de85-5e8f-e0915f5a517f@arm.com>
+To: Christian Zigotzky <chzigotzky@xenosoft.de>
+Subject: Re: Bug 205201 - Booting halts if Dawicontrol DC-2976 UW SCSI
+ board installed, unless RAM size limited to 3500M
+Message-ID: <20191121180226.GA3852@lst.de>
+References: <F1EBB706-73DF-430E-9020-C214EC8ED5DA@xenosoft.de>
+ <20191121072943.GA24024@lst.de>
+ <dbde2252-035e-6183-7897-43348e60647e@xenosoft.de>
+ <6eec5c42-019c-a988-fc2a-cb804194683d@xenosoft.de>
+ <d0252d29-7a03-20e1-ccd7-e12d906e4bdf@arm.com>
+ <b3217742-2c0b-8447-c9ac-608b93265363@xenosoft.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <c407877d-a812-de85-5e8f-e0915f5a517f@arm.com>
+In-Reply-To: <b3217742-2c0b-8447-c9ac-608b93265363@xenosoft.de>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -55,35 +60,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Dave Hansen <dave.hansen@linux.intel.com>, linux-pci@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Hanjun Guo <guohanjun@huawei.com>,
- Frank Rowand <frowand.list@gmail.com>, Christoph Hellwig <hch@lst.de>,
- Marek Szyprowski <m.szyprowski@samsung.com>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- "H. Peter Anvin" <hpa@zytor.com>, Paul Burton <paulburton@kernel.org>,
- Joerg Roedel <joro@8bytes.org>, x86@kernel.org, linux-acpi@vger.kernel.org,
- Ingo Molnar <mingo@redhat.com>, James Hogan <jhogan@kernel.org>,
- Len Brown <lenb@kernel.org>, devicetree@vger.kernel.org,
- Rob Herring <robh+dt@kernel.org>, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Jens Axboe <axboe@kernel.dk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- linux-mips@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
- iommu@lists.linux-foundation.org, Sudeep Holla <sudeep.holla@arm.com>,
- linuxppc-dev@lists.ozlabs.org, Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Cc: linux-arch@vger.kernel.org, darren@stevens-zone.net, rtd2@xtra.co.nz,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, iommu@lists.linux-foundation.org,
+ Rob Herring <robh+dt@kernel.org>, paulus@samba.org,
+ mad skateman <madskateman@gmail.com>, "contact@a-eon.com" <contact@a-eon.com>,
+ Robin Murphy <robin.murphy@arm.com>, Christoph Hellwig <hch@lst.de>,
+ nsaenzjulienne@suse.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Nov 21, 2019 at 05:07:54PM +0000, Robin Murphy wrote:
-> ^^ super-nit only because I can't not see my editor currently highlighting 
-> the typo: "accessible"
+On Thu, Nov 21, 2019 at 05:34:48PM +0100, Christian Zigotzky wrote:
+> I modified the patch and compiled a new RC8 of kernel 5.4 today. (patch 
+> attached)
 >
-> Regardless of that though,
->
-> Reviewed-by: Robin Murphy <robin.murphy@arm.com>
+> We have to wait to Rolands test results with his SCSI PCI card. I tested it 
+> today but my TV card doesn't work with this patch.
 
-Applied for real now with that typo fixed and on top of the pulled in
-arm64 branch.
+I think we have two sorta overlapping issues here.  One is that I think
+we need the bus_dma_limit, which should mostly help for something like
+a SCSI controller that doesn't need streaming mappings (btw, do we
+have more details on that somewhere?).
+
+And something weird with the videobuf things.  Your change of the dma
+masks suggests that the driver doesn't do the right allocations and thus
+hits bounce buffering (swiotlb).  We should fix that for real, but the
+fact that the bounce buffering itself also fails is even more interesting.
+
+Can you try this git branch:
+
+    git://git.infradead.org/users/hch/misc.git fsl-dma-debugging
+
+Gitweb:
+
+    http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/fsl-dma-debugging
+
+and send me the dmesg with that with your TV adapter?
