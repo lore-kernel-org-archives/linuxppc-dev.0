@@ -7,75 +7,75 @@ X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 59A56C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 07:24:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C72A0C432C0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 07:26:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 096172089D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 07:24:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 757D820872
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 07:26:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="Th24DY3G"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 096172089D
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="GljxL876"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 757D820872
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nvidia.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47JWK34MGjzDqtG
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 18:24:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47JWMS19LrzDqGT
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 18:26:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=nvidia.com (client-ip=216.228.121.143;
- helo=hqemgate14.nvidia.com; envelope-from=jhubbard@nvidia.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=nvidia.com (client-ip=216.228.121.64; helo=hqemgate15.nvidia.com;
+ envelope-from=jhubbard@nvidia.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="Th24DY3G"; 
+ unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="GljxL876"; 
  dkim-atps=neutral
-Received: from hqemgate14.nvidia.com (hqemgate14.nvidia.com [216.228.121.143])
+Received: from hqemgate15.nvidia.com (hqemgate15.nvidia.com [216.228.121.64])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47JW57472SzDqs1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2019 18:14:03 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47JW573SBmzDqrs
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2019 18:14:02 +1100 (AEDT)
 Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by
- hqemgate14.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
- id <B5dd639380000>; Wed, 20 Nov 2019 23:14:00 -0800
+ hqemgate15.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+ id <B5dd639300000>; Wed, 20 Nov 2019 23:13:52 -0800
 Received: from hqmail.nvidia.com ([172.20.161.6])
  by hqpgpgate101.nvidia.com (PGP Universal service);
- Wed, 20 Nov 2019 23:13:57 -0800
+ Wed, 20 Nov 2019 23:13:55 -0800
 X-PGP-Universal: processed;
- by hqpgpgate101.nvidia.com on Wed, 20 Nov 2019 23:13:57 -0800
-Received: from HQMAIL107.nvidia.com (172.20.187.13) by HQMAIL107.nvidia.com
- (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Thu, 21 Nov
- 2019 07:13:56 +0000
-Received: from hqnvemgw03.nvidia.com (10.124.88.68) by HQMAIL107.nvidia.com
- (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
- Transport; Thu, 21 Nov 2019 07:13:56 +0000
+ by hqpgpgate101.nvidia.com on Wed, 20 Nov 2019 23:13:55 -0800
+Received: from HQMAIL111.nvidia.com (172.20.187.18) by HQMAIL111.nvidia.com
+ (172.20.187.18) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Thu, 21 Nov
+ 2019 07:13:55 +0000
+Received: from hqnvemgw03.nvidia.com (10.124.88.68) by HQMAIL111.nvidia.com
+ (172.20.187.18) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
+ Transport; Thu, 21 Nov 2019 07:13:55 +0000
 Received: from blueforge.nvidia.com (Not Verified[10.110.48.28]) by
  hqnvemgw03.nvidia.com with Trustwave SEG (v7, 5, 8, 10121)
- id <B5dd639340007>; Wed, 20 Nov 2019 23:13:56 -0800
+ id <B5dd639330004>; Wed, 20 Nov 2019 23:13:55 -0800
 From: John Hubbard <jhubbard@nvidia.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v7 16/24] net/xdp: set FOLL_PIN via pin_user_pages()
-Date: Wed, 20 Nov 2019 23:13:46 -0800
-Message-ID: <20191121071354.456618-17-jhubbard@nvidia.com>
+Subject: [PATCH v7 03/24] mm/gup: move try_get_compound_head() to top,
+ fix minor issues
+Date: Wed, 20 Nov 2019 23:13:33 -0800
+Message-ID: <20191121071354.456618-4-jhubbard@nvidia.com>
 X-Mailer: git-send-email 2.24.0
 In-Reply-To: <20191121071354.456618-1-jhubbard@nvidia.com>
 References: <20191121071354.456618-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
 X-NVConfidentiality: public
-Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
- t=1574320440; bh=JiuMSIu1KROGnYN0FUrQmmZholMbEQnfhCSo9iAG4Tw=;
+ t=1574320432; bh=diV8s1yuXD4Hgu8vlHZLpe4KN2/SH1maxCg7V19wHIM=;
  h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
  In-Reply-To:References:MIME-Version:X-NVConfidentiality:
- Content-Type:Content-Transfer-Encoding;
- b=Th24DY3GgZ75uiI4k8eyekw8SqOYVAgo8mkdD15klVZLgr85wzWmBlE45VW2Q+jaw
- GJLk0eKwHeOVTk7tjo1SrL1hu5mMioMCqX3yE3pppHj/+lh6VRqCDyoN8q3uh0/lIY
- YN4xX4hQ+7xAzgoaiLW0pJ9jkT03NtwLD48eohqa4K3t7iUHhGwwjW7Bkn1heUBDHn
- aR7Sybhw/gXzg8T4sEbjLmRKJkI4O3F6an6hvwrz1G87Exsl697qnVG/wWuOVCrr+j
- AT1Cle5kUpRouL5KhRurfcYlPJtgs/ZErvkOYAr0MGM8UDJlvEbAl9bUXTTa9er1GO
- u1Gfh1G3pEEUg==
+ Content-Transfer-Encoding:Content-Type;
+ b=GljxL876+gvuLSjDsLvdnPqOxClI/Ba5thrKXPQx/ixqgcNRfKAZDpBQQ2os5Z7YC
+ 7cL5zxn16JCiVQWj1ZTXK02HfMhRRPVENV9RsJZTDhO9BgwdWgiIUrazdv0CXTEbqw
+ cEbCbcq7N8TczqO9rmLK5EQCLbtRCWXyqFrbr63Non+f3K14n+gEOHD1Rm0dtyh3Uh
+ qDlCq399rKL3l2KPteTmRmTotzQnwBcvXn2y6BgAM8jxLiXMHE4QFqGJJCLTcDmUM5
+ OXMe49djzmAEEiiP7N+fQPsboKLOfSn++O/7fPnoJ8ECqzcZn5xgKwmXKO7rmFMSMz
+ 2NTGr/KHCuFGQ==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,35 +112,70 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Convert net/xdp to use the new pin_longterm_pages() call, which sets
-FOLL_PIN. Setting FOLL_PIN is now required for code that requires
-tracking of pinned pages.
+An upcoming patch uses try_get_compound_head() more widely,
+so move it to the top of gup.c.
 
-In partial anticipation of this work, the net/xdp code was already
-calling put_user_page() instead of put_page(). Therefore, in order to
-convert from the get_user_pages()/put_page() model, to the
-pin_user_pages()/put_user_page() model, the only change required
-here is to change get_user_pages() to pin_user_pages().
+Also fix a tiny spelling error and a checkpatch.pl warning.
 
-Acked-by: Bj=C3=B6rn T=C3=B6pel <bjorn.topel@intel.com>
+Reviewed-by: Jan Kara <jack@suse.cz>
+Reviewed-by: Ira Weiny <ira.weiny@intel.com>
 Signed-off-by: John Hubbard <jhubbard@nvidia.com>
 ---
- net/xdp/xdp_umem.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ mm/gup.c | 29 +++++++++++++++--------------
+ 1 file changed, 15 insertions(+), 14 deletions(-)
 
-diff --git a/net/xdp/xdp_umem.c b/net/xdp/xdp_umem.c
-index 3049af269fbf..d071003b5e76 100644
---- a/net/xdp/xdp_umem.c
-+++ b/net/xdp/xdp_umem.c
-@@ -291,7 +291,7 @@ static int xdp_umem_pin_pages(struct xdp_umem *umem)
- 		return -ENOMEM;
+diff --git a/mm/gup.c b/mm/gup.c
+index f3c7d6625817..14fcdc502166 100644
+--- a/mm/gup.c
++++ b/mm/gup.c
+@@ -29,6 +29,21 @@ struct follow_page_context {
+ 	unsigned int page_mask;
+ };
 =20
- 	down_read(&current->mm->mmap_sem);
--	npgs =3D get_user_pages(umem->address, umem->npgs,
-+	npgs =3D pin_user_pages(umem->address, umem->npgs,
- 			      gup_flags | FOLL_LONGTERM, &umem->pgs[0], NULL);
- 	up_read(&current->mm->mmap_sem);
++/*
++ * Return the compound head page with ref appropriately incremented,
++ * or NULL if that failed.
++ */
++static inline struct page *try_get_compound_head(struct page *page, int re=
+fs)
++{
++	struct page *head =3D compound_head(page);
++
++	if (WARN_ON_ONCE(page_ref_count(head) < 0))
++		return NULL;
++	if (unlikely(!page_cache_add_speculative(head, refs)))
++		return NULL;
++	return head;
++}
++
+ /**
+  * put_user_pages_dirty_lock() - release and optionally dirty gup-pinned p=
+ages
+  * @pages:  array of pages to be maybe marked dirty, and definitely releas=
+ed.
+@@ -1793,20 +1808,6 @@ static void __maybe_unused undo_dev_pagemap(int *nr,=
+ int nr_start,
+ 	}
+ }
 =20
+-/*
+- * Return the compund head page with ref appropriately incremented,
+- * or NULL if that failed.
+- */
+-static inline struct page *try_get_compound_head(struct page *page, int re=
+fs)
+-{
+-	struct page *head =3D compound_head(page);
+-	if (WARN_ON_ONCE(page_ref_count(head) < 0))
+-		return NULL;
+-	if (unlikely(!page_cache_add_speculative(head, refs)))
+-		return NULL;
+-	return head;
+-}
+-
+ #ifdef CONFIG_ARCH_HAS_PTE_SPECIAL
+ static int gup_pte_range(pmd_t pmd, unsigned long addr, unsigned long end,
+ 			 unsigned int flags, struct page **pages, int *nr)
 --=20
 2.24.0
 
