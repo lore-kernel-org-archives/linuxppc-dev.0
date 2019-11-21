@@ -7,57 +7,58 @@ X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C72A0C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 07:26:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F425C432C3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 07:28:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 757D820872
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 07:26:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C298C20872
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 07:28:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="GljxL876"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 757D820872
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="UDv7hXGr"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C298C20872
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nvidia.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47JWMS19LrzDqGT
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 18:26:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47JWPt43CWzDqxL
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 18:28:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=nvidia.com (client-ip=216.228.121.64; helo=hqemgate15.nvidia.com;
- envelope-from=jhubbard@nvidia.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=nvidia.com (client-ip=216.228.121.143;
+ helo=hqemgate14.nvidia.com; envelope-from=jhubbard@nvidia.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="GljxL876"; 
+ unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="UDv7hXGr"; 
  dkim-atps=neutral
-Received: from hqemgate15.nvidia.com (hqemgate15.nvidia.com [216.228.121.64])
+Received: from hqemgate14.nvidia.com (hqemgate14.nvidia.com [216.228.121.143])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47JW573SBmzDqrs
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2019 18:14:02 +1100 (AEDT)
-Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by
- hqemgate15.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
- id <B5dd639300000>; Wed, 20 Nov 2019 23:13:52 -0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47JW574YW1zDqs6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2019 18:14:03 +1100 (AEDT)
+Received: from hqpgpgate102.nvidia.com (Not Verified[216.228.121.13]) by
+ hqemgate14.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+ id <B5dd639380001>; Wed, 20 Nov 2019 23:14:00 -0800
 Received: from hqmail.nvidia.com ([172.20.161.6])
- by hqpgpgate101.nvidia.com (PGP Universal service);
- Wed, 20 Nov 2019 23:13:55 -0800
+ by hqpgpgate102.nvidia.com (PGP Universal service);
+ Wed, 20 Nov 2019 23:13:57 -0800
 X-PGP-Universal: processed;
- by hqpgpgate101.nvidia.com on Wed, 20 Nov 2019 23:13:55 -0800
-Received: from HQMAIL111.nvidia.com (172.20.187.18) by HQMAIL111.nvidia.com
- (172.20.187.18) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Thu, 21 Nov
- 2019 07:13:55 +0000
-Received: from hqnvemgw03.nvidia.com (10.124.88.68) by HQMAIL111.nvidia.com
- (172.20.187.18) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
- Transport; Thu, 21 Nov 2019 07:13:55 +0000
+ by hqpgpgate102.nvidia.com on Wed, 20 Nov 2019 23:13:57 -0800
+Received: from HQMAIL109.nvidia.com (172.20.187.15) by HQMAIL101.nvidia.com
+ (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Thu, 21 Nov
+ 2019 07:13:57 +0000
+Received: from hqnvemgw03.nvidia.com (10.124.88.68) by HQMAIL109.nvidia.com
+ (172.20.187.15) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
+ Transport; Thu, 21 Nov 2019 07:13:57 +0000
 Received: from blueforge.nvidia.com (Not Verified[10.110.48.28]) by
  hqnvemgw03.nvidia.com with Trustwave SEG (v7, 5, 8, 10121)
- id <B5dd639330004>; Wed, 20 Nov 2019 23:13:55 -0800
+ id <B5dd639350000>; Wed, 20 Nov 2019 23:13:57 -0800
 From: John Hubbard <jhubbard@nvidia.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v7 03/24] mm/gup: move try_get_compound_head() to top,
- fix minor issues
-Date: Wed, 20 Nov 2019 23:13:33 -0800
-Message-ID: <20191121071354.456618-4-jhubbard@nvidia.com>
+Subject: [PATCH v7 19/24] vfio,
+ mm: pin_user_pages (FOLL_PIN) and put_user_page() conversion
+Date: Wed, 20 Nov 2019 23:13:49 -0800
+Message-ID: <20191121071354.456618-20-jhubbard@nvidia.com>
 X-Mailer: git-send-email 2.24.0
 In-Reply-To: <20191121071354.456618-1-jhubbard@nvidia.com>
 References: <20191121071354.456618-1-jhubbard@nvidia.com>
@@ -66,16 +67,16 @@ X-NVConfidentiality: public
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
- t=1574320432; bh=diV8s1yuXD4Hgu8vlHZLpe4KN2/SH1maxCg7V19wHIM=;
+ t=1574320440; bh=nI3kBsm1YYmEZh4r0pGrnWMl68q+Rq4M7HG7pTJrYP4=;
  h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
  In-Reply-To:References:MIME-Version:X-NVConfidentiality:
  Content-Transfer-Encoding:Content-Type;
- b=GljxL876+gvuLSjDsLvdnPqOxClI/Ba5thrKXPQx/ixqgcNRfKAZDpBQQ2os5Z7YC
- 7cL5zxn16JCiVQWj1ZTXK02HfMhRRPVENV9RsJZTDhO9BgwdWgiIUrazdv0CXTEbqw
- cEbCbcq7N8TczqO9rmLK5EQCLbtRCWXyqFrbr63Non+f3K14n+gEOHD1Rm0dtyh3Uh
- qDlCq399rKL3l2KPteTmRmTotzQnwBcvXn2y6BgAM8jxLiXMHE4QFqGJJCLTcDmUM5
- OXMe49djzmAEEiiP7N+fQPsboKLOfSn++O/7fPnoJ8ECqzcZn5xgKwmXKO7rmFMSMz
- 2NTGr/KHCuFGQ==
+ b=UDv7hXGrBG/yd6ToTnVLxiTw9r1H4giBXZNVJ6DpNhyAl4KY/tyMaq+wFxnHOdMtV
+ i6AkoGUNL3wEyFlwt9HbgsAyf/SniOPZK9HqqqTkGWvp95bKLP4ZrPVIbebeGhFVNg
+ eSmLsDzCah1dUYnfTnfSryQIs4sk8ta+DUuaK7rV4th2Fx3ncB3J6jdaJrhY1OwcOK
+ fgT1xS6ChSchMjYwgaCp4F9NxbbSvQLXsqEHs80t/lCoGAURk4yw10TZK1u8rEw5I4
+ fjDaykUkkaLbGldcR6iMqKlwWiFfTSZxzqAG1djSZcHsSLWbP7WLlivUWKovbw8neX
+ NjXDeQTFV8djg==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,70 +113,57 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-An upcoming patch uses try_get_compound_head() more widely,
-so move it to the top of gup.c.
+1. Change vfio from get_user_pages_remote(), to
+pin_user_pages_remote().
 
-Also fix a tiny spelling error and a checkpatch.pl warning.
+2. Because all FOLL_PIN-acquired pages must be released via
+put_user_page(), also convert the put_page() call over to
+put_user_pages_dirty_lock().
 
-Reviewed-by: Jan Kara <jack@suse.cz>
-Reviewed-by: Ira Weiny <ira.weiny@intel.com>
+Note that this effectively changes the code's behavior in
+vfio_iommu_type1.c: put_pfn(): it now ultimately calls
+set_page_dirty_lock(), instead of set_page_dirty(). This is
+probably more accurate.
+
+As Christoph Hellwig put it, "set_page_dirty() is only safe if we are
+dealing with a file backed page where we have reference on the inode it
+hangs off." [1]
+
+[1] https://lore.kernel.org/r/20190723153640.GB720@lst.de
+
+Cc: Alex Williamson <alex.williamson@redhat.com>
 Signed-off-by: John Hubbard <jhubbard@nvidia.com>
 ---
- mm/gup.c | 29 +++++++++++++++--------------
- 1 file changed, 15 insertions(+), 14 deletions(-)
+ drivers/vfio/vfio_iommu_type1.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/mm/gup.c b/mm/gup.c
-index f3c7d6625817..14fcdc502166 100644
---- a/mm/gup.c
-+++ b/mm/gup.c
-@@ -29,6 +29,21 @@ struct follow_page_context {
- 	unsigned int page_mask;
- };
-=20
-+/*
-+ * Return the compound head page with ref appropriately incremented,
-+ * or NULL if that failed.
-+ */
-+static inline struct page *try_get_compound_head(struct page *page, int re=
-fs)
-+{
-+	struct page *head =3D compound_head(page);
+diff --git a/drivers/vfio/vfio_iommu_type1.c b/drivers/vfio/vfio_iommu_type=
+1.c
+index c7a111ad9975..18aa36b56896 100644
+--- a/drivers/vfio/vfio_iommu_type1.c
++++ b/drivers/vfio/vfio_iommu_type1.c
+@@ -327,9 +327,8 @@ static int put_pfn(unsigned long pfn, int prot)
+ {
+ 	if (!is_invalid_reserved_pfn(pfn)) {
+ 		struct page *page =3D pfn_to_page(pfn);
+-		if (prot & IOMMU_WRITE)
+-			SetPageDirty(page);
+-		put_page(page);
 +
-+	if (WARN_ON_ONCE(page_ref_count(head) < 0))
-+		return NULL;
-+	if (unlikely(!page_cache_add_speculative(head, refs)))
-+		return NULL;
-+	return head;
-+}
-+
- /**
-  * put_user_pages_dirty_lock() - release and optionally dirty gup-pinned p=
-ages
-  * @pages:  array of pages to be maybe marked dirty, and definitely releas=
-ed.
-@@ -1793,20 +1808,6 @@ static void __maybe_unused undo_dev_pagemap(int *nr,=
- int nr_start,
++		put_user_pages_dirty_lock(&page, 1, prot & IOMMU_WRITE);
+ 		return 1;
  	}
- }
+ 	return 0;
+@@ -347,7 +346,7 @@ static int vaddr_get_pfn(struct mm_struct *mm, unsigned=
+ long vaddr,
+ 		flags |=3D FOLL_WRITE;
 =20
--/*
-- * Return the compund head page with ref appropriately incremented,
-- * or NULL if that failed.
-- */
--static inline struct page *try_get_compound_head(struct page *page, int re=
-fs)
--{
--	struct page *head =3D compound_head(page);
--	if (WARN_ON_ONCE(page_ref_count(head) < 0))
--		return NULL;
--	if (unlikely(!page_cache_add_speculative(head, refs)))
--		return NULL;
--	return head;
--}
--
- #ifdef CONFIG_ARCH_HAS_PTE_SPECIAL
- static int gup_pte_range(pmd_t pmd, unsigned long addr, unsigned long end,
- 			 unsigned int flags, struct page **pages, int *nr)
+ 	down_read(&mm->mmap_sem);
+-	ret =3D get_user_pages_remote(NULL, mm, vaddr, 1, flags | FOLL_LONGTERM,
++	ret =3D pin_user_pages_remote(NULL, mm, vaddr, 1, flags | FOLL_LONGTERM,
+ 				    page, NULL, NULL);
+ 	if (ret =3D=3D 1) {
+ 		*pfn =3D page_to_pfn(page[0]);
 --=20
 2.24.0
 
