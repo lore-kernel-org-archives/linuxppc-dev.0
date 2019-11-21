@@ -2,64 +2,79 @@ Return-Path: <SRS0=V+RV=ZN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 70C04C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 08:11:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DDFDEC432C0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 08:14:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1E60020855
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 08:11:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8ED1220855
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 08:14:16 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZgrIzQRw"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1E60020855
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="aNUFf4zL"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8ED1220855
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47JXMk60vHzDqy9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 19:11:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47JXQZ4hhszDr13
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 19:14:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
+ smtp.mailfrom=redhat.com (client-ip=205.139.110.120;
+ helo=us-smtp-1.mimecast.com; envelope-from=dyoung@redhat.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="ZgrIzQRw"; 
+ unprotected) header.d=redhat.com header.i=@redhat.com header.b="aNUFf4zL"; 
  dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+Received: from us-smtp-1.mimecast.com (us-smtp-delivery-1.mimecast.com
+ [205.139.110.120])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47JWFj0gqKzDqtK
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2019 18:21:29 +1100 (AEDT)
-Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
- [83.86.89.107])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47JWGg6ZFjzDqxM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2019 18:22:19 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1574320937;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=bWE830W7XPGCNo1jp1GJ01OlXQKp72T4TdINlVBXIEk=;
+ b=aNUFf4zLOXa8xZDw6gU7DL+E3VbyiBn1pc+6UaO1SqXyNVoFNkd1hrEg/R/L/G0GkVrhX2
+ RpjSR+EbcU+E2okunMVSY8/r76+aBdQLidosXIXsa04PgBN/nt4MBSidq5LDRVA2Bm6sFy
+ sQ3rCad3At66J3NFENwuzhplKuUS3A8=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-398-B1bmXBaGNl65qKvByAPhSQ-1; Wed, 20 Nov 2019 22:21:04 -0500
+Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.phx2.redhat.com
+ [10.5.11.16])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id DF2FD20872;
- Thu, 21 Nov 2019 07:21:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1574320886;
- bh=o22Hi13qhmwZwPmKcq3ZrnZnV5e0srKRPAqCcT43rXU=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=ZgrIzQRwbUOEyVKz/MI1dgBCGcwoGLTPXQdb42swkYHrCwBdUPmblMC4Q/DJ93Veh
- cUKtZrTXsDTe9I6cWhSejkX8CdoTBtJILLyI+lPcBM0hSB7aTJfcGq/VGYp5CThpEU
- qjna1vkbpGfMBVXtEw5SY+46ppjlCfrcHrc2M9o0=
-Date: Thu, 21 Nov 2019 08:21:24 +0100
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH v2] tty: Fix Kconfig indentation
-Message-ID: <20191121072124.GA356838@kroah.com>
-References: <1574306408-20021-1-git-send-email-krzk@kernel.org>
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 8979E477;
+ Thu, 21 Nov 2019 03:21:01 +0000 (UTC)
+Received: from dhcp-128-65.nay.redhat.com (ovpn-12-115.pek2.redhat.com
+ [10.72.12.115])
+ by smtp.corp.redhat.com (Postfix) with ESMTPS id 1C79066D46;
+ Thu, 21 Nov 2019 03:20:51 +0000 (UTC)
+Date: Thu, 21 Nov 2019 11:20:47 +0800
+From: Dave Young <dyoung@redhat.com>
+To: Bhupesh Sharma <bhsharma@redhat.com>
+Subject: Re: [PATCH v4 0/3] Append new variables to vmcoreinfo (TCR_EL1.T1SZ
+ for arm64 and MAX_PHYSMEM_BITS for all archs)
+Message-ID: <20191121032047.GB23368@dhcp-128-65.nay.redhat.com>
+References: <1573459282-26989-1-git-send-email-bhsharma@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1573459282-26989-1-git-send-email-bhsharma@redhat.com>
+User-Agent: Mutt/1.12.1 (2019-06-15)
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.16
+X-MC-Unique: B1bmXBaGNl65qKvByAPhSQ-1
+X-Mimecast-Spam-Score: 0
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
-In-Reply-To: <1574306408-20021-1-git-send-email-krzk@kernel.org>
-User-Agent: Mutt/1.12.2 (2019-09-21)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,22 +86,103 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-serial@vger.kernel.org, Jiri Slaby <jslaby@suse.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, linux-doc@vger.kernel.org,
+ Catalin Marinas <catalin.marinas@arm.com>, Paul Mackerras <paulus@samba.org>,
+ Will Deacon <will@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Jonathan Corbet <corbet@lwn.net>, x86@kernel.org,
+ Dave Anderson <anderson@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+ bhupesh.linux@gmail.com, linux-arm-kernel@lists.infradead.org,
+ Kazuhito Hagio <k-hagio@ab.jp.nec.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Steve Capper <steve.capper@arm.com>, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, James Morse <james.morse@arm.com>,
+ Boris Petkov <bp@alien8.de>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Nov 21, 2019 at 04:20:08AM +0100, Krzysztof Kozlowski wrote:
-> Adjust indentation from spaces to tab (+optional two spaces) as in
-> coding style with command like:
-> 	$ sed -e 's/^        /\t/' -i */Kconfig
-> 
-> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
-> 
-> ---
-> 
+On 11/11/19 at 01:31pm, Bhupesh Sharma wrote:
+> Changes since v3:
+> ----------------
+> - v3 can be seen here:
+>   http://lists.infradead.org/pipermail/kexec/2019-March/022590.html
+> - Addressed comments from James and exported TCR_EL1.T1SZ in vmcoreinfo
+>   instead of PTRS_PER_PGD.
+> - Added a new patch (via [PATCH 3/3]), which fixes a simple typo in
+>   'Documentation/arm64/memory.rst'
+>=20
+> Changes since v2:
+> ----------------
+> - v2 can be seen here:
+>   http://lists.infradead.org/pipermail/kexec/2019-March/022531.html
+> - Protected 'MAX_PHYSMEM_BITS' vmcoreinfo variable under CONFIG_SPARSEMEM
+>   ifdef sections, as suggested by Kazu.
+> - Updated vmcoreinfo documentation to add description about
+>   'MAX_PHYSMEM_BITS' variable (via [PATCH 3/3]).
+>=20
 > Changes since v1:
-> 1. Fix also 7-space and tab+1 space indentation issues.
+> ----------------
+> - v1 was sent out as a single patch which can be seen here:
+>   http://lists.infradead.org/pipermail/kexec/2019-February/022411.html
+>=20
+> - v2 breaks the single patch into two independent patches:
+>   [PATCH 1/2] appends 'PTRS_PER_PGD' to vmcoreinfo for arm64 arch, wherea=
+s
+>   [PATCH 2/2] appends 'MAX_PHYSMEM_BITS' to vmcoreinfo in core kernel cod=
+e (all archs)
+>=20
+> This patchset primarily fixes the regression reported in user-space
+> utilities like 'makedumpfile' and 'crash-utility' on arm64 architecture
+> with the availability of 52-bit address space feature in underlying
+> kernel. These regressions have been reported both on CPUs which don't
+> support ARMv8.2 extensions (i.e. LVA, LPA) and are running newer kernels
+> and also on prototype platforms (like ARMv8 FVP simulator model) which
+> support ARMv8.2 extensions and are running newer kernels.
+>=20
+> The reason for these regressions is that right now user-space tools
+> have no direct access to these values (since these are not exported
+> from the kernel) and hence need to rely on a best-guess method of
+> determining value of 'vabits_actual' and 'MAX_PHYSMEM_BITS' supported
+> by underlying kernel.
+>=20
+> Exporting these values via vmcoreinfo will help user-land in such cases.
+> In addition, as per suggestion from makedumpfile maintainer (Kazu),
+> it makes more sense to append 'MAX_PHYSMEM_BITS' to
+> vmcoreinfo in the core code itself rather than in arm64 arch-specific
+> code, so that the user-space code for other archs can also benefit from
+> this addition to the vmcoreinfo and use it as a standard way of
+> determining 'SECTIONS_SHIFT' value in user-land.
+>=20
+> Cc: Boris Petkov <bp@alien8.de>
+> Cc: Ingo Molnar <mingo@kernel.org>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Jonathan Corbet <corbet@lwn.net>
+> Cc: James Morse <james.morse@arm.com>
+> Cc: Mark Rutland <mark.rutland@arm.com>
+> Cc: Will Deacon <will@kernel.org>
+> Cc: Steve Capper <steve.capper@arm.com>
+> Cc: Catalin Marinas <catalin.marinas@arm.com>
+> Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Dave Anderson <anderson@redhat.com>
+> Cc: Kazuhito Hagio <k-hagio@ab.jp.nec.com>
+> Cc: x86@kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-kernel@vger.kernel.org
+> Cc: linux-doc@vger.kernel.org
+> Cc: kexec@lists.infradead.org
+>=20
+> Bhupesh Sharma (3):
+>   crash_core, vmcoreinfo: Append 'MAX_PHYSMEM_BITS' to vmcoreinfo
+>   arm64/crash_core: Export TCR_EL1.T1SZ in vmcoreinfo
 
-Same here, I already applied v1, so this one does not apply :(
+Soft reminder:  the new introduced vmcoreinfo needs documentation
+
+Please check Documentation/admin-guide/kdump/vmcoreinfo.rst
+
+Thanks
+Dave
+
