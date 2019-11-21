@@ -2,66 +2,49 @@ Return-Path: <SRS0=V+RV=ZN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 60AF0C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 08:18:43 +0000 (UTC)
-Received: from lists.ozlabs.org (unknown [203.11.71.2])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6BEA8C432C0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 08:21:06 +0000 (UTC)
+Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 102D820855
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 08:18:42 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="pTdxGys+"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 102D820855
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id 2531E20855
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 08:21:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2531E20855
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47JXWh20kwzDqFJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 19:18:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
+	by lists.ozlabs.org (Postfix) with ESMTP id 47JXZR60bJzDqQQ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 19:21:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lst.de
+ (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="pTdxGys+"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=lst.de
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47JWNv59SZzDqQY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2019 18:27:43 +1100 (AEDT)
-Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
- [83.86.89.107])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 49BD02089D;
- Thu, 21 Nov 2019 07:27:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1574321260;
- bh=gPWdK3ZQs3w3pA48qJ20NHH19/TD+hbiKK+54x6ca3E=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=pTdxGys+fI/YWmhs8ajHyqe9MpZFOMqsSpbZM4ITK0fB17xJiuhgJvs1fxMLYpCvf
- 82lTIevOKs+X04tx7NsT34LTKYCScq8DKhMoySraei9v6CsowPflU/BOZu2x2R4Hh7
- 1jj4m0+06Cvw+2SmBRdkw30QwC1TqHDSmWmZ5vfs=
-Date: Thu, 21 Nov 2019 08:27:38 +0100
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH v2] tty: Fix Kconfig indentation
-Message-ID: <20191121072738.GA368332@kroah.com>
-References: <1574306408-20021-1-git-send-email-krzk@kernel.org>
- <20191121072124.GA356838@kroah.com>
- <CAJKOXPeW_ffza48Bbxm7Od-Xo_Vt-Qfy+8OY5w8AzZOPkxriXg@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47JWRL471DzDqwH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2019 18:29:49 +1100 (AEDT)
+Received: by verein.lst.de (Postfix, from userid 2407)
+ id 517D368B05; Thu, 21 Nov 2019 08:29:43 +0100 (CET)
+Date: Thu, 21 Nov 2019 08:29:43 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Christian Zigotzky <chzigotzky@xenosoft.de>
+Subject: Re: Bug 205201 - Booting halts if Dawicontrol DC-2976 UW SCSI
+ board installed, unless RAM size limited to 3500M
+Message-ID: <20191121072943.GA24024@lst.de>
+References: <F1EBB706-73DF-430E-9020-C214EC8ED5DA@xenosoft.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <CAJKOXPeW_ffza48Bbxm7Od-Xo_Vt-Qfy+8OY5w8AzZOPkxriXg@mail.gmail.com>
-User-Agent: Mutt/1.12.2 (2019-09-21)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <F1EBB706-73DF-430E-9020-C214EC8ED5DA@xenosoft.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,38 +56,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- linux-serial@vger.kernel.org, Jiri Slaby <jslaby@suse.com>
+Cc: linux-arch@vger.kernel.org, darren@stevens-zone.net,
+ mad skateman <madskateman@gmail.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, iommu@lists.linux-foundation.org,
+ Rob Herring <robh+dt@kernel.org>, paulus@samba.org, rtd2@xtra.co.nz,
+ "contact@a-eon.com" <contact@a-eon.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Christoph Hellwig <hch@lst.de>,
+ nsaenzjulienne@suse.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Nov 21, 2019 at 03:22:27PM +0800, Krzysztof Kozlowski wrote:
-> On Thu, 21 Nov 2019 at 15:21, Greg Kroah-Hartman
-> <gregkh@linuxfoundation.org> wrote:
-> >
-> > On Thu, Nov 21, 2019 at 04:20:08AM +0100, Krzysztof Kozlowski wrote:
-> > > Adjust indentation from spaces to tab (+optional two spaces) as in
-> > > coding style with command like:
-> > >       $ sed -e 's/^        /\t/' -i */Kconfig
-> > >
-> > > Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
-> > >
-> > > ---
-> > >
-> > > Changes since v1:
-> > > 1. Fix also 7-space and tab+1 space indentation issues.
-> >
-> > Same here, I already applied v1, so this one does not apply :(
+On Sat, Nov 16, 2019 at 08:06:05AM +0100, Christian Zigotzky wrote:
+> /*
+>  *  DMA addressing mode.
+>  *
+>  *  0 : 32 bit addressing for all chips.
+>  *  1 : 40 bit addressing when supported by chip.
+>  *  2 : 64 bit addressing when supported by chip,
+>  *      limited to 16 segments of 4 GB -> 64 GB max.
+>  */
+> #define   SYM_CONF_DMA_ADDRESSING_MODE CONFIG_SCSI_SYM53C8XX_DMA_ADDRESSING_MODE
 > 
-> Hi Greg,
+> Cyrus config:
 > 
-> I missed your notification that the patch was applied and then I
-> worked on a updated version fixing few more whitespace errors (pointed
-> during review on other patches). This supersedes v1 but if you do not
-> want to rebase, I can send it later as a separate patch.
+> CONFIG_SCSI_SYM53C8XX_DMA_ADDRESSING_MODE=1
+> 
+> I will configure “0 : 32 bit addressing for all chips” for the RC8. Maybe this is the solution.
 
-My public trees do not rebase, so I need a separate patch, thanks.
+0 means you are going to do bounce buffering a lot, which seems
+generally like a bad idea.
 
-greg k-h
+But why are we talking about the sym53c8xx driver now?  The last issue
+you reported was about video4linux allocations.
