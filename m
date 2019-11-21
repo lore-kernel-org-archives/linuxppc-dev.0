@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 859ACC432C3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 09:51:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 497E2C432C0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 09:56:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 35371204FD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 09:51:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 35371204FD
+	by mail.kernel.org (Postfix) with ESMTPS id 00FC02068D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 09:56:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 00FC02068D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.cz
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47JZZm1DFLzDr4r
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 20:51:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47JZhX3L8CzDqkP
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 20:56:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz
  (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=jack@suse.cz;
@@ -28,20 +28,20 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47JZXB6HBvzDr1D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2019 20:49:13 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47JZf04vsvzDqJH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2019 20:54:16 +1100 (AEDT)
 X-Virus-Scanned: by amavisd-new at test-mx.suse.de
 Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id 8A829AE39;
- Thu, 21 Nov 2019 09:49:10 +0000 (UTC)
+ by mx1.suse.de (Postfix) with ESMTP id 1B5FCAC46;
+ Thu, 21 Nov 2019 09:54:13 +0000 (UTC)
 Received: by quack2.suse.cz (Postfix, from userid 1000)
- id 0C6121E47FC; Thu, 21 Nov 2019 10:49:08 +0100 (CET)
-Date: Thu, 21 Nov 2019 10:49:08 +0100
+ id 5A11F1E47FC; Thu, 21 Nov 2019 10:54:11 +0100 (CET)
+Date: Thu, 21 Nov 2019 10:54:11 +0100
 From: Jan Kara <jack@suse.cz>
 To: John Hubbard <jhubbard@nvidia.com>
 Subject: Re: [PATCH v7 02/24] mm/gup: factor out duplicate code from four
  routines
-Message-ID: <20191121094908.GB18190@quack2.suse.cz>
+Message-ID: <20191121095411.GC18190@quack2.suse.cz>
 References: <20191121071354.456618-1-jhubbard@nvidia.com>
  <20191121071354.456618-3-jhubbard@nvidia.com>
  <20191121080356.GA24784@lst.de>
@@ -89,7 +89,7 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 On Thu 21-11-19 00:29:59, John Hubbard wrote:
-> On 11/21/19 12:03 AM, Christoph Hellwig wrote:
+> > 
 > > Otherwise this looks fine and might be a worthwhile cleanup to feed
 > > Andrew for 5.5 independent of the gut of the changes.
 > > 
@@ -100,17 +100,10 @@ On Thu 21-11-19 00:29:59, John Hubbard wrote:
 > series should be targeted at 5.6 (not 5.5), is that what you have in mind?
 > And get the preparatory patches (1-9, and maybe even 10-16) into 5.5?
 
-Yeah, actually I feel the same. The merge window is going to open on Sunday
-and the series isn't still fully baked and happily sitting in linux-next
-(and larger changes should really sit in linux-next for at least a week,
-preferably two, before the merge window opens to get some reasonable test
-coverage).  So I'd take out the independent easy patches that are already
-reviewed, get them merged into Andrew's (or whatever other appropriate
-tree) now so that they get at least a week of testing in linux-next before
-going upstream.  And the more involved bits will have to wait for 5.6 -
-which means let's just continue working on them as we do now because
-ideally in 4 weeks we should have them ready with all the reviews so that
-they can be picked up and integrated into linux-next.
+One more note :) If you are going to push pin_user_pages() interfaces
+(which I'm fine with), it would probably make sense to push also the
+put_user_pages() -> unpin_user_pages() renaming so that that inconsistency
+in naming does not exist in the released upstream kernel.
 
 								Honza
 -- 
