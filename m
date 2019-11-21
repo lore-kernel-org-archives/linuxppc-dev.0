@@ -2,82 +2,82 @@ Return-Path: <SRS0=V+RV=ZN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLACK,USER_AGENT_SANE_1 autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 075E0C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 03:52:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8143C432C0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 03:59:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9F027208A1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 03:52:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 46BD520674
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 03:59:07 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="yo/sLPdc"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F027208A1
+	dkim=pass (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="mFejt8AL"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 46BD520674
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47JQc75XSGzDqpR
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 14:52:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47JQm85Lh0zDqpJ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Nov 2019 14:59:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.ru (client-ip=2607:f8b0:4864:20::1041;
- helo=mail-pj1-x1041.google.com; envelope-from=aik@ozlabs.ru;
+ smtp.mailfrom=ozlabs.ru (client-ip=2607:f8b0:4864:20::1042;
+ helo=mail-pj1-x1042.google.com; envelope-from=aik@ozlabs.ru;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
- header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="yo/sLPdc"; 
+ header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="mFejt8AL"; 
  dkim-atps=neutral
-Received: from mail-pj1-x1041.google.com (mail-pj1-x1041.google.com
- [IPv6:2607:f8b0:4864:20::1041])
+Received: from mail-pj1-x1042.google.com (mail-pj1-x1042.google.com
+ [IPv6:2607:f8b0:4864:20::1042])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47JQZF5TRSzDqng
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2019 14:50:28 +1100 (AEDT)
-Received: by mail-pj1-x1041.google.com with SMTP id y21so816335pjn.9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Nov 2019 19:50:28 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47JQkP0X66zDqRY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2019 14:57:31 +1100 (AEDT)
+Received: by mail-pj1-x1042.google.com with SMTP id f7so831469pjw.5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Nov 2019 19:57:31 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
  h=subject:to:cc:references:from:autocrypt:message-id:date:user-agent
  :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=STURaD0ixqOxW/ioFF3kk8EoUsTNkbfj5gnfwAGUDtM=;
- b=yo/sLPdcka+mVr8Y56X2jthlk1a9JsSAyqwU9ETctal/JFUCJxlxc7rXKENH0B+F6I
- XcO/OAcZSIUYEQIyDLex9KUV4rzr23gRlCyqKmtfKxOF68w7DXts8mtR4NjS+W7tmxdz
- A2dYZ8I0WszknBt/fs1gJsOWcTbJn7lhe7K4Lri+JmXWlKoOQy1Dmau0ZXb7xNJeTi1a
- hRc01L41yrN78kty3lQMbnPd3YuQ5CuGpM/tWDdnOnrf2tcJytTlzq7IziLGhPcOhp1Z
- o5NW54n+jTbRz3IMFq79llQqpkDi07Og3j5iXQPc46LEY37mZ2+NFjbEj8d0/OfqcV3G
- +fHg==
+ bh=adDaeF6HlboM4tUCP2dKcqanf7vg0NBVVvuBO/cyJu4=;
+ b=mFejt8AL3rOMrRODaIa8ojGwPO1USQcj1qQF1EKvjDGySgbF9eklxY2IGG6sdgIiaE
+ qmGE0A/3hL7rmBUAXMHUJq2zV8lzeaE9Liaqgmwl0CeH2oz3hVQmyr9L3MZ3irMOZXRx
+ /ZHr11FoYOy0mvJ723Zd+LVkCEG1oLe7ziiptpAiLwo9AU74u7eA3Y6DRjF2lgIenKWf
+ 9uTnsa0/N00rHRaAe2KJnrMZFZH4V3Hdj2rnWf/kVdqYnWEROcUUjeqOGnWly7JAhkvm
+ /I1FQeDNWc+LB/JudH0D9zMDsIrxXpMop7hYuC6f/IXXMe3dJVa78QmuZa59DIQpBj6k
+ jQmA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:subject:to:cc:references:from:autocrypt
  :message-id:date:user-agent:mime-version:in-reply-to
  :content-language:content-transfer-encoding;
- bh=STURaD0ixqOxW/ioFF3kk8EoUsTNkbfj5gnfwAGUDtM=;
- b=j6GstHkv3aqlaRca7T5I1gOLCMXONNWDrzoDn7knbwmNI9++ZgEmoY6OQKS5hvnsOL
- 9hAyAvrvEPPd4G+to7HG8xKTh/Y59Ahc/FqGgBP1yb3MtrFMx2cPPdPlp6uydYyvv4Pz
- hHw0k8XyIkP3dYZMBDWRuRTjUUDfMKFm7W8muZ81NSroDn+WaEvVHN/JjChocDRUWVfv
- ysGq/kKuY0PaCRuefNWAfudBibDFthDxocd3f131HUaqxCDI+Y+9EE3rAINErV0dgi2o
- 7+3f5Enn8v4M/uQDBUxClzWnH7oHaBiD2VoGNgDH4u3X2klLO1aPjfIjaL9Swf4bO54x
- x3Fw==
-X-Gm-Message-State: APjAAAXh/BMLecYfidQhD/qIK3vyNj/exUcAVFXX4X3uUPAkLW75KsCf
- +ylQc2V7vPzqV6g9FQtAYblPKw==
-X-Google-Smtp-Source: APXvYqwwY6LcCdTxXK0MPVzestExAEg1NfH25j/SddklH/1H0kPoLjcJ06XNVPxP0KqnjFv/JG3TfQ==
-X-Received: by 2002:a17:902:202:: with SMTP id 2mr6502458plc.63.1574308225112; 
- Wed, 20 Nov 2019 19:50:25 -0800 (PST)
+ bh=adDaeF6HlboM4tUCP2dKcqanf7vg0NBVVvuBO/cyJu4=;
+ b=jQ8teZilU4tBYFzVUy3Q3lu4MWIyUSZzsaiQ8sWcRGnXXYVf0oL8pw6MdOsOEzpZsY
+ ks45GGACGMFvKSH+pqx4rEAQ0tyGofJuCVjjL6KUrIIPiDhYgQW290AfyEAML+OOS4Fa
+ EsNVtP/sFIxCavWBmyee7EJMi52lOnC9XfEGVy1c66PZD7syUJxWkzlTMZTiBDk3IpWg
+ pX5mPwERIJxPPwGAqFr/teVIuWIZpKuajrUk8ZGWZYPJGz4DYwiF7ZPVrxXPvN8UUGel
+ jLTAIPie31QdrsRKzNsHvI6qiwwzh/zKxVmn6VEyIJmKf4qrazuHjmdKpuiUHPFRYghP
+ 5SwQ==
+X-Gm-Message-State: APjAAAWX1nGJShaQXTE0YdFAa43EVuoRigqUIwIxt1X0mBAXd1MBqJqU
+ 05BvKtjL+Ak969DFWwjiwF2heg==
+X-Google-Smtp-Source: APXvYqwQS7U4Uapd4udUBnA9CpPJc6yRxCoYMKAH3euPQnsp504qrJjffhhXFvpKMPxQcjkzbGU1qw==
+X-Received: by 2002:a17:902:b945:: with SMTP id
+ h5mr6429211pls.291.1574308648817; 
+ Wed, 20 Nov 2019 19:57:28 -0800 (PST)
 Received: from [10.61.2.175] ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id q26sm932475pff.143.2019.11.20.19.50.22
+ by smtp.gmail.com with ESMTPSA id 6sm995596pfy.43.2019.11.20.19.57.26
  (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Wed, 20 Nov 2019 19:50:24 -0800 (PST)
-Subject: Re: [Very RFC 37/46] powernv/pci: Use the PHB's rmap for
- pnv_ioda_to_pe()
+ Wed, 20 Nov 2019 19:57:28 -0800 (PST)
+Subject: Re: [Very RFC 03/46] powernv/pci: Remove dma_dev_setup() for NPU PHBs
 To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
 References: <20191120012859.23300-1-oohall@gmail.com>
- <20191120012859.23300-38-oohall@gmail.com>
+ <20191120012859.23300-4-oohall@gmail.com>
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 Autocrypt: addr=aik@ozlabs.ru; keydata=
  mQINBE+rT0sBEADFEI2UtPRsLLvnRf+tI9nA8T91+jDK3NLkqV+2DKHkTGPP5qzDZpRSH6mD
@@ -152,12 +152,12 @@ Autocrypt: addr=aik@ozlabs.ru; keydata=
  c7E5M+/NpslPCmYnDjs5qg0/3ihh6XuOGggZQOqrYPC3PnsNs3NxirwOkVPQgO6mXxpuifvJ
  DG9EMkK8IBXnLulqVk54kf7fE0jT/d8RTtJIA92GzsgdK2rpT1MBKKVffjRFGwN7nQVOzi4T
  XrB5p+6ML7Bd84xOEGsj/vdaXmz1esuH7BOZAGEZfLRCHJ0GVCSssg==
-Message-ID: <b5d37566-af3f-2fc1-a56d-7cb25c833c05@ozlabs.ru>
-Date: Thu, 21 Nov 2019 14:50:21 +1100
+Message-ID: <f2d76ec5-6394-e299-fe14-5947f376fb04@ozlabs.ru>
+Date: Thu, 21 Nov 2019 14:57:24 +1100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
  Thunderbird/68.2.2
 MIME-Version: 1.0
-In-Reply-To: <20191120012859.23300-38-oohall@gmail.com>
+In-Reply-To: <20191120012859.23300-4-oohall@gmail.com>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
@@ -180,47 +180,39 @@ Sender: "Linuxppc-dev"
 
 
 On 20/11/2019 12:28, Oliver O'Halloran wrote:
-> Rather than using the pdn->pe_number for a device as an index into the
-> IODA PE array we can use the reverse map. This maps the RID (i.e. bdfn)
-> to the PE number associated with it. Firmware maintains a copy of the
-> rmap which is used by the hardware for determining which PE to use
-> when handling a DMA so this gets us a bit closer to the model used
-> by the HW, which is comprehensible by mortals, rather than... whatever
+> The pnv_pci_dma_dev_setup() only does something when:
+> 
+> 1) There PHB contains VFs, or
+> 2) The PHB defines a dma_dev_setup() callback in the pnv_phb structure.
+> 
+> Neither is true for NPU PHBs, so don't set the callback in the pci_controller_ops.
 
-s/comprensible/comprehensible/ ?
-
-> the hell is going on currently.
+True.
 
 
-Merge this into 02/46?
+Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+
+
 
 
 > 
 > Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 > ---
->  arch/powerpc/platforms/powernv/pci-ioda.c | 8 ++------
->  1 file changed, 2 insertions(+), 6 deletions(-)
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 1 -
+>  1 file changed, 1 deletion(-)
 > 
 > diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 8525642b1256..d111a50fbe68 100644
+> index 65b5b121ebad..099c0bb1a9b9 100644
 > --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 > +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -672,13 +672,9 @@ struct pnv_ioda_pe *__pnv_ioda_get_pe(struct pnv_phb *phb, u16 bdfn)
->  struct pnv_ioda_pe *pnv_ioda_get_pe(struct pci_dev *dev)
->  {
->  	struct pnv_phb *phb = pci_bus_to_pnvhb(dev->bus);
-> -	struct pci_dn *pdn = pci_get_pdn(dev);
-> +	u16 bdfn = (dev->bus->number << 8) | dev->devfn;
+> @@ -3652,7 +3652,6 @@ static const struct pci_controller_ops pnv_pci_ioda_controller_ops = {
+>  };
 >  
-> -	if (!pdn)
-> -		return NULL;
-> -	if (pdn->pe_number == IODA_INVALID_PE)
-> -		return NULL;
-> -	return &phb->ioda.pe_array[pdn->pe_number];
-> +	return __pnv_ioda_get_pe(phb, bdfn);
->  }
->  
->  static int pnv_ioda_set_one_peltv(struct pnv_phb *phb,
+>  static const struct pci_controller_ops pnv_npu_ioda_controller_ops = {
+> -	.dma_dev_setup		= pnv_pci_dma_dev_setup,
+>  	.setup_msi_irqs		= pnv_setup_msi_irqs,
+>  	.teardown_msi_irqs	= pnv_teardown_msi_irqs,
+>  	.enable_device_hook	= pnv_pci_enable_device_hook,
 > 
 
 -- 
