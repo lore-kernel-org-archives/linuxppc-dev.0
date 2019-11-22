@@ -7,53 +7,54 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35211C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 07:17:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CCADFC432C0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 07:19:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D48E320659
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 07:17:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 717C520659
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 07:19:23 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZijtLRyB"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D48E320659
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="v8FFS9aG"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 717C520659
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47K76T3gjfzDrDp
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 18:17:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47K78m749czDqCk
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 18:19:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="ZijtLRyB"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="v8FFS9aG"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47K5Ry3jc3zDr8m
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Nov 2019 17:02:22 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47K5Rz4Qx1zDr8v
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Nov 2019 17:02:23 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id D231C20659;
- Fri, 22 Nov 2019 06:02:19 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id DA5782068E;
+ Fri, 22 Nov 2019 06:02:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1574402540;
- bh=BE3RiM1zwBhTfnORaxv1pQOdWQGQKMfZni0293r2iDU=;
+ s=default; t=1574402541;
+ bh=giUmpor69kBQGPlEKJQXTVOif8JHpyxMXUDBvI7re4Q=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=ZijtLRyBFYGlAP1c5DqH/y54OtVawpaS9FqUncdhbknABF+p0jWNKyWkgHli/Gy7G
- dhv636lM/Z+d1nPGRYwFSzCFN2ragdtSASDiY9qIqbVo+vRDP3tcNEpSihH/dKUsvE
- 2WxOqJ+Vfb/VankD8mNMm/012aQMbgVfAfLSIf4Y=
+ b=v8FFS9aGcw6Qd7BV8bmtXWBaytbAUZ5MFbyLC7ao/bHZfsVAXecrKrOsxCUMTBg39
+ NI9XZGDaV0KbAGvpMroLZtXTGhe3gPUKJUD+4NqSYcAWzP7WN5xDod1GeuHLczjrBt
+ uVNxHAI1/TK3UKoDYRoisWzXvRl+FTCryrNQu/3U=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 47/91] powerpc/prom: fix early DEBUG messages
-Date: Fri, 22 Nov 2019 01:00:45 -0500
-Message-Id: <20191122060129.4239-46-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 48/91] powerpc/mm: Make NULL pointer deferences
+ explicit on bad page faults.
+Date: Fri, 22 Nov 2019 01:00:46 -0500
+Message-Id: <20191122060129.4239-47-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20191122060129.4239-1-sashal@kernel.org>
 References: <20191122060129.4239-1-sashal@kernel.org>
@@ -79,51 +80,59 @@ Sender: "Linuxppc-dev"
 
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 
-[ Upstream commit b18f0ae92b0a1db565c3e505fa87b6971ad3b641 ]
+[ Upstream commit 49a502ea23bf9dec47f8f3c3960909ff409cd1bb ]
 
-This patch fixes early DEBUG messages in prom.c:
-- Use %px instead of %p to see the addresses
-- Cast memblock_phys_mem_size() with (unsigned long long) to
-avoid build failure when phys_addr_t is not 64 bits.
+As several other arches including x86, this patch makes it explicit
+that a bad page fault is a NULL pointer dereference when the fault
+address is lower than PAGE_SIZE
+
+In the mean time, this page makes all bad_page_fault() messages
+shorter so that they remain on one single line. And it prefixes them
+by "BUG: " so that they get easily grepped.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+[mpe: Avoid pr_cont()]
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/kernel/prom.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/mm/fault.c | 17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index b0245bed6f548..b868f07c4246c 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -128,7 +128,7 @@ static void __init move_device_tree(void)
- 		p = __va(memblock_alloc(size, PAGE_SIZE));
- 		memcpy(p, initial_boot_params, size);
- 		initial_boot_params = p;
--		DBG("Moved device tree to 0x%p\n", p);
-+		DBG("Moved device tree to 0x%px\n", p);
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 9376e8e53bfae..2791f568bdb25 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -521,21 +521,22 @@ void bad_page_fault(struct pt_regs *regs, unsigned long address, int sig)
+ 	switch (regs->trap) {
+ 	case 0x300:
+ 	case 0x380:
+-		printk(KERN_ALERT "Unable to handle kernel paging request for "
+-			"data at address 0x%08lx\n", regs->dar);
++		pr_alert("BUG: %s at 0x%08lx\n",
++			 regs->dar < PAGE_SIZE ? "Kernel NULL pointer dereference" :
++			 "Unable to handle kernel data access", regs->dar);
+ 		break;
+ 	case 0x400:
+ 	case 0x480:
+-		printk(KERN_ALERT "Unable to handle kernel paging request for "
+-			"instruction fetch\n");
++		pr_alert("BUG: Unable to handle kernel instruction fetch%s",
++			 regs->nip < PAGE_SIZE ? " (NULL pointer?)\n" : "\n");
+ 		break;
+ 	case 0x600:
+-		printk(KERN_ALERT "Unable to handle kernel paging request for "
+-			"unaligned access at address 0x%08lx\n", regs->dar);
++		pr_alert("BUG: Unable to handle kernel unaligned access at 0x%08lx\n",
++			 regs->dar);
+ 		break;
+ 	default:
+-		printk(KERN_ALERT "Unable to handle kernel paging request for "
+-			"unknown fault\n");
++		pr_alert("BUG: Unable to handle unknown paging fault at 0x%08lx\n",
++			 regs->dar);
+ 		break;
  	}
- 
- 	DBG("<- move_device_tree\n");
-@@ -651,7 +651,7 @@ void __init early_init_devtree(void *params)
- {
- 	phys_addr_t limit;
- 
--	DBG(" -> early_init_devtree(%p)\n", params);
-+	DBG(" -> early_init_devtree(%px)\n", params);
- 
- 	/* Too early to BUG_ON(), do it by hand */
- 	if (!early_init_dt_verify(params))
-@@ -711,7 +711,7 @@ void __init early_init_devtree(void *params)
- 	memblock_allow_resize();
- 	memblock_dump_all();
- 
--	DBG("Phys. mem: %llx\n", memblock_phys_mem_size());
-+	DBG("Phys. mem: %llx\n", (unsigned long long)memblock_phys_mem_size());
- 
- 	/* We may need to relocate the flat tree, do it now.
- 	 * FIXME .. and the initrd too? */
+ 	printk(KERN_ALERT "Faulting instruction address: 0x%08lx\n",
 -- 
 2.20.1
 
