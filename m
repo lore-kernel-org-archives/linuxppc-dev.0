@@ -7,54 +7,54 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 39BFBC432C0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 06:53:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D42FBC432C0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 06:57:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A82812068F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 06:53:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 855702068F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 06:57:29 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="FsWsDp2l"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A82812068F
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="jnuZaJvf"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 855702068F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47K6bS11hmzDqLD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 17:53:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47K6gW3FTczDr8H
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 17:57:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="FsWsDp2l"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="jnuZaJvf"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47K5Kp178KzDr0p
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Nov 2019 16:57:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47K5Kr4nw1zDqwP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Nov 2019 16:57:04 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 404F920854;
- Fri, 22 Nov 2019 05:56:58 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id B1C6A207FA;
+ Fri, 22 Nov 2019 05:57:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1574402218;
- bh=qcNO1Caxm6NWbnY5JlZralMjIeX6Rv+MxU4i3SGAiy8=;
+ s=default; t=1574402222;
+ bh=4+GHqQmqPjorqmdA5wl5NUQh87jDzmSFSFQb4P1qgGs=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=FsWsDp2lPKmv0Gh9qrHAyxFEitHAQqhV5Kq3LD97XyCVI+sE1IH6WWUYmA2qIqHLH
- WkBe6jHtkWHrG7GbX5IaitIKwCJmichB11kdK41Vgyhu7nS+Ckrvoisu8cD50EhqwW
- 8ONgWQWpBmytp0/+ZtFWXluojumngu0Gt2xa11Nw=
+ b=jnuZaJvfa3++HMkd/WEplYAKOXCi/XsrlAWkv202kw5XNY4gA+Ukaq+0XOY3T2D9T
+ nfYV/Q6oLK6j3ikFX+EVq1iMBPdN0XwvrWcXe+WsMhBjikiAlrTwyJW4EozBO6zyTN
+ tc0XknRSsEiTG4XUEer8FmIUvog2MFx8KoFw19o8=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 066/127] powerpc/mm: Make NULL pointer deferences
- explicit on bad page faults.
-Date: Fri, 22 Nov 2019 00:54:44 -0500
-Message-Id: <20191122055544.3299-65-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 069/127] powerpc/powernv/eeh/npu: Fix
+ uninitialized variables in opal_pci_eeh_freeze_status
+Date: Fri, 22 Nov 2019 00:54:47 -0500
+Message-Id: <20191122055544.3299-68-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20191122055544.3299-1-sashal@kernel.org>
 References: <20191122055544.3299-1-sashal@kernel.org>
@@ -73,66 +73,88 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Sasha Levin <sashal@kernel.org>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Sam Bobroff <sbobroff@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Sasha Levin <sashal@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Christophe Leroy <christophe.leroy@c-s.fr>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-[ Upstream commit 49a502ea23bf9dec47f8f3c3960909ff409cd1bb ]
+[ Upstream commit c20577014f85f36d4e137d3d52a1f61225b4a3d2 ]
 
-As several other arches including x86, this patch makes it explicit
-that a bad page fault is a NULL pointer dereference when the fault
-address is lower than PAGE_SIZE
+The current implementation of the OPAL_PCI_EEH_FREEZE_STATUS call in
+skiboot's NPU driver does not touch the pci_error_type parameter so
+it might have garbage but the powernv code analyzes it nevertheless.
 
-In the mean time, this page makes all bad_page_fault() messages
-shorter so that they remain on one single line. And it prefixes them
-by "BUG: " so that they get easily grepped.
+This initializes pcierr and fstate to zero in all call sites.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-[mpe: Avoid pr_cont()]
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Reviewed-by: Sam Bobroff <sbobroff@linux.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/mm/fault.c | 17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
+ arch/powerpc/platforms/powernv/eeh-powernv.c | 8 ++++----
+ arch/powerpc/platforms/powernv/pci-ioda.c    | 4 ++--
+ arch/powerpc/platforms/powernv/pci.c         | 4 ++--
+ 3 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 52863deed65df..5fc8a010fdf07 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -581,21 +581,22 @@ void bad_page_fault(struct pt_regs *regs, unsigned long address, int sig)
- 	switch (regs->trap) {
- 	case 0x300:
- 	case 0x380:
--		printk(KERN_ALERT "Unable to handle kernel paging request for "
--			"data at address 0x%08lx\n", regs->dar);
-+		pr_alert("BUG: %s at 0x%08lx\n",
-+			 regs->dar < PAGE_SIZE ? "Kernel NULL pointer dereference" :
-+			 "Unable to handle kernel data access", regs->dar);
- 		break;
- 	case 0x400:
- 	case 0x480:
--		printk(KERN_ALERT "Unable to handle kernel paging request for "
--			"instruction fetch\n");
-+		pr_alert("BUG: Unable to handle kernel instruction fetch%s",
-+			 regs->nip < PAGE_SIZE ? " (NULL pointer?)\n" : "\n");
- 		break;
- 	case 0x600:
--		printk(KERN_ALERT "Unable to handle kernel paging request for "
--			"unaligned access at address 0x%08lx\n", regs->dar);
-+		pr_alert("BUG: Unable to handle kernel unaligned access at 0x%08lx\n",
-+			 regs->dar);
- 		break;
- 	default:
--		printk(KERN_ALERT "Unable to handle kernel paging request for "
--			"unknown fault\n");
-+		pr_alert("BUG: Unable to handle unknown paging fault at 0x%08lx\n",
-+			 regs->dar);
- 		break;
- 	}
- 	printk(KERN_ALERT "Faulting instruction address: 0x%08lx\n",
+diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+index 8864065eba227..fa2965c96155b 100644
+--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
++++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+@@ -548,8 +548,8 @@ static void pnv_eeh_get_phb_diag(struct eeh_pe *pe)
+ static int pnv_eeh_get_phb_state(struct eeh_pe *pe)
+ {
+ 	struct pnv_phb *phb = pe->phb->private_data;
+-	u8 fstate;
+-	__be16 pcierr;
++	u8 fstate = 0;
++	__be16 pcierr = 0;
+ 	s64 rc;
+ 	int result = 0;
+ 
+@@ -587,8 +587,8 @@ static int pnv_eeh_get_phb_state(struct eeh_pe *pe)
+ static int pnv_eeh_get_pe_state(struct eeh_pe *pe)
+ {
+ 	struct pnv_phb *phb = pe->phb->private_data;
+-	u8 fstate;
+-	__be16 pcierr;
++	u8 fstate = 0;
++	__be16 pcierr = 0;
+ 	s64 rc;
+ 	int result;
+ 
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index ddef22e00ddd7..d3d5796f7df60 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -598,8 +598,8 @@ static int pnv_ioda_unfreeze_pe(struct pnv_phb *phb, int pe_no, int opt)
+ static int pnv_ioda_get_pe_state(struct pnv_phb *phb, int pe_no)
+ {
+ 	struct pnv_ioda_pe *slave, *pe;
+-	u8 fstate, state;
+-	__be16 pcierr;
++	u8 fstate = 0, state;
++	__be16 pcierr = 0;
+ 	s64 rc;
+ 
+ 	/* Sanity check on PE number */
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index 5422f4a6317ca..e2d031a3ec157 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -600,8 +600,8 @@ static void pnv_pci_handle_eeh_config(struct pnv_phb *phb, u32 pe_no)
+ static void pnv_pci_config_check_eeh(struct pci_dn *pdn)
+ {
+ 	struct pnv_phb *phb = pdn->phb->private_data;
+-	u8	fstate;
+-	__be16	pcierr;
++	u8	fstate = 0;
++	__be16	pcierr = 0;
+ 	unsigned int pe_no;
+ 	s64	rc;
+ 
 -- 
 2.20.1
 
