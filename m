@@ -6,54 +6,54 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 972ECC432C3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 05:58:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2201BC432C0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 06:01:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4A9762084F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 05:58:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C35822068E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 06:01:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="aIw6FRMD"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4A9762084F
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="KT2xbNYu"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C35822068E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47K5Lv4667zDr4D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 16:57:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47K5R12gvhzDqKw
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 17:01:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="aIw6FRMD"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="KT2xbNYu"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47K5C4673tzDqw6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Nov 2019 16:51:12 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47K5CM1jSjzDr8g
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Nov 2019 16:51:27 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 043EA2068F;
- Fri, 22 Nov 2019 05:51:09 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id AA57F2071F;
+ Fri, 22 Nov 2019 05:51:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1574401870;
- bh=QFLf3HJ6du181U9CDpuGFKVocaY+72lw3PwSNKydJss=;
+ s=default; t=1574401884;
+ bh=WjAP0E2QeXsNCmQgotZYDKD38OPPBWuEEuGfayCCZWE=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=aIw6FRMDGRXtkvBAlYz3cSEHM5r45Ph00IKgZHt6/MqSCF1GLkX/p/EUYCymaQIRS
- tG8FzIuvof3WD0q4Up7yYih7WtGR9a8XDaB3g6yHQi8yCqb/pX3TEIWwgov34daXIg
- j3wNo2L0XpQJZovI8G5Z5R/LbjV716KOqTRaY6/A=
+ b=KT2xbNYuINerM7gVjEE4Wd0Et5+JwtzQnhbVhaoZ0Un7Wz2kG6zBrne1sZ+5q4Glv
+ z0/2hNDcOZJGwSsEXkkGWRXqRHddXVaJ9kiFw4c2TA47O1qZ62iq4e21jFIeCUATg4
+ chWAXzOkcQuTgjecPIl9wN5Llezh4oMfSvIfMn48=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 106/219] powerpc/book3s/32: fix number of bats in
- p/v_block_mapped()
-Date: Fri, 22 Nov 2019 00:47:18 -0500
-Message-Id: <20191122054911.1750-99-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 118/219] powerpc/perf: Fix unit_sel/cache_sel
+ checks
+Date: Fri, 22 Nov 2019 00:47:30 -0500
+Message-Id: <20191122054911.1750-111-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20191122054911.1750-1-sashal@kernel.org>
 References: <20191122054911.1750-1-sashal@kernel.org>
@@ -72,47 +72,102 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Sasha Levin <sashal@kernel.org>
+Cc: Sasha Levin <sashal@kernel.org>,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Christophe Leroy <christophe.leroy@c-s.fr>
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 
-[ Upstream commit e93ba1b7eb5b188c749052df7af1c90821c5f320 ]
+[ Upstream commit 2d46d4877b1afd14059393a48bdb8ce27955174c ]
 
-This patch fixes the loop in p_block_mapped() and v_block_mapped()
-to scan the entire bat_addrs[] array.
+Raw event code has couple of fields "unit" and "cache" in it, to capture
+the "unit" to monitor for a given pmcxsel and cache reload qualifier to
+program in MMCR1.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+isa207_get_constraint() refers "unit" field to update the MMCRC (L2/L3)
+Event bus control fields with "cache" bits of the raw event code.
+These are power8 specific and not supported by PowerISA v3.0 pmu. So wrap
+the checks to be power8 specific. Also, "cache" bit field is referred to
+update MMCR1[16:17] and this check can be power8 specific.
+
+Fixes: 7ffd948fae4cd ('powerpc/perf: factor out power8 pmu functions')
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/mm/ppc_mmu_32.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/perf/isa207-common.c | 25 ++++++++++++++++++-------
+ arch/powerpc/perf/isa207-common.h |  4 ++--
+ 2 files changed, 20 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/mm/ppc_mmu_32.c b/arch/powerpc/mm/ppc_mmu_32.c
-index bea6c544e38f9..06783270a1242 100644
---- a/arch/powerpc/mm/ppc_mmu_32.c
-+++ b/arch/powerpc/mm/ppc_mmu_32.c
-@@ -52,7 +52,7 @@ struct batrange {		/* stores address ranges mapped by BATs */
- phys_addr_t v_block_mapped(unsigned long va)
+diff --git a/arch/powerpc/perf/isa207-common.c b/arch/powerpc/perf/isa207-common.c
+index 6a2f65d3d088c..053b8e9aa9e75 100644
+--- a/arch/powerpc/perf/isa207-common.c
++++ b/arch/powerpc/perf/isa207-common.c
+@@ -148,6 +148,14 @@ static bool is_thresh_cmp_valid(u64 event)
+ 	return true;
+ }
+ 
++static unsigned int dc_ic_rld_quad_l1_sel(u64 event)
++{
++	unsigned int cache;
++
++	cache = (event >> EVENT_CACHE_SEL_SHIFT) & MMCR1_DC_IC_QUAL_MASK;
++	return cache;
++}
++
+ static inline u64 isa207_find_source(u64 idx, u32 sub_idx)
  {
- 	int b;
--	for (b = 0; b < 4; ++b)
-+	for (b = 0; b < ARRAY_SIZE(bat_addrs); ++b)
- 		if (va >= bat_addrs[b].start && va < bat_addrs[b].limit)
- 			return bat_addrs[b].phys + (va - bat_addrs[b].start);
- 	return 0;
-@@ -64,7 +64,7 @@ phys_addr_t v_block_mapped(unsigned long va)
- unsigned long p_block_mapped(phys_addr_t pa)
- {
- 	int b;
--	for (b = 0; b < 4; ++b)
-+	for (b = 0; b < ARRAY_SIZE(bat_addrs); ++b)
- 		if (pa >= bat_addrs[b].phys
- 	    	    && pa < (bat_addrs[b].limit-bat_addrs[b].start)
- 		              +bat_addrs[b].phys)
+ 	u64 ret = PERF_MEM_NA;
+@@ -288,10 +296,10 @@ int isa207_get_constraint(u64 event, unsigned long *maskp, unsigned long *valp)
+ 		 * have a cache selector of zero. The bank selector (bit 3) is
+ 		 * irrelevant, as long as the rest of the value is 0.
+ 		 */
+-		if (cache & 0x7)
++		if (!cpu_has_feature(CPU_FTR_ARCH_300) && (cache & 0x7))
+ 			return -1;
+ 
+-	} else if (event & EVENT_IS_L1) {
++	} else if (cpu_has_feature(CPU_FTR_ARCH_300) || (event & EVENT_IS_L1)) {
+ 		mask  |= CNST_L1_QUAL_MASK;
+ 		value |= CNST_L1_QUAL_VAL(cache);
+ 	}
+@@ -394,11 +402,14 @@ int isa207_compute_mmcr(u64 event[], int n_ev,
+ 		/* In continuous sampling mode, update SDAR on TLB miss */
+ 		mmcra_sdar_mode(event[i], &mmcra);
+ 
+-		if (event[i] & EVENT_IS_L1) {
+-			cache = event[i] >> EVENT_CACHE_SEL_SHIFT;
+-			mmcr1 |= (cache & 1) << MMCR1_IC_QUAL_SHIFT;
+-			cache >>= 1;
+-			mmcr1 |= (cache & 1) << MMCR1_DC_QUAL_SHIFT;
++		if (cpu_has_feature(CPU_FTR_ARCH_300)) {
++			cache = dc_ic_rld_quad_l1_sel(event[i]);
++			mmcr1 |= (cache) << MMCR1_DC_IC_QUAL_SHIFT;
++		} else {
++			if (event[i] & EVENT_IS_L1) {
++				cache = dc_ic_rld_quad_l1_sel(event[i]);
++				mmcr1 |= (cache) << MMCR1_DC_IC_QUAL_SHIFT;
++			}
+ 		}
+ 
+ 		if (is_event_marked(event[i])) {
+diff --git a/arch/powerpc/perf/isa207-common.h b/arch/powerpc/perf/isa207-common.h
+index 0028f4b9490db..e5a621699a6d8 100644
+--- a/arch/powerpc/perf/isa207-common.h
++++ b/arch/powerpc/perf/isa207-common.h
+@@ -163,8 +163,8 @@
+ #define MMCR1_COMBINE_SHIFT(pmc)	(35 - ((pmc) - 1))
+ #define MMCR1_PMCSEL_SHIFT(pmc)		(24 - (((pmc) - 1)) * 8)
+ #define MMCR1_FAB_SHIFT			36
+-#define MMCR1_DC_QUAL_SHIFT		47
+-#define MMCR1_IC_QUAL_SHIFT		46
++#define MMCR1_DC_IC_QUAL_MASK		0x3
++#define MMCR1_DC_IC_QUAL_SHIFT		46
+ 
+ /* MMCR1 Combine bits macro for power9 */
+ #define p9_MMCR1_COMBINE_SHIFT(pmc)	(38 - ((pmc - 1) * 2))
 -- 
 2.20.1
 
