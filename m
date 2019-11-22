@@ -4,24 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B7B8C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 10:36:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C0853C43215
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 10:45:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B301120656
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 10:36:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 721602073B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 10:45:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="FwZjmDhq"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B301120656
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="GmVoWriA"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 721602073B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47KCXh0z3czDqyg
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 21:36:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47KCl41NknzDrF5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 21:45:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
  helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
@@ -29,34 +29,34 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="FwZjmDhq"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="GmVoWriA"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47KCT45jFYzDqYt
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Nov 2019 21:33:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47KCgT1yf7zDqwv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Nov 2019 21:42:45 +1100 (AEDT)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 6C02720708;
- Fri, 22 Nov 2019 10:33:41 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id D346620715;
+ Fri, 22 Nov 2019 10:42:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1574418821;
+ s=default; t=1574419362;
  bh=0K5Le4/yUVvQ+7LVnDH2eIxwNTpwnAm+e6EkDjNqOyY=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=FwZjmDhqYV+rgw2kcZLQWnPHu+66eFQ35Z27AbL3SsoGImpjiy2EXlxe6h5tlp/JP
- eIzSqJ+eKbNd6GhpWLOCtL4EBPE1u2Yb/a+fWbz8/J1WrRaEjj4bP81hh10cnBZ9Af
- 4nK1P7o3QSq0uJcG78mjZfk8iSyN/8eEOuRfAdrE=
+ b=GmVoWriA4/3Or6+UrMP+p5w9iaxkChr+mtIdURb3Lrd/TO96zRtL4ORY1A3uzD3NU
+ fOKbVpUXRMIMzV0dUq+eFoebi9+JRw+B+xbMio/l7DLlVVJ7/Futlu/Tnc4gwdDTrs
+ IW51hTex6mb6WscKaazzZYMwgnYXhajAwuT/DvDU=
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 4.4 062/159] libfdt: Ensure INT_MAX is defined in libfdt_env.h
-Date: Fri, 22 Nov 2019 11:27:33 +0100
-Message-Id: <20191122100752.929251532@linuxfoundation.org>
+Subject: [PATCH 4.9 087/222] libfdt: Ensure INT_MAX is defined in libfdt_env.h
+Date: Fri, 22 Nov 2019 11:27:07 +0100
+Message-Id: <20191122100909.853136152@linuxfoundation.org>
 X-Mailer: git-send-email 2.24.0
-In-Reply-To: <20191122100704.194776704@linuxfoundation.org>
-References: <20191122100704.194776704@linuxfoundation.org>
+In-Reply-To: <20191122100830.874290814@linuxfoundation.org>
+References: <20191122100830.874290814@linuxfoundation.org>
 User-Agent: quilt/0.66
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
