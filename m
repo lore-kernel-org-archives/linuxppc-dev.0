@@ -7,53 +7,54 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6BECBC432C0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 07:13:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 349BBC432C0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 07:15:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 150B1205C9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 07:13:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D644920659
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 07:15:04 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="bjcDTCLM"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 150B1205C9
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="XpWjC1Wu"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D644920659
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47K71f4FfRzDrFK
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 18:13:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47K73p5hCjzDrDl
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 18:15:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="bjcDTCLM"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="XpWjC1Wu"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47K5Rm1SvTzDr4D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Nov 2019 17:02:12 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47K5Rl5V4xzDqDm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Nov 2019 17:02:11 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id DAC7C2068F;
- Fri, 22 Nov 2019 06:02:09 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id CE1632070B;
+ Fri, 22 Nov 2019 06:02:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1574402530;
- bh=ET+DFIQMOkHhXcT1P7hHhRmwzDhIgs682udKVkzTbRU=;
+ s=default; t=1574402529;
+ bh=c92/BLyGFwnUnlC9RHs4LORE2AeBCegKXnWlVU3xO4I=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=bjcDTCLMG3sI1fIWov1IdJEku6bUuRnyy0UI7oDVzrslCEfh+WCsZUcohrSwR6XDU
- W+5264EZQKxl9z2fC+Iw+30sgqzlktkAGE5iQLe9I2gtiL9tQhsoc45hw/jDcj0Axx
- d6fBHkfzyZvG55S5EjKyCAGfd62soqZwpFQMSbjI=
+ b=XpWjC1WuzDOUFUZe8rGRu+XXPoK/UkVS7eX3tWrJcO+s3qDPhFctVa2P1nOriJgl0
+ coDD6VqJ9FxiarlLayhR1mU0rvXdJK5ll93LrFu9lLSKxA7A+WLC6dXYMCC/NAxaUd
+ 5ni9386uu2qRJwJANqfKbzqLkBFB4nPYnGfhsGdA=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 38/91] powerpc/xmon: fix dump_segments()
-Date: Fri, 22 Nov 2019 01:00:36 -0500
-Message-Id: <20191122060129.4239-37-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 37/91] powerpc/book3s/32: fix number of bats in
+ p/v_block_mapped()
+Date: Fri, 22 Nov 2019 01:00:35 -0500
+Message-Id: <20191122060129.4239-36-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20191122060129.4239-1-sashal@kernel.org>
 References: <20191122060129.4239-1-sashal@kernel.org>
@@ -79,31 +80,40 @@ Sender: "Linuxppc-dev"
 
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 
-[ Upstream commit 32c8c4c621897199e690760c2d57054f8b84b6e6 ]
+[ Upstream commit e93ba1b7eb5b188c749052df7af1c90821c5f320 ]
 
-mfsrin() takes segment num from bits 31-28 (IBM bits 0-3).
+This patch fixes the loop in p_block_mapped() and v_block_mapped()
+to scan the entire bat_addrs[] array.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-[mpe: Clarify bit numbering]
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/xmon/xmon.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/mm/ppc_mmu_32.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 687e8b8bf5c67..899288b71145e 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -3043,7 +3043,7 @@ void dump_segments(void)
- 
- 	printf("sr0-15 =");
- 	for (i = 0; i < 16; ++i)
--		printf(" %x", mfsrin(i));
-+		printf(" %x", mfsrin(i << 28));
- 	printf("\n");
- }
- #endif
+diff --git a/arch/powerpc/mm/ppc_mmu_32.c b/arch/powerpc/mm/ppc_mmu_32.c
+index 2a049fb8523d5..96c52271e9c2d 100644
+--- a/arch/powerpc/mm/ppc_mmu_32.c
++++ b/arch/powerpc/mm/ppc_mmu_32.c
+@@ -52,7 +52,7 @@ struct batrange {		/* stores address ranges mapped by BATs */
+ phys_addr_t v_block_mapped(unsigned long va)
+ {
+ 	int b;
+-	for (b = 0; b < 4; ++b)
++	for (b = 0; b < ARRAY_SIZE(bat_addrs); ++b)
+ 		if (va >= bat_addrs[b].start && va < bat_addrs[b].limit)
+ 			return bat_addrs[b].phys + (va - bat_addrs[b].start);
+ 	return 0;
+@@ -64,7 +64,7 @@ phys_addr_t v_block_mapped(unsigned long va)
+ unsigned long p_block_mapped(phys_addr_t pa)
+ {
+ 	int b;
+-	for (b = 0; b < 4; ++b)
++	for (b = 0; b < ARRAY_SIZE(bat_addrs); ++b)
+ 		if (pa >= bat_addrs[b].phys
+ 	    	    && pa < (bat_addrs[b].limit-bat_addrs[b].start)
+ 		              +bat_addrs[b].phys)
 -- 
 2.20.1
 
