@@ -4,57 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A313EC432C3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 07:29:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CF92EC432C0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 07:31:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5265D20707
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 07:29:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7BF9F20707
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 07:31:52 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="u+hStftT"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5265D20707
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="hHCQxVIo"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7BF9F20707
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47K7NS6NFkzDr9L
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 18:29:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47K7RB3MkLzDrHp
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Nov 2019 18:31:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="u+hStftT"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="hHCQxVIo"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47K5SQ0xLfzDqDm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Nov 2019 17:02:46 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47K5Sx0BJgzDr8v
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Nov 2019 17:03:13 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id E32052068F;
- Fri, 22 Nov 2019 06:02:41 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 3372320717;
+ Fri, 22 Nov 2019 06:03:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1574402562;
- bh=SeAsYV7SVBrdZa76EEz+x99Xd94q22fntAQUgeEiTRU=;
+ s=default; t=1574402589;
+ bh=e6qGQRIZrtXDgznxd/sfbmBkFUaX/3tahaTY56rdRTE=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=u+hStftTAnKvuFzZmE2EQqG1+7FkkEragbWtPHbTcHNjLtlXhsamH/Fj0qI9qiWmk
- o3ACMd9d4dWVCk1gwiSC3q3TS0a8dJoK/rQVetbSsrZ4EX/oma11kU+Ozu7YgcVV53
- msxz7e3nzPCIzA4U3XU5dbcWNdrfoQRG6J5BC2Xg=
+ b=hHCQxVIoweULkRhoHZgeiBBva0ghQdIPrvD8ko8HhVWJjA8BFeXOHSoC6lE5fCUvM
+ owouVT6VPvX1IZ7P0jUHYeKDa3RBKrWiIbRasuQAUzcOUp+NM21lmWcLrkNcltY8v2
+ fdfyrSrUsHNZXwTtkSLMH0mSdWtmE8e7SllJ7GKk=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 67/91] net/wan/fsl_ucc_hdlc: Avoid double free in
- ucc_hdlc_probe()
-Date: Fri, 22 Nov 2019 01:01:05 -0500
-Message-Id: <20191122060129.4239-66-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 90/91] powerpc/pseries/dlpar: Fix a missing check
+ in dlpar_parse_cc_property()
+Date: Fri, 22 Nov 2019 01:01:28 -0500
+Message-Id: <20191122060129.4239-89-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20191122060129.4239-1-sashal@kernel.org>
 References: <20191122060129.4239-1-sashal@kernel.org>
@@ -73,45 +72,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, Peng Hao <peng.hao2@zte.com.cn>,
- netdev@vger.kernel.org, Wen Yang <wen.yang99@zte.com.cn>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
- Zhao Qiang <qiang.zhao@nxp.com>
+Cc: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ Gen Zhang <blackgod016574@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Wen Yang <wen.yang99@zte.com.cn>
+From: Gen Zhang <blackgod016574@gmail.com>
 
-[ Upstream commit 40752b3eae29f8ca2378e978a02bd6dbeeb06d16 ]
+[ Upstream commit efa9ace68e487ddd29c2b4d6dd23242158f1f607 ]
 
-This patch fixes potential double frees if register_hdlc_device() fails.
+In dlpar_parse_cc_property(), 'prop->name' is allocated by kstrdup().
+kstrdup() may return NULL, so it should be checked and handle error.
+And prop should be freed if 'prop->name' is NULL.
 
-Signed-off-by: Wen Yang <wen.yang99@zte.com.cn>
-Reviewed-by: Peng Hao <peng.hao2@zte.com.cn>
-CC: Zhao Qiang <qiang.zhao@nxp.com>
-CC: "David S. Miller" <davem@davemloft.net>
-CC: netdev@vger.kernel.org
-CC: linuxppc-dev@lists.ozlabs.org
-CC: linux-kernel@vger.kernel.org
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Gen Zhang <blackgod016574@gmail.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/net/wan/fsl_ucc_hdlc.c | 1 -
- 1 file changed, 1 deletion(-)
+ arch/powerpc/platforms/pseries/dlpar.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
-index 7a62316c570d2..b2c1e872d5ed5 100644
---- a/drivers/net/wan/fsl_ucc_hdlc.c
-+++ b/drivers/net/wan/fsl_ucc_hdlc.c
-@@ -1117,7 +1117,6 @@ static int ucc_hdlc_probe(struct platform_device *pdev)
- 	if (register_hdlc_device(dev)) {
- 		ret = -ENOBUFS;
- 		pr_err("ucc_hdlc: unable to register hdlc device\n");
--		free_netdev(dev);
- 		goto free_dev;
- 	}
+diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+index 999b04819d699..5abb8e2239a54 100644
+--- a/arch/powerpc/platforms/pseries/dlpar.c
++++ b/arch/powerpc/platforms/pseries/dlpar.c
+@@ -63,6 +63,10 @@ static struct property *dlpar_parse_cc_property(struct cc_workarea *ccwa)
  
+ 	name = (char *)ccwa + be32_to_cpu(ccwa->name_offset);
+ 	prop->name = kstrdup(name, GFP_KERNEL);
++	if (!prop->name) {
++		dlpar_free_cc_property(prop);
++		return NULL;
++	}
+ 
+ 	prop->length = be32_to_cpu(ccwa->prop_length);
+ 	value = (char *)ccwa + be32_to_cpu(ccwa->prop_offset);
 -- 
 2.20.1
 
