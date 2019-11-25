@@ -7,58 +7,60 @@ X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F0C3C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Nov 2019 04:53:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BB8EC432C0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Nov 2019 04:54:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B1B6B20748
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Nov 2019 04:53:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id BDCE62082C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Nov 2019 04:54:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="WXhDDif3"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B1B6B20748
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="PuFsLnuG"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BDCE62082C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nvidia.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47Lvmj5V5hzDqY5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Nov 2019 15:53:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47Lvpj0l8tzDqXb
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Nov 2019 15:54:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=nvidia.com (client-ip=216.228.121.143;
- helo=hqemgate14.nvidia.com; envelope-from=jhubbard@nvidia.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=nvidia.com (client-ip=216.228.121.64; helo=hqemgate15.nvidia.com;
+ envelope-from=jhubbard@nvidia.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="WXhDDif3"; 
+ unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="PuFsLnuG"; 
  dkim-atps=neutral
-Received: from hqemgate14.nvidia.com (hqemgate14.nvidia.com [216.228.121.143])
+Received: from hqemgate15.nvidia.com (hqemgate15.nvidia.com [216.228.121.64])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47Lv2z2kk6zDqVJ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Nov 2019 15:20:26 +1100 (AEDT)
-Received: from hqpgpgate102.nvidia.com (Not Verified[216.228.121.13]) by
- hqemgate14.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
- id <B5ddb56820003>; Sun, 24 Nov 2019 20:20:18 -0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47Lv3020hYzDqVC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Nov 2019 15:20:27 +1100 (AEDT)
+Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by
+ hqemgate15.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+ id <B5ddb567c0001>; Sun, 24 Nov 2019 20:20:12 -0800
 Received: from hqmail.nvidia.com ([172.20.161.6])
- by hqpgpgate102.nvidia.com (PGP Universal service);
- Sun, 24 Nov 2019 20:20:15 -0800
+ by hqpgpgate101.nvidia.com (PGP Universal service);
+ Sun, 24 Nov 2019 20:20:18 -0800
 X-PGP-Universal: processed;
- by hqpgpgate102.nvidia.com on Sun, 24 Nov 2019 20:20:15 -0800
-Received: from HQMAIL101.nvidia.com (172.20.187.10) by HQMAIL107.nvidia.com
- (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Mon, 25 Nov
- 2019 04:20:14 +0000
-Received: from hqnvemgw03.nvidia.com (10.124.88.68) by HQMAIL101.nvidia.com
- (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
- Transport; Mon, 25 Nov 2019 04:20:14 +0000
+ by hqpgpgate101.nvidia.com on Sun, 24 Nov 2019 20:20:18 -0800
+Received: from HQMAIL109.nvidia.com (172.20.187.15) by HQMAIL111.nvidia.com
+ (172.20.187.18) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Mon, 25 Nov
+ 2019 04:20:17 +0000
+Received: from HQMAIL107.nvidia.com (172.20.187.13) by HQMAIL109.nvidia.com
+ (172.20.187.15) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Mon, 25 Nov
+ 2019 04:20:13 +0000
+Received: from hqnvemgw03.nvidia.com (10.124.88.68) by HQMAIL107.nvidia.com
+ (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
+ Transport; Mon, 25 Nov 2019 04:20:13 +0000
 Received: from blueforge.nvidia.com (Not Verified[10.110.48.28]) by
  hqnvemgw03.nvidia.com with Trustwave SEG (v7, 5, 8, 10121)
- id <B5ddb567e0008>; Sun, 24 Nov 2019 20:20:14 -0800
+ id <B5ddb567d0006>; Sun, 24 Nov 2019 20:20:13 -0800
 From: John Hubbard <jhubbard@nvidia.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 16/19] vfio,
- mm: pin_user_pages (FOLL_PIN) and put_user_page() conversion
-Date: Sun, 24 Nov 2019 20:20:08 -0800
-Message-ID: <20191125042011.3002372-17-jhubbard@nvidia.com>
+Subject: [PATCH 05/19] mm: fix get_user_pages_remote()'s handling of
+ FOLL_LONGTERM
+Date: Sun, 24 Nov 2019 20:19:57 -0800
+Message-ID: <20191125042011.3002372-6-jhubbard@nvidia.com>
 X-Mailer: git-send-email 2.24.0
 In-Reply-To: <20191125042011.3002372-1-jhubbard@nvidia.com>
 References: <20191125042011.3002372-1-jhubbard@nvidia.com>
@@ -67,16 +69,16 @@ X-NVConfidentiality: public
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
- t=1574655618; bh=wk2NwG+UPRzhGeGA4o6oMgrCb1pvQrHxv3rBUNt8i3I=;
+ t=1574655612; bh=l4ZzqtVW71Fwvoz1qyCbd1xWWEz8EY4C2cUJdAbaFHs=;
  h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
  In-Reply-To:References:MIME-Version:X-NVConfidentiality:
  Content-Transfer-Encoding:Content-Type;
- b=WXhDDif3bJufyQnuphtBlQozFVfqIyJ9Mript97a3mRTdP8UDUcemEgxJ+NtYddUQ
- BhLBDgCdhYE8hzpTD1GmrsOabQhZ3Lqe6aGu5utR1LGcgxzoN76Onh2Qa8YD796daT
- OXPjeIjwyBsGFMYhCTsHZOZqjhwoU5hvefqTWHww0jPi61jH9K0NY2acSt/6GRYjQ2
- sp9H/MQLa1Usm1KqZ3+L7MKMYnT2coxKfaEdc0Z2fssGD7hnvTi5BSw1SYLuthCo8Z
- wCEFuf2pCKdbveqNLCYda8dhPNQZtFe8Jh9Iq3L/YjIurcWPYPa2u1CcyZ8foBQJKu
- 3qWww3z/VOyyw==
+ b=PuFsLnuGu1KfB/ZC9izxEq0bMZSKw8FTNCw9beyt6bkUSDvoRbbiuS99SR7As24lu
+ RGbHmieWvPTXU5e+mq74L8miXctdPbS0ioC326V6mLcvZoRfydtyo4rIwM2R6Jm6Y6
+ 23VRYgCcNYQIW4DAuRBJaAfOxnfr8ibm/Si4ea/2FO0GHPZEt26wKzvbdKSJFb3SoI
+ OQDgSp3ubf0/3+PrrJl2Ax3wUIMAX6Tzpjfxed19Rt0JuaQHyvhUbCzkCSmjSgb7lq
+ 2blCTd3N7xpKdUogXl+J6b4iDitiVq0ZaMwEly1saing+z2ZeMaF4JaRAtrZQeE9F4
+ nJz2PdoULdpQA==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,11 +94,12 @@ Cc: Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>,
  kvm@vger.kernel.org, linux-doc@vger.kernel.org,
  David Airlie <airlied@linux.ie>, Dave Chinner <david@fromorbit.com>,
  dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- linux-kselftest@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>,
- Jonathan Corbet <corbet@lwn.net>, linux-rdma@vger.kernel.org,
- Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>,
- Vlastimil Babka <vbabka@suse.cz>,
+ linux-mm@kvack.org, Paul
+ Mackerras <paulus@samba.org>, linux-kselftest@vger.kernel.org,
+ Ira Weiny <ira.weiny@intel.com>, Jonathan Corbet <corbet@lwn.net>,
+ linux-rdma@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+ Jason Gunthorpe <jgg@ziepe.ca>, Jason
+ Gunthorpe <jgg@mellanox.com>, Vlastimil Babka <vbabka@suse.cz>,
  =?UTF-8?q?Bj=C3=B6rn=20T=C3=B6pel?= <bjorn.topel@intel.com>,
  linux-media@vger.kernel.org, Shuah Khan <shuah@kernel.org>,
  John Hubbard <jhubbard@nvidia.com>, linux-block@vger.kernel.org,
@@ -113,58 +116,88 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-1. Change vfio from get_user_pages_remote(), to
-pin_user_pages_remote().
+As it says in the updated comment in gup.c: current FOLL_LONGTERM
+behavior is incompatible with FAULT_FLAG_ALLOW_RETRY because of the
+FS DAX check requirement on vmas.
 
-2. Because all FOLL_PIN-acquired pages must be released via
-put_user_page(), also convert the put_page() call over to
-put_user_pages_dirty_lock().
+However, the corresponding restriction in get_user_pages_remote() was
+slightly stricter than is actually required: it forbade all
+FOLL_LONGTERM callers, but we can actually allow FOLL_LONGTERM callers
+that do not set the "locked" arg.
 
-Note that this effectively changes the code's behavior in
-vfio_iommu_type1.c: put_pfn(): it now ultimately calls
-set_page_dirty_lock(), instead of set_page_dirty(). This is
-probably more accurate.
+Update the code and comments to loosen the restriction, allowing
+FOLL_LONGTERM in some cases.
 
-As Christoph Hellwig put it, "set_page_dirty() is only safe if we are
-dealing with a file backed page where we have reference on the inode it
-hangs off." [1]
+Also, copy the DAX check ("if a VMA is DAX, don't allow long term
+pinning") from the VFIO call site, all the way into the internals
+of get_user_pages_remote() and __gup_longterm_locked(). That is:
+get_user_pages_remote() calls __gup_longterm_locked(), which in turn
+calls check_dax_vmas(). This check will then be removed from the VFIO
+call site in a subsequent patch.
 
-[1] https://lore.kernel.org/r/20190723153640.GB720@lst.de
+Thanks to Jason Gunthorpe for pointing out a clean way to fix this,
+and to Dan Williams for helping clarify the DAX refactoring.
 
 Tested-by: Alex Williamson <alex.williamson@redhat.com>
 Acked-by: Alex Williamson <alex.williamson@redhat.com>
+Reviewed-by: Jason Gunthorpe <jgg@mellanox.com>
+Reviewed-by: Ira Weiny <ira.weiny@intel.com>
+Suggested-by: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: Jerome Glisse <jglisse@redhat.com>
 Signed-off-by: John Hubbard <jhubbard@nvidia.com>
 ---
- drivers/vfio/vfio_iommu_type1.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ mm/gup.c | 27 ++++++++++++++++++++++-----
+ 1 file changed, 22 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/vfio/vfio_iommu_type1.c b/drivers/vfio/vfio_iommu_type=
-1.c
-index b800fc9a0251..18bfc2fc8e6d 100644
---- a/drivers/vfio/vfio_iommu_type1.c
-+++ b/drivers/vfio/vfio_iommu_type1.c
-@@ -309,9 +309,8 @@ static int put_pfn(unsigned long pfn, int prot)
- {
- 	if (!is_invalid_reserved_pfn(pfn)) {
- 		struct page *page =3D pfn_to_page(pfn);
--		if (prot & IOMMU_WRITE)
--			SetPageDirty(page);
--		put_page(page);
-+
-+		put_user_pages_dirty_lock(&page, 1, prot & IOMMU_WRITE);
- 		return 1;
- 	}
- 	return 0;
-@@ -329,7 +328,7 @@ static int vaddr_get_pfn(struct mm_struct *mm, unsigned=
- long vaddr,
- 		flags |=3D FOLL_WRITE;
+diff --git a/mm/gup.c b/mm/gup.c
+index 3ecce297a47f..c0c56888e7cc 100644
+--- a/mm/gup.c
++++ b/mm/gup.c
+@@ -29,6 +29,13 @@ struct follow_page_context {
+ 	unsigned int page_mask;
+ };
 =20
- 	down_read(&mm->mmap_sem);
--	ret =3D get_user_pages_remote(NULL, mm, vaddr, 1, flags | FOLL_LONGTERM,
-+	ret =3D pin_user_pages_remote(NULL, mm, vaddr, 1, flags | FOLL_LONGTERM,
- 				    page, NULL, NULL);
- 	if (ret =3D=3D 1) {
- 		*pfn =3D page_to_pfn(page[0]);
++static __always_inline long __gup_longterm_locked(struct task_struct *tsk,
++						  struct mm_struct *mm,
++						  unsigned long start,
++						  unsigned long nr_pages,
++						  struct page **pages,
++						  struct vm_area_struct **vmas,
++						  unsigned int flags);
+ /*
+  * Return the compound head page with ref appropriately incremented,
+  * or NULL if that failed.
+@@ -1179,13 +1186,23 @@ long get_user_pages_remote(struct task_struct *tsk,=
+ struct mm_struct *mm,
+ 		struct vm_area_struct **vmas, int *locked)
+ {
+ 	/*
+-	 * FIXME: Current FOLL_LONGTERM behavior is incompatible with
++	 * Parts of FOLL_LONGTERM behavior are incompatible with
+ 	 * FAULT_FLAG_ALLOW_RETRY because of the FS DAX check requirement on
+-	 * vmas.  As there are no users of this flag in this call we simply
+-	 * disallow this option for now.
++	 * vmas. However, this only comes up if locked is set, and there are
++	 * callers that do request FOLL_LONGTERM, but do not set locked. So,
++	 * allow what we can.
+ 	 */
+-	if (WARN_ON_ONCE(gup_flags & FOLL_LONGTERM))
+-		return -EINVAL;
++	if (gup_flags & FOLL_LONGTERM) {
++		if (WARN_ON_ONCE(locked))
++			return -EINVAL;
++		/*
++		 * This will check the vmas (even if our vmas arg is NULL)
++		 * and return -ENOTSUPP if DAX isn't allowed in this case:
++		 */
++		return __gup_longterm_locked(tsk, mm, start, nr_pages, pages,
++					     vmas, gup_flags | FOLL_TOUCH |
++					     FOLL_REMOTE);
++	}
+=20
+ 	return __get_user_pages_locked(tsk, mm, start, nr_pages, pages, vmas,
+ 				       locked,
 --=20
 2.24.0
 
