@@ -7,60 +7,57 @@ X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03B3CC432C0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Nov 2019 04:58:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 54151C432C0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Nov 2019 05:01:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9D22B2071A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Nov 2019 04:58:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 033712071A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Nov 2019 05:01:00 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="d+2WX6jv"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9D22B2071A
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="pKXQBq2x"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 033712071A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nvidia.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47Lvv84X8czDqJ7
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Nov 2019 15:58:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47Lvxj6VrdzDqYV
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Nov 2019 16:00:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=nvidia.com (client-ip=216.228.121.64; helo=hqemgate15.nvidia.com;
  envelope-from=jhubbard@nvidia.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="d+2WX6jv"; 
+ unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="pKXQBq2x"; 
  dkim-atps=neutral
 Received: from hqemgate15.nvidia.com (hqemgate15.nvidia.com [216.228.121.64])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47Lv344tvKzDqVN
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Nov 2019 15:20:32 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47Lv340k5czDqVB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Nov 2019 15:20:31 +1100 (AEDT)
 Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by
  hqemgate15.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
- id <B5ddb567c0000>; Sun, 24 Nov 2019 20:20:12 -0800
+ id <B5ddb567b0000>; Sun, 24 Nov 2019 20:20:11 -0800
 Received: from hqmail.nvidia.com ([172.20.161.6])
  by hqpgpgate101.nvidia.com (PGP Universal service);
- Sun, 24 Nov 2019 20:20:17 -0800
+ Sun, 24 Nov 2019 20:20:16 -0800
 X-PGP-Universal: processed;
- by hqpgpgate101.nvidia.com on Sun, 24 Nov 2019 20:20:17 -0800
-Received: from HQMAIL109.nvidia.com (172.20.187.15) by HQMAIL111.nvidia.com
- (172.20.187.18) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Mon, 25 Nov
- 2019 04:20:17 +0000
-Received: from HQMAIL101.nvidia.com (172.20.187.10) by HQMAIL109.nvidia.com
- (172.20.187.15) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Mon, 25 Nov
+ by hqpgpgate101.nvidia.com on Sun, 24 Nov 2019 20:20:16 -0800
+Received: from HQMAIL105.nvidia.com (172.20.187.12) by HQMAIL105.nvidia.com
+ (172.20.187.12) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Mon, 25 Nov
  2019 04:20:13 +0000
-Received: from hqnvemgw03.nvidia.com (10.124.88.68) by HQMAIL101.nvidia.com
- (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
+Received: from hqnvemgw03.nvidia.com (10.124.88.68) by HQMAIL105.nvidia.com
+ (172.20.187.12) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
  Transport; Mon, 25 Nov 2019 04:20:13 +0000
 Received: from blueforge.nvidia.com (Not Verified[10.110.48.28]) by
  hqnvemgw03.nvidia.com with Trustwave SEG (v7, 5, 8, 10121)
- id <B5ddb567d0007>; Sun, 24 Nov 2019 20:20:13 -0800
+ id <B5ddb567d000b>; Sun, 24 Nov 2019 20:20:13 -0800
 From: John Hubbard <jhubbard@nvidia.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 06/19] vfio: fix FOLL_LONGTERM use,
- simplify get_user_pages_remote() call
-Date: Sun, 24 Nov 2019 20:19:58 -0800
-Message-ID: <20191125042011.3002372-7-jhubbard@nvidia.com>
+Subject: [PATCH 09/19] IB/{core, hw, umem}: set FOLL_PIN via pin_user_pages*(),
+ fix up ODP
+Date: Sun, 24 Nov 2019 20:20:01 -0800
+Message-ID: <20191125042011.3002372-10-jhubbard@nvidia.com>
 X-Mailer: git-send-email 2.24.0
 In-Reply-To: <20191125042011.3002372-1-jhubbard@nvidia.com>
 References: <20191125042011.3002372-1-jhubbard@nvidia.com>
@@ -69,16 +66,16 @@ X-NVConfidentiality: public
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
- t=1574655612; bh=8L6xDPC0B530xp/MTT0aA3xB5v7i2RtCewyab6Z4Hgg=;
+ t=1574655611; bh=F5LoLh4kW0VgIVuupouosvzq/0ORLXJ24SyIGBNyaiY=;
  h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
  In-Reply-To:References:MIME-Version:X-NVConfidentiality:
  Content-Transfer-Encoding:Content-Type;
- b=d+2WX6jvpItLi8hNFhPqgSpccod4/P1VedoLoAUgl/dUgX7PZO6N7wBlZmwSg9eaC
- JDoIk9NMTDlA4l9zJjH3iUwXrO660bdn4DOaMUaxD5jqFFsjyNE4Ws0tzcw3sMa0PT
- jRAPtCqgsiOHw7iGHselnEaqe7tWX/6qfOKoiyK1odt80sAGYjsCrC3bOMKAsoELgZ
- wodPgnOQcdT0fNwRDK6Rpt1RK8EcyIMe4SlgEQ19JcKVQSwURCxwHLqWDO7sVnbgRr
- gtiT8c3DGCDXil3af715FfwCFHPgrVvotgRtg4Gur554k2Y1RYC/kijMMjcLYb2wsh
- m3mnpFJzq5zIQ==
+ b=pKXQBq2xFNosSHMxDGBCax7XdfIYB/U7NFfgYUWqEQriuv4x/Ruvetfkp4QHGiDA1
+ vbeUKUbk6kOYGLHm0gCZ3qJ9H1EVY93WYcedgBCVfw5M3EFBLyq/2JXwKKTV71UzHF
+ rqlcaebwmLkTX2Vp6HOGYigxVEcULGtlda+dD/xouAIldGc3F/+2ZTuOT8guh6mwq7
+ 41CilFdOkcbx0WqJUzg6kg8HHtrRZFawSX1Hdl/moSERPg73t4Ka+ntBOYY26elngm
+ mJkt9jzcnkowOi3JANxBUksjvp0PbCTJpSgJq4ha4hIPzyssqUbjUbIJLPlth2Efyy
+ KPGtXay/D+g0A==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,95 +113,188 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Update VFIO to take advantage of the recently loosened restriction on
-FOLL_LONGTERM with get_user_pages_remote(). Also, now it is possible to
-fix a bug: the VFIO caller is logically a FOLL_LONGTERM user, but it
-wasn't setting FOLL_LONGTERM.
+Convert infiniband to use the new pin_user_pages*() calls.
 
-Also, remove an unnessary pair of calls that were releasing and
-reacquiring the mmap_sem. There is no need to avoid holding mmap_sem
-just in order to call page_to_pfn().
+Also, revert earlier changes to Infiniband ODP that had it using
+put_user_page(). ODP is "Case 3" in
+Documentation/core-api/pin_user_pages.rst, which is to say, normal
+get_user_pages() and put_page() is the API to use there.
 
-Also, now that the the DAX check ("if a VMA is DAX, don't allow long
-term pinning") is in the internals of get_user_pages_remote() and
-__gup_longterm_locked(), there's no need for it at the VFIO call site.
-So remove it.
+The new pin_user_pages*() calls replace corresponding get_user_pages*()
+calls, and set the FOLL_PIN flag. The FOLL_PIN flag requires that the
+caller must return the pages via put_user_page*() calls, but infiniband
+was already doing that as part of an earlier commit.
 
-Tested-by: Alex Williamson <alex.williamson@redhat.com>
-Acked-by: Alex Williamson <alex.williamson@redhat.com>
 Reviewed-by: Jason Gunthorpe <jgg@mellanox.com>
-Reviewed-by: Ira Weiny <ira.weiny@intel.com>
-Suggested-by: Jason Gunthorpe <jgg@ziepe.ca>
-Cc: Dan Williams <dan.j.williams@intel.com>
-Cc: Jerome Glisse <jglisse@redhat.com>
 Signed-off-by: John Hubbard <jhubbard@nvidia.com>
 ---
- drivers/vfio/vfio_iommu_type1.c | 30 +++++-------------------------
- 1 file changed, 5 insertions(+), 25 deletions(-)
+ drivers/infiniband/core/umem.c              |  2 +-
+ drivers/infiniband/core/umem_odp.c          | 13 ++++++-------
+ drivers/infiniband/hw/hfi1/user_pages.c     |  2 +-
+ drivers/infiniband/hw/mthca/mthca_memfree.c |  2 +-
+ drivers/infiniband/hw/qib/qib_user_pages.c  |  2 +-
+ drivers/infiniband/hw/qib/qib_user_sdma.c   |  2 +-
+ drivers/infiniband/hw/usnic/usnic_uiom.c    |  2 +-
+ drivers/infiniband/sw/siw/siw_mem.c         |  2 +-
+ 8 files changed, 13 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/vfio/vfio_iommu_type1.c b/drivers/vfio/vfio_iommu_type=
-1.c
-index 2ada8e6cdb88..b800fc9a0251 100644
---- a/drivers/vfio/vfio_iommu_type1.c
-+++ b/drivers/vfio/vfio_iommu_type1.c
-@@ -322,7 +322,6 @@ static int vaddr_get_pfn(struct mm_struct *mm, unsigned=
- long vaddr,
- {
- 	struct page *page[1];
- 	struct vm_area_struct *vma;
--	struct vm_area_struct *vmas[1];
- 	unsigned int flags =3D 0;
- 	int ret;
+diff --git a/drivers/infiniband/core/umem.c b/drivers/infiniband/core/umem.=
+c
+index 7a3b99597ead..39a1542e6707 100644
+--- a/drivers/infiniband/core/umem.c
++++ b/drivers/infiniband/core/umem.c
+@@ -267,7 +267,7 @@ struct ib_umem *ib_umem_get(struct ib_udata *udata, uns=
+igned long addr,
 =20
-@@ -330,33 +329,14 @@ static int vaddr_get_pfn(struct mm_struct *mm, unsign=
-ed long vaddr,
- 		flags |=3D FOLL_WRITE;
-=20
- 	down_read(&mm->mmap_sem);
--	if (mm =3D=3D current->mm) {
--		ret =3D get_user_pages(vaddr, 1, flags | FOLL_LONGTERM, page,
--				     vmas);
--	} else {
--		ret =3D get_user_pages_remote(NULL, mm, vaddr, 1, flags, page,
--					    vmas, NULL);
--		/*
--		 * The lifetime of a vaddr_get_pfn() page pin is
--		 * userspace-controlled. In the fs-dax case this could
--		 * lead to indefinite stalls in filesystem operations.
--		 * Disallow attempts to pin fs-dax pages via this
--		 * interface.
--		 */
--		if (ret > 0 && vma_is_fsdax(vmas[0])) {
--			ret =3D -EOPNOTSUPP;
--			put_page(page[0]);
--		}
--	}
--	up_read(&mm->mmap_sem);
--
-+	ret =3D get_user_pages_remote(NULL, mm, vaddr, 1, flags | FOLL_LONGTERM,
-+				    page, NULL, NULL);
- 	if (ret =3D=3D 1) {
- 		*pfn =3D page_to_pfn(page[0]);
--		return 0;
-+		ret =3D 0;
-+		goto done;
+ 	while (npages) {
+ 		down_read(&mm->mmap_sem);
+-		ret =3D get_user_pages(cur_base,
++		ret =3D pin_user_pages(cur_base,
+ 				     min_t(unsigned long, npages,
+ 					   PAGE_SIZE / sizeof (struct page *)),
+ 				     gup_flags | FOLL_LONGTERM,
+diff --git a/drivers/infiniband/core/umem_odp.c b/drivers/infiniband/core/u=
+mem_odp.c
+index e42d44e501fd..abc3bb6578cc 100644
+--- a/drivers/infiniband/core/umem_odp.c
++++ b/drivers/infiniband/core/umem_odp.c
+@@ -308,9 +308,8 @@ EXPORT_SYMBOL(ib_umem_odp_release);
+  * The function returns -EFAULT if the DMA mapping operation fails. It ret=
+urns
+  * -EAGAIN if a concurrent invalidation prevents us from updating the page=
+.
+  *
+- * The page is released via put_user_page even if the operation failed. Fo=
+r
+- * on-demand pinning, the page is released whenever it isn't stored in the
+- * umem.
++ * The page is released via put_page even if the operation failed. For on-=
+demand
++ * pinning, the page is released whenever it isn't stored in the umem.
+  */
+ static int ib_umem_odp_map_dma_single_page(
+ 		struct ib_umem_odp *umem_odp,
+@@ -363,7 +362,7 @@ static int ib_umem_odp_map_dma_single_page(
  	}
 =20
--	down_read(&mm->mmap_sem);
--
- 	vaddr =3D untagged_addr(vaddr);
-=20
- 	vma =3D find_vma_intersection(mm, vaddr, vaddr + 1);
-@@ -366,7 +346,7 @@ static int vaddr_get_pfn(struct mm_struct *mm, unsigned=
- long vaddr,
- 		if (is_invalid_reserved_pfn(*pfn))
- 			ret =3D 0;
- 	}
--
-+done:
- 	up_read(&mm->mmap_sem);
+ out:
+-	put_user_page(page);
++	put_page(page);
  	return ret;
  }
+=20
+@@ -473,7 +472,7 @@ int ib_umem_odp_map_dma_pages(struct ib_umem_odp *umem_=
+odp, u64 user_virt,
+ 					ret =3D -EFAULT;
+ 					break;
+ 				}
+-				put_user_page(local_page_list[j]);
++				put_page(local_page_list[j]);
+ 				continue;
+ 			}
+=20
+@@ -500,8 +499,8 @@ int ib_umem_odp_map_dma_pages(struct ib_umem_odp *umem_=
+odp, u64 user_virt,
+ 			 * ib_umem_odp_map_dma_single_page().
+ 			 */
+ 			if (npages - (j + 1) > 0)
+-				put_user_pages(&local_page_list[j+1],
+-					       npages - (j + 1));
++				release_pages(&local_page_list[j+1],
++					      npages - (j + 1));
+ 			break;
+ 		}
+ 	}
+diff --git a/drivers/infiniband/hw/hfi1/user_pages.c b/drivers/infiniband/h=
+w/hfi1/user_pages.c
+index 469acb961fbd..9a94761765c0 100644
+--- a/drivers/infiniband/hw/hfi1/user_pages.c
++++ b/drivers/infiniband/hw/hfi1/user_pages.c
+@@ -106,7 +106,7 @@ int hfi1_acquire_user_pages(struct mm_struct *mm, unsig=
+ned long vaddr, size_t np
+ 	int ret;
+ 	unsigned int gup_flags =3D FOLL_LONGTERM | (writable ? FOLL_WRITE : 0);
+=20
+-	ret =3D get_user_pages_fast(vaddr, npages, gup_flags, pages);
++	ret =3D pin_user_pages_fast(vaddr, npages, gup_flags, pages);
+ 	if (ret < 0)
+ 		return ret;
+=20
+diff --git a/drivers/infiniband/hw/mthca/mthca_memfree.c b/drivers/infiniba=
+nd/hw/mthca/mthca_memfree.c
+index edccfd6e178f..8269ab040c21 100644
+--- a/drivers/infiniband/hw/mthca/mthca_memfree.c
++++ b/drivers/infiniband/hw/mthca/mthca_memfree.c
+@@ -472,7 +472,7 @@ int mthca_map_user_db(struct mthca_dev *dev, struct mth=
+ca_uar *uar,
+ 		goto out;
+ 	}
+=20
+-	ret =3D get_user_pages_fast(uaddr & PAGE_MASK, 1,
++	ret =3D pin_user_pages_fast(uaddr & PAGE_MASK, 1,
+ 				  FOLL_WRITE | FOLL_LONGTERM, pages);
+ 	if (ret < 0)
+ 		goto out;
+diff --git a/drivers/infiniband/hw/qib/qib_user_pages.c b/drivers/infiniban=
+d/hw/qib/qib_user_pages.c
+index 6bf764e41891..7fc4b5f81fcd 100644
+--- a/drivers/infiniband/hw/qib/qib_user_pages.c
++++ b/drivers/infiniband/hw/qib/qib_user_pages.c
+@@ -108,7 +108,7 @@ int qib_get_user_pages(unsigned long start_page, size_t=
+ num_pages,
+=20
+ 	down_read(&current->mm->mmap_sem);
+ 	for (got =3D 0; got < num_pages; got +=3D ret) {
+-		ret =3D get_user_pages(start_page + got * PAGE_SIZE,
++		ret =3D pin_user_pages(start_page + got * PAGE_SIZE,
+ 				     num_pages - got,
+ 				     FOLL_LONGTERM | FOLL_WRITE | FOLL_FORCE,
+ 				     p + got, NULL);
+diff --git a/drivers/infiniband/hw/qib/qib_user_sdma.c b/drivers/infiniband=
+/hw/qib/qib_user_sdma.c
+index 05190edc2611..1a3cc2957e3a 100644
+--- a/drivers/infiniband/hw/qib/qib_user_sdma.c
++++ b/drivers/infiniband/hw/qib/qib_user_sdma.c
+@@ -670,7 +670,7 @@ static int qib_user_sdma_pin_pages(const struct qib_dev=
+data *dd,
+ 		else
+ 			j =3D npages;
+=20
+-		ret =3D get_user_pages_fast(addr, j, FOLL_LONGTERM, pages);
++		ret =3D pin_user_pages_fast(addr, j, FOLL_LONGTERM, pages);
+ 		if (ret !=3D j) {
+ 			i =3D 0;
+ 			j =3D ret;
+diff --git a/drivers/infiniband/hw/usnic/usnic_uiom.c b/drivers/infiniband/=
+hw/usnic/usnic_uiom.c
+index 62e6ffa9ad78..600896727d34 100644
+--- a/drivers/infiniband/hw/usnic/usnic_uiom.c
++++ b/drivers/infiniband/hw/usnic/usnic_uiom.c
+@@ -141,7 +141,7 @@ static int usnic_uiom_get_pages(unsigned long addr, siz=
+e_t size, int writable,
+ 	ret =3D 0;
+=20
+ 	while (npages) {
+-		ret =3D get_user_pages(cur_base,
++		ret =3D pin_user_pages(cur_base,
+ 				     min_t(unsigned long, npages,
+ 				     PAGE_SIZE / sizeof(struct page *)),
+ 				     gup_flags | FOLL_LONGTERM,
+diff --git a/drivers/infiniband/sw/siw/siw_mem.c b/drivers/infiniband/sw/si=
+w/siw_mem.c
+index e99983f07663..e53b07dcfed5 100644
+--- a/drivers/infiniband/sw/siw/siw_mem.c
++++ b/drivers/infiniband/sw/siw/siw_mem.c
+@@ -426,7 +426,7 @@ struct siw_umem *siw_umem_get(u64 start, u64 len, bool =
+writable)
+ 		while (nents) {
+ 			struct page **plist =3D &umem->page_chunk[i].plist[got];
+=20
+-			rv =3D get_user_pages(first_page_va, nents,
++			rv =3D pin_user_pages(first_page_va, nents,
+ 					    foll_flags | FOLL_LONGTERM,
+ 					    plist, NULL);
+ 			if (rv < 0)
 --=20
 2.24.0
 
