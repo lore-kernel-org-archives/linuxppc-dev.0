@@ -2,26 +2,27 @@ Return-Path: <SRS0=uOHI=ZR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+X-Spam-Status: No, score=-6.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB678C432C3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Nov 2019 05:09:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 37D0CC432C0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Nov 2019 05:11:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 52D6320679
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Nov 2019 05:09:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D2A3420722
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Nov 2019 05:11:34 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gzgjf+15"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 52D6320679
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Eow5KXVR"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D2A3420722
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47Lw771l7JzDqGk
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Nov 2019 16:09:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47Lw9w6dKHzDqZF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Nov 2019 16:11:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::143;
  helo=mail-il1-x143.google.com; envelope-from=oohall@gmail.com;
@@ -29,53 +30,54 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="gzgjf+15"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="Eow5KXVR"; 
  dkim-atps=neutral
 Received: from mail-il1-x143.google.com (mail-il1-x143.google.com
  [IPv6:2607:f8b0:4864:20::143])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47LvTL5drqzDqXT
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Nov 2019 15:39:50 +1100 (AEDT)
-Received: by mail-il1-x143.google.com with SMTP id s5so12958118iln.4
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Nov 2019 20:39:50 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47LvX368krzDqWw
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Nov 2019 15:42:11 +1100 (AEDT)
+Received: by mail-il1-x143.google.com with SMTP id q15so12941532ils.8
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Nov 2019 20:42:11 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=eCYFT6TGZD0y/qQ6ga3jz2EXsTuOpcRjvnAzBbU9vZc=;
- b=gzgjf+15qsDZepOBOZlYG68Sk1m+yceYLeTmQl6CC3X6n0CXOo2cSAGp5qdc3TPxVU
- IfmgTP5LcSpuQjkAXZ5T+QTMjizd4Olz0Kbzv4+egjBRysywzmg8G0pseus9M3PQWllb
- 1sxfUGL9OdsHsVFVTlEa8ZqyI21eWWitTu62pwO4M/T+3bCOypUywZDiErZDeEpwW9nw
- eyEmccPY/NNqGXhv3hfaW2morr2mdOgdCPO7MurvfSDktd8cbTgTpfvRHL+9xRcCYiXq
- xeg91vhSDo+bRG+96SnnrLH1OF10o4/Sa2Qs/dOuBf+HPbErIip38nKC62uNssMNgt3h
- mVxg==
+ :cc; bh=H/SpM38MUmnkiJ9mCGzLv5Th991siNYw2QE/6UR3xUk=;
+ b=Eow5KXVRycnITJA4KkQGN4DyQzdzn2Ryznnr3Df8qNlwtaiIZRxMGrRx/Gh14aWwOM
+ GaDkiMG1a3AphfC30lupDYin2woSzJnMTTeT/BFpuBEW1UnrvUwy/fsSjjBby8JJa4mr
+ fKQ/qiluR3NRWRLobGmnIf5HT9QIlPbrytj31Z4augeOUthaXZrAGQ+EaV0VrXBPHQOJ
+ ekx81cXCoGkowBZPOYJotGuMjj+CdfRNPlmlgbqzd+BEiyKo9GLh5S4vdBVxnXSen320
+ XVGaKlKFi9gf/ys4TwaQAISErAHn5SoP6EBkMvzJm+uPXwfg7nH6QvcjWmyhoV8Sdd8R
+ S3JA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=eCYFT6TGZD0y/qQ6ga3jz2EXsTuOpcRjvnAzBbU9vZc=;
- b=RePnvuYB1mjU3blrls3LiA85Rx0FDG1ws6jZlFCAnKGwAs7J804D8QaDlCwXISjEFV
- O7yKEoun9AiZiczyZQgUpEQNfwMS3T7xdW4iC4kifqC06N/G5uvgHgsOhEHBt3wJEYfL
- n3rmfWkPVF6Mj+SKWFI/OluQNhmY9xT6jkriIlz4t3htLLV1G//9zaHRRChWyhtEsEY9
- B5/n8rXUWrdiCU7L0n32ln1Eq8jHGoYAzuRMm3N1UZGpMLG31iyPPDMjnUT5cRbGFVzF
- 9ah0HPiYXQ9iqhIzkDMxbgNsbGxX4tl9drocYehzuw4WWXmnAd00yfo4Dvj9yLZm04UC
- yvnw==
-X-Gm-Message-State: APjAAAWSiXXrvplDXLRmsieZJkvewC/e+9Gm5QhzMTvjeqandHi2OsoQ
- AN6VsxWjcN3SZSpw/okpCK/pXiHSXO5HdtTgrH8=
-X-Google-Smtp-Source: APXvYqzw3XgnbeAo8GOX3zjnouDOdCk9h29fAaJqcnsEwBh4/yPch4WCdmPQxy+okTsEIYozAGzlpHztxgPjuGEEzhw=
-X-Received: by 2002:a92:3943:: with SMTP id g64mr15429932ila.298.1574656787336; 
- Sun, 24 Nov 2019 20:39:47 -0800 (PST)
+ bh=H/SpM38MUmnkiJ9mCGzLv5Th991siNYw2QE/6UR3xUk=;
+ b=BsWobIsKve/S/A2WnSattv5O2X9UhtAV3cAWGZckJ9egrF6Bve3MkGfb4NW8UTlOHF
+ mCBqUAI7+K5TXLRNou+xrCx/3Ue/tzRrBANwb0Vfp0W8nPX9k4yEAif4dloAcQeluvtL
+ bVCJRJuLxIMlLgQ7aLLntLvT/zdzuZnau3pIUdj5BoJZ6xyrEZJ9sqjstkQ3ZXilr3pt
+ 5dJ0aNhiqBFXaTJyC/ueyaabW5YC8IU+8248pKPFFGU2nwkWFwWXbrKuzKUuxKv3VqOR
+ Kim0FZQfjxWc6CmB5vMUdaUGbu2xN435xUeSS164ZUlFm7N5tuf0PqP14lI//5cLgseY
+ HNDQ==
+X-Gm-Message-State: APjAAAWFWdN4m0G/PHVlNFBOVyovi+SHTgEbBX0UO54By3NT9oX53GKO
+ xxUSD7S8ILPwYVZIIubRj+iYOR0lBOW/7/nZCLXoPQ==
+X-Google-Smtp-Source: APXvYqyk2USwKI6VTYNAw9Xq3rcc1miF5uKvhgVYIdbXf5/MqTEHc5Kg7VUyv0B7PHf/HgTXMQtg7hkxYVmj4UFU4Ro=
+X-Received: by 2002:a05:6e02:152:: with SMTP id
+ j18mr32236851ilr.293.1574656929597; 
+ Sun, 24 Nov 2019 20:42:09 -0800 (PST)
 MIME-Version: 1.0
 References: <20191120012859.23300-1-oohall@gmail.com>
  <20191120012859.23300-7-oohall@gmail.com>
- <20191121074855.GC17209@infradead.org>
-In-Reply-To: <20191121074855.GC17209@infradead.org>
+ <31213003-c6c4-001e-74b9-298e584ef58e@ozlabs.ru>
+In-Reply-To: <31213003-c6c4-001e-74b9-298e584ef58e@ozlabs.ru>
 From: "Oliver O'Halloran" <oohall@gmail.com>
-Date: Mon, 25 Nov 2019 15:39:36 +1100
-Message-ID: <CAOSf1CGDPF1G763494hBLW+ok9wQ3rsnu946j32zo4-Crk4yqw@mail.gmail.com>
+Date: Mon, 25 Nov 2019 15:41:58 +1100
+Message-ID: <CAOSf1CHcs9OV-0r9LwY=v6-2fdPW6KXe07ri65MWgHhwt5ynvg@mail.gmail.com>
 Subject: Re: [Very RFC 06/46] powerpc/iov: Move VF pdev fixup into
  pcibios_fixup_iov()
-To: Christoph Hellwig <hch@infradead.org>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -95,41 +97,73 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Nov 21, 2019 at 6:48 PM Christoph Hellwig <hch@infradead.org> wrote:
+On Thu, Nov 21, 2019 at 3:34 PM Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
 >
-> On Wed, Nov 20, 2019 at 12:28:19PM +1100, Oliver O'Halloran wrote:
+>
+>
+> On 20/11/2019 12:28, Oliver O'Halloran wrote:
 > > Move this out of the PHB's dma_dev_setup() callback and into the
 > > ppc_md.pcibios_fixup_iov callback. This ensures that the VF PE's
 > > pdev pointer is always valid for the whole time the device is
 > > added the bus.
-> >
-> > This isn't strictly required, but it's slightly a slightly more logical
-> > place to do the fixup and it makes dma_dev_setup a bit simpler.
 >
-> Ok, this removes the code I commented on earlier, so I take my
-> comment there back.
-
-It is a bit weird. I'll re-order the two patches so we're not
-shovelling around the fixup junk.
-
+> Yeah it would be nice if dma setup did just dma stuff.
+>
+> > This isn't strictly required, but it's slightly a slightly more logical
+>
+> s/slightly a slightly/slightly (slightly)/ ? :)
+>
+>
+> > place to do the fixup and it makes dma_dev_setup a bit simpler.
+> >
+> > Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+> > ---
+> >  arch/powerpc/platforms/powernv/pci-ioda.c | 35 +++++++++++------------
+> >  1 file changed, 17 insertions(+), 18 deletions(-)
+> >
+> > diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> > index 45f974258766..c6ea7a504e04 100644
+> > --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> > +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> > @@ -2910,9 +2910,6 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
+> >       struct pci_dn *pdn;
+> >       int mul, total_vfs;
+> >
+> > -     if (!pdev->is_physfn || pci_dev_is_added(pdev))
+> > -             return;
+> > -
+> >       pdn = pci_get_pdn(pdev);
+> >       pdn->vfs_expanded = 0;
+> >       pdn->m64_single_mode = false;
+> > @@ -2987,6 +2984,22 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
+> >               res->end = res->start - 1;
+> >       }
+> >  }
+> > +
+> > +static void pnv_pci_ioda_fixup_iov(struct pci_dev *pdev)
+> > +{
+> > +     if (WARN_ON(pci_dev_is_added(pdev)))
+> > +             return;
+> > +
 > > +     if (pdev->is_virtfn) {
 > > +             /* Fix the VF PE's pdev pointer */
 > > +             struct pnv_ioda_pe *pe = pnv_ioda_get_pe(pdev);
 > > +             pe->pdev = pdev;
+> > +
+> > +             WARN_ON(!(pe->flags & PNV_IODA_PE_VF));
 >
-> Maybe add an empty line after the variable declaration?
-
-ok
-
-> > @@ -3641,20 +3654,6 @@ void pnv_pci_dma_dev_setup(struct pci_dev *pdev)
-> >  {
-> >       struct pci_controller *hose = pci_bus_to_host(pdev->bus);
-> >       struct pnv_phb *phb = hose->private_data;
-> >
-> >       pnv_pci_ioda_dma_dev_setup(phb, pdev);
-> >  }
 >
-> Can you just merge pnv_pci_dma_dev_setup and pnv_pci_ioda_dma_dev_setup
-> now?
+> return;
+>
+> > +     } else if (pdev->is_physfn) {
+>
+>
+>
+> > +             pnv_pci_ioda_fixup_iov_resources(pdev);
+>
+>
+> and open code pnv_pci_ioda_fixup_iov_resources() right here?
 
-Oh cool, looks like we can. I'll do that.
+pnv_pci_ioda_fixup_iov_resources() is pretty hairy so I'd rather keep
+it as a separate function. I'd like to get rid of it entirely at some
+point, but that's a problem for another day.
