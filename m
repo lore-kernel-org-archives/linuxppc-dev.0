@@ -6,40 +6,40 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 67BECC432C3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Nov 2019 10:57:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B586FC432C0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Nov 2019 10:59:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 145D9207FD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Nov 2019 10:57:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 145D9207FD
+	by mail.kernel.org (Postfix) with ESMTPS id 6EC912068E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Nov 2019 10:59:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6EC912068E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47M3sY66KpzDqZq
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Nov 2019 21:57:53 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 47M3vs0HnszDqZk
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Nov 2019 21:59:53 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47M3cz5yt3zDqXr
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Nov 2019 21:46:59 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47M3d068sMzDqY1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Nov 2019 21:47:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 47M3cz3vTsz9sR5; Mon, 25 Nov 2019 21:46:59 +1100 (AEDT)
+ id 47M3d05Phdz9sR3; Mon, 25 Nov 2019 21:47:00 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: b06174345f6e70200916136695514e0b6b95ac17
-In-Reply-To: <ac19713826fa55e9e7bfe3100c5a7b1712ab9526.1566999711.git.christophe.leroy@c-s.fr>
+X-powerpc-patch-commit: 44448640dd0df98891c5ea4695d89a4972cb4c1f
+In-Reply-To: <dd82934ad91aab607d0eb7e626c14e6ac0d654eb.1567068137.git.christophe.leroy@c-s.fr>
 To: Christophe Leroy <christophe.leroy@c-s.fr>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
+ Paul Mackerras <paulus@samba.org>, segher@kernel.crashing.org,
+ npiggin@gmail.com
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/reg: use ASM_FTR_IFSET() instead of opencoding
- fixup.
-Message-Id: <47M3cz3vTsz9sR5@ozlabs.org>
-Date: Mon, 25 Nov 2019 21:46:59 +1100 (AEDT)
+Subject: Re: [PATCH v3 1/2] powerpc: permanently include 8xx registers in reg.h
+Message-Id: <47M3d05Phdz9sR3@ozlabs.org>
+Date: Mon, 25 Nov 2019 21:47:00 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,16 +56,20 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2019-08-28 at 13:42:01 UTC, Christophe Leroy wrote:
-> mftb() includes a feature fixup for CELL ppc.
+On Thu, 2019-08-29 at 08:45:12 UTC, Christophe Leroy wrote:
+> Most 8xx registers have specific names, so just include
+> reg_8xx.h all the time in reg.h in order to have them defined
+> even when CONFIG_PPC_8xx is not selected. This will avoid
+> the need for #ifdefs in C code.
 > 
-> Use ASM_FTR_IFSET() macro instead of opencoding the setup
-> of the fixup sections.
+> Guard SPRN_ICTRL in an #ifdef CONFIG_PPC_8xx as this register
+> has same name but different meaning and different spr number as
+> another register in the mpc7450.
 > 
 > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/b06174345f6e70200916136695514e0b6b95ac17
+https://git.kernel.org/powerpc/c/44448640dd0df98891c5ea4695d89a4972cb4c1f
 
 cheers
