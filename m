@@ -1,4 +1,4 @@
-Return-Path: <SRS0=uOHI=ZR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=Qvps=ZS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
@@ -6,32 +6,32 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B538C432C3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Nov 2019 23:59:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 177C6C432C0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 00:01:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EA05920740
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Nov 2019 23:59:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EA05920740
+	by mail.kernel.org (Postfix) with ESMTPS id C7A0620748
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 00:01:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C7A0620748
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47MPCT6WDHzDqdp
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 10:59:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47MPG56xrFzDqTg
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 11:01:49 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47MN9z3vB1zDqbq
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Nov 2019 10:13:11 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47MNB14bPXzDqZR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Nov 2019 10:13:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 47MN9y6NHTz8snv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Nov 2019 10:13:10 +1100 (AEDT)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 47MNB05w2Rz8snv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Nov 2019 10:13:12 +1100 (AEDT)
 Received: by ozlabs.org (Postfix)
- id 47MN9y5DQqz9sRm; Tue, 26 Nov 2019 10:13:10 +1100 (AEDT)
+ id 47MNB011VDz9sRw; Tue, 26 Nov 2019 10:13:12 +1100 (AEDT)
 Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=tlfalcon@linux.ibm.com;
@@ -42,44 +42,44 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 47MN9x74JGz9sRW
- for <linuxppc-dev@ozlabs.org>; Tue, 26 Nov 2019 10:13:09 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 47MN9z3tbwz9sRW
+ for <linuxppc-dev@ozlabs.org>; Tue, 26 Nov 2019 10:13:11 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- xAPMvK9m169744; Mon, 25 Nov 2019 18:13:05 -0500
-Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
- [169.55.91.170])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2wfjyxegqk-1
+ xAPMvJC9126473; Mon, 25 Nov 2019 18:13:09 -0500
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
+ [169.55.85.253])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2wfjq0t4rm-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 25 Nov 2019 18:13:05 -0500
-Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
- by ppma02wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id xAPMtQee010074;
- Mon, 25 Nov 2019 23:13:04 GMT
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by ppma02wdc.us.ibm.com with ESMTP id 2wevd6e3ca-1
+ Mon, 25 Nov 2019 18:13:09 -0500
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+ by ppma01wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id xAPMtVvj012635;
+ Mon, 25 Nov 2019 23:13:13 GMT
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by ppma01wdc.us.ibm.com with ESMTP id 2wevd5x32x-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 25 Nov 2019 23:13:04 +0000
+ Mon, 25 Nov 2019 23:13:13 +0000
 Received: from b03ledav005.gho.boulder.ibm.com
  (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xAPND2vI61931878
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xAPND7I658982758
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 25 Nov 2019 23:13:02 GMT
+ Mon, 25 Nov 2019 23:13:07 GMT
 Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id AC4E3BE058;
- Mon, 25 Nov 2019 23:13:02 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id F2499BE058;
+ Mon, 25 Nov 2019 23:13:06 +0000 (GMT)
 Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 72D93BE053;
- Mon, 25 Nov 2019 23:13:01 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 09169BE05A;
+ Mon, 25 Nov 2019 23:13:06 +0000 (GMT)
 Received: from oc7186267434.ibm.com (unknown [9.80.224.141])
  by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
- Mon, 25 Nov 2019 23:13:01 +0000 (GMT)
+ Mon, 25 Nov 2019 23:13:05 +0000 (GMT)
 From: Thomas Falcon <tlfalcon@linux.ibm.com>
 To: jakub.kicinski@netronome.com
-Subject: [PATCH net v2 1/4] ibmvnic: Fix completion structure initialization
-Date: Mon, 25 Nov 2019 17:12:53 -0600
-Message-Id: <1574723576-27553-2-git-send-email-tlfalcon@linux.ibm.com>
+Subject: [PATCH net v2 4/4] ibmvnic: Serialize device queries
+Date: Mon, 25 Nov 2019 17:12:56 -0600
+Message-Id: <1574723576-27553-5-git-send-email-tlfalcon@linux.ibm.com>
 X-Mailer: git-send-email 1.8.3.1
 In-Reply-To: <1574723576-27553-1-git-send-email-tlfalcon@linux.ibm.com>
 References: <20191125112359.7a468352@cakuba.hsd1.ca.comcast.net>
@@ -88,11 +88,11 @@ X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
  definitions=2019-11-25_06:2019-11-21,2019-11-25 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=1 phishscore=0
- mlxscore=0 malwarescore=0 impostorscore=0 priorityscore=1501 spamscore=0
- adultscore=0 clxscore=1015 bulkscore=0 mlxlogscore=999 lowpriorityscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-1910280000
- definitions=main-1911250181
+ clxscore=1015
+ lowpriorityscore=0 phishscore=0 adultscore=0 mlxscore=0 bulkscore=0
+ impostorscore=0 mlxlogscore=999 malwarescore=0 suspectscore=3
+ priorityscore=1501 spamscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-1910280000 definitions=main-1911250181
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -111,101 +111,237 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fix multiple calls to init_completion for device completion
-structures. Instead, initialize them during device probe and
-reinitialize them later as needed.
+Provide some serialization for device CRQ commands
+and queries to ensure that the shared variable used for
+storing return codes is properly synchronized.
 
 Signed-off-by: Thomas Falcon <tlfalcon@linux.ibm.com>
 ---
- drivers/net/ethernet/ibm/ibmvnic.c | 19 +++++++++++--------
- 1 file changed, 11 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/ibm/ibmvnic.c | 54 ++++++++++++++++++++++++++++++++++----
+ drivers/net/ethernet/ibm/ibmvnic.h |  2 ++
+ 2 files changed, 51 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-index f59d9a8e35e2..48225297a5e2 100644
+index 4504f96ee07d..42e15b31a5ff 100644
 --- a/drivers/net/ethernet/ibm/ibmvnic.c
 +++ b/drivers/net/ethernet/ibm/ibmvnic.c
-@@ -176,7 +176,7 @@ static int alloc_long_term_buff(struct ibmvnic_adapter *adapter,
+@@ -210,11 +210,14 @@ static int alloc_long_term_buff(struct ibmvnic_adapter *adapter,
  	ltb->map_id = adapter->map_id;
  	adapter->map_id++;
  
--	init_completion(&adapter->fw_done);
-+	reinit_completion(&adapter->fw_done);
++	mutex_lock(&adapter->fw_lock);
++	adapter->fw_done_rc = 0;
+ 	reinit_completion(&adapter->fw_done);
  	rc = send_request_map(adapter, ltb->addr,
  			      ltb->size, ltb->map_id);
  	if (rc) {
-@@ -215,7 +215,7 @@ static int reset_long_term_buff(struct ibmvnic_adapter *adapter,
+ 		dma_free_coherent(dev, ltb->size, ltb->buff, ltb->addr);
++		mutex_unlock(&adapter->fw_lock);
+ 		return rc;
+ 	}
+ 
+@@ -224,6 +227,7 @@ static int alloc_long_term_buff(struct ibmvnic_adapter *adapter,
+ 			"Long term map request aborted or timed out,rc = %d\n",
+ 			rc);
+ 		dma_free_coherent(dev, ltb->size, ltb->buff, ltb->addr);
++		mutex_unlock(&adapter->fw_lock);
+ 		return rc;
+ 	}
+ 
+@@ -231,8 +235,10 @@ static int alloc_long_term_buff(struct ibmvnic_adapter *adapter,
+ 		dev_err(dev, "Couldn't map long term buffer,rc = %d\n",
+ 			adapter->fw_done_rc);
+ 		dma_free_coherent(dev, ltb->size, ltb->buff, ltb->addr);
++		mutex_unlock(&adapter->fw_lock);
+ 		return -1;
+ 	}
++	mutex_unlock(&adapter->fw_lock);
+ 	return 0;
+ }
+ 
+@@ -258,15 +264,21 @@ static int reset_long_term_buff(struct ibmvnic_adapter *adapter,
  
  	memset(ltb->buff, 0, ltb->size);
  
--	init_completion(&adapter->fw_done);
-+	reinit_completion(&adapter->fw_done);
++	mutex_lock(&adapter->fw_lock);
++	adapter->fw_done_rc = 0;
++
+ 	reinit_completion(&adapter->fw_done);
  	rc = send_request_map(adapter, ltb->addr, ltb->size, ltb->map_id);
- 	if (rc)
+-	if (rc)
++	if (rc) {
++		mutex_unlock(&adapter->fw_lock);
  		return rc;
-@@ -943,7 +943,7 @@ static int ibmvnic_get_vpd(struct ibmvnic_adapter *adapter)
++	}
+ 
+ 	rc = ibmvnic_wait_for_completion(adapter, &adapter->fw_done, 10000);
+ 	if (rc) {
+ 		dev_info(dev,
+ 			 "Reset failed, long term map request timed out or aborted\n");
++		mutex_unlock(&adapter->fw_lock);
+ 		return rc;
+ 	}
+ 
+@@ -274,8 +286,10 @@ static int reset_long_term_buff(struct ibmvnic_adapter *adapter,
+ 		dev_info(dev,
+ 			 "Reset failed, attempting to free and reallocate buffer\n");
+ 		free_long_term_buff(adapter, ltb);
++		mutex_unlock(&adapter->fw_lock);
+ 		return alloc_long_term_buff(adapter, ltb, ltb->size);
+ 	}
++	mutex_unlock(&adapter->fw_lock);
+ 	return 0;
+ }
+ 
+@@ -992,18 +1006,25 @@ static int ibmvnic_get_vpd(struct ibmvnic_adapter *adapter)
  	if (adapter->vpd->buff)
  		len = adapter->vpd->len;
  
--	init_completion(&adapter->fw_done);
-+	reinit_completion(&adapter->fw_done);
++	mutex_lock(&adapter->fw_lock);
++	adapter->fw_done_rc = 0;
+ 	reinit_completion(&adapter->fw_done);
++
  	crq.get_vpd_size.first = IBMVNIC_CRQ_CMD;
  	crq.get_vpd_size.cmd = GET_VPD_SIZE;
  	rc = ibmvnic_send_crq(adapter, &crq);
-@@ -1689,7 +1689,7 @@ static int __ibmvnic_set_mac(struct net_device *netdev, u8 *dev_addr)
+-	if (rc)
++	if (rc) {
++		mutex_unlock(&adapter->fw_lock);
+ 		return rc;
++	}
+ 
+ 	rc = ibmvnic_wait_for_completion(adapter, &adapter->fw_done, 10000);
+ 	if (rc) {
+ 		dev_err(dev, "Could not retrieve VPD size, rc = %d\n", rc);
++		mutex_unlock(&adapter->fw_lock);
+ 		return rc;
+ 	}
++	mutex_unlock(&adapter->fw_lock);
+ 
+ 	if (!adapter->vpd->len)
+ 		return -ENODATA;
+@@ -1030,7 +1051,10 @@ static int ibmvnic_get_vpd(struct ibmvnic_adapter *adapter)
+ 		return -ENOMEM;
+ 	}
+ 
++	mutex_lock(&adapter->fw_lock);
++	adapter->fw_done_rc = 0;
+ 	reinit_completion(&adapter->fw_done);
++
+ 	crq.get_vpd.first = IBMVNIC_CRQ_CMD;
+ 	crq.get_vpd.cmd = GET_VPD;
+ 	crq.get_vpd.ioba = cpu_to_be32(adapter->vpd->dma_addr);
+@@ -1039,6 +1063,7 @@ static int ibmvnic_get_vpd(struct ibmvnic_adapter *adapter)
+ 	if (rc) {
+ 		kfree(adapter->vpd->buff);
+ 		adapter->vpd->buff = NULL;
++		mutex_unlock(&adapter->fw_lock);
+ 		return rc;
+ 	}
+ 
+@@ -1047,9 +1072,11 @@ static int ibmvnic_get_vpd(struct ibmvnic_adapter *adapter)
+ 		dev_err(dev, "Unable to retrieve VPD, rc = %d\n", rc);
+ 		kfree(adapter->vpd->buff);
+ 		adapter->vpd->buff = NULL;
++		mutex_unlock(&adapter->fw_lock);
+ 		return rc;
+ 	}
+ 
++	mutex_unlock(&adapter->fw_lock);
+ 	return 0;
+ }
+ 
+@@ -1750,10 +1777,14 @@ static int __ibmvnic_set_mac(struct net_device *netdev, u8 *dev_addr)
  	crq.change_mac_addr.cmd = CHANGE_MAC_ADDR;
  	ether_addr_copy(&crq.change_mac_addr.mac_addr[0], dev_addr);
  
--	init_completion(&adapter->fw_done);
-+	reinit_completion(&adapter->fw_done);
++	mutex_lock(&adapter->fw_lock);
++	adapter->fw_done_rc = 0;
+ 	reinit_completion(&adapter->fw_done);
++
  	rc = ibmvnic_send_crq(adapter, &crq);
  	if (rc) {
  		rc = -EIO;
-@@ -2316,7 +2316,7 @@ static int wait_for_reset(struct ibmvnic_adapter *adapter)
- 	adapter->fallback.rx_entries = adapter->req_rx_add_entries_per_subcrq;
- 	adapter->fallback.tx_entries = adapter->req_tx_entries_per_subcrq;
++		mutex_unlock(&adapter->fw_lock);
+ 		goto err;
+ 	}
  
--	init_completion(&adapter->reset_done);
-+	reinit_completion(&adapter->reset_done);
- 	adapter->wait_for_reset = true;
- 	rc = ibmvnic_reset(adapter, VNIC_RESET_CHANGE_PARAM);
- 	if (rc)
-@@ -2332,7 +2332,7 @@ static int wait_for_reset(struct ibmvnic_adapter *adapter)
- 		adapter->desired.rx_entries = adapter->fallback.rx_entries;
- 		adapter->desired.tx_entries = adapter->fallback.tx_entries;
- 
--		init_completion(&adapter->reset_done);
-+		reinit_completion(&adapter->reset_done);
- 		adapter->wait_for_reset = true;
- 		rc = ibmvnic_reset(adapter, VNIC_RESET_CHANGE_PARAM);
- 		if (rc)
-@@ -2603,7 +2603,7 @@ static void ibmvnic_get_ethtool_stats(struct net_device *dev,
- 	    cpu_to_be32(sizeof(struct ibmvnic_statistics));
- 
- 	/* Wait for data to be written */
--	init_completion(&adapter->stats_done);
-+	reinit_completion(&adapter->stats_done);
- 	rc = ibmvnic_send_crq(adapter, &crq);
- 	if (rc)
- 		return;
-@@ -4403,7 +4403,7 @@ static int send_query_phys_parms(struct ibmvnic_adapter *adapter)
+@@ -1761,9 +1792,10 @@ static int __ibmvnic_set_mac(struct net_device *netdev, u8 *dev_addr)
+ 	/* netdev->dev_addr is changed in handle_change_mac_rsp function */
+ 	if (rc || adapter->fw_done_rc) {
+ 		rc = -EIO;
++		mutex_unlock(&adapter->fw_lock);
+ 		goto err;
+ 	}
+-
++	mutex_unlock(&adapter->fw_lock);
+ 	return 0;
+ err:
+ 	ether_addr_copy(adapter->mac_addr, netdev->dev_addr);
+@@ -4481,15 +4513,24 @@ static int send_query_phys_parms(struct ibmvnic_adapter *adapter)
  	memset(&crq, 0, sizeof(crq));
  	crq.query_phys_parms.first = IBMVNIC_CRQ_CMD;
  	crq.query_phys_parms.cmd = QUERY_PHYS_PARMS;
--	init_completion(&adapter->fw_done);
-+	reinit_completion(&adapter->fw_done);
++
++	mutex_lock(&adapter->fw_lock);
++	adapter->fw_done_rc = 0;
+ 	reinit_completion(&adapter->fw_done);
++
  	rc = ibmvnic_send_crq(adapter, &crq);
- 	if (rc)
+-	if (rc)
++	if (rc) {
++		mutex_unlock(&adapter->fw_lock);
  		return rc;
-@@ -4955,6 +4955,9 @@ static int ibmvnic_probe(struct vio_dev *dev, const struct vio_device_id *id)
++	}
+ 
+ 	rc = ibmvnic_wait_for_completion(adapter, &adapter->fw_done, 10000);
+-	if (rc)
++	if (rc) {
++		mutex_unlock(&adapter->fw_lock);
+ 		return rc;
++	}
+ 
++	mutex_unlock(&adapter->fw_lock);
+ 	return adapter->fw_done_rc ? -EIO : 0;
+ }
+ 
+@@ -5045,6 +5086,7 @@ static int ibmvnic_probe(struct vio_dev *dev, const struct vio_device_id *id)
+ 			  __ibmvnic_delayed_reset);
  	INIT_LIST_HEAD(&adapter->rwi_list);
  	spin_lock_init(&adapter->rwi_lock);
++	mutex_init(&adapter->fw_lock);
  	init_completion(&adapter->init_done);
-+	init_completion(&adapter->fw_done);
-+	init_completion(&adapter->reset_done);
-+	init_completion(&adapter->stats_done);
- 	clear_bit(0, &adapter->resetting);
+ 	init_completion(&adapter->fw_done);
+ 	init_completion(&adapter->reset_done);
+@@ -5106,6 +5148,7 @@ static int ibmvnic_probe(struct vio_dev *dev, const struct vio_device_id *id)
+ ibmvnic_init_fail:
+ 	release_sub_crqs(adapter, 1);
+ 	release_crq_queue(adapter);
++	mutex_destroy(&adapter->fw_lock);
+ 	free_netdev(netdev);
  
- 	do {
+ 	return rc;
+@@ -5130,6 +5173,7 @@ static int ibmvnic_remove(struct vio_dev *dev)
+ 	adapter->state = VNIC_REMOVED;
+ 
+ 	rtnl_unlock();
++	mutex_destroy(&adapter->fw_lock);
+ 	device_remove_file(&dev->dev, &dev_attr_failover);
+ 	free_netdev(netdev);
+ 	dev_set_drvdata(&dev->dev, NULL);
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.h b/drivers/net/ethernet/ibm/ibmvnic.h
+index ebc39248b334..60eccaf91b12 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.h
++++ b/drivers/net/ethernet/ibm/ibmvnic.h
+@@ -1026,6 +1026,8 @@ struct ibmvnic_adapter {
+ 	int init_done_rc;
+ 
+ 	struct completion fw_done;
++	/* Used for serialization of device commands */
++	struct mutex fw_lock;
+ 	int fw_done_rc;
+ 
+ 	struct completion reset_done;
 -- 
 2.12.3
 
