@@ -2,83 +2,80 @@ Return-Path: <SRS0=Qvps=ZS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83AA5C432C3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 05:24:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C2301C432C0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 05:26:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DEF0620637
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 05:24:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 71B1420637
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 05:26:28 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Q+6aTw0a"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DEF0620637
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="inamUJ8I"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 71B1420637
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47MXQK4ldwzDqc3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 16:24:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47MXSf69RpzDqBs
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 16:26:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::641;
- helo=mail-pl1-x641.google.com; envelope-from=jniethe5@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::536;
+ helo=mail-pg1-x536.google.com; envelope-from=jniethe5@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="Q+6aTw0a"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="inamUJ8I"; 
  dkim-atps=neutral
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
+Received: from mail-pg1-x536.google.com (mail-pg1-x536.google.com
+ [IPv6:2607:f8b0:4864:20::536])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47MXN95nv6zDqBW
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Nov 2019 16:22:33 +1100 (AEDT)
-Received: by mail-pl1-x641.google.com with SMTP id q16so3395828plr.10
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Nov 2019 21:22:33 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47MXN97545zDqBs
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Nov 2019 16:22:30 +1100 (AEDT)
+Received: by mail-pg1-x536.google.com with SMTP id z188so8373154pgb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Nov 2019 21:22:30 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=7ISG4mLSmSSVy+VO7Y6xAojx6lHfG66ZOcv81yzph2o=;
- b=Q+6aTw0aO2S3f4y/NH6RUi4oJ/2oit1DbtZUWwkEC7MhcOvrgYE86EnwqdvKVvSmXv
- 3vOdm7rtylhV+uGJiW5fMLH0U+hz9R1Er2CKu3eE3s3+fvm9Gqly8XQOJNvI0XgaCnte
- pw1/3ug/cJWwkvatysXtOilA3I7DvjmIL1NCUkO4q5q7SAiXnXxxBbo7I2s6NTK5lsD5
- yxnvs6TFw6XRVOeArw3+YPrHTxbi7LxoWliBLnpWyKigwJ52EHXfvMfjKzJRsBpJ6BVE
- RkR4tmfDMBofv3bnqPUR2Y1wFybDnHZyfn63K2+Yw/hJkFMp6C4ry/KmoJ9EjDe1zhtM
- Ac4A==
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=lkZ6ivCZqkKAehepgllab1ym8y1J5g593ht8YeOUxgA=;
+ b=inamUJ8IF21aY5kjykIjaZDpMzJeA/qd1eh1ymocoqjpSwcmpjUbLMcy9z+8O1xXTf
+ U/jck0lmVK8Be4D60F5akgpOiANcnI5ZK7znydzG2dNY/kcVcsNW7QTt64TKxyM6VvEt
+ NyqSq6faEeHSchGR+UzPUkt6BFREzyPZLsx+cVQBd3+//KIar0wsVpnEQ5HUc416HctO
+ bQw6Pjxyqh6Y7Zx8A9kjFEVM1tUPaPBi90qg7wL6QPitdPnTN+a0wcOp29ngWMBLOyZq
+ Kpr7yyJjpiC8zL7kJ/m+4xKypO4/ijLJdfA7JHvjnetQHHhbjO8Se7ahm2cervw/CSGy
+ rgbg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=7ISG4mLSmSSVy+VO7Y6xAojx6lHfG66ZOcv81yzph2o=;
- b=bsQC/LoIoWSXaRCunCPMBMXXzSZu48rIkg578XO//atkNBChsMMeJkhLT1UoRE30TH
- Sl4xm6OMQHQV/oUv8Le23jgfJLycrl0QOj2ERD8fqFiHqqlpY+CSUZ5MrZUUopXctFr3
- Xbi+cnGJlkDswp7/6qauDnhnFnLAJXH9u3PLPG8Mqbgq0sLg9xgchGQG/yWYb8ZGEGg7
- tIPLsexA5S8FstaEEjba089bk2868Z/wOt2v0nfCNRev/yovk/A6eMTMybvb7zaKstmJ
- G/3V6PNbZrtRKgr8fExCm2ltxisFSDXQ4INUwmR1yykwKV8nBWvrrB/Vh3idsbR7xVGG
- XjmA==
-X-Gm-Message-State: APjAAAUK2q/YDtYKQylO2yixFg0zN1PRoNmov3E6EvjdgYrK1HTUHJnQ
- lAckp8VhEJn2NgdJ5v8Ql9GJlvHp
-X-Google-Smtp-Source: APXvYqxeIhTnJSw+peRGoR1e7uQ82PA2TNwV9Dn3pHs1qGujgNITFbI98luASesryHQ2AL0GDGrV2g==
-X-Received: by 2002:a17:902:ff0e:: with SMTP id f14mr763056plj.3.1574745750839; 
- Mon, 25 Nov 2019 21:22:30 -0800 (PST)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=lkZ6ivCZqkKAehepgllab1ym8y1J5g593ht8YeOUxgA=;
+ b=aDOqcjGKHL6wT9dRTOcCcXhyGVeYRi0JP64PUxn+5MxdArAS13lLtRfbrMISXFubWA
+ n6DOM/5QyzuIrCwvvw98c2ZS3Qt05PLMuemHauvR2tlyPo09UO5vFun3eDkAiWcr61bv
+ uG2kU/SFLQ3jf9A4MrOOFvPX/PjwXEYjmUh7Ae8knv1LqDoh8S17b6hy5QQ1jLpGbCem
+ lmWNhsL3qaacZ59FGVKgy7ZCB2KkFMOuaa9rWE0Nk4hCHW+eVMCwdedGBekQtCE0Cp5+
+ jbmjpt5lVw7EOaqmqRBAd1DoxODqGMRl+Yu4YIR+Olif8I3Qy6CoWOF0zhPFt5GXv6of
+ B0nQ==
+X-Gm-Message-State: APjAAAW1fg+wXY4U7xMoIFkv9SZebHOXma0mmzmCDNoqe+B5n/8Em3yz
+ L6LbHeIxZH2m0Jv006BI0cpIuTRt
+X-Google-Smtp-Source: APXvYqwAI0QsffSnbLJVl+GoEctZLkcyQVjUzVi6gfOrffl0VeExYmueIV1GyIXS+09BIWXhn3NBQA==
+X-Received: by 2002:a63:fb15:: with SMTP id o21mr36232597pgh.193.1574745746766; 
+ Mon, 25 Nov 2019 21:22:26 -0800 (PST)
 Received: from sol.ozlabs.ibm.com ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id t27sm10657920pfq.169.2019.11.25.21.22.29
+ by smtp.gmail.com with ESMTPSA id t27sm10657920pfq.169.2019.11.25.21.22.24
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 25 Nov 2019 21:22:30 -0800 (PST)
+ Mon, 25 Nov 2019 21:22:26 -0800 (PST)
 From: Jordan Niethe <jniethe5@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 02/18] powerpc: Add BOUNDARY SRR1 bit for future ISA version
-Date: Tue, 26 Nov 2019 16:21:25 +1100
-Message-Id: <20191126052141.28009-3-jniethe5@gmail.com>
+Subject: [PATCH 00/18] Initial Prefixed Instruction support
+Date: Tue, 26 Nov 2019 16:21:23 +1100
+Message-Id: <20191126052141.28009-1-jniethe5@gmail.com>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20191126052141.28009-1-jniethe5@gmail.com>
-References: <20191126052141.28009-1-jniethe5@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -97,26 +94,75 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add the bit definition for when the cause of an alignment exception is a
-prefixed instruction that crosses a 64-byte boundary.
+A future revision of the ISA will introduce prefixed instructions. A
+prefixed instruction is composed of a 4-byte prefix followed by a
+4-byte suffix.
 
-Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
----
- arch/powerpc/include/asm/reg.h | 1 +
- 1 file changed, 1 insertion(+)
+All prefixes have the major opcode 1. A prefix will never be a valid
+word instruction. A suffix may be an existing word instruction or a new
+instruction.
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 521ecbe35507..6f9fcc3d4c82 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -777,6 +777,7 @@
- #define   SRR1_PROGADDR		0x00010000 /* SRR0 contains subsequent addr */
- 
- #define   SRR1_MCE_MCP		0x00080000 /* Machine check signal caused interrupt */
-+#define   SRR1_BOUNDARY		0x10000000 /* Prefixed instruction crosses 64-byte boundary */
- 
- #define SPRN_HSRR0	0x13A	/* Save/Restore Register 0 */
- #define SPRN_HSRR1	0x13B	/* Save/Restore Register 1 */
+The new instruction formats are:
+    * Eight-Byte Load/Store Instructions
+    * Eight-Byte Register-to-Register Instructions
+    * Modified Load/Store Instructions
+    * Modified Register-to-Register Instructions
+
+This series enables prefixed instructions and extends the instruction
+emulation to support them. Then the places where prefixed instructions
+might need to be emulated are updated.
+
+A future series will add prefixed instruction support to guests running
+in KVM.
+
+Alistair Popple (1):
+  powerpc: Enable Prefixed Instructions
+
+Jordan Niethe (17):
+  powerpc: Add BOUNDARY SRR1 bit for future ISA version
+  powerpc: Add PREFIXED SRR1 bit for future ISA version
+  powerpc: Rename Bit 35 of SRR1 to indicate new purpose
+  powerpc sstep: Prepare to support prefixed instructions
+  powerpc sstep: Add support for prefixed integer load/stores
+  powerpc sstep: Add support for prefixed floating-point load/stores
+  powerpc sstep: Add support for prefixed VSX load/stores
+  powerpc sstep: Add support for prefixed fixed-point arithmetic
+  powerpc: Support prefixed instructions in alignment handler
+  powerpc/traps: Check for prefixed instructions in
+    facility_unavailable_exception()
+  powerpc/xmon: Add initial support for prefixed instructions
+  powerpc/xmon: Dump prefixed instructions
+  powerpc/kprobes: Support kprobes on prefixed instructions
+  powerpc/uprobes: Add support for prefixed instructions
+  powerpc/hw_breakpoints: Initial support for prefixed instructions
+  powerpc: Add prefix support to mce_find_instr_ea_and_pfn()
+  powerpc/fault: Use analyse_instr() to check for store with updates to
+    sp
+
+ arch/powerpc/include/asm/kprobes.h    |   5 +-
+ arch/powerpc/include/asm/ppc-opcode.h |   3 +
+ arch/powerpc/include/asm/reg.h        |   7 +-
+ arch/powerpc/include/asm/sstep.h      |   8 +-
+ arch/powerpc/include/asm/uaccess.h    |  30 +++++
+ arch/powerpc/include/asm/uprobes.h    |  18 ++-
+ arch/powerpc/kernel/align.c           |   8 +-
+ arch/powerpc/kernel/dt_cpu_ftrs.c     |  23 ++++
+ arch/powerpc/kernel/hw_breakpoint.c   |   8 +-
+ arch/powerpc/kernel/kprobes.c         |  46 +++++--
+ arch/powerpc/kernel/mce_power.c       |   6 +-
+ arch/powerpc/kernel/optprobes.c       |  31 +++--
+ arch/powerpc/kernel/optprobes_head.S  |   6 +
+ arch/powerpc/kernel/traps.c           |  18 ++-
+ arch/powerpc/kernel/uprobes.c         |   4 +-
+ arch/powerpc/kvm/book3s_hv_nested.c   |   2 +-
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c   |   2 +-
+ arch/powerpc/kvm/emulate_loadstore.c  |   2 +-
+ arch/powerpc/lib/sstep.c              | 180 +++++++++++++++++++++++++-
+ arch/powerpc/lib/test_emulate_step.c  |  30 ++---
+ arch/powerpc/mm/fault.c               |  39 ++----
+ arch/powerpc/xmon/xmon.c              | 132 +++++++++++++++----
+ 22 files changed, 490 insertions(+), 118 deletions(-)
+
 -- 
 2.20.1
 
