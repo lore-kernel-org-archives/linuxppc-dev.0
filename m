@@ -2,57 +2,82 @@ Return-Path: <SRS0=Qvps=ZS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4CA7C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 16:42:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D51BFC432C3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 17:45:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 493BD20835
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 16:42:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 493BD20835
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 4BCCA2073F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 17:45:47 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="twpQAMdj"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4BCCA2073F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47MqSw66RszDq9b
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 03:42:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47Mrsh2DrNzDqW7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 04:45:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
- receiver=<UNKNOWN>)
+ spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="twpQAMdj"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47MqQY691XzDqWm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Nov 2019 03:40:35 +1100 (AEDT)
-Received: by verein.lst.de (Postfix, from userid 2407)
- id C1C2068C4E; Tue, 26 Nov 2019 17:40:27 +0100 (CET)
-Date: Tue, 26 Nov 2019 17:40:26 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>
-Subject: Re: Bug 205201 - Booting halts if Dawicontrol DC-2976 UW SCSI
- board installed, unless RAM size limited to 3500M
-Message-ID: <20191126164026.GA8026@lst.de>
-References: <F1EBB706-73DF-430E-9020-C214EC8ED5DA@xenosoft.de>
- <20191121072943.GA24024@lst.de>
- <dbde2252-035e-6183-7897-43348e60647e@xenosoft.de>
- <6eec5c42-019c-a988-fc2a-cb804194683d@xenosoft.de>
- <d0252d29-7a03-20e1-ccd7-e12d906e4bdf@arm.com>
- <b3217742-2c0b-8447-c9ac-608b93265363@xenosoft.de>
- <20191121180226.GA3852@lst.de>
- <2fde79cf-875f-94e6-4a1b-f73ebb2e2c32@xenosoft.de>
- <20191125073923.GA30168@lst.de>
- <4681f5fe-c095-15f5-9221-4b55e940bafc@xenosoft.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4681f5fe-c095-15f5-9221-4b55e940bafc@xenosoft.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47MrqF09HYzDqBb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Nov 2019 04:43:34 +1100 (AEDT)
+Received: from localhost (mailhub1-ext [192.168.12.233])
+ by localhost (Postfix) with ESMTP id 47Mrq56Ldsz9ty2b;
+ Tue, 26 Nov 2019 18:43:29 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=twpQAMdj; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id kXcPbgiquUQG; Tue, 26 Nov 2019 18:43:29 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 47Mrq55GWNz9ty2Y;
+ Tue, 26 Nov 2019 18:43:29 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1574790209; bh=Nm8voP3roRsSJAwpWrKFutNy5/buSvyuxten1tQ9gTY=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=twpQAMdj6a4+f20pV4DPDuYjHyRUb/LjKbcEh4ouigrnW0V8x6XCySPnGgAeK0EST
+ k4aCausfd1kvRKYBzfgdeKiKY4V2CLEREHbBDsD2Vknlgau3FDGYx2ekGuZzdnhDhH
+ UIYAEfaPuxzUib/oq0qgEKSghZqmoU9mG2yg7Ybc=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 69C578B81A;
+ Tue, 26 Nov 2019 18:43:31 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id AG6IN_c4oP0K; Tue, 26 Nov 2019 18:43:31 +0100 (CET)
+Received: from po16098vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 021B08B825;
+ Tue, 26 Nov 2019 18:43:30 +0100 (CET)
+Received: by po16098vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id B1F0A6B76D; Tue, 26 Nov 2019 17:43:30 +0000 (UTC)
+Message-Id: <081e3b4e3a17a8ec9fdac46b505e3a29ca15f209.1574790198.git.christophe.leroy@c-s.fr>
+In-Reply-To: <05105deeaf63bc02151aea2cdeaf525534e0e9d4.1574790198.git.christophe.leroy@c-s.fr>
+References: <05105deeaf63bc02151aea2cdeaf525534e0e9d4.1574790198.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v2 2/2] selftests/powerpc: enable range tests on 8xx in
+ ptrace-hwbreak.c selftest
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ ravi.bangoria@linux.ibm.com
+Date: Tue, 26 Nov 2019 17:43:30 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,26 +89,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, darren@stevens-zone.net, rtd2@xtra.co.nz,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org,
- Mike Rapoport <rppt@linux.ibm.com>, linux-mm@kvack.org,
- iommu@lists.linux-foundation.org, Rob Herring <robh+dt@kernel.org>,
- paulus@samba.org, mad skateman <madskateman@gmail.com>,
- "contact@a-eon.com" <contact@a-eon.com>, Robin Murphy <robin.murphy@arm.com>,
- Christoph Hellwig <hch@lst.de>, nsaenzjulienne@suse.de
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Nov 26, 2019 at 12:26:38PM +0100, Christian Zigotzky wrote:
-> Hello Christoph,
->
-> The PCI TV card works with your patch! I was able to patch your Git kernel 
-> with the patch above.
->
-> I haven't found any error messages in the dmesg yet.
+8xx is now able to support any range length so range tests can be enabled.
 
-Thanks.  Unfortunately this is a bit of a hack as we need to set
-the mask based on runtime information like the magic FSL PCIe window.
-Let me try to draft something better up, and thanks already for testing
-this one!
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+
+---
+v2: new
+---
+ tools/testing/selftests/powerpc/ptrace/ptrace-hwbreak.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-hwbreak.c b/tools/testing/selftests/powerpc/ptrace/ptrace-hwbreak.c
+index 7deedbc16b0b..fc477dfe86a2 100644
+--- a/tools/testing/selftests/powerpc/ptrace/ptrace-hwbreak.c
++++ b/tools/testing/selftests/powerpc/ptrace/ptrace-hwbreak.c
+@@ -455,9 +455,8 @@ run_tests(pid_t child_pid, struct ppc_debug_info *dbginfo, bool dawr)
+ 	if (dbginfo->features & PPC_DEBUG_FEATURE_DATA_BP_RANGE) {
+ 		test_sethwdebug_exact(child_pid);
+ 
+-		if (!is_8xx)
+-			test_sethwdebug_range_aligned(child_pid);
+-		if (dawr && !is_8xx) {
++		test_sethwdebug_range_aligned(child_pid);
++		if (dawr || is_8xx) {
+ 			test_sethwdebug_range_unaligned(child_pid);
+ 			test_sethwdebug_range_unaligned_dar(child_pid);
+ 			test_sethwdebug_dawr_max_range(child_pid);
+-- 
+2.13.3
+
