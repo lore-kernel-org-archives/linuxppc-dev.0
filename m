@@ -2,102 +2,63 @@ Return-Path: <SRS0=Qvps=ZS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5AD7C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 01:50:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63C4DC432C0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 02:30:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1E87E20684
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 01:50:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B879620684
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 02:30:10 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="tfZz/hUh";
-	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="WU8WB3In"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1E87E20684
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=mailbox.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="FgztwZwN"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B879620684
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47MRgH72ZTzDqgp
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 12:50:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47MSYC4m4ZzDqgW
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 13:30:07 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47MRdK33KjzDqcl
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Nov 2019 12:48:37 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=mailbox.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47MSW44gKpzDqfr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Nov 2019 13:28:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=mailbox.org header.i=@mailbox.org header.b="tfZz/hUh"; 
- dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org
- header.b="WU8WB3In"; dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 47MRdK0FPgz8tBg
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Nov 2019 12:48:37 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 47MRdJ6f93z9sPV; Tue, 26 Nov 2019 12:48:36 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=mailbox.org (client-ip=2001:67c:2050::465:202;
- helo=mout-p-202.mailbox.org; envelope-from=erhard_f@mailbox.org;
- receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=mailbox.org
-Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=mailbox.org header.i=@mailbox.org header.b="tfZz/hUh"; 
- dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org
- header.b="WU8WB3In"; dkim-atps=neutral
-Received: from mout-p-202.mailbox.org (mout-p-202.mailbox.org
- [IPv6:2001:67c:2050::465:202])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 47MRdG07TDz9sPT
- for <linuxppc-dev@ozlabs.org>; Tue, 26 Nov 2019 12:48:33 +1100 (AEDT)
-Received: from smtp1.mailbox.org (smtp1.mailbox.org
- [IPv6:2001:67c:2050:105:465:1:1:0])
- (using TLSv1.2 with cipher ECDHE-RSA-CHACHA20-POLY1305 (256/256 bits))
- (No client certificate requested)
- by mout-p-202.mailbox.org (Postfix) with ESMTPS id 47MRcx4JGHzQlC4;
- Tue, 26 Nov 2019 02:48:17 +0100 (CET)
-Authentication-Results: gerste.heinlein-support.de (amavisd-new);
- dkim=pass (2048-bit key) reason="pass (just generated, assumed good)"
- header.d=mailbox.org
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org;
- s=mail20150812; t=1574732895;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding;
- bh=3vGTyx4hrjcs+n5a2EyZnoDC1MYkgE9tWQx/rXiB5Jg=;
- b=tfZz/hUhECWi98Ur/t45TDfhcHtd8n7kweUxvyoG2Hxe3iuq497B9zDKgr9yZ8tVD612U6
- c3e9gO4VrJ9fo+NcjBEKMajYlRKbpLS0l6QCs9Wu15ZFkAMSQTf22UpziRbfhaBI72nyEx
- bVMOykVbdveeIRkiJIwYMGb3aWQHDFtXSg8TzyCGCjQXYCqE//+chroTwyufwWR+fhD1HO
- 6+F+a7GdqRNWuwQKFVgKreWxYCYH11vZ+e+PyE+AJy4ounzlS+/jD1x+FhSOIyBOJMw5Gu
- FHFOfpLDdjS2EO++HqpfoyYSjWXkJ2KTqLrHEOSfH8Of84LfTQqawP2oCf+jYQ==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=mailbox.org; h=
- content-transfer-encoding:mime-version:message-id:date:date
- :subject:subject:from:from:received; s=mail20150812; t=
- 1574732893; bh=PWOAFg4hdwumD5Wgmmm4vIukmBf1tHCRGCyJGHCyzX0=; b=W
- U8WB3InnQZTnesO09wYOBTq74yclueWZR2ykRstZ+ZFCI8FX5d/NIV+cdZMxA+sU
- BM67mm2e9fXfYMbTYPyYLp6KEqTI7SRnLzDZ0YNjG/8DCQVnpKwYTU+mecJk5OSk
- vxEiOzmORXnym1Wxj/OI8NehWUjv9eVHU3A+oYRnIJo3EACTWS+S4J4OY8U2HH/u
- hq3MaNTwXvVT4PYAypu6ZjzDATFK929epNUX1+AeA515Mj5rin9lokPcjdDpUvxD
- czLTNYcOGKi9uYLStwNKKaZvJFYe5xH8+esXXAXsDW+sj0/VxEYKH1EOzKpuLqsi
- wQfAZOHzSoqBWLqaR1GUg==
-X-Virus-Scanned: amavisd-new at heinlein-support.de
-Received: from smtp1.mailbox.org ([80.241.60.240])
- by gerste.heinlein-support.de (gerste.heinlein-support.de [91.198.250.173])
- (amavisd-new, port 10030)
- with ESMTP id EnMWbBeg9YEO; Tue, 26 Nov 2019 02:48:13 +0100 (CET)
-From: Erhard Furtner <erhard_f@mailbox.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2] of: unittest: fix memory leak in attach_node_and_children
-Date: Tue, 26 Nov 2019 02:48:04 +0100
-Message-Id: <20191126014804.28267-1-erhard_f@mailbox.org>
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.b="FgztwZwN"; dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 47MSW10MKdz9sPT;
+ Tue, 26 Nov 2019 13:28:13 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1574735296;
+ bh=bDpBpExv22RYZg9+7U2ew6DFKYXTfeM4Kl6AcYjAgzY=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=FgztwZwNJDiZ7EM+Yr9+ALlLY8vEMT2mnd8WXWdEpCdnNkQw4xADD7XKzgrAvyTT6
+ Cv8gvnycwfKKIrTHQap0Kk81nvKOZy4ya9O9B5p54sNMtFw6gB+KXD740JrhoRBVBb
+ 6596F6YHpp7MSRpyBiawhr2fkyofqG43h728IvxqU1zbTSj1FMKsCNqxnKsOUNtlmQ
+ SnW8YYx/zorrarGVZl5iN4E3DNR8RtnqVkgL+HMW28EN0QoLZqjzZNbtfHCdxoh2d2
+ emHH3FOjfo12nuIt9IUJuHvMDOUxHV3MfmfnjhuDRR71JXglFzeMO+YefJWdIkS+rF
+ sfXYWJPnubq8Q==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Gustavo Walbon <gwalbon@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH][v2] powerpc: Set right value of Speculation_Store_Bypass
+ in /proc/<pid>/status
+In-Reply-To: <20191123230235.11888-1-gwalbon@linux.ibm.com>
+References: <20191123230235.11888-1-gwalbon@linux.ibm.com>
+Date: Tue, 26 Nov 2019 13:28:10 +1100
+Message-ID: <87v9r79xs5.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,49 +70,103 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, Erhard Furtner <erhard_f@mailbox.org>,
- linux-kernel@vger.kernel.org, robh+dt@kernel.org,
- Tyrel Datwyler <tyreld@linux.ibm.com>, frowand.list@gmail.com
+Cc: geert+renesas@glider.be, jkosina@suse.cz, gwalbon@linux.ibm.com,
+ cmr@informatik.wtf, yuehaibing@huawei.com, linux-kernel@vger.kernel.org,
+ diana.craciun@nxp.com, paulus@samba.org, jpoimboe@redhat.com,
+ maurosr@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In attach_node_and_children memory is allocated for full_name via
-kasprintf. If the condition of the 1st if is not met the function
-returns early without freeing the memory. Add a kfree() to fix that.
+Gustavo Walbon <gwalbon@linux.ibm.com> writes:
+> The issue has showed the value of status of Speculation_Store_Bypass in the
+> /proc/<pid>/status as `unknown` for PowerPC systems.
+>
+> The patch fix the checking of the mitigation status of Speculation, and
+> can be reported as "not vulnerable", "globally mitigated" or "vulnerable".
+>
+> Link: https://github.com/linuxppc/issues/issues/255
+>
+> Changelog:
+> Rebase on v5.4-rc8
+>
+> Signed-off-by: Gustavo Walbon <gwalbon@linux.ibm.com>
+> ---
+>  arch/powerpc/kernel/security.c | 25 ++++++++++++++++++++++++-
+>  1 file changed, 24 insertions(+), 1 deletion(-)
 
-This has been detected with kmemleak:
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=205327
+On further thoughts I don't think this logic (which I suggested) is
+right >:(
 
-It looks like the leak was introduced by this commit:
-Fixes: 5babefb7f7ab ("of: unittest: allow base devicetree to have symbol metadata")
+I commented on the issue:
 
-Signed-off-by: Erhard Furtner <erhard_f@mailbox.org>
-Reviewed-by: Michael Ellerman <mpe@ellerman.id.au>
-Reviewed-by: Tyrel Datwyler <tyreld@linux.ibm.com>
----
-Changes in v2:
-  - Make the commit message more clearer.
+  I think my original suggestion on this was wrong.
+  
+  Our mitigation is not global, ie. it's a barrier that must be used in
+  the right location. We have kernel code to insert the barrier on
+  kernel entry/exit, but that doesn't protect userspace against itself
+  (ie. sandboxes).
+  
+  There's no way to express that with the current values as far as I can
+  see.
+  
+  I think all we can do for now is:
+  
+  if stf_enabled_flush_types == STF_BARRIER_NONE:
+    return PR_SPEC_NOT_AFFECTED // "not vulnerable"
+  else
+    return PR_SPEC_ENABLE // "vulnerable"
+  
+  To express the situation properly we'd need another value, something
+  like PR_SPEC_MITIGATION_AVAILABLE (??) which says that there is a
+  mitigation available but it must be used. That still has the problem
+  that it doesn't tell userspace what the mitigation is, userspace would
+  have to know.
 
- drivers/of/unittest.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+cheers
 
-diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
-index 92e895d86458..ca7823eef2b4 100644
---- a/drivers/of/unittest.c
-+++ b/drivers/of/unittest.c
-@@ -1146,8 +1146,10 @@ static void attach_node_and_children(struct device_node *np)
- 	full_name = kasprintf(GFP_KERNEL, "%pOF", np);
- 
- 	if (!strcmp(full_name, "/__local_fixups__") ||
--	    !strcmp(full_name, "/__fixups__"))
-+	    !strcmp(full_name, "/__fixups__")) {
-+		kfree(full_name);
- 		return;
-+	}
- 
- 	dup = of_find_node_by_path(full_name);
- 	kfree(full_name);
--- 
-2.23.0
-
+> diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
+> index 7d4b2080a658..04e566026bbc 100644
+> --- a/arch/powerpc/kernel/security.c
+> +++ b/arch/powerpc/kernel/security.c
+> @@ -14,7 +14,7 @@
+>  #include <asm/debugfs.h>
+>  #include <asm/security_features.h>
+>  #include <asm/setup.h>
+> -
+> +#include <linux/prctl.h>
+>  
+>  u64 powerpc_security_features __read_mostly = SEC_FTR_DEFAULT;
+>  
+> @@ -344,6 +344,29 @@ ssize_t cpu_show_spec_store_bypass(struct device *dev, struct device_attribute *
+>  	return sprintf(buf, "Vulnerable\n");
+>  }
+>  
+> +static int ssb_prctl_get(struct task_struct *task)
+> +{
+> +	if (stf_barrier) {
+> +		if (stf_enabled_flush_types == STF_BARRIER_NONE)
+> +			return PR_SPEC_NOT_AFFECTED;
+> +		else
+> +			return PR_SPEC_DISABLE;
+> +	} else
+> +		return PR_SPEC_DISABLE_NOEXEC;
+> +
+> +	return -EINVAL;
+> +}
+> +
+> +int arch_prctl_spec_ctrl_get(struct task_struct *task, unsigned long which)
+> +{
+> +	switch (which) {
+> +	case PR_SPEC_STORE_BYPASS:
+> +		return ssb_prctl_get(task);
+> +	default:
+> +		return -ENODEV;
+> +	}
+> +}
+> +
+>  #ifdef CONFIG_DEBUG_FS
+>  static int stf_barrier_set(void *data, u64 val)
+>  {
+> -- 
+> 2.19.1
