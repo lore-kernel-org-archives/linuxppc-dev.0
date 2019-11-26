@@ -2,83 +2,80 @@ Return-Path: <SRS0=Qvps=ZS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DEAEC432C0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 12:00:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C10CFC432C0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 12:40:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0A15E2073F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 12:00:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3A47A2071E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 12:40:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="O+1tvTa6"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0A15E2073F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="uT62KOph"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3A47A2071E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47MjCd5Rh8zDqPw
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 23:00:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.helo=mo6-p02-ob.smtp.rzone.de (client-ip=2a01:238:20a:202:5302::5;
- helo=mo6-p02-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47Mk5c177hzDqbW
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 23:40:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=xenosoft.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="O+1tvTa6"; 
+ spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="uT62KOph"; 
  dkim-atps=neutral
-Received: from mo6-p02-ob.smtp.rzone.de (mo6-p02-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5302::5])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-384) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47Mj8N6TXdzDqNK
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Nov 2019 22:57:55 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1574769468;
- s=strato-dkim-0002; d=xenosoft.de;
- h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:
- X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
- bh=OiXIPkAa+jo3JWZau1B2Ey3v2wblVpCTuGCnmx5s9Rg=;
- b=O+1tvTa6/2Q25IpJz2BMeU1lWbx/hGYpvKMfNo7zOS3rC8jT6ItjkZq3xkpADp0fTy
- 6jjZq2wJ0GtVysHnSpi7pHe6iej+21g4LXhvcOxYEC5dSABOE3BIwROfD0GXNMEa+Peh
- mFy88p/1nk9MpijsS3b5TpNvndwd3bB2GqKq6uYIUQYkqfZITufsKFHMYBVVvb2Dtisz
- fjtJDL2yS3AOsTpSyNL0QDZ+2zqr5ctw7qcBKfirzzXKAtp/otMbGsEqoyTTL+ypVzqU
- 13Cd3yKiQLQq+qNkP8ZTeowJMIZ9+M9eR4y6N76OcCdPjhnvn7S45n0WZb2Nj3yt/GRr
- +qsQ==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5DdBJSrwuuqxvPhSIh0PhkEvMsMre1rbZ/xz+jsR"
-X-RZG-CLASS-ID: mo00
-Received: from [IPv6:2a02:8109:89c0:ebfc:14bb:b5af:17db:dc1]
- by smtp.strato.de (RZmta 45.0.2 AUTH) with ESMTPSA id x0678cvAQBv38le
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
- 521 ECDH bits, eq. 15360 bits RSA))
- (Client did not present a certificate);
- Tue, 26 Nov 2019 12:57:03 +0100 (CET)
-Subject: Re: Bug 205201 - Booting halts if Dawicontrol DC-2976 UW SCSI board
- installed, unless RAM size limited to 3500M
-To: Mike Rapoport <rppt@linux.ibm.com>, Christoph Hellwig <hch@lst.de>
-References: <F1EBB706-73DF-430E-9020-C214EC8ED5DA@xenosoft.de>
- <20191121072943.GA24024@lst.de>
- <dbde2252-035e-6183-7897-43348e60647e@xenosoft.de>
- <6eec5c42-019c-a988-fc2a-cb804194683d@xenosoft.de>
- <d0252d29-7a03-20e1-ccd7-e12d906e4bdf@arm.com>
- <b3217742-2c0b-8447-c9ac-608b93265363@xenosoft.de>
- <20191121180226.GA3852@lst.de>
- <2fde79cf-875f-94e6-4a1b-f73ebb2e2c32@xenosoft.de>
- <20191125073923.GA30168@lst.de> <20191125093159.GA23118@linux.ibm.com>
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Message-ID: <b668bc25-9268-d25e-f9a0-176bb4ce1d07@xenosoft.de>
-Date: Tue, 26 Nov 2019 12:57:02 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.9.1
-MIME-Version: 1.0
-In-Reply-To: <20191125093159.GA23118@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Content-Language: de-DE
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47Mk0W1BJmzDq6Q
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Nov 2019 23:36:09 +1100 (AEDT)
+Received: from localhost (mailhub1-ext [192.168.12.233])
+ by localhost (Postfix) with ESMTP id 47Mk0N5M1yz9v0G6;
+ Tue, 26 Nov 2019 13:36:04 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=uT62KOph; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id nBKrcked7xLD; Tue, 26 Nov 2019 13:36:04 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 47Mk0N4DSKz9v0G3;
+ Tue, 26 Nov 2019 13:36:04 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1574771764; bh=EO9Qxk0hjLo3ieTea7LgHM8klTAmnyp7SMifgH/BhW0=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=uT62KOphC1cFChUDxO/0b+WwwaJ8PP08fzNy8VCWMdVkhrjUUW09g2I+vnu7yLIBQ
+ l6ZjAyDudCiNrlcyPmg3ZYXXAdKUKtSCBUwV+COkZq5Fmq9z5z+lcmbxiICqlSlW+k
+ 5YRUDx/3mUZdjmZttTKBwaDdTuXIh/QmkuJ1Ri9M=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E0FE88B7FF;
+ Tue, 26 Nov 2019 13:36:05 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id C0VvUOgAJNpy; Tue, 26 Nov 2019 13:36:05 +0100 (CET)
+Received: from po16098vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 9E83C8B771;
+ Tue, 26 Nov 2019 13:36:05 +0100 (CET)
+Received: by po16098vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 6E11D6B76A; Tue, 26 Nov 2019 12:36:05 +0000 (UTC)
+Message-Id: <7566798af7bb806fb113a6787eb30df1d143600c.1574771540.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1574771539.git.christophe.leroy@c-s.fr>
+References: <cover.1574771539.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v4 02/16] powerpc/32: Add EXCEPTION_PROLOG_0 in head_32.h
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Tue, 26 Nov 2019 12:36:05 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,110 +87,89 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, darren@stevens-zone.net, rtd2@xtra.co.nz,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, iommu@lists.linux-foundation.org,
- Rob Herring <robh+dt@kernel.org>, paulus@samba.org,
- mad skateman <madskateman@gmail.com>, "contact@a-eon.com" <contact@a-eon.com>,
- Robin Murphy <robin.murphy@arm.com>, nsaenzjulienne@suse.de
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 25 November 2019 at 10:32 am, Mike Rapoport wrote:
-> On Mon, Nov 25, 2019 at 08:39:23AM +0100, Christoph Hellwig wrote:
->> On Sat, Nov 23, 2019 at 12:42:27PM +0100, Christian Zigotzky wrote:
->>> Hello Christoph,
->>>
->>> Please find attached the dmesg of your Git kernel.
->> Thanks.  It looks like on your platform the swiotlb buffer isn't
->> actually addressable based on the bus dma mask limit, which is rather
->> interesting.  swiotlb_init uses memblock_alloc_low to allocate the
->> buffer, and I'll need some help from Mike and the powerpc maintainers
->> to figure out how that select where to allocate the buffer from, and
->> how we can move it to a lower address.  My gut feeling would be to try
->> to do what arm64 does and define a new ARCH_LOW_ADDRESS_LIMIT, preferably
->> without needing too much arch specific magic.
-> Presuming the problem is relevant for all CoreNet boards something like
-> this could work:
->   
-> diff --git a/arch/powerpc/include/asm/dma.h b/arch/powerpc/include/asm/dma.h
-> index 1b4f0254868f..7c6cfeeaff52 100644
-> --- a/arch/powerpc/include/asm/dma.h
-> +++ b/arch/powerpc/include/asm/dma.h
-> @@ -347,5 +347,11 @@ extern int isa_dma_bridge_buggy;
->   #define isa_dma_bridge_buggy	(0)
->   #endif
->   
-> +#ifdef CONFIG_CORENET_GENERIC
-> +extern phys_addr_t ppc_dma_phys_limit;
-> +#define ARCH_LOW_ADDRESS_LIMIT	(ppc_dma_phys_limit - 1)
-> +#endif
-> +
-> +
->   #endif /* __KERNEL__ */
->   #endif	/* _ASM_POWERPC_DMA_H */
-> diff --git a/arch/powerpc/platforms/85xx/common.c b/arch/powerpc/platforms/85xx/common.c
-> index fe0606439b5a..346b436b6d3f 100644
-> --- a/arch/powerpc/platforms/85xx/common.c
-> +++ b/arch/powerpc/platforms/85xx/common.c
-> @@ -126,3 +126,7 @@ void __init mpc85xx_qe_par_io_init(void)
->   	}
->   }
->   #endif
-> +
-> +#ifdef CONFIG_CORENET_GENERIC
-> +phys_addr_t ppc_dma_phys_limit = 0xffffffffUL;
-> +#endif
-> diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
-> index 7ee2c6628f64..673bcbdc7c75 100644
-> --- a/arch/powerpc/platforms/85xx/corenet_generic.c
-> +++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-> @@ -64,7 +64,7 @@ void __init corenet_gen_setup_arch(void)
->   	mpc85xx_smp_init();
->   
->   	swiotlb_detect_4g();
-> -
-> +	ppc_dma_phys_limit = 0x0fffffffUL;
->   	pr_info("%s board\n", ppc_md.name);
->   
->   	mpc85xx_qe_init();
-Hello Mike,
+This patch creates a macro for the very first part of
+exception prolog, this will help when implementing
+CONFIG_VMAP_STACK
 
-My PCI TV card works also with your patch! Before I had to add "#include 
-<asm/dma.h>" to the file "arch/powerpc/platforms/85xx/corenet_generic.c" 
-because of the following error:
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/kernel/head_32.S  | 4 +---
+ arch/powerpc/kernel/head_32.h  | 9 ++++++---
+ arch/powerpc/kernel/head_8xx.S | 9 ++-------
+ 3 files changed, 9 insertions(+), 13 deletions(-)
 
-------
+diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+index 4a24f8f026c7..9e868567b716 100644
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -272,9 +272,7 @@ __secondary_hold_acknowledge:
+  */
+ 	. = 0x200
+ 	DO_KVM  0x200
+-	mtspr	SPRN_SPRG_SCRATCH0,r10
+-	mtspr	SPRN_SPRG_SCRATCH1,r11
+-	mfcr	r10
++	EXCEPTION_PROLOG_0
+ #ifdef CONFIG_PPC_CHRP
+ 	mfspr	r11, SPRN_SPRG_THREAD
+ 	lwz	r11, RTAS_SP(r11)
+diff --git a/arch/powerpc/kernel/head_32.h b/arch/powerpc/kernel/head_32.h
+index b2ca8c9ffd8b..8e345f8d4b0e 100644
+--- a/arch/powerpc/kernel/head_32.h
++++ b/arch/powerpc/kernel/head_32.h
+@@ -10,13 +10,16 @@
+  * We assume sprg3 has the physical address of the current
+  * task's thread_struct.
+  */
+-
+ .macro EXCEPTION_PROLOG
++	EXCEPTION_PROLOG_0
++	EXCEPTION_PROLOG_1
++	EXCEPTION_PROLOG_2
++.endm
++
++.macro EXCEPTION_PROLOG_0
+ 	mtspr	SPRN_SPRG_SCRATCH0,r10
+ 	mtspr	SPRN_SPRG_SCRATCH1,r11
+ 	mfcr	r10
+-	EXCEPTION_PROLOG_1
+-	EXCEPTION_PROLOG_2
+ .endm
+ 
+ .macro EXCEPTION_PROLOG_1
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index 19f583e18402..dac7c0a34eea 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -494,10 +494,7 @@ InstructionTLBError:
+  */
+ 	. = 0x1400
+ DataTLBError:
+-	mtspr	SPRN_SPRG_SCRATCH0, r10
+-	mtspr	SPRN_SPRG_SCRATCH1, r11
+-	mfcr	r10
+-
++	EXCEPTION_PROLOG_0
+ 	mfspr	r11, SPRN_DAR
+ 	cmpwi	cr0, r11, RPN_PATTERN
+ 	beq-	FixupDAR	/* must be a buggy dcbX, icbi insn. */
+@@ -530,9 +527,7 @@ DARFixed:/* Return from dcbx instruction bug workaround */
+  */
+ 	. = 0x1c00
+ DataBreakpoint:
+-	mtspr	SPRN_SPRG_SCRATCH0, r10
+-	mtspr	SPRN_SPRG_SCRATCH1, r11
+-	mfcr	r10
++	EXCEPTION_PROLOG_0
+ 	mfspr	r11, SPRN_SRR0
+ 	cmplwi	cr0, r11, (.Ldtlbie - PAGE_OFFSET)@l
+ 	cmplwi	cr7, r11, (.Litlbie - PAGE_OFFSET)@l
+-- 
+2.13.3
 
-   CC      arch/powerpc/platforms/85xx/corenet_generic.o
-   CC      ipc/util.o
-   CC      ipc/msgutil.o
-arch/powerpc/platforms/85xx/corenet_generic.c: In function 
-‘corenet_gen_setup_arch’:
-arch/powerpc/platforms/85xx/corenet_generic.c:77:2: error: 
-‘ppc_dma_phys_limit’ undeclared (first use in this function); did you 
-mean ‘cpu_to_phys_id’?
-   ppc_dma_phys_limit = 0x0fffffffUL;
-   ^~~~~~~~~~~~~~~~~~
-   cpu_to_phys_id
-arch/powerpc/platforms/85xx/corenet_generic.c:77:2: note: each 
-undeclared identifier is reported only once for each function it appears in
-scripts/Makefile.build:265: recipe for target 
-'arch/powerpc/platforms/85xx/corenet_generic.o' failed
-make[3]: *** [arch/powerpc/platforms/85xx/corenet_generic.o] Error 1
-scripts/Makefile.build:509: recipe for target 
-'arch/powerpc/platforms/85xx' failed
-make[2]: *** [arch/powerpc/platforms/85xx] Error 2
-scripts/Makefile.build:509: recipe for target 'arch/powerpc/platforms' 
-failed
-make[1]: *** [arch/powerpc/platforms] Error 2
-Makefile:1652: recipe for target 'arch/powerpc' failed
-make: *** [arch/powerpc] Error 2
-
-------
-
-After that I was able to compile the latest Git kernel with your patch.
-
-Thanks,
-Christian
