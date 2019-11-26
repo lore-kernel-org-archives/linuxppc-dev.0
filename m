@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F14EC432C0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 13:00:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 07D90C432C3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 13:03:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 43722206BF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 13:00:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B0F47206BF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 13:03:05 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="PnPyQyQ0"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 43722206BF
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="F+CezjWa"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B0F47206BF
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47MkXR2718zDqch
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 00:00:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47MkbW2z2ZzDqcy
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 00:03:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,54 +29,53 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="PnPyQyQ0"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="F+CezjWa"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47Mk0b4Hg7zDq69
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Nov 2019 23:36:15 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47Mk0g0kLPzDqDB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Nov 2019 23:36:18 +1100 (AEDT)
 Received: from localhost (mailhub1-ext [192.168.12.233])
- by localhost (Postfix) with ESMTP id 47Mk0T6mvNz9v0GC;
- Tue, 26 Nov 2019 13:36:09 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 47Mk0Z3Hlmz9v0G8;
+ Tue, 26 Nov 2019 13:36:14 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=PnPyQyQ0; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=F+CezjWa; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id PtuDK7RrT_qk; Tue, 26 Nov 2019 13:36:09 +0100 (CET)
+ with ESMTP id 5NS0X-0jvC8c; Tue, 26 Nov 2019 13:36:14 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 47Mk0T5lz7z9v0G3;
- Tue, 26 Nov 2019 13:36:09 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 47Mk0Z2F25z9v0G3;
+ Tue, 26 Nov 2019 13:36:14 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1574771769; bh=gOKxrtnFAgRuj43vPkwpnRsML3n0B7clWBuAh6m562Y=;
+ t=1574771774; bh=SuQxAQ4l/1mHGi45aVKRS3CT3WsuP/jKyi3kssGze6g=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=PnPyQyQ04mngmpm+Thv3+/K8x1FG75fVbSBF1KM3i+WrO6Qb9OaPFjP5oNeeyzR9s
- HcMx3OBvoR20fF6He9obZJQQjOQD7YULSiTqVWnWChzOsoYzs1PDGy8jWocFqUcc6R
- tVG2d4UEHAC58vv9yBq4sm3lFTpyDvrZBEO0Tfq4=
+ b=F+CezjWaWcLVWwfzSbZHbxkNkW2eY/uQkx1c6+/ORauptQeeDq/bsmg1Xi1F4jEQ+
+ YskD5wLgPMujZJMHQFfDf0v1sbPXZw9UF0LDlh/NdqEE4uJpVhhkawjz2Jm/TqJBEd
+ V+UuRUJpq1oREQ/aC85ATds8+wi8jrcWF55Ee2tw=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 099468B7FC;
- Tue, 26 Nov 2019 13:36:11 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 9D43B8B7FC;
+ Tue, 26 Nov 2019 13:36:15 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id y-1AHrQMGz9a; Tue, 26 Nov 2019 13:36:10 +0100 (CET)
+ with ESMTP id 4rld6BwlFtzU; Tue, 26 Nov 2019 13:36:15 +0100 (CET)
 Received: from po16098vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C83918B771;
- Tue, 26 Nov 2019 13:36:10 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 6526D8B771;
+ Tue, 26 Nov 2019 13:36:15 +0100 (CET)
 Received: by po16098vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 94CDE6B76A; Tue, 26 Nov 2019 12:36:10 +0000 (UTC)
-Message-Id: <f28c9b5daf833e3b88f9c1245494b8aa73651a98.1574771540.git.christophe.leroy@c-s.fr>
+ id EA2866B76A; Tue, 26 Nov 2019 12:36:14 +0000 (UTC)
+Message-Id: <c893bfdf0ff385427f8013a2faa2643f6a7df6c7.1574771541.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1574771539.git.christophe.leroy@c-s.fr>
 References: <cover.1574771539.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v4 07/16] powerpc: align stack to 2 * THREAD_SIZE with
- VMAP_STACK
+Subject: [PATCH v4 11/16] powerpc/8xx: move DataStoreTLBMiss perf handler
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue, 26 Nov 2019 12:36:10 +0000 (UTC)
+Date: Tue, 26 Nov 2019 12:36:14 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,81 +93,56 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In order to ease stack overflow detection, align
-stack to 2 * THREAD_SIZE when using VMAP_STACK.
-This allows overflow detection using a single bit check.
+Move DataStoreTLBMiss perf handler in order to cope
+with future growing exception prolog.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/thread_info.h | 13 +++++++++++++
- arch/powerpc/kernel/setup_32.c         |  2 +-
- arch/powerpc/kernel/setup_64.c         |  2 +-
- arch/powerpc/kernel/vmlinux.lds.S      |  2 +-
- 4 files changed, 16 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/head_8xx.S | 24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-index 488d5c4670ff..a2270749b282 100644
---- a/arch/powerpc/include/asm/thread_info.h
-+++ b/arch/powerpc/include/asm/thread_info.h
-@@ -22,6 +22,19 @@
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index 5aa63693f790..1e718e47fe3c 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -166,18 +166,6 @@ SystemCall:
+  */
+ 	EXCEPTION(0x1000, SoftEmu, program_check_exception, EXC_XFER_STD)
  
- #define THREAD_SIZE		(1 << THREAD_SHIFT)
+-/* Called from DataStoreTLBMiss when perf TLB misses events are activated */
+-#ifdef CONFIG_PERF_EVENTS
+-	patch_site	0f, patch__dtlbmiss_perf
+-0:	lwz	r10, (dtlb_miss_counter - PAGE_OFFSET)@l(0)
+-	addi	r10, r10, 1
+-	stw	r10, (dtlb_miss_counter - PAGE_OFFSET)@l(0)
+-	mfspr	r10, SPRN_DAR
+-	mtspr	SPRN_DAR, r11	/* Tag DAR */
+-	mfspr	r11, SPRN_M_TW
+-	rfi
+-#endif
+-
+ 	. = 0x1100
+ /*
+  * For the MPC8xx, this is a software tablewalk to load the instruction
+@@ -486,6 +474,18 @@ DARFixed:/* Return from dcbx instruction bug workaround */
+ 	/* 0x300 is DataAccess exception, needed by bad_page_fault() */
+ 	EXC_XFER_LITE(0x300, handle_page_fault)
  
-+/*
-+ * By aligning VMAP'd stacks to 2 * THREAD_SIZE, we can detect overflow by
-+ * checking sp & (1 << THREAD_SHIFT), which we can do cheaply in the entry
-+ * assembly.
-+ */
-+#ifdef CONFIG_VMAP_STACK
-+#define THREAD_ALIGN_SHIFT	(THREAD_SHIFT + 1)
-+#else
-+#define THREAD_ALIGN_SHIFT	THREAD_SHIFT
++/* Called from DataStoreTLBMiss when perf TLB misses events are activated */
++#ifdef CONFIG_PERF_EVENTS
++	patch_site	0f, patch__dtlbmiss_perf
++0:	lwz	r10, (dtlb_miss_counter - PAGE_OFFSET)@l(0)
++	addi	r10, r10, 1
++	stw	r10, (dtlb_miss_counter - PAGE_OFFSET)@l(0)
++	mfspr	r10, SPRN_DAR
++	mtspr	SPRN_DAR, r11	/* Tag DAR */
++	mfspr	r11, SPRN_M_TW
++	rfi
 +#endif
 +
-+#define THREAD_ALIGN		(1 << THREAD_ALIGN_SHIFT)
-+
- #ifndef __ASSEMBLY__
- #include <linux/cache.h>
- #include <asm/processor.h>
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index dcffe927f5b9..f014c4f7a337 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -140,7 +140,7 @@ arch_initcall(ppc_init);
- 
- static void *__init alloc_stack(void)
- {
--	void *ptr = memblock_alloc(THREAD_SIZE, THREAD_SIZE);
-+	void *ptr = memblock_alloc(THREAD_SIZE, THREAD_ALIGN);
- 
- 	if (!ptr)
- 		panic("cannot allocate %d bytes for stack at %pS\n",
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 6104917a282d..e05e6dd67ae6 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -633,7 +633,7 @@ static void *__init alloc_stack(unsigned long limit, int cpu)
- 
- 	BUILD_BUG_ON(STACK_INT_FRAME_SIZE % 16);
- 
--	ptr = memblock_alloc_try_nid(THREAD_SIZE, THREAD_SIZE,
-+	ptr = memblock_alloc_try_nid(THREAD_SIZE, THREAD_ALIGN,
- 				     MEMBLOCK_LOW_LIMIT, limit,
- 				     early_cpu_to_node(cpu));
- 	if (!ptr)
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 060a1acd7c6d..d38335129c06 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -346,7 +346,7 @@ SECTIONS
- #endif
- 
- 	/* The initial task and kernel stack */
--	INIT_TASK_DATA_SECTION(THREAD_SIZE)
-+	INIT_TASK_DATA_SECTION(THREAD_ALIGN)
- 
- 	.data..page_aligned : AT(ADDR(.data..page_aligned) - LOAD_OFFSET) {
- 		PAGE_ALIGNED_DATA(PAGE_SIZE)
+ /* On the MPC8xx, these next four traps are used for development
+  * support of breakpoints and such.  Someday I will get around to
+  * using them.
 -- 
 2.13.3
 
