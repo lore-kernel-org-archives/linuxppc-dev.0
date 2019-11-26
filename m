@@ -2,68 +2,69 @@ Return-Path: <SRS0=Qvps=ZS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4C45C432C3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 21:32:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B299AC432C0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 21:35:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9A54920722
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 21:32:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9A54920722
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 47E8020722
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Nov 2019 21:35:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 47E8020722
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=davemloft.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47Mxvg09hLzDq5t
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 08:32:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.166.65; helo=mail-io1-f65.google.com;
- envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-io1-f65.google.com (mail-io1-f65.google.com
- [209.85.166.65])
+	by lists.ozlabs.org (Postfix) with ESMTP id 47MxyH2nYFzDqnT
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 08:35:03 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47Mwcm06DxzDqPN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Nov 2019 07:34:47 +1100 (AEDT)
-Received: by mail-io1-f65.google.com with SMTP id p12so14821000iog.10
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Nov 2019 12:34:47 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=eCiyINJIqZQ9+c/j9O3wV96E5XzkXxVGgIEzTJ6ccpU=;
- b=cPkNI+weP8gWC6JmSbYZigV7en69JYu70cprwJqdzzpoQ+uEjs5Pz0B5KPh2HUxsLY
- 8X5kXzyaY1S409KyZwIDzEimuZcb288JQY7nX5tnQpbTVEhfLINSCLwOAYagzb0uoZ99
- LOTJWB6TC9g7kTCR1pUe97bLy0AjWGvGHAw5ZRuBWc9xhvHZuCoxYv5pVRxeznR2o0Zo
- mJgnO3ZzUMo9AmQLh0Z2VPPiJSyy+I47CmOUaWfKNEGe9DOJ4CVHo3XuT1AQLMA8AxWT
- bcnoDkpgZ/9RLrWwQJUwvhRToWG8GXNJw/KHNkNrrvlkDGUWCK42yqM0SytZ3yHoZJqK
- AGCA==
-X-Gm-Message-State: APjAAAUudNiTTXyz4AEmekK/h4gaV4R0ORSFmcveYQHiufrZ4udG/vzO
- mGs9FjOAuZg8iap8tXSTkw==
-X-Google-Smtp-Source: APXvYqyNLRbXmRMw2om5THIIvUDL/2IP2aEwIaLwJGNOkUm6TYCHlgggxCi3KYF+cIwCDLGz2FM3sA==
-X-Received: by 2002:a6b:f317:: with SMTP id m23mr17361728ioh.303.1574800484514; 
- Tue, 26 Nov 2019 12:34:44 -0800 (PST)
-Received: from localhost ([64.188.179.253])
- by smtp.gmail.com with ESMTPSA id k22sm2923474iot.34.2019.11.26.12.34.43
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 26 Nov 2019 12:34:43 -0800 (PST)
-Date: Tue, 26 Nov 2019 13:34:42 -0700
-From: Rob Herring <robh@kernel.org>
-To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Subject: Re: [PATCH v3] libfdt: define INT32_MAX and UINT32_MAX in libfdt_env.h
-Message-ID: <20191126203442.GA20537@bogus>
-References: <20191113071202.11287-1-yamada.masahiro@socionext.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20191113071202.11287-1-yamada.masahiro@socionext.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47Mxcv0lX6zDqlR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Nov 2019 08:19:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=davemloft.net
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 47Mxct6M0rz8t0Q
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Nov 2019 08:19:58 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 47Mxct5JgFz9sRQ; Wed, 27 Nov 2019 08:19:58 +1100 (AEDT)
+Authentication-Results: ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=davemloft.net
+ (client-ip=2620:137:e000::1:9; helo=shards.monkeyblade.net;
+ envelope-from=davem@davemloft.net; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=davemloft.net
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2620:137:e000::1:9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 47Mxct2q7Tz9sRH
+ for <linuxppc-dev@ozlabs.org>; Wed, 27 Nov 2019 08:19:55 +1100 (AEDT)
+Received: from localhost (c-73-35-209-67.hsd1.wa.comcast.net [73.35.209.67])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ (Authenticated sender: davem-davemloft)
+ by shards.monkeyblade.net (Postfix) with ESMTPSA id D9EF914CED4B3;
+ Tue, 26 Nov 2019 13:19:45 -0800 (PST)
+Date: Tue, 26 Nov 2019 13:19:45 -0800 (PST)
+Message-Id: <20191126.131945.1705488455872187863.davem@davemloft.net>
+To: tlfalcon@linux.ibm.com
+Subject: Re: [PATCH net v2 0/4] ibmvnic: Harden device commands and queries
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1574723576-27553-1-git-send-email-tlfalcon@linux.ibm.com>
+References: <20191125112359.7a468352@cakuba.hsd1.ca.comcast.net>
+ <1574723576-27553-1-git-send-email-tlfalcon@linux.ibm.com>
+X-Mailer: Mew version 6.8 on Emacs 26.1
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.5.12
+ (shards.monkeyblade.net [149.20.54.216]);
+ Tue, 26 Nov 2019 13:19:46 -0800 (PST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,57 +76,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Russell King <linux@armlinux.org.uk>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Frank Rowand <frowand.list@gmail.com>,
- linux-arm-kernel@lists.infradead.org
+Cc: jakub.kicinski@netronome.com, julietk@linux.vnet.ibm.com,
+ netdev@vger.kernel.org, dnbanerg@us.ibm.com, linuxppc-dev@ozlabs.org,
+ brking@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Nov 13, 2019 at 04:12:02PM +0900, Masahiro Yamada wrote:
-> The DTC v1.5.1 added references to (U)INT32_MAX.
-> 
-> This is no problem for user-space programs since <stdint.h> defines
-> (U)INT32_MAX along with (u)int32_t.
-> 
-> For the kernel space, libfdt_env.h needs to be adjusted before we
-> pull in the changes.
-> 
-> In the kernel, we usually use s/u32 instead of (u)int32_t for the
-> fixed-width types.
-> 
-> Accordingly, we already have S/U32_MAX for their max values.
-> So, we should not add (U)INT32_MAX to <linux/limits.h> any more.
-> 
-> Instead, add them to the in-kernel libfdt_env.h to compile the
-> latest libfdt.
-> 
-> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
-> ---
-> 
-> My initial plan was to change this in a series of 3 patches
-> since it is clean, and reduces the code.
-> 
-> [1/3] https://lore.kernel.org/patchwork/patch/1147095/
-> [2/3] https://lore.kernel.org/patchwork/patch/1147096/
-> [3/3] https://lore.kernel.org/patchwork/patch/1147097/
-> 
-> 1/3 is stuck in the license bikeshed.
-> 
-> For 2/3, I have not been able to get Ack from Russell.
-> 
-> So, I chose a straight-forward fixup.
-> 
-> 
-> Changes in v3:
->  - Resend as a single patch
-> 
->  arch/arm/boot/compressed/libfdt_env.h | 4 +++-
->  arch/powerpc/boot/libfdt_env.h        | 2 ++
->  include/linux/libfdt_env.h            | 3 +++
->  3 files changed, 8 insertions(+), 1 deletion(-)
+From: Thomas Falcon <tlfalcon@linux.ibm.com>
+Date: Mon, 25 Nov 2019 17:12:52 -0600
 
-Applied.
+> This patch series fixes some shortcomings with the current
+> VNIC device command implementation. The first patch fixes
+> the initialization of driver completion structures used
+> for device commands. Additionally, all waits for device
+> commands are bounded with a timeout in the event that the
+> device does not respond or becomes inoperable. Finally,
+> serialize queries to retain the integrity of device return
+> codes.
+> 
+> Changes in v2:
+> 
+>  - included header comment for ibmvnic_wait_for_completion
+>  - removed open-coded loop in patch 3/4, suggested by Jakub
+>  - ibmvnic_wait_for_completion accepts timeout value in milliseconds
+>    instead of jiffies
+>  - timeout calculations cleaned up and completed before wait loop
+>  - included missing mutex_destroy calls, suggested by Jakub
+>  - included comment before mutex declaration
 
-Rob
+Series applied, thanks.
