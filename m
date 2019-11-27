@@ -2,23 +2,23 @@ Return-Path: <SRS0=SG0q=ZT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 18F43C43215
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 10:43:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F1065C432C0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 10:47:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7FDD8204FD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 10:43:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7FDD8204FD
+	by mail.kernel.org (Postfix) with ESMTPS id A31562070A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 10:47:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A31562070A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47NHSR3GdpzDqlZ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 21:43:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47NHX52wBRzDqkT
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 21:47:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
  (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=msuchanek@suse.de;
@@ -28,21 +28,18 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47NHMG6pGvzDqb5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Nov 2019 21:39:22 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47NHMH1Np0zDqbW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Nov 2019 21:39:21 +1100 (AEDT)
 X-Virus-Scanned: by amavisd-new at test-mx.suse.de
 Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id A6830B31C;
- Wed, 27 Nov 2019 10:39:19 +0000 (UTC)
+ by mx1.suse.de (Postfix) with ESMTP id 32307B24A;
+ Wed, 27 Nov 2019 10:39:18 +0000 (UTC)
 From: Michal Suchanek <msuchanek@suse.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 rebase 01/34] powerpc/64s/exception: Introduce INT_DEFINE
- parameter block for code generation
-Date: Wed, 27 Nov 2019 11:38:37 +0100
-Message-Id: <1183b3557ef23d7b8d00243f0b828e47ba40a013.1574803684.git.msuchanek@suse.de>
+Subject: [PATCH v2 rebase 00/34] exception cleanup, syscall in C and !COMPAT
+Date: Wed, 27 Nov 2019 11:38:36 +0100
+Message-Id: <cover.1574803684.git.msuchanek@suse.de>
 X-Mailer: git-send-email 2.23.0
-In-Reply-To: <cover.1574803684.git.msuchanek@suse.de>
-References: <cover.1574803684.git.msuchanek@suse.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -86,145 +83,110 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Nicholas Piggin <npiggin@gmail.com>
+Hello,
 
-The code generation macro arguments are difficult to read, and
-defaults can't easily be used.
+This is merge of https://patchwork.ozlabs.org/cover/1162376/ (except two
+last experimental patches) and
+https://patchwork.ozlabs.org/patch/1162079/ rebased on top of master.
 
-This introduces a block where parameters can be set for interrupt
-handler code generation by the subsequent macros, and adds the first
-generation macro for interrupt entry.
+There was minor conflict in Makefile in the latter series.
 
-One interrupt handler is converted to the new macros to demonstrate
-the change, the rest will be coverted all at once.
+Refreshed the patchset to fix build error on ppc32 and ppc64e.
 
-No generated code change.
+Rebased on top of powerpc/merge.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kernel/exceptions-64s.S | 77 ++++++++++++++++++++++++++--
- 1 file changed, 73 insertions(+), 4 deletions(-)
+Thanks
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 46508b148e16..0be6d8c34536 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -193,6 +193,61 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
- 	mtctr	reg;							\
- 	bctr
- 
-+/*
-+ * Interrupt code generation macros
-+ */
-+#define IVEC		.L_IVEC_\name\()
-+#define IHSRR		.L_IHSRR_\name\()
-+#define IAREA		.L_IAREA_\name\()
-+#define IDAR		.L_IDAR_\name\()
-+#define IDSISR		.L_IDSISR_\name\()
-+#define ISET_RI		.L_ISET_RI_\name\()
-+#define IEARLY		.L_IEARLY_\name\()
-+#define IMASK		.L_IMASK_\name\()
-+#define IKVM_REAL	.L_IKVM_REAL_\name\()
-+#define IKVM_VIRT	.L_IKVM_VIRT_\name\()
-+
-+#define INT_DEFINE_BEGIN(n)						\
-+.macro int_define_ ## n name
-+
-+#define INT_DEFINE_END(n)						\
-+.endm ;									\
-+int_define_ ## n n ;							\
-+do_define_int n
-+
-+.macro do_define_int name
-+	.ifndef IVEC
-+		.error "IVEC not defined"
-+	.endif
-+	.ifndef IHSRR
-+		IHSRR=EXC_STD
-+	.endif
-+	.ifndef IAREA
-+		IAREA=PACA_EXGEN
-+	.endif
-+	.ifndef IDAR
-+		IDAR=0
-+	.endif
-+	.ifndef IDSISR
-+		IDSISR=0
-+	.endif
-+	.ifndef ISET_RI
-+		ISET_RI=1
-+	.endif
-+	.ifndef IEARLY
-+		IEARLY=0
-+	.endif
-+	.ifndef IMASK
-+		IMASK=0
-+	.endif
-+	.ifndef IKVM_REAL
-+		IKVM_REAL=0
-+	.endif
-+	.ifndef IKVM_VIRT
-+		IKVM_VIRT=0
-+	.endif
-+.endm
-+
- .macro INT_KVM_HANDLER name, vec, hsrr, area, skip
- 	TRAMP_KVM_BEGIN(\name\()_kvm)
- 	KVM_HANDLER \vec, \hsrr, \area, \skip
-@@ -474,7 +529,7 @@ END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948)
- 	 */
- 	GET_SCRATCH0(r10)
- 	std	r10,\area\()+EX_R13(r13)
--	.if \dar
-+	.if \dar == 1
- 	.if \hsrr
- 	mfspr	r10,SPRN_HDAR
- 	.else
-@@ -482,7 +537,7 @@ END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948)
- 	.endif
- 	std	r10,\area\()+EX_DAR(r13)
- 	.endif
--	.if \dsisr
-+	.if \dsisr == 1
- 	.if \hsrr
- 	mfspr	r10,SPRN_HDSISR
- 	.else
-@@ -506,6 +561,14 @@ END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948)
- 	.endif
- .endm
- 
-+.macro GEN_INT_ENTRY name, virt, ool=0
-+	.if ! \virt
-+		INT_HANDLER \name, IVEC, \ool, IEARLY, \virt, IHSRR, IAREA, ISET_RI, IDAR, IDSISR, IMASK, IKVM_REAL
-+	.else
-+		INT_HANDLER \name, IVEC, \ool, IEARLY, \virt, IHSRR, IAREA, ISET_RI, IDAR, IDSISR, IMASK, IKVM_VIRT
-+	.endif
-+.endm
-+
- /*
-  * On entry r13 points to the paca, r9-r13 are saved in the paca,
-  * r9 contains the saved CR, r11 and r12 contain the saved SRR0 and
-@@ -1143,12 +1206,18 @@ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
- 	bl	unrecoverable_exception
- 	b	.
- 
-+INT_DEFINE_BEGIN(data_access)
-+	IVEC=0x300
-+	IDAR=1
-+	IDSISR=1
-+	IKVM_REAL=1
-+INT_DEFINE_END(data_access)
- 
- EXC_REAL_BEGIN(data_access, 0x300, 0x80)
--	INT_HANDLER data_access, 0x300, ool=1, dar=1, dsisr=1, kvm=1
-+	GEN_INT_ENTRY data_access, virt=0, ool=1
- EXC_REAL_END(data_access, 0x300, 0x80)
- EXC_VIRT_BEGIN(data_access, 0x4300, 0x80)
--	INT_HANDLER data_access, 0x300, virt=1, dar=1, dsisr=1
-+	GEN_INT_ENTRY data_access, virt=1
- EXC_VIRT_END(data_access, 0x4300, 0x80)
- INT_KVM_HANDLER data_access, 0x300, EXC_STD, PACA_EXGEN, 1
- EXC_COMMON_BEGIN(data_access_common)
+Michal
+
+Michal Suchanek (9):
+  powerpc/64: system call: Fix sparse warning about missing declaration
+  powerpc: Add back __ARCH_WANT_SYS_LLSEEK macro
+  powerpc: move common register copy functions from signal_32.c to
+    signal.c
+  powerpc/perf: consolidate read_user_stack_32
+  powerpc/perf: consolidate valid_user_sp
+  powerpc/64: make buildable without CONFIG_COMPAT
+  powerpc/64: Make COMPAT user-selectable disabled on littleendian by
+    default.
+  powerpc/perf: split callchain.c by bitness
+  MAINTAINERS: perf: Add pattern that matches ppc perf to the perf
+    entry.
+
+Nicholas Piggin (25):
+  powerpc/64s/exception: Introduce INT_DEFINE parameter block for code
+    generation
+  powerpc/64s/exception: Add GEN_COMMON macro that uses INT_DEFINE
+    parameters
+  powerpc/64s/exception: Add GEN_KVM macro that uses INT_DEFINE
+    parameters
+  powerpc/64s/exception: Expand EXC_COMMON and EXC_COMMON_ASYNC macros
+  powerpc/64s/exception: Move all interrupt handlers to new style code
+    gen macros
+  powerpc/64s/exception: Remove old INT_ENTRY macro
+  powerpc/64s/exception: Remove old INT_COMMON macro
+  powerpc/64s/exception: Remove old INT_KVM_HANDLER
+  powerpc/64s/exception: Add ISIDE option
+  powerpc/64s/exception: move real->virt switch into the common handler
+  powerpc/64s/exception: move soft-mask test to common code
+  powerpc/64s/exception: move KVM test to common code
+  powerpc/64s/exception: remove confusing IEARLY option
+  powerpc/64s/exception: remove the SPR saving patch code macros
+  powerpc/64s/exception: trim unused arguments from KVMTEST macro
+  powerpc/64s/exception: hdecrementer avoid touching the stack
+  powerpc/64s/exception: re-inline some handlers
+  powerpc/64s/exception: Clean up SRR specifiers
+  powerpc/64s/exception: add more comments for interrupt handlers
+  powerpc/64s/exception: only test KVM in SRR interrupts when PR KVM is
+    supported
+  powerpc/64s/exception: soft nmi interrupt should not use
+    ret_from_except
+  powerpc/64: system call remove non-volatile GPR save optimisation
+  powerpc/64: system call implement the bulk of the logic in C
+  powerpc/64s: interrupt return in C
+  powerpc/64s/exception: remove lite interrupt return
+
+ MAINTAINERS                                   |    2 +
+ arch/powerpc/Kconfig                          |    5 +-
+ arch/powerpc/include/asm/asm-prototypes.h     |   17 +-
+ .../powerpc/include/asm/book3s/64/kup-radix.h |   24 +-
+ arch/powerpc/include/asm/cputime.h            |   24 +
+ arch/powerpc/include/asm/exception-64s.h      |    4 -
+ arch/powerpc/include/asm/hw_irq.h             |    4 +
+ arch/powerpc/include/asm/ptrace.h             |    3 +
+ arch/powerpc/include/asm/signal.h             |    3 +
+ arch/powerpc/include/asm/switch_to.h          |   11 +
+ arch/powerpc/include/asm/thread_info.h        |    4 +-
+ arch/powerpc/include/asm/time.h               |    4 +-
+ arch/powerpc/include/asm/unistd.h             |    1 +
+ arch/powerpc/kernel/Makefile                  |    9 +-
+ arch/powerpc/kernel/entry_64.S                |  880 ++------
+ arch/powerpc/kernel/exceptions-64e.S          |  255 ++-
+ arch/powerpc/kernel/exceptions-64s.S          | 1937 ++++++++++++-----
+ arch/powerpc/kernel/process.c                 |   89 +-
+ arch/powerpc/kernel/signal.c                  |  144 +-
+ arch/powerpc/kernel/signal.h                  |    2 -
+ arch/powerpc/kernel/signal_32.c               |  140 --
+ arch/powerpc/kernel/syscall_64.c              |  349 +++
+ arch/powerpc/kernel/syscalls/syscall.tbl      |   22 +-
+ arch/powerpc/kernel/systbl.S                  |    9 +-
+ arch/powerpc/kernel/time.c                    |    9 -
+ arch/powerpc/kernel/vdso.c                    |    3 +-
+ arch/powerpc/kernel/vector.S                  |    2 +-
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S       |   11 -
+ arch/powerpc/kvm/book3s_segment.S             |    7 -
+ arch/powerpc/perf/Makefile                    |    5 +-
+ arch/powerpc/perf/callchain.c                 |  370 +---
+ arch/powerpc/perf/callchain.h                 |   20 +
+ arch/powerpc/perf/callchain_32.c              |  197 ++
+ arch/powerpc/perf/callchain_64.c              |  178 ++
+ fs/read_write.c                               |    3 +-
+ 35 files changed, 2798 insertions(+), 1949 deletions(-)
+ create mode 100644 arch/powerpc/kernel/syscall_64.c
+ create mode 100644 arch/powerpc/perf/callchain.h
+ create mode 100644 arch/powerpc/perf/callchain_32.c
+ create mode 100644 arch/powerpc/perf/callchain_64.c
+
 -- 
 2.23.0
 
