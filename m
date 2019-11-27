@@ -2,67 +2,67 @@ Return-Path: <SRS0=SG0q=ZT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B55CC432C0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 12:29:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 41D42C432C0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 12:31:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D7BC92068E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 12:29:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D7BC92068E
+	by mail.kernel.org (Postfix) with ESMTPS id EF2A62071E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 12:31:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EF2A62071E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47NKnl2YrYzDqwJ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 23:28:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47NKrx3G7HzDqJ2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 23:31:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47NKBN4Lp1zDqsC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Nov 2019 23:01:48 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47NKBQ05CMzDqLF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Nov 2019 23:01:49 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- xARBqHYq087518; Wed, 27 Nov 2019 07:01:40 -0500
+ xARBqPhD146012; Wed, 27 Nov 2019 07:01:40 -0500
 Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
  [169.63.214.131])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2whhyfeu7s-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2whcxqpktg-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
  Wed, 27 Nov 2019 07:01:40 -0500
 Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
- by ppma01dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id xARC07Qx021008;
+ by ppma01dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id xARC1IaN022718;
  Wed, 27 Nov 2019 12:01:39 GMT
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27]) by ppma01dal.us.ibm.com with ESMTP id 2wevd6wfer-1
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28]) by ppma01dal.us.ibm.com with ESMTP id 2wevd6wfey-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
  Wed, 27 Nov 2019 12:01:39 +0000
-Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
- [9.57.199.110])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xARC1bwS46530910
+Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
+ [9.57.199.108])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xARC1cSo51446128
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 27 Nov 2019 12:01:37 GMT
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id CB43FAE066;
- Wed, 27 Nov 2019 12:01:37 +0000 (GMT)
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8BB6DAE06A;
+ Wed, 27 Nov 2019 12:01:38 GMT
+Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3BED9B2070;
+ Wed, 27 Nov 2019 12:01:38 +0000 (GMT)
+Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id F0EC0B2067;
  Wed, 27 Nov 2019 12:01:37 +0000 (GMT)
 Received: from sofia.ibm.com (unknown [9.124.35.209])
- by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
+ by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
  Wed, 27 Nov 2019 12:01:37 +0000 (GMT)
 Received: by sofia.ibm.com (Postfix, from userid 1000)
- id 84CFF2E2F8D; Wed, 27 Nov 2019 17:31:35 +0530 (IST)
+ id 6164F2E2F5A; Wed, 27 Nov 2019 17:31:35 +0530 (IST)
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
@@ -70,20 +70,18 @@ To: Michael Ellerman <mpe@ellerman.id.au>,
  Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
  "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
  Tyrel Datwyler <tyreld@linux.ibm.com>
-Subject: [PATCH 2/3] powerpc/sysfs: Show idle_purr and idle_spurr for every CPU
-Date: Wed, 27 Nov 2019 17:31:11 +0530
-Message-Id: <1574856072-30972-3-git-send-email-ego@linux.vnet.ibm.com>
+Subject: [PATCH 0/3] pseries: Track and expose idle PURR and SPURR ticks
+Date: Wed, 27 Nov 2019 17:31:09 +0530
+Message-Id: <1574856072-30972-1-git-send-email-ego@linux.vnet.ibm.com>
 X-Mailer: git-send-email 1.8.3.1
-In-Reply-To: <1574856072-30972-1-git-send-email-ego@linux.vnet.ibm.com>
-References: <1574856072-30972-1-git-send-email-ego@linux.vnet.ibm.com>
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
  definitions=2019-11-27_02:2019-11-27,2019-11-27 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 suspectscore=0
- clxscore=1015 priorityscore=1501 lowpriorityscore=0 bulkscore=0
- phishscore=0 impostorscore=0 mlxlogscore=999 spamscore=0 mlxscore=0
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ bulkscore=0 spamscore=0
+ mlxlogscore=999 lowpriorityscore=0 priorityscore=1501 impostorscore=0
+ mlxscore=0 malwarescore=0 adultscore=0 phishscore=0 suspectscore=0
+ clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-1910280000 definitions=main-1911270104
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -104,72 +102,35 @@ Sender: "Linuxppc-dev"
 
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-On Pseries LPARs, to calculate utilization, we need to know the
-[S]PURR ticks when the CPUs were busy or idle.
+On PSeries LPARs, the data centers planners desire a more accurate
+view of system utilization per resource such as CPU to plan the system
+capacity requirements better. Such accuracy can be obtained by reading
+PURR/SPURR registers for CPU resource utilization.
 
-The total PURR and SPURR ticks are already exposed via the per-cpu
-sysfs files /sys/devices/system/cpu/cpuX/purr and
-/sys/devices/system/cpu/cpuX/spurr.
+Tools such as lparstat which are used to compute the utilization need
+to know [S]PURR ticks when the cpu was busy or idle. The [S]PURR
+counters are already exposed through sysfs.  We already account for
+PURR ticks when we go to idle so that we can update the VPA area. This
+patchset extends support to account for SPURR ticks when idle, and
+expose both via per-cpu sysfs files.
 
-This patch adds support for exposing the idle PURR and SPURR ticks via
-/sys/devices/system/cpu/cpuX/idle_purr and
-/sys/devices/system/cpu/cpuX/idle_spurr.
+These patches are required for enhancement to the lparstat utility
+that compute the CPU utilization based on PURR and SPURR which can be
+found here :
+https://groups.google.com/forum/#!topic/powerpc-utils-devel/fYRo69xO9r4
 
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/sysfs.c | 32 ++++++++++++++++++++++++++++++++
- 1 file changed, 32 insertions(+)
+Gautham R. Shenoy (3):
+  powerpc/pseries: Account for SPURR ticks on idle CPUs
+  powerpc/sysfs: Show idle_purr and idle_spurr for every CPU
+  Documentation: Document sysfs interfaces purr, spurr, idle_purr,
+    idle_spurr
 
-diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-index 80a676d..42ade55 100644
---- a/arch/powerpc/kernel/sysfs.c
-+++ b/arch/powerpc/kernel/sysfs.c
-@@ -1044,6 +1044,36 @@ static ssize_t show_physical_id(struct device *dev,
- }
- static DEVICE_ATTR(physical_id, 0444, show_physical_id, NULL);
- 
-+static ssize_t idle_purr_show(struct device *dev,
-+			      struct device_attribute *attr, char *buf)
-+{
-+	struct cpu *cpu = container_of(dev, struct cpu, dev);
-+	unsigned int cpuid = cpu->dev.id;
-+	struct lppaca *cpu_lppaca_ptr = paca_ptrs[cpuid]->lppaca_ptr;
-+	u64 idle_purr_cycles = be64_to_cpu(cpu_lppaca_ptr->wait_state_cycles);
-+
-+	return sprintf(buf, "%llx\n", idle_purr_cycles);
-+}
-+static DEVICE_ATTR_RO(idle_purr);
-+
-+DECLARE_PER_CPU(u64, idle_spurr_cycles);
-+static ssize_t idle_spurr_show(struct device *dev,
-+			       struct device_attribute *attr, char *buf)
-+{
-+	struct cpu *cpu = container_of(dev, struct cpu, dev);
-+	unsigned int cpuid = cpu->dev.id;
-+	u64 *idle_spurr_cycles_ptr = per_cpu_ptr(&idle_spurr_cycles, cpuid);
-+
-+	return sprintf(buf, "%llx\n", *idle_spurr_cycles_ptr);
-+}
-+static DEVICE_ATTR_RO(idle_spurr);
-+
-+static void create_idle_purr_spurr_sysfs_entry(struct device *cpudev)
-+{
-+	device_create_file(cpudev, &dev_attr_idle_purr);
-+	device_create_file(cpudev, &dev_attr_idle_spurr);
-+}
-+
- static int __init topology_init(void)
- {
- 	int cpu, r;
-@@ -1067,6 +1097,8 @@ static int __init topology_init(void)
- 			register_cpu(c, cpu);
- 
- 			device_create_file(&c->dev, &dev_attr_physical_id);
-+			if (firmware_has_feature(FW_FEATURE_SPLPAR))
-+				create_idle_purr_spurr_sysfs_entry(&c->dev);
- 		}
- 	}
- 	r = cpuhp_setup_state(CPUHP_AP_ONLINE_DYN, "powerpc/topology:online",
+ Documentation/ABI/testing/sysfs-devices-system-cpu | 39 ++++++++++++++++++++++
+ arch/powerpc/kernel/idle.c                         |  2 ++
+ arch/powerpc/kernel/sysfs.c                        | 32 ++++++++++++++++++
+ drivers/cpuidle/cpuidle-pseries.c                  | 28 ++++++++++------
+ 4 files changed, 90 insertions(+), 11 deletions(-)
+
 -- 
 1.9.4
 
