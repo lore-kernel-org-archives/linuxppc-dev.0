@@ -2,83 +2,49 @@ Return-Path: <SRS0=SG0q=ZT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 040DBC432C0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 09:54:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18F43C43215
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 10:43:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9A9582070B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 09:54:24 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pHqYpy5+"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9A9582070B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 7FDD8204FD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 10:43:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7FDD8204FD
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47NGML1SrgzDqly
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 20:54:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::141;
- helo=mail-il1-x141.google.com; envelope-from=oohall@gmail.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 47NHSR3GdpzDqlZ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 21:43:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=msuchanek@suse.de;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="pHqYpy5+"; 
- dkim-atps=neutral
-Received: from mail-il1-x141.google.com (mail-il1-x141.google.com
- [IPv6:2607:f8b0:4864:20::141])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47NGHp1c5mzDqkw
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Nov 2019 20:51:17 +1100 (AEDT)
-Received: by mail-il1-x141.google.com with SMTP id t9so826457iln.4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Nov 2019 01:51:17 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=pvfoNFwf0w3pfIKk3mN+ISE/mTmhnDldKi+aqu60kQU=;
- b=pHqYpy5+8tIRAqyR/EWJOxw7sZH3aGQ/Qr1ZFY9RshLuBX+nQMSLFvo50ot0XfevNw
- HqaIfaKGvdkdmaHSEY1GKobAttXtwftyQdRUoy8Ju4iLdjVZ9eCh7S4+7yYjrv6NAxae
- DjY9oKPML6A8vMUe9r+/CidRom+2q0UKma1mGMOSz67GxbunLYyBZZyBjbTKj57WewYH
- THEfD8f5/5+Z+IoQw+/A7PGzYDczRVJJalChmT2lsRAcbxGmp0/WsDwRRwizjIJlLOFr
- nzqgBaebOFVquvw8J+uMsIcl6sHGL6o2I/5C4lD9PKc7HcoE/5CSJ2kurG/CigId0nIO
- 9WwQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=pvfoNFwf0w3pfIKk3mN+ISE/mTmhnDldKi+aqu60kQU=;
- b=kAQhT2NmtmH1Snqd5S2jJKnSz16fIY/aOhTvQ14oSJJkyRXaM1XQ53RiG47WlXCHwZ
- my8M7lcIegm3lMGLsybjJiI4jKoq4y3GqBIkvTrOd7w+6C12x0v5mcAKdujP/tVwJ4Au
- +vsMtHYrmWC8EdCcs9/Kigstd5oqoazhEvokNkOhsgZp7sGt2r0uYyhIArgoV3rZAHV+
- do1upcoPrvTpFIYyRcr0Ps5VyinaA2+7XPSpBZ7XDASayPGaBj6FyHBXSAFsNh0TaRoT
- Gbz+Srs4FMNpA7hGYxbJcmq56jGhScjI2hXIqkuVd1Ed3DgWyk52rjAdRFCUPUkwUdgs
- /sCw==
-X-Gm-Message-State: APjAAAUC+4iiYPAVMK1wfac6G9sOx6mv5TMX1deV36QGJPv79hmaV4SM
- WqPku4uiD5/PByRLoYlPNq2Xk0Njv8RD1jvTg7Q=
-X-Google-Smtp-Source: APXvYqw7ZU4rXdGQKvGnnGjbwLS5dtkQE5Htv9oueneo1Sjl7tnRezlePKOxhEJ9QUTRKmXC+XI9NeJvHbPV+YBcJcU=
-X-Received: by 2002:a05:6e02:152:: with SMTP id
- j18mr45724573ilr.293.1574848274259; 
- Wed, 27 Nov 2019 01:51:14 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47NHMG6pGvzDqb5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Nov 2019 21:39:22 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id A6830B31C;
+ Wed, 27 Nov 2019 10:39:19 +0000 (UTC)
+From: Michal Suchanek <msuchanek@suse.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 rebase 01/34] powerpc/64s/exception: Introduce INT_DEFINE
+ parameter block for code generation
+Date: Wed, 27 Nov 2019 11:38:37 +0100
+Message-Id: <1183b3557ef23d7b8d00243f0b828e47ba40a013.1574803684.git.msuchanek@suse.de>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <cover.1574803684.git.msuchanek@suse.de>
+References: <cover.1574803684.git.msuchanek@suse.de>
 MIME-Version: 1.0
-References: <20191120012859.23300-1-oohall@gmail.com>
- <20191120012859.23300-36-oohall@gmail.com>
- <a81b18a4-328f-70ba-027c-ef2e8c2d93a8@ozlabs.ru>
-In-Reply-To: <a81b18a4-328f-70ba-027c-ef2e8c2d93a8@ozlabs.ru>
-From: "Oliver O'Halloran" <oohall@gmail.com>
-Date: Wed, 27 Nov 2019 20:51:03 +1100
-Message-ID: <CAOSf1CHYGD3mRh2BKPYjUXCC87BjUwKf_+J1P3=keJDsTOmtXg@mail.gmail.com>
-Subject: Re: [Very RFC 35/46] powernv/pci: Remove open-coded PE lookup in
- pnv_pci_release_device
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,52 +56,175 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alistair Popple <alistair@popple.id.au>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ David Hildenbrand <david@redhat.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Claudio Carvalho <cclaudio@linux.ibm.com>, David Howells <dhowells@redhat.com>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Paul Mackerras <paulus@samba.org>, Christian Brauner <christian@brauner.io>,
+ Breno Leitao <leitao@debian.org>, Michael Neuling <mikey@neuling.org>,
+ Nicolai Stange <nstange@suse.de>, Diana Craciun <diana.craciun@nxp.com>,
+ Firoz Khan <firoz.khan@linaro.org>, Allison Randal <allison@lohutok.net>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Michal Suchanek <msuchanek@suse.de>,
+ Valentin Schneider <valentin.schneider@arm.com>,
+ Jagadeesh Pagadala <jagdsh.linux@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
+ Nicholas Piggin <npiggin@gmail.com>, Alexander Viro <viro@zeniv.linux.org.uk>,
+ Steven Rostedt <rostedt@goodmis.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Dmitry Vyukov <dvyukov@google.com>, Daniel Axtens <dja@axtens.net>,
+ Gustavo Romero <gromero@linux.ibm.com>, Mathieu Malaterre <malat@debian.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
+ "Eric W. Biederman" <ebiederm@xmission.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Brajeswar Ghosh <brajeswar.linux@gmail.com>,
+ Hari Bathini <hbathini@linux.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Nov 27, 2019 at 4:24 PM Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
->
->
->
-> On 20/11/2019 12:28, Oliver O'Halloran wrote:
-> > Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
-> > ---
-> >  arch/powerpc/platforms/powernv/pci-ioda.c | 5 ++---
-> >  1 file changed, 2 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> > index 4f38652c7cd7..8525642b1256 100644
-> > --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> > +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> > @@ -3562,14 +3562,14 @@ static void pnv_ioda_release_pe(struct pnv_ioda_pe *pe)
-> >  static void pnv_pci_release_device(struct pci_dev *pdev)
-> >  {
-> >       struct pnv_phb *phb = pci_bus_to_pnvhb(pdev->bus);
-> > +     struct pnv_ioda_pe *pe = pnv_ioda_get_pe(pdev);
-> >       struct pci_dn *pdn = pci_get_pdn(pdev);
-> > -     struct pnv_ioda_pe *pe;
-> >
-> >       /* The VF PE state is torn down when sriov_disable() is called */
-> >       if (pdev->is_virtfn)
-> >               return;
-> >
-> > -     if (!pdn || pdn->pe_number == IODA_INVALID_PE)
-> > +     if (WARN_ON(!pe))
->
->
-> Is that WARN_ON because there is always a PE - from upstream bridge or a
+From: Nicholas Piggin <npiggin@gmail.com>
 
-The device should always belong to a PE. If it doesn't (at this point)
-then something deeply strange has happened.
+The code generation macro arguments are difficult to read, and
+defaults can't easily be used.
 
-> reserved one?
+This introduces a block where parameters can be set for interrupt
+handler code generation by the subsequent macros, and adds the first
+generation macro for interrupt entry.
 
-If it's associated with the reserved PE the rmap is set to
-IODA_PE_INVALID, so would return NULL and we'd hit the WARN_ON(). I
-think that's ok though since PE assignment should always succeed. If
-it failed, or we're tearing down the device before we got to the point
-of assigning a PE then there's probably a bug.
+One interrupt handler is converted to the new macros to demonstrate
+the change, the rest will be coverted all at once.
+
+No generated code change.
+
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/kernel/exceptions-64s.S | 77 ++++++++++++++++++++++++++--
+ 1 file changed, 73 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 46508b148e16..0be6d8c34536 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -193,6 +193,61 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ 	mtctr	reg;							\
+ 	bctr
+ 
++/*
++ * Interrupt code generation macros
++ */
++#define IVEC		.L_IVEC_\name\()
++#define IHSRR		.L_IHSRR_\name\()
++#define IAREA		.L_IAREA_\name\()
++#define IDAR		.L_IDAR_\name\()
++#define IDSISR		.L_IDSISR_\name\()
++#define ISET_RI		.L_ISET_RI_\name\()
++#define IEARLY		.L_IEARLY_\name\()
++#define IMASK		.L_IMASK_\name\()
++#define IKVM_REAL	.L_IKVM_REAL_\name\()
++#define IKVM_VIRT	.L_IKVM_VIRT_\name\()
++
++#define INT_DEFINE_BEGIN(n)						\
++.macro int_define_ ## n name
++
++#define INT_DEFINE_END(n)						\
++.endm ;									\
++int_define_ ## n n ;							\
++do_define_int n
++
++.macro do_define_int name
++	.ifndef IVEC
++		.error "IVEC not defined"
++	.endif
++	.ifndef IHSRR
++		IHSRR=EXC_STD
++	.endif
++	.ifndef IAREA
++		IAREA=PACA_EXGEN
++	.endif
++	.ifndef IDAR
++		IDAR=0
++	.endif
++	.ifndef IDSISR
++		IDSISR=0
++	.endif
++	.ifndef ISET_RI
++		ISET_RI=1
++	.endif
++	.ifndef IEARLY
++		IEARLY=0
++	.endif
++	.ifndef IMASK
++		IMASK=0
++	.endif
++	.ifndef IKVM_REAL
++		IKVM_REAL=0
++	.endif
++	.ifndef IKVM_VIRT
++		IKVM_VIRT=0
++	.endif
++.endm
++
+ .macro INT_KVM_HANDLER name, vec, hsrr, area, skip
+ 	TRAMP_KVM_BEGIN(\name\()_kvm)
+ 	KVM_HANDLER \vec, \hsrr, \area, \skip
+@@ -474,7 +529,7 @@ END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948)
+ 	 */
+ 	GET_SCRATCH0(r10)
+ 	std	r10,\area\()+EX_R13(r13)
+-	.if \dar
++	.if \dar == 1
+ 	.if \hsrr
+ 	mfspr	r10,SPRN_HDAR
+ 	.else
+@@ -482,7 +537,7 @@ END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948)
+ 	.endif
+ 	std	r10,\area\()+EX_DAR(r13)
+ 	.endif
+-	.if \dsisr
++	.if \dsisr == 1
+ 	.if \hsrr
+ 	mfspr	r10,SPRN_HDSISR
+ 	.else
+@@ -506,6 +561,14 @@ END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948)
+ 	.endif
+ .endm
+ 
++.macro GEN_INT_ENTRY name, virt, ool=0
++	.if ! \virt
++		INT_HANDLER \name, IVEC, \ool, IEARLY, \virt, IHSRR, IAREA, ISET_RI, IDAR, IDSISR, IMASK, IKVM_REAL
++	.else
++		INT_HANDLER \name, IVEC, \ool, IEARLY, \virt, IHSRR, IAREA, ISET_RI, IDAR, IDSISR, IMASK, IKVM_VIRT
++	.endif
++.endm
++
+ /*
+  * On entry r13 points to the paca, r9-r13 are saved in the paca,
+  * r9 contains the saved CR, r11 and r12 contain the saved SRR0 and
+@@ -1143,12 +1206,18 @@ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
+ 	bl	unrecoverable_exception
+ 	b	.
+ 
++INT_DEFINE_BEGIN(data_access)
++	IVEC=0x300
++	IDAR=1
++	IDSISR=1
++	IKVM_REAL=1
++INT_DEFINE_END(data_access)
+ 
+ EXC_REAL_BEGIN(data_access, 0x300, 0x80)
+-	INT_HANDLER data_access, 0x300, ool=1, dar=1, dsisr=1, kvm=1
++	GEN_INT_ENTRY data_access, virt=0, ool=1
+ EXC_REAL_END(data_access, 0x300, 0x80)
+ EXC_VIRT_BEGIN(data_access, 0x4300, 0x80)
+-	INT_HANDLER data_access, 0x300, virt=1, dar=1, dsisr=1
++	GEN_INT_ENTRY data_access, virt=1
+ EXC_VIRT_END(data_access, 0x4300, 0x80)
+ INT_KVM_HANDLER data_access, 0x300, EXC_STD, PACA_EXGEN, 1
+ EXC_COMMON_BEGIN(data_access_common)
+-- 
+2.23.0
+
