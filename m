@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0D6CC432C0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 11:17:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 292D1C432C0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 11:19:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 425D12053B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 11:17:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 425D12053B
+	by mail.kernel.org (Postfix) with ESMTPS id D3E722053B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 11:19:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D3E722053B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47NJCK4fKGzDqs3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 22:17:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47NJFw2R21zDqR2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 22:19:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
  (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=msuchanek@suse.de;
@@ -28,18 +28,18 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47NHMh6sp1zDqjy
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47NHMj0d4kzDqbw
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Nov 2019 21:39:44 +1100 (AEDT)
 X-Virus-Scanned: by amavisd-new at test-mx.suse.de
 Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id 50CD1B286;
- Wed, 27 Nov 2019 10:39:38 +0000 (UTC)
+ by mx1.suse.de (Postfix) with ESMTP id 5EC68B463;
+ Wed, 27 Nov 2019 10:39:41 +0000 (UTC)
 From: Michal Suchanek <msuchanek@suse.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 rebase 13/34] powerpc/64s/exception: remove confusing
- IEARLY option
-Date: Wed, 27 Nov 2019 11:38:49 +0100
-Message-Id: <600cea04cfa1744cc132d1ee9951a83592f9df94.1574803685.git.msuchanek@suse.de>
+Subject: [PATCH v2 rebase 15/34] powerpc/64s/exception: trim unused arguments
+ from KVMTEST macro
+Date: Wed, 27 Nov 2019 11:38:51 +0100
+Message-Id: <9459f86200a79e7cf79b4e9772bb99cbf39e602d.1574803685.git.msuchanek@suse.de>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <cover.1574803684.git.msuchanek@suse.de>
 References: <cover.1574803684.git.msuchanek@suse.de>
@@ -88,168 +88,60 @@ Sender: "Linuxppc-dev"
 
 From: Nicholas Piggin <npiggin@gmail.com>
 
-Replace IEARLY=1 and IEARLY=2 with IBRANCH_COMMON, which controls if
-the entry code branches to a common handler; and IREALMODE_COMMON,
-which controls whether the common handler should remain in real mode.
-
-These special cases no longer avoid loading the SRR registers, there
-is no point as most of them load the registers immediately anyway.
-
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/exceptions-64s.S | 48 ++++++++++++++--------------
- 1 file changed, 24 insertions(+), 24 deletions(-)
+ arch/powerpc/kernel/exceptions-64s.S | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 7db76e7be0aa..716a95ba814f 100644
+index abf26db36427..9fa71d51ecf4 100644
 --- a/arch/powerpc/kernel/exceptions-64s.S
 +++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -174,7 +174,8 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
- #define IDAR		.L_IDAR_\name\()
- #define IDSISR		.L_IDSISR_\name\()
- #define ISET_RI		.L_ISET_RI_\name\()
--#define IEARLY		.L_IEARLY_\name\()
-+#define IBRANCH_TO_COMMON	.L_IBRANCH_TO_COMMON_\name\()
-+#define IREALMODE_COMMON	.L_IREALMODE_COMMON_\name\()
- #define IMASK		.L_IMASK_\name\()
- #define IKVM_SKIP	.L_IKVM_SKIP_\name\()
- #define IKVM_REAL	.L_IKVM_REAL_\name\()
-@@ -218,8 +219,15 @@ do_define_int n
- 	.ifndef ISET_RI
- 		ISET_RI=1
- 	.endif
--	.ifndef IEARLY
--		IEARLY=0
-+	.ifndef IBRANCH_TO_COMMON
-+		IBRANCH_TO_COMMON=1
-+	.endif
-+	.ifndef IREALMODE_COMMON
-+		IREALMODE_COMMON=0
-+	.else
-+		.if ! IBRANCH_TO_COMMON
-+			.error "IREALMODE_COMMON=1 but IBRANCH_TO_COMMON=0"
-+		.endif
- 	.endif
- 	.ifndef IMASK
- 		IMASK=0
-@@ -353,6 +361,11 @@ END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948)
-  */
+@@ -224,7 +224,7 @@ do_define_int n
+ #define kvmppc_interrupt kvmppc_interrupt_pr
+ #endif
  
- .macro GEN_BRANCH_TO_COMMON name, virt
-+	.if IREALMODE_COMMON
-+	LOAD_HANDLER(r10, \name\()_common)
-+	mtctr	r10
-+	bctr
-+	.else
- 	.if \virt
- #ifndef CONFIG_RELOCATABLE
- 	b	\name\()_common_virt
-@@ -366,6 +379,7 @@ END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948)
- 	mtctr	r10
- 	bctr
- 	.endif
-+	.endif
+-.macro KVMTEST name, hsrr, n
++.macro KVMTEST name
+ 	lbz	r10,HSTATE_IN_GUEST(r13)
+ 	cmpwi	r10,0
+ 	bne	\name\()_kvm
+@@ -293,7 +293,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
  .endm
  
- .macro GEN_INT_ENTRY name, virt, ool=0
-@@ -421,11 +435,6 @@ END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948)
- 	stw	r10,IAREA+EX_DSISR(r13)
- 	.endif
- 
--	.if IEARLY == 2
--	/* nothing more */
--	.elseif IEARLY
--	BRANCH_TO_C000(r11, \name\()_common)
--	.else
- 	.if IHSRR == EXC_HV_OR_STD
- 	BEGIN_FTR_SECTION
- 	mfspr	r11,SPRN_HSRR0		/* save HSRR0 */
-@@ -441,6 +450,8 @@ END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948)
- 	mfspr	r11,SPRN_SRR0		/* save SRR0 */
- 	mfspr	r12,SPRN_SRR1		/* and SRR1 */
- 	.endif
-+
-+	.if IBRANCH_TO_COMMON
- 	GEN_BRANCH_TO_COMMON \name \virt
- 	.endif
- 
-@@ -926,6 +937,7 @@ INT_DEFINE_BEGIN(machine_check_early)
- 	IVEC=0x200
- 	IAREA=PACA_EXMC
- 	IVIRT=0 /* no virt entry point */
-+	IREALMODE_COMMON=1
- 	/*
- 	 * MSR_RI is not enabled, because PACA_EXMC is being used, so a
- 	 * nested machine check corrupts it. machine_check_common enables
-@@ -933,7 +945,6 @@ INT_DEFINE_BEGIN(machine_check_early)
- 	 */
- 	ISET_RI=0
- 	ISTACK=0
--	IEARLY=1
- 	IDAR=1
- 	IDSISR=1
- 	IRECONCILE=0
-@@ -973,9 +984,6 @@ TRAMP_REAL_BEGIN(machine_check_fwnmi)
- 	EXCEPTION_RESTORE_REGS EXC_STD
- 
- EXC_COMMON_BEGIN(machine_check_early_common)
--	mfspr	r11,SPRN_SRR0
--	mfspr	r12,SPRN_SRR1
--
- 	/*
- 	 * Switch to mc_emergency stack and handle re-entrancy (we limit
- 	 * the nested MCE upto level 4 to avoid stack overflow).
-@@ -1822,7 +1830,7 @@ EXC_COMMON_BEGIN(emulation_assist_common)
- INT_DEFINE_BEGIN(hmi_exception_early)
- 	IVEC=0xe60
- 	IHSRR=EXC_HV
--	IEARLY=1
-+	IREALMODE_COMMON=1
- 	ISTACK=0
- 	IRECONCILE=0
- 	IKUAP=0 /* We don't touch AMR here, we never go to virtual mode */
-@@ -1842,8 +1850,6 @@ EXC_REAL_END(hmi_exception, 0xe60, 0x20)
- EXC_VIRT_NONE(0x4e60, 0x20)
- 
- EXC_COMMON_BEGIN(hmi_exception_early_common)
--	mfspr	r11,SPRN_HSRR0		/* Save HSRR0 */
--	mfspr	r12,SPRN_HSRR1		/* Save HSRR1 */
- 	mr	r10,r1			/* Save r1 */
- 	ld	r1,PACAEMERGSP(r13)	/* Use emergency stack for realmode */
- 	subi	r1,r1,INT_FRAME_SIZE	/* alloc stack frame		*/
-@@ -2169,29 +2175,23 @@ EXC_VIRT_NONE(0x5400, 0x100)
- INT_DEFINE_BEGIN(denorm_exception)
- 	IVEC=0x1500
- 	IHSRR=EXC_HV
--	IEARLY=2
-+	IBRANCH_TO_COMMON=0
- 	IKVM_REAL=1
- INT_DEFINE_END(denorm_exception)
- 
- EXC_REAL_BEGIN(denorm_exception, 0x1500, 0x100)
- 	GEN_INT_ENTRY denorm_exception, virt=0
- #ifdef CONFIG_PPC_DENORMALISATION
--	mfspr	r10,SPRN_HSRR1
--	andis.	r10,r10,(HSRR1_DENORM)@h /* denorm? */
-+	andis.	r10,r12,(HSRR1_DENORM)@h /* denorm? */
- 	bne+	denorm_assist
- #endif
--	mfspr	r11,SPRN_HSRR0
--	mfspr	r12,SPRN_HSRR1
- 	GEN_BRANCH_TO_COMMON denorm_exception, virt=0
- EXC_REAL_END(denorm_exception, 0x1500, 0x100)
- #ifdef CONFIG_PPC_DENORMALISATION
- EXC_VIRT_BEGIN(denorm_exception, 0x5500, 0x100)
- 	GEN_INT_ENTRY denorm_exception, virt=1
--	mfspr	r10,SPRN_HSRR1
--	andis.	r10,r10,(HSRR1_DENORM)@h /* denorm? */
-+	andis.	r10,r12,(HSRR1_DENORM)@h /* denorm? */
- 	bne+	denorm_assist
--	mfspr	r11,SPRN_HSRR0
--	mfspr	r12,SPRN_HSRR1
- 	GEN_BRANCH_TO_COMMON denorm_exception, virt=1
- EXC_VIRT_END(denorm_exception, 0x5500, 0x100)
  #else
+-.macro KVMTEST name, hsrr, n
++.macro KVMTEST name
+ .endm
+ .macro GEN_KVM name
+ .endm
+@@ -437,7 +437,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
+ DEFINE_FIXED_SYMBOL(\name\()_common_real)
+ \name\()_common_real:
+ 	.if IKVM_REAL
+-		KVMTEST \name IHSRR IVEC
++		KVMTEST \name
+ 	.endif
+ 
+ 	ld	r10,PACAKMSR(r13)	/* get MSR value for kernel */
+@@ -460,7 +460,7 @@ DEFINE_FIXED_SYMBOL(\name\()_common_real)
+ DEFINE_FIXED_SYMBOL(\name\()_common_virt)
+ \name\()_common_virt:
+ 	.if IKVM_VIRT
+-		KVMTEST \name IHSRR IVEC
++		KVMTEST \name
+ 1:
+ 	.endif
+ 	.endif /* IVIRT */
+@@ -1595,7 +1595,7 @@ INT_DEFINE_END(system_call)
+ 	GET_PACA(r13)
+ 	std	r10,PACA_EXGEN+EX_R10(r13)
+ 	INTERRUPT_TO_KERNEL
+-	KVMTEST system_call EXC_STD 0xc00 /* uses r10, branch to system_call_kvm */
++	KVMTEST system_call /* uses r10, branch to system_call_kvm */
+ 	mfctr	r9
+ #else
+ 	mr	r9,r13
 -- 
 2.23.0
 
