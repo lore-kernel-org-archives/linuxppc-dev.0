@@ -2,83 +2,86 @@ Return-Path: <SRS0=SG0q=ZT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-0.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D93D7C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 15:27:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8279BC432C0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 16:22:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 183D42053B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 15:27:48 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="AKIw8GJy"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 183D42053B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	by mail.kernel.org (Postfix) with ESMTPS id E76B5206E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2019 16:22:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E76B5206E0
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47NPm13C0wzDqwJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 02:27:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47NQzd3P8szDqwf
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 03:22:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.helo=mo6-p01-ob.smtp.rzone.de (client-ip=2a01:238:20a:202:5301::1;
- helo=mo6-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=leonardo@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=xenosoft.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="AKIw8GJy"; 
- dkim-atps=neutral
-Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5301::1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47NPVD2slnzDqvT
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Nov 2019 02:15:46 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1574867734;
- s=strato-dkim-0002; d=xenosoft.de;
- h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:
- X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
- bh=rU6EJZnQMWHiAAMrDnvCSg5GJl/7kaL3qM/q2ihcwWc=;
- b=AKIw8GJyYbaypCFu1/R4Crvr46NrB5mMyCWXjinF5tVsyAjkF0GDi5OYwsd2+frC4p
- /GXVXZziexXQ16puOtMp9Atw0vaUYKUZAFXMo+qk14KGQu54a6LPJwwM1nkhTSw91MUQ
- H9RCzrN4Wrx/Rwzdtc/U/pMQW+EC0lxPGHK3FcVCy3JRYH0a7lndUKjPxH8KnjbAd3v2
- 7gERdgYxDTJrYe88O/MtgtPrUqvoeVU5Aeo5dGPFCIS4Izjiq1NsPvpAoDkGhfarR/zR
- vSMdOMXbee3Kl653fyVfjb98rN2Dp1caI1rnG1DgVAg5B21DJztSB6BJvYRNLBRNtWNR
- HYqQ==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5DdBJSrwuuqxvPhUIxnPrrzntHiDgpTRUbNSOXek"
-X-RZG-CLASS-ID: mo00
-Received: from [IPv6:2a02:8109:89c0:ebfc:7591:d54e:863:4581]
- by smtp.strato.de (RZmta 46.0.0 AUTH) with ESMTPSA id n05ae1vARFEh10O
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256 bits))
- (Client did not present a certificate);
- Wed, 27 Nov 2019 16:14:43 +0100 (CET)
-Subject: Re: Bug 205201 - Booting halts if Dawicontrol DC-2976 UW SCSI board
- installed, unless RAM size limited to 3500M
-To: Mike Rapoport <rppt@linux.ibm.com>, Christoph Hellwig <hch@lst.de>
-References: <20191121072943.GA24024@lst.de>
- <dbde2252-035e-6183-7897-43348e60647e@xenosoft.de>
- <6eec5c42-019c-a988-fc2a-cb804194683d@xenosoft.de>
- <d0252d29-7a03-20e1-ccd7-e12d906e4bdf@arm.com>
- <b3217742-2c0b-8447-c9ac-608b93265363@xenosoft.de>
- <20191121180226.GA3852@lst.de>
- <2fde79cf-875f-94e6-4a1b-f73ebb2e2c32@xenosoft.de>
- <20191125073923.GA30168@lst.de>
- <4681f5fe-c095-15f5-9221-4b55e940bafc@xenosoft.de>
- <20191126164026.GA8026@lst.de> <20191127065624.GB16913@linux.ibm.com>
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Message-ID: <6a4289cf-d2b5-2357-f1ad-eeab44ab3b1e@xenosoft.de>
-Date: Wed, 27 Nov 2019 16:14:43 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.9.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47NQxK1XhlzDqwf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Nov 2019 03:20:52 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ xARGEEC6069557; Wed, 27 Nov 2019 11:20:43 -0500
+Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.10])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2whcxqga9c-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 27 Nov 2019 11:20:42 -0500
+Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
+ by ppma02dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id xARGG1Ve002859;
+ Wed, 27 Nov 2019 16:20:42 GMT
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23]) by ppma02dal.us.ibm.com with ESMTP id 2wevd6yn7n-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 27 Nov 2019 16:20:42 +0000
+Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
+ [9.57.199.111])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xARGKf5S40829398
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 27 Nov 2019 16:20:41 GMT
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 50202AC075;
+ Wed, 27 Nov 2019 16:20:41 +0000 (GMT)
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5F5F8AC06A;
+ Wed, 27 Nov 2019 16:20:40 +0000 (GMT)
+Received: from leobras.br.ibm.com (unknown [9.18.235.137])
+ by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
+ Wed, 27 Nov 2019 16:20:40 +0000 (GMT)
+Message-ID: <411c748246960afffca0eb286ec938559a196852.camel@linux.ibm.com>
+Subject: Re: [PATCH v3 0/2] Replace current->mm by kvm->mm on powerpc/kvm
+From: Leonardo Bras <leonardo@linux.ibm.com>
+To: Paul Mackerras <paulus@ozlabs.org>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Wed, 27 Nov 2019 13:20:36 -0300
+In-Reply-To: <20191126223631.389779-1-leonardo@linux.ibm.com>
+References: <20191126223631.389779-1-leonardo@linux.ibm.com>
+Content-Type: multipart/signed; micalg="pgp-sha256";
+ protocol="application/pgp-signature"; boundary="=-3OQMnFYPQ7WcaTZttaSk"
+User-Agent: Evolution 3.34.1 (3.34.1-1.fc31) 
 MIME-Version: 1.0
-In-Reply-To: <20191127065624.GB16913@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: de-DE
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
+ definitions=2019-11-27_04:2019-11-27,2019-11-27 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ mlxlogscore=821
+ malwarescore=0 impostorscore=0 clxscore=1015 adultscore=0 suspectscore=0
+ phishscore=0 spamscore=0 lowpriorityscore=0 bulkscore=0 priorityscore=1501
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-1910280000 definitions=main-1911270138
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,47 +93,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, darren@stevens-zone.net, rtd2@xtra.co.nz,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, iommu@lists.linux-foundation.org,
- Rob Herring <robh+dt@kernel.org>, paulus@samba.org,
- mad skateman <madskateman@gmail.com>, "contact@a-eon.com" <contact@a-eon.com>,
- Robin Murphy <robin.murphy@arm.com>, nsaenzjulienne@suse.de
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 27 November 2019 at 07:56 am, Mike Rapoport wrote:
->
-> Maybe we'll simply force bottom up allocation before calling
-> swiotlb_init()? Anyway, it's the last memblock allocation.
->
->
-> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-> index 62f74b1b33bd..771e6cf7e2b9 100644
-> --- a/arch/powerpc/mm/mem.c
-> +++ b/arch/powerpc/mm/mem.c
-> @@ -286,14 +286,15 @@ void __init mem_init(void)
->   	/*
->   	 * book3s is limited to 16 page sizes due to encoding this in
->   	 * a 4-bit field for slices.
->   	 */
->   	BUILD_BUG_ON(MMU_PAGE_COUNT > 16);
->   
->   #ifdef CONFIG_SWIOTLB
-> +	memblock_set_bottom_up(true);
->   	swiotlb_init(0);
->   #endif
->   
->   	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE);
->   	set_max_mapnr(max_pfn);
->   	memblock_free_all();
->   
->   
-Hello Mike,
 
-I tested the latest Git kernel with your new patch today. My PCI TV card 
-works without any problems.
+--=-3OQMnFYPQ7WcaTZttaSk
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
-Christian
+Result of Travis-CI testing the change:
+https://travis-ci.org/LeoBras/linux-ppc/builds/617712012
+
+--=-3OQMnFYPQ7WcaTZttaSk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEMdeUgIzgjf6YmUyOlQYWtz9SttQFAl3eolQACgkQlQYWtz9S
+ttQ7VQ/+PYOk1QHYIqz2IyCZceHcgPOmksF23eax+OWuyrGmQZ/zr+Cm81pBxuGw
+QYdqIddtUZw9caS0mLayvf8luPFa5r4+4FLXCn+pHFLQG6GXKLYSXFNEujBaL+0o
+bZQ+N1wMnvZSlIX2AlIE/kMsPOLhWRMzod+DlYmDZsV8cJn1xBYa8P5C/VSXIdL8
+EmVQOrraDle33dNBxop28sf09sFdnNBUYMWP/rllJ6evVWrmATRjMbkco2HZpj6O
+36CYbnI1CV5ETpjXxWQKLOy0WBPg021LJdedlqci3uRdwqxyFDyfwdaO9PNgDdNq
+uypw+FLG7kAzcF4ePrCMUVknUmpTbiby8vw19gj2ekOskfNp6n5RRML7U4WIcFWE
+3WzNnYks13zrvxr8ucLsoHUGqPOwJ1XIwbPo9PjN8ic9DAmQ/lWkW8SSzS2+BMWq
+ekj1FEMA4Kn/35bh4m7lbKJkpamKVqMmeWCXb2Pe4DKwjyY1UCImnlQBQEO654qO
+ompS7yuCUAhZ387iFxZ+GAyHBeg6XOg1sE2nEjPnYuVFXVMnkVHatsekNxyQQdgk
+o1BlxhlBntj6LQBJ3lV5xSHRaVf4lDCe3p3AB7DJkXyHTpbXYnCPNOXNkCxWcqpj
+vjbP95uPFEnqDI0nKIyfdEGQ/+E2HXuH80ugOQe/cXa2C3jYdGM=
+=SLY2
+-----END PGP SIGNATURE-----
+
+--=-3OQMnFYPQ7WcaTZttaSk--
+
