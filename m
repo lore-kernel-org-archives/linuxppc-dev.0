@@ -2,84 +2,95 @@ Return-Path: <SRS0=QEr8=ZU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C3F1C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 17:15:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B6327C432C0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 17:21:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EC69821739
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 17:14:59 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="Fm9J/BPt"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC69821739
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rasmusvillemoes.dk
+	by mail.kernel.org (Postfix) with ESMTPS id 6FA3621739
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 17:21:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6FA3621739
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47P45F5RvGzDr4m
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Nov 2019 04:14:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47P4Dg2b1QzDr7b
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Nov 2019 04:21:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::244;
- helo=mail-lj1-x244.google.com; envelope-from=linux@rasmusvillemoes.dk;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=leonardo@linux.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=rasmusvillemoes.dk
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk
- header.b="Fm9J/BPt"; dkim-atps=neutral
-Received: from mail-lj1-x244.google.com (mail-lj1-x244.google.com
- [IPv6:2a00:1450:4864:20::244])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47P13T72ZPzDqn4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2019 01:58:13 +1100 (AEDT)
-Received: by mail-lj1-x244.google.com with SMTP id e28so4649566ljo.9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Nov 2019 06:58:13 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=rasmusvillemoes.dk; s=google;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=uJFqdfn2nSDjHf42hirywvV4nKXCcu5QZEHn2MRQUqE=;
- b=Fm9J/BPtzefO6mLtz+s8hghaGLQl9/e0iHtM+c2WZUylSQ5IRCuZvLLrqa9pvESajc
- sgUXiAdEW5ODvwgf/p7K3+6ps2qo4ojoUJEOeaW4+cvwZGzSxZUYdES0IEMWB57Deuf4
- xjUml1c0Urakd08HfwFSCPyXLT1jfJ5CE/vuE=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=uJFqdfn2nSDjHf42hirywvV4nKXCcu5QZEHn2MRQUqE=;
- b=VE2kcdfw7Nj6pn/X6wLmnO+qv1xl3IoCoY+KQKOz8WKNO0goMCsrPeS9kj2Huy010O
- dLC6XrZtyk2tUk+qay5l5wfJSnOfYezjrT1LFHzbXApSFGZFE7QAq0B7xb52gsCRh7Ir
- SHGULEXBD0p50WkghDKgvkHyesj+Omje85IFckbQWsQm8NzQPOn8lqUnIexLJAQrWHz6
- 0e3nTCRCIDGbbOOvfNSG8kI+gTwHcS2bYAiU+FgUGQJ2GgbpT38UHi53W8FuHmN29lVH
- nydz7H78MH5m19iycnwgfuhbMc5CK71RTjewQWaPFjCf/Y5xEuKYivF/yYD/GpaIZrAg
- PSqg==
-X-Gm-Message-State: APjAAAXlaN9dxMQ0DnFEXUbGybxnGTdYsnw88JT4536R6sPJFhs8jX+E
- j1c77S7Oe7Dm6sFZ3lIQUxPEow==
-X-Google-Smtp-Source: APXvYqyvULz2Tjp/CvI4s3FOQVWvQSzO1JW8WbB25Ky4p0+qkSxEH1U0IiPoAs0MVz6PY4HNawn0gg==
-X-Received: by 2002:a2e:90da:: with SMTP id o26mr1140714ljg.25.1574953085644; 
- Thu, 28 Nov 2019 06:58:05 -0800 (PST)
-Received: from prevas-ravi.prevas.se ([81.216.59.226])
- by smtp.gmail.com with ESMTPSA id u2sm2456803lfl.18.2019.11.28.06.58.04
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 28 Nov 2019 06:58:05 -0800 (PST)
-From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-To: Qiang Zhao <qiang.zhao@nxp.com>, Li Yang <leoyang.li@nxp.com>,
- Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v6 47/49] net: ethernet: freescale: make UCC_GETH explicitly
- depend on PPC32
-Date: Thu, 28 Nov 2019 15:55:52 +0100
-Message-Id: <20191128145554.1297-48-linux@rasmusvillemoes.dk>
-X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20191128145554.1297-1-linux@rasmusvillemoes.dk>
-References: <20191128145554.1297-1-linux@rasmusvillemoes.dk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47P2zH2C77zDqg7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2019 03:24:43 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ xASGGZWH019825; Thu, 28 Nov 2019 11:24:31 -0500
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2wjf1v5y8c-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 28 Nov 2019 11:24:31 -0500
+Received: from m0098416.ppops.net (m0098416.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id xASGGuJw021288;
+ Thu, 28 Nov 2019 11:24:31 -0500
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2wjf1v5y86-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 28 Nov 2019 11:24:31 -0500
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id xASGMjB2032468;
+ Thu, 28 Nov 2019 16:24:30 GMT
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by ppma03dal.us.ibm.com with ESMTP id 2wevd7ame2-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 28 Nov 2019 16:24:30 +0000
+Received: from b03ledav004.gho.boulder.ibm.com
+ (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xASGOT6B30081516
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 28 Nov 2019 16:24:29 GMT
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5722D7805E;
+ Thu, 28 Nov 2019 16:24:29 +0000 (GMT)
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6C5437805F;
+ Thu, 28 Nov 2019 16:24:27 +0000 (GMT)
+Received: from leobras.br.ibm.com (unknown [9.18.235.137])
+ by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Thu, 28 Nov 2019 16:24:27 +0000 (GMT)
+Message-ID: <5789f26ca5568f05b9554053a1c6c3309d5c36e8.camel@linux.ibm.com>
+Subject: Re: [PATCH 1/1] powerpc/kvm/book3s: Fixes possible 'use after
+ release' of kvm
+From: Leonardo Bras <leonardo@linux.ibm.com>
+To: Paul Mackerras <paulus@ozlabs.org>
+Date: Thu, 28 Nov 2019 13:24:22 -0300
+In-Reply-To: <20191127225747.GA2317@blackberry>
+References: <20191126175212.377171-1-leonardo@linux.ibm.com>
+ <20191127225747.GA2317@blackberry>
+Content-Type: multipart/signed; micalg="pgp-sha256";
+ protocol="application/pgp-signature"; boundary="=-PNohgKkP6BiPP+29h/le"
+User-Agent: Evolution 3.34.1 (3.34.1-1.fc31) 
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
+ definitions=2019-11-28_05:2019-11-28,2019-11-28 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 bulkscore=0
+ impostorscore=0 phishscore=0 mlxlogscore=999 spamscore=0 adultscore=0
+ lowpriorityscore=0 clxscore=1015 suspectscore=2 priorityscore=1501
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-1910280000 definitions=main-1911280136
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,41 +102,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Timur Tabi <timur@kernel.org>, netdev@vger.kernel.org,
- Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-kernel@vger.kernel.org,
- Scott Wood <oss@buserror.net>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: kvm@vger.kernel.org,
+ Radim =?UTF-8?Q?Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@redhat.com>,
+ linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Sean Christopherson <sean.j.christopherson@intel.com>,
+ Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently, QUICC_ENGINE depends on PPC32, so this in itself does not
-change anything. In order to allow removing the PPC32 dependency from
-QUICC_ENGINE and avoid allmodconfig build failures, add this explicit
-dependency.
 
-Also, the QE Ethernet has never been integrated on any non-PowerPC SoC
-and most likely will not be in the future.
+--=-PNohgKkP6BiPP+29h/le
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Reviewed-by: Timur Tabi <timur@kernel.org>
-Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
----
- drivers/net/ethernet/freescale/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Thu, 2019-11-28 at 09:57 +1100, Paul Mackerras wrote:
+> There isn't a potential use-after-free here.  We are relying on the
+> property that the release function (kvm_vm_release) cannot be called
+> in parallel with this function.  The reason is that this function
+> (kvm_vm_ioctl_create_spapr_tce) is handling an ioctl on a kvm VM file
+> descriptor.  That means that a userspace process has the file
+> descriptor still open.  The code that implements the close() system
+> call makes sure that no thread is still executing inside any system
+> call that is using the same file descriptor before calling the file
+> descriptor's release function (in this case, kvm_vm_release).  That
+> means that this kvm_put_kvm() call here cannot make the reference
+> count go to zero.
 
-diff --git a/drivers/net/ethernet/freescale/Kconfig b/drivers/net/ethernet/freescale/Kconfig
-index 6a7e8993119f..2bd7ace0a953 100644
---- a/drivers/net/ethernet/freescale/Kconfig
-+++ b/drivers/net/ethernet/freescale/Kconfig
-@@ -74,7 +74,7 @@ config FSL_XGMAC_MDIO
- 
- config UCC_GETH
- 	tristate "Freescale QE Gigabit Ethernet"
--	depends on QUICC_ENGINE
-+	depends on QUICC_ENGINE && PPC32
- 	select FSL_PQ_MDIO
- 	select PHYLIB
- 	---help---
--- 
-2.23.0
+That was very informative. A lot of things are clear to me now.
+Thanks for explaining this Paul.=20
+
+Best regards,
+Leonardo
+
+--=-PNohgKkP6BiPP+29h/le
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEMdeUgIzgjf6YmUyOlQYWtz9SttQFAl3f9LYACgkQlQYWtz9S
+ttTuFRAAzklmvK/yrMAbKL0SscgkU2u5KsQ6td7bys4CpwCyjrFvMpPEhTscVF6l
+oJ/MuPcpEikVISnJTdqpbnyRp3fyZE105GBKP1LN5aXp+1HxT4DZHggSwuQg0THh
+9dce2RIjBaa+dUtLlFselG4xWBkJoUzVM1yNpvxhNLJGc52+mCmDmUeA3icT/NoY
+uKVtuOBfE7/UK94AhuBUkvVoUNGMPmLof+czvZPIuVc8Vprga3cXIpjLT2lw8Stk
+nKriyJO0/MVDTEU6mcqUYRfHUW2c2SAeae3AGz0HiXfPX3ar0Xl+wCd8vX+yO07S
+QmkWlKnvyBQi7WSHwg54xtbPDQBxig0PwOrG2OTDlZDuWT3PfGvYy9q2C5FOABcH
+xgxe4fas0u1dw/MY/JKo/DnJBq7L+aIu2faQDCRV6E/BI6s7t84nkEqALxQAmDvK
+uGPEtt2L/5Y/V9h78kJG501Xfz0TESuSfa9dTlOkUTvgKz0MCogTJFVI5wgPGYS+
+PK9aGMCRNzggyNprKsy+V76fvWy5LyR4L1ZfvToSVpTkd3kXV6prD2oRH2hYuVTX
++MGhuqMf56WNUug++Yc82DAHTNJAwMpAs9nOwK7xoOwIs+4t5di4PdjK1KjwFhlO
+SIDljErVyer2WdJSIvW+CaUczw8qlrx4qqus8ffqI/Jnf64fZPQ=
+=hQv1
+-----END PGP SIGNATURE-----
+
+--=-PNohgKkP6BiPP+29h/le--
 
