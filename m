@@ -7,74 +7,73 @@ X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35AFDC432C0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 15:53:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C1F4EC43215
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 15:55:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D812221771
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 15:53:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 20EB9217D6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 15:55:26 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="i39lh9aW"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D812221771
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="eSJlsgRo"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 20EB9217D6
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rasmusvillemoes.dk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47P2Gj41lvzDr3L
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Nov 2019 02:53:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47P2KS5614zDr2k
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Nov 2019 02:55:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::242;
- helo=mail-lj1-x242.google.com; envelope-from=linux@rasmusvillemoes.dk;
+ smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::243;
+ helo=mail-lj1-x243.google.com; envelope-from=linux@rasmusvillemoes.dk;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=rasmusvillemoes.dk
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk
- header.b="i39lh9aW"; dkim-atps=neutral
-Received: from mail-lj1-x242.google.com (mail-lj1-x242.google.com
- [IPv6:2a00:1450:4864:20::242])
+ header.b="eSJlsgRo"; dkim-atps=neutral
+Received: from mail-lj1-x243.google.com (mail-lj1-x243.google.com
+ [IPv6:2a00:1450:4864:20::243])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47P12d3BxczDqsw
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2019 01:57:29 +1100 (AEDT)
-Received: by mail-lj1-x242.google.com with SMTP id j6so19825052lja.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Nov 2019 06:57:29 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47P12k6ydlzDqyq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2019 01:57:34 +1100 (AEDT)
+Received: by mail-lj1-x243.google.com with SMTP id t5so28869428ljk.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Nov 2019 06:57:34 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=rasmusvillemoes.dk; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=fm8vGKJ4TPWor/SrNM6rE461Gf1D2pmUecTv9capx2A=;
- b=i39lh9aWGpqjz9XI/OFfEnvTGPZ/LiEky1vlTemc4GbVU8oOBhimEDgTQM9P09m6O6
- ObJeoq+Tbxu8vuPW/WPjlrom7jcqajGns3DbLkvaoMUMSW2SLdVnLnossT4Iz0XqNKud
- NCte6uFdJbKUOLro5cdE0VeP2XQzQJmLJ3NL4=
+ bh=USinHcmv+ksGlMbxnbmLxuy0P66Q7HhR0AFEthjqY1w=;
+ b=eSJlsgRoqTynoxnNeBVf+IkwM63Ac9ztMdfQvsjRq5txZGy2t6QSH9CnnZBD6OwU/1
+ lTHMy3iujv02EGiXw6caHkTIq1GPRdwgs/vakISvyvy3Qg3GSi0krDWObXmh6NsbadOB
+ 8i55Z4UFd0jKdGfVl09SKBp5q/JKGOoPvK+tM=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=fm8vGKJ4TPWor/SrNM6rE461Gf1D2pmUecTv9capx2A=;
- b=G6yElhgiwsv9ExJB2mUOkBFiV39KINmSlWIfYCII0d0Ll1qfSbwznnioud3OanFY7F
- oDXs/a2OvaE2G+0r23HfrD5B2qYveMpDc+RF5I1p8ZDFYZQT6JgPHiv5qg9w7FFSydbd
- E2CGNxyEQzGJ0MrzqepXhTG+iNsqInlbdWvLOnjs0F3yiZzK4JjhYxM67XISUVQZNtEq
- /tkqCygEZIJiQG9F7HJiizhBKeMHrwMgv/CSdywA1XBzg8rxVdexthssm1Ih7ruQSUJc
- pMu1TWfKeDe7blSRw0hEW1uSQFILpgR6bpQhCSoApnXYARAhfoGo86/ia1Xpvtfjytwn
- uslw==
-X-Gm-Message-State: APjAAAVmF+wUG3Gs0RWzxyHvFCf1ifuueWUEZvQ4kSS/1EJT3B5GJmLT
- d3YdqaCg6CENxeurhxCuSE1mwQ==
-X-Google-Smtp-Source: APXvYqzOH4CCR5V7oe5QpALAtS3/oGlBdApJLkD4j0pv6h8wj8vcXCUvjS7Un4muT3AhfCe2YXCDXA==
-X-Received: by 2002:a2e:6e07:: with SMTP id j7mr3589919ljc.18.1574953046004;
- Thu, 28 Nov 2019 06:57:26 -0800 (PST)
+ bh=USinHcmv+ksGlMbxnbmLxuy0P66Q7HhR0AFEthjqY1w=;
+ b=o4OUZ3b2YQ38TF8wDOmZkMF1MF9zvuwnZ8W4WmkjD++15GXac/TrfCK5/6uZUCLrrR
+ Bsdbl7kSNmjEsQWVWgZjj2lykLJAOBvlfEQ3sx1pPny3K1dqqtB3frV2NccVzMgnILGB
+ rMOH4YNdpqo4ucaOdJqS4OznPlcBMQ0oVJnQmEI/3FBB8KPX4UlBxxlMIV3dtFeQb4KP
+ MosYoRpSdiX11Jau9dh88nOgYCMAGBczX0pRyPGXNevEIZmyiJrWUHSvoEjtWEjuOs/k
+ 6a4xqaZ+3JjOWnqKwBXg/LmO0TvnR2SI8/GKmVIDatwyjv+sPFqTTWPkdlw/Bl/HlSho
+ EbwA==
+X-Gm-Message-State: APjAAAUtf4yKX3j6SXk6clzFeam8uC6lKqkcezwP8+s2FjvTCwU2VLhS
+ f5ialyHEeZddxfmY/ZLKygOKRA==
+X-Google-Smtp-Source: APXvYqwWbKVLrkCPCqAQ45HonIHroFiKt/f5U++VVvIibHXJ05e3osalBaVmWBSGtrrlGbxRgN9fcw==
+X-Received: by 2002:a2e:2a43:: with SMTP id q64mr35565201ljq.242.1574953050912; 
+ Thu, 28 Nov 2019 06:57:30 -0800 (PST)
 Received: from prevas-ravi.prevas.se ([81.216.59.226])
- by smtp.gmail.com with ESMTPSA id u2sm2456803lfl.18.2019.11.28.06.57.24
+ by smtp.gmail.com with ESMTPSA id u2sm2456803lfl.18.2019.11.28.06.57.29
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 28 Nov 2019 06:57:25 -0800 (PST)
+ Thu, 28 Nov 2019 06:57:30 -0800 (PST)
 From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 To: Qiang Zhao <qiang.zhao@nxp.com>, Li Yang <leoyang.li@nxp.com>,
  Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v6 16/49] soc: fsl: qe: rename qe_ic_cascade_low_mpic ->
- qe_ic_cascade_low
-Date: Thu, 28 Nov 2019 15:55:21 +0100
-Message-Id: <20191128145554.1297-17-linux@rasmusvillemoes.dk>
+Subject: [PATCH v6 20/49] soc: fsl: qe: simplify qe_ic_init()
+Date: Thu, 28 Nov 2019 15:55:25 +0100
+Message-Id: <20191128145554.1297-21-linux@rasmusvillemoes.dk>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191128145554.1297-1-linux@rasmusvillemoes.dk>
 References: <20191128145554.1297-1-linux@rasmusvillemoes.dk>
@@ -98,49 +97,75 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The qe_ic_cascade_{low,high}_mpic functions are now used as handlers
-both when the interrupt parent is mpic as well as ipic, so remove the
-_mpic suffix.
+qe_ic_init() takes a flags parameter, but all callers (including the
+sole remaining one) have always passed 0. So remove that parameter and
+simplify the body accordingly. We still explicitly initialize the
+Interrupt Configuration Register (CICR) to its reset value of
+all-zeroes, just in case the bootloader has played funny games.
 
 Reviewed-by: Timur Tabi <timur@kernel.org>
 Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 ---
- drivers/soc/fsl/qe/qe_ic.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/soc/fsl/qe/qe_ic.c | 27 ++++-----------------------
+ 1 file changed, 4 insertions(+), 23 deletions(-)
 
 diff --git a/drivers/soc/fsl/qe/qe_ic.c b/drivers/soc/fsl/qe/qe_ic.c
-index 94ccbeeb1ad1..de2ca2e3a648 100644
+index 23b457e884d8..4832884da5bb 100644
 --- a/drivers/soc/fsl/qe/qe_ic.c
 +++ b/drivers/soc/fsl/qe/qe_ic.c
-@@ -314,7 +314,7 @@ unsigned int qe_ic_get_high_irq(struct qe_ic *qe_ic)
- 	return irq_linear_revmap(qe_ic->irqhost, irq);
+@@ -356,13 +356,13 @@ static void qe_ic_cascade_muxed_mpic(struct irq_desc *desc)
+ 	chip->irq_eoi(&desc->irq_data);
  }
  
--static void qe_ic_cascade_low_mpic(struct irq_desc *desc)
-+static void qe_ic_cascade_low(struct irq_desc *desc)
+-static void __init qe_ic_init(struct device_node *node, unsigned int flags)
++static void __init qe_ic_init(struct device_node *node)
  {
- 	struct qe_ic *qe_ic = irq_desc_get_handler_data(desc);
- 	unsigned int cascade_irq = qe_ic_get_low_irq(qe_ic);
-@@ -327,7 +327,7 @@ static void qe_ic_cascade_low_mpic(struct irq_desc *desc)
- 		chip->irq_eoi(&desc->irq_data);
- }
+ 	void (*low_handler)(struct irq_desc *desc);
+ 	void (*high_handler)(struct irq_desc *desc);
+ 	struct qe_ic *qe_ic;
+ 	struct resource res;
+-	u32 temp = 0, ret;
++	u32 ret;
  
--static void qe_ic_cascade_high_mpic(struct irq_desc *desc)
-+static void qe_ic_cascade_high(struct irq_desc *desc)
- {
- 	struct qe_ic *qe_ic = irq_desc_get_handler_data(desc);
- 	unsigned int cascade_irq = qe_ic_get_high_irq(qe_ic);
-@@ -392,8 +392,8 @@ static void __init qe_ic_init(struct device_node *node, unsigned int flags)
- 		return;
- 	}
- 	if (qe_ic->virq_high != qe_ic->virq_low) {
--		low_handler = qe_ic_cascade_low_mpic;
--		high_handler = qe_ic_cascade_high_mpic;
-+		low_handler = qe_ic_cascade_low;
-+		high_handler = qe_ic_cascade_high;
- 	} else {
- 		low_handler = qe_ic_cascade_muxed_mpic;
+ 	ret = of_address_to_resource(node, 0, &res);
+ 	if (ret)
+@@ -399,26 +399,7 @@ static void __init qe_ic_init(struct device_node *node, unsigned int flags)
  		high_handler = NULL;
+ 	}
+ 
+-	/* default priority scheme is grouped. If spread mode is    */
+-	/* required, configure cicr accordingly.                    */
+-	if (flags & QE_IC_SPREADMODE_GRP_W)
+-		temp |= CICR_GWCC;
+-	if (flags & QE_IC_SPREADMODE_GRP_X)
+-		temp |= CICR_GXCC;
+-	if (flags & QE_IC_SPREADMODE_GRP_Y)
+-		temp |= CICR_GYCC;
+-	if (flags & QE_IC_SPREADMODE_GRP_Z)
+-		temp |= CICR_GZCC;
+-	if (flags & QE_IC_SPREADMODE_GRP_RISCA)
+-		temp |= CICR_GRTA;
+-	if (flags & QE_IC_SPREADMODE_GRP_RISCB)
+-		temp |= CICR_GRTB;
+-
+-	/* choose destination signal for highest priority interrupt */
+-	if (flags & QE_IC_HIGH_SIGNAL)
+-		temp |= (SIGNAL_HIGH << CICR_HPIT_SHIFT);
+-
+-	qe_ic_write(qe_ic->regs, QEIC_CICR, temp);
++	qe_ic_write(qe_ic->regs, QEIC_CICR, 0);
+ 
+ 	irq_set_handler_data(qe_ic->virq_low, qe_ic);
+ 	irq_set_chained_handler(qe_ic->virq_low, low_handler);
+@@ -439,7 +420,7 @@ static int __init qe_ic_of_init(void)
+ 		if (!np)
+ 			return -ENODEV;
+ 	}
+-	qe_ic_init(np, 0);
++	qe_ic_init(np);
+ 	of_node_put(np);
+ 	return 0;
+ }
 -- 
 2.23.0
 
