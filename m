@@ -2,78 +2,78 @@ Return-Path: <SRS0=QEr8=ZU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF337C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 16:59:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9CB59C432C0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 17:02:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9961521771
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 16:59:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 12A8D21771
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 17:02:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="H9GNJFOo"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9961521771
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="PondpcWe"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 12A8D21771
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rasmusvillemoes.dk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47P3lc2l1GzDqHb
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Nov 2019 03:59:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47P3pz1nt6zDr2q
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Nov 2019 04:02:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::141;
- helo=mail-lf1-x141.google.com; envelope-from=linux@rasmusvillemoes.dk;
+ smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::143;
+ helo=mail-lf1-x143.google.com; envelope-from=linux@rasmusvillemoes.dk;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=rasmusvillemoes.dk
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk
- header.b="H9GNJFOo"; dkim-atps=neutral
-Received: from mail-lf1-x141.google.com (mail-lf1-x141.google.com
- [IPv6:2a00:1450:4864:20::141])
+ header.b="PondpcWe"; dkim-atps=neutral
+Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com
+ [IPv6:2a00:1450:4864:20::143])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47P13J0ShhzDqyw
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2019 01:58:04 +1100 (AEDT)
-Received: by mail-lf1-x141.google.com with SMTP id a17so20229110lfi.13
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Nov 2019 06:58:03 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47P13Q3H9tzDqys
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2019 01:58:10 +1100 (AEDT)
+Received: by mail-lf1-x143.google.com with SMTP id a17so20229190lfi.13
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Nov 2019 06:58:10 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=rasmusvillemoes.dk; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=PyA4fvyHPic1hHseYG61wC3TVgVcfbpZ17hSo3R3QxM=;
- b=H9GNJFOo2tBgwxNF/Mvxe35zT+dq5pwGZ0owmVOSIU2EzzDigi/R9KMcG5HAWIvrIT
- Qg8Nh9+oMFaBwCtzZOFWvEKKLVFDWNsMN4jJfpL5FlPmX8MwlNNI2NkNfPBm9Af9pQxA
- iRix/HHPfoc8REM8iZpZBBjYY/GcODdO3UCM4=
+ bh=byxQuHw6IVmwv5QbVm5twa+er8x0Qu7qmmS64lJfOnw=;
+ b=PondpcWeSDGdnmJ3H3VheUMZ5EamRr1/9yXbPe7FnTxs0EB3gX3rAmq3N+xxQXg1zC
+ 8n9IySGiwvx4CXJ87vaurWMM04a78FAMf2Sv1PDfAzRwEzyV7rH4OyqjmmxRqM28QIEv
+ FB3fNi1x+H8+Cb63fYmgSdnsF52YRLDjjuMIo=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=PyA4fvyHPic1hHseYG61wC3TVgVcfbpZ17hSo3R3QxM=;
- b=jketw3Hrn1KZDrjPn+b4M7SE+3mE7dl+XiMsBG9Ygb4QFgZhl2pjIqTBLYL6InW1db
- +i6I/ANzny7tn0vJQXhHq+dT3BxsKYBoN9OeJV8e0me2VpBfQgLt62l8Gkey+9FP3xam
- l+WkWA+fR3mMLCcaskMjjR/645zeObGZNhN2NX6W408Cras/lbvGG8CDgD+WDfwbNRHB
- AcW0Xxs9VGrCJz3/EFuseazxPov0o6a+YwHGFEwh+5FSijYK+DDNBAtBGp0WMw+mUOhN
- nqNst37bheE/WfLJzeUlUdvZZi1oU7qBIiKTwkbUrF/stf+CVpljldloiIttK3st6RUY
- BmRA==
-X-Gm-Message-State: APjAAAXXUashf3yUn/j6R0eiHpWpD5ATbTL/H5I1Ew/CSC/1U+3dYhu2
- IdClu40FpYYmVremUGyGw4O5XA==
-X-Google-Smtp-Source: APXvYqyvt7YRsEI3f7Rdq/jHii7xfNyBE/f16tqd63AmAMdURuB/Q1c5U4ESjLrpdqfvdabSVNzicQ==
-X-Received: by 2002:a19:3f51:: with SMTP id m78mr1872602lfa.70.1574953081096; 
- Thu, 28 Nov 2019 06:58:01 -0800 (PST)
+ bh=byxQuHw6IVmwv5QbVm5twa+er8x0Qu7qmmS64lJfOnw=;
+ b=AtvhZ4ihl8xYKecRcZ0bLBzIvpuGbaDhr6Ah9ncbyRyFsjRrcETilgTePPdpEW+DYX
+ heW14FJnK8+oPtczAN+79CYE9uUQymZ4VePObdRH+8O7eSbLuV5+PVq4WOtaqDtmkhLv
+ c0go1dWu4LtBQIzTL2IUyUM56XPJpfJI9S9yPsO2eYtSPnbIG+T1/h38aaCBHX9t80Ul
+ GGsFhnLlqqU4ZqPMg2lamtiXZdRGQaAYEq7aBuieKeKQAQpZv5wenLyggzC/78vpD+Cc
+ wcoxaqp6cj0BNKq8pZvSF8bW8Qbsi3FdKl/qNfrz6h6af2pc1aXp76CVy7MJj2dmjbHB
+ 8iSg==
+X-Gm-Message-State: APjAAAWxiUOmM307IwR7hXj7ZlPFckAOPoTsP+pW8TAvsWqKGNHfMw2+
+ w5DfoUD8kaw5iiOKCyszoJUW/A==
+X-Google-Smtp-Source: APXvYqyFtd33g1Hp4cvK1H6BPWnHJDxlirit0nsDRKrmBSAkYuEyCJVhYftiyBHH6/qxlZfMH1fiXA==
+X-Received: by 2002:a19:e011:: with SMTP id x17mr8564756lfg.59.1574953083383; 
+ Thu, 28 Nov 2019 06:58:03 -0800 (PST)
 Received: from prevas-ravi.prevas.se ([81.216.59.226])
- by smtp.gmail.com with ESMTPSA id u2sm2456803lfl.18.2019.11.28.06.58.00
+ by smtp.gmail.com with ESMTPSA id u2sm2456803lfl.18.2019.11.28.06.58.02
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 28 Nov 2019 06:58:00 -0800 (PST)
+ Thu, 28 Nov 2019 06:58:03 -0800 (PST)
 From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 To: Qiang Zhao <qiang.zhao@nxp.com>, Li Yang <leoyang.li@nxp.com>,
  Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v6 43/49] soc: fsl: qe: avoid IS_ERR_VALUE in ucc_fast.c
-Date: Thu, 28 Nov 2019 15:55:48 +0100
-Message-Id: <20191128145554.1297-44-linux@rasmusvillemoes.dk>
+Subject: [PATCH v6 45/49] net/wan/fsl_ucc_hdlc: fix reading of __be16 registers
+Date: Thu, 28 Nov 2019 15:55:50 +0100
+Message-Id: <20191128145554.1297-46-linux@rasmusvillemoes.dk>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191128145554.1297-1-linux@rasmusvillemoes.dk>
 References: <20191128145554.1297-1-linux@rasmusvillemoes.dk>
@@ -90,94 +90,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Timur Tabi <timur@kernel.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- linux-kernel@vger.kernel.org, Scott Wood <oss@buserror.net>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Timur Tabi <timur@kernel.org>, netdev@vger.kernel.org,
+ Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-kernel@vger.kernel.org,
+ Scott Wood <oss@buserror.net>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When building this on a 64-bit platform gcc rightly warns that the
-error checking is broken (-ENOMEM stored in an u32 does not compare
-greater than (unsigned long)-MAX_ERRNO). Instead, change the
-ucc_fast_[tr]x_virtual_fifo_base_offset members to s32 and use an
-ordinary check-for-negative. Also, this avoids treating 0 as "this
-cannot have been returned from qe_muram_alloc() so don't free it".
+When releasing the allocated muram resource, we rely on reading back
+the offsets from the riptr/tiptr registers. But those registers are
+__be16 (and we indeed write them using iowrite16be), so we can't just
+read them back with a normal C dereference.
+
+This is not currently a real problem, since for now the driver is
+PPC32-only. But it will soon be allowed to be used on arm and arm64 as
+well.
 
 Reviewed-by: Timur Tabi <timur@kernel.org>
 Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 ---
- drivers/soc/fsl/qe/ucc_fast.c | 15 ++++++---------
- include/soc/fsl/qe/ucc_fast.h |  4 ++--
- 2 files changed, 8 insertions(+), 11 deletions(-)
+ drivers/net/wan/fsl_ucc_hdlc.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/soc/fsl/qe/ucc_fast.c b/drivers/soc/fsl/qe/ucc_fast.c
-index ca0452497a20..ad6193ea4597 100644
---- a/drivers/soc/fsl/qe/ucc_fast.c
-+++ b/drivers/soc/fsl/qe/ucc_fast.c
-@@ -197,6 +197,8 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
- 			__func__);
- 		return -ENOMEM;
- 	}
-+	uccf->ucc_fast_tx_virtual_fifo_base_offset = -1;
-+	uccf->ucc_fast_rx_virtual_fifo_base_offset = -1;
+diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
+index 405b24a5a60d..8d13586bb774 100644
+--- a/drivers/net/wan/fsl_ucc_hdlc.c
++++ b/drivers/net/wan/fsl_ucc_hdlc.c
+@@ -732,8 +732,8 @@ static int uhdlc_open(struct net_device *dev)
  
- 	/* Fill fast UCC structure */
- 	uccf->uf_info = uf_info;
-@@ -265,10 +267,9 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
- 	/* Allocate memory for Tx Virtual Fifo */
- 	uccf->ucc_fast_tx_virtual_fifo_base_offset =
- 	    qe_muram_alloc(uf_info->utfs, UCC_FAST_VIRT_FIFO_REGS_ALIGNMENT);
--	if (IS_ERR_VALUE(uccf->ucc_fast_tx_virtual_fifo_base_offset)) {
-+	if (uccf->ucc_fast_tx_virtual_fifo_base_offset < 0) {
- 		printk(KERN_ERR "%s: cannot allocate MURAM for TX FIFO\n",
- 			__func__);
--		uccf->ucc_fast_tx_virtual_fifo_base_offset = 0;
- 		ucc_fast_free(uccf);
- 		return -ENOMEM;
- 	}
-@@ -278,10 +279,9 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
- 		qe_muram_alloc(uf_info->urfs +
- 			   UCC_FAST_RECEIVE_VIRTUAL_FIFO_SIZE_FUDGE_FACTOR,
- 			   UCC_FAST_VIRT_FIFO_REGS_ALIGNMENT);
--	if (IS_ERR_VALUE(uccf->ucc_fast_rx_virtual_fifo_base_offset)) {
-+	if (uccf->ucc_fast_rx_virtual_fifo_base_offset < 0) {
- 		printk(KERN_ERR "%s: cannot allocate MURAM for RX FIFO\n",
- 			__func__);
--		uccf->ucc_fast_rx_virtual_fifo_base_offset = 0;
- 		ucc_fast_free(uccf);
- 		return -ENOMEM;
- 	}
-@@ -384,11 +384,8 @@ void ucc_fast_free(struct ucc_fast_private * uccf)
- 	if (!uccf)
- 		return;
+ static void uhdlc_memclean(struct ucc_hdlc_private *priv)
+ {
+-	qe_muram_free(priv->ucc_pram->riptr);
+-	qe_muram_free(priv->ucc_pram->tiptr);
++	qe_muram_free(ioread16be(&priv->ucc_pram->riptr));
++	qe_muram_free(ioread16be(&priv->ucc_pram->tiptr));
  
--	if (uccf->ucc_fast_tx_virtual_fifo_base_offset)
--		qe_muram_free(uccf->ucc_fast_tx_virtual_fifo_base_offset);
--
--	if (uccf->ucc_fast_rx_virtual_fifo_base_offset)
--		qe_muram_free(uccf->ucc_fast_rx_virtual_fifo_base_offset);
-+	qe_muram_free(uccf->ucc_fast_tx_virtual_fifo_base_offset);
-+	qe_muram_free(uccf->ucc_fast_rx_virtual_fifo_base_offset);
- 
- 	if (uccf->uf_regs)
- 		iounmap(uccf->uf_regs);
-diff --git a/include/soc/fsl/qe/ucc_fast.h b/include/soc/fsl/qe/ucc_fast.h
-index e9cc46042a83..ba0e838f962a 100644
---- a/include/soc/fsl/qe/ucc_fast.h
-+++ b/include/soc/fsl/qe/ucc_fast.h
-@@ -188,9 +188,9 @@ struct ucc_fast_private {
- 	int stopped_tx;		/* Whether channel has been stopped for Tx
- 				   (STOP_TX, etc.) */
- 	int stopped_rx;		/* Whether channel has been stopped for Rx */
--	u32 ucc_fast_tx_virtual_fifo_base_offset;/* pointer to base of Tx
-+	s32 ucc_fast_tx_virtual_fifo_base_offset;/* pointer to base of Tx
- 						    virtual fifo */
--	u32 ucc_fast_rx_virtual_fifo_base_offset;/* pointer to base of Rx
-+	s32 ucc_fast_rx_virtual_fifo_base_offset;/* pointer to base of Rx
- 						    virtual fifo */
- #ifdef STATISTICS
- 	u32 tx_frames;		/* Transmitted frames counter. */
+ 	if (priv->rx_bd_base) {
+ 		dma_free_coherent(priv->dev,
 -- 
 2.23.0
 
