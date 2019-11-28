@@ -7,73 +7,73 @@ X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1F4EC43215
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 15:55:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C886C432C0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 15:57:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 20EB9217D6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 15:55:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2981121771
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 15:57:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="eSJlsgRo"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 20EB9217D6
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="BqgKvObs"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2981121771
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rasmusvillemoes.dk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47P2KS5614zDr2k
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Nov 2019 02:55:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47P2NM4m36zDr4Q
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Nov 2019 02:57:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::243;
- helo=mail-lj1-x243.google.com; envelope-from=linux@rasmusvillemoes.dk;
+ smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::144;
+ helo=mail-lf1-x144.google.com; envelope-from=linux@rasmusvillemoes.dk;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=rasmusvillemoes.dk
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk
- header.b="eSJlsgRo"; dkim-atps=neutral
-Received: from mail-lj1-x243.google.com (mail-lj1-x243.google.com
- [IPv6:2a00:1450:4864:20::243])
+ header.b="BqgKvObs"; dkim-atps=neutral
+Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com
+ [IPv6:2a00:1450:4864:20::144])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47P12k6ydlzDqyq
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47P12k6RWGzDqsw
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2019 01:57:34 +1100 (AEDT)
-Received: by mail-lj1-x243.google.com with SMTP id t5so28869428ljk.0
+Received: by mail-lf1-x144.google.com with SMTP id v201so19208623lfa.11
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Nov 2019 06:57:34 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=rasmusvillemoes.dk; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=USinHcmv+ksGlMbxnbmLxuy0P66Q7HhR0AFEthjqY1w=;
- b=eSJlsgRoqTynoxnNeBVf+IkwM63Ac9ztMdfQvsjRq5txZGy2t6QSH9CnnZBD6OwU/1
- lTHMy3iujv02EGiXw6caHkTIq1GPRdwgs/vakISvyvy3Qg3GSi0krDWObXmh6NsbadOB
- 8i55Z4UFd0jKdGfVl09SKBp5q/JKGOoPvK+tM=
+ bh=r3X14YrVIUClSXLFCcykgpknPW7q8CkrbSuzPJYKIgU=;
+ b=BqgKvObsXIWxVEmBNUn1r6eHP5osq02sC3XtopwwdsqJh2mHsFg2vFe1Grf4Zhy+GH
+ vJZ6CKNbCCoIRxx0chQzVfOFFH7i6PyxiZ7yrLxxkmzx5MQJAXtj8erlwmiR/7AoKrSs
+ 5MlYJ+l3O471MKMNl0wm+kxWUwwPKQs4RLmLE=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=USinHcmv+ksGlMbxnbmLxuy0P66Q7HhR0AFEthjqY1w=;
- b=o4OUZ3b2YQ38TF8wDOmZkMF1MF9zvuwnZ8W4WmkjD++15GXac/TrfCK5/6uZUCLrrR
- Bsdbl7kSNmjEsQWVWgZjj2lykLJAOBvlfEQ3sx1pPny3K1dqqtB3frV2NccVzMgnILGB
- rMOH4YNdpqo4ucaOdJqS4OznPlcBMQ0oVJnQmEI/3FBB8KPX4UlBxxlMIV3dtFeQb4KP
- MosYoRpSdiX11Jau9dh88nOgYCMAGBczX0pRyPGXNevEIZmyiJrWUHSvoEjtWEjuOs/k
- 6a4xqaZ+3JjOWnqKwBXg/LmO0TvnR2SI8/GKmVIDatwyjv+sPFqTTWPkdlw/Bl/HlSho
- EbwA==
-X-Gm-Message-State: APjAAAUtf4yKX3j6SXk6clzFeam8uC6lKqkcezwP8+s2FjvTCwU2VLhS
- f5ialyHEeZddxfmY/ZLKygOKRA==
-X-Google-Smtp-Source: APXvYqwWbKVLrkCPCqAQ45HonIHroFiKt/f5U++VVvIibHXJ05e3osalBaVmWBSGtrrlGbxRgN9fcw==
-X-Received: by 2002:a2e:2a43:: with SMTP id q64mr35565201ljq.242.1574953050912; 
- Thu, 28 Nov 2019 06:57:30 -0800 (PST)
+ bh=r3X14YrVIUClSXLFCcykgpknPW7q8CkrbSuzPJYKIgU=;
+ b=icELvoTYABpHbn4YBuvBK8JenmjW7hmoovzX9Im44L4k7IZ0RZl8hWQilIFBLtCk+e
+ OsybEl56JRHdUaXDDDcmXJQ1cAHJN+n/aLckrKuHt0czRsYzx3pr59laNIY6Mr0FflOf
+ ZkETTSw+ZNcz9C+QqX+ybL6r1tipS0+nyPw8wTgnWtB1phYPW9mJS8fCjRA89EruZXOp
+ NtqZixjE6E/VVmNvbyctIu8kv8Dfv9cQ+4j9dnBn0oi+8jIJVTpWCamQXXcGr7kvvv56
+ CiVv2jSjtbl1YtTeQvkahC+/DgxDuhd+JY7hD42pSf8pff7YYk9wxHVfW+aIe9YDDF2U
+ iCPA==
+X-Gm-Message-State: APjAAAWXY+3UUfmeYoKXz0pC7HYYAy0EoOxMyKHY5JYP/Ycx9n4HYeht
+ khNveimVlwadVTpDh5ddaK4Mgw==
+X-Google-Smtp-Source: APXvYqy3g5ATq/JQp5xfPoK4/TMKrONa38Lkmq+otiNYXU7CSnx/L8zDrIc7fZRsl2bQRfYROFNJmQ==
+X-Received: by 2002:a19:e011:: with SMTP id x17mr8563557lfg.59.1574953047246; 
+ Thu, 28 Nov 2019 06:57:27 -0800 (PST)
 Received: from prevas-ravi.prevas.se ([81.216.59.226])
- by smtp.gmail.com with ESMTPSA id u2sm2456803lfl.18.2019.11.28.06.57.29
+ by smtp.gmail.com with ESMTPSA id u2sm2456803lfl.18.2019.11.28.06.57.26
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 28 Nov 2019 06:57:30 -0800 (PST)
+ Thu, 28 Nov 2019 06:57:26 -0800 (PST)
 From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 To: Qiang Zhao <qiang.zhao@nxp.com>, Li Yang <leoyang.li@nxp.com>,
  Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v6 20/49] soc: fsl: qe: simplify qe_ic_init()
-Date: Thu, 28 Nov 2019 15:55:25 +0100
-Message-Id: <20191128145554.1297-21-linux@rasmusvillemoes.dk>
+Subject: [PATCH v6 17/49] soc: fsl: qe: remove unused qe_ic_set_* functions
+Date: Thu, 28 Nov 2019 15:55:22 +0100
+Message-Id: <20191128145554.1297-18-linux@rasmusvillemoes.dk>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191128145554.1297-1-linux@rasmusvillemoes.dk>
 References: <20191128145554.1297-1-linux@rasmusvillemoes.dk>
@@ -97,75 +97,138 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-qe_ic_init() takes a flags parameter, but all callers (including the
-sole remaining one) have always passed 0. So remove that parameter and
-simplify the body accordingly. We still explicitly initialize the
-Interrupt Configuration Register (CICR) to its reset value of
-all-zeroes, just in case the bootloader has played funny games.
+There are no current callers of these functions, and they use the
+ppc-specific virq_to_hw(). So removing them gets us one step closer to
+building QE support for ARM.
+
+If the functionality is ever actually needed, the code can be dug out
+of git and then adapted to work on all architectures, but for future
+reference please note that I believe qe_ic_set_priority is buggy: The
+"priority < 4" should be "priority <= 4", and in the else branch 24
+should be replaced by 28, at least if I'm reading the data sheet right.
 
 Reviewed-by: Timur Tabi <timur@kernel.org>
 Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 ---
- drivers/soc/fsl/qe/qe_ic.c | 27 ++++-----------------------
- 1 file changed, 4 insertions(+), 23 deletions(-)
+ drivers/soc/fsl/qe/qe_ic.c | 94 --------------------------------------
+ include/soc/fsl/qe/qe_ic.h |  4 --
+ 2 files changed, 98 deletions(-)
 
 diff --git a/drivers/soc/fsl/qe/qe_ic.c b/drivers/soc/fsl/qe/qe_ic.c
-index 23b457e884d8..4832884da5bb 100644
+index de2ca2e3a648..4839dcd5c5d3 100644
 --- a/drivers/soc/fsl/qe/qe_ic.c
 +++ b/drivers/soc/fsl/qe/qe_ic.c
-@@ -356,13 +356,13 @@ static void qe_ic_cascade_muxed_mpic(struct irq_desc *desc)
- 	chip->irq_eoi(&desc->irq_data);
- }
- 
--static void __init qe_ic_init(struct device_node *node, unsigned int flags)
-+static void __init qe_ic_init(struct device_node *node)
- {
- 	void (*low_handler)(struct irq_desc *desc);
- 	void (*high_handler)(struct irq_desc *desc);
- 	struct qe_ic *qe_ic;
- 	struct resource res;
--	u32 temp = 0, ret;
-+	u32 ret;
- 
- 	ret = of_address_to_resource(node, 0, &res);
- 	if (ret)
-@@ -399,26 +399,7 @@ static void __init qe_ic_init(struct device_node *node, unsigned int flags)
- 		high_handler = NULL;
- 	}
- 
--	/* default priority scheme is grouped. If spread mode is    */
--	/* required, configure cicr accordingly.                    */
--	if (flags & QE_IC_SPREADMODE_GRP_W)
--		temp |= CICR_GWCC;
--	if (flags & QE_IC_SPREADMODE_GRP_X)
--		temp |= CICR_GXCC;
--	if (flags & QE_IC_SPREADMODE_GRP_Y)
--		temp |= CICR_GYCC;
--	if (flags & QE_IC_SPREADMODE_GRP_Z)
--		temp |= CICR_GZCC;
--	if (flags & QE_IC_SPREADMODE_GRP_RISCA)
--		temp |= CICR_GRTA;
--	if (flags & QE_IC_SPREADMODE_GRP_RISCB)
--		temp |= CICR_GRTB;
--
--	/* choose destination signal for highest priority interrupt */
--	if (flags & QE_IC_HIGH_SIGNAL)
--		temp |= (SIGNAL_HIGH << CICR_HPIT_SHIFT);
--
--	qe_ic_write(qe_ic->regs, QEIC_CICR, temp);
-+	qe_ic_write(qe_ic->regs, QEIC_CICR, 0);
- 
- 	irq_set_handler_data(qe_ic->virq_low, qe_ic);
- 	irq_set_chained_handler(qe_ic->virq_low, low_handler);
-@@ -439,7 +420,7 @@ static int __init qe_ic_of_init(void)
- 		if (!np)
- 			return -ENODEV;
- 	}
--	qe_ic_init(np, 0);
-+	qe_ic_init(np);
- 	of_node_put(np);
+@@ -445,97 +445,3 @@ static int __init qe_ic_of_init(void)
  	return 0;
  }
+ subsys_initcall(qe_ic_of_init);
+-
+-void qe_ic_set_highest_priority(unsigned int virq, int high)
+-{
+-	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
+-	unsigned int src = virq_to_hw(virq);
+-	u32 temp = 0;
+-
+-	temp = qe_ic_read(qe_ic->regs, QEIC_CICR);
+-
+-	temp &= ~CICR_HP_MASK;
+-	temp |= src << CICR_HP_SHIFT;
+-
+-	temp &= ~CICR_HPIT_MASK;
+-	temp |= (high ? SIGNAL_HIGH : SIGNAL_LOW) << CICR_HPIT_SHIFT;
+-
+-	qe_ic_write(qe_ic->regs, QEIC_CICR, temp);
+-}
+-
+-/* Set Priority level within its group, from 1 to 8 */
+-int qe_ic_set_priority(unsigned int virq, unsigned int priority)
+-{
+-	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
+-	unsigned int src = virq_to_hw(virq);
+-	u32 temp;
+-
+-	if (priority > 8 || priority == 0)
+-		return -EINVAL;
+-	if (WARN_ONCE(src >= ARRAY_SIZE(qe_ic_info),
+-		      "%s: Invalid hw irq number for QEIC\n", __func__))
+-		return -EINVAL;
+-	if (qe_ic_info[src].pri_reg == 0)
+-		return -EINVAL;
+-
+-	temp = qe_ic_read(qe_ic->regs, qe_ic_info[src].pri_reg);
+-
+-	if (priority < 4) {
+-		temp &= ~(0x7 << (32 - priority * 3));
+-		temp |= qe_ic_info[src].pri_code << (32 - priority * 3);
+-	} else {
+-		temp &= ~(0x7 << (24 - priority * 3));
+-		temp |= qe_ic_info[src].pri_code << (24 - priority * 3);
+-	}
+-
+-	qe_ic_write(qe_ic->regs, qe_ic_info[src].pri_reg, temp);
+-
+-	return 0;
+-}
+-
+-/* Set a QE priority to use high irq, only priority 1~2 can use high irq */
+-int qe_ic_set_high_priority(unsigned int virq, unsigned int priority, int high)
+-{
+-	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
+-	unsigned int src = virq_to_hw(virq);
+-	u32 temp, control_reg = QEIC_CICNR, shift = 0;
+-
+-	if (priority > 2 || priority == 0)
+-		return -EINVAL;
+-	if (WARN_ONCE(src >= ARRAY_SIZE(qe_ic_info),
+-		      "%s: Invalid hw irq number for QEIC\n", __func__))
+-		return -EINVAL;
+-
+-	switch (qe_ic_info[src].pri_reg) {
+-	case QEIC_CIPZCC:
+-		shift = CICNR_ZCC1T_SHIFT;
+-		break;
+-	case QEIC_CIPWCC:
+-		shift = CICNR_WCC1T_SHIFT;
+-		break;
+-	case QEIC_CIPYCC:
+-		shift = CICNR_YCC1T_SHIFT;
+-		break;
+-	case QEIC_CIPXCC:
+-		shift = CICNR_XCC1T_SHIFT;
+-		break;
+-	case QEIC_CIPRTA:
+-		shift = CRICR_RTA1T_SHIFT;
+-		control_reg = QEIC_CRICR;
+-		break;
+-	case QEIC_CIPRTB:
+-		shift = CRICR_RTB1T_SHIFT;
+-		control_reg = QEIC_CRICR;
+-		break;
+-	default:
+-		return -EINVAL;
+-	}
+-
+-	shift += (2 - priority) * 2;
+-	temp = qe_ic_read(qe_ic->regs, control_reg);
+-	temp &= ~(SIGNAL_MASK << shift);
+-	temp |= (high ? SIGNAL_HIGH : SIGNAL_LOW) << shift;
+-	qe_ic_write(qe_ic->regs, control_reg, temp);
+-
+-	return 0;
+-}
+diff --git a/include/soc/fsl/qe/qe_ic.h b/include/soc/fsl/qe/qe_ic.h
+index 43e4ce95c6a0..d47eb231519e 100644
+--- a/include/soc/fsl/qe/qe_ic.h
++++ b/include/soc/fsl/qe/qe_ic.h
+@@ -63,8 +63,4 @@ static inline unsigned int qe_ic_get_high_irq(struct qe_ic *qe_ic)
+ { return 0; }
+ #endif /* CONFIG_QUICC_ENGINE */
+ 
+-void qe_ic_set_highest_priority(unsigned int virq, int high);
+-int qe_ic_set_priority(unsigned int virq, unsigned int priority);
+-int qe_ic_set_high_priority(unsigned int virq, unsigned int priority, int high);
+-
+ #endif /* _ASM_POWERPC_QE_IC_H */
 -- 
 2.23.0
 
