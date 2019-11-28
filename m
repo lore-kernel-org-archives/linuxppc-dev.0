@@ -2,79 +2,79 @@ Return-Path: <SRS0=QEr8=ZU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 27106C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 16:31:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD59FC432C0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 16:33:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CB43821774
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 16:31:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5D1A021774
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 16:33:35 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="BNS8YU7z"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CB43821774
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="Fs4SgS4/"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5D1A021774
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rasmusvillemoes.dk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47P36p69ZrzDqSD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Nov 2019 03:31:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47P39T08zBzDr6T
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Nov 2019 03:33:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::242;
- helo=mail-lj1-x242.google.com; envelope-from=linux@rasmusvillemoes.dk;
+ smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::244;
+ helo=mail-lj1-x244.google.com; envelope-from=linux@rasmusvillemoes.dk;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=rasmusvillemoes.dk
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk
- header.b="BNS8YU7z"; dkim-atps=neutral
-Received: from mail-lj1-x242.google.com (mail-lj1-x242.google.com
- [IPv6:2a00:1450:4864:20::242])
+ header.b="Fs4SgS4/"; dkim-atps=neutral
+Received: from mail-lj1-x244.google.com (mail-lj1-x244.google.com
+ [IPv6:2a00:1450:4864:20::244])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47P13405TdzDqsd
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47P1340XjPzDqys
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2019 01:57:52 +1100 (AEDT)
-Received: by mail-lj1-x242.google.com with SMTP id e10so19658927ljj.6
+Received: by mail-lj1-x244.google.com with SMTP id s22so9822439ljs.7
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Nov 2019 06:57:51 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=rasmusvillemoes.dk; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=gOHk69/KFsExobLE9NJQaGShwXGaUdC/TzJxF/vkfiE=;
- b=BNS8YU7z/62qBru4p5dWldmGUqPFFFYcSf6UoO5+N8cI1t/eYIwVb93SWj/sJb/aPr
- CLgKaJzW4T4UJCDV6fxG/mFRQa5+pWEgUVNo9gk6Z/haJ0GbejDd0krX3Tx1ekUBIG7+
- Kf0VDKOEyN97OudALHUN6autns8qnyxm/Ncyk=
+ bh=QBhz5rvCw4g2Ox9AwtLP/2ydNw3vwlfo4gXSav3FB44=;
+ b=Fs4SgS4/1psPKfkuhI4Ny+x/2oJrTK7HBfKE4/RCaNwwy+uA8dMiNwd3beo5/zLTHw
+ 62oVxo+n4p+sA9/H9nbzmMU2pfSe0i3IY9PDEKXtA5Y16gW6pwQTd4R0Uiu6nNqFDpUH
+ SzXhTou8vQGjVBBwFvDic+ydbfn1zpUpRjhKA=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=gOHk69/KFsExobLE9NJQaGShwXGaUdC/TzJxF/vkfiE=;
- b=Boxl8jFIQvAHmEr/iOlfl329NY7zseDtcZZ+wlSA+9Tq/IAjJECFDjsZu+3kSjv8bU
- Dnuo4pDMaDU0IJmRBKQTn/WefjmMbuDv+qjyDR6d6E55m9/o5MWZfs7/Z6MrYcRdUBeH
- ppxhMhJA6lJ+1WJwWLxtaqFa30mFDvw6Dq43O+C3ZMsDBnhnamaiCicVN5oGQzUyb9h+
- J0TKncq0ZBhuBGAkElHzFAUuvt7yZmT0nIyYPUk9RDge1f5oi7jH8ah6JY2MGyFhggVE
- guKcvaavAOaOQFfybvakx56j6JHVVML/kEqHqLpce9CRIvJh+dRWdfT6cln/gNg/iG+W
- Mw5w==
-X-Gm-Message-State: APjAAAVK6iRhys9bfd0yHHsCmkvsjcTdw0q3uWWEcDUWb1D9NImwGypn
- mqQUUTCCkmiJyToPBWG0fj6OTw==
-X-Google-Smtp-Source: APXvYqyIZpDYj/S47jI4BvahQQv0z5TMLaQBBFJjaoxjSz2gIfzyz1ZHAFXq4N7Oyd5IVHNFskfXyA==
-X-Received: by 2002:a2e:7405:: with SMTP id p5mr19349633ljc.34.1574953067629; 
- Thu, 28 Nov 2019 06:57:47 -0800 (PST)
+ bh=QBhz5rvCw4g2Ox9AwtLP/2ydNw3vwlfo4gXSav3FB44=;
+ b=Cp1gt8DBww+nFARwzQIx/YARUGNpxfOATLVn2sKgeNGFH0sjkNeAMHrXUA1EXFHOvB
+ 8rKPFjfR8qbSGjcmDtDLxxfIAa3VCo0YxJU+8zBrodLK8inFDLHykdHdarkoRzrIRUnj
+ YwaDXWy9YSAopPmk1MNeglWYOY0SMUwj5D7NwMXOTbdzoAbxIPaGMzGv9Ox7aPktxXFk
+ lvdYPnhOqT/z5B0c709UxctsTeRdsZt/pa3ETR+Jx2IHmbh2SVcjySbPBXK5wL05lja1
+ pGFgAsI2qdU9GbtV6Tr+ezgJHGf00SB3XgOi4tqcQGQ66qQt+sY3SbohXdk34Q6IibsI
+ 5u+w==
+X-Gm-Message-State: APjAAAX/rtj1pQCZQfEWEb537PJW9C7n9r00oAprobEyI55vUT3kAv4I
+ xD8W2F/wnKAqZoSCk2/O7iwPHw==
+X-Google-Smtp-Source: APXvYqx99pjU5nTC/rq9MmsMvdS7IjR/57AJ+W7tuU3iN95pO3rx6CAJcCzrdDDJbnd7jwEkPdc8CQ==
+X-Received: by 2002:a2e:888b:: with SMTP id k11mr10315128lji.87.1574953068992; 
+ Thu, 28 Nov 2019 06:57:48 -0800 (PST)
 Received: from prevas-ravi.prevas.se ([81.216.59.226])
- by smtp.gmail.com with ESMTPSA id u2sm2456803lfl.18.2019.11.28.06.57.46
+ by smtp.gmail.com with ESMTPSA id u2sm2456803lfl.18.2019.11.28.06.57.47
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 28 Nov 2019 06:57:47 -0800 (PST)
+ Thu, 28 Nov 2019 06:57:48 -0800 (PST)
 From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 To: Qiang Zhao <qiang.zhao@nxp.com>, Li Yang <leoyang.li@nxp.com>,
  Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v6 32/49] serial: ucc_uart: use of_property_read_u32() in
- ucc_uart_probe()
-Date: Thu, 28 Nov 2019 15:55:37 +0100
-Message-Id: <20191128145554.1297-33-linux@rasmusvillemoes.dk>
+Subject: [PATCH v6 33/49] serial: ucc_uart: limit brg-frequency workaround to
+ PPC32
+Date: Thu, 28 Nov 2019 15:55:38 +0100
+Message-Id: <20191128145554.1297-34-linux@rasmusvillemoes.dk>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191128145554.1297-1-linux@rasmusvillemoes.dk>
 References: <20191128145554.1297-1-linux@rasmusvillemoes.dk>
@@ -99,117 +99,40 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-For this to work correctly on little-endian hosts, don't access the
-device-tree properties directly in native endianness, but use the
-of_property_read_u32() helper.
+According to Timur Tabi
 
+    This bug in older U-Boots is definitely PowerPC-specific
+
+So before allowing this driver to be built for platforms other than
+PPC32, make sure that we don't accept malformed device trees on those
+other platforms.
+
+Suggested-by: Timur Tabi <timur@kernel.org>
 Reviewed-by: Timur Tabi <timur@kernel.org>
 Acked-by: Timur Tabi <timur@kernel.org>
 Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 ---
- drivers/tty/serial/ucc_uart.c | 36 +++++++++++++++--------------------
- 1 file changed, 15 insertions(+), 21 deletions(-)
+ drivers/tty/serial/ucc_uart.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
 diff --git a/drivers/tty/serial/ucc_uart.c b/drivers/tty/serial/ucc_uart.c
-index 313697842e24..c055abf4c919 100644
+index c055abf4c919..9436b93d5cfa 100644
 --- a/drivers/tty/serial/ucc_uart.c
 +++ b/drivers/tty/serial/ucc_uart.c
-@@ -1256,10 +1256,10 @@ static int soft_uart_init(struct platform_device *ofdev)
- static int ucc_uart_probe(struct platform_device *ofdev)
- {
- 	struct device_node *np = ofdev->dev.of_node;
--	const unsigned int *iprop;      /* Integer OF properties */
- 	const char *sprop;      /* String OF properties */
- 	struct uart_qe_port *qe_port = NULL;
- 	struct resource res;
-+	u32 val;
- 	int ret;
- 
- 	/*
-@@ -1290,23 +1290,20 @@ static int ucc_uart_probe(struct platform_device *ofdev)
- 
- 	/* Get the UCC number (device ID) */
- 	/* UCCs are numbered 1-7 */
--	iprop = of_get_property(np, "cell-index", NULL);
--	if (!iprop) {
--		iprop = of_get_property(np, "device-id", NULL);
--		if (!iprop) {
--			dev_err(&ofdev->dev, "UCC is unspecified in "
--				"device tree\n");
-+	if (of_property_read_u32(np, "cell-index", &val)) {
-+		if (of_property_read_u32(np, "device-id", &val)) {
-+			dev_err(&ofdev->dev, "UCC is unspecified in device tree\n");
- 			ret = -EINVAL;
- 			goto out_free;
- 		}
- 	}
- 
--	if ((*iprop < 1) || (*iprop > UCC_MAX_NUM)) {
--		dev_err(&ofdev->dev, "no support for UCC%u\n", *iprop);
-+	if (val < 1 || val > UCC_MAX_NUM) {
-+		dev_err(&ofdev->dev, "no support for UCC%u\n", val);
- 		ret = -ENODEV;
- 		goto out_free;
- 	}
--	qe_port->ucc_num = *iprop - 1;
-+	qe_port->ucc_num = val - 1;
- 
- 	/*
- 	 * In the future, we should not require the BRG to be specified in the
-@@ -1350,13 +1347,12 @@ static int ucc_uart_probe(struct platform_device *ofdev)
- 	}
- 
- 	/* Get the port number, numbered 0-3 */
--	iprop = of_get_property(np, "port-number", NULL);
--	if (!iprop) {
-+	if (of_property_read_u32(np, "port-number", &val)) {
- 		dev_err(&ofdev->dev, "missing port-number in device tree\n");
- 		ret = -EINVAL;
- 		goto out_free;
- 	}
--	qe_port->port.line = *iprop;
-+	qe_port->port.line = val;
- 	if (qe_port->port.line >= UCC_MAX_UART) {
- 		dev_err(&ofdev->dev, "port-number must be 0-%u\n",
- 			UCC_MAX_UART - 1);
-@@ -1386,31 +1382,29 @@ static int ucc_uart_probe(struct platform_device *ofdev)
- 		}
- 	}
- 
--	iprop = of_get_property(np, "brg-frequency", NULL);
--	if (!iprop) {
-+	if (of_property_read_u32(np, "brg-frequency", &val)) {
- 		dev_err(&ofdev->dev,
- 		       "missing brg-frequency in device tree\n");
- 		ret = -EINVAL;
- 		goto out_np;
- 	}
- 
--	if (*iprop)
--		qe_port->port.uartclk = *iprop;
-+	if (val)
-+		qe_port->port.uartclk = val;
+@@ -1392,6 +1392,13 @@ static int ucc_uart_probe(struct platform_device *ofdev)
+ 	if (val)
+ 		qe_port->port.uartclk = val;
  	else {
++		if (!IS_ENABLED(CONFIG_PPC32)) {
++			dev_err(&ofdev->dev,
++				"invalid brg-frequency in device tree\n");
++			ret = -EINVAL;
++			goto out_np;
++		}
++
  		/*
  		 * Older versions of U-Boot do not initialize the brg-frequency
  		 * property, so in this case we assume the BRG frequency is
- 		 * half the QE bus frequency.
- 		 */
--		iprop = of_get_property(np, "bus-frequency", NULL);
--		if (!iprop) {
-+		if (of_property_read_u32(np, "bus-frequency", &val)) {
- 			dev_err(&ofdev->dev,
- 				"missing QE bus-frequency in device tree\n");
- 			ret = -EINVAL;
- 			goto out_np;
- 		}
--		if (*iprop)
--			qe_port->port.uartclk = *iprop / 2;
-+		if (val)
-+			qe_port->port.uartclk = val / 2;
- 		else {
- 			dev_err(&ofdev->dev,
- 				"invalid QE bus-frequency in device tree\n");
 -- 
 2.23.0
 
