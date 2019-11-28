@@ -2,79 +2,83 @@ Return-Path: <SRS0=QEr8=ZU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A3A4C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 12:25:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 84CD1C432C0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 15:02:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CD11D2158A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 12:25:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id F0D9A2084D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 15:02:23 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="jabLiYoV"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CD11D2158A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="f/W/exb9"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F0D9A2084D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rasmusvillemoes.dk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47Nxfv6ctHzDr0L
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 23:25:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47P18D52N1zDqdG
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Nov 2019 02:02:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::242;
- helo=mail-lj1-x242.google.com; envelope-from=linus.walleij@linaro.org;
+ smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::144;
+ helo=mail-lf1-x144.google.com; envelope-from=linux@rasmusvillemoes.dk;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=linaro.org header.i=@linaro.org header.b="jabLiYoV"; 
- dkim-atps=neutral
-Received: from mail-lj1-x242.google.com (mail-lj1-x242.google.com
- [IPv6:2a00:1450:4864:20::242])
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=rasmusvillemoes.dk
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk
+ header.b="f/W/exb9"; dkim-atps=neutral
+Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com
+ [IPv6:2a00:1450:4864:20::144])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47NxbF221DzDqdW
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Nov 2019 23:22:00 +1100 (AEDT)
-Received: by mail-lj1-x242.google.com with SMTP id u17so914766lja.4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Nov 2019 04:22:00 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=SXCA4P1++mZ4GjWU0WE3nsYL5FMcWa3cXbIapek2T/s=;
- b=jabLiYoVLgEE4KTwesZZ2DmLmaC34ZclwZ1kroQlBm1emD0PcHERirT/hIXKWoQFos
- FXGKTcgMut7RTmZ5gXXmVxyK4gRpeofT8e2F8s6uLfmA+TQObcbJyQh1OR+sP5z3w+vH
- iVyRWxpvtyGd0kqgtzW3CQRScRwwOudpNBwxE1TAHpVCjIzAJwfin6SsgPTMGVpotdh3
- ooylYNSUGySU9KKHhWVPly1OHawrnLauXENT78d93EllPbBwpznUq9al7WKA6Jc+w8X2
- yzAsA4EJ59JuX+Vfi82qtpXLIyN+EOD8BlzexqqEakfaRNLtDQBtKzorXhAlD3MTM1sV
- 03JQ==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47P12G027vzDqmh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2019 01:57:08 +1100 (AEDT)
+Received: by mail-lf1-x144.google.com with SMTP id y19so20245448lfl.9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Nov 2019 06:57:08 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=rasmusvillemoes.dk; s=google;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=r0Z99m46uTitiY7EAqUjdsfnbt8T6jBnOkYMa/lxzFc=;
+ b=f/W/exb9eqrLZUZU7hVxEY41tbm7yL1+b7JHIp/+HXGPW6D57B7kArjlPKFQAP795y
+ JFFg6GJoWjgAQzfamqMMSl7siZ5vtxRSyA6w4/O5Y0YSqBAYYsiufM8Jod3NrLYjb9DT
+ QDUuJMw+ZdkL9v/N3IHXbu7xg+vS9msqIMmXo=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=SXCA4P1++mZ4GjWU0WE3nsYL5FMcWa3cXbIapek2T/s=;
- b=MYFVoTvUUGJ2GY65BgYEkP9gSFaR/h4rScZW16vZOjYs5SFkDJ4FJHGMryGGN65lCn
- jjCSkEh8MitfaHcwl5xDiOylVqpiTsQ27bNG0WBifgpV8+5CvhMp7YsCv5kPpaPBrmHS
- 42QSQttdgwJOTBui56MaFAvwK6+cAmbRicxjAwvPeFM7vb6BM5HcKWe2iwER0/n2qjvw
- NpNPhlCtaTGZvmRkQwTJKxLpwp+2Qfr7Tb0CmBKQbptmDz933dajAS59KNQtjfH42NVB
- BgmvKcHbIZmbnT+eDUPjG35DXLV/WONfUpJ/tn1Kcdxj0HTgsfoPGFJip9K0b9tDT7/S
- jl9Q==
-X-Gm-Message-State: APjAAAX5B2fr66FooHo2jC5PwTKfUhFm3ALbXywbPxXqXynNsrtPGL9K
- T3eM36q62r5ZnhAx7A5aE2R1bM/h+ImeRdsRlBWIhA==
-X-Google-Smtp-Source: APXvYqxC+CilfFecs694uPA2TkzfBRgLiP8clA3RZ7THF3M8WYbpWuyE8yJFEz9LrJzLIs8TgrYqaoLQgeR+Iv/pMiA=
-X-Received: by 2002:a05:651c:1049:: with SMTP id
- x9mr13384895ljm.233.1574943715334; 
- Thu, 28 Nov 2019 04:21:55 -0800 (PST)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=r0Z99m46uTitiY7EAqUjdsfnbt8T6jBnOkYMa/lxzFc=;
+ b=AOivDbhguud9cQJuctkNVAQWUhOSzdJlVVLNuLVcdNli/CujHbMNoKkBA3V74z3NQ4
+ oYjdEfSUaByPHzdFpqpIQ8e5/x6MF11ncaKGbdTFPsj5usmg64uKgcP2k2da/paDNcOd
+ Va6+y6aV7dL+pw/BRcRbTfWx/9in9hIZCpYSIXNThDWLhMJsyPZs5G2UGH5y9g0qzEB4
+ LF248GgVXH/8VF9G1WyEhrNaAEuLqadyTMnTdel/S0VnbFZwkZyJ91sGV3njOysftWN6
+ GxSN7IKlTjHaPx+miY69Bx7vsLG48K5M0ySlrXimf+ISlOGH50fviqNdii3runVTI3M1
+ Rfzg==
+X-Gm-Message-State: APjAAAXIlrKlTrOckElDM37eAWK7nr7DWIKVn+DhXzMckckn8ayffoLm
+ 7FcmFxLDJvWFQ8jjJUosCXGpjQ==
+X-Google-Smtp-Source: APXvYqxb8GWt/9RrETi2+yLMb/nDXIK4UMHDkk05wdq/zOJZC8k6Rm4tzODOn7GKBe/vlKCItiPr3w==
+X-Received: by 2002:a19:756:: with SMTP id 83mr6609479lfh.173.1574953025427;
+ Thu, 28 Nov 2019 06:57:05 -0800 (PST)
+Received: from prevas-ravi.prevas.se ([81.216.59.226])
+ by smtp.gmail.com with ESMTPSA id u2sm2456803lfl.18.2019.11.28.06.57.04
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 28 Nov 2019 06:57:04 -0800 (PST)
+From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+To: Qiang Zhao <qiang.zhao@nxp.com>, Li Yang <leoyang.li@nxp.com>,
+ Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v6 01/49] soc: fsl: qe: remove space-before-tab
+Date: Thu, 28 Nov 2019 15:55:06 +0100
+Message-Id: <20191128145554.1297-2-linux@rasmusvillemoes.dk>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20191128145554.1297-1-linux@rasmusvillemoes.dk>
+References: <20191128145554.1297-1-linux@rasmusvillemoes.dk>
 MIME-Version: 1.0
-References: <7556683b57d8ce100855857f03d1cd3d2903d045.1574943062.git.christophe.leroy@c-s.fr>
-In-Reply-To: <7556683b57d8ce100855857f03d1cd3d2903d045.1574943062.git.christophe.leroy@c-s.fr>
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Thu, 28 Nov 2019 13:21:43 +0100
-Message-ID: <CACRpkdZZc5QKqX74WbyO8WQmVw7SSm2HYYMtoxjbEWomGvnkUg@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/devicetrees: Change 'gpios' to 'cs-gpios' on
- fsl,spi nodes
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,27 +90,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>,
- "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
- <devicetree@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Rob Herring <robh+dt@kernel.org>, linux-spi <linux-spi@vger.kernel.org>,
- Mark Brown <broonie@kernel.org>, Paul Mackerras <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
+Cc: Timur Tabi <timur@kernel.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ linux-kernel@vger.kernel.org, Scott Wood <oss@buserror.net>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Nov 28, 2019 at 1:16 PM Christophe Leroy
-<christophe.leroy@c-s.fr> wrote:
+Reviewed-by: Timur Tabi <timur@kernel.org>
+Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+---
+ drivers/soc/fsl/qe/qe.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-> Since commit 0f0581b24bd0 ("spi: fsl: Convert to use CS GPIO
-> descriptors"), the prefered way to define chipselect GPIOs is using
-> 'cs-gpios' property instead of the legacy 'gpios' property.
->
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+diff --git a/drivers/soc/fsl/qe/qe.c b/drivers/soc/fsl/qe/qe.c
+index 417df7e19281..2a0e6e642776 100644
+--- a/drivers/soc/fsl/qe/qe.c
++++ b/drivers/soc/fsl/qe/qe.c
+@@ -378,8 +378,8 @@ static int qe_sdma_init(void)
+ 	}
+ 
+ 	out_be32(&sdma->sdebcr, (u32) sdma_buf_offset & QE_SDEBCR_BA_MASK);
+- 	out_be32(&sdma->sdmr, (QE_SDMR_GLB_1_MSK |
+- 					(0x1 << QE_SDMR_CEN_SHIFT)));
++	out_be32(&sdma->sdmr, (QE_SDMR_GLB_1_MSK |
++		 (0x1 << QE_SDMR_CEN_SHIFT)));
+ 
+ 	return 0;
+ }
+-- 
+2.23.0
 
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-
-Yours,
-Linus Walleij
