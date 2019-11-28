@@ -7,74 +7,73 @@ X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B6C3FC432C0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 17:07:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A1ECC432C0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 17:10:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5FF8F21739
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 17:07:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id ADC1221739
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Nov 2019 17:10:12 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="MsBrXnDd"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5FF8F21739
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="Hf/PPnAb"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ADC1221739
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rasmusvillemoes.dk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47P3x71c1gzDr4C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Nov 2019 04:07:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47P3zk65b5zDqJT
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Nov 2019 04:10:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::241;
- helo=mail-lj1-x241.google.com; envelope-from=linux@rasmusvillemoes.dk;
+ smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::141;
+ helo=mail-lf1-x141.google.com; envelope-from=linux@rasmusvillemoes.dk;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=rasmusvillemoes.dk
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk
- header.b="MsBrXnDd"; dkim-atps=neutral
-Received: from mail-lj1-x241.google.com (mail-lj1-x241.google.com
- [IPv6:2a00:1450:4864:20::241])
+ header.b="Hf/PPnAb"; dkim-atps=neutral
+Received: from mail-lf1-x141.google.com (mail-lf1-x141.google.com
+ [IPv6:2a00:1450:4864:20::141])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47P13S6d7LzDr0B
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47P13S45yYzDqn4
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2019 01:58:12 +1100 (AEDT)
-Received: by mail-lj1-x241.google.com with SMTP id m6so21460871ljc.1
+Received: by mail-lf1-x141.google.com with SMTP id f16so20275452lfm.3
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Nov 2019 06:58:12 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=rasmusvillemoes.dk; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=Z0ILJLPvMSycr+N5z1WBGPbbOOzMeVGs3+El1NFG5gM=;
- b=MsBrXnDd/G1Zjj210ATgY6vuErblELNtwtEokGCaoA1MxxkLkU5DMXWZ/DqI4rkd5Z
- gETgTkCKjtmJ/BL1I8x41SvinDsW0tjkR9cfyiTi9zOlB2m8FMv18BEU617l2rIZlRYm
- JgqrkOdeLh5F0tEM8F/+7LQYmLCxUlP6KBeO0=
+ bh=A61btIRCfGl2K49FU+YApUFpLzedg3OmEOwCORD6qFU=;
+ b=Hf/PPnAbgXenT8bkLjfb4K/u1LbHRKbg0TAYF79JBnqjid3M76xfsO2Iqr0VVwnFyD
+ rZNl4JtYAtUQD8Zu1LwxcvmtRvoRs1HGQ6aR9a88XKhA2wHLwBiX2tp7T944IhB1pgwY
+ FAIkJLiijQAUm9eh3TF6qwqwuxYQZ78WxFPpM=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=Z0ILJLPvMSycr+N5z1WBGPbbOOzMeVGs3+El1NFG5gM=;
- b=mOJx/fSldGrpYsN/KisbfjWyUpGvGX/QNkmFD03Mi7Zifb2JFD/ghcbL/VO0vRPS4d
- QubsBnl0V6PzyRyILS7ehZyMz6PgeVX6O5aubUZiOq+pYC4ToLz+5Ls1PmyTpwjeRCSo
- oU6nS6DbbxmYB0Uc1SESb0EwsFJj7l35VctbMkHLq6jHMm5W/AlYTedH0sIWXI6uzAo5
- 4mYizDLcWrTzVr+ZjGkxvx7VcEIaiRrH53MkgEVlvCCuxJdM+Hq98AnqMvjPdK0s/SZp
- mvxWZKAvfIwEBKYcqnr8VjNuJUBSsP0xGvomxHLOsVrjGN1+udIO8pKCTXYGneAZETf4
- VeFg==
-X-Gm-Message-State: APjAAAWAkLJqDFIKbzo7Jn4uLpabOZbiw6GOh/NcloPhGhBg3nZ5ZGQ7
- nD3NP23Nl+P0lTuITksLcvM59w==
-X-Google-Smtp-Source: APXvYqzc2fQxY6lskiW/Z09onmsQDrBOExaD6v9SX5/irAT7oq304NVrn38+PRfo+mxcFltlRIIozA==
-X-Received: by 2002:a2e:9f4d:: with SMTP id v13mr35084645ljk.78.1574953086759; 
- Thu, 28 Nov 2019 06:58:06 -0800 (PST)
+ bh=A61btIRCfGl2K49FU+YApUFpLzedg3OmEOwCORD6qFU=;
+ b=TOnb3cDWGsSR+ZeYMo5nv46x4KMt3UzqQ1MQW6vBCXmxKwmCVng5UgPl3xzzD6R5W7
+ 8S/wGZ1NdRlzzSKufruT1iwbuKRd0y+63Vnr82OT99bbOaGFsAzox1a3lSSR5torzQ4E
+ 4VwuGazfn0lX5KDUXwTF3Gs9SZcnSzO/yHpoGvCTvar96d4ZSy69L23MjDvRImoZ508X
+ Sr9enctRcaGOjVJdOreCvH68rLt/sIup9iJrNk8BlFeR2kgEGkhyNlq2StMbD8uiIM9P
+ q3G82bVd4Ub9QJvgCmGi0gQRLsYYZo22e5Mll3oSi9LVZq4u1I1VaNLIJqmk7wWr8zrJ
+ rbxg==
+X-Gm-Message-State: APjAAAVG4wgwEN+WTMF1ivoxBoq4wSTSaf3yWYA0PFywrHd3TF3GlHuh
+ xRlrzyymeZDVP8D9exrAWsHnvA==
+X-Google-Smtp-Source: APXvYqxhBAd4opJgrPy7P/4weZdPIJVgERAZIrjiD0AKu9eR6iQ1KzTsifkMtoeeLjTOMUJ9elo8CA==
+X-Received: by 2002:a19:cc08:: with SMTP id c8mr32134885lfg.124.1574953084507; 
+ Thu, 28 Nov 2019 06:58:04 -0800 (PST)
 Received: from prevas-ravi.prevas.se ([81.216.59.226])
- by smtp.gmail.com with ESMTPSA id u2sm2456803lfl.18.2019.11.28.06.58.05
+ by smtp.gmail.com with ESMTPSA id u2sm2456803lfl.18.2019.11.28.06.58.03
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 28 Nov 2019 06:58:06 -0800 (PST)
+ Thu, 28 Nov 2019 06:58:04 -0800 (PST)
 From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 To: Qiang Zhao <qiang.zhao@nxp.com>, Li Yang <leoyang.li@nxp.com>,
  Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v6 48/49] soc: fsl: qe: remove unused #include of asm/irq.h
- from ucc.c
-Date: Thu, 28 Nov 2019 15:55:53 +0100
-Message-Id: <20191128145554.1297-49-linux@rasmusvillemoes.dk>
+Subject: [PATCH v6 46/49] net/wan/fsl_ucc_hdlc: reject muram offsets above 64K
+Date: Thu, 28 Nov 2019 15:55:51 +0100
+Message-Id: <20191128145554.1297-47-linux@rasmusvillemoes.dk>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191128145554.1297-1-linux@rasmusvillemoes.dk>
 References: <20191128145554.1297-1-linux@rasmusvillemoes.dk>
@@ -91,7 +90,7 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kbuild test robot <lkp@intel.com>, Timur Tabi <timur@kernel.org>,
+Cc: Timur Tabi <timur@kernel.org>, netdev@vger.kernel.org,
  Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-kernel@vger.kernel.org,
  Scott Wood <oss@buserror.net>, linuxppc-dev@lists.ozlabs.org,
  linux-arm-kernel@lists.infradead.org
@@ -99,36 +98,35 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When allowing this driver to be built for ARM, the build fails (for
-CONFIG_SMP=y) since ARM's asm/irq.h header is not self-contained:
+Qiang Zhao points out that these offsets get written to 16-bit
+registers, and there are some QE platforms with more than 64K
+muram. So it is possible that qe_muram_alloc() gives us an allocation
+that can't actually be used by the hardware, so detect and reject
+that.
 
-  In file included from drivers/soc/fsl/qe/ucc.c:18:0:
->> arch/arm/include/asm/irq.h:34:50: error: unknown type name 'cpumask_t'
-    extern void arch_trigger_cpumask_backtrace(const cpumask_t *mask,
-
-But nothing in this file actually uses anything from asm/irq.h -
-removing this #include generates identical object code, both on PPC32
-and on ARM (the latter with a patch added to asm/irq.h to make the
-build work in the first place).
-
-Reported-by: kbuild test robot <lkp@intel.com>
+Reported-by: Qiang Zhao <qiang.zhao@nxp.com>
+Reviewed-by: Timur Tabi <timur@kernel.org>
 Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 ---
- drivers/soc/fsl/qe/ucc.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/net/wan/fsl_ucc_hdlc.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/soc/fsl/qe/ucc.c b/drivers/soc/fsl/qe/ucc.c
-index da3d7e2dd837..90157acc5ba6 100644
---- a/drivers/soc/fsl/qe/ucc.c
-+++ b/drivers/soc/fsl/qe/ucc.c
-@@ -15,7 +15,6 @@
- #include <linux/spinlock.h>
- #include <linux/export.h>
+diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
+index 8d13586bb774..f029eaa7cfc0 100644
+--- a/drivers/net/wan/fsl_ucc_hdlc.c
++++ b/drivers/net/wan/fsl_ucc_hdlc.c
+@@ -245,6 +245,11 @@ static int uhdlc_init(struct ucc_hdlc_private *priv)
+ 		ret = -ENOMEM;
+ 		goto free_riptr;
+ 	}
++	if (riptr != (u16)riptr || tiptr != (u16)tiptr) {
++		dev_err(priv->dev, "MURAM allocation out of addressable range\n");
++		ret = -ENOMEM;
++		goto free_tiptr;
++	}
  
--#include <asm/irq.h>
- #include <asm/io.h>
- #include <soc/fsl/qe/immap_qe.h>
- #include <soc/fsl/qe/qe.h>
+ 	/* Set RIPTR, TIPTR */
+ 	iowrite16be(riptr, &priv->ucc_pram->riptr);
 -- 
 2.23.0
 
