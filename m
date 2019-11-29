@@ -2,63 +2,89 @@ Return-Path: <SRS0=844/=ZV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78B26C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Nov 2019 18:49:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F4B6C432C0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Nov 2019 19:31:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 108BD21736
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Nov 2019 18:49:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 108BD21736
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id D5F13207FC
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Nov 2019 19:31:43 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="JqgtnWDj"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D5F13207FC
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47Pk7y39NczDrDD
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Nov 2019 05:49:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47Pl4X6BHSzDrFY
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Nov 2019 06:31:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=redhat.com (client-ip=207.211.31.81;
+ helo=us-smtp-delivery-1.mimecast.com; envelope-from=bhsharma@redhat.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=permerror (SPF Permanent Error: Unknown mechanism
- found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
- (client-ip=63.228.1.57; helo=gate.crashing.org;
- envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.b="JqgtnWDj"; 
+ dkim-atps=neutral
+Received: from us-smtp-delivery-1.mimecast.com (us-smtp-2.mimecast.com
+ [207.211.31.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47Pk5J5ycnzDr9L
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Nov 2019 05:47:16 +1100 (AEDT)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id xATIkxwn003148;
- Fri, 29 Nov 2019 12:47:00 -0600
-Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id xATIkw6Y003147;
- Fri, 29 Nov 2019 12:46:58 -0600
-X-Authentication-Warning: gate.crashing.org: segher set sender to
- segher@kernel.crashing.org using -f
-Date: Fri, 29 Nov 2019 12:46:58 -0600
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH v4 2/2] powerpc/irq: inline call_do_irq() and
- call_do_softirq()
-Message-ID: <20191129184658.GR9491@gate.crashing.org>
-References: <f12fb9a6cc52d83ee9ddf15a36ee12ac77e6379f.1570684298.git.christophe.leroy@c-s.fr>
- <5ca6639b7c1c21ee4b4138b7cfb31d6245c4195c.1570684298.git.christophe.leroy@c-s.fr>
- <877e3tbvsa.fsf@mpe.ellerman.id.au>
- <20191121101552.GR16031@gate.crashing.org>
- <87y2w49rgo.fsf@mpe.ellerman.id.au> <20191125142556.GU9491@gate.crashing.org>
- <5fdb1c92-8bf4-01ca-f81c-214870c33be3@c-s.fr>
- <20191127145958.GG9491@gate.crashing.org>
- <2072e066-1ffb-867e-60ec-04a6bb9075c1@c-s.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <2072e066-1ffb-867e-60ec-04a6bb9075c1@c-s.fr>
-User-Agent: Mutt/1.4.2.3i
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47Pl1s6w6nzDrBd
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Nov 2019 06:29:19 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1575055757;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding;
+ bh=A1Y9WHtaAY4UzSoPOoSv2m/ifwl+YEceF+RKR3CTCTk=;
+ b=JqgtnWDjFgszpHigYL6q3+yqIwbhPr/yMYnwfNg1ZShf28rj2gorYge24XpIbrniNhCi5s
+ n5xJErr9rndEFZdUNaNBGR1q40drViXf9mlZUG5xUSprLPeDC7ZgxWAPgh87/ejKZ1FAxB
+ rVUA3jZAMgqehnEait/Rgb6ry6I639c=
+Received: from mail-pl1-f199.google.com (mail-pl1-f199.google.com
+ [209.85.214.199]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-371-j78ZccCYMGurMAEOMz3F_g-1; Fri, 29 Nov 2019 14:29:13 -0500
+Received: by mail-pl1-f199.google.com with SMTP id z9so351093plo.8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2019 11:29:13 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=+RGhDPWZi/m+uC+dFG9W5dCj6ubdgxgz1OjCUZFmMIs=;
+ b=k7OI+qLQ7ugfAs0QxHgborsXrb/XF684uHYd+9tdxFTmuNYqm7+MNCZilTfATJokkT
+ EMe0JsO1NMKYpP2UMnIjbNoZJi1AANxADbmyf60QSnlDoE8dq6IlrwDylOBumPArB9uQ
+ ec5kHLEkBSs8Ry+wZDzCj9Aky+avphf6VP6Qu3xkTdri97JYauZIAByhk1I01e3RwqB9
+ mMPHmum+Q+m+BAB4+0EPPG0aMyZaJzSxcyodhMiNJMxU9q9yKxb+ngHuWblCmlftNDs/
+ 17mzMJzXa3ClwJmQhQPPm7WGzM8ipI0ogs7SIxJr2D2PS2QPImY0CtSGCFE/ZmumZOa+
+ /Y8w==
+X-Gm-Message-State: APjAAAUSPyW3Z92Rmm9gHgk8ZMCCBFFd9crNS7/KNQliEOxtR9hFytU4
+ OitBkpQg8oIldHl42Tap9hnO8Fd762qq7s9KN5dySmpCJcep5iHQO4z9H2Khvj1Jcbos/RFPFp4
+ wP0P3SSd1bzKkGZ7ln/id6xBfJQ==
+X-Received: by 2002:a17:90a:b38c:: with SMTP id
+ e12mr20373948pjr.89.1575055752560; 
+ Fri, 29 Nov 2019 11:29:12 -0800 (PST)
+X-Google-Smtp-Source: APXvYqxbsJq68B0VFjsjCP+XCq0F6XFF9siQwhdXf0KacvnZ7i830WNBU2oxnas4e3iBnGfWl5c1rw==
+X-Received: by 2002:a17:90a:b38c:: with SMTP id
+ e12mr20373930pjr.89.1575055752286; 
+ Fri, 29 Nov 2019 11:29:12 -0800 (PST)
+Received: from localhost ([122.177.85.74])
+ by smtp.gmail.com with ESMTPSA id k10sm14560656pjs.31.2019.11.29.11.29.10
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Fri, 29 Nov 2019 11:29:11 -0800 (PST)
+From: Bhupesh Sharma <bhsharma@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [RESEND PATCH v5 0/5] Append new variables to vmcoreinfo
+ (TCR_EL1.T1SZ for arm64 and MAX_PHYSMEM_BITS for all archs)
+Date: Sat, 30 Nov 2019 00:58:41 +0530
+Message-Id: <1575055726-23464-1-git-send-email-bhsharma@redhat.com>
+X-Mailer: git-send-email 2.7.4
+X-MC-Unique: j78ZccCYMGurMAEOMz3F_g-1
+X-Mimecast-Spam-Score: 0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,60 +96,119 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
+Cc: Mark Rutland <mark.rutland@arm.com>, linux-doc@vger.kernel.org,
+ bhsharma@redhat.com, Paul Mackerras <paulus@samba.org>,
+ Will Deacon <will@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Jonathan Corbet <corbet@lwn.net>, x86@kernel.org,
+ Catalin Marinas <catalin.marinas@arm.com>, Dave Anderson <anderson@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>, bhupesh.linux@gmail.com,
+ linux-arm-kernel@lists.infradead.org, Kazuhito Hagio <k-hagio@ab.jp.nec.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Steve Capper <steve.capper@arm.com>, kexec@lists.infradead.org,
+ James Morse <james.morse@arm.com>, Boris Petkov <bp@alien8.de>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi!
+- Resending the v5 version as Will Deacon reported that the patchset was
+  split into two seperate threads while sending out. It was an issue
+  with my 'msmtp' settings which is now fixed.
 
-On Wed, Nov 27, 2019 at 04:15:15PM +0100, Christophe Leroy wrote:
-> Le 27/11/2019 à 15:59, Segher Boessenkool a écrit :
-> >On Wed, Nov 27, 2019 at 02:50:30PM +0100, Christophe Leroy wrote:
-> >>So what do we do ? We just drop the "r2" clobber ?
-> >
-> >You have to make sure your asm code works for all ABIs.  This is quite
-> >involved if you do a call to an external function.  The compiler does
-> >*not* see this call, so you will have to make sure that all that the
-> >compiler and linker do will work, or prevent some of those things (say,
-> >inlining of the function containing the call).
-> 
-> But the whole purpose of the patch is to inline the call to __do_irq() 
-> in order to avoid the trampoline function.
+Changes since v4:
+----------------
+- v4 can be seen here:
+  http://lists.infradead.org/pipermail/kexec/2019-November/023961.html
+- Addressed comments from Dave and added patches for documenting
+  new variables appended to vmcoreinfo documentation.
+- Added testing report shared by Akashi for PATCH 2/5.
 
-Yes, so you call __do_irq.  You have to make sure that what you tell the
-compiler -- and what you *don't tell the compiler -- works with what the
-ABIs require, and what the called function expects and provides.
+Changes since v3:
+----------------
+- v3 can be seen here:
+  http://lists.infradead.org/pipermail/kexec/2019-March/022590.html
+- Addressed comments from James and exported TCR_EL1.T1SZ in vmcoreinfo
+  instead of PTRS_PER_PGD.
+- Added a new patch (via [PATCH 3/3]), which fixes a simple typo in
+  'Documentation/arm64/memory.rst'
 
-> >That does not fix everything.  The called function requires a specific
-> >value in r2 on entry.
-> 
-> Euh ... but there is nothing like that when using existing 
-> call_do_irq().
+Changes since v2:
+----------------
+- v2 can be seen here:
+  http://lists.infradead.org/pipermail/kexec/2019-March/022531.html
+- Protected 'MAX_PHYSMEM_BITS' vmcoreinfo variable under CONFIG_SPARSEMEM
+  ifdef sections, as suggested by Kazu.
+- Updated vmcoreinfo documentation to add description about
+  'MAX_PHYSMEM_BITS' variable (via [PATCH 3/3]).
 
-> How does GCC know that call_do_irq() has same TOC as __do_irq() ?
+Changes since v1:
+----------------
+- v1 was sent out as a single patch which can be seen here:
+  http://lists.infradead.org/pipermail/kexec/2019-February/022411.html
 
-The existing call_do_irq isn't C code.  It doesn't do anything with r2,
-as far as I can see; __do_irq just gets whatever the caller of call_do_irq
-has.
+- v2 breaks the single patch into two independent patches:
+  [PATCH 1/2] appends 'PTRS_PER_PGD' to vmcoreinfo for arm64 arch, whereas
+  [PATCH 2/2] appends 'MAX_PHYSMEM_BITS' to vmcoreinfo in core kernel code =
+(all archs)
 
-So I guess all the callers of call_do_irq have the correct r2 value always
-already?  In that case everything Just Works.
+This patchset primarily fixes the regression reported in user-space
+utilities like 'makedumpfile' and 'crash-utility' on arm64 architecture
+with the availability of 52-bit address space feature in underlying
+kernel. These regressions have been reported both on CPUs which don't
+support ARMv8.2 extensions (i.e. LVA, LPA) and are running newer kernels
+and also on prototype platforms (like ARMv8 FVP simulator model) which
+support ARMv8.2 extensions and are running newer kernels.
 
-> >So all this needs verification.  Hopefully you can get away with just
-> >not clobbering r2 (and not adding a nop after the bl), sure.  But this
-> >needs to be checked.
-> >
-> >Changing control flow inside inline assembler always is problematic.
-> >Another problem in this case (on all ABIs) is that the compiler does
-> >not see you call __do_irq.  Again, you can probably get away with that
-> >too, but :-)
-> 
-> Anyway it sees I reference it, as it is in input arguments. Isn't it 
-> enough ?
+The reason for these regressions is that right now user-space tools
+have no direct access to these values (since these are not exported
+from the kernel) and hence need to rely on a best-guess method of
+determining value of 'vabits_actual' and 'MAX_PHYSMEM_BITS' supported
+by underlying kernel.
 
-It is enough for some things, sure.  But not all.
+Exporting these values via vmcoreinfo will help user-land in such cases.
+In addition, as per suggestion from makedumpfile maintainer (Kazu),
+it makes more sense to append 'MAX_PHYSMEM_BITS' to
+vmcoreinfo in the core code itself rather than in arm64 arch-specific
+code, so that the user-space code for other archs can also benefit from
+this addition to the vmcoreinfo and use it as a standard way of
+determining 'SECTIONS_SHIFT' value in user-land.
 
+Cc: Boris Petkov <bp@alien8.de>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: James Morse <james.morse@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Cc: Steve Capper <steve.capper@arm.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Dave Anderson <anderson@redhat.com>
+Cc: Kazuhito Hagio <k-hagio@ab.jp.nec.com>
+Cc: x86@kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-doc@vger.kernel.org
+Cc: kexec@lists.infradead.org
 
-Segher
+Bhupesh Sharma (5):
+  crash_core, vmcoreinfo: Append 'MAX_PHYSMEM_BITS' to vmcoreinfo
+  arm64/crash_core: Export TCR_EL1.T1SZ in vmcoreinfo
+  Documentation/arm64: Fix a simple typo in memory.rst
+  Documentation/vmcoreinfo: Add documentation for 'MAX_PHYSMEM_BITS'
+  Documentation/vmcoreinfo: Add documentation for 'TCR_EL1.T1SZ'
+
+ Documentation/admin-guide/kdump/vmcoreinfo.rst | 11 +++++++++++
+ Documentation/arm64/memory.rst                 |  2 +-
+ arch/arm64/include/asm/pgtable-hwdef.h         |  1 +
+ arch/arm64/kernel/crash_core.c                 |  9 +++++++++
+ kernel/crash_core.c                            |  1 +
+ 5 files changed, 23 insertions(+), 1 deletion(-)
+
+--=20
+2.7.4
+
