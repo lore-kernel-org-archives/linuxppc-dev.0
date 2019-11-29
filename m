@@ -2,88 +2,54 @@ Return-Path: <SRS0=844/=ZV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EF24C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Nov 2019 07:59:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D5F62C432C0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Nov 2019 08:19:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DBF7F21721
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Nov 2019 07:59:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DBF7F21721
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id EC81E2176D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Nov 2019 08:19:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC81E2176D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47PRjn4sq9zDr9S
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Nov 2019 18:59:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47PS9H4l0BzDr8H
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Nov 2019 19:19:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.190; helo=huawei.com;
+ envelope-from=shaolexi@huawei.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=none (p=none dis=none) header.from=huawei.com
+X-Greylist: delayed 956 seconds by postgrey-1.36 at bilbo;
+ Fri, 29 Nov 2019 18:21:24 AEDT
+Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47PRgd0RMCzDqxV
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2019 18:57:32 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- xAT7vLtD055623
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2019 02:57:27 -0500
-Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
- [169.63.214.131])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2whcxsgfb3-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2019 02:57:26 -0500
-Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
- by ppma01dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id xAT7p0dR004747
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2019 07:57:26 GMT
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23]) by ppma01dal.us.ibm.com with ESMTP id 2wevd7h19p-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2019 07:57:26 +0000
-Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
- [9.57.199.111])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xAT7vP0H33358088
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 29 Nov 2019 07:57:25 GMT
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2F48EAC05E;
- Fri, 29 Nov 2019 07:57:25 +0000 (GMT)
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id AD977AC060;
- Fri, 29 Nov 2019 07:57:23 +0000 (GMT)
-Received: from skywalker.linux.ibm.com (unknown [9.199.41.201])
- by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Fri, 29 Nov 2019 07:57:23 +0000 (GMT)
-X-Mailer: emacs 26.2 (via feedmail 11-beta-1 I)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: Sachin Sant <sachinp@linux.vnet.ibm.com>
-Subject: Re: [-merge] BUG followed by oops running ndctl tests
-In-Reply-To: <6D6FA8CC-7FD3-409E-9CB9-1D3DB5353F7A@linux.vnet.ibm.com>
-References: <B0EBF64C-3B57-4716-BAAF-CBC4CBDF5FBC@linux.vnet.ibm.com>
- <86aee55a-3968-cf0d-6030-cbc6e63fddc9@linux.ibm.com>
- <6D6FA8CC-7FD3-409E-9CB9-1D3DB5353F7A@linux.vnet.ibm.com>
-Date: Fri, 29 Nov 2019 13:27:20 +0530
-Message-ID: <87eexrm7xb.fsf@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47PQsw66jfzDr7F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2019 18:21:20 +1100 (AEDT)
+Received: from DGGEMS412-HUB.china.huawei.com (unknown [172.30.72.60])
+ by Forcepoint Email with ESMTP id 53DBF9292813DBDE57C3;
+ Fri, 29 Nov 2019 15:05:09 +0800 (CST)
+Received: from huawei.com (10.67.189.2) by DGGEMS412-HUB.china.huawei.com
+ (10.3.19.212) with Microsoft SMTP Server id 14.3.439.0; Fri, 29 Nov 2019
+ 15:04:55 +0800
+From: Lexi Shao <shaolexi@huawei.com>
+To: <benh@kernel.crashing.org>, <paulus@samba.org>, <mpe@ellerman.id.au>,
+ <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc/kasan: KASAN is not supported on RELOCATABLE &&
+ FSL_BOOKE
+Date: Fri, 29 Nov 2019 15:04:55 +0800
+Message-ID: <20191129070455.62084-1-shaolexi@huawei.com>
+X-Mailer: git-send-email 2.12.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
- definitions=2019-11-29_01:2019-11-29,2019-11-29 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=644
- malwarescore=0 impostorscore=0 clxscore=1015 adultscore=0 suspectscore=0
- phishscore=0 spamscore=0 lowpriorityscore=0 bulkscore=0 priorityscore=1501
- mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-1910280000 definitions=main-1911290069
+Content-Type: text/plain
+X-Originating-IP: [10.67.189.2]
+X-CFilter-Loop: Reflected
+X-Mailman-Approved-At: Fri, 29 Nov 2019 19:17:47 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,34 +61,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: harish@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: wangkefeng.wang@huawei.com, liucheng32@huawei.com, yi.zhang@huawei.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ shaolexi@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Sachin Sant <sachinp@linux.vnet.ibm.com> writes:
+CONFIG_RELOCATABLE and CONFIG_KASAN cannot be enabled at the same time
+on ppce500 fsl_booke. All functions called before kasan_early_init()
+should be disabled with kasan check. When CONFIG_RELOCATABLE is enabled
+on ppce500 fsl_booke, relocate_init() is called before kasan_early_init()
+which triggers kasan check and results in boot failure.
+Call trace and functions which triggers kasan check(*):
+  - _start
+   - set_ivor
+    - relocate_init(*)
+     - early_get_first_memblock_info(*)
+      - of_scan_flat_dt(*)
+	...
+    - kasan_early_init
 
->> On 16-Nov-2019, at 12:25 AM, Aneesh Kumar K.V <aneesh.kumar@linux.ibm.co=
-m> wrote:
->>=20
->> On 11/15/19 11:36 AM, Sachin Sant wrote:
->>> Following Oops is seen on latest (commit 3b4852888d) powerpc merge bran=
-ch
->>> code while running ndctl (test_namespace) tests
->>> 85c5b0984e was good.
->>=20
->>=20
->>=20
->> Are the namespace size created with size that is multiple of 16M size?
->>=20
->> Wondering whether this is related to https://patchwork.kernel.org/patch/=
-11215049/
->
-> This patch series doesn=E2=80=99t seem to help. I can still recreate the =
-problem with the patches applied.
->
+Potential solutions could be 1. implement relocate_init and all its children
+function in a seperate file or 2. introduce a global vairable in KASAN, only
+enable KASAN check when init is done.
 
-Are the namespace 16MB size aligned? If not you need to recreate all of
-them size aligned.
+Disable KASAN when RELOCATABLE is selected on fsl_booke for now until
+it is supported.
 
--aneesh
+Signed-off-by: Lexi Shao <shaolexi@huawei.com>
+---
+ arch/powerpc/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 3e56c9c2f16e..14f3da63c088 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -171,7 +171,7 @@ config PPC
+ 	select HAVE_ARCH_AUDITSYSCALL
+ 	select HAVE_ARCH_HUGE_VMAP		if PPC_BOOK3S_64 && PPC_RADIX_MMU
+ 	select HAVE_ARCH_JUMP_LABEL
+-	select HAVE_ARCH_KASAN			if PPC32
++	select HAVE_ARCH_KASAN			if PPC32 && !(RELOCATABLE && FSL_BOOKE)
+ 	select HAVE_ARCH_KGDB
+ 	select HAVE_ARCH_MMAP_RND_BITS
+ 	select HAVE_ARCH_MMAP_RND_COMPAT_BITS	if COMPAT
+-- 
+2.12.3
+
