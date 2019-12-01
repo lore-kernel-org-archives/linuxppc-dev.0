@@ -2,136 +2,88 @@ Return-Path: <SRS0=IzGd=ZX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.0 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D0CEDC432C0
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Dec 2019 19:44:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DFD6CC432C0
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Dec 2019 20:27:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 213F120865
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Dec 2019 19:44:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4A35A20865
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Dec 2019 20:27:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lzYNtaj2"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 213F120865
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="e5+HC7eJ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4A35A20865
+Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47QzGG4RN6zDqXY
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Dec 2019 06:44:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47R0Cp4lgLzDqQR
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Dec 2019 07:27:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::435;
- helo=mail-wr1-x435.google.com; envelope-from=asml.silence@gmail.com;
+ smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::344;
+ helo=mail-ot1-x344.google.com; envelope-from=hughd@google.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+ dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="lzYNtaj2"; 
+ unprotected) header.d=google.com header.i=@google.com header.b="e5+HC7eJ"; 
  dkim-atps=neutral
-Received: from mail-wr1-x435.google.com (mail-wr1-x435.google.com
- [IPv6:2a00:1450:4864:20::435])
+Received: from mail-ot1-x344.google.com (mail-ot1-x344.google.com
+ [IPv6:2607:f8b0:4864:20::344])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47PjDT74GczDr5D
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Nov 2019 05:08:19 +1100 (AEDT)
-Received: by mail-wr1-x435.google.com with SMTP id t2so36195558wrr.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Nov 2019 10:08:18 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=to:cc:references:from:autocrypt:subject:message-id:date:user-agent
- :mime-version:in-reply-to;
- bh=clniEQS47FGgd7NfiLKoYACJnRe08zxZ0y8JHSOO35k=;
- b=lzYNtaj2KkWEw8fMfV5x3ouiKh0F7QUe/pAfiytYJjDtbiuxr2E/df1mRImTtl/WTy
- cLmVMKdM2jCOL2n67pzj+7J15bDdpcK0X3PUAxJqBacaS99QvFbHhdx+OW73uja0DlT1
- Rhk1DllHD255Wpmk8eeFDFe3PUUikG31vx9/MAEmfQBQHpLxTU55GJeWMuJj1h0d0DGk
- qL+VfjSMTfbA5uAAq6tstf9HUNZGYXJ0BF90D4vxvf8eqHFbkfHSxadMTLLqAH1aliEe
- Orl31o4NjkfNUWnzYwiXHlBA1rWOpD4BJA1BL91Y5jy946GvNB8ZKbWqmZotJVbZFTw3
- LNiA==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47R09L3g7YzDqWr
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Dec 2019 07:25:08 +1100 (AEDT)
+Received: by mail-ot1-x344.google.com with SMTP id i4so2313418otr.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Dec 2019 12:25:08 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
+ h=date:from:to:cc:subject:in-reply-to:message-id:references
+ :user-agent:mime-version;
+ bh=I2Yj7WZ2eIVwURYWTRsAO1/HJqcoGDPFFh90G05uVz8=;
+ b=e5+HC7eJOsGBzcln7aLNMNBn17SkFrz5U9QjsFhZ/57uKHwF8+/NkDgMV2dr/dMgOl
+ dDY/fiuGIgvmp6dkQv06uTLpteR5VrkWQNcPheAlBG21Q8GM+bScfbvqr8fs1WrGVvpU
+ oeWLf0C3LwK1s3EyNDjXWVQU3jZV3lAUKoG6qxtXFs/75KuVHD3cifSDN7qAndu7z2EK
+ 1OwET0lv1W7gwZfcIkej0uPqPF2jTL3ofI+AqzSWpj8EL1bj78Udp7delfgCuOFkA+VY
+ Nz17I4oZ3/NYbd9EtcjOBzWliSBtrj/wC+M20ld5u+zHJY0oarKARDGcH+ui5wTnHV3F
+ tvHw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:to:cc:references:from:autocrypt:subject
- :message-id:date:user-agent:mime-version:in-reply-to;
- bh=clniEQS47FGgd7NfiLKoYACJnRe08zxZ0y8JHSOO35k=;
- b=AXfK3D2nZ14mVAMiO0yVZ0EyyYw/XS4UHqMputiTof4QRLJuh8PQjHtHKkX71ox7pe
- kHLtdSj3O/jp00zmZcutqnMWLOFfPlt8uyjH/h1qz5ryuOeoXsITrCH0/mJU9jJqu7i1
- AClkfjIqghWeacVE9GAMh4+zv63oKpF6uu4x2FvkFmxONi86jqvPLg8YinB35gPB/F9t
- bMU8toDUzkmv4mNQTKL+V/vpH6hCvYKjEgCGP4Q0bqxftXBaxKHadEnfhwgPODxGGlWQ
- 2YHxxd7PaTwdIoqsYba02HXow/7E78BQW/VkL2XOsJaB+DAFzwTsF+asaCmSnjgv8p7A
- 1rjQ==
-X-Gm-Message-State: APjAAAW2m1oWaWPbNnK3653RzZbn/dzaWkSW6f739G8yh7lgt70FItOM
- l2e+ln7GCiSadn+lxFTyXYY=
-X-Google-Smtp-Source: APXvYqxhVPDcD/eraU8bit12aebDhkH0gXkz2I8GI1ngujbRENP7TJHJBHuSpfHBvMvATODdsFBkGw==
-X-Received: by 2002:a5d:4645:: with SMTP id j5mr23223185wrs.329.1575050890964; 
- Fri, 29 Nov 2019 10:08:10 -0800 (PST)
-Received: from [192.168.43.161] ([109.126.143.74])
- by smtp.gmail.com with ESMTPSA id y2sm15141095wmy.2.2019.11.29.10.08.09
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Fri, 29 Nov 2019 10:08:10 -0800 (PST)
-To: Jens Axboe <axboe@kernel.dk>, Christophe Leroy <christophe.leroy@c-s.fr>, 
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-References: <71cf82d5-5986-43b7-cf1c-acba429a89d6@c-s.fr>
- <3a95d445-1f5c-7750-f0de-ddc427800b3b@kernel.dk>
- <4ef71e74-848f-59d4-6b0b-d3a3c52095a0@c-s.fr>
- <5389b43a-259d-997c-41e6-5e84a91b012a@kernel.dk>
-From: Pavel Begunkov <asml.silence@gmail.com>
-Autocrypt: addr=asml.silence@gmail.com; prefer-encrypt=mutual; keydata=
- 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 bA==
-Subject: Re: Build failure on latest powerpc/merge (311ae9e159d8 io_uring: fix
- dead-hung for non-iter fixed rw)
-Message-ID: <38cb2865-d887-d46d-94ef-4ebccff4dc60@gmail.com>
-Date: Fri, 29 Nov 2019 21:07:49 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.2.0
+ h=x-gm-message-state:date:from:to:cc:subject:in-reply-to:message-id
+ :references:user-agent:mime-version;
+ bh=I2Yj7WZ2eIVwURYWTRsAO1/HJqcoGDPFFh90G05uVz8=;
+ b=Orky7W7IAmy6k4iFd0dBXJGVE9HHZ0HLNns1Sf3tp40e1tkeZ3qpkLfjR0/DjDEzpp
+ 12FMGkSz2jjns6j2Wot9DUL484mbJSv4GkrTzuX+QN7JfBrCuMgEmpciyvWfH1L+nagP
+ bZvvCOnETh0q+mQhlG5TguKOKJdoA8FXSnD9YqePZXPI6wdzJ4skGA4rz8hmGMtdTkTY
+ MaYVOf9bNs58XADoMhtDbnHEsff/hn3187oUJ4ilW7N1qQfCj7TGzdpDKm7uJXJ1IC9C
+ E9+zh0HEuyOPAgf7ogAGZbKv/3NhDcNPNhysAVuOz9fuYBlq0gXCxfAZh0pDUN7BoKy4
+ jkEA==
+X-Gm-Message-State: APjAAAXmUGNhyTS59oo4fcRWJZOmDGeZsdjaIegRJY/03ti9t4ynPM7I
+ 6VDg7nrT+xkBOQofXefe3VFJQ2ROTgQ=
+X-Google-Smtp-Source: APXvYqy3gEoj/BYRE+hfQFJKRq+lli+tF2ElHGDIgZhyLlcZAp823TGVvFyHVeUl1QExPaJaAGDOaA==
+X-Received: by 2002:a05:6830:20cf:: with SMTP id
+ z15mr1710826otq.277.1575231904769; 
+ Sun, 01 Dec 2019 12:25:04 -0800 (PST)
+Received: from eggly.attlocal.net
+ (172-10-233-147.lightspeed.sntcca.sbcglobal.net. [172.10.233.147])
+ by smtp.gmail.com with ESMTPSA id l12sm10004554oth.76.2019.12.01.12.25.02
+ (version=TLS1 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+ Sun, 01 Dec 2019 12:25:03 -0800 (PST)
+Date: Sun, 1 Dec 2019 12:24:50 -0800 (PST)
+From: Hugh Dickins <hughd@google.com>
+X-X-Sender: hugh@eggly.anvils
+To: Bharata B Rao <bharata@linux.ibm.com>
+Subject: Re: [PATCH v11 0/7] KVM: PPC: Driver to manage pages of secure guest
+In-Reply-To: <20191128050411.GF23438@in.ibm.com>
+Message-ID: <alpine.LSU.2.11.1912011214180.1410@eggly.anvils>
+References: <20191125030631.7716-1-bharata@linux.ibm.com>
+ <20191128050411.GF23438@in.ibm.com>
+User-Agent: Alpine 2.11 (LSU 23 2013-08-11)
 MIME-Version: 1.0
-In-Reply-To: <5389b43a-259d-997c-41e6-5e84a91b012a@kernel.dk>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="9PFTxigMb0Dzg01fL4pO7DziHyOQQo2gf"
-X-Mailman-Approved-At: Mon, 02 Dec 2019 06:42:38 +1100
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -143,77 +95,129 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: LKML <linux-kernel@vger.kernel.org>, stable@vger.kernel.org
+Cc: Hugh Dickins <hughd@google.com>, linuxram@us.ibm.com,
+ cclaudio@linux.ibm.com, kvm-ppc@vger.kernel.org, linux-mm@kvack.org,
+ jglisse@redhat.com, aneesh.kumar@linux.vnet.ibm.com, paulus@au1.ibm.com,
+ sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, hch@lst.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---9PFTxigMb0Dzg01fL4pO7DziHyOQQo2gf
-Content-Type: multipart/mixed; boundary="C9XQpoNGHYZUOjscc1yNOyFigP0yqGbZw";
- protected-headers="v1"
-From: Pavel Begunkov <asml.silence@gmail.com>
-To: Jens Axboe <axboe@kernel.dk>, Christophe Leroy <christophe.leroy@c-s.fr>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Cc: stable@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Message-ID: <38cb2865-d887-d46d-94ef-4ebccff4dc60@gmail.com>
-Subject: Re: Build failure on latest powerpc/merge (311ae9e159d8 io_uring: fix
- dead-hung for non-iter fixed rw)
-References: <71cf82d5-5986-43b7-cf1c-acba429a89d6@c-s.fr>
- <3a95d445-1f5c-7750-f0de-ddc427800b3b@kernel.dk>
- <4ef71e74-848f-59d4-6b0b-d3a3c52095a0@c-s.fr>
- <5389b43a-259d-997c-41e6-5e84a91b012a@kernel.dk>
-In-Reply-To: <5389b43a-259d-997c-41e6-5e84a91b012a@kernel.dk>
+On Thu, 28 Nov 2019, Bharata B Rao wrote:
+> On Mon, Nov 25, 2019 at 08:36:24AM +0530, Bharata B Rao wrote:
+> > Hi,
+> > 
+> > This is the next version of the patchset that adds required support
+> > in the KVM hypervisor to run secure guests on PEF-enabled POWER platforms.
+> > 
+> 
+> Here is a fix for the issue Hugh identified with the usage of ksm_madvise()
+> in this patchset. It applies on top of this patchset.
 
---C9XQpoNGHYZUOjscc1yNOyFigP0yqGbZw
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: quoted-printable
+It looks correct to me, and I hope will not spoil your performance in any
+way that matters.  But I have to say, the patch would be so much clearer,
+if you just named your bool "downgraded" instead of "downgrade".
 
-On 29/11/2019 20:16, Jens Axboe wrote:
-> On 11/29/19 8:14 AM, Christophe Leroy wrote:
->>>>
->>>> Reverting commit 311ae9e159d8 ("io_uring: fix dead-hung for non-iter=
+Hugh
 
->>>> fixed rw") clears the failure.
->>>>
->>>> Most likely an #include is missing.
->>>
->>> Huh weird how the build bots didn't catch that. Does the below work?
->>
->> Yes it works, thanks.
->=20
-> Thanks for reporting and testing, I've queued it up with your reported
-> and tested-by.
->=20
-My bad, thanks for the report and fixing.
-
---=20
-Pavel Begunkov
-
-
---C9XQpoNGHYZUOjscc1yNOyFigP0yqGbZw--
-
---9PFTxigMb0Dzg01fL4pO7DziHyOQQo2gf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEE+6JuPTjTbx479o3OWt5b1Glr+6UFAl3hXngACgkQWt5b1Glr
-+6WZww//Xz8lsz3NVq/0HukBD+hfL/dmeHL1XlDu1WPpnO1tgUAm6gvGHYBxF7fL
-50YY+cipbSKd2VHydGRjDnAlNxWa5bJu/vqsJSioSZnpEIMr03Hv0uLXYnFfxWW/
-RY7/IaVNNljQchiBU8cA9y0TaRZdjQ15HuQcB6EQZeZi/2KKXSMHhlsrcGkJ//i6
-aJTuAV3S+q24CbMLyq8Rlf82TPCxAsjkmiuI1MlD0o0/FHcwj9RRHJa53+lliFIJ
-MikJUYiVjZINy63FRBW9EX+7Yul7nLcvBrJ8WbQj/naWBgfoxSLlwLnzVVk4Zsxf
-RNigt4pah47x6yYXe/oPCJUT6ILlfzBr5/eH0k/8Aacyo6SAYeS3OH0wKFQGjqZj
-mYkz8ye1sthtjSVZPT6WC+ELGjRa9eFTYJcNYtFcwGsoWaCd98+ubEUK/JUucPLA
-DSr2CuHdNcyziW17kQ18+IUFHaRSsyft/04fiT/v23y82/S8jBmDnt7W7hi5BApS
-8TcgXIn/8ClCPpmMrDfnGy8rPWqZaL0xnIFkNFxNGv+qmD8VlhLVaOB4LgXVDPMm
-R/XGY8HX/7AXbJgla3hNGjo7+mFGo+y1UC+Ziu+m9DN06rfiD/D74S7cvltUWQuK
-IHjK4snDRSIZX44IjtVgcOVOFqcOSVGxlyrzhe+F8BsRA2vSOFo=
-=dTBF
------END PGP SIGNATURE-----
-
---9PFTxigMb0Dzg01fL4pO7DziHyOQQo2gf--
+> ----
+> 
+> From 8a4d769bf4c61f921c79ce68923be3c403bd5862 Mon Sep 17 00:00:00 2001
+> From: Bharata B Rao <bharata@linux.ibm.com>
+> Date: Thu, 28 Nov 2019 09:31:54 +0530
+> Subject: [PATCH 1/1] KVM: PPC: Book3S HV: Take write mmap_sem when calling
+>  ksm_madvise
+> 
+> In order to prevent the device private pages (that correspond to
+> pages of secure guest) from participating in KSM merging, H_SVM_PAGE_IN
+> calls ksm_madvise() under read version of mmap_sem. However ksm_madvise()
+> needs to be under write lock, fix this.
+> 
+> Signed-off-by: Bharata B Rao <bharata@linux.ibm.com>
+> ---
+>  arch/powerpc/kvm/book3s_hv_uvmem.c | 29 ++++++++++++++++++++---------
+>  1 file changed, 20 insertions(+), 9 deletions(-)
+> 
+> diff --git a/arch/powerpc/kvm/book3s_hv_uvmem.c b/arch/powerpc/kvm/book3s_hv_uvmem.c
+> index f24ac3cfb34c..2de264fc3156 100644
+> --- a/arch/powerpc/kvm/book3s_hv_uvmem.c
+> +++ b/arch/powerpc/kvm/book3s_hv_uvmem.c
+> @@ -46,11 +46,10 @@
+>   *
+>   * Locking order
+>   *
+> - * 1. srcu_read_lock(&kvm->srcu) - Protects KVM memslots
+> - * 2. down_read(&kvm->mm->mmap_sem) - find_vma, migrate_vma_pages and helpers
+> - * 3. mutex_lock(&kvm->arch.uvmem_lock) - protects read/writes to uvmem slots
+> - *					  thus acting as sync-points
+> - *					  for page-in/out
+> + * 1. kvm->srcu - Protects KVM memslots
+> + * 2. kvm->mm->mmap_sem - find_vma, migrate_vma_pages and helpers, ksm_madvise
+> + * 3. kvm->arch.uvmem_lock - protects read/writes to uvmem slots thus acting
+> + *			     as sync-points for page-in/out
+>   */
+>  
+>  /*
+> @@ -344,7 +343,7 @@ static struct page *kvmppc_uvmem_get_page(unsigned long gpa, struct kvm *kvm)
+>  static int
+>  kvmppc_svm_page_in(struct vm_area_struct *vma, unsigned long start,
+>  		   unsigned long end, unsigned long gpa, struct kvm *kvm,
+> -		   unsigned long page_shift)
+> +		   unsigned long page_shift, bool *downgrade)
+>  {
+>  	unsigned long src_pfn, dst_pfn = 0;
+>  	struct migrate_vma mig;
+> @@ -360,8 +359,15 @@ kvmppc_svm_page_in(struct vm_area_struct *vma, unsigned long start,
+>  	mig.src = &src_pfn;
+>  	mig.dst = &dst_pfn;
+>  
+> +	/*
+> +	 * We come here with mmap_sem write lock held just for
+> +	 * ksm_madvise(), otherwise we only need read mmap_sem.
+> +	 * Hence downgrade to read lock once ksm_madvise() is done.
+> +	 */
+>  	ret = ksm_madvise(vma, vma->vm_start, vma->vm_end,
+>  			  MADV_UNMERGEABLE, &vma->vm_flags);
+> +	downgrade_write(&kvm->mm->mmap_sem);
+> +	*downgrade = true;
+>  	if (ret)
+>  		return ret;
+>  
+> @@ -456,6 +462,7 @@ unsigned long
+>  kvmppc_h_svm_page_in(struct kvm *kvm, unsigned long gpa,
+>  		     unsigned long flags, unsigned long page_shift)
+>  {
+> +	bool downgrade = false;
+>  	unsigned long start, end;
+>  	struct vm_area_struct *vma;
+>  	int srcu_idx;
+> @@ -476,7 +483,7 @@ kvmppc_h_svm_page_in(struct kvm *kvm, unsigned long gpa,
+>  
+>  	ret = H_PARAMETER;
+>  	srcu_idx = srcu_read_lock(&kvm->srcu);
+> -	down_read(&kvm->mm->mmap_sem);
+> +	down_write(&kvm->mm->mmap_sem);
+>  
+>  	start = gfn_to_hva(kvm, gfn);
+>  	if (kvm_is_error_hva(start))
+> @@ -492,12 +499,16 @@ kvmppc_h_svm_page_in(struct kvm *kvm, unsigned long gpa,
+>  	if (!vma || vma->vm_start > start || vma->vm_end < end)
+>  		goto out_unlock;
+>  
+> -	if (!kvmppc_svm_page_in(vma, start, end, gpa, kvm, page_shift))
+> +	if (!kvmppc_svm_page_in(vma, start, end, gpa, kvm, page_shift,
+> +				&downgrade))
+>  		ret = H_SUCCESS;
+>  out_unlock:
+>  	mutex_unlock(&kvm->arch.uvmem_lock);
+>  out:
+> -	up_read(&kvm->mm->mmap_sem);
+> +	if (downgrade)
+> +		up_read(&kvm->mm->mmap_sem);
+> +	else
+> +		up_write(&kvm->mm->mmap_sem);
+>  	srcu_read_unlock(&kvm->srcu, srcu_idx);
+>  	return ret;
+>  }
+> -- 
+> 2.21.0
