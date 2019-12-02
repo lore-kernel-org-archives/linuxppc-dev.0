@@ -4,81 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CE348C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Dec 2019 06:45:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3836C432C0
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Dec 2019 06:48:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 85C8220715
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Dec 2019 06:45:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 85C8220715
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8C05920715
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Dec 2019 06:48:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8C05920715
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=us.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47RFwb4CdwzDqNP
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Dec 2019 17:45:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47RG0Z20P3zDqMV
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Dec 2019 17:48:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ smtp.mailfrom=us.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=linuxram@us.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=none (p=none dis=none) header.from=us.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47RFqd3KfPzDqRS
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Dec 2019 17:40:45 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- xB26WhLW031140; Mon, 2 Dec 2019 01:40:39 -0500
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2wm6g7xtss-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 02 Dec 2019 01:40:39 -0500
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id xB26eS7J004172;
- Mon, 2 Dec 2019 06:40:43 GMT
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26]) by ppma01wdc.us.ibm.com with ESMTP id 2wkg25r8ku-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 02 Dec 2019 06:40:43 +0000
-Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
- [9.57.199.107])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xB26ecen14353030
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47RFyJ4WcNzDqDm
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Dec 2019 17:46:32 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ xB26gZqp134684
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Dec 2019 01:46:29 -0500
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2wm6smf2wt-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Dec 2019 01:46:29 -0500
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Mon, 2 Dec 2019 06:46:27 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 2 Dec 2019 06:46:22 -0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xB26kLJ534799708
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 2 Dec 2019 06:40:38 GMT
-Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5F217124052;
- Mon,  2 Dec 2019 06:40:38 +0000 (GMT)
-Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4AB82124054;
- Mon,  2 Dec 2019 06:40:37 +0000 (GMT)
-Received: from skywalker.in.ibm.com (unknown [9.124.35.144])
- by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP;
- Mon,  2 Dec 2019 06:40:37 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: mpe@ellerman.id.au
-Subject: [PATCH] powerepc/book3s64/hash: Align start address correctly with
- bolt mapping
-Date: Mon,  2 Dec 2019 12:10:34 +0530
-Message-Id: <20191202064034.155218-1-aneesh.kumar@linux.ibm.com>
-X-Mailer: git-send-email 2.23.0
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ Mon, 2 Dec 2019 06:46:21 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 86BF711C0A1;
+ Mon,  2 Dec 2019 06:46:21 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2CCED11C0BE;
+ Mon,  2 Dec 2019 06:46:08 +0000 (GMT)
+Received: from oc0525413822.ibm.com (unknown [9.80.214.136])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon,  2 Dec 2019 06:46:07 +0000 (GMT)
+From: Ram Pai <linuxram@us.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Subject: [PATCH v4 1/2] powerpc/pseries/iommu: Share the per-cpu TCE page with
+ the hypervisor.
+Date: Sun,  1 Dec 2019 22:45:23 -0800
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1575269124-17885-1-git-send-email-linuxram@us.ibm.com>
+References: <1575269124-17885-1-git-send-email-linuxram@us.ibm.com>
 X-TM-AS-GCONF: 00
+x-cbid: 19120206-0016-0000-0000-000002CF7A2D
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19120206-0017-0000-0000-000033316BD7
+Message-Id: <1575269124-17885-2-git-send-email-linuxram@us.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
  definitions=2019-12-01_04:2019-11-29,2019-12-01 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 clxscore=1015
- lowpriorityscore=0 bulkscore=0 phishscore=0 priorityscore=1501
- impostorscore=0 suspectscore=1 spamscore=0 mlxscore=0 adultscore=0
- mlxlogscore=641 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-1910280000 definitions=main-1912020058
+ bulkscore=0 mlxscore=0
+ suspectscore=2 clxscore=1015 malwarescore=0 adultscore=0 impostorscore=0
+ phishscore=0 mlxlogscore=363 spamscore=0 priorityscore=1501
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-1910280000 definitions=main-1912020059
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,93 +96,82 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: andmike@us.ibm.com, mst@redhat.com, aik@ozlabs.ru, linuxram@us.ibm.com,
+ mdroth@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, ram.n.pai@gmail.com,
+ cai@lca.pw, tglx@linutronix.de, sukadev@linux.vnet.ibm.com, hch@lst.de,
+ bauerman@linux.ibm.com, david@gibson.dropbear.id.au
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This ensures we don't do a partial mapping of memory. With nvdimm, when creating
-namespaces with size not aligned to 16MB, kernel ends up partially mapping the pages.
-This results in a crash when a namespace is removed. This is due to kernel doing
-unmap of a page that was part of both the namespace.
+H_PUT_TCE_INDIRECT hcall uses a page filled with TCE entries, as one of
+its parameters. One page is dedicated per cpu, for the lifetime of the
+kernel for this purpose. On secure VMs, contents of this page, when
+accessed by the hypervisor, retrieves encrypted TCE entries.  Hypervisor
+needs to know the unencrypted entries, to update the TCE table
+accordingly.  There is nothing secret or sensitive about these entries.
+Hence share the page with the hypervisor.
 
-Another patch series will make sure we always create namespaces aligned to 16MB.
-But we can do better by avoiding mapping pages that are not aligned. This helps
-to catch access to these partially mapped pages early.
-
-A kernel crash will look like below:
-
-BUG: Unable to handle kernel data access at 0xc001000406000000
-Faulting instruction address: 0xc000000000090790
-NIP [c000000000090790] arch_add_memory+0xc0/0x130
-LR [c000000000090744] arch_add_memory+0x74/0x130
-Call Trace:
- arch_add_memory+0x74/0x130 (unreliable)
- memremap_pages+0x74c/0xa30
- devm_memremap_pages+0x3c/0xa0
- pmem_attach_disk+0x188/0x770
- nvdimm_bus_probe+0xd8/0x470
- really_probe+0x148/0x570
- driver_probe_device+0x19c/0x1d0
- device_driver_attach+0xcc/0x100
- bind_store+0x134/0x1c0
- drv_attr_store+0x44/0x60
- sysfs_kf_write+0x74/0xc0
- kernfs_fop_write+0x1b4/0x290
- __vfs_write+0x3c/0x70
- vfs_write+0xd0/0x260
- ksys_write+0xdc/0x130
- system_call+0x5c/0x68
-
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 ---
- arch/powerpc/mm/book3s64/hash_utils.c    | 12 +++++++++---
- arch/powerpc/mm/book3s64/radix_pgtable.c |  1 +
- 2 files changed, 10 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/pseries/iommu.c | 23 ++++++++++++++++++++---
+ 1 file changed, 20 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
-index b30435c7d804..51fb4a4df57b 100644
---- a/arch/powerpc/mm/book3s64/hash_utils.c
-+++ b/arch/powerpc/mm/book3s64/hash_utils.c
-@@ -257,8 +257,12 @@ int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
- 	DBG("htab_bolt_mapping(%lx..%lx -> %lx (%lx,%d,%d)\n",
- 	    vstart, vend, pstart, prot, psize, ssize);
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 6ba081d..0720831 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -37,6 +37,7 @@
+ #include <asm/mmzone.h>
+ #include <asm/plpar_wrappers.h>
+ #include <asm/svm.h>
++#include <asm/ultravisor.h>
  
--	for (vaddr = vstart, paddr = pstart; vaddr < vend;
--	     vaddr += step, paddr += step) {
-+	/* Carefully map only the possible range */
-+	vaddr = _ALIGN_UP(vstart, step);
-+	paddr = _ALIGN_UP(pstart, step);
-+	vend = _ALIGN_DOWN(vend, step);
+ #include "pseries.h"
+ 
+@@ -179,6 +180,23 @@ static int tce_build_pSeriesLP(struct iommu_table *tbl, long tcenum,
+ 
+ static DEFINE_PER_CPU(__be64 *, tce_page);
+ 
++/*
++ * Allocate a tce page.  If secure VM, share the page with the hypervisor.
++ *
++ * NOTE: the TCE page is shared with the hypervisor explicitly and remains
++ * shared for the lifetime of the kernel. It is implicitly unshared at kernel
++ * shutdown through a UV_UNSHARE_ALL_PAGES ucall.
++ */
++static __be64 *alloc_tce_page(void)
++{
++	__be64 *tcep = (__be64 *)__get_free_page(GFP_ATOMIC);
 +
-+	for (; vaddr < vend; vaddr += step, paddr += step) {
- 		unsigned long hash, hpteg;
- 		unsigned long vsid = get_kernel_vsid(vaddr, ssize);
- 		unsigned long vpn  = hpt_vpn(vaddr, vsid, ssize);
-@@ -340,7 +344,9 @@ int htab_remove_mapping(unsigned long vstart, unsigned long vend,
- 	if (!mmu_hash_ops.hpte_removebolted)
- 		return -ENODEV;
++	if (tcep && is_secure_guest())
++		uv_share_page(PHYS_PFN(__pa(tcep)), 1);
++
++	return tcep;
++}
++
+ static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
+ 				     long npages, unsigned long uaddr,
+ 				     enum dma_data_direction direction,
+@@ -206,8 +224,7 @@ static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
+ 	 * from iommu_alloc{,_sg}()
+ 	 */
+ 	if (!tcep) {
+-		tcep = (__be64 *)__get_free_page(GFP_ATOMIC);
+-		/* If allocation fails, fall back to the loop implementation */
++		tcep = alloc_tce_page();
+ 		if (!tcep) {
+ 			local_irq_restore(flags);
+ 			return tce_build_pSeriesLP(tbl, tcenum, npages, uaddr,
+@@ -405,7 +422,7 @@ static int tce_setrange_multi_pSeriesLP(unsigned long start_pfn,
+ 	tcep = __this_cpu_read(tce_page);
  
--	for (vaddr = vstart; vaddr < vend; vaddr += step) {
-+	/* Unmap the full reange specificied */
-+	vaddr = _ALIGN_DOWN(vstart, step);
-+	for (;vaddr < vend; vaddr += step) {
- 		rc = mmu_hash_ops.hpte_removebolted(vaddr, psize, ssize);
- 		if (rc == -ENOENT) {
- 			ret = -ENOENT;
-diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/book3s64/radix_pgtable.c
-index 6ee17d09649c..e40d2f923d4d 100644
---- a/arch/powerpc/mm/book3s64/radix_pgtable.c
-+++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
-@@ -260,6 +260,7 @@ static int __meminit create_physical_mapping(unsigned long start,
- 	int psize;
- 
- 	start = _ALIGN_UP(start, PAGE_SIZE);
-+	end = _ALIGN_DOWN(end, PAGE_SIZE);
- 	for (addr = start; addr < end; addr += mapping_size) {
- 		unsigned long gap, previous_size;
- 		int rc;
+ 	if (!tcep) {
+-		tcep = (__be64 *)__get_free_page(GFP_ATOMIC);
++		tcep = alloc_tce_page();
+ 		if (!tcep) {
+ 			local_irq_enable();
+ 			return -ENOMEM;
 -- 
-2.23.0
+1.8.3.1
 
