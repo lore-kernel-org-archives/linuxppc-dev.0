@@ -2,23 +2,23 @@ Return-Path: <SRS0=x21H=ZZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D24F5C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 05:10:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F34A3C432C0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 05:13:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 856D0206DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 05:10:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 856D0206DF
+	by mail.kernel.org (Postfix) with ESMTPS id 4B8F220684
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 05:13:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4B8F220684
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47RqnD5jyYzDqVl
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 16:10:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47RqrG0ltHzDqVp
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 16:13:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com;
@@ -29,71 +29,73 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47Rpxf2hpHzDqSZ
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2019 15:32:54 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- xB34Wnci131627
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Dec 2019 23:32:51 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47RqHF5RhRzDqBW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2019 15:48:09 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ xB34loWS092141
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Dec 2019 23:48:06 -0500
 Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2wm6rr1rer-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2wm6c15a0g-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Dec 2019 23:32:50 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Dec 2019 23:48:05 -0500
 Received: from localhost
  by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ajd@linux.ibm.com>;
- Tue, 3 Dec 2019 04:31:56 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ Tue, 3 Dec 2019 04:48:03 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
  by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 3 Dec 2019 04:31:54 -0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xB34VrnP24838160
+ Tue, 3 Dec 2019 04:47:55 -0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xB34lsqd54722746
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 3 Dec 2019 04:31:53 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1C3BAAE051;
- Tue,  3 Dec 2019 04:31:53 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C177CAE053;
- Tue,  3 Dec 2019 04:31:52 +0000 (GMT)
+ Tue, 3 Dec 2019 04:47:55 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D8F1111C050;
+ Tue,  3 Dec 2019 04:47:54 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8365A11C04C;
+ Tue,  3 Dec 2019 04:47:54 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue,  3 Dec 2019 04:31:52 +0000 (GMT)
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue,  3 Dec 2019 04:47:54 +0000 (GMT)
 Received: from [9.81.204.28] (unknown [9.81.204.28])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id F14E2A01B6;
- Tue,  3 Dec 2019 15:31:49 +1100 (AEDT)
-Subject: Re: [PATCH 00/18] Initial Prefixed Instruction support
-To: Jordan Niethe <jniethe5@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <20191126052141.28009-1-jniethe5@gmail.com>
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 1E457A01B6;
+ Tue,  3 Dec 2019 15:47:51 +1100 (AEDT)
+Subject: Re: [PATCH v2 02/27] nvdimm: remove prototypes for nonexistent
+ functions
+To: "Alastair D'Silva" <alastair@au1.ibm.com>, alastair@d-silva.org
+References: <20191203034655.51561-1-alastair@au1.ibm.com>
+ <20191203034655.51561-3-alastair@au1.ibm.com>
 From: Andrew Donnellan <ajd@linux.ibm.com>
-Date: Tue, 3 Dec 2019 15:31:50 +1100
+Date: Tue, 3 Dec 2019 15:47:51 +1100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
  Thunderbird/68.2.2
 MIME-Version: 1.0
-In-Reply-To: <20191126052141.28009-1-jniethe5@gmail.com>
+In-Reply-To: <20191203034655.51561-3-alastair@au1.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
-x-cbid: 19120304-0020-0000-0000-00000392D181
+x-cbid: 19120304-0020-0000-0000-00000392D376
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19120304-0021-0000-0000-000021E9EFE6
-Message-Id: <c22200d0-6af9-9f30-533f-6288c85324d7@linux.ibm.com>
+x-cbparentid: 19120304-0021-0000-0000-000021E9F1E2
+Message-Id: <7d78054e-54a2-5fbc-5570-474e58cefe63@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
  definitions=2019-12-02_06:2019-11-29,2019-12-02 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 adultscore=0
- spamscore=0 priorityscore=1501 mlxscore=0 bulkscore=0 mlxlogscore=834
- lowpriorityscore=0 impostorscore=0 phishscore=0 clxscore=1015
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-1910280000 definitions=main-1912030039
+ malwarescore=0 bulkscore=0
+ adultscore=0 priorityscore=1501 impostorscore=0 mlxscore=0 mlxlogscore=693
+ suspectscore=0 lowpriorityscore=0 spamscore=0 phishscore=0 clxscore=1015
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-1910280000
+ definitions=main-1912030042
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,38 +107,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alistair@popple.id.au
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, Keith Busch <keith.busch@intel.com>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Paul Mackerras <paulus@samba.org>,
+ Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
+ Ira Weiny <ira.weiny@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Rob Herring <robh@kernel.org>, Dave Jiang <dave.jiang@intel.com>,
+ linux-nvdimm@lists.01.org, Vishal Verma <vishal.l.verma@intel.com>,
+ Krzysztof Kozlowski <krzk@kernel.org>,
+ Anju T Sudhakar <anju@linux.vnet.ibm.com>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kurz <groug@kaod.org>, Nicholas Piggin <npiggin@gmail.com>,
+ =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>,
+ Dan Williams <dan.j.williams@intel.com>, Hari Bathini <hbathini@linux.ibm.com>,
+ linux-mm@kvack.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linux-kernel@vger.kernel.org, Frederic Barrat <fbarrat@linux.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 26/11/19 4:21 pm, Jordan Niethe wrote:
-> A future revision of the ISA will introduce prefixed instructions. A
-> prefixed instruction is composed of a 4-byte prefix followed by a
-> 4-byte suffix.
+On 3/12/19 2:46 pm, Alastair D'Silva wrote:
+> From: Alastair D'Silva <alastair@d-silva.org>
 > 
-> All prefixes have the major opcode 1. A prefix will never be a valid
-> word instruction. A suffix may be an existing word instruction or a new
-> instruction.
+> These functions don't exist, so remove the prototypes for them.
 > 
-> The new instruction formats are:
->      * Eight-Byte Load/Store Instructions
->      * Eight-Byte Register-to-Register Instructions
->      * Modified Load/Store Instructions
->      * Modified Register-to-Register Instructions
-> 
-> This series enables prefixed instructions and extends the instruction
-> emulation to support them. Then the places where prefixed instructions
-> might need to be emulated are updated.
-> 
-> A future series will add prefixed instruction support to guests running
-> in KVM.
+> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+> Reviewed-by: Frederic Barrat <fbarrat@linux.ibm.com>
 
-Snowpatch found sparse warnings:
+Reviewed-by: Andrew Donnellan <ajd@linux.ibm.com>
 
-https://openpower.xyz/job/snowpatch/job/snowpatch-linux-sparse/14381//artifact/linux/report.txt
-
-(And a few minor checkpatch things too)
 -- 
 Andrew Donnellan              OzLabs, ADL Canberra
 ajd@linux.ibm.com             IBM Australia Limited
