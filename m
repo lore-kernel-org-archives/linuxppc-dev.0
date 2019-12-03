@@ -2,24 +2,23 @@ Return-Path: <SRS0=x21H=ZZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNWANTED_LANGUAGE_BODY,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 26539C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 04:37:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC6F2C432C0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 04:39:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D02052068E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 04:37:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D02052068E
+	by mail.kernel.org (Postfix) with ESMTPS id 391122068E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 04:39:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 391122068E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47Rq32133gzDqBm
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 15:37:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47Rq57341bzDqTl
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 15:39:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=au1.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=alastair@au1.ibm.com;
@@ -30,21 +29,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47RnyV5xnxzDqPF
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47RnyV5tmJzDqPC
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2019 14:48:34 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- xB33klin109364
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Dec 2019 22:48:31 -0500
+ xB33kkdj021092
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Dec 2019 22:48:32 -0500
 Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2wm6v00ygd-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2wnehxj6un-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Dec 2019 22:48:30 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Dec 2019 22:48:32 -0500
 Received: from localhost
  by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
- Tue, 3 Dec 2019 03:48:27 -0000
+ Tue, 3 Dec 2019 03:48:28 -0000
 Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
  by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
@@ -53,14 +52,14 @@ Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
 Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
  [9.149.105.60])
  by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id xB33mJEj46334272
+ id xB33mJeB45023540
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
  Tue, 3 Dec 2019 03:48:19 GMT
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1C32A4204C;
+ by IMSVA (Postfix) with ESMTP id 2DBB64204F;
  Tue,  3 Dec 2019 03:48:19 +0000 (GMT)
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 75F574203F;
+ by IMSVA (Postfix) with ESMTP id 873FC42041;
  Tue,  3 Dec 2019 03:48:18 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
  by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
@@ -68,31 +67,30 @@ Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
 Received: from adsilva.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 3B162A03E1;
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 96F42A03EE;
  Tue,  3 Dec 2019 14:48:13 +1100 (AEDT)
 From: "Alastair D'Silva" <alastair@au1.ibm.com>
 To: alastair@d-silva.org
-Subject: [PATCH v2 15/27] nvdimm/ocxl: Register a character device for
- userspace to interact with
-Date: Tue,  3 Dec 2019 14:46:43 +1100
+Subject: [PATCH v2 24/27] nvdimm/ocxl: Implement Overwrite
+Date: Tue,  3 Dec 2019 14:46:52 +1100
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191203034655.51561-1-alastair@au1.ibm.com>
 References: <20191203034655.51561-1-alastair@au1.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19120303-4275-0000-0000-0000038A31E2
+x-cbid: 19120303-4275-0000-0000-0000038A31E1
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19120303-4276-0000-0000-0000389DCDDB
-Message-Id: <20191203034655.51561-16-alastair@au1.ibm.com>
+x-cbparentid: 19120303-4276-0000-0000-0000389DCDDC
+Message-Id: <20191203034655.51561-25-alastair@au1.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
  definitions=2019-12-02_06:2019-11-29,2019-12-02 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 clxscore=1015
- priorityscore=1501 impostorscore=0 adultscore=0 phishscore=0 bulkscore=0
- suspectscore=3 lowpriorityscore=0 mlxlogscore=999 mlxscore=0 spamscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-1910280000
- definitions=main-1912030032
+ lowpriorityscore=0
+ phishscore=0 spamscore=0 adultscore=0 malwarescore=0 bulkscore=0
+ suspectscore=1 impostorscore=0 mlxlogscore=999 priorityscore=1501
+ mlxscore=0 clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-1910280000 definitions=main-1912030032
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -129,201 +127,270 @@ Sender: "Linuxppc-dev"
 
 From: Alastair D'Silva <alastair@d-silva.org>
 
-This patch introduces a character device (/dev/ocxl-scmX) which further
-patches will use to interact with userspace.
+The near storage command 'Secure Erase' overwrites all data on the
+media.
+
+This patch hooks it up to the security function 'overwrite'.
 
 Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 ---
- drivers/nvdimm/ocxl/scm.c          | 114 ++++++++++++++++++++++++++++-
- drivers/nvdimm/ocxl/scm_internal.h |   2 +
- 2 files changed, 115 insertions(+), 1 deletion(-)
+ drivers/nvdimm/ocxl/scm.c          | 164 ++++++++++++++++++++++++++++-
+ drivers/nvdimm/ocxl/scm_internal.c |   1 +
+ drivers/nvdimm/ocxl/scm_internal.h |  17 +++
+ 3 files changed, 180 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/nvdimm/ocxl/scm.c b/drivers/nvdimm/ocxl/scm.c
-index 6c16ca7fabfa..c313a473a28e 100644
+index a81eb5916eb3..8deb7862793c 100644
 --- a/drivers/nvdimm/ocxl/scm.c
 +++ b/drivers/nvdimm/ocxl/scm.c
-@@ -9,6 +9,7 @@
- #include <misc/ocxl.h>
- #include <linux/delay.h>
- #include <linux/ndctl.h>
-+#include <linux/fs.h>
- #include <linux/mm_types.h>
- #include <linux/memory_hotplug.h>
- #include "scm_internal.h"
-@@ -386,6 +387,9 @@ static void free_scm(struct scm_data *scm_data)
- 
- 	free_scm_minor(scm_data);
- 
-+	if (scm_data->cdev.owner)
-+		cdev_del(&scm_data->cdev);
-+
- 	if (scm_data->metadata_addr)
- 		devm_memunmap(&scm_data->dev, scm_data->metadata_addr);
- 
-@@ -444,6 +448,70 @@ static int scm_register(struct scm_data *scm_data)
- 	return rc;
- }
- 
-+static void scm_put(struct scm_data *scm_data)
-+{
-+	put_device(&scm_data->dev);
-+}
-+
-+static struct scm_data *scm_get(struct scm_data *scm_data)
-+{
-+	return (get_device(&scm_data->dev) == NULL) ? NULL : scm_data;
-+}
-+
-+static struct scm_data *find_and_get_scm(dev_t devno)
-+{
-+	struct scm_data *scm_data;
-+	int minor = MINOR(devno);
-+	/*
-+	 * We don't declare an RCU critical section here, as our AFU
-+	 * is protected by a reference counter on the device. By the time the
-+	 * minor number of a device is removed from the idr, the ref count of
-+	 * the device is already at 0, so no user API will access that AFU and
-+	 * this function can't return it.
-+	 */
-+	scm_data = idr_find(&minors_idr, minor);
-+	if (scm_data)
-+		scm_get(scm_data);
-+	return scm_data;
-+}
-+
-+static int scm_file_open(struct inode *inode, struct file *file)
-+{
-+	struct scm_data *scm_data;
-+
-+	scm_data = find_and_get_scm(inode->i_rdev);
-+	if (!scm_data)
-+		return -ENODEV;
-+
-+	file->private_data = scm_data;
-+	return 0;
-+}
-+
-+static int scm_file_release(struct inode *inode, struct file *file)
-+{
-+	struct scm_data *scm_data = file->private_data;
-+
-+	scm_put(scm_data);
-+	return 0;
-+}
-+
-+static const struct file_operations scm_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= scm_file_open,
-+	.release	= scm_file_release,
-+};
-+
-+/**
-+ * scm_create_cdev() - Create the chardev in /dev for this scm device
-+ * @scm_data: the SCM metadata
-+ * Return: 0 on success, negative on failure
-+ */
-+static int scm_create_cdev(struct scm_data *scm_data)
-+{
-+	cdev_init(&scm_data->cdev, &scm_fops);
-+	return cdev_add(&scm_data->cdev, scm_data->dev.devt, 1);
-+}
-+
- /**
-  * scm_remove() - Free an OpenCAPI Storage Class Memory device
-  * @pdev: the PCI device information struct
-@@ -616,6 +684,11 @@ static int scm_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		goto err;
- 	}
- 
-+	if (scm_create_cdev(scm_data)) {
-+		dev_err(&pdev->dev, "Could not create SCM character device\n");
-+		goto err;
-+	}
-+
- 	elapsed = 0;
- 	timeout = scm_data->readiness_timeout + scm_data->memory_available_timeout;
- 	while (!scm_is_usable(scm_data)) {
-@@ -653,20 +726,59 @@ static struct pci_driver scm_pci_driver = {
- 	.shutdown = scm_remove,
- };
- 
-+static int scm_file_init(void)
-+{
-+	int rc;
-+
-+	mutex_init(&minors_idr_lock);
-+	idr_init(&minors_idr);
-+
-+	rc = alloc_chrdev_region(&scm_dev, 0, SCM_NUM_MINORS, "ocxl-scm");
-+	if (rc) {
-+		idr_destroy(&minors_idr);
-+		pr_err("Unable to allocate scm major number: %d\n", rc);
-+		return rc;
-+	}
-+
-+	scm_class = class_create(THIS_MODULE, "ocxl-scm");
-+	if (IS_ERR(scm_class)) {
-+		idr_destroy(&minors_idr);
-+		pr_err("Unable to create ocxl-scm class\n");
-+		unregister_chrdev_region(scm_dev, SCM_NUM_MINORS);
-+		return PTR_ERR(scm_class);
-+	}
-+
-+	return 0;
-+}
-+
-+static void scm_file_exit(void)
-+{
-+	class_destroy(scm_class);
-+	unregister_chrdev_region(scm_dev, SCM_NUM_MINORS);
-+	idr_destroy(&minors_idr);
-+}
-+
- static int __init scm_init(void)
- {
- 	int rc = 0;
- 
--	rc = pci_register_driver(&scm_pci_driver);
-+	rc = scm_file_init();
- 	if (rc)
- 		return rc;
- 
-+	rc = pci_register_driver(&scm_pci_driver);
-+	if (rc) {
-+		scm_file_exit();
-+		return rc;
-+	}
-+
+@@ -169,6 +169,86 @@ static int scm_reserve_metadata(struct scm_data *scm_data,
  	return 0;
  }
  
- static void scm_exit(void)
- {
- 	pci_unregister_driver(&scm_pci_driver);
-+	scm_file_exit();
++/**
++ * scm_overwrite() - Overwrite all data on the card
++ * @scm_data: The SCM device data
++ * Return: 0 on success
++ */
++int scm_overwrite(struct scm_data *scm_data)
++{
++	int rc;
++
++	mutex_lock(&scm_data->ns_command.lock);
++
++	rc = scm_ns_command_request(scm_data, NS_COMMAND_SECURE_ERASE);
++	if (rc)
++		goto out;
++
++	rc = scm_ns_command_execute(scm_data);
++	if (rc)
++		goto out;
++
++	scm_data->overwrite_state = SCM_OVERWRITE_BUSY;
++
++	return 0;
++
++out:
++	mutex_unlock(&scm_data->ns_command.lock);
++	return rc;
++}
++
++/**
++ * scm_secop_overwrite() - Overwrite all data on the card
++ * @nvdimm: The nvdimm representation of the SCM device to start the overwrite on
++ * @key_data: Unused (no security key implementation)
++ * Return: 0 on success
++ */
++static int scm_secop_overwrite(struct nvdimm *nvdimm,
++			       const struct nvdimm_key_data *key_data)
++{
++	struct scm_data *scm_data = nvdimm_provider_data(nvdimm);
++
++	return scm_overwrite(scm_data);
++}
++
++/**
++ * scm_secop_query_overwrite() - Get the current overwrite state
++ * @nvdimm: The nvdimm representation of the SCM device to start the overwrite on
++ * Return: 0 if successful or idle, -EBUSY if busy, -EFAULT if failed
++ */
++static int scm_secop_query_overwrite(struct nvdimm *nvdimm)
++{
++	struct scm_data *scm_data = nvdimm_provider_data(nvdimm);
++
++	if (scm_data->overwrite_state == SCM_OVERWRITE_BUSY)
++		return -EBUSY;
++
++	if (scm_data->overwrite_state == SCM_OVERWRITE_FAILED)
++		return -EFAULT;
++
++	return 0;
++}
++
++/**
++ * scm_secop_get_flags() - return the security flags for the SCM device
++ */
++static unsigned long scm_secop_get_flags(struct nvdimm *nvdimm,
++		enum nvdimm_passphrase_type ptype)
++{
++	struct scm_data *scm_data = nvdimm_provider_data(nvdimm);
++
++	if (scm_data->overwrite_state == SCM_OVERWRITE_BUSY)
++		return BIT(NVDIMM_SECURITY_OVERWRITE);
++
++	return BIT(NVDIMM_SECURITY_DISABLED);
++}
++
++static const struct nvdimm_security_ops sec_ops  = {
++	.get_flags = scm_secop_get_flags,
++	.overwrite = scm_secop_overwrite,
++	.query_overwrite = scm_secop_query_overwrite,
++};
++
+ /**
+  * scm_register_lpc_mem() - Discover persistent memory on a device and register it with the NVDIMM subsystem
+  * @scm_data: The SCM device data
+@@ -224,10 +304,10 @@ static int scm_register_lpc_mem(struct scm_data *scm_data)
+ 	set_bit(NDD_ALIASING, &nvdimm_flags);
+ 
+ 	snprintf(serial, sizeof(serial), "%llx", fn_config->serial);
+-	nd_mapping_desc.nvdimm = nvdimm_create(scm_data->nvdimm_bus, scm_data,
++	nd_mapping_desc.nvdimm = __nvdimm_create(scm_data->nvdimm_bus, scm_data,
+ 				 scm_dimm_attribute_groups,
+ 				 nvdimm_flags, nvdimm_cmd_mask,
+-				 0, NULL);
++				 0, NULL, serial, &sec_ops);
+ 	if (!nd_mapping_desc.nvdimm)
+ 		return -ENOMEM;
+ 
+@@ -1530,6 +1610,83 @@ static void scm_dump_error_log(struct scm_data *scm_data)
+ 	kfree(buf);
  }
  
- module_init(scm_init);
++static void scm_handle_nscra_doorbell(struct scm_data *scm_data)
++{
++	int rc;
++
++	if (scm_data->ns_command.op_code == NS_COMMAND_SECURE_ERASE) {
++		u64 success, attempted;
++
++
++		rc = scm_ns_response(scm_data);
++		if (rc < 0) {
++			scm_data->overwrite_state = SCM_OVERWRITE_FAILED;
++			mutex_unlock(&scm_data->ns_command.lock);
++			return;
++		}
++		if (rc != STATUS_SUCCESS)
++			scm_warn_status(scm_data, "Unexpected status from overwrite", rc);
++
++		rc = ocxl_global_mmio_read64(scm_data->ocxl_afu,
++					     scm_data->ns_command.response_offset +
++					     NS_RESPONSE_SECURE_ERASE_ACCESSIBLE_SUCCESS,
++					     OCXL_HOST_ENDIAN, &success);
++		if (rc) {
++			scm_data->overwrite_state = SCM_OVERWRITE_FAILED;
++			mutex_unlock(&scm_data->ns_command.lock);
++			return;
++		}
++
++		rc = ocxl_global_mmio_read64(scm_data->ocxl_afu,
++					     scm_data->ns_command.response_offset +
++					     NS_RESPONSE_SECURE_ERASE_ACCESSIBLE_ATTEMPTED,
++					     OCXL_HOST_ENDIAN, &attempted);
++		if (rc) {
++			scm_data->overwrite_state = SCM_OVERWRITE_FAILED;
++			mutex_unlock(&scm_data->ns_command.lock);
++			return;
++		}
++
++		scm_data->overwrite_state = SCM_OVERWRITE_SUCCESS;
++		if (success != attempted)
++			scm_data->overwrite_state = SCM_OVERWRITE_FAILED;
++
++		dev_info(&scm_data->dev,
++			 "Overwritten %llu/%llu accessible pages", success, attempted);
++
++		rc = ocxl_global_mmio_read64(scm_data->ocxl_afu,
++					     scm_data->ns_command.response_offset +
++					     NS_RESPONSE_SECURE_ERASE_DEFECTIVE_SUCCESS,
++					     OCXL_HOST_ENDIAN, &success);
++		if (rc) {
++			scm_data->overwrite_state = SCM_OVERWRITE_FAILED;
++			mutex_unlock(&scm_data->ns_command.lock);
++			return;
++		}
++
++		rc = ocxl_global_mmio_read64(scm_data->ocxl_afu,
++					     scm_data->ns_command.response_offset +
++					     NS_RESPONSE_SECURE_ERASE_DEFECTIVE_ATTEMPTED,
++					     OCXL_HOST_ENDIAN, &attempted);
++		if (rc) {
++			scm_data->overwrite_state = SCM_OVERWRITE_FAILED;
++			mutex_unlock(&scm_data->ns_command.lock);
++			return;
++		}
++
++		if (success != attempted)
++			scm_data->overwrite_state = SCM_OVERWRITE_FAILED;
++
++		dev_info(&scm_data->dev,
++			 "Overwritten %llu/%llu defective pages", success, attempted);
++
++		scm_ns_response_handled(scm_data);
++
++		mutex_unlock(&scm_data->ns_command.lock);
++		return;
++	}
++}
++
+ static irqreturn_t scm_imn0_handler(void *private)
+ {
+ 	struct scm_data *scm_data = private;
+@@ -1537,6 +1694,9 @@ static irqreturn_t scm_imn0_handler(void *private)
+ 
+ 	(void)scm_chi(scm_data, &chi);
+ 
++	if (chi & GLOBAL_MMIO_CHI_NSCRA)
++		scm_handle_nscra_doorbell(scm_data);
++
+ 	if (chi & GLOBAL_MMIO_CHI_ELA) {
+ 		dev_warn(&scm_data->dev, "Error log is available\n");
+ 
+diff --git a/drivers/nvdimm/ocxl/scm_internal.c b/drivers/nvdimm/ocxl/scm_internal.c
+index 8fc849610eaa..db919a23c69b 100644
+--- a/drivers/nvdimm/ocxl/scm_internal.c
++++ b/drivers/nvdimm/ocxl/scm_internal.c
+@@ -173,6 +173,7 @@ int scm_ns_response_handled(const struct scm_data *scm_data)
+ 				      OCXL_LITTLE_ENDIAN, GLOBAL_MMIO_CHI_NSCRA);
+ }
+ 
++
+ void scm_warn_status(const struct scm_data *scm_data, const char *message,
+ 		     u8 status)
+ {
 diff --git a/drivers/nvdimm/ocxl/scm_internal.h b/drivers/nvdimm/ocxl/scm_internal.h
-index 9575996a89e7..57491dbee1a4 100644
+index af19813a7f75..4a29088612a9 100644
 --- a/drivers/nvdimm/ocxl/scm_internal.h
 +++ b/drivers/nvdimm/ocxl/scm_internal.h
-@@ -2,6 +2,7 @@
- // Copyright 2019 IBM Corp.
+@@ -70,6 +70,15 @@
+ #define ADMIN_COMMAND_CMD_CAPS		0x08u
+ #define ADMIN_COMMAND_MAX		0x08u
  
- #include <linux/pci.h>
-+#include <linux/cdev.h>
- #include <misc/ocxl.h>
- #include <linux/libnvdimm.h>
- #include <linux/mm.h>
-@@ -100,6 +101,7 @@ struct scm_function_0 {
++#define NS_COMMAND_SECURE_ERASE	0x20ull
++
++#define NS_RESPONSE_SECURE_ERASE_ACCESSIBLE_SUCCESS 0x20
++#define NS_RESPONSE_SECURE_ERASE_ACCESSIBLE_ATTEMPTED 0x28
++#define NS_RESPONSE_SECURE_ERASE_DEFECTIVE_SUCCESS 0x30
++#define NS_RESPONSE_SECURE_ERASE_DEFECTIVE_ATTEMPTED 0x38
++
++
++
+ #define STATUS_SUCCESS		0x00
+ #define STATUS_MEM_UNAVAILABLE	0x20
+ #define STATUS_BAD_OPCODE	0x50
+@@ -99,6 +108,13 @@ struct scm_function_0 {
+ 	struct ocxl_fn *ocxl_fn;
+ };
+ 
++enum overwrite_state {
++	SCM_OVERWRITE_IDLE = 0,
++	SCM_OVERWRITE_BUSY,
++	SCM_OVERWRITE_SUCCESS,
++	SCM_OVERWRITE_FAILED
++};
++
  struct scm_data {
  	struct device dev;
  	struct pci_dev *pdev;
-+	struct cdev cdev;
- 	struct ocxl_fn *ocxl_fn;
- 	struct nd_interleave_set nd_set;
- 	struct nvdimm_bus_descriptor bus_desc;
+@@ -116,6 +132,7 @@ struct scm_data {
+ 	void *metadata_addr;
+ 	struct command_metadata admin_command;
+ 	struct command_metadata ns_command;
++	enum overwrite_state overwrite_state;
+ 	struct resource scm_res;
+ 	struct nd_region *nd_region;
+ 	struct eventfd_ctx *ev_ctx;
 -- 
 2.23.0
 
