@@ -2,52 +2,68 @@ Return-Path: <SRS0=x21H=ZZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 76A90C432C3
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 12:40:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DC208C432C0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 12:46:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2A3AD2068E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 12:40:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2A3AD2068E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 870AA20684
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 12:46:04 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="m8Z9EA16"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 870AA20684
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47S1m93ByMzDqWk
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 23:40:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47S1td1kPgzDqBh
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 23:46:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.13; helo=inva020.nxp.com; envelope-from=biwen.li@nxp.com;
- receiver=<UNKNOWN>)
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
+ envelope-from=willy@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="m8Z9EA16"; dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47S1WL6fqtzDqTT
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2019 23:29:10 +1100 (AEDT)
-Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 882F51A1340;
- Tue,  3 Dec 2019 13:29:06 +0100 (CET)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
- [165.114.16.14])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id C7F6A1A0383;
- Tue,  3 Dec 2019 13:29:01 +0100 (CET)
-Received: from localhost.localdomain (mega.ap.freescale.net [10.192.208.232])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 77C614028F;
- Tue,  3 Dec 2019 20:28:55 +0800 (SGT)
-From: Biwen Li <biwen.li@nxp.com>
-To: leoyang.li@nxp.com, shawnguo@kernel.org, robh+dt@kernel.org,
- mark.rutland@arm.com, ran.wang_1@nxp.com
-Subject: [v5 1/3] soc: fsl: handle RCPM errata A-008646 on SoC LS1021A
-Date: Tue,  3 Dec 2019 20:28:16 +0800
-Message-Id: <20191203122818.21941-1-biwen.li@nxp.com>
-X-Mailer: git-send-email 2.17.1
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47S1qC6FlzzDqV1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2019 23:43:03 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
+ :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=y32EyG9QTIAAfBfEpUvYlhT+mcWXafYYc7fjM/sPObM=; b=m8Z9EA16p0cdhP5aXa2cDeouD
+ 8v18exxvbDL2VZ+g12YOFJL8h4D64m1aUWCjUztX9coGysKzDNmS82ECczmiSSugoSgZ9I8fL9733
+ yByR1W4OgWm9Ji+79sSU19wUMIbaL9vhWILbJzqBWIYJTITSALTfX8PQqTR6ncq9isowfjM5tK81V
+ DhgMGFKKI5B5HnMtJhJFcrzkzezv2TLmE+jL2cmZiZL0voqrqklRcOy//ON418iZSdT3QArUEvbuM
+ ATlvjkn6wfb7OXS8n+w6/tzVdX7N06vOEiLtYT8y+Qz025I88HodvPHRaxMl+zkd3oThPgqxf9AOL
+ VUr5RTx1g==;
+Received: from willy by bombadil.infradead.org with local (Exim 4.92.3 #3 (Red
+ Hat Linux)) id 1ic7Vo-0007i6-VW; Tue, 03 Dec 2019 12:42:40 +0000
+Date: Tue, 3 Dec 2019 04:42:40 -0800
+From: Matthew Wilcox <willy@infradead.org>
+To: Alastair D'Silva <alastair@au1.ibm.com>
+Subject: Re: [PATCH v2 00/27] Add support for OpenCAPI SCM devices
+Message-ID: <20191203124240.GT20752@bombadil.infradead.org>
+References: <20191203034655.51561-1-alastair@au1.ibm.com>
+ <20191203035057.GR20752@bombadil.infradead.org>
+ <1e3892815b9684e3fb4f84bd1935ea7e68cd07d8.camel@au1.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1e3892815b9684e3fb4f84bd1935ea7e68cd07d8.camel@au1.ibm.com>
+User-Agent: Mutt/1.12.1 (2019-06-15)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,124 +75,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- Biwen Li <biwen.li@nxp.com>
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, Keith Busch <keith.busch@intel.com>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Paul Mackerras <paulus@samba.org>,
+ Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
+ Ira Weiny <ira.weiny@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Rob Herring <robh@kernel.org>, Dave Jiang <dave.jiang@intel.com>,
+ linux-nvdimm@lists.01.org, Vishal Verma <vishal.l.verma@intel.com>,
+ Krzysztof Kozlowski <krzk@kernel.org>,
+ Anju T Sudhakar <anju@linux.vnet.ibm.com>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kurz <groug@kaod.org>, Nicholas Piggin <npiggin@gmail.com>,
+ =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>,
+ Dan Williams <dan.j.williams@intel.com>, Hari Bathini <hbathini@linux.ibm.com>,
+ linux-mm@kvack.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linux-kernel@vger.kernel.org, Frederic Barrat <fbarrat@linux.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Description:
-	- Reading configuration register RCPM_IPPDEXPCR1
-	  always return zero
+On Tue, Dec 03, 2019 at 03:01:17PM +1100, Alastair D'Silva wrote:
+> On Mon, 2019-12-02 at 19:50 -0800, Matthew Wilcox wrote:
+> > On Tue, Dec 03, 2019 at 02:46:28PM +1100, Alastair D'Silva wrote:
+> > > This series adds support for OpenCAPI SCM devices, exposing
+> > 
+> > Could we _not_ introduce yet another term for persistent memory?
+> > 
+> 
+> "Storage Class Memory" is an industry wide term, and is used repeatedly
+> in the device specifications. It's not something that has been pulled
+> out of thin air.
 
-Workaround:
-	- Save register RCPM_IPPDEXPCR1's value to
-	  register SCFG_SPARECR8.(uboot's psci also
-	  need reading value from the register SCFG_SPARECR8
-	  to set register RCPM_IPPDEXPCR1)
+"Somebody else also wrote down Storage Class Memory".  Don't care.
+Google gets 750k hits for Persistent Memory and 150k hits for
+Storage Class Memory.  This term lost.
 
-Impact:
-	- FlexTimer module will cannot wakeup system in
-	  deep sleep on SoC LS1021A
+> The term is also already in use within the 'papr_scm' driver.
 
-Signed-off-by: Biwen Li <biwen.li@nxp.com>
----
-Change in v5:
-	- update the patch, because of rcpm driver has updated.
-
-Change in v4:
-	- rename property name
-	  fsl,ippdexpcr-alt-addr -> fsl,ippdexpcr1-alt-addr
-
-Change in v3:
-	- update commit message
-	- rename property name
-	  fsl,rcpm-scfg -> fsl,ippdexpcr-alt-addr
-
-Change in v2:
-  	- fix stype problems
-
- drivers/soc/fsl/rcpm.c | 47 ++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 45 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/soc/fsl/rcpm.c b/drivers/soc/fsl/rcpm.c
-index a093dbe6d2cb..775c618f0456 100644
---- a/drivers/soc/fsl/rcpm.c
-+++ b/drivers/soc/fsl/rcpm.c
-@@ -6,13 +6,16 @@
- //
- // Author: Ran Wang <ran.wang_1@nxp.com>
- 
-+#include <linux/acpi.h>
- #include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/mfd/syscon.h>
- #include <linux/module.h>
--#include <linux/platform_device.h>
- #include <linux/of_address.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
- #include <linux/slab.h>
- #include <linux/suspend.h>
--#include <linux/kernel.h>
- 
- #define RCPM_WAKEUP_CELL_MAX_SIZE	7
- 
-@@ -37,6 +40,9 @@ static int rcpm_pm_prepare(struct device *dev)
- 	struct device_node	*np = dev->of_node;
- 	u32 value[RCPM_WAKEUP_CELL_MAX_SIZE + 1];
- 	u32 setting[RCPM_WAKEUP_CELL_MAX_SIZE] = {0};
-+	struct regmap *scfg_addr_regmap = NULL;
-+	u32 reg_offset[RCPM_WAKEUP_CELL_MAX_SIZE + 1];
-+	u32 reg_value = 0;
- 
- 	rcpm = dev_get_drvdata(dev);
- 	if (!rcpm)
-@@ -90,6 +96,43 @@ static int rcpm_pm_prepare(struct device *dev)
- 			tmp |= ioread32be(address);
- 			iowrite32be(tmp, address);
- 		}
-+		/*
-+		 * Workaround of errata A-008646 on SoC LS1021A:
-+		 * There is a bug of register ippdexpcr1.
-+		 * Reading configuration register RCPM_IPPDEXPCR1
-+		 * always return zero. So save ippdexpcr1's value
-+		 * to register SCFG_SPARECR8.And the value of
-+		 * ippdexpcr1 will be read from SCFG_SPARECR8.
-+		 */
-+		if (device_property_present(dev, "fsl,ippdexpcr1-alt-addr")) {
-+			if (dev_of_node(dev)) {
-+				scfg_addr_regmap = syscon_regmap_lookup_by_phandle(np,
-+										   "fsl,ippdexpcr1-alt-addr");
-+			} else if (is_acpi_node(dev->fwnode)) {
-+				dev_err(dev, "not support acpi for rcpm\n");
-+				continue;
-+			}
-+
-+			if (scfg_addr_regmap && (i == 1)) {
-+				if (device_property_read_u32_array(dev,
-+				    "fsl,ippdexpcr1-alt-addr",
-+				    reg_offset,
-+				    1 + sizeof(u64)/sizeof(u32))) {
-+					scfg_addr_regmap = NULL;
-+					continue;
-+				}
-+				/* Read value from register SCFG_SPARECR8 */
-+				regmap_read(scfg_addr_regmap,
-+					    (u32)(((u64)(reg_offset[1] << (sizeof(u32) * 8) |
-+					    reg_offset[2])) & 0xffffffff),
-+					    &reg_value);
-+				/* Write value to register SCFG_SPARECR8 */
-+				regmap_write(scfg_addr_regmap,
-+					     (u32)(((u64)(reg_offset[1] << (sizeof(u32) * 8) |
-+					     reg_offset[2])) & 0xffffffff),
-+					     tmp | reg_value);
-+			}
-+		}
- 	}
- 
- 	return 0;
--- 
-2.17.1
-
+The acronym "SCM" is already in use.  Socket Control Messages go back
+to early Unix (SCM_RIGHTS, SCM_CREDENTIALS, etc).  Really, you're just
+making the case that IBM already uses the term SCM.  You should stop.
