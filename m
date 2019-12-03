@@ -2,91 +2,65 @@ Return-Path: <SRS0=KnCP=Z2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EB74AC432C0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 04:34:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 92B58C432C0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 04:37:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 61AC92068E
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 04:34:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3D84A20640
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 04:37:12 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="iH/GkB/i"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 61AC92068E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=anastas.io header.i=@anastas.io header.b="RX2KsrOy"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3D84A20640
+Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=anastas.io
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47SQxT3pCGzDqSK
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 15:34:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="iH/GkB/i"; 
+	by lists.ozlabs.org (Postfix) with ESMTP id 47SR062slZzDqSK
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 15:37:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=anastas.io (client-ip=104.248.188.109; helo=alpha.anastas.io;
+ envelope-from=shawn@anastas.io; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none)
+ header.from=anastas.io
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=anastas.io header.i=@anastas.io header.b="RX2KsrOy"; 
  dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from alpha.anastas.io (alpha.anastas.io [104.248.188.109])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47SQvL0Z5RzDqFC
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Dec 2019 15:32:59 +1100 (AEDT)
-Received: from localhost (mailhub1-ext [192.168.12.233])
- by localhost (Postfix) with ESMTP id 47SQvB1X8Wz9v3nv;
- Wed,  4 Dec 2019 05:32:54 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=iH/GkB/i; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id Rjy7c9LzwKGl; Wed,  4 Dec 2019 05:32:54 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 47SQvB0NRVz9v3nt;
- Wed,  4 Dec 2019 05:32:54 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1575433974; bh=JpFN3Nh7EoLxvzsnF7qnjZOmLclHkS0vKsPmhr9E1rY=;
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47SQw83ff5zDqT6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Dec 2019 15:33:44 +1100 (AEDT)
+Received: from authenticated-user (alpha.anastas.io [104.248.188.109])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by alpha.anastas.io (Postfix) with ESMTPSA id 9CFD77F435;
+ Tue,  3 Dec 2019 17:45:53 -0600 (CST)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=anastas.io; s=mail;
+ t=1575416754; bh=mdtQhN24kYvuo/KKla+16YACVSx83u/SxcWjz3GMu8E=;
  h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=iH/GkB/irOi2Glg4L74cAldoyoVItS8ctviRTvxAZRFX+JtQxGP2s8VqMePMeuWkh
- yLOXAen36+IZLAyTa0ypzL/6w1cGK+w5tZBtoyIvVMQv4jf2Bfu4bStE5R4rz3FTet
- Vg9585kYP6cFkfhf/qdplxHaO7voIqLyJruy1YDY=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id BAF1A8B838;
- Wed,  4 Dec 2019 05:32:54 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id mxoDTfKPwG7V; Wed,  4 Dec 2019 05:32:54 +0100 (CET)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 4D6298B815;
- Wed,  4 Dec 2019 05:32:54 +0100 (CET)
-Subject: Re: [PATCH v4 2/2] powerpc/irq: inline call_do_irq() and
- call_do_softirq()
-To: Segher Boessenkool <segher@kernel.crashing.org>
-References: <f12fb9a6cc52d83ee9ddf15a36ee12ac77e6379f.1570684298.git.christophe.leroy@c-s.fr>
- <5ca6639b7c1c21ee4b4138b7cfb31d6245c4195c.1570684298.git.christophe.leroy@c-s.fr>
- <877e3tbvsa.fsf@mpe.ellerman.id.au>
- <20191121101552.GR16031@gate.crashing.org>
- <87y2w49rgo.fsf@mpe.ellerman.id.au> <20191125142556.GU9491@gate.crashing.org>
- <5fdb1c92-8bf4-01ca-f81c-214870c33be3@c-s.fr>
- <20191127145958.GG9491@gate.crashing.org>
- <2072e066-1ffb-867e-60ec-04a6bb9075c1@c-s.fr>
- <20191129184658.GR9491@gate.crashing.org>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <ebc67964-e5a9-acd0-0011-61ba23692f7e@c-s.fr>
-Date: Wed, 4 Dec 2019 05:32:54 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.9.1
+ b=RX2KsrOyELqDyJKEfd8W1Ers5uUuvDUvvfYAFg6XgbIbA6Dckey5KVjDPF74PcUBQ
+ NrHiAQZXIghL9EKTMP07O+k0eb/vwAr1tssHj22vWiosLf69W7T4EwTVX9piAEMtVP
+ 228LLnFgFxu0x4csQBxyuCDhkpFh/eZjtXIgvNrZUHw6Ips2d5QybFhqXfH2NQI5AW
+ 3RwRGMpBvyTTJRvNg1aABPio/OZ0n6+jED1XJr6MGrAw/JbsfWdH91f2dUhmehhqFF
+ S2fBn2luLsnpXlEz/fB6vo4IH6DqHC9NkZ004KLil1717rrwCcntluSekIf6RdjDss
+ Nukga9XSlvFIA==
+Subject: Re: [PATCH v2 1/3] powernv/iov: Ensure the pdn for VFs always
+ contains a valid PE number
+To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+References: <20191028085424.12006-1-oohall@gmail.com>
+From: Shawn Anastasio <shawn@anastas.io>
+Message-ID: <166b9ee3-08fe-e558-b6a3-4ea5d9b9219f@anastas.io>
+Date: Tue, 3 Dec 2019 17:45:51 -0600
 MIME-Version: 1.0
-In-Reply-To: <20191129184658.GR9491@gate.crashing.org>
+In-Reply-To: <20191028085424.12006-1-oohall@gmail.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,64 +72,15 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
+Cc: aik@ozlabs.ru, linux-pci@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+On 10/28/19 3:54 AM, Oliver O'Halloran wrote:
+> On pseries there is a bug with adding hotplugged devices to an IOMMU group.
+> For a number of dumb reasons fixing that bug first requires re-working how
+> VFs are configured on PowerNV.
 
-Le 29/11/2019 à 19:46, Segher Boessenkool a écrit :
-> Hi!
-> 
-> On Wed, Nov 27, 2019 at 04:15:15PM +0100, Christophe Leroy wrote:
->> Le 27/11/2019 à 15:59, Segher Boessenkool a écrit :
->>> On Wed, Nov 27, 2019 at 02:50:30PM +0100, Christophe Leroy wrote:
->>>> So what do we do ? We just drop the "r2" clobber ?
->>>
->>> You have to make sure your asm code works for all ABIs.  This is quite
->>> involved if you do a call to an external function.  The compiler does
->>> *not* see this call, so you will have to make sure that all that the
->>> compiler and linker do will work, or prevent some of those things (say,
->>> inlining of the function containing the call).
->>
->> But the whole purpose of the patch is to inline the call to __do_irq()
->> in order to avoid the trampoline function.
-> 
-> Yes, so you call __do_irq.  You have to make sure that what you tell the
-> compiler -- and what you *don't tell the compiler -- works with what the
-> ABIs require, and what the called function expects and provides.
-> 
->>> That does not fix everything.  The called function requires a specific
->>> value in r2 on entry.
->>
->> Euh ... but there is nothing like that when using existing
->> call_do_irq().
-> 
->> How does GCC know that call_do_irq() has same TOC as __do_irq() ?
-> 
-> The existing call_do_irq isn't C code.  It doesn't do anything with r2,
-> as far as I can see; __do_irq just gets whatever the caller of call_do_irq
-> has.
-> 
-> So I guess all the callers of call_do_irq have the correct r2 value always
-> already?  In that case everything Just Works.
-
-Indeed, there is only one caller for call_do_irq() which is do_IRQ().
-And do_IRQ() is also calling __do_irq() directly (when the stack pointer 
-is already set to IRQ stack). do_IRQ() and __do_irq() are both in 
-arch/powerpc/kernel/irq.c
-
-As far as I can see when replacing the call to call_do_irq() by a call 
-to __do_irq(), the compiler doesn't do anything special with r2, and 
-doesn't add any nop after the bl either, whereas for all calls outside 
-irq.c, there is a nop added. So I guess that's ok ?
-
-Now that call_do_irq() is inlined, we can even define __do_irq() as static.
-
-And that's the same for do_softirq_own_stack(), it is only called from 
-do_softirq() which is defined in the same file as __do_softirq() 
-(kernel/softirq.c)
-
-Christophe
+Are these patches expected to land soon, or is there another fix in the
+pipeline? As far as I can tell this is still an issue.
