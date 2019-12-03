@@ -6,92 +6,91 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C600CC432C0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 04:07:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D36DBC432C0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 04:08:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7E16820665
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 04:07:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7E16820665
+	by mail.kernel.org (Postfix) with ESMTPS id 56AA120665
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 04:08:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 56AA120665
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47RpMk1jJ0zDqQc
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 15:06:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47RpPq2FZ0zDqQc
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 15:08:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=au1.ibm.com (client-ip=148.163.156.1;
+ smtp.mailfrom=au1.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=alastair@au1.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=au1.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47RnyS43BhzDqP5
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47RnyS47V8zDqP9
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2019 14:48:32 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- xB33kkIG032799
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Dec 2019 22:48:29 -0500
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2wm6snr94w-1
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ xB33kmrJ001094
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Dec 2019 22:48:30 -0500
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2wm6myr93h-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Dec 2019 22:48:29 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Dec 2019 22:48:30 -0500
 Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
- Tue, 3 Dec 2019 03:48:25 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Tue, 3 Dec 2019 03:48:27 -0000
+Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 3 Dec 2019 03:48:18 -0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xB33mHuf63307976
+ Tue, 3 Dec 2019 03:48:20 -0000
+Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
+ [9.149.105.60])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id xB33mJs837224800
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 3 Dec 2019 03:48:17 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 635DCA4057;
- Tue,  3 Dec 2019 03:48:17 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 11606A4053;
- Tue,  3 Dec 2019 03:48:17 +0000 (GMT)
+ Tue, 3 Dec 2019 03:48:19 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2BDE24204D;
+ Tue,  3 Dec 2019 03:48:19 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C7B1642045;
+ Tue,  3 Dec 2019 03:48:18 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue,  3 Dec 2019 03:48:17 +0000 (GMT)
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue,  3 Dec 2019 03:48:18 +0000 (GMT)
 Received: from adsilva.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id BDAD8A03D3;
- Tue,  3 Dec 2019 14:48:12 +1100 (AEDT)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id D07FBA03F1;
+ Tue,  3 Dec 2019 14:48:13 +1100 (AEDT)
 From: "Alastair D'Silva" <alastair@au1.ibm.com>
 To: alastair@d-silva.org
-Subject: [PATCH v2 09/27] ocxl: Free detached contexts in
- ocxl_context_detach_all()
-Date: Tue,  3 Dec 2019 14:46:37 +1100
+Subject: [PATCH v2 27/27] MAINTAINERS: Add myself & nvdimm/ocxl to ocxl
+Date: Tue,  3 Dec 2019 14:46:55 +1100
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191203034655.51561-1-alastair@au1.ibm.com>
 References: <20191203034655.51561-1-alastair@au1.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19120303-0008-0000-0000-0000033C0FDE
+x-cbid: 19120303-0016-0000-0000-000002D0158E
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19120303-0009-0000-0000-00004A5B289A
-Message-Id: <20191203034655.51561-10-alastair@au1.ibm.com>
+x-cbparentid: 19120303-0017-0000-0000-000033320CA9
+Message-Id: <20191203034655.51561-28-alastair@au1.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
  definitions=2019-12-02_06:2019-11-29,2019-12-02 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 mlxscore=0
- suspectscore=3 clxscore=1015 malwarescore=0 adultscore=0 impostorscore=0
- phishscore=0 mlxlogscore=810 spamscore=0 priorityscore=1501
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-1910280000 definitions=main-1912030032
+ malwarescore=0
+ impostorscore=0 lowpriorityscore=0 mlxscore=0 clxscore=1015
+ mlxlogscore=599 spamscore=0 phishscore=0 suspectscore=1 adultscore=0
+ bulkscore=0 priorityscore=1501 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-1910280000 definitions=main-1912030032
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -128,45 +127,37 @@ Sender: "Linuxppc-dev"
 
 From: Alastair D'Silva <alastair@d-silva.org>
 
-ocxl_context_detach_all() is called from ocxl_function_close(), so
-there is no reason to leave the contexts allocated, as the caller
-can do nothing useful with them at that point.
+The nvdimm/ocxl driver will be maintained as part of the ppc tree.
 
-This also has the side-effect of freeing any allocated IRQs
-within the context.
+I'm also adding myself as an author of the driver & contributor to
+the generic ocxl driver.
 
 Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 ---
- drivers/misc/ocxl/context.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ MAINTAINERS | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/misc/ocxl/context.c b/drivers/misc/ocxl/context.c
-index 994563a078eb..6cb36ef96e09 100644
---- a/drivers/misc/ocxl/context.c
-+++ b/drivers/misc/ocxl/context.c
-@@ -259,10 +259,11 @@ void ocxl_context_detach_all(struct ocxl_afu *afu)
- {
- 	struct ocxl_context *ctx;
- 	int tmp;
-+	int rc;
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 9d3a5c54a41d..e9152cf27176 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -11724,13 +11724,16 @@ F:	tools/objtool/
+ OCXL (Open Coherent Accelerator Processor Interface OpenCAPI) DRIVER
+ M:	Frederic Barrat <fbarrat@linux.ibm.com>
+ M:	Andrew Donnellan <ajd@linux.ibm.com>
++M:	Alastair D'Silva <alastair@d-silva.org>
+ L:	linuxppc-dev@lists.ozlabs.org
+ S:	Supported
+ F:	arch/powerpc/platforms/powernv/ocxl.c
+ F:	arch/powerpc/include/asm/pnv-ocxl.h
+ F:	drivers/misc/ocxl/
++F:	drivers/nvdimm/ocxl/
+ F:	include/misc/ocxl*
+ F:	include/uapi/misc/ocxl.h
++F:	include/uapi/nvdimm/ocxl-scm.h
+ F:	Documentation/userspace-api/accelerators/ocxl.rst
  
- 	mutex_lock(&afu->contexts_lock);
- 	idr_for_each_entry(&afu->contexts_idr, ctx, tmp) {
--		ocxl_context_detach(ctx);
-+		rc = ocxl_context_detach(ctx);
- 		/*
- 		 * We are force detaching - remove any active mmio
- 		 * mappings so userspace cannot interfere with the
-@@ -274,6 +275,9 @@ void ocxl_context_detach_all(struct ocxl_afu *afu)
- 		if (ctx->mapping)
- 			unmap_mapping_range(ctx->mapping, 0, 0, 1);
- 		mutex_unlock(&ctx->mapping_lock);
-+
-+		if (rc != -EBUSY)
-+			ocxl_context_free(ctx);
- 	}
- 	mutex_unlock(&afu->contexts_lock);
- }
+ OMAP AUDIO SUPPORT
 -- 
 2.23.0
 
