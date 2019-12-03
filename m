@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 785B1C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 04:02:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 96930C432C0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 04:04:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 330A12068E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 04:02:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 330A12068E
+	by mail.kernel.org (Postfix) with ESMTPS id 5155C2068E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 04:04:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5155C2068E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47RpGc419gzDqR7
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 15:02:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47RpJk6XPvzDq9L
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 15:04:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=au1.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=alastair@au1.ibm.com;
@@ -29,64 +29,64 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47RnyS0SFhzDqP3
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47RnyS1QQQzDqP6
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2019 14:48:31 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- xB33klvM078523
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ xB33kndJ093450
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Dec 2019 22:48:28 -0500
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2wm6rr0paq-1
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2wm6g99bnm-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Dec 2019 22:48:27 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Dec 2019 22:48:28 -0500
 Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
  Tue, 3 Dec 2019 03:48:25 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 3 Dec 2019 03:48:17 -0000
+ Tue, 3 Dec 2019 03:48:18 -0000
 Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
  [9.149.105.232])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xB33mGhc35586160
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xB33mH6I63111196
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 3 Dec 2019 03:48:16 GMT
+ Tue, 3 Dec 2019 03:48:17 GMT
 Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id EB13852057;
- Tue,  3 Dec 2019 03:48:15 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 672B55204E;
+ Tue,  3 Dec 2019 03:48:17 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 4998B5205A;
- Tue,  3 Dec 2019 03:48:15 +0000 (GMT)
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id BC70F52050;
+ Tue,  3 Dec 2019 03:48:16 +0000 (GMT)
 Received: from adsilva.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 4D7DAA03CB;
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id AA740A03D2;
  Tue,  3 Dec 2019 14:48:12 +1100 (AEDT)
 From: "Alastair D'Silva" <alastair@au1.ibm.com>
 To: alastair@d-silva.org
-Subject: [PATCH v2 03/27] powerpc: Add OPAL calls for LPC memory alloc/release
-Date: Tue,  3 Dec 2019 14:46:31 +1100
+Subject: [PATCH v2 08/27] ocxl: Save the device serial number in ocxl_fn
+Date: Tue,  3 Dec 2019 14:46:36 +1100
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191203034655.51561-1-alastair@au1.ibm.com>
 References: <20191203034655.51561-1-alastair@au1.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19120303-4275-0000-0000-0000038A31DB
+x-cbid: 19120303-0028-0000-0000-000003C3CC73
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19120303-4276-0000-0000-0000389DCDD7
-Message-Id: <20191203034655.51561-4-alastair@au1.ibm.com>
+x-cbparentid: 19120303-0029-0000-0000-00002486E432
+Message-Id: <20191203034655.51561-9-alastair@au1.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
  definitions=2019-12-02_06:2019-11-29,2019-12-02 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=1 adultscore=0
- spamscore=0 priorityscore=1501 mlxscore=0 bulkscore=0 mlxlogscore=807
- lowpriorityscore=0 impostorscore=0 phishscore=0 clxscore=1015
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ malwarescore=0 clxscore=1015
+ lowpriorityscore=0 bulkscore=0 phishscore=0 priorityscore=1501
+ impostorscore=0 suspectscore=1 spamscore=0 mlxscore=0 adultscore=0
+ mlxlogscore=473 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-1910280000 definitions=main-1912030032
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -124,57 +124,93 @@ Sender: "Linuxppc-dev"
 
 From: Alastair D'Silva <alastair@d-silva.org>
 
-Add OPAL calls for LPC memory alloc/release
+This patch retrieves the serial number of the card and makes it available
+to consumers of the ocxl driver via the ocxl_fn struct.
 
 Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
-Acked-by: Andrew Donnellan <ajd@linux.ibm.com>
 Acked-by: Frederic Barrat <fbarrat@linux.ibm.com>
+Acked-by: Andrew Donnellan <ajd@linux.ibm.com>
 ---
- arch/powerpc/include/asm/opal-api.h        | 2 ++
- arch/powerpc/include/asm/opal.h            | 3 +++
- arch/powerpc/platforms/powernv/opal-call.c | 2 ++
- 3 files changed, 7 insertions(+)
+ drivers/misc/ocxl/config.c | 46 ++++++++++++++++++++++++++++++++++++++
+ include/misc/ocxl.h        |  1 +
+ 2 files changed, 47 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 378e3997845a..2c88c02e69ed 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -208,6 +208,8 @@
- #define OPAL_HANDLE_HMI2			166
- #define	OPAL_NX_COPROC_INIT			167
- #define OPAL_XIVE_GET_VP_STATE			170
-+#define OPAL_NPU_MEM_ALLOC			171
-+#define OPAL_NPU_MEM_RELEASE			172
- #define OPAL_MPIPL_UPDATE			173
- #define OPAL_MPIPL_REGISTER_TAG			174
- #define OPAL_MPIPL_QUERY_TAG			175
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index a0cf8fba4d12..4db135fb54ab 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -39,6 +39,9 @@ int64_t opal_npu_spa_clear_cache(uint64_t phb_id, uint32_t bdfn,
- 				uint64_t PE_handle);
- int64_t opal_npu_tl_set(uint64_t phb_id, uint32_t bdfn, long cap,
- 			uint64_t rate_phys, uint32_t size);
-+int64_t opal_npu_mem_alloc(uint64_t phb_id, uint32_t bdfn,
-+			uint64_t size, uint64_t *bar);
-+int64_t opal_npu_mem_release(uint64_t phb_id, uint32_t bdfn);
+diff --git a/drivers/misc/ocxl/config.c b/drivers/misc/ocxl/config.c
+index fb0c3b6f8312..a9203c309365 100644
+--- a/drivers/misc/ocxl/config.c
++++ b/drivers/misc/ocxl/config.c
+@@ -71,6 +71,51 @@ static int find_dvsec_afu_ctrl(struct pci_dev *dev, u8 afu_idx)
+ 	return 0;
+ }
  
- int64_t opal_console_write(int64_t term_number, __be64 *length,
- 			   const uint8_t *buffer);
-diff --git a/arch/powerpc/platforms/powernv/opal-call.c b/arch/powerpc/platforms/powernv/opal-call.c
-index a2aa5e433ac8..27c4b93c774c 100644
---- a/arch/powerpc/platforms/powernv/opal-call.c
-+++ b/arch/powerpc/platforms/powernv/opal-call.c
-@@ -287,6 +287,8 @@ OPAL_CALL(opal_pci_set_pbcq_tunnel_bar,		OPAL_PCI_SET_PBCQ_TUNNEL_BAR);
- OPAL_CALL(opal_sensor_read_u64,			OPAL_SENSOR_READ_U64);
- OPAL_CALL(opal_sensor_group_enable,		OPAL_SENSOR_GROUP_ENABLE);
- OPAL_CALL(opal_nx_coproc_init,			OPAL_NX_COPROC_INIT);
-+OPAL_CALL(opal_npu_mem_alloc,			OPAL_NPU_MEM_ALLOC);
-+OPAL_CALL(opal_npu_mem_release,			OPAL_NPU_MEM_RELEASE);
- OPAL_CALL(opal_mpipl_update,			OPAL_MPIPL_UPDATE);
- OPAL_CALL(opal_mpipl_register_tag,		OPAL_MPIPL_REGISTER_TAG);
- OPAL_CALL(opal_mpipl_query_tag,			OPAL_MPIPL_QUERY_TAG);
++/**
++ * Find a related PCI device (function 0)
++ * @device: PCI device to match
++ *
++ * Returns a pointer to the related device, or null if not found
++ */
++static struct pci_dev *get_function_0(struct pci_dev *dev)
++{
++	unsigned int devfn = PCI_DEVFN(PCI_SLOT(dev->devfn), 0); // Look for function 0
++
++	return pci_get_domain_bus_and_slot(pci_domain_nr(dev->bus),
++					dev->bus->number, devfn);
++}
++
++static void read_serial(struct pci_dev *dev, struct ocxl_fn_config *fn)
++{
++	u32 low, high;
++	int pos;
++
++	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_DSN);
++	if (pos) {
++		pci_read_config_dword(dev, pos + 0x04, &low);
++		pci_read_config_dword(dev, pos + 0x08, &high);
++
++		fn->serial = low | ((u64)high) << 32;
++
++		return;
++	}
++
++	if (PCI_FUNC(dev->devfn) != 0) {
++		struct pci_dev *related = get_function_0(dev);
++
++		if (!related) {
++			fn->serial = 0;
++			return;
++		}
++
++		read_serial(related, fn);
++		pci_dev_put(related);
++		return;
++	}
++
++	fn->serial = 0;
++}
++
+ static void read_pasid(struct pci_dev *dev, struct ocxl_fn_config *fn)
+ {
+ 	u16 val;
+@@ -208,6 +253,7 @@ int ocxl_config_read_function(struct pci_dev *dev, struct ocxl_fn_config *fn)
+ 	int rc;
+ 
+ 	read_pasid(dev, fn);
++	read_serial(dev, fn);
+ 
+ 	rc = read_dvsec_tl(dev, fn);
+ 	if (rc) {
+diff --git a/include/misc/ocxl.h b/include/misc/ocxl.h
+index 6f7c02f0d5e3..9843051c3c5b 100644
+--- a/include/misc/ocxl.h
++++ b/include/misc/ocxl.h
+@@ -46,6 +46,7 @@ struct ocxl_fn_config {
+ 	int dvsec_afu_info_pos; /* offset of the AFU information DVSEC */
+ 	s8 max_pasid_log;
+ 	s8 max_afu_index;
++	u64 serial;
+ };
+ 
+ enum ocxl_endian {
 -- 
 2.23.0
 
