@@ -7,90 +7,90 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	UNWANTED_LANGUAGE_BODY,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D16D7C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 04:30:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29A81C432C0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 04:32:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 88D1920409
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 04:30:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 88D1920409
+	by mail.kernel.org (Postfix) with ESMTPS id D1FD120640
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 04:32:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D1FD120640
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47RptS3R5VzDqMK
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 15:30:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47Rpwg5fqQzDq9Q
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2019 15:32:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=au1.ibm.com (client-ip=148.163.156.1;
+ smtp.mailfrom=au1.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=alastair@au1.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=au1.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47RnyV0dJyzDqP4
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2019 14:48:33 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47RnyV4F8JzDqP6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2019 14:48:34 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- xB33kn8M076541
+ xB33kmXj083969
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Dec 2019 22:48:30 -0500
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2wm6s60fpa-1
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2wm6xb0p19-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Dec 2019 22:48:30 -0500
 Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
  Tue, 3 Dec 2019 03:48:27 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
  Tue, 3 Dec 2019 03:48:19 -0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xB33mI2F44630180
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xB33mIIj24707220
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 3 Dec 2019 03:48:18 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8C2A1A4040;
+ Tue, 3 Dec 2019 03:48:19 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DC467AE051;
  Tue,  3 Dec 2019 03:48:18 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id EBBFEA4057;
- Tue,  3 Dec 2019 03:48:17 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3F3AEAE053;
+ Tue,  3 Dec 2019 03:48:18 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue,  3 Dec 2019 03:48:17 +0000 (GMT)
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue,  3 Dec 2019 03:48:18 +0000 (GMT)
 Received: from adsilva.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 4DCB9A03E3;
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id A91CAA03EF;
  Tue,  3 Dec 2019 14:48:13 +1100 (AEDT)
 From: "Alastair D'Silva" <alastair@au1.ibm.com>
 To: alastair@d-silva.org
-Subject: [PATCH v2 17/27] nvdimm/ocxl: Add controller dump IOCTLs
-Date: Tue,  3 Dec 2019 14:46:45 +1100
+Subject: [PATCH v2 25/27] nvdimm/ocxl: Expose SMART data via ndctl
+Date: Tue,  3 Dec 2019 14:46:53 +1100
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191203034655.51561-1-alastair@au1.ibm.com>
 References: <20191203034655.51561-1-alastair@au1.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19120303-0020-0000-0000-00000392CC5A
+x-cbid: 19120303-0028-0000-0000-000003C3CC76
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19120303-0021-0000-0000-000021E9EAA9
-Message-Id: <20191203034655.51561-18-alastair@au1.ibm.com>
+x-cbparentid: 19120303-0029-0000-0000-00002486E434
+Message-Id: <20191203034655.51561-26-alastair@au1.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
  definitions=2019-12-02_06:2019-11-29,2019-12-02 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=15
- mlxscore=15 adultscore=0
- mlxlogscore=76 suspectscore=1 clxscore=1015 priorityscore=1501
- phishscore=0 bulkscore=0 malwarescore=0 spamscore=15 impostorscore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 malwarescore=0
+ suspectscore=1 lowpriorityscore=0 phishscore=0 priorityscore=1501
+ impostorscore=0 clxscore=1015 adultscore=0 mlxlogscore=999 mlxscore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-1910280000 definitions=main-1912030032
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -128,54 +128,113 @@ Sender: "Linuxppc-dev"
 
 From: Alastair D'Silva <alastair@d-silva.org>
 
-This patch adds IOCTLs to allow userspace to request & fetch dumps
-of the internal controller state.
-
-This is useful during debugging or when a fatal error on the controller
-has occurred.
+This patch retrieves proprietary formatted SMART data and makes it
+available via ndctl. A later contribution will be made to ndctl to
+parse this data.
 
 Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 ---
- drivers/nvdimm/ocxl/scm.c      | 132 +++++++++++++++++++++++++++++++++
- include/uapi/nvdimm/ocxl-scm.h |  15 ++++
- 2 files changed, 147 insertions(+)
+ drivers/nvdimm/ocxl/scm.c          | 156 +++++++++++++++++++++++++++++
+ drivers/nvdimm/ocxl/scm_internal.h |  21 ++++
+ 2 files changed, 177 insertions(+)
 
 diff --git a/drivers/nvdimm/ocxl/scm.c b/drivers/nvdimm/ocxl/scm.c
-index 0bbe1a14291e..a520f209d626 100644
+index 8deb7862793c..77b9e68870a3 100644
 --- a/drivers/nvdimm/ocxl/scm.c
 +++ b/drivers/nvdimm/ocxl/scm.c
-@@ -688,6 +688,124 @@ static int scm_ioctl_error_log(struct scm_data *scm_data,
+@@ -94,6 +94,157 @@ static int scm_ndctl_config_size(struct nd_cmd_get_config_size *command)
  	return 0;
  }
  
-+static int scm_ioctl_controller_dump_data(struct scm_data *scm_data,
-+	struct scm_ioctl_controller_dump_data __user *uarg)
++static int read_smart_attrib(struct scm_data *scm_data, u16 offset,
++			     struct scm_smart_attribs *attribs)
 +{
-+	struct scm_ioctl_controller_dump_data args;
-+	u16 i;
 +	u64 val;
 +	int rc;
++	struct scm_smart_attrib *attrib;
++	u8 attrib_id;
 +
-+	if (copy_from_user(&args, uarg, sizeof(args)))
-+		return -EFAULT;
++	rc = ocxl_global_mmio_read64(scm_data->ocxl_afu, offset, OCXL_LITTLE_ENDIAN,
++				     &val);
++	if (rc)
++		return rc;
 +
-+	if (args.buf_size % 8)
++	attrib_id = (val >> 56) & 0xff;
++	switch (attrib_id) {
++	case SCM_SMART_ATTR_POWER_ON_HOURS:
++		attrib = &attribs->power_on_hours;
++		break;
++
++	case SCM_SMART_ATTR_TEMPERATURE:
++		attrib = &attribs->temperature;
++		break;
++
++	case SCM_SMART_ATTR_LIFE_REMAINING:
++		attrib = &attribs->life_remaining;
++		break;
++
++	default:
++		dev_warn(&scm_data->dev, "Unknown smart attrib '%d'", attrib_id);
++		return -ENOENT;
++	}
++
++	attrib->id = attrib_id;
++	attrib->attribute_flags = (val >> 40) & 0xffff;
++	attrib->current_val = (val >> 32) & 0xff;
++	attrib->threshold_val = (val >> 24) & 0xff;
++	attrib->worst_val = (val >> 16) & 0xff;
++
++	rc = ocxl_global_mmio_read64(scm_data->ocxl_afu, offset + 0x08,
++				     OCXL_LITTLE_ENDIAN, &val);
++	if (rc)
++		return rc;
++
++	attrib->raw_val = val;
++
++	return 0;
++}
++
++/**
++ * scm_smart_header_parse() - Parse the first 64 bits of the SMART admin command response
++ * @scm_data: the SCM metadata
++ * @length: out, returns the number of bytes in the response (excluding the 64 bit header)
++ */
++static int scm_smart_header_parse(struct scm_data *scm_data, u32 *length)
++{
++	int rc;
++	u64 val;
++
++	u16 data_identifier;
++	u32 data_length;
++
++	rc = ocxl_global_mmio_read64(scm_data->ocxl_afu,
++				     scm_data->admin_command.data_offset,
++				     OCXL_LITTLE_ENDIAN, &val);
++	if (rc)
++		return rc;
++
++	data_identifier = val >> 48;
++	data_length = val & 0xFFFFFFFF;
++
++	if (data_identifier != 0x534D) {
++		dev_err(&scm_data->dev,
++			"Bad data identifier for smart data, expected 'SM', got '%-.*s'\n",
++			2, (char *)&data_identifier);
 +		return -EINVAL;
++	}
 +
-+	if (args.buf_size > scm_data->admin_command.data_size)
-+		return -EINVAL;
++	*length = data_length;
++	return 0;
++}
++
++static int scm_smart_update(struct scm_data *scm_data)
++{
++	u32 length, i;
++	int rc;
 +
 +	mutex_lock(&scm_data->admin_command.lock);
 +
-+	rc = scm_admin_command_request(scm_data, ADMIN_COMMAND_CONTROLLER_DUMP);
-+	if (rc)
-+		goto out;
-+
-+	val = ((u64)args.offset) << 32;
-+	val |= args.buf_size;
-+	rc = ocxl_global_mmio_write64(scm_data->ocxl_afu,
-+				      scm_data->admin_command.request_offset + 0x08,
-+				      OCXL_LITTLE_ENDIAN, val);
++	rc = scm_admin_command_request(scm_data, ADMIN_COMMAND_SMART);
 +	if (rc)
 +		goto out;
 +
@@ -183,10 +242,9 @@ index 0bbe1a14291e..a520f209d626 100644
 +	if (rc)
 +		goto out;
 +
-+	rc = scm_admin_command_complete_timeout(scm_data,
-+						ADMIN_COMMAND_CONTROLLER_DUMP);
++	rc = scm_admin_command_complete_timeout(scm_data, ADMIN_COMMAND_SMART);
 +	if (rc < 0) {
-+		dev_warn(&scm_data->dev, "Controller dump timed out\n");
++		dev_err(&scm_data->dev, "SMART timeout\n");
 +		goto out;
 +	}
 +
@@ -194,132 +252,112 @@ index 0bbe1a14291e..a520f209d626 100644
 +	if (rc < 0)
 +		goto out;
 +	if (rc != STATUS_SUCCESS) {
-+		scm_warn_status(scm_data,
-+				"Unexpected status from retrieve error log",
-+				rc);
++		scm_warn_status(scm_data, "Unexpected status from SMART", rc);
 +		goto out;
 +	}
 +
-+	for (i = 0; i < args.buf_size; i += 8) {
-+		u64 val;
-+
-+		rc = ocxl_global_mmio_read64(scm_data->ocxl_afu,
-+					     scm_data->admin_command.data_offset + i,
-+					     OCXL_HOST_ENDIAN, &val);
-+		if (rc)
-+			goto out;
-+
-+		if (copy_to_user(&args.buf[i], &val, sizeof(u64))) {
-+			rc = -EFAULT;
-+			goto out;
-+		}
-+	}
-+
-+	if (copy_to_user(uarg, &args, sizeof(args))) {
-+		rc = -EFAULT;
++	rc = scm_smart_header_parse(scm_data, &length);
++	if (rc)
 +		goto out;
-+	}
++
++	length /= 0x10; // Length now contains the number of attributes
++
++	for (i = 0; i < length; i++)
++		read_smart_attrib(scm_data,
++				  scm_data->admin_command.data_offset + 0x08 + i * 0x10,
++				  &scm_data->smart);
 +
 +	rc = scm_admin_response_handled(scm_data);
 +	if (rc)
 +		goto out;
++
++	rc = 0;
++	goto out;
 +
 +out:
 +	mutex_unlock(&scm_data->admin_command.lock);
 +	return rc;
 +}
 +
-+int scm_request_controller_dump(struct scm_data *scm_data)
++static int scm_ndctl_smart(struct scm_data *scm_data, void *buf,
++			   unsigned int buf_len)
 +{
 +	int rc;
-+	u64 busy = 1;
 +
-+	rc = ocxl_global_mmio_set64(scm_data->ocxl_afu, GLOBAL_MMIO_CHIC,
-+				    OCXL_LITTLE_ENDIAN,
-+				    GLOBAL_MMIO_CHI_CDA);
++	if (buf_len != sizeof(scm_data->smart))
++		return -EINVAL;
 +
-+
-+	rc = ocxl_global_mmio_set64(scm_data->ocxl_afu, GLOBAL_MMIO_HCI,
-+				    OCXL_LITTLE_ENDIAN,
-+				    GLOBAL_MMIO_HCI_CONTROLLER_DUMP);
++	rc = scm_smart_update(scm_data);
 +	if (rc)
 +		return rc;
 +
-+	while (busy) {
-+		rc = ocxl_global_mmio_read64(scm_data->ocxl_afu,
-+					     GLOBAL_MMIO_HCI,
-+					     OCXL_LITTLE_ENDIAN, &busy);
-+		if (rc)
-+			return rc;
-+
-+		busy &= GLOBAL_MMIO_HCI_CONTROLLER_DUMP;
-+		cond_resched();
-+	}
++	memcpy(buf, &scm_data->smart, buf_len);
 +
 +	return 0;
 +}
 +
-+static int scm_ioctl_controller_dump_complete(struct scm_data *scm_data)
-+{
-+	return ocxl_global_mmio_set64(scm_data->ocxl_afu, GLOBAL_MMIO_HCI,
-+				    OCXL_LITTLE_ENDIAN,
-+				    GLOBAL_MMIO_HCI_CONTROLLER_DUMP_COLLECTED);
-+}
 +
- static long scm_file_ioctl(struct file *file, unsigned int cmd,
- 			   unsigned long args)
- {
-@@ -699,7 +817,21 @@ static long scm_file_ioctl(struct file *file, unsigned int cmd,
- 		rc = scm_ioctl_error_log(scm_data,
- 					 (struct scm_ioctl_error_log __user *)args);
- 		break;
-+
-+	case SCM_IOCTL_CONTROLLER_DUMP:
-+		rc = scm_request_controller_dump(scm_data);
-+		break;
-+
-+	case SCM_IOCTL_CONTROLLER_DUMP_DATA:
-+		rc = scm_ioctl_controller_dump_data(scm_data,
-+						    (struct scm_ioctl_controller_dump_data __user *)args);
-+		break;
-+
-+	case SCM_IOCTL_CONTROLLER_DUMP_COMPLETE:
-+		rc = scm_ioctl_controller_dump_complete(scm_data);
-+		break;
- 	}
-+
- 	return rc;
- }
+ static int scm_ndctl(struct nvdimm_bus_descriptor *nd_desc,
+ 		     struct nvdimm *nvdimm,
+ 		     unsigned int cmd, void *buf, unsigned int buf_len, int *cmd_rc)
+@@ -101,6 +252,10 @@ static int scm_ndctl(struct nvdimm_bus_descriptor *nd_desc,
+ 	struct scm_data *scm_data = container_of(nd_desc, struct scm_data, bus_desc);
  
-diff --git a/include/uapi/nvdimm/ocxl-scm.h b/include/uapi/nvdimm/ocxl-scm.h
-index b34dd1ba06ff..abd2dc9ea112 100644
---- a/include/uapi/nvdimm/ocxl-scm.h
-+++ b/include/uapi/nvdimm/ocxl-scm.h
-@@ -38,9 +38,24 @@ struct scm_ioctl_error_log {
- 	__u8 *buf; // pointer to output buffer
+ 	switch (cmd) {
++	case ND_CMD_SMART:
++		*cmd_rc = scm_ndctl_smart(scm_data, buf, buf_len);
++		return 0;
++
+ 	case ND_CMD_GET_CONFIG_SIZE:
+ 		*cmd_rc = scm_ndctl_config_size(buf);
+ 		return 0;
+@@ -300,6 +455,7 @@ static int scm_register_lpc_mem(struct scm_data *scm_data)
+ 	set_bit(ND_CMD_GET_CONFIG_SIZE, &nvdimm_cmd_mask);
+ 	set_bit(ND_CMD_GET_CONFIG_DATA, &nvdimm_cmd_mask);
+ 	set_bit(ND_CMD_SET_CONFIG_DATA, &nvdimm_cmd_mask);
++	set_bit(ND_CMD_SMART, &nvdimm_cmd_mask);
+ 
+ 	set_bit(NDD_ALIASING, &nvdimm_flags);
+ 
+diff --git a/drivers/nvdimm/ocxl/scm_internal.h b/drivers/nvdimm/ocxl/scm_internal.h
+index 4a29088612a9..d593fefe38d5 100644
+--- a/drivers/nvdimm/ocxl/scm_internal.h
++++ b/drivers/nvdimm/ocxl/scm_internal.h
+@@ -115,6 +115,26 @@ enum overwrite_state {
+ 	SCM_OVERWRITE_FAILED
  };
  
-+struct scm_ioctl_controller_dump_data {
-+	__u8 *buf; // pointer to output buffer
-+	__u16 buf_size; /* in/out, buffer size provided/required.
-+			 * If required is greater than provided, the buffer
-+			 * will be truncated to the amount provided. If its
-+			 * less, then only the required bytes will be populated.
-+			 * If it is 0, then there is no more dump data available.
-+			 */
-+	__u32 offset; // in, Offset within the dump
-+	__u64 reserved[8];
++#define SCM_SMART_ATTR_POWER_ON_HOURS	0x09
++#define SCM_SMART_ATTR_TEMPERATURE	0xC2
++#define SCM_SMART_ATTR_LIFE_REMAINING	0xCA
++
++struct scm_smart_attrib {
++	__u8 id; /* See defines above */
++	__u16 attribute_flags;
++	__u8 current_val;
++	__u8 threshold_val;
++	__u8 worst_val;
++	__u8 reserved;
++	__u64 raw_val;
 +};
 +
- /* ioctl numbers */
- #define SCM_MAGIC 0x5C
- /* SCM devices */
- #define SCM_IOCTL_ERROR_LOG	_IOWR(SCM_MAGIC, 0x01, struct scm_ioctl_error_log)
-+#define SCM_IOCTL_CONTROLLER_DUMP _IO(SCM_MAGIC, 0x02)
-+#define SCM_IOCTL_CONTROLLER_DUMP_DATA _IOWR(SCM_MAGIC, 0x03, struct scm_ioctl_controller_dump_data)
-+#define SCM_IOCTL_CONTROLLER_DUMP_COMPLETE _IO(SCM_MAGIC, 0x04)
++struct scm_smart_attribs {
++	struct scm_smart_attrib power_on_hours;
++	struct scm_smart_attrib temperature;
++	struct scm_smart_attrib life_remaining;
++};
++
+ struct scm_data {
+ 	struct device dev;
+ 	struct pci_dev *pdev;
+@@ -136,6 +156,7 @@ struct scm_data {
+ 	struct resource scm_res;
+ 	struct nd_region *nd_region;
+ 	struct eventfd_ctx *ev_ctx;
++	struct scm_smart_attribs smart;
+ 	char fw_version[8+1];
+ 	u32 timeouts[ADMIN_COMMAND_MAX+1];
  
- #endif /* _UAPI_OCXL_SCM_H */
 -- 
 2.23.0
 
