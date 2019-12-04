@@ -2,100 +2,79 @@ Return-Path: <SRS0=KnCP=Z2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BD93C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 00:52:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E0B6C432C0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 01:34:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1CB9720675
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 00:52:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1CB9720675
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=us.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id AA862206DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 01:34:25 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="tmY+JAcw"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AA862206DF
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47SL175sL5zDqS7
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 11:52:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47SLxB0w0TzDqTP
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 12:34:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=us.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=linuxram@us.ibm.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::d41;
+ helo=mail-io1-xd41.google.com; envelope-from=oohall@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=us.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="tmY+JAcw"; 
+ dkim-atps=neutral
+Received: from mail-io1-xd41.google.com (mail-io1-xd41.google.com
+ [IPv6:2607:f8b0:4864:20::d41])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47SKyK4nMKzDqHW
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Dec 2019 11:50:16 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- xB40RL1n101809
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Dec 2019 19:50:13 -0500
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2wnsd4da80-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Dec 2019 19:50:13 -0500
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Wed, 4 Dec 2019 00:50:11 -0000
-Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 4 Dec 2019 00:50:06 -0000
-Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
- [9.149.105.60])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id xB40nPQ949480180
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 4 Dec 2019 00:49:25 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4FD374204C;
- Wed,  4 Dec 2019 00:50:05 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 80C8242041;
- Wed,  4 Dec 2019 00:50:01 +0000 (GMT)
-Received: from oc0525413822.ibm.com (unknown [9.80.193.7])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Wed,  4 Dec 2019 00:50:01 +0000 (GMT)
-Date: Tue, 3 Dec 2019 16:49:58 -0800
-From: Ram Pai <linuxram@us.ibm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-References: <1575269124-17885-1-git-send-email-linuxram@us.ibm.com>
- <1575269124-17885-2-git-send-email-linuxram@us.ibm.com>
- <f08ace25-fa94-990b-1b6d-a1c0f30d6348@ozlabs.ru>
- <20191203020850.GA12354@oc0525413822.ibm.com>
- <0b56ce3e-6c32-5f3b-e7cc-0d419a61d71d@ozlabs.ru>
- <20191203040509.GB12354@oc0525413822.ibm.com>
- <a0f19e65-81eb-37bd-928b-7a57a8660e3d@ozlabs.ru>
- <20191203165204.GA5079@oc0525413822.ibm.com>
- <3a17372a-fcee-efbf-0a05-282ffb1adc90@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47SLv2059DzDqRx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Dec 2019 12:32:29 +1100 (AEDT)
+Received: by mail-io1-xd41.google.com with SMTP id x1so6135863iop.7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Dec 2019 17:32:29 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=TCwJ275CuH71t/vT7lbifqLC+KDIUiUzGT2lgvQtjG0=;
+ b=tmY+JAcwPEF4llgL1Y1PDrM7d6jg4KaGWgGX7KggEas/6sOojo1m7P7DviKDJsqtDu
+ DDuuarVW5uFuyfTe9nF1q5iiQrPOPitcOKwE9rS7KZ99hhhN54HOLRu1P4aO+LeJX3Xp
+ UsbTlaODWCLDcnO5AsLKNXEr9/o2IZ43aRHgkjRNQ4nQMxyRxbCZt2nsIjY0vjfh1Ay2
+ XZmwzA0ZbEuw5nIcOReWJjB+FQrHB6ME0JQnXHkD0RkJLnlLsDYzyXCjR+pbFR+K799t
+ iN1wwAzFjfSsOaCnU8jM2nO94y5MJmP1YNieySOCBUoh2pMQsPigId39uwfnNty4SAMg
+ eknw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=TCwJ275CuH71t/vT7lbifqLC+KDIUiUzGT2lgvQtjG0=;
+ b=ImIm9x4GQzRoDIe9NeXHDTJHubbBounzvP6KSJP0u4dm3tU8NcG3oaEeP31sxZ7TFa
+ dR0gnlsh/8Siyr9TImHxnGSCQg9S/l+Jk9OA6HCQF6JTAshYrpEaWZxh6UuYr8T37Wel
+ Goe6Ka+g8wqkT9lMhYY3yNahQoSvq4bpFPasqZOMAiq0ACMbSL3QV1L+K7dMNwYWR+ZV
+ HT7V8jeb6gISl8PWX3Uq+7oTb1vvQnWRm3m1odD2P4UbUpoZDkJifdfU6+IkgMrp+PGG
+ heorqQAL99dvCfJbY+0hhrjUZ8k9LR/72L/Xz57D8bJXPRKjmqNjMqH/6xQOdx7Rihce
+ kWzQ==
+X-Gm-Message-State: APjAAAXV5b3GOtMlu2AMDNY+pynj7qY+FjEU/CZLqwH/0qhC+fSPSmzU
+ SO6OTd/rdH0qaQ6ThJmdv+HEmavP5RhZ3iBoI5k=
+X-Google-Smtp-Source: APXvYqwQs/htvlz9OSVsTnG++MaHshXW2UEZ3eXouJkAekAJeW/hSSpcOkBUl3JjdrlBwDC2WURadhiB9B4Ck0/vbow=
+X-Received: by 2002:a6b:6b16:: with SMTP id g22mr380415ioc.192.1575423144840; 
+ Tue, 03 Dec 2019 17:32:24 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3a17372a-fcee-efbf-0a05-282ffb1adc90@ozlabs.ru>
-User-Agent: Mutt/1.5.21 (2010-09-15)
-X-TM-AS-GCONF: 00
-x-cbid: 19120400-4275-0000-0000-0000038AC85F
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19120400-4276-0000-0000-0000389E6841
-Message-Id: <20191204004958.GB5063@oc0525413822.ibm.com>
-Subject: RE: [PATCH v4 1/2] powerpc/pseries/iommu: Share the per-cpu TCE page
- with the hypervisor.
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
- definitions=2019-12-03_07:2019-12-02,2019-12-03 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 phishscore=0
- spamscore=0 priorityscore=1501 mlxscore=0 malwarescore=0
- lowpriorityscore=0 adultscore=0 mlxlogscore=999 impostorscore=0
- suspectscore=18 clxscore=1015 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-1910280000 definitions=main-1912040002
+References: <20191202030731.26714-1-jniethe5@gmail.com>
+In-Reply-To: <20191202030731.26714-1-jniethe5@gmail.com>
+From: "Oliver O'Halloran" <oohall@gmail.com>
+Date: Wed, 4 Dec 2019 12:32:13 +1100
+Message-ID: <CAOSf1CHT_cVGLkvCwWfYP4Y4K91shdLE5gN227Yhq+tgShYh8Q@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/mm: Remove kvm radix prefetch workaround for
+ Power9 DD2.2
+To: Jordan Niethe <jniethe5@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,99 +86,126 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-Cc: andmike@us.ibm.com, mst@redhat.com, mdroth@linux.vnet.ibm.com,
- linux-kernel@vger.kernel.org, ram.n.pai@gmail.com, cai@lca.pw,
- tglx@linutronix.de, sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- hch@lst.de, bauerman@linux.ibm.com, david@gibson.dropbear.id.au
+Cc: Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Dec 04, 2019 at 11:04:04AM +1100, Alexey Kardashevskiy wrote:
-> 
-> 
-> On 04/12/2019 03:52, Ram Pai wrote:
-> > On Tue, Dec 03, 2019 at 03:24:37PM +1100, Alexey Kardashevskiy wrote:
-> >>
-> >>
-> >> On 03/12/2019 15:05, Ram Pai wrote:
-> >>> On Tue, Dec 03, 2019 at 01:15:04PM +1100, Alexey Kardashevskiy wrote:
-> >>>>
-> >>>>
-> >>>> On 03/12/2019 13:08, Ram Pai wrote:
-> >>>>> On Tue, Dec 03, 2019 at 11:56:43AM +1100, Alexey Kardashevskiy wrote:
-> >>>>>>
-> >>>>>>
-> >>>>>> On 02/12/2019 17:45, Ram Pai wrote:
-> >>>>>>> H_PUT_TCE_INDIRECT hcall uses a page filled with TCE entries, as one of
-> >>>>>>> its parameters. One page is dedicated per cpu, for the lifetime of the
-> >>>>>>> kernel for this purpose. On secure VMs, contents of this page, when
-> >>>>>>> accessed by the hypervisor, retrieves encrypted TCE entries.  Hypervisor
-> >>>>>>> needs to know the unencrypted entries, to update the TCE table
-> >>>>>>> accordingly.  There is nothing secret or sensitive about these entries.
-> >>>>>>> Hence share the page with the hypervisor.
-> >>>>>>
-> >>>>>> This unsecures a page in the guest in a random place which creates an
-> >>>>>> additional attack surface which is hard to exploit indeed but
-> >>>>>> nevertheless it is there.
-> >>>>>> A safer option would be not to use the
-> >>>>>> hcall-multi-tce hyperrtas option (which translates FW_FEATURE_MULTITCE
-> >>>>>> in the guest).
-> >>>>>
-> >>>>>
-> >>>>> Hmm... How do we not use it?  AFAICT hcall-multi-tce option gets invoked
-> >>>>> automatically when IOMMU option is enabled.
-> >>>>
-> >>>> It is advertised by QEMU but the guest does not have to use it.
-> >>>
-> >>> Are you suggesting that even normal-guest, not use hcall-multi-tce?
-> >>> or just secure-guest?  
-> >>
-> >>
-> >> Just secure.
-> > 
-> > hmm..  how are the TCE entries communicated to the hypervisor, if
-> > hcall-multi-tce is disabled?
-> 
-> Via H_PUT_TCE which updates 1 entry at once (sets or clears).
-> hcall-multi-tce  enables H_PUT_TCE_INDIRECT (512 entries at once) and
-> H_STUFF_TCE (clearing, up to 4bln at once? many), these are simply an
-> optimization.
+On Mon, Dec 2, 2019 at 2:08 PM Jordan Niethe <jniethe5@gmail.com> wrote:
+>
+> Commit a25bd72badfa ("powerpc/mm/radix: Workaround prefetch issue with
+> KVM") introduced a number of workarounds as coming out of a guest with
+> the mmu enabled would make the cpu would start running in hypervisor
+> state with the PID value from the guest. The cpu will then start
+> prefetching for the hypervisor with that PID value.
+>
+> In Power9 DD2.2 the cpu behaviour was modified to fix this. When
+> accessing Quadrant 0 in hypervisor mode with LPID != 0 prefetching will
+> not be performed. This means that we can get rid of the workarounds for
+> Power9 DD2.2 and later revisions.
+>
+> Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
+> ---
+>  arch/powerpc/kvm/book3s_hv_rmhandlers.S  |  9 +++++++++
+>  arch/powerpc/mm/book3s64/radix_pgtable.c | 18 ++++++++++++------
+>  arch/powerpc/mm/book3s64/radix_tlb.c     |  5 +++++
+>  3 files changed, 26 insertions(+), 6 deletions(-)
+>
+> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> index faebcbb8c4db..6bbc5fbc7ea9 100644
+> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> @@ -1793,6 +1793,15 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+>         tlbsync
+>         ptesync
+>
+> +       /* We do not need this work around from POWER9 DD2.2 and onwards */
+> +       mfspr   r3, SPRN_PVR
+> +       srwi    r6, r3, 16
+> +       cmpwi   cr0, r6, PVR_POWER9
+> +       bne     cr0, 2f
+> +       andi.   r3, r3, 0xfff
+> +       cmpwi   cr0, r3, 0x202
+> +       bge     cr0, 2f
 
-Do you still think, secure-VM should use H_PUT_TCE and not
-H_PUT_TCE_INDIRECT?  And normal VM should use H_PUT_TCE_INDIRECT?
-Is there any advantage of special casing it for secure-VMs.
-In fact, we could make use of as much optimization as possible.
+This seems like the sort of thing we'd want to use a CPU_FTR_SECTION()
+for. We probably want to have a CPU_FTR for this anyway so we're not
+open-coding the PVR check all over the place.
 
-
-> 
-> >>>> Is not this for pci+swiotlb? 
-..snip..
-> >>> This patch is purely to help the hypervisor setup the TCE table, in the
-> >>> presence of a IOMMU.
-> >>
-> >> Then the hypervisor should be able to access the guest pages mapped for
-> >> DMA and these pages should be made unsecure for this to work. Where/when
-> >> does this happen?
-> > 
-> > This happens in the SWIOTLB code.  The code to do that is already
-> > upstream.  
-> >
-> > The sharing of the pages containing the SWIOTLB bounce buffers is done
-> > in init_svm() which calls swiotlb_update_mem_attributes() which calls
-> > set_memory_decrypted().  In the case of pseries, set_memory_decrypted() calls 
-> > uv_share_page().
-> 
-> 
-> This does not seem enough as when you enforce iommu_platform=on, QEMU
-> starts accessing virtio buffers via IOMMU so bounce buffers have to be
-> mapped explicitly, via H_PUT_TCE&co, where does this happen?
-> 
-
-I think, it happens at boot time. Every page of the guest memory is TCE
-mapped, if iommu is enabled. SWIOTLB pages get implicitly TCE-mapped
-as part of that operation.
-
-RP
-
+> +
+>         /* Radix: Handle the case where the guest used an illegal PID */
+>         LOAD_REG_ADDR(r4, mmu_base_pid)
+>         lwz     r3, VCPU_GUEST_PID(r9)
+> diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/book3s64/radix_pgtable.c
+> index 6ee17d09649c..1f280124994e 100644
+> --- a/arch/powerpc/mm/book3s64/radix_pgtable.c
+> +++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
+> @@ -312,6 +312,7 @@ static void __init radix_init_pgtable(void)
+>  {
+>         unsigned long rts_field;
+>         struct memblock_region *reg;
+> +       unsigned int pvr;
+>
+>         /* We don't support slb for radix */
+>         mmu_slb_size = 0;
+> @@ -336,24 +337,29 @@ static void __init radix_init_pgtable(void)
+>         }
+>
+>         /* Find out how many PID bits are supported */
+> +       pvr = mfspr(SPRN_PVR);
+>         if (cpu_has_feature(CPU_FTR_HVMODE)) {
+>                 if (!mmu_pid_bits)
+>                         mmu_pid_bits = 20;
+>  #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+>                 /*
+> -                * When KVM is possible, we only use the top half of the
+> -                * PID space to avoid collisions between host and guest PIDs
+> -                * which can cause problems due to prefetch when exiting the
+> -                * guest with AIL=3
+> +                * Before Power9 DD2.2, when KVM is possible, we only use the
+> +                * top half of the PID space to avoid collisions between host
+> +                * and guest PIDs which can cause problems due to prefetch when
+> +                * exiting the guest with AIL=3
+>                  */
+> -               mmu_base_pid = 1 << (mmu_pid_bits - 1);
+> +               if (PVR_VER(pvr) == PVR_POWER9 && ((0xfff & pvr) < 0x202))
+> +                       mmu_base_pid = 1;
+> +               else
+> +                       mmu_base_pid = 1 << (mmu_pid_bits - 1);
+>  #else
+>                 mmu_base_pid = 1;
+>  #endif
+>         } else {
+>                 /* The guest uses the bottom half of the PID space */
+>                 if (!mmu_pid_bits)
+> -                       mmu_pid_bits = 19;
+> +                       mmu_pid_bits = (PVR_VER(pvr) == PVR_POWER9 &&
+> +                                       ((0xfff & pvr) < 0x202)) ? 19 : 20;
+>                 mmu_base_pid = 1;
+>         }
+>
+> diff --git a/arch/powerpc/mm/book3s64/radix_tlb.c b/arch/powerpc/mm/book3s64/radix_tlb.c
+> index 67af871190c6..cc86d8a88b86 100644
+> --- a/arch/powerpc/mm/book3s64/radix_tlb.c
+> +++ b/arch/powerpc/mm/book3s64/radix_tlb.c
+> @@ -1217,10 +1217,15 @@ void radix__flush_tlb_all(void)
+>  extern void radix_kvm_prefetch_workaround(struct mm_struct *mm)
+>  {
+>         unsigned long pid = mm->context.id;
+> +       unsigned int pvr;
+>
+>         if (unlikely(pid == MMU_NO_CONTEXT))
+>                 return;
+>
+> +       pvr = mfspr(SPRN_PVR);
+> +       if (PVR_VER(pvr) != PVR_POWER9 || ((0xfff & pvr) >= 0x202))
+> +               return;
+> +
+>         /*
+>          * If this context hasn't run on that CPU before and KVM is
+>          * around, there's a slim chance that the guest on another
+> --
+> 2.20.1
+>
