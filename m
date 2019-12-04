@@ -2,111 +2,91 @@ Return-Path: <SRS0=KnCP=Z2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43235C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 03:10:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB74AC432C0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 04:34:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 842A92073C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 03:10:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 61AC92068E
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 04:34:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="Qt4CM0CI"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 842A92073C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="iH/GkB/i"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 61AC92068E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47SP3V1QXHzDqR5
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 14:09:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47SQxT3pCGzDqSK
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 15:34:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=40.107.8.44; helo=eur04-vi1-obe.outbound.protection.outlook.com;
- envelope-from=biwen.li@nxp.com; receiver=<UNKNOWN>)
+ spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
+ dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=nxp.com header.i=@nxp.com header.b="Qt4CM0CI"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="iH/GkB/i"; 
  dkim-atps=neutral
-Received: from EUR04-VI1-obe.outbound.protection.outlook.com
- (mail-eopbgr80044.outbound.protection.outlook.com [40.107.8.44])
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47SP0s1d1HzDqRr
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Dec 2019 14:07:37 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=OT73inbMPAFneFm7OfBT+h/SFHBplUVGyX0fVmR3+LcJzYtnE/oWHOUuxOYdqwdwwt4P9wSrNriQaIMzq3l7/g1kGIIZbmZPdwNFRG5AoKAEI1mllowOkgiW0IYNwbEZd682xgaMryuhO+Z6++JKRKwnWMEFj9oceCiGloIId/Bohp7KJUtD5cS1I2/MVmJM1yymAiSUbXRxZ1IdO01xz/X+4BFVhiy71dsIk2bUcVPlR5bGHtIr6UfWiUkJMvDbWX6mXXL1PktWDZhs9613I0b2waQkSeyzfUFiOvyhNZvRz2ibgCBj5LnDgv2fgoxG/g3jH+jVO/CXedc4HpGeRA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=5ETdrMXm01AuDMAhP/wWeoy9H4GnLYdPoiI05f0/p08=;
- b=dLjLRGw08G0INYbjmO8ZML5pH4/hG4jTcvtD6XI5u7D8tbTQvcn2dx6ZWaZTa53B/RjMpsxC4DP22NkE2YjpsgSNnS1Xec2bPUSFq+EgBf39/6GTN4gpXkly20VTXhBQBqXek+FQ9pJ/T5U/g7hiuG8Phq6YJw0rui2/OOGjxIRWJ44DdUhC4fwONR9dzqf+AlU+iFs4fpEErh8uPPpyk84J4b8N73ZxcKrtxw8dEX/9sj8Dr9T1N6DL+rrPNgwGhYIZUfHom3icO0IP8ODAI77UFfs7GjE7SomYzQvS/wOqVmlOCDSbLFoBemaIjmUUHQ4xIN4dchUiIDTymp4DUg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2; 
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=5ETdrMXm01AuDMAhP/wWeoy9H4GnLYdPoiI05f0/p08=;
- b=Qt4CM0CICS1pmAGucwMMTDVkkfNFXOGWhGFve1OKh3Z+COujHX2YnXpDhM6GTQgC1zKOsAaYReiTCarIvTugdu0PPx6ZXnbW3QYqYPJwE/O+EXS6QGUvkc1oGKYUqWN/qYZuwOmRFVtUGbhM0/Vus8ZrCkY43P0w1F1P7NYpZWo=
-Received: from DB7PR04MB4490.eurprd04.prod.outlook.com (52.135.138.150) by
- DB7PR04MB4041.eurprd04.prod.outlook.com (52.134.110.156) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.2495.22; Wed, 4 Dec 2019 03:07:30 +0000
-Received: from DB7PR04MB4490.eurprd04.prod.outlook.com
- ([fe80::4182:4692:ffbd:43a0]) by DB7PR04MB4490.eurprd04.prod.outlook.com
- ([fe80::4182:4692:ffbd:43a0%6]) with mapi id 15.20.2495.014; Wed, 4 Dec 2019
- 03:07:29 +0000
-From: Biwen Li <biwen.li@nxp.com>
-To: Biwen Li <biwen.li@nxp.com>, Leo Li <leoyang.li@nxp.com>,
- "shawnguo@kernel.org" <shawnguo@kernel.org>, "robh+dt@kernel.org"
- <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, Ran Wang
- <ran.wang_1@nxp.com>
-Subject: RE: [v5 1/3] soc: fsl: handle RCPM errata A-008646 on SoC LS1021A
-Thread-Topic: [v5 1/3] soc: fsl: handle RCPM errata A-008646 on SoC LS1021A
-Thread-Index: AQHVqdVCo9UDQyyZQEuy2dNMI/fYS6epStNw
-Date: Wed, 4 Dec 2019 03:07:29 +0000
-Message-ID: <DB7PR04MB4490FBD7321BD39AE83E37D68F5D0@DB7PR04MB4490.eurprd04.prod.outlook.com>
-References: <20191203122818.21941-1-biwen.li@nxp.com>
-In-Reply-To: <20191203122818.21941-1-biwen.li@nxp.com>
-Accept-Language: zh-CN, en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=biwen.li@nxp.com; 
-x-originating-ip: [119.31.174.73]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-ht: Tenant
-x-ms-office365-filtering-correlation-id: 5288d75e-3d78-4874-f34c-08d778671968
-x-ms-traffictypediagnostic: DB7PR04MB4041:|DB7PR04MB4041:
-x-ms-exchange-transport-forked: True
-x-microsoft-antispam-prvs: <DB7PR04MB404133991C6178CDAF5F5BF58F5D0@DB7PR04MB4041.eurprd04.prod.outlook.com>
-x-ms-oob-tlc-oobclassifiers: OLM:785;
-x-forefront-prvs: 0241D5F98C
-x-forefront-antispam-report: SFV:NSPM;
- SFS:(10009020)(4636009)(396003)(366004)(136003)(39860400002)(346002)(376002)(189003)(199004)(53754006)(7736002)(66476007)(55016002)(76116006)(66446008)(66556008)(229853002)(966005)(66946007)(81156014)(316002)(7696005)(74316002)(305945005)(64756008)(8676002)(6636002)(14444005)(256004)(86362001)(6116002)(33656002)(2501003)(3846002)(2906002)(5660300002)(14454004)(71200400001)(52536014)(76176011)(9686003)(8936002)(6306002)(81166006)(4326008)(478600001)(6506007)(446003)(26005)(25786009)(11346002)(6246003)(71190400001)(44832011)(6436002)(102836004)(99286004)(54906003)(110136005)(186003);
- DIR:OUT; SFP:1101; SCL:1; SRVR:DB7PR04MB4041;
- H:DB7PR04MB4490.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
- PTR:InfoNoRecords; MX:1; A:1; 
-received-spf: None (protection.outlook.com: nxp.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: JaeS3+MArT0ri0dDm2lhm5ncEyqF5uS8YPgJwzwSigNBpJCner4JtjUd36HBIG1oinXZZGI9DMt/OKPFxjy1uWowDeLrYZsR6CNV2c2OU+QMYtKng+hFun1MFB7I6XzQsXhyVNE1JyJmQLB373sZX0NOccgMJLDbkSmPdvvANrXIEtsREfXrWM6wmgBno/2FIIDQGaBHAXJLACFZoJ5jIOXk/tPluD+tcQKSD9Q+Q7K7MU2F/jtlYLDRYYGt9+i9hF/UNzaSQW0Hcq5+BXNjmDS9NqvTj05e5G9kIaWbsJ/kZGiqgDQDh5fTW7/j0N65eChTn8qop4keM1qidTZv6ktnbwLdrXGiqaKh23eCAlrrwYYOOvFBMI9BTxmGuAOyBIweZ5t611w7IYuwdKCJ81WafnPh1YbJZS/rcaG/PN/Ub7Bgzq6Shm3GuHIL5kZrEdyUgXY0gAKxWEegUKfvFEg8jdoGLzWnq163dFmSUE9D6HWEZ387vS9NMaga3+7aEPwrG5tuNLg7ClE9VQJwS9YLgI5kn3IAZdxsFALBaR8=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47SQvL0Z5RzDqFC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Dec 2019 15:32:59 +1100 (AEDT)
+Received: from localhost (mailhub1-ext [192.168.12.233])
+ by localhost (Postfix) with ESMTP id 47SQvB1X8Wz9v3nv;
+ Wed,  4 Dec 2019 05:32:54 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=iH/GkB/i; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id Rjy7c9LzwKGl; Wed,  4 Dec 2019 05:32:54 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 47SQvB0NRVz9v3nt;
+ Wed,  4 Dec 2019 05:32:54 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1575433974; bh=JpFN3Nh7EoLxvzsnF7qnjZOmLclHkS0vKsPmhr9E1rY=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=iH/GkB/irOi2Glg4L74cAldoyoVItS8ctviRTvxAZRFX+JtQxGP2s8VqMePMeuWkh
+ yLOXAen36+IZLAyTa0ypzL/6w1cGK+w5tZBtoyIvVMQv4jf2Bfu4bStE5R4rz3FTet
+ Vg9585kYP6cFkfhf/qdplxHaO7voIqLyJruy1YDY=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id BAF1A8B838;
+ Wed,  4 Dec 2019 05:32:54 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id mxoDTfKPwG7V; Wed,  4 Dec 2019 05:32:54 +0100 (CET)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4D6298B815;
+ Wed,  4 Dec 2019 05:32:54 +0100 (CET)
+Subject: Re: [PATCH v4 2/2] powerpc/irq: inline call_do_irq() and
+ call_do_softirq()
+To: Segher Boessenkool <segher@kernel.crashing.org>
+References: <f12fb9a6cc52d83ee9ddf15a36ee12ac77e6379f.1570684298.git.christophe.leroy@c-s.fr>
+ <5ca6639b7c1c21ee4b4138b7cfb31d6245c4195c.1570684298.git.christophe.leroy@c-s.fr>
+ <877e3tbvsa.fsf@mpe.ellerman.id.au>
+ <20191121101552.GR16031@gate.crashing.org>
+ <87y2w49rgo.fsf@mpe.ellerman.id.au> <20191125142556.GU9491@gate.crashing.org>
+ <5fdb1c92-8bf4-01ca-f81c-214870c33be3@c-s.fr>
+ <20191127145958.GG9491@gate.crashing.org>
+ <2072e066-1ffb-867e-60ec-04a6bb9075c1@c-s.fr>
+ <20191129184658.GR9491@gate.crashing.org>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <ebc67964-e5a9-acd0-0011-61ba23692f7e@c-s.fr>
+Date: Wed, 4 Dec 2019 05:32:54 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.1
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 5288d75e-3d78-4874-f34c-08d778671968
-X-MS-Exchange-CrossTenant-originalarrivaltime: 04 Dec 2019 03:07:29.8777 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: XZC6whAQWB6FYq6rrqyPDEs9DDav07G4mfGPykzUyivXdsngyxdeCxs8Eb+YzOm2RomL3W/Y6Lc4tbzYFyjdhA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB7PR04MB4041
+In-Reply-To: <20191129184658.GR9491@gate.crashing.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -118,144 +98,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi All,
+Hi,
 
-1.Need apply below patches before apply these patches.
-1.1 Flextimer dts
-https://lore.kernel.org/patchwork/series/405653/mbox/ (https://lore.kernel.=
-org/patchwork/patch/1112493/)
-1.2 RCPM driver
-https://lore.kernel.org/patchwork/patch/1143809/mbox/ [v10,1/3] PM: wakeup:=
- Add routine to help fetch wakeup source object)
-https://lore.kernel.org/patchwork/patch/1143810/mbox/ ([v10,2/3] Documentat=
-ion: dt: binding: fsl: Add 'little-endian' and update Chassis define)
-https://lore.kernel.org/patchwork/patch/1143811/mbox/ ([v10,3/3] soc: fsl: =
-add RCPM driver)
+Le 29/11/2019 à 19:46, Segher Boessenkool a écrit :
+> Hi!
+> 
+> On Wed, Nov 27, 2019 at 04:15:15PM +0100, Christophe Leroy wrote:
+>> Le 27/11/2019 à 15:59, Segher Boessenkool a écrit :
+>>> On Wed, Nov 27, 2019 at 02:50:30PM +0100, Christophe Leroy wrote:
+>>>> So what do we do ? We just drop the "r2" clobber ?
+>>>
+>>> You have to make sure your asm code works for all ABIs.  This is quite
+>>> involved if you do a call to an external function.  The compiler does
+>>> *not* see this call, so you will have to make sure that all that the
+>>> compiler and linker do will work, or prevent some of those things (say,
+>>> inlining of the function containing the call).
+>>
+>> But the whole purpose of the patch is to inline the call to __do_irq()
+>> in order to avoid the trampoline function.
+> 
+> Yes, so you call __do_irq.  You have to make sure that what you tell the
+> compiler -- and what you *don't tell the compiler -- works with what the
+> ABIs require, and what the called function expects and provides.
+> 
+>>> That does not fix everything.  The called function requires a specific
+>>> value in r2 on entry.
+>>
+>> Euh ... but there is nothing like that when using existing
+>> call_do_irq().
+> 
+>> How does GCC know that call_do_irq() has same TOC as __do_irq() ?
+> 
+> The existing call_do_irq isn't C code.  It doesn't do anything with r2,
+> as far as I can see; __do_irq just gets whatever the caller of call_do_irq
+> has.
+> 
+> So I guess all the callers of call_do_irq have the correct r2 value always
+> already?  In that case everything Just Works.
 
-> Subject: [v5 1/3] soc: fsl: handle RCPM errata A-008646 on SoC LS1021A
->=20
-> Description:
-> 	- Reading configuration register RCPM_IPPDEXPCR1
-> 	  always return zero
->=20
-> Workaround:
-> 	- Save register RCPM_IPPDEXPCR1's value to
-> 	  register SCFG_SPARECR8.(uboot's psci also
-> 	  need reading value from the register SCFG_SPARECR8
-> 	  to set register RCPM_IPPDEXPCR1)
->=20
-> Impact:
-> 	- FlexTimer module will cannot wakeup system in
-> 	  deep sleep on SoC LS1021A
->=20
-> Signed-off-by: Biwen Li <biwen.li@nxp.com>
-> ---
-> Change in v5:
-> 	- update the patch, because of rcpm driver has updated.
->=20
-> Change in v4:
-> 	- rename property name
-> 	  fsl,ippdexpcr-alt-addr -> fsl,ippdexpcr1-alt-addr
->=20
-> Change in v3:
-> 	- update commit message
-> 	- rename property name
-> 	  fsl,rcpm-scfg -> fsl,ippdexpcr-alt-addr
->=20
-> Change in v2:
->   	- fix stype problems
->=20
->  drivers/soc/fsl/rcpm.c | 47
-> ++++++++++++++++++++++++++++++++++++++++--
->  1 file changed, 45 insertions(+), 2 deletions(-)
->=20
-> diff --git a/drivers/soc/fsl/rcpm.c b/drivers/soc/fsl/rcpm.c index
-> a093dbe6d2cb..775c618f0456 100644
-> --- a/drivers/soc/fsl/rcpm.c
-> +++ b/drivers/soc/fsl/rcpm.c
-> @@ -6,13 +6,16 @@
->  //
->  // Author: Ran Wang <ran.wang_1@nxp.com>
->=20
-> +#include <linux/acpi.h>
->  #include <linux/init.h>
-> +#include <linux/kernel.h>
-> +#include <linux/mfd/syscon.h>
->  #include <linux/module.h>
-> -#include <linux/platform_device.h>
->  #include <linux/of_address.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/regmap.h>
->  #include <linux/slab.h>
->  #include <linux/suspend.h>
-> -#include <linux/kernel.h>
->=20
->  #define RCPM_WAKEUP_CELL_MAX_SIZE	7
->=20
-> @@ -37,6 +40,9 @@ static int rcpm_pm_prepare(struct device *dev)
->  	struct device_node	*np =3D dev->of_node;
->  	u32 value[RCPM_WAKEUP_CELL_MAX_SIZE + 1];
->  	u32 setting[RCPM_WAKEUP_CELL_MAX_SIZE] =3D {0};
-> +	struct regmap *scfg_addr_regmap =3D NULL;
-> +	u32 reg_offset[RCPM_WAKEUP_CELL_MAX_SIZE + 1];
-> +	u32 reg_value =3D 0;
->=20
->  	rcpm =3D dev_get_drvdata(dev);
->  	if (!rcpm)
-> @@ -90,6 +96,43 @@ static int rcpm_pm_prepare(struct device *dev)
->  			tmp |=3D ioread32be(address);
->  			iowrite32be(tmp, address);
->  		}
-> +		/*
-> +		 * Workaround of errata A-008646 on SoC LS1021A:
-> +		 * There is a bug of register ippdexpcr1.
-> +		 * Reading configuration register RCPM_IPPDEXPCR1
-> +		 * always return zero. So save ippdexpcr1's value
-> +		 * to register SCFG_SPARECR8.And the value of
-> +		 * ippdexpcr1 will be read from SCFG_SPARECR8.
-> +		 */
-> +		if (device_property_present(dev, "fsl,ippdexpcr1-alt-addr")) {
-> +			if (dev_of_node(dev)) {
-> +				scfg_addr_regmap =3D
-> syscon_regmap_lookup_by_phandle(np,
-> +
-> "fsl,ippdexpcr1-alt-addr");
-> +			} else if (is_acpi_node(dev->fwnode)) {
-> +				dev_err(dev, "not support acpi for rcpm\n");
-> +				continue;
-> +			}
-> +
-> +			if (scfg_addr_regmap && (i =3D=3D 1)) {
-> +				if (device_property_read_u32_array(dev,
-> +				    "fsl,ippdexpcr1-alt-addr",
-> +				    reg_offset,
-> +				    1 + sizeof(u64)/sizeof(u32))) {
-> +					scfg_addr_regmap =3D NULL;
-> +					continue;
-> +				}
-> +				/* Read value from register SCFG_SPARECR8 */
-> +				regmap_read(scfg_addr_regmap,
-> +					    (u32)(((u64)(reg_offset[1] << (sizeof(u32) * 8) |
-> +					    reg_offset[2])) & 0xffffffff),
-> +					    &reg_value);
-> +				/* Write value to register SCFG_SPARECR8 */
-> +				regmap_write(scfg_addr_regmap,
-> +					     (u32)(((u64)(reg_offset[1] << (sizeof(u32) * 8) |
-> +					     reg_offset[2])) & 0xffffffff),
-> +					     tmp | reg_value);
-> +			}
-> +		}
->  	}
->=20
->  	return 0;
-> --
-> 2.17.1
+Indeed, there is only one caller for call_do_irq() which is do_IRQ().
+And do_IRQ() is also calling __do_irq() directly (when the stack pointer 
+is already set to IRQ stack). do_IRQ() and __do_irq() are both in 
+arch/powerpc/kernel/irq.c
 
+As far as I can see when replacing the call to call_do_irq() by a call 
+to __do_irq(), the compiler doesn't do anything special with r2, and 
+doesn't add any nop after the bl either, whereas for all calls outside 
+irq.c, there is a nop added. So I guess that's ok ?
+
+Now that call_do_irq() is inlined, we can even define __do_irq() as static.
+
+And that's the same for do_softirq_own_stack(), it is only called from 
+do_softirq() which is defined in the same file as __do_softirq() 
+(kernel/softirq.c)
+
+Christophe
