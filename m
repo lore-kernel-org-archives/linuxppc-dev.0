@@ -2,83 +2,80 @@ Return-Path: <SRS0=KnCP=Z2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1851CC432C0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 05:31:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BA403C43603
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 08:31:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7A9D220674
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 05:31:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7A9D220674
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 2D693206DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 08:31:00 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gvBjg1YJ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2D693206DF
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47SSBc0QthzDqRt
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 16:31:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47SX9t5SHBzDqBN
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 19:30:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::844;
+ helo=mail-qt1-x844.google.com; envelope-from=shengjiu.wang@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="gvBjg1YJ"; 
+ dkim-atps=neutral
+Received: from mail-qt1-x844.google.com (mail-qt1-x844.google.com
+ [IPv6:2607:f8b0:4864:20::844])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47SS8N213XzDq61
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Dec 2019 16:29:23 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- xB45RI2T010781; Wed, 4 Dec 2019 00:29:16 -0500
-Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.10])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2wnp66eh2b-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 04 Dec 2019 00:29:15 -0500
-Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
- by ppma02dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id xB45Qc8x007999;
- Wed, 4 Dec 2019 05:29:15 GMT
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25]) by ppma02dal.us.ibm.com with ESMTP id 2wkg26u3vw-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 04 Dec 2019 05:29:15 +0000
-Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
- [9.57.199.106])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xB45TEBP50856424
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 4 Dec 2019 05:29:14 GMT
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4312E2805A;
- Wed,  4 Dec 2019 05:29:14 +0000 (GMT)
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id F012428058;
- Wed,  4 Dec 2019 05:29:12 +0000 (GMT)
-Received: from skywalker.in.ibm.com (unknown [9.204.200.104])
- by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
- Wed,  4 Dec 2019 05:29:12 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: mpe@ellerman.id.au
-Subject: [PATCH] powerpc/pmem: Fix kernel crash due to wrong range value usage
- in flush_dcache_range
-Date: Wed,  4 Dec 2019 10:59:09 +0530
-Message-Id: <20191204052909.59145-1-aneesh.kumar@linux.ibm.com>
-X-Mailer: git-send-email 2.23.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47SX745ws4zDqSn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Dec 2019 19:28:32 +1100 (AEDT)
+Received: by mail-qt1-x844.google.com with SMTP id 38so6846520qtb.13
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Dec 2019 00:28:31 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=uCZKNDAWGqV6WX7WGX2zLuCaauh33mKw/9lBmVTJ0ho=;
+ b=gvBjg1YJe/IrgjhMS9JhufqyINkwEbIy+RWFYHR8NZAu2kCC5HDcADIa9KOonJVUMh
+ x7npQ2M1Gwtzb01zbPcFN1d4+1KPuGhN7931x+ADgxvT34FpDGlSRmRTWzKDgOgXXFZE
+ yW4H9qRNanJnl1JyGi5SuSKkGCbT/3MFLiuLhzleGytWEbahqN2qHO/Ttikp4/rhPLVX
+ MFgI2W3MZsQ8Bg2XD/YSh30Yl3ktzvucbKdheQMnZDcOiwr4GddhWIHvVnsENi0TGRXD
+ 6UV8U7GFZdjRzKAjddqxcWGaxBxUQ+rTHYcacIHRLMig57fygCtyIb8nGXoTTddswSIW
+ Fp5w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=uCZKNDAWGqV6WX7WGX2zLuCaauh33mKw/9lBmVTJ0ho=;
+ b=Gv/tN+P1zsDkPMHC/BZ64bUkvTTtFJdLmv86PH+HhieDY2Tk4jblv+8f5PFPpNq1cr
+ BMMt7Q38g0aQgr+p1awSQBfaF+1XHjnOL0KnQ353SoDs0hlxXZr/Y0bwyLgde67S6t3j
+ qzPtMprCDrjT7tAy6TOnpJ0hm+t2clcg0vEL1t2VmcIwS1V4JgAbbpX4Ptq+2xv3C31i
+ v/VdqH6qZIIHqI+7qP/lXPdMJwqzrjPlnq5x0jnexRYr3dN8AOb+fbxCsEbDZ//JoETb
+ QuFCJEoBUpxxMeXyIKTRrQI27Y8qYouU42/yg7aTJCuH+bxyFLSrJ6t6WCDlALoYgRef
+ Puiw==
+X-Gm-Message-State: APjAAAVS31jAkA6mb3lMZEnqzF67SJdqbN2PI4/3TAmHJHzl+Rin8qJ5
+ tUbveEbY4at/OQqgl0axZKZeUqAjT74DZc7HRp8=
+X-Google-Smtp-Source: APXvYqy42lrbvBO0PxmylNsnUOfkNboxvBZlj0DuNVhD+5LgfpHEOmahKkd9pLCkOj8ycJdUS1RZFPe6vl3a7cNcC9M=
+X-Received: by 2002:ac8:7652:: with SMTP id i18mr1580423qtr.292.1575448108482; 
+ Wed, 04 Dec 2019 00:28:28 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
- definitions=2019-12-04_01:2019-12-04,2019-12-03 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=1 spamscore=0
- priorityscore=1501 adultscore=0 lowpriorityscore=0 clxscore=1015
- bulkscore=0 phishscore=0 impostorscore=0 mlxlogscore=999 malwarescore=0
- mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-1910280000 definitions=main-1912040040
+References: <45ef9ee8c6265743a9c30d8e4d9dcbac1ee3aabe.1575286886.git.shengjiu.wang@nxp.com>
+ <CAOMZO5AXnw7QDdfKkZ+FBwuWWvr+t0rRsHQ4muW-T00he2f73Q@mail.gmail.com>
+In-Reply-To: <CAOMZO5AXnw7QDdfKkZ+FBwuWWvr+t0rRsHQ4muW-T00he2f73Q@mail.gmail.com>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Wed, 4 Dec 2019 16:28:17 +0800
+Message-ID: <CAA+D8AN-UrAyixp+cOw3h=V7xLfCNQRB0XDhxCeYAmnZo9UWBw@mail.gmail.com>
+Subject: Re: [alsa-devel] [PATCH v4 1/2] ASoC: dt-bindings: fsl_asrc: add
+ compatible string for imx8qm & imx8qxp
+To: Fabio Estevam <festevam@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,60 +87,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sachin Sant <sachinp@linux.vnet.ibm.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>, Linux-ALSA <alsa-devel@alsa-project.org>,
+ Timur Tabi <timur@kernel.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Shengjiu Wang <shengjiu.wang@nxp.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>, Takashi Iwai <tiwai@suse.com>,
+ Nicolin Chen <nicoleotsuka@gmail.com>, Rob Herring <robh+dt@kernel.org>,
+ Mark Brown <broonie@kernel.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch fix the below kernel crash.
+Hi
 
- BUG: Unable to handle kernel data access on read at 0xc000000380000000
- Faulting instruction address: 0xc00000000008b6f0
-cpu 0x5: Vector: 300 (Data Access) at [c0000000d8587790]
-    pc: c00000000008b6f0: arch_remove_memory+0x150/0x210
-    lr: c00000000008b720: arch_remove_memory+0x180/0x210
-    sp: c0000000d8587a20
-   msr: 800000000280b033
-   dar: c000000380000000
- dsisr: 40000000
-  current = 0xc0000000d8558600
-  paca    = 0xc00000000fff8f00   irqmask: 0x03   irq_happened: 0x01
-    pid   = 1220, comm = ndctl
-enter ? for help
- memunmap_pages+0x33c/0x410
- devm_action_release+0x30/0x50
- release_nodes+0x30c/0x3a0
- device_release_driver_internal+0x178/0x240
- unbind_store+0x74/0x190
- drv_attr_store+0x44/0x60
- sysfs_kf_write+0x74/0xa0
- kernfs_fop_write+0x1b0/0x260
- __vfs_write+0x3c/0x70
- vfs_write+0xe4/0x200
- ksys_write+0x7c/0x140
- system_call+0x5c/0x68
+On Mon, Dec 2, 2019 at 8:58 PM Fabio Estevam <festevam@gmail.com> wrote:
+>
+> On Mon, Dec 2, 2019 at 8:56 AM Shengjiu Wang <shengjiu.wang@nxp.com> wrote:
+>
+> > -  - compatible         : Contains "fsl,imx35-asrc" or "fsl,imx53-asrc".
+> > +  - compatible         : Contains "fsl,imx35-asrc", "fsl,imx53-asrc",
+> > +                         "fsl,imx8qm-asrc", "fsl,imx8qxp-asrc"
+>
+> You missed the word "or" as in the original binding.
 
-Fixes: 076265907cf9 ("powerpc: Chunk calls to flush_dcache_range in arch_*_memory")
-Reported-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- arch/powerpc/mm/mem.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+will update it in v5.
 
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index ad299e72ec30..9488b63dfc87 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -121,7 +121,7 @@ static void flush_dcache_range_chunked(unsigned long start, unsigned long stop,
- 	unsigned long i;
- 
- 	for (i = start; i < stop; i += chunk) {
--		flush_dcache_range(i, min(stop, start + chunk));
-+		flush_dcache_range(i, min(stop, i + chunk));
- 		cond_resched();
- 	}
- }
--- 
-2.23.0
-
+Best regards
+Wang Shengjiu
