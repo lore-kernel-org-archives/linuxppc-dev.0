@@ -2,67 +2,83 @@ Return-Path: <SRS0=KnCP=Z2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28911C432C0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 04:45:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1851CC432C0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 05:31:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7810720659
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 04:45:28 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="Ky1DOXdY"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7810720659
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 7A9D220674
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 05:31:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7A9D220674
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47SR9d5p27zDqTF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 15:45:25 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47SSBc0QthzDqRt
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 16:31:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47SR7h2r90zDqSL
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Dec 2019 15:43:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gibson.dropbear.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="Ky1DOXdY"; dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 47SR7h0Jhfz9sR8; Wed,  4 Dec 2019 15:43:43 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1575434624;
- bh=0ftyPdnyKfQDnu98YNE3xbdhD7agELawu01H6mP95Lg=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=Ky1DOXdYVtCpC5d0qcti91YI0bdeBD2fIKsbHOMcDGQOiJfZ4xu4AzrEyMH5cD1Os
- T+mAfdqlKTX+hMSvTaTVpSjCqPJpw6FbHB5EddfRBnBpOWjTu85RRyaUuh9ZdmvTxd
- UCbY0E5bEH8hvB7ssamFhTqc/ymW+lIdBW6T2wgU=
-Date: Wed, 4 Dec 2019 14:36:18 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH v4 1/2] powerpc/pseries/iommu: Share the per-cpu TCE page
- with the hypervisor.
-Message-ID: <20191204033618.GA5031@umbus.fritz.box>
-References: <1575269124-17885-2-git-send-email-linuxram@us.ibm.com>
- <f08ace25-fa94-990b-1b6d-a1c0f30d6348@ozlabs.ru>
- <20191203020850.GA12354@oc0525413822.ibm.com>
- <0b56ce3e-6c32-5f3b-e7cc-0d419a61d71d@ozlabs.ru>
- <20191203040509.GB12354@oc0525413822.ibm.com>
- <a0f19e65-81eb-37bd-928b-7a57a8660e3d@ozlabs.ru>
- <20191203165204.GA5079@oc0525413822.ibm.com>
- <3a17372a-fcee-efbf-0a05-282ffb1adc90@ozlabs.ru>
- <20191204004958.GB5063@oc0525413822.ibm.com>
- <5963ff32-2119-be7c-d1e5-63457888a73b@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47SS8N213XzDq61
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Dec 2019 16:29:23 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ xB45RI2T010781; Wed, 4 Dec 2019 00:29:16 -0500
+Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.10])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2wnp66eh2b-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 04 Dec 2019 00:29:15 -0500
+Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
+ by ppma02dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id xB45Qc8x007999;
+ Wed, 4 Dec 2019 05:29:15 GMT
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25]) by ppma02dal.us.ibm.com with ESMTP id 2wkg26u3vw-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 04 Dec 2019 05:29:15 +0000
+Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
+ [9.57.199.106])
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xB45TEBP50856424
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 4 Dec 2019 05:29:14 GMT
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4312E2805A;
+ Wed,  4 Dec 2019 05:29:14 +0000 (GMT)
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id F012428058;
+ Wed,  4 Dec 2019 05:29:12 +0000 (GMT)
+Received: from skywalker.in.ibm.com (unknown [9.204.200.104])
+ by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
+ Wed,  4 Dec 2019 05:29:12 +0000 (GMT)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: mpe@ellerman.id.au
+Subject: [PATCH] powerpc/pmem: Fix kernel crash due to wrong range value usage
+ in flush_dcache_range
+Date: Wed,  4 Dec 2019 10:59:09 +0530
+Message-Id: <20191204052909.59145-1-aneesh.kumar@linux.ibm.com>
+X-Mailer: git-send-email 2.23.0
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="IS0zKkzwUGydFO0o"
-Content-Disposition: inline
-In-Reply-To: <5963ff32-2119-be7c-d1e5-63457888a73b@ozlabs.ru>
-User-Agent: Mutt/1.12.1 (2019-06-15)
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
+ definitions=2019-12-04_01:2019-12-04,2019-12-03 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=1 spamscore=0
+ priorityscore=1501 adultscore=0 lowpriorityscore=0 clxscore=1015
+ bulkscore=0 phishscore=0 impostorscore=0 mlxlogscore=999 malwarescore=0
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-1910280000 definitions=main-1912040040
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,167 +90,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: andmike@us.ibm.com, mst@redhat.com, Ram Pai <linuxram@us.ibm.com>,
- mdroth@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, ram.n.pai@gmail.com,
- cai@lca.pw, tglx@linutronix.de, sukadev@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, hch@lst.de, bauerman@linux.ibm.com
+Cc: Sachin Sant <sachinp@linux.vnet.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+This patch fix the below kernel crash.
 
---IS0zKkzwUGydFO0o
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+ BUG: Unable to handle kernel data access on read at 0xc000000380000000
+ Faulting instruction address: 0xc00000000008b6f0
+cpu 0x5: Vector: 300 (Data Access) at [c0000000d8587790]
+    pc: c00000000008b6f0: arch_remove_memory+0x150/0x210
+    lr: c00000000008b720: arch_remove_memory+0x180/0x210
+    sp: c0000000d8587a20
+   msr: 800000000280b033
+   dar: c000000380000000
+ dsisr: 40000000
+  current = 0xc0000000d8558600
+  paca    = 0xc00000000fff8f00   irqmask: 0x03   irq_happened: 0x01
+    pid   = 1220, comm = ndctl
+enter ? for help
+ memunmap_pages+0x33c/0x410
+ devm_action_release+0x30/0x50
+ release_nodes+0x30c/0x3a0
+ device_release_driver_internal+0x178/0x240
+ unbind_store+0x74/0x190
+ drv_attr_store+0x44/0x60
+ sysfs_kf_write+0x74/0xa0
+ kernfs_fop_write+0x1b0/0x260
+ __vfs_write+0x3c/0x70
+ vfs_write+0xe4/0x200
+ ksys_write+0x7c/0x140
+ system_call+0x5c/0x68
 
-On Wed, Dec 04, 2019 at 12:08:09PM +1100, Alexey Kardashevskiy wrote:
->=20
->=20
-> On 04/12/2019 11:49, Ram Pai wrote:
-> > On Wed, Dec 04, 2019 at 11:04:04AM +1100, Alexey Kardashevskiy wrote:
-> >>
-> >>
-> >> On 04/12/2019 03:52, Ram Pai wrote:
-> >>> On Tue, Dec 03, 2019 at 03:24:37PM +1100, Alexey Kardashevskiy wrote:
-> >>>>
-> >>>>
-> >>>> On 03/12/2019 15:05, Ram Pai wrote:
-> >>>>> On Tue, Dec 03, 2019 at 01:15:04PM +1100, Alexey Kardashevskiy wrot=
-e:
-> >>>>>>
-> >>>>>>
-> >>>>>> On 03/12/2019 13:08, Ram Pai wrote:
-> >>>>>>> On Tue, Dec 03, 2019 at 11:56:43AM +1100, Alexey Kardashevskiy wr=
-ote:
-> >>>>>>>>
-> >>>>>>>>
-> >>>>>>>> On 02/12/2019 17:45, Ram Pai wrote:
-> >>>>>>>>> H_PUT_TCE_INDIRECT hcall uses a page filled with TCE entries, a=
-s one of
-> >>>>>>>>> its parameters. One page is dedicated per cpu, for the lifetime=
- of the
-> >>>>>>>>> kernel for this purpose. On secure VMs, contents of this page, =
-when
-> >>>>>>>>> accessed by the hypervisor, retrieves encrypted TCE entries.  H=
-ypervisor
-> >>>>>>>>> needs to know the unencrypted entries, to update the TCE table
-> >>>>>>>>> accordingly.  There is nothing secret or sensitive about these =
-entries.
-> >>>>>>>>> Hence share the page with the hypervisor.
-> >>>>>>>>
-> >>>>>>>> This unsecures a page in the guest in a random place which creat=
-es an
-> >>>>>>>> additional attack surface which is hard to exploit indeed but
-> >>>>>>>> nevertheless it is there.
-> >>>>>>>> A safer option would be not to use the
-> >>>>>>>> hcall-multi-tce hyperrtas option (which translates FW_FEATURE_MU=
-LTITCE
-> >>>>>>>> in the guest).
-> >>>>>>>
-> >>>>>>>
-> >>>>>>> Hmm... How do we not use it?  AFAICT hcall-multi-tce option gets =
-invoked
-> >>>>>>> automatically when IOMMU option is enabled.
-> >>>>>>
-> >>>>>> It is advertised by QEMU but the guest does not have to use it.
-> >>>>>
-> >>>>> Are you suggesting that even normal-guest, not use hcall-multi-tce?
-> >>>>> or just secure-guest? =20
-> >>>>
-> >>>>
-> >>>> Just secure.
-> >>>
-> >>> hmm..  how are the TCE entries communicated to the hypervisor, if
-> >>> hcall-multi-tce is disabled?
-> >>
-> >> Via H_PUT_TCE which updates 1 entry at once (sets or clears).
-> >> hcall-multi-tce  enables H_PUT_TCE_INDIRECT (512 entries at once) and
-> >> H_STUFF_TCE (clearing, up to 4bln at once? many), these are simply an
-> >> optimization.
-> >=20
-> > Do you still think, secure-VM should use H_PUT_TCE and not
-> > H_PUT_TCE_INDIRECT?  And normal VM should use H_PUT_TCE_INDIRECT?
-> > Is there any advantage of special casing it for secure-VMs.
->=20
->=20
-> Reducing the amount of insecure memory at random location.
+Fixes: 076265907cf9 ("powerpc: Chunk calls to flush_dcache_range in arch_*_memory")
+Reported-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+---
+ arch/powerpc/mm/mem.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-The other approach we could use for that - which would still allow
-H_PUT_TCE_INDIRECT, would be to allocate the TCE buffer page from the
-same pool that we use for the bounce buffers.  I assume there must
-already be some sort of allocator for that?
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index ad299e72ec30..9488b63dfc87 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -121,7 +121,7 @@ static void flush_dcache_range_chunked(unsigned long start, unsigned long stop,
+ 	unsigned long i;
+ 
+ 	for (i = start; i < stop; i += chunk) {
+-		flush_dcache_range(i, min(stop, start + chunk));
++		flush_dcache_range(i, min(stop, i + chunk));
+ 		cond_resched();
+ 	}
+ }
+-- 
+2.23.0
 
-> > In fact, we could make use of as much optimization as possible.
-> >=20
-> >=20
-> >>
-> >>>>>> Is not this for pci+swiotlb?=20
-> > ..snip..
-> >>>>> This patch is purely to help the hypervisor setup the TCE table, in=
- the
-> >>>>> presence of a IOMMU.
-> >>>>
-> >>>> Then the hypervisor should be able to access the guest pages mapped =
-for
-> >>>> DMA and these pages should be made unsecure for this to work. Where/=
-when
-> >>>> does this happen?
-> >>>
-> >>> This happens in the SWIOTLB code.  The code to do that is already
-> >>> upstream. =20
-> >>>
-> >>> The sharing of the pages containing the SWIOTLB bounce buffers is done
-> >>> in init_svm() which calls swiotlb_update_mem_attributes() which calls
-> >>> set_memory_decrypted().  In the case of pseries, set_memory_decrypted=
-() calls=20
-> >>> uv_share_page().
-> >>
-> >>
-> >> This does not seem enough as when you enforce iommu_platform=3Don, QEMU
-> >> starts accessing virtio buffers via IOMMU so bounce buffers have to be
-> >> mapped explicitly, via H_PUT_TCE&co, where does this happen?
-> >>
-> >=20
-> > I think, it happens at boot time. Every page of the guest memory is TCE
-> > mapped, if iommu is enabled. SWIOTLB pages get implicitly TCE-mapped
-> > as part of that operation.
->=20
->=20
-> Ah I see. This works via the huge dma window. Ok, makes sense now.
->=20
-> It just seems like a waste that we could map swiotlb 1:1 via the always
-> existing small DMA window but instead we rely on a huge window to map
-> these small buffers. This way we are wasting the entire 32bit window and
-> most of the huge window. We may fix it in the future (not right now) but
-> for now I would still avoid unsecuring additional memory. Thanks,
->=20
->=20
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---IS0zKkzwUGydFO0o
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAl3nKbAACgkQbDjKyiDZ
-s5KMexAAllYYsecO3NDQbhy2gO0VyzjwweSDd5tosdQl/Knkeu7XeCBfKQN3mIrG
-fO8k2+HZHX2LLPyopjnit5VOwKgIigv2y4HKHRrAKWrLsbFVYpm1M/VC2Dz3TBmt
-v0RYeiaVtXtpHEJcPHRj6WmKjiEG2DwiAFQoT76PjTj4HTQBAp9GYEfddPKbjhhF
-wrxR5h3SOOuLaaP1o8lkWTTkUCkUTfMNUiKBeC3xedeAsvUldXihSUgENeAKjxMS
-nOvMcA8JJ6M7acLILT6/xOrrLPkjn+wWfbo0B40c9GQfnSWGbb+OZRwaIoefowKk
-1IgSXJtM3aYqJadcObgTD0MCp0PaEBpKEe66QxTP2gxKKgpD71TMG5kYqYbqTs2t
-LHUGq7HegCQe5aOZ4hBHvCHb4VqztxNz0woJTD3GjtxmFiwlsrQ1FCK51OT+s0rr
-Ga5inejhc+BTuho7XFPxNyQ0piFq3uBGTRJ5vIkygMUWnxVMSVi0DYSxbqC9J5qm
-M7Ezhlca7c5m7sh5LG1ULrh+GZEZx/Li5iUWytolJnuV12v4eGAyEcux14mik8wh
-pa/1OmU+7K+tCIP3lTzzcPqMNjRDbOhYIVahaByzAvztET4x2uj4AadGHCdhTUsu
-AaKRc+4helF5D6sbcsxwY1h2VrR7c7ZrTlFdHa7Xd+LXlepo+OY=
-=k2sc
------END PGP SIGNATURE-----
-
---IS0zKkzwUGydFO0o--
