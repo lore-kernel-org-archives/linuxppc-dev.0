@@ -2,90 +2,48 @@ Return-Path: <SRS0=KnCP=Z2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 205E0C43603
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 13:59:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D2B3C43603
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 14:02:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CDA0A2077B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 13:59:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CDA0A2077B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id B4BE9205F4
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2019 14:02:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B4BE9205F4
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47SgSs2vt8zDqJk
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Dec 2019 00:59:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=sachinp@linux.vnet.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 47SgXJ3Lq1zDqX8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Dec 2019 01:02:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lst.de
+ (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=lst.de
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47SgDh4VK1zDqX7
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Dec 2019 00:48:51 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- xB4Dl2cr093411
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Dec 2019 08:48:48 -0500
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2wnsvj4adt-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Dec 2019 08:48:47 -0500
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sachinp@linux.vnet.ibm.com>;
- Wed, 4 Dec 2019 13:48:46 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 4 Dec 2019 13:48:45 -0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xB4Dmh9g59572374
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 4 Dec 2019 13:48:43 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8BC3D52051;
- Wed,  4 Dec 2019 13:48:43 +0000 (GMT)
-Received: from [9.85.95.134] (unknown [9.85.95.134])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id C583B5204E;
- Wed,  4 Dec 2019 13:48:42 +0000 (GMT)
-Content-Type: text/plain;
-	charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 12.4 \(3445.104.11\))
-Subject: Re: [PATCH] powerpc/pmem: Fix kernel crash due to wrong range value
- usage in flush_dcache_range
-From: Sachin Sant <sachinp@linux.vnet.ibm.com>
-In-Reply-To: <20191204052909.59145-1-aneesh.kumar@linux.ibm.com>
-Date: Wed, 4 Dec 2019 19:18:41 +0530
-Content-Transfer-Encoding: quoted-printable
-References: <20191204052909.59145-1-aneesh.kumar@linux.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-X-Mailer: Apple Mail (2.3445.104.11)
-X-TM-AS-GCONF: 00
-x-cbid: 19120413-0020-0000-0000-00000393B9ED
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19120413-0021-0000-0000-000021EAE208
-Message-Id: <0CA599BB-8C7F-44B7-9A75-8C7A80201234@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
- definitions=2019-12-04_03:2019-12-04,2019-12-04 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 phishscore=0
- impostorscore=0 priorityscore=1501 bulkscore=0 mlxlogscore=999
- malwarescore=0 mlxscore=0 adultscore=0 suspectscore=0 lowpriorityscore=0
- clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-1910280000 definitions=main-1912040113
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47SgPf6K5xzDqQH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Dec 2019 00:56:37 +1100 (AEDT)
+Received: by verein.lst.de (Postfix, from userid 2407)
+ id 95DA468BFE; Wed,  4 Dec 2019 14:56:32 +0100 (CET)
+Date: Wed, 4 Dec 2019 14:56:32 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Mike Rapoport <rppt@kernel.org>
+Subject: Re: [PATCH] powerpc: ensure that swiotlb buffer is allocated from
+ low memory
+Message-ID: <20191204135632.GA31262@lst.de>
+References: <20191204123524.22919-1-rppt@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20191204123524.22919-1-rppt@kernel.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,45 +55,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
+ linux-kernel@vger.kernel.org, Mike Rapoport <rppt@linux.ibm.com>,
+ linux-mm@kvack.org, iommu@lists.linux-foundation.org,
+ Rob Herring <robh+dt@kernel.org>, Paul Mackerras <paulus@samba.org>,
+ mad skateman <madskateman@gmail.com>,
+ Christian Zigotzky <chzigotzky@xenosoft.de>, linuxppc-dev@lists.ozlabs.org,
+ Christoph Hellwig <hch@lst.de>,
+ Nicolas Saenz Julienne <nsaenzjulienne@suse.de>,
+ Robin Murphy <robin.murphy@arm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Wed, Dec 04, 2019 at 02:35:24PM +0200, Mike Rapoport wrote:
+> From: Mike Rapoport <rppt@linux.ibm.com>
+> 
+> Some powerpc platforms (e.g. 85xx) limit DMA-able memory way below 4G. If a
+> system has more physical memory than this limit, the swiotlb buffer is not
+> addressable because it is allocated from memblock using top-down mode.
+> 
+> Force memblock to bottom-up mode before calling swiotlb_init() to ensure
+> that the swiotlb buffer is DMA-able.
+> 
+> Link: https://lkml.kernel.org/r/F1EBB706-73DF-430E-9020-C214EC8ED5DA@xenosoft.de
+> Reported-by: Christian Zigotzky <chzigotzky@xenosoft.de>
+> Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
 
->=20
-> Fixes: 076265907cf9 ("powerpc: Chunk calls to flush_dcache_range in =
-arch_*_memory")
-> Reported-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-> ---
-> arch/powerpc/mm/mem.c | 2 +-
-> 1 file changed, 1 insertion(+), 1 deletion(-)
->=20
+Looks good:
 
-It took a while to setup environment on a replacement machine.=20
-Was able to test the fix. With this fix applied I no longer see the =
-problem.
-
-Tested-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
-
-Thanks
--Sachin
-> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-> index ad299e72ec30..9488b63dfc87 100644
-> --- a/arch/powerpc/mm/mem.c
-> +++ b/arch/powerpc/mm/mem.c
-> @@ -121,7 +121,7 @@ static void flush_dcache_range_chunked(unsigned =
-long start, unsigned long stop,
-> 	unsigned long i;
->=20
-> 	for (i =3D start; i < stop; i +=3D chunk) {
-> -		flush_dcache_range(i, min(stop, start + chunk));
-> +		flush_dcache_range(i, min(stop, i + chunk));
-> 		cond_resched();
-> 	}
-> }
-> --=20
-> 2.23.0
->=20
-
+Reviewed-by: Christoph Hellwig <hch@lst.de>
