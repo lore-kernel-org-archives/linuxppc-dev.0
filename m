@@ -2,81 +2,71 @@ Return-Path: <SRS0=1hKA=Z3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C9EBC2D0BF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Dec 2019 20:37:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A520BC43603
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Dec 2019 20:39:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F1C64205F4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Dec 2019 20:37:08 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="iGRkYK/Y"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F1C64205F4
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 5F25C205F4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Dec 2019 20:39:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5F25C205F4
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47TSFG73R8zDqbm
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Dec 2019 07:37:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47TSHh32ctzDqF6
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Dec 2019 07:39:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=207.211.31.120;
- helo=us-smtp-1.mimecast.com; envelope-from=pauld@redhat.com;
+ smtp.mailfrom=gmail.com (client-ip=209.85.167.193;
+ helo=mail-oi1-f193.google.com; envelope-from=robherring2@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.b="iGRkYK/Y"; 
- dkim-atps=neutral
-Received: from us-smtp-1.mimecast.com (us-smtp-delivery-1.mimecast.com
- [207.211.31.120])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from mail-oi1-f193.google.com (mail-oi1-f193.google.com
+ [209.85.167.193])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47TNY02LrvzDqL8
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Dec 2019 04:50:25 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1575568221;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=lCq3xsw+wql8e0KabFjTkE7OSUpqz8BEOKGY9cQ3d30=;
- b=iGRkYK/Y9qr+yjHpkWchhC6koKjFQS7sIWpG3cQUWL0UZMulDU6GZl6an/qFciTLRQCkf2
- 2S8ySTTR3D6MqWxgFnUXmdIf/geiCUCGaEOckUfWJ+VEICaly8iJVVNlufTKNRSFwiqutX
- vVVpW3rX7cDw7gIV+zMAAukvtHGq8Zg=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-416-_4dtNLu3PRyqZbZ0f5FI6A-1; Thu, 05 Dec 2019 08:48:13 -0500
-Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com
- [10.5.11.15])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 7E979801E74;
- Thu,  5 Dec 2019 13:48:11 +0000 (UTC)
-Received: from lorien.usersys.redhat.com (ovpn-116-240.phx2.redhat.com
- [10.3.116.240])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id 17A795D6A5;
- Thu,  5 Dec 2019 13:48:05 +0000 (UTC)
-Date: Thu, 5 Dec 2019 08:48:03 -0500
-From: Phil Auld <pauld@redhat.com>
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 1/2] powerpc/vcpu: Assume dedicated processors as
- non-preempt
-Message-ID: <20191205134803.GA18693@lorien.usersys.redhat.com>
-References: <20191205083218.25824-1-srikar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47TSDR5T8wzDqb1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Dec 2019 07:36:22 +1100 (AEDT)
+Received: by mail-oi1-f193.google.com with SMTP id x195so4040523oix.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Dec 2019 12:36:22 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=ZxDdi4tWZwGx16qsUivpeEYi/QdxFDG6lu1aaAIGIhQ=;
+ b=U5LBmvcL0lefhyRW03sM+z0CVcc1REabOYZdN+Zu9cp6LdeSuUmtyGuEa0GwsQ5wLM
+ Om5aaluMWtuBtgFhyI95ktEGH8VwJrJCWaEwl02uAXLmZTBAtiEF0p5ED9B9rQ+qErL0
+ xDlciD67b5FBk2LDquU9nqRwqVKVN67iYJoe2NKivyeT1AOS89/Q8K/wbv+Fvn9Z6Nfc
+ 2FNVkp19AY5DmvFl4bYJSzwSzKWKvJ5Ht7uY22vhgWHBdvo6s9KjXaUEYjhB1ywRg8BU
+ UzrfoGQdn/9mfTEhnoBdADEjtCplHXr2BtU2Fy6iBYDSzihrtnQqV1WW0Qc8QPuGbVlo
+ +DHA==
+X-Gm-Message-State: APjAAAWI7e9nrqgxwozA68FthpySEsU+KAmkZjyub+jfdrYAxw7ZJCdt
+ FM/h8Emw4Q70iau2pZQo/w==
+X-Google-Smtp-Source: APXvYqzYl1PiM/lOBJJsKXVawc+2jiuwRnCBFFqCTTpp7sRvT16zLjnLLQFobFKmhv+5fOCdXqzUnw==
+X-Received: by 2002:aca:ad11:: with SMTP id w17mr9342474oie.85.1575578179673; 
+ Thu, 05 Dec 2019 12:36:19 -0800 (PST)
+Received: from localhost (24-155-109-49.dyn.grandenetworks.net.
+ [24.155.109.49])
+ by smtp.gmail.com with ESMTPSA id e6sm3766415otl.12.2019.12.05.12.36.18
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 05 Dec 2019 12:36:18 -0800 (PST)
+Date: Thu, 5 Dec 2019 14:36:18 -0600
+From: Rob Herring <robh@kernel.org>
+To: Haren Myneni <haren@linux.vnet.ibm.com>
+Subject: Re: [PATCH 01/14] powerpc/vas: Describe vas-port and interrupts
+ properties
+Message-ID: <20191205203618.GA26880@bogus>
+References: <1574816523.13250.4.camel@hbabu-laptop>
 MIME-Version: 1.0
-In-Reply-To: <20191205083218.25824-1-srikar@linux.vnet.ibm.com>
-User-Agent: Mutt/1.12.1 (2019-06-15)
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.15
-X-MC-Unique: _4dtNLu3PRyqZbZ0f5FI6A-1
-X-Mimecast-Spam-Score: 0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
-X-Mailman-Approved-At: Fri, 06 Dec 2019 07:33:31 +1100
+In-Reply-To: <1574816523.13250.4.camel@hbabu-laptop>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,172 +78,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Juri Lelli <juri.lelli@redhat.com>, Parth Shah <parth@linux.ibm.com>,
- "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
- Ihor Pasichnyk <Ihor.Pasichnyk@ibm.com>, Waiman Long <longman@redhat.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: devicetree@vger.kernel.org, mikey@neuling.org, herbert@gondor.apana.org.au,
+ npiggin@gmail.com, sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Dec 05, 2019 at 02:02:17PM +0530 Srikar Dronamraju wrote:
-> With commit 247f2f6f3c70 ("sched/core: Don't schedule threads on pre-empt=
-ed
-> vCPUs"), scheduler avoids preempted vCPUs to schedule tasks on wakeup.
-> This leads to wrong choice of CPU, which in-turn leads to larger wakeup
-> latencies. Eventually, it leads to performance regression in latency
-> sensitive benchmarks like soltp, schbench etc.
->=20
-> On Powerpc, vcpu_is_preempted only looks at yield_count. If the
-> yield_count is odd, the vCPU is assumed to be preempted. However
-> yield_count is increased whenever LPAR enters CEDE state. So any CPU
-> that has entered CEDE state is assumed to be preempted.
->=20
-> Even if vCPU of dedicated LPAR is preempted/donated, it should have
-> right of first-use since they are suppose to own the vCPU.
->=20
-> On a Power9 System with 32 cores
->  # lscpu
-> Architecture:        ppc64le
-> Byte Order:          Little Endian
-> CPU(s):              128
-> On-line CPU(s) list: 0-127
-> Thread(s) per core:  8
-> Core(s) per socket:  1
-> Socket(s):           16
-> NUMA node(s):        2
-> Model:               2.2 (pvr 004e 0202)
-> Model name:          POWER9 (architected), altivec supported
-> Hypervisor vendor:   pHyp
-> Virtualization type: para
-> L1d cache:           32K
-> L1i cache:           32K
-> L2 cache:            512K
-> L3 cache:            10240K
-> NUMA node0 CPU(s):   0-63
-> NUMA node1 CPU(s):   64-127
->=20
->   # perf stat -a -r 5 ./schbench
-> v5.4                                     v5.4 + patch
-> Latency percentiles (usec)               Latency percentiles (usec)
-> =0950.0000th: 45                    =0950.0000th: 39
-> =0975.0000th: 62                    =0975.0000th: 53
-> =0990.0000th: 71                    =0990.0000th: 67
-> =0995.0000th: 77                    =0995.0000th: 76
-> =09*99.0000th: 91                   =09*99.0000th: 89
-> =0999.5000th: 707                   =0999.5000th: 93
-> =0999.9000th: 6920                  =0999.9000th: 118
-> =09min=3D0, max=3D10048                 =09min=3D0, max=3D211
-> Latency percentiles (usec)               Latency percentiles (usec)
-> =0950.0000th: 45                    =0950.0000th: 34
-> =0975.0000th: 61                    =0975.0000th: 45
-> =0990.0000th: 72                    =0990.0000th: 53
-> =0995.0000th: 79                    =0995.0000th: 56
-> =09*99.0000th: 691                  =09*99.0000th: 61
-> =0999.5000th: 3972                  =0999.5000th: 63
-> =0999.9000th: 8368                  =0999.9000th: 78
-> =09min=3D0, max=3D16606                 =09min=3D0, max=3D228
-> Latency percentiles (usec)               Latency percentiles (usec)
-> =0950.0000th: 45                    =0950.0000th: 34
-> =0975.0000th: 61                    =0975.0000th: 45
-> =0990.0000th: 71                    =0990.0000th: 53
-> =0995.0000th: 77                    =0995.0000th: 57
-> =09*99.0000th: 106                  =09*99.0000th: 63
-> =0999.5000th: 2364                  =0999.5000th: 68
-> =0999.9000th: 7480                  =0999.9000th: 100
-> =09min=3D0, max=3D10001                 =09min=3D0, max=3D134
-> Latency percentiles (usec)               Latency percentiles (usec)
-> =0950.0000th: 45                    =0950.0000th: 34
-> =0975.0000th: 62                    =0975.0000th: 46
-> =0990.0000th: 72                    =0990.0000th: 53
-> =0995.0000th: 78                    =0995.0000th: 56
-> =09*99.0000th: 93                   =09*99.0000th: 61
-> =0999.5000th: 108                   =0999.5000th: 64
-> =0999.9000th: 6792                  =0999.9000th: 85
-> =09min=3D0, max=3D17681                 =09min=3D0, max=3D121
-> Latency percentiles (usec)               Latency percentiles (usec)
-> =0950.0000th: 46                    =0950.0000th: 33
-> =0975.0000th: 62                    =0975.0000th: 44
-> =0990.0000th: 73                    =0990.0000th: 51
-> =0995.0000th: 79                    =0995.0000th: 54
-> =09*99.0000th: 113                  =09*99.0000th: 61
-> =0999.5000th: 2724                  =0999.5000th: 64
-> =0999.9000th: 6184                  =0999.9000th: 82
-> =09min=3D0, max=3D9887                  =09min=3D0, max=3D121
->=20
->  Performance counter stats for 'system wide' (5 runs):
->=20
-> context-switches    43,373  ( +-  0.40% )   44,597 ( +-  0.55% )
-> cpu-migrations       1,211  ( +-  5.04% )      220 ( +-  6.23% )
-> page-faults         15,983  ( +-  5.21% )   15,360 ( +-  3.38% )
->=20
-> Waiman Long suggested using static_keys.
->=20
-> Reported-by: Parth Shah <parth@linux.ibm.com>
-> Reported-by: Ihor Pasichnyk <Ihor.Pasichnyk@ibm.com>
-> Cc: Parth Shah <parth@linux.ibm.com>
-> Cc: Ihor Pasichnyk <Ihor.Pasichnyk@ibm.com>
-> Cc: Juri Lelli <juri.lelli@redhat.com>
-> Cc: Phil Auld <pauld@redhat.com>
-> Cc: Waiman Long <longman@redhat.com>
-> Cc: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> Tested-by: Juri Lelli <juri.lelli@redhat.com>
-> Ack-by: Waiman Long <longman@redhat.com>
-> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+On Tue, Nov 26, 2019 at 05:02:03PM -0800, Haren Myneni wrote:
+> [PATCH 01/14] powerpc/vas: Describe vas-port and interrupts properties
+
+Something wrong here with the subject in the body.
+
+> 
+> Signed-off-by: Haren Myneni <haren@us.ibm.com>
 > ---
-> Changelog v1 (https://patchwork.ozlabs.org/patch/1204190/) ->v3:
-> Code is now under CONFIG_PPC_SPLPAR as it depends on CONFIG_PPC_PSERIES.
-> This was suggested by Waiman Long.
->=20
->  arch/powerpc/include/asm/spinlock.h | 5 +++--
->  arch/powerpc/mm/numa.c              | 4 ++++
->  2 files changed, 7 insertions(+), 2 deletions(-)
->=20
-> diff --git a/arch/powerpc/include/asm/spinlock.h b/arch/powerpc/include/a=
-sm/spinlock.h
-> index e9a960e28f3c..de817c25deff 100644
-> --- a/arch/powerpc/include/asm/spinlock.h
-> +++ b/arch/powerpc/include/asm/spinlock.h
-> @@ -35,11 +35,12 @@
->  #define LOCK_TOKEN=091
->  #endif
-> =20
-> -#ifdef CONFIG_PPC_PSERIES
-> +#ifdef CONFIG_PPC_SPLPAR
-> +DECLARE_STATIC_KEY_FALSE(shared_processor);
->  #define vcpu_is_preempted vcpu_is_preempted
->  static inline bool vcpu_is_preempted(int cpu)
->  {
-> -=09if (!firmware_has_feature(FW_FEATURE_SPLPAR))
-> +=09if (!static_branch_unlikely(&shared_processor))
->  =09=09return false;
->  =09return !!(be32_to_cpu(lppaca_of(cpu).yield_count) & 1);
->  }
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index 50d68d21ddcc..ffb971f3a63c 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -1568,9 +1568,13 @@ int prrn_is_enabled(void)
->  =09return prrn_enabled;
->  }
-> =20
-> +DEFINE_STATIC_KEY_FALSE(shared_processor);
-> +EXPORT_SYMBOL_GPL(shared_processor);
-> +
->  void __init shared_proc_topology_init(void)
->  {
->  =09if (lppaca_shared_proc(get_lppaca())) {
-> +=09=09static_branch_enable(&shared_processor);
->  =09=09bitmap_fill(cpumask_bits(&cpu_associativity_changes_mask),
->  =09=09=09    nr_cpumask_bits);
->  =09=09numa_update_cpu_topology(false);
-> --=20
-> 2.18.1
->
+>  Documentation/devicetree/bindings/powerpc/ibm,vas.txt | 5 +++++
+>  1 file changed, 5 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/powerpc/ibm,vas.txt b/Documentation/devicetree/bindings/powerpc/ibm,vas.txt
+> index bf11d2f..12de08b 100644
+> --- a/Documentation/devicetree/bindings/powerpc/ibm,vas.txt
+> +++ b/Documentation/devicetree/bindings/powerpc/ibm,vas.txt
+> @@ -11,6 +11,8 @@ Required properties:
+>    window context start and length, OS/User window context start and length,
+>    "Paste address" start and length, "Paste window id" start bit and number
+>    of bits)
+> +- ibm,vas-port : Port address for the interrupt.
 
-This looks good to me, thanks Srikar.
+What's the size of this property?
 
-Acked-by: Phil Auld <pauld@redhat.com>
---=20
-
+> +- interrupts: IRQ value for each VAS instance and level.
+>  
+>  Example:
+>  
+> @@ -18,5 +20,8 @@ Example:
+>  		compatible = "ibm,vas", "ibm,power9-vas";
+>  		reg = <0x6019100000000 0x2000000 0x6019000000000 0x100000000 0x8000000000000 0x100000000 0x20 0x10>;
+>  		name = "vas";
+> +		interrupts = <0x1f 0>;
+> +		interrupt-parent = <&mpic>;
+>  		ibm,vas-id = <0x1>;
+> +		ibm,vas-port = <0x6010001000000>;
+>  	};
+> -- 
+> 1.8.3.1
+> 
+> 
+> 
