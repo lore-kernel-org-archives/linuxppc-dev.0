@@ -2,83 +2,106 @@ Return-Path: <SRS0=sQep=Z4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 05C81C43603
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Dec 2019 19:21:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 66A6AC43603
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Dec 2019 19:22:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B30312064B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Dec 2019 19:21:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B30312064B
+	by mail.kernel.org (Postfix) with ESMTPS id 20CFA206DF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Dec 2019 19:22:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 20CFA206DF
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47V2W46gtLzDqg4
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Dec 2019 06:21:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=desnesn@linux.ibm.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47V2Y10ycCzDqf2
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Dec 2019 06:22:45 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47V2TX5qH0zDqfF
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Dec 2019 06:19:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 47V2TX3RDMz8t1Z
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Dec 2019 06:19:44 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 47V2TX23L3z9sR7; Sat,  7 Dec 2019 06:19:44 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47V2R80XdqzDqfK
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Dec 2019 06:17:39 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- xB6JHKHX057271
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Dec 2019 14:17:37 -0500
-Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
- [169.53.41.122])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2wq8uju9np-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Dec 2019 14:17:37 -0500
-Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
- by ppma04dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id xB6JFHd9006041
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Dec 2019 19:17:36 GMT
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by ppma04dal.us.ibm.com with ESMTP id 2wkg280sq1-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Dec 2019 19:17:36 +0000
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xB6JHYZf57147756
+ by ozlabs.org (Postfix) with ESMTPS id 47V2TW4PCsz9sR0
+ for <linuxppc-dev@ozlabs.org>; Sat,  7 Dec 2019 06:19:43 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ xB6JHLc1142023
+ for <linuxppc-dev@ozlabs.org>; Fri, 6 Dec 2019 14:19:41 -0500
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2wq2twcw42-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Fri, 06 Dec 2019 14:19:41 -0500
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sourabhjain@linux.ibm.com>;
+ Fri, 6 Dec 2019 19:19:39 -0000
+Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 6 Dec 2019 19:19:37 -0000
+Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
+ [9.149.105.60])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id xB6JIteD37355782
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 6 Dec 2019 19:17:34 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 27215BE05A;
- Fri,  6 Dec 2019 19:17:34 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 17C08BE04F;
- Fri,  6 Dec 2019 19:17:32 +0000 (GMT)
-Received: from ibm.ibmuc.com (unknown [9.85.176.162])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
- Fri,  6 Dec 2019 19:17:32 +0000 (GMT)
-From: "Desnes A. Nunes do Rosario" <desnesn@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] selftests/powerpc: enable performance alerts when freezing
- counters on cycles_with_freeze_test selftest
-Date: Fri,  6 Dec 2019 16:15:26 -0300
-Message-Id: <20191206191526.26543-1-desnesn@linux.ibm.com>
-X-Mailer: git-send-email 2.21.0
+ Fri, 6 Dec 2019 19:18:55 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 454AA4204C;
+ Fri,  6 Dec 2019 19:19:36 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8ABEB4203F;
+ Fri,  6 Dec 2019 19:19:34 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.85.71.21])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri,  6 Dec 2019 19:19:34 +0000 (GMT)
+Subject: Re: [PATCH v4 6/6] powerpc/fadump: sysfs for fadump memory reservation
+To: Greg KH <gregkh@linuxfoundation.org>
+References: <20191206122434.29587-1-sourabhjain@linux.ibm.com>
+ <20191206122434.29587-7-sourabhjain@linux.ibm.com>
+ <20191206124855.GE1360047@kroah.com>
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+Date: Sat, 7 Dec 2019 00:49:33 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20191206124855.GE1360047@kroah.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
+x-cbid: 19120619-0008-0000-0000-0000033E5B24
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19120619-0009-0000-0000-00004A5D8348
+Message-Id: <dd95f01f-791d-6c6c-e4f5-5824939e01a2@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
  definitions=2019-12-06_06:2019-12-05,2019-12-06 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  mlxscore=0 lowpriorityscore=0
- malwarescore=0 priorityscore=1501 phishscore=0 mlxlogscore=999 bulkscore=0
- impostorscore=0 adultscore=0 clxscore=1015 suspectscore=1 spamscore=0
+ malwarescore=0 mlxlogscore=999 clxscore=1015 bulkscore=0 impostorscore=0
+ phishscore=0 spamscore=0 suspectscore=0 adultscore=0 priorityscore=1501
  classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-1910280000
  definitions=main-1912060155
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -92,46 +115,107 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Desnes A . Nunes do Rosario" <desnesn@linux.ibm.com>,
- Gustavo Romero <gromero@linux.ibm.com>
+Cc: corbet@lwn.net, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@ozlabs.org, mahesh@linux.vnet.ibm.com, hbathini@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Gustavo Romero <gromero@linux.ibm.com>
 
-When disabling freezing counters by setting MMCR0 FC bit to 0, the MMCR0
-PMAE bit must also be enabled if a Performance Monitor Alert (and the cor-
-responding Performance Monitor Interrupt) is still desired to be received
-when an enabled condition or event occurs.
 
-This is the case of the cycles_with_freeze_test selftest, since the test
-disables the MMCR0 PMAE due to the usage of PMU to trigger EBBs. This can
-make the test loop up to the point of being killed by the test harness
-timeout (2500 ms), since no other ebb event will happen because the MMCR0
-PMAE bit is disabled, and thus, no more increments to ebb_count occur.
+On 12/6/19 6:18 PM, Greg KH wrote:
+> On Fri, Dec 06, 2019 at 05:54:34PM +0530, Sourabh Jain wrote:
+>> Add a sys interface to allow querying the memory reserved by FADump for
+>> saving the crash dump.
+>>
+>> Also added Documentation/ABI for the new sysfs file.
+>>
+>> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+>> ---
+>>  Documentation/ABI/testing/sysfs-kernel-fadump    |  7 +++++++
+>>  Documentation/powerpc/firmware-assisted-dump.rst |  5 +++++
+>>  arch/powerpc/kernel/fadump.c                     | 15 +++++++++++++++
+>>  3 files changed, 27 insertions(+)
+>>
+>> diff --git a/Documentation/ABI/testing/sysfs-kernel-fadump b/Documentation/ABI/testing/sysfs-kernel-fadump
+>> index 5d988b919e81..8f7a64a81783 100644
+>> --- a/Documentation/ABI/testing/sysfs-kernel-fadump
+>> +++ b/Documentation/ABI/testing/sysfs-kernel-fadump
+>> @@ -31,3 +31,10 @@ Description:	write only
+>>  		the system is booted to capture the vmcore using FADump.
+>>  		It is used to release the memory reserved by FADump to
+>>  		save the crash dump.
+>> +
+>> +What:		/sys/kernel/fadump/mem_reserved
+>> +Date:		Dec 2019
+>> +Contact:	linuxppc-dev@lists.ozlabs.org
+>> +Description:	read only
+>> +		Provide information about the amount of memory reserved by
+>> +		FADump to save the crash dump in bytes.
+>> diff --git a/Documentation/powerpc/firmware-assisted-dump.rst b/Documentation/powerpc/firmware-assisted-dump.rst
+>> index 365c10209ef3..04993eaf3113 100644
+>> --- a/Documentation/powerpc/firmware-assisted-dump.rst
+>> +++ b/Documentation/powerpc/firmware-assisted-dump.rst
+>> @@ -268,6 +268,11 @@ Here is the list of files under kernel sysfs:
+>>      be handled and vmcore will not be captured. This interface can be
+>>      easily integrated with kdump service start/stop.
+>>  
+>> + /sys/kernel/fadump/mem_reserved
+>> +
+>> +   This is used to display the memory reserved by FADump for saving the
+>> +   crash dump.
+>> +
+>>   /sys/kernel/fadump_release_mem
+>>      This file is available only when FADump is active during
+>>      second kernel. This is used to release the reserved memory
+>> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+>> index 41a3cda81791..b2af51b7c750 100644
+>> --- a/arch/powerpc/kernel/fadump.c
+>> +++ b/arch/powerpc/kernel/fadump.c
+>> @@ -1357,6 +1357,13 @@ static ssize_t fadump_enabled_show(struct kobject *kobj,
+>>  	return sprintf(buf, "%d\n", fw_dump.fadump_enabled);
+>>  }
+>>  
+>> +static ssize_t fadump_mem_reserved_show(struct kobject *kobj,
+>> +					struct kobj_attribute *attr,
+>> +					char *buf)
+>> +{
+>> +	return sprintf(buf, "%ld\n", fw_dump.reserve_dump_area_size);
+>> +}
+>> +
+>>  static ssize_t fadump_register_show(struct kobject *kobj,
+>>  					struct kobj_attribute *attr,
+>>  					char *buf)
+>> @@ -1430,6 +1437,10 @@ static struct kobj_attribute enable_attr = __ATTR(enabled,
+>>  static struct kobj_attribute register_attr = __ATTR(registered,
+>>  						0644, fadump_register_show,
+>>  						fadump_register_store);
+>> +static struct kobj_attribute mem_reserved_attr = __ATTR(mem_reserved,
+>> +						0444, fadump_mem_reserved_show,
+>> +						NULL);
+> 
+> __ATTRI_RO()?
+> 
+>> +
+>>  
+>>  DEFINE_SHOW_ATTRIBUTE(fadump_region);
+>>  
+>> @@ -1464,6 +1475,10 @@ static void fadump_init_files(void)
+>>  			pr_err("unable to create release_mem sysfs file (%d)\n",
+>>  			       rc);
+>>  	}
+>> +	rc = sysfs_create_file(fadump_kobj, &mem_reserved_attr.attr);
+>> +	if (rc)
+>> +		pr_err("unable to create mem_reserved sysfs file (%d)\n",
+>> +		       rc);
+> 
+> Again, put it in an attribute group, that would have only required one
+> line, and not this mess of not cleaning up if something went wrong.
 
-Fixes: 3752e453f6bafd7 ("selftests/powerpc: Add tests of PMU EBBs")
-Signed-off-by: Gustavo Romero <gromero@linux.ibm.com>
-[desnesn: Only set MMCR0_PMAE when disabling MMCR0_FC, reflow comment]
-Signed-off-by: Desnes A. Nunes do Rosario <desnesn@linux.ibm.com>
----
- .../testing/selftests/powerpc/pmu/ebb/cycles_with_freeze_test.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/tools/testing/selftests/powerpc/pmu/ebb/cycles_with_freeze_test.c b/tools/testing/selftests/powerpc/pmu/ebb/cycles_with_freeze_test.c
-index dcd351d20328..46b5a7d46c60 100644
---- a/tools/testing/selftests/powerpc/pmu/ebb/cycles_with_freeze_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/ebb/cycles_with_freeze_test.c
-@@ -81,7 +81,7 @@ int cycles_with_freeze(void)
- 	{
- 		counters_frozen = false;
- 		mb();
--		mtspr(SPRN_MMCR0, mfspr(SPRN_MMCR0) & ~MMCR0_FC);
-+		mtspr(SPRN_MMCR0, (mfspr(SPRN_MMCR0) & ~MMCR0_FC) | MMCR0_PMAE);
- 
- 		FAIL_IF(core_busy_loop());
- 
--- 
-2.21.0
+Will make the changes accordingly.
+
+
+Thanks,
+Sourabh Jain
 
