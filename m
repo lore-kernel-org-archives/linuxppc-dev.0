@@ -2,82 +2,109 @@ Return-Path: <SRS0=sQep=Z4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 853ECC43603
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Dec 2019 19:17:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5908C43603
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Dec 2019 19:19:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2228324673
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Dec 2019 19:17:06 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="1kJqvtEe"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2228324673
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id 6F2622464E
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Dec 2019 19:19:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6F2622464E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47V2QT0Np6zDqTT
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Dec 2019 06:17:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47V2Sx1t04zDqfD
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Dec 2019 06:19:13 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47V2MS46vdzDqfH
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Dec 2019 06:14:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="1kJqvtEe"; 
- dkim-atps=neutral
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47V2Pt28c3zDqf9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Dec 2019 06:16:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 47V2MR616zz8t3b
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Dec 2019 06:14:27 +1100 (AEDT)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 47V2Pt0Fxfz8t1Z
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Dec 2019 06:16:34 +1100 (AEDT)
 Received: by ozlabs.org (Postfix)
- id 47V2MR55qWz9sRH; Sat,  7 Dec 2019 06:14:27 +1100 (AEDT)
+ id 47V2Ps5LsZz9sR0; Sat,  7 Dec 2019 06:16:33 +1100 (AEDT)
 Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linuxfoundation.org
-Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="1kJqvtEe"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 47V2MQ5hgSz9sR8
- for <linuxppc-dev@ozlabs.org>; Sat,  7 Dec 2019 06:14:26 +1100 (AEDT)
-Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
- [83.86.89.107])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 4B65321835;
- Fri,  6 Dec 2019 19:14:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1575659663;
- bh=LPnXnjKbm0b4gtrlcehg2oiRCOVCNtSW0HjJxtovOtQ=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=1kJqvtEecr1K6h1tqyXRWHiTEmaVksOxPW/2vTlWvPJzQ7b0SUYP7gfqyC5qkz/Iu
- 6kegACy2K8Jz/ABZjfANuBWSi1JjqBBrcgv/k+qb1LhEbQW4MKdx9KPFBzZzbxfvIj
- 8b3jh3FVbJb3+gHUf1m9TLx0UeZNEQyivQAJf8yI=
-Date: Fri, 6 Dec 2019 20:14:20 +0100
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Sourabh Jain <sourabhjain@linux.ibm.com>
-Subject: Re: [PATCH v4 2/6] sysfs: wrap
- __compat_only_sysfs_link_entry_to_kobj function to change the symlink name
-Message-ID: <20191206191420.GA192422@kroah.com>
+ by ozlabs.org (Postfix) with ESMTPS id 47V2Ps1J0kz9sPf
+ for <linuxppc-dev@ozlabs.org>; Sat,  7 Dec 2019 06:16:32 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ xB6JC8xB059563
+ for <linuxppc-dev@ozlabs.org>; Fri, 6 Dec 2019 14:16:31 -0500
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2wq55txcgn-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Fri, 06 Dec 2019 14:16:31 -0500
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sourabhjain@linux.ibm.com>;
+ Fri, 6 Dec 2019 19:16:28 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 6 Dec 2019 19:16:26 -0000
+Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
+ [9.149.105.60])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xB6JGPWr60489848
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 6 Dec 2019 19:16:25 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5111D42049;
+ Fri,  6 Dec 2019 19:16:25 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 902D14204B;
+ Fri,  6 Dec 2019 19:16:23 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.85.71.21])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri,  6 Dec 2019 19:16:23 +0000 (GMT)
+Subject: Re: [PATCH v4 4/6] powerpc/powernv: move core and
+ fadump_release_opalcore under new kobject
+To: Greg KH <gregkh@linuxfoundation.org>
 References: <20191206122434.29587-1-sourabhjain@linux.ibm.com>
- <20191206122434.29587-3-sourabhjain@linux.ibm.com>
- <20191206124642.GB1360047@kroah.com>
- <3aabdf19-ccbf-e99a-c560-2b110e8b536a@linux.ibm.com>
+ <20191206122434.29587-5-sourabhjain@linux.ibm.com>
+ <20191206124801.GD1360047@kroah.com>
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+Date: Sat, 7 Dec 2019 00:46:22 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3aabdf19-ccbf-e99a-c560-2b110e8b536a@linux.ibm.com>
+In-Reply-To: <20191206124801.GD1360047@kroah.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19120619-0008-0000-0000-0000033E5B01
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19120619-0009-0000-0000-00004A5D8325
+Message-Id: <d22893e3-41e0-c8db-9262-670f90536816@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
+ definitions=2019-12-06_06:2019-12-05,2019-12-06 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0
+ suspectscore=0 phishscore=0 priorityscore=1501 spamscore=0 malwarescore=0
+ adultscore=0 bulkscore=0 clxscore=1015 mlxlogscore=999 lowpriorityscore=0
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-1910280000 definitions=main-1912060154
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,119 +122,128 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Dec 06, 2019 at 11:57:53PM +0530, Sourabh Jain wrote:
-> 
-> 
-> On 12/6/19 6:16 PM, Greg KH wrote:
-> > On Fri, Dec 06, 2019 at 05:54:30PM +0530, Sourabh Jain wrote:
-> >> The __compat_only_sysfs_link_entry_to_kobj function creates a symlink to a
-> >> kobject but doesn't provide an option to change the symlink file name.
-> >>
-> >> This patch adds a wrapper function create_sysfs_symlink_entry_to_kobj that
-> >> extends the __compat_only_sysfs_link_entry_to_kobj functionality which
-> >> allows function caller to customize the symlink name.
-> >>
-> >> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
-> >> ---
-> >>  fs/sysfs/group.c      | 28 +++++++++++++++++++++++++---
-> >>  include/linux/sysfs.h | 12 ++++++++++++
-> >>  2 files changed, 37 insertions(+), 3 deletions(-)
-> >>
-> >> diff --git a/fs/sysfs/group.c b/fs/sysfs/group.c
-> >> index d41c21fef138..5eb38145b957 100644
-> >> --- a/fs/sysfs/group.c
-> >> +++ b/fs/sysfs/group.c
-> >> @@ -424,6 +424,25 @@ EXPORT_SYMBOL_GPL(sysfs_remove_link_from_group);
-> >>  int __compat_only_sysfs_link_entry_to_kobj(struct kobject *kobj,
-> >>  				      struct kobject *target_kobj,
-> >>  				      const char *target_name)
-> >> +{
-> >> +	return create_sysfs_symlink_entry_to_kobj(kobj, target_kobj,
-> >> +						target_name, NULL);
-> >> +}
-> >> +EXPORT_SYMBOL_GPL(__compat_only_sysfs_link_entry_to_kobj);
-> >> +
-> >> +/**
-> >> + * create_sysfs_symlink_entry_to_kobj - add a symlink to a kobject pointing
-> >> + * to a group or an attribute
-> >> + * @kobj:		The kobject containing the group.
-> >> + * @target_kobj:	The target kobject.
-> >> + * @target_name:	The name of the target group or attribute.
-> >> + * @symlink_name:	The name of the symlink file (target_name will be
-> >> + *			considered if symlink_name is NULL).
-> >> + */
-> >> +int create_sysfs_symlink_entry_to_kobj(struct kobject *kobj,
-> >> +				       struct kobject *target_kobj,
-> >> +				       const char *target_name,
-> >> +				       const char *symlink_name)
-> >>  {
-> >>  	struct kernfs_node *target;
-> >>  	struct kernfs_node *entry;
-> >> @@ -448,12 +467,15 @@ int __compat_only_sysfs_link_entry_to_kobj(struct kobject *kobj,
-> >>  		return -ENOENT;
-> >>  	}
-> >>  
-> >> -	link = kernfs_create_link(kobj->sd, target_name, entry);
-> >> +	if (!symlink_name)
-> >> +		symlink_name = target_name;
-> >> +
-> >> +	link = kernfs_create_link(kobj->sd, symlink_name, entry);
-> >>  	if (IS_ERR(link) && PTR_ERR(link) == -EEXIST)
-> >> -		sysfs_warn_dup(kobj->sd, target_name);
-> >> +		sysfs_warn_dup(kobj->sd, symlink_name);
-> >>  
-> >>  	kernfs_put(entry);
-> >>  	kernfs_put(target);
-> >>  	return PTR_ERR_OR_ZERO(link);
-> >>  }
-> >> -EXPORT_SYMBOL_GPL(__compat_only_sysfs_link_entry_to_kobj);
-> >> +EXPORT_SYMBOL_GPL(create_sysfs_symlink_entry_to_kobj);
-> >> diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-> >> index 5420817ed317..123c6f10333a 100644
-> >> --- a/include/linux/sysfs.h
-> >> +++ b/include/linux/sysfs.h
-> >> @@ -300,6 +300,10 @@ void sysfs_remove_link_from_group(struct kobject *kobj, const char *group_name,
-> >>  int __compat_only_sysfs_link_entry_to_kobj(struct kobject *kobj,
-> >>  				      struct kobject *target_kobj,
-> >>  				      const char *target_name);
-> >> +int create_sysfs_symlink_entry_to_kobj(struct kobject *kobj,
-> >> +				       struct kobject *target_kobj,
-> >> +				       const char *target_name,
-> >> +				       const char *symlink_name);
-> > 
-> > sysfs_create_symlink_entry_to_kobj()?
-> > 
-> > I can't remember why we put __compat_only there, perhaps because we do
-> > not want people to really use this unless you really really have to?
-> 
-> We don't have much option here. I tried replicating the sysfs files
-> in older patch series but creating symlink at old location is much
-> better approach.
-> 
-> The __compat_only_sysfs_link_entry_to_kobj function is pretty generic,
-> unable to understand the reason behind restricting its usage.
-> 
-> > 
-> > So then keep compat_only here as well?
-> 
-> Sure, I will rename the wrapper function.
-> 
-> But how about changing the function signature instead of creating
-> a wrapper function?
-> 
-> Considering the fact that there are only two places this function
-> has called.
-> 
-> > 
-> > What breaks if you remove those undocumented sysfs files?  What
-> > userspace tool do you have that will even notice?
-> 
-> The scripts used in kdump service need those sysfs files to control
-> the dump collection. So we can't just move the sysfs files to the
-> new location.
 
-If you can not change them, then just document them and live with it.
-Why do this extra work to create a symlink for something you will never
-use?
 
-greg k-h
+On 12/6/19 6:18 PM, Greg KH wrote:
+> On Fri, Dec 06, 2019 at 05:54:32PM +0530, Sourabh Jain wrote:
+>> The /sys/firmware/opal/core and /sys/kernel/fadump_release_opalcore sysfs
+>> files are used to export and release the OPAL memory on PowerNV platform.
+>> let's organize them into a new kobject under /sys/firmware/opal/mpipl/
+>> directory.
+>>
+>> A symlink is added to maintain the backward compatibility for
+>> /sys/firmware/opal/core sysfs file.
+>>
+>> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+>> ---
+>>  .../sysfs-kernel-fadump_release_opalcore      |  2 ++
+>>  .../powerpc/firmware-assisted-dump.rst        | 15 +++++----
+>>  arch/powerpc/platforms/powernv/opal-core.c    | 31 ++++++++++++++-----
+>>  3 files changed, 34 insertions(+), 14 deletions(-)
+>>  rename Documentation/ABI/{testing => removed}/sysfs-kernel-fadump_release_opalcore (82%)
+>>
+>> diff --git a/Documentation/ABI/testing/sysfs-kernel-fadump_release_opalcore b/Documentation/ABI/removed/sysfs-kernel-fadump_release_opalcore
+>> similarity index 82%
+>> rename from Documentation/ABI/testing/sysfs-kernel-fadump_release_opalcore
+>> rename to Documentation/ABI/removed/sysfs-kernel-fadump_release_opalcore
+>> index 53313c1d4e7a..a8d46cd0f4e6 100644
+>> --- a/Documentation/ABI/testing/sysfs-kernel-fadump_release_opalcore
+>> +++ b/Documentation/ABI/removed/sysfs-kernel-fadump_release_opalcore
+>> @@ -1,3 +1,5 @@
+>> +This ABI is moved to /sys/firmware/opal/mpipl/release_core.
+>> +
+>>  What:		/sys/kernel/fadump_release_opalcore
+>>  Date:		Sep 2019
+>>  Contact:	linuxppc-dev@lists.ozlabs.org
+>> diff --git a/Documentation/powerpc/firmware-assisted-dump.rst b/Documentation/powerpc/firmware-assisted-dump.rst
+>> index 0455a78486d5..345a3405206e 100644
+>> --- a/Documentation/powerpc/firmware-assisted-dump.rst
+>> +++ b/Documentation/powerpc/firmware-assisted-dump.rst
+>> @@ -112,13 +112,13 @@ to ensure that crash data is preserved to process later.
+>>  
+>>  -- On OPAL based machines (PowerNV), if the kernel is build with
+>>     CONFIG_OPAL_CORE=y, OPAL memory at the time of crash is also
+>> -   exported as /sys/firmware/opal/core file. This procfs file is
+>> +   exported as /sys/firmware/opal/mpipl/core file. This procfs file is
+>>     helpful in debugging OPAL crashes with GDB. The kernel memory
+>>     used for exporting this procfs file can be released by echo'ing
+>> -   '1' to /sys/kernel/fadump_release_opalcore node.
+>> +   '1' to /sys/firmware/opal/mpipl/release_core node.
+>>  
+>>     e.g.
+>> -     # echo 1 > /sys/kernel/fadump_release_opalcore
+>> +     # echo 1 > /sys/firmware/opal/mpipl/release_core
+>>  
+>>  Implementation details:
+>>  -----------------------
+>> @@ -283,14 +283,17 @@ Here is the list of files under kernel sysfs:
+>>      enhanced to use this interface to release the memory reserved for
+>>      dump and continue without 2nd reboot.
+>>  
+>> - /sys/kernel/fadump_release_opalcore
+>> +Note: /sys/kernel/fadump_release_opalcore sysfs has moved to
+>> +      /sys/firmware/opal/mpipl/release_core
+>> +
+>> + /sys/firmware/opal/mpipl/release_core
+>>  
+>>      This file is available only on OPAL based machines when FADump is
+>>      active during capture kernel. This is used to release the memory
+>> -    used by the kernel to export /sys/firmware/opal/core file. To
+>> +    used by the kernel to export /sys/firmware/opal/mpipl/core file. To
+>>      release this memory, echo '1' to it:
+>>  
+>> -    echo 1  > /sys/kernel/fadump_release_opalcore
+>> +    echo 1  > /sys/firmware/opal/mpipl/release_core
+>>  
+>>  Here is the list of files under powerpc debugfs:
+>>  (Assuming debugfs is mounted on /sys/kernel/debug directory.)
+>> diff --git a/arch/powerpc/platforms/powernv/opal-core.c b/arch/powerpc/platforms/powernv/opal-core.c
+>> index ed895d82c048..7fcc092d065e 100644
+>> --- a/arch/powerpc/platforms/powernv/opal-core.c
+>> +++ b/arch/powerpc/platforms/powernv/opal-core.c
+>> @@ -589,7 +589,8 @@ static ssize_t fadump_release_opalcore_store(struct kobject *kobj,
+>>  	return count;
+>>  }
+>>  
+>> -static struct kobj_attribute opalcore_rel_attr = __ATTR(fadump_release_opalcore,
+>> +struct kobject *mpipl_kobj;
+>> +static struct kobj_attribute opalcore_rel_attr = __ATTR(release_core,
+>>  						0200, NULL,
+>>  						fadump_release_opalcore_store);
+> 
+> __ATTR_WO()?
+
+Thanks :)
+> 
+>>  
+>> @@ -609,7 +610,7 @@ static int __init opalcore_init(void)
+>>  	 * then capture the dump.
+>>  	 */
+>>  	if (!(is_opalcore_usable())) {
+>> -		pr_err("Failed to export /sys/firmware/opal/core\n");
+>> +		pr_err("Failed to export /sys/firmware/opal/mpipl/core\n");
+>>  		opalcore_cleanup();
+>>  		return rc;
+>>  	}
+>> @@ -617,18 +618,32 @@ static int __init opalcore_init(void)
+>>  	/* Set OPAL core file size */
+>>  	opal_core_attr.size = oc_conf->opalcore_size;
+>>  
+>> +	mpipl_kobj = kobject_create_and_add("mpipl", opal_kobj);
+>> +	if (!mpipl_kobj) {
+>> +		pr_err("unable to create mpipl kobject\n");
+>> +		return -ENOMEM;
+>> +	}
+>> +
+>>  	/* Export OPAL core sysfs file */
+>> -	rc = sysfs_create_bin_file(opal_kobj, &opal_core_attr);
+>> +	rc = sysfs_create_bin_file(mpipl_kobj, &opal_core_attr);
+> 
+> Again, create an attribute group and add everything all at once, makes
+> it much simpler and your error cleanup logic will actually work :)
+
+Agree.
+
+Thanks,
+Sourabh Jain
+
