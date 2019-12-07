@@ -1,58 +1,87 @@
-Return-Path: <SRS0=sQep=Z4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=2P8o=Z5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E8516C43603
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Dec 2019 23:43:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B3117C43603
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Dec 2019 01:15:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9FAE52467E
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Dec 2019 23:43:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9FAE52467E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id 2B3992173E
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Dec 2019 01:15:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2B3992173E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=us.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47V8Ks4tdBzDqhb
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Dec 2019 10:43:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47VBMn0hmQzDqdv
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Dec 2019 12:15:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=us.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=linuxram@us.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=permerror (SPF Permanent Error: Unknown mechanism
- found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
- (client-ip=63.228.1.57; helo=gate.crashing.org;
- envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=us.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47V8H02lCjzDqhS
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Dec 2019 10:41:00 +1100 (AEDT)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id xB6NeZ43027638;
- Fri, 6 Dec 2019 17:40:35 -0600
-Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id xB6NeYbA027637;
- Fri, 6 Dec 2019 17:40:34 -0600
-X-Authentication-Warning: gate.crashing.org: segher set sender to
- segher@kernel.crashing.org using -f
-Date: Fri, 6 Dec 2019 17:40:34 -0600
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Frank Rowand <frowand.list@gmail.com>
-Subject: Re: [RFC] Efficiency of the phandle_cache on ppc64/SLOF
-Message-ID: <20191206234034.GW3152@gate.crashing.org>
-References: <20191129151056.o5c44lm5lb4wsr4r@linutronix.de>
- <87wobedpit.fsf@mpe.ellerman.id.au>
- <20191203183531.GT24609@gate.crashing.org>
- <493a7da7-774c-1515-b43a-80d72c9d3c19@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <493a7da7-774c-1515-b43a-80d72c9d3c19@gmail.com>
-User-Agent: Mutt/1.4.2.3i
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47VBKL3HtXzDqSj
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Dec 2019 12:13:10 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ xB71CXwb028015
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Dec 2019 20:13:05 -0500
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2wpvg3h007-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Dec 2019 20:13:05 -0500
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Sat, 7 Dec 2019 01:13:04 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Sat, 7 Dec 2019 01:12:59 -0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xB71CwdX2032102
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Sat, 7 Dec 2019 01:12:58 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3AD7F4C04A;
+ Sat,  7 Dec 2019 01:12:58 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 217724C040;
+ Sat,  7 Dec 2019 01:12:54 +0000 (GMT)
+Received: from oc0525413822.ibm.com (unknown [9.80.215.155])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Sat,  7 Dec 2019 01:12:53 +0000 (GMT)
+From: Ram Pai <linuxram@us.ibm.com>
+To: mpe@ellerman.id.au
+Subject: [PATCH v5 0/2] Enable IOMMU support for pseries Secure VMs
+Date: Fri,  6 Dec 2019 17:12:37 -0800
+X-Mailer: git-send-email 1.8.3.1
+X-TM-AS-GCONF: 00
+x-cbid: 19120701-0028-0000-0000-000003C62762
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19120701-0029-0000-0000-000024894E8C
+Message-Id: <1575681159-30356-1-git-send-email-linuxram@us.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
+ definitions=2019-12-06_08:2019-12-05,2019-12-06 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0
+ lowpriorityscore=0 malwarescore=0 mlxlogscore=618 spamscore=0
+ clxscore=1015 impostorscore=0 phishscore=0 suspectscore=1 mlxscore=0
+ bulkscore=0 priorityscore=1501 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-1910280000 definitions=main-1912070004
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,59 +93,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- Rob Herring <robh+dt@kernel.org>, Paul Mackerras <paulus@samba.org>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
+Cc: andmike@us.ibm.com, mst@redhat.com, aik@ozlabs.ru, linuxram@us.ibm.com,
+ mdroth@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, ram.n.pai@gmail.com,
+ leonardo@linux.ibm.com, cai@lca.pw, tglx@linutronix.de,
+ sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, hch@lst.de,
+ bauerman@linux.ibm.com, david@gibson.dropbear.id.au
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+This patch series enables IOMMU support for pseries Secure VMs.
 
-On Thu, Dec 05, 2019 at 07:37:24PM -0600, Frank Rowand wrote:
-> On 12/3/19 12:35 PM, Segher Boessenkool wrote:
-> > Btw.  Some OFs mangle the phandles some way, to make it easier to catch
-> > people using it as an address (and similarly, mangle ihandles differently,
-> > so you catch confusion between ihandles and phandles as well).  Like a
-> > simple xor, with some odd number preferably.  You should assume *nothing*
-> > about phandles, they are opaque identifiers.
-> 
-> For arm32 machines that use dtc to generate the devicetree, which is a
-> very large user base, we certainly can make assumptions about phandles.
+Tested using QEMU command line option:
 
-I was talking about OF.  Phandles are explicitly defined to be opaque
-tokens.  If there is an extra meaning to them in flattened device trees,
-well, the kernel should then only depend on that there, not for more
-general phandles.  Where is this documented btw?
+	"-device virtio-scsi-pci,id=scsi0,bus=pci.0,addr=0x4,
+	iommu_platform=on,disable-modern=off,disable-legacy=on"
 
-> Especially because the complaints about the overhead of phandle based
-> lookups have been voiced by users of this specific set of machines.
-> 
-> For systems with a devicetree that does not follow the assumptions, the
-> phandle cache should not measurably increase the overhead of phandle
-> based lookups.
+	and
 
-It's an extra memory access and extra code to execute, for not much gain
-(if anything).  While with a reasonable hash function it will be good
-for everyone.
+	"-device virtio-blk-pci,scsi=off,bus=pci.0,
+	addr=0x5,drive=drive-virtio-disk0,id=virtio-disk0,
+	iommu_platform=on,disable-modern=off,disable-legacy=on"
 
-> If you have measurements of a system where implementing the phandle
-> cache increased the overhead,
+changelog:
+	v5: unshare the page used in H_PUT_TCE_INDIRECT hcall to
+       	    communicate the TCE entries with the hypervisor.
+	    Concern raised by Alexey. This minimizes the number
+	    of pages shared with the hypervisor.
 
-Are you seriously saying you think this code can run in zero time and
-space on most systems?
+	v4: Corrected the Subject, to include the keyword 'PATCH'.
+		No other changes.
 
-> and the additional overhead is a concern
-> (such as significantly increasing boot time) then please share that
-> information with us.  Otherwise this is just a theoretical exercise.
+	v3: Better description of 2/2 patch.
+		Suggested by David Gibson.
 
-The point is that this code could be easily beneficial for most (or all)
-users, not just those that use dtc-constructed device trees.  It is
-completely obvious that having a worse cache hash function results in
-many more lookups.  Whether that results in something expressed as
-milliseconds on tiny systems or microseconds on bigger systems is
-completely beside the point.
+	v2: added comments describing the changes.
+		Suggested by Alexey and Michael Ellermen.
 
 
-Segher
+Ram Pai (2):
+  powerpc/pseries/iommu: Share the per-cpu TCE page with the hypervisor.
+  powerpc/pseries/iommu: Use dma_iommu_ops for Secure VM.
+
+ arch/powerpc/platforms/pseries/iommu.c | 43 ++++++++++++++++++++++++----------
+ 1 file changed, 30 insertions(+), 13 deletions(-)
+
+-- 
+1.8.3.1
+
