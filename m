@@ -2,59 +2,111 @@ Return-Path: <SRS0=2P8o=Z5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,HK_RANDOM_FROM,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 33A40C43603
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Dec 2019 01:28:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BDAE2C43603
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Dec 2019 03:24:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BA1C82173E
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Dec 2019 01:28:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BA1C82173E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=free.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 2F204217BA
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Dec 2019 03:24:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2F204217BA
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47VBfm6Z1BzDqXK
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Dec 2019 12:28:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47VFDG64RyzDqfV
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Dec 2019 14:23:58 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47VFBD5ncwzDqGJ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Dec 2019 14:22:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=free.fr
- (client-ip=212.27.42.3; helo=smtp3-g21.free.fr; envelope-from=dftxbs3e@free.fr;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 47VFBD0VP5z8t0m
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Dec 2019 14:22:12 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 47VFBC75dpz9sPf; Sat,  7 Dec 2019 14:22:11 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=free.fr
-Received: from smtp3-g21.free.fr (smtp3-g21.free.fr [212.27.42.3])
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47V8w81Y2fzDqg7
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Dec 2019 11:09:37 +1100 (AEDT)
-Received: from [IPv6:2a01:e0a:2a2:1590:3130:d4af:7a6d:562c] (unknown
- [IPv6:2a01:e0a:2a2:1590:3130:d4af:7a6d:562c])
- by smtp3-g21.free.fr (Postfix) with ESMTP id 8FAC913F89C;
- Sat,  7 Dec 2019 01:09:17 +0100 (CET)
-Subject: [bug] userspace hitting sporadic SIGBUS on xfs (Power9, ppc64le),
- v4.19 and later
-References: <9c0af967-4916-4e8b-e77f-087515793d77@free.fr>
-To: Jan Stancek <jstancek@redhat.com>, linux-xfs@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, hch@infradead.org, darrick.wong@oracle.com,
- linuxppc-dev@lists.ozlabs.org, Memory Management <mm-qe@redhat.com>,
- LTP Mailing List <ltp@lists.linux.it>, CKI Project <cki-project@redhat.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-From: dftxbs3e <dftxbs3e@free.fr>
-X-Forwarded-Message-Id: <9c0af967-4916-4e8b-e77f-087515793d77@free.fr>
-Message-ID: <e9a171cc-6827-5c43-092a-9dcd8a997b5a@free.fr>
-Date: Sat, 7 Dec 2019 01:09:17 +0100
-User-Agent: Mozilla/5.0 (X11; Linux ppc64le; rv:68.0) Gecko/20100101
- Thunderbird/68.1.1
+ by ozlabs.org (Postfix) with ESMTPS id 47VFBC3JySz9sPW
+ for <linuxppc-dev@ozlabs.org>; Sat,  7 Dec 2019 14:22:10 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ xB737E4X108558
+ for <linuxppc-dev@ozlabs.org>; Fri, 6 Dec 2019 22:22:08 -0500
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2wq9mhqhp3-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Fri, 06 Dec 2019 22:22:08 -0500
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sourabhjain@linux.ibm.com>;
+ Sat, 7 Dec 2019 03:22:06 -0000
+Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Sat, 7 Dec 2019 03:22:02 -0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id xB73M1vt47448568
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Sat, 7 Dec 2019 03:22:01 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 63BE9AE04D;
+ Sat,  7 Dec 2019 03:22:01 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B91A8AE045;
+ Sat,  7 Dec 2019 03:21:59 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.85.92.151])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Sat,  7 Dec 2019 03:21:59 +0000 (GMT)
+Subject: Re: [PATCH v4 2/6] sysfs: wrap __compat_only_sysfs_link_entry_to_kobj
+ function to change the symlink name
+To: Greg KH <gregkh@linuxfoundation.org>
+References: <20191206122434.29587-1-sourabhjain@linux.ibm.com>
+ <20191206122434.29587-3-sourabhjain@linux.ibm.com>
+ <20191206124642.GB1360047@kroah.com>
+ <3aabdf19-ccbf-e99a-c560-2b110e8b536a@linux.ibm.com>
+ <20191206191420.GA192422@kroah.com>
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+Date: Sat, 7 Dec 2019 08:51:58 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
 MIME-Version: 1.0
-In-Reply-To: <9c0af967-4916-4e8b-e77f-087515793d77@free.fr>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20191206191420.GA192422@kroah.com>
+Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
-X-Mailman-Approved-At: Sat, 07 Dec 2019 12:26:41 +1100
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19120703-0008-0000-0000-0000033E70F5
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19120703-0009-0000-0000-00004A5D99AB
+Message-Id: <51893cad-e8df-a240-bc60-db245420d811@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
+ definitions=2019-12-06_08:2019-12-05,2019-12-06 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0
+ phishscore=0 mlxscore=0 bulkscore=0 clxscore=1015 spamscore=0
+ impostorscore=0 malwarescore=0 mlxlogscore=999 suspectscore=0
+ priorityscore=1501 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-1910280000 definitions=main-1912070022
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,160 +118,134 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linux-doc@vger.kernel.org, mahesh@linux.vnet.ibm.com, corbet@lwn.net,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, hbathini@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello!
 
-I am very happy that someone has found this issue.
 
-I have been suffering from rather random SIGBUS errors in similar
-conditions described by the author.
+On 12/7/19 12:44 AM, Greg KH wrote:
+> On Fri, Dec 06, 2019 at 11:57:53PM +0530, Sourabh Jain wrote:
+>>
+>>
+>> On 12/6/19 6:16 PM, Greg KH wrote:
+>>> On Fri, Dec 06, 2019 at 05:54:30PM +0530, Sourabh Jain wrote:
+>>>> The __compat_only_sysfs_link_entry_to_kobj function creates a symlink to a
+>>>> kobject but doesn't provide an option to change the symlink file name.
+>>>>
+>>>> This patch adds a wrapper function create_sysfs_symlink_entry_to_kobj that
+>>>> extends the __compat_only_sysfs_link_entry_to_kobj functionality which
+>>>> allows function caller to customize the symlink name.
+>>>>
+>>>> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+>>>> ---
+>>>>  fs/sysfs/group.c      | 28 +++++++++++++++++++++++++---
+>>>>  include/linux/sysfs.h | 12 ++++++++++++
+>>>>  2 files changed, 37 insertions(+), 3 deletions(-)
+>>>>
+>>>> diff --git a/fs/sysfs/group.c b/fs/sysfs/group.c
+>>>> index d41c21fef138..5eb38145b957 100644
+>>>> --- a/fs/sysfs/group.c
+>>>> +++ b/fs/sysfs/group.c
+>>>> @@ -424,6 +424,25 @@ EXPORT_SYMBOL_GPL(sysfs_remove_link_from_group);
+>>>>  int __compat_only_sysfs_link_entry_to_kobj(struct kobject *kobj,
+>>>>  				      struct kobject *target_kobj,
+>>>>  				      const char *target_name)
+>>>> +{
+>>>> +	return create_sysfs_symlink_entry_to_kobj(kobj, target_kobj,
+>>>> +						target_name, NULL);
+>>>> +}
+>>>> +EXPORT_SYMBOL_GPL(__compat_only_sysfs_link_entry_to_kobj);
+>>>> +
+>>>> +/**
+>>>> + * create_sysfs_symlink_entry_to_kobj - add a symlink to a kobject pointing
+>>>> + * to a group or an attribute
+>>>> + * @kobj:		The kobject containing the group.
+>>>> + * @target_kobj:	The target kobject.
+>>>> + * @target_name:	The name of the target group or attribute.
+>>>> + * @symlink_name:	The name of the symlink file (target_name will be
+>>>> + *			considered if symlink_name is NULL).
+>>>> + */
+>>>> +int create_sysfs_symlink_entry_to_kobj(struct kobject *kobj,
+>>>> +				       struct kobject *target_kobj,
+>>>> +				       const char *target_name,
+>>>> +				       const char *symlink_name)
+>>>>  {
+>>>>  	struct kernfs_node *target;
+>>>>  	struct kernfs_node *entry;
+>>>> @@ -448,12 +467,15 @@ int __compat_only_sysfs_link_entry_to_kobj(struct kobject *kobj,
+>>>>  		return -ENOENT;
+>>>>  	}
+>>>>  
+>>>> -	link = kernfs_create_link(kobj->sd, target_name, entry);
+>>>> +	if (!symlink_name)
+>>>> +		symlink_name = target_name;
+>>>> +
+>>>> +	link = kernfs_create_link(kobj->sd, symlink_name, entry);
+>>>>  	if (IS_ERR(link) && PTR_ERR(link) == -EEXIST)
+>>>> -		sysfs_warn_dup(kobj->sd, target_name);
+>>>> +		sysfs_warn_dup(kobj->sd, symlink_name);
+>>>>  
+>>>>  	kernfs_put(entry);
+>>>>  	kernfs_put(target);
+>>>>  	return PTR_ERR_OR_ZERO(link);
+>>>>  }
+>>>> -EXPORT_SYMBOL_GPL(__compat_only_sysfs_link_entry_to_kobj);
+>>>> +EXPORT_SYMBOL_GPL(create_sysfs_symlink_entry_to_kobj);
+>>>> diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
+>>>> index 5420817ed317..123c6f10333a 100644
+>>>> --- a/include/linux/sysfs.h
+>>>> +++ b/include/linux/sysfs.h
+>>>> @@ -300,6 +300,10 @@ void sysfs_remove_link_from_group(struct kobject *kobj, const char *group_name,
+>>>>  int __compat_only_sysfs_link_entry_to_kobj(struct kobject *kobj,
+>>>>  				      struct kobject *target_kobj,
+>>>>  				      const char *target_name);
+>>>> +int create_sysfs_symlink_entry_to_kobj(struct kobject *kobj,
+>>>> +				       struct kobject *target_kobj,
+>>>> +				       const char *target_name,
+>>>> +				       const char *symlink_name);
+>>>
+>>> sysfs_create_symlink_entry_to_kobj()?
+>>>
+>>> I can't remember why we put __compat_only there, perhaps because we do
+>>> not want people to really use this unless you really really have to?
+>>
+>> We don't have much option here. I tried replicating the sysfs files
+>> in older patch series but creating symlink at old location is much
+>> better approach.
+>>
+>> The __compat_only_sysfs_link_entry_to_kobj function is pretty generic,
+>> unable to understand the reason behind restricting its usage.
+>>
+>>>
+>>> So then keep compat_only here as well?
+>>
+>> Sure, I will rename the wrapper function.
+>>
+>> But how about changing the function signature instead of creating
+>> a wrapper function?
+>>
+>> Considering the fact that there are only two places this function
+>> has called.
+>>
+>>>
+>>> What breaks if you remove those undocumented sysfs files?  What
+>>> userspace tool do you have that will even notice?
+>>
+>> The scripts used in kdump service need those sysfs files to control
+>> the dump collection. So we can't just move the sysfs files to the
+>> new location.
+> 
+> If you can not change them, then just document them and live with it.
+> Why do this extra work to create a symlink for something you will never
+> use?
 
-I don't have much troubleshooting information to provide, however, I hit
-the issue regularly so I could investigate during that.
+Eventually the scripts will change but I think it is better to have some
+overlap time to avoid breaking those scripts.
 
-How do you debug such an issue? I tried a debugger etc. but besides
-crashing with SIGBUS, I couldnt get any other meaningful information.
 
-dftxbs3e
+Thanks,
+Sourabh Jain
 
-On 12/3/19 1:50 PM, Jan Stancek wrote:
-> Hi,
->
-> (This bug report is summary from thread [1] with some additions)
->
-> User-space binaries on Power9 ppc64le (with 64k pages) on xfs
-> filesystem are sporadically hitting SIGBUS:
->
-> ---------- 8< ----------
-> (gdb) r
-> Starting program: /mnt/testarea/ltp/testcases/bin/genasin
->
-> Program received signal SIGBUS, Bus error.
-> dl_main (phdr=0x10000040, phnum=<optimized out>, user_entry=0x7fffffffe760, auxv=<optimized out>) at rtld.c:1362
-> 1362        switch (ph->p_type)
->
-> (gdb) p ph
-> $1 = (const Elf64_Phdr *) 0x10000040
->
-> (gdb) p *ph
-> Cannot access memory at address 0x10000040
->
-> (gdb) info proc map
-> process 1110670
-> Mapped address spaces:
->
->             Start Addr           End Addr       Size     Offset objfile
->             0x10000000         0x10010000    0x10000        0x0 /mnt/testarea/ltp/testcases/bin/genasin
->             0x10010000         0x10030000    0x20000        0x0 /mnt/testarea/ltp/testcases/bin/genasin
->         0x7ffff7f90000     0x7ffff7fb0000    0x20000        0x0 [vdso]
->         0x7ffff7fb0000     0x7ffff7fe0000    0x30000        0x0 /usr/lib64/ld-2.30.so
->         0x7ffff7fe0000     0x7ffff8000000    0x20000    0x20000 /usr/lib64/ld-2.30.so
->         0x7ffffffd0000     0x800000000000    0x30000        0x0 [stack]
->
-> (gdb) x/1x 0x10000040
-> 0x10000040:     Cannot access memory at address 0x10000040
-> ---------- >8 ----------
->
-> When this happens the binary continues to hit SIGBUS until page
-> is released, for example by: echo 3 > /proc/sys/vm/drop_caches
->
-> The issue goes back to at least v4.19.
->
-> I can semi-reliably reproduce it with LTP is installed to /mnt/testarea/ltp by:
-> while [ True ]; do
->           echo 3 > /proc/sys/vm/drop_caches
->           rm -f /mnt/testarea/ltp/results/RUNTEST.log /mnt/testarea/ltp/output/RUNTEST.run.log
->           ./runltp -p -d results -l RUNTEST.log -o RUNTEST.run.log -f math
->           grep FAIL /mnt/testarea/ltp/results/RUNTEST.log && exit 1
-> done
->
-> and some stress activity in other terminal (e.g. kernel build).
-> Sometimes in minutes, sometimes in hours. It is not reliable
-> enough to get meaningful bisect results.
->
-> My theory is that there's a race in iomap. There appear to be
-> interleaved calls to iomap_set_range_uptodate() for same page
-> with varying offset and length. Each call sees bitmap as _not_
-> entirely "uptodate" and hence doesn't call SetPageUptodate().
-> Even though each bit in bitmap ends up uptodate by the time
-> all calls finish.
->
-> For example, with following traces:
->
-> iomap_set_range_uptodate()
-> ...
->           if (uptodate && !PageError(page))
->                   SetPageUptodate(page);
-> +
-> +       if (mycheck(page)) {
-> +               trace_printk("page: %px, iop: %px, uptodate: %d, !PageError(page): %d, flags: %lx\n", page, iop, uptodate, !PageError(page), page->flags);
-> +               trace_printk("first: %u, last: %u, off: %u, len: %u, i: %u\n", first, last, off, len, i);
-> +       }
->
-> I get:
->            genacos-18471 [057] ....   162.465730: iomap_readpages: mapping: c000003f185a1ab0
->            genacos-18471 [057] ....   162.465732: iomap_page_create: iomap_page_create page: c00c00000fe26180, page->private: 0000000000000000, iop: c000003fc70a19c0, flags: 3ffff800000001
->            genacos-18471 [057] ....   162.465736: iomap_set_range_uptodate: page: c00c00000fe26180, iop: c000003fc70a19c0, uptodate: 0, !PageError(page): 1, flags: 3ffff800002001
->            genacos-18471 [057] ....   162.465736: iomap_set_range_uptodate: first: 1, last: 14, off: 4096, len: 57344, i: 16
->             <idle>-0     [060] ..s.   162.534862: iomap_set_range_uptodate: page: c00c00000fe26180, iop: c000003fc70a19c0, uptodate: 0, !PageError(page): 1, flags: 3ffff800002081
->             <idle>-0     [061] ..s.   162.534862: iomap_set_range_uptodate: page: c00c00000fe26180, iop: c000003fc70a19c0, uptodate: 0, !PageError(page): 1, flags: 3ffff800002081
->             <idle>-0     [060] ..s.   162.534864: iomap_set_range_uptodate: first: 0, last: 0, off: 0, len: 4096, i: 16
->             <idle>-0     [061] ..s.   162.534864: iomap_set_range_uptodate: first: 15, last: 15, off: 61440, len: 4096, i: 16
->
-> This page doesn't have Uptodate flag set, which leads to filemap_fault()
-> returning VM_FAULT_SIGBUS:
->
-> crash> p/x ((struct page *) 0xc00c00000fe26180)->flags
-> $1 = 0x3ffff800002032
->
-> crash> kmem -g 0x3ffff800002032
-> FLAGS: 3ffff800002032
->     PAGE-FLAG       BIT  VALUE
->     PG_error          1  0000002
->     PG_dirty          4  0000010
->     PG_lru            5  0000020
->     PG_private_2     13  0002000
->     PG_fscache       13  0002000
->     PG_savepinned     4  0000010
->     PG_double_map    13  0002000
->
-> But iomap_page->uptodate in page->private suggests all bits are uptodate:
->
-> crash> p/x ((struct page *) 0xc00c00000fe26180)->private
-> $2 = 0xc000003fc70a19c0
->
-> crash> p/x ((struct iomap_page *) 0xc000003fc70a19c0)->uptodate
-> $3 = {0xffff, 0x0}
->
->
-> It appears (after ~4 hours) that I can avoid the problem if I split
-> the loop so that bits are checked only after all updates are made.
-> Not sure if this correct approach, or just making it less reproducible:
->
-> diff --git a/fs/iomap/buffered-io.c b/fs/iomap/buffered-io.c
-> index e25901ae3ff4..abe37031c93d 100644
-> --- a/fs/iomap/buffered-io.c
-> +++ b/fs/iomap/buffered-io.c
-> @@ -131,7 +131,11 @@ iomap_set_range_uptodate(struct page *page, unsigned off, unsigned len)
->                   for (i = 0; i < PAGE_SIZE / i_blocksize(inode); i++) {
->                           if (i >= first && i <= last)
->                                   set_bit(i, iop->uptodate);
-> -                       else if (!test_bit(i, iop->uptodate))
-> +               }
-> +               for (i = 0; i < PAGE_SIZE / i_blocksize(inode); i++) {
-> +                       if (i >= first && i <= last)
-> +                               continue;
-> +                       if (!test_bit(i, iop->uptodate))
->                                   uptodate = false;
->                   }
->           }
->
-> Thanks,
-> Jan
->
-> [1] https://lore.kernel.org/stable/1420623640.14527843.1575289859701.JavaMail.zimbra@redhat.com/T/#u
->
->
