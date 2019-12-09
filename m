@@ -2,26 +2,26 @@ Return-Path: <SRS0=oaAR=Z7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A45F6C43603
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Dec 2019 23:39:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 08020C43603
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Dec 2019 23:41:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 50C59206D5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Dec 2019 23:39:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id AC796206D5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Dec 2019 23:41:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="q40ew6gm"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 50C59206D5
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="qV3uJB7V"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AC796206D5
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nvidia.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47X05N4f2WzDqDL
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Dec 2019 10:39:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47X07h45PZzDqPG
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Dec 2019 10:41:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=nvidia.com (client-ip=216.228.121.65;
  helo=hqnvemgate26.nvidia.com; envelope-from=jhubbard@nvidia.com;
@@ -29,37 +29,37 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="q40ew6gm"; 
+ unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="qV3uJB7V"; 
  dkim-atps=neutral
 Received: from hqnvemgate26.nvidia.com (hqnvemgate26.nvidia.com
  [216.228.121.65])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47Wz5k09jwzDqRg
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47Wz5k0CQ6zDqSF
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2019 09:54:16 +1100 (AEDT)
 Received: from hqpgpgate102.nvidia.com (Not Verified[216.228.121.13]) by
  hqnvemgate26.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
- id <B5deed08b0000>; Mon, 09 Dec 2019 14:54:03 -0800
+ id <B5deed08f0000>; Mon, 09 Dec 2019 14:54:07 -0800
 Received: from hqmail.nvidia.com ([172.20.161.6])
  by hqpgpgate102.nvidia.com (PGP Universal service);
- Mon, 09 Dec 2019 14:54:09 -0800
+ Mon, 09 Dec 2019 14:54:13 -0800
 X-PGP-Universal: processed;
- by hqpgpgate102.nvidia.com on Mon, 09 Dec 2019 14:54:09 -0800
-Received: from HQMAIL107.nvidia.com (172.20.187.13) by HQMAIL107.nvidia.com
- (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Mon, 9 Dec
- 2019 22:54:09 +0000
-Received: from rnnvemgw01.nvidia.com (10.128.109.123) by HQMAIL107.nvidia.com
- (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via
- Frontend Transport; Mon, 9 Dec 2019 22:54:07 +0000
+ by hqpgpgate102.nvidia.com on Mon, 09 Dec 2019 14:54:13 -0800
+Received: from HQMAIL101.nvidia.com (172.20.187.10) by HQMAIL101.nvidia.com
+ (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Mon, 9 Dec
+ 2019 22:54:12 +0000
+Received: from rnnvemgw01.nvidia.com (10.128.109.123) by HQMAIL101.nvidia.com
+ (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via
+ Frontend Transport; Mon, 9 Dec 2019 22:54:11 +0000
 Received: from blueforge.nvidia.com (Not Verified[10.110.48.28]) by
  rnnvemgw01.nvidia.com with Trustwave SEG (v7, 5, 8, 10121)
- id <B5deed08e0001>; Mon, 09 Dec 2019 14:54:07 -0800
+ id <B5deed0920003>; Mon, 09 Dec 2019 14:54:11 -0800
 From: John Hubbard <jhubbard@nvidia.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v8 21/26] mm/gup_benchmark: use proper FOLL_WRITE flags
- instead of hard-coding "1"
-Date: Mon, 9 Dec 2019 14:53:39 -0800
-Message-ID: <20191209225344.99740-22-jhubbard@nvidia.com>
+Subject: [PATCH v8 26/26] selftests/vm: run_vmtests: invoke gup_benchmark with
+ basic FOLL_PIN coverage
+Date: Mon, 9 Dec 2019 14:53:44 -0800
+Message-ID: <20191209225344.99740-27-jhubbard@nvidia.com>
 X-Mailer: git-send-email 2.24.0
 In-Reply-To: <20191209225344.99740-1-jhubbard@nvidia.com>
 References: <20191209225344.99740-1-jhubbard@nvidia.com>
@@ -68,16 +68,16 @@ X-NVConfidentiality: public
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
- t=1575932043; bh=zwwITV4l72pt0LmhAqpHWuQbAhr06rUfgov5x98Cdpc=;
+ t=1575932047; bh=efjW/rF0EGuRthlOGEU05IQnyHi57jZRzyopoxtDk8c=;
  h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
  In-Reply-To:References:MIME-Version:X-NVConfidentiality:
  Content-Transfer-Encoding:Content-Type;
- b=q40ew6gmhmZT5F40JjoTy66d0rs0b8xKs0tn1F/iX8BS72cS6B3WXMrf9/MtWILv9
- dJ5sTULUSTL7ni0DCg+sgEBTM4CPjI9OLuMeXpQFckWqyJ3Cgdm7XsROCrAcraUn+y
- 0GEsuQBtrrm0sP+r3U8tCwEfEt+Dlac3cAB3D1906mVyjyXtjRPZM51Saz6hSbh3Ml
- N4zX0375qN0nfQiv2bsDgZuc9LSLXfPdqZCPIRAZWFlQ39wGpktAai9st3AS20Xrd9
- UDSHY9D8TqKmxgPJY4zO4j1/vySss45eCs7aGPv3PgiNdA4hU8P3u6slEfufR5xmlU
- L0ij9Zeob+6kQ==
+ b=qV3uJB7VZRPn8h/t1hIu8YevHEQMbA6ytY7EXlbIwT+Y5aVa6SSMTKDXGhoau+Np9
+ SXj+sUF5Zt1nGzc+gDnMftMZ783jkTGZpbgnOkcctnZX3s3d6WXHEohuIVF7yzZeGR
+ ygw/gKI58lE2sUc35Cy0UmpJw+FO/2bcReyZzeD70yLGqvf4tS0EdeF8RZfC0ASFL8
+ 7kuLYQ1Ps+1sWrXxax9z07GSCOo44qcTHbB3lxAH77qnnhMi2B1hjBCUkNOq6E9/ek
+ Op/wTYdOnk2+V0dbVmV+gE5zCnUDp7xm+aIrH1mszn1QnNw72uwtRJfg/zkFxFZtTv
+ 8OVY/MKZ8u6pw==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,75 +114,66 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fix the gup benchmark flags to use the symbolic FOLL_WRITE,
-instead of a hard-coded "1" value.
+It's good to have basic unit test coverage of the new FOLL_PIN
+behavior. Fortunately, the gup_benchmark unit test is extremely
+fast (a few milliseconds), so adding it the the run_vmtests suite
+is going to cause no noticeable change in running time.
 
-Also, clean up the filtering of gup flags a little, by just doing
-it once before issuing any of the get_user_pages*() calls. This
-makes it harder to overlook, instead of having little "gup_flags & 1"
-phrases in the function calls.
+So, add two new invocations to run_vmtests:
+
+1) Run gup_benchmark with normal get_user_pages().
+
+2) Run gup_benchmark with pin_user_pages(). This is much like
+the first call, except that it sets FOLL_PIN.
+
+Running these two in quick succession also provide a visual
+comparison of the running times, which is convenient.
+
+The new invocations are fairly early in the run_vmtests script,
+because with test suites, it's usually preferable to put the
+shorter, faster tests first, all other things being equal.
 
 Reviewed-by: Ira Weiny <ira.weiny@intel.com>
 Signed-off-by: John Hubbard <jhubbard@nvidia.com>
 ---
- mm/gup_benchmark.c                         | 9 ++++++---
- tools/testing/selftests/vm/gup_benchmark.c | 6 +++++-
- 2 files changed, 11 insertions(+), 4 deletions(-)
+ tools/testing/selftests/vm/run_vmtests | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
 
-diff --git a/mm/gup_benchmark.c b/mm/gup_benchmark.c
-index 7dd602d7f8db..7fc44d25eca7 100644
---- a/mm/gup_benchmark.c
-+++ b/mm/gup_benchmark.c
-@@ -48,18 +48,21 @@ static int __gup_benchmark_ioctl(unsigned int cmd,
- 			nr =3D (next - addr) / PAGE_SIZE;
- 		}
+diff --git a/tools/testing/selftests/vm/run_vmtests b/tools/testing/selftes=
+ts/vm/run_vmtests
+index a692ea828317..df6a6bf3f238 100755
+--- a/tools/testing/selftests/vm/run_vmtests
++++ b/tools/testing/selftests/vm/run_vmtests
+@@ -112,6 +112,28 @@ echo "NOTE: The above hugetlb tests provide minimal co=
+verage.  Use"
+ echo "      https://github.com/libhugetlbfs/libhugetlbfs.git for"
+ echo "      hugetlb regression testing."
 =20
-+		/* Filter out most gup flags: only allow a tiny subset here: */
-+		gup->flags &=3D FOLL_WRITE;
++echo "--------------------------------------------"
++echo "running 'gup_benchmark -U' (normal/slow gup)"
++echo "--------------------------------------------"
++./gup_benchmark -U
++if [ $? -ne 0 ]; then
++	echo "[FAIL]"
++	exitcode=3D1
++else
++	echo "[PASS]"
++fi
 +
- 		switch (cmd) {
- 		case GUP_FAST_BENCHMARK:
--			nr =3D get_user_pages_fast(addr, nr, gup->flags & 1,
-+			nr =3D get_user_pages_fast(addr, nr, gup->flags,
- 						 pages + i);
- 			break;
- 		case GUP_LONGTERM_BENCHMARK:
- 			nr =3D get_user_pages(addr, nr,
--					    (gup->flags & 1) | FOLL_LONGTERM,
-+					    gup->flags | FOLL_LONGTERM,
- 					    pages + i, NULL);
- 			break;
- 		case GUP_BENCHMARK:
--			nr =3D get_user_pages(addr, nr, gup->flags & 1, pages + i,
-+			nr =3D get_user_pages(addr, nr, gup->flags, pages + i,
- 					    NULL);
- 			break;
- 		default:
-diff --git a/tools/testing/selftests/vm/gup_benchmark.c b/tools/testing/sel=
-ftests/vm/gup_benchmark.c
-index 485cf06ef013..389327e9b30a 100644
---- a/tools/testing/selftests/vm/gup_benchmark.c
-+++ b/tools/testing/selftests/vm/gup_benchmark.c
-@@ -18,6 +18,9 @@
- #define GUP_LONGTERM_BENCHMARK	_IOWR('g', 2, struct gup_benchmark)
- #define GUP_BENCHMARK		_IOWR('g', 3, struct gup_benchmark)
-=20
-+/* Just the flags we need, copied from mm.h: */
-+#define FOLL_WRITE	0x01	/* check pte is writable */
++echo "------------------------------------------"
++echo "running gup_benchmark -b (pin_user_pages)"
++echo "------------------------------------------"
++./gup_benchmark -b
++if [ $? -ne 0 ]; then
++	echo "[FAIL]"
++	exitcode=3D1
++else
++	echo "[PASS]"
++fi
 +
- struct gup_benchmark {
- 	__u64 get_delta_usec;
- 	__u64 put_delta_usec;
-@@ -85,7 +88,8 @@ int main(int argc, char **argv)
- 	}
-=20
- 	gup.nr_pages_per_call =3D nr_pages;
--	gup.flags =3D write;
-+	if (write)
-+		gup.flags |=3D FOLL_WRITE;
-=20
- 	fd =3D open("/sys/kernel/debug/gup_benchmark", O_RDWR);
- 	if (fd =3D=3D -1)
+ echo "-------------------"
+ echo "running userfaultfd"
+ echo "-------------------"
 --=20
 2.24.0
 
