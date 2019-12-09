@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 18D26C43603
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Dec 2019 19:53:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4ACCAC43603
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Dec 2019 19:57:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BD8FB206D3
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Dec 2019 19:53:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BD8FB206D3
+	by mail.kernel.org (Postfix) with ESMTPS id C89FC206D3
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Dec 2019 19:57:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C89FC206D3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=deltatee.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47Wv5M3gBpzDqK6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Dec 2019 06:53:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47Wv992PL6zDqRW
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Dec 2019 06:57:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=deltatee.com (client-ip=207.54.116.67; helo=ale.deltatee.com;
  envelope-from=gunthorp@deltatee.com; receiver=<UNKNOWN>)
@@ -28,15 +28,15 @@ Received: from ale.deltatee.com (ale.deltatee.com [207.54.116.67])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47WtrY3T4zzDqQt
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2019 06:42:37 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47Wtrf2bBVzDq9D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2019 06:42:42 +1100 (AEDT)
 Received: from cgy1-donard.priv.deltatee.com ([172.16.1.31])
  by ale.deltatee.com with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
  (Exim 4.92) (envelope-from <gunthorp@deltatee.com>)
- id 1ieOTl-00025p-6A; Mon, 09 Dec 2019 12:14:04 -0700
+ id 1ieOTk-00025l-RO; Mon, 09 Dec 2019 12:13:59 -0700
 Received: from gunthorp by cgy1-donard.priv.deltatee.com with local (Exim 4.92)
  (envelope-from <gunthorp@deltatee.com>)
- id 1ieOTd-0001Ms-Ju; Mon, 09 Dec 2019 12:13:49 -0700
+ id 1ieOTd-0001Mg-59; Mon, 09 Dec 2019 12:13:49 -0700
 From: Logan Gunthorpe <logang@deltatee.com>
 To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
@@ -44,8 +44,8 @@ To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  platform-driver-x86@vger.kernel.org, linux-mm@kvack.org,
  Christoph Hellwig <hch@lst.de>, Dan Williams <dan.j.williams@intel.com>,
  Andrew Morton <akpm@linux-foundation.org>
-Date: Mon,  9 Dec 2019 12:13:45 -0700
-Message-Id: <20191209191346.5197-6-logang@deltatee.com>
+Date: Mon,  9 Dec 2019 12:13:41 -0700
+Message-Id: <20191209191346.5197-2-logang@deltatee.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20191209191346.5197-1-logang@deltatee.com>
 References: <20191209191346.5197-1-logang@deltatee.com>
@@ -58,12 +58,11 @@ X-SA-Exim-Rcpt-To: linux-arm-kernel@lists.infradead.org,
  linux-sh@vger.kernel.org, platform-driver-x86@vger.kernel.org,
  linux-mm@kvack.org, hch@lst.de, dan.j.williams@intel.com,
  akpm@linux-foundation.org, catalin.marinas@arm.com, benh@kernel.crashing.org,
- tglx@linutronix.de, bp@alien8.de, dave.hansen@linux.intel.com, will@kernel.org,
- luto@kernel.org, peterz@infradead.org, logang@deltatee.com, mingo@redhat.com,
- david@redhat.com, mhocko@suse.com
+ tglx@linutronix.de, mingo@redhat.com, bp@alien8.de,
+ dave.hansen@linux.intel.com, peterz@infradead.org, logang@deltatee.com,
+ hpa@zytor.com, will@kernel.org, luto@kernel.org, x86@kernel.org
 X-SA-Exim-Mail-From: gunthorp@deltatee.com
-Subject: [PATCH 5/6] mm, memory_hotplug: Provide argument for the pgprot_t in
- arch_add_memory()
+Subject: [PATCH 1/6] x86/mm: Thread pgprot_t through init_memory_mapping()
 X-SA-Exim-Version: 4.2.1 (built Wed, 08 May 2019 21:11:16 +0000)
 X-SA-Exim-Scanned: Yes (on ale.deltatee.com)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -77,7 +76,7 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Hocko <mhocko@suse.com>, David Hildenbrand <david@redhat.com>,
+Cc: x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
  Peter Zijlstra <peterz@infradead.org>,
  Catalin Marinas <catalin.marinas@arm.com>,
  Dave Hansen <dave.hansen@linux.intel.com>,
@@ -88,235 +87,283 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-devm_memremap_pages() is currently used by the PCI P2PDMA code to create
-struct page mappings for IO memory. At present, these mappings are created
-with PAGE_KERNEL which implies setting the PAT bits to be WB. However, on
-x86, an mtrr register will typically override this and force the cache
-type to be UC-. In the case firmware doesn't set this register it is
-effectively WB and will typically result in a machine check exception
-when it's accessed.
+In prepartion to support a pgprot_t argument for arch_add_memory().
 
-Other arches are not currently likely to function correctly seeing they
-don't have any MTRR registers to fall back on.
+It's required to move the prototype of init_memory_mapping() seeing
+the original location came before the definition of pgprot_t.
 
-To solve this, add an argument to arch_add_memory() to explicitly
-set the pgprot value to a specific value.
-
-Of the arches that support MEMORY_HOTPLUG: x86_64, s390 and arm64 is a
-simple change to pass the pgprot_t down to their respective functions
-which set up the page tables. For x86_32, set the page tables explicitly
-using _set_memory_prot() (seeing they are already mapped). For sh, reject
-anything but PAGE_KERNEL settings -- this should be fine, for now, seeing
-sh doesn't support ZONE_DEVICE anyway.
-
-Cc: Dan Williams <dan.j.williams@intel.com>
-Cc: David Hildenbrand <david@redhat.com>
-Cc: Michal Hocko <mhocko@suse.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: x86@kernel.org
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: Andy Lutomirski <luto@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
 Signed-off-by: Logan Gunthorpe <logang@deltatee.com>
 ---
- arch/arm64/mm/mmu.c            | 4 ++--
- arch/ia64/mm/init.c            | 5 ++++-
- arch/powerpc/mm/mem.c          | 4 ++--
- arch/s390/mm/init.c            | 4 ++--
- arch/sh/mm/init.c              | 5 ++++-
- arch/x86/mm/init_32.c          | 7 ++++++-
- arch/x86/mm/init_64.c          | 4 ++--
- include/linux/memory_hotplug.h | 2 +-
- mm/memory_hotplug.c            | 2 +-
- mm/memremap.c                  | 2 +-
- 10 files changed, 25 insertions(+), 14 deletions(-)
+ arch/x86/include/asm/page_types.h |  3 ---
+ arch/x86/include/asm/pgtable.h    |  3 +++
+ arch/x86/kernel/amd_gart_64.c     |  3 ++-
+ arch/x86/mm/init.c                |  9 +++++----
+ arch/x86/mm/init_32.c             |  3 ++-
+ arch/x86/mm/init_64.c             | 32 +++++++++++++++++--------------
+ arch/x86/mm/mm_internal.h         |  3 ++-
+ arch/x86/platform/efi/efi_64.c    |  3 ++-
+ 8 files changed, 34 insertions(+), 25 deletions(-)
 
-diff --git a/arch/arm64/mm/mmu.c b/arch/arm64/mm/mmu.c
-index 60c929f3683b..48b65272df15 100644
---- a/arch/arm64/mm/mmu.c
-+++ b/arch/arm64/mm/mmu.c
-@@ -1050,7 +1050,7 @@ int p4d_free_pud_page(p4d_t *p4d, unsigned long addr)
- }
+diff --git a/arch/x86/include/asm/page_types.h b/arch/x86/include/asm/page_types.h
+index c85e15010f48..bf7aa2e290ef 100644
+--- a/arch/x86/include/asm/page_types.h
++++ b/arch/x86/include/asm/page_types.h
+@@ -73,9 +73,6 @@ static inline phys_addr_t get_max_mapped(void)
  
- #ifdef CONFIG_MEMORY_HOTPLUG
--int arch_add_memory(int nid, u64 start, u64 size,
-+int arch_add_memory(int nid, u64 start, u64 size, pgprot_t prot,
- 			struct mhp_restrictions *restrictions)
- {
- 	int flags = 0;
-@@ -1059,7 +1059,7 @@ int arch_add_memory(int nid, u64 start, u64 size,
- 		flags = NO_BLOCK_MAPPINGS | NO_CONT_MAPPINGS;
+ bool pfn_range_is_mapped(unsigned long start_pfn, unsigned long end_pfn);
  
- 	__create_pgd_mapping(swapper_pg_dir, start, __phys_to_virt(start),
--			     size, PAGE_KERNEL, __pgd_pgtable_alloc, flags);
-+			     size, prot, __pgd_pgtable_alloc, flags);
+-extern unsigned long init_memory_mapping(unsigned long start,
+-					 unsigned long end);
+-
+ extern void initmem_init(void);
  
- 	return __add_pages(nid, start >> PAGE_SHIFT, size >> PAGE_SHIFT,
- 			   restrictions);
-diff --git a/arch/ia64/mm/init.c b/arch/ia64/mm/init.c
-index bf9df2625bc8..15a1efcecd83 100644
---- a/arch/ia64/mm/init.c
-+++ b/arch/ia64/mm/init.c
-@@ -669,13 +669,16 @@ mem_init (void)
- }
+ #endif	/* !__ASSEMBLY__ */
+diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
+index 0bc530c4eb13..f1c3a3840edf 100644
+--- a/arch/x86/include/asm/pgtable.h
++++ b/arch/x86/include/asm/pgtable.h
+@@ -1041,6 +1041,9 @@ static inline void __meminit init_trampoline_default(void)
  
- #ifdef CONFIG_MEMORY_HOTPLUG
--int arch_add_memory(int nid, u64 start, u64 size,
-+int arch_add_memory(int nid, u64 start, u64 size, pgprot_t prot,
- 			struct mhp_restrictions *restrictions)
- {
- 	unsigned long start_pfn = start >> PAGE_SHIFT;
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
- 	int ret;
+ void __init poking_init(void);
  
-+	if (prot != PAGE_KERNEL)
-+		return -EINVAL;
++unsigned long init_memory_mapping(unsigned long start,
++				  unsigned long end, pgprot_t prot);
 +
- 	ret = __add_pages(nid, start_pfn, nr_pages, restrictions);
- 	if (ret)
- 		printk("%s: Problem encountered in __add_pages() as ret=%d\n",
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 22525d8935ce..a901c2b65801 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -105,7 +105,7 @@ int __weak remove_section_mapping(unsigned long start, unsigned long end)
- 	return -ENODEV;
- }
+ # ifdef CONFIG_RANDOMIZE_MEMORY
+ void __meminit init_trampoline(void);
+ # else
+diff --git a/arch/x86/kernel/amd_gart_64.c b/arch/x86/kernel/amd_gart_64.c
+index a6ac3712db8b..1decce1d9030 100644
+--- a/arch/x86/kernel/amd_gart_64.c
++++ b/arch/x86/kernel/amd_gart_64.c
+@@ -746,7 +746,8 @@ int __init gart_iommu_init(void)
  
--int __ref arch_add_memory(int nid, u64 start, u64 size,
-+int __ref arch_add_memory(int nid, u64 start, u64 size, pgprot_t prot,
- 			struct mhp_restrictions *restrictions)
+ 	start_pfn = PFN_DOWN(aper_base);
+ 	if (!pfn_range_is_mapped(start_pfn, end_pfn))
+-		init_memory_mapping(start_pfn<<PAGE_SHIFT, end_pfn<<PAGE_SHIFT);
++		init_memory_mapping(start_pfn<<PAGE_SHIFT, end_pfn<<PAGE_SHIFT,
++				    PAGE_KERNEL);
+ 
+ 	pr_info("PCI-DMA: using GART IOMMU.\n");
+ 	iommu_size = check_iommu_size(info.aper_base, aper_size);
+diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
+index fd10d91a6115..efa4517f9e3d 100644
+--- a/arch/x86/mm/init.c
++++ b/arch/x86/mm/init.c
+@@ -467,7 +467,7 @@ bool pfn_range_is_mapped(unsigned long start_pfn, unsigned long end_pfn)
+  * the physical memory. To access them they are temporarily mapped.
+  */
+ unsigned long __ref init_memory_mapping(unsigned long start,
+-					       unsigned long end)
++					unsigned long end, pgprot_t prot)
  {
- 	unsigned long start_pfn = start >> PAGE_SHIFT;
-@@ -115,7 +115,7 @@ int __ref arch_add_memory(int nid, u64 start, u64 size,
- 	resize_hpt_for_hotplug(memblock_phys_mem_size());
+ 	struct map_range mr[NR_RANGE_MR];
+ 	unsigned long ret = 0;
+@@ -481,7 +481,8 @@ unsigned long __ref init_memory_mapping(unsigned long start,
  
- 	start = (unsigned long)__va(start);
--	rc = create_section_mapping(start, start + size, nid, PAGE_KERNEL);
-+	rc = create_section_mapping(start, start + size, nid, prot);
- 	if (rc) {
- 		pr_warn("Unable to create mapping for hot added memory 0x%llx..0x%llx: %d\n",
- 			start, start + size, rc);
-diff --git a/arch/s390/mm/init.c b/arch/s390/mm/init.c
-index 263ebb074cdd..d3a67d8a1317 100644
---- a/arch/s390/mm/init.c
-+++ b/arch/s390/mm/init.c
-@@ -266,7 +266,7 @@ device_initcall(s390_cma_mem_init);
+ 	for (i = 0; i < nr_range; i++)
+ 		ret = kernel_physical_mapping_init(mr[i].start, mr[i].end,
+-						   mr[i].page_size_mask);
++						   mr[i].page_size_mask,
++						   prot);
  
- #endif /* CONFIG_CMA */
+ 	add_pfn_range_mapped(start >> PAGE_SHIFT, ret >> PAGE_SHIFT);
  
--int arch_add_memory(int nid, u64 start, u64 size,
-+int arch_add_memory(int nid, u64 start, u64 size, pgprot_t prot,
- 		struct mhp_restrictions *restrictions)
- {
- 	unsigned long start_pfn = PFN_DOWN(start);
-@@ -276,7 +276,7 @@ int arch_add_memory(int nid, u64 start, u64 size,
- 	if (WARN_ON_ONCE(restrictions->altmap))
- 		return -EINVAL;
+@@ -521,7 +522,7 @@ static unsigned long __init init_range_memory_mapping(
+ 		 */
+ 		can_use_brk_pgt = max(start, (u64)pgt_buf_end<<PAGE_SHIFT) >=
+ 				    min(end, (u64)pgt_buf_top<<PAGE_SHIFT);
+-		init_memory_mapping(start, end);
++		init_memory_mapping(start, end, PAGE_KERNEL);
+ 		mapped_ram_size += end - start;
+ 		can_use_brk_pgt = true;
+ 	}
+@@ -661,7 +662,7 @@ void __init init_mem_mapping(void)
+ #endif
  
--	rc = vmem_add_mapping(start, size, PAGE_KERNEL);
-+	rc = vmem_add_mapping(start, size, prot);
- 	if (rc)
- 		return rc;
+ 	/* the ISA range is always mapped regardless of memory holes */
+-	init_memory_mapping(0, ISA_END_ADDRESS);
++	init_memory_mapping(0, ISA_END_ADDRESS, PAGE_KERNEL);
  
-diff --git a/arch/sh/mm/init.c b/arch/sh/mm/init.c
-index dfdbaa50946e..cf9f788115ff 100644
---- a/arch/sh/mm/init.c
-+++ b/arch/sh/mm/init.c
-@@ -405,13 +405,16 @@ void __init mem_init(void)
- }
- 
- #ifdef CONFIG_MEMORY_HOTPLUG
--int arch_add_memory(int nid, u64 start, u64 size,
-+int arch_add_memory(int nid, u64 start, u64 size, pgprot_t prot,
- 			struct mhp_restrictions *restrictions)
- {
- 	unsigned long start_pfn = PFN_DOWN(start);
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
- 	int ret;
- 
-+	if (prot != PAGE_KERNEL)
-+		return -EINVAL;
-+
- 	/* We only have ZONE_NORMAL, so this is easy.. */
- 	ret = __add_pages(nid, start_pfn, nr_pages, restrictions);
- 	if (unlikely(ret))
+ 	/* Init the trampoline, possibly with KASLR memory offset */
+ 	init_trampoline();
 diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index d3cdd9137f42..c0fe624eb304 100644
+index 930edeb41ec3..d3cdd9137f42 100644
 --- a/arch/x86/mm/init_32.c
 +++ b/arch/x86/mm/init_32.c
-@@ -852,11 +852,16 @@ void __init mem_init(void)
- }
- 
- #ifdef CONFIG_MEMORY_HOTPLUG
--int arch_add_memory(int nid, u64 start, u64 size,
-+int arch_add_memory(int nid, u64 start, u64 size, pgprot_t prot,
- 			struct mhp_restrictions *restrictions)
+@@ -252,7 +252,8 @@ static inline int is_kernel_text(unsigned long addr)
+ unsigned long __init
+ kernel_physical_mapping_init(unsigned long start,
+ 			     unsigned long end,
+-			     unsigned long page_size_mask)
++			     unsigned long page_size_mask,
++			     pgprot_t prot)
  {
- 	unsigned long start_pfn = start >> PAGE_SHIFT;
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
-+	int ret;
-+
-+	ret = _set_memory_prot(start, nr_pages, prot);
-+	if (ret)
-+		return ret;
- 
- 	return __add_pages(nid, start_pfn, nr_pages, restrictions);
- }
+ 	int use_pse = page_size_mask == (1<<PG_LEVEL_2M);
+ 	unsigned long last_map_addr = end;
 diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 65a5093ec97b..c7d170d67b57 100644
+index a6b5c653727b..65a5093ec97b 100644
 --- a/arch/x86/mm/init_64.c
 +++ b/arch/x86/mm/init_64.c
-@@ -862,13 +862,13 @@ int add_pages(int nid, unsigned long start_pfn, unsigned long nr_pages,
- 	return ret;
+@@ -585,7 +585,7 @@ phys_pmd_init(pmd_t *pmd_page, unsigned long paddr, unsigned long paddr_end,
+  */
+ static unsigned long __meminit
+ phys_pud_init(pud_t *pud_page, unsigned long paddr, unsigned long paddr_end,
+-	      unsigned long page_size_mask, bool init)
++	      unsigned long page_size_mask, pgprot_t _prot, bool init)
+ {
+ 	unsigned long pages = 0, paddr_next;
+ 	unsigned long paddr_last = paddr_end;
+@@ -595,7 +595,7 @@ phys_pud_init(pud_t *pud_page, unsigned long paddr, unsigned long paddr_end,
+ 	for (; i < PTRS_PER_PUD; i++, paddr = paddr_next) {
+ 		pud_t *pud;
+ 		pmd_t *pmd;
+-		pgprot_t prot = PAGE_KERNEL;
++		pgprot_t prot = _prot;
+ 
+ 		vaddr = (unsigned long)__va(paddr);
+ 		pud = pud_page + pud_index(vaddr);
+@@ -644,9 +644,12 @@ phys_pud_init(pud_t *pud_page, unsigned long paddr, unsigned long paddr_end,
+ 		if (page_size_mask & (1<<PG_LEVEL_1G)) {
+ 			pages++;
+ 			spin_lock(&init_mm.page_table_lock);
++
++			prot = __pgprot(pgprot_val(prot) | __PAGE_KERNEL_LARGE);
++
+ 			set_pte_init((pte_t *)pud,
+ 				     pfn_pte((paddr & PUD_MASK) >> PAGE_SHIFT,
+-					     PAGE_KERNEL_LARGE),
++					     prot),
+ 				     init);
+ 			spin_unlock(&init_mm.page_table_lock);
+ 			paddr_last = paddr_next;
+@@ -669,7 +672,7 @@ phys_pud_init(pud_t *pud_page, unsigned long paddr, unsigned long paddr_end,
+ 
+ static unsigned long __meminit
+ phys_p4d_init(p4d_t *p4d_page, unsigned long paddr, unsigned long paddr_end,
+-	      unsigned long page_size_mask, bool init)
++	      unsigned long page_size_mask, pgprot_t prot, bool init)
+ {
+ 	unsigned long vaddr, vaddr_end, vaddr_next, paddr_next, paddr_last;
+ 
+@@ -679,7 +682,7 @@ phys_p4d_init(p4d_t *p4d_page, unsigned long paddr, unsigned long paddr_end,
+ 
+ 	if (!pgtable_l5_enabled())
+ 		return phys_pud_init((pud_t *) p4d_page, paddr, paddr_end,
+-				     page_size_mask, init);
++				     page_size_mask, prot, init);
+ 
+ 	for (; vaddr < vaddr_end; vaddr = vaddr_next) {
+ 		p4d_t *p4d = p4d_page + p4d_index(vaddr);
+@@ -702,13 +705,13 @@ phys_p4d_init(p4d_t *p4d_page, unsigned long paddr, unsigned long paddr_end,
+ 		if (!p4d_none(*p4d)) {
+ 			pud = pud_offset(p4d, 0);
+ 			paddr_last = phys_pud_init(pud, paddr, __pa(vaddr_end),
+-					page_size_mask, init);
++					page_size_mask, prot, init);
+ 			continue;
+ 		}
+ 
+ 		pud = alloc_low_page();
+ 		paddr_last = phys_pud_init(pud, paddr, __pa(vaddr_end),
+-					   page_size_mask, init);
++					   page_size_mask, prot, init);
+ 
+ 		spin_lock(&init_mm.page_table_lock);
+ 		p4d_populate_init(&init_mm, p4d, pud, init);
+@@ -722,7 +725,7 @@ static unsigned long __meminit
+ __kernel_physical_mapping_init(unsigned long paddr_start,
+ 			       unsigned long paddr_end,
+ 			       unsigned long page_size_mask,
+-			       bool init)
++			       pgprot_t prot, bool init)
+ {
+ 	bool pgd_changed = false;
+ 	unsigned long vaddr, vaddr_start, vaddr_end, vaddr_next, paddr_last;
+@@ -743,13 +746,13 @@ __kernel_physical_mapping_init(unsigned long paddr_start,
+ 			paddr_last = phys_p4d_init(p4d, __pa(vaddr),
+ 						   __pa(vaddr_end),
+ 						   page_size_mask,
+-						   init);
++						   prot, init);
+ 			continue;
+ 		}
+ 
+ 		p4d = alloc_low_page();
+ 		paddr_last = phys_p4d_init(p4d, __pa(vaddr), __pa(vaddr_end),
+-					   page_size_mask, init);
++					   page_size_mask, prot, init);
+ 
+ 		spin_lock(&init_mm.page_table_lock);
+ 		if (pgtable_l5_enabled())
+@@ -778,10 +781,10 @@ __kernel_physical_mapping_init(unsigned long paddr_start,
+ unsigned long __meminit
+ kernel_physical_mapping_init(unsigned long paddr_start,
+ 			     unsigned long paddr_end,
+-			     unsigned long page_size_mask)
++			     unsigned long page_size_mask, pgprot_t prot)
+ {
+ 	return __kernel_physical_mapping_init(paddr_start, paddr_end,
+-					      page_size_mask, true);
++					      page_size_mask, prot, true);
  }
  
--int arch_add_memory(int nid, u64 start, u64 size,
-+int arch_add_memory(int nid, u64 start, u64 size, pgprot_t prot,
- 			struct mhp_restrictions *restrictions)
+ /*
+@@ -796,7 +799,8 @@ kernel_physical_mapping_change(unsigned long paddr_start,
+ 			       unsigned long page_size_mask)
  {
+ 	return __kernel_physical_mapping_init(paddr_start, paddr_end,
+-					      page_size_mask, false);
++					      page_size_mask, PAGE_KERNEL,
++					      false);
+ }
+ 
+ #ifndef CONFIG_NUMA
+@@ -864,7 +868,7 @@ int arch_add_memory(int nid, u64 start, u64 size,
  	unsigned long start_pfn = start >> PAGE_SHIFT;
  	unsigned long nr_pages = size >> PAGE_SHIFT;
  
--	init_memory_mapping(start, start + size, PAGE_KERNEL);
-+	init_memory_mapping(start, start + size, prot);
+-	init_memory_mapping(start, start + size);
++	init_memory_mapping(start, start + size, PAGE_KERNEL);
  
  	return add_pages(nid, start_pfn, nr_pages, restrictions);
  }
-diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
-index f46ea71b4ffd..82e8b3fcebab 100644
---- a/include/linux/memory_hotplug.h
-+++ b/include/linux/memory_hotplug.h
-@@ -111,7 +111,7 @@ extern void __online_page_free(struct page *page);
+diff --git a/arch/x86/mm/mm_internal.h b/arch/x86/mm/mm_internal.h
+index eeae142062ed..3f37b5c80bb3 100644
+--- a/arch/x86/mm/mm_internal.h
++++ b/arch/x86/mm/mm_internal.h
+@@ -12,7 +12,8 @@ void early_ioremap_page_table_range_init(void);
  
- extern int try_online_node(int nid);
+ unsigned long kernel_physical_mapping_init(unsigned long start,
+ 					     unsigned long end,
+-					     unsigned long page_size_mask);
++					     unsigned long page_size_mask,
++					     pgprot_t prot);
+ unsigned long kernel_physical_mapping_change(unsigned long start,
+ 					     unsigned long end,
+ 					     unsigned long page_size_mask);
+diff --git a/arch/x86/platform/efi/efi_64.c b/arch/x86/platform/efi/efi_64.c
+index 08ce8177c3af..3d0acfdb58c3 100644
+--- a/arch/x86/platform/efi/efi_64.c
++++ b/arch/x86/platform/efi/efi_64.c
+@@ -499,7 +499,8 @@ void __iomem *__init efi_ioremap(unsigned long phys_addr, unsigned long size,
+ 	if (type == EFI_MEMORY_MAPPED_IO)
+ 		return ioremap(phys_addr, size);
  
--extern int arch_add_memory(int nid, u64 start, u64 size,
-+extern int arch_add_memory(int nid, u64 start, u64 size, pgprot_t prot,
- 			struct mhp_restrictions *restrictions);
- extern u64 max_mem_size;
- 
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index df570e5c71cc..0a581a344a00 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -1035,7 +1035,7 @@ int __ref add_memory_resource(int nid, struct resource *res)
- 	new_node = ret;
- 
- 	/* call arch's memory hotadd */
--	ret = arch_add_memory(nid, start, size, &restrictions);
-+	ret = arch_add_memory(nid, start, size, PAGE_KERNEL, &restrictions);
- 	if (ret < 0)
- 		goto error;
- 
-diff --git a/mm/memremap.c b/mm/memremap.c
-index 03ccbdfeb697..4edcca074e15 100644
---- a/mm/memremap.c
-+++ b/mm/memremap.c
-@@ -281,7 +281,7 @@ void *memremap_pages(struct dev_pagemap *pgmap, int nid)
- 		}
- 
- 		error = arch_add_memory(nid, res->start, resource_size(res),
--					&restrictions);
-+					pgprot, &restrictions);
- 	}
- 
- 	if (!error) {
+-	last_map_pfn = init_memory_mapping(phys_addr, phys_addr + size);
++	last_map_pfn = init_memory_mapping(phys_addr, phys_addr + size,
++					   PAGE_KERNEL);
+ 	if ((last_map_pfn << PAGE_SHIFT) < phys_addr + size) {
+ 		unsigned long top = last_map_pfn << PAGE_SHIFT;
+ 		efi_ioremap(top, size - (top - phys_addr), type, attribute);
 -- 
 2.20.1
 
