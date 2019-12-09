@@ -2,79 +2,73 @@ Return-Path: <SRS0=oaAR=Z7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5252CC43603
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Dec 2019 20:28:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 69450C43603
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Dec 2019 20:43:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F29CE2068E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Dec 2019 20:28:45 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="AQ5uuAD8"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F29CE2068E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.microsoft.com
+	by mail.kernel.org (Postfix) with ESMTPS id C9B2B20637
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Dec 2019 20:43:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C9B2B20637
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47Wvsl3bK3zDqNF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Dec 2019 07:28:43 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 47WwBb5t0CzDqR1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Dec 2019 07:43:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=209.85.128.65; helo=mail-wm1-f65.google.com;
+ envelope-from=mstsxfx@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from mail-wm1-f65.google.com (mail-wm1-f65.google.com
+ [209.85.128.65])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47Wvqn5lTPzDqPT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2019 07:27:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
- header.from=linux.microsoft.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com
- header.b="AQ5uuAD8"; dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 47Wvqn2gm8z8wHr
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2019 07:27:01 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 47Wvqn2NY7z9sPL; Tue, 10 Dec 2019 07:27:01 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182;
- helo=linux.microsoft.com; envelope-from=nramas@linux.microsoft.com;
- receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org; dmarc=pass (p=none dis=none)
- header.from=linux.microsoft.com
-Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com
- header.b="AQ5uuAD8"; dkim-atps=neutral
-Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
- by ozlabs.org (Postfix) with ESMTP id 47Wvqm2x2Qz9sPJ;
- Tue, 10 Dec 2019 07:27:00 +1100 (AEDT)
-Received: from [10.137.112.111] (unknown [131.107.147.111])
- by linux.microsoft.com (Postfix) with ESMTPSA id A5797205D07B;
- Mon,  9 Dec 2019 12:26:58 -0800 (PST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com A5797205D07B
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
- s=default; t=1575923218;
- bh=kAPFAoYHjtm9AzjW0GrD+w2DDaOvexFJS3Kgd3gHBDc=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=AQ5uuAD8hU2knYQC4wx13g05p4OJw0EHmqdDQBc6zcen/V0HeLrkanZAx5IqIfhpQ
- 0RijU2xmHfT9178jTBC8bI6uiCY4SynSPahDfBsqrEQDStuYh9OGcQOr/oa34/Ym1g
- poP8Gb4vq9AKhOt/zP1eDpBOyIrElfMQP702yn7c=
-Subject: Re: [PATCH v10 0/9] powerpc: Enabling IMA arch specific secure boot
- policies
-To: Mimi Zohar <zohar@linux.ibm.com>, linuxppc-dev@ozlabs.org,
- linux-efi@vger.kernel.org, linux-integrity@vger.kernel.org
-References: <1572492694-6520-1-git-send-email-zohar@linux.ibm.com>
-From: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
-Message-ID: <5254346f-4ba7-c820-e127-d46b84f2e6e6@linux.microsoft.com>
-Date: Mon, 9 Dec 2019 12:27:24 -0800
-User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.3.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47Ww8d6tKzzDqPb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2019 07:41:34 +1100 (AEDT)
+Received: by mail-wm1-f65.google.com with SMTP id q9so783102wmj.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Dec 2019 12:41:34 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=oSbUiS7EP2tldG1YzNxaAsQzPlJ8BCKd2KYUFJ680IM=;
+ b=adtAXe8kfwtZWQgI7Hr7JfHel0Cny5q3KD+Dj52cCRfDUpIdWwtudWjh01bGVD2qZG
+ /xryL6BzjwiEe3edpt6Dml8cezKEXXybJYAGiGWybqQfE94ohDNu32umbDYweSuuw91n
+ 0/S6k6JMk6udImM2Cox4iGlhjSeFlryjqVat8Dw83pOSXKSSmIA8Ba6ZVfa1mdDSSwNQ
+ 6arWu+S/YxiMsR10kzHnJjogsSL7SpJR33OyqM1Q0qSwhi3lV3N1QRv9VTLK4vG7+Qz8
+ /ex+fkQBINf/gfyiH+RSp78sD7PkIgJbM1/sBYGuAE7eNJwMHMp/XNs9OMI7o2zf/vm5
+ FrkA==
+X-Gm-Message-State: APjAAAVr1f28fXrYzkK19rZBpf6zRRZzr3uU3qV2ODlbnjPNcGdyBUUP
+ kC2LQj4r/B/jQHGsfureTwk=
+X-Google-Smtp-Source: APXvYqyLft4TxSNFH48B5L3G63KfAdrp5DrYOJ1M1gqSEHOOdcj01DiA+cYxABOqwwT0LyX2UQKe5g==
+X-Received: by 2002:a05:600c:cd:: with SMTP id
+ u13mr1018119wmm.24.1575924091072; 
+ Mon, 09 Dec 2019 12:41:31 -0800 (PST)
+Received: from localhost (ip-37-188-170-11.eurotel.cz. [37.188.170.11])
+ by smtp.gmail.com with ESMTPSA id p5sm668853wrt.79.2019.12.09.12.41.29
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 09 Dec 2019 12:41:30 -0800 (PST)
+Date: Mon, 9 Dec 2019 21:41:28 +0100
+From: Michal Hocko <mhocko@kernel.org>
+To: Logan Gunthorpe <logang@deltatee.com>
+Subject: Re: [PATCH 5/6] mm, memory_hotplug: Provide argument for the
+ pgprot_t in arch_add_memory()
+Message-ID: <20191209204128.GC7658@dhcp22.suse.cz>
+References: <20191209191346.5197-1-logang@deltatee.com>
+ <20191209191346.5197-6-logang@deltatee.com>
+ <ce50d9da-c60e-05a1-a86b-3bb3629de502@redhat.com>
+ <f34a4c52-cc95-15ed-8a72-c05ab4fd6d33@deltatee.com>
 MIME-Version: 1.0
-In-Reply-To: <1572492694-6520-1-git-send-email-zohar@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f34a4c52-cc95-15ed-8a72-c05ab4fd6d33@deltatee.com>
+User-Agent: Mutt/1.12.2 (2019-09-21)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,28 +80,94 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Eric Ricther <erichte@linux.ibm.com>, Nayna Jain <nayna@linux.ibm.com>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Jeremy Kerr <jk@ozlabs.org>, Oliver O'Halloran <oohall@gmail.com>
+Cc: linux-s390@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>,
+ linux-ia64@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ Will Deacon <will@kernel.org>, David Hildenbrand <david@redhat.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, linux-sh@vger.kernel.org,
+ linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org,
+ linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Andy Lutomirski <luto@kernel.org>,
+ Borislav Petkov <bp@alien8.de>, Dan Williams <dan.j.williams@intel.com>,
+ linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Mimi,
-
-On 10/30/2019 8:31 PM, Mimi Zohar wrote:
-
-> This patchset extends the previous version[1] by adding support for
-> checking against a blacklist of binary hashes.
+On Mon 09-12-19 13:24:19, Logan Gunthorpe wrote:
 > 
-> The IMA subsystem supports custom, built-in, arch-specific policies to
-> define the files to be measured and appraised. These policies are honored
-> based on priority, where arch-specific policy is the highest and custom
-> is the lowest.
+> 
+> On 2019-12-09 12:23 p.m., David Hildenbrand wrote:
+> > On 09.12.19 20:13, Logan Gunthorpe wrote:
+> >> devm_memremap_pages() is currently used by the PCI P2PDMA code to create
+> >> struct page mappings for IO memory. At present, these mappings are created
+> >> with PAGE_KERNEL which implies setting the PAT bits to be WB. However, on
+> >> x86, an mtrr register will typically override this and force the cache
+> >> type to be UC-. In the case firmware doesn't set this register it is
+> >> effectively WB and will typically result in a machine check exception
+> >> when it's accessed.
+> >>
+> >> Other arches are not currently likely to function correctly seeing they
+> >> don't have any MTRR registers to fall back on.
+> >>
+> >> To solve this, add an argument to arch_add_memory() to explicitly
+> >> set the pgprot value to a specific value.
+> >>
+> >> Of the arches that support MEMORY_HOTPLUG: x86_64, s390 and arm64 is a
+> >> simple change to pass the pgprot_t down to their respective functions
+> >> which set up the page tables. For x86_32, set the page tables explicitly
+> >> using _set_memory_prot() (seeing they are already mapped). For sh, reject
+> >> anything but PAGE_KERNEL settings -- this should be fine, for now, seeing
+> >> sh doesn't support ZONE_DEVICE anyway.
+> >>
+> >> Cc: Dan Williams <dan.j.williams@intel.com>
+> >> Cc: David Hildenbrand <david@redhat.com>
+> >> Cc: Michal Hocko <mhocko@suse.com>
+> >> Signed-off-by: Logan Gunthorpe <logang@deltatee.com>
+> >> ---
+> >>  arch/arm64/mm/mmu.c            | 4 ++--
+> >>  arch/ia64/mm/init.c            | 5 ++++-
+> >>  arch/powerpc/mm/mem.c          | 4 ++--
+> >>  arch/s390/mm/init.c            | 4 ++--
+> >>  arch/sh/mm/init.c              | 5 ++++-
+> >>  arch/x86/mm/init_32.c          | 7 ++++++-
+> >>  arch/x86/mm/init_64.c          | 4 ++--
+> >>  include/linux/memory_hotplug.h | 2 +-
+> >>  mm/memory_hotplug.c            | 2 +-
+> >>  mm/memremap.c                  | 2 +-
+> >>  10 files changed, 25 insertions(+), 14 deletions(-)
+> >>
+> >> diff --git a/arch/arm64/mm/mmu.c b/arch/arm64/mm/mmu.c
+> >> index 60c929f3683b..48b65272df15 100644
+> >> --- a/arch/arm64/mm/mmu.c
+> >> +++ b/arch/arm64/mm/mmu.c
+> >> @@ -1050,7 +1050,7 @@ int p4d_free_pud_page(p4d_t *p4d, unsigned long addr)
+> >>  }
+> >>  
+> >>  #ifdef CONFIG_MEMORY_HOTPLUG
+> >> -int arch_add_memory(int nid, u64 start, u64 size,
+> >> +int arch_add_memory(int nid, u64 start, u64 size, pgprot_t prot,
+> >>  			struct mhp_restrictions *restrictions)
+> > 
+> > Can we fiddle that into "struct mhp_restrictions" instead?
+> 
+> Yes, if that's what people want, it's pretty trivial to do. I chose not
+> to do it that way because it doesn't get passed down to add_pages() and
+> it's not really a "restriction". If I don't hear any objections, I will
+> do that for v2.
 
-Has this change been signed off and merged for the next update of the 
-kernel (v5.5)?
+I do agree that restriction is not the best fit. But I consider prot
+argument to complicate the API to all users even though it is not really
+clear whether we are going to have many users really benefiting from it.
+Look at the vmalloc API and try to find how many users of __vmalloc do
+not use PAGE_KERNEL.
 
-thanks,
-  -lakshmi
+So I can see two options. One of them is to add arch_add_memory_prot
+that would allow to have give and extra prot argument or simply call
+an arch independent API to change the protection after arch_add_memory.
+The later sounds like much less code. The memory shouldn't be in use by
+anybody at that stage yet AFAIU. Maybe there even is an API like that.
+-- 
+Michal Hocko
+SUSE Labs
