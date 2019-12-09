@@ -2,23 +2,23 @@ Return-Path: <SRS0=oaAR=Z7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28513C43603
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Dec 2019 19:46:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0EEFC43603
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Dec 2019 19:48:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D2507206E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Dec 2019 19:46:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D2507206E0
+	by mail.kernel.org (Postfix) with ESMTPS id 84A29206E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Dec 2019 19:48:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 84A29206E0
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=deltatee.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47WtxH2vLRzDqQx
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Dec 2019 06:46:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47Wtzh219BzDqJT
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Dec 2019 06:48:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=deltatee.com (client-ip=207.54.116.67; helo=ale.deltatee.com;
  envelope-from=gunthorp@deltatee.com; receiver=<UNKNOWN>)
@@ -28,15 +28,15 @@ Received: from ale.deltatee.com (ale.deltatee.com [207.54.116.67])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47WtrM6fjczDqPN
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2019 06:42:27 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47WtrQ0fM1zDqQZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2019 06:42:30 +1100 (AEDT)
 Received: from cgy1-donard.priv.deltatee.com ([172.16.1.31])
  by ale.deltatee.com with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
  (Exim 4.92) (envelope-from <gunthorp@deltatee.com>)
- id 1ieOTm-00025o-2L; Mon, 09 Dec 2019 12:14:04 -0700
+ id 1ieOTk-00025k-Lg; Mon, 09 Dec 2019 12:13:57 -0700
 Received: from gunthorp by cgy1-donard.priv.deltatee.com with local (Exim 4.92)
  (envelope-from <gunthorp@deltatee.com>)
- id 1ieOTd-0001Mp-GC; Mon, 09 Dec 2019 12:13:49 -0700
+ id 1ieOTd-0001Me-0k; Mon, 09 Dec 2019 12:13:49 -0700
 From: Logan Gunthorpe <logang@deltatee.com>
 To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
@@ -44,11 +44,9 @@ To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  platform-driver-x86@vger.kernel.org, linux-mm@kvack.org,
  Christoph Hellwig <hch@lst.de>, Dan Williams <dan.j.williams@intel.com>,
  Andrew Morton <akpm@linux-foundation.org>
-Date: Mon,  9 Dec 2019 12:13:44 -0700
-Message-Id: <20191209191346.5197-5-logang@deltatee.com>
+Date: Mon,  9 Dec 2019 12:13:40 -0700
+Message-Id: <20191209191346.5197-1-logang@deltatee.com>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20191209191346.5197-1-logang@deltatee.com>
-References: <20191209191346.5197-1-logang@deltatee.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 172.16.1.31
@@ -60,10 +58,9 @@ X-SA-Exim-Rcpt-To: linux-arm-kernel@lists.infradead.org,
  akpm@linux-foundation.org, catalin.marinas@arm.com, benh@kernel.crashing.org,
  tglx@linutronix.de, mingo@redhat.com, bp@alien8.de,
  dave.hansen@linux.intel.com, will@kernel.org, luto@kernel.org,
- peterz@infradead.org, logang@deltatee.com, gor@linux.ibm.com,
- heiko.carstens@de.ibm.com, borntraeger@de.ibm.com
+ peterz@infradead.org, logang@deltatee.com
 X-SA-Exim-Mail-From: gunthorp@deltatee.com
-Subject: [PATCH 4/6] s390/mm: Thread pgprot_t through vmem_add_mapping()
+Subject: [PATCH 0/6] Allow setting caching mode in arch_add_memory() for P2PDMA
 X-SA-Exim-Version: 4.2.1 (built Wed, 08 May 2019 21:11:16 +0000)
 X-SA-Exim-Scanned: Yes (on ale.deltatee.com)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -77,11 +74,9 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Vasily Gorbik <gor@linux.ibm.com>, Peter Zijlstra <peterz@infradead.org>,
+Cc: Peter Zijlstra <peterz@infradead.org>,
  Catalin Marinas <catalin.marinas@arm.com>,
  Dave Hansen <dave.hansen@linux.intel.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
  Logan Gunthorpe <logang@deltatee.com>, Ingo Molnar <mingo@redhat.com>,
  Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
  Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will@kernel.org>
@@ -89,109 +84,73 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In prepartion to support a pgprot_t argument for arch_add_memory().
+Hi,
 
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Vasily Gorbik <gor@linux.ibm.com>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>
-Signed-off-by: Logan Gunthorpe <logang@deltatee.com>
----
- arch/s390/include/asm/pgtable.h |  3 ++-
- arch/s390/mm/extmem.c           |  3 ++-
- arch/s390/mm/init.c             |  2 +-
- arch/s390/mm/vmem.c             | 10 +++++-----
- 4 files changed, 10 insertions(+), 8 deletions(-)
+Currently, the page tables created using memremap_pages() are always
+created with the PAGE_KERNEL cacheing mode. However, the P2PDMA code
+is creating pages for PCI BAR memory which should never be accessed
+through the cache and instead use either WC or UC. This still works in
+most cases, on x86, because the MTRR registers typically override the
+caching settings in the page tables for all of the IO memory to be
+UC-. However, this tends not to work so well on other arches or
+some rare x86 machines that have firmware which does not setup the
+MTRR registers in this way.
 
-diff --git a/arch/s390/include/asm/pgtable.h b/arch/s390/include/asm/pgtable.h
-index 5ff98d76a66c..e0d5ed38282b 100644
---- a/arch/s390/include/asm/pgtable.h
-+++ b/arch/s390/include/asm/pgtable.h
-@@ -1673,7 +1673,8 @@ static inline swp_entry_t __swp_entry(unsigned long type, unsigned long offset)
- 
- #define kern_addr_valid(addr)   (1)
- 
--extern int vmem_add_mapping(unsigned long start, unsigned long size);
-+extern int vmem_add_mapping(unsigned long start, unsigned long size,
-+			    pgprot_t prot);
- extern int vmem_remove_mapping(unsigned long start, unsigned long size);
- extern int s390_enable_sie(void);
- extern int s390_enable_skey(void);
-diff --git a/arch/s390/mm/extmem.c b/arch/s390/mm/extmem.c
-index fd0dae9d10f4..6cf7029a7b35 100644
---- a/arch/s390/mm/extmem.c
-+++ b/arch/s390/mm/extmem.c
-@@ -313,7 +313,8 @@ __segment_load (char *name, int do_nonshared, unsigned long *addr, unsigned long
- 		goto out_free;
- 	}
- 
--	rc = vmem_add_mapping(seg->start_addr, seg->end - seg->start_addr + 1);
-+	rc = vmem_add_mapping(seg->start_addr, seg->end - seg->start_addr + 1,
-+			      PAGE_KERNEL);
- 
- 	if (rc)
- 		goto out_free;
-diff --git a/arch/s390/mm/init.c b/arch/s390/mm/init.c
-index a124f19f7b3c..263ebb074cdd 100644
---- a/arch/s390/mm/init.c
-+++ b/arch/s390/mm/init.c
-@@ -276,7 +276,7 @@ int arch_add_memory(int nid, u64 start, u64 size,
- 	if (WARN_ON_ONCE(restrictions->altmap))
- 		return -EINVAL;
- 
--	rc = vmem_add_mapping(start, size);
-+	rc = vmem_add_mapping(start, size, PAGE_KERNEL);
- 	if (rc)
- 		return rc;
- 
-diff --git a/arch/s390/mm/vmem.c b/arch/s390/mm/vmem.c
-index b403fa14847d..8a5e95f184a2 100644
---- a/arch/s390/mm/vmem.c
-+++ b/arch/s390/mm/vmem.c
-@@ -66,7 +66,7 @@ pte_t __ref *vmem_pte_alloc(void)
- /*
-  * Add a physical memory range to the 1:1 mapping.
-  */
--static int vmem_add_mem(unsigned long start, unsigned long size)
-+static int vmem_add_mem(unsigned long start, unsigned long size, pgprot_t prot)
- {
- 	unsigned long pgt_prot, sgt_prot, r3_prot;
- 	unsigned long pages4k, pages1m, pages2g;
-@@ -79,7 +79,7 @@ static int vmem_add_mem(unsigned long start, unsigned long size)
- 	pte_t *pt_dir;
- 	int ret = -ENOMEM;
- 
--	pgt_prot = pgprot_val(PAGE_KERNEL);
-+	pgt_prot = pgprot_val(prot);
- 	sgt_prot = pgprot_val(SEGMENT_KERNEL);
- 	r3_prot = pgprot_val(REGION3_KERNEL);
- 	if (!MACHINE_HAS_NX) {
-@@ -362,7 +362,7 @@ int vmem_remove_mapping(unsigned long start, unsigned long size)
- 	return ret;
- }
- 
--int vmem_add_mapping(unsigned long start, unsigned long size)
-+int vmem_add_mapping(unsigned long start, unsigned long size, pgprot_t prot)
- {
- 	struct memory_segment *seg;
- 	int ret;
-@@ -379,7 +379,7 @@ int vmem_add_mapping(unsigned long start, unsigned long size)
- 	if (ret)
- 		goto out_free;
- 
--	ret = vmem_add_mem(start, size);
-+	ret = vmem_add_mem(start, size, prot);
- 	if (ret)
- 		goto out_remove;
- 	goto out;
-@@ -403,7 +403,7 @@ void __init vmem_map_init(void)
- 	struct memblock_region *reg;
- 
- 	for_each_memblock(memory, reg)
--		vmem_add_mem(reg->base, reg->size);
-+		vmem_add_mem(reg->base, reg->size, PAGE_KERNEL);
- 	__set_memory((unsigned long)_stext,
- 		     (unsigned long)(_etext - _stext) >> PAGE_SHIFT,
- 		     SET_MEMORY_RO | SET_MEMORY_X);
--- 
+Instead of this, this series proposes a change to arch_add_memory()
+to take the pgprot required by the mapping which allows us to
+explicitly set pagetable entries for P2PDMA memory to WC.
+
+This changes is pretty routine for most of the arches: x86_64, s390, arm64
+and powerpc simply need to thread the pgprot through to where the page tables
+are setup. x86_32 unfortunately sets up the page tables at boot so
+must use _set_memory_prot() to change their caching mode. ia64 and sh
+don't appear to have an easy way to change the page tables so, for now
+at least, we just return -EINVAL on such mappings and thus they will
+not support P2PDMA memory until the work for this is done.
+
+Thanks,
+
+Logan
+
+--
+
+Logan Gunthorpe (6):
+  x86/mm: Thread pgprot_t through init_memory_mapping()
+  x86/mm: Introduce _set_memory_prot()
+  powerpc/mm: Thread pgprot_t through create_section_mapping()
+  s390/mm: Thread pgprot_t through vmem_add_mapping()
+  mm, memory_hotplug: Provide argument for the pgprot_t in
+    arch_add_memory()
+  mm/memremap: Set caching mode for PCI P2PDMA memory to WC
+
+ arch/arm64/mm/mmu.c                        |  4 +--
+ arch/ia64/mm/init.c                        |  5 +++-
+ arch/powerpc/include/asm/book3s/64/hash.h  |  3 +-
+ arch/powerpc/include/asm/book3s/64/radix.h |  3 +-
+ arch/powerpc/include/asm/sparsemem.h       |  3 +-
+ arch/powerpc/mm/book3s64/hash_utils.c      |  5 ++--
+ arch/powerpc/mm/book3s64/pgtable.c         |  7 +++--
+ arch/powerpc/mm/book3s64/radix_pgtable.c   | 18 +++++++-----
+ arch/powerpc/mm/mem.c                      |  7 +++--
+ arch/s390/include/asm/pgtable.h            |  3 +-
+ arch/s390/mm/extmem.c                      |  3 +-
+ arch/s390/mm/init.c                        |  4 +--
+ arch/s390/mm/vmem.c                        | 10 +++----
+ arch/sh/mm/init.c                          |  5 +++-
+ arch/x86/include/asm/page_types.h          |  3 --
+ arch/x86/include/asm/pgtable.h             |  3 ++
+ arch/x86/include/asm/set_memory.h          |  1 +
+ arch/x86/kernel/amd_gart_64.c              |  3 +-
+ arch/x86/mm/init.c                         |  9 +++---
+ arch/x86/mm/init_32.c                      | 10 +++++--
+ arch/x86/mm/init_64.c                      | 34 ++++++++++++----------
+ arch/x86/mm/mm_internal.h                  |  3 +-
+ arch/x86/mm/pageattr.c                     |  7 +++++
+ arch/x86/platform/efi/efi_64.c             |  3 +-
+ include/linux/memory_hotplug.h             |  2 +-
+ mm/memory_hotplug.c                        |  2 +-
+ mm/memremap.c                              |  5 +++-
+ 27 files changed, 104 insertions(+), 61 deletions(-)
+
+--
 2.20.1
-
