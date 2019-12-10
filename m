@@ -5,19 +5,19 @@ X-Spam-Level:
 X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C3D4AC43603
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Dec 2019 23:53:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A9BB8C43603
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Dec 2019 23:55:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3F31120663
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Dec 2019 23:53:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3F31120663
+	by mail.kernel.org (Postfix) with ESMTPS id 5D6EA20663
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Dec 2019 23:55:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5D6EA20663
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47XcMK6hSWzDqd3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Dec 2019 10:53:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47XcQD3hrVzDqcy
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Dec 2019 10:55:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=srs0=cxmp=2a=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
@@ -27,13 +27,13 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47XcKF3rDmzDqbp
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2019 10:51:28 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47XcKw3swqzDqbt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2019 10:52:04 +1100 (AEDT)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 205099] KASAN hit at raid6_pq: BUG: Unable to handle kernel
  data access at 0x00f0fd0d
-Date: Tue, 10 Dec 2019 23:51:25 +0000
+Date: Tue, 10 Dec 2019 23:52:02 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
@@ -49,7 +49,7 @@ X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
 X-Bugzilla-Changed-Fields: attachments.isobsolete attachments.created
-Message-ID: <bug-205099-206035-DSlzGJ53l5@https.bugzilla.kernel.org/>
+Message-ID: <bug-205099-206035-MpiPnNtwig@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-205099-206035@https.bugzilla.kernel.org/>
 References: <bug-205099-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -78,13 +78,13 @@ Erhard F. (erhard_f@mailbox.org) changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
- Attachment #285369|0                           |1
+ Attachment #285367|0                           |1
         is obsolete|                            |
 
---- Comment #3 from Erhard F. (erhard_f@mailbox.org) ---
-Created attachment 286249
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D286249&action=3Dedit
-kernel .config (5.5-rc1, PowerMac G4 DP)
+--- Comment #4 from Erhard F. (erhard_f@mailbox.org) ---
+Created attachment 286251
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D286251&action=3Dedit
+dmesg (kernel 5.5-rc1, PowerMac G4 DP)
 
 --=20
 You are receiving this mail because:
