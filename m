@@ -7,77 +7,77 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 142EAC43603
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Dec 2019 03:26:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 81D59C43603
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Dec 2019 03:28:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B690B206A5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Dec 2019 03:26:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D53702073B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Dec 2019 03:28:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="hHu2itqp"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B690B206A5
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="XeEwBP2p"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D53702073B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nvidia.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47Xj5p4W9czDqjV
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Dec 2019 14:26:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47Xj7v5vJrzDqGZ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Dec 2019 14:28:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=nvidia.com (client-ip=216.228.121.65;
- helo=hqnvemgate26.nvidia.com; envelope-from=jhubbard@nvidia.com;
+ smtp.mailfrom=nvidia.com (client-ip=216.228.121.64;
+ helo=hqnvemgate25.nvidia.com; envelope-from=jhubbard@nvidia.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="hHu2itqp"; 
+ unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="XeEwBP2p"; 
  dkim-atps=neutral
-Received: from hqnvemgate26.nvidia.com (hqnvemgate26.nvidia.com
- [216.228.121.65])
+Received: from hqnvemgate25.nvidia.com (hqnvemgate25.nvidia.com
+ [216.228.121.64])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47XhMT0LSVzDqYd
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2019 13:53:40 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47XhMW51gWzDqbw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2019 13:53:43 +1100 (AEDT)
 Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by
- hqnvemgate26.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
- id <B5df05a2a0000>; Tue, 10 Dec 2019 18:53:30 -0800
+ hqnvemgate25.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+ id <B5df05a240000>; Tue, 10 Dec 2019 18:53:24 -0800
 Received: from hqmail.nvidia.com ([172.20.161.6])
  by hqpgpgate101.nvidia.com (PGP Universal service);
- Tue, 10 Dec 2019 18:53:36 -0800
+ Tue, 10 Dec 2019 18:53:30 -0800
 X-PGP-Universal: processed;
- by hqpgpgate101.nvidia.com on Tue, 10 Dec 2019 18:53:36 -0800
-Received: from HQMAIL107.nvidia.com (172.20.187.13) by HQMAIL107.nvidia.com
- (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Wed, 11 Dec
- 2019 02:53:35 +0000
-Received: from rnnvemgw01.nvidia.com (10.128.109.123) by HQMAIL107.nvidia.com
- (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via
- Frontend Transport; Wed, 11 Dec 2019 02:53:34 +0000
+ by hqpgpgate101.nvidia.com on Tue, 10 Dec 2019 18:53:30 -0800
+Received: from HQMAIL111.nvidia.com (172.20.187.18) by HQMAIL101.nvidia.com
+ (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Wed, 11 Dec
+ 2019 02:53:30 +0000
+Received: from rnnvemgw01.nvidia.com (10.128.109.123) by HQMAIL111.nvidia.com
+ (172.20.187.18) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via
+ Frontend Transport; Wed, 11 Dec 2019 02:53:29 +0000
 Received: from blueforge.nvidia.com (Not Verified[10.110.48.28]) by
  rnnvemgw01.nvidia.com with Trustwave SEG (v7, 5, 8, 10121)
- id <B5df05a2e0000>; Tue, 10 Dec 2019 18:53:34 -0800
+ id <B5df05a280000>; Tue, 10 Dec 2019 18:53:29 -0800
 From: John Hubbard <jhubbard@nvidia.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v9 21/25] mm/gup_benchmark: use proper FOLL_WRITE flags
- instead of hard-coding "1"
-Date: Tue, 10 Dec 2019 18:53:14 -0800
-Message-ID: <20191211025318.457113-22-jhubbard@nvidia.com>
+Subject: [PATCH v9 13/25] mm/process_vm_access: set FOLL_PIN via
+ pin_user_pages_remote()
+Date: Tue, 10 Dec 2019 18:53:06 -0800
+Message-ID: <20191211025318.457113-14-jhubbard@nvidia.com>
 X-Mailer: git-send-email 2.24.0
 In-Reply-To: <20191211025318.457113-1-jhubbard@nvidia.com>
 References: <20191211025318.457113-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
 X-NVConfidentiality: public
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
- t=1576032810; bh=zwwITV4l72pt0LmhAqpHWuQbAhr06rUfgov5x98Cdpc=;
+ t=1576032804; bh=P8nVR+kV72iD6sM0eEn6ntwngrRbmURGxrL6qNBlbv8=;
  h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
  In-Reply-To:References:MIME-Version:X-NVConfidentiality:
- Content-Transfer-Encoding:Content-Type;
- b=hHu2itqpB8193pGglkk+I/NxK3ENo6htNAGRnzzk4HjD4Z/sSCXk6GZJkw3yBA2IK
- rBvBrcztQ3qn4+I+MWPz4ojmggXo3gbb8j8SDmMHA2qfwAudJYg/Cn67Ty/DuXhI3A
- Gr2Gq8KK5XVPA5KhhCm3FEnSSK2s+f6PozB+Bqq46yGPrqcTBtykTzgn9xmC/I/JzW
- M0hsL/BCe91KXZ50zggFHqzvsbB5yu6ri29rzWEQfJgM97dAalJocgd4N4XykF5CYw
- LrGYOSgo2iJZHlxd/AYLJif78sBWKERhpozau/TvXqOR0DHWs6XWnSHJBYYx66Ztzb
- uB7tEIVx+76LA==
+ Content-Type:Content-Transfer-Encoding;
+ b=XeEwBP2pTYdNaIYEG246RP/UGv4oCzI7HThRY4+SyCHY1b6FFnWIuAWaZeOk6ugC/
+ peWmXwtUB0VSt/MEU11EZRwef0YJMKQooOhhE2q1kE8KXOakW3G5DvLDex1uQtZ5L9
+ xb+t79vPiUYay+/jVra4UnbKZ6tzp+mSHzKGxGvgZki++im+lzwfYiEc8brUwhFWGO
+ 0kF6XTIHYPb+jEuGMlr854+Lo1QfggvNTmm7LG9RdpyTPyilhmHkRxEmzrxhIaAOnH
+ FHHMHlkg6zfv7HpdX5KOo3hIMy+yo7B+sqK7BaEyE+LlV6MpG5DQAW5LL+EImWWv08
+ 3GwOSeyrsoYwg==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,75 +114,91 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fix the gup benchmark flags to use the symbolic FOLL_WRITE,
-instead of a hard-coded "1" value.
+Convert process_vm_access to use the new pin_user_pages_remote()
+call, which sets FOLL_PIN. Setting FOLL_PIN is now required for
+code that requires tracking of pinned pages.
 
-Also, clean up the filtering of gup flags a little, by just doing
-it once before issuing any of the get_user_pages*() calls. This
-makes it harder to overlook, instead of having little "gup_flags & 1"
-phrases in the function calls.
+Also, release the pages via put_user_page*().
 
+Also, rename "pages" to "pinned_pages", as this makes for
+easier reading of process_vm_rw_single_vec().
+
+Reviewed-by: Jan Kara <jack@suse.cz>
+Reviewed-by: J=C3=A9r=C3=B4me Glisse <jglisse@redhat.com>
 Reviewed-by: Ira Weiny <ira.weiny@intel.com>
 Signed-off-by: John Hubbard <jhubbard@nvidia.com>
 ---
- mm/gup_benchmark.c                         | 9 ++++++---
- tools/testing/selftests/vm/gup_benchmark.c | 6 +++++-
- 2 files changed, 11 insertions(+), 4 deletions(-)
+ mm/process_vm_access.c | 28 +++++++++++++++-------------
+ 1 file changed, 15 insertions(+), 13 deletions(-)
 
-diff --git a/mm/gup_benchmark.c b/mm/gup_benchmark.c
-index 7dd602d7f8db..7fc44d25eca7 100644
---- a/mm/gup_benchmark.c
-+++ b/mm/gup_benchmark.c
-@@ -48,18 +48,21 @@ static int __gup_benchmark_ioctl(unsigned int cmd,
- 			nr =3D (next - addr) / PAGE_SIZE;
- 		}
+diff --git a/mm/process_vm_access.c b/mm/process_vm_access.c
+index 357aa7bef6c0..fd20ab675b85 100644
+--- a/mm/process_vm_access.c
++++ b/mm/process_vm_access.c
+@@ -42,12 +42,11 @@ static int process_vm_rw_pages(struct page **pages,
+ 		if (copy > len)
+ 			copy =3D len;
 =20
-+		/* Filter out most gup flags: only allow a tiny subset here: */
-+		gup->flags &=3D FOLL_WRITE;
+-		if (vm_write) {
++		if (vm_write)
+ 			copied =3D copy_page_from_iter(page, offset, copy, iter);
+-			set_page_dirty_lock(page);
+-		} else {
++		else
+ 			copied =3D copy_page_to_iter(page, offset, copy, iter);
+-		}
 +
- 		switch (cmd) {
- 		case GUP_FAST_BENCHMARK:
--			nr =3D get_user_pages_fast(addr, nr, gup->flags & 1,
-+			nr =3D get_user_pages_fast(addr, nr, gup->flags,
- 						 pages + i);
- 			break;
- 		case GUP_LONGTERM_BENCHMARK:
- 			nr =3D get_user_pages(addr, nr,
--					    (gup->flags & 1) | FOLL_LONGTERM,
-+					    gup->flags | FOLL_LONGTERM,
- 					    pages + i, NULL);
- 			break;
- 		case GUP_BENCHMARK:
--			nr =3D get_user_pages(addr, nr, gup->flags & 1, pages + i,
-+			nr =3D get_user_pages(addr, nr, gup->flags, pages + i,
- 					    NULL);
- 			break;
- 		default:
-diff --git a/tools/testing/selftests/vm/gup_benchmark.c b/tools/testing/sel=
-ftests/vm/gup_benchmark.c
-index 485cf06ef013..389327e9b30a 100644
---- a/tools/testing/selftests/vm/gup_benchmark.c
-+++ b/tools/testing/selftests/vm/gup_benchmark.c
-@@ -18,6 +18,9 @@
- #define GUP_LONGTERM_BENCHMARK	_IOWR('g', 2, struct gup_benchmark)
- #define GUP_BENCHMARK		_IOWR('g', 3, struct gup_benchmark)
+ 		len -=3D copied;
+ 		if (copied < copy && iov_iter_count(iter))
+ 			return -EFAULT;
+@@ -96,7 +95,7 @@ static int process_vm_rw_single_vec(unsigned long addr,
+ 		flags |=3D FOLL_WRITE;
 =20
-+/* Just the flags we need, copied from mm.h: */
-+#define FOLL_WRITE	0x01	/* check pte is writable */
+ 	while (!rc && nr_pages && iov_iter_count(iter)) {
+-		int pages =3D min(nr_pages, max_pages_per_loop);
++		int pinned_pages =3D min(nr_pages, max_pages_per_loop);
+ 		int locked =3D 1;
+ 		size_t bytes;
+=20
+@@ -106,14 +105,15 @@ static int process_vm_rw_single_vec(unsigned long add=
+r,
+ 		 * current/current->mm
+ 		 */
+ 		down_read(&mm->mmap_sem);
+-		pages =3D get_user_pages_remote(task, mm, pa, pages, flags,
+-					      process_pages, NULL, &locked);
++		pinned_pages =3D pin_user_pages_remote(task, mm, pa, pinned_pages,
++						     flags, process_pages,
++						     NULL, &locked);
+ 		if (locked)
+ 			up_read(&mm->mmap_sem);
+-		if (pages <=3D 0)
++		if (pinned_pages <=3D 0)
+ 			return -EFAULT;
+=20
+-		bytes =3D pages * PAGE_SIZE - start_offset;
++		bytes =3D pinned_pages * PAGE_SIZE - start_offset;
+ 		if (bytes > len)
+ 			bytes =3D len;
+=20
+@@ -122,10 +122,12 @@ static int process_vm_rw_single_vec(unsigned long add=
+r,
+ 					 vm_write);
+ 		len -=3D bytes;
+ 		start_offset =3D 0;
+-		nr_pages -=3D pages;
+-		pa +=3D pages * PAGE_SIZE;
+-		while (pages)
+-			put_page(process_pages[--pages]);
++		nr_pages -=3D pinned_pages;
++		pa +=3D pinned_pages * PAGE_SIZE;
 +
- struct gup_benchmark {
- 	__u64 get_delta_usec;
- 	__u64 put_delta_usec;
-@@ -85,7 +88,8 @@ int main(int argc, char **argv)
++		/* If vm_write is set, the pages need to be made dirty: */
++		put_user_pages_dirty_lock(process_pages, pinned_pages,
++					  vm_write);
  	}
 =20
- 	gup.nr_pages_per_call =3D nr_pages;
--	gup.flags =3D write;
-+	if (write)
-+		gup.flags |=3D FOLL_WRITE;
-=20
- 	fd =3D open("/sys/kernel/debug/gup_benchmark", O_RDWR);
- 	if (fd =3D=3D -1)
+ 	return rc;
 --=20
 2.24.0
 
