@@ -2,53 +2,74 @@ Return-Path: <SRS0=Dwgl=2B=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B53C5C43603
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Dec 2019 11:31:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17C16C43603
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Dec 2019 14:35:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3C151206A5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Dec 2019 11:31:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3C151206A5
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.cz
+	by mail.kernel.org (Postfix) with ESMTPS id 866D722B48
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Dec 2019 14:35:09 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="a1nb3G8T"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 866D722B48
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=yadro.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47Xvrn1C1zzDqnM
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Dec 2019 22:31:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47Xzwq0SFGzDqjY
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2019 01:35:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=yadro.com (client-ip=89.207.88.252; helo=mta-01.yadro.com;
+ envelope-from=r.bolshakov@yadro.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz
- (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=jack@suse.cz;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=suse.cz
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ dmarc=pass (p=none dis=none) header.from=yadro.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=yadro.com header.i=@yadro.com header.b="a1nb3G8T"; 
+ dkim-atps=neutral
+Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47XvnC23LgzDqV6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2019 22:28:13 +1100 (AEDT)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id 4E902AD0E;
- Wed, 11 Dec 2019 11:28:10 +0000 (UTC)
-Received: by quack2.suse.cz (Postfix, from userid 1000)
- id 63C461E0B23; Wed, 11 Dec 2019 12:28:07 +0100 (CET)
-Date: Wed, 11 Dec 2019 12:28:07 +0100
-From: Jan Kara <jack@suse.cz>
-To: John Hubbard <jhubbard@nvidia.com>
-Subject: Re: [PATCH v9 23/25] mm/gup: track FOLL_PIN pages
-Message-ID: <20191211112807.GN1551@quack2.suse.cz>
-References: <20191211025318.457113-1-jhubbard@nvidia.com>
- <20191211025318.457113-24-jhubbard@nvidia.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47Xzsr3vf9zDqjN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2019 01:32:31 +1100 (AEDT)
+Received: from localhost (unknown [127.0.0.1])
+ by mta-01.yadro.com (Postfix) with ESMTP id 676AA43C28;
+ Wed, 11 Dec 2019 14:32:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
+ content-disposition:content-type:content-type:mime-version
+ :message-id:subject:subject:from:from:date:date:received
+ :received:received; s=mta-01; t=1576074746; x=1577889147; bh=nVO
+ qV8JU6Q3WyFeaHtl8vLxQcuROtv7ljFj4/vjuHr0=; b=a1nb3G8TMP/w/dfVWZQ
+ /s22B9680XRJxJhdxE0ZB3MZV2/fmYQBfPZu8HtKeGzSvWMGes02fRdjCPcbi4zr
+ 2GK6Vix3D1QrEgjZht03unt/5JqCwoh474oyr0Aj98J9V0A813kNT78IUtX1mRnG
+ ScfHnelgrH1WjooYCHYMtzRE=
+X-Virus-Scanned: amavisd-new at yadro.com
+Received: from mta-01.yadro.com ([127.0.0.1])
+ by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id rf9JQvE0n-R2; Wed, 11 Dec 2019 17:32:26 +0300 (MSK)
+Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
+ [172.17.10.102])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mta-01.yadro.com (Postfix) with ESMTPS id D014F41200;
+ Wed, 11 Dec 2019 17:32:25 +0300 (MSK)
+Received: from localhost (172.17.128.60) by T-EXCH-02.corp.yadro.com
+ (172.17.10.102) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Wed, 11
+ Dec 2019 17:32:25 +0300
+Date: Wed, 11 Dec 2019 17:32:24 +0300
+From: Roman Bolshakov <r.bolshakov@yadro.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: MODPOST warnings on ppc64le
+Message-ID: <20191211143224.mxknpbtrrs2g5q6f@SPB-NB-133.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20191211025318.457113-24-jhubbard@nvidia.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+X-Originating-IP: [172.17.128.60]
+X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
+ T-EXCH-02.corp.yadro.com (172.17.10.102)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,178 +81,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>,
- kvm@vger.kernel.org, linux-doc@vger.kernel.org,
- David Airlie <airlied@linux.ie>, Dave Chinner <david@fromorbit.com>,
- dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- linux-kselftest@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>,
- Jonathan Corbet <corbet@lwn.net>, linux-rdma@vger.kernel.org,
- Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>,
- Vlastimil Babka <vbabka@suse.cz>,
- =?iso-8859-1?Q?Bj=F6rn_T=F6pel?= <bjorn.topel@intel.com>,
- linux-media@vger.kernel.org, Shuah Khan <shuah@kernel.org>,
- linux-block@vger.kernel.org,
- =?iso-8859-1?B?Suly9G1l?= Glisse <jglisse@redhat.com>,
- Al Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>,
- Mauro Carvalho Chehab <mchehab@kernel.org>, bpf@vger.kernel.org,
- Magnus Karlsson <magnus.karlsson@intel.com>, Jens Axboe <axboe@kernel.dk>,
- netdev@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
- Daniel Vetter <daniel@ffwll.ch>, linux-fsdevel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S . Miller" <davem@davemloft.net>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
- Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>, linux@yadro.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue 10-12-19 18:53:16, John Hubbard wrote:
-> Add tracking of pages that were pinned via FOLL_PIN.
-> 
-> As mentioned in the FOLL_PIN documentation, callers who effectively set
-> FOLL_PIN are required to ultimately free such pages via unpin_user_page().
-> The effect is similar to FOLL_GET, and may be thought of as "FOLL_GET
-> for DIO and/or RDMA use".
-> 
-> Pages that have been pinned via FOLL_PIN are identifiable via a
-> new function call:
-> 
->    bool page_dma_pinned(struct page *page);
-> 
-> What to do in response to encountering such a page, is left to later
-> patchsets. There is discussion about this in [1], [2], and [3].
-> 
-> This also changes a BUG_ON(), to a WARN_ON(), in follow_page_mask().
-> 
-> [1] Some slow progress on get_user_pages() (Apr 2, 2019):
->     https://lwn.net/Articles/784574/
-> [2] DMA and get_user_pages() (LPC: Dec 12, 2018):
->     https://lwn.net/Articles/774411/
-> [3] The trouble with get_user_pages() (Apr 30, 2018):
->     https://lwn.net/Articles/753027/
+Hello,
 
-The patch looks mostly good to me now. Just a few smaller comments below.
+I'm seeing a set of build warnings on the 5.5-rc1 kernel:
 
-> Suggested-by: Jan Kara <jack@suse.cz>
-> Suggested-by: Jérôme Glisse <jglisse@redhat.com>
-> Reviewed-by: Jan Kara <jack@suse.cz>
-> Reviewed-by: Jérôme Glisse <jglisse@redhat.com>
-> Reviewed-by: Ira Weiny <ira.weiny@intel.com>
+WARNING: vmlinux.o(.text+0x31e4): Section mismatch in reference from the variable __boot_from_prom to the function .init.text:prom_init()
+The function __boot_from_prom() references
+the function __init prom_init().
+This is often because __boot_from_prom lacks a __init
+annotation or the annotation of prom_init is wrong.
 
-I think you inherited here the Reviewed-by tags from the "add flags" patch
-you've merged into this one but that's not really fair since this patch
-does much more... In particular I didn't give my Reviewed-by tag for this
-patch yet.
+WARNING: vmlinux.o(.text+0x33c8): Section mismatch in reference from the variable start_here_common to the function .init.text:start_kernel()
+The function start_here_common() references
+the function __init start_kernel().
+This is often because start_here_common lacks a __init
+annotation or the annotation of start_kernel is wrong.
 
-> +/*
-> + * try_grab_compound_head() - attempt to elevate a page's refcount, by a
-> + * flags-dependent amount.
-> + *
-> + * This has a default assumption of "use FOLL_GET behavior, if FOLL_PIN is not
-> + * set".
-> + *
-> + * "grab" names in this file mean, "look at flags to decide whether to use
-> + * FOLL_PIN or FOLL_GET behavior, when incrementing the page's refcount.
-> + */
-> +static __maybe_unused struct page *try_grab_compound_head(struct page *page,
-> +							  int refs,
-> +							  unsigned int flags)
-> +{
-> +	if (flags & FOLL_PIN)
-> +		return try_pin_compound_head(page, refs);
-> +
-> +	return try_get_compound_head(page, refs);
-> +}
+There was a patch sent a year ago that addresses the issue:
+https://patchwork.ozlabs.org/patch/895442/
 
-I somewhat wonder about the asymmetry of try_grab_compound_head() vs
-try_grab_page() in the treatment of 'flags'. How costly would it be to make
-them symmetric (i.e., either set FOLL_GET for try_grab_compound_head()
-callers or make sure one of FOLL_GET, FOLL_PIN is set for try_grab_page())?
+What's the fate of it? Could it be merged?
 
-Because this difference looks like a subtle catch in the long run...
-
-> +
-> +/**
-> + * try_grab_page() - elevate a page's refcount by a flag-dependent amount
-> + *
-> + * This might not do anything at all, depending on the flags argument.
-> + *
-> + * "grab" names in this file mean, "look at flags to decide whether to use
-> + * FOLL_PIN or FOLL_GET behavior, when incrementing the page's refcount.
-> + *
-> + * @page:	pointer to page to be grabbed
-> + * @flags:	gup flags: these are the FOLL_* flag values.
-> + *
-> + * Either FOLL_PIN or FOLL_GET (or neither) may be set, but not both at the same
-> + * time. (That's true throughout the get_user_pages*() and pin_user_pages*()
-> + * APIs.) Cases:
-> + *
-> + *	FOLL_GET: page's refcount will be incremented by 1.
-> + *      FOLL_PIN: page's refcount will be incremented by GUP_PIN_COUNTING_BIAS.
-> + *
-> + * Return: true for success, or if no action was required (if neither FOLL_PIN
-> + * nor FOLL_GET was set, nothing is done). False for failure: FOLL_GET or
-> + * FOLL_PIN was set, but the page could not be grabbed.
-> + */
-> +bool __must_check try_grab_page(struct page *page, unsigned int flags)
-> +{
-> +	if (flags & FOLL_GET)
-> +		return try_get_page(page);
-> +	else if (flags & FOLL_PIN) {
-> +		page = compound_head(page);
-> +		WARN_ON_ONCE(flags & FOLL_GET);
-> +
-> +		if (WARN_ON_ONCE(page_ref_zero_or_close_to_bias_overflow(page)))
-> +			return false;
-> +
-> +		page_ref_add(page, GUP_PIN_COUNTING_BIAS);
-> +		__update_proc_vmstat(page, NR_FOLL_PIN_REQUESTED, 1);
-> +	}
-> +
-> +	return true;
-> +}
-
-...
-
-> @@ -1522,8 +1536,8 @@ struct page *follow_trans_huge_pmd(struct vm_area_struct *vma,
->  skip_mlock:
->  	page += (addr & ~HPAGE_PMD_MASK) >> PAGE_SHIFT;
->  	VM_BUG_ON_PAGE(!PageCompound(page) && !is_zone_device_page(page), page);
-> -	if (flags & FOLL_GET)
-> -		get_page(page);
-> +	if (!try_grab_page(page, flags))
-> +		page = ERR_PTR(-EFAULT);
-
-I think you need to also move the try_grab_page() earlier in the function.
-At this point the page may be marked as mlocked and you'd need to undo that
-in case try_grab_page() fails.
-
-> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-> index ac65bb5e38ac..0aab6fe0072f 100644
-> --- a/mm/hugetlb.c
-> +++ b/mm/hugetlb.c
-> @@ -4356,7 +4356,13 @@ long follow_hugetlb_page(struct mm_struct *mm, struct vm_area_struct *vma,
->  same_page:
->  		if (pages) {
->  			pages[i] = mem_map_offset(page, pfn_offset);
-> -			get_page(pages[i]);
-> +			if (!try_grab_page(pages[i], flags)) {
-> +				spin_unlock(ptl);
-> +				remainder = 0;
-> +				err = -ENOMEM;
-> +				WARN_ON_ONCE(1);
-> +				break;
-> +			}
->  		}
-
-This function does a refcount overflow check early so that it doesn't have
-to do try_get_page() here. So that check can be now removed when you do
-try_grab_page() here anyway since that early check seems to be just a tiny
-optimization AFAICT.
-
-								Honza
-
--- 
-Jan Kara <jack@suse.com>
-SUSE Labs, CR
+Thank you,
+Roman
