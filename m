@@ -2,99 +2,102 @@ Return-Path: <SRS0=Dwgl=2B=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 383D7C43603
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Dec 2019 18:24:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 12A7AC43603
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Dec 2019 18:29:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ECEEB2077B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Dec 2019 18:24:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ECEEB2077B
+	by mail.kernel.org (Postfix) with ESMTPS id C51EC222C4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Dec 2019 18:29:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C51EC222C4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47Y51s3wHwzDqsy
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2019 05:24:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47Y56k0TMMzDqpR
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2019 05:29:02 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47Y21m5WznzDqYY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2019 03:09:32 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47Y21q3rxRzDqjj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2019 03:09:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 47Y21k3QvYz8wHf
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2019 03:09:30 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 47Y21p6b2Mz8wHf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2019 03:09:34 +1100 (AEDT)
 Received: by ozlabs.org (Postfix)
- id 47Y21k17f6zB3xy; Thu, 12 Dec 2019 03:09:30 +1100 (AEDT)
+ id 47Y21p3mWyzB3y5; Thu, 12 Dec 2019 03:09:34 +1100 (AEDT)
 Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 47Y21j38MGzB3y2
- for <linuxppc-dev@ozlabs.org>; Thu, 12 Dec 2019 03:09:29 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- xBBG8KnY141316
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Dec 2019 11:09:25 -0500
+ by ozlabs.org (Postfix) with ESMTPS id 47Y21n3rKRz9sfR
+ for <linuxppc-dev@ozlabs.org>; Thu, 12 Dec 2019 03:09:33 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ xBBG7XiC062744
+ for <linuxppc-dev@ozlabs.org>; Wed, 11 Dec 2019 11:09:31 -0500
 Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2wtf8j50rf-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2wu1fmeggg-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Dec 2019 11:09:24 -0500
+ for <linuxppc-dev@ozlabs.org>; Wed, 11 Dec 2019 11:09:31 -0500
 Received: from localhost
  by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <sourabhjain@linux.ibm.com>;
- Wed, 11 Dec 2019 16:09:22 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ Wed, 11 Dec 2019 16:09:29 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
  by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 11 Dec 2019 16:09:18 -0000
+ Wed, 11 Dec 2019 16:09:26 -0000
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com
  (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xBBG9GQ735389666
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xBBG9O5454853638
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 11 Dec 2019 16:09:16 GMT
+ Wed, 11 Dec 2019 16:09:24 GMT
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 69801A405F;
- Wed, 11 Dec 2019 16:09:16 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 7F21FA405B;
+ Wed, 11 Dec 2019 16:09:24 +0000 (GMT)
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5C95FA4054;
- Wed, 11 Dec 2019 16:09:14 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 30AD8A4054;
+ Wed, 11 Dec 2019 16:09:22 +0000 (GMT)
 Received: from localhost.localdomain.com (unknown [9.85.74.172])
  by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 11 Dec 2019 16:09:14 +0000 (GMT)
+ Wed, 11 Dec 2019 16:09:21 +0000 (GMT)
 From: Sourabh Jain <sourabhjain@linux.ibm.com>
 To: mpe@ellerman.id.au
-Subject: [PATCH v6 0/6] reorganize and add FADump sysfs files
-Date: Wed, 11 Dec 2019 21:39:04 +0530
+Subject: [PATCH v6 2/6] sysfs: wrap __compat_only_sysfs_link_entry_to_kobj
+ function to change the symlink name
+Date: Wed, 11 Dec 2019 21:39:06 +0530
 X-Mailer: git-send-email 2.17.2
+In-Reply-To: <20191211160910.21656-1-sourabhjain@linux.ibm.com>
+References: <20191211160910.21656-1-sourabhjain@linux.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 19121116-4275-0000-0000-0000038E019B
+x-cbid: 19121116-4275-0000-0000-0000038E019D
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19121116-4276-0000-0000-000038A1B827
-Message-Id: <20191211160910.21656-1-sourabhjain@linux.ibm.com>
+x-cbparentid: 19121116-4276-0000-0000-000038A1B82A
+Message-Id: <20191211160910.21656-3-sourabhjain@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
  definitions=2019-12-11_04:2019-12-11,2019-12-11 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 bulkscore=0
- clxscore=1015 priorityscore=1501 malwarescore=0 phishscore=0
- mlxlogscore=999 impostorscore=0 mlxscore=0 spamscore=0 lowpriorityscore=0
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-1910280000 definitions=main-1912110136
+ clxscore=1015
+ priorityscore=1501 bulkscore=0 spamscore=0 lowpriorityscore=0
+ malwarescore=0 mlxscore=0 mlxlogscore=999 impostorscore=0 phishscore=0
+ adultscore=0 suspectscore=1 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-1910280000 definitions=main-1912110136
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,55 +116,98 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently, FADump sysfs files are present inside /sys/kernel directory.
-But as the number of FADump sysfs file increases it is not a good idea to
-push all of them in /sys/kernel directory. It is better to have separate
-directory to keep all the FADump sysfs files.
+The __compat_only_sysfs_link_entry_to_kobj function creates a symlink to a
+kobject but doesn't provide an option to change the symlink file name.
 
-Patch series reorganizes the FADump sysfs files and avail all the existing
-FADump sysfs files present inside /sys/kernel into a new directory
-/sys/kernel/fadump. The backward compatibility is maintained by adding a
-symlink for every sysfs file that has moved to new location. Also a new
-FADump sys interface is added to get the amount of memory reserved by FADump
-for saving the crash dump.
+This patch adds a wrapper function compat_only_sysfs_link_entry_to_kobj
+that extends the __compat_only_sysfs_link_entry_to_kobj functionality
+which allows function caller to customize the symlink name.
 
-Changelog:
-v1 -> v5:
-  - https://lists.ozlabs.org/pipermail/linuxppc-dev/2019-December/201642.html
+Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+---
+ fs/sysfs/group.c      | 28 +++++++++++++++++++++++++---
+ include/linux/sysfs.h | 12 ++++++++++++
+ 2 files changed, 37 insertions(+), 3 deletions(-)
 
-v5 -> v6
-  - Unregister FADump if fadump group creation fails.
-  - Remove fadump_enabled symlink if fadump_registered symlink
-    creation fails.
-  - Removed CREATE_SYMLINK macro.
-
-Sourabh Jain (6):
-  Documentation/ABI: add ABI documentation for /sys/kernel/fadump_*
-  sysfs: wrap __compat_only_sysfs_link_entry_to_kobj function to change
-    the symlink name
-  powerpc/fadump: reorganize /sys/kernel/fadump_* sysfs files
-  powerpc/powernv: move core and fadump_release_opalcore under new
-    kobject
-  Documentation/ABI: mark /sys/kernel/fadump_* sysfs files deprecated
-  powerpc/fadump: sysfs for fadump memory reservation
-
- .../ABI/obsolete/sysfs-kernel-fadump_enabled  |   9 ++
- .../obsolete/sysfs-kernel-fadump_registered   |  10 ++
- .../obsolete/sysfs-kernel-fadump_release_mem  |  10 ++
- .../sysfs-kernel-fadump_release_opalcore      |   9 ++
- Documentation/ABI/testing/sysfs-kernel-fadump |  40 ++++++
- .../powerpc/firmware-assisted-dump.rst        |  28 +++-
- arch/powerpc/kernel/fadump.c                  | 127 +++++++++++++-----
- arch/powerpc/platforms/powernv/opal-core.c    |  55 +++++---
- fs/sysfs/group.c                              |  28 +++-
- include/linux/sysfs.h                         |  12 ++
- 10 files changed, 270 insertions(+), 58 deletions(-)
- create mode 100644 Documentation/ABI/obsolete/sysfs-kernel-fadump_enabled
- create mode 100644 Documentation/ABI/obsolete/sysfs-kernel-fadump_registered
- create mode 100644 Documentation/ABI/obsolete/sysfs-kernel-fadump_release_mem
- create mode 100644 Documentation/ABI/removed/sysfs-kernel-fadump_release_opalcore
- create mode 100644 Documentation/ABI/testing/sysfs-kernel-fadump
-
+diff --git a/fs/sysfs/group.c b/fs/sysfs/group.c
+index d41c21fef138..0993645f0b59 100644
+--- a/fs/sysfs/group.c
++++ b/fs/sysfs/group.c
+@@ -424,6 +424,25 @@ EXPORT_SYMBOL_GPL(sysfs_remove_link_from_group);
+ int __compat_only_sysfs_link_entry_to_kobj(struct kobject *kobj,
+ 				      struct kobject *target_kobj,
+ 				      const char *target_name)
++{
++	return compat_only_sysfs_link_entry_to_kobj(kobj, target_kobj,
++						target_name, NULL);
++}
++EXPORT_SYMBOL_GPL(__compat_only_sysfs_link_entry_to_kobj);
++
++/**
++ * compat_only_sysfs_link_entry_to_kobj - add a symlink to a kobject pointing
++ * to a group or an attribute
++ * @kobj:		The kobject containing the group.
++ * @target_kobj:	The target kobject.
++ * @target_name:	The name of the target group or attribute.
++ * @symlink_name:	The name of the symlink file (target_name will be
++ *			considered if symlink_name is NULL).
++ */
++int compat_only_sysfs_link_entry_to_kobj(struct kobject *kobj,
++					 struct kobject *target_kobj,
++					 const char *target_name,
++					 const char *symlink_name)
+ {
+ 	struct kernfs_node *target;
+ 	struct kernfs_node *entry;
+@@ -448,12 +467,15 @@ int __compat_only_sysfs_link_entry_to_kobj(struct kobject *kobj,
+ 		return -ENOENT;
+ 	}
+ 
+-	link = kernfs_create_link(kobj->sd, target_name, entry);
++	if (!symlink_name)
++		symlink_name = target_name;
++
++	link = kernfs_create_link(kobj->sd, symlink_name, entry);
+ 	if (IS_ERR(link) && PTR_ERR(link) == -EEXIST)
+-		sysfs_warn_dup(kobj->sd, target_name);
++		sysfs_warn_dup(kobj->sd, symlink_name);
+ 
+ 	kernfs_put(entry);
+ 	kernfs_put(target);
+ 	return PTR_ERR_OR_ZERO(link);
+ }
+-EXPORT_SYMBOL_GPL(__compat_only_sysfs_link_entry_to_kobj);
++EXPORT_SYMBOL_GPL(compat_only_sysfs_link_entry_to_kobj);
+diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
+index 5420817ed317..15b195a4529d 100644
+--- a/include/linux/sysfs.h
++++ b/include/linux/sysfs.h
+@@ -300,6 +300,10 @@ void sysfs_remove_link_from_group(struct kobject *kobj, const char *group_name,
+ int __compat_only_sysfs_link_entry_to_kobj(struct kobject *kobj,
+ 				      struct kobject *target_kobj,
+ 				      const char *target_name);
++int compat_only_sysfs_link_entry_to_kobj(struct kobject *kobj,
++					 struct kobject *target_kobj,
++					 const char *target_name,
++					 const char *symlink_name);
+ 
+ void sysfs_notify(struct kobject *kobj, const char *dir, const char *attr);
+ 
+@@ -508,6 +512,14 @@ static inline int __compat_only_sysfs_link_entry_to_kobj(
+ 	return 0;
+ }
+ 
++static int compat_only_sysfs_link_entry_to_kobj(struct kobject *kobj,
++						struct kobject *target_kobj,
++						const char *target_name,
++						const char *symlink_name)
++{
++	return 0;
++}
++
+ static inline void sysfs_notify(struct kobject *kobj, const char *dir,
+ 				const char *attr)
+ {
 -- 
 2.17.2
 
