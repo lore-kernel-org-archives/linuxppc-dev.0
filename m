@@ -2,82 +2,98 @@ Return-Path: <SRS0=Dwgl=2B=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04890C43603
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Dec 2019 03:45:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CBAF5C43603
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Dec 2019 03:49:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E27F0206EC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Dec 2019 03:45:16 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="Ibw6DdhZ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E27F0206EC
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nvidia.com
+	by mail.kernel.org (Postfix) with ESMTPS id 5E62F20836
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Dec 2019 03:49:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5E62F20836
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47XjVy5fFBzDqhs
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Dec 2019 14:45:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47Xjbt3DtVzDqFG
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Dec 2019 14:49:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=nvidia.com (client-ip=216.228.121.64;
- helo=hqnvemgate25.nvidia.com; envelope-from=jhubbard@nvidia.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nvidia.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="Ibw6DdhZ"; 
- dkim-atps=neutral
-Received: from hqnvemgate25.nvidia.com (hqnvemgate25.nvidia.com
- [216.228.121.64])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47XhMf2QlqzDqfM
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2019 13:53:49 +1100 (AEDT)
-Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by
- hqnvemgate25.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
- id <B5df05a2b0000>; Tue, 10 Dec 2019 18:53:31 -0800
-Received: from hqmail.nvidia.com ([172.20.161.6])
- by hqpgpgate101.nvidia.com (PGP Universal service);
- Tue, 10 Dec 2019 18:53:37 -0800
-X-PGP-Universal: processed;
- by hqpgpgate101.nvidia.com on Tue, 10 Dec 2019 18:53:37 -0800
-Received: from HQMAIL101.nvidia.com (172.20.187.10) by HQMAIL107.nvidia.com
- (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Wed, 11 Dec
- 2019 02:53:37 +0000
-Received: from rnnvemgw01.nvidia.com (10.128.109.123) by HQMAIL101.nvidia.com
- (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via
- Frontend Transport; Wed, 11 Dec 2019 02:53:36 +0000
-Received: from blueforge.nvidia.com (Not Verified[10.110.48.28]) by
- rnnvemgw01.nvidia.com with Trustwave SEG (v7, 5, 8, 10121)
- id <B5df05a300000>; Tue, 10 Dec 2019 18:53:36 -0800
-From: John Hubbard <jhubbard@nvidia.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v9 24/25] mm/gup_benchmark: support pin_user_pages() and
- related calls
-Date: Tue, 10 Dec 2019 18:53:17 -0800
-Message-ID: <20191211025318.457113-25-jhubbard@nvidia.com>
-X-Mailer: git-send-email 2.24.0
-In-Reply-To: <20191211025318.457113-1-jhubbard@nvidia.com>
-References: <20191211025318.457113-1-jhubbard@nvidia.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47XjLt43LLzDqDN
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2019 14:38:14 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ xBB3R9m4040081
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2019 22:38:11 -0500
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2wtf8hb7fk-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2019 22:38:10 -0500
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ajd@linux.ibm.com>;
+ Wed, 11 Dec 2019 03:38:08 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 11 Dec 2019 03:38:06 -0000
+Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
+ [9.149.105.60])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xBB3c5W453149924
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 11 Dec 2019 03:38:05 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3A99B4203F;
+ Wed, 11 Dec 2019 03:38:05 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DC51842041;
+ Wed, 11 Dec 2019 03:38:04 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 11 Dec 2019 03:38:04 +0000 (GMT)
+Received: from [9.81.199.13] (unknown [9.81.199.13])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 3487EA025A;
+ Wed, 11 Dec 2019 14:38:02 +1100 (AEDT)
+Subject: Re: [PATCH] powerpc/64: Use {SAVE,REST}_NVGPRS macros
+To: Jordan Niethe <jniethe5@gmail.com>, linuxppc-dev@lists.ozlabs.org
+References: <20191211023552.16480-1-jniethe5@gmail.com>
+From: Andrew Donnellan <ajd@linux.ibm.com>
+Date: Wed, 11 Dec 2019 14:38:03 +1100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.2.2
 MIME-Version: 1.0
-X-NVConfidentiality: public
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
- t=1576032811; bh=x7MvVbQRVwUCvgSjQ/8SlrbWelgqje2hefrKJsxWbbs=;
- h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
- In-Reply-To:References:MIME-Version:X-NVConfidentiality:
- Content-Transfer-Encoding:Content-Type;
- b=Ibw6DdhZdycZZBMLmtkubQjMfNd15L9IJ19dKUI6Dhz6vrT6luhJQfGdkq508jsaY
- wEOiOGkd86kV95Ro8XgWXv6Ygmv6FaCDtB1m5sjRw//kUEPo2csdS39+IrfS4xPG5I
- zgenXAokb2kdz1rHFp1NHqTmp3u5xMPh9a6vYGdb2lH/x37lRcToUMxKC2RXbuJ6XZ
- ehqG0x4sEj+5GBtsvwkbMDQW1VS1j5ru8zfymGLbE2geC2e2Gd7HEfR0vj3H96U6AS
- TzIvvVtulWHBubi2LFDHDlPGg3dkNs4T/wTgQnislHfw5R9efVod/9KQ4xIYtce7k3
- l9fb9F3xYFZYA==
+In-Reply-To: <20191211023552.16480-1-jniethe5@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19121103-0028-0000-0000-000003C7651B
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19121103-0029-0000-0000-0000248A976D
+Message-Id: <07882387-912e-e242-859c-00ab7dc5579f@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
+ definitions=2019-12-10_08:2019-12-10,2019-12-10 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 bulkscore=0
+ clxscore=1015 priorityscore=1501 malwarescore=0 phishscore=0
+ mlxlogscore=809 impostorscore=0 mlxscore=0 spamscore=0 lowpriorityscore=0
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-1910280000 definitions=main-1912110030
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,219 +105,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>,
- kvm@vger.kernel.org, linux-doc@vger.kernel.org,
- David Airlie <airlied@linux.ie>, Dave Chinner <david@fromorbit.com>,
- dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- linux-kselftest@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>,
- Jonathan Corbet <corbet@lwn.net>, linux-rdma@vger.kernel.org,
- Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>,
- Vlastimil Babka <vbabka@suse.cz>,
- =?UTF-8?q?Bj=C3=B6rn=20T=C3=B6pel?= <bjorn.topel@intel.com>,
- linux-media@vger.kernel.org, Shuah Khan <shuah@kernel.org>,
- John Hubbard <jhubbard@nvidia.com>, linux-block@vger.kernel.org,
- =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>,
- Al Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
- Magnus Karlsson <magnus.karlsson@intel.com>, Jens Axboe <axboe@kernel.dk>,
- netdev@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
- Daniel Vetter <daniel@ffwll.ch>, linux-fsdevel@vger.kernel.org,
- bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "David S . Miller" <davem@davemloft.net>,
- Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Up until now, gup_benchmark supported testing of the
-following kernel functions:
+On 11/12/19 1:35 pm, Jordan Niethe wrote:
+> In entry_64.S there are places that open code saving and restoring the
+> non-volatile registers. There are already macros for doing this so use
+> them.
+> 
+> Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
 
-* get_user_pages(): via the '-U' command line option
-* get_user_pages_longterm(): via the '-L' command line option
-* get_user_pages_fast(): as the default (no options required)
+Reviewed-by: Andrew Donnellan <ajd@linux.ibm.com>
 
-Add test coverage for the new corresponding pin_*() functions:
 
-* pin_user_pages_fast(): via the '-a' command line option
-* pin_user_pages():      via the '-b' command line option
-
-Also, add an option for clarity: '-u' for what is now (still) the
-default choice: get_user_pages_fast().
-
-Also, for the commands that set FOLL_PIN, verify that the pages
-really are dma-pinned, via the new is_dma_pinned() routine.
-Those commands are:
-
-    PIN_FAST_BENCHMARK     : calls pin_user_pages_fast()
-    PIN_BENCHMARK          : calls pin_user_pages()
-
-In between the calls to pin_*() and unpin_user_pages(),
-check each page: if page_dma_pinned() returns false, then
-WARN and return.
-
-Do this outside of the benchmark timestamps, so that it doesn't
-affect reported times.
-
-Reviewed-by: Ira Weiny <ira.weiny@intel.com>
-Signed-off-by: John Hubbard <jhubbard@nvidia.com>
----
- mm/gup_benchmark.c                         | 65 ++++++++++++++++++++--
- tools/testing/selftests/vm/gup_benchmark.c | 15 ++++-
- 2 files changed, 74 insertions(+), 6 deletions(-)
-
-diff --git a/mm/gup_benchmark.c b/mm/gup_benchmark.c
-index 7fc44d25eca7..76d32db48af8 100644
---- a/mm/gup_benchmark.c
-+++ b/mm/gup_benchmark.c
-@@ -8,6 +8,8 @@
- #define GUP_FAST_BENCHMARK	_IOWR('g', 1, struct gup_benchmark)
- #define GUP_LONGTERM_BENCHMARK	_IOWR('g', 2, struct gup_benchmark)
- #define GUP_BENCHMARK		_IOWR('g', 3, struct gup_benchmark)
-+#define PIN_FAST_BENCHMARK	_IOWR('g', 4, struct gup_benchmark)
-+#define PIN_BENCHMARK		_IOWR('g', 5, struct gup_benchmark)
-=20
- struct gup_benchmark {
- 	__u64 get_delta_usec;
-@@ -19,6 +21,42 @@ struct gup_benchmark {
- 	__u64 expansion[10];	/* For future use */
- };
-=20
-+static void put_back_pages(int cmd, struct page **pages, unsigned long nr_=
-pages)
-+{
-+	int i;
-+
-+	switch (cmd) {
-+	case GUP_FAST_BENCHMARK:
-+	case GUP_LONGTERM_BENCHMARK:
-+	case GUP_BENCHMARK:
-+		for (i =3D 0; i < nr_pages; i++)
-+			put_page(pages[i]);
-+		break;
-+
-+	case PIN_FAST_BENCHMARK:
-+	case PIN_BENCHMARK:
-+		unpin_user_pages(pages, nr_pages);
-+		break;
-+	}
-+}
-+
-+static void verify_dma_pinned(int cmd, struct page **pages,
-+			      unsigned long nr_pages)
-+{
-+	int i;
-+
-+	switch (cmd) {
-+	case PIN_FAST_BENCHMARK:
-+	case PIN_BENCHMARK:
-+		for (i =3D 0; i < nr_pages; i++) {
-+			if (WARN(!page_dma_pinned(pages[i]),
-+				 "pages[%d] is NOT dma-pinned\n", i))
-+				break;
-+		}
-+		break;
-+	}
-+}
-+
- static int __gup_benchmark_ioctl(unsigned int cmd,
- 		struct gup_benchmark *gup)
- {
-@@ -65,6 +103,14 @@ static int __gup_benchmark_ioctl(unsigned int cmd,
- 			nr =3D get_user_pages(addr, nr, gup->flags, pages + i,
- 					    NULL);
- 			break;
-+		case PIN_FAST_BENCHMARK:
-+			nr =3D pin_user_pages_fast(addr, nr, gup->flags,
-+						 pages + i);
-+			break;
-+		case PIN_BENCHMARK:
-+			nr =3D pin_user_pages(addr, nr, gup->flags, pages + i,
-+					    NULL);
-+			break;
- 		default:
- 			return -1;
- 		}
-@@ -75,15 +121,22 @@ static int __gup_benchmark_ioctl(unsigned int cmd,
- 	}
- 	end_time =3D ktime_get();
-=20
-+	/* Shifting the meaning of nr_pages: now it is actual number pinned: */
-+	nr_pages =3D i;
-+
- 	gup->get_delta_usec =3D ktime_us_delta(end_time, start_time);
- 	gup->size =3D addr - gup->addr;
-=20
-+	/*
-+	 * Take an un-benchmark-timed moment to verify DMA pinned
-+	 * state: print a warning if any non-dma-pinned pages are found:
-+	 */
-+	verify_dma_pinned(cmd, pages, nr_pages);
-+
- 	start_time =3D ktime_get();
--	for (i =3D 0; i < nr_pages; i++) {
--		if (!pages[i])
--			break;
--		put_page(pages[i]);
--	}
-+
-+	put_back_pages(cmd, pages, nr_pages);
-+
- 	end_time =3D ktime_get();
- 	gup->put_delta_usec =3D ktime_us_delta(end_time, start_time);
-=20
-@@ -101,6 +154,8 @@ static long gup_benchmark_ioctl(struct file *filep, uns=
-igned int cmd,
- 	case GUP_FAST_BENCHMARK:
- 	case GUP_LONGTERM_BENCHMARK:
- 	case GUP_BENCHMARK:
-+	case PIN_FAST_BENCHMARK:
-+	case PIN_BENCHMARK:
- 		break;
- 	default:
- 		return -EINVAL;
-diff --git a/tools/testing/selftests/vm/gup_benchmark.c b/tools/testing/sel=
-ftests/vm/gup_benchmark.c
-index 389327e9b30a..43b4dfe161a2 100644
---- a/tools/testing/selftests/vm/gup_benchmark.c
-+++ b/tools/testing/selftests/vm/gup_benchmark.c
-@@ -18,6 +18,10 @@
- #define GUP_LONGTERM_BENCHMARK	_IOWR('g', 2, struct gup_benchmark)
- #define GUP_BENCHMARK		_IOWR('g', 3, struct gup_benchmark)
-=20
-+/* Similar to above, but use FOLL_PIN instead of FOLL_GET. */
-+#define PIN_FAST_BENCHMARK	_IOWR('g', 4, struct gup_benchmark)
-+#define PIN_BENCHMARK		_IOWR('g', 5, struct gup_benchmark)
-+
- /* Just the flags we need, copied from mm.h: */
- #define FOLL_WRITE	0x01	/* check pte is writable */
-=20
-@@ -40,8 +44,14 @@ int main(int argc, char **argv)
- 	char *file =3D "/dev/zero";
- 	char *p;
-=20
--	while ((opt =3D getopt(argc, argv, "m:r:n:f:tTLUwSH")) !=3D -1) {
-+	while ((opt =3D getopt(argc, argv, "m:r:n:f:abtTLUuwSH")) !=3D -1) {
- 		switch (opt) {
-+		case 'a':
-+			cmd =3D PIN_FAST_BENCHMARK;
-+			break;
-+		case 'b':
-+			cmd =3D PIN_BENCHMARK;
-+			break;
- 		case 'm':
- 			size =3D atoi(optarg) * MB;
- 			break;
-@@ -63,6 +73,9 @@ int main(int argc, char **argv)
- 		case 'U':
- 			cmd =3D GUP_BENCHMARK;
- 			break;
-+		case 'u':
-+			cmd =3D GUP_FAST_BENCHMARK;
-+			break;
- 		case 'w':
- 			write =3D 1;
- 			break;
---=20
-2.24.0
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+ajd@linux.ibm.com             IBM Australia Limited
 
