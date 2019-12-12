@@ -2,26 +2,26 @@ Return-Path: <SRS0=eY2C=2C=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C9BAC43603
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2019 09:10:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 04206C3F68F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2019 09:12:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B2D0324654
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2019 09:10:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 72FFC24679
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2019 09:12:28 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="WWDMGVYO"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B2D0324654
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="YNvksdWl"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 72FFC24679
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nvidia.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47YSgZ5kVczDqvd
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2019 20:10:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47YSk24X2qzDqyk
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2019 20:12:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=nvidia.com (client-ip=216.228.121.65;
  helo=hqnvemgate26.nvidia.com; envelope-from=jhubbard@nvidia.com;
@@ -29,17 +29,17 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="WWDMGVYO"; 
+ unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="YNvksdWl"; 
  dkim-atps=neutral
 Received: from hqnvemgate26.nvidia.com (hqnvemgate26.nvidia.com
  [216.228.121.65])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47YRYJ4xzRzDqZX
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47YRYJ4ypXzDqwW
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2019 19:19:47 +1100 (AEDT)
 Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by
  hqnvemgate26.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
- id <B5df1f8040002>; Thu, 12 Dec 2019 00:19:16 -0800
+ id <B5df1f8040003>; Thu, 12 Dec 2019 00:19:17 -0800
 Received: from hqmail.nvidia.com ([172.20.161.6])
  by hqpgpgate101.nvidia.com (PGP Universal service);
  Thu, 12 Dec 2019 00:19:23 -0800
@@ -47,22 +47,22 @@ X-PGP-Universal: processed;
  by hqpgpgate101.nvidia.com on Thu, 12 Dec 2019 00:19:23 -0800
 Received: from HQMAIL109.nvidia.com (172.20.187.15) by HQMAIL107.nvidia.com
  (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Thu, 12 Dec
- 2019 08:19:21 +0000
-Received: from HQMAIL109.nvidia.com (172.20.187.15) by HQMAIL109.nvidia.com
+ 2019 08:19:22 +0000
+Received: from HQMAIL101.nvidia.com (172.20.187.10) by HQMAIL109.nvidia.com
  (172.20.187.15) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Thu, 12 Dec
- 2019 08:19:21 +0000
-Received: from hqnvemgw03.nvidia.com (10.124.88.68) by HQMAIL109.nvidia.com
- (172.20.187.15) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
- Transport; Thu, 12 Dec 2019 08:19:21 +0000
+ 2019 08:19:19 +0000
+Received: from hqnvemgw03.nvidia.com (10.124.88.68) by HQMAIL101.nvidia.com
+ (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
+ Transport; Thu, 12 Dec 2019 08:19:19 +0000
 Received: from blueforge.nvidia.com (Not Verified[10.110.48.28]) by
  hqnvemgw03.nvidia.com with Trustwave SEG (v7, 5, 8, 10121)
- id <B5df1f8090001>; Thu, 12 Dec 2019 00:19:21 -0800
+ id <B5df1f8070001>; Thu, 12 Dec 2019 00:19:19 -0800
 From: John Hubbard <jhubbard@nvidia.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v10 25/25] selftests/vm: run_vmtests: invoke gup_benchmark
- with basic FOLL_PIN coverage
-Date: Thu, 12 Dec 2019 00:19:17 -0800
-Message-ID: <20191212081917.1264184-26-jhubbard@nvidia.com>
+Subject: [PATCH v10 06/25] mm: fix get_user_pages_remote()'s handling of
+ FOLL_LONGTERM
+Date: Thu, 12 Dec 2019 00:18:58 -0800
+Message-ID: <20191212081917.1264184-7-jhubbard@nvidia.com>
 X-Mailer: git-send-email 2.24.0
 In-Reply-To: <20191212081917.1264184-1-jhubbard@nvidia.com>
 References: <20191212081917.1264184-1-jhubbard@nvidia.com>
@@ -71,16 +71,16 @@ X-NVConfidentiality: public
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
- t=1576138757; bh=efjW/rF0EGuRthlOGEU05IQnyHi57jZRzyopoxtDk8c=;
+ t=1576138757; bh=l4ZzqtVW71Fwvoz1qyCbd1xWWEz8EY4C2cUJdAbaFHs=;
  h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
  In-Reply-To:References:MIME-Version:X-NVConfidentiality:
  Content-Transfer-Encoding:Content-Type;
- b=WWDMGVYOnHd3iWE+NQQYwhBWbPaghrkNlNIExThbsN/YXyZZxolHhixKxcf8GqE/k
- zF9jZ17Pvol2P/BjE3xhCV/rhnk5thJMSeLFQqOfOazFqY5oolm1j6pVo0cd95tKbN
- F31zukDFvOKYBV2dvENEhMUn1B91vbhd3i4wJGjJ4RPIwCJFToXC8m4sBIBpz2px5U
- F9hMccp4L8YeXaEKmlNprmiR65S6O7E7EzTLOutDvfCdRwF9rvkBaMisYbAmbMtoYZ
- vv3yw+6/SqlvDkIXoOmGW7/OgE7PrZmOTmWZH9P9/nHXXZF5hmGt2C7TTl7TTSsXNI
- G9Ljkzb2cb+0w==
+ b=YNvksdWlyl2599mmaaugSdiX1UCO56zpF5N9DYcD/vZ2p7+o0dY61zE7nU97ta9m/
+ 26nMlVzTBISct5P8uG+3Gi7hnC1NH8nGfefemcNG47ilbQw2tw4L9JhghF53jnZK3Q
+ V3weahbyJyIncwop+hfXFMM69n7/p/MbrvPbFWxTKGxGRYJM3D3rUMcMiAwOqGTi7p
+ F/cnat8bNtoNg+9UU8caJLFv0HRT5uBP2AvEP48Mkn3MVCeW1ldS7kSoU85E5VIOS0
+ fRjFM7oet5MBa/lhRMLh3mRRVxAfPJVusfImFZxrdEcOMr0VdUBQLWZBEAAzrTWzkU
+ LDxG0ypzYUD8A==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,7 +100,8 @@ Cc: Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>,
  Mackerras <paulus@samba.org>, linux-kselftest@vger.kernel.org,
  Ira Weiny <ira.weiny@intel.com>, Jonathan Corbet <corbet@lwn.net>,
  linux-rdma@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
- Jason Gunthorpe <jgg@ziepe.ca>, Vlastimil Babka <vbabka@suse.cz>,
+ Jason Gunthorpe <jgg@ziepe.ca>, Jason
+ Gunthorpe <jgg@mellanox.com>, Vlastimil Babka <vbabka@suse.cz>,
  =?UTF-8?q?Bj=C3=B6rn=20T=C3=B6pel?= <bjorn.topel@intel.com>,
  linux-media@vger.kernel.org, Shuah Khan <shuah@kernel.org>,
  John Hubbard <jhubbard@nvidia.com>, linux-block@vger.kernel.org,
@@ -117,66 +118,88 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-It's good to have basic unit test coverage of the new FOLL_PIN
-behavior. Fortunately, the gup_benchmark unit test is extremely
-fast (a few milliseconds), so adding it the the run_vmtests suite
-is going to cause no noticeable change in running time.
+As it says in the updated comment in gup.c: current FOLL_LONGTERM
+behavior is incompatible with FAULT_FLAG_ALLOW_RETRY because of the
+FS DAX check requirement on vmas.
 
-So, add two new invocations to run_vmtests:
+However, the corresponding restriction in get_user_pages_remote() was
+slightly stricter than is actually required: it forbade all
+FOLL_LONGTERM callers, but we can actually allow FOLL_LONGTERM callers
+that do not set the "locked" arg.
 
-1) Run gup_benchmark with normal get_user_pages().
+Update the code and comments to loosen the restriction, allowing
+FOLL_LONGTERM in some cases.
 
-2) Run gup_benchmark with pin_user_pages(). This is much like
-the first call, except that it sets FOLL_PIN.
+Also, copy the DAX check ("if a VMA is DAX, don't allow long term
+pinning") from the VFIO call site, all the way into the internals
+of get_user_pages_remote() and __gup_longterm_locked(). That is:
+get_user_pages_remote() calls __gup_longterm_locked(), which in turn
+calls check_dax_vmas(). This check will then be removed from the VFIO
+call site in a subsequent patch.
 
-Running these two in quick succession also provide a visual
-comparison of the running times, which is convenient.
+Thanks to Jason Gunthorpe for pointing out a clean way to fix this,
+and to Dan Williams for helping clarify the DAX refactoring.
 
-The new invocations are fairly early in the run_vmtests script,
-because with test suites, it's usually preferable to put the
-shorter, faster tests first, all other things being equal.
-
+Tested-by: Alex Williamson <alex.williamson@redhat.com>
+Acked-by: Alex Williamson <alex.williamson@redhat.com>
+Reviewed-by: Jason Gunthorpe <jgg@mellanox.com>
 Reviewed-by: Ira Weiny <ira.weiny@intel.com>
+Suggested-by: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: Jerome Glisse <jglisse@redhat.com>
 Signed-off-by: John Hubbard <jhubbard@nvidia.com>
 ---
- tools/testing/selftests/vm/run_vmtests | 22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
+ mm/gup.c | 27 ++++++++++++++++++++++-----
+ 1 file changed, 22 insertions(+), 5 deletions(-)
 
-diff --git a/tools/testing/selftests/vm/run_vmtests b/tools/testing/selftes=
-ts/vm/run_vmtests
-index a692ea828317..df6a6bf3f238 100755
---- a/tools/testing/selftests/vm/run_vmtests
-+++ b/tools/testing/selftests/vm/run_vmtests
-@@ -112,6 +112,28 @@ echo "NOTE: The above hugetlb tests provide minimal co=
-verage.  Use"
- echo "      https://github.com/libhugetlbfs/libhugetlbfs.git for"
- echo "      hugetlb regression testing."
+diff --git a/mm/gup.c b/mm/gup.c
+index 3ecce297a47f..c0c56888e7cc 100644
+--- a/mm/gup.c
++++ b/mm/gup.c
+@@ -29,6 +29,13 @@ struct follow_page_context {
+ 	unsigned int page_mask;
+ };
 =20
-+echo "--------------------------------------------"
-+echo "running 'gup_benchmark -U' (normal/slow gup)"
-+echo "--------------------------------------------"
-+./gup_benchmark -U
-+if [ $? -ne 0 ]; then
-+	echo "[FAIL]"
-+	exitcode=3D1
-+else
-+	echo "[PASS]"
-+fi
-+
-+echo "------------------------------------------"
-+echo "running gup_benchmark -b (pin_user_pages)"
-+echo "------------------------------------------"
-+./gup_benchmark -b
-+if [ $? -ne 0 ]; then
-+	echo "[FAIL]"
-+	exitcode=3D1
-+else
-+	echo "[PASS]"
-+fi
-+
- echo "-------------------"
- echo "running userfaultfd"
- echo "-------------------"
++static __always_inline long __gup_longterm_locked(struct task_struct *tsk,
++						  struct mm_struct *mm,
++						  unsigned long start,
++						  unsigned long nr_pages,
++						  struct page **pages,
++						  struct vm_area_struct **vmas,
++						  unsigned int flags);
+ /*
+  * Return the compound head page with ref appropriately incremented,
+  * or NULL if that failed.
+@@ -1179,13 +1186,23 @@ long get_user_pages_remote(struct task_struct *tsk,=
+ struct mm_struct *mm,
+ 		struct vm_area_struct **vmas, int *locked)
+ {
+ 	/*
+-	 * FIXME: Current FOLL_LONGTERM behavior is incompatible with
++	 * Parts of FOLL_LONGTERM behavior are incompatible with
+ 	 * FAULT_FLAG_ALLOW_RETRY because of the FS DAX check requirement on
+-	 * vmas.  As there are no users of this flag in this call we simply
+-	 * disallow this option for now.
++	 * vmas. However, this only comes up if locked is set, and there are
++	 * callers that do request FOLL_LONGTERM, but do not set locked. So,
++	 * allow what we can.
+ 	 */
+-	if (WARN_ON_ONCE(gup_flags & FOLL_LONGTERM))
+-		return -EINVAL;
++	if (gup_flags & FOLL_LONGTERM) {
++		if (WARN_ON_ONCE(locked))
++			return -EINVAL;
++		/*
++		 * This will check the vmas (even if our vmas arg is NULL)
++		 * and return -ENOTSUPP if DAX isn't allowed in this case:
++		 */
++		return __gup_longterm_locked(tsk, mm, start, nr_pages, pages,
++					     vmas, gup_flags | FOLL_TOUCH |
++					     FOLL_REMOTE);
++	}
+=20
+ 	return __get_user_pages_locked(tsk, mm, start, nr_pages, pages, vmas,
+ 				       locked,
 --=20
 2.24.0
 
