@@ -7,80 +7,77 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A1EE7C43603
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2019 09:01:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 451E9C43603
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2019 09:04:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5209522B48
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2019 09:01:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E93012464B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2019 09:04:02 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="elg+sSRR"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5209522B48
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="Ast3wtQF"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E93012464B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nvidia.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
-Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47YSTR1QVPzDqsN
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2019 20:01:31 +1100 (AEDT)
+Received: from lists.ozlabs.org (unknown [IPv6:2401:3900:2:1::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 47YSXJ3zpFzDqv4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2019 20:04:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=nvidia.com (client-ip=216.228.121.65;
- helo=hqnvemgate26.nvidia.com; envelope-from=jhubbard@nvidia.com;
+ smtp.mailfrom=nvidia.com (client-ip=216.228.121.64;
+ helo=hqnvemgate25.nvidia.com; envelope-from=jhubbard@nvidia.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="elg+sSRR"; 
+ unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="Ast3wtQF"; 
  dkim-atps=neutral
-Received: from hqnvemgate26.nvidia.com (hqnvemgate26.nvidia.com
- [216.228.121.65])
+Received: from hqnvemgate25.nvidia.com (hqnvemgate25.nvidia.com
+ [216.228.121.64])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47YRYC1ZtbzDqf0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47YRYC1Zf4zDqck
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2019 19:19:40 +1100 (AEDT)
 Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by
- hqnvemgate26.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
- id <B5df1f8020002>; Thu, 12 Dec 2019 00:19:15 -0800
+ hqnvemgate25.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+ id <B5df1f8030001>; Thu, 12 Dec 2019 00:19:15 -0800
 Received: from hqmail.nvidia.com ([172.20.161.6])
  by hqpgpgate101.nvidia.com (PGP Universal service);
- Thu, 12 Dec 2019 00:19:21 -0800
+ Thu, 12 Dec 2019 00:19:22 -0800
 X-PGP-Universal: processed;
- by hqpgpgate101.nvidia.com on Thu, 12 Dec 2019 00:19:21 -0800
-Received: from HQMAIL109.nvidia.com (172.20.187.15) by HQMAIL107.nvidia.com
- (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Thu, 12 Dec
- 2019 08:19:19 +0000
-Received: from HQMAIL105.nvidia.com (172.20.187.12) by HQMAIL109.nvidia.com
- (172.20.187.15) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Thu, 12 Dec
- 2019 08:19:19 +0000
-Received: from hqnvemgw03.nvidia.com (10.124.88.68) by HQMAIL105.nvidia.com
- (172.20.187.12) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
- Transport; Thu, 12 Dec 2019 08:19:19 +0000
+ by hqpgpgate101.nvidia.com on Thu, 12 Dec 2019 00:19:22 -0800
+Received: from HQMAIL107.nvidia.com (172.20.187.13) by HQMAIL101.nvidia.com
+ (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Thu, 12 Dec
+ 2019 08:19:20 +0000
+Received: from hqnvemgw03.nvidia.com (10.124.88.68) by HQMAIL107.nvidia.com
+ (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
+ Transport; Thu, 12 Dec 2019 08:19:20 +0000
 Received: from blueforge.nvidia.com (Not Verified[10.110.48.28]) by
  hqnvemgw03.nvidia.com with Trustwave SEG (v7, 5, 8, 10121)
- id <B5df1f8060006>; Thu, 12 Dec 2019 00:19:18 -0800
+ id <B5df1f8080007>; Thu, 12 Dec 2019 00:19:20 -0800
 From: John Hubbard <jhubbard@nvidia.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v10 04/25] mm: devmap: refactor 1-based refcounting for
- ZONE_DEVICE pages
-Date: Thu, 12 Dec 2019 00:18:56 -0800
-Message-ID: <20191212081917.1264184-5-jhubbard@nvidia.com>
+Subject: [PATCH v10 19/25] vfio,
+ mm: pin_user_pages (FOLL_PIN) and put_user_page() conversion
+Date: Thu, 12 Dec 2019 00:19:11 -0800
+Message-ID: <20191212081917.1264184-20-jhubbard@nvidia.com>
 X-Mailer: git-send-email 2.24.0
 In-Reply-To: <20191212081917.1264184-1-jhubbard@nvidia.com>
 References: <20191212081917.1264184-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
 X-NVConfidentiality: public
-Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
- t=1576138755; bh=r3XA8lSkA5Bnz921S0tMCXc9LaTJg03zUmdbkjLWRbI=;
+ t=1576138755; bh=wk2NwG+UPRzhGeGA4o6oMgrCb1pvQrHxv3rBUNt8i3I=;
  h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
  In-Reply-To:References:MIME-Version:X-NVConfidentiality:
- Content-Type:Content-Transfer-Encoding;
- b=elg+sSRRzUJLWxg7pEMGo1TjXJDPNYbJwAkjvScwBISUPDcaOwt3JsejxGsKxLFUi
- qBagTKwhdnMYBIkqRIOG581MOnXxwQINdcFFkxRsWxujnFNbIRfalulU1S2D8c/gZ9
- upqBAINw7s4lLJtYFHDFXIeb+beNVFgNf2XU06fnSFm1r4Q1URuF9uFYqCv1KxnaM4
- CiXBKa3U+CMEo8sUhfxanTzS+S669s8HkKaEu5xLpbot4NbK1xzSpz6kFNdTbdLI2w
- aubectHeigApixn4Ccg0/UbmY3RraK/s1yzlGHN9vn38p0PHoottu5mw00BJWl4csT
- 3K09shusUckgg==
+ Content-Transfer-Encoding:Content-Type;
+ b=Ast3wtQFbvCiHeM2zxa/lseifaGkPgOSlbrmuC2Iz1n08zBxQ6GheFgJYSwcA4Nh5
+ 09y8rBScEZzfvDDFo3N88myi4KERo/AGN8ezchspbD/i6j6A/UqqziroJvjlrd6hSF
+ H0DN192EupFywn5tmzhcED/zit1roCP0LhCtvmQ/wGONdihc6Wcmf8lKFr+U4QWRHS
+ 0Y4v89AkpBg9SXpW51fsuTL1+qMUnOOwbBvESlZK0Dk6tKm1Gn2K8VAf1My2WPUDiy
+ OCnXAy2fyZLdC2kyc5IFjDE1yWZEVscJxCGoNoib2KRzI1bkoDdCFT9BUx3GsVzf+D
+ WcIvTeilWMMDQ==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,9 +93,8 @@ Cc: Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>,
  kvm@vger.kernel.org, linux-doc@vger.kernel.org,
  David Airlie <airlied@linux.ie>, Dave Chinner <david@fromorbit.com>,
  dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>,
- linux-mm@kvack.org, Paul
- Mackerras <paulus@samba.org>, linux-kselftest@vger.kernel.org,
- Ira Weiny <ira.weiny@intel.com>, Christoph Hellwig <hch@lst.de>,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ linux-kselftest@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>,
  Jonathan Corbet <corbet@lwn.net>, linux-rdma@vger.kernel.org,
  Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>,
  Vlastimil Babka <vbabka@suse.cz>,
@@ -118,159 +114,58 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-An upcoming patch changes and complicates the refcounting and
-especially the "put page" aspects of it. In order to keep
-everything clean, refactor the devmap page release routines:
+1. Change vfio from get_user_pages_remote(), to
+pin_user_pages_remote().
 
-* Rename put_devmap_managed_page() to page_is_devmap_managed(),
-  and limit the functionality to "read only": return a bool,
-  with no side effects.
+2. Because all FOLL_PIN-acquired pages must be released via
+put_user_page(), also convert the put_page() call over to
+put_user_pages_dirty_lock().
 
-* Add a new routine, put_devmap_managed_page(), to handle checking
-  what kind of page it is, and what kind of refcount handling it
-  requires.
+Note that this effectively changes the code's behavior in
+vfio_iommu_type1.c: put_pfn(): it now ultimately calls
+set_page_dirty_lock(), instead of set_page_dirty(). This is
+probably more accurate.
 
-* Rename __put_devmap_managed_page() to free_devmap_managed_page(),
-  and limit the functionality to unconditionally freeing a devmap
-  page.
+As Christoph Hellwig put it, "set_page_dirty() is only safe if we are
+dealing with a file backed page where we have reference on the inode it
+hangs off." [1]
 
-This is originally based on a separate patch by Ira Weiny, which
-applied to an early version of the put_user_page() experiments.
-Since then, J=C3=A9r=C3=B4me Glisse suggested the refactoring described abo=
-ve.
+[1] https://lore.kernel.org/r/20190723153640.GB720@lst.de
 
-Cc: Christoph Hellwig <hch@lst.de>
-Suggested-by: J=C3=A9r=C3=B4me Glisse <jglisse@redhat.com>
-Reviewed-by: Dan Williams <dan.j.williams@intel.com>
-Reviewed-by: Jan Kara <jack@suse.cz>
-Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+Tested-by: Alex Williamson <alex.williamson@redhat.com>
+Acked-by: Alex Williamson <alex.williamson@redhat.com>
 Signed-off-by: John Hubbard <jhubbard@nvidia.com>
 ---
- include/linux/mm.h | 17 +++++++++++++----
- mm/memremap.c      | 16 ++--------------
- mm/swap.c          | 24 ++++++++++++++++++++++++
- 3 files changed, 39 insertions(+), 18 deletions(-)
+ drivers/vfio/vfio_iommu_type1.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index c97ea3b694e6..77a4df06c8a7 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -952,9 +952,10 @@ static inline bool is_zone_device_page(const struct pa=
-ge *page)
- #endif
-=20
- #ifdef CONFIG_DEV_PAGEMAP_OPS
--void __put_devmap_managed_page(struct page *page);
-+void free_devmap_managed_page(struct page *page);
- DECLARE_STATIC_KEY_FALSE(devmap_managed_key);
--static inline bool put_devmap_managed_page(struct page *page)
-+
-+static inline bool page_is_devmap_managed(struct page *page)
+diff --git a/drivers/vfio/vfio_iommu_type1.c b/drivers/vfio/vfio_iommu_type=
+1.c
+index b800fc9a0251..18bfc2fc8e6d 100644
+--- a/drivers/vfio/vfio_iommu_type1.c
++++ b/drivers/vfio/vfio_iommu_type1.c
+@@ -309,9 +309,8 @@ static int put_pfn(unsigned long pfn, int prot)
  {
- 	if (!static_branch_unlikely(&devmap_managed_key))
- 		return false;
-@@ -963,7 +964,6 @@ static inline bool put_devmap_managed_page(struct page =
-*page)
- 	switch (page->pgmap->type) {
- 	case MEMORY_DEVICE_PRIVATE:
- 	case MEMORY_DEVICE_FS_DAX:
--		__put_devmap_managed_page(page);
- 		return true;
- 	default:
- 		break;
-@@ -971,7 +971,14 @@ static inline bool put_devmap_managed_page(struct page=
- *page)
- 	return false;
- }
+ 	if (!is_invalid_reserved_pfn(pfn)) {
+ 		struct page *page =3D pfn_to_page(pfn);
+-		if (prot & IOMMU_WRITE)
+-			SetPageDirty(page);
+-		put_page(page);
++
++		put_user_pages_dirty_lock(&page, 1, prot & IOMMU_WRITE);
+ 		return 1;
+ 	}
+ 	return 0;
+@@ -329,7 +328,7 @@ static int vaddr_get_pfn(struct mm_struct *mm, unsigned=
+ long vaddr,
+ 		flags |=3D FOLL_WRITE;
 =20
-+bool put_devmap_managed_page(struct page *page);
-+
- #else /* CONFIG_DEV_PAGEMAP_OPS */
-+static inline bool page_is_devmap_managed(struct page *page)
-+{
-+	return false;
-+}
-+
- static inline bool put_devmap_managed_page(struct page *page)
- {
- 	return false;
-@@ -1028,8 +1035,10 @@ static inline void put_page(struct page *page)
- 	 * need to inform the device driver through callback. See
- 	 * include/linux/memremap.h and HMM for details.
- 	 */
--	if (put_devmap_managed_page(page))
-+	if (page_is_devmap_managed(page)) {
-+		put_devmap_managed_page(page);
- 		return;
-+	}
-=20
- 	if (put_page_testzero(page))
- 		__put_page(page);
-diff --git a/mm/memremap.c b/mm/memremap.c
-index e899fa876a62..2ba773859031 100644
---- a/mm/memremap.c
-+++ b/mm/memremap.c
-@@ -411,20 +411,8 @@ struct dev_pagemap *get_dev_pagemap(unsigned long pfn,
- EXPORT_SYMBOL_GPL(get_dev_pagemap);
-=20
- #ifdef CONFIG_DEV_PAGEMAP_OPS
--void __put_devmap_managed_page(struct page *page)
-+void free_devmap_managed_page(struct page *page)
- {
--	int count =3D page_ref_dec_return(page);
--
--	/* still busy */
--	if (count > 1)
--		return;
--
--	/* only triggered by the dev_pagemap shutdown path */
--	if (count =3D=3D 0) {
--		__put_page(page);
--		return;
--	}
--
- 	/* notify page idle for dax */
- 	if (!is_device_private_page(page)) {
- 		wake_up_var(&page->_refcount);
-@@ -461,5 +449,5 @@ void __put_devmap_managed_page(struct page *page)
- 	page->mapping =3D NULL;
- 	page->pgmap->ops->page_free(page);
- }
--EXPORT_SYMBOL(__put_devmap_managed_page);
-+EXPORT_SYMBOL(free_devmap_managed_page);
- #endif /* CONFIG_DEV_PAGEMAP_OPS */
-diff --git a/mm/swap.c b/mm/swap.c
-index 5341ae93861f..49f7c2eea0ba 100644
---- a/mm/swap.c
-+++ b/mm/swap.c
-@@ -1102,3 +1102,27 @@ void __init swap_setup(void)
- 	 * _really_ don't want to cluster much more
- 	 */
- }
-+
-+#ifdef CONFIG_DEV_PAGEMAP_OPS
-+bool put_devmap_managed_page(struct page *page)
-+{
-+	bool is_devmap =3D page_is_devmap_managed(page);
-+
-+	if (is_devmap) {
-+		int count =3D page_ref_dec_return(page);
-+
-+		/*
-+		 * devmap page refcounts are 1-based, rather than 0-based: if
-+		 * refcount is 1, then the page is free and the refcount is
-+		 * stable because nobody holds a reference on the page.
-+		 */
-+		if (count =3D=3D 1)
-+			free_devmap_managed_page(page);
-+		else if (!count)
-+			__put_page(page);
-+	}
-+
-+	return is_devmap;
-+}
-+EXPORT_SYMBOL(put_devmap_managed_page);
-+#endif
+ 	down_read(&mm->mmap_sem);
+-	ret =3D get_user_pages_remote(NULL, mm, vaddr, 1, flags | FOLL_LONGTERM,
++	ret =3D pin_user_pages_remote(NULL, mm, vaddr, 1, flags | FOLL_LONGTERM,
+ 				    page, NULL, NULL);
+ 	if (ret =3D=3D 1) {
+ 		*pfn =3D page_to_pfn(page[0]);
 --=20
 2.24.0
 
