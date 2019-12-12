@@ -2,92 +2,61 @@ Return-Path: <SRS0=eY2C=2C=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 76902C43603
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2019 17:51:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C0C4CC43603
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2019 17:54:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2A924205C9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2019 17:51:58 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="MAwdhQ2A"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2A924205C9
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id 7DF3E205C9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2019 17:54:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7DF3E205C9
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47YhFS0ksTzDr6b
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 04:51:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linuxfoundation.org (client-ip=2a00:1450:4864:20::241;
- helo=mail-lj1-x241.google.com; envelope-from=torvalds@linuxfoundation.org;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47YhHw10GVzDqbv
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 04:54:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=permerror (SPF Permanent Error: Unknown mechanism
+ found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
+ (client-ip=63.228.1.57; helo=gate.crashing.org;
+ envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-foundation.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
- header.b="MAwdhQ2A"; dkim-atps=neutral
-Received: from mail-lj1-x241.google.com (mail-lj1-x241.google.com
- [IPv6:2a00:1450:4864:20::241])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ header.from=kernel.crashing.org
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47YhCC1n94zDqFB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2019 04:49:58 +1100 (AEDT)
-Received: by mail-lj1-x241.google.com with SMTP id j6so3274550lja.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2019 09:49:58 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linux-foundation.org; s=google;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=bMM9+SXbUifsEu+Y3zqfvwzhjRsedDBd5kfOwAh/UwA=;
- b=MAwdhQ2ApXj+Y01Th4BCE3RSlffcMF2vn+S1n9g9eLPqUXBxqb7H1E20UVL+9mb/zo
- TUamH+60U4LyvobpVidwKOG160coaIFky35EjHAPgaruzcWX7fUztBbagb0MZDX0xKZK
- b+3B1PXWXfIs13GZ1+vXd3HB1o38BkFLHhGiE=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=bMM9+SXbUifsEu+Y3zqfvwzhjRsedDBd5kfOwAh/UwA=;
- b=de21B+YddFxfxDHnzKykwGVT9RJknG0BeV7BbHipIVmrx9Mbbp9cOsWt4kbppCpAjs
- uCXkMzQ87SNm3nnLzLf/8uBv8w4R02r2mDkC+xG+Go7a5fh26jPO3INzWdh498gg0gwZ
- fdjN+Afk0J4yky4alleVwr0eIWIGDegErFXn6L3qFqJnqNSNQ6YTAjtdLaVKwX5CXzzM
- FSZqEBLsSOMFX43ptlGd3Vu3+eLaRrZfoacGXmvlgX9+eHls2fYw8OmSDvs9Iwmoh8Pr
- f48H45sNl2v1xJVtHFOKVJZPGKqNlmPKQfqVEBOv3q0BFmfcGO/pouy6eJM+9P9JCb3A
- jAHQ==
-X-Gm-Message-State: APjAAAVrOpBZU/dBSWN7aOKBi7Q4rTenVigPmM39th4ch8AAHo07iROA
- v3F4odQYIcHdaSPzvDjm9jXbbXaPSxI=
-X-Google-Smtp-Source: APXvYqyU0dvkLIh/fkgmW7Rx5TwFUEbJ2NE4ZA+6DdAZavhnvZUUL5LJyjxXn2b5DDs+bMeqTVyv+A==
-X-Received: by 2002:a2e:918c:: with SMTP id f12mr6739620ljg.66.1576172509459; 
- Thu, 12 Dec 2019 09:41:49 -0800 (PST)
-Received: from mail-lj1-f174.google.com (mail-lj1-f174.google.com.
- [209.85.208.174])
- by smtp.gmail.com with ESMTPSA id n3sm3237501lfk.61.2019.12.12.09.41.48
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Thu, 12 Dec 2019 09:41:48 -0800 (PST)
-Received: by mail-lj1-f174.google.com with SMTP id m6so3247361ljc.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2019 09:41:48 -0800 (PST)
-X-Received: by 2002:a2e:241a:: with SMTP id k26mr6727345ljk.26.1576172507997; 
- Thu, 12 Dec 2019 09:41:47 -0800 (PST)
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47YhF12r3NzDr7g
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2019 04:51:32 +1100 (AEDT)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id xBCHoZtM005441;
+ Thu, 12 Dec 2019 11:50:36 -0600
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id xBCHoY8p005433;
+ Thu, 12 Dec 2019 11:50:34 -0600
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Thu, 12 Dec 2019 11:50:34 -0600
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: READ_ONCE() + STACKPROTECTOR_STRONG == :/ (was Re: [GIT PULL]
+ Please pull powerpc/linux.git powerpc-5.5-2 tag (topic/kasan-bitops))
+Message-ID: <20191212175034.GH3152@gate.crashing.org>
 References: <87blslei5o.fsf@mpe.ellerman.id.au>
  <20191206131650.GM2827@hirez.programming.kicks-ass.net>
  <875zimp0ay.fsf@mpe.ellerman.id.au>
  <20191212080105.GV2844@hirez.programming.kicks-ass.net>
  <20191212100756.GA11317@willie-the-truck>
  <20191212104610.GW2827@hirez.programming.kicks-ass.net>
-In-Reply-To: <20191212104610.GW2827@hirez.programming.kicks-ass.net>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Thu, 12 Dec 2019 09:41:32 -0800
-X-Gmail-Original-Message-ID: <CAHk-=wjUBsH0BYDBv=q36482G-U7c=9bC89L_BViSciTfb8fhA@mail.gmail.com>
-Message-ID: <CAHk-=wjUBsH0BYDBv=q36482G-U7c=9bC89L_BViSciTfb8fhA@mail.gmail.com>
-Subject: Re: READ_ONCE() + STACKPROTECTOR_STRONG == :/ (was Re: [GIT PULL]
- Please pull powerpc/linux.git powerpc-5.5-2 tag (topic/kasan-bitops))
-To: Peter Zijlstra <peterz@infradead.org>
-Content-Type: text/plain; charset="UTF-8"
+ <CAHk-=wjUBsH0BYDBv=q36482G-U7c=9bC89L_BViSciTfb8fhA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAHk-=wjUBsH0BYDBv=q36482G-U7c=9bC89L_BViSciTfb8fhA@mail.gmail.com>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,52 +68,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch <linux-arch@vger.kernel.org>, Will Deacon <will@kernel.org>,
+Cc: linux-arch <linux-arch@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ Will Deacon <will@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
  Mark Rutland <mark.rutland@arm.com>, linuxppc-dev@lists.ozlabs.org,
  dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Dec 12, 2019 at 2:46 AM Peter Zijlstra <peterz@infradead.org> wrote:
->
-> +#ifdef GCC_VERSION < 40800
+On Thu, Dec 12, 2019 at 09:41:32AM -0800, Linus Torvalds wrote:
+> Yeah, I know, but this really wants a comment. Sadly it looks like gcc
+> bugzilla is down, so
+> 
+>    https://gcc.gnu.org/bugzilla/show_bug.cgi?id=58145
+> 
+> currently gives an "Internal Server Error" for me.
 
-Where does that 4.8 version check come from, and why?
+We're being DoSsed again.  Reload, it will work after a while :-/
 
-Yeah, I know, but this really wants a comment. Sadly it looks like gcc
-bugzilla is down, so
 
-   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=58145
-
-currently gives an "Internal Server Error" for me.
-
-[ Delete the horrid code we have because of gcc bugs ]
-
-> +#else /* GCC_VERSION < 40800 */
-> +
-> +#define READ_ONCE_NOCHECK(x)                                           \
-> +({                                                                     \
-> +       typeof(x) __x = *(volatile typeof(x))&(x);                      \
-
-I think we can/should just do this unconditionally if it helps th eissue.
-
-Maybe add a warning about how gcc < 4.8 might mis-compile the kernel -
-those versions are getting close to being unacceptable for kernel
-builds anyway.
-
-We could also look at being stricter for the normal READ/WRITE_ONCE(),
-and require that they are
-
- (a) regular integer types
-
- (b) fit in an atomic word
-
-We actually did (b) for a while, until we noticed that we do it on
-loff_t's etc and relaxed the rules. But maybe we could have a
-"non-atomic" version of READ/WRITE_ONCE() that is used for the
-questionable cases?
-
-              Linus
+Segher
