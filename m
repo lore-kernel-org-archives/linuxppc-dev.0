@@ -2,68 +2,78 @@ Return-Path: <SRS0=eY2C=2C=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BED40C43603
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2019 17:18:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 316C0C43603
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2019 17:49:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 71BA6205C9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2019 17:18:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A8D8A214AF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2019 17:49:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="EWuay0I8"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 71BA6205C9
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="NgtTHc3R"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A8D8A214AF
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47YgVv3fHfzDq69
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 04:18:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=will@kernel.org; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47YhC31q94zDr3T
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 04:49:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
+ spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="EWuay0I8"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="NgtTHc3R"; 
  dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47YgSk5DyczDq69
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2019 04:16:38 +1100 (AEDT)
-Received: from willie-the-truck (236.31.169.217.in-addr.arpa [217.169.31.236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 93FE3205C9;
- Thu, 12 Dec 2019 17:16:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1576170996;
- bh=hCIUUjoV9LDxYFfpfhgTZKOW9fzOYuAszkQqCpfyxqI=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=EWuay0I819XqGuvOSsknn0d9k75Vn8g4VG3BHr2E2DN4rsyF1Ff5RAOgMHPgzFwtc
- 8Na0syFuMwf74TW1Aod2SFGjufh5djkZ7Y9bO46PbSsdR7iP3IfPKFNvfs/9sqAhyU
- WdC0UAGaNcw5F5Lq+ZtVZ6pmlyL17XIKquJFBPPY=
-Date: Thu, 12 Dec 2019 17:16:31 +0000
-From: Will Deacon <will@kernel.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: READ_ONCE() + STACKPROTECTOR_STRONG == :/ (was Re: [GIT PULL]
- Please pull powerpc/linux.git powerpc-5.5-2 tag (topic/kasan-bitops))
-Message-ID: <20191212171630.GC16364@willie-the-truck>
-References: <87blslei5o.fsf@mpe.ellerman.id.au>
- <20191206131650.GM2827@hirez.programming.kicks-ass.net>
- <875zimp0ay.fsf@mpe.ellerman.id.au>
- <20191212080105.GV2844@hirez.programming.kicks-ass.net>
- <20191212100756.GA11317@willie-the-truck>
- <20191212104610.GW2827@hirez.programming.kicks-ass.net>
- <20191212170427.GA16364@willie-the-truck>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20191212170427.GA16364@willie-the-truck>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47Yh8Q07j0zDr37
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2019 04:47:33 +1100 (AEDT)
+Received: from localhost (mailhub1-ext [192.168.12.233])
+ by localhost (Postfix) with ESMTP id 47Yh8C4sqGzB09bG;
+ Thu, 12 Dec 2019 18:47:23 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=NgtTHc3R; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id dsa5BH8wBHuE; Thu, 12 Dec 2019 18:47:23 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 47Yh8C3rMkzB09bF;
+ Thu, 12 Dec 2019 18:47:23 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1576172843; bh=yNBKHgBeVhxuEL0twelYE6v4UaF/ILC0FPOkeX1TzhI=;
+ h=From:Subject:To:Cc:Date:From;
+ b=NgtTHc3RoPnk0WOUnDHCn1qWnYvwBy/PaSWrc/aFMok2oo8B+TruqZ2Xv7knjF0yf
+ T83Kl0sTcwMq+qOxRbc/QxTKdn8WUkTWU14m1pha5dl+4z0Gzcvr/664ddk/qCl1OF
+ 9Uud/OFNogCZcmsXZZvFgp7HBwlTCt1MzBo8nqWk=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 39F3D8B87A;
+ Thu, 12 Dec 2019 18:47:25 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 5kIYfMYKMeKa; Thu, 12 Dec 2019 18:47:25 +0100 (CET)
+Received: from po16098vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
+ [172.25.230.112])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 14D2D8B872;
+ Thu, 12 Dec 2019 18:47:25 +0100 (CET)
+Received: by po16098vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id DB5E063743; Thu, 12 Dec 2019 17:47:24 +0000 (UTC)
+Message-Id: <091a277fd0b3356dca1e29858c1c96983fc9cb25.1576172743.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] spi: fsl: use platform_get_irq() instead of
+ of_irq_to_resource()
+To: Mark Brown <broonie@kernel.org>
+Date: Thu, 12 Dec 2019 17:47:24 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,46 +85,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
- Christian Borntraeger <borntraeger@de.ibm.com>, linux-kernel@vger.kernel.org,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Mark Rutland <mark.rutland@arm.com>, linuxppc-dev@lists.ozlabs.org,
- dja@axtens.net
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-spi@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Dec 12, 2019 at 05:04:27PM +0000, Will Deacon wrote:
-> On Thu, Dec 12, 2019 at 11:46:10AM +0100, Peter Zijlstra wrote:
-> > On Thu, Dec 12, 2019 at 10:07:56AM +0000, Will Deacon wrote:
-> > 
-> > > > So your proposed change _should_ be fine. Will, I'm assuming you never
-> > > > saw this on your ARGH64 builds when you did this code ?
-> > > 
-> > > I did see it, but (a) looking at the code out-of-line makes it look a lot
-> > > worse than it actually is (so the ext4 example is really helpful -- thanks
-> > > Michael!) and (b) I chalked it up to a crappy compiler.
-> > > 
-> > > However, see this comment from Arnd on my READ_ONCE series from the other
-> > > day:
-> > > 
-> > > https://lore.kernel.org/lkml/CAK8P3a0f=WvSQSBQ4t0FmEkcFE_mC3oARxaeTviTSkSa-D2qhg@mail.gmail.com
-> > > 
-> > > In which case, I'm thinking that we should be doing better in READ_ONCE()
-> > > for non-buggy compilers which would also keep the KCSAN folks happy for this
-> > > code (and would help with [1] too).
-> > 
-> > So something like this then? Although I suppose that should be moved
-> > into compiler-gcc.h and then guarded by #ifndef READ_ONCE or so.
-> 
-> Ah wait, I think we've been looking at this wrong. The volatile pointer
-> argument is actually the problem here, not READ_ONCE()! The use of typeof()
-> means that the temporary variable to which __READ_ONCE_SIZE writes ends up
-> being a volatile store, so it can't be optimised away. This is why we get
-> a stack access and why stack protector then wrecks the codegen for us.
+Unlike irq_of_parse_and_map() which has a dummy definition on SPARC,
+of_irq_to_resource() hasn't.
 
-Hmm, it's actually probably the volatile read which is causing the problem,
-since __READ_ONCE_SIZE has casted that away and just uses "void *", but you
-get the idea.
+But as platform_get_irq() can be used instead and is generic, use it.
 
-Will
+Reported-by: kbuild test robot <lkp@intel.com>
+Suggested-by: Mark Brown <broonie@kernel.org>
+Fixes: 	3194d2533eff ("spi: fsl: don't map irq during probe")
+Cc: stable@vger.kernel.org
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ drivers/spi/spi-fsl-spi.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/spi/spi-fsl-spi.c b/drivers/spi/spi-fsl-spi.c
+index 2d85c81983b1..c76128cadf0c 100644
+--- a/drivers/spi/spi-fsl-spi.c
++++ b/drivers/spi/spi-fsl-spi.c
+@@ -765,9 +765,9 @@ static int of_fsl_spi_probe(struct platform_device *ofdev)
+ 	if (ret)
+ 		goto err;
+ 
+-	irq = of_irq_to_resource(np, 0, NULL);
+-	if (irq <= 0) {
+-		ret = -EINVAL;
++	irq = platform_get_irq(ofdev, 0);
++	if (irq < 0) {
++		ret = irq;
+ 		goto err;
+ 	}
+ 
+-- 
+2.13.3
+
