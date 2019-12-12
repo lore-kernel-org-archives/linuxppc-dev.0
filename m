@@ -2,72 +2,95 @@ Return-Path: <SRS0=eY2C=2C=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A7F56C43603
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2019 18:45:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 54B28C3F68F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2019 18:47:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 339E5206C3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2019 18:45:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 339E5206C3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=dolbeau.org
+	by mail.kernel.org (Postfix) with ESMTPS id 0EF012073D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2019 18:47:37 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="ESVNK1Mw"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0EF012073D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47YjRb2VDxzDr7n
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 05:45:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47YjTh13XfzDr72
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 05:47:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.221.42; helo=mail-wr1-f42.google.com;
- envelope-from=romain.dolbeau@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=dolbeau.org
-Received: from mail-wr1-f42.google.com (mail-wr1-f42.google.com
- [209.85.221.42])
+ smtp.mailfrom=linuxfoundation.org (client-ip=2a00:1450:4864:20::243;
+ helo=mail-lj1-x243.google.com; envelope-from=torvalds@linuxfoundation.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
+ header.b="ESVNK1Mw"; dkim-atps=neutral
+X-Greylist: delayed 3693 seconds by postgrey-1.36 at bilbo;
+ Fri, 13 Dec 2019 05:43:37 AEDT
+Received: from mail-lj1-x243.google.com (unknown [IPv6:2a00:1450:4864:20::243])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47YjP550TGzDr1x
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2019 05:43:37 +1100 (AEDT)
-Received: by mail-wr1-f42.google.com with SMTP id d16so3846815wre.10
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47YjP54yd9zDr1c
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2019 05:43:36 +1100 (AEDT)
+Received: by mail-lj1-x243.google.com with SMTP id m6so3444056ljc.1
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2019 10:43:36 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linux-foundation.org; s=google;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=daP2x4GLzegqYAtGzoN/GqQWx/OgbUZpFEmzsIb9AuY=;
+ b=ESVNK1Mwi4VakiBbtSIOLOxnFTfo9yicVGMiebqVDAAObXDl8gUPGjFP3V6AoTVKJc
+ HXbX49wJTIP8gVq4DIOHImreynSyKqrAyaVA413Sj66yFki8qzqdppnMRHspROxc1wIy
+ o3RYW91grmKJW3WGA8r4+DqCoBMnHPzXSZzsw=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc:content-transfer-encoding;
- bh=a+mv3jMicl1jse7K+JqsfDkyITYDweKoxsau7sJfMOo=;
- b=B0j2ApHKz75VOKYQa5CfFJJlfHMWzachSrTA021m1BPOdL8gFlO3CW8LHyNTHSShd3
- TJBL0ZC3TEkUfJPFkkUmA7fwK7Mc0TBVVZX9yIFEqHIdBBLkPTAX4UItTAlOianQkH2Y
- Jurg1NIdCLiMWcf/Yn8L5oD1js8BZYeelfLo2d7upeuwmYt8cwwD3nCkOlkulqAbj0R9
- JZA0xPULQQbsTrGPBdNjhlvZPTcRRy43kNVAG9VPivDzToYM6KVQvhNEGtIxMOUIBXVl
- G2DWcA5MNUAreDHRwFbledIYLyCUCZN0iMM+hisQn74aIylmWuhNid0uiiw/POAn1nQm
- wiTA==
-X-Gm-Message-State: APjAAAVMCcgowbjCj6KduDpjEOLe3xd0dPctN6ZDS5FtFCAc1Z6KZEu/
- zE9w46sZNvdIacqSzytsRaru0hkkUCgx4oW3op/gTVWV
-X-Google-Smtp-Source: APXvYqwble4PHYCoIm9MJyEsDPapeRE30lq8kPw2AerlfYWf5WuMZVZmK/3hC1QoawLOz/sttkx4EhjPy1+HWaWNKMI=
-X-Received: by 2002:a5d:65c5:: with SMTP id e5mr7865384wrw.311.1576176211346; 
- Thu, 12 Dec 2019 10:43:31 -0800 (PST)
+ :message-id:subject:to:cc;
+ bh=daP2x4GLzegqYAtGzoN/GqQWx/OgbUZpFEmzsIb9AuY=;
+ b=gAq4XVBnOqcPN6KHKgR4U0Y+YsKFHNEsW5IXvRtC4ryiHup+ClYYvz2/Qc/rhYYIsh
+ xdz+FXZK/ocezHA80Wj/numH9+GzHQvKnp+LWtdg2LlZF7NxmqmaLNLRjNASGgoYn70/
+ 6mp7NQktGHU4ne+npi7sMM/ky9rn1N7Y75s5iOiDZK1yghctStEVuImMypl1uV00Sdk1
+ kVvhNUkoqh53koSH0DUiIs4CxkPbYXWBGX3DHfMZ8yVkKtFlPbI5bktCsRvcs/HMP1gw
+ iShdcC0KGcdPuyP3bWFBWYBC2Vem26WvsN8PCaQmwF2+0ALKL6/lf2RbgRWw2k7NIPuX
+ 1MJg==
+X-Gm-Message-State: APjAAAUx0Ud+yR5OA7Ntk97KjMt7fM6BISXkpryIHq6D/EvU251MNpfl
+ CBQ9k9uiV5KWgK4XWq61sGwvE8C7msI=
+X-Google-Smtp-Source: APXvYqwLSEUI91t3uR02ymjVRa46GyUXjEqmN4PzLgCHCNrDYCRr53pGtHrhcL1YTeGcU6FdRnKzig==
+X-Received: by 2002:a2e:8953:: with SMTP id b19mr6374121ljk.249.1576176202434; 
+ Thu, 12 Dec 2019 10:43:22 -0800 (PST)
+Received: from mail-lf1-f43.google.com (mail-lf1-f43.google.com.
+ [209.85.167.43])
+ by smtp.gmail.com with ESMTPSA id z9sm3421454ljm.40.2019.12.12.10.43.21
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Thu, 12 Dec 2019 10:43:21 -0800 (PST)
+Received: by mail-lf1-f43.google.com with SMTP id 15so42883lfr.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2019 10:43:21 -0800 (PST)
+X-Received: by 2002:ac2:4946:: with SMTP id o6mr6694407lfi.170.1576176201157; 
+ Thu, 12 Dec 2019 10:43:21 -0800 (PST)
 MIME-Version: 1.0
-References: <CADuzgbqYpv40NvAMGjo1cU2cNnij-2p4SYpWgM-Xn0v-8Qapsg@mail.gmail.com>
- <e87e2397-a8d4-c928-d3d4-7ae700603770@physik.fu-berlin.de>
- <CA+7wUsxBkmG-jW_UVBUuMriZbDkJko3kg0hzmMrVMoJLu2+rPw@mail.gmail.com>
- <CADuzgbqoX3DQ6OVqdR6dw1oqnNn-Q0zLPshDi23DwDtYukDYdg@mail.gmail.com>
- <CADuzgboWQtVqp7-Ru4uQQaPerkhLnaS9=WiwX2dD4-5VypT2MA@mail.gmail.com>
- <CADuzgboYv69FQxQRvJ_Bd563OPO0e=USd+cTChfDK60D5x75hw@mail.gmail.com>
- <b2256437-efe1-909d-1488-174b6522f9e0@physik.fu-berlin.de>
- <87eexbk3gw.fsf@linux.ibm.com>
- <CADuzgbq-P8mgf9zLaxhdqUfQcqfRpSzjgRoofF84rp+-S064xg@mail.gmail.com>
- <87mubxl82x.fsf@igel.home>
-In-Reply-To: <87mubxl82x.fsf@igel.home>
-From: Romain Dolbeau <romain@dolbeau.org>
-Date: Thu, 12 Dec 2019 19:43:20 +0100
-Message-ID: <CADuzgbqU-SVy5U_4Pkv2G8SJcT9JhyirhFGamnQusZBSRSgcPw@mail.gmail.com>
-Subject: Re: Call for report - G5/PPC970 status
-To: Andreas Schwab <schwab@linux-m68k.org>
+References: <87blslei5o.fsf@mpe.ellerman.id.au>
+ <20191206131650.GM2827@hirez.programming.kicks-ass.net>
+ <875zimp0ay.fsf@mpe.ellerman.id.au>
+ <20191212080105.GV2844@hirez.programming.kicks-ass.net>
+ <20191212100756.GA11317@willie-the-truck>
+ <20191212104610.GW2827@hirez.programming.kicks-ass.net>
+ <CAHk-=wjUBsH0BYDBv=q36482G-U7c=9bC89L_BViSciTfb8fhA@mail.gmail.com>
+ <20191212180634.GA19020@willie-the-truck>
+In-Reply-To: <20191212180634.GA19020@willie-the-truck>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Thu, 12 Dec 2019 10:43:05 -0800
+X-Gmail-Original-Message-ID: <CAHk-=whRxB0adkz+V7SQC8Ac_rr_YfaPY8M2mFDfJP2FFBNz8A@mail.gmail.com>
+Message-ID: <CAHk-=whRxB0adkz+V7SQC8Ac_rr_YfaPY8M2mFDfJP2FFBNz8A@mail.gmail.com>
+Subject: Re: READ_ONCE() + STACKPROTECTOR_STRONG == :/ (was Re: [GIT PULL]
+ Please pull powerpc/linux.git powerpc-5.5-2 tag (topic/kasan-bitops))
+To: Will Deacon <will@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,25 +102,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- PowerPC List Debian <debian-powerpc@lists.debian.org>,
- linuxppc-dev@lists.ozlabs.org,
- John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+Cc: linux-arch <linux-arch@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Mark Rutland <mark.rutland@arm.com>, linuxppc-dev@lists.ozlabs.org,
+ dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Le jeu. 12 d=C3=A9c. 2019 =C3=A0 19:20, Andreas Schwab <schwab@linux-m68k.o=
-rg> a =C3=A9crit :
-> My PowerMac7,3 (DP 2.0GHz) can boot 5.5-rc1 without issues.
+On Thu, Dec 12, 2019 at 10:06 AM Will Deacon <will@kernel.org> wrote:
+>
+> I'm currently trying to solve the issue by removing volatile from the bitop
+> function signatures
 
-This is weird, as except for the frequency it should be the same
-system as Jeroen's crashing G5!
+I really think that's the wrong thing to do.
 
-Can you share your kernel config, compiler version, and other details?
-Perhaps even the binary...
+The bitop signature really should be "volatile" (and it should be
+"const volatile" for test_bit, but I'm not sure anybody cares).
 
-Thanks & cordially,
+Exactly because it's simply valid to say "hey, my data is volatile,
+but do an atomic test of this bit". So it might be volatile in the
+caller.
 
---=20
-Romain Dolbeau
+Now, I generally frown on actual volatile data structures - because
+the data structure volatility often depends on _context_. The same
+data might be volatile in one context (when you do some optimistic
+test on it without locking), but 100% stable in another (when you do
+have a lock).
+
+So I don't want to see "volatile" on data definitions ("jiffies" being
+the one traditional exception), but marking things volatile in code
+(because you know you're working with unlocked data) and then passing
+them down to various helper functions - including the bitops ones - is
+quite traditional and accepted.
+
+In other words, 'volatile" should be treated the same way "const" is
+largely treated in C.
+
+A pointer to "const" data doesn't mean that the data is read-only, or
+that it cannot be modified _elsewhere_, it means that within this
+particular context and this copy of the pointer we promise not to
+write to it.
+
+Similarly, a pointer to "volatile" data doesn't mean that the data
+might not be stable once you take a lock, for example. So it's ok to
+have volatile pointers even if the data declaration itself isn't
+volatile - you're stating something about the context, not something
+fundamental about the data.
+
+And in the context of the bit operations, "volatile" is the correct thing to do.
+
+                     Linus
