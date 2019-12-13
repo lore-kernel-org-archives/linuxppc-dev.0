@@ -2,68 +2,79 @@ Return-Path: <SRS0=Sd9m=2D=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DD8C8C2D0C9
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C8CB2C43603
 	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 21:37:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 45A4124125
+	by mail.kernel.org (Postfix) with ESMTPS id 45A252253D
 	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 21:37:41 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="WXZ8TIT/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 45A4124125
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="eNsSuvgn"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 45A252253D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47Z8fR1w7KzDqcK
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 23:11:43 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47ZDR85VpMzDrHP
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Dec 2019 02:02:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="eNsSuvgn"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47Z8ZB29lYzDqKV
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2019 23:08:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.b="WXZ8TIT/"; dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 47Z8Z75M69z9sNH;
- Fri, 13 Dec 2019 23:07:59 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1576238880;
- bh=T73UbJx6DhmwQ1N/iNMIavMt3Lbs62DgCQLGRpz+/FM=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=WXZ8TIT/18VCusfv0/4GxMXeLZyG9e/dxQn9uQb2kX1dBzq4bQQLvVRkSqv62BI6A
- nf6xFtNVGbDVzJg55Mx3ZN+XCZC54kP7PVy2cg0VJSy4UAVirl9uhRJIUPUJpTjHiN
- yOmNGNyXzg0i/vEoHp21xNf+AI3vCnFO5xIGtk7Ad+ndOIhFeluKeH/27NOg3+/kxb
- 7eiRc8TEh2W/q52qnAy4vz7t5QWgeFUNxAj9klDYnCPW4CsplJ9n6gZ0E1nTvhAcQ3
- uv4xbOfhW0ZmA6C3Z8wDOrRZlJtjMuQfNXEdv2MzNXfL+Qr9T+DJvXS4fpvy2LZgGS
- ccnL2ZE0DQeew==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Peter Zijlstra <peterz@infradead.org>, Will Deacon <will@kernel.org>
-Subject: Re: READ_ONCE() + STACKPROTECTOR_STRONG == :/ (was Re: [GIT PULL]
- Please pull powerpc/linux.git powerpc-5.5-2 tag (topic/kasan-bitops))
-In-Reply-To: <20191212104610.GW2827@hirez.programming.kicks-ass.net>
-References: <87blslei5o.fsf@mpe.ellerman.id.au>
- <20191206131650.GM2827@hirez.programming.kicks-ass.net>
- <875zimp0ay.fsf@mpe.ellerman.id.au>
- <20191212080105.GV2844@hirez.programming.kicks-ass.net>
- <20191212100756.GA11317@willie-the-truck>
- <20191212104610.GW2827@hirez.programming.kicks-ass.net>
-Date: Fri, 13 Dec 2019 23:07:55 +1100
-Message-ID: <87pngso2ck.fsf@mpe.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47ZDNK306mzDrDy
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Dec 2019 01:59:42 +1100 (AEDT)
+Received: from localhost (mailhub1-ext [192.168.12.233])
+ by localhost (Postfix) with ESMTP id 47ZDN82bdGz9vBJg;
+ Fri, 13 Dec 2019 15:59:36 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=eNsSuvgn; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id JbWyOEqSF5fS; Fri, 13 Dec 2019 15:59:36 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 47ZDN81JZNz9vBJc;
+ Fri, 13 Dec 2019 15:59:36 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1576249176; bh=ciNClaFt4bgE8XImcN+vK2ienGGRWFLoOBnDEXiWkyo=;
+ h=From:Subject:To:Cc:Date:From;
+ b=eNsSuvgnmZw1YmG5E/YgVg0KpuE+7i8abcfUzZwyBTaKGuDHrE70cwAEPxQTNKOGT
+ Qayr0Zwr419NfgU9KtjmPIPc7OybWEmftzlVvIHoBLETrhaD4SPnCawConqvQNt09V
+ u1zs90wHYjnVo4VE7sjygwG6OfO5s83Z38EsEt2s=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A27798B8CE;
+ Fri, 13 Dec 2019 15:59:37 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id gYnh7uNCBj0G; Fri, 13 Dec 2019 15:59:37 +0100 (CET)
+Received: from po16098vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 471608B8C4;
+ Fri, 13 Dec 2019 15:59:37 +0100 (CET)
+Received: by po16098vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id DDB6B63777; Fri, 13 Dec 2019 14:59:36 +0000 (UTC)
+Message-Id: <66a26ff96689f6f84b25ed11dcff6c3818801fe7.1576248635.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v2] powerpc/32: add support of KASAN_VMALLOC
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ dja@axtens.net
+Date: Fri, 13 Dec 2019 14:59:36 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,155 +86,161 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
- Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- Mark Rutland <mark.rutland@arm.com>, linuxppc-dev@lists.ozlabs.org,
- dja@axtens.net
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Peter Zijlstra <peterz@infradead.org> writes:
-> On Thu, Dec 12, 2019 at 10:07:56AM +0000, Will Deacon wrote:
->
->> > So your proposed change _should_ be fine. Will, I'm assuming you never
->> > saw this on your ARGH64 builds when you did this code ?
->> 
->> I did see it, but (a) looking at the code out-of-line makes it look a lot
->> worse than it actually is (so the ext4 example is really helpful -- thanks
->> Michael!) and (b) I chalked it up to a crappy compiler.
->> 
->> However, see this comment from Arnd on my READ_ONCE series from the other
->> day:
->> 
->> https://lore.kernel.org/lkml/CAK8P3a0f=WvSQSBQ4t0FmEkcFE_mC3oARxaeTviTSkSa-D2qhg@mail.gmail.com
->> 
->> In which case, I'm thinking that we should be doing better in READ_ONCE()
->> for non-buggy compilers which would also keep the KCSAN folks happy for this
->> code (and would help with [1] too).
->
-> So something like this then? Although I suppose that should be moved
-> into compiler-gcc.h and then guarded by #ifndef READ_ONCE or so.
+Add support of KASAN_VMALLOC on PPC32.
 
-I tried this:
+To allow this, the early shadow covering the VMALLOC space
+need to be removed once high_memory var is set and before
+freeing memblock.
 
-> @@ -295,6 +296,23 @@ void __write_once_size(volatile void *p, void *res, int size)
->   */
->  #define READ_ONCE_NOCHECK(x) __READ_ONCE(x, 0)
->  
-> +#else /* GCC_VERSION < 40800 */
-> +
-> +#define READ_ONCE_NOCHECK(x)						\
-> +({									\
-> +	typeof(x) __x = *(volatile typeof(x))&(x);			\
+And the VMALLOC area need to be aligned such that boundaries
+are covered by a full shadow page.
 
-Didn't compile, needed:
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-	typeof(x) __x = *(volatile typeof(&x))&(x);			\
+---
+v2: rebased ; exclude specific module handling when CONFIG_KASAN_VMALLOC is set.
+---
+ arch/powerpc/Kconfig                         |  1 +
+ arch/powerpc/include/asm/book3s/32/pgtable.h |  5 +++++
+ arch/powerpc/include/asm/kasan.h             |  2 ++
+ arch/powerpc/include/asm/nohash/32/pgtable.h |  5 +++++
+ arch/powerpc/mm/kasan/kasan_init_32.c        | 33 +++++++++++++++++++++++++++-
+ arch/powerpc/mm/mem.c                        |  3 +++
+ 6 files changed, 48 insertions(+), 1 deletion(-)
 
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 1ec34e16ed65..a247bbfb03d4 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -173,6 +173,7 @@ config PPC
+ 	select HAVE_ARCH_HUGE_VMAP		if PPC_BOOK3S_64 && PPC_RADIX_MMU
+ 	select HAVE_ARCH_JUMP_LABEL
+ 	select HAVE_ARCH_KASAN			if PPC32
++	select HAVE_ARCH_KASAN_VMALLOC		if PPC32
+ 	select HAVE_ARCH_KGDB
+ 	select HAVE_ARCH_MMAP_RND_BITS
+ 	select HAVE_ARCH_MMAP_RND_COMPAT_BITS	if COMPAT
+diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
+index 0796533d37dd..5b39c11e884a 100644
+--- a/arch/powerpc/include/asm/book3s/32/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
+@@ -193,7 +193,12 @@ int map_kernel_page(unsigned long va, phys_addr_t pa, pgprot_t prot);
+ #else
+ #define VMALLOC_START ((((long)high_memory + VMALLOC_OFFSET) & ~(VMALLOC_OFFSET-1)))
+ #endif
++
++#ifdef CONFIG_KASAN_VMALLOC
++#define VMALLOC_END	_ALIGN_DOWN(ioremap_bot, PAGE_SIZE << KASAN_SHADOW_SCALE_SHIFT)
++#else
+ #define VMALLOC_END	ioremap_bot
++#endif
+ 
+ #ifndef __ASSEMBLY__
+ #include <linux/sched.h>
+diff --git a/arch/powerpc/include/asm/kasan.h b/arch/powerpc/include/asm/kasan.h
+index 296e51c2f066..fbff9ff9032e 100644
+--- a/arch/powerpc/include/asm/kasan.h
++++ b/arch/powerpc/include/asm/kasan.h
+@@ -31,9 +31,11 @@
+ void kasan_early_init(void);
+ void kasan_mmu_init(void);
+ void kasan_init(void);
++void kasan_late_init(void);
+ #else
+ static inline void kasan_init(void) { }
+ static inline void kasan_mmu_init(void) { }
++static inline void kasan_late_init(void) { }
+ #endif
+ 
+ #endif /* __ASSEMBLY */
+diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
+index 552b96eef0c8..60c4d829152e 100644
+--- a/arch/powerpc/include/asm/nohash/32/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
+@@ -114,7 +114,12 @@ int map_kernel_page(unsigned long va, phys_addr_t pa, pgprot_t prot);
+ #else
+ #define VMALLOC_START ((((long)high_memory + VMALLOC_OFFSET) & ~(VMALLOC_OFFSET-1)))
+ #endif
++
++#ifdef CONFIG_KASAN_VMALLOC
++#define VMALLOC_END	_ALIGN_DOWN(ioremap_bot, PAGE_SIZE << KASAN_SHADOW_SCALE_SHIFT)
++#else
+ #define VMALLOC_END	ioremap_bot
++#endif
+ 
+ /*
+  * Bits in a linux-style PTE.  These match the bits in the
+diff --git a/arch/powerpc/mm/kasan/kasan_init_32.c b/arch/powerpc/mm/kasan/kasan_init_32.c
+index 0e6ed4413eea..88036fb88350 100644
+--- a/arch/powerpc/mm/kasan/kasan_init_32.c
++++ b/arch/powerpc/mm/kasan/kasan_init_32.c
+@@ -129,6 +129,31 @@ static void __init kasan_remap_early_shadow_ro(void)
+ 	flush_tlb_kernel_range(KASAN_SHADOW_START, KASAN_SHADOW_END);
+ }
+ 
++static void __init kasan_unmap_early_shadow_vmalloc(void)
++{
++	unsigned long k_start = (unsigned long)kasan_mem_to_shadow((void *)VMALLOC_START);
++	unsigned long k_end = (unsigned long)kasan_mem_to_shadow((void *)VMALLOC_END);
++	unsigned long k_cur;
++	phys_addr_t pa = __pa(kasan_early_shadow_page);
++
++	if (!early_mmu_has_feature(MMU_FTR_HPTE_TABLE)) {
++		int ret = kasan_init_shadow_page_tables(k_start, k_end);
++
++		if (ret)
++			panic("kasan: kasan_init_shadow_page_tables() failed");
++	}
++	for (k_cur = k_start & PAGE_MASK; k_cur < k_end; k_cur += PAGE_SIZE) {
++		pmd_t *pmd = pmd_offset(pud_offset(pgd_offset_k(k_cur), k_cur), k_cur);
++		pte_t *ptep = pte_offset_kernel(pmd, k_cur);
++
++		if ((pte_val(*ptep) & PTE_RPN_MASK) != pa)
++			continue;
++
++		__set_pte_at(&init_mm, k_cur, ptep, __pte(0), 0);
++	}
++	flush_tlb_kernel_range(k_start, k_end);
++}
++
+ void __init kasan_mmu_init(void)
+ {
+ 	int ret;
+@@ -165,7 +190,13 @@ void __init kasan_init(void)
+ 	pr_info("KASAN init done\n");
+ }
+ 
+-#ifdef CONFIG_MODULES
++void __init kasan_late_init(void)
++{
++	if (IS_ENABLED(CONFIG_KASAN_VMALLOC))
++		kasan_unmap_early_shadow_vmalloc();
++}
++
++#if defined(CONFIG_MODULES) && !defined(CONFIG_KASAN_VMALLOC)
+ void *module_alloc(unsigned long size)
+ {
+ 	void *base;
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 9488b63dfc87..3bb212c8ef2d 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -294,6 +294,9 @@ void __init mem_init(void)
+ 
+ 	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE);
+ 	set_max_mapnr(max_pfn);
++
++	kasan_late_init();
++
+ 	memblock_free_all();
+ 
+ #ifdef CONFIG_HIGHMEM
+-- 
+2.13.3
 
-> +	smp_read_barrier_depends();					\
-> +	__x;
-> +})
-
-
-And that works for me. No extra stack check stuff.
-
-I guess the question is does that version of READ_ONCE() implement the
-read once semantics. Do we have a good way to test that?
-
-The only differences are because of the early return in the generic
-test_and_set_bit_lock():
-
-   1 <ext4_resize_begin_generic>:                            1 <ext4_resize_begin_ppc>:
-   2         addis   r2,r12,281                              2         addis   r2,r12,281
-   3         addi    r2,r2,-22368                            3         addi    r2,r2,-22064
-   4         mflr    r0                                      4         mflr    r0
-   5         bl      <_mcount>                               5         bl      <_mcount>
-   6         mflr    r0                                      6         mflr    r0
-   7         std     r31,-8(r1)                              7         std     r31,-8(r1)
-   8         std     r30,-16(r1)                             8         std     r30,-16(r1)
-   9         mr      r31,r3                                  9         mr      r31,r3
-  10         li      r3,24                                  10         li      r3,24
-  11         std     r0,16(r1)                              11         std     r0,16(r1)
-  12         stdu    r1,-128(r1)                            12         stdu    r1,-112(r1)
-  13         ld      r30,920(r31)                           13         ld      r30,920(r31)
-  14         bl      <capable+0x8>                          14         bl      <capable+0x8>
-  15         nop                                            15         nop
-  16         cmpdi   cr7,r3,0                               16         cmpdi   cr7,r3,0
-  17         beq     cr7,<ext4_resize_begin_generic+0xf0>   17         beq     cr7,<ext4_resize_begin_ppc+0xc0>
-  18         ld      r9,920(r31)                            18         ld      r9,920(r31)
-  19         ld      r10,96(r30)                            19         ld      r10,96(r30)
-  20         lwz     r7,84(r30)                             20         lwz     r7,84(r30)
-  21         ld      r8,104(r9)                             21         ld      r8,104(r9)
-  22         ld      r10,24(r10)                            22         ld      r10,24(r10)
-  23         lwz     r8,20(r8)                              23         lwz     r8,20(r8)
-  24         srd     r10,r10,r7                             24         srd     r10,r10,r7
-  25         cmpd    cr7,r10,r8                             25         cmpd    cr7,r10,r8
-  26         bne     cr7,<ext4_resize_begin_generic+0x128>  26         bne     cr7,<ext4_resize_begin_ppc+0xf8>
-  27         lhz     r10,160(r9)                            27         lhz     r10,160(r9)
-  28         andi.   r10,r10,2                              28         andi.   r10,r10,2
-  29         bne     <ext4_resize_begin_generic+0x100>
-  30         ld      r10,560(r9)
-  31         std     r10,104(r1)
-  32         ld      r10,104(r1)
-  33         andi.   r10,r10,1
-  34         bne     <ext4_resize_begin_generic+0xd0>       29         bne     <ext4_resize_begin_ppc+0xd0>
-  35         addi    r7,r9,560                              30         addi    r9,r9,560
-  36         li      r8,1                                   31         li      r10,1
-  37         ldarx   r10,0,r7                               32         ldarx   r3,0,r9,1
-  38         or      r6,r8,r10                              33         or      r8,r3,r10
-  39         stdcx.  r6,0,r7                                34         stdcx.  r8,0,r9
-  40         bne-    <ext4_resize_begin_generic+0x8c>       35         bne-    <ext4_resize_begin_ppc+0x78>
-  41         isync                                          36         isync
-                                                            37         clrldi  r3,r3,63
-  42         andi.   r9,r10,1                               38         addi    r3,r3,-1
-  43         li      r3,0                                   39         rlwinm  r3,r3,0,27,27
-  44         bne     <ext4_resize_begin_generic+0xd0>       40         addi    r3,r3,-16
-  45         addi    r1,r1,128                              41         addi    r1,r1,112
-  46         ld      r0,16(r1)                              42         ld      r0,16(r1)
-  47         ld      r30,-16(r1)                            43         ld      r30,-16(r1)
-  48         ld      r31,-8(r1)                             44         ld      r31,-8(r1)
-  49         mtlr    r0                                     45         mtlr    r0
-  50         blr                                            46         blr
-  51         nop                                            47         nop
-  52         nop                                            48         nop
-  53         nop                                            49         nop
-  54         addi    r1,r1,128
-  55         li      r3,-16
-  56         ld      r0,16(r1)
-  57         ld      r30,-16(r1)
-  58         ld      r31,-8(r1)
-  59         mtlr    r0
-  60         blr
-  61         nop
-  62         li      r3,-1                                  50         li      r3,-1
-  63         b       <ext4_resize_begin_generic+0xac>       51         b       <ext4_resize_begin_ppc+0x9c>
-  64         nop                                            52         nop
-  65         nop                                            53         nop
-  66         addis   r6,r2,-117                             54         addis   r6,r2,-117
-  67         addis   r4,r2,-140                             55         addis   r4,r2,-140
-  68         mr      r3,r31                                 56         mr      r3,r31
-  69         li      r5,146                                 57         li      r5,83
-  70         addi    r6,r6,-32736                           58         addi    r6,r6,-32736
-  71         addi    r4,r4,3088                             59         addi    r4,r4,3064
-  72         bl      <__ext4_warning+0x8>                   60         bl      <__ext4_warning+0x8>
-  73         nop                                            61         nop
-  74         li      r3,-1                                  62         li      r3,-1
-  75         b       <ext4_resize_begin_generic+0xac>       63         b       <ext4_resize_begin_ppc+0x9c>
-  76         ld      r9,96(r9)                              64         ld      r9,96(r9)
-  77         addis   r6,r2,-118                             65         addis   r6,r2,-118
-  78         addis   r4,r2,-140                             66         addis   r4,r2,-140
-  79         mr      r3,r31                                 67         mr      r3,r31
-  80         li      r5,136                                 68         li      r5,73
-  81         addi    r6,r6,32752                            69         addi    r6,r6,32752
-  82         addi    r4,r4,3088                             70         addi    r4,r4,3064
-  83         ld      r7,24(r9)                              71         ld      r7,24(r9)
-  84         bl      <__ext4_warning+0x8>                   72         bl      <__ext4_warning+0x8>
-  85         nop                                            73         nop
-  86         li      r3,-1                                  74         li      r3,-1
-  87         b       <ext4_resize_begin_generic+0xac>       75         b       <ext4_resize_begin_ppc+0x9c>
-
-
-cheers
