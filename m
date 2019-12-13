@@ -2,95 +2,101 @@ Return-Path: <SRS0=Sd9m=2D=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 145C4C43603
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 21:42:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9355BC43603
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 22:03:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 97112206D8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 21:42:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E904F206C3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 22:03:51 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="X4Em0CQg"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 97112206D8
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="OMLOqShW"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E904F206C3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47ZCsP6rRVzDrH6
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Dec 2019 01:36:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47ZPnc4k1VzDrJ1
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Dec 2019 09:03:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::336;
- helo=mail-wm1-x336.google.com; envelope-from=luc.vanoostenryck@gmail.com;
+ smtp.mailfrom=linuxfoundation.org (client-ip=2a00:1450:4864:20::143;
+ helo=mail-lf1-x143.google.com; envelope-from=torvalds@linuxfoundation.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="X4Em0CQg"; 
- dkim-atps=neutral
-Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com
- [IPv6:2a00:1450:4864:20::336])
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
+ header.b="OMLOqShW"; dkim-atps=neutral
+Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com
+ [IPv6:2a00:1450:4864:20::143])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47ZChk4ZWzzDr99
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Dec 2019 01:28:54 +1100 (AEDT)
-Received: by mail-wm1-x336.google.com with SMTP id q9so6588008wmj.5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2019 06:28:54 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to;
- bh=6QLZHSUqVyecs2iharIBnV+waYycsRrF0PppbO8VMdc=;
- b=X4Em0CQg7XPS3z8XGXcRnzQcQadSqmHsHNxwILAXvTkGF1A0285lgDVyCcfmeLJMPj
- +Tk9WJ2x/6XiFUCTHg0b8xn10ROMgVaTjQnbg+3qy3Gv3aep3BkV8hyVg4Rj0h75Z/oD
- 35XebvEWDrOknx7OGqgYUi4qMIv+qa9zC1voRXNBH6drGXWrKcVy9HlcS2r/HuYmNAI9
- OLcCG+k1GSnn6YvMkJcBCrtfY6FidTIooBhHPKYhYtE5D3BJoBZLsrfJHapK+8InoSks
- f0UPKA4o/9sHfTcTLWVTfcOsu/7MQOC8y9flklApuHnQ61tarND+8sgZ2yf0UyGiQP7W
- Yp+g==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47ZPl33D1fzDqk7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Dec 2019 09:01:33 +1100 (AEDT)
+Received: by mail-lf1-x143.google.com with SMTP id f15so331792lfl.13
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2019 14:01:33 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linux-foundation.org; s=google;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=zfICJ6KhaPZeol1tl5aqhZNB4nOYiiQp60xAzoCt3JU=;
+ b=OMLOqShWneJ3fe3UbyHRP01hVO4iIEtu+rKtip4uFYuny7eKWa9RVguRhdDXyGlazr
+ Vu8irtlqDqkjSxlpxcEnR/mPZqGnWrv40jn+8NdgbI7DAtOpxmVjJ6hnmrSN7O80Gy2B
+ 6ZEjjOYm27LL3/V26Z0KJqLy5QPWKtyS57u7I=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=6QLZHSUqVyecs2iharIBnV+waYycsRrF0PppbO8VMdc=;
- b=igpkXef3XUVYwfedPvgV4TigZJYYBgr71AMjBGp52OxsEmNY3vvc0CKISiVCz+FnaJ
- ZRP+jwz8qn3aIyOdOGSKSYLuY/DcCa0REmFPVz+WJyntBgqCQdMdyn2zjA+tENhGeb+X
- vMIpAwRxbyc7ViWTFjNDW63Z5lhBGj+uEE+xtitNhxjjYi0kjzDQ5SCX0dgFJhb0XaLE
- PHTtk4cB3j1KCV5Vwkj9X/nMyGORcY9k81iwpmo3CVEGUteTRcUFi26r11p3ZZDz++pB
- j4hbjWOPCL591elp9HllQOmJiz6jF0adrYappCQBy7o6hCvzgZtYxuTAOjD6JUQrHCGw
- 8Z0w==
-X-Gm-Message-State: APjAAAXQMUvgDgJ3bkAa06zd0e+BS82u9sC141UySy45zmWDSRL6PHp6
- wuIwnNKbozPiS1uPcwvQNvw=
-X-Google-Smtp-Source: APXvYqwcogMDfRsO+0kr7L/xFj6Up/8vQMcepDErEiyPT73ffpPLdwealTjrhoiMySzSoGv/hvLbhQ==
-X-Received: by 2002:a1c:980e:: with SMTP id a14mr9520966wme.76.1576247330116; 
- Fri, 13 Dec 2019 06:28:50 -0800 (PST)
-Received: from ltop.local ([2a02:a03f:40f6:4600:60b0:6ca6:1eae:3b06])
- by smtp.gmail.com with ESMTPSA id h127sm11148048wme.31.2019.12.13.06.28.47
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 13 Dec 2019 06:28:49 -0800 (PST)
-Date: Fri, 13 Dec 2019 15:28:46 +0100
-From: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: READ_ONCE() + STACKPROTECTOR_STRONG == :/ (was Re: [GIT PULL]
- Please pull powerpc/linux.git powerpc-5.5-2 tag (topic/kasan-bitops))
-Message-ID: <20191213142846.ki2t2fwljnql66lt@ltop.local>
-References: <20191212100756.GA11317@willie-the-truck>
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=zfICJ6KhaPZeol1tl5aqhZNB4nOYiiQp60xAzoCt3JU=;
+ b=o6GC4MbmYR9LHtokU/2p4kxRgl5trKl14CmeEwNnGqrzaJ4fZdMQIZTHvNJnR8Drr2
+ YIAUY/mn3dAbjPXIMjJp4Xtmi/ivV5QRBGl3JbJ/5j0rcTUpKzFnhqGsdjWGDzmsfP71
+ kHN26VTJPFyyZCTxQ5Ny8g6X+EhVwabUq852pX9b8KZxROu1g3SQqBUzcv86oUQc+yGh
+ W5iVlZy+Ul/uvBHIXEQ+El+Sv/nFdnfeQY++vYoqm+GgW90+Br4Pjb7pyFbzvqkvl9+m
+ jFbcsUDIkp/jxY7ORqtwl44loCd2Tzz/16bipx6WQ4wFNuclktjlITqfgMMlLBcCKTRA
+ V04g==
+X-Gm-Message-State: APjAAAWxA4XicdSw3wxLIJ6AxpSII3sG/Mc2qXwbsGb3jFPSFImhQOrF
+ tyQFu6RllWuzgIe7hoeA6T75xLkhfTg=
+X-Google-Smtp-Source: APXvYqwMwBnj3vkafAZO/NpOYzArZsFg0WK1AiSZgQHvCgY8iD5qgi6UGB+HV8TIBd36DbfGHUINcQ==
+X-Received: by 2002:ac2:4945:: with SMTP id o5mr9959752lfi.93.1576274489078;
+ Fri, 13 Dec 2019 14:01:29 -0800 (PST)
+Received: from mail-lf1-f54.google.com (mail-lf1-f54.google.com.
+ [209.85.167.54])
+ by smtp.gmail.com with ESMTPSA id g27sm5151325lfj.49.2019.12.13.14.01.26
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Fri, 13 Dec 2019 14:01:27 -0800 (PST)
+Received: by mail-lf1-f54.google.com with SMTP id m30so350803lfp.8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2019 14:01:26 -0800 (PST)
+X-Received: by 2002:a05:6512:1dd:: with SMTP id
+ f29mr10402310lfp.106.1576274486558; 
+ Fri, 13 Dec 2019 14:01:26 -0800 (PST)
+MIME-Version: 1.0
+References: <87blslei5o.fsf@mpe.ellerman.id.au>
+ <20191206131650.GM2827@hirez.programming.kicks-ass.net>
+ <875zimp0ay.fsf@mpe.ellerman.id.au>
+ <20191212080105.GV2844@hirez.programming.kicks-ass.net>
+ <20191212100756.GA11317@willie-the-truck>
  <20191212104610.GW2827@hirez.programming.kicks-ass.net>
  <CAHk-=wjUBsH0BYDBv=q36482G-U7c=9bC89L_BViSciTfb8fhA@mail.gmail.com>
  <20191212180634.GA19020@willie-the-truck>
  <CAHk-=whRxB0adkz+V7SQC8Ac_rr_YfaPY8M2mFDfJP2FFBNz8A@mail.gmail.com>
  <20191212193401.GB19020@willie-the-truck>
- <20191212202157.GD11457@worktop.programming.kicks-ass.net>
- <20191212205338.GB11802@worktop.programming.kicks-ass.net>
- <20191213104706.xnpqaehmtean3mkd@ltop.local>
- <20191213125618.GD2844@hirez.programming.kicks-ass.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20191213125618.GD2844@hirez.programming.kicks-ass.net>
+ <CAHk-=wiMuHmWzQ7-CRQB6o+SHtA-u-Rp6VZwPcqDbjAaug80rQ@mail.gmail.com>
+ <CAK8P3a2QYpT_u3D7c_w+hoyeO-Stkj5MWyU_LgGOqnMtKLEudg@mail.gmail.com>
+ <CAK8P3a014U76S+t3rKyPghepOT_fYHBExuMC27MoGMNffjczEw@mail.gmail.com>
+In-Reply-To: <CAK8P3a014U76S+t3rKyPghepOT_fYHBExuMC27MoGMNffjczEw@mail.gmail.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Fri, 13 Dec 2019 14:01:10 -0800
+X-Gmail-Original-Message-ID: <CAHk-=wgsN+0i8mF_1L8zDvY0XJEkZNumT1dH0NBiSbecZZ3+HA@mail.gmail.com>
+Message-ID: <CAHk-=wgsN+0i8mF_1L8zDvY0XJEkZNumT1dH0NBiSbecZZ3+HA@mail.gmail.com>
+Subject: Re: READ_ONCE() + STACKPROTECTOR_STRONG == :/ (was Re: [GIT PULL]
+ Please pull powerpc/linux.git powerpc-5.5-2 tag (topic/kasan-bitops))
+To: Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,52 +109,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: linux-arch <linux-arch@vger.kernel.org>, Will Deacon <will@kernel.org>,
- linuxppc-dev@lists.ozlabs.org,
+ Peter Zijlstra <peterz@infradead.org>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
  Mark Rutland <mark.rutland@arm.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, dja@axtens.net
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Dec 13, 2019 at 01:56:18PM +0100, Peter Zijlstra wrote:
-> 
-> Excellent! I had to change it to something like:
-> 
-> #define unqual_typeof(x)    typeof(({_Atomic typeof(x) ___x __maybe_unused; ___x; }))
-> 
-> but that does indeed work!
-> 
-> Now I suppose we should wrap that in a symbol that indicates our
-> compiler does indeed support _Atomic, otherwise things will come apart.
-> 
-> That is, my gcc-4.6 doesn't seem to have it, while gcc-4.8 does, which
-> is exactly the range that needs the daft READ_ONCE() construct, how
-> convenient :/
-> 
-> Something a little like this perhaps?
+On Fri, Dec 13, 2019 at 1:33 PM Arnd Bergmann <arnd@arndb.de> wrote:
+>
+> A few hundred randconfig (x86, arm32 and arm64) builds later I
+> still only found one other instance:
 
-Yes, this looks good to me.
-Just a small nit here below.
+Just send me the pull request to READ_ONCE() and WRITE_ONCE() be
+arithmetic types, and your two trivial fixes, and let's get this over
+with.
 
-> ---
-> 
-> diff --git a/arch/arm64/include/asm/barrier.h b/arch/arm64/include/asm/barrier.h
-> index 7d9cc5ec4971..c389af602da8 100644
-> --- a/arch/arm64/include/asm/barrier.h
-> +++ b/arch/arm64/include/asm/barrier.h
-> @@ -75,9 +75,9 @@ static inline unsigned long array_index_mask_nospec(unsigned long idx,
->  
->  #define __smp_store_release(p, v)					\
->  do {									\
-> -	typeof(p) __p = (p);						\
-> -	union { typeof(*p) __val; char __c[1]; } __u =			\
-> -		{ .__val = (__force typeof(*p)) (v) };			\
-> +	unqual_typeof(p) __p = (p);					\
-> +	union { unqual_typeof(*p) __val; char __c[1]; } __u =	\
-> +		{ .__val = (__force unqual_typeof(*p)) (v) };	\
+With that, you can remove the 'volatile' with my simple
+'typeof(0+*(p))' trick, and we're all good, and we don't need to worry
+about compiler versions either.
 
-The 2 two trailing backslashes are now off by one tab.
+I'm willing to take that after the merge window as a "sanity fix".
 
--- Luc 
+             Linus
