@@ -2,44 +2,85 @@ Return-Path: <SRS0=Sd9m=2D=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CA6AC43603
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 21:23:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A3CA6C43603
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 21:27:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A3A832465A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 21:23:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A3A832465A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 0B5F124125
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 21:27:40 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="hmi5MJB7"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0B5F124125
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47ZNvc4ysczDrJJ
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Dec 2019 08:23:56 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 47ZBgJ1RmYzDrJ1
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Dec 2019 00:42:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::443;
+ helo=mail-pf1-x443.google.com; envelope-from=dja@axtens.net;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=axtens.net
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=axtens.net header.i=@axtens.net header.b="hmi5MJB7"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
+ [IPv6:2607:f8b0:4864:20::443])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47ZNph382ZzDqw1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Dec 2019 08:19:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 47ZNph0MYTz9sP3; Sat, 14 Dec 2019 08:19:40 +1100 (AEDT)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 47ZNpg6rD7z9sPW; Sat, 14 Dec 2019 08:19:39 +1100 (AEDT)
-X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 14c73bd344da60abaf7da3ea2e7733ddda35bbac
-In-Reply-To: <20191213035036.6913-1-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH v5 1/2] powerpc/vcpu: Assume dedicated processors as
- non-preempt
-Message-Id: <47ZNpg6rD7z9sPW@ozlabs.org>
-Date: Sat, 14 Dec 2019 08:19:39 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47ZBck3HfKzDqM5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Dec 2019 00:40:20 +1100 (AEDT)
+Received: by mail-pf1-x443.google.com with SMTP id d199so1485606pfd.11
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2019 05:40:20 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
+ h=from:to:cc:subject:in-reply-to:references:date:message-id
+ :mime-version; bh=/eZlIcE4bRaQxd77WQWCVd4CAZbU8bs/M4S7Zue3IL0=;
+ b=hmi5MJB7//OHKo5837yEOlibfIFDbAeAyzjogvIW/yoZXWya7liW884Pp8aTYUM2Ix
+ CCTUr4D8OwNZy9ZD28XnCQ24o3k29nkh6AK+PxNHmUm9cTR9rN97k0esbF6a81knRYV0
+ /H5Ochm9M6emXtAa5aQZRazKAcl6V7rhtq6IM=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
+ :message-id:mime-version;
+ bh=/eZlIcE4bRaQxd77WQWCVd4CAZbU8bs/M4S7Zue3IL0=;
+ b=slV0xbEUW2no3VqRY570revGYRYN44qpnDlIQYv+D7ydkJmyJGnJ2occAapKcWA9MV
+ Zd0srJhPI1cECCdD99IAICB6sCKvRZh7mn8H6T6w+sBs031759Y2P2PxJTr5no9h+B+c
+ oFDhxbpC/8OTO0nAfvj6qnbntX1z+pq/jasnAcz2fvNWWpCdBe+wNyiu4vJ2/pV+V43C
+ zVZfVLkRIiqnHCywIOJGjtTn7gyx3IE2MSllAGoacegV0jSBNnTspfTXFcgeR7rqZkF8
+ 7sGLfE3S1b5yuy/C7DiykEu/WtSowhb7V0c9EelwpBvRieZJ9r8JZEximyqYejlbtv3j
+ 6B+Q==
+X-Gm-Message-State: APjAAAXjPn8D1tpCNcfnuz6lxh+EJ488gygF27goxRQiCFBsHp93umpN
+ vDzn5KjnEmzr+2xzIgPKX0Skpg==
+X-Google-Smtp-Source: APXvYqwy8PSjw8EEDkZW4PT0M9uPnhBRfPVSXSF/t1vCT9Ei+dnRB/Ar31P3ZfiyKfQxta3h5/BJfw==
+X-Received: by 2002:a63:770c:: with SMTP id s12mr17493474pgc.25.1576244417558; 
+ Fri, 13 Dec 2019 05:40:17 -0800 (PST)
+Received: from localhost
+ (2001-44b8-1113-6700-a426-f10f-bfc4-6b9c.static.ipv6.internode.on.net.
+ [2001:44b8:1113:6700:a426:f10f:bfc4:6b9c])
+ by smtp.gmail.com with ESMTPSA id i4sm9547075pjd.19.2019.12.13.05.40.15
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 13 Dec 2019 05:40:16 -0800 (PST)
+From: Daniel Axtens <dja@axtens.net>
+To: Christophe Leroy <christophe.leroy@c-s.fr>, aneesh.kumar@linux.ibm.com,
+ bsingharora@gmail.com
+Subject: Re: [PATCH 4/4] powerpc: Book3S 64-bit "heavyweight" KASAN support
+In-Reply-To: <464a8b50-0d4c-b1ea-485b-851f7cd7643b@c-s.fr>
+References: <20190806233827.16454-1-dja@axtens.net>
+ <20190806233827.16454-5-dja@axtens.net>
+ <372df444-27e7-12a7-0bdb-048f29983cf4@c-s.fr>
+ <878snkdauf.fsf@dja-thinkpad.axtens.net>
+ <464a8b50-0d4c-b1ea-485b-851f7cd7643b@c-s.fr>
+Date: Sat, 14 Dec 2019 00:40:13 +1100
+Message-ID: <87mubwbayq.fsf@dja-thinkpad.axtens.net>
+MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,49 +92,85 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: juri.lelli@redhat.com, parth@linux.ibm.com, pauld@redhat.com,
- srikar@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, Ihor.Pasichnyk@ibm.com,
- longman@redhat.com
+Cc: linuxppc-dev@lists.ozlabs.org, kasan-dev@googlegroups.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2019-12-13 at 03:50:35 UTC, Michael Ellerman wrote:
-> From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-> 
-> With commit 247f2f6f3c70 ("sched/core: Don't schedule threads on
-> pre-empted vCPUs"), the scheduler avoids preempted vCPUs to schedule
-> tasks on wakeup. This leads to wrong choice of CPU, which in-turn
-> leads to larger wakeup latencies. Eventually, it leads to performance
-> regression in latency sensitive benchmarks like soltp, schbench etc.
-> 
-> On Powerpc, vcpu_is_preempted() only looks at yield_count. If the
-> yield_count is odd, the vCPU is assumed to be preempted. However
-> yield_count is increased whenever the LPAR enters CEDE state (idle).
-> So any CPU that has entered CEDE state is assumed to be preempted.
-> 
-> Even if vCPU of dedicated LPAR is preempted/donated, it should have
-> right of first-use since they are supposed to own the vCPU.
-...
-> 
-> Waiman Long suggested using static_keys.
-> 
-> Fixes: 247f2f6f3c70 ("sched/core: Don't schedule threads on pre-empted vCPUs")
-> Cc: stable@vger.kernel.org # v4.18+
-> Reported-by: Parth Shah <parth@linux.ibm.com>
-> Reported-by: Ihor Pasichnyk <Ihor.Pasichnyk@ibm.com>
-> Tested-by: Juri Lelli <juri.lelli@redhat.com>
-> Acked-by: Waiman Long <longman@redhat.com>
-> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-> Acked-by: Phil Auld <pauld@redhat.com>
-> Reviewed-by: Vaidyanathan Srinivasan <svaidy@linux.ibm.com>
-> Tested-by: Parth Shah <parth@linux.ibm.com>
-> [mpe: Move the key and setting of the key to pseries/setup.c]
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Hi Christophe,
 
-Series applied to powerpc fixes.
+>>>>    - We run a lot of code at boot in real mode. This includes stuff like
+>>>>      printk(), so it's not feasible to just disable instrumentation
+>>>>      around it.
+>>>
+>>> Have you definitely given up the idea of doing a standard implementation
+>>> of KASAN like other 64 bits arches have done ?
+>>>
+>>> Isn't it possible to setup an early 1:1 mapping and go in virtual mode
+>>> earlier ? What is so different between book3s64 and book3e64 ?
+>>> On book3e64, we've been able to setup KASAN before printing anything
+>>> (except when using EARLY_DEBUG). Isn't it feasible on book3s64 too ?
+>> 
+>> So I got this pretty wrong when trying to explain it. The problem isn't
+>> that we run the code in boot as I said, it's that a bunch of the KVM
+>> code runs in real mode.
+>
+> Ok.
+>
+> Does it mean we would be able to implement it the standard way when 
+> CONFIG_KVM is not selected ?
 
-https://git.kernel.org/powerpc/c/14c73bd344da60abaf7da3ea2e7733ddda35bbac
+I suppose, but KVM is pretty important to me!
 
-cheers
+>>>>    - disabled reporting when we're checking the stack for exception
+>>>>      frames. The behaviour isn't wrong, just incompatible with KASAN.
+>>>
+>>> Does this applies to / impacts PPC32 at all ?
+>> 
+>> It should. I found that when doing stack walks, the code would touch
+>> memory that KASAN hadn't unpoisioned. I'm a bit surprised you haven't
+>> seen it arise, tbh.
+>
+> How do you trigger that ?
+>
+> I've tried to provoke some faults with LKDTM that provoke BUG dumps, but 
+> it doesn't trip.
+> I also performed task state listing via sysrq, and I don't get anything 
+> wrong either.
+
+I'll try to disable this and see if I can trigger it again.
+
+>>>>    - Dropped old module stuff in favour of KASAN_VMALLOC.
+>>>
+>>> You said in the cover that this is done to avoid having to split modules
+>>> out of VMALLOC area. Would it be an issue to perform that split ?
+>>> I can understand it is not easy on 32 bits because vmalloc space is
+>>> rather small, but on 64 bits don't we have enough virtual space to
+>>> confortably split modules out of vmalloc ? The 64 bits already splits
+>>> ioremap away from vmalloc whereas 32 bits have them merged too.
+>> 
+>> I could have done this. Maybe I should have done this. But now I have
+>> done vmalloc space support.
+>
+> So you force the use of KASAN_VMALLOC ? Doesn't it have a performance 
+> impact ?
+
+It has a perfomance impact when allocating and freeing virtual address
+space in the vmalloc region, yes. There should be no discernable impact
+when using vmalloc space.
+
+My team is actively working on vmap-stack support for ppc64, with the
+end goal of running syzkaller with vmap-stack and kasan. vmap-stack plus
+kasan requires kasan-vmalloc, so for my purposes doing things in this
+order makes sense.
+
+I'd be happy to have a later series introduce the split and then make
+KASAN_VMALLOC optional. I would need to understand the implications of
+splitting the address space from a KASLR point of view: I don't want to
+accidentally overly restrict the available randomness.
+
+Regards,
+Daniel
+
+>
+> Christophe
