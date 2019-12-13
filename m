@@ -2,40 +2,65 @@ Return-Path: <SRS0=Sd9m=2D=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CA8EC43603
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 08:55:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 00867C43603
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 10:09:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 07017206C3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 08:55:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 07017206C3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by mail.kernel.org (Postfix) with ESMTPS id 627292073D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 10:09:00 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="sE3izP+S"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 627292073D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47Z4HX288CzDrDg
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 19:55:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.ru (client-ip=107.174.27.60; helo=ozlabs.ru;
- envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
-Received: from ozlabs.ru (unknown [107.174.27.60])
- by lists.ozlabs.org (Postfix) with ESMTP id 47Z45P1BmdzDrBc
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2019 19:46:16 +1100 (AEDT)
-Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 77389AE8001D;
- Fri, 13 Dec 2019 03:44:37 -0500 (EST)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel 0/3] Enable IOMMU support for pseries Secure VMs
-Date: Fri, 13 Dec 2019 19:45:34 +1100
-Message-Id: <20191213084537.27306-1-aik@ozlabs.ru>
-X-Mailer: git-send-email 2.17.1
+	by lists.ozlabs.org (Postfix) with ESMTP id 47Z5wm5n3lzDr4Q
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 21:08:56 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47Z5t51YqBzDrCF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2019 21:06:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.b="sE3izP+S"; dkim-atps=neutral
+Received: by ozlabs.org (Postfix)
+ id 47Z5t50LfNz9sPc; Fri, 13 Dec 2019 21:06:37 +1100 (AEDT)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 47Z5t41bQVz9sPK;
+ Fri, 13 Dec 2019 21:06:35 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1576231596;
+ bh=NeAHb1eiw8bCoBFLlJ6KF9HZgOdANH3SvOXm2Ry8VfA=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=sE3izP+S3soAtt3Etn5ohBckswdJD5LG4WO+FLgF9DyeV9AFq9JzEU39WhXyNMqme
+ tdk5L07Rr0SjH+j6lEaxv47k5WKPIOHHx51vhvyLLn35f5CSrhKyaNJGXTXSgf/suU
+ Ajy9gzK6F8DASuhTfXfQmhHdbhK6ixZxqs2cFf1OLhyhD5C4kEOkbNEjsdJqWZrB74
+ PrVcxdBgZxQn4VvQ5WjxdlhpYP7qpCVKxLRTtihSA1cIDk132A/re+0GLXHMUSEIaU
+ ldz1QS0qtqLs7TOtEVjtOUm3pdwQ7MaskrlsUb6qlBSzmoNu9+e9yFi5z7fNkCJ3dl
+ YbWIgksjx/u+w==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Subject: Re: [PATCH v5 1/2] powerpc/vcpu: Assume dedicated processors as
+ non-preempt
+In-Reply-To: <20191213050755.GA23839@linux.vnet.ibm.com>
+References: <20191213035036.6913-1-mpe@ellerman.id.au>
+ <20191213050755.GA23839@linux.vnet.ibm.com>
+Date: Fri, 13 Dec 2019 21:06:32 +1100
+Message-ID: <87y2vgo7yv.fsf@mpe.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -47,35 +72,91 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Ram Pai <linuxram@us.ibm.com>,
- kvm-ppc@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Thiago Jung Bauermann <bauerman@linux.ibm.com>,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: juri.lelli@redhat.com, ego@linux.vnet.ibm.com, pauld@redhat.com,
+ parth@linux.ibm.com, Ihor.Pasichnyk@ibm.com, linuxppc-dev@ozlabs.org,
+ longman@redhat.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This enables IOMMU for SVM. Instead of sharing
-a H_PUT_TCE_INDIRECT page, this uses H_PUT_TCE for mapping
-and H_STUFF_TCE for clearing TCEs which should bring
-acceptable performance at the boot time; otherwise things
-work with the same speed anyway.
+Srikar Dronamraju <srikar@linux.vnet.ibm.com> writes:
+> * Michael Ellerman <mpe@ellerman.id.au> [2019-12-13 14:50:35]:
+>
+>> Waiman Long suggested using static_keys.
+>> 
+>> Fixes: 247f2f6f3c70 ("sched/core: Don't schedule threads on pre-empted vCPUs")
+>> Cc: stable@vger.kernel.org # v4.18+
+>> Reported-by: Parth Shah <parth@linux.ibm.com>
+>> Reported-by: Ihor Pasichnyk <Ihor.Pasichnyk@ibm.com>
+>> Tested-by: Juri Lelli <juri.lelli@redhat.com>
+>> Acked-by: Waiman Long <longman@redhat.com>
+>> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+>> Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+>> Acked-by: Phil Auld <pauld@redhat.com>
+>> Reviewed-by: Vaidyanathan Srinivasan <svaidy@linux.ibm.com>
+>> Tested-by: Parth Shah <parth@linux.ibm.com>
+>> [mpe: Move the key and setting of the key to pseries/setup.c]
+>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>> ---
+>>  arch/powerpc/include/asm/spinlock.h    | 4 +++-
+>>  arch/powerpc/platforms/pseries/setup.c | 7 +++++++
+>>  2 files changed, 10 insertions(+), 1 deletion(-)
+>> 
+>
+> Tested with your version of the patch and its working as expected
 
-Please comment. Thanks.
+Thanks, I took the values below and put them in the changelog for the
+patched case.
 
+cheers
 
-
-Alexey Kardashevskiy (2):
-  powerpc/pseries: Allow not having
-    ibm,hypertas-functions::hcall-multi-tce for DDW
-  powerpc/pseries/iommu: Do not use H_PUT_TCE_INDIRECT in secure VM
-
-Ram Pai (1):
-  powerpc/pseries/iommu: Use dma_iommu_ops for Secure VM.
-
- arch/powerpc/platforms/pseries/iommu.c | 59 +++++++++++++++-----------
- 1 file changed, 34 insertions(+), 25 deletions(-)
-
--- 
-2.17.1
-
+> Latency percentiles (usec)
+>         50.0th: 45
+>         75.0th: 63
+>         90.0th: 74
+>         95.0th: 78
+>         *99.0th: 82
+>         99.5th: 83
+>         99.9th: 86
+>         min=0, max=96
+> Latency percentiles (usec)
+>         50.0th: 46
+>         75.0th: 64
+>         90.0th: 75
+>         95.0th: 79
+>         *99.0th: 83
+>         99.5th: 85
+>         99.9th: 91
+>         min=0, max=117
+> Latency percentiles (usec)
+>         50.0th: 46
+>         75.0th: 64
+>         90.0th: 75
+>         95.0th: 79
+>         *99.0th: 83
+>         99.5th: 84
+>         99.9th: 90
+>         min=0, max=95
+> Latency percentiles (usec)
+>         50.0th: 47
+>         75.0th: 65
+>         90.0th: 75
+>         95.0th: 79
+>         *99.0th: 84
+>         99.5th: 85
+>         99.9th: 90
+>         min=0, max=117
+> Latency percentiles (usec)
+>         50.0th: 45
+>         75.0th: 64
+>         90.0th: 75
+>         95.0th: 79
+>         *99.0th: 82
+>         99.5th: 83
+>         99.9th: 93
+>         min=0, max=111
+>
+>
+> -- 
+> Thanks and Regards
+> Srikar Dronamraju
