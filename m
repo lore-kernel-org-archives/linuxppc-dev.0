@@ -2,79 +2,43 @@ Return-Path: <SRS0=Sd9m=2D=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A16EEC43603
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 07:50:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 37D92C43603
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 08:47:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EE5EE2467F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 07:49:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EE5EE2467F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=dolbeau.org
+	by mail.kernel.org (Postfix) with ESMTPS id AEC782253D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 08:47:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AEC782253D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47Z2rP2t8pzDr1F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 18:49:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47Z47962gNzDqyc
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 19:47:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.128.44; helo=mail-wm1-f44.google.com;
- envelope-from=romain.dolbeau@gmail.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=ozlabs.ru (client-ip=107.174.27.60; helo=ozlabs.ru;
+ envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=dolbeau.org
-Received: from mail-wm1-f44.google.com (mail-wm1-f44.google.com
- [209.85.128.44])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47Z2pH0J68zDqS4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2019 18:48:04 +1100 (AEDT)
-Received: by mail-wm1-f44.google.com with SMTP id p9so5214471wmc.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2019 23:48:04 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc:content-transfer-encoding;
- bh=+ayxr0lOza+uYjY31HOngilfBPcaq2kPB0ceYtxeR/Y=;
- b=YSnwTzdFQRv6VD0CDZoFNIKxDdNU7V3S6QLe0xKviQQfzMujbymmqxfb3Lx/DM0SiG
- Pu5fo8IWDFD6mIqslkwJ/G30I0t6sGMshOxeDwzTHG8PxU3zrGetFVZvflKDrGp6+Rpa
- zDiWNbGYzZSUEDN0sKQVhiNlEGzeAOM7o1A6Fg0dXEw8nZnp7uzGx/3xWkLdF26JaD2S
- ejvEmfZoBGGr6+nU0uhGlW/2rsW/fhkaaWBAJcrzM2UjQeeFT1bQfDC2Cbb0Fr6hHGQx
- PQGV6V9uzaOwA1fTGxOe8Vfacn/WeVyY5XpjDfDUIc7oxWZJlpeYK+xODuqv2tWaZTle
- VuBA==
-X-Gm-Message-State: APjAAAUWEEDqY0dn2UJ7rzgPfjkF2IUEJYyeOc7WRkRmrPq/HVr5Gz6K
- X7bOOTj4P0GArlKQvhX/1XbvxSPJZeJWZg17Xq3z4w==
-X-Google-Smtp-Source: APXvYqwnLeAV/nWNDNx7DvQzT7KFIZv7WFv3Usz53j5GBa2rixyAbY3PXfOrePPTCjsVbS3EsC1ZcYVTycvCafDvW+E=
-X-Received: by 2002:a7b:c3c6:: with SMTP id t6mr11371699wmj.106.1576223280225; 
- Thu, 12 Dec 2019 23:48:00 -0800 (PST)
-MIME-Version: 1.0
-References: <CADuzgbqYpv40NvAMGjo1cU2cNnij-2p4SYpWgM-Xn0v-8Qapsg@mail.gmail.com>
- <e87e2397-a8d4-c928-d3d4-7ae700603770@physik.fu-berlin.de>
- <CA+7wUsxBkmG-jW_UVBUuMriZbDkJko3kg0hzmMrVMoJLu2+rPw@mail.gmail.com>
- <CADuzgbqoX3DQ6OVqdR6dw1oqnNn-Q0zLPshDi23DwDtYukDYdg@mail.gmail.com>
- <CADuzgboWQtVqp7-Ru4uQQaPerkhLnaS9=WiwX2dD4-5VypT2MA@mail.gmail.com>
- <CADuzgboYv69FQxQRvJ_Bd563OPO0e=USd+cTChfDK60D5x75hw@mail.gmail.com>
- <b2256437-efe1-909d-1488-174b6522f9e0@physik.fu-berlin.de>
- <87eexbk3gw.fsf@linux.ibm.com>
- <CADuzgbq-P8mgf9zLaxhdqUfQcqfRpSzjgRoofF84rp+-S064xg@mail.gmail.com>
- <87mubxl82x.fsf@igel.home>
- <CADuzgbqU-SVy5U_4Pkv2G8SJcT9JhyirhFGamnQusZBSRSgcPw@mail.gmail.com>
- <87immlkytp.fsf@igel.home>
-In-Reply-To: <87immlkytp.fsf@igel.home>
-From: Romain Dolbeau <romain@dolbeau.org>
-Date: Fri, 13 Dec 2019 08:47:49 +0100
-Message-ID: <CADuzgbo=Yr09hxrkbkwj7Crg0aUfx+RQZOt0sCSNOeYUfR0SmA@mail.gmail.com>
-Subject: PPC64: G5 & 4k/64k page size (was: Re: Call for report - G5/PPC970
- status)
-To: linuxppc-dev@lists.ozlabs.org, 
- PowerPC List Debian <debian-powerpc@lists.debian.org>,
- Andreas Schwab <schwab@linux-m68k.org>, 
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- jjhdiederen <jjhdiederen@zonnet.nl>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+ dmarc=none (p=none dis=none) header.from=ozlabs.ru
+Received: from ozlabs.ru (unknown [107.174.27.60])
+ by lists.ozlabs.org (Postfix) with ESMTP id 47Z44v2wk4zDqRY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2019 19:45:50 +1100 (AEDT)
+Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
+ by ozlabs.ru (Postfix) with ESMTP id 192F7AE80037;
+ Fri, 13 Dec 2019 03:44:39 -0500 (EST)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH kernel 1/3] powerpc/pseries/iommu: Use dma_iommu_ops for
+ Secure VM.
+Date: Fri, 13 Dec 2019 19:45:35 +1100
+Message-Id: <20191213084537.27306-2-aik@ozlabs.ru>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20191213084537.27306-1-aik@ozlabs.ru>
+References: <20191213084537.27306-1-aik@ozlabs.ru>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,35 +50,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Ram Pai <linuxram@us.ibm.com>,
+ kvm-ppc@vger.kernel.org, Thiago Jung Bauermann <bauerman@linux.ibm.com>,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Le jeu. 12 d=C3=A9c. 2019 =C3=A0 22:40, Andreas Schwab <schwab@linux-m68k.o=
-rg> a =C3=A9crit :
-> I'm using 4K pages, in case that matters
+From: Ram Pai <linuxram@us.ibm.com>
 
-Yes it does matter, as it seems to be the difference between "working"
-and "not working" :-)
-Thank you for the config & pointing out the culprit!
+Commit edea902c1c1e ("powerpc/pseries/iommu: Don't use dma_iommu_ops on
+		secure guests")
+disabled dma_iommu_ops path, for secure VMs. Disabling dma_iommu_ops
+path for secure VMs, helped enable dma_direct path.  This enabled
+support for bounce-buffering through SWIOTLB.  However it fails to
+operate when IOMMU is enabled, since I/O pages are not TCE mapped.
 
-With your config, my machine boots (though it's missing some features
-as the config seems quite tuned).
+Reenable dma_iommu_ops path for pseries Secure VMs.  It handles all
+cases including, TCE mapping I/O pages, in the presence of a
+IOMMU.
 
-Moving from 64k pages to 4k pages on 'my' config (essentially,
-Debian's 5.3 with default values for changes since), my machine boots
-as well & everything seems to work fine.
+Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ arch/powerpc/platforms/pseries/iommu.c | 11 +----------
+ 1 file changed, 1 insertion(+), 10 deletions(-)
 
-So question to Aneesh - did you try 64k pages on your G5, or only 4k?
-In the second case, could you try with 64k to see if you can reproduce
-the crash?
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 6ba081dd61c9..df7db33ca93b 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -36,7 +36,6 @@
+ #include <asm/udbg.h>
+ #include <asm/mmzone.h>
+ #include <asm/plpar_wrappers.h>
+-#include <asm/svm.h>
+ 
+ #include "pseries.h"
+ 
+@@ -1320,15 +1319,7 @@ void iommu_init_early_pSeries(void)
+ 	of_reconfig_notifier_register(&iommu_reconfig_nb);
+ 	register_memory_notifier(&iommu_mem_nb);
+ 
+-	/*
+-	 * Secure guest memory is inacessible to devices so regular DMA isn't
+-	 * possible.
+-	 *
+-	 * In that case keep devices' dma_map_ops as NULL so that the generic
+-	 * DMA code path will use SWIOTLB to bounce buffers for DMA.
+-	 */
+-	if (!is_secure_guest())
+-		set_pci_dma_ops(&dma_iommu_ops);
++	set_pci_dma_ops(&dma_iommu_ops);
+ }
+ 
+ static int __init disable_multitce(char *str)
+-- 
+2.17.1
 
-To Jeroen - is your iMac booting with 4k or 64k pages? Same question
-for the crashing G5, though I assume the answer is going to be 64k
-there.
-
-Thanks & cordially,
-
---=20
-Romain Dolbeau
