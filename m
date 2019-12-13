@@ -2,68 +2,84 @@ Return-Path: <SRS0=Sd9m=2D=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61CBDC341C2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 20:52:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 816D9C43603
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 21:07:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6058B2469B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 20:52:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6058B2469B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=decadent.org.uk
+	by mail.kernel.org (Postfix) with ESMTPS id 729A324671
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 21:07:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 729A324671
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47ZFqK3ztGzDrHd
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Dec 2019 03:04:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=decadent.org.uk (client-ip=88.96.1.126;
- helo=shadbolt.e.decadent.org.uk; envelope-from=ben@decadent.org.uk;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=decadent.org.uk
-X-Greylist: delayed 1352 seconds by postgrey-1.36 at bilbo;
- Sat, 14 Dec 2019 03:02:29 AEDT
-Received: from shadbolt.e.decadent.org.uk (shadbolt.e.decadent.org.uk
- [88.96.1.126])
+	by lists.ozlabs.org (Postfix) with ESMTP id 47ZBDD1C0bzDrGv
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Dec 2019 00:22:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=arndb.de
+ (client-ip=212.227.126.187; helo=mout.kundenserver.de;
+ envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arndb.de
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47ZFmj5JHMzDrGp
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Dec 2019 03:02:29 +1100 (AEDT)
-Received: from [167.98.27.226] (helo=deadeye)
- by shadbolt.decadent.org.uk with esmtps
- (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.89)
- (envelope-from <ben@decadent.org.uk>)
- id 1ifn2Y-0001FZ-DR; Fri, 13 Dec 2019 15:39:38 +0000
-Received: from ben by deadeye with local (Exim 4.93-RC7)
- (envelope-from <ben@decadent.org.uk>)
- id 1ifn2X-00056v-9m; Fri, 13 Dec 2019 15:39:37 +0000
-Message-ID: <784d8f924612b91310baca25f2b0acc7ba78b83b.camel@decadent.org.uk>
-Subject: Re: [PATCH] libbpf: fix readelf output parsing on powerpc with
- recent binutils
-From: Ben Hutchings <ben@decadent.org.uk>
-To: Michael Ellerman <mpe@ellerman.id.au>, Thadeu Lima de Souza Cascardo
- <cascardo@canonical.com>, Justin Forbes <jmforbes@linuxtx.org>
-Date: Fri, 13 Dec 2019 15:39:32 +0000
-In-Reply-To: <87a77ypdno.fsf@mpe.ellerman.id.au>
-References: <20191201195728.4161537-1-aurelien@aurel32.net>
- <87zhgbe0ix.fsf@mpe.ellerman.id.au>
- <20191202093752.GA1535@localhost.localdomain>
- <CAFxkdAqg6RaGbRrNN3e_nHfHFR-xxzZgjhi5AnppTxxwdg0VyQ@mail.gmail.com>
- <20191210222553.GA4580@calabresa>
- <CAFxkdAp6Up0qSyp0sH0O1yD+5W3LvY-+-iniBrorcz2pMV+y-g@mail.gmail.com>
- <20191211160133.GB4580@calabresa> <87a77ypdno.fsf@mpe.ellerman.id.au>
-Content-Type: multipart/signed; micalg="pgp-sha512";
- protocol="application/pgp-signature"; boundary="=-XTuTpKbXj3nCdOipqGDS"
-User-Agent: Evolution 3.30.5-1.1 
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47ZB6P6Ym9zDrCN
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Dec 2019 00:17:31 +1100 (AEDT)
+Received: from mail-qv1-f44.google.com ([209.85.219.44]) by
+ mrelayeu.kundenserver.de (mreue012 [212.227.15.129]) with ESMTPSA (Nemesis)
+ id 1M5Qhx-1igZdL0Xtl-001P2P for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec
+ 2019 14:17:26 +0100
+Received: by mail-qv1-f44.google.com with SMTP id p2so789298qvo.10
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2019 05:17:25 -0800 (PST)
+X-Gm-Message-State: APjAAAULEWx+zYXO+jHyG9nt+l4v0keHHegRx+nwIu30ck4vYU6zykrG
+ CUv7dDPk9o/DaIahQmDDT7ywrVrAXtGwpPEf+Ww=
+X-Google-Smtp-Source: APXvYqzFwFcYikxJ28kBoN0UCn5sg1VzXwQF4a8L8BwcmPohvWspCPfGhWeuKWhSDV04mg28v6cq323o0FLTlhBpJL4=
+X-Received: by 2002:ad4:4021:: with SMTP id q1mr12702039qvp.211.1576243044500; 
+ Fri, 13 Dec 2019 05:17:24 -0800 (PST)
 MIME-Version: 1.0
-X-SA-Exim-Connect-IP: 167.98.27.226
-X-SA-Exim-Mail-From: ben@decadent.org.uk
-X-SA-Exim-Scanned: No (on shadbolt.decadent.org.uk);
- SAEximRunCond expanded to false
+References: <87blslei5o.fsf@mpe.ellerman.id.au>
+ <20191206131650.GM2827@hirez.programming.kicks-ass.net>
+ <875zimp0ay.fsf@mpe.ellerman.id.au>
+ <20191212080105.GV2844@hirez.programming.kicks-ass.net>
+ <20191212100756.GA11317@willie-the-truck>
+ <20191212104610.GW2827@hirez.programming.kicks-ass.net>
+ <CAHk-=wjUBsH0BYDBv=q36482G-U7c=9bC89L_BViSciTfb8fhA@mail.gmail.com>
+ <20191212180634.GA19020@willie-the-truck>
+ <CAHk-=whRxB0adkz+V7SQC8Ac_rr_YfaPY8M2mFDfJP2FFBNz8A@mail.gmail.com>
+ <20191212193401.GB19020@willie-the-truck>
+ <CAHk-=wiMuHmWzQ7-CRQB6o+SHtA-u-Rp6VZwPcqDbjAaug80rQ@mail.gmail.com>
+In-Reply-To: <CAHk-=wiMuHmWzQ7-CRQB6o+SHtA-u-Rp6VZwPcqDbjAaug80rQ@mail.gmail.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 13 Dec 2019 14:17:08 +0100
+X-Gmail-Original-Message-ID: <CAK8P3a2QYpT_u3D7c_w+hoyeO-Stkj5MWyU_LgGOqnMtKLEudg@mail.gmail.com>
+Message-ID: <CAK8P3a2QYpT_u3D7c_w+hoyeO-Stkj5MWyU_LgGOqnMtKLEudg@mail.gmail.com>
+Subject: Re: READ_ONCE() + STACKPROTECTOR_STRONG == :/ (was Re: [GIT PULL]
+ Please pull powerpc/linux.git powerpc-5.5-2 tag (topic/kasan-bitops))
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+X-Provags-ID: V03:K1:d0lF46rXOr8ET59Wh14KT5WJV6vq3eAKKwrkq/BB/TOcZLxIWPU
+ K91d7y8SvULBlhxiT2PnB6ULcPan1dVFl+NUUeCTTTKgG2ngWGxllXkn+iCZnXOZVKWGNht
+ DR5SRMdQPg4QbZaupuPyzFjer1VU/YA4Wjo+MnQzUQd4EpHWj1sxBSN6Px9VhsskhGadP2M
+ TxI8BSqUAjrJCv+bzkNaw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:fPbOIvT4g5I=:E8TRONiKlUJopFNvX12juV
+ u5ceSnO8X/X36DdrJsL6DfWNzaOK5v2hMoY2+Mqm85i34zakqLdJmI8aPzzcdgx0BvDt4UEzi
+ AvvFWjQ2M3kTl4RB2ZIbdPYX97zWeKODwRNmpyVyWt8u3Xlptpn+TrLWUzzUJMeX4Q+7JoFO7
+ Amb/Z94lrVagwpCFpzV88QhevRKmjoxBP5GXJcX4jvTxEuLw0B03tfDj+2Azpb5TV2CxmlXns
+ j5gvPuxopWGzMhvLhR8CYgHtDqhgB7NaiqLzIjeLPBhPG27YHYpvk4lNW9HZ/XVVI2Cz+qKMu
+ hcoowXttVSQD2+2P/XY1JnMMJdKtYv6QSgSjFJ/r55QWjYkh9vOwT2BX88Pt4eq9HQbJcVd86
+ LYz+mU1huP0MA+paszIMZ44YWnd0oDKZz2nQlBbCPKsct3v+KrEVzqUp73LEEC6vwUdty/JwV
+ 4uuTxqgrRoYOaKMtD4XDx+HTOSnXxfbpYmd8J1zdIi8mFkdujdOBlX3VpU0PXxsNQes9JgyTC
+ 6NILotQ3uH2xdRWW9xttlupa4BFwGY3kv0QOvU9DW78sw+Sq9mGsbeUYmSnUYyrmZdID0r/Jo
+ 0RIwmw0JUBNKgiQa/KrrAwc1f7Y/kgd2kwIRID4PYaw7QJJYEMBxgQ0aup7HA6i9kayPNdFyg
+ MqkGhLzakNI+smLa7eoSgbAG9WMO0Y1Dg4/X2Le0vLr6veNQv76MhCUIwjxOtTIfKB8/svEKM
+ 7ds23lNw/l3ThCusZEzPyh4syq1ElhCQTgePTqE2d/EmIyT0AOPRS0AHeEmi/7SB0hMH4SXOZ
+ 6Mx5nG8n2ZSCL8NMDEpj0ICNcbO8uEoQPhMjOumD0r61kz0lJ7zwsplvk5gf431s3AKJfhHHE
+ JNYuC3XYLfxckvAqtjPA==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,95 +91,98 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Song Liu <songliubraving@fb.com>, Nick Clifton <nickc@redhat.com>,
- Daniel Borkmann <daniel@iogearbox.net>, "open
- list:BPF \(Safe dynamic programs and tools\)" <netdev@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org, Alexei Starovoitov <ast@kernel.org>,
- LKML <linux-kernel@vger.kernel.org>, Yonghong Song <yhs@fb.com>,
- "open list:BPF \(Safe dynamic programs and
- tools\)" <bpf@vger.kernel.org>, Andrii Nakryiko <andriin@fb.com>,
- Martin KaFai Lau <kafai@fb.com>, Aurelien Jarno <aurelien@aurel32.net>,
- debian-kernel@lists.debian.org
+Cc: linux-arch <linux-arch@vger.kernel.org>, Will Deacon <will@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Mark Rutland <mark.rutland@arm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Thu, Dec 12, 2019 at 9:50 PM Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+> On Thu, Dec 12, 2019 at 11:34 AM Will Deacon <will@kernel.org> wrote:
+> > The root of my concern in all of this, and what started me looking at it in
+> > the first place, is the interaction with 'typeof()'. Inheriting 'volatile'
+> > for a pointer means that local variables in macros declared using typeof()
+> > suddenly start generating *hideous* code, particularly when pointless stack
+> > spills get stackprotector all excited.
+>
+> Yeah, removing volatile can be a bit annoying.
+>
+> For the particular case of the bitops, though, it's not an issue.
+> Since you know the type there, you can just cast it.
+>
+> And if we had the rule that READ_ONCE() was an arithmetic type, you could do
+>
+>     typeof(0+(*p)) __var;
+>
+> since you might as well get the integer promotion anyway (on the
+> non-volatile result).
+>
+> But that doesn't work with structures or unions, of course.
+>
+> I'm not entirely sure we have READ_ONCE() with a struct. I do know we
+> have it with 64-bit entities on 32-bit machines, but that's ok with
+> the "0+" trick.
 
---=-XTuTpKbXj3nCdOipqGDS
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+I'll have my randconfig builder look for instances, so far I found one,
+see below. My feeling is that it would be better to enforce at least
+the size being a 1/2/4/8, to avoid cases where someone thinks
+the access is atomic, but it falls back on a memcpy.
 
-On Thu, 2019-12-12 at 11:53 +1100, Michael Ellerman wrote:
-> Thadeu Lima de Souza Cascardo <cascardo@canonical.com> writes:
-[...]
-> > This is a patch on binutils carried by Fedora:
-> >=20
-> > https://src.fedoraproject.org/rpms/binutils/c/b8265c46f7ddae23a792ee830=
-6fbaaeacba83bf8
-> >=20
-> > " b8265c Have readelf display extra symbol information at the end of th=
-e line. "
-> >=20
-> > It has the following comment:
-> >=20
-> > # FIXME:    The proper fix would be to update the scripts that are expe=
-cting
-> > #           a fixed output from readelf.  But it seems that some of the=
-m are
-> > #           no longer being maintained.
-> >=20
-> > This commit is from 2017, had it been on binutils upstream, maybe the s=
-ituation
-> > right now would be different.
->=20
-> Bleeping bleep.
->=20
-> Looks like it was actually ruby that was the original problem:
->=20
->   https://bugzilla.redhat.com/show_bug.cgi?id=3D1479302
->=20
->=20
-> Why it wasn't hacked around in the ruby package I don't know, doing it in
-> the distro binutils package is not ideal.
+      Arnd
 
-That wouldn't help people building Ruby from upstream.
+diff --git a/drivers/xen/time.c b/drivers/xen/time.c
+index 0968859c29d0..adb492c0aa34 100644
+--- a/drivers/xen/time.c
++++ b/drivers/xen/time.c
+@@ -64,7 +64,7 @@ static void xen_get_runstate_snapshot_cpu_delta(
+        do {
+                state_time = get64(&state->state_entry_time);
+                rmb();  /* Hypervisor might update data. */
+-               *res = READ_ONCE(*state);
++               memcpy(res, state, sizeof(*res));
+                rmb();  /* Hypervisor might update data. */
+        } while (get64(&state->state_entry_time) != state_time ||
+                 (state_time & XEN_RUNSTATE_UPDATE));
+diff --git a/include/linux/compiler.h b/include/linux/compiler.h
+index 5e88e7e33abe..f4ae360efdba 100644
+--- a/include/linux/compiler.h
++++ b/include/linux/compiler.h
+@@ -179,6 +179,8 @@ void ftrace_likely_update(struct
+ftrace_likely_data *f, int val,
 
-Any tool generating tabular output like this should add new fields at
-the end (or show them only if requested), since there are bound to be
-scripts that parse the output like this.  So I think Fedora's change to
-readelf was reasonable, but should have been pushed upstream as soon as
-possible.
+ #include <uapi/linux/types.h>
 
-Now everyone is going to have to deal with both formats.
++extern void __broken_access_once(void *, const void *, unsigned long);
++
+ #define __READ_ONCE_SIZE                                               \
+ ({                                                                     \
+        switch (size) {                                                 \
+@@ -187,9 +189,7 @@ void ftrace_likely_update(struct
+ftrace_likely_data *f, int val,
+        case 4: *(__u32 *)res = *(volatile __u32 *)p; break;            \
+        case 8: *(__u64 *)res = *(volatile __u64 *)p; break;            \
+        default:                                                        \
+-               barrier();                                              \
+-               __builtin_memcpy((void *)res, (const void *)p, size);   \
+-               barrier();                                              \
++               __broken_access_once((void *)res, (const void *)p,
+size);       \
+        }                                                               \
+ })
 
-Ben.
-
---=20
-Ben Hutchings
-Horngren's Observation:
-              Among economists, the real world is often a special case.
-
-
-
---=-XTuTpKbXj3nCdOipqGDS
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEErCspvTSmr92z9o8157/I7JWGEQkFAl3zsLQACgkQ57/I7JWG
-EQn2Yg//TXyohEOZzCVyllfhvYlZubQmABin7AvKKCrohI86PUkKZzydMPKW7wjF
-KSi+xCi62Q52OwskMvIaWjiBzvhijZaFWHB8EPGqRMeJtnbjjwGTTta0ZzPYBBEa
-ngKWvU50Vjqlt8uF7qNXQk3M/mJloOXmqhjPjwuX2Yqa/aWz20NAzV2WQQ9OzNMn
-8HQzX5jHN76CWmMwkqblKqO0yRpb8Cw08bpn42zkVYlIZapxAeBIY4DQP2A+TWPs
-3ElgHxlL3Rgg4qvYqnhIzD7Jr/jOCFIcdD/j5SaNMJV6HzLK5/vUQs0NEA0y6M7I
-91T2k3hhd6pJPpCn4eP0Vc2JQWZQl4P+x0FMlYiXfBiOjdy2cOqDiez0g3i3SqyQ
-6i29+SUSriP5QvPHK8Pg2L4MRuelBoNyuP55IZWonDYpQx1qDoI8ycXgEtPpuP1s
-B41ClX9UNrozPrEuDEcC7tbw+ak+xsJy+PqEF9RYnIJcJ8bJRI2YTR1h8ysWZyOI
-13zEPyAZG2b34rBmUaqA2fBFTG98qPuEV6Amcq4rpdqsdbzTkD1PYCpEtXnqiok/
-C0o/6Wsey1BpfcXsag7xX824BvJkgsWzQnFJ1cto4zmsHxUyLvLh+X5VXilsRgTd
-ongG67DAwcznlANn9XjPGeN3qjDErgSWwXPdUecrKm0+xgMNPo0=
-=ttgq
------END PGP SIGNATURE-----
-
---=-XTuTpKbXj3nCdOipqGDS--
+@@ -225,9 +225,7 @@ static __always_inline void
+__write_once_size(volatile void *p, void *res, int s
+        case 4: *(volatile __u32 *)p = *(__u32 *)res; break;
+        case 8: *(volatile __u64 *)p = *(__u64 *)res; break;
+        default:
+-               barrier();
+-               __builtin_memcpy((void *)p, (const void *)res, size);
+-               barrier();
++               __broken_access_once((void *)p, (const void *)res, size);
+        }
+ }
