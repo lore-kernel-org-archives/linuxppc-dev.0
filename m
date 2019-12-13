@@ -2,79 +2,95 @@ Return-Path: <SRS0=Sd9m=2D=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C8CB2C43603
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 21:37:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A650FC43603
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 21:39:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 45A252253D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 21:37:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id EDD8F206C3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 21:39:29 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="eNsSuvgn"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 45A252253D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BkJUDoxm"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EDD8F206C3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47ZDR85VpMzDrHP
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Dec 2019 02:02:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47ZPFV5F4JzDqHk
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Dec 2019 08:39:26 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::244;
+ helo=mail-lj1-x244.google.com; envelope-from=bsingharora@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="eNsSuvgn"; 
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="BkJUDoxm"; 
  dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lj1-x244.google.com (mail-lj1-x244.google.com
+ [IPv6:2a00:1450:4864:20::244])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47ZDNK306mzDrDy
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Dec 2019 01:59:42 +1100 (AEDT)
-Received: from localhost (mailhub1-ext [192.168.12.233])
- by localhost (Postfix) with ESMTP id 47ZDN82bdGz9vBJg;
- Fri, 13 Dec 2019 15:59:36 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=eNsSuvgn; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id JbWyOEqSF5fS; Fri, 13 Dec 2019 15:59:36 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 47ZDN81JZNz9vBJc;
- Fri, 13 Dec 2019 15:59:36 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1576249176; bh=ciNClaFt4bgE8XImcN+vK2ienGGRWFLoOBnDEXiWkyo=;
- h=From:Subject:To:Cc:Date:From;
- b=eNsSuvgnmZw1YmG5E/YgVg0KpuE+7i8abcfUzZwyBTaKGuDHrE70cwAEPxQTNKOGT
- Qayr0Zwr419NfgU9KtjmPIPc7OybWEmftzlVvIHoBLETrhaD4SPnCawConqvQNt09V
- u1zs90wHYjnVo4VE7sjygwG6OfO5s83Z38EsEt2s=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A27798B8CE;
- Fri, 13 Dec 2019 15:59:37 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id gYnh7uNCBj0G; Fri, 13 Dec 2019 15:59:37 +0100 (CET)
-Received: from po16098vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 471608B8C4;
- Fri, 13 Dec 2019 15:59:37 +0100 (CET)
-Received: by po16098vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id DDB6B63777; Fri, 13 Dec 2019 14:59:36 +0000 (UTC)
-Message-Id: <66a26ff96689f6f84b25ed11dcff6c3818801fe7.1576248635.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2] powerpc/32: add support of KASAN_VMALLOC
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- dja@axtens.net
-Date: Fri, 13 Dec 2019 14:59:36 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47ZPCN68lbzDrFn
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Dec 2019 08:37:34 +1100 (AEDT)
+Received: by mail-lj1-x244.google.com with SMTP id h23so221318ljc.8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2019 13:37:34 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=subject:to:references:from:message-id:date:user-agent:mime-version
+ :in-reply-to:content-language:content-transfer-encoding;
+ bh=6Cel1cpD0Jtu0AycJ47huuRD/DgMmGpodkanI6OR1bo=;
+ b=BkJUDoxm4UTj76qbb34bMW8fVbz7oLUiI7HX3/57fDHmH3Uv+GHq3VcDR+vHKaAg5U
+ MRvB2yJVN7+A61+KCixPlGkUzaVMQiuVTIlI172XVT5x+S7mtRuVBdgZMlZ52VvAd6w5
+ 8DS69v4jrJn0jMy9a5+r0cCy2lYUVl4XLKLiepprazD+qKqkNHo0ECt0YCpdRVGTyHz4
+ VjAzgEPu/D/m8aE66lLDO+FNBU7D7ZHpuDWXX8Fl352r0ij5bbjS4FbTOJxn+TYzVZO7
+ Bj3w9oapQScyHyiAMtgvC+M5Mq1e2F52BG03GzWhSggUR+7xTx4IhJagsXPmx1ye6JJI
+ O/PQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:references:from:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=6Cel1cpD0Jtu0AycJ47huuRD/DgMmGpodkanI6OR1bo=;
+ b=NakVDvEGOJ9lb/zPZd9foQB2nTftRUCj0aKaA+gP1svnHJ/qWPEn1Zr2TFWm9rpRgo
+ RrkfxgeMuea6t/cakmbFxhZbaLcvwvG5bDfTaYA/uSRDH/hwAsdm083TaskSLDwTbjIX
+ ZR7+RKm1V8ab2mHeI488v29BwJrrTQUn07de0N1G8F5wwshEhBG43YHz6yhmUY9lWbyD
+ YEwzJpMB8tkdOkxmmBjMb/2FhgO64Mq/uJFhEa9jR2q6xp+hN750g6tbAneCVgzTT7do
+ +Gvvj44WhqBGgn1eshuvWDB0aBR4r6Gesq5yK93QnEbqvyJ09DfMMFsLhvnP/3ptM1yK
+ awJA==
+X-Gm-Message-State: APjAAAWNICi+rsQpGkQpWsY5UJpsDlaVTCCdCgw+wu2w3zxkopCTrkKP
+ R342GaeyE1Ld4cYl9eqoqt4=
+X-Google-Smtp-Source: APXvYqxsM40YoG7z6ZiJtPbz7asvMlxZ1g3vpJyflgNEYbZa2GiRD4WWokcH+Epr1Can0FbY1J66HQ==
+X-Received: by 2002:a2e:165c:: with SMTP id 28mr10631069ljw.247.1576273048447; 
+ Fri, 13 Dec 2019 13:37:28 -0800 (PST)
+Received: from [192.168.68.108] (115-64-122-209.tpgi.com.au. [115.64.122.209])
+ by smtp.gmail.com with ESMTPSA id
+ z7sm5774631lfa.81.2019.12.13.13.37.24
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Fri, 13 Dec 2019 13:37:27 -0800 (PST)
+Subject: Re: [PATCH v3 1/3] kasan: define and use MAX_PTRS_PER_* for early
+ shadow tables
+To: Daniel Axtens <dja@axtens.net>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ kasan-dev@googlegroups.com, christophe.leroy@c-s.fr,
+ aneesh.kumar@linux.ibm.com
+References: <20191212151656.26151-1-dja@axtens.net>
+ <20191212151656.26151-2-dja@axtens.net>
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <37872cba-5cdf-2e28-df45-70df4e8ef5af@gmail.com>
+Date: Sat, 14 Dec 2019 08:37:20 +1100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
+MIME-Version: 1.0
+In-Reply-To: <20191212151656.26151-2-dja@axtens.net>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,161 +102,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add support of KASAN_VMALLOC on PPC32.
 
-To allow this, the early shadow covering the VMALLOC space
-need to be removed once high_memory var is set and before
-freeing memblock.
 
-And the VMALLOC area need to be aligned such that boundaries
-are covered by a full shadow page.
+On 13/12/19 2:16 am, Daniel Axtens wrote:
+> powerpc has a variable number of PTRS_PER_*, set at runtime based
+> on the MMU that the kernel is booted under.
+> 
+> This means the PTRS_PER_* are no longer constants, and therefore
+> breaks the build.
+> 
+> Define default MAX_PTRS_PER_*s in the same style as MAX_PTRS_PER_P4D.
+> As KASAN is the only user at the moment, just define them in the kasan
+> header, and have them default to PTRS_PER_* unless overridden in arch
+> code.
+> 
+> Suggested-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Suggested-by: Balbir Singh <bsingharora@gmail.com>
+> Signed-off-by: Daniel Axtens <dja@axtens.net>
+> ---
+Reviewed-by: Balbir Singh <bsingharora@gmail.com>
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-
----
-v2: rebased ; exclude specific module handling when CONFIG_KASAN_VMALLOC is set.
----
- arch/powerpc/Kconfig                         |  1 +
- arch/powerpc/include/asm/book3s/32/pgtable.h |  5 +++++
- arch/powerpc/include/asm/kasan.h             |  2 ++
- arch/powerpc/include/asm/nohash/32/pgtable.h |  5 +++++
- arch/powerpc/mm/kasan/kasan_init_32.c        | 33 +++++++++++++++++++++++++++-
- arch/powerpc/mm/mem.c                        |  3 +++
- 6 files changed, 48 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 1ec34e16ed65..a247bbfb03d4 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -173,6 +173,7 @@ config PPC
- 	select HAVE_ARCH_HUGE_VMAP		if PPC_BOOK3S_64 && PPC_RADIX_MMU
- 	select HAVE_ARCH_JUMP_LABEL
- 	select HAVE_ARCH_KASAN			if PPC32
-+	select HAVE_ARCH_KASAN_VMALLOC		if PPC32
- 	select HAVE_ARCH_KGDB
- 	select HAVE_ARCH_MMAP_RND_BITS
- 	select HAVE_ARCH_MMAP_RND_COMPAT_BITS	if COMPAT
-diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
-index 0796533d37dd..5b39c11e884a 100644
---- a/arch/powerpc/include/asm/book3s/32/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
-@@ -193,7 +193,12 @@ int map_kernel_page(unsigned long va, phys_addr_t pa, pgprot_t prot);
- #else
- #define VMALLOC_START ((((long)high_memory + VMALLOC_OFFSET) & ~(VMALLOC_OFFSET-1)))
- #endif
-+
-+#ifdef CONFIG_KASAN_VMALLOC
-+#define VMALLOC_END	_ALIGN_DOWN(ioremap_bot, PAGE_SIZE << KASAN_SHADOW_SCALE_SHIFT)
-+#else
- #define VMALLOC_END	ioremap_bot
-+#endif
- 
- #ifndef __ASSEMBLY__
- #include <linux/sched.h>
-diff --git a/arch/powerpc/include/asm/kasan.h b/arch/powerpc/include/asm/kasan.h
-index 296e51c2f066..fbff9ff9032e 100644
---- a/arch/powerpc/include/asm/kasan.h
-+++ b/arch/powerpc/include/asm/kasan.h
-@@ -31,9 +31,11 @@
- void kasan_early_init(void);
- void kasan_mmu_init(void);
- void kasan_init(void);
-+void kasan_late_init(void);
- #else
- static inline void kasan_init(void) { }
- static inline void kasan_mmu_init(void) { }
-+static inline void kasan_late_init(void) { }
- #endif
- 
- #endif /* __ASSEMBLY */
-diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
-index 552b96eef0c8..60c4d829152e 100644
---- a/arch/powerpc/include/asm/nohash/32/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
-@@ -114,7 +114,12 @@ int map_kernel_page(unsigned long va, phys_addr_t pa, pgprot_t prot);
- #else
- #define VMALLOC_START ((((long)high_memory + VMALLOC_OFFSET) & ~(VMALLOC_OFFSET-1)))
- #endif
-+
-+#ifdef CONFIG_KASAN_VMALLOC
-+#define VMALLOC_END	_ALIGN_DOWN(ioremap_bot, PAGE_SIZE << KASAN_SHADOW_SCALE_SHIFT)
-+#else
- #define VMALLOC_END	ioremap_bot
-+#endif
- 
- /*
-  * Bits in a linux-style PTE.  These match the bits in the
-diff --git a/arch/powerpc/mm/kasan/kasan_init_32.c b/arch/powerpc/mm/kasan/kasan_init_32.c
-index 0e6ed4413eea..88036fb88350 100644
---- a/arch/powerpc/mm/kasan/kasan_init_32.c
-+++ b/arch/powerpc/mm/kasan/kasan_init_32.c
-@@ -129,6 +129,31 @@ static void __init kasan_remap_early_shadow_ro(void)
- 	flush_tlb_kernel_range(KASAN_SHADOW_START, KASAN_SHADOW_END);
- }
- 
-+static void __init kasan_unmap_early_shadow_vmalloc(void)
-+{
-+	unsigned long k_start = (unsigned long)kasan_mem_to_shadow((void *)VMALLOC_START);
-+	unsigned long k_end = (unsigned long)kasan_mem_to_shadow((void *)VMALLOC_END);
-+	unsigned long k_cur;
-+	phys_addr_t pa = __pa(kasan_early_shadow_page);
-+
-+	if (!early_mmu_has_feature(MMU_FTR_HPTE_TABLE)) {
-+		int ret = kasan_init_shadow_page_tables(k_start, k_end);
-+
-+		if (ret)
-+			panic("kasan: kasan_init_shadow_page_tables() failed");
-+	}
-+	for (k_cur = k_start & PAGE_MASK; k_cur < k_end; k_cur += PAGE_SIZE) {
-+		pmd_t *pmd = pmd_offset(pud_offset(pgd_offset_k(k_cur), k_cur), k_cur);
-+		pte_t *ptep = pte_offset_kernel(pmd, k_cur);
-+
-+		if ((pte_val(*ptep) & PTE_RPN_MASK) != pa)
-+			continue;
-+
-+		__set_pte_at(&init_mm, k_cur, ptep, __pte(0), 0);
-+	}
-+	flush_tlb_kernel_range(k_start, k_end);
-+}
-+
- void __init kasan_mmu_init(void)
- {
- 	int ret;
-@@ -165,7 +190,13 @@ void __init kasan_init(void)
- 	pr_info("KASAN init done\n");
- }
- 
--#ifdef CONFIG_MODULES
-+void __init kasan_late_init(void)
-+{
-+	if (IS_ENABLED(CONFIG_KASAN_VMALLOC))
-+		kasan_unmap_early_shadow_vmalloc();
-+}
-+
-+#if defined(CONFIG_MODULES) && !defined(CONFIG_KASAN_VMALLOC)
- void *module_alloc(unsigned long size)
- {
- 	void *base;
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 9488b63dfc87..3bb212c8ef2d 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -294,6 +294,9 @@ void __init mem_init(void)
- 
- 	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE);
- 	set_max_mapnr(max_pfn);
-+
-+	kasan_late_init();
-+
- 	memblock_free_all();
- 
- #ifdef CONFIG_HIGHMEM
--- 
-2.13.3
-
+Balbir
