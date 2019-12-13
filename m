@@ -2,94 +2,93 @@ Return-Path: <SRS0=Sd9m=2D=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 98A92C43603
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 10:49:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C1CEFC2D0CF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 20:42:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0241A206B7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 10:49:06 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="k2toVqK3"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0241A206B7
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9A148246D0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 20:42:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9A148246D0
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=us.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47Z6q40XTlzDq6K
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Dec 2019 21:49:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47ZMq13zBczDrKV
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Dec 2019 07:34:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::343;
- helo=mail-wm1-x343.google.com; envelope-from=luc.vanoostenryck@gmail.com;
+ smtp.mailfrom=us.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=linuxram@us.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="k2toVqK3"; 
- dkim-atps=neutral
-Received: from mail-wm1-x343.google.com (mail-wm1-x343.google.com
- [IPv6:2a00:1450:4864:20::343])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=us.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47Z6mz3Js7zDrCT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2019 21:47:13 +1100 (AEDT)
-Received: by mail-wm1-x343.google.com with SMTP id q9so5814331wmj.5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2019 02:47:12 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to;
- bh=aaItiTBk+e/R7wwZriBm1tDINaCLpM0u6e3njFKqqz8=;
- b=k2toVqK3xMpoQjPSunK5wQX2k/4FJdeWG6RMkZAOfcidd8oWAypdSfZVmj7VqJPARt
- D9jsVNfdnktzLM9kafptKzLf/MBDUHACylS71VvxJt7joO/PueWSlwl2tfrDfs/OB3A5
- 9nCBlOpxsQ7z9OaxavDF50HpmkILhzxJAg+/RavBVin1voVF96sfcYcSpKx9j8YSDsMK
- wtD9Q3zk7/sQHPjUfcqEUXsoym55yhSOs0arrNE7BUzb5IeSai+o9nINSC8MklBR2Xeo
- ArjWDcuB4XqhR8P1+e5GcvXGXXYJj2Xlvr5AGErgkBbdrVFbwWjMdHUGWWmahvHJnBx1
- 5wig==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=aaItiTBk+e/R7wwZriBm1tDINaCLpM0u6e3njFKqqz8=;
- b=c4DSsGL+gSZgbz+n2h8edyY0JJSvwEEgzPnwBX95vBPy6Jo1EfzhmPkDEa8H9/MVzK
- t8HyaHp1WWknn4I/eRHkZDe04Zsq8YTFKXYAjHjJQQFjt6mGtu3pM88N66pPpeNjLEyi
- ywu66J9oDU1U6oJiE1LTOZqNUz2NWS+j5L+Kc/bWhAoufeD6kE0XJZrDmx19bszKnwrz
- jTzPXFwrURlXkzRUI8GFvZ6mIaN7gjH93Wyf6IUM+MMaob3Bb4BjcorbXm1rsY+3ncge
- l1fh3N80PoF7be3xgTxUPJE4G2WPUzxM8UqL08QeKWKsP6GCyZMnNKmTdoc36lDzT3vi
- SyQw==
-X-Gm-Message-State: APjAAAXLC2+BCAXguNVFAZHEvb6wOUaVC30UTapCy/4P2W4vCDOIuUz1
- eBKGKQtXbWmDiYtUP2aWUUs=
-X-Google-Smtp-Source: APXvYqyfTI8+XVU3RlrvIfXGdBG0oWSlgTPqBGikvSD/heK932h0ralSPKkMiJh26I6zh+Fs+wYfXg==
-X-Received: by 2002:a1c:e90e:: with SMTP id q14mr12593233wmc.108.1576234029069; 
- Fri, 13 Dec 2019 02:47:09 -0800 (PST)
-Received: from ltop.local ([2a02:a03f:40f6:4600:c498:c79c:5e:9634])
- by smtp.gmail.com with ESMTPSA id x17sm8764911wrt.74.2019.12.13.02.47.07
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 13 Dec 2019 02:47:08 -0800 (PST)
-Date: Fri, 13 Dec 2019 11:47:06 +0100
-From: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: READ_ONCE() + STACKPROTECTOR_STRONG == :/ (was Re: [GIT PULL]
- Please pull powerpc/linux.git powerpc-5.5-2 tag (topic/kasan-bitops))
-Message-ID: <20191213104706.xnpqaehmtean3mkd@ltop.local>
-References: <875zimp0ay.fsf@mpe.ellerman.id.au>
- <20191212080105.GV2844@hirez.programming.kicks-ass.net>
- <20191212100756.GA11317@willie-the-truck>
- <20191212104610.GW2827@hirez.programming.kicks-ass.net>
- <CAHk-=wjUBsH0BYDBv=q36482G-U7c=9bC89L_BViSciTfb8fhA@mail.gmail.com>
- <20191212180634.GA19020@willie-the-truck>
- <CAHk-=whRxB0adkz+V7SQC8Ac_rr_YfaPY8M2mFDfJP2FFBNz8A@mail.gmail.com>
- <20191212193401.GB19020@willie-the-truck>
- <20191212202157.GD11457@worktop.programming.kicks-ass.net>
- <20191212205338.GB11802@worktop.programming.kicks-ass.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47ZMn01RRpzDrG3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Dec 2019 07:33:07 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ xBDKWgfX046298
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2019 15:33:05 -0500
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2wugd4196y-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2019 15:33:05 -0500
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Fri, 13 Dec 2019 20:33:02 -0000
+Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 13 Dec 2019 20:33:00 -0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id xBDKWxtb40173952
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 13 Dec 2019 20:33:00 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DDF0011C052;
+ Fri, 13 Dec 2019 20:32:59 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2728711C04A;
+ Fri, 13 Dec 2019 20:32:58 +0000 (GMT)
+Received: from oc0525413822.ibm.com (unknown [9.80.213.32])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Fri, 13 Dec 2019 20:32:57 +0000 (GMT)
+Date: Fri, 13 Dec 2019 12:32:55 -0800
+From: Ram Pai <linuxram@us.ibm.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+References: <20191213084537.27306-1-aik@ozlabs.ru>
+ <20191213084537.27306-3-aik@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20191212205338.GB11802@worktop.programming.kicks-ass.net>
+In-Reply-To: <20191213084537.27306-3-aik@ozlabs.ru>
+User-Agent: Mutt/1.5.21 (2010-09-15)
+X-TM-AS-GCONF: 00
+x-cbid: 19121320-0016-0000-0000-000002D4936B
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19121320-0017-0000-0000-00003336C08E
+Message-Id: <20191213203255.GE5702@oc0525413822.ibm.com>
+Subject: Re:  [PATCH kernel 2/3] powerpc/pseries: Allow not having
+ ibm,hypertas-functions::hcall-multi-tce for DDW
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
+ definitions=2019-12-13_07:2019-12-13,2019-12-13 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ mlxscore=0 suspectscore=48
+ mlxlogscore=999 clxscore=1015 adultscore=0 malwarescore=0
+ priorityscore=1501 spamscore=0 bulkscore=0 phishscore=0 lowpriorityscore=0
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-1910280000 definitions=main-1912130151
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,41 +100,177 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch <linux-arch@vger.kernel.org>, Will Deacon <will@kernel.org>,
- linuxppc-dev@lists.ozlabs.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
- Mark Rutland <mark.rutland@arm.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, dja@axtens.net
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Thiago Jung Bauermann <bauerman@linux.ibm.com>, kvm-ppc@vger.kernel.org,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Dec 12, 2019 at 09:53:38PM +0100, Peter Zijlstra wrote:
-> Now, looking at the current GCC source:
-> 
->   https://github.com/gcc-mirror/gcc/blob/97d7270f894395e513667a031a0c309d1819d05e/gcc/c/c-parser.c#L3707
-> 
-> it seems that __typeof__() is supposed to strip all qualifiers from
-> _Atomic types. That lead me to try:
-> 
-> 	typeof(_Atomic typeof(p)) __p = (p);
-> 
-> But alas, I still get the same junk you got for ool_store_release() :/
+On Fri, Dec 13, 2019 at 07:45:36PM +1100, Alexey Kardashevskiy wrote:
+> By default a pseries guest supports a H_PUT_TCE hypercall which maps
+> a single IOMMU page in a DMA window. Additionally the hypervisor may
+> support H_PUT_TCE_INDIRECT/H_STUFF_TCE which update multiple TCEs at once;
+> this is advertised via the device tree /rtas/ibm,hypertas-functions
+> property which Linux converts to FW_FEATURE_MULTITCE.
 
-I was checking this to see if Sparse was ready to support this.
-I was a bit surprised because at first sigth GCC was doing as
-it claims (typeof striping const & volatile on _Atomic types)
-but your exampe wasn't working. But it's working if an
-intermediate var is used:
-	_Atomic typeof(p) tmp;
-	typeof(tmp) __p = (p);
-or, uglier but probably more practical:
-	typeof(({_Atomic typeof(p) tmp; })) __p = (p);
+Thanks Alexey for the patches!
 
-Go figure!
+> 
+> FW_FEATURE_MULTITCE is checked when dma_iommu_ops is used; however
+> the code managing the huge DMA window (DDW) ignores it and calls
+> H_PUT_TCE_INDIRECT even if it is explicitly disabled via
+> the "multitce=off" kernel command line parameter.
 
-OTOH, at least on GCC 8.3, it seems to always do the same with
-volatiles than it does with consts.
+Also H_PUT_TCE_INDIRECT should not be called in secure VM, even when
+"multitce=on".  right? Or does it get disabled somehow in the 
+secure guest?
 
--- Luc Van Oostenryck
+
+> 
+> This adds FW_FEATURE_MULTITCE checking to the DDW code path.
+> 
+> This changes tce_build_pSeriesLP to take liobn and page size as
+> the huge window does not have iommu_table descriptor which usually
+> the place to store these numbers.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+> 
+> The idea is then set FW_FEATURE_MULTITCE in init_svm() and have the guest
+
+I think, you mean unset FW_FEATURE_MULTITCE.
+
+> use H_PUT_TCE without sharing a (temporary) page for H_PUT_TCE_INDIRECT.
+> ---
+>  arch/powerpc/platforms/pseries/iommu.c | 44 ++++++++++++++++++--------
+>  1 file changed, 30 insertions(+), 14 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+> index df7db33ca93b..f6e9b87c82fc 100644
+> --- a/arch/powerpc/platforms/pseries/iommu.c
+> +++ b/arch/powerpc/platforms/pseries/iommu.c
+> @@ -132,10 +132,10 @@ static unsigned long tce_get_pseries(struct iommu_table *tbl, long index)
+>  	return be64_to_cpu(*tcep);
+>  }
+> 
+> -static void tce_free_pSeriesLP(struct iommu_table*, long, long);
+> +static void tce_free_pSeriesLP(unsigned long liobn, long, long);
+>  static void tce_freemulti_pSeriesLP(struct iommu_table*, long, long);
+> 
+> -static int tce_build_pSeriesLP(struct iommu_table *tbl, long tcenum,
+> +static int tce_build_pSeriesLP(unsigned long liobn, long tcenum, long tceshift,
+>  				long npages, unsigned long uaddr,
+>  				enum dma_data_direction direction,
+>  				unsigned long attrs)
+> @@ -146,25 +146,25 @@ static int tce_build_pSeriesLP(struct iommu_table *tbl, long tcenum,
+>  	int ret = 0;
+>  	long tcenum_start = tcenum, npages_start = npages;
+> 
+> -	rpn = __pa(uaddr) >> TCE_SHIFT;
+> +	rpn = __pa(uaddr) >> tceshift;
+>  	proto_tce = TCE_PCI_READ;
+>  	if (direction != DMA_TO_DEVICE)
+>  		proto_tce |= TCE_PCI_WRITE;
+> 
+>  	while (npages--) {
+> -		tce = proto_tce | (rpn & TCE_RPN_MASK) << TCE_RPN_SHIFT;
+> -		rc = plpar_tce_put((u64)tbl->it_index, (u64)tcenum << 12, tce);
+> +		tce = proto_tce | (rpn & TCE_RPN_MASK) << tceshift;
+> +		rc = plpar_tce_put((u64)liobn, (u64)tcenum << tceshift, tce);
+> 
+>  		if (unlikely(rc == H_NOT_ENOUGH_RESOURCES)) {
+>  			ret = (int)rc;
+> -			tce_free_pSeriesLP(tbl, tcenum_start,
+> +			tce_free_pSeriesLP(liobn, tcenum_start,
+>  			                   (npages_start - (npages + 1)));
+>  			break;
+>  		}
+> 
+>  		if (rc && printk_ratelimit()) {
+>  			printk("tce_build_pSeriesLP: plpar_tce_put failed. rc=%lld\n", rc);
+> -			printk("\tindex   = 0x%llx\n", (u64)tbl->it_index);
+> +			printk("\tindex   = 0x%llx\n", (u64)liobn);
+>  			printk("\ttcenum  = 0x%llx\n", (u64)tcenum);
+>  			printk("\ttce val = 0x%llx\n", tce );
+>  			dump_stack();
+> @@ -193,7 +193,8 @@ static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
+>  	unsigned long flags;
+> 
+>  	if ((npages == 1) || !firmware_has_feature(FW_FEATURE_MULTITCE)) {
+> -		return tce_build_pSeriesLP(tbl, tcenum, npages, uaddr,
+> +		return tce_build_pSeriesLP(tbl->it_index, tcenum,
+> +					   tbl->it_page_shift, npages, uaddr,
+>  		                           direction, attrs);
+>  	}
+> 
+> @@ -209,8 +210,9 @@ static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
+>  		/* If allocation fails, fall back to the loop implementation */
+>  		if (!tcep) {
+>  			local_irq_restore(flags);
+> -			return tce_build_pSeriesLP(tbl, tcenum, npages, uaddr,
+> -					    direction, attrs);
+> +			return tce_build_pSeriesLP(tbl->it_index, tcenum,
+> +					tbl->it_page_shift,
+> +					npages, uaddr, direction, attrs);
+>  		}
+>  		__this_cpu_write(tce_page, tcep);
+>  	}
+> @@ -261,16 +263,16 @@ static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
+>  	return ret;
+>  }
+> 
+> -static void tce_free_pSeriesLP(struct iommu_table *tbl, long tcenum, long npages)
+> +static void tce_free_pSeriesLP(unsigned long liobn, long tcenum, long npages)
+>  {
+>  	u64 rc;
+> 
+>  	while (npages--) {
+> -		rc = plpar_tce_put((u64)tbl->it_index, (u64)tcenum << 12, 0);
+> +		rc = plpar_tce_put((u64)liobn, (u64)tcenum << 12, 0);
+> 
+>  		if (rc && printk_ratelimit()) {
+>  			printk("tce_free_pSeriesLP: plpar_tce_put failed. rc=%lld\n", rc);
+> -			printk("\tindex   = 0x%llx\n", (u64)tbl->it_index);
+> +			printk("\tindex   = 0x%llx\n", (u64)liobn);
+>  			printk("\ttcenum  = 0x%llx\n", (u64)tcenum);
+>  			dump_stack();
+>  		}
+> @@ -285,7 +287,7 @@ static void tce_freemulti_pSeriesLP(struct iommu_table *tbl, long tcenum, long n
+>  	u64 rc;
+> 
+>  	if (!firmware_has_feature(FW_FEATURE_MULTITCE))
+> -		return tce_free_pSeriesLP(tbl, tcenum, npages);
+> +		return tce_free_pSeriesLP(tbl->it_index, tcenum, npages);
+> 
+>  	rc = plpar_tce_stuff((u64)tbl->it_index, (u64)tcenum << 12, 0, npages);
+> 
+> @@ -400,6 +402,20 @@ static int tce_setrange_multi_pSeriesLP(unsigned long start_pfn,
+>  	u64 rc = 0;
+>  	long l, limit;
+> 
+> +	if (!firmware_has_feature(FW_FEATURE_MULTITCE)) {
+
+this code should execute in  secure guest. Which means we need a
+	' || is_secure_guest() '   check.
+
+
+> +		unsigned long tceshift = be32_to_cpu(maprange->tce_shift);
+> +		unsigned long dmastart = (start_pfn << PAGE_SHIFT) +
+> +				be64_to_cpu(maprange->dma_base);
+> +		unsigned long tcenum = dmastart >> tceshift;
+> +		unsigned long npages = num_pfn << PAGE_SHIFT >>
+> +				be32_to_cpu(maprange->tce_shift);
+> +		void *uaddr = __va(start_pfn << PAGE_SHIFT);
+> +
+> +		return tce_build_pSeriesLP(be32_to_cpu(maprange->liobn),
+> +				tcenum, tceshift, npages, (unsigned long) uaddr,
+> +				DMA_BIDIRECTIONAL, 0);
+> +	}
+> +
+>  	local_irq_disable();	/* to protect tcep and the page behind it */
+>  	tcep = __this_cpu_read(tce_page);
+
+RP
+
