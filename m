@@ -2,61 +2,86 @@ Return-Path: <SRS0=reMV=2E=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C7A69C43603
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Dec 2019 13:51:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 769CAC43603
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Dec 2019 17:57:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 23B2624658
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Dec 2019 13:51:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 23B2624658
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id E5760214AF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Dec 2019 17:57:39 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="IdnEahgW"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E5760214AF
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47Zppk0kMgzDr1V
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Dec 2019 00:51:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47ZwH50w4xzDqxZ
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Dec 2019 04:57:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=srs0=rbny=2e=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::541;
+ helo=mail-pg1-x541.google.com; envelope-from=tiny.windzz@gmail.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=bugzilla.kernel.org
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="IdnEahgW"; 
+ dkim-atps=neutral
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47ZpmP103zzDqJl
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Dec 2019 00:49:08 +1100 (AEDT)
-From: bugzilla-daemon@bugzilla.kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 205099] KASAN hit at raid6_pq: BUG: Unable to handle kernel
- data access at 0x00f0fd0d
-Date: Sat, 14 Dec 2019 13:49:05 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
-X-Bugzilla-Product: Platform Specific/Hardware
-X-Bugzilla-Component: PPC-32
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: erhard_f@mailbox.org
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-205099-206035-NI775hPECb@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-205099-206035@https.bugzilla.kernel.org/>
-References: <bug-205099-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47ZwD23Y4vzDqwn
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Dec 2019 04:54:58 +1100 (AEDT)
+Received: by mail-pg1-x541.google.com with SMTP id 6so1198643pgk.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Dec 2019 09:54:58 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references;
+ bh=ndfZOSOPMFzdlsJ4y++gytIs8MeUXglHTS0DvEbmTno=;
+ b=IdnEahgWAR9M4ay1p7g7jXGNeleJSN/P4VE30OGOw9nwFkNumcqzoq8i3h9o4rIrUu
+ Nurp0p2IiltqBDNFiqIVSHRXRwmvF75PwfIGvhnVdzMvWhV6G8AINxl2D9oEa1D6/pQe
+ ytdcI6Wex7iWcRLeDfkXp+Vciij7n77J4rN6sIy1fw+8gTuR7m894EJ5/IyqVEaLOEJ9
+ xtPABBFefL/DQZ3qA5wCEinKv2ZWtgxyx4/lRYaZDd5wYVFpm4aDjFQ0AHugNROjJzvb
+ WPdwxO4zXX8wVPTvkieEKPZzux9cfO7YuHwXLHEni208k1iAUI8slHYwMcnswHyhf4nG
+ ws3w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references;
+ bh=ndfZOSOPMFzdlsJ4y++gytIs8MeUXglHTS0DvEbmTno=;
+ b=R5ZDACA1j0reHTKxQ0Q49FmV2vrFY4hVwVVX22PSE1E5DBwV/tXMk7wRqVEuyWYOvy
+ vC/e6NdlbSMX34WdpX7vPD0/lMwet7QqQLNqkcX/ir6H3ktziuVd1Ky/qof2ZWB1RWbm
+ zp9NknGIXgiv3KMUORvTe4CmWCLtgmCXbJ1cfHcwxqyDW2rR9priDYU3ySlTWJMK4BlT
+ CbeQX/3oxe5yX9vpSsMW+nizw2omYbGEbWabgH4ivYDLPBlmc1TIWnuNpvQQTNR/ySdX
+ dYBpCM3atREoqqqQYiAn4nVmPri/kbqpvprxCaRhrEUN4jlygdGXLL2KrR9/SWovdTf/
+ 3qVA==
+X-Gm-Message-State: APjAAAWnOSIu9KYW+aWLsUe6z3zNExfYIb7l6GXT4VkVdK6rj1ySWwmu
+ 8Z1QwWa5PHiaSKamnFnEh3A=
+X-Google-Smtp-Source: APXvYqyntHYYzT5XK8Is3T2y43EjL546dQMIWdhxgNlwlneNp8k3SwJP9re1oPWgimXPNxBXbgGHIQ==
+X-Received: by 2002:aa7:8d03:: with SMTP id j3mr6687115pfe.162.1576346096173; 
+ Sat, 14 Dec 2019 09:54:56 -0800 (PST)
+Received: from localhost ([2001:19f0:6001:12c8:5400:2ff:fe72:6403])
+ by smtp.gmail.com with ESMTPSA id k9sm13731248pje.26.2019.12.14.09.54.55
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Sat, 14 Dec 2019 09:54:55 -0800 (PST)
+From: Yangtao Li <tiny.windzz@gmail.com>
+To: khilman@baylibre.com, leoyang.li@nxp.com, khalasa@piap.pl,
+ john@phrozen.org, matthias.bgg@gmail.com, agross@kernel.org,
+ bjorn.andersson@linaro.org, kgene@kernel.org, krzk@kernel.org,
+ mripard@kernel.org, wens@csie.org, ssantosh@kernel.org, jun.nie@linaro.org,
+ shawnguo@kernel.org
+Subject: [PATCH 02/10] soc: samsung: convert to devm_platform_ioremap_resource
+Date: Sat, 14 Dec 2019 17:54:39 +0000
+Message-Id: <20191214175447.25482-2-tiny.windzz@gmail.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20191214175447.25482-1-tiny.windzz@gmail.com>
+References: <20191214175447.25482-1-tiny.windzz@gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,18 +93,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linux-samsung-soc@vger.kernel.org, Yangtao Li <tiny.windzz@gmail.com>,
+ linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-mips@vger.kernel.org, linux-mediatek@lists.infradead.org,
+ linux-amlogic@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D205099
+Use devm_platform_ioremap_resource() to simplify code.
 
---- Comment #7 from Erhard F. (erhard_f@mailbox.org) ---
-I enabled DEBUG_STACKOVERFLOW in the kernel .config but I got no additional
-hints...
+Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+---
+ drivers/soc/samsung/exynos-pmu.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-Is there any other debugging option that could help?
+diff --git a/drivers/soc/samsung/exynos-pmu.c b/drivers/soc/samsung/exynos-pmu.c
+index d34ca201b8b7..7da2701c871a 100644
+--- a/drivers/soc/samsung/exynos-pmu.c
++++ b/drivers/soc/samsung/exynos-pmu.c
+@@ -110,10 +110,8 @@ EXPORT_SYMBOL_GPL(exynos_get_pmu_regmap);
+ static int exynos_pmu_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+-	struct resource *res;
+ 
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	pmu_base_addr = devm_ioremap_resource(dev, res);
++	pmu_base_addr = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(pmu_base_addr))
+ 		return PTR_ERR(pmu_base_addr);
+ 
+-- 
+2.17.1
 
---=20
-You are receiving this mail because:
-You are watching the assignee of the bug.=
