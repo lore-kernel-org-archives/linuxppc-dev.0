@@ -2,77 +2,80 @@ Return-Path: <SRS0=reMV=2E=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.5 required=3.0 tests=FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 53A03C43603
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Dec 2019 08:12:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 97ABCC43603
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Dec 2019 09:52:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BDBF824656
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Dec 2019 08:12:27 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="W0NFSiHz"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BDBF824656
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id F15C320700
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Dec 2019 09:52:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F15C320700
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=zonnet.nl
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47ZgHs0gy0zDr3N
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Dec 2019 19:12:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47ZjVl6ZX2zDr41
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Dec 2019 20:51:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=neutral (access neither permitted nor denied)
+ smtp.mailfrom=zonnet.nl (client-ip=212.54.42.168;
+ helo=smtpq5.tb.mail.iss.as9143.net; envelope-from=jjhdiederen@zonnet.nl;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="W0NFSiHz"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=none (p=none dis=none) header.from=zonnet.nl
+X-Greylist: delayed 1061 seconds by postgrey-1.36 at bilbo;
+ Sat, 14 Dec 2019 20:50:07 AEDT
+Received: from smtpq5.tb.mail.iss.as9143.net (smtpq5.tb.mail.iss.as9143.net
+ [212.54.42.168])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47ZgFj3lwmzDr0D
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Dec 2019 19:10:33 +1100 (AEDT)
-Received: from localhost (mailhub1-ext [192.168.12.233])
- by localhost (Postfix) with ESMTP id 47ZgFd0bxnz9vBmV;
- Sat, 14 Dec 2019 09:10:29 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=W0NFSiHz; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id D22I_wQSIGpE; Sat, 14 Dec 2019 09:10:29 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 47ZgFc6QmRz9vBmT;
- Sat, 14 Dec 2019 09:10:28 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1576311028; bh=9OX3cbpsdk/Bx1nvgsH+3knqA1sJ152d4iqy6Fxiacc=;
- h=From:Subject:To:Cc:Date:From;
- b=W0NFSiHzN8TKwEHuS4NXLTbNpGOQ/TefcbudBWs89mBUVsBorYJJa/Nn6ThfUMsE1
- U1eDe96p23NSClCS1ZyPVzYJzPHMX1CxNgjJO+J4VgkC/CS1Fw39KANsldnjdST8fM
- bG9jGs0E3Q1g9iqXvssCjbFq5HafPY6pwWKPzrYE=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D75D18B788;
- Sat, 14 Dec 2019 09:10:29 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id Zsh-J2ty9Sz4; Sat, 14 Dec 2019 09:10:29 +0100 (CET)
-Received: from po16098vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 992C78B755;
- Sat, 14 Dec 2019 09:10:29 +0100 (CET)
-Received: by localhost.localdomain (Postfix, from userid 0)
- id 3F4736377C; Sat, 14 Dec 2019 08:10:29 +0000 (UTC)
-Message-Id: <56648921986a6b3e7315b1fbbf4684f21bd2dea8.1576310997.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/8xx: fix bogus __init on mmu_mapin_ram_chunk()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Sat, 14 Dec 2019 08:10:29 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47ZjSb23l9zDr1c
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Dec 2019 20:50:05 +1100 (AEDT)
+Received: from [212.54.42.136] (helo=smtp12.tb.mail.iss.as9143.net)
+ by smtpq5.tb.mail.iss.as9143.net with esmtps
+ (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.90_1)
+ (envelope-from <jjhdiederen@zonnet.nl>)
+ id 1ig3mZ-0007hI-7S; Sat, 14 Dec 2019 10:32:15 +0100
+Received: from 94-209-172-18.cable.dynamic.v4.ziggo.nl ([94.209.172.18]
+ helo=debian) by smtp12.tb.mail.iss.as9143.net with smtp (Exim 4.90_1)
+ (envelope-from <jjhdiederen@zonnet.nl>)
+ id 1ig3mY-0002wB-U8; Sat, 14 Dec 2019 10:32:15 +0100
+Date: Sat, 14 Dec 2019 10:32:13 +0100
+From: Jeroen Diederen <jjhdiederen@zonnet.nl>
+To: Romain Dolbeau <romain@dolbeau.org>
+Subject: Re: PPC64: G5 & 4k/64k page size (was: Re: Call for report -
+ G5/PPC970 status)
+Message-Id: <20191214103213.309bfbbb1f9c50fe47e733d9@zonnet.nl>
+In-Reply-To: <CADuzgbo=Yr09hxrkbkwj7Crg0aUfx+RQZOt0sCSNOeYUfR0SmA@mail.gmail.com>
+References: <CADuzgbqYpv40NvAMGjo1cU2cNnij-2p4SYpWgM-Xn0v-8Qapsg@mail.gmail.com>
+ <e87e2397-a8d4-c928-d3d4-7ae700603770@physik.fu-berlin.de>
+ <CA+7wUsxBkmG-jW_UVBUuMriZbDkJko3kg0hzmMrVMoJLu2+rPw@mail.gmail.com>
+ <CADuzgbqoX3DQ6OVqdR6dw1oqnNn-Q0zLPshDi23DwDtYukDYdg@mail.gmail.com>
+ <CADuzgboWQtVqp7-Ru4uQQaPerkhLnaS9=WiwX2dD4-5VypT2MA@mail.gmail.com>
+ <CADuzgboYv69FQxQRvJ_Bd563OPO0e=USd+cTChfDK60D5x75hw@mail.gmail.com>
+ <b2256437-efe1-909d-1488-174b6522f9e0@physik.fu-berlin.de>
+ <87eexbk3gw.fsf@linux.ibm.com>
+ <CADuzgbq-P8mgf9zLaxhdqUfQcqfRpSzjgRoofF84rp+-S064xg@mail.gmail.com>
+ <87mubxl82x.fsf@igel.home>
+ <CADuzgbqU-SVy5U_4Pkv2G8SJcT9JhyirhFGamnQusZBSRSgcPw@mail.gmail.com>
+ <87immlkytp.fsf@igel.home>
+ <CADuzgbo=Yr09hxrkbkwj7Crg0aUfx+RQZOt0sCSNOeYUfR0SmA@mail.gmail.com>
+X-Mailer: Sylpheed 3.7.0 (GTK+ 2.24.32; powerpc64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+X-SourceIP: 94.209.172.18
+X-Ziggo-spambar: /
+X-Ziggo-spamscore: 0.0
+X-Ziggo-spamreport: CMAE Analysis: v=2.3 cv=OIFZIhSB c=1 sm=1 tr=0
+ a=hX1wvrNIyYTyeNV4br3Ikw==:17 a=jpOVt7BSZ2e4Z31A5e1TngXxSK0=:19
+ a=8nJEP1OIZ-IA:10 a=pxVhFHJ0LMsA:10 a=4N9OZ5xKAAAA:8 a=tBb2bbeoAAAA:8
+ a=bZG9RO2IwdgYX660zAIA:9 a=wPNLvfGTeEIA:10 a=PVzpVZy-QHXMxH31aWPS:22
+ a=Oj-tNtZlA1e06AYgeCfH:22
+X-Ziggo-Spam-Status: No
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,37 +87,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Andreas Schwab <schwab@linux-m68k.org>,
+ John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+ PowerPC List Debian <debian-powerpc@lists.debian.org>,
+ linuxppc-dev@lists.ozlabs.org, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Remove __init qualifier for mmu_mapin_ram_chunk() as it is called by
-mmu_mark_initmem_nx() and mmu_mark_rodata_ro() which are not __init
-functions.
+on my iMac iSight:
 
-At the same time, mark it static as it is only used in this file.
 
-Reported-by: kbuild test robot <lkp@intel.com>
-Fixes: a2227a277743 ("powerpc/32: Don't populate page tables for block mapped pages except on the 8xx")
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/mm/nohash/8xx.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+grep CONFIG_PPC.*PAGE config-5.3.0-3-powerpc64=20
+# CONFIG_PPC_4K_PAGES is not set
+CONFIG_PPC_64K_PAGES=3Dy
+CONFIG_PPC_PAGE_SHIFT=3D16
+# CONFIG_PPC_SUBPAGE_PROT is not set
 
-diff --git a/arch/powerpc/mm/nohash/8xx.c b/arch/powerpc/mm/nohash/8xx.c
-index 2c98078d2ede..3189308dece4 100644
---- a/arch/powerpc/mm/nohash/8xx.c
-+++ b/arch/powerpc/mm/nohash/8xx.c
-@@ -104,7 +104,7 @@ static void mmu_patch_addis(s32 *site, long simm)
- 	patch_instruction_site(site, instr);
- }
- 
--void __init mmu_mapin_ram_chunk(unsigned long offset, unsigned long top, pgprot_t prot)
-+static void mmu_mapin_ram_chunk(unsigned long offset, unsigned long top, pgprot_t prot)
- {
- 	unsigned long s = offset;
- 	unsigned long v = PAGE_OFFSET + s;
--- 
-2.13.3
+I can't give you info about the G5 PowerMac 7,3 as it is not my machine.
 
+Regards,
+Jeroen
+
+On Fri, 13 Dec 2019 08:47:49 +0100
+Romain Dolbeau <romain@dolbeau.org> wrote:
+
+> Le jeu. 12 d=E9c. 2019 =E0 22:40, Andreas Schwab <schwab@linux-m68k.org> =
+a =E9crit :
+> > I'm using 4K pages, in case that matters
+>=20
+> Yes it does matter, as it seems to be the difference between "working"
+> and "not working" :-)
+> Thank you for the config & pointing out the culprit!
+>=20
+> With your config, my machine boots (though it's missing some features
+> as the config seems quite tuned).
+>=20
+> Moving from 64k pages to 4k pages on 'my' config (essentially,
+> Debian's 5.3 with default values for changes since), my machine boots
+> as well & everything seems to work fine.
+>=20
+> So question to Aneesh - did you try 64k pages on your G5, or only 4k?
+> In the second case, could you try with 64k to see if you can reproduce
+> the crash?
+>=20
+> To Jeroen - is your iMac booting with 4k or 64k pages? Same question
+> for the crashing G5, though I assume the answer is going to be 64k
+> there.
+>=20
+> Thanks & cordially,
+>=20
+> --=20
+> Romain Dolbeau
+
+
+--=20
+Jeroen Diederen <jjhdiederen@zonnet.nl>
