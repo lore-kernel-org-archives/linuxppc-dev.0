@@ -2,87 +2,69 @@ Return-Path: <SRS0=g46S=2F=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A60FC43603
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Dec 2019 20:29:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 552D0C43603
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Dec 2019 20:30:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1245524676
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Dec 2019 20:29:01 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="LiRgSKsE"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1245524676
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0CF4E24676
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Dec 2019 20:30:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0CF4E24676
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47bbbG1p1SzDqPC
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 07:28:58 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::f42;
- helo=mail-qv1-xf42.google.com; envelope-from=andrii.nakryiko@gmail.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 47bbdM5MmrzDqbv
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 07:30:47 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=softfail (domain owner discourages use of this
+ host) smtp.mailfrom=kernel.org (client-ip=213.251.177.50;
+ helo=inca-roads.misterjones.org; envelope-from=maz@kernel.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="LiRgSKsE"; 
- dkim-atps=neutral
-Received: from mail-qv1-xf42.google.com (mail-qv1-xf42.google.com
- [IPv6:2607:f8b0:4864:20::f42])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+X-Greylist: delayed 1278 seconds by postgrey-1.36 at bilbo;
+ Sun, 15 Dec 2019 22:09:57 AEDT
+Received: from inca-roads.misterjones.org (inca-roads.misterjones.org
+ [213.251.177.50])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47ZH692DFYzDrCW
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Dec 2019 04:02:34 +1100 (AEDT)
-Received: by mail-qv1-xf42.google.com with SMTP id c2so11277qvp.12
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2019 09:02:33 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=vUE8AEfpv1Je3ytswJ2t5UjmrKOaLm5nTOW/OGZXKqs=;
- b=LiRgSKsEotztqVrsicsLsNUDrDyYeIVpc5+lRgzqczvL62rsuBj4Sa8kv7CHVoxoXH
- EWf2/4n/6YSz0KEDVyfYtJTpb8F7EmGyVJR+ZshuzOr+rwiewODBxJsSOOlq9GFzmfmR
- xbyfqPPoFwYCGFYTbxa0kspoKBUFBP8SWqe6HFH220EKZNVz5tnRGO45bF6o7uPDCsYs
- c/oZxItM/SELe7rS2ok8whcpRv0BeIPcwpH6Sy1KO9LukZKVfqv3oXFTjiNf3iXIc7hr
- s0ZkR9IY00n1vFjE/biRCTww+E0EzM7oNaqT4yRiQqb5w4dqYj9TQmRdhnkZeug5/rJe
- 984Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=vUE8AEfpv1Je3ytswJ2t5UjmrKOaLm5nTOW/OGZXKqs=;
- b=foqki3UyRhh2RLQHPduy3zKTIXiwVGUXQ4GPVSvrFcTemMIUN0e+Oa99tCAsdFA8jO
- frBB9viKumkKyvwEY1DzqbmfFRnQfKIr8RvySNETvCKLJ9P5P4vP/1WzXLBRL7O/S0u9
- JPb2bONlOCm0Y3V9AzDR1OkrNnHDVJ3aoGYFN1cPPaGLyMDAbAa3dIhTETj0wly5f/B7
- Rhuu/Wrij45qyPS7f58Y73NYi5mT2fTphRsiVNhj0Xb0+XkOgU7ruRp6WenCt5LRS7Jx
- eogcoKokGvBoYVGOZSdl/+82qXJCzGUUH7OjMc/56QcRvTZ+5HAqYXClXFkeRbTy3UXu
- 002A==
-X-Gm-Message-State: APjAAAU1i96RLQKyfQvUtPoJKRhAWu/prLjyzkfl7O69AKKri5arAzda
- eilHn3qeoF3F3LeSXdR7IrO2cV8uvNM82lqs4g0=
-X-Google-Smtp-Source: APXvYqxSHgQ7tT0FFNjw0FMOJb3XsIngDsE1kSkmcHPlEmXgbqA8EhfpMfQEZmwNFjBDUp4xDIjV8uTmvi+wnxrkb7A=
-X-Received: by 2002:ad4:4e34:: with SMTP id
- dm20mr14796667qvb.163.1576256550460; 
- Fri, 13 Dec 2019 09:02:30 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47bMBF4mt4zDqWS
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Dec 2019 22:09:56 +1100 (AEDT)
+Received: from 78.163-31-62.static.virginmediabusiness.co.uk ([62.31.163.78]
+ helo=why)
+ by cheepnis.misterjones.org with esmtpsa (TLSv1.2:AES256-GCM-SHA384:256)
+ (Exim 4.80) (envelope-from <maz@kernel.org>)
+ id 1igRRq-0007sB-2S; Sun, 15 Dec 2019 11:48:26 +0100
+Date: Sun, 15 Dec 2019 10:48:24 +0000
+From: Marc Zyngier <maz@kernel.org>
+To: Yangtao Li <tiny.windzz@gmail.com>
+Subject: Re: [PATCH 10/10] soc: qcom: convert to devm_platform_ioremap_resource
+Message-ID: <20191215104824.658889d3@why>
+In-Reply-To: <20191214175447.25482-10-tiny.windzz@gmail.com>
+References: <20191214175447.25482-1-tiny.windzz@gmail.com>
+ <20191214175447.25482-10-tiny.windzz@gmail.com>
+Organization: Approximate
+X-Mailer: Claws Mail 3.17.4 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
-References: <20191201195728.4161537-1-aurelien@aurel32.net>
- <87zhgbe0ix.fsf@mpe.ellerman.id.au>
- <20191202093752.GA1535@localhost.localdomain>
- <CAFxkdAqg6RaGbRrNN3e_nHfHFR-xxzZgjhi5AnppTxxwdg0VyQ@mail.gmail.com>
- <20191210222553.GA4580@calabresa>
- <CAFxkdAp6Up0qSyp0sH0O1yD+5W3LvY-+-iniBrorcz2pMV+y-g@mail.gmail.com>
- <20191211160133.GB4580@calabresa>
- <CAFxkdAp9OGjJS1Sdny+TiG2+zU4n0Nj+ZVrZt5J6iVsS_zqqcw@mail.gmail.com>
- <20191213101114.GA3986@calabresa>
-In-Reply-To: <20191213101114.GA3986@calabresa>
-From: Andrii Nakryiko <andrii.nakryiko@gmail.com>
-Date: Fri, 13 Dec 2019 09:02:19 -0800
-Message-ID: <CAEf4BzY-JP+vYNjwShhgMs6sJ+Bdqc8FEd19BVf8uf+jSnX1Jw@mail.gmail.com>
-Subject: Re: [PATCH] libbpf: Fix readelf output parsing for Fedora
-To: Thadeu Lima de Souza Cascardo <cascardo@canonical.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 62.31.163.78
+X-SA-Exim-Rcpt-To: tiny.windzz@gmail.com, khilman@baylibre.com,
+ leoyang.li@nxp.com, khalasa@piap.pl, john@phrozen.org, matthias.bgg@gmail.com,
+ agross@kernel.org, bjorn.andersson@linaro.org, kgene@kernel.org,
+ krzk@kernel.org, mripard@kernel.org, wens@csie.org, ssantosh@kernel.org,
+ jun.nie@linaro.org, shawnguo@kernel.org, linux-samsung-soc@vger.kernel.org,
+ linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-mips@vger.kernel.org, linux-mediatek@lists.infradead.org,
+ linux-amlogic@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
+X-SA-Exim-Mail-From: maz@kernel.org
+X-SA-Exim-Scanned: No (on cheepnis.misterjones.org);
+ SAEximRunCond expanded to false
 X-Mailman-Approved-At: Mon, 16 Dec 2019 07:27:01 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -95,75 +77,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Song Liu <songliubraving@fb.com>, Daniel Borkmann <daniel@iogearbox.net>,
- "open list:BPF \(Safe dynamic programs and tools\)"
- <netdev@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Justin Forbes <jmforbes@linuxtx.org>, Alexei Starovoitov <ast@kernel.org>,
- LKML <linux-kernel@vger.kernel.org>, Yonghong Song <yhs@fb.com>,
- "open list:BPF \(Safe dynamic programs and tools\)" <bpf@vger.kernel.org>,
- Andrii Nakryiko <andriin@fb.com>, Martin KaFai Lau <kafai@fb.com>,
- Aurelien Jarno <aurelien@aurel32.net>, debian-kernel@lists.debian.org
+Cc: john@phrozen.org, linux-kernel@vger.kernel.org,
+ linux-samsung-soc@vger.kernel.org, khilman@baylibre.com, krzk@kernel.org,
+ wens@csie.org, agross@kernel.org, linux-arm-msm@vger.kernel.org,
+ mripard@kernel.org, khalasa@piap.pl, ssantosh@kernel.org,
+ matthias.bgg@gmail.com, linux-amlogic@lists.infradead.org,
+ bjorn.andersson@linaro.org, linux-arm-kernel@lists.infradead.org,
+ shawnguo@kernel.org, linux-mips@vger.kernel.org, leoyang.li@nxp.com,
+ kgene@kernel.org, linux-mediatek@lists.infradead.org, jun.nie@linaro.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Dec 13, 2019 at 2:11 AM Thadeu Lima de Souza Cascardo
-<cascardo@canonical.com> wrote:
->
-> Fedora binutils has been patched to show "other info" for a symbol at the
-> end of the line. This was done in order to support unmaintained scripts
-> that would break with the extra info. [1]
->
-> [1] https://src.fedoraproject.org/rpms/binutils/c/b8265c46f7ddae23a792ee8306fbaaeacba83bf8
->
-> This in turn has been done to fix the build of ruby, because of checksec.
-> [2] Thanks Michael Ellerman for the pointer.
->
-> [2] https://bugzilla.redhat.com/show_bug.cgi?id=1479302
->
-> As libbpf Makefile is not unmaintained, we can simply deal with either
-> output format, by just removing the "other info" field, as it always comes
-> inside brackets.
->
-> Cc: Aurelien Jarno <aurelien@aurel32.net>
-> Fixes: 3464afdf11f9 (libbpf: Fix readelf output parsing on powerpc with recent binutils)
-> Reported-by: Justin Forbes <jmforbes@linuxtx.org>
-> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@canonical.com>
+On Sat, 14 Dec 2019 17:54:47 +0000
+Yangtao Li <tiny.windzz@gmail.com> wrote:
+
+> Use devm_platform_ioremap_resource() to simplify code.
+> 
+> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
 > ---
+>  drivers/soc/qcom/llcc-qcom.c    | 7 +------
+>  drivers/soc/qcom/qcom-geni-se.c | 4 +---
+>  drivers/soc/qcom/qcom_aoss.c    | 4 +---
+>  drivers/soc/qcom/qcom_gsbi.c    | 5 +----
+>  drivers/soc/qcom/spm.c          | 4 +---
+>  5 files changed, 5 insertions(+), 19 deletions(-)
+> 
+> diff --git a/drivers/soc/qcom/llcc-qcom.c b/drivers/soc/qcom/llcc-qcom.c
+> index 429b5a60a1ba..99e19df76889 100644
+> --- a/drivers/soc/qcom/llcc-qcom.c
+> +++ b/drivers/soc/qcom/llcc-qcom.c
+> @@ -387,7 +387,6 @@ static int qcom_llcc_remove(struct platform_device *pdev)
+>  static struct regmap *qcom_llcc_init_mmio(struct platform_device *pdev,
+>  		const char *name)
+>  {
+> -	struct resource *res;
+>  	void __iomem *base;
+>  	struct regmap_config llcc_regmap_config = {
+>  		.reg_bits = 32,
+> @@ -396,11 +395,7 @@ static struct regmap *qcom_llcc_init_mmio(struct platform_device *pdev,
+>  		.fast_io = true,
+>  	};
+>  
+> -	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, name);
+> -	if (!res)
+> -		return ERR_PTR(-ENODEV);
+> -
+> -	base = devm_ioremap_resource(&pdev->dev, res);
+> +	base = devm_platform_ioremap_resource(pdev, 0);
 
-I was briefly playing with it and trying to make it use nm to dump
-symbols, instead of parsing more human-oriented output of readelf, but
-somehow nm doesn't output symbols with @@LIBBPF.* suffix at the end,
-so I just gave up. So I think this one is good.
+What guarantees do you have that entry 0 matches name?
 
-This should go through bpf-next tree.
+I find these changes pointless: they don't add much to the readability
+or maintainability of the code, and instead introduce creative bugs.
 
-Acked-by: Andrii Nakryiko <andriin@fb.com>
-
-
->  tools/lib/bpf/Makefile | 2 ++
->  1 file changed, 2 insertions(+)
->
-> diff --git a/tools/lib/bpf/Makefile b/tools/lib/bpf/Makefile
-> index defae23a0169..23ae06c43d08 100644
-> --- a/tools/lib/bpf/Makefile
-> +++ b/tools/lib/bpf/Makefile
-> @@ -147,6 +147,7 @@ TAGS_PROG := $(if $(shell which etags 2>/dev/null),etags,ctags)
->
->  GLOBAL_SYM_COUNT = $(shell readelf -s --wide $(BPF_IN_SHARED) | \
->                            cut -d "@" -f1 | sed 's/_v[0-9]_[0-9]_[0-9].*//' | \
-> +                          sed 's/\[.*\]//' | \
->                            awk '/GLOBAL/ && /DEFAULT/ && !/UND/ {print $$NF}' | \
->                            sort -u | wc -l)
->  VERSIONED_SYM_COUNT = $(shell readelf -s --wide $(OUTPUT)libbpf.so | \
-> @@ -213,6 +214,7 @@ check_abi: $(OUTPUT)libbpf.so
->                      "versioned in $(VERSION_SCRIPT)." >&2;              \
->                 readelf -s --wide $(BPF_IN_SHARED) |                     \
->                     cut -d "@" -f1 | sed 's/_v[0-9]_[0-9]_[0-9].*//' |   \
-> +                   sed 's/\[.*\]//' |                                   \
->                     awk '/GLOBAL/ && /DEFAULT/ && !/UND/ {print $$NF}'|  \
->                     sort -u > $(OUTPUT)libbpf_global_syms.tmp;           \
->                 readelf -s --wide $(OUTPUT)libbpf.so |                   \
-> --
-> 2.24.0
->
+	M.
+-- 
+Jazz is not dead. It just smells funny...
