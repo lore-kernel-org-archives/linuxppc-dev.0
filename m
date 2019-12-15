@@ -2,88 +2,70 @@ Return-Path: <SRS0=g46S=2F=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BBBAC43603
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Dec 2019 02:15:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 77373C43603
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Dec 2019 11:59:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3FBF720706
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Dec 2019 02:15:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3FBF720706
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id D762620663
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Dec 2019 11:59:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D762620663
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47b7Jy5rygzDqlJ
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Dec 2019 13:14:58 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=sukadev@linux.vnet.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 47bNHg6cv0zDqC9
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Dec 2019 22:59:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=209.85.208.67; helo=mail-ed1-f67.google.com;
+ envelope-from=k.kozlowski.k@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from mail-ed1-f67.google.com (mail-ed1-f67.google.com
+ [209.85.208.67])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47b7Fy6VxwzDql9
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Dec 2019 13:12:22 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- xBF2CBDv044260; Sat, 14 Dec 2019 21:12:11 -0500
-Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
- [169.55.91.170])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2wvsj0h4d6-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Sat, 14 Dec 2019 21:12:11 -0500
-Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
- by ppma02wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id xBF2AkZi017689;
- Sun, 15 Dec 2019 02:12:10 GMT
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28]) by ppma02wdc.us.ibm.com with ESMTP id 2wvqc5qspa-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Sun, 15 Dec 2019 02:12:10 +0000
-Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
- [9.57.199.107])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xBF2CAlZ45875568
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Sun, 15 Dec 2019 02:12:10 GMT
-Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4B538124053;
- Sun, 15 Dec 2019 02:12:10 +0000 (GMT)
-Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1F009124052;
- Sun, 15 Dec 2019 02:12:10 +0000 (GMT)
-Received: from suka-w540.localdomain (unknown [9.70.94.45])
- by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP;
- Sun, 15 Dec 2019 02:12:10 +0000 (GMT)
-Received: by suka-w540.localdomain (Postfix, from userid 1000)
- id 97DF32E210B; Sat, 14 Dec 2019 18:12:08 -0800 (PST)
-Date: Sat, 14 Dec 2019 18:12:08 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH V3 2/2] KVM: PPC: Implement H_SVM_INIT_ABORT hcall
-Message-ID: <20191215021208.GB27378@us.ibm.com>
-References: <20191215021104.GA27378@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47bNFH6ZbhzDq5t
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Dec 2019 22:57:34 +1100 (AEDT)
+Received: by mail-ed1-f67.google.com with SMTP id cm12so2717540edb.11
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Dec 2019 03:57:34 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=3bFRjA9UFM72dx5MZDZ0tLg6rOZz8LMmXjc51eyWHQw=;
+ b=REwVdZSfoybJnRiG0TbYA09Fa0Nj45uTjzKm390wI4h0ixmFj/nxBd829wIRkHRGIv
+ Y/QqKE8QczKY/vY8z7kKVuelEZbJIhPw0luvi03LANnaZAhHIUpxROnl7N8S9y5W6FVy
+ CIm3ipxxJcvpJWvgH9IuGRlPXP9hjeJfsHUStr4kpRHj90ZFP4Q/qJvHmUNPvZfDjRvP
+ +LGZdiR6eTvBPAx1ea3GQN5h9YYUcFSJiYfhPG9OcDYTeyzIB/ajqbs1Ps0nUWjwxJFy
+ xXec/1MQwPztZL9Ib1Bk0qenIC/59J0QI6NiiyR9NdLGZjMQV5UEYJAeLJ5sWAa1wOHD
+ S7rA==
+X-Gm-Message-State: APjAAAWOBj+IhegleWCYiBq0tql6XL91LgpNLEAl6sOym2zKaodmfMfS
+ 9Hico2O5JlTuMynZO7TdGBs=
+X-Google-Smtp-Source: APXvYqwZaqP3BPfUD1WWLgwtYw1XJJ7Zy4zkrjF1M4qRiNjNshTKEWnoyc7zscsZ5R0wuEWiJvnvIw==
+X-Received: by 2002:aa7:d306:: with SMTP id p6mr26042390edq.72.1576411050586; 
+ Sun, 15 Dec 2019 03:57:30 -0800 (PST)
+Received: from kozik-lap ([194.230.155.234])
+ by smtp.googlemail.com with ESMTPSA id l18sm663825edw.59.2019.12.15.03.57.28
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Sun, 15 Dec 2019 03:57:29 -0800 (PST)
+Date: Sun, 15 Dec 2019 12:57:27 +0100
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Yangtao Li <tiny.windzz@gmail.com>
+Subject: Re: [PATCH 02/10] soc: samsung: convert to
+ devm_platform_ioremap_resource
+Message-ID: <20191215115727.GB30973@kozik-lap>
+References: <20191214175447.25482-1-tiny.windzz@gmail.com>
+ <20191214175447.25482-2-tiny.windzz@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20191215021104.GA27378@us.ibm.com>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
- definitions=2019-12-14_07:2019-12-13,2019-12-14 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=2 mlxscore=0
- priorityscore=1501 phishscore=0 malwarescore=0 bulkscore=0 adultscore=0
- impostorscore=0 spamscore=0 mlxlogscore=999 lowpriorityscore=0
- clxscore=1011 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-1910280000 definitions=main-1912150019
+In-Reply-To: <20191214175447.25482-2-tiny.windzz@gmail.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,226 +77,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxram@us.ibm.com, kvm-ppc@vger.kernel.org,
- Bharata B Rao <bharata@linux.ibm.com>, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mips@vger.kernel.org,
+ khilman@baylibre.com, linux-arm-msm@vger.kernel.org, ssantosh@kernel.org,
+ linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
+ mripard@kernel.org, leoyang.li@nxp.com, linux-samsung-soc@vger.kernel.org,
+ wens@csie.org, agross@kernel.org, khalasa@piap.pl, kgene@kernel.org,
+ john@phrozen.org, matthias.bgg@gmail.com, linux-amlogic@lists.infradead.org,
+ jun.nie@linaro.org, bjorn.andersson@linaro.org, shawnguo@kernel.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Sat, Dec 14, 2019 at 05:54:39PM +0000, Yangtao Li wrote:
+> Use devm_platform_ioremap_resource() to simplify code.
+> 
+> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+> ---
+>  drivers/soc/samsung/exynos-pmu.c | 4 +---
 
-Implement the H_SVM_INIT_ABORT hcall which the Ultravisor can use to
-abort an SVM after it has issued the H_SVM_INIT_START and before the
-H_SVM_INIT_DONE hcalls. This hcall could be used when Ultravisor
-encounters security violations or other errors when starting an SVM.
+Thanks, applied.
 
-Note that this hcall is different from UV_SVM_TERMINATE ucall which
-is used by HV to terminate/cleanup an VM that has becore secure.
-
-The H_SVM_INIT_ABORT should basically undo operations that were done
-since the H_SVM_INIT_START hcall - i.e page-out all the VM pages back
-to normal memory, and terminate the SVM.
-
-(If we do not bring the pages back to normal memory, the text/data
-of the VM would be stuck in secure memory and since the SVM did not
-go secure, its MSR_S bit will be clear and the VM wont be able to
-access its pages even to do a clean exit).
-
-Based on patches and discussion with Paul Mackerras, Ram Pai and
-Bharata Rao.
-
-Signed-off-by: Ram Pai <linuxram@linux.ibm.com>
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.ibm.com>
-Signed-off-by: Bharata B Rao <bharata@linux.ibm.com>
----
-Changelog[v3]:
-	- Rather than pass the NIP/MSR as parameters, load them into
-	  SRR0/SRR1 (like we do with other registers) and terminate
-	  the VM after paging out pages
-	- Move the code to add a skip_page_out parameter into a
-	  separate patch.
-
-Changelog[v2]:
-	[Paul Mackerras] avoid returning to UV "one last time" after
-	the state is cleaned up.  So, we now have H_SVM_INIT_ABORT:
-	- take the VM's NIP/MSR register states as parameters
-	- inherit the state of other registers as at UV_ESM call.
-	After cleaning up the partial state, HV uses these to return
-	directly to the VM with a failed UV_ESM call.
----
- Documentation/powerpc/ultravisor.rst        | 57 +++++++++++++++++++++
- arch/powerpc/include/asm/hvcall.h           |  1 +
- arch/powerpc/include/asm/kvm_book3s_uvmem.h |  6 +++
- arch/powerpc/include/asm/kvm_host.h         |  1 +
- arch/powerpc/kvm/book3s_hv.c                |  3 ++
- arch/powerpc/kvm/book3s_hv_uvmem.c          | 24 +++++++++
- 6 files changed, 92 insertions(+)
-
-diff --git a/Documentation/powerpc/ultravisor.rst b/Documentation/powerpc/ultravisor.rst
-index 730854f73830..8c114c071bfa 100644
---- a/Documentation/powerpc/ultravisor.rst
-+++ b/Documentation/powerpc/ultravisor.rst
-@@ -948,6 +948,63 @@ Use cases
-     up its internal state for this virtual machine.
- 
- 
-+H_SVM_INIT_ABORT
-+----------------
-+
-+    Abort the process of securing an SVM.
-+
-+Syntax
-+~~~~~~
-+
-+.. code-block:: c
-+
-+	uint64_t hypercall(const uint64_t H_SVM_INIT_ABORT)
-+
-+Return values
-+~~~~~~~~~~~~~
-+
-+    One of the following values:
-+
-+	* H_PARAMETER 		on successfully cleaning up the state,
-+				Hypervisor will return this value to the
-+				**guest**, to indicate that the underlying
-+				UV_ESM ultracall failed.
-+
-+	* H_UNSUPPORTED		if called from the wrong context (e.g. from
-+				an SVM or before an H_SVM_INIT_START hypercall).
-+
-+Description
-+~~~~~~~~~~~
-+
-+    Abort the process of securing a virtual machine. This call must
-+    be made after a prior call to ``H_SVM_INIT_START`` hypercall and
-+    before a call to ``H_SVM_INIT_DONE``.
-+
-+    On entry into this hypercall the non-volatile GPRs and FPRs are
-+    expected to contain the values they had at the time the VM issued
-+    the UV_ESM ultracall. Further ``SRR0`` is expected to contain the
-+    address of the instruction after the ``UV_ESM`` ultracall and ``SRR1``
-+    the MSR value with which to return to the VM.
-+
-+    This hypercall will cleanup any partial state that was established for
-+    the VM since the prior ``H_SVM_INIT_START`` hypercall, including paging
-+    out pages that were paged-into secure memory, and issue the
-+    ``UV_SVM_TERMINATE`` ultracall to terminate the VM.
-+
-+    After the partial state is cleaned up, control returns to the VM
-+    (**not Ultravisor**), at the address specified in ``SRR0`` with the
-+    MSR values set to the value in ``SRR1``.
-+
-+Use cases
-+~~~~~~~~~
-+
-+    If after a successful call to ``H_SVM_INIT_START``, the Ultravisor
-+    encounters an error while securing a virtual machine, either due
-+    to lack of resources or because the VM's security information could
-+    not be validated, Ultravisor informs the Hypervisor about it.
-+    Hypervisor should use this call to clean up any internal state for
-+    this virtual machine and return to the VM.
-+
- H_SVM_PAGE_IN
- -------------
- 
-diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-index 13bd870609c3..e90c073e437e 100644
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -350,6 +350,7 @@
- #define H_SVM_PAGE_OUT		0xEF04
- #define H_SVM_INIT_START	0xEF08
- #define H_SVM_INIT_DONE		0xEF0C
-+#define H_SVM_INIT_ABORT	0xEF14
- 
- /* Values for 2nd argument to H_SET_MODE */
- #define H_SET_MODE_RESOURCE_SET_CIABR		1
-diff --git a/arch/powerpc/include/asm/kvm_book3s_uvmem.h b/arch/powerpc/include/asm/kvm_book3s_uvmem.h
-index 3cf8425b9838..5a9834e0e2d1 100644
---- a/arch/powerpc/include/asm/kvm_book3s_uvmem.h
-+++ b/arch/powerpc/include/asm/kvm_book3s_uvmem.h
-@@ -19,6 +19,7 @@ unsigned long kvmppc_h_svm_page_out(struct kvm *kvm,
- unsigned long kvmppc_h_svm_init_start(struct kvm *kvm);
- unsigned long kvmppc_h_svm_init_done(struct kvm *kvm);
- int kvmppc_send_page_to_uv(struct kvm *kvm, unsigned long gfn);
-+unsigned long kvmppc_h_svm_init_abort(struct kvm *kvm);
- void kvmppc_uvmem_drop_pages(const struct kvm_memory_slot *free,
- 			     struct kvm *kvm, bool skip_page_out);
- #else
-@@ -62,6 +63,11 @@ static inline unsigned long kvmppc_h_svm_init_done(struct kvm *kvm)
- 	return H_UNSUPPORTED;
- }
- 
-+static inline unsigned long kvmppc_h_svm_init_abort(struct kvm *kvm)
-+{
-+	return H_UNSUPPORTED;
-+}
-+
- static inline int kvmppc_send_page_to_uv(struct kvm *kvm, unsigned long gfn)
- {
- 	return -EFAULT;
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 577ca95fac7c..8310c0407383 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -278,6 +278,7 @@ struct kvm_resize_hpt;
- /* Flag values for kvm_arch.secure_guest */
- #define KVMPPC_SECURE_INIT_START 0x1 /* H_SVM_INIT_START has been called */
- #define KVMPPC_SECURE_INIT_DONE  0x2 /* H_SVM_INIT_DONE completed */
-+#define KVMPPC_SECURE_INIT_ABORT 0x4 /* H_SVM_INIT_ABORT issued */
- 
- struct kvm_arch {
- 	unsigned int lpid;
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 66d5312be16b..1b22f2c7ad1b 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -1099,6 +1099,9 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
- 	case H_SVM_INIT_DONE:
- 		ret = kvmppc_h_svm_init_done(vcpu->kvm);
- 		break;
-+	case H_SVM_INIT_ABORT:
-+		ret = kvmppc_h_svm_init_abort(vcpu->kvm);
-+		break;
- 
- 	default:
- 		return RESUME_HOST;
-diff --git a/arch/powerpc/kvm/book3s_hv_uvmem.c b/arch/powerpc/kvm/book3s_hv_uvmem.c
-index 9a5bbad7d87e..f7df8c327468 100644
---- a/arch/powerpc/kvm/book3s_hv_uvmem.c
-+++ b/arch/powerpc/kvm/book3s_hv_uvmem.c
-@@ -287,6 +287,30 @@ void kvmppc_uvmem_drop_pages(const struct kvm_memory_slot *free,
- 	}
- }
- 
-+unsigned long kvmppc_h_svm_init_abort(struct kvm *kvm)
-+{
-+	int i;
-+
-+	if (!(kvm->arch.secure_guest & KVMPPC_SECURE_INIT_START))
-+		return H_UNSUPPORTED;
-+
-+	for (i = 0; i < KVM_ADDRESS_SPACE_NUM; i++) {
-+		struct kvm_memory_slot *memslot;
-+		struct kvm_memslots *slots = __kvm_memslots(kvm, i);
-+
-+		if (!slots)
-+			continue;
-+
-+		kvm_for_each_memslot(memslot, slots)
-+			kvmppc_uvmem_drop_pages(memslot, kvm, false);
-+	}
-+
-+	kvm->arch.secure_guest = 0;
-+	uv_svm_terminate(kvm->arch.lpid);
-+
-+	return H_PARAMETER;
-+}
-+
- /*
-  * Get a free device PFN from the pool
-  *
--- 
-2.17.2
+Best regards,
+Krzysztof
 
