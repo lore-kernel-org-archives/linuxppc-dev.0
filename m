@@ -2,85 +2,86 @@ Return-Path: <SRS0=uftn=2G=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6CC9FC43603
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 14:41:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 73E11C43603
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 14:55:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C82D52067C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 14:41:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C82D52067C
+	by mail.kernel.org (Postfix) with ESMTPS id 2C56F206E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 14:55:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2C56F206E0
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47c3r53QjLzDqRv
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2019 01:41:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47c47Q5YBtzDqT9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2019 01:54:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux.vnet.ibm.com
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47c3nL0jPfzDqNC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2019 01:39:17 +1100 (AEDT)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47c40t4lt8zDqSJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2019 01:49:18 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- xBGEbjPZ115966
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2019 09:39:13 -0500
+ xBGEc3mZ071732
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2019 09:49:16 -0500
 Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2wvue755fk-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2wwe366t2f-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2019 09:39:12 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2019 09:49:15 -0500
 Received: from localhost
  by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
- Mon, 16 Dec 2019 14:38:54 -0000
-Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
+ Mon, 16 Dec 2019 14:49:13 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
  by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 16 Dec 2019 14:38:51 -0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id xBGEco7O22282694
+ Mon, 16 Dec 2019 14:49:12 -0000
+Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xBGEnBkl58982498
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 16 Dec 2019 14:38:51 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E6D3CA4053;
- Mon, 16 Dec 2019 14:38:50 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id F14F9A4040;
- Mon, 16 Dec 2019 14:38:48 +0000 (GMT)
+ Mon, 16 Dec 2019 14:49:11 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5BA9042041;
+ Mon, 16 Dec 2019 14:49:11 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6C51D42042;
+ Mon, 16 Dec 2019 14:49:09 +0000 (GMT)
 Received: from srikart450.in.ibm.com (unknown [9.102.1.133])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 16 Dec 2019 14:38:48 +0000 (GMT)
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon, 16 Dec 2019 14:49:09 +0000 (GMT)
 From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v5 0/5] Early node associativity
-Date: Mon, 16 Dec 2019 20:08:38 +0530
+Subject: [PATCH v5 1/5] powerpc/vphn: Check for error from hcall_vphn
+Date: Mon, 16 Dec 2019 20:19:00 +0530
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20191216144904.6776-1-srikar@linux.vnet.ibm.com>
+References: <20191216144904.6776-1-srikar@linux.vnet.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 19121614-0016-0000-0000-000002D569E8
+x-cbid: 19121614-0016-0000-0000-000002D56B03
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19121614-0017-0000-0000-000033379E4D
-Message-Id: <20191216143843.6640-1-srikar@linux.vnet.ibm.com>
+x-cbparentid: 19121614-0017-0000-0000-000033379F75
+Message-Id: <20191216144904.6776-2-srikar@linux.vnet.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
  definitions=2019-12-16_05:2019-12-16,2019-12-16 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 phishscore=0
- mlxlogscore=757 spamscore=0 priorityscore=1501 adultscore=0 mlxscore=0
- lowpriorityscore=0 clxscore=1015 bulkscore=0 malwarescore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ priorityscore=1501
+ bulkscore=0 adultscore=0 lowpriorityscore=0 phishscore=0 spamscore=0
+ impostorscore=0 clxscore=1015 mlxlogscore=796 malwarescore=0 mlxscore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-1910280000 definitions=main-1912160131
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -103,52 +104,39 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Note: (Only patch 3 changes from v3)
+There is no value in unpacking associativity, if
+H_HOME_NODE_ASSOCIATIVITY hcall has returned an error.
 
-Abdul reported  a warning on a shared lpar.
-"WARNING: workqueue cpumask: online intersect > possible intersect".
-This is because per node workqueue possible mask is set very early in the
-boot process even before the system was querying the home node
-associativity. However per node workqueue online cpumask gets updated
-dynamically. Hence there is a chance when per node workqueue online cpumask
-is a superset of per node workqueue possible mask.
-
-Link for v4: https://patchwork.ozlabs.org/patch/1161979
-Changelog: v4->v5:
-- Rebased to v5.5-rc2
-
-Link for v3: http://lkml.kernel.org/r/20190906135020.19772-1-srikar@linux.vnet.ibm.com
-Changelog: v3->v4
- - Added a warning as suggested by Nathan Lynch.
-
-Link for v2: http://lkml.kernel.org/r/20190829055023.6171-1-srikar@linux.vnet.ibm.com
-Changelog: v2->v3
- - Handled comments from Nathan Lynch.
-
-Link for v1: https://patchwork.ozlabs.org/patch/1151658
-Changelog: v1->v2
- - Handled comments from Nathan Lynch.
-
+Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
 Cc: Nathan Lynch <nathanl@linux.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
 Cc: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
+Reported-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+Reviewed-by: Nathan Lynch <nathanl@linux.ibm.com>
+---
+Changelog (v2->v1):
+- Split the patch into 2(Suggested by Nathan).
 
-Srikar Dronamraju (5):
-  powerpc/vphn: Check for error from hcall_vphn
-  powerpc/numa: Handle extra hcall_vphn error cases
-  powerpc/numa: Use cpu node map of first sibling thread
-  powerpc/numa: Early request for home node associativity
-  powerpc/numa: Remove late request for home node associativity
+ arch/powerpc/platforms/pseries/vphn.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
- arch/powerpc/include/asm/topology.h   |  4 --
- arch/powerpc/kernel/smp.c             |  5 --
- arch/powerpc/mm/numa.c                | 99 ++++++++++++++++++++-------
- arch/powerpc/platforms/pseries/vphn.c |  3 +-
- 4 files changed, 77 insertions(+), 34 deletions(-)
-
+diff --git a/arch/powerpc/platforms/pseries/vphn.c b/arch/powerpc/platforms/pseries/vphn.c
+index 3f07bf6c670e..cca474a2c396 100644
+--- a/arch/powerpc/platforms/pseries/vphn.c
++++ b/arch/powerpc/platforms/pseries/vphn.c
+@@ -82,7 +82,8 @@ long hcall_vphn(unsigned long cpu, u64 flags, __be32 *associativity)
+ 	long retbuf[PLPAR_HCALL9_BUFSIZE] = {0};
+ 
+ 	rc = plpar_hcall9(H_HOME_NODE_ASSOCIATIVITY, retbuf, flags, cpu);
+-	vphn_unpack_associativity(retbuf, associativity);
++	if (rc == H_SUCCESS)
++		vphn_unpack_associativity(retbuf, associativity);
+ 
+ 	return rc;
+ }
 -- 
 2.18.1
 
