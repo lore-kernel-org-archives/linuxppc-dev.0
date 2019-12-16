@@ -2,63 +2,66 @@ Return-Path: <SRS0=uftn=2G=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BD62EC43603
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 08:51:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 71886C43603
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 09:59:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 40E0A206D3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 08:51:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 40E0A206D3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
+	by mail.kernel.org (Postfix) with ESMTPS id 3014B205ED
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 09:59:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3014B205ED
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47bw3y54W7zDqTv
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 19:51:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=metux.net
- (client-ip=212.227.126.131; helo=mout.kundenserver.de;
- envelope-from=info@metux.net; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=metux.net
-X-Greylist: delayed 335 seconds by postgrey-1.36 at bilbo;
- Mon, 16 Dec 2019 19:49:16 AEDT
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
+	by lists.ozlabs.org (Postfix) with ESMTP id 47bxZD4FyPzDqT9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 20:59:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.helo=mga12.intel.com (client-ip=192.55.52.136; helo=mga12.intel.com;
+ envelope-from=alexey.budankov@linux.intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.intel.com
+Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47bw1S6rndzDqDx
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2019 19:49:16 +1100 (AEDT)
-Received: from orion.localdomain ([77.2.44.177]) by mrelayeu.kundenserver.de
- (mreue012 [212.227.15.167]) with ESMTPSA (Nemesis) id
- 1N2jO8-1hiOOQ3fYa-0137DZ; Mon, 16 Dec 2019 09:43:02 +0100
-From: "Enrico Weigelt, metux IT consult" <info@metux.net>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] drivers: char: tpm: remove unneeded MODULE_VERSION() usage
-Date: Mon, 16 Dec 2019 09:42:30 +0100
-Message-Id: <20191216084230.31412-1-info@metux.net>
-X-Mailer: git-send-email 2.11.0
-X-Provags-ID: V03:K1:ZRMRCvGtq21lbtgskvbS5prFUgst+5RwJZEQW66QiN+qjkuMlBc
- uGZLISeYLgQ9heOIGqmejXQW6EJ1Yj9dlSn4uQwVBS1GCATDsnRMdpuN2L0Y/QUQihyF0/5
- Py17FBwzilsZjijPn/vtG8iHe13gTG4QALNK+LcHtpbLNoRNZbWECYtzyjqi0Lcjg6loX+I
- NHKQcxcT7bFsh1zJN5JKA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:FTjVl9iVLCM=:615AOCvORb17ezdjDykKOa
- O65kTBYdxeRpP2UcBRbdt/C8uo4vx87/d3Vb41S2dShrkVVh40iJ2bTaAJM2oHVeBvhfyuD6W
- QDBs0LzAGtBysIYE1UUfabwtcIt1rofZa7BYqrP5jD1MVsqc04SPPrrf1WEkWYt2eYZHSKhRn
- XASaNscbdfGfOkeAUdZzd3xLZsmmtVdGiFu90vr7Mg/lZ7d0/fyyRSh2cThnKSk9+h3VCBN1a
- iYN+ASXYxOyukOgL4O+wPGBHW3xdLJ8w5b/DqfWJjeTMwY+PFrYIzJFURWgdR6qNLJKSakyJV
- twypeKvJ4bjNb7V9RJUWk5H8pJgET0yx3SU78IgbU5QaPFd939py6poL1e5nCid3zo48j6EBh
- LXFnOuS2qX/NNtZuz69HxqZH8CUomiZB1967R9oIIaMRhLQb0+Ro/gNy6HSwnu5g6xRBLBABA
- 8I/QGC24CKiI61YOvsZaHo9+MfN2EplvzgpiiUd98axAgBHYU6j9YBlHsgZn6Pn0ICckaTJxe
- KiJsJ25Qve1EgRbPHT7zvqN9B4jNlHDd5PucAMPYOqrvUlPxDLwTxJb+JctYseJYZBMxiE0PQ
- Y1jb5msIbptX6EbveYpS5gw+fCVJgU4CiTgz21PvuAbOQx7Mz7UXTm8hqChTWJUJjg7kmO8Yq
- ojoquAHjlDxIewPs7/pJN5B1s83RtYo9liVp9tIcpSAQKsDPUAoVHrtDIYyUrNoskUt7YUoMj
- iqIUpW14qox/6MI0klQWG8PhLDDPz0UOL68YW4GUDVPj7E2H5FooiIhveKbcwtk5AgSBNLgsv
- nkfNgdX6X+wAm9HVcV92GWnPOQbNx9/p67KNJdGfHgP2gmm22xENihQUbiLkStumnISdAMkHi
- xWsOc63CvCwOwaE9jM4A==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47bscm0CFdzDqSk
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2019 18:01:03 +1100 (AEDT)
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+ by fmsmga106.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 15 Dec 2019 23:01:00 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.69,320,1571727600"; d="scan'208";a="227022520"
+Received: from linux.intel.com ([10.54.29.200])
+ by orsmga002.jf.intel.com with ESMTP; 15 Dec 2019 23:00:59 -0800
+Received: from [10.251.95.214] (abudanko-mobl.ccr.corp.intel.com
+ [10.251.95.214])
+ by linux.intel.com (Postfix) with ESMTP id EB57B5802C9;
+ Sun, 15 Dec 2019 23:00:50 -0800 (PST)
+From: Alexey Budankov <alexey.budankov@linux.intel.com>
+Subject: [PATCH v2 0/7] Introduce CAP_SYS_PERFMON to secure system performance
+ monitoring and observability
+To: Peter Zijlstra <peterz@infradead.org>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ jani.nikula@linux.intel.com, joonas.lahtinen@linux.intel.com,
+ rodrigo.vivi@intel.com, Alexei Starovoitov <ast@kernel.org>,
+ james.bottomley@hansenpartnership.com, benh@kernel.crashing.org,
+ Casey Schaufler <casey@schaufler-ca.com>, serge@hallyn.com,
+ James Morris <jmorris@namei.org>
+Organization: Intel Corp.
+Message-ID: <26101427-c0a3-db9f-39e9-9e5f4ddd009c@linux.intel.com>
+Date: Mon, 16 Dec 2019 10:00:49 +0300
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Mailman-Approved-At: Mon, 16 Dec 2019 20:57:32 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,164 +73,161 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: jgg@ziepe.ca, peterhuewe@gmx.de, linuxppc-dev@lists.ozlabs.org,
- linux-integrity@vger.kernel.org, jarkko.sakkinen@linux.intel.com
+Cc: Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
+ Song Liu <songliubraving@fb.com>, Andi Kleen <ak@linux.intel.com>,
+ Kees Cook <keescook@chromium.org>, linux-parisc@vger.kernel.org,
+ Jann Horn <jannh@google.com>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ linuxppc-dev@lists.ozlabs.org, intel-gfx@lists.freedesktop.org,
+ Igor Lubashev <ilubashe@akamai.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ Stephane Eranian <eranian@google.com>,
+ "linux-perf-users@vger.kernel.org" <linux-perf-users@vger.kernel.org>,
+ selinux@vger.kernel.org, linux-security-module@vger.kernel.org,
+ Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ bgregg@netflix.com, Jiri Olsa <jolsa@redhat.com>, bpf@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Remove MODULE_VERSION(), as it isn't needed at all: the only version
-making sense is the kernel version.
 
-See also: https://lkml.org/lkml/2017/11/22/480
+Currently access to perf_events, i915_perf and other performance monitoring and
+observability subsystems of the kernel is open for a privileged process [1] with
+CAP_SYS_ADMIN capability enabled in the process effective set [2].
 
-Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
+This patch set introduces CAP_SYS_PERFMON capability devoted to secure system
+performance monitoring and observability operations so that CAP_SYS_PERFMON would
+assist CAP_SYS_ADMIN capability in its governing role for perf_events, i915_perf
+and other performance monitoring and observability subsystems of the kernel.
+
+CAP_SYS_PERFMON intends to meet the demand to secure system performance monitoring
+and observability operations in security sensitive, restricted, production
+environments (e.g. HPC clusters, cloud and virtual compute environments) where root
+or CAP_SYS_ADMIN credentials are not available to mass users of a system because
+of security considerations.
+
+CAP_SYS_PERFMON intends to harden system security and integrity during system
+performance monitoring and observability operations by decreasing attack surface
+that is available to CAP_SYS_ADMIN privileged processes [2].
+
+CAP_SYS_PERFMON intends to take over CAP_SYS_ADMIN credentials related to system
+performance monitoring and observability operations and balance amount of
+CAP_SYS_ADMIN credentials following the recommendations in the capabilities man
+page [2] for CAP_SYS_ADMIN: "Note: this capability is overloaded; see Notes to
+kernel developers, below."
+
+For backward compatibility reasons access to system performance monitoring and
+observability subsystems of the kernel remains open for CAP_SYS_ADMIN privileged
+processes but CAP_SYS_ADMIN capability usage for secure system performance monitoring
+and observability operations is discouraged with respect to the introduced
+CAP_SYS_PERFMON capability.
+
+The patch set is for tip perf/core repository:
+git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip perf/core
+sha1: ceb9e77324fa661b1001a0ae66f061b5fcb4e4e6
+
 ---
- drivers/char/tpm/st33zp24/i2c.c      | 1 -
- drivers/char/tpm/st33zp24/spi.c      | 1 -
- drivers/char/tpm/st33zp24/st33zp24.c | 1 -
- drivers/char/tpm/tpm-interface.c     | 1 -
- drivers/char/tpm/tpm_atmel.c         | 1 -
- drivers/char/tpm/tpm_crb.c           | 1 -
- drivers/char/tpm/tpm_i2c_infineon.c  | 1 -
- drivers/char/tpm/tpm_ibmvtpm.c       | 1 -
- drivers/char/tpm/tpm_infineon.c      | 1 -
- drivers/char/tpm/tpm_nsc.c           | 1 -
- drivers/char/tpm/tpm_tis.c           | 1 -
- drivers/char/tpm/tpm_tis_core.c      | 1 -
- drivers/char/tpm/tpm_vtpm_proxy.c    | 1 -
- 13 files changed, 13 deletions(-)
+Changes in v2:
+- made perf_events trace points available to CAP_SYS_PERFMON privileged processes
+- made perf_event_paranoid_check() treat CAP_SYS_PERFMON equally to CAP_SYS_ADMIN
+- applied CAP_SYS_PERFMON to i915_perf, bpf_trace, powerpc and parisc system
+  performance monitoring and observability related subsystems
 
-diff --git a/drivers/char/tpm/st33zp24/i2c.c b/drivers/char/tpm/st33zp24/i2c.c
-index 35333b65acd1..71df056f14c9 100644
---- a/drivers/char/tpm/st33zp24/i2c.c
-+++ b/drivers/char/tpm/st33zp24/i2c.c
-@@ -313,5 +313,4 @@ module_i2c_driver(st33zp24_i2c_driver);
- 
- MODULE_AUTHOR("TPM support (TPMsupport@list.st.com)");
- MODULE_DESCRIPTION("STM TPM 1.2 I2C ST33 Driver");
--MODULE_VERSION("1.3.0");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/char/tpm/st33zp24/spi.c b/drivers/char/tpm/st33zp24/spi.c
-index 26e09de50f1e..94ceced4d57d 100644
---- a/drivers/char/tpm/st33zp24/spi.c
-+++ b/drivers/char/tpm/st33zp24/spi.c
-@@ -430,5 +430,4 @@ module_spi_driver(st33zp24_spi_driver);
- 
- MODULE_AUTHOR("TPM support (TPMsupport@list.st.com)");
- MODULE_DESCRIPTION("STM TPM 1.2 SPI ST33 Driver");
--MODULE_VERSION("1.3.0");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/char/tpm/st33zp24/st33zp24.c b/drivers/char/tpm/st33zp24/st33zp24.c
-index 37bb13f516be..60269b6ac470 100644
---- a/drivers/char/tpm/st33zp24/st33zp24.c
-+++ b/drivers/char/tpm/st33zp24/st33zp24.c
-@@ -646,5 +646,4 @@ EXPORT_SYMBOL(st33zp24_pm_resume);
- 
- MODULE_AUTHOR("TPM support (TPMsupport@list.st.com)");
- MODULE_DESCRIPTION("ST33ZP24 TPM 1.2 driver");
--MODULE_VERSION("1.3.0");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/char/tpm/tpm-interface.c b/drivers/char/tpm/tpm-interface.c
-index a438b1206fcb..91d4584f399d 100644
---- a/drivers/char/tpm/tpm-interface.c
-+++ b/drivers/char/tpm/tpm-interface.c
-@@ -514,5 +514,4 @@ module_exit(tpm_exit);
- 
- MODULE_AUTHOR("Leendert van Doorn (leendert@watson.ibm.com)");
- MODULE_DESCRIPTION("TPM Driver");
--MODULE_VERSION("2.0");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/char/tpm/tpm_atmel.c b/drivers/char/tpm/tpm_atmel.c
-index 54a6750a6757..35bf249cc95a 100644
---- a/drivers/char/tpm/tpm_atmel.c
-+++ b/drivers/char/tpm/tpm_atmel.c
-@@ -231,5 +231,4 @@ module_exit(cleanup_atmel);
- 
- MODULE_AUTHOR("Leendert van Doorn (leendert@watson.ibm.com)");
- MODULE_DESCRIPTION("TPM Driver");
--MODULE_VERSION("2.0");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/char/tpm/tpm_crb.c b/drivers/char/tpm/tpm_crb.c
-index a9dcf31eadd2..3e72b7b99cce 100644
---- a/drivers/char/tpm/tpm_crb.c
-+++ b/drivers/char/tpm/tpm_crb.c
-@@ -748,5 +748,4 @@ static struct acpi_driver crb_acpi_driver = {
- module_acpi_driver(crb_acpi_driver);
- MODULE_AUTHOR("Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>");
- MODULE_DESCRIPTION("TPM2 Driver");
--MODULE_VERSION("0.1");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/char/tpm/tpm_i2c_infineon.c b/drivers/char/tpm/tpm_i2c_infineon.c
-index a19d32cb4e94..8920b7c19fcb 100644
---- a/drivers/char/tpm/tpm_i2c_infineon.c
-+++ b/drivers/char/tpm/tpm_i2c_infineon.c
-@@ -731,5 +731,4 @@ static struct i2c_driver tpm_tis_i2c_driver = {
- module_i2c_driver(tpm_tis_i2c_driver);
- MODULE_AUTHOR("Peter Huewe <peter.huewe@infineon.com>");
- MODULE_DESCRIPTION("TPM TIS I2C Infineon Driver");
--MODULE_VERSION("2.2.0");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/char/tpm/tpm_ibmvtpm.c b/drivers/char/tpm/tpm_ibmvtpm.c
-index 78cc52690177..034d24758915 100644
---- a/drivers/char/tpm/tpm_ibmvtpm.c
-+++ b/drivers/char/tpm/tpm_ibmvtpm.c
-@@ -723,5 +723,4 @@ module_exit(ibmvtpm_module_exit);
- 
- MODULE_AUTHOR("adlai@us.ibm.com");
- MODULE_DESCRIPTION("IBM vTPM Driver");
--MODULE_VERSION("1.0");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/char/tpm/tpm_infineon.c b/drivers/char/tpm/tpm_infineon.c
-index 9c924a1440a9..8a58966c5c9b 100644
---- a/drivers/char/tpm/tpm_infineon.c
-+++ b/drivers/char/tpm/tpm_infineon.c
-@@ -621,5 +621,4 @@ module_pnp_driver(tpm_inf_pnp_driver);
- 
- MODULE_AUTHOR("Marcel Selhorst <tpmdd@sirrix.com>");
- MODULE_DESCRIPTION("Driver for Infineon TPM SLD 9630 TT 1.1 / SLB 9635 TT 1.2");
--MODULE_VERSION("1.9.2");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/char/tpm/tpm_nsc.c b/drivers/char/tpm/tpm_nsc.c
-index 038701d48351..6ab2fe7e8782 100644
---- a/drivers/char/tpm/tpm_nsc.c
-+++ b/drivers/char/tpm/tpm_nsc.c
-@@ -412,5 +412,4 @@ module_exit(cleanup_nsc);
- 
- MODULE_AUTHOR("Leendert van Doorn (leendert@watson.ibm.com)");
- MODULE_DESCRIPTION("TPM Driver");
--MODULE_VERSION("2.0");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/char/tpm/tpm_tis.c b/drivers/char/tpm/tpm_tis.c
-index e7df342a317d..713773ebff81 100644
---- a/drivers/char/tpm/tpm_tis.c
-+++ b/drivers/char/tpm/tpm_tis.c
-@@ -397,5 +397,4 @@ module_init(init_tis);
- module_exit(cleanup_tis);
- MODULE_AUTHOR("Leendert van Doorn (leendert@watson.ibm.com)");
- MODULE_DESCRIPTION("TPM Driver");
--MODULE_VERSION("2.0");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/char/tpm/tpm_tis_core.c b/drivers/char/tpm/tpm_tis_core.c
-index 8af2cee1a762..1aeb11e5fd5b 100644
---- a/drivers/char/tpm/tpm_tis_core.c
-+++ b/drivers/char/tpm/tpm_tis_core.c
-@@ -1150,5 +1150,4 @@ EXPORT_SYMBOL_GPL(tpm_tis_resume);
- 
- MODULE_AUTHOR("Leendert van Doorn (leendert@watson.ibm.com)");
- MODULE_DESCRIPTION("TPM Driver");
--MODULE_VERSION("2.0");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/char/tpm/tpm_vtpm_proxy.c b/drivers/char/tpm/tpm_vtpm_proxy.c
-index 91c772e38bb5..18f14162d1c1 100644
---- a/drivers/char/tpm/tpm_vtpm_proxy.c
-+++ b/drivers/char/tpm/tpm_vtpm_proxy.c
-@@ -729,5 +729,4 @@ module_exit(vtpm_module_exit);
- 
- MODULE_AUTHOR("Stefan Berger (stefanb@us.ibm.com)");
- MODULE_DESCRIPTION("vTPM Driver");
--MODULE_VERSION("0.1");
- MODULE_LICENSE("GPL");
+---
+Alexey Budankov (7):
+  capabilities: introduce CAP_SYS_PERFMON to kernel and user space
+  perf/core: open access for CAP_SYS_PERFMON privileged process
+  perf tool: extend Perf tool with CAP_SYS_PERFMON capability support
+  drm/i915/perf: open access for CAP_SYS_PERFMON privileged process
+  trace/bpf_trace: open access for CAP_SYS_PERFMON privileged process
+  powerpc/perf: open access for CAP_SYS_PERFMON privileged process
+  parisc/perf: open access for CAP_SYS_PERFMON privileged process
+
+ arch/parisc/kernel/perf.c           |  2 +-
+ arch/powerpc/perf/imc-pmu.c         |  4 ++--
+ drivers/gpu/drm/i915/i915_perf.c    | 13 +++++++------
+ include/linux/perf_event.h          |  9 ++++++---
+ include/uapi/linux/capability.h     |  8 +++++++-
+ kernel/trace/bpf_trace.c            |  2 +-
+ security/selinux/include/classmap.h |  4 ++--
+ tools/perf/design.txt               |  3 ++-
+ tools/perf/util/cap.h               |  4 ++++
+ tools/perf/util/evsel.c             | 10 +++++-----
+ tools/perf/util/util.c              |  1 +
+ 11 files changed, 38 insertions(+), 22 deletions(-)
+
+---
+Testing and validation (Intel Skylake, 8 cores, Fedora 29, 5.4.0-rc8+, x86_64):
+
+libcap library [3], [4] and Perf tool can be used to apply CAP_SYS_PERFMON 
+capability for secure system performance monitoring and observability beyond the
+scope permitted by the system wide perf_event_paranoid kernel setting [5] and
+below are the steps for evaluation:
+
+  - patch, build and boot the kernel
+  - patch, build Perf tool e.g. to /home/user/perf
+  ...
+  # git clone git://git.kernel.org/pub/scm/libs/libcap/libcap.git libcap
+  # pushd libcap
+  # patch libcap/include/uapi/linux/capabilities.h with [PATCH 1]
+  # make
+  # pushd progs
+  # ./setcap "cap_sys_perfmon,cap_sys_ptrace,cap_syslog=ep" /home/user/perf
+  # ./setcap -v "cap_sys_perfmon,cap_sys_ptrace,cap_syslog=ep" /home/user/perf
+  /home/user/perf: OK
+  # ./getcap /home/user/perf
+  /home/user/perf = cap_sys_ptrace,cap_syslog,cap_sys_perfmon+ep
+  # echo 2 > /proc/sys/kernel/perf_event_paranoid
+  # cat /proc/sys/kernel/perf_event_paranoid 
+  2
+  ...
+  $ /home/user/perf top
+    ... works as expected ...
+  $ cat /proc/`pidof perf`/status
+  Name:	perf
+  Umask:	0002
+  State:	S (sleeping)
+  Tgid:	2958
+  Ngid:	0
+  Pid:	2958
+  PPid:	9847
+  TracerPid:	0
+  Uid:	500	500	500	500
+  Gid:	500	500	500	500
+  FDSize:	256
+  ...
+  CapInh:	0000000000000000
+  CapPrm:	0000004400080000
+  CapEff:	0000004400080000 => 01000100 00000000 00001000 00000000 00000000
+                                     cap_sys_perfmon,cap_sys_ptrace,cap_syslog
+  CapBnd:	0000007fffffffff
+  CapAmb:	0000000000000000
+  NoNewPrivs:	0
+  Seccomp:	0
+  Speculation_Store_Bypass:	thread vulnerable
+  Cpus_allowed:	ff
+  Cpus_allowed_list:	0-7
+  ...
+
+Usage of cap_sys_perfmon effectively avoids unused credentials excess:
+
+- with cap_sys_admin:
+  CapEff:	0000007fffffffff => 01111111 11111111 11111111 11111111 11111111
+
+- with cap_sys_perfmon:
+  CapEff:	0000004400080000 => 01000100 00000000 00001000 00000000 00000000
+                                    38   34               19
+                           sys_perfmon   syslog           sys_ptrace
+
+---
+
+[1] https://www.kernel.org/doc/html/latest/admin-guide/perf-security.html
+[2] http://man7.org/linux/man-pages/man7/capabilities.7.html
+[3] http://man7.org/linux/man-pages/man8/setcap.8.html
+[4] https://git.kernel.org/pub/scm/libs/libcap/libcap.git
+[5] http://man7.org/linux/man-pages/man2/perf_event_open.2.html
+[6] https://sites.google.com/site/fullycapable/, posix_1003.1e-990310.pdf
+
 -- 
-2.11.0
+2.20.1
 
