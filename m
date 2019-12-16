@@ -2,88 +2,63 @@ Return-Path: <SRS0=uftn=2G=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2376CC43603
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 06:48:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BD62EC43603
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 08:51:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 716E620717
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 06:48:26 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="axvd/GuM"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 716E620717
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 40E0A206D3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 08:51:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 40E0A206D3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47bsL035WjzDqTk
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 17:48:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=207.211.31.120;
- helo=us-smtp-1.mimecast.com; envelope-from=bhsharma@redhat.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47bw3y54W7zDqTv
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 19:51:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.b="axvd/GuM"; 
- dkim-atps=neutral
-Received: from us-smtp-1.mimecast.com (us-smtp-delivery-1.mimecast.com
- [207.211.31.120])
+ spf=none (no SPF record) smtp.mailfrom=metux.net
+ (client-ip=212.227.126.131; helo=mout.kundenserver.de;
+ envelope-from=info@metux.net; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=metux.net
+X-Greylist: delayed 335 seconds by postgrey-1.36 at bilbo;
+ Mon, 16 Dec 2019 19:49:16 AEDT
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47bsHr5vJtzDqTZ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2019 17:46:32 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1576478788;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=uPUbX9Jz4xx+ZUII2dhvvUhvv4VHD3gib9TjJw4FvFo=;
- b=axvd/GuMCMCsTs+CMigP/dZ5im6iSKbMZASuAT33LNq6UiMoLwqAXtc6WMgvVGlxe4ktns
- 1no5hUBHbNV/FC9qBK4j/cyMrB+XvnUHoVfzqSZgdeZVyNf84Us07YSRNE4Y1/1ijxIfrA
- ifQe2KwFh8pnpgyiv2vqa5Td0DuW/U4=
-Received: from mail-lj1-f197.google.com (mail-lj1-f197.google.com
- [209.85.208.197]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-333-5F8lQ5REMwKIN7kSv5gmTQ-1; Mon, 16 Dec 2019 01:46:26 -0500
-Received: by mail-lj1-f197.google.com with SMTP id r14so1770741ljc.18
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Dec 2019 22:46:25 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=uPUbX9Jz4xx+ZUII2dhvvUhvv4VHD3gib9TjJw4FvFo=;
- b=TZUr+JgCH67PuqwuPvgvN05dMB6N5dnLp6z0QWWUMd3KiYvdBnoGmGJuZWpAmL43Lv
- 3KNSDdPihCnaenMQBrFrTF+8Qv3PFSi9kJVDuUUnHVGRM6G7MdVt45nj7HRlD3xIgiaz
- /5fbKEczRNqSUtpbysfEEvzkkxIplf7dYWzqZ/e/jCRu8wcgHXhIni3Pd5cqDv/Zl8hk
- vRKVfgIPG05ySCS9uzpdUxm+UShyYFtZohq0BCb2eKE7Pgyc2GxVKCRJZljp+dXCOpDa
- RQrmXVuF263KhFBfQRAg8XZof2gCBIRCCjlarGYQZvNUwb3lATgG+y8PqutnIJzs0/E/
- NugA==
-X-Gm-Message-State: APjAAAV/z8NQww8yoqFcJNSFE8JtuDtfbJXkGYqZVgwkbdpsVllS0wnH
- F5iPF3kMJnjXh10A73msXxdbusveG3nrK3uXLwbB/+Yn7jgzEpb0BWSNCl289PRyQe+OULb/PY5
- GwIJnGYUd1n+mnpefw1+coTYZGa3mTWSRKtkihEsG1w==
-X-Received: by 2002:a19:f619:: with SMTP id x25mr15220135lfe.146.1576478784854; 
- Sun, 15 Dec 2019 22:46:24 -0800 (PST)
-X-Google-Smtp-Source: APXvYqxYIqap6RvvS/V3qRxs6d85Vgoutpx8l9xgfgCmVn0EpC3k91P2m6SYYYdmxGiRTrSSf+TXl7Fnv3bF7BQRunc=
-X-Received: by 2002:a19:f619:: with SMTP id x25mr15220124lfe.146.1576478784677; 
- Sun, 15 Dec 2019 22:46:24 -0800 (PST)
-MIME-Version: 1.0
-References: <1574972621-25750-1-git-send-email-bhsharma@redhat.com>
- <20191214122734.GC28635@zn.tnic>
-In-Reply-To: <20191214122734.GC28635@zn.tnic>
-From: Bhupesh Sharma <bhsharma@redhat.com>
-Date: Mon, 16 Dec 2019 12:16:12 +0530
-Message-ID: <CACi5LpP2PPcmaQw95V4MUzhvENq9+mB7UR7eib2HADCDHLz4oA@mail.gmail.com>
-Subject: Re: [PATCH v5 0/5] Append new variables to vmcoreinfo (TCR_EL1.T1SZ
- for arm64 and MAX_PHYSMEM_BITS for all archs)
-To: Borislav Petkov <bp@alien8.de>
-X-MC-Unique: 5F8lQ5REMwKIN7kSv5gmTQ-1
-X-Mimecast-Spam-Score: 0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47bw1S6rndzDqDx
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2019 19:49:16 +1100 (AEDT)
+Received: from orion.localdomain ([77.2.44.177]) by mrelayeu.kundenserver.de
+ (mreue012 [212.227.15.167]) with ESMTPSA (Nemesis) id
+ 1N2jO8-1hiOOQ3fYa-0137DZ; Mon, 16 Dec 2019 09:43:02 +0100
+From: "Enrico Weigelt, metux IT consult" <info@metux.net>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] drivers: char: tpm: remove unneeded MODULE_VERSION() usage
+Date: Mon, 16 Dec 2019 09:42:30 +0100
+Message-Id: <20191216084230.31412-1-info@metux.net>
+X-Mailer: git-send-email 2.11.0
+X-Provags-ID: V03:K1:ZRMRCvGtq21lbtgskvbS5prFUgst+5RwJZEQW66QiN+qjkuMlBc
+ uGZLISeYLgQ9heOIGqmejXQW6EJ1Yj9dlSn4uQwVBS1GCATDsnRMdpuN2L0Y/QUQihyF0/5
+ Py17FBwzilsZjijPn/vtG8iHe13gTG4QALNK+LcHtpbLNoRNZbWECYtzyjqi0Lcjg6loX+I
+ NHKQcxcT7bFsh1zJN5JKA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:FTjVl9iVLCM=:615AOCvORb17ezdjDykKOa
+ O65kTBYdxeRpP2UcBRbdt/C8uo4vx87/d3Vb41S2dShrkVVh40iJ2bTaAJM2oHVeBvhfyuD6W
+ QDBs0LzAGtBysIYE1UUfabwtcIt1rofZa7BYqrP5jD1MVsqc04SPPrrf1WEkWYt2eYZHSKhRn
+ XASaNscbdfGfOkeAUdZzd3xLZsmmtVdGiFu90vr7Mg/lZ7d0/fyyRSh2cThnKSk9+h3VCBN1a
+ iYN+ASXYxOyukOgL4O+wPGBHW3xdLJ8w5b/DqfWJjeTMwY+PFrYIzJFURWgdR6qNLJKSakyJV
+ twypeKvJ4bjNb7V9RJUWk5H8pJgET0yx3SU78IgbU5QaPFd939py6poL1e5nCid3zo48j6EBh
+ LXFnOuS2qX/NNtZuz69HxqZH8CUomiZB1967R9oIIaMRhLQb0+Ro/gNy6HSwnu5g6xRBLBABA
+ 8I/QGC24CKiI61YOvsZaHo9+MfN2EplvzgpiiUd98axAgBHYU6j9YBlHsgZn6Pn0ICckaTJxe
+ KiJsJ25Qve1EgRbPHT7zvqN9B4jNlHDd5PucAMPYOqrvUlPxDLwTxJb+JctYseJYZBMxiE0PQ
+ Y1jb5msIbptX6EbveYpS5gw+fCVJgU4CiTgz21PvuAbOQx7Mz7UXTm8hqChTWJUJjg7kmO8Yq
+ ojoquAHjlDxIewPs7/pJN5B1s83RtYo9liVp9tIcpSAQKsDPUAoVHrtDIYyUrNoskUt7YUoMj
+ iqIUpW14qox/6MI0klQWG8PhLDDPz0UOL68YW4GUDVPj7E2H5FooiIhveKbcwtk5AgSBNLgsv
+ nkfNgdX6X+wAm9HVcV92GWnPOQbNx9/p67KNJdGfHgP2gmm22xENihQUbiLkStumnISdAMkHi
+ xWsOc63CvCwOwaE9jM4A==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,47 +70,164 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Jonathan Corbet <corbet@lwn.net>,
- Dave Anderson <anderson@redhat.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Linux Doc Mailing List <linux-doc@vger.kernel.org>,
- Will Deacon <will@kernel.org>, x86@kernel.org,
- kexec mailing list <kexec@lists.infradead.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Kazuhito Hagio <k-hagio@ab.jp.nec.com>, James Morse <james.morse@arm.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Paul Mackerras <paulus@samba.org>,
- Thomas Gleixner <tglx@linutronix.de>, Bhupesh SHARMA <bhupesh.linux@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
- Steve Capper <steve.capper@arm.com>
+Cc: jgg@ziepe.ca, peterhuewe@gmx.de, linuxppc-dev@lists.ozlabs.org,
+ linux-integrity@vger.kernel.org, jarkko.sakkinen@linux.intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Boris,
+Remove MODULE_VERSION(), as it isn't needed at all: the only version
+making sense is the kernel version.
 
-On Sat, Dec 14, 2019 at 5:57 PM Borislav Petkov <bp@alien8.de> wrote:
->
-> On Fri, Nov 29, 2019 at 01:53:36AM +0530, Bhupesh Sharma wrote:
-> > Bhupesh Sharma (5):
-> >   crash_core, vmcoreinfo: Append 'MAX_PHYSMEM_BITS' to vmcoreinfo
-> >   arm64/crash_core: Export TCR_EL1.T1SZ in vmcoreinfo
-> >   Documentation/arm64: Fix a simple typo in memory.rst
-> >   Documentation/vmcoreinfo: Add documentation for 'MAX_PHYSMEM_BITS'
-> >   Documentation/vmcoreinfo: Add documentation for 'TCR_EL1.T1SZ'
->
-> why are those last two separate patches and not part of the patches
-> which export the respective variable/define?
+See also: https://lkml.org/lkml/2017/11/22/480
 
-I remember there was a suggestion during the review of an earlier
-version to keep them as a separate patch(es) so that the documentation
-text is easier to review, but I have no strong preference towards the
-same.
+Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
+---
+ drivers/char/tpm/st33zp24/i2c.c      | 1 -
+ drivers/char/tpm/st33zp24/spi.c      | 1 -
+ drivers/char/tpm/st33zp24/st33zp24.c | 1 -
+ drivers/char/tpm/tpm-interface.c     | 1 -
+ drivers/char/tpm/tpm_atmel.c         | 1 -
+ drivers/char/tpm/tpm_crb.c           | 1 -
+ drivers/char/tpm/tpm_i2c_infineon.c  | 1 -
+ drivers/char/tpm/tpm_ibmvtpm.c       | 1 -
+ drivers/char/tpm/tpm_infineon.c      | 1 -
+ drivers/char/tpm/tpm_nsc.c           | 1 -
+ drivers/char/tpm/tpm_tis.c           | 1 -
+ drivers/char/tpm/tpm_tis_core.c      | 1 -
+ drivers/char/tpm/tpm_vtpm_proxy.c    | 1 -
+ 13 files changed, 13 deletions(-)
 
-I can merge the documentation patches with the respective patches
-(which export the variables/defines to vmcoreinfo) in v6, unless other
-maintainers have an objections towards the same.
-
-Thanks,
-Bhupesh
+diff --git a/drivers/char/tpm/st33zp24/i2c.c b/drivers/char/tpm/st33zp24/i2c.c
+index 35333b65acd1..71df056f14c9 100644
+--- a/drivers/char/tpm/st33zp24/i2c.c
++++ b/drivers/char/tpm/st33zp24/i2c.c
+@@ -313,5 +313,4 @@ module_i2c_driver(st33zp24_i2c_driver);
+ 
+ MODULE_AUTHOR("TPM support (TPMsupport@list.st.com)");
+ MODULE_DESCRIPTION("STM TPM 1.2 I2C ST33 Driver");
+-MODULE_VERSION("1.3.0");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/char/tpm/st33zp24/spi.c b/drivers/char/tpm/st33zp24/spi.c
+index 26e09de50f1e..94ceced4d57d 100644
+--- a/drivers/char/tpm/st33zp24/spi.c
++++ b/drivers/char/tpm/st33zp24/spi.c
+@@ -430,5 +430,4 @@ module_spi_driver(st33zp24_spi_driver);
+ 
+ MODULE_AUTHOR("TPM support (TPMsupport@list.st.com)");
+ MODULE_DESCRIPTION("STM TPM 1.2 SPI ST33 Driver");
+-MODULE_VERSION("1.3.0");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/char/tpm/st33zp24/st33zp24.c b/drivers/char/tpm/st33zp24/st33zp24.c
+index 37bb13f516be..60269b6ac470 100644
+--- a/drivers/char/tpm/st33zp24/st33zp24.c
++++ b/drivers/char/tpm/st33zp24/st33zp24.c
+@@ -646,5 +646,4 @@ EXPORT_SYMBOL(st33zp24_pm_resume);
+ 
+ MODULE_AUTHOR("TPM support (TPMsupport@list.st.com)");
+ MODULE_DESCRIPTION("ST33ZP24 TPM 1.2 driver");
+-MODULE_VERSION("1.3.0");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/char/tpm/tpm-interface.c b/drivers/char/tpm/tpm-interface.c
+index a438b1206fcb..91d4584f399d 100644
+--- a/drivers/char/tpm/tpm-interface.c
++++ b/drivers/char/tpm/tpm-interface.c
+@@ -514,5 +514,4 @@ module_exit(tpm_exit);
+ 
+ MODULE_AUTHOR("Leendert van Doorn (leendert@watson.ibm.com)");
+ MODULE_DESCRIPTION("TPM Driver");
+-MODULE_VERSION("2.0");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/char/tpm/tpm_atmel.c b/drivers/char/tpm/tpm_atmel.c
+index 54a6750a6757..35bf249cc95a 100644
+--- a/drivers/char/tpm/tpm_atmel.c
++++ b/drivers/char/tpm/tpm_atmel.c
+@@ -231,5 +231,4 @@ module_exit(cleanup_atmel);
+ 
+ MODULE_AUTHOR("Leendert van Doorn (leendert@watson.ibm.com)");
+ MODULE_DESCRIPTION("TPM Driver");
+-MODULE_VERSION("2.0");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/char/tpm/tpm_crb.c b/drivers/char/tpm/tpm_crb.c
+index a9dcf31eadd2..3e72b7b99cce 100644
+--- a/drivers/char/tpm/tpm_crb.c
++++ b/drivers/char/tpm/tpm_crb.c
+@@ -748,5 +748,4 @@ static struct acpi_driver crb_acpi_driver = {
+ module_acpi_driver(crb_acpi_driver);
+ MODULE_AUTHOR("Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>");
+ MODULE_DESCRIPTION("TPM2 Driver");
+-MODULE_VERSION("0.1");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/char/tpm/tpm_i2c_infineon.c b/drivers/char/tpm/tpm_i2c_infineon.c
+index a19d32cb4e94..8920b7c19fcb 100644
+--- a/drivers/char/tpm/tpm_i2c_infineon.c
++++ b/drivers/char/tpm/tpm_i2c_infineon.c
+@@ -731,5 +731,4 @@ static struct i2c_driver tpm_tis_i2c_driver = {
+ module_i2c_driver(tpm_tis_i2c_driver);
+ MODULE_AUTHOR("Peter Huewe <peter.huewe@infineon.com>");
+ MODULE_DESCRIPTION("TPM TIS I2C Infineon Driver");
+-MODULE_VERSION("2.2.0");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/char/tpm/tpm_ibmvtpm.c b/drivers/char/tpm/tpm_ibmvtpm.c
+index 78cc52690177..034d24758915 100644
+--- a/drivers/char/tpm/tpm_ibmvtpm.c
++++ b/drivers/char/tpm/tpm_ibmvtpm.c
+@@ -723,5 +723,4 @@ module_exit(ibmvtpm_module_exit);
+ 
+ MODULE_AUTHOR("adlai@us.ibm.com");
+ MODULE_DESCRIPTION("IBM vTPM Driver");
+-MODULE_VERSION("1.0");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/char/tpm/tpm_infineon.c b/drivers/char/tpm/tpm_infineon.c
+index 9c924a1440a9..8a58966c5c9b 100644
+--- a/drivers/char/tpm/tpm_infineon.c
++++ b/drivers/char/tpm/tpm_infineon.c
+@@ -621,5 +621,4 @@ module_pnp_driver(tpm_inf_pnp_driver);
+ 
+ MODULE_AUTHOR("Marcel Selhorst <tpmdd@sirrix.com>");
+ MODULE_DESCRIPTION("Driver for Infineon TPM SLD 9630 TT 1.1 / SLB 9635 TT 1.2");
+-MODULE_VERSION("1.9.2");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/char/tpm/tpm_nsc.c b/drivers/char/tpm/tpm_nsc.c
+index 038701d48351..6ab2fe7e8782 100644
+--- a/drivers/char/tpm/tpm_nsc.c
++++ b/drivers/char/tpm/tpm_nsc.c
+@@ -412,5 +412,4 @@ module_exit(cleanup_nsc);
+ 
+ MODULE_AUTHOR("Leendert van Doorn (leendert@watson.ibm.com)");
+ MODULE_DESCRIPTION("TPM Driver");
+-MODULE_VERSION("2.0");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/char/tpm/tpm_tis.c b/drivers/char/tpm/tpm_tis.c
+index e7df342a317d..713773ebff81 100644
+--- a/drivers/char/tpm/tpm_tis.c
++++ b/drivers/char/tpm/tpm_tis.c
+@@ -397,5 +397,4 @@ module_init(init_tis);
+ module_exit(cleanup_tis);
+ MODULE_AUTHOR("Leendert van Doorn (leendert@watson.ibm.com)");
+ MODULE_DESCRIPTION("TPM Driver");
+-MODULE_VERSION("2.0");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/char/tpm/tpm_tis_core.c b/drivers/char/tpm/tpm_tis_core.c
+index 8af2cee1a762..1aeb11e5fd5b 100644
+--- a/drivers/char/tpm/tpm_tis_core.c
++++ b/drivers/char/tpm/tpm_tis_core.c
+@@ -1150,5 +1150,4 @@ EXPORT_SYMBOL_GPL(tpm_tis_resume);
+ 
+ MODULE_AUTHOR("Leendert van Doorn (leendert@watson.ibm.com)");
+ MODULE_DESCRIPTION("TPM Driver");
+-MODULE_VERSION("2.0");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/char/tpm/tpm_vtpm_proxy.c b/drivers/char/tpm/tpm_vtpm_proxy.c
+index 91c772e38bb5..18f14162d1c1 100644
+--- a/drivers/char/tpm/tpm_vtpm_proxy.c
++++ b/drivers/char/tpm/tpm_vtpm_proxy.c
+@@ -729,5 +729,4 @@ module_exit(vtpm_module_exit);
+ 
+ MODULE_AUTHOR("Stefan Berger (stefanb@us.ibm.com)");
+ MODULE_DESCRIPTION("vTPM Driver");
+-MODULE_VERSION("0.1");
+ MODULE_LICENSE("GPL");
+-- 
+2.11.0
 
