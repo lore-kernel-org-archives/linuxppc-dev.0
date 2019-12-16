@@ -6,44 +6,44 @@ X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 79DB1C43603
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 20:08:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A2D8C43603
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 20:10:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 35C702082E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 20:08:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 35C702082E
+	by mail.kernel.org (Postfix) with ESMTPS id E1BAE2082E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 20:10:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E1BAE2082E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47cC5H1GdWzDqRr
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2019 07:08:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47cC7Q1fddzDqQV
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2019 07:10:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=linux.intel.com
- (client-ip=192.55.52.120; helo=mga04.intel.com;
+ (client-ip=192.55.52.88; helo=mga01.intel.com;
  envelope-from=alexey.budankov@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux.intel.com
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47cBzy3hslzDqQZ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2019 07:03:58 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47cC0x5MbszDqRN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2019 07:04:48 +1100 (AEDT)
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
-Received: from fmsmga007.fm.intel.com ([10.253.24.52])
- by fmsmga104.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 16 Dec 2019 12:03:56 -0800
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+ by fmsmga101.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 16 Dec 2019 12:04:46 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.69,322,1571727600"; d="scan'208";a="212150818"
+X-IronPort-AV: E=Sophos;i="5.69,322,1571727600"; d="scan'208";a="205229105"
 Received: from linux.intel.com ([10.54.29.200])
- by fmsmga007.fm.intel.com with ESMTP; 16 Dec 2019 12:03:55 -0800
+ by orsmga007.jf.intel.com with ESMTP; 16 Dec 2019 12:04:46 -0800
 Received: from [10.251.95.214] (abudanko-mobl.ccr.corp.intel.com
  [10.251.95.214])
- by linux.intel.com (Postfix) with ESMTP id 0E7855802E5;
- Mon, 16 Dec 2019 12:03:46 -0800 (PST)
-Subject: [PATCH v3 5/7] trace/bpf_trace: open access for CAP_SYS_PERFMON
+ by linux.intel.com (Postfix) with ESMTP id 145DD5802E5;
+ Mon, 16 Dec 2019 12:04:35 -0800 (PST)
+Subject: [PATCH v3 6/7] powerpc/perf: open access for CAP_SYS_PERFMON
  privileged process
 From: Alexey Budankov <alexey.budankov@linux.intel.com>
 To: Peter Zijlstra <peterz@infradead.org>,
@@ -58,8 +58,8 @@ To: Peter Zijlstra <peterz@infradead.org>,
  Casey Schaufler <casey@schaufler-ca.com>
 References: <b175f283-d256-e37e-f447-6ba4ab4f3d3a@linux.intel.com>
 Organization: Intel Corp.
-Message-ID: <d94e5d0b-aa34-ad21-349f-fa3fd6862345@linux.intel.com>
-Date: Mon, 16 Dec 2019 23:03:45 +0300
+Message-ID: <537b8d2e-9ace-35b8-2144-a34e336198a7@linux.intel.com>
+Date: Mon, 16 Dec 2019 23:04:34 +0300
 User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101
  Thunderbird/60.9.1
 MIME-Version: 1.0
@@ -97,29 +97,38 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
-Open access to bpf_trace monitoring for CAP_SYS_PERFMON privileged processes.
-For backward compatibility reasons access to bpf_trace monitoring remains open
+Open access to monitoring for CAP_SYS_PERFMON privileged processes.
+For backward compatibility reasons access to the monitoring remains open
 for CAP_SYS_ADMIN privileged processes but CAP_SYS_ADMIN usage for secure
-bpf_trace monitoring is discouraged with respect to CAP_SYS_PERFMON capability.
+monitoring is discouraged with respect to CAP_SYS_PERFMON capability.
 
 Signed-off-by: Alexey Budankov <alexey.budankov@linux.intel.com>
 ---
- kernel/trace/bpf_trace.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/perf/imc-pmu.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/trace/bpf_trace.c b/kernel/trace/bpf_trace.c
-index 44bd08f2443b..bafe21ac6d92 100644
---- a/kernel/trace/bpf_trace.c
-+++ b/kernel/trace/bpf_trace.c
-@@ -1272,7 +1272,7 @@ int perf_event_query_prog_array(struct perf_event *event, void __user *info)
- 	u32 *ids, prog_cnt, ids_len;
- 	int ret;
+diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
+index cb50a9e1fd2d..e837717492e4 100644
+--- a/arch/powerpc/perf/imc-pmu.c
++++ b/arch/powerpc/perf/imc-pmu.c
+@@ -898,7 +898,7 @@ static int thread_imc_event_init(struct perf_event *event)
+ 	if (event->attr.type != event->pmu->type)
+ 		return -ENOENT;
  
 -	if (!capable(CAP_SYS_ADMIN))
 +	if (!perfmon_capable())
- 		return -EPERM;
- 	if (event->attr.type != PERF_TYPE_TRACEPOINT)
- 		return -EINVAL;
+ 		return -EACCES;
+ 
+ 	/* Sampling not supported */
+@@ -1307,7 +1307,7 @@ static int trace_imc_event_init(struct perf_event *event)
+ 	if (event->attr.type != event->pmu->type)
+ 		return -ENOENT;
+ 
+-	if (!capable(CAP_SYS_ADMIN))
++	if (!perfmon_capable())
+ 		return -EACCES;
+ 
+ 	/* Return if this is a couting event */
 -- 
 2.20.1
 
