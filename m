@@ -6,82 +6,82 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 195CBC43603
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 15:01:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 667B7C43603
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 15:03:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C5240206E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 15:01:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C5240206E0
+	by mail.kernel.org (Postfix) with ESMTPS id 21CB2206E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 15:03:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 21CB2206E0
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47c4Gr1TKBzDqWj
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2019 02:01:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47c4KW0sgHzDqWr
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2019 02:03:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47c4101tGfzDqSJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2019 01:49:24 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- xBGEcG3E145036
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2019 09:49:19 -0500
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2wwdt9x8hf-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47c41268BDzDqSH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2019 01:49:26 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ xBGEbvfl130111
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2019 09:49:24 -0500
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2wwe3nenj2-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2019 09:49:19 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2019 09:49:24 -0500
 Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
- Mon, 16 Dec 2019 14:49:17 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Mon, 16 Dec 2019 14:49:22 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 16 Dec 2019 14:49:14 -0000
+ Mon, 16 Dec 2019 14:49:19 -0000
 Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xBGEnDjx51708022
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xBGEnIPR64421940
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 16 Dec 2019 14:49:13 GMT
+ Mon, 16 Dec 2019 14:49:18 GMT
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8AC7D4203F;
- Mon, 16 Dec 2019 14:49:13 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 714C942041;
+ Mon, 16 Dec 2019 14:49:18 +0000 (GMT)
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C11B842049;
- Mon, 16 Dec 2019 14:49:11 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 7EB894204D;
+ Mon, 16 Dec 2019 14:49:16 +0000 (GMT)
 Received: from srikart450.in.ibm.com (unknown [9.102.1.133])
  by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 16 Dec 2019 14:49:11 +0000 (GMT)
+ Mon, 16 Dec 2019 14:49:16 +0000 (GMT)
 From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v5 2/5] powerpc/numa: Handle extra hcall_vphn error cases
-Date: Mon, 16 Dec 2019 20:19:01 +0530
+Subject: [PATCH v5 4/5] powerpc/numa: Early request for home node associativity
+Date: Mon, 16 Dec 2019 20:19:03 +0530
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20191216144904.6776-1-srikar@linux.vnet.ibm.com>
 References: <20191216144904.6776-1-srikar@linux.vnet.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 19121614-0028-0000-0000-000003C925A2
+x-cbid: 19121614-0016-0000-0000-000002D56B04
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19121614-0029-0000-0000-0000248C6A46
-Message-Id: <20191216144904.6776-3-srikar@linux.vnet.ibm.com>
+x-cbparentid: 19121614-0017-0000-0000-000033379F77
+Message-Id: <20191216144904.6776-5-srikar@linux.vnet.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
  definitions=2019-12-16_05:2019-12-16,2019-12-16 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  lowpriorityscore=0
- adultscore=0 malwarescore=0 priorityscore=1501 mlxscore=0 mlxlogscore=999
- phishscore=0 spamscore=0 clxscore=1015 suspectscore=0 impostorscore=0
- bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ priorityscore=1501 mlxscore=0 mlxlogscore=999 impostorscore=0 phishscore=0
+ adultscore=0 bulkscore=0 clxscore=1015 suspectscore=0 spamscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-1910280000 definitions=main-1912160131
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -104,10 +104,19 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently code handles H_FUNCTION, H_SUCCESS, H_HARDWARE return codes.
-However hcall_vphn can return other return codes. Now it also handles
-H_PARAMETER return code.  Also the rest return codes are handled under the
-default case.
+Currently the kernel detects if its running on a shared lpar platform
+and requests home node associativity before the scheduler sched_domains
+are setup. However between the time NUMA setup is initialized and the
+request for home node associativity, workqueue initializes its per node
+cpumask. The per node workqueue possible cpumask may turn invalid
+after home node associativity resulting in weird situations like
+workqueue possible cpumask being a subset of workqueue online cpumask.
+
+This can be fixed by requesting home node associativity earlier just
+before NUMA setup. However at the NUMA setup time, kernel may not be in
+a position to detect if its running on a shared lpar platform. So
+request for home node associativity and if the request fails, fallback
+on the device tree property.
 
 Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
@@ -119,59 +128,115 @@ Cc: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
 Reported-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
 Reviewed-by: Nathan Lynch <nathanl@linux.ibm.com>
 ---
-Changelog (v2->v1):
- Handled comments from Nathan:
-  - Split patch from patch 1.
-  - Corrected a problem where I missed calling stop_topology_update().
-  - Using pr_err_ratelimited instead of printk.
+Changelog (v2->v3):
+- Handled comments from Nathan Lynch
+  * Use first thread of the core for cpu-to-node map.
+  * get hardware-id in numa_setup_cpu
 
- arch/powerpc/mm/numa.c | 25 ++++++++++++++++---------
- 1 file changed, 16 insertions(+), 9 deletions(-)
+Changelog (v1->v2):
+- Handled comments from Nathan Lynch
+  * Dont depend on pacas to be setup for the hwid
+
+
+ arch/powerpc/mm/numa.c | 45 +++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 40 insertions(+), 5 deletions(-)
 
 diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 50d68d21ddcc..8fbe57c29153 100644
+index 63ec0c3c817f..f837a0e725bc 100644
 --- a/arch/powerpc/mm/numa.c
 +++ b/arch/powerpc/mm/numa.c
-@@ -1191,23 +1191,30 @@ static long vphn_get_associativity(unsigned long cpu,
- 				VPHN_FLAG_VCPU, associativity);
- 
- 	switch (rc) {
-+	case H_SUCCESS:
-+		dbg("VPHN hcall succeeded. Reset polling...\n");
-+		timed_topology_update(0);
-+		goto out;
-+
- 	case H_FUNCTION:
--		printk_once(KERN_INFO
--			"VPHN is not supported. Disabling polling...\n");
--		stop_topology_update();
-+		pr_err_ratelimited("VPHN unsupported. Disabling polling...\n");
- 		break;
- 	case H_HARDWARE:
--		printk(KERN_ERR
--			"hcall_vphn() experienced a hardware fault "
-+		pr_err_ratelimited("hcall_vphn() experienced a hardware fault "
- 			"preventing VPHN. Disabling polling...\n");
--		stop_topology_update();
- 		break;
--	case H_SUCCESS:
--		dbg("VPHN hcall succeeded. Reset polling...\n");
--		timed_topology_update(0);
-+	case H_PARAMETER:
-+		pr_err_ratelimited("hcall_vphn() was passed an invalid parameter. "
-+			"Disabling polling...\n");
-+		break;
-+	default:
-+		pr_err_ratelimited("hcall_vphn() returned %ld. Disabling polling...\n"
-+			, rc);
- 		break;
- 	}
- 
-+	stop_topology_update();
-+out:
- 	return rc;
+@@ -461,13 +461,27 @@ static int of_drconf_to_nid_single(struct drmem_lmb *lmb)
+ 	return nid;
  }
  
++static int vphn_get_nid(long hwid)
++{
++	__be32 associativity[VPHN_ASSOC_BUFSIZE] = {0};
++	long rc;
++
++	rc = hcall_vphn(hwid, VPHN_FLAG_VCPU, associativity);
++	if (rc == H_SUCCESS)
++		return associativity_to_nid(associativity);
++
++	return NUMA_NO_NODE;
++}
++
+ /*
+  * Figure out to which domain a cpu belongs and stick it there.
++ * cpu_to_phys_id is only valid between smp_setup_cpu_maps() and
++ * smp_setup_pacas(). If called outside this window, set get_hwid to true.
+  * Return the id of the domain used.
+  */
+-static int numa_setup_cpu(unsigned long lcpu)
++static int numa_setup_cpu(unsigned long lcpu, bool get_hwid)
+ {
+-	struct device_node *cpu;
++	struct device_node *cpu = NULL;
+ 	int fcpu = cpu_first_thread_sibling(lcpu);
+ 	int nid = NUMA_NO_NODE;
+ 
+@@ -485,6 +499,27 @@ static int numa_setup_cpu(unsigned long lcpu)
+ 		return nid;
+ 	}
+ 
++	/*
++	 * On a shared lpar, device tree will not have node associativity.
++	 * At this time lppaca, or its __old_status field may not be
++	 * updated. Hence kernel cannot detect if its on a shared lpar. So
++	 * request an explicit associativity irrespective of whether the
++	 * lpar is shared or dedicated. Use the device tree property as a
++	 * fallback.
++	 */
++	if (firmware_has_feature(FW_FEATURE_VPHN)) {
++		long hwid;
++
++		if (get_hwid)
++			hwid = get_hard_smp_processor_id(lcpu);
++		else
++			hwid = cpu_to_phys_id[lcpu];
++		nid = vphn_get_nid(hwid);
++	}
++
++	if (nid != NUMA_NO_NODE)
++		goto out_present;
++
+ 	cpu = of_get_cpu_node(lcpu, NULL);
+ 
+ 	if (!cpu) {
+@@ -496,6 +531,7 @@ static int numa_setup_cpu(unsigned long lcpu)
+ 	}
+ 
+ 	nid = of_node_to_nid_single(cpu);
++	of_node_put(cpu);
+ 
+ out_present:
+ 	if (nid < 0 || !node_possible(nid))
+@@ -515,7 +551,6 @@ static int numa_setup_cpu(unsigned long lcpu)
+ 	}
+ 
+ 	map_cpu_to_node(lcpu, nid);
+-	of_node_put(cpu);
+ out:
+ 	return nid;
+ }
+@@ -546,7 +581,7 @@ static int ppc_numa_cpu_prepare(unsigned int cpu)
+ {
+ 	int nid;
+ 
+-	nid = numa_setup_cpu(cpu);
++	nid = numa_setup_cpu(cpu, true);
+ 	verify_cpu_node_mapping(cpu, nid);
+ 	return 0;
+ }
+@@ -893,7 +928,7 @@ void __init mem_topology_setup(void)
+ 	reset_numa_cpu_lookup_table();
+ 
+ 	for_each_present_cpu(cpu)
+-		numa_setup_cpu(cpu);
++		numa_setup_cpu(cpu, false);
+ }
+ 
+ void __init initmem_init(void)
 -- 
 2.18.1
 
