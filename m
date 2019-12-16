@@ -2,91 +2,43 @@ Return-Path: <SRS0=uftn=2G=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.1 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLACK,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E00B9C43603
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 03:31:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 96D10C43603
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 04:21:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 44CB92465E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 03:31:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 44CB92465E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 5AB3420684
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 04:21:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5AB3420684
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47bmyr4SXkzDqWJ
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 14:31:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47bp4Z0vDFzDqTP
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 15:21:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=bharata@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=ozlabs.ru (client-ip=107.174.27.60; helo=ozlabs.ru;
+ envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47bmwQ5k6tzDqGF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2019 14:29:24 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- xBG3RTk3100994
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Dec 2019 22:29:21 -0500
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2wwdt8q1u0-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Dec 2019 22:29:21 -0500
-Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bharata@linux.ibm.com>;
- Mon, 16 Dec 2019 03:29:19 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 16 Dec 2019 03:29:16 -0000
-Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xBG3TFQl61800468
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 16 Dec 2019 03:29:15 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6BB4D42042;
- Mon, 16 Dec 2019 03:29:15 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 17ADC42045;
- Mon, 16 Dec 2019 03:29:14 +0000 (GMT)
-Received: from in.ibm.com (unknown [9.199.46.216])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Mon, 16 Dec 2019 03:29:13 +0000 (GMT)
-Date: Mon, 16 Dec 2019 08:59:11 +0530
-From: Bharata B Rao <bharata@linux.ibm.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH V3 2/2] KVM: PPC: Implement H_SVM_INIT_ABORT hcall
-References: <20191215021104.GA27378@us.ibm.com>
- <20191215021208.GB27378@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20191215021208.GB27378@us.ibm.com>
-User-Agent: Mutt/1.12.1 (2019-06-15)
-X-TM-AS-GCONF: 00
-x-cbid: 19121603-0012-0000-0000-000003753716
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19121603-0013-0000-0000-000021B11B34
-Message-Id: <20191216032911.GA25495@in.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
- definitions=2019-12-15_07:2019-12-13,2019-12-15 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 mlxscore=0
- priorityscore=1501 spamscore=0 lowpriorityscore=0 bulkscore=0
- suspectscore=0 adultscore=0 mlxlogscore=523 malwarescore=0 impostorscore=0
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-1910280000 definitions=main-1912160029
+ dmarc=none (p=none dis=none) header.from=ozlabs.ru
+Received: from ozlabs.ru (unknown [107.174.27.60])
+ by lists.ozlabs.org (Postfix) with ESMTP id 47bp2F3kmczDqQ3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2019 15:19:31 +1100 (AEDT)
+Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
+ by ozlabs.ru (Postfix) with ESMTP id 546B7AE80565;
+ Sun, 15 Dec 2019 23:18:21 -0500 (EST)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH kernel v2 1/4] Revert "powerpc/pseries/iommu: Don't use
+ dma_iommu_ops on secure guests"
+Date: Mon, 16 Dec 2019 15:19:21 +1100
+Message-Id: <20191216041924.42318-2-aik@ozlabs.ru>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20191216041924.42318-1-aik@ozlabs.ru>
+References: <20191216041924.42318-1-aik@ozlabs.ru>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,34 +50,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: bharata@linux.ibm.com
-Cc: linuxram@us.ibm.com, kvm-ppc@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Michael Anderson <andmike@linux.ibm.com>, Ram Pai <linuxram@us.ibm.com>,
+ kvm-ppc@vger.kernel.org, Thiago Jung Bauermann <bauerman@linux.ibm.com>,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Dec 14, 2019 at 06:12:08PM -0800, Sukadev Bhattiprolu wrote:
-> +unsigned long kvmppc_h_svm_init_abort(struct kvm *kvm)
-> +{
-> +	int i;
-> +
-> +	if (!(kvm->arch.secure_guest & KVMPPC_SECURE_INIT_START))
-> +		return H_UNSUPPORTED;
-> +
-> +	for (i = 0; i < KVM_ADDRESS_SPACE_NUM; i++) {
-> +		struct kvm_memory_slot *memslot;
-> +		struct kvm_memslots *slots = __kvm_memslots(kvm, i);
-> +
-> +		if (!slots)
-> +			continue;
-> +
-> +		kvm_for_each_memslot(memslot, slots)
-> +			kvmppc_uvmem_drop_pages(memslot, kvm, false);
-> +	}
+From: Ram Pai <linuxram@us.ibm.com>
 
-You need to hold srcu_read_lock(&kvm->srcu) here.
+This reverts commit edea902c1c1efb855f77e041f9daf1abe7a9768a.
 
-Regards,
-Bharata.
+At the time the change allowed direct DMA ops for secure VMs; however
+since then we switched on using SWIOTLB backed with IOMMU (direct mapping)
+and to make this work, we need dma_iommu_ops which handles all cases
+including TCE mapping I/O pages in the presence of an IOMMU.
+
+Fixes: edea902c1c1e ("powerpc/pseries/iommu: Don't use dma_iommu_ops on secure guests")
+Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+[aik: added "revert" and "fixes:"]
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+Changes:
+v2
+* made it a revert patch, added "fixes:"
+---
+ arch/powerpc/platforms/pseries/iommu.c | 11 +----------
+ 1 file changed, 1 insertion(+), 10 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 6ba081dd61c9..df7db33ca93b 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -36,7 +36,6 @@
+ #include <asm/udbg.h>
+ #include <asm/mmzone.h>
+ #include <asm/plpar_wrappers.h>
+-#include <asm/svm.h>
+ 
+ #include "pseries.h"
+ 
+@@ -1320,15 +1319,7 @@ void iommu_init_early_pSeries(void)
+ 	of_reconfig_notifier_register(&iommu_reconfig_nb);
+ 	register_memory_notifier(&iommu_mem_nb);
+ 
+-	/*
+-	 * Secure guest memory is inacessible to devices so regular DMA isn't
+-	 * possible.
+-	 *
+-	 * In that case keep devices' dma_map_ops as NULL so that the generic
+-	 * DMA code path will use SWIOTLB to bounce buffers for DMA.
+-	 */
+-	if (!is_secure_guest())
+-		set_pci_dma_ops(&dma_iommu_ops);
++	set_pci_dma_ops(&dma_iommu_ops);
+ }
+ 
+ static int __init disable_multitce(char *str)
+-- 
+2.17.1
 
