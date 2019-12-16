@@ -2,84 +2,44 @@ Return-Path: <SRS0=uftn=2G=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 56F67C43603
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 12:13:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 66A89C43603
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 12:38:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0C663206CB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 12:13:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0C663206CB
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
+	by mail.kernel.org (Postfix) with ESMTPS id ACC56206D3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 12:38:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ACC56206D3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=sang-engineering.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47c0Xy34q3zDqW2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 23:13:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=arndb.de
- (client-ip=212.227.17.10; helo=mout.kundenserver.de;
- envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arndb.de
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47c0PP0FDfzDqV4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2019 23:06:46 +1100 (AEDT)
-Received: from mail-qk1-f179.google.com ([209.85.222.179]) by
- mrelayeu.kundenserver.de (mreue109 [212.227.15.145]) with ESMTPSA (Nemesis)
- id 1MIxBc-1iQoQs3wlO-00KOWW for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec
- 2019 13:06:41 +0100
-Received: by mail-qk1-f179.google.com with SMTP id r14so4516277qke.13
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2019 04:06:40 -0800 (PST)
-X-Gm-Message-State: APjAAAXQ+FTvW+KNTCvW1Q2Mrty/00Wbmy6iTJWegxsaK2fWYMzHrPV2
- 1NPh5DNyrX+v/RmGTw+4O8sL09Leu2ZRBcroAos=
-X-Google-Smtp-Source: APXvYqzaldzKvuGG0VSm+NPjH2zK7pPG6M4z5r7MC0BxVjXSzaHMKlB7/FcMflcuRR66LlFgIuTrrgyX4wxlYfFrPhU=
-X-Received: by 2002:a37:2f02:: with SMTP id v2mr5213363qkh.3.1576497999318;
- Mon, 16 Dec 2019 04:06:39 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47c16N1TKhzDq7W
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2019 23:38:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.helo=pokefinder.org (client-ip=88.99.104.3; helo=pokefinder.org;
+ envelope-from=wsa+renesas@sang-engineering.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=sang-engineering.com
+Received: from pokefinder.org (sauhun.de [88.99.104.3])
+ by lists.ozlabs.org (Postfix) with ESMTP id 47c12z0gWczDqTT
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2019 23:35:54 +1100 (AEDT)
+Received: from localhost (p54B33297.dip0.t-ipconnect.de [84.179.50.151])
+ by pokefinder.org (Postfix) with ESMTPSA id CF81D2C2D6D;
+ Mon, 16 Dec 2019 13:29:44 +0100 (CET)
+From: Wolfram Sang <wsa+renesas@sang-engineering.com>
+To: linux-i2c@vger.kernel.org
+Subject: [PATCH 1/1] macintosh: convert to i2c_new_scanned_device
+Date: Mon, 16 Dec 2019 13:29:39 +0100
+Message-Id: <20191216122939.3411-2-wsa+renesas@sang-engineering.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20191216122939.3411-1-wsa+renesas@sang-engineering.com>
+References: <20191216122939.3411-1-wsa+renesas@sang-engineering.com>
 MIME-Version: 1.0
-References: <875zimp0ay.fsf@mpe.ellerman.id.au>
- <20191212080105.GV2844@hirez.programming.kicks-ass.net>
- <20191212100756.GA11317@willie-the-truck>
- <20191212104610.GW2827@hirez.programming.kicks-ass.net>
- <CAHk-=wjUBsH0BYDBv=q36482G-U7c=9bC89L_BViSciTfb8fhA@mail.gmail.com>
- <20191212180634.GA19020@willie-the-truck>
- <CAHk-=whRxB0adkz+V7SQC8Ac_rr_YfaPY8M2mFDfJP2FFBNz8A@mail.gmail.com>
- <20191212193401.GB19020@willie-the-truck>
- <CAHk-=wiMuHmWzQ7-CRQB6o+SHtA-u-Rp6VZwPcqDbjAaug80rQ@mail.gmail.com>
- <CAK8P3a2QYpT_u3D7c_w+hoyeO-Stkj5MWyU_LgGOqnMtKLEudg@mail.gmail.com>
- <20191213144359.GA3826@willie-the-truck>
-In-Reply-To: <20191213144359.GA3826@willie-the-truck>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Mon, 16 Dec 2019 13:06:22 +0100
-X-Gmail-Original-Message-ID: <CAK8P3a0qgbqKTtRWTh6c0R2E93rehKbkBcB18TL3JX_RWHsTZA@mail.gmail.com>
-Message-ID: <CAK8P3a0qgbqKTtRWTh6c0R2E93rehKbkBcB18TL3JX_RWHsTZA@mail.gmail.com>
-Subject: Re: READ_ONCE() + STACKPROTECTOR_STRONG == :/ (was Re: [GIT PULL]
- Please pull powerpc/linux.git powerpc-5.5-2 tag (topic/kasan-bitops))
-To: Will Deacon <will@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-X-Provags-ID: V03:K1:TSDQJJn4NG66d3QBWWRBaMDee1S38OtP8sBuHD9JgLCqJ+Hbt34
- USfRMNLz2rabXnk/+Ns0lo1G50XrHYxPrFz0AoSKdYW23B0zsUPKhTQG55Le89VgUpUUsJl
- 73n/QGPYT4qeeeNH+OQ9aK86T9uAkM/NAyeXzi2I5owK1ZfNibHTj3UncnUpNb22oZ37hMg
- JBmZnf2Os8gkG8ZOB59aw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:iWkM2cbPCac=:RJuAOR6Av+94EkDGAE/r9j
- f5G2t8VkaWiqMJr4cR69P3z00Sq5xmvdUojD9Ae4m1OKTuhoRaiD0yMjZR9eAdB3WACosciPS
- Mz2mFD+IxmGX4sCT8KqCYSWKyfkW/eDoS6KgPA1O5RrArFcerveuOz/htw+Og9QBmbdYZXFz4
- 6+HXjRu+Z+AAxzU9lOQOVw97it+P+QO859Wv+P39OtltdAW44ZIZjotXevk09c7KN0O04eyR1
- +7MjAdPlop/vpT4bMxeS7w6pD743oE0pBrKFkQ+3v0q/3Ly7cysqLaQRJUqkEVrnSfQdiVjoy
- yoflkz8ulHZkVXAyRY0xIQUMw/DIgDA7A9aUEFjof+T1OD7In4/hryrq0e18tlcObn6YPnXGB
- ELCMnPrpw9CdLPdgIQ6PqKwk1BZ2IEuDTLVpHxrO71yIxgwdynIOvnfYfR70VqER1iqJFvGYb
- 2F/92ZERuUo7wxY0C+rqCL0C599tUI8vnD6V6yAgU1Nyan/WSa1spD7VcexIWJ/jg1xKQdXBm
- FP5gZJm6AeF1+Xy7GupCDqrrsENAV4ewPAf33qkrRlEK5th5aN5zd9It8AQSmqwngRvJzL9SR
- ib74CXj1bN8x2LvlWQe02BiDPrKc01+nJLh0W12gACv+bN5gkjjeiEL/Q+3lp63G+K1E+iOF7
- av9VE5NufbhxgKy6SPNv3BpWUfI/WtCzEonf1pDVW3FKh6TUz1i7ScbSdFG4I/GpYJXxWJ7Sg
- FyzP7TGRq58svX373aOiwUDuABx+BMxOK/IfDs6kTV4rSV54A7WJIb080ILs2i+oFuLOeKqBy
- uiy53wDm9115OjPcEUEaWsZRzV73vARY0ReWa5D6ak9qLmBdGC2XLQCDwbzDHCRcPeIFw2Ixr
- eNQtER6f0sH8Go6BTUWQ==
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,84 +51,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch <linux-arch@vger.kernel.org>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Mark Rutland <mark.rutland@arm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Daniel Axtens <dja@axtens.net>
+Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Dec 16, 2019 at 11:28 AM Will Deacon <will@kernel.org> wrote:
-> On Fri, Dec 13, 2019 at 02:17:08PM +0100, Arnd Bergmann wrote:
-> > On Thu, Dec 12, 2019 at 9:50 PM Linus Torvalds
-> > <torvalds@linux-foundation.org> wrote:
-> > > On Thu, Dec 12, 2019 at 11:34 AM Will Deacon <will@kernel.org> wrote:
-> > > > The root of my concern in all of this, and what started me looking at it in
-> > > > the first place, is the interaction with 'typeof()'. Inheriting 'volatile'
-> > > > for a pointer means that local variables in macros declared using typeof()
-> > > > suddenly start generating *hideous* code, particularly when pointless stack
-> > > > spills get stackprotector all excited.
-> > >
-> > > Yeah, removing volatile can be a bit annoying.
-> > >
-> > > For the particular case of the bitops, though, it's not an issue.
-> > > Since you know the type there, you can just cast it.
-> > >
-> > > And if we had the rule that READ_ONCE() was an arithmetic type, you could do
-> > >
-> > >     typeof(0+(*p)) __var;
-> > >
-> > > since you might as well get the integer promotion anyway (on the
-> > > non-volatile result).
-> > >
-> > > But that doesn't work with structures or unions, of course.
-> > >
-> > > I'm not entirely sure we have READ_ONCE() with a struct. I do know we
-> > > have it with 64-bit entities on 32-bit machines, but that's ok with
-> > > the "0+" trick.
-> >
-> > I'll have my randconfig builder look for instances, so far I found one,
-> > see below. My feeling is that it would be better to enforce at least
-> > the size being a 1/2/4/8, to avoid cases where someone thinks
-> > the access is atomic, but it falls back on a memcpy.
->
-> I've been using something similar built on compiletime_assert_atomic_type()
-> and I spotted another instance in the xdp code (xskq_validate_desc()) which
-> tries to READ_ONCE() on a 128-bit descriptor, although a /very/ quick read
-> of the code suggests that this probably can't be concurrently modified if
-> the ring indexes are synchronised properly.
+Move from the deprecated i2c_new_probed_device() to the new
+i2c_new_scanned_device(). Make use of the new ERRPTR if suitable.
 
-That's the only other one I found. I have not checked how many are structs
-that are the size of a normal u8/u16/u32/u64, or if there are types that
-have a lower alignment than there size, such as a __u16[2] that might
-span a page boundary.
+Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+---
+Build tested only.
 
-> However, enabling this for 32-bit ARM is total carnage; as Linus mentioned,
-> a whole bunch of code appears to be relying on atomic 64-bit access of
-> READ_ONCE(); the perf ring buffer, io_uring, the scheduler, pm_runtime,
-> cpuidle, ... :(
->
-> Unfortunately, at least some of these *do* look like bugs, but I can't see
-> how we can fix them, not least because the first two are user ABI afaict. It
-> may also be that in practice we get 2x32-bit stores, and that works out fine
-> when storing a 32-bit virtual address. I'm not sure what (if anything) the
-> compiler guarantees in these cases.
+ drivers/macintosh/therm_windtunnel.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Would it help if 32-bit architectures use atomic64_read() and atomic64_set()
-to implement a 64-bit READ_ONCE()/WRITE_ONCE(), or would that make it
-worse in other ways?
+diff --git a/drivers/macintosh/therm_windtunnel.c b/drivers/macintosh/therm_windtunnel.c
+index 8c744578122a..f15fec5e1cb6 100644
+--- a/drivers/macintosh/therm_windtunnel.c
++++ b/drivers/macintosh/therm_windtunnel.c
+@@ -321,10 +321,10 @@ do_attach( struct i2c_adapter *adapter )
+ 
+ 		memset(&info, 0, sizeof(struct i2c_board_info));
+ 		strlcpy(info.type, "therm_ds1775", I2C_NAME_SIZE);
+-		i2c_new_probed_device(adapter, &info, scan_ds1775, NULL);
++		i2c_new_scanned_device(adapter, &info, scan_ds1775, NULL);
+ 
+ 		strlcpy(info.type, "therm_adm1030", I2C_NAME_SIZE);
+-		i2c_new_probed_device(adapter, &info, scan_adm1030, NULL);
++		i2c_new_scanned_device(adapter, &info, scan_adm1030, NULL);
+ 
+ 		if( x.thermostat && x.fan ) {
+ 			x.running = 1;
+-- 
+2.20.1
 
-On mips32, riscv32 and some minor 32-bit architectures with SMP support
-(xtensa,  csky, hexagon, openrisc, parisc32, sparc32 and ppc32 AFAICT) this
-ends up using a spinlock for GENERIC_ATOMIC64, but at least ARMv6+,
-i586+ and most ARC should be fine.
-
-(Side note: the ARMv7 implementation is suboptimimal for ARMv7VE+
-if LPAE is disabled, I think we need to really add Kconfig options for
-ARMv7VE and 32-bit ARMv8 improve this and things like integer divide).
-
-      Arnd
