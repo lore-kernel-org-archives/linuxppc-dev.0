@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89EA3C43603
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2019 07:31:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9855BC43603
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2019 07:42:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3C7002067C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2019 07:31:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3C7002067C
+	by mail.kernel.org (Postfix) with ESMTPS id F14E32067C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2019 07:42:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F14E32067C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.cz
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47cVFk1Ty0zDqdl
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2019 18:31:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47cVTV3hS9zDqdn
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2019 18:42:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz
  (client-ip=195.135.220.15; helo=mx2.suse.de; envelope-from=jack@suse.cz;
@@ -28,27 +28,24 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47cVCV3hqszDqbC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2019 18:29:57 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47cVR11rrJzDqc1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2019 18:39:56 +1100 (AEDT)
 X-Virus-Scanned: by amavisd-new at test-mx.suse.de
 Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx2.suse.de (Postfix) with ESMTP id 8FDE2AD8E;
- Tue, 17 Dec 2019 07:29:51 +0000 (UTC)
+ by mx2.suse.de (Postfix) with ESMTP id CC5EBADB3;
+ Tue, 17 Dec 2019 07:39:52 +0000 (UTC)
 Received: by quack2.suse.cz (Postfix, from userid 1000)
- id C60311E0B35; Tue, 17 Dec 2019 08:29:46 +0100 (CET)
-Date: Tue, 17 Dec 2019 08:29:46 +0100
+ id 937DF1E0B35; Tue, 17 Dec 2019 08:39:51 +0100 (CET)
+Date: Tue, 17 Dec 2019 08:39:51 +0100
 From: Jan Kara <jack@suse.cz>
 To: John Hubbard <jhubbard@nvidia.com>
-Subject: Re: [PATCH v11 23/25] mm/gup: track FOLL_PIN pages
-Message-ID: <20191217072946.GB16051@quack2.suse.cz>
-References: <20191212101741.GD10065@quack2.suse.cz>
- <20191214032617.1670759-1-jhubbard@nvidia.com>
- <20191216125353.GF22157@quack2.suse.cz>
- <86297621-0200-01db-923b-9f8d3ee87354@nvidia.com>
+Subject: Re: [PATCH v11 00/25] mm/gup: track dma-pinned pages: FOLL_PIN
+Message-ID: <20191217073951.GC16051@quack2.suse.cz>
+References: <20191216222537.491123-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <86297621-0200-01db-923b-9f8d3ee87354@nvidia.com>
+In-Reply-To: <20191216222537.491123-1-jhubbard@nvidia.com>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -81,27 +78,26 @@ Cc: Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>,
  Daniel Vetter <daniel@ffwll.ch>, linux-fsdevel@vger.kernel.org,
  Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
  "David S . Miller" <davem@davemloft.net>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
  Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon 16-12-19 14:18:59, John Hubbard wrote:
-> On 12/16/19 4:53 AM, Jan Kara wrote:
-> > With this fixed, the patch looks good to me so you can then add:
-> > 
-> > Reviewed-by: Jan Kara <jack@suse.cz>
-> > 
-> > 								Honza
-> > 
-> 
-> btw, thanks for the thorough review of this critical patch (and for your
-> patience with my mistakes). I really appreciate it, and this patchset would
-> not have made it this far without your detailed help and explanations.
+Hi!
 
-You're welcome! I'd also like to thank you for persistently driving this
-series :)
+On Mon 16-12-19 14:25:12, John Hubbard wrote:
+> Hi,
+> 
+> This implements an API naming change (put_user_page*() -->
+> unpin_user_page*()), and also implements tracking of FOLL_PIN pages. It
+> extends that tracking to a few select subsystems. More subsystems will
+> be added in follow up work.
+
+Just a note for Andrew and others watching this series: At this point I'm fine
+with the series so if someone still has some review feedback or wants to
+check the series, now is the right time. Otherwise I think Andrew can push
+the series to MM tree so that it will get wider testing exposure and is
+prepared for the next merge window.
 
 								Honza
 -- 
