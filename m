@@ -2,57 +2,78 @@ Return-Path: <SRS0=7pZz=2H=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 98E9EC43603
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2019 08:09:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 27D3EC2D0C5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2019 09:01:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4EB6E20665
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2019 08:09:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4EB6E20665
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9BEFE2072D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2019 09:01:14 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="dmixie/n"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9BEFE2072D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47cW580MknzDqX1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2019 19:09:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.43; helo=mga05.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47cXDk5vXyzDqZk
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2019 20:01:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
+ envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="dmixie/n"; dkim-atps=neutral
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:8b0:10b:1231::1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47cW0X3z9yzDqd0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2019 19:05:31 +1100 (AEDT)
-X-Amp-Result: UNKNOWN
-X-Amp-Original-Verdict: FILE UNKNOWN
-X-Amp-File-Uploaded: False
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
- by fmsmga105.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 17 Dec 2019 00:05:27 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.69,324,1571727600"; d="scan'208";a="247347300"
-Received: from lkp-server01.sh.intel.com (HELO lkp-server01) ([10.239.97.150])
- by fmsmga002.fm.intel.com with ESMTP; 17 Dec 2019 00:05:21 -0800
-Received: from kbuild by lkp-server01 with local (Exim 4.89)
- (envelope-from <lkp@intel.com>)
- id 1ih7qn-0006kj-6U; Tue, 17 Dec 2019 16:05:01 +0800
-Date: Tue, 17 Dec 2019 16:03:56 +0800
-From: kbuild test robot <lkp@intel.com>
-To: John Hubbard <jhubbard@nvidia.com>
-Subject: Re: [PATCH v9 23/25] mm/gup: track FOLL_PIN pages
-Message-ID: <201912171520.rTYbJvYF%lkp@intel.com>
-References: <20191211025318.457113-24-jhubbard@nvidia.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47cXBL2dLVzDqZL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2019 19:59:06 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=umUpQwNCFcx4pJ445vi4RUlvQ3RCBfh2CumoCKRy+mk=; b=dmixie/nerThIK4dsyBBVW4EI
+ eYS7fSANuZVJl7nMZkU+KmMDZgIrp7uFvjbNKnCto4kwOuUvebXu7miWQjkatuoUKChmlGdg7LNB+
+ 5I8HS7wI1IVkTYfF26Q96j89zUo+N4dddai0r7GnJtXnnH1gBHPdt0sMxmFsNZ8AaBuA2aeVUI0LA
+ KzRV5OW6rp0WgrpGx0PQbZqH+VtItNULFEfyhl8Ku9WQF5UKRC4pqJCBpgrOJCHjusjwr5JXNCI8J
+ KWSYIhRRu8LAF7Pqo6BE0WwAuk6Bl/omWYsAOQFfvGYB1Fssr992VAjtBT4h5bfpsEarqEVPtiYkM
+ W0v6zSaTw==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100]
+ helo=noisy.programming.kicks-ass.net)
+ by merlin.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+ id 1ih8gz-0001jU-7R; Tue, 17 Dec 2019 08:58:57 +0000
+Received: from hirez.programming.kicks-ass.net
+ (hirez.programming.kicks-ass.net [192.168.1.225])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id CE79E3007F2;
+ Tue, 17 Dec 2019 09:57:32 +0100 (CET)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+ id F36782B3D7E90; Tue, 17 Dec 2019 09:58:54 +0100 (CET)
+Date: Tue, 17 Dec 2019 09:58:54 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Subject: Re: [RFC PATCH 2/2] mm/mmu_gather: Avoid multiple page walk cache
+ flush
+Message-ID: <20191217085854.GW2844@hirez.programming.kicks-ass.net>
+References: <20191217071713.93399-1-aneesh.kumar@linux.ibm.com>
+ <20191217071713.93399-2-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20191211025318.457113-24-jhubbard@nvidia.com>
-User-Agent: NeoMutt/20170113 (1.7.2)
+In-Reply-To: <20191217071713.93399-2-aneesh.kumar@linux.ibm.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,61 +85,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>,
- kvm@vger.kernel.org, linux-doc@vger.kernel.org,
- David Airlie <airlied@linux.ie>, Dave Chinner <david@fromorbit.com>,
- dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- linux-kselftest@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>,
- Jonathan Corbet <corbet@lwn.net>, linux-rdma@vger.kernel.org,
- Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>,
- Vlastimil Babka <vbabka@suse.cz>,
- =?iso-8859-1?Q?Bj=F6rn_T=F6pel?= <bjorn.topel@intel.com>,
- linux-media@vger.kernel.org, Shuah Khan <shuah@kernel.org>,
- John Hubbard <jhubbard@nvidia.com>, linux-block@vger.kernel.org,
- =?iso-8859-1?B?Suly9G1l?= Glisse <jglisse@redhat.com>,
- Al Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>,
- Mauro Carvalho Chehab <mchehab@kernel.org>, bpf@vger.kernel.org,
- Magnus Karlsson <magnus.karlsson@intel.com>, Jens Axboe <axboe@kernel.dk>,
- kbuild-all@lists.01.org, netdev@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>, Daniel Vetter <daniel@ffwll.ch>,
- linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
- Mike Kravetz <mike.kravetz@oracle.com>
+Cc: linux-kernel@vger.kernel.org, npiggin@gmail.com, linux-mm@kvack.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi John,
+On Tue, Dec 17, 2019 at 12:47:13PM +0530, Aneesh Kumar K.V wrote:
+> On tlb_finish_mmu() kernel does a tlb flush before  mmu gather table invalidate.
+> The mmu gather table invalidate depending on kernel config also does another
+> TLBI. Avoid the later on tlb_finish_mmu().
 
-Thank you for the patch! Perhaps something to improve:
+That is already avoided, if you look at tlb_flush_mmu_tlbonly() it does
+__tlb_range_reset(), which results in ->end = 0, which then triggers the
+early exit on the next invocation:
 
-[auto build test WARNING on rdma/for-next]
-[also build test WARNING on linus/master v5.5-rc2 next-20191216]
-[cannot apply to mmotm/master vfio/next]
-[if your patch is applied to the wrong git tree, please drop us a note to help
-improve the system. BTW, we also suggest to use '--base' option to specify the
-base tree in git format-patch, please see https://stackoverflow.com/a/37406982]
-
-url:    https://github.com/0day-ci/linux/commits/John-Hubbard/mm-gup-track-dma-pinned-pages-FOLL_PIN/20191212-013238
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/rdma/rdma.git for-next
-reproduce:
-        # apt-get install sparse
-        # sparse version: v0.6.1-104-gf934193-dirty
-        make ARCH=x86_64 allmodconfig
-        make C=1 CF='-fdiagnostic-prefix -D__CHECK_ENDIAN__'
-
-If you fix the issue, kindly add following tag
-Reported-by: kbuild test robot <lkp@intel.com>
-
-
-sparse warnings: (new ones prefixed by >>)
-
->> mm/gup.c:78:26: sparse: sparse: symbol 'try_pin_compound_head' was not declared. Should it be static?
-
-Please review and possibly fold the followup patch.
-
----
-0-DAY kernel test infrastructure                 Open Source Technology Center
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org Intel Corporation
+	if (!tlb->end)
+		return;
