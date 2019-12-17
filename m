@@ -2,78 +2,58 @@ Return-Path: <SRS0=7pZz=2H=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 322A8C43603
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2019 07:49:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D00DFC43603
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2019 08:07:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D6384206D3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2019 07:49:51 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=ti.com header.i=@ti.com header.b="aXtLu1vI"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D6384206D3
-Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=ti.com
+	by mail.kernel.org (Postfix) with ESMTPS id 544D121835
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2019 08:07:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 544D121835
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47cVfP70pLzDqdD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2019 18:49:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47cW2f6ljhzDqc1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2019 19:07:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=intel.com (client-ip=134.134.136.24; helo=mga09.intel.com;
+ envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=ti.com
- (client-ip=198.47.23.249; helo=lelv0142.ext.ti.com;
- envelope-from=peter.ujfalusi@ti.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=quarantine dis=none) header.from=ti.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=ti.com header.i=@ti.com header.b="aXtLu1vI"; 
- dkim-atps=neutral
-X-Greylist: delayed 615 seconds by postgrey-1.36 at bilbo;
- Tue, 17 Dec 2019 18:47:57 AEDT
-Received: from lelv0142.ext.ti.com (lelv0142.ext.ti.com [198.47.23.249])
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47cVcF28FkzDqHb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2019 18:47:55 +1100 (AEDT)
-Received: from lelv0265.itg.ti.com ([10.180.67.224])
- by lelv0142.ext.ti.com (8.15.2/8.15.2) with ESMTP id xBH7bHKH006897;
- Tue, 17 Dec 2019 01:37:17 -0600
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
- s=ti-com-17Q1; t=1576568237;
- bh=uq4M6dCHylxyKFwJawgtPdUJOCVELJz3UBxlL6ZzTc4=;
- h=From:To:CC:Subject:Date;
- b=aXtLu1vIsWEzIZHmnvQmu8h9BoCJ7bOLYEp7+YCA8ruweISoRJN9RUSppN+8xgdAR
- rbiNl66Cym8qNXjnce+7+fMXBVS2AK5xtMAWCRB61/gtrLSouZi7CIGfHI7NZZFLo+
- tqpUTjJTh+W5LybMSsFKRQClTes/VlL+AB3og8ag=
-Received: from DLEE105.ent.ti.com (dlee105.ent.ti.com [157.170.170.35])
- by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id xBH7bHn7111365
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
- Tue, 17 Dec 2019 01:37:17 -0600
-Received: from DLEE102.ent.ti.com (157.170.170.32) by DLEE105.ent.ti.com
- (157.170.170.35) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1847.3; Tue, 17
- Dec 2019 01:37:17 -0600
-Received: from lelv0326.itg.ti.com (10.180.67.84) by DLEE102.ent.ti.com
- (157.170.170.32) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1847.3 via
- Frontend Transport; Tue, 17 Dec 2019 01:37:17 -0600
-Received: from feketebors.ti.com (ileax41-snat.itg.ti.com [10.172.224.153])
- by lelv0326.itg.ti.com (8.15.2/8.15.2) with ESMTP id xBH7bFQB068169;
- Tue, 17 Dec 2019 01:37:15 -0600
-From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-To: <agust@denx.de>
-Subject: [PATCH] powerpc/512x: Use dma_request_chan() instead
- dma_request_slave_channel()
-Date: Tue, 17 Dec 2019 09:37:30 +0200
-Message-ID: <20191217073730.21249-1-peter.ujfalusi@ti.com>
-X-Mailer: git-send-email 2.24.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47cW0D6lSmzDqX1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2019 19:05:07 +1100 (AEDT)
+X-Amp-Result: UNKNOWN
+X-Amp-Original-Verdict: FILE UNKNOWN
+X-Amp-File-Uploaded: False
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+ by orsmga102.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 17 Dec 2019 00:05:04 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.69,324,1571727600"; d="scan'208";a="217691035"
+Received: from lkp-server01.sh.intel.com (HELO lkp-server01) ([10.239.97.150])
+ by orsmga003.jf.intel.com with ESMTP; 17 Dec 2019 00:04:57 -0800
+Received: from kbuild by lkp-server01 with local (Exim 4.89)
+ (envelope-from <lkp@intel.com>)
+ id 1ih7qi-0006Px-ST; Tue, 17 Dec 2019 16:04:56 +0800
+Date: Tue, 17 Dec 2019 16:03:58 +0800
+From: kbuild test robot <lkp@intel.com>
+To: John Hubbard <jhubbard@nvidia.com>
+Subject: [RFC PATCH] mm/gup: try_pin_compound_head() can be static
+Message-ID: <20191217080358.q3k57ta62txvip5h@4978f4969bb8>
+References: <20191211025318.457113-24-jhubbard@nvidia.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20191211025318.457113-24-jhubbard@nvidia.com>
+X-Patchwork-Hint: ignore
+User-Agent: NeoMutt/20170113 (1.7.2)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,43 +65,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: vkoul@kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>,
+ kvm@vger.kernel.org, linux-doc@vger.kernel.org,
+ David Airlie <airlied@linux.ie>, Dave Chinner <david@fromorbit.com>,
+ dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ linux-kselftest@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>,
+ Jonathan Corbet <corbet@lwn.net>, linux-rdma@vger.kernel.org,
+ Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>,
+ Vlastimil Babka <vbabka@suse.cz>,
+ =?iso-8859-1?Q?Bj=F6rn_T=F6pel?= <bjorn.topel@intel.com>,
+ linux-media@vger.kernel.org, Shuah Khan <shuah@kernel.org>,
+ John Hubbard <jhubbard@nvidia.com>, linux-block@vger.kernel.org,
+ =?iso-8859-1?B?Suly9G1l?= Glisse <jglisse@redhat.com>,
+ Al Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>, bpf@vger.kernel.org,
+ Magnus Karlsson <magnus.karlsson@intel.com>, Jens Axboe <axboe@kernel.dk>,
+ kbuild-all@lists.01.org, netdev@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>, Daniel Vetter <daniel@ffwll.ch>,
+ linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>,
+ "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
+ Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-dma_request_slave_channel() is a wrapper on top of dma_request_chan()
-eating up the error code.
 
-By using dma_request_chan() directly the driver can support deferred
-probing against DMA.
-
-Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Fixes: 8086d1c61970 ("mm/gup: track FOLL_PIN pages")
+Signed-off-by: kbuild test robot <lkp@intel.com>
 ---
- arch/powerpc/platforms/512x/mpc512x_lpbfifo.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ gup.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/512x/mpc512x_lpbfifo.c b/arch/powerpc/platforms/512x/mpc512x_lpbfifo.c
-index 13631f35cd14..04bf6ecf7d55 100644
---- a/arch/powerpc/platforms/512x/mpc512x_lpbfifo.c
-+++ b/arch/powerpc/platforms/512x/mpc512x_lpbfifo.c
-@@ -434,9 +434,9 @@ static int mpc512x_lpbfifo_probe(struct platform_device *pdev)
- 	memset(&lpbfifo, 0, sizeof(struct lpbfifo_data));
- 	spin_lock_init(&lpbfifo.lock);
- 
--	lpbfifo.chan = dma_request_slave_channel(&pdev->dev, "rx-tx");
--	if (lpbfifo.chan == NULL)
--		return -EPROBE_DEFER;
-+	lpbfifo.chan = dma_request_chan(&pdev->dev, "rx-tx");
-+	if (IS_ERR(lpbfifo.chan))
-+		return PTR_ERR(lpbfifo.chan);
- 
- 	if (of_address_to_resource(pdev->dev.of_node, 0, &r) != 0) {
- 		dev_err(&pdev->dev, "bad 'reg' in 'sclpc' device tree node\n");
--- 
-Peter
-
-Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
-Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki
-
+diff --git a/mm/gup.c b/mm/gup.c
+index 038b71165a761..849a6f55938e6 100644
+--- a/mm/gup.c
++++ b/mm/gup.c
+@@ -75,7 +75,7 @@ static inline struct page *try_get_compound_head(struct page *page, int refs)
+  * @Return:	the compound head page, with ref appropriately incremented,
+  * or NULL upon failure.
+  */
+-__must_check struct page *try_pin_compound_head(struct page *page, int refs)
++static __must_check struct page *try_pin_compound_head(struct page *page, int refs)
+ {
+ 	struct page *head = try_get_compound_head(page,
+ 						  GUP_PIN_COUNTING_BIAS * refs);
