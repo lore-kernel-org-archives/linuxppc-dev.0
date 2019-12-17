@@ -2,77 +2,56 @@ Return-Path: <SRS0=7pZz=2H=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 68795C43603
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2019 18:21:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3FE40C43603
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2019 18:33:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 10D13206D7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2019 18:21:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9E0D52072D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2019 18:33:53 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="RfiBPyWe"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 10D13206D7
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="qlucZe0w"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9E0D52072D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47cmgF2r9KzDqGm
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 05:21:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47cmxW3k81zDqZ2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 05:33:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linuxfoundation.org (client-ip=2a00:1450:4864:20::141;
- helo=mail-lf1-x141.google.com; envelope-from=torvalds@linuxfoundation.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-foundation.org
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=will@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
- header.b="RfiBPyWe"; dkim-atps=neutral
-Received: from mail-lf1-x141.google.com (mail-lf1-x141.google.com
- [IPv6:2a00:1450:4864:20::141])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="qlucZe0w"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47cmKh4vLfzDqNF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 05:06:16 +1100 (AEDT)
-Received: by mail-lf1-x141.google.com with SMTP id v201so7596580lfa.11
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2019 10:06:16 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linux-foundation.org; s=google;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=2FmdBG00eyF0mCLPHUhnZPiYsr9gMuTHxWDo5KEuXIA=;
- b=RfiBPyWeZAzQgIBtq60kIzhloZUPXwDzUfA7/StNCE0CG0dtDUhp2Ewy/xVxfm6KGP
- Df5Tk+VbkeJUcH9BCjIfG5UOSKgGvWdi5Az1/Qo1yD1OhxmYNXkDchH0t3cs5GTsnGGc
- mY0wPUPFyCbvMDhlKo0Sh/qqCC9ol32klGEME=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=2FmdBG00eyF0mCLPHUhnZPiYsr9gMuTHxWDo5KEuXIA=;
- b=nDbF9+7c3xX+FajzZPOEIGp7wSma5qe0x4NYmGiK4g+Epw2yMAWdVfgLSgJygWQn6Z
- TrlYGs5smFE/zX6h/YlHEvtozyaMOgsiggEJ4QtecahEz+1lipvypYdVdqW/RQwkna9S
- 5sXvggo4XS41DpDLmqJoWmVNEopXweRtEY2KaBizOCrb+hnwh7lTCnzl/DbL7PqNQeCb
- EweHgaEY0kMOLXiitpeYzWoX0KBKSbkYDGqth5PJAMZ/pWvLn3+XQMO8nJtoAmJa68Rw
- uIRvwDuKcp5JMy8yc3MFuuvIl0HIn7TPr9J3kmaR+RG8y0KY9zFXTYh/pautuI4rMQaR
- onNg==
-X-Gm-Message-State: APjAAAXpNw3Dgul58+qWtgZUR67eTNhQBj2u31+JHypdCfAlcQpwWmss
- ORuY5m8LW7aIY4tixQ8qBjmYw6sb9j0=
-X-Google-Smtp-Source: APXvYqxSdjYdeFrQ6lyyrJpnXW31yc8JMZr3ipCV9/84RRn6KBS0Lc3pGWNkGyA+sELFfAb2nTAyYw==
-X-Received: by 2002:a19:be93:: with SMTP id o141mr3745212lff.181.1576605971807; 
- Tue, 17 Dec 2019 10:06:11 -0800 (PST)
-Received: from mail-lj1-f169.google.com (mail-lj1-f169.google.com.
- [209.85.208.169])
- by smtp.gmail.com with ESMTPSA id f16sm1087446ljn.17.2019.12.17.10.06.10
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Tue, 17 Dec 2019 10:06:11 -0800 (PST)
-Received: by mail-lj1-f169.google.com with SMTP id u1so1129032ljk.7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2019 10:06:10 -0800 (PST)
-X-Received: by 2002:a2e:9ad8:: with SMTP id p24mr4238381ljj.148.1576605970602; 
- Tue, 17 Dec 2019 10:06:10 -0800 (PST)
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47cmv33wThzDqRr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 05:31:43 +1100 (AEDT)
+Received: from willie-the-truck (236.31.169.217.in-addr.arpa [217.169.31.236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 0905F2072D;
+ Tue, 17 Dec 2019 18:31:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1576607501;
+ bh=QQuu8iUQ+/oSXmkk5ps5rHx88lLLo8CtbBy55ldroWQ=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=qlucZe0w0YjDK//g9ld4Rw7+gYrjYw3SZiQQpOWLkAbx1LQcJarwHA+QvhSXv4N75
+ TCI3VahKrrPOp9xiqSB77sZ/DeOQjTFyl3AF3ljc2Y5djHXQhRaPvlMuAQHPVWRZp1
+ O8sKuIA7PoyPalcNR5l8uY59jF0zbCJ5LMnzt+CA=
+Date: Tue, 17 Dec 2019 18:31:35 +0000
+From: Will Deacon <will@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: READ_ONCE() + STACKPROTECTOR_STRONG == :/ (was Re: [GIT PULL]
+ Please pull powerpc/linux.git powerpc-5.5-2 tag (topic/kasan-bitops))
+Message-ID: <20191217183135.GA3944@willie-the-truck>
 References: <20191212100756.GA11317@willie-the-truck>
  <20191212104610.GW2827@hirez.programming.kicks-ass.net>
  <CAHk-=wjUBsH0BYDBv=q36482G-U7c=9bC89L_BViSciTfb8fhA@mail.gmail.com>
@@ -82,15 +61,12 @@ References: <20191212100756.GA11317@willie-the-truck>
  <CAHk-=wiMuHmWzQ7-CRQB6o+SHtA-u-Rp6VZwPcqDbjAaug80rQ@mail.gmail.com>
  <20191217170719.GA869@willie-the-truck>
  <CAHk-=whBnZBVNwu8aVVp205EKk7xtsnQgSjs38a5=y9HyheXzQ@mail.gmail.com>
-In-Reply-To: <CAHk-=whBnZBVNwu8aVVp205EKk7xtsnQgSjs38a5=y9HyheXzQ@mail.gmail.com>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 17 Dec 2019 10:05:53 -0800
-X-Gmail-Original-Message-ID: <CAHk-=wgsbrq6sFOSd9QrjR-fCamgzqCtFuO2_8qvJANA1+Jm6g@mail.gmail.com>
-Message-ID: <CAHk-=wgsbrq6sFOSd9QrjR-fCamgzqCtFuO2_8qvJANA1+Jm6g@mail.gmail.com>
-Subject: Re: READ_ONCE() + STACKPROTECTOR_STRONG == :/ (was Re: [GIT PULL]
- Please pull powerpc/linux.git powerpc-5.5-2 tag (topic/kasan-bitops))
-To: Will Deacon <will@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+ <CAHk-=wgsbrq6sFOSd9QrjR-fCamgzqCtFuO2_8qvJANA1+Jm6g@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAHk-=wgsbrq6sFOSd9QrjR-fCamgzqCtFuO2_8qvJANA1+Jm6g@mail.gmail.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,15 +88,27 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Dec 17, 2019 at 10:04 AM Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
-> Let me think about it.
+On Tue, Dec 17, 2019 at 10:05:53AM -0800, Linus Torvalds wrote:
+> On Tue, Dec 17, 2019 at 10:04 AM Linus Torvalds
+> <torvalds@linux-foundation.org> wrote:
+> >
+> > Let me think about it.
+> 
+> .. and in the short term, maybe for code generation, the right thing
+> is to just do the cast in the bitops, where we can just cast to
+> "unsigned long *" and remove the volatile that way.
 
-.. and in the short term, maybe for code generation, the right thing
-is to just do the cast in the bitops, where we can just cast to
-"unsigned long *" and remove the volatile that way.
+Yeah, I think I'll spin that patch series tomorrow anyway, since I don't
+think we need to hold it up.
 
-I'm still hoping there's a trick, but..
+> I'm still hoping there's a trick, but..
 
-           Linus
+Well, there's always Peter's awful hack [1] but it's really gross. FWIW,
+I've pushed the handful of patches I have to [2], which drop the GCC 4.8
+workaround and introduce a non-atomic version instead of the
+'__builtin_memcpy()'.
+
+Will
+
+[1] https://lore.kernel.org/lkml/20191213125618.GD2844@hirez.programming.kicks-ass.net
+[2] https://git.kernel.org/pub/scm/linux/kernel/git/will/linux.git/log/?h=rwonce/cleanup
