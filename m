@@ -2,72 +2,84 @@ Return-Path: <SRS0=gJAX=2I=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 67FA3C43603
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 22:20:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F0386C43603
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 22:22:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E297A218AC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 22:20:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E297A218AC
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 9BED72176D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 22:22:33 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="UZ8jBMwY"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9BED72176D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nvidia.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47dTwL0F5CzDqkW
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Dec 2019 09:20:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47dTyv5qxjzDqll
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Dec 2019 09:22:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.167.193;
- helo=mail-oi1-f193.google.com; envelope-from=robherring2@gmail.com;
+ smtp.mailfrom=nvidia.com (client-ip=216.228.121.64;
+ helo=hqnvemgate25.nvidia.com; envelope-from=jhubbard@nvidia.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-oi1-f193.google.com (mail-oi1-f193.google.com
- [209.85.167.193])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=pass (p=none dis=none) header.from=nvidia.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="UZ8jBMwY"; 
+ dkim-atps=neutral
+Received: from hqnvemgate25.nvidia.com (hqnvemgate25.nvidia.com
+ [216.228.121.64])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47dTsz1ZBLzDqht
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2019 09:18:12 +1100 (AEDT)
-Received: by mail-oi1-f193.google.com with SMTP id 18so1325443oin.9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 14:18:12 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=uYxswBgZAiTLI2tTYUd7v8zHT1mrovfVUjVCk1N6olY=;
- b=J/S7dvFNgP6q1YQQQoo14PvWVDDdSzOKEVfqppYrxeWBQp0lgNr3h+/e/0X5bCkf+7
- MWAu/oRgxIej3JAe4QM7mCkm/KkpxpA47nrZ1JfZU8uG3zrF1jt0BoqwAkPSatQYqG3m
- XykaZgMdd9G8i0tcbUmIp4mczeHwJUM7bE7UobmeKo6FWWnwDyWImW1CDYB0OTY2aFT7
- Jdd3Jd0MzgL/GqYCB63OtcUz0mDnpxhWcJwxH98Hn4ZGc+O2SWaMikdLaC5iE3atjJUU
- b0a3SllxzRwwAlzPft6t9suP8eYOVHaxpl4XWSo8ocaj1LrOMu1Il1IAoBtJprlf2Top
- cEZA==
-X-Gm-Message-State: APjAAAX50trYqI09PF23ZZmYllvOXISJBflvVbL4ufYyxhSbagl24wzA
- VdUDw8nRMRiGvAT/IxRA7A==
-X-Google-Smtp-Source: APXvYqx1/vDB+TcHIO9sTlIA5oKvGc9NKrFg+21wXmHM5ouHlzRBUgHOjtgzGeFA5nBhdY34QJj2rw==
-X-Received: by 2002:aca:1e0e:: with SMTP id m14mr1633487oic.114.1576707490155; 
- Wed, 18 Dec 2019 14:18:10 -0800 (PST)
-Received: from localhost (24-155-109-49.dyn.grandenetworks.net.
- [24.155.109.49])
- by smtp.gmail.com with ESMTPSA id r13sm1275547oic.52.2019.12.18.14.18.09
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 18 Dec 2019 14:18:09 -0800 (PST)
-Date: Wed, 18 Dec 2019 16:18:09 -0600
-From: Rob Herring <robh@kernel.org>
-To: Haren Myneni <haren@linux.ibm.com>
-Subject: Re: [PATCH V3 01/13] powerpc/vas: Describe vas-port and interrupts
- properties
-Message-ID: <20191218221808.GA20302@bogus>
-References: <1576561080.16318.6531.camel@hbabu-laptop>
- <1576561720.16318.6532.camel@hbabu-laptop>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47dTtN4BF8zDqkZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2019 09:18:36 +1100 (AEDT)
+Received: from hqpgpgate102.nvidia.com (Not Verified[216.228.121.13]) by
+ hqnvemgate25.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+ id <B5dfaa5ad0000>; Wed, 18 Dec 2019 14:18:21 -0800
+Received: from hqmail.nvidia.com ([172.20.161.6])
+ by hqpgpgate102.nvidia.com (PGP Universal service);
+ Wed, 18 Dec 2019 14:18:31 -0800
+X-PGP-Universal: processed;
+ by hqpgpgate102.nvidia.com on Wed, 18 Dec 2019 14:18:31 -0800
+Received: from [10.2.165.11] (10.124.1.5) by HQMAIL107.nvidia.com
+ (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Wed, 18 Dec
+ 2019 22:18:30 +0000
+Subject: Re: [PATCH v11 06/25] mm: fix get_user_pages_remote()'s handling of
+ FOLL_LONGTERM
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+References: <20191216222537.491123-1-jhubbard@nvidia.com>
+ <20191216222537.491123-7-jhubbard@nvidia.com>
+ <20191218161907.yczbijr3ngm7wwnj@box>
+From: John Hubbard <jhubbard@nvidia.com>
+X-Nvconfidentiality: public
+Message-ID: <c8d746ff-f544-6c9f-110b-215514fb4b5c@nvidia.com>
+Date: Wed, 18 Dec 2019 14:15:40 -0800
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1576561720.16318.6532.camel@hbabu-laptop>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20191218161907.yczbijr3ngm7wwnj@box>
+X-Originating-IP: [10.124.1.5]
+X-ClientProxiedBy: HQMAIL105.nvidia.com (172.20.187.12) To
+ HQMAIL107.nvidia.com (172.20.187.13)
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
+ t=1576707501; bh=sxjwJVdMWX10qxIPxn4THVxS9SYzoQiX2+nIJ9/LG7I=;
+ h=X-PGP-Universal:Subject:To:CC:References:From:X-Nvconfidentiality:
+ Message-ID:Date:User-Agent:MIME-Version:In-Reply-To:
+ X-Originating-IP:X-ClientProxiedBy:Content-Type:Content-Language:
+ Content-Transfer-Encoding;
+ b=UZ8jBMwY32NgWwiJjZwTAPW3ja6CuPOAfe4SpG+9/CDwknPqX5qccd7q+WCVa0kre
+ Av1FM/rgDWBJQowSF6blVYewBi40/EoGKov0KLTmsD25hxZXVoFAuUTjqD9AjunTuW
+ zOw8acZ6PbPZg9ggfzbvjmuiESVGaX+/zsYCSMAQZrWJGMuf5ikxNna4ygsE1Jk8cJ
+ dHbTfbTsY5cfH+d0VRIX71N/Dllb+k91MxmporXWGxV5JQ3DVwfnyQEVBsHmZwuyup
+ I9epWsR1kc8VLnGg3SRALlsRj1gICz0/x78ascTmPUjlda17XHeoBT+12qtVoXpcGN
+ AwPIbnNqxY2bw==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,53 +91,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, mikey@neuling.org, herbert@gondor.apana.org.au,
- npiggin@gmail.com, hch@infradead.org, sukadev@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>,
+ kvm@vger.kernel.org, linux-doc@vger.kernel.org,
+ David Airlie <airlied@linux.ie>, Dave Chinner <david@fromorbit.com>,
+ dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ linux-kselftest@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>,
+ Jonathan Corbet <corbet@lwn.net>, linux-rdma@vger.kernel.org,
+ Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>,
+ Jason Gunthorpe <jgg@mellanox.com>, Vlastimil Babka <vbabka@suse.cz>,
+ =?UTF-8?B?QmrDtnJuIFTDtnBlbA==?= <bjorn.topel@intel.com>,
+ linux-media@vger.kernel.org, Shuah Khan <shuah@kernel.org>,
+ linux-block@vger.kernel.org,
+ =?UTF-8?B?SsOpcsO0bWUgR2xpc3Nl?= <jglisse@redhat.com>,
+ Al Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>, bpf@vger.kernel.org,
+ Magnus Karlsson <magnus.karlsson@intel.com>, Jens Axboe <axboe@kernel.dk>,
+ netdev@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
+ Daniel Vetter <daniel@ffwll.ch>, linux-fsdevel@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S . Miller" <davem@davemloft.net>,
+ Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Dec 16, 2019 at 09:48:40PM -0800, Haren Myneni wrote:
+On 12/18/19 8:19 AM, Kirill A. Shutemov wrote:
+...
+>> diff --git a/mm/gup.c b/mm/gup.c
+>> index 3ecce297a47f..c0c56888e7cc 100644
+>> --- a/mm/gup.c
+>> +++ b/mm/gup.c
+>> @@ -29,6 +29,13 @@ struct follow_page_context {
+>>   	unsigned int page_mask;
+>>   };
+>>   
+>> +static __always_inline long __gup_longterm_locked(struct task_struct *tsk,
+>> +						  struct mm_struct *mm,
+>> +						  unsigned long start,
+>> +						  unsigned long nr_pages,
+>> +						  struct page **pages,
+>> +						  struct vm_area_struct **vmas,
+>> +						  unsigned int flags);
+> 
+> Any particular reason for the forward declaration? Maybe move
+> get_user_pages_remote() down?
 > 
 
-Commit message?
+Yes, that's exactly why: I was thinking it would be cleaner to put in the
+forward declaration, rather than moving code blocks, but either way seems
+reasonable. I'll go ahead and move the code blocks and delete the forward
+declaration, now that someone has weighed in in favor of that.
 
-> Signed-off-by: Haren Myneni <haren@us.ibm.com>
-
-Your author and S-o-b emails don't match.
-
-> ---
->  Documentation/devicetree/bindings/powerpc/ibm,vas.txt | 5 +++++
->  1 file changed, 5 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/powerpc/ibm,vas.txt b/Documentation/devicetree/bindings/powerpc/ibm,vas.txt
-> index bf11d2f..12de08b 100644
-> --- a/Documentation/devicetree/bindings/powerpc/ibm,vas.txt
-> +++ b/Documentation/devicetree/bindings/powerpc/ibm,vas.txt
-> @@ -11,6 +11,8 @@ Required properties:
->    window context start and length, OS/User window context start and length,
->    "Paste address" start and length, "Paste window id" start bit and number
->    of bits)
-> +- ibm,vas-port : Port address for the interrupt.
-
-64-bit?
-
-> +- interrupts: IRQ value for each VAS instance and level.
->  
->  Example:
->  
-> @@ -18,5 +20,8 @@ Example:
->  		compatible = "ibm,vas", "ibm,power9-vas";
->  		reg = <0x6019100000000 0x2000000 0x6019000000000 0x100000000 0x8000000000000 0x100000000 0x20 0x10>;
->  		name = "vas";
-> +		interrupts = <0x1f 0>;
-> +		interrupt-parent = <&mpic>;
->  		ibm,vas-id = <0x1>;
-> +		ibm,vas-port = <0x6010001000000>;
->  	};
-> -- 
-> 1.8.3.1
-> 
-> 
-> 
+thanks,
+-- 
+John Hubbard
+NVIDIA
