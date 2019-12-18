@@ -2,53 +2,71 @@ Return-Path: <SRS0=gJAX=2I=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 00B26C43603
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 21:48:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 67FA3C43603
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 22:20:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7028A2176D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 21:48:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7028A2176D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
+	by mail.kernel.org (Postfix) with ESMTPS id E297A218AC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 22:20:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E297A218AC
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47dTCy0xgCzDqgn
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Dec 2019 08:48:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
- (client-ip=195.135.220.15; helo=mx2.suse.de; envelope-from=msuchanek@suse.de;
+	by lists.ozlabs.org (Postfix) with ESMTP id 47dTwL0F5CzDqkW
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Dec 2019 09:20:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=209.85.167.193;
+ helo=mail-oi1-f193.google.com; envelope-from=robherring2@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=suse.de
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from mail-oi1-f193.google.com (mail-oi1-f193.google.com
+ [209.85.167.193])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47dT8N0nZ7zDqBl
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2019 08:45:36 +1100 (AEDT)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx2.suse.de (Postfix) with ESMTP id 96540AD5D;
- Wed, 18 Dec 2019 21:45:32 +0000 (UTC)
-Date: Wed, 18 Dec 2019 22:45:31 +0100
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: Dave Hansen <dave.hansen@intel.com>
-Subject: Re: [PATCH v15 06/23] selftests/vm/pkeys: Typecast the pkey register
-Message-ID: <20191218214531.GI4113@kitsune.suse.cz>
-References: <cover.1576645161.git.sandipan@linux.ibm.com>
- <719ec65756a64cc03e8464a9c6da51c4519d2389.1576645161.git.sandipan@linux.ibm.com>
- <5b6c3f8a-9d2f-2534-c072-89f130ce110f@intel.com>
- <20191218205905.GG4113@kitsune.suse.cz>
- <15c3b6cc-d8da-9a32-da6a-4c3990f48994@intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47dTsz1ZBLzDqht
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2019 09:18:12 +1100 (AEDT)
+Received: by mail-oi1-f193.google.com with SMTP id 18so1325443oin.9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 14:18:12 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=uYxswBgZAiTLI2tTYUd7v8zHT1mrovfVUjVCk1N6olY=;
+ b=J/S7dvFNgP6q1YQQQoo14PvWVDDdSzOKEVfqppYrxeWBQp0lgNr3h+/e/0X5bCkf+7
+ MWAu/oRgxIej3JAe4QM7mCkm/KkpxpA47nrZ1JfZU8uG3zrF1jt0BoqwAkPSatQYqG3m
+ XykaZgMdd9G8i0tcbUmIp4mczeHwJUM7bE7UobmeKo6FWWnwDyWImW1CDYB0OTY2aFT7
+ Jdd3Jd0MzgL/GqYCB63OtcUz0mDnpxhWcJwxH98Hn4ZGc+O2SWaMikdLaC5iE3atjJUU
+ b0a3SllxzRwwAlzPft6t9suP8eYOVHaxpl4XWSo8ocaj1LrOMu1Il1IAoBtJprlf2Top
+ cEZA==
+X-Gm-Message-State: APjAAAX50trYqI09PF23ZZmYllvOXISJBflvVbL4ufYyxhSbagl24wzA
+ VdUDw8nRMRiGvAT/IxRA7A==
+X-Google-Smtp-Source: APXvYqx1/vDB+TcHIO9sTlIA5oKvGc9NKrFg+21wXmHM5ouHlzRBUgHOjtgzGeFA5nBhdY34QJj2rw==
+X-Received: by 2002:aca:1e0e:: with SMTP id m14mr1633487oic.114.1576707490155; 
+ Wed, 18 Dec 2019 14:18:10 -0800 (PST)
+Received: from localhost (24-155-109-49.dyn.grandenetworks.net.
+ [24.155.109.49])
+ by smtp.gmail.com with ESMTPSA id r13sm1275547oic.52.2019.12.18.14.18.09
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 18 Dec 2019 14:18:09 -0800 (PST)
+Date: Wed, 18 Dec 2019 16:18:09 -0600
+From: Rob Herring <robh@kernel.org>
+To: Haren Myneni <haren@linux.ibm.com>
+Subject: Re: [PATCH V3 01/13] powerpc/vas: Describe vas-port and interrupts
+ properties
+Message-ID: <20191218221808.GA20302@bogus>
+References: <1576561080.16318.6531.camel@hbabu-laptop>
+ <1576561720.16318.6532.camel@hbabu-laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <15c3b6cc-d8da-9a32-da6a-4c3990f48994@intel.com>
+In-Reply-To: <1576561720.16318.6532.camel@hbabu-laptop>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -61,28 +79,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, fweimer@redhat.com, aneesh.kumar@linux.ibm.com,
- x86@kernel.org, linuxram@us.ibm.com, shuahkh@osg.samsung.com,
- mhocko@kernel.org, linux-mm@kvack.org, mingo@redhat.com,
- Sandipan Das <sandipan@linux.ibm.com>, linux-kselftest@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, bauerman@linux.ibm.com
+Cc: devicetree@vger.kernel.org, mikey@neuling.org, herbert@gondor.apana.org.au,
+ npiggin@gmail.com, hch@infradead.org, sukadev@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Dec 18, 2019 at 01:01:46PM -0800, Dave Hansen wrote:
-> On 12/18/19 12:59 PM, Michal Suchánek wrote:
-> >> I'd really just rather do %016lx *everywhere* than sprinkle the
-> >> PKEY_REG_FMTs around.
-> > Does lx work with u32 without warnings?
+On Mon, Dec 16, 2019 at 09:48:40PM -0800, Haren Myneni wrote:
 > 
-> Either way, I'd be happy to just make the x86 one u64 to make the whole
-> thing look more sane,
 
-So long as it still works with u64 on x86 it should be pretty
-future-proof.  Does not look like we are getting 128bit registers for
-anything but math units any time soon.
+Commit message?
 
-Thanks
+> Signed-off-by: Haren Myneni <haren@us.ibm.com>
 
-Michal
+Your author and S-o-b emails don't match.
+
+> ---
+>  Documentation/devicetree/bindings/powerpc/ibm,vas.txt | 5 +++++
+>  1 file changed, 5 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/powerpc/ibm,vas.txt b/Documentation/devicetree/bindings/powerpc/ibm,vas.txt
+> index bf11d2f..12de08b 100644
+> --- a/Documentation/devicetree/bindings/powerpc/ibm,vas.txt
+> +++ b/Documentation/devicetree/bindings/powerpc/ibm,vas.txt
+> @@ -11,6 +11,8 @@ Required properties:
+>    window context start and length, OS/User window context start and length,
+>    "Paste address" start and length, "Paste window id" start bit and number
+>    of bits)
+> +- ibm,vas-port : Port address for the interrupt.
+
+64-bit?
+
+> +- interrupts: IRQ value for each VAS instance and level.
+>  
+>  Example:
+>  
+> @@ -18,5 +20,8 @@ Example:
+>  		compatible = "ibm,vas", "ibm,power9-vas";
+>  		reg = <0x6019100000000 0x2000000 0x6019000000000 0x100000000 0x8000000000000 0x100000000 0x20 0x10>;
+>  		name = "vas";
+> +		interrupts = <0x1f 0>;
+> +		interrupt-parent = <&mpic>;
+>  		ibm,vas-id = <0x1>;
+> +		ibm,vas-port = <0x6010001000000>;
+>  	};
+> -- 
+> 1.8.3.1
+> 
+> 
+> 
