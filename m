@@ -2,86 +2,83 @@ Return-Path: <SRS0=gJAX=2I=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 835EAC43603
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 08:48:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DEC0AC43603
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 08:50:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4189B21582
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 08:48:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4189B21582
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 742D121582
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 08:50:55 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="ZOC7C1xq"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 742D121582
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47d7vJ0Tp5zDq5f
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 19:48:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47d7yP3v6NzDqfd
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 19:50:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=sandipan@linux.ibm.com;
+ smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::444;
+ helo=mail-pf1-x444.google.com; envelope-from=dja@axtens.net;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=axtens.net
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=axtens.net header.i=@axtens.net header.b="ZOC7C1xq"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
+ [IPv6:2607:f8b0:4864:20::444])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47d7DM4qcnzDqd3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 19:17:54 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- xBI7ljXl111042
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 02:52:06 -0500
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2wyen7arsf-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 02:52:06 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47d7Lb3TlczDqdc
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 19:23:18 +1100 (AEDT)
+Received: by mail-pf1-x444.google.com with SMTP id x185so802150pfc.5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 00:23:18 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
+ h=from:to:cc:subject:in-reply-to:references:date:message-id
+ :mime-version; bh=u6YuZYHprAHHi0QwOfU3E3YITTrm0AcZfhRLKsJtsT4=;
+ b=ZOC7C1xq1t7VDphwBtvlYLLrsokgL4RWFfDwz2kbOq+lOrHUd4NWi1XbeoKsyA5SvE
+ v0MKtw83sMXut/S0l5vDtG6zBxKy3WqVSmUVerYJigETcdUPYvHCpknEqBULcl+Fd3nJ
+ 5OR7BnGl0f3wcdSf/azCbOxG1Mw4WhpOXnBi4=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
+ :message-id:mime-version;
+ bh=u6YuZYHprAHHi0QwOfU3E3YITTrm0AcZfhRLKsJtsT4=;
+ b=WCmNXUdaAkhyR4pOJFUrB2OHUamTvrk8t3S5J0w+OiZV2wZUpzIRjAplhSBXAeT6t4
+ tzmX14BzZCn1ihfT92OP3p+DKsJaCJZFhFwfACyfqLxea6yg2kgi0VboF/sQ1Syp5srJ
+ JlTNWS/LTYSsRuM9WaVl2M5DH5d4ixLNbujxMZgflXXp+a0st4UiIRNDytQ+chkQkYBN
+ 239EkOhoukQkHJYg/NkNO2HbJdwrvc82XPkjCgBiLRhC5AYOxoMURM5SjsFBJslIsOAF
+ UoMlg/RNLoiNV7Jj9K3s8p4NI5MGtoAFwSkbxjSfwZsb66O/Q8hLNh1DyhrHIWtXKwka
+ dDpQ==
+X-Gm-Message-State: APjAAAXhw3BHAPg9Lt+GBaIy7Ft5vRNR3lM0U19Yal1mzvHACx1F3bKx
+ e3t34aoXFlnDPUhe1QuEnM0iuA==
+X-Google-Smtp-Source: APXvYqy5wQjGRBOLJMF5efGSjev0LGgQSKnO0x9a8KPptpbEyk+K6Pwlx+A6USOEs2166ugmVpGJRg==
+X-Received: by 2002:aa7:9629:: with SMTP id r9mr1698424pfg.51.1576657395370;
+ Wed, 18 Dec 2019 00:23:15 -0800 (PST)
 Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.ibm.com>;
- Wed, 18 Dec 2019 07:52:04 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 18 Dec 2019 07:52:00 -0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xBI7pxxJ9240750
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 18 Dec 2019 07:51:59 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2000AAE058;
- Wed, 18 Dec 2019 07:51:59 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C31F9AE04D;
- Wed, 18 Dec 2019 07:51:56 +0000 (GMT)
-Received: from fir03.in.ibm.com (unknown [9.121.59.65])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 18 Dec 2019 07:51:56 +0000 (GMT)
-From: Sandipan Das <sandipan@linux.ibm.com>
-To: shuahkh@osg.samsung.com, linux-kselftest@vger.kernel.org
-Subject: [PATCH v15 00/24] selftests, powerpc, x86: Memory Protection Keys
-Date: Wed, 18 Dec 2019 13:21:33 +0530
-X-Mailer: git-send-email 2.17.1
-X-TM-AS-GCONF: 00
-x-cbid: 19121807-4275-0000-0000-000003903973
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19121807-4276-0000-0000-000038A401AC
-Message-Id: <cover.1576645161.git.sandipan@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
- definitions=2019-12-18_01:2019-12-17,2019-12-18 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 spamscore=0
- malwarescore=0 clxscore=1011 impostorscore=0 lowpriorityscore=0
- suspectscore=0 priorityscore=1501 bulkscore=0 mlxscore=0 mlxlogscore=948
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-1910280000 definitions=main-1912180062
+ (2001-44b8-1113-6700-a084-b324-40b3-453d.static.ipv6.internode.on.net.
+ [2001:44b8:1113:6700:a084:b324:40b3:453d])
+ by smtp.gmail.com with ESMTPSA id o17sm1596866pjq.1.2019.12.18.00.23.13
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 18 Dec 2019 00:23:14 -0800 (PST)
+From: Daniel Axtens <dja@axtens.net>
+To: Jordan Niethe <jniethe5@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 03/18] powerpc: Add PREFIXED SRR1 bit for future ISA
+ version
+In-Reply-To: <20191126052141.28009-4-jniethe5@gmail.com>
+References: <20191126052141.28009-1-jniethe5@gmail.com>
+ <20191126052141.28009-4-jniethe5@gmail.com>
+Date: Wed, 18 Dec 2019 19:23:11 +1100
+Message-ID: <87v9qet53k.fsf@dja-thinkpad.axtens.net>
+MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,110 +90,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, fweimer@redhat.com, linux-mm@kvack.org,
- aneesh.kumar@linux.ibm.com, x86@kernel.org, linuxram@us.ibm.com,
- mhocko@kernel.org, dave.hansen@intel.com, mingo@redhat.com, msuchanek@suse.de,
- linuxppc-dev@lists.ozlabs.org, bauerman@linux.ibm.com
+Cc: alistair@popple.id.au, Jordan Niethe <jniethe5@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Memory protection keys enables an application to protect its address
-space from inadvertent access by its own code.
+Jordan Niethe <jniethe5@gmail.com> writes:
 
-This feature is now enabled on powerpc and has been available since
-4.16-rc1. The patches move the selftests to arch neutral directory
-and enhance their test coverage.
+> Add the bit definition for exceptions caused by prefixed instructions.
+>
+> Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
+> ---
+>  arch/powerpc/include/asm/reg.h | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+> index 6f9fcc3d4c82..0a6d39fb4769 100644
+> --- a/arch/powerpc/include/asm/reg.h
+> +++ b/arch/powerpc/include/asm/reg.h
+> @@ -778,6 +778,7 @@
+>  
+>  #define   SRR1_MCE_MCP		0x00080000 /* Machine check signal caused interrupt */
+>  #define   SRR1_BOUNDARY		0x10000000 /* Prefixed instruction crosses 64-byte boundary */
+> +#define   SRR1_PREFIXED		0x20000000 /* Exception caused by prefixed instruction */
 
-Testing
--------
-Verified for correctness on powerpc. Need help with x86 testing as I
-do not have access to a Skylake server. Client platforms like Coffee
-Lake do not have the required feature bits set in CPUID.
+You could probably squash this with the previous patch, and maybe the
+next patch too.
 
-Changelog
----------
-Link to previous version (v14):
-https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=55981&state=*
+Regards,
+Daniel
 
-v15:
-	(1) Rebased on top of latest master.
-	(2) Addressed review comments from Dave Hansen.
-	(3) Moved code for getting or setting pkey bits to new
-	    helpers. These changes replace patch 7 of v14.
-	(4) Added a fix which ensures that the correct count of
-	    reserved keys is used across different platforms.
-	(5) Added a fix which ensures that the correct page size
-	    is used as powerpc supports both 4K and 64K pages.
-
-v14:
-	(1) Incorporated another round of comments from Dave Hansen.
-
-v13:
-	(1) Incorporated comments for Dave Hansen.
-	(2) Added one more test for correct pkey-0 behavior.
-
-v12:
-	(1) Fixed the offset of pkey field in the siginfo structure for
-	    x86_64 and powerpc. And tries to use the actual field
-	    if the headers have it defined.
-
-v11:
-	(1) Fixed a deadlock in the ptrace testcase.
-
-v10 and prior:
-	(1) Moved the testcase to arch neutral directory.
-	(2) Split the changes into incremental patches.
-
-Desnes A. Nunes do Rosario (1):
-  selftests/vm/pkeys: Fix number of reserved powerpc pkeys
-
-Ram Pai (17):
-  selftests/x86/pkeys: Move selftests to arch-neutral directory
-  selftests/vm/pkeys: Rename all references to pkru to a generic name
-  selftests/vm/pkeys: Move generic definitions to header file
-  selftests/vm/pkeys: Typecast the pkey register
-  selftests/vm/pkeys: Fix pkey_disable_clear()
-  selftests/vm/pkeys: Fix assertion in pkey_disable_set/clear()
-  selftests/vm/pkeys: Fix alloc_random_pkey() to make it really random
-  selftests/vm/pkeys: Introduce generic pkey abstractions
-  selftests/vm/pkeys: Introduce powerpc support
-  selftests/vm/pkeys: Fix assertion in test_pkey_alloc_exhaust()
-  selftests/vm/pkeys: Improve checks to determine pkey support
-  selftests/vm/pkeys: Associate key on a mapped page and detect access
-    violation
-  selftests/vm/pkeys: Associate key on a mapped page and detect write
-    violation
-  selftests/vm/pkeys: Detect write violation on a mapped
-    access-denied-key page
-  selftests/vm/pkeys: Introduce a sub-page allocator
-  selftests/vm/pkeys: Test correct behaviour of pkey-0
-  selftests/vm/pkeys: Override access right definitions on powerpc
-
-Sandipan Das (3):
-  selftests: vm: pkeys: Add helpers for pkey bits
-  selftests: vm: pkeys: Use the correct huge page size
-  selftests: vm: pkeys: Use the correct page size on powerpc
-
-Thiago Jung Bauermann (2):
-  selftests/vm/pkeys: Move some definitions to arch-specific header
-  selftests/vm/pkeys: Make gcc check arguments of sigsafe_printf()
-
- tools/testing/selftests/vm/.gitignore         |   1 +
- tools/testing/selftests/vm/Makefile           |   5 +
- tools/testing/selftests/vm/pkey-helpers.h     | 226 ++++++
- tools/testing/selftests/vm/pkey-powerpc.h     | 138 ++++
- tools/testing/selftests/vm/pkey-x86.h         | 183 +++++
- .../selftests/{x86 => vm}/protection_keys.c   | 688 ++++++++++--------
- tools/testing/selftests/x86/.gitignore        |   1 -
- tools/testing/selftests/x86/pkey-helpers.h    | 219 ------
- 8 files changed, 931 insertions(+), 530 deletions(-)
- create mode 100644 tools/testing/selftests/vm/pkey-helpers.h
- create mode 100644 tools/testing/selftests/vm/pkey-powerpc.h
- create mode 100644 tools/testing/selftests/vm/pkey-x86.h
- rename tools/testing/selftests/{x86 => vm}/protection_keys.c (74%)
- delete mode 100644 tools/testing/selftests/x86/pkey-helpers.h
-
--- 
-2.17.1
-
+>  
+>  #define SPRN_HSRR0	0x13A	/* Save/Restore Register 0 */
+>  #define SPRN_HSRR1	0x13B	/* Save/Restore Register 1 */
+> -- 
+> 2.20.1
