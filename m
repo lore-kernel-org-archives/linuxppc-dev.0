@@ -2,62 +2,61 @@ Return-Path: <SRS0=gJAX=2I=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D9CCDC2D0CD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 10:50:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D9EE3C43603
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 11:04:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2633321582
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 10:50:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8A0622176D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 11:04:31 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="iP83JgyK"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2633321582
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="YfMz2eXY"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A0622176D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47dBcr6N4PzDqgl
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 21:50:52 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 47dBwY4FGNzDql5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 22:04:29 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47dBYs5bwbzDqdc
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 21:48:17 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47dBtS0RHjzDqgH
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 22:02:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.b="iP83JgyK"; dkim-atps=neutral
-Received: by ozlabs.org (Postfix)
- id 47dBYs3MHWz9sS9; Wed, 18 Dec 2019 21:48:17 +1100 (AEDT)
+ header.b="YfMz2eXY"; dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 47dBYs16rnz9sRv;
- Wed, 18 Dec 2019 21:48:17 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 47dBtQ3mHmz9sRv;
+ Wed, 18 Dec 2019 22:02:38 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1576666097;
- bh=ZxUGwSnd+Uj+76kk7JZsXqdVR/+/bA5WleNX8JnscbA=;
+ s=201909; t=1576666959;
+ bh=FWlAjNM6cmTI+9Vit59LLCQZ6i+spyEjv7d/aZR81VA=;
  h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=iP83JgyK9jL61e13XD/6XYlUHfuwFrNukWKOXIq+ZwAHjjPFQkzcMLSqPnRJiDws0
- 4vpDFnl7HSJ2ePsHWwDHD1KXe28EoTt0+A5aF0U3HdbkFloBxPiM4QfuW1q3Gf/+DJ
- FF7zkjyFhxiyhYRu10SJw7Fl557Dw3TM08e2Sx1amh6Fz7490Y7GA3UwFeCpxweTQB
- kndaCcYRWJcygo0EA6/Ec2tOeTtVVC5Xf+65Y9JCg2wUmA6u5ihgKjaMaG8uh893nG
- IlJxqlsQoqliY77UvSIX8NilmMmkM+AURj6WeMmd8dVyLoF85LEeUoqbedLV3jg24o
- 86bAENWVjYOQw==
+ b=YfMz2eXYxZdO8Wm8veuFf9IU7mF9LyzoX4KVXYDjvPFDtpb8Ogrf3H2FiPowFSIDR
+ ad5k7V9s+DndepXK9fOd/Ln4IuytMJ/1GWUaXHRLf02gCeZlO8FWv2a9cvEZBj9jv/
+ iGmTiTQ4e9KOdspMX1dzYDrdT7QNc5P0/GhXtYYQoY7h0Mu183rMtWvHx7Kb9zUUPZ
+ tGVedghPFNXaDxiDgIhnDYQlqhqvPHgVp8B2EqTzct11UEe76IuwRhgrybe/Q2l9ST
+ Qo+x79Fqyi/6Smi/zsqiCMAgrfhD3AZDBjzqCFFGBJMUuS3nsugek6U1Juu2rBru/6
+ 97/GJw+nsU7eQ==
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Sukadev Bhattiprolu <sukadev@linux.ibm.com>,
- Paul Mackerras <paulus@ozlabs.org>, linuxram@us.ibm.com
-Subject: Re: [PATCH 1/2] powerpc/pseries/svm: Don't access some SPRs
-In-Reply-To: <20191218043048.3400-1-sukadev@linux.ibm.com>
-References: <20191218043048.3400-1-sukadev@linux.ibm.com>
-Date: Wed, 18 Dec 2019 21:48:11 +1100
-Message-ID: <875zidoqok.fsf@mpe.ellerman.id.au>
+To: Chen Zhou <chenzhou10@huawei.com>, benh@kernel.crashing.org,
+ paulus@samba.org
+Subject: Re: [PATCH] powerpc/setup_64: use DEFINE_DEBUGFS_ATTRIBUTE to define
+ fops_rfi_flush
+In-Reply-To: <20191218020842.186446-1-chenzhou10@huawei.com>
+References: <20191218020842.186446-1-chenzhou10@huawei.com>
+Date: Wed, 18 Dec 2019 22:02:36 +1100
+Message-ID: <8736dhoq0j.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -71,108 +70,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@ozlabs.org, andmike@linux.ibm.com, kvm-ppc@vger.kernel.org,
- bauerman@linux.ibm.com
+Cc: chenzhou10@huawei.com, Julia Lawall <Julia.Lawall@lip6.fr>,
+ Nicolai Stange <nicstange@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Sukadev Bhattiprolu <sukadev@linux.ibm.com> writes:
-> Ultravisor disables some CPU features like EBB and BHRB in the HFSCR
-> for secure virtual machines (SVMs). If the SVMs attempt to access
-> related registers, they will get a Program Interrupt.
+Chen Zhou <chenzhou10@huawei.com> writes:
+> Use DEFINE_DEBUGFS_ATTRIBUTE rather than DEFINE_SIMPLE_ATTRIBUTE for
+> debugfs files.
 >
-> Use macros/wrappers to skip accessing EBB and BHRB registers in secure
-> VMs.
+> Semantic patch information:
+> Rationale: DEFINE_SIMPLE_ATTRIBUTE + debugfs_create_file()
+> imposes some significant overhead as compared to
+> DEFINE_DEBUGFS_ATTRIBUTE + debugfs_create_file_unsafe().
 
-I continue to dislike this approach.
+I know you didn't write this text, but these change logs are not great.
+It doesn't really explain why you're doing it. And it is alarming that
+you're converting *to* a function with "unsafe" in the name.
 
-The result is code that at a glance looks like it's doing one thing,
-ie. reading or writing an SPR, but is in fact doing nothing.
+The commit that added the script:
 
-It's confusing for readers.
+  5103068eaca2 ("debugfs, coccinelle: check for obsolete DEFINE_SIMPLE_ATTRIBUTE() usage")
 
-It also slows down all these already slow register accesses further, by
-inserting an mfmsr() in front of every single one.
+Has a bit more explanation.
 
+Maybe something like this:
 
-> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-> index b3cbb1136bce..026eb20f6d13 100644
-> --- a/arch/powerpc/include/asm/reg.h
-> +++ b/arch/powerpc/include/asm/reg.h
-> @@ -1379,6 +1379,41 @@ static inline void msr_check_and_clear(unsigned long bits)
->  		__msr_check_and_clear(bits);
->  }
->  
-> +#ifdef CONFIG_PPC_SVM
-> +/*
-> + * Move from some "restricted" sprs.
-> + * Secure VMs should not access some registers as the related features
-> + * are disabled in the CPU. If an SVM is attempting read from the given
-> + * SPR, return 0. Otherwise behave like a normal mfspr.
-> + */
-> +#define mfspr_r(rn)						\
-> +({								\
-> +	unsigned long rval = 0ULL;				\
-> +								\
-> +	if (!(mfmsr() & MSR_S))					\
-> +		asm volatile("mfspr %0," __stringify(rn)	\
-> +				: "=r" (rval));			\
-> +	rval;							\
-> +})
-> +
-> +/*
-> + * Move to some "restricted" sprs.
-> + * Secure VMs should not access some registers as the related features
-> + * are disabled in the CPU. If an SVM is attempting write to the given
-> + * SPR, ignore the write. Otherwise behave like a normal mtspr.
-> + */
-> +#define mtspr_r(rn, v)					\
-> +({								\
-> +	if (!(mfmsr() & MSR_S))					\
-> +		asm volatile("mtspr " __stringify(rn) ",%0" :	\
-> +				     : "r" ((unsigned long)(v)) \
-> +				     : "memory");		\
-> +})
-> +#else
-> +#define mfspr_r		mfspr
-> +#define mtspr_r		mtspr
-> +#endif
-> +
->  #ifdef __powerpc64__
->  #if defined(CONFIG_PPC_CELL) || defined(CONFIG_PPC_FSL_BOOK3E)
->  #define mftb()		({unsigned long rval;				\
-> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-> index 639ceae7da9d..9a691452ea3b 100644
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -1059,9 +1059,9 @@ static inline void save_sprs(struct thread_struct *t)
->  		t->dscr = mfspr(SPRN_DSCR);
->  
->  	if (cpu_has_feature(CPU_FTR_ARCH_207S)) {
-> -		t->bescr = mfspr(SPRN_BESCR);
-> -		t->ebbhr = mfspr(SPRN_EBBHR);
-> -		t->ebbrr = mfspr(SPRN_EBBRR);
-> +		t->bescr = mfspr_r(SPRN_BESCR);
-> +		t->ebbhr = mfspr_r(SPRN_EBBHR);
-> +		t->ebbrr = mfspr_r(SPRN_EBBRR);
-
-eg. here.
-
-This is the fast path of context switch.
-
-That expands to:
-
-	if (!(mfmsr() & MSR_S))
-		asm volatile("mfspr %0, SPRN_BESCR" : "=r" (rval));
-	if (!(mfmsr() & MSR_S))
-		asm volatile("mfspr %0, SPRN_EBBHR" : "=r" (rval));
-	if (!(mfmsr() & MSR_S))
-		asm volatile("mfspr %0, SPRN_EBBRR" : "=r" (rval));
+  In order to protect against file removal races, debugfs files created via
+  debugfs_create_file() are wrapped by a struct file_operations at their
+  opening.
+  
+  If the original struct file_operations is known to be safe against removal
+  races already, the proxy creation may be bypassed by creating the files
+  using DEFINE_DEBUGFS_ATTRIBUTE() and debugfs_create_file_unsafe().
 
 
-If the Ultravisor is going to disable EBB and BHRB then we need new
-CPU_FTR bits for those, and the code that accesses those registers
-needs to be put behind cpu_has_feature(EBB) etc.
+The part that's not explained is why this file is "known to be safe
+against removal races already"?
+
+It also seems this conversion will make the file no longer seekable,
+because DEFINE_SIMPLE_ATTRIBUTE() uses generic_file_llseek() whereas
+DEFINE_DEBUGFS_ATTRIBUTE() uses no_llseek.
+
+That is probably fine, but should be mentioned.
 
 cheers
+
+> Signed-off-by: Chen Zhou <chenzhou10@huawei.com>
+> ---
+>  arch/powerpc/kernel/setup_64.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+> index 6104917..4b9fbb2 100644
+> --- a/arch/powerpc/kernel/setup_64.c
+> +++ b/arch/powerpc/kernel/setup_64.c
+> @@ -956,11 +956,11 @@ static int rfi_flush_get(void *data, u64 *val)
+>  	return 0;
+>  }
+>  
+> -DEFINE_SIMPLE_ATTRIBUTE(fops_rfi_flush, rfi_flush_get, rfi_flush_set, "%llu\n");
+> +DEFINE_DEBUGFS_ATTRIBUTE(fops_rfi_flush, rfi_flush_get, rfi_flush_set, "%llu\n");
+>  
+>  static __init int rfi_flush_debugfs_init(void)
+>  {
+> -	debugfs_create_file("rfi_flush", 0600, powerpc_debugfs_root, NULL, &fops_rfi_flush);
+> +	debugfs_create_file_unsafe("rfi_flush", 0600, powerpc_debugfs_root, NULL, &fops_rfi_flush);
+>  	return 0;
+>  }
+>  device_initcall(rfi_flush_debugfs_init);
+> -- 
+> 2.7.4
