@@ -2,93 +2,58 @@ Return-Path: <SRS0=gJAX=2I=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 915D3C3F68F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 05:42:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 457B4C43603
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 05:45:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4FC642176D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 05:42:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4FC642176D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id E410220733
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 05:45:07 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="NhDElDY9"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E410220733
+Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47d3nP5BcbzDqbF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 16:42:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 47d3r20ByPzDqbh
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 16:45:06 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47d3dw0469zDqX1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 16:36:19 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- xBI5Xn5m023982; Wed, 18 Dec 2019 00:36:07 -0500
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2wydpq934v-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 18 Dec 2019 00:36:07 -0500
-Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id xBI5XnZH024049;
- Wed, 18 Dec 2019 00:36:06 -0500
-Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.10])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2wydpq934e-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 18 Dec 2019 00:36:06 -0500
-Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
- by ppma02dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id xBI5Wcnd026221;
- Wed, 18 Dec 2019 05:36:05 GMT
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by ppma02dal.us.ibm.com with ESMTP id 2wvqc6ud6j-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 18 Dec 2019 05:36:05 +0000
-Received: from b03ledav006.gho.boulder.ibm.com
- (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xBI5a45A45154770
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 18 Dec 2019 05:36:04 GMT
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 583BAC605B;
- Wed, 18 Dec 2019 05:36:04 +0000 (GMT)
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C5BBFC6055;
- Wed, 18 Dec 2019 05:36:00 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.199.35.117])
- by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Wed, 18 Dec 2019 05:36:00 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: akpm@linux-foundation.org, npiggin@gmail.com, mpe@ellerman.id.au,
- peterz@infradead.org, will@kernel.org
-Subject: [PATCH v2 3/3] asm-generic/tlb: Avoid potential double flush
-Date: Wed, 18 Dec 2019 11:05:30 +0530
-Message-Id: <20191218053530.73053-3-aneesh.kumar@linux.ibm.com>
-X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20191218053530.73053-1-aneesh.kumar@linux.ibm.com>
-References: <20191218053530.73053-1-aneesh.kumar@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47d3fD1sspzDqYq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 16:36:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=ozlabs.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="NhDElDY9"; 
+ dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1003)
+ id 47d3fC0xHGz9sS9; Wed, 18 Dec 2019 16:36:34 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
+ t=1576647395; bh=arBhEw9NZmuhyzR9ri9+gjUXrFXvq5epgRZxiP5ucNg=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=NhDElDY9zmVJkVePcXc133bDxJpq78JWTKjRkTXTN6bvZxBcOMs/hpys48N9ukgp5
+ 7nr87BGLpPTjupTI3yUT9v/j+7oL4tN9jKYRu6RkJmW/tKHKcDW1YYaHFcfDBJ0RTs
+ DibDDbf0taAlwZgPKYksGt895RCWB/0WCHTEGK6d4quXaHvrclxZt2LnGZsI25Ey/F
+ G2m0THpYmB1CcvqPc2Bo2kI0b9cFWAonDWr7INs1X+72+hxT97NUjLcpbAlCQHdol8
+ mCEqVeLIlhnEieHqyFkljrQlMYO+C6I2s9mKYosevnS/8uLY6sIDh5mlbdEHavlrAA
+ H6IEgkuH1/f/A==
+Date: Wed, 18 Dec 2019 16:32:50 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: Re: [PATCH V3 1/2] KVM: PPC: Add skip_page_out parameter
+Message-ID: <20191218053250.GB29890@oak.ozlabs.ibm.com>
+References: <20191215021104.GA27378@us.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
- definitions=2019-12-18_01:2019-12-17,2019-12-18 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=999
- lowpriorityscore=0 suspectscore=2 adultscore=0 clxscore=1015
- priorityscore=1501 phishscore=0 bulkscore=0 spamscore=0 malwarescore=0
- impostorscore=0 mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-1910280000 definitions=main-1912180043
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20191215021104.GA27378@us.ibm.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,61 +65,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Cc: linuxram@us.ibm.com, kvm-ppc@vger.kernel.org,
+ Bharata B Rao <bharata@linux.ibm.com>, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Peter Zijlstra <peterz@infradead.org>
+On Sat, Dec 14, 2019 at 06:11:04PM -0800, Sukadev Bhattiprolu wrote:
+> 
+> This patch is based on Bharata's v11 KVM patches for secure guests:
+> https://lists.ozlabs.org/pipermail/linuxppc-dev/2019-November/200918.html
+> ---
+> 
+> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> Date: Fri, 13 Dec 2019 15:06:16 -0600
+> Subject: [PATCH V3 1/2] KVM: PPC: Add skip_page_out parameter
+> 
+> Add 'skip_page_out' parameter to kvmppc_uvmem_drop_pages() which will
+> be needed in a follow-on patch that implements H_SVM_INIT_ABORT hcall.
+> 
+> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.ibm.com>
 
-Aneesh reported that:
-
-	tlb_flush_mmu()
-	  tlb_flush_mmu_tlbonly()
-	    tlb_flush()			<-- #1
-	  tlb_flush_mmu_free()
-	    tlb_table_flush()
-	      tlb_table_invalidate()
-		tlb_flush_mmu_tlbonly()
-		  tlb_flush()		<-- #2
-
-does two TLBIs when tlb->fullmm, because __tlb_reset_range() will not
-clear tlb->end in that case.
-
-Observe that any caller to __tlb_adjust_range() also sets at least one
-of the tlb->freed_tables || tlb->cleared_p* bits, and those are
-unconditionally cleared by __tlb_reset_range().
-
-Change the condition for actually issuing TLBI to having one of those
-bits set, as opposed to having tlb->end != 0.
-
-Reported-by: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- include/asm-generic/tlb.h | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
-
-diff --git a/include/asm-generic/tlb.h b/include/asm-generic/tlb.h
-index 9e22ac369d1d..b36b3bef5661 100644
---- a/include/asm-generic/tlb.h
-+++ b/include/asm-generic/tlb.h
-@@ -402,7 +402,12 @@ tlb_update_vma_flags(struct mmu_gather *tlb, struct vm_area_struct *vma) { }
- 
- static inline void tlb_flush_mmu_tlbonly(struct mmu_gather *tlb)
- {
--	if (!tlb->end)
-+	/*
-+	 * Anything calling __tlb_adjust_range() also sets at least one of
-+	 * these bits.
-+	 */
-+	if (!(tlb->freed_tables || tlb->cleared_ptes || tlb->cleared_pmds ||
-+	      tlb->cleared_puds || tlb->cleared_p4ds))
- 		return;
- 
- 	tlb_flush(tlb);
--- 
-2.23.0
-
+Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
