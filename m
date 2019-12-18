@@ -6,87 +6,87 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1DB66C43603
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 08:11:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 32D91C2D0D1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 08:13:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 980CF218AC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 08:11:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 980CF218AC
+	by mail.kernel.org (Postfix) with ESMTPS id E4F8C24692
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 08:13:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E4F8C24692
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47d74s6h47zDqd7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 19:11:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47d77863C9zDqYJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 19:13:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=sandipan@linux.ibm.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=sandipan@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47d6gL30ZrzDqWq
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47d6gL6grKzDqbk
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 18:52:46 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- xBI7qTOr002158
+ xBI7qOg4140504
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 02:52:44 -0500
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2wy705fw16-1
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2wy90p3qf5-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 02:52:43 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 02:52:42 -0500
 Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.ibm.com>;
- Wed, 18 Dec 2019 07:52:41 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Wed, 18 Dec 2019 07:52:36 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 18 Dec 2019 07:52:37 -0000
+ Wed, 18 Dec 2019 07:52:32 -0000
 Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
  [9.149.105.62])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xBI7qZku47186004
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xBI7qUQW61472994
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 18 Dec 2019 07:52:35 GMT
+ Wed, 18 Dec 2019 07:52:30 GMT
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B48D9AE053;
- Wed, 18 Dec 2019 07:52:35 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 7B5C4AE045;
+ Wed, 18 Dec 2019 07:52:30 +0000 (GMT)
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 68CE8AE04D;
- Wed, 18 Dec 2019 07:52:33 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 31FC5AE051;
+ Wed, 18 Dec 2019 07:52:28 +0000 (GMT)
 Received: from fir03.in.ibm.com (unknown [9.121.59.65])
  by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 18 Dec 2019 07:52:33 +0000 (GMT)
+ Wed, 18 Dec 2019 07:52:28 +0000 (GMT)
 From: Sandipan Das <sandipan@linux.ibm.com>
 To: shuahkh@osg.samsung.com, linux-kselftest@vger.kernel.org
-Subject: [PATCH v15 14/23] selftests/vm/pkeys: Fix assertion in
- test_pkey_alloc_exhaust()
-Date: Wed, 18 Dec 2019 13:21:47 +0530
+Subject: [PATCH v15 12/23] selftests/vm/pkeys: Introduce generic pkey
+ abstractions
+Date: Wed, 18 Dec 2019 13:21:45 +0530
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <cover.1576645161.git.sandipan@linux.ibm.com>
 References: <cover.1576645161.git.sandipan@linux.ibm.com>
 In-Reply-To: <cover.1576645161.git.sandipan@linux.ibm.com>
 References: <cover.1576645161.git.sandipan@linux.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 19121807-0020-0000-0000-00000399680A
+x-cbid: 19121807-0028-0000-0000-000003C9CAE5
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19121807-0021-0000-0000-000021F088A5
-Message-Id: <d82e1652135569cfc38b289f88e39e94d55308ff.1576645161.git.sandipan@linux.ibm.com>
+x-cbparentid: 19121807-0029-0000-0000-0000248D162F
+Message-Id: <e0d421c178c3c4694b808d99003dfbaae6b45996.1576645161.git.sandipan@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
  definitions=2019-12-18_01:2019-12-17,2019-12-18 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=2 mlxscore=0
- lowpriorityscore=0 adultscore=0 mlxlogscore=999 clxscore=1015
- priorityscore=1501 spamscore=0 phishscore=0 malwarescore=0 bulkscore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-1910280000 definitions=main-1912180063
+ phishscore=0
+ priorityscore=1501 clxscore=1015 malwarescore=0 suspectscore=0
+ adultscore=0 mlxlogscore=701 impostorscore=0 mlxscore=0 bulkscore=0
+ spamscore=0 lowpriorityscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-1910280000 definitions=main-1912180063
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,56 +108,106 @@ Sender: "Linuxppc-dev"
 
 From: Ram Pai <linuxram@us.ibm.com>
 
-Some pkeys which are valid on the hardware are reserved
-and not available for application use. These keys cannot
-be allocated.
-
-test_pkey_alloc_exhaust() tries to account for these and
-has an assertion which validates if all available pkeys
-have been exahaustively allocated. However, the expression
-that is currently used is only valid for x86. On powerpc,
-a pkey is additionally reserved as compared to x86. Hence,
-the assertion is made to use an arch-specific helper to
-get the correct count of reserved pkeys.
+This introduces some generic abstractions and provides
+the corresponding architecture-specfic implementations
+for these abstractions.
 
 cc: Dave Hansen <dave.hansen@intel.com>
 cc: Florian Weimer <fweimer@redhat.com>
 Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
 Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
 ---
- tools/testing/selftests/vm/protection_keys.c | 11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+ tools/testing/selftests/vm/pkey-helpers.h    | 12 ++++++++++++
+ tools/testing/selftests/vm/pkey-x86.h        | 15 +++++++++++++++
+ tools/testing/selftests/vm/protection_keys.c |  8 ++------
+ 3 files changed, 29 insertions(+), 6 deletions(-)
 
+diff --git a/tools/testing/selftests/vm/pkey-helpers.h b/tools/testing/selftests/vm/pkey-helpers.h
+index bd90a49a3229..c929cc09b3cc 100644
+--- a/tools/testing/selftests/vm/pkey-helpers.h
++++ b/tools/testing/selftests/vm/pkey-helpers.h
+@@ -74,6 +74,9 @@ extern void abort_hooks(void);
+ 	}					\
+ } while (0)
+ 
++__attribute__((noinline)) int read_ptr(int *ptr);
++void expected_pkey_fault(int pkey);
++
+ #if defined(__i386__) || defined(__x86_64__) /* arch */
+ #include "pkey-x86.h"
+ #else /* arch */
+@@ -173,4 +176,13 @@ static inline void __pkey_write_allow(int pkey, int do_allow_write)
+ #define __stringify_1(x...)     #x
+ #define __stringify(x...)       __stringify_1(x)
+ 
++static inline u32 *siginfo_get_pkey_ptr(siginfo_t *si)
++{
++#ifdef si_pkey
++	return &si->si_pkey;
++#else
++	return (u32 *)(((u8 *)si) + si_pkey_offset);
++#endif
++}
++
+ #endif /* _PKEYS_HELPER_H */
+diff --git a/tools/testing/selftests/vm/pkey-x86.h b/tools/testing/selftests/vm/pkey-x86.h
+index 4937f48f77cc..bb2d4dfcacd5 100644
+--- a/tools/testing/selftests/vm/pkey-x86.h
++++ b/tools/testing/selftests/vm/pkey-x86.h
+@@ -42,6 +42,7 @@
+ #endif
+ 
+ #define NR_PKEYS		16
++#define NR_RESERVED_PKEYS	2 /* pkey-0 and exec-only-pkey */
+ #define PKEY_BITS_PER_PKEY	2
+ #define HPAGE_SIZE		(1UL<<21)
+ #define PAGE_SIZE		4096
+@@ -160,4 +161,18 @@ int pkey_reg_xstate_offset(void)
+ 	return xstate_offset;
+ }
+ 
++static inline int get_arch_reserved_keys(void)
++{
++	return NR_RESERVED_PKEYS;
++}
++
++void expect_fault_on_read_execonly_key(void *p1, int pkey)
++{
++	int ptr_contents;
++
++	ptr_contents = read_ptr(p1);
++	dprintf2("ptr (%p) contents@%d: %x\n", p1, __LINE__, ptr_contents);
++	expected_pkey_fault(pkey);
++}
++
+ #endif /* _PKEYS_X86_H */
 diff --git a/tools/testing/selftests/vm/protection_keys.c b/tools/testing/selftests/vm/protection_keys.c
-index 1920bca84def..8d90cfe2c9bd 100644
+index 2327cfa0b836..dbc2918bec13 100644
 --- a/tools/testing/selftests/vm/protection_keys.c
 +++ b/tools/testing/selftests/vm/protection_keys.c
-@@ -1152,6 +1152,7 @@ void test_pkey_alloc_exhaust(int *ptr, u16 pkey)
- 	dprintf3("%s()::%d\n", __func__, __LINE__);
+@@ -1306,9 +1306,7 @@ void test_executing_on_unreadable_memory(int *ptr, u16 pkey)
+ 	madvise(p1, PAGE_SIZE, MADV_DONTNEED);
+ 	lots_o_noops_around_write(&scratch);
+ 	do_not_expect_pkey_fault("executing on PROT_EXEC memory");
+-	ptr_contents = read_ptr(p1);
+-	dprintf2("ptr (%p) contents@%d: %x\n", p1, __LINE__, ptr_contents);
+-	expected_pkey_fault(pkey);
++	expect_fault_on_read_execonly_key(p1, pkey);
+ }
+ 
+ void test_implicit_mprotect_exec_only_memory(int *ptr, u16 pkey)
+@@ -1335,9 +1333,7 @@ void test_implicit_mprotect_exec_only_memory(int *ptr, u16 pkey)
+ 	madvise(p1, PAGE_SIZE, MADV_DONTNEED);
+ 	lots_o_noops_around_write(&scratch);
+ 	do_not_expect_pkey_fault("executing on PROT_EXEC memory");
+-	ptr_contents = read_ptr(p1);
+-	dprintf2("ptr (%p) contents@%d: %x\n", p1, __LINE__, ptr_contents);
+-	expected_pkey_fault(UNKNOWN_PKEY);
++	expect_fault_on_read_execonly_key(p1, UNKNOWN_PKEY);
  
  	/*
-+	 * On x86:
- 	 * There are 16 pkeys supported in hardware.  Three are
- 	 * allocated by the time we get here:
- 	 *   1. The default key (0)
-@@ -1159,8 +1160,16 @@ void test_pkey_alloc_exhaust(int *ptr, u16 pkey)
- 	 *   3. One allocated by the test code and passed in via
- 	 *      'pkey' to this function.
- 	 * Ensure that we can allocate at least another 13 (16-3).
-+	 *
-+	 * On powerpc:
-+	 * There are either 5 or 32 pkeys supported in hardware
-+	 * depending on the page size (4K or 64K). Four are
-+	 * allocated by the time we get here. This includes
-+	 * pkey-0, pkey-1, exec-only pkey and the one allocated
-+	 * by the test code.
-+	 * Ensure that we can allocate the remaining.
- 	 */
--	pkey_assert(i >= NR_PKEYS-3);
-+	pkey_assert(i >= (NR_PKEYS - get_arch_reserved_keys() - 1));
- 
- 	for (i = 0; i < nr_allocated_pkeys; i++) {
- 		err = sys_pkey_free(allocated_pkeys[i]);
+ 	 * Put the memory back to non-PROT_EXEC.  Should clear the
 -- 
 2.17.1
 
