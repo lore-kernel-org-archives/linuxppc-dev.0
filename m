@@ -2,83 +2,81 @@ Return-Path: <SRS0=gJAX=2I=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DCAD6C43603
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 08:54:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 309F1C43603
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 09:03:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 662AE218AC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 08:54:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A1215218AC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 09:03:57 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="QEQMlNMM"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 662AE218AC
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="cEjAIefo"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A1215218AC
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47d8253Mq4zDqD4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 19:54:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::443;
- helo=mail-pf1-x443.google.com; envelope-from=dja@axtens.net;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47d8FR0ZCJzDqQH
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 20:03:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=axtens.net
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=axtens.net header.i=@axtens.net header.b="QEQMlNMM"; 
- dkim-atps=neutral
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
- [IPv6:2607:f8b0:4864:20::443])
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
+ envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="cEjAIefo"; dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47d7dD0G62zDqfP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 19:35:59 +1100 (AEDT)
-Received: by mail-pf1-x443.google.com with SMTP id p14so821579pfn.4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 00:35:59 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
- h=from:to:cc:subject:in-reply-to:references:date:message-id
- :mime-version; bh=38IXLec8H6b/jyjzlitqBtd3wUcecpKg+uthvBuK+00=;
- b=QEQMlNMMvEwTc43kb5HcDmhGaqhHVOXHydMk2iWyVnY9m61GQiVt1FIpFaPepxTIVB
- 7uM+D/czQmc3/ovMmbPjToZEJipxpvqNIZc+FNwcfUL/3Z+TgIMZS1DxGw4FBZx9JBqd
- lrIVy7KYdpxNUwi7216gVCWDk3U/utburJVsQ=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
- :message-id:mime-version;
- bh=38IXLec8H6b/jyjzlitqBtd3wUcecpKg+uthvBuK+00=;
- b=TDZVpX9U8fuHRcrlhl42EIyQrGpvX2WzZ/gLRUDIqmQOCqlON/4E+zmpqln1lKkAJW
- 5gwmBMabXyVbS3j0RNRfCZKH7BIO7Bpo/i1ghaEYys/cdWBjWEe9gnFR8TI+6FQ3vO47
- v1CdnP8fihZ9aZCF6FIOK1nO56W0oGMHnNjcAWUqUhyb6JfUkxWHJWkGuH6c4SW6Qhao
- YUvWZ0TDlErFpvoPmHkgje/EIhBMoiCE9tJGs6/wQ0REq5uhnFWaMS0dsVPaSF6p0WJ6
- m0q98bv6L+1nhx5U2b1dGYW7FOuFQ9NCuVh6W2JYLI2NSS9CNraXlNsPK/NgmOeHnXAP
- 3fsA==
-X-Gm-Message-State: APjAAAXx4P2xfcYkOPlu8MGO5VNqBKUd/XLLS/4t7UTjc33tUrkGGGN6
- 0ZoiBvnsTW3WqnlpRWBL+/LEmg==
-X-Google-Smtp-Source: APXvYqz+3Dfas9QNrjiFDKO+bMGda7i7zzBaurmSLsM80F8tPvI1n6UTTGiWAtzUIKJSozCTRy8TtQ==
-X-Received: by 2002:a63:70e:: with SMTP id 14mr1694338pgh.266.1576658156228;
- Wed, 18 Dec 2019 00:35:56 -0800 (PST)
-Received: from localhost
- (2001-44b8-1113-6700-a084-b324-40b3-453d.static.ipv6.internode.on.net.
- [2001:44b8:1113:6700:a084:b324:40b3:453d])
- by smtp.gmail.com with ESMTPSA id k23sm1873517pgg.7.2019.12.18.00.35.54
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 18 Dec 2019 00:35:55 -0800 (PST)
-From: Daniel Axtens <dja@axtens.net>
-To: Jordan Niethe <jniethe5@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 05/18] powerpc sstep: Prepare to support prefixed
- instructions
-In-Reply-To: <20191126052141.28009-6-jniethe5@gmail.com>
-References: <20191126052141.28009-1-jniethe5@gmail.com>
- <20191126052141.28009-6-jniethe5@gmail.com>
-Date: Wed, 18 Dec 2019 19:35:51 +1100
-Message-ID: <87sglit4ig.fsf@dja-thinkpad.axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47d8Bx57KmzDqSQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 20:01:45 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
+ :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=t9//2RqMFCl0kVnQJETmKMopzrjo3RCGeRkT7almLNk=; b=cEjAIefo00+LZGzxc9G92MeGD
+ /zw7RWEJqTZ6iKP1NsqYFTn/YCaU86ieVZypvpzSRQ31hLIK35Cn131sWUl44or7N+QUSgNBg8py6
+ P04oRIA2Bw4yOol9yYQtdFW5k1aeogAlwU7HIuftzS3fog2rsMt+AKP7WyAON6seOpgKIMSxMt9VM
+ rId7rHci0daivY3k911WQ1FM5FE9gMVEPsh9VfQuKrA+fdMnvD3T2Lij4X1O/o+cPRwYKwwMtnL71
+ BvN2lCH/7kETpQkyJXIgphrfyF3spc17K4nlir8F+gmmxlsW4RY1yFc/ndOdE6yeO4L76JF7HbtjE
+ I3QDGBDKw==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100]
+ helo=noisy.programming.kicks-ass.net)
+ by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+ id 1ihVD6-0007aW-B6; Wed, 18 Dec 2019 09:01:36 +0000
+Received: from hirez.programming.kicks-ass.net
+ (hirez.programming.kicks-ass.net [192.168.1.225])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id E6738300F29;
+ Wed, 18 Dec 2019 10:00:10 +0100 (CET)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+ id 6010B2B2CECE0; Wed, 18 Dec 2019 10:01:33 +0100 (CET)
+Date: Wed, 18 Dec 2019 10:01:33 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Subject: Re: [RFC PATCH 1/2] mm/mmu_gather: Invalidate TLB correctly on batch
+ allocation failure and flush
+Message-ID: <20191218090133.GM2844@hirez.programming.kicks-ass.net>
+References: <20191217071713.93399-1-aneesh.kumar@linux.ibm.com>
+ <20191217090914.GX2844@hirez.programming.kicks-ass.net>
+ <3d250b04-a78d-20a7-d41e-50e48e08d1cb@linux.ibm.com>
+ <20191217123544.GI2827@hirez.programming.kicks-ass.net>
+ <874kxymclu.fsf@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <874kxymclu.fsf@linux.ibm.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,465 +88,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alistair@popple.id.au, Jordan Niethe <jniethe5@gmail.com>
+Cc: linux-kernel@vger.kernel.org, npiggin@gmail.com, linux-mm@kvack.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Jordan Niethe <jniethe5@gmail.com> writes:
+On Wed, Dec 18, 2019 at 10:52:53AM +0530, Aneesh Kumar K.V wrote:
+> Upstream ppc64 is broken after the commit: a46cc7a90fd8
+> ("powerpc/mm/radix: Improve TLB/PWC flushes").
+> 
+> Also the patches are not adding any extra TLBI on either radix or hash.
+> 
+> Considering we need to backport this to stable and other distributions,
+> how about we do this early patches in your series before the Kconfig rename?
+> This should enable stable to pick them up with less dependencies. 
 
-> Currently all instructions are a single word long. A future ISA version
-> will include prefixed instructions which have a double word length. The
-> functions used for analysing and emulating instructions need to be
-> modified so that they can handle these new instruction types.
->
-> A prefixed instruction is a word prefix followed by a word suffix. All
-> prefixes uniquely have the primary op-code 1. Suffixes may be valid word
-> instructions or instructions that only exist as suffixes.
->
-> In handling prefixed instructions it will be convenient to treat the
-> suffix and prefix as separate words. To facilitate this modify
-> analyse_instr() and emulate_step() to take a take a suffix as a
-> parameter. For word instructions it does not matter what is passed in
-> here - it will be ignored.
->
-> We also define a new flag, PREFIXED, to be used in instruction_op:type.
-> This flag will indicate when emulating an analysed instruction if the
-> NIP should be advanced by word length or double word length.
->
-> The callers of analyse_instr() and emulate_step() will need their own
-> changes to be able to support prefixed instructions. For now modify them
-> to pass in 0 as a suffix.
->
-> Note that at this point no prefixed instructions are emulated or
-> analysed - this is just making it possible to do so.
->
-> Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
-> ---
->  arch/powerpc/include/asm/ppc-opcode.h |  3 +++
->  arch/powerpc/include/asm/sstep.h      |  8 +++++--
->  arch/powerpc/include/asm/uaccess.h    | 30 +++++++++++++++++++++++++++
->  arch/powerpc/kernel/align.c           |  2 +-
->  arch/powerpc/kernel/hw_breakpoint.c   |  4 ++--
->  arch/powerpc/kernel/kprobes.c         |  2 +-
->  arch/powerpc/kernel/mce_power.c       |  2 +-
->  arch/powerpc/kernel/optprobes.c       |  2 +-
->  arch/powerpc/kernel/uprobes.c         |  2 +-
->  arch/powerpc/kvm/emulate_loadstore.c  |  2 +-
->  arch/powerpc/lib/sstep.c              | 12 ++++++-----
->  arch/powerpc/lib/test_emulate_step.c  | 30 +++++++++++++--------------
->  arch/powerpc/xmon/xmon.c              |  4 ++--
->  13 files changed, 71 insertions(+), 32 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-> index c1df75edde44..a1dfa4bdd22f 100644
-> --- a/arch/powerpc/include/asm/ppc-opcode.h
-> +++ b/arch/powerpc/include/asm/ppc-opcode.h
-> @@ -377,6 +377,9 @@
->  #define PPC_INST_VCMPEQUD		0x100000c7
->  #define PPC_INST_VCMPEQUB		0x10000006
->  
-> +/* macro to check if a word is a prefix */
-> +#define IS_PREFIX(x) (((x) >> 26) == 1)
-> +
->  /* macros to insert fields into opcodes */
->  #define ___PPC_RA(a)	(((a) & 0x1f) << 16)
->  #define ___PPC_RB(b)	(((b) & 0x1f) << 11)
-> diff --git a/arch/powerpc/include/asm/sstep.h b/arch/powerpc/include/asm/sstep.h
-> index 769f055509c9..6d4cb602e231 100644
-> --- a/arch/powerpc/include/asm/sstep.h
-> +++ b/arch/powerpc/include/asm/sstep.h
-> @@ -89,6 +89,9 @@ enum instruction_type {
->  #define VSX_LDLEFT	4	/* load VSX register from left */
->  #define VSX_CHECK_VEC	8	/* check MSR_VEC not MSR_VSX for reg >= 32 */
->  
-> +/* Prefixed flag, ORed in with type */
-> +#define PREFIXED	0x800
-> +
->  /* Size field in type word */
->  #define SIZE(n)		((n) << 12)
->  #define GETSIZE(w)	((w) >> 12)
-> @@ -132,7 +135,7 @@ union vsx_reg {
->   * otherwise.
->   */
->  extern int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
-> -			 unsigned int instr);
-> +			 unsigned int instr, unsigned int sufx);
->  
->  /*
->   * Emulate an instruction that can be executed just by updating
-> @@ -149,7 +152,8 @@ void emulate_update_regs(struct pt_regs *reg, struct instruction_op *op);
->   * 0 if it could not be emulated, or -1 for an instruction that
->   * should not be emulated (rfid, mtmsrd clearing MSR_RI, etc.).
->   */
-> -extern int emulate_step(struct pt_regs *regs, unsigned int instr);
-> +extern int emulate_step(struct pt_regs *regs, unsigned int instr,
-> +			unsigned int sufx);
->  
->  /*
->   * Emulate a load or store instruction by reading/writing the
-> diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-> index 15002b51ff18..bc585399e0c7 100644
-> --- a/arch/powerpc/include/asm/uaccess.h
-> +++ b/arch/powerpc/include/asm/uaccess.h
-> @@ -423,4 +423,34 @@ extern long __copy_from_user_flushcache(void *dst, const void __user *src,
->  extern void memcpy_page_flushcache(char *to, struct page *page, size_t offset,
->  			   size_t len);
->  
-> +/*
-> + * When reading an instruction iff it is a prefix, the suffix needs to be also
-> + * loaded.
-> + */
-> +#define __get_user_instr(x, y, ptr)			\
-> +({							\
-> +	long __gui_ret = 0;				\
-> +	y = 0;						\
-> +	__gui_ret = __get_user(x, ptr);			\
-> +	if (!__gui_ret) {				\
-> +		if (IS_PREFIX(x))			\
-> +			__gui_ret = __get_user(y, ptr + 1);	\
-> +	}						\
-> +							\
-> +	__gui_ret;					\
-> +})
-> +
-> +#define __get_user_instr_inatomic(x, y, ptr)		\
-> +({							\
-> +	long __gui_ret = 0;				\
-> +	y = 0;						\
-> +	__gui_ret = __get_user_inatomic(x, ptr);	\
-> +	if (!__gui_ret) {				\
-> +		if (IS_PREFIX(x))			\
-> +			__gui_ret = __get_user_inatomic(y, ptr + 1);	\
-> +	}						\
-> +							\
-> +	__gui_ret;					\
-> +})
-> +
->  #endif	/* _ARCH_POWERPC_UACCESS_H */
-> diff --git a/arch/powerpc/kernel/align.c b/arch/powerpc/kernel/align.c
-> index 92045ed64976..245e79792a01 100644
-> --- a/arch/powerpc/kernel/align.c
-> +++ b/arch/powerpc/kernel/align.c
-> @@ -334,7 +334,7 @@ int fix_alignment(struct pt_regs *regs)
->  	if ((instr & 0xfc0006fe) == (PPC_INST_COPY & 0xfc0006fe))
->  		return -EIO;
->  
-> -	r = analyse_instr(&op, regs, instr);
-> +	r = analyse_instr(&op, regs, instr, 0);
->  	if (r < 0)
->  		return -EINVAL;
->  
-> diff --git a/arch/powerpc/kernel/hw_breakpoint.c b/arch/powerpc/kernel/hw_breakpoint.c
-> index 58ce3d37c2a3..f4530961998c 100644
-> --- a/arch/powerpc/kernel/hw_breakpoint.c
-> +++ b/arch/powerpc/kernel/hw_breakpoint.c
-> @@ -248,7 +248,7 @@ static bool stepping_handler(struct pt_regs *regs, struct perf_event *bp,
->  	if (__get_user_inatomic(instr, (unsigned int *)regs->nip))
->  		goto fail;
->  
-> -	ret = analyse_instr(&op, regs, instr);
-> +	ret = analyse_instr(&op, regs, instr, 0);
->  	type = GETTYPE(op.type);
->  	size = GETSIZE(op.type);
->  
-> @@ -272,7 +272,7 @@ static bool stepping_handler(struct pt_regs *regs, struct perf_event *bp,
->  		return false;
->  	}
->  
-> -	if (!emulate_step(regs, instr))
-> +	if (!emulate_step(regs, instr, 0))
->  		goto fail;
->  
->  	return true;
-> diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-> index 2d27ec4feee4..7303fe3856cc 100644
-> --- a/arch/powerpc/kernel/kprobes.c
-> +++ b/arch/powerpc/kernel/kprobes.c
-> @@ -219,7 +219,7 @@ static int try_to_emulate(struct kprobe *p, struct pt_regs *regs)
->  	unsigned int insn = *p->ainsn.insn;
->  
->  	/* regs->nip is also adjusted if emulate_step returns 1 */
-> -	ret = emulate_step(regs, insn);
-> +	ret = emulate_step(regs, insn, 0);
->  	if (ret > 0) {
->  		/*
->  		 * Once this instruction has been boosted
-> diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
-> index 1cbf7f1a4e3d..d862bb549158 100644
-> --- a/arch/powerpc/kernel/mce_power.c
-> +++ b/arch/powerpc/kernel/mce_power.c
-> @@ -374,7 +374,7 @@ static int mce_find_instr_ea_and_phys(struct pt_regs *regs, uint64_t *addr,
->  	if (pfn != ULONG_MAX) {
->  		instr_addr = (pfn << PAGE_SHIFT) + (regs->nip & ~PAGE_MASK);
->  		instr = *(unsigned int *)(instr_addr);
-> -		if (!analyse_instr(&op, &tmp, instr)) {
-> +		if (!analyse_instr(&op, &tmp, instr, 0)) {
->  			pfn = addr_to_pfn(regs, op.ea);
->  			*addr = op.ea;
->  			*phys_addr = (pfn << PAGE_SHIFT);
-> diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optprobes.c
-> index 024f7aad1952..82dc8a589c87 100644
-> --- a/arch/powerpc/kernel/optprobes.c
-> +++ b/arch/powerpc/kernel/optprobes.c
-> @@ -100,7 +100,7 @@ static unsigned long can_optimize(struct kprobe *p)
->  	 * and that can be emulated.
->  	 */
->  	if (!is_conditional_branch(*p->ainsn.insn) &&
-> -			analyse_instr(&op, &regs, *p->ainsn.insn) == 1) {
-> +			analyse_instr(&op, &regs, *p->ainsn.insn, 0) == 1) {
->  		emulate_update_regs(&regs, &op);
->  		nip = regs.nip;
->  	}
-> diff --git a/arch/powerpc/kernel/uprobes.c b/arch/powerpc/kernel/uprobes.c
-> index 1cfef0e5fec5..ab1077dc6148 100644
-> --- a/arch/powerpc/kernel/uprobes.c
-> +++ b/arch/powerpc/kernel/uprobes.c
-> @@ -173,7 +173,7 @@ bool arch_uprobe_skip_sstep(struct arch_uprobe *auprobe, struct pt_regs *regs)
->  	 * emulate_step() returns 1 if the insn was successfully emulated.
->  	 * For all other cases, we need to single-step in hardware.
->  	 */
-> -	ret = emulate_step(regs, auprobe->insn);
-> +	ret = emulate_step(regs, auprobe->insn, 0);
->  	if (ret > 0)
->  		return true;
->  
-> diff --git a/arch/powerpc/kvm/emulate_loadstore.c b/arch/powerpc/kvm/emulate_loadstore.c
-> index 2e496eb86e94..fcab1f31b48d 100644
-> --- a/arch/powerpc/kvm/emulate_loadstore.c
-> +++ b/arch/powerpc/kvm/emulate_loadstore.c
-> @@ -100,7 +100,7 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu)
->  
->  	emulated = EMULATE_FAIL;
->  	vcpu->arch.regs.msr = vcpu->arch.shared->msr;
-> -	if (analyse_instr(&op, &vcpu->arch.regs, inst) == 0) {
-> +	if (analyse_instr(&op, &vcpu->arch.regs, inst, 0) == 0) {
->  		int type = op.type & INSTR_TYPE_MASK;
->  		int size = GETSIZE(op.type);
->  
-> diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-> index c077acb983a1..ade3f5eba2e5 100644
-> --- a/arch/powerpc/lib/sstep.c
-> +++ b/arch/powerpc/lib/sstep.c
-> @@ -1163,7 +1163,7 @@ static nokprobe_inline int trap_compare(long v1, long v2)
->   * otherwise.
->   */
->  int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
-> -		  unsigned int instr)
-> +		  unsigned int instr, unsigned int sufx)
-
-I know we really like shortenings in arch/powerpc, but I think we can
-afford the two extra characters to spell 'suffix' in full :)
-
->  {
->  	unsigned int opcode, ra, rb, rc, rd, spr, u;
->  	unsigned long int imm;
-> @@ -2756,7 +2756,8 @@ void emulate_update_regs(struct pt_regs *regs, struct instruction_op *op)
->  {
->  	unsigned long next_pc;
->  
-> -	next_pc = truncate_if_32bit(regs->msr, regs->nip + 4);
-> +	next_pc = truncate_if_32bit(regs->msr,
-> +				    regs->nip + ((op->type & PREFIXED) ? 8 : 4));
-
-I know you only use it twice, but this is super ugly - could you add a
-macro like IS_PREFIXED_TYPE? or even something like
-#define OP_TYPE_LENGTH(x) (((op)->type & PREFIXED) ? 8 : 4)
-
->  	switch (GETTYPE(op->type)) {
->  	case COMPUTE:
->  		if (op->type & SETREG)
-> @@ -3101,14 +3102,14 @@ NOKPROBE_SYMBOL(emulate_loadstore);
->   * or -1 if the instruction is one that should not be stepped,
->   * such as an rfid, or a mtmsrd that would clear MSR_RI.
->   */
-> -int emulate_step(struct pt_regs *regs, unsigned int instr)
-> +int emulate_step(struct pt_regs *regs, unsigned int instr, unsigned int sufx)
->  {
->  	struct instruction_op op;
->  	int r, err, type;
->  	unsigned long val;
->  	unsigned long ea;
->  
-> -	r = analyse_instr(&op, regs, instr);
-> +	r = analyse_instr(&op, regs, instr, sufx);
->  	if (r < 0)
->  		return r;
->  	if (r > 0) {
-> @@ -3200,7 +3201,8 @@ int emulate_step(struct pt_regs *regs, unsigned int instr)
->  	return 0;
->  
->   instr_done:
-> -	regs->nip = truncate_if_32bit(regs->msr, regs->nip + 4);
-> +	regs->nip = truncate_if_32bit(regs->msr,
-> +				      regs->nip + ((op.type & PREFIXED) ? 8 : 4));
->  	return 1;
->  }
->  NOKPROBE_SYMBOL(emulate_step);
-> diff --git a/arch/powerpc/lib/test_emulate_step.c b/arch/powerpc/lib/test_emulate_step.c
-> index 42347067739c..9288dc6fc715 100644
-> --- a/arch/powerpc/lib/test_emulate_step.c
-> +++ b/arch/powerpc/lib/test_emulate_step.c
-> @@ -103,7 +103,7 @@ static void __init test_ld(void)
->  	regs.gpr[3] = (unsigned long) &a;
->  
->  	/* ld r5, 0(r3) */
-> -	stepped = emulate_step(&regs, TEST_LD(5, 3, 0));
-> +	stepped = emulate_step(&regs, TEST_LD(5, 3, 0), 0);
-
-I wonder if it would be clearer if we had something like
-#define NO_SUFFIX 0
-
->  
->  	if (stepped == 1 && regs.gpr[5] == a)
->  		show_result("ld", "PASS");
-> @@ -121,7 +121,7 @@ static void __init test_lwz(void)
->  	regs.gpr[3] = (unsigned long) &a;
->  
->  	/* lwz r5, 0(r3) */
-> -	stepped = emulate_step(&regs, TEST_LWZ(5, 3, 0));
-> +	stepped = emulate_step(&regs, TEST_LWZ(5, 3, 0), 0);
->  
->  	if (stepped == 1 && regs.gpr[5] == a)
->  		show_result("lwz", "PASS");
-> @@ -141,7 +141,7 @@ static void __init test_lwzx(void)
->  	regs.gpr[5] = 0x8765;
->  
->  	/* lwzx r5, r3, r4 */
-> -	stepped = emulate_step(&regs, TEST_LWZX(5, 3, 4));
-> +	stepped = emulate_step(&regs, TEST_LWZX(5, 3, 4), 0);
->  	if (stepped == 1 && regs.gpr[5] == a[2])
->  		show_result("lwzx", "PASS");
->  	else
-> @@ -159,7 +159,7 @@ static void __init test_std(void)
->  	regs.gpr[5] = 0x5678;
->  
->  	/* std r5, 0(r3) */
-> -	stepped = emulate_step(&regs, TEST_STD(5, 3, 0));
-> +	stepped = emulate_step(&regs, TEST_STD(5, 3, 0), 0);
->  	if (stepped == 1 || regs.gpr[5] == a)
->  		show_result("std", "PASS");
->  	else
-> @@ -184,7 +184,7 @@ static void __init test_ldarx_stdcx(void)
->  	regs.gpr[5] = 0x5678;
->  
->  	/* ldarx r5, r3, r4, 0 */
-> -	stepped = emulate_step(&regs, TEST_LDARX(5, 3, 4, 0));
-> +	stepped = emulate_step(&regs, TEST_LDARX(5, 3, 4, 0), 0);
->  
->  	/*
->  	 * Don't touch 'a' here. Touching 'a' can do Load/store
-> @@ -202,7 +202,7 @@ static void __init test_ldarx_stdcx(void)
->  	regs.gpr[5] = 0x9ABC;
->  
->  	/* stdcx. r5, r3, r4 */
-> -	stepped = emulate_step(&regs, TEST_STDCX(5, 3, 4));
-> +	stepped = emulate_step(&regs, TEST_STDCX(5, 3, 4), 0);
->  
->  	/*
->  	 * Two possible scenarios that indicates successful emulation
-> @@ -242,7 +242,7 @@ static void __init test_lfsx_stfsx(void)
->  	regs.gpr[4] = 0;
->  
->  	/* lfsx frt10, r3, r4 */
-> -	stepped = emulate_step(&regs, TEST_LFSX(10, 3, 4));
-> +	stepped = emulate_step(&regs, TEST_LFSX(10, 3, 4), 0);
->  
->  	if (stepped == 1)
->  		show_result("lfsx", "PASS");
-> @@ -255,7 +255,7 @@ static void __init test_lfsx_stfsx(void)
->  	c.a = 678.91;
->  
->  	/* stfsx frs10, r3, r4 */
-> -	stepped = emulate_step(&regs, TEST_STFSX(10, 3, 4));
-> +	stepped = emulate_step(&regs, TEST_STFSX(10, 3, 4), 0);
->  
->  	if (stepped == 1 && c.b == cached_b)
->  		show_result("stfsx", "PASS");
-> @@ -285,7 +285,7 @@ static void __init test_lfdx_stfdx(void)
->  	regs.gpr[4] = 0;
->  
->  	/* lfdx frt10, r3, r4 */
-> -	stepped = emulate_step(&regs, TEST_LFDX(10, 3, 4));
-> +	stepped = emulate_step(&regs, TEST_LFDX(10, 3, 4), 0);
->  
->  	if (stepped == 1)
->  		show_result("lfdx", "PASS");
-> @@ -298,7 +298,7 @@ static void __init test_lfdx_stfdx(void)
->  	c.a = 987654.32;
->  
->  	/* stfdx frs10, r3, r4 */
-> -	stepped = emulate_step(&regs, TEST_STFDX(10, 3, 4));
-> +	stepped = emulate_step(&regs, TEST_STFDX(10, 3, 4), 0);
->  
->  	if (stepped == 1 && c.b == cached_b)
->  		show_result("stfdx", "PASS");
-> @@ -344,7 +344,7 @@ static void __init test_lvx_stvx(void)
->  	regs.gpr[4] = 0;
->  
->  	/* lvx vrt10, r3, r4 */
-> -	stepped = emulate_step(&regs, TEST_LVX(10, 3, 4));
-> +	stepped = emulate_step(&regs, TEST_LVX(10, 3, 4), 0);
->  
->  	if (stepped == 1)
->  		show_result("lvx", "PASS");
-> @@ -360,7 +360,7 @@ static void __init test_lvx_stvx(void)
->  	c.b[3] = 498532;
->  
->  	/* stvx vrs10, r3, r4 */
-> -	stepped = emulate_step(&regs, TEST_STVX(10, 3, 4));
-> +	stepped = emulate_step(&regs, TEST_STVX(10, 3, 4), 0);
->  
->  	if (stepped == 1 && cached_b[0] == c.b[0] && cached_b[1] == c.b[1] &&
->  	    cached_b[2] == c.b[2] && cached_b[3] == c.b[3])
-> @@ -401,7 +401,7 @@ static void __init test_lxvd2x_stxvd2x(void)
->  	regs.gpr[4] = 0;
->  
->  	/* lxvd2x vsr39, r3, r4 */
-> -	stepped = emulate_step(&regs, TEST_LXVD2X(39, 3, 4));
-> +	stepped = emulate_step(&regs, TEST_LXVD2X(39, 3, 4), 0);
->  
->  	if (stepped == 1 && cpu_has_feature(CPU_FTR_VSX)) {
->  		show_result("lxvd2x", "PASS");
-> @@ -421,7 +421,7 @@ static void __init test_lxvd2x_stxvd2x(void)
->  	c.b[3] = 4;
->  
->  	/* stxvd2x vsr39, r3, r4 */
-> -	stepped = emulate_step(&regs, TEST_STXVD2X(39, 3, 4));
-> +	stepped = emulate_step(&regs, TEST_STXVD2X(39, 3, 4), 0);
->  
->  	if (stepped == 1 && cached_b[0] == c.b[0] && cached_b[1] == c.b[1] &&
->  	    cached_b[2] == c.b[2] && cached_b[3] == c.b[3] &&
-> @@ -848,7 +848,7 @@ static int __init emulate_compute_instr(struct pt_regs *regs,
->  	if (!regs || !instr)
->  		return -EINVAL;
->  
-> -	if (analyse_instr(&op, regs, instr) != 1 ||
-> +	if (analyse_instr(&op, regs, instr, 0) != 1 ||
->  	    GETTYPE(op.type) != COMPUTE) {
->  		pr_info("emulation failed, instruction = 0x%08x\n", instr);
->  		return -EFAULT;
-> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-> index a7056049709e..f47bd843dc52 100644
-> --- a/arch/powerpc/xmon/xmon.c
-> +++ b/arch/powerpc/xmon/xmon.c
-> @@ -705,7 +705,7 @@ static int xmon_core(struct pt_regs *regs, int fromipi)
->  	if ((regs->msr & (MSR_IR|MSR_PR|MSR_64BIT)) == (MSR_IR|MSR_64BIT)) {
->  		bp = at_breakpoint(regs->nip);
->  		if (bp != NULL) {
-> -			int stepped = emulate_step(regs, bp->instr[0]);
-> +			int stepped = emulate_step(regs, bp->instr[0], 0);
->  			if (stepped == 0) {
->  				regs->nip = (unsigned long) &bp->instr[0];
->  				atomic_inc(&bp->ref_count);
-> @@ -1170,7 +1170,7 @@ static int do_step(struct pt_regs *regs)
->  	/* check we are in 64-bit kernel mode, translation enabled */
->  	if ((regs->msr & (MSR_64BIT|MSR_PR|MSR_IR)) == (MSR_64BIT|MSR_IR)) {
->  		if (mread(regs->nip, &instr, 4) == 4) {
-> -			stepped = emulate_step(regs, instr);
-> +			stepped = emulate_step(regs, instr, 0);
->  			if (stepped < 0) {
->  				printf("Couldn't single-step %s instruction\n",
->  				       (IS_RFID(instr)? "rfid": "mtmsrd"));
-> -- 
-> 2.20.1
+OK I suppose. Will you send a new series?
