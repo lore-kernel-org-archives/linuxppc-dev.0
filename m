@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1B57C43603
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 08:40:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F00DFC43603
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 08:43:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6F79721D7D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 08:40:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6F79721D7D
+	by mail.kernel.org (Postfix) with ESMTPS id 79F9621D7D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 08:43:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 79F9621D7D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47d7kF57bPzDqRM
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 19:40:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47d7nY4dbxzDqfD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 19:43:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=sandipan@linux.ibm.com;
@@ -29,63 +29,64 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47d6hW6b5LzDqWm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 18:53:47 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47d6jV0nhJzDqYq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 18:54:37 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- xBI7rfAs131889
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 02:53:45 -0500
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2wy7uapuvy-1
+ xBI7sMXA053712
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 02:54:35 -0500
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2wy41rdkh1-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 02:53:44 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 02:54:32 -0500
 Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.ibm.com>;
- Wed, 18 Dec 2019 07:52:25 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Wed, 18 Dec 2019 07:52:59 -0000
+Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 18 Dec 2019 07:52:21 -0000
+ Wed, 18 Dec 2019 07:52:55 -0000
 Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
  [9.149.105.62])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xBI7qKdk52232224
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id xBI7qAP645154698
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 18 Dec 2019 07:52:20 GMT
+ Wed, 18 Dec 2019 07:52:10 GMT
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 10309AE051;
- Wed, 18 Dec 2019 07:52:20 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 08717AE055;
+ Wed, 18 Dec 2019 07:52:54 +0000 (GMT)
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B9CADAE045;
- Wed, 18 Dec 2019 07:52:17 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 90DE1AE051;
+ Wed, 18 Dec 2019 07:52:51 +0000 (GMT)
 Received: from fir03.in.ibm.com (unknown [9.121.59.65])
  by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 18 Dec 2019 07:52:17 +0000 (GMT)
+ Wed, 18 Dec 2019 07:52:51 +0000 (GMT)
 From: Sandipan Das <sandipan@linux.ibm.com>
 To: shuahkh@osg.samsung.com, linux-kselftest@vger.kernel.org
-Subject: [PATCH v15 08/23] selftests/vm/pkeys: Fix pkey_disable_clear()
-Date: Wed, 18 Dec 2019 13:21:41 +0530
+Subject: [PATCH v15 21/23] selftests/vm/pkeys: Fix number of reserved powerpc
+ pkeys
+Date: Wed, 18 Dec 2019 13:21:54 +0530
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <cover.1576645161.git.sandipan@linux.ibm.com>
 References: <cover.1576645161.git.sandipan@linux.ibm.com>
 In-Reply-To: <cover.1576645161.git.sandipan@linux.ibm.com>
 References: <cover.1576645161.git.sandipan@linux.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 19121807-0020-0000-0000-000003996805
+x-cbid: 19121807-0028-0000-0000-000003C9CAED
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19121807-0021-0000-0000-000021F088A0
-Message-Id: <9fde42a1d4888e8d5621fb8847e95f425daf692b.1576645161.git.sandipan@linux.ibm.com>
+x-cbparentid: 19121807-0029-0000-0000-0000248D1637
+Message-Id: <be1a6a9fefa37d6188fcbe17a408847065ffd64f.1576645161.git.sandipan@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
  definitions=2019-12-18_01:2019-12-17,2019-12-18 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- clxscore=1015 bulkscore=0 adultscore=0 suspectscore=0 mlxlogscore=736
- malwarescore=0 mlxscore=0 phishscore=0 priorityscore=1501 impostorscore=0
- spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-1910280000 definitions=main-1912180063
+ phishscore=0 bulkscore=0
+ adultscore=0 spamscore=0 malwarescore=0 impostorscore=0 priorityscore=1501
+ suspectscore=0 mlxscore=0 mlxlogscore=999 clxscore=1015 lowpriorityscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-1910280000
+ definitions=main-1912180063
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,50 +100,72 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: linux-arch@vger.kernel.org, fweimer@redhat.com, linux-mm@kvack.org,
  aneesh.kumar@linux.ibm.com, x86@kernel.org, linuxram@us.ibm.com,
- mhocko@kernel.org, dave.hansen@intel.com, mingo@redhat.com, msuchanek@suse.de,
+ mhocko@kernel.org, dave.hansen@intel.com, mingo@redhat.com,
+ "Desnes A. Nunes do Rosario" <desnesn@linux.vnet.ibm.com>, msuchanek@suse.de,
  linuxppc-dev@lists.ozlabs.org, bauerman@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Ram Pai <linuxram@us.ibm.com>
+From: "Desnes A. Nunes do Rosario" <desnesn@linux.vnet.ibm.com>
 
-Currently, pkey_disable_clear() sets the specified bits
-instead clearing them. This has been dead code up to now
-because its only callers i.e. pkey_access/write_allow()
-are also unused.
+The number of reserved pkeys in a PowerNV environment is
+different from that on PowerVM or KVM.
 
-cc: Dave Hansen <dave.hansen@intel.com>
-cc: Florian Weimer <fweimer@redhat.com>
+Tested on PowerVM and PowerNV environments.
+
+Signed-off-by: "Desnes A. Nunes do Rosario" <desnesn@linux.vnet.ibm.com>
 Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-Acked-by: Dave Hansen <dave.hansen@intel.com>
 Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
 ---
- tools/testing/selftests/vm/protection_keys.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ tools/testing/selftests/vm/pkey-powerpc.h | 22 ++++++++++++++++++++--
+ 1 file changed, 20 insertions(+), 2 deletions(-)
 
-diff --git a/tools/testing/selftests/vm/protection_keys.c b/tools/testing/selftests/vm/protection_keys.c
-index b474d4fbe92b..9a6c95b220cc 100644
---- a/tools/testing/selftests/vm/protection_keys.c
-+++ b/tools/testing/selftests/vm/protection_keys.c
-@@ -417,7 +417,7 @@ void pkey_disable_clear(int pkey, int flags)
- 			pkey, pkey, pkey_rights);
- 	pkey_assert(pkey_rights >= 0);
- 
--	pkey_rights |= flags;
-+	pkey_rights &= ~flags;
- 
- 	ret = hw_pkey_set(pkey, pkey_rights, 0);
- 	shadow_pkey_reg = set_pkey_bits(shadow_pkey_reg, pkey, pkey_rights);
-@@ -430,7 +430,7 @@ void pkey_disable_clear(int pkey, int flags)
- 	dprintf1("%s(%d) pkey_reg: 0x"PKEY_REG_FMT"\n", __func__,
- 			pkey, read_pkey_reg());
- 	if (flags)
--		assert(read_pkey_reg() > orig_pkey_reg);
-+		assert(read_pkey_reg() < orig_pkey_reg);
+diff --git a/tools/testing/selftests/vm/pkey-powerpc.h b/tools/testing/selftests/vm/pkey-powerpc.h
+index f7a20bd07870..a70577045074 100644
+--- a/tools/testing/selftests/vm/pkey-powerpc.h
++++ b/tools/testing/selftests/vm/pkey-powerpc.h
+@@ -28,7 +28,10 @@
+ #define NR_RESERVED_PKEYS_4K	27 /* pkey-0, pkey-1, exec-only-pkey
+ 				      and 24 other keys that cannot be
+ 				      represented in the PTE */
+-#define NR_RESERVED_PKEYS_64K	3  /* pkey-0, pkey-1 and exec-only-pkey */
++#define NR_RESERVED_PKEYS_64K_3KEYS	3 /* PowerNV and KVM: pkey-0,
++					     pkey-1 and exec-only key */
++#define NR_RESERVED_PKEYS_64K_4KEYS	4 /* PowerVM: pkey-0, pkey-1,
++					     pkey-31 and exec-only key */
+ #define PKEY_BITS_PER_PKEY	2
+ #define HPAGE_SIZE		(1UL << 24)
+ #define PAGE_SIZE		(1UL << 16)
+@@ -69,12 +72,27 @@ static inline int cpu_has_pkeys(void)
+ 	return 1;
  }
  
- void pkey_write_allow(int pkey)
++static inline bool arch_is_powervm()
++{
++	struct stat buf;
++
++	if ((stat("/sys/firmware/devicetree/base/ibm,partition-name", &buf) == 0) &&
++	    (stat("/sys/firmware/devicetree/base/hmc-managed?", &buf) == 0) &&
++	    (stat("/sys/firmware/devicetree/base/chosen/qemu,graphic-width", &buf) == -1) )
++		return true;
++
++	return false;
++}
++
+ static inline int get_arch_reserved_keys(void)
+ {
+ 	if (sysconf(_SC_PAGESIZE) == 4096)
+ 		return NR_RESERVED_PKEYS_4K;
+ 	else
+-		return NR_RESERVED_PKEYS_64K;
++		if (arch_is_powervm())
++			return NR_RESERVED_PKEYS_64K_4KEYS;
++		else
++			return NR_RESERVED_PKEYS_64K_3KEYS;
+ }
+ 
+ void expect_fault_on_read_execonly_key(void *p1, int pkey)
 -- 
 2.17.1
 
