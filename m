@@ -2,63 +2,62 @@ Return-Path: <SRS0=gJAX=2I=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.0 required=3.0 tests=MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D9EE3C43603
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 11:04:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC13FC43603
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 11:09:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8A0622176D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 11:04:31 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="YfMz2eXY"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A0622176D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 67DF5206A5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 11:09:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 67DF5206A5
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47dBwY4FGNzDql5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 22:04:29 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47dBtS0RHjzDqgH
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 22:02:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47dC2N3FPyzDqDf
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 22:09:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=srs0=np5j=2i=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.b="YfMz2eXY"; dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 47dBtQ3mHmz9sRv;
- Wed, 18 Dec 2019 22:02:38 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1576666959;
- bh=FWlAjNM6cmTI+9Vit59LLCQZ6i+spyEjv7d/aZR81VA=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=YfMz2eXYxZdO8Wm8veuFf9IU7mF9LyzoX4KVXYDjvPFDtpb8Ogrf3H2FiPowFSIDR
- ad5k7V9s+DndepXK9fOd/Ln4IuytMJ/1GWUaXHRLf02gCeZlO8FWv2a9cvEZBj9jv/
- iGmTiTQ4e9KOdspMX1dzYDrdT7QNc5P0/GhXtYYQoY7h0Mu183rMtWvHx7Kb9zUUPZ
- tGVedghPFNXaDxiDgIhnDYQlqhqvPHgVp8B2EqTzct11UEe76IuwRhgrybe/Q2l9ST
- Qo+x79Fqyi/6Smi/zsqiCMAgrfhD3AZDBjzqCFFGBJMUuS3nsugek6U1Juu2rBru/6
- 97/GJw+nsU7eQ==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Chen Zhou <chenzhou10@huawei.com>, benh@kernel.crashing.org,
- paulus@samba.org
-Subject: Re: [PATCH] powerpc/setup_64: use DEFINE_DEBUGFS_ATTRIBUTE to define
- fops_rfi_flush
-In-Reply-To: <20191218020842.186446-1-chenzhou10@huawei.com>
-References: <20191218020842.186446-1-chenzhou10@huawei.com>
-Date: Wed, 18 Dec 2019 22:02:36 +1100
-Message-ID: <8736dhoq0j.fsf@mpe.ellerman.id.au>
+ header.from=bugzilla.kernel.org
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47dC0401rmzDqgH
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 22:07:31 +1100 (AEDT)
+From: bugzilla-daemon@bugzilla.kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 205885] [Bisected] BUG: KASAN: null-ptr-deref in
+ strncpy+0x3c/0x60
+Date: Wed, 18 Dec 2019 11:07:29 +0000
+X-Bugzilla-Reason: None
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
+X-Bugzilla-Product: Platform Specific/Hardware
+X-Bugzilla-Component: PPC-32
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: michael@ellerman.id.au
+X-Bugzilla-Status: RESOLVED
+X-Bugzilla-Resolution: PATCH_ALREADY_AVAILABLE
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: bug_status cc resolution
+Message-ID: <bug-205885-206035-pm076z5tEs@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-205885-206035@https.bugzilla.kernel.org/>
+References: <bug-205885-206035@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 MIME-Version: 1.0
-Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,76 +69,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: chenzhou10@huawei.com, Julia Lawall <Julia.Lawall@lip6.fr>,
- Nicolai Stange <nicstange@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Chen Zhou <chenzhou10@huawei.com> writes:
-> Use DEFINE_DEBUGFS_ATTRIBUTE rather than DEFINE_SIMPLE_ATTRIBUTE for
-> debugfs files.
->
-> Semantic patch information:
-> Rationale: DEFINE_SIMPLE_ATTRIBUTE + debugfs_create_file()
-> imposes some significant overhead as compared to
-> DEFINE_DEBUGFS_ATTRIBUTE + debugfs_create_file_unsafe().
+https://bugzilla.kernel.org/show_bug.cgi?id=3D205885
 
-I know you didn't write this text, but these change logs are not great.
-It doesn't really explain why you're doing it. And it is alarming that
-you're converting *to* a function with "unsafe" in the name.
+Michael Ellerman (michael@ellerman.id.au) changed:
 
-The commit that added the script:
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEW                         |RESOLVED
+                 CC|                            |michael@ellerman.id.au
+         Resolution|---                         |PATCH_ALREADY_AVAILABLE
 
-  5103068eaca2 ("debugfs, coccinelle: check for obsolete DEFINE_SIMPLE_ATTRIBUTE() usage")
+--- Comment #7 from Michael Ellerman (michael@ellerman.id.au) ---
+This is fixed upstream:
 
-Has a bit more explanation.
+https://git.kernel.org/torvalds/c/7de7de7ca0ae0fc70515ee3154af33af75edae2c
 
-Maybe something like this:
-
-  In order to protect against file removal races, debugfs files created via
-  debugfs_create_file() are wrapped by a struct file_operations at their
-  opening.
-  
-  If the original struct file_operations is known to be safe against removal
-  races already, the proxy creation may be bypassed by creating the files
-  using DEFINE_DEBUGFS_ATTRIBUTE() and debugfs_create_file_unsafe().
-
-
-The part that's not explained is why this file is "known to be safe
-against removal races already"?
-
-It also seems this conversion will make the file no longer seekable,
-because DEFINE_SIMPLE_ATTRIBUTE() uses generic_file_llseek() whereas
-DEFINE_DEBUGFS_ATTRIBUTE() uses no_llseek.
-
-That is probably fine, but should be mentioned.
-
-cheers
-
-> Signed-off-by: Chen Zhou <chenzhou10@huawei.com>
-> ---
->  arch/powerpc/kernel/setup_64.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-> index 6104917..4b9fbb2 100644
-> --- a/arch/powerpc/kernel/setup_64.c
-> +++ b/arch/powerpc/kernel/setup_64.c
-> @@ -956,11 +956,11 @@ static int rfi_flush_get(void *data, u64 *val)
->  	return 0;
->  }
->  
-> -DEFINE_SIMPLE_ATTRIBUTE(fops_rfi_flush, rfi_flush_get, rfi_flush_set, "%llu\n");
-> +DEFINE_DEBUGFS_ATTRIBUTE(fops_rfi_flush, rfi_flush_get, rfi_flush_set, "%llu\n");
->  
->  static __init int rfi_flush_debugfs_init(void)
->  {
-> -	debugfs_create_file("rfi_flush", 0600, powerpc_debugfs_root, NULL, &fops_rfi_flush);
-> +	debugfs_create_file_unsafe("rfi_flush", 0600, powerpc_debugfs_root, NULL, &fops_rfi_flush);
->  	return 0;
->  }
->  device_initcall(rfi_flush_debugfs_init);
-> -- 
-> 2.7.4
+--=20
+You are receiving this mail because:
+You are watching the assignee of the bug.=
