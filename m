@@ -2,77 +2,91 @@ Return-Path: <SRS0=gJAX=2I=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D3DAC43603
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 09:26:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DC16CC43603
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 09:28:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3FA6921582
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 09:26:33 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="OvGwwzXG"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3FA6921582
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id 99B0021582
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 09:28:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 99B0021582
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47d8lV6GNkzDqMh
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 20:26:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47d8p03QrlzDqSJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 20:28:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=sandipan@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
- envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="OvGwwzXG"; dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47d8b72j4VzDqCc
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 20:19:15 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=QZGedylInCJfPCSf+kcRbP2/TdXT8x3ydBMR01xASqw=; b=OvGwwzXGyysGvPaaFYdQ0Dbfy
- raigUNsjkQYZ8tEmisXy2dBiU0NbvOG4c+s5sDXMgIy77YCnBMMaaJ7niNp1onJd1/Jmr51xOhWSh
- hTTlK4y+ZJqbdDUV2Wrcdqdo4376uXvgpixZXZZ0nKOJ6Os7x550zA8zk9yGlVoictxEWgyah5dxr
- norSBBfveOHywfnvsoPOfmbLaxPbX9ZpKrJt9E2FkmxRFuIagQsO0XEw+uiJQJ04CC5FNfPJduvLy
- FFiUk7IpB0vvMDOEErkRLu4NGZnr2+0yJRXodJEoPPR+bj8iuydqZvD9h7U56dR3JYgdWqunm4h24
- o3FYgNDWA==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100]
- helo=noisy.programming.kicks-ass.net)
- by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1ihVU4-0004tc-BE; Wed, 18 Dec 2019 09:19:08 +0000
-Received: from hirez.programming.kicks-ass.net
- (hirez.programming.kicks-ass.net [192.168.1.225])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id C1B7A304C1B;
- Wed, 18 Dec 2019 10:17:43 +0100 (CET)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
- id C901D2B3E30F8; Wed, 18 Dec 2019 10:19:06 +0100 (CET)
-Date: Wed, 18 Dec 2019 10:19:06 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH v2 3/3] asm-generic/tlb: Avoid potential double flush
-Message-ID: <20191218091906.GP2844@hirez.programming.kicks-ass.net>
-References: <20191218053530.73053-1-aneesh.kumar@linux.ibm.com>
- <20191218053530.73053-3-aneesh.kumar@linux.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20191218053530.73053-3-aneesh.kumar@linux.ibm.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47d8d93QtSzDqgG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 20:21:00 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ xBI7lgfK110764
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 02:52:09 -0500
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2wyen7artq-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 02:52:09 -0500
+Received: from localhost
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.ibm.com>;
+ Wed, 18 Dec 2019 07:52:07 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 18 Dec 2019 07:52:03 -0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xBI7q1WR40239134
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 18 Dec 2019 07:52:01 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B0CD9AE057;
+ Wed, 18 Dec 2019 07:52:01 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6745AAE053;
+ Wed, 18 Dec 2019 07:51:59 +0000 (GMT)
+Received: from fir03.in.ibm.com (unknown [9.121.59.65])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 18 Dec 2019 07:51:59 +0000 (GMT)
+From: Sandipan Das <sandipan@linux.ibm.com>
+To: shuahkh@osg.samsung.com, linux-kselftest@vger.kernel.org
+Subject: [PATCH v15 01/23] selftests/x86/pkeys: Move selftests to arch-neutral
+ directory
+Date: Wed, 18 Dec 2019 13:21:34 +0530
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <cover.1576645161.git.sandipan@linux.ibm.com>
+References: <cover.1576645161.git.sandipan@linux.ibm.com>
+In-Reply-To: <cover.1576645161.git.sandipan@linux.ibm.com>
+References: <cover.1576645161.git.sandipan@linux.ibm.com>
+X-TM-AS-GCONF: 00
+x-cbid: 19121807-0012-0000-0000-0000037613FF
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19121807-0013-0000-0000-000021B20156
+Message-Id: <47158483e6c807bdb2f14e65aa9adee4b3ae929b.1576645161.git.sandipan@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
+ definitions=2019-12-18_01:2019-12-17,2019-12-18 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 spamscore=0
+ malwarescore=0 clxscore=1015 impostorscore=0 lowpriorityscore=0
+ suspectscore=0 priorityscore=1501 bulkscore=0 mlxscore=0 mlxlogscore=999
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-1910280000 definitions=main-1912180062
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,29 +98,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, npiggin@gmail.com, linux-mm@kvack.org,
- akpm@linux-foundation.org, will@kernel.org
+Cc: linux-arch@vger.kernel.org, fweimer@redhat.com, linux-mm@kvack.org,
+ aneesh.kumar@linux.ibm.com, x86@kernel.org, linuxram@us.ibm.com,
+ mhocko@kernel.org, dave.hansen@intel.com, mingo@redhat.com, msuchanek@suse.de,
+ linuxppc-dev@lists.ozlabs.org, bauerman@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Dec 18, 2019 at 11:05:30AM +0530, Aneesh Kumar K.V wrote:
+From: Ram Pai <linuxram@us.ibm.com>
 
-> --- a/include/asm-generic/tlb.h
-> +++ b/include/asm-generic/tlb.h
-> @@ -402,7 +402,12 @@ tlb_update_vma_flags(struct mmu_gather *tlb, struct vm_area_struct *vma) { }
->  
->  static inline void tlb_flush_mmu_tlbonly(struct mmu_gather *tlb)
->  {
-> -	if (!tlb->end)
-> +	/*
-> +	 * Anything calling __tlb_adjust_range() also sets at least one of
-> +	 * these bits.
-> +	 */
-> +	if (!(tlb->freed_tables || tlb->cleared_ptes || tlb->cleared_pmds ||
-> +	      tlb->cleared_puds || tlb->cleared_p4ds))
->  		return;
+cc: Dave Hansen <dave.hansen@intel.com>
+cc: Florian Weimer <fweimer@redhat.com>
+Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+Acked-by: Ingo Molnar <mingo@kernel.org>
+Acked-by: Dave Hansen <dave.hansen@intel.com>
+Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
+---
+ tools/testing/selftests/vm/.gitignore                 | 1 +
+ tools/testing/selftests/vm/Makefile                   | 1 +
+ tools/testing/selftests/{x86 => vm}/pkey-helpers.h    | 0
+ tools/testing/selftests/{x86 => vm}/protection_keys.c | 0
+ tools/testing/selftests/x86/.gitignore                | 1 -
+ 5 files changed, 2 insertions(+), 1 deletion(-)
+ rename tools/testing/selftests/{x86 => vm}/pkey-helpers.h (100%)
+ rename tools/testing/selftests/{x86 => vm}/protection_keys.c (100%)
 
-FWIW I looked at the GCC generated assembly output for this (x86_64) and
-it did a single load and mask as expected.
+diff --git a/tools/testing/selftests/vm/.gitignore b/tools/testing/selftests/vm/.gitignore
+index 31b3c98b6d34..c55837bf39fa 100644
+--- a/tools/testing/selftests/vm/.gitignore
++++ b/tools/testing/selftests/vm/.gitignore
+@@ -14,3 +14,4 @@ virtual_address_range
+ gup_benchmark
+ va_128TBswitch
+ map_fixed_noreplace
++protection_keys
+diff --git a/tools/testing/selftests/vm/Makefile b/tools/testing/selftests/vm/Makefile
+index 7f9a8a8c31da..4e9c741be6af 100644
+--- a/tools/testing/selftests/vm/Makefile
++++ b/tools/testing/selftests/vm/Makefile
+@@ -18,6 +18,7 @@ TEST_GEN_FILES += on-fault-limit
+ TEST_GEN_FILES += thuge-gen
+ TEST_GEN_FILES += transhuge-stress
+ TEST_GEN_FILES += userfaultfd
++TEST_GEN_FILES += protection_keys
+ 
+ ifneq (,$(filter $(ARCH),arm64 ia64 mips64 parisc64 ppc64 riscv64 s390x sh64 sparc64 x86_64))
+ TEST_GEN_FILES += va_128TBswitch
+diff --git a/tools/testing/selftests/x86/pkey-helpers.h b/tools/testing/selftests/vm/pkey-helpers.h
+similarity index 100%
+rename from tools/testing/selftests/x86/pkey-helpers.h
+rename to tools/testing/selftests/vm/pkey-helpers.h
+diff --git a/tools/testing/selftests/x86/protection_keys.c b/tools/testing/selftests/vm/protection_keys.c
+similarity index 100%
+rename from tools/testing/selftests/x86/protection_keys.c
+rename to tools/testing/selftests/vm/protection_keys.c
+diff --git a/tools/testing/selftests/x86/.gitignore b/tools/testing/selftests/x86/.gitignore
+index 7757f73ff9a3..eb30ffd83876 100644
+--- a/tools/testing/selftests/x86/.gitignore
++++ b/tools/testing/selftests/x86/.gitignore
+@@ -11,5 +11,4 @@ ldt_gdt
+ iopl
+ mpx-mini-test
+ ioperm
+-protection_keys
+ test_vdso
+-- 
+2.17.1
+
