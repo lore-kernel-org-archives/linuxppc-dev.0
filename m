@@ -2,23 +2,22 @@ Return-Path: <SRS0=gJAX=2I=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.0 required=3.0 tests=MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EC13FC43603
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 11:09:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DF01C43603
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 11:39:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 67DF5206A5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 11:09:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 67DF5206A5
+	by mail.kernel.org (Postfix) with ESMTPS id 8A58021582
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 11:39:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A58021582
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47dC2N3FPyzDqDf
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 22:09:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47dChz3gYfzDqg8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 22:39:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=srs0=np5j=2i=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
@@ -28,13 +27,13 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47dC0401rmzDqgH
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 22:07:31 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47dCfB4WLdzDqKb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 22:37:05 +1100 (AEDT)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 205885] [Bisected] BUG: KASAN: null-ptr-deref in
- strncpy+0x3c/0x60
-Date: Wed, 18 Dec 2019 11:07:29 +0000
+Subject: [Bug 205889] CONFIG_PPC_85xx with CONFIG_CORENET_GENERIC outputs
+ uImage instead of zImage
+Date: Wed, 18 Dec 2019 11:37:03 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
@@ -44,15 +43,15 @@ X-Bugzilla-Version: 2.5
 X-Bugzilla-Keywords: 
 X-Bugzilla-Severity: normal
 X-Bugzilla-Who: michael@ellerman.id.au
-X-Bugzilla-Status: RESOLVED
-X-Bugzilla-Resolution: PATCH_ALREADY_AVAILABLE
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
 X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: bug_status cc resolution
-Message-ID: <bug-205885-206035-pm076z5tEs@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-205885-206035@https.bugzilla.kernel.org/>
-References: <bug-205885-206035@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: cc
+Message-ID: <bug-205889-206035-Z3RRmHYZYh@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-205889-206035@https.bugzilla.kernel.org/>
+References: <bug-205889-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 X-Bugzilla-URL: https://bugzilla.kernel.org/
@@ -73,20 +72,36 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D205885
+https://bugzilla.kernel.org/show_bug.cgi?id=3D205889
 
 Michael Ellerman (michael@ellerman.id.au) changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-             Status|NEW                         |RESOLVED
                  CC|                            |michael@ellerman.id.au
-         Resolution|---                         |PATCH_ALREADY_AVAILABLE
 
---- Comment #7 from Michael Ellerman (michael@ellerman.id.au) ---
-This is fixed upstream:
+--- Comment #1 from Michael Ellerman (michael@ellerman.id.au) ---
+I think that's working as designed, if not expected.
 
-https://git.kernel.org/torvalds/c/7de7de7ca0ae0fc70515ee3154af33af75edae2c
+CONFIG_CORENET_GENERIC selects CONFIG_DEFAULT_UIMAGE, which tells
+arch/powerpc/boot/Makefile to build a uImage.
+
+The zImage is just a hardlinkg to the uImage.
+
+You can see that using the -i flag to ls, eg:
+
+$ ls -il arch/powerpc/boot/{uImage,zImage}
+1300656 -rw-rw-r-- 2 michael michael 5356164 Dec 18 22:19
+arch/powerpc/boot/uImage
+1300656 -rw-rw-r-- 2 michael michael 5356164 Dec 18 22:19
+arch/powerpc/boot/zImage
+
+Notice the inode is the same, and the link count is 2.
+
+I think the logic behind the link is that people might have scripts to copy
+zImage somewhere to boot it, and we didn't want to break that just because =
+the
+target of the build is a uImage.
 
 --=20
 You are receiving this mail because:
