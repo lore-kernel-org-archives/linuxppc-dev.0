@@ -2,97 +2,72 @@ Return-Path: <SRS0=gJAX=2I=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 293BBC43603
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 11:41:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AAA54C43603
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 12:20:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D8DB621582
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 11:41:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D8DB621582
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 26882206D7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 12:20:26 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="FWwsdBB2"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 26882206D7
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47dClj5B7RzDqdx
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 22:41:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 47dDc81BRqzDqjj
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2019 23:20:24 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47dCg25g9hzDqf0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 22:37:50 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- xBIBbXnD062289; Wed, 18 Dec 2019 06:37:35 -0500
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2wye06cpfn-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 18 Dec 2019 06:37:34 -0500
-Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id xBIBbWmj062239;
- Wed, 18 Dec 2019 06:37:32 -0500
-Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.11])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2wye06cp6y-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 18 Dec 2019 06:37:32 -0500
-Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
- by ppma03dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id xBIBZ9aF005603;
- Wed, 18 Dec 2019 11:37:08 GMT
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29]) by ppma03dal.us.ibm.com with ESMTP id 2wvqc6x6g0-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 18 Dec 2019 11:37:08 +0000
-Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
- [9.57.199.111])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xBIBb7A747448394
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 18 Dec 2019 11:37:07 GMT
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B010BAC062;
- Wed, 18 Dec 2019 11:37:07 +0000 (GMT)
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 40DFAAC05B;
- Wed, 18 Dec 2019 11:37:04 +0000 (GMT)
-Received: from [9.199.40.202] (unknown [9.199.40.202])
- by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Wed, 18 Dec 2019 11:37:03 +0000 (GMT)
-Subject: Re: [PATCH v2 2/3] mm/mmu_gather: Invalidate TLB correctly on batch
- allocation failure and flush
-To: Peter Zijlstra <peterz@infradead.org>, Paul Mackerras <paulus@ozlabs.org>
-References: <20191218053530.73053-1-aneesh.kumar@linux.ibm.com>
- <20191218053530.73053-2-aneesh.kumar@linux.ibm.com>
- <20191218091733.GO2844@hirez.programming.kicks-ass.net>
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Message-ID: <0f0bea3b-b7b5-fa8c-f75c-396cf78c47b4@linux.ibm.com>
-Date: Wed, 18 Dec 2019 17:07:02 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.2.2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47dDXc75X8zDqgF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2019 23:17:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.b="FWwsdBB2"; dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 47dDXb27H3z9sS6;
+ Wed, 18 Dec 2019 23:17:19 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1576671439;
+ bh=nwZUJvsHJoteMMjLAMbyeGibq43+npiZP1GzGw6OdMg=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=FWwsdBB2+MZf8NVXIEjf8tR9dv+exTyvKS6elRrzIyN27dQh8eHzQNjJQHpQveSml
+ xoqXnvuT7c7nNs/ravK1bS5c7m/ql9XqGyxIjCBb9LoTFcnX8uhdTy+mQ57DOmM6tT
+ jJrlgpKZIt+799SUTrRBAWBSnrCJeJigPRc+P3Wzs7L/pejGxlV/TrV3IGQ/xI0OgR
+ XXHNPaPI3u6gbCNEbb0rl01jngUdmk+TBgvV5caOxjJRye8oEKVEhT4t9oxE8bWblp
+ cZ3NCYARcHRFSLNOYnjjOWRrd/e6rntCX82fGi65iP2qQ6A8ajaxzCPHF68byUvpSu
+ l2M3qvgekM/QQ==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+ Will Deacon <will@kernel.org>
+Subject: Re: READ_ONCE() + STACKPROTECTOR_STRONG == :/ (was Re: [GIT PULL]
+ Please pull powerpc/linux.git powerpc-5.5-2 tag (topic/kasan-bitops))
+In-Reply-To: <CAHk-=wjNLxSZZs+A0tyb-MnJ2YU-sqTAfy0-X+9vxjXfs_O4zA@mail.gmail.com>
+References: <20191212100756.GA11317@willie-the-truck>
+ <20191212104610.GW2827@hirez.programming.kicks-ass.net>
+ <CAHk-=wjUBsH0BYDBv=q36482G-U7c=9bC89L_BViSciTfb8fhA@mail.gmail.com>
+ <20191212180634.GA19020@willie-the-truck>
+ <CAHk-=whRxB0adkz+V7SQC8Ac_rr_YfaPY8M2mFDfJP2FFBNz8A@mail.gmail.com>
+ <20191212193401.GB19020@willie-the-truck>
+ <CAHk-=wiMuHmWzQ7-CRQB6o+SHtA-u-Rp6VZwPcqDbjAaug80rQ@mail.gmail.com>
+ <20191217170719.GA869@willie-the-truck>
+ <CAHk-=whBnZBVNwu8aVVp205EKk7xtsnQgSjs38a5=y9HyheXzQ@mail.gmail.com>
+ <CAHk-=wjNLxSZZs+A0tyb-MnJ2YU-sqTAfy0-X+9vxjXfs_O4zA@mail.gmail.com>
+Date: Wed, 18 Dec 2019 23:17:13 +1100
+Message-ID: <87zhfpn7zq.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20191218091733.GO2844@hirez.programming.kicks-ass.net>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
- definitions=2019-12-18_03:2019-12-17,2019-12-18 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0 mlxscore=0
- bulkscore=0 spamscore=0 clxscore=1011 priorityscore=1501 suspectscore=2
- mlxlogscore=999 phishscore=0 adultscore=0 malwarescore=0 impostorscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-1910280000
- definitions=main-1912180097
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,71 +79,127 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, npiggin@gmail.com, linux-mm@kvack.org,
- akpm@linux-foundation.org, will@kernel.org
+Cc: linux-arch <linux-arch@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Mark Rutland <mark.rutland@arm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 12/18/19 2:47 PM, Peter Zijlstra wrote:
-> On Wed, Dec 18, 2019 at 11:05:29AM +0530, Aneesh Kumar K.V wrote:
->> From: Peter Zijlstra <peterz@infradead.org>
+Linus Torvalds <torvalds@linux-foundation.org> writes:
+> On Tue, Dec 17, 2019 at 10:04 AM Linus Torvalds
+> <torvalds@linux-foundation.org> wrote:
 >>
->> Architectures for which we have hardware walkers of Linux page table should
->> flush TLB on mmu gather batch allocation failures and batch flush. Some
->> architectures like POWER supports multiple translation modes (hash and radix)
-> 
-> nohash, hash and radix in fact :-)
-> 
->> and in the case of POWER only radix translation mode needs the above TLBI.
-> 
->> This is because for hash translation mode kernel wants to avoid this extra
->> flush since there are no hardware walkers of linux page table. With radix
->> translation, the hardware also walks linux page table and with that, kernel
->> needs to make sure to TLB invalidate page walk cache before page table pages are
->> freed.
->>
->> More details in
->> commit: d86564a2f085 ("mm/tlb, x86/mm: Support invalidating TLB caches for RCU_TABLE_FREE")
->>
->> Fixes: a46cc7a90fd8 ("powerpc/mm/radix: Improve TLB/PWC flushes")
->> Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
->> ---
-> 
->> diff --git a/arch/powerpc/include/asm/tlb.h b/arch/powerpc/include/asm/tlb.h
->> index b2c0be93929d..7f3a8b902325 100644
->> --- a/arch/powerpc/include/asm/tlb.h
->> +++ b/arch/powerpc/include/asm/tlb.h
->> @@ -26,6 +26,17 @@
->>   
->>   #define tlb_flush tlb_flush
->>   extern void tlb_flush(struct mmu_gather *tlb);
->> +/*
->> + * book3s:
->> + * Hash does not use the linux page-tables, so we can avoid
->> + * the TLB invalidate for page-table freeing, Radix otoh does use the
->> + * page-tables and needs the TLBI.
->> + *
->> + * nohash:
->> + * We still do TLB invalidate in the __pte_free_tlb routine before we
->> + * add the page table pages to mmu gather table batch.
-> 
-> I'm a little confused though; if nohash is a software TLB fill, why do
-> you need a TLBI for tables?
-> 
+>> Let me think about it.
+>
+> How about we just get rid of the union entirely, and just use
+> 'unsigned long' or 'unsigned long long' depending on the size.
+>
+> Something like the attached patch - it still requires that it be an
+> arithmetic type, but now because of the final cast.
+>
+> But it might still be a cast to a volatile type, of course. Then the
+> result will be volatile, but at least now READ_ONCE() won't be taking
+> the address of a volatile variable on the stack - does that at least
+> fix some of the horrible code generation. Hmm?
 
-nohash (AKA book3e) has different mmu modes. I don't follow all the 
-details w.r.t book3e. Paul or Michael might be able to explain the need 
-for table flush with book3e.
+Yes it seems to fix it for me.
 
-Documentation/powerpc/cpu-faimilies.rst shows different hardware assist 
-TLB fill support.
+There's no unnecessary stack protector gunk, and no store/load to the
+stack variable.
 
-What I wanted to convey with the above comment way we handle only radix 
-translation mode with tlb_needs_table_invalidate() check. Other 
-translations (hash,  different variants of book3e) are all good because 
-of the reason outlined above.
+This is my previous example of ext4_resize_begin(), hacked to use a copy
+of the generic version of test_and_set_bit_lock(), which in turn was
+hacked to use a local version of your READ_ONCE().
 
--aneesh
+  c000000000534390 <ext4_resize_begin_generic>:
+  c000000000534390:       19 01 4c 3c     addis   r2,r12,281
+  c000000000534394:       70 c3 42 38     addi    r2,r2,-15504
+  c000000000534398:       a6 02 08 7c     mflr    r0
+  c00000000053439c:       4d 98 b3 4b     bl      c00000000006dbe8 <_mcount>
+  c0000000005343a0:       a6 02 08 7c     mflr    r0
+  c0000000005343a4:       f8 ff e1 fb     std     r31,-8(r1)
+  c0000000005343a8:       f0 ff c1 fb     std     r30,-16(r1)
+  c0000000005343ac:       78 1b 7f 7c     mr      r31,r3
+  c0000000005343b0:       18 00 60 38     li      r3,24
+  c0000000005343b4:       10 00 01 f8     std     r0,16(r1)
+  c0000000005343b8:       91 ff 21 f8     stdu    r1,-112(r1)
+  c0000000005343bc:       98 03 df eb     ld      r30,920(r31)
+  c0000000005343c0:       d9 d3 c0 4b     bl      c000000000141798 <capable+0x8>
+  c0000000005343c4:       00 00 00 60     nop
+  c0000000005343c8:       00 00 a3 2f     cmpdi   cr7,r3,0
+  c0000000005343cc:       a4 00 9e 41     beq     cr7,c000000000534470 <ext4_resize_begin_generic+0xe0>
+  c0000000005343d0:       98 03 3f e9     ld      r9,920(r31)
+  c0000000005343d4:       60 00 5e e9     ld      r10,96(r30)
+  c0000000005343d8:       54 00 fe 80     lwz     r7,84(r30)
+  c0000000005343dc:       68 00 09 e9     ld      r8,104(r9)
+  c0000000005343e0:       18 00 4a e9     ld      r10,24(r10)
+  c0000000005343e4:       14 00 08 81     lwz     r8,20(r8)
+  c0000000005343e8:       36 3c 4a 7d     srd     r10,r10,r7
+  c0000000005343ec:       00 40 aa 7f     cmpd    cr7,r10,r8
+  c0000000005343f0:       b8 00 9e 40     bne     cr7,c0000000005344a8 <ext4_resize_begin_generic+0x118>
+  c0000000005343f4:       a0 00 49 a1     lhz     r10,160(r9)
+  c0000000005343f8:       02 00 4a 71     andi.   r10,r10,2
+  c0000000005343fc:       84 00 82 40     bne     c000000000534480 <ext4_resize_begin_generic+0xf0>
+  c000000000534400:       30 02 49 e9     ld      r10,560(r9)						# simple load of EXT4_SB(sb)->s_ext4_flags
+  c000000000534404:       01 00 4a 71     andi.   r10,r10,1
+  c000000000534408:       48 00 82 40     bne     c000000000534450 <ext4_resize_begin_generic+0xc0>
+  c00000000053440c:       30 02 e9 38     addi    r7,r9,560
+  c000000000534410:       01 00 00 39     li      r8,1
+  c000000000534414:       a8 38 40 7d     ldarx   r10,0,r7
+  c000000000534418:       78 53 06 7d     or      r6,r8,r10
+  c00000000053441c:       ad 39 c0 7c     stdcx.  r6,0,r7
+  c000000000534420:       f4 ff c2 40     bne-    c000000000534414 <ext4_resize_begin_generic+0x84>
+  c000000000534424:       2c 01 00 4c     isync
+  c000000000534428:       01 00 49 71     andi.   r9,r10,1
+  c00000000053442c:       00 00 60 38     li      r3,0
+  c000000000534430:       20 00 82 40     bne     c000000000534450 <ext4_resize_begin_generic+0xc0>
+  c000000000534434:       70 00 21 38     addi    r1,r1,112
+  c000000000534438:       10 00 01 e8     ld      r0,16(r1)
+  c00000000053443c:       f0 ff c1 eb     ld      r30,-16(r1)
+  c000000000534440:       f8 ff e1 eb     ld      r31,-8(r1)
+  c000000000534444:       a6 03 08 7c     mtlr    r0
+  c000000000534448:       20 00 80 4e     blr
+  c00000000053444c:       00 00 00 60     nop
+  c000000000534450:       70 00 21 38     addi    r1,r1,112
+  c000000000534454:       f0 ff 60 38     li      r3,-16
+  c000000000534458:       10 00 01 e8     ld      r0,16(r1)
+  c00000000053445c:       f0 ff c1 eb     ld      r30,-16(r1)
+  c000000000534460:       f8 ff e1 eb     ld      r31,-8(r1)
+  c000000000534464:       a6 03 08 7c     mtlr    r0
+  c000000000534468:       20 00 80 4e     blr
+  c00000000053446c:       00 00 00 60     nop
+  c000000000534470:       ff ff 60 38     li      r3,-1
+  c000000000534474:       c0 ff ff 4b     b       c000000000534434 <ext4_resize_begin_generic+0xa4>
+  c000000000534478:       00 00 00 60     nop
+  c00000000053447c:       00 00 00 60     nop
+  c000000000534480:       8a ff c2 3c     addis   r6,r2,-118
+  c000000000534484:       74 ff 82 3c     addis   r4,r2,-140
+  c000000000534488:       78 fb e3 7f     mr      r3,r31
+  c00000000053448c:       7c 00 a0 38     li      r5,124
+  c000000000534490:       a8 75 c6 38     addi    r6,r6,30120
+  c000000000534494:       f8 0b 84 38     addi    r4,r4,3064
+  c000000000534498:       d1 a4 01 48     bl      c00000000054e968 <__ext4_warning+0x8>
+  c00000000053449c:       00 00 00 60     nop
+  c0000000005344a0:       ff ff 60 38     li      r3,-1
+  c0000000005344a4:       90 ff ff 4b     b       c000000000534434 <ext4_resize_begin_generic+0xa4>
+  c0000000005344a8:       60 00 29 e9     ld      r9,96(r9)
+  c0000000005344ac:       8a ff c2 3c     addis   r6,r2,-118
+  c0000000005344b0:       74 ff 82 3c     addis   r4,r2,-140
+  c0000000005344b4:       78 fb e3 7f     mr      r3,r31
+  c0000000005344b8:       72 00 a0 38     li      r5,114
+  c0000000005344bc:       78 75 c6 38     addi    r6,r6,30072
+  c0000000005344c0:       f8 0b 84 38     addi    r4,r4,3064
+  c0000000005344c4:       18 00 e9 e8     ld      r7,24(r9)
+  c0000000005344c8:       a1 a4 01 48     bl      c00000000054e968 <__ext4_warning+0x8>
+  c0000000005344cc:       00 00 00 60     nop
+  c0000000005344d0:       ff ff 60 38     li      r3,-1
+  c0000000005344d4:       60 ff ff 4b     b       c000000000534434 <ext4_resize_begin_generic+0xa4>
+  c0000000005344d8:       00 00 00 60     nop
+  c0000000005344dc:       00 00 00 60     nop
+
+
+cheers
