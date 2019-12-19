@@ -2,51 +2,67 @@ Return-Path: <SRS0=TRtS=2J=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 75D79C43603
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Dec 2019 11:26:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59DCBC43603
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Dec 2019 11:29:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E498A21D7D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Dec 2019 11:26:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E498A21D7D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0B77A21D7D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Dec 2019 11:29:27 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="P0pIMkw4"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0B77A21D7D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47dqM105K6zDq7j
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Dec 2019 22:26:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.190; helo=huawei.com;
- envelope-from=chenzhou10@huawei.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 47dqQs6qWZzDq69
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Dec 2019 22:29:25 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47dqFs155hzDqpq
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2019 22:21:36 +1100 (AEDT)
-Received: from DGGEMS410-HUB.china.huawei.com (unknown [172.30.72.58])
- by Forcepoint Email with ESMTP id 5EE7D51507BCD5EC8564;
- Thu, 19 Dec 2019 19:21:28 +0800 (CST)
-Received: from localhost.localdomain.localdomain (10.175.113.25) by
- DGGEMS410-HUB.china.huawei.com (10.3.19.210) with Microsoft SMTP Server id
- 14.3.439.0; Thu, 19 Dec 2019 19:21:21 +0800
-From: Chen Zhou <chenzhou10@huawei.com>
-To: <benh@kernel.crashing.org>, <paulus@samba.org>, <mpe@ellerman.id.au>
-Subject: [PATCH V2] powerpc/setup_64: use DEFINE_DEBUGFS_ATTRIBUTE to define
- fops_rfi_flush
-Date: Thu, 19 Dec 2019 19:18:12 +0800
-Message-ID: <20191219111812.180386-1-chenzhou10@huawei.com>
-X-Mailer: git-send-email 2.20.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47dqLS1l8lzDqp5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Dec 2019 22:25:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.b="P0pIMkw4"; dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 47dqLP6ntkz9sPn;
+ Thu, 19 Dec 2019 22:25:33 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1576754734;
+ bh=Zx5Yd53JL3kH4J/q4/1yt1DPvG/CjFpohvESNKMplWE=;
+ h=From:To:Subject:In-Reply-To:References:Date:From;
+ b=P0pIMkw4ErNb1nuX21DZj5B+bxMWXCI5nmpMnd5T6pbiUuAxWRe3O7aYGiY6JIHWI
+ 6tKOYZBhSeKKirWC2ajlvKX8n1LklGqR3iEtRq/0czGjJPqibcwrb2HCaq/bJfHlQW
+ joz438XnOFK6gVX3n/z5HJbu5x/xI6epfBhcV9zVSWTH6idQzG9F210BkUS6QdCYuI
+ awM9SDsFVPT7frGLLHg40y4fFq+ze3zhybiXysOeieaka8bMOVc5xH7gaDcMVeatEI
+ jH2+2xsu8mlfVjwjs/jy3HW60tJTnpLnEAELufqZjXp02xJHY8SFdXpJmz5rwaazsu
+ wzDaeBRGKO6PQ==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Daniel Axtens <dja@axtens.net>, Christophe Leroy <christophe.leroy@c-s.fr>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org, kasan-dev@googlegroups.com,
+ aneesh.kumar@linux.ibm.com, bsingharora@gmail.com
+Subject: Re: [PATCH v4 4/4] powerpc: Book3S 64-bit "heavyweight" KASAN support
+In-Reply-To: <87bls4tzjn.fsf@dja-thinkpad.axtens.net>
+References: <20191219003630.31288-1-dja@axtens.net>
+ <20191219003630.31288-5-dja@axtens.net>
+ <c4d37067-829f-cd7d-7e94-0ec2223cce71@c-s.fr>
+ <87bls4tzjn.fsf@dja-thinkpad.axtens.net>
+Date: Thu, 19 Dec 2019 22:25:32 +1100
+Message-ID: <87fthgmuab.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-Originating-IP: [10.175.113.25]
-X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,49 +74,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: chenzhou10@huawei.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use DEFINE_DEBUGFS_ATTRIBUTE rather than DEFINE_SIMPLE_ATTRIBUTE for
-debugfs files.
+Daniel Axtens <dja@axtens.net> writes:
+> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>> On 12/19/2019 12:36 AM, Daniel Axtens wrote:
+>>> KASAN support on Book3S is a bit tricky to get right:
+...
+>>> diff --git a/arch/powerpc/include/asm/kasan.h b/arch/powerpc/include/asm/kasan.h
+>>> index 296e51c2f066..f18268cbdc33 100644
+>>> --- a/arch/powerpc/include/asm/kasan.h
+>>> +++ b/arch/powerpc/include/asm/kasan.h
+>>> @@ -2,6 +2,9 @@
+>>>   #ifndef __ASM_KASAN_H
+>>>   #define __ASM_KASAN_H
+>>>   
+>>> +#include <asm/page.h>
+>>> +#include <asm/pgtable.h>
+>>
+>> What do you need asm/pgtable.h for ?
+>>
+>> Build failure due to circular inclusion of asm/pgtable.h:
+>
+> I see there's a lot of ppc32 stuff, I clearly need to bite the bullet
+> and get a ppc32 toolchain so I can squash these without chewing up any
+> more of your time. I'll sort that out and send a new spin.
 
-In order to protect against file removal races, debugfs files created via
-debugfs_create_file() are wrapped by a struct file_operations at their
-opening.
+I think you run Ubuntu, in which case it should just be:
 
-If the original struct file_operations is known to be safe against removal
-races already, the proxy creation may be bypassed by creating the files
-using DEFINE_DEBUGFS_ATTRIBUTE() and debugfs_create_file_unsafe().
+$ apt install gcc-powerpc-linux-gnu
 
-Signed-off-by: Chen Zhou <chenzhou10@huawei.com>
----
-Changes since v1:
-- modify commit message.
-
- arch/powerpc/kernel/setup_64.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 6104917..4b9fbb2 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -956,11 +956,11 @@ static int rfi_flush_get(void *data, u64 *val)
- 	return 0;
- }
- 
--DEFINE_SIMPLE_ATTRIBUTE(fops_rfi_flush, rfi_flush_get, rfi_flush_set, "%llu\n");
-+DEFINE_DEBUGFS_ATTRIBUTE(fops_rfi_flush, rfi_flush_get, rfi_flush_set, "%llu\n");
- 
- static __init int rfi_flush_debugfs_init(void)
- {
--	debugfs_create_file("rfi_flush", 0600, powerpc_debugfs_root, NULL, &fops_rfi_flush);
-+	debugfs_create_file_unsafe("rfi_flush", 0600, powerpc_debugfs_root, NULL, &fops_rfi_flush);
- 	return 0;
- }
- device_initcall(rfi_flush_debugfs_init);
--- 
-2.7.4
-
+cheers
