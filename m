@@ -2,22 +2,23 @@ Return-Path: <SRS0=4UjL=2K=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.0 required=3.0 tests=MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C9E4C43603
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Dec 2019 20:48:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 264A7C43603
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Dec 2019 20:52:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 08DFE2082E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Dec 2019 20:48:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 08DFE2082E
+	by mail.kernel.org (Postfix) with ESMTPS id A8E7D20866
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Dec 2019 20:52:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A8E7D20866
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47fgmy0XMMzDqsW
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Dec 2019 07:48:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47fgtH2CrRzDqwC
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Dec 2019 07:52:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=srs0=mdpr=2k=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
@@ -27,13 +28,13 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47fgjV3nKQzDqvT
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Dec 2019 07:45:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47fgqp1DKBzDqtr
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Dec 2019 07:50:29 +1100 (AEDT)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 205283] BUG: KASAN: global-out-of-bounds in
  _copy_to_iter+0x3d4/0x5a8
-Date: Fri, 20 Dec 2019 20:45:00 +0000
+Date: Fri, 20 Dec 2019 20:50:27 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: CC platform_ppc-32@kernel-bugs.osdl.org
@@ -48,8 +49,8 @@ X-Bugzilla-Resolution:
 X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: fs_btrfs@kernel-bugs.kernel.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: attachments.created
-Message-ID: <bug-205283-206035-t7DjQdyfef@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-205283-206035-lnlCGmQ2dA@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-205283-206035@https.bugzilla.kernel.org/>
 References: <bug-205283-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -74,10 +75,20 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D205283
 
---- Comment #6 from Erhard F. (erhard_f@mailbox.org) ---
-Created attachment 286387
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D286387&action=3Dedit
-5.5.0-rc2+ kernel .config (PowerMac G4 DP)
+--- Comment #7 from Erhard F. (erhard_f@mailbox.org) ---
+(In reply to Christophe Leroy from comment #4)
+> Can you apply https://patchwork.ozlabs.org/patch/1213028/ and select
+> CONFIG_KASAN_VMALLOC
+Re-tried with 5.5-rc2 your KASAN_VMALLOC patch and this patch
+(https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/=
+?id=3D7de7de7ca0ae0fc70515ee3154af33af75edae2c)
+to make -rc2 boot again.
+
+Result with KASAN is the same as before. If I enable CONFIG_KASAN_VMALLOC
+additionally the KASAN hit is gone. modprobing and removing btrfs shows no
+error then. Interesting!
+
+Double-checked it just to be sure.
 
 --=20
 You are receiving this mail because:
