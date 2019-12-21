@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 58AFAC2D0C0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Dec 2019 08:51:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BECDC2D0C0
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Dec 2019 08:53:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BA9E8206D3
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Dec 2019 08:51:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 266842072B
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Dec 2019 08:53:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="Zy7fOLTm"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BA9E8206D3
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="boXaXRjK"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 266842072B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47fzqj5fHJzDqDy
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Dec 2019 19:51:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47fzsn27kkzDq6Q
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Dec 2019 19:53:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,54 +28,54 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="Zy7fOLTm"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="boXaXRjK"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47fzPw5ZBszDqrm
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Dec 2019 19:32:36 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47fzPv4rr6zDqrM
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Dec 2019 19:32:35 +1100 (AEDT)
 Received: from localhost (mailhub1-ext [192.168.12.233])
- by localhost (Postfix) with ESMTP id 47fzPp1kdgz9txh8;
- Sat, 21 Dec 2019 09:32:30 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 47fzPl1vK9z9vBmw;
+ Sat, 21 Dec 2019 09:32:27 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=Zy7fOLTm; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=boXaXRjK; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id ss6Tha5HnOid; Sat, 21 Dec 2019 09:32:30 +0100 (CET)
+ with ESMTP id EcwGma4AgOP2; Sat, 21 Dec 2019 09:32:27 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 47fzPp0jnbz9vBmv;
- Sat, 21 Dec 2019 09:32:30 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 47fzPl0pJ3z9vBmv;
+ Sat, 21 Dec 2019 09:32:27 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1576917150; bh=w+xBToVhZ/hhpWFIpAvoRq9RuWR0Mj1UyY+7f+k+jhw=;
+ t=1576917147; bh=vGFn6Xs3VPXb1NNT2pdcceLZLNSRn0DbiBGAyHCcEBo=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=Zy7fOLTmrXxdKJvEZyMUeH5zMzM8ETFIXwB8Tq1mhKX7sZjT+bzxUg5i3sErxag5X
- bCRVN1Xq04EHomwO4imMFp4ULfD+U7s6lxz+4nYr3gnkM+srDaW8Vty8+qYde+xweM
- JyalDqg6SLgqUhA0aO/jPe5VHfse5cnSgzpFBVh8=
+ b=boXaXRjKAGP2Dkb8HGNhSUcNNswq8pOVqQsvwvVwful7kwP2eZPzZyr85rr4VQ74z
+ w7ToT8FO9R6f9hkVuFqiPU5c/TMhzMzkfJibecZgvtjZFAA/R/aih4LTMQfNCiUMLI
+ ocZq47oDGHxGwuWwuGkeE0Tiu9bFc/nKAj0iB514=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 187058B77C;
- Sat, 21 Dec 2019 09:32:31 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1D49F8B77C;
+ Sat, 21 Dec 2019 09:32:28 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id bHtHoTsDflDm; Sat, 21 Dec 2019 09:32:31 +0100 (CET)
+ with ESMTP id E28t8NDzsFB1; Sat, 21 Dec 2019 09:32:28 +0100 (CET)
 Received: from localhost.localdomain (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D446B8B752;
- Sat, 21 Dec 2019 09:32:30 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id BCABA8B752;
+ Sat, 21 Dec 2019 09:32:27 +0100 (CET)
 Received: by localhost.localdomain (Postfix, from userid 0)
- id 9C35C637B6; Sat, 21 Dec 2019 08:32:30 +0000 (UTC)
-Message-Id: <d33ad1b36ddff4dcc19f96c592c12a61cf85d406.1576916812.git.christophe.leroy@c-s.fr>
+ id 82472637B6; Sat, 21 Dec 2019 08:32:27 +0000 (UTC)
+Message-Id: <a775a1fea60f190e0f63503463fb775310a2009b.1576916812.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1576916812.git.christophe.leroy@c-s.fr>
 References: <cover.1576916812.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v5 09/17] powerpc/32: Use vmapped stacks for interrupts
+Subject: [PATCH v5 06/17] powerpc/32: prepare for CONFIG_VMAP_STACK
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  dja@axtens.net
-Date: Sat, 21 Dec 2019 08:32:30 +0000 (UTC)
+Date: Sat, 21 Dec 2019 08:32:27 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,70 +93,313 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In order to also catch overflows on IRQ stacks, use vmapped stacks.
+To support CONFIG_VMAP_STACK, the kernel has to activate Data MMU
+Translation for accessing the stack. Before doing that it must save
+SRR0, SRR1 and also DAR and DSISR when relevant, in order to not
+loose them in case there is a Data TLB Miss once the translation is
+reactivated.
+
+This patch adds fields in thread struct for saving those registers.
+It prepares entry_32.S to handle exception entry with
+Data MMU Translation enabled and alters EXCEPTION_PROLOG macros to
+save SRR0, SRR1, DAR and DSISR then reenables Data MMU.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/irq.c      | 22 ++++++++++++++++++++++
- arch/powerpc/kernel/setup_32.c |  3 +++
- 2 files changed, 25 insertions(+)
+ arch/powerpc/include/asm/processor.h   |   6 ++
+ arch/powerpc/include/asm/thread_info.h |   5 ++
+ arch/powerpc/kernel/asm-offsets.c      |   6 ++
+ arch/powerpc/kernel/entry_32.S         |   4 +-
+ arch/powerpc/kernel/head_32.h          | 126 +++++++++++++++++++++++++++++----
+ 5 files changed, 131 insertions(+), 16 deletions(-)
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index add67498c126..5c9b11878555 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -50,6 +50,7 @@
- #include <linux/debugfs.h>
- #include <linux/of.h>
- #include <linux/of_irq.h>
-+#include <linux/vmalloc.h>
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index a9993e7a443b..92c02d15f117 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -163,6 +163,12 @@ struct thread_struct {
+ #if defined(CONFIG_PPC_BOOK3S_32) && defined(CONFIG_PPC_KUAP)
+ 	unsigned long	kuap;		/* opened segments for user access */
+ #endif
++#ifdef CONFIG_VMAP_STACK
++	unsigned long	srr0;
++	unsigned long	srr1;
++	unsigned long	dar;
++	unsigned long	dsisr;
++#endif
+ 	/* Debug Registers */
+ 	struct debug_reg debug;
+ 	struct thread_fp_state	fp_state;
+diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
+index 8e1d0195ac36..488d5c4670ff 100644
+--- a/arch/powerpc/include/asm/thread_info.h
++++ b/arch/powerpc/include/asm/thread_info.h
+@@ -10,10 +10,15 @@
+ #define _ASM_POWERPC_THREAD_INFO_H
  
- #include <linux/uaccess.h>
- #include <asm/io.h>
-@@ -664,8 +665,29 @@ void do_IRQ(struct pt_regs *regs)
- 	set_irq_regs(old_regs);
- }
+ #include <asm/asm-const.h>
++#include <asm/page.h>
  
-+static void *__init alloc_vm_stack(void)
-+{
-+	return __vmalloc_node_range(THREAD_SIZE, THREAD_ALIGN, VMALLOC_START,
-+				    VMALLOC_END, THREADINFO_GFP, PAGE_KERNEL,
-+				     0, NUMA_NO_NODE, (void*)_RET_IP_);
-+}
-+
-+static void __init vmap_irqstack_init(void)
-+{
-+	int i;
-+
-+	for_each_possible_cpu(i) {
-+		softirq_ctx[i] = alloc_vm_stack();
-+		hardirq_ctx[i] = alloc_vm_stack();
-+	}
-+}
-+
-+
- void __init init_IRQ(void)
- {
-+	if (IS_ENABLED(CONFIG_VMAP_STACK))
-+		vmap_irqstack_init();
-+
- 	if (ppc_md.init_IRQ)
- 		ppc_md.init_IRQ();
- }
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index a55b4d9ab824..5b49b26eb154 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -153,6 +153,9 @@ void __init irqstack_early_init(void)
- {
- 	unsigned int i;
+ #ifdef __KERNEL__
  
-+	if (IS_ENABLED(CONFIG_VMAP_STACK))
-+		return;
++#if defined(CONFIG_VMAP_STACK) && CONFIG_THREAD_SHIFT < PAGE_SHIFT
++#define THREAD_SHIFT		PAGE_SHIFT
++#else
+ #define THREAD_SHIFT		CONFIG_THREAD_SHIFT
++#endif
+ 
+ #define THREAD_SIZE		(1 << THREAD_SHIFT)
+ 
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 3d47aec7becf..bef3f7f92823 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -127,6 +127,12 @@ int main(void)
+ 	OFFSET(KSP_VSID, thread_struct, ksp_vsid);
+ #else /* CONFIG_PPC64 */
+ 	OFFSET(PGDIR, thread_struct, pgdir);
++#ifdef CONFIG_VMAP_STACK
++	OFFSET(SRR0, thread_struct, srr0);
++	OFFSET(SRR1, thread_struct, srr1);
++	OFFSET(DAR, thread_struct, dar);
++	OFFSET(DSISR, thread_struct, dsisr);
++#endif
+ #ifdef CONFIG_SPE
+ 	OFFSET(THREAD_EVR0, thread_struct, evr[0]);
+ 	OFFSET(THREAD_ACC, thread_struct, acc);
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 317ad9df8ba8..8f6617cf2689 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -140,6 +140,7 @@ transfer_to_handler:
+ 	stw	r12,_CTR(r11)
+ 	stw	r2,_XER(r11)
+ 	mfspr	r12,SPRN_SPRG_THREAD
++	tovirt_vmstack r12, r12
+ 	beq	2f			/* if from user, fix up THREAD.regs */
+ 	addi	r2, r12, -THREAD
+ 	addi	r11,r1,STACK_FRAME_OVERHEAD
+@@ -195,7 +196,8 @@ transfer_to_handler:
+ transfer_to_handler_cont:
+ 3:
+ 	mflr	r9
+-	tovirt(r2, r2)			/* set r2 to current */
++	tovirt_novmstack r2, r2 	/* set r2 to current */
++	tovirt_vmstack r9, r9
+ 	lwz	r11,0(r9)		/* virtual address of handler */
+ 	lwz	r9,4(r9)		/* where to go when done */
+ #if defined(CONFIG_PPC_8xx) && defined(CONFIG_PERF_EVENTS)
+diff --git a/arch/powerpc/kernel/head_32.h b/arch/powerpc/kernel/head_32.h
+index f19a1ab91fb5..d4baa063c6b4 100644
+--- a/arch/powerpc/kernel/head_32.h
++++ b/arch/powerpc/kernel/head_32.h
+@@ -10,31 +10,53 @@
+  * We assume sprg3 has the physical address of the current
+  * task's thread_struct.
+  */
+-.macro EXCEPTION_PROLOG
+-	EXCEPTION_PROLOG_0
++.macro EXCEPTION_PROLOG handle_dar_dsisr=0
++	EXCEPTION_PROLOG_0	handle_dar_dsisr=\handle_dar_dsisr
+ 	EXCEPTION_PROLOG_1
+-	EXCEPTION_PROLOG_2
++	EXCEPTION_PROLOG_2	handle_dar_dsisr=\handle_dar_dsisr
+ .endm
+ 
+-.macro EXCEPTION_PROLOG_0
++.macro EXCEPTION_PROLOG_0 handle_dar_dsisr=0
+ 	mtspr	SPRN_SPRG_SCRATCH0,r10
+ 	mtspr	SPRN_SPRG_SCRATCH1,r11
++#ifdef CONFIG_VMAP_STACK
++	mfspr	r10, SPRN_SPRG_THREAD
++	.if	\handle_dar_dsisr
++	mfspr	r11, SPRN_DAR
++	stw	r11, DAR(r10)
++	mfspr	r11, SPRN_DSISR
++	stw	r11, DSISR(r10)
++	.endif
++	mfspr	r11, SPRN_SRR0
++	stw	r11, SRR0(r10)
++#endif
+ 	mfspr	r11, SPRN_SRR1		/* check whether user or kernel */
++#ifdef CONFIG_VMAP_STACK
++	stw	r11, SRR1(r10)
++#endif
+ 	mfcr	r10
+ 	andi.	r11, r11, MSR_PR
+ .endm
+ 
+ .macro EXCEPTION_PROLOG_1
++#ifdef CONFIG_VMAP_STACK
++	li	r11, MSR_KERNEL & ~(MSR_IR | MSR_RI) /* can take DTLB miss */
++	mtmsr	r11
++	subi	r11, r1, INT_FRAME_SIZE		/* use r1 if kernel */
++#else
+ 	tophys(r11,r1)			/* use tophys(r1) if kernel */
++	subi	r11, r11, INT_FRAME_SIZE	/* alloc exc. frame */
++#endif
+ 	beq	1f
+ 	mfspr	r11,SPRN_SPRG_THREAD
++	tovirt_vmstack r11, r11
+ 	lwz	r11,TASK_STACK-THREAD(r11)
+-	addi	r11,r11,THREAD_SIZE
+-	tophys(r11,r11)
+-1:	subi	r11,r11,INT_FRAME_SIZE	/* alloc exc. frame */
++	addi	r11, r11, THREAD_SIZE - INT_FRAME_SIZE
++	tophys_novmstack r11, r11
++1:
+ .endm
+ 
+-.macro EXCEPTION_PROLOG_2
++.macro EXCEPTION_PROLOG_2 handle_dar_dsisr=0
+ 	stw	r10,_CCR(r11)		/* save registers */
+ 	stw	r12,GPR12(r11)
+ 	stw	r9,GPR9(r11)
+@@ -44,15 +66,32 @@
+ 	stw	r12,GPR11(r11)
+ 	mflr	r10
+ 	stw	r10,_LINK(r11)
++#ifdef CONFIG_VMAP_STACK
++	mfspr	r12, SPRN_SPRG_THREAD
++	tovirt(r12, r12)
++	.if	\handle_dar_dsisr
++	lwz	r10, DAR(r12)
++	stw	r10, _DAR(r11)
++	lwz	r10, DSISR(r12)
++	stw	r10, _DSISR(r11)
++	.endif
++	lwz	r9, SRR1(r12)
++	lwz	r12, SRR0(r12)
++#else
+ 	mfspr	r12,SPRN_SRR0
+ 	mfspr	r9,SPRN_SRR1
++#endif
+ 	stw	r1,GPR1(r11)
+ 	stw	r1,0(r11)
+-	tovirt(r1,r11)			/* set new kernel sp */
++	tovirt_novmstack r1, r11	/* set new kernel sp */
+ #ifdef CONFIG_40x
+ 	rlwinm	r9,r9,0,14,12		/* clear MSR_WE (necessary?) */
+ #else
++#ifdef CONFIG_VMAP_STACK
++	li	r10, MSR_KERNEL & ~MSR_IR /* can take exceptions */
++#else
+ 	li	r10,MSR_KERNEL & ~(MSR_IR|MSR_DR) /* can take exceptions */
++#endif
+ 	mtmsr	r10			/* (except for mach check in rtas) */
+ #endif
+ 	stw	r0,GPR0(r11)
+@@ -65,24 +104,44 @@
+ 
+ .macro SYSCALL_ENTRY trapno
+ 	mfspr	r12,SPRN_SPRG_THREAD
++#ifdef CONFIG_VMAP_STACK
++	mfspr	r9, SPRN_SRR0
++	mfspr	r11, SPRN_SRR1
++	stw	r9, SRR0(r12)
++	stw	r11, SRR1(r12)
++#endif
+ 	mfcr	r10
+ 	lwz	r11,TASK_STACK-THREAD(r12)
+-	mflr	r9
+-	addi	r11,r11,THREAD_SIZE - INT_FRAME_SIZE
+ 	rlwinm	r10,r10,0,4,2	/* Clear SO bit in CR */
+-	tophys(r11,r11)
++	addi	r11, r11, THREAD_SIZE - INT_FRAME_SIZE
++#ifdef CONFIG_VMAP_STACK
++	li	r9, MSR_KERNEL & ~(MSR_IR | MSR_RI) /* can take DTLB miss */
++	mtmsr	r9
++#endif
++	tovirt_vmstack r12, r12
++	tophys_novmstack r11, r11
++	mflr	r9
+ 	stw	r10,_CCR(r11)		/* save registers */
++	stw	r9, _LINK(r11)
++#ifdef CONFIG_VMAP_STACK
++	lwz	r10, SRR0(r12)
++	lwz	r9, SRR1(r12)
++#else
+ 	mfspr	r10,SPRN_SRR0
+-	stw	r9,_LINK(r11)
+ 	mfspr	r9,SPRN_SRR1
++#endif
+ 	stw	r1,GPR1(r11)
+ 	stw	r1,0(r11)
+-	tovirt(r1,r11)			/* set new kernel sp */
++	tovirt_novmstack r1, r11	/* set new kernel sp */
+ 	stw	r10,_NIP(r11)
+ #ifdef CONFIG_40x
+ 	rlwinm	r9,r9,0,14,12		/* clear MSR_WE (necessary?) */
+ #else
++#ifdef CONFIG_VMAP_STACK
++	LOAD_REG_IMMEDIATE(r10, MSR_KERNEL & ~MSR_IR) /* can take exceptions */
++#else
+ 	LOAD_REG_IMMEDIATE(r10, MSR_KERNEL & ~(MSR_IR|MSR_DR)) /* can take exceptions */
++#endif
+ 	mtmsr	r10			/* (except for mach check in rtas) */
+ #endif
+ 	lis	r10,STACK_FRAME_REGS_MARKER@ha /* exception frame marker */
+@@ -121,7 +180,7 @@
+ #endif
+ 
+ 3:
+-	tovirt(r2, r2)			/* set r2 to current */
++	tovirt_novmstack r2, r2 	/* set r2 to current */
+ 	lis	r11, transfer_to_syscall@h
+ 	ori	r11, r11, transfer_to_syscall@l
+ #ifdef CONFIG_TRACE_IRQFLAGS
+@@ -145,14 +204,51 @@
+ .endm
+ 
+ .macro save_dar_dsisr_on_stack reg1, reg2, sp
++#ifndef CONFIG_VMAP_STACK
+ 	mfspr	\reg1, SPRN_DAR
+ 	mfspr	\reg2, SPRN_DSISR
+ 	stw	\reg1, _DAR(\sp)
+ 	stw	\reg2, _DSISR(\sp)
++#endif
+ .endm
+ 
+ .macro get_and_save_dar_dsisr_on_stack reg1, reg2, sp
++#ifdef CONFIG_VMAP_STACK
++	lwz	\reg1, _DAR(\sp)
++	lwz	\reg2, _DSISR(\sp)
++#else
+ 	save_dar_dsisr_on_stack \reg1, \reg2, \sp
++#endif
++.endm
 +
- 	/* interrupt stacks must be in lowmem, we get that for free on ppc32
- 	 * as the memblock is limited to lowmem by default */
- 	for_each_possible_cpu(i) {
++.macro tovirt_vmstack dst, src
++#ifdef CONFIG_VMAP_STACK
++	tovirt(\dst, \src)
++#else
++	.ifnc	\dst, \src
++	mr	\dst, \src
++	.endif
++#endif
++.endm
++
++.macro tovirt_novmstack dst, src
++#ifndef CONFIG_VMAP_STACK
++	tovirt(\dst, \src)
++#else
++	.ifnc	\dst, \src
++	mr	\dst, \src
++	.endif
++#endif
++.endm
++
++.macro tophys_novmstack dst, src
++#ifndef CONFIG_VMAP_STACK
++	tophys(\dst, \src)
++#else
++	.ifnc	\dst, \src
++	mr	\dst, \src
++	.endif
++#endif
+ .endm
+ 
+ /*
 -- 
 2.13.3
 
