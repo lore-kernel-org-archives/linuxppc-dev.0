@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04E8AC2D0C0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Dec 2019 08:42:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 75873C2D0C0
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Dec 2019 08:44:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9C8A3206D3
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Dec 2019 08:42:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2615C206D3
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Dec 2019 08:44:22 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="eKZNwdsV"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9C8A3206D3
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="GH8QhU59"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2615C206D3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47fzdM1l6mzDqwr
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Dec 2019 19:42:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47fzgS0rBLzDqsq
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Dec 2019 19:44:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,54 +28,55 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="eKZNwdsV"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="GH8QhU59"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47fzPn4xTGzDqr5
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Dec 2019 19:32:27 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47fzPv4jp9zDqqJ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Dec 2019 19:32:35 +1100 (AEDT)
 Received: from localhost (mailhub1-ext [192.168.12.233])
- by localhost (Postfix) with ESMTP id 47fzPf20vmz9v1Kv;
- Sat, 21 Dec 2019 09:32:22 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 47fzPm1XnZz9vBn0;
+ Sat, 21 Dec 2019 09:32:28 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=eKZNwdsV; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=GH8QhU59; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id YEkFCQOK3dn9; Sat, 21 Dec 2019 09:32:22 +0100 (CET)
+ with ESMTP id V64sKJAt0eTT; Sat, 21 Dec 2019 09:32:28 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 47fzPf03nJz9v1Ks;
- Sat, 21 Dec 2019 09:32:22 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 47fzPm0WYVz9vBmv;
+ Sat, 21 Dec 2019 09:32:28 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1576917142; bh=kGon0ub1xJnz0O6Eae+CiFjeXTbJxumDVRZ8IyCl084=;
+ t=1576917148; bh=DQVyB9m2SFlXQ/6NdPBYridG2vEVSsZ5fiPCfT1jDYA=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=eKZNwdsV0nCrKWv/Jd4CzuDEHYbk/L1GKWul7KhSvI7i2RnA1c1LxauOTvgaJEjrj
- Q9vpLvTsxCkII5JvGtFPr+uOuxsc6+UhkJ2rSHEREcjh6gTRI8542B8h8yttdv6IVt
- hHpu+ifvsCjCyp+mMltKHC2sIGw2unhnwL310opM=
+ b=GH8QhU596ao3qVRmQVoLd675JOn2TS4f+p6EHnZkDe/e6LfII1+kAgKJwB+KOLIKT
+ x73Dj1CLkhuIdFe/d3aWQyJeDkB5XSRrzWpos2Z0Z6XPDDQeI7T9dvCSBXocjcLlNe
+ hwy0Ws1Q2SWp/PjOiNpJ32cLhUnKKSI5bz1+pVcg=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id DCB448B77C;
- Sat, 21 Dec 2019 09:32:22 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 083708B77C;
+ Sat, 21 Dec 2019 09:32:29 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id Ea7zC5xXbefy; Sat, 21 Dec 2019 09:32:22 +0100 (CET)
+ with ESMTP id aeRrlaLRdQ6v; Sat, 21 Dec 2019 09:32:28 +0100 (CET)
 Received: from localhost.localdomain (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 8F7788B752;
- Sat, 21 Dec 2019 09:32:22 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id BFC7A8B752;
+ Sat, 21 Dec 2019 09:32:28 +0100 (CET)
 Received: by localhost.localdomain (Postfix, from userid 0)
- id 57137637B6; Sat, 21 Dec 2019 08:32:22 +0000 (UTC)
-Message-Id: <22469e78230edea3dbd0c79a555d73124f6c6d93.1576916812.git.christophe.leroy@c-s.fr>
+ id 88DD0637B6; Sat, 21 Dec 2019 08:32:28 +0000 (UTC)
+Message-Id: <60e9ae86b7d2cdcf21468787076d345663648f46.1576916812.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1576916812.git.christophe.leroy@c-s.fr>
 References: <cover.1576916812.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v5 01/17] powerpc/32: replace MTMSRD() by mtmsr
+Subject: [PATCH v5 07/17] powerpc: align stack to 2 * THREAD_SIZE with
+ VMAP_STACK
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  dja@axtens.net
-Date: Sat, 21 Dec 2019 08:32:22 +0000 (UTC)
+Date: Sat, 21 Dec 2019 08:32:28 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,124 +94,81 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On PPC32, MTMSRD() is simply defined as mtmsr.
-
-Replace MTMSRD(reg) by mtmsr reg in files dedicated to PPC32,
-this makes the code less obscure.
+In order to ease stack overflow detection, align
+stack to 2 * THREAD_SIZE when using VMAP_STACK.
+This allows overflow detection using a single bit check.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/entry_32.S | 18 +++++++++---------
- arch/powerpc/kernel/head_32.h  |  4 ++--
- 2 files changed, 11 insertions(+), 11 deletions(-)
+ arch/powerpc/include/asm/thread_info.h | 13 +++++++++++++
+ arch/powerpc/kernel/setup_32.c         |  2 +-
+ arch/powerpc/kernel/setup_64.c         |  2 +-
+ arch/powerpc/kernel/vmlinux.lds.S      |  2 +-
+ 4 files changed, 16 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index d60908ea37fb..6273b4862482 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -397,7 +397,7 @@ ret_from_syscall:
- 	LOAD_REG_IMMEDIATE(r10,MSR_KERNEL)	/* doesn't include MSR_EE */
- 	/* Note: We don't bother telling lockdep about it */
- 	SYNC
--	MTMSRD(r10)
-+	mtmsr	r10
- 	lwz	r9,TI_FLAGS(r2)
- 	li	r8,-MAX_ERRNO
- 	andi.	r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP|_TIF_USER_WORK_MASK|_TIF_PERSYSCALL_MASK)
-@@ -554,7 +554,7 @@ syscall_exit_work:
- 	 */
- 	ori	r10,r10,MSR_EE
- 	SYNC
--	MTMSRD(r10)
-+	mtmsr	r10
+diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
+index 488d5c4670ff..a2270749b282 100644
+--- a/arch/powerpc/include/asm/thread_info.h
++++ b/arch/powerpc/include/asm/thread_info.h
+@@ -22,6 +22,19 @@
  
- 	/* Save NVGPRS if they're not saved already */
- 	lwz	r4,_TRAP(r1)
-@@ -697,7 +697,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_SPE)
- 	and.	r0,r0,r11	/* FP or altivec or SPE enabled? */
- 	beq+	1f
- 	andc	r11,r11,r0
--	MTMSRD(r11)
-+	mtmsr	r11
- 	isync
- 1:	stw	r11,_MSR(r1)
- 	mfcr	r10
-@@ -831,7 +831,7 @@ ret_from_except:
- 	/* Note: We don't bother telling lockdep about it */
- 	LOAD_REG_IMMEDIATE(r10,MSR_KERNEL)
- 	SYNC			/* Some chip revs have problems here... */
--	MTMSRD(r10)		/* disable interrupts */
-+	mtmsr	r10		/* disable interrupts */
+ #define THREAD_SIZE		(1 << THREAD_SHIFT)
  
- 	lwz	r3,_MSR(r1)	/* Returning to user mode? */
- 	andi.	r0,r3,MSR_PR
-@@ -998,7 +998,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_NEED_PAIRED_STWCX)
- 	 */
- 	LOAD_REG_IMMEDIATE(r10,MSR_KERNEL & ~MSR_RI)
- 	SYNC
--	MTMSRD(r10)		/* clear the RI bit */
-+	mtmsr	r10		/* clear the RI bit */
- 	.globl exc_exit_restart
- exc_exit_restart:
- 	lwz	r12,_NIP(r1)
-@@ -1234,7 +1234,7 @@ do_resched:			/* r10 contains MSR_KERNEL here */
++/*
++ * By aligning VMAP'd stacks to 2 * THREAD_SIZE, we can detect overflow by
++ * checking sp & (1 << THREAD_SHIFT), which we can do cheaply in the entry
++ * assembly.
++ */
++#ifdef CONFIG_VMAP_STACK
++#define THREAD_ALIGN_SHIFT	(THREAD_SHIFT + 1)
++#else
++#define THREAD_ALIGN_SHIFT	THREAD_SHIFT
++#endif
++
++#define THREAD_ALIGN		(1 << THREAD_ALIGN_SHIFT)
++
+ #ifndef __ASSEMBLY__
+ #include <linux/cache.h>
+ #include <asm/processor.h>
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index dcffe927f5b9..f014c4f7a337 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -140,7 +140,7 @@ arch_initcall(ppc_init);
+ 
+ static void *__init alloc_stack(void)
+ {
+-	void *ptr = memblock_alloc(THREAD_SIZE, THREAD_SIZE);
++	void *ptr = memblock_alloc(THREAD_SIZE, THREAD_ALIGN);
+ 
+ 	if (!ptr)
+ 		panic("cannot allocate %d bytes for stack at %pS\n",
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 6104917a282d..e05e6dd67ae6 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -633,7 +633,7 @@ static void *__init alloc_stack(unsigned long limit, int cpu)
+ 
+ 	BUILD_BUG_ON(STACK_INT_FRAME_SIZE % 16);
+ 
+-	ptr = memblock_alloc_try_nid(THREAD_SIZE, THREAD_SIZE,
++	ptr = memblock_alloc_try_nid(THREAD_SIZE, THREAD_ALIGN,
+ 				     MEMBLOCK_LOW_LIMIT, limit,
+ 				     early_cpu_to_node(cpu));
+ 	if (!ptr)
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index 8834220036a5..b4c89a1acebb 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -323,7 +323,7 @@ SECTIONS
  #endif
- 	ori	r10,r10,MSR_EE
- 	SYNC
--	MTMSRD(r10)		/* hard-enable interrupts */
-+	mtmsr	r10		/* hard-enable interrupts */
- 	bl	schedule
- recheck:
- 	/* Note: And we don't tell it we are disabling them again
-@@ -1243,7 +1243,7 @@ recheck:
- 	 */
- 	LOAD_REG_IMMEDIATE(r10,MSR_KERNEL)
- 	SYNC
--	MTMSRD(r10)		/* disable interrupts */
-+	mtmsr	r10		/* disable interrupts */
- 	lwz	r9,TI_FLAGS(r2)
- 	andi.	r0,r9,_TIF_NEED_RESCHED
- 	bne-	do_resched
-@@ -1252,7 +1252,7 @@ recheck:
- do_user_signal:			/* r10 contains MSR_KERNEL here */
- 	ori	r10,r10,MSR_EE
- 	SYNC
--	MTMSRD(r10)		/* hard-enable interrupts */
-+	mtmsr	r10		/* hard-enable interrupts */
- 	/* save r13-r31 in the exception frame, if not already done */
- 	lwz	r3,_TRAP(r1)
- 	andi.	r0,r3,1
-@@ -1341,7 +1341,7 @@ _GLOBAL(enter_rtas)
- 	stw	r9,8(r1)
- 	LOAD_REG_IMMEDIATE(r0,MSR_KERNEL)
- 	SYNC			/* disable interrupts so SRR0/1 */
--	MTMSRD(r0)		/* don't get trashed */
-+	mtmsr	r0		/* don't get trashed */
- 	li	r9,MSR_KERNEL & ~(MSR_IR|MSR_DR)
- 	mtlr	r6
- 	stw	r7, THREAD + RTAS_SP(r2)
-diff --git a/arch/powerpc/kernel/head_32.h b/arch/powerpc/kernel/head_32.h
-index 8abc7783dbe5..b2ca8c9ffd8b 100644
---- a/arch/powerpc/kernel/head_32.h
-+++ b/arch/powerpc/kernel/head_32.h
-@@ -50,7 +50,7 @@
- 	rlwinm	r9,r9,0,14,12		/* clear MSR_WE (necessary?) */
- #else
- 	li	r10,MSR_KERNEL & ~(MSR_IR|MSR_DR) /* can take exceptions */
--	MTMSRD(r10)			/* (except for mach check in rtas) */
-+	mtmsr	r10			/* (except for mach check in rtas) */
- #endif
- 	stw	r0,GPR0(r11)
- 	lis	r10,STACK_FRAME_REGS_MARKER@ha /* exception frame marker */
-@@ -80,7 +80,7 @@
- 	rlwinm	r9,r9,0,14,12		/* clear MSR_WE (necessary?) */
- #else
- 	LOAD_REG_IMMEDIATE(r10, MSR_KERNEL & ~(MSR_IR|MSR_DR)) /* can take exceptions */
--	MTMSRD(r10)			/* (except for mach check in rtas) */
-+	mtmsr	r10			/* (except for mach check in rtas) */
- #endif
- 	lis	r10,STACK_FRAME_REGS_MARKER@ha /* exception frame marker */
- 	stw	r2,GPR2(r11)
+ 
+ 	/* The initial task and kernel stack */
+-	INIT_TASK_DATA_SECTION(THREAD_SIZE)
++	INIT_TASK_DATA_SECTION(THREAD_ALIGN)
+ 
+ 	.data..page_aligned : AT(ADDR(.data..page_aligned) - LOAD_OFFSET) {
+ 		PAGE_ALIGNED_DATA(PAGE_SIZE)
 -- 
 2.13.3
 
