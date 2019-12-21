@@ -2,25 +2,25 @@ Return-Path: <SRS0=iYC3=2L=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9099C2D0C0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Dec 2019 08:37:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A195BC2D0C0
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Dec 2019 08:39:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 64A7C206D3
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Dec 2019 08:37:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4FC12206D3
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Dec 2019 08:39:00 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="IZy4u149"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 64A7C206D3
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="X/CC3zVj"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4FC12206D3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47fzWK63GjzDqw3
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Dec 2019 19:37:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47fzYG4YL3zDqHJ
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Dec 2019 19:38:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,55 +28,52 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="IZy4u149"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="X/CC3zVj"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47fzPn4GZyzDqqK
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Dec 2019 19:32:28 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47fzPn4F6HzDqqJ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Dec 2019 19:32:27 +1100 (AEDT)
 Received: from localhost (mailhub1-ext [192.168.12.233])
- by localhost (Postfix) with ESMTP id 47fzPh1574z9v1Ky;
- Sat, 21 Dec 2019 09:32:24 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 47fzPd2RhCz9v1Kt;
+ Sat, 21 Dec 2019 09:32:21 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=IZy4u149; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=X/CC3zVj; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id EPqtKVjQTK1M; Sat, 21 Dec 2019 09:32:24 +0100 (CET)
+ with ESMTP id 9CZTJWpIb3oz; Sat, 21 Dec 2019 09:32:21 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 47fzPg748nz9v1Ks;
- Sat, 21 Dec 2019 09:32:23 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 47fzPd0n8yz9v1Ks;
+ Sat, 21 Dec 2019 09:32:21 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1576917144; bh=T2fAxijLvN7YIaqp6AHKr/+FZ/iVPHULkNK+7Gbp7oo=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=IZy4u149eZqiMS3NTkmt8JiHLVOVep8ped4yVT/VauEKXIjumII2S1KHqj8Q1kC42
- a+ws+I+XLLefa1xxrWmR8Crvt5dhL1Ie6oF4xms3tsTNwx/C/n+44Yp9s4IP2IXiVs
- 5MxWxqlzNshufcYWLLS+4JLlPfsrtBrhgQgjy4+A=
+ t=1576917141; bh=E9RKebUP1SppGa2SP1hXCPrAmxC2lQWVebR4woXcBx4=;
+ h=From:Subject:To:Cc:Date:From;
+ b=X/CC3zVji3J7DK/g7Rrz/AyTo0Y5CoJMc25c7ql5rHqSRlTGaSqbTh4XA6EWt4SON
+ g8dx7mQjw0IIqrUJTPNqMqOKZEn1YAyfja8qRjAHISFddOuN4hWvU9bO+610hzQw4x
+ lGCJEXigJhDEI6ZgPMcq/MuxAcrBh5X+DBf1P/2c=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id F19D68B77C;
- Sat, 21 Dec 2019 09:32:24 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 02CFC8B77C;
+ Sat, 21 Dec 2019 09:32:22 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id YimsqWZ-81aH; Sat, 21 Dec 2019 09:32:24 +0100 (CET)
+ with ESMTP id jxdAh1n2NAhk; Sat, 21 Dec 2019 09:32:21 +0100 (CET)
 Received: from localhost.localdomain (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A85688B752;
- Sat, 21 Dec 2019 09:32:24 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id ACFFE8B752;
+ Sat, 21 Dec 2019 09:32:21 +0100 (CET)
 Received: by localhost.localdomain (Postfix, from userid 0)
- id 708E8637B6; Sat, 21 Dec 2019 08:32:24 +0000 (UTC)
-Message-Id: <3a4d58d378091086f00fde42b59610c80289e120.1576916812.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1576916812.git.christophe.leroy@c-s.fr>
-References: <cover.1576916812.git.christophe.leroy@c-s.fr>
+ id 4B883637B6; Sat, 21 Dec 2019 08:32:21 +0000 (UTC)
+Message-Id: <cover.1576916812.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v5 03/17] powerpc/32: save DEAR/DAR before calling
- handle_page_fault
+Subject: [PATCH v5 00/17] Enable CONFIG_VMAP_STACK on PPC32
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  dja@axtens.net
-Date: Sat, 21 Dec 2019 08:32:24 +0000 (UTC)
+Date: Sat, 21 Dec 2019 08:32:21 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,125 +91,69 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-handle_page_fault() is the only function that save DAR/DEAR itself.
+The purpose of this serie is to enable CONFIG_VMAP_STACK on PPC32.
 
-Save DAR/DEAR before calling handle_page_fault() to prepare for
-VMAP stack which will require to save even before.
+rfc v1: initial support on 8xx
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/kernel/entry_32.S       | 1 -
- arch/powerpc/kernel/head_32.S        | 2 ++
- arch/powerpc/kernel/head_40x.S       | 2 ++
- arch/powerpc/kernel/head_8xx.S       | 2 ++
- arch/powerpc/kernel/head_booke.h     | 2 ++
- arch/powerpc/kernel/head_fsl_booke.S | 1 +
- 6 files changed, 9 insertions(+), 1 deletion(-)
+rfc v2: added stack overflow detection.
 
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 6273b4862482..317ad9df8ba8 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -621,7 +621,6 @@ ppc_swapcontext:
-  */
- 	.globl	handle_page_fault
- handle_page_fault:
--	stw	r4,_DAR(r1)
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- #ifdef CONFIG_PPC_BOOK3S_32
- 	andis.  r0,r5,DSISR_DABRMATCH@h
-diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
-index 9e868567b716..bebb49d877f2 100644
---- a/arch/powerpc/kernel/head_32.S
-+++ b/arch/powerpc/kernel/head_32.S
-@@ -310,6 +310,7 @@ BEGIN_MMU_FTR_SECTION
- END_MMU_FTR_SECTION_IFSET(MMU_FTR_HPTE_TABLE)
- 1:	lwz	r5,_DSISR(r11)		/* get DSISR value */
- 	mfspr	r4,SPRN_DAR
-+	stw	r4, _DAR(r11)
- 	EXC_XFER_LITE(0x300, handle_page_fault)
- 
- 
-@@ -327,6 +328,7 @@ BEGIN_MMU_FTR_SECTION
- END_MMU_FTR_SECTION_IFSET(MMU_FTR_HPTE_TABLE)
- 1:	mr	r4,r12
- 	andis.	r5,r9,DSISR_SRR1_MATCH_32S@h /* Filter relevant SRR1 bits */
-+	stw	r4, _DAR(r11)
- 	EXC_XFER_LITE(0x400, handle_page_fault)
- 
- /* External interrupt */
-diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
-index 585ea1976550..9bb663977e84 100644
---- a/arch/powerpc/kernel/head_40x.S
-+++ b/arch/powerpc/kernel/head_40x.S
-@@ -313,6 +313,7 @@ _ENTRY(saved_ksp_limit)
- 	START_EXCEPTION(0x0400, InstructionAccess)
- 	EXCEPTION_PROLOG
- 	mr	r4,r12			/* Pass SRR0 as arg2 */
-+	stw	r4, _DEAR(r11)
- 	li	r5,0			/* Pass zero as arg3 */
- 	EXC_XFER_LITE(0x400, handle_page_fault)
- 
-@@ -676,6 +677,7 @@ DataAccess:
- 	mfspr	r5,SPRN_ESR		/* Grab the ESR, save it, pass arg3 */
- 	stw	r5,_ESR(r11)
- 	mfspr	r4,SPRN_DEAR		/* Grab the DEAR, save it, pass arg2 */
-+	stw	r4, _DEAR(r11)
- 	EXC_XFER_LITE(0x300, handle_page_fault)
- 
- /* Other PowerPC processors, namely those derived from the 6xx-series
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index dac7c0a34eea..fb284d95c76a 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -486,6 +486,7 @@ InstructionTLBError:
- 	tlbie	r4
- 	/* 0x400 is InstructionAccess exception, needed by bad_page_fault() */
- .Litlbie:
-+	stw	r4, _DAR(r11)
- 	EXC_XFER_LITE(0x400, handle_page_fault)
- 
- /* This is the data TLB error on the MPC8xx.  This could be due to
-@@ -504,6 +505,7 @@ DARFixed:/* Return from dcbx instruction bug workaround */
- 	mfspr	r5,SPRN_DSISR
- 	stw	r5,_DSISR(r11)
- 	mfspr	r4,SPRN_DAR
-+	stw	r4, _DAR(r11)
- 	andis.	r10,r5,DSISR_NOHPTE@h
- 	beq+	.Ldtlbie
- 	tlbie	r4
-diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
-index 2ae635df9026..37fc84ed90e3 100644
---- a/arch/powerpc/kernel/head_booke.h
-+++ b/arch/powerpc/kernel/head_booke.h
-@@ -467,6 +467,7 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_EMB_HV)
- 	mfspr	r5,SPRN_ESR;		/* Grab the ESR and save it */	      \
- 	stw	r5,_ESR(r11);						      \
- 	mfspr	r4,SPRN_DEAR;		/* Grab the DEAR */		      \
-+	stw	r4, _DEAR(r11);						      \
- 	EXC_XFER_LITE(0x0300, handle_page_fault)
- 
- #define INSTRUCTION_STORAGE_EXCEPTION					      \
-@@ -475,6 +476,7 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_EMB_HV)
- 	mfspr	r5,SPRN_ESR;		/* Grab the ESR and save it */	      \
- 	stw	r5,_ESR(r11);						      \
- 	mr      r4,r12;                 /* Pass SRR0 as arg2 */		      \
-+	stw	r4, _DEAR(r11);						      \
- 	li      r5,0;                   /* Pass zero as arg3 */		      \
- 	EXC_XFER_LITE(0x0400, handle_page_fault)
- 
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index 6f7a3a7162c5..840af004041e 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -378,6 +378,7 @@ interrupt_base:
- 	mfspr	r4,SPRN_DEAR		/* Grab the DEAR, save it, pass arg2 */
- 	andis.	r10,r5,(ESR_ILK|ESR_DLK)@h
- 	bne	1f
-+	stw	r4, _DEAR(r11)
- 	EXC_XFER_LITE(0x0300, handle_page_fault)
- 1:
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
+v3:
+- Stack overflow detection works, tested with LKDTM STACK_EXHAUST test
+- Support for book3s32 added
+
+v4:
+- Fixed build failure with CONFIG_KVM (patch 14)
+- Fixed boot failure with pmac32_defconfig+VMAP_STACK+KVM (new patch 15)
+- Fixed crash with altivec and fpu (patch 16)
+
+v5:
+- Reduced ifdefs around tophys/tovirt by using macros (patch 5)
+- Reorganised stack overflow handling, making it independent of the existing one which could go away in another series (patch 7)
+- Added vmapped stacks for interrupts (new patch 8)
+
+Christophe Leroy (17):
+  powerpc/32: replace MTMSRD() by mtmsr
+  powerpc/32: Add EXCEPTION_PROLOG_0 in head_32.h
+  powerpc/32: save DEAR/DAR before calling handle_page_fault
+  powerpc/32: move MSR_PR test into EXCEPTION_PROLOG_0
+  powerpc/32: add a macro to get and/or save DAR and DSISR on stack.
+  powerpc/32: prepare for CONFIG_VMAP_STACK
+  powerpc: align stack to 2 * THREAD_SIZE with VMAP_STACK
+  powerpc/32: Add early stack overflow detection with VMAP stack.
+  powerpc/32: Use vmapped stacks for interrupts
+  powerpc/8xx: Use alternative scratch registers in DTLB miss handler
+  powerpc/8xx: drop exception entries for non-existing exceptions
+  powerpc/8xx: move DataStoreTLBMiss perf handler
+  powerpc/8xx: split breakpoint exception
+  powerpc/8xx: Enable CONFIG_VMAP_STACK
+  powerpc/32s: reorganise DSI handler.
+  powerpc/32s: avoid crossing page boundary while changing SRR0/1.
+  powerpc/32s: Enable CONFIG_VMAP_STACK
+
+ arch/powerpc/include/asm/processor.h   |   6 ++
+ arch/powerpc/include/asm/thread_info.h |  18 ++++
+ arch/powerpc/kernel/asm-offsets.c      |   6 ++
+ arch/powerpc/kernel/entry_32.S         |  29 +++---
+ arch/powerpc/kernel/fpu.S              |   3 +
+ arch/powerpc/kernel/head_32.S          |  61 ++++++-----
+ arch/powerpc/kernel/head_32.h          | 178 +++++++++++++++++++++++++++----
+ arch/powerpc/kernel/head_40x.S         |   2 +
+ arch/powerpc/kernel/head_8xx.S         | 184 +++++++++++++++------------------
+ arch/powerpc/kernel/head_booke.h       |   2 +
+ arch/powerpc/kernel/head_fsl_booke.S   |   1 +
+ arch/powerpc/kernel/irq.c              |  22 ++++
+ arch/powerpc/kernel/setup.h            |   2 +-
+ arch/powerpc/kernel/setup_32.c         |  17 ++-
+ arch/powerpc/kernel/setup_64.c         |   2 +-
+ arch/powerpc/kernel/traps.c            |   9 ++
+ arch/powerpc/kernel/vector.S           |   3 +
+ arch/powerpc/kernel/vmlinux.lds.S      |   2 +-
+ arch/powerpc/mm/book3s32/hash_low.S    |  46 ++++++---
+ arch/powerpc/mm/book3s32/mmu.c         |   9 +-
+ arch/powerpc/perf/8xx-pmu.c            |  12 ++-
+ arch/powerpc/platforms/Kconfig.cputype |   3 +
+ 22 files changed, 435 insertions(+), 182 deletions(-)
+
 -- 
 2.13.3
 
