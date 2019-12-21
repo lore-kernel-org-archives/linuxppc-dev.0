@@ -2,60 +2,60 @@ Return-Path: <SRS0=iYC3=2L=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BC3EDC2D0C0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Dec 2019 12:16:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 50919C2D0C0
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Dec 2019 14:57:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6AE0721655
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Dec 2019 12:16:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A78492070C
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Dec 2019 14:57:29 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="mk1ipUBQ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6AE0721655
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="dRhbY1jJ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A78492070C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47g4N70t0XzDqwY
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Dec 2019 23:16:23 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 47g7xz4CFBzDqv3
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Dec 2019 01:57:27 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=pr-tracker-bot@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="dRhbY1jJ"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47g4KK264JzDqtW
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Dec 2019 23:13:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.b="mk1ipUBQ"; dkim-atps=neutral
-Received: by ozlabs.org (Postfix)
- id 47g4KK1C8wz9sP6; Sat, 21 Dec 2019 23:13:57 +1100 (AEDT)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 47g4KK0NsKz9sPV; Sat, 21 Dec 2019 23:13:56 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1576930437;
- bh=fdGx99SybEx58+mgqPKw8RXITFkl+BhWI68Y46n/QKY=;
- h=From:To:Cc:Subject:Date:From;
- b=mk1ipUBQWoF7JXo8cyYKz3kFqgdxrSHmBOb5/ffUK+RNZCQihMAlzqCiXhA1eLUr3
- pVNudNzN1EZNyRSSxMsg40OZqoTIldaflgRNHHAdKLzxYIzFztIuJ/FiRZ2JsDUxWB
- f2hR0Btdg4IN1KVIXQC9cJr+Ov49cb1UuKAGiPT8Jh/Ll9piQ7CCA9sUQk9Jrdxy44
- uyV5qsdia1Wn12rEoqlpxh6fWzayngAudNxXNJPIwVUyWDUVseawTpPzcEGJvAYjFA
- onSkRVecUe7JGMQhDGrCdAADM8GJkZutjk7HnB+foA+edevZ2E9Dc7MHdf3FbBKAbc
- swsrg0W5eF2fw==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/mm: Mark get_slice_psize() & slice_addr_is_low() as
- notrace
-Date: Sat, 21 Dec 2019 23:13:37 +1100
-Message-Id: <20191221121337.4894-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.21.0
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47g7vP4MPCzDqnx
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Dec 2019 01:55:12 +1100 (AEDT)
+Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-5.5-4 tag
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1576940110;
+ bh=MI/JmG2aNZLH/n4zNzRm8HaS1AdrgVr2N65rL/m9UO8=;
+ h=From:In-Reply-To:References:Date:To:Cc:From;
+ b=dRhbY1jJH0CP7sZg8h2wzi5T8ukY+RVnvEPChsH2sWHaR430ctqXdKlbzMlNXOw5J
+ zEDz53EQbjeBEPDrgDQMxD7Wpa7atNFm7M/3QzyTeGzzzWU3l0sbYLRMiv07rGeOZU
+ avuJYeHI85dOGasK7J8KlKGurO73naWiJRGtIMiE=
+From: pr-tracker-bot@kernel.org
+In-Reply-To: <87sgldlwb0.fsf@mpe.ellerman.id.au>
+References: <87sgldlwb0.fsf@mpe.ellerman.id.au>
+X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
+X-PR-Tracked-Message-Id: <87sgldlwb0.fsf@mpe.ellerman.id.au>
+X-PR-Tracked-Remote: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git
+ tags/powerpc-5.5-4
+X-PR-Tracked-Commit-Id: 228b607d8ea1b7d4561945058d5692709099d432
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: 6d04182dd36dc5a4dd2e352c1d0f0241e83bd2a0
+Message-Id: <157694011047.20544.8813472995788397797.pr-tracker-bot@kernel.org>
+Date: Sat, 21 Dec 2019 14:55:10 +0000
+To: Michael Ellerman <mpe@ellerman.id.au>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,62 +67,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: npiggin@gmail.com
+Cc: pauld@redhat.com, ajd@linux.ibm.com, david@redhat.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ rppt@linux.ibm.com, fbarrat@linux.ibm.com, longman@redhat.com,
+ Linus Torvalds <torvalds@linux-foundation.org>, marcus@mc.pp.se,
+ srikar@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-These slice routines are called from the SLB miss handler, which can
-lead to warnings from the IRQ code, because we have not reconciled the
-IRQ state properly:
+The pull request you sent on Sat, 21 Dec 2019 23:04:03 +1100:
 
-  WARNING: CPU: 72 PID: 30150 at arch/powerpc/kernel/irq.c:258 arch_local_irq_restore.part.0+0xcc/0x100
-  Modules linked in:
-  CPU: 72 PID: 30150 Comm: ftracetest Not tainted 5.5.0-rc2-gcc9x-g7e0165b2f1a9 #1
-  NIP:  c00000000001d83c LR: c00000000029ab90 CTR: c00000000026cf90
-  REGS: c0000007eee3b960 TRAP: 0700   Not tainted  (5.5.0-rc2-gcc9x-g7e0165b2f1a9)
-  MSR:  8000000000021033 <SF,ME,IR,DR,RI,LE>  CR: 22242844  XER: 20000000
-  CFAR: c00000000001d780 IRQMASK: 0
-  ...
-  NIP arch_local_irq_restore.part.0+0xcc/0x100
-  LR  trace_graph_entry+0x270/0x340
-  Call Trace:
-    trace_graph_entry+0x254/0x340 (unreliable)
-    function_graph_enter+0xe4/0x1a0
-    prepare_ftrace_return+0xa0/0x130
-    ftrace_graph_caller+0x44/0x94	# (get_slice_psize())
-    slb_allocate_user+0x7c/0x100
-    do_slb_fault+0xf8/0x300
-    instruction_access_slb_common+0x140/0x180
+> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-5.5-4
 
-Fixes: 48e7b7695745 ("powerpc/64s/hash: Convert SLB miss handlers to C")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/mm/slice.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/6d04182dd36dc5a4dd2e352c1d0f0241e83bd2a0
 
-diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-index 42bbcd47cc85..dffe1a45b6ed 100644
---- a/arch/powerpc/mm/slice.c
-+++ b/arch/powerpc/mm/slice.c
-@@ -50,7 +50,7 @@ static void slice_print_mask(const char *label, const struct slice_mask *mask) {
- 
- #endif
- 
--static inline bool slice_addr_is_low(unsigned long addr)
-+static inline notrace bool slice_addr_is_low(unsigned long addr)
- {
- 	u64 tmp = (u64)addr;
- 
-@@ -659,7 +659,7 @@ unsigned long arch_get_unmapped_area_topdown(struct file *filp,
- 				       mm_ctx_user_psize(&current->mm->context), 1);
- }
- 
--unsigned int get_slice_psize(struct mm_struct *mm, unsigned long addr)
-+unsigned int notrace get_slice_psize(struct mm_struct *mm, unsigned long addr)
- {
- 	unsigned char *psizes;
- 	int index, mask_index;
+Thank you!
+
 -- 
-2.21.0
-
+Deet-doot-dot, I am a bot.
+https://korg.wiki.kernel.org/userdoc/prtracker
