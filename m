@@ -6,77 +6,76 @@ X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_SANE_2 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 73375C2D0C0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Dec 2019 11:35:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B092AC2D0C0
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Dec 2019 11:37:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E576F206D3
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Dec 2019 11:35:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E576F206D3
+	by mail.kernel.org (Postfix) with ESMTPS id 6033320665
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Dec 2019 11:37:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6033320665
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47ggQ96bc8zDqVW
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Dec 2019 22:35:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47ggSn0h4xzDqVV
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Dec 2019 22:37:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47gg3s12PKzDqTW
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Dec 2019 22:19:20 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- xBMBHRks048802; Sun, 22 Dec 2019 06:19:10 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47gg5v2SfCzDqTk
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Dec 2019 22:21:06 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ xBMBHRKH093100; Sun, 22 Dec 2019 06:20:54 -0500
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2x1gt8tdwj-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2x21f77wu3-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Sun, 22 Dec 2019 06:19:10 -0500
-Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id xBMBIWpA050320;
- Sun, 22 Dec 2019 06:19:10 -0500
-Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.11])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2x1gt8tdwa-1
+ Sun, 22 Dec 2019 06:20:53 -0500
+Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id xBMBHTvk093265;
+ Sun, 22 Dec 2019 06:20:53 -0500
+Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.27])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2x21f77wty-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Sun, 22 Dec 2019 06:19:09 -0500
-Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
- by ppma03dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id xBMBIsMb019151;
- Sun, 22 Dec 2019 11:19:09 GMT
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23]) by ppma03dal.us.ibm.com with ESMTP id 2x1b164h9r-1
+ Sun, 22 Dec 2019 06:20:53 -0500
+Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
+ by ppma05wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id xBMBKUij008459;
+ Sun, 22 Dec 2019 11:20:52 GMT
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28]) by ppma05wdc.us.ibm.com with ESMTP id 2x1b1620s5-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Sun, 22 Dec 2019 11:19:09 +0000
-Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
- [9.57.199.108])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- xBMBJ81D15794620
+ Sun, 22 Dec 2019 11:20:52 +0000
+Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
+ [9.57.199.107])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ xBMBKqCS40829392
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Sun, 22 Dec 2019 11:19:08 GMT
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6038AB205F;
- Sun, 22 Dec 2019 11:19:08 +0000 (GMT)
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A6BAEB2066;
- Sun, 22 Dec 2019 11:19:07 +0000 (GMT)
+ Sun, 22 Dec 2019 11:20:52 GMT
+Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5E63F124054;
+ Sun, 22 Dec 2019 11:20:52 +0000 (GMT)
+Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A3DB0124052;
+ Sun, 22 Dec 2019 11:20:51 +0000 (GMT)
 Received: from [9.70.82.143] (unknown [9.70.82.143])
- by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
- Sun, 22 Dec 2019 11:19:07 +0000 (GMT)
-Subject: [PATCH V4 11/14] powerpc/vas: Do not use default credits for
- receive window
+ by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP;
+ Sun, 22 Dec 2019 11:20:51 +0000 (GMT)
+Subject: [PATCH V4 12/14] powerpc/VAS: Return credits after handling fault
 From: Haren Myneni <haren@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 In-Reply-To: <1577012478.12797.71.camel@hbabu-laptop>
 References: <1577012478.12797.71.camel@hbabu-laptop>
 Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 22 Dec 2019 03:18:59 -0800
-Message-ID: <1577013539.12797.87.camel@hbabu-laptop>
+Date: Sun, 22 Dec 2019 03:20:42 -0800
+Message-ID: <1577013642.12797.89.camel@hbabu-laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.3 
 Content-Transfer-Encoding: 7bit
@@ -84,11 +83,11 @@ X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
  definitions=2019-12-22_01:2019-12-17,2019-12-21 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 mlxscore=0
- malwarescore=0 impostorscore=0 mlxlogscore=919 adultscore=0 spamscore=0
- clxscore=1015 priorityscore=1501 suspectscore=1 bulkscore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-1910280000 definitions=main-1912220105
+ mlxlogscore=686
+ suspectscore=3 impostorscore=0 clxscore=1015 malwarescore=0
+ priorityscore=1501 adultscore=0 spamscore=0 phishscore=0 bulkscore=0
+ mlxscore=0 lowpriorityscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-1910280000 definitions=main-1912220105
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,54 +106,84 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
-System checkstops if RxFIFO overruns with more requests than the
-maximum possible number of CRBs allowed in FIFO at any time. So
-max credits value (rxattr.wcreds_max) is set and is passed to
-vas_rx_win_open() by the the driver.
+NX expects OS to return credit for send window after processing each
+fault. Also credit has to be returned even for fault window.
 
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 Signed-off-by: Haren Myneni <haren@linux.ibm.com>
 ---
- arch/powerpc/platforms/powernv/vas-window.c | 4 ++--
- arch/powerpc/platforms/powernv/vas.h        | 2 --
- 2 files changed, 2 insertions(+), 4 deletions(-)
+ arch/powerpc/platforms/powernv/vas-fault.c  | 10 ++++++++++
+ arch/powerpc/platforms/powernv/vas-window.c | 17 +++++++++++++++++
+ arch/powerpc/platforms/powernv/vas.h        |  1 +
+ 3 files changed, 28 insertions(+)
 
+diff --git a/arch/powerpc/platforms/powernv/vas-fault.c b/arch/powerpc/platforms/powernv/vas-fault.c
+index cf776d2..9c31568 100644
+--- a/arch/powerpc/platforms/powernv/vas-fault.c
++++ b/arch/powerpc/platforms/powernv/vas-fault.c
+@@ -239,6 +239,11 @@ irqreturn_t vas_fault_handler(int irq, void *data)
+ 		memset(fifo, 0, CRB_SIZE);
+ 		mutex_unlock(&vinst->mutex);
+ 
++		/*
++		 * Return credit for the fault window.
++		 */
++		vas_return_credit(vinst->fault_win, 0);
++
+ 		pr_devel("VAS[%d] fault_fifo %p, fifo %p, fault_crbs %d\n",
+ 				vinst->vas_id, vinst->fault_fifo, fifo,
+ 				vinst->fault_crbs);
+@@ -265,6 +270,11 @@ irqreturn_t vas_fault_handler(int irq, void *data)
+ 		}
+ 
+ 		update_csb(window, crb);
++		/*
++		 * Return credit for send window after processing
++		 * fault CRB.
++		 */
++		vas_return_credit(window, 1);
+ 	} while (true);
+ 
+ 	return IRQ_HANDLED;
 diff --git a/arch/powerpc/platforms/powernv/vas-window.c b/arch/powerpc/platforms/powernv/vas-window.c
-index 0f27ac5..8428970 100644
+index 8428970..8d90d25 100644
 --- a/arch/powerpc/platforms/powernv/vas-window.c
 +++ b/arch/powerpc/platforms/powernv/vas-window.c
-@@ -772,7 +772,7 @@ static bool rx_win_args_valid(enum vas_cop_type cop,
- 	if (attr->rx_fifo_size > VAS_RX_FIFO_SIZE_MAX)
- 		return false;
+@@ -1319,6 +1319,23 @@ int vas_win_close(struct vas_window *window)
+ }
+ EXPORT_SYMBOL_GPL(vas_win_close);
  
--	if (attr->wcreds_max > VAS_RX_WCREDS_MAX)
-+	if (!attr->wcreds_max)
- 		return false;
- 
- 	if (attr->nx_win) {
-@@ -878,7 +878,7 @@ struct vas_window *vas_rx_win_open(int vasid, enum vas_cop_type cop,
- 	rxwin->nx_win = rxattr->nx_win;
- 	rxwin->user_win = rxattr->user_win;
- 	rxwin->cop = cop;
--	rxwin->wcreds_max = rxattr->wcreds_max ?: VAS_WCREDS_DEFAULT;
-+	rxwin->wcreds_max = rxattr->wcreds_max;
- 
- 	init_winctx_for_rxwin(rxwin, rxattr, &winctx);
- 	init_winctx_regs(rxwin, &winctx);
++/*
++ * Return credit for the given window.
++ */
++void vas_return_credit(struct vas_window *window, bool tx)
++{
++	uint64_t val;
++
++	val = 0ULL;
++	if (tx) { /* send window */
++		val = SET_FIELD(VAS_TX_WCRED, val, 1);
++		write_hvwc_reg(window, VREG(TX_WCRED_ADDER), val);
++	} else {
++		val = SET_FIELD(VAS_LRX_WCRED, val, 1);
++		write_hvwc_reg(window, VREG(LRX_WCRED_ADDER), val);
++	}
++}
++
+ struct vas_window *vas_pswid_to_window(struct vas_instance *vinst,
+ 		uint32_t pswid)
+ {
 diff --git a/arch/powerpc/platforms/powernv/vas.h b/arch/powerpc/platforms/powernv/vas.h
-index af03aa0..f5f45ea 100644
+index f5f45ea..495937a 100644
 --- a/arch/powerpc/platforms/powernv/vas.h
 +++ b/arch/powerpc/platforms/powernv/vas.h
-@@ -101,11 +101,9 @@
- /*
-  * Initial per-process credits.
-  * Max send window credits:    4K-1 (12-bits in VAS_TX_WCRED)
-- * Max receive window credits: 64K-1 (16 bits in VAS_LRX_WCRED)
-  *
-  * TODO: Needs tuning for per-process credits
-  */
--#define VAS_RX_WCREDS_MAX		((64 << 10) - 1)
- #define VAS_TX_WCREDS_MAX		((4 << 10) - 1)
- #define VAS_WCREDS_DEFAULT		(1 << 10)
+@@ -415,6 +415,7 @@ struct vas_winctx {
+ extern void vas_window_free_dbgdir(struct vas_window *win);
+ extern int vas_setup_fault_window(struct vas_instance *vinst);
+ extern irqreturn_t vas_fault_handler(int irq, void *data);
++extern void vas_return_credit(struct vas_window *window, bool tx);
+ extern struct vas_window *vas_pswid_to_window(struct vas_instance *vinst,
+ 						uint32_t pswid);
  
 -- 
 1.8.3.1
