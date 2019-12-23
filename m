@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A899C2D0C0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Dec 2019 15:41:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C1D8C2D0CF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Dec 2019 15:42:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AD0C920409
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Dec 2019 15:40:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2D623222C3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Dec 2019 15:42:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="SVJZ6Mlz"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AD0C920409
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="TpqudzOM"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2D623222C3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47hNqF47wJzDqJh
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Dec 2019 02:40:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47hNs71vL4zDqPF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Dec 2019 02:42:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,54 +28,54 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="SVJZ6Mlz"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="TpqudzOM"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47hNVM1fcGzDqL9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Dec 2019 02:26:19 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47hNVP2RZnzDqL9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Dec 2019 02:26:21 +1100 (AEDT)
 Received: from localhost (mailhub1-ext [192.168.12.233])
- by localhost (Postfix) with ESMTP id 47hNVC08mlz9vJyn;
- Mon, 23 Dec 2019 16:26:11 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 47hNVF12djz9vJyy;
+ Mon, 23 Dec 2019 16:26:13 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=SVJZ6Mlz; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=TpqudzOM; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id NMduw6uLKHzc; Mon, 23 Dec 2019 16:26:10 +0100 (CET)
+ with ESMTP id zIN-liUu8jfd; Mon, 23 Dec 2019 16:26:13 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 47hNVB65gtz9vJyx;
- Mon, 23 Dec 2019 16:26:10 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 47hNVD6zPtz9vJyw;
+ Mon, 23 Dec 2019 16:26:12 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1577114770; bh=D3+VKZJ3hPYAS69Fkh6Xu5UkefnPwZgOHwwzmESq47E=;
+ t=1577114773; bh=CGg5lFjG79+f3AndFF6HVcEwxv4O9U6o4GFVGWYCcUM=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=SVJZ6MlzwisGMPUrmb7zjVPn5E8ioInBlKV63cjaMHP359fiVDCGeCtBL5c7Aj4ga
- AF6Jo0GLl1l0ZXQGUUjJidH0sEXKC9h1uHvPP2AbupP4aEkLAv03ie8lEC2Q8n6j+j
- aIV0/BOVpK5WBNpgm9FZ5rrlbf92caXOOrUkX52s=
+ b=TpqudzOMTrzBq6NdKEoT6ie4xE8cDofbv/TXPN8mm3jpmcvS9HGZ9rmIJDf8H2qn4
+ AlcfawkPHFYVGYFzJ0lHOyy94MW4kWjGWoHlrl2TsuNML9KyNvCGtrA0bg+DrYFqkE
+ reBWPEeuMk/xDhJf2lp/RErt9oRP4/+nb9DD/jzE=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0ADF38B7AB;
- Mon, 23 Dec 2019 16:26:16 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 2120E8B7D1;
+ Mon, 23 Dec 2019 16:26:18 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id nedWeDvJrad3; Mon, 23 Dec 2019 16:26:15 +0100 (CET)
+ with ESMTP id vWNFPbebVhiN; Mon, 23 Dec 2019 16:26:18 +0100 (CET)
 Received: from po16098vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.230.100])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E0D5B8B7A1;
- Mon, 23 Dec 2019 16:26:15 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id EFBDF8B7A1;
+ Mon, 23 Dec 2019 16:26:17 +0100 (CET)
 Received: by po16098vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id E4733637D8; Mon, 23 Dec 2019 15:26:15 +0000 (UTC)
-Message-Id: <ca37c53561e4023315499ee3a35816bad01e4964.1577114567.git.christophe.leroy@c-s.fr>
+ id 05519637D8; Mon, 23 Dec 2019 15:26:17 +0000 (UTC)
+Message-Id: <af0bff368b4f65b5c96695385b9f4c0dd162ea7a.1577114567.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1577114567.git.christophe.leroy@c-s.fr>
 References: <cover.1577114567.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [RFC PATCH 5/8] powerpc/irq: move stack overflow verification
+Subject: [RFC PATCH 7/8] powerpc/32: use IRQ stack immediately on IRQ exception
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 23 Dec 2019 15:26:15 +0000 (UTC)
+Date: Mon, 23 Dec 2019 15:26:17 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,62 +92,126 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-As we are going to switch to IRQ stack immediately in the exception
-handler, it won't be possible anymore to check stack overflow by
-reading stack pointer.
+Exception entries run of kernel thread stack, then do_IRQ()
+switches to the IRQ stack.
 
-Do the verification on regs->gpr[1] which contains the stack pointer
-at the time the IRQ happended, and move it to __do_irq() so that the
-verification is also done when calling __do_irq() directly once the
-exception entry does the stack switch.
+Instead of doing a first step of the thread stack, increasing the
+risk of stack overflow and spending time switch stacks two times when
+coming from userspace, set the stack to IRQ stack immediately in the
+EXCEPTION entry.
+
+In the same way as ARM64, consider that when the stack pointer is not
+within the kernel thread stack, it means it is already on IRQ stack.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/irq.c | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+ arch/powerpc/kernel/head_32.S  |  2 +-
+ arch/powerpc/kernel/head_32.h  | 32 +++++++++++++++++++++++++++++---
+ arch/powerpc/kernel/head_40x.S |  2 +-
+ arch/powerpc/kernel/head_8xx.S |  2 +-
+ 4 files changed, 32 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 28414c6665cc..4df49f6e9987 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -596,15 +596,16 @@ u64 arch_irq_stat_cpu(unsigned int cpu)
- 	return sum;
- }
+diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+index 4a24f8f026c7..0c36fba5b861 100644
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -332,7 +332,7 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_HPTE_TABLE)
+ 	EXC_XFER_LITE(0x400, handle_page_fault)
  
--static inline void check_stack_overflow(void)
-+static inline void check_stack_overflow(struct pt_regs *regs)
- {
- #ifdef CONFIG_DEBUG_STACKOVERFLOW
-+	bool is_user = user_mode(regs);
- 	long sp;
+ /* External interrupt */
+-	EXCEPTION(0x500, HardwareInterrupt, do_IRQ, EXC_XFER_LITE)
++	EXCEPTION_IRQ(0x500, HardwareInterrupt, __do_irq, EXC_XFER_LITE)
  
--	sp = current_stack_pointer() & (THREAD_SIZE-1);
-+	sp = regs->gpr[1] & (THREAD_SIZE - 1);
+ /* Alignment exception */
+ 	. = 0x600
+diff --git a/arch/powerpc/kernel/head_32.h b/arch/powerpc/kernel/head_32.h
+index 8abc7783dbe5..f9e77e51723e 100644
+--- a/arch/powerpc/kernel/head_32.h
++++ b/arch/powerpc/kernel/head_32.h
+@@ -11,21 +11,41 @@
+  * task's thread_struct.
+  */
  
- 	/* check for stack overflow: is there less than 2KB free? */
--	if (unlikely(sp < 2048)) {
-+	if (unlikely(!is_user && sp < 2048)) {
- 		pr_err("do_IRQ: stack overflow: %ld\n", sp);
- 		dump_stack();
- 	}
-@@ -654,6 +655,8 @@ void __do_irq(struct pt_regs *regs)
+-.macro EXCEPTION_PROLOG
++.macro EXCEPTION_PROLOG is_irq=0
+ 	mtspr	SPRN_SPRG_SCRATCH0,r10
+ 	mtspr	SPRN_SPRG_SCRATCH1,r11
+ 	mfcr	r10
+-	EXCEPTION_PROLOG_1
++	EXCEPTION_PROLOG_1 is_irq=\is_irq
+ 	EXCEPTION_PROLOG_2
+ .endm
  
- 	trace_irq_entry(regs);
+-.macro EXCEPTION_PROLOG_1
++.macro EXCEPTION_PROLOG_1 is_irq=0
+ 	mfspr	r11,SPRN_SRR1		/* check whether user or kernel */
+ 	andi.	r11,r11,MSR_PR
++	.if \is_irq
++	bne	2f
++	mfspr	r11, SPRN_SPRG_THREAD
++	lwz	r11, TASK_STACK - THREAD(r11)
++	xor	r11, r11, r1
++	cmplwi	cr7, r11, THREAD_SIZE - 1
++	tophys(r11, r1)			/* use tophys(r1) if not thread stack */
++	bgt	cr7, 1f
++2:
++#ifdef CONFIG_SMP
++	mfspr	r11, SPRN_SPRG_THREAD
++	lwz	r11, TASK_CPU - THREAD(r11)
++	slwi	r11, r11, 3
++	addis	r11, r11, (hardirq_ctx - PAGE_OFFSET)@ha
++#else
++	lis	r11, (hardirq_ctx - PAGE_OFFSET)@ha
++#endif
++	lwz	r11, (hardirq_ctx - PAGE_OFFSET)@l(r11)
++	.else
+ 	tophys(r11,r1)			/* use tophys(r1) if kernel */
+ 	beq	1f
+ 	mfspr	r11,SPRN_SPRG_THREAD
+ 	lwz	r11,TASK_STACK-THREAD(r11)
++	.endif
+ 	addi	r11,r11,THREAD_SIZE
+ 	tophys(r11,r11)
+ 1:	subi	r11,r11,INT_FRAME_SIZE	/* alloc exc. frame */
+@@ -171,6 +191,12 @@
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD;	\
+ 	xfer(n, hdlr)
  
-+	check_stack_overflow(regs);
++#define EXCEPTION_IRQ(n, label, hdlr, xfer)	\
++	START_EXCEPTION(n, label)		\
++	EXCEPTION_PROLOG is_irq=1;		\
++	addi	r3,r1,STACK_FRAME_OVERHEAD;	\
++	xfer(n, hdlr)
 +
- 	/*
- 	 * Query the platform PIC for the interrupt & ack it.
- 	 *
-@@ -685,8 +688,6 @@ void do_IRQ(struct pt_regs *regs)
- 	irqsp = hardirq_ctx[raw_smp_processor_id()];
- 	sirqsp = softirq_ctx[raw_smp_processor_id()];
+ #define EXC_XFER_TEMPLATE(hdlr, trap, msr, tfer, ret)		\
+ 	li	r10,trap;					\
+ 	stw	r10,_TRAP(r11);					\
+diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
+index 4511fc1549f7..dd236f596c0b 100644
+--- a/arch/powerpc/kernel/head_40x.S
++++ b/arch/powerpc/kernel/head_40x.S
+@@ -315,7 +315,7 @@ _ENTRY(crit_srr1)
+ 	EXC_XFER_LITE(0x400, handle_page_fault)
  
--	check_stack_overflow();
--
- 	/* Already there ? Otherwise switch stack and call */
- 	if (unlikely(cursp == irqsp || cursp == sirqsp))
- 		__do_irq(regs);
+ /* 0x0500 - External Interrupt Exception */
+-	EXCEPTION(0x0500, HardwareInterrupt, do_IRQ, EXC_XFER_LITE)
++	EXCEPTION_IRQ(0x0500, HardwareInterrupt, __do_irq, EXC_XFER_LITE)
+ 
+ /* 0x0600 - Alignment Exception */
+ 	START_EXCEPTION(0x0600, Alignment)
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index 19f583e18402..5a6cdbc89e26 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -150,7 +150,7 @@ DataAccess:
+ InstructionAccess:
+ 
+ /* External interrupt */
+-	EXCEPTION(0x500, HardwareInterrupt, do_IRQ, EXC_XFER_LITE)
++	EXCEPTION_IRQ(0x500, HardwareInterrupt, __do_irq, EXC_XFER_LITE)
+ 
+ /* Alignment exception */
+ 	. = 0x600
 -- 
 2.13.3
 
