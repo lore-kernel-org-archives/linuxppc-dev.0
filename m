@@ -2,71 +2,57 @@ Return-Path: <SRS0=LneW=2O=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1AF4FC2D0CF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Dec 2019 12:45:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 53041C2D0CF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Dec 2019 14:48:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8C3C52053B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Dec 2019 12:45:02 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="mbhzlqrF"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8C3C52053B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id C4559206B7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Dec 2019 14:48:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C4559206B7
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47hwsl2l2FzDqNw
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Dec 2019 23:44:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=luto@kernel.org; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47hzcV0zJpzDqNR
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Dec 2019 01:48:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="mbhzlqrF"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=permerror (SPF Permanent Error: Unknown mechanism
+ found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
+ (client-ip=63.228.1.57; helo=gate.crashing.org;
+ envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=kernel.crashing.org
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47hwpN5wxPzDqKs
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Dec 2019 23:42:04 +1100 (AEDT)
-Received: from mail-wr1-f51.google.com (mail-wr1-f51.google.com
- [209.85.221.51])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 025BF20731
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Dec 2019 12:42:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1577191322;
- bh=xWNWJ8I9fxHntwfPGgiUpJJyIhLQ1SeEPpEpuaGohNs=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=mbhzlqrFOTd5D0VnwK8uZ6zmm6un9WEQBuC+SsW/vNr4zmirMRl3Ie03Hti+oSKnq
- jWL+FYDrP86b5jRs0x0aSDRUVDijhRUPxNal17nD3tvwFIHL1sEqrGQp833aEf8LTp
- 5Sfx49XQkhGKpNMeG65TqgqaLju0XthGjvsfdWd0=
-Received: by mail-wr1-f51.google.com with SMTP id c9so19738258wrw.8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Dec 2019 04:42:01 -0800 (PST)
-X-Gm-Message-State: APjAAAX7OtcvJTnLOvEbjETivVmGG48+aw2z6WIlj8s6Gm4dSewWh4A7
- cnIjTYd8rhnwEX1KTvXYSKhwVt4kaVuJv0h8JOWaVQ==
-X-Google-Smtp-Source: APXvYqwdNLgm/8CaMUR6XukS3F5ntUzE/BsJd5vEuNBWA9P9kZsIX/K2aEVbOOWPEOSGyhiF4uqEjDSBVC/HOxryAY4=
-X-Received: by 2002:adf:eb09:: with SMTP id s9mr36777598wrn.61.1577191320403; 
- Tue, 24 Dec 2019 04:42:00 -0800 (PST)
-MIME-Version: 1.0
-References: <de5273aa-69dc-8e37-c917-44708257d2ba@c-s.fr>
- <D2614EC4-5B80-4846-994D-22730ACD44A1@amacapital.net>
-In-Reply-To: <D2614EC4-5B80-4846-994D-22730ACD44A1@amacapital.net>
-From: Andy Lutomirski <luto@kernel.org>
-Date: Tue, 24 Dec 2019 04:41:48 -0800
-X-Gmail-Original-Message-ID: <CALCETrUR-NgVMeTPh3TmgNSTsA=2xE03_KBeO9DSk0P-JxD_fQ@mail.gmail.com>
-Message-ID: <CALCETrUR-NgVMeTPh3TmgNSTsA=2xE03_KBeO9DSk0P-JxD_fQ@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47hzZS1KC2zDqJj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Dec 2019 01:46:53 +1100 (AEDT)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id xBOEkNuV031561;
+ Tue, 24 Dec 2019 08:46:23 -0600
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id xBOEkMoQ031560;
+ Tue, 24 Dec 2019 08:46:22 -0600
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Tue, 24 Dec 2019 08:46:21 -0600
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Andy Lutomirski <luto@amacapital.net>
 Subject: Re: [RFC PATCH v2 04/10] lib: vdso: get pointer to vdso data from the
  arch
-To: christophe leroy <christophe.leroy@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Message-ID: <20191224144621.GG4505@gate.crashing.org>
+References: <de5273aa-69dc-8e37-c917-44708257d2ba@c-s.fr>
+ <D2614EC4-5B80-4846-994D-22730ACD44A1@amacapital.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <D2614EC4-5B80-4846-994D-22730ACD44A1@amacapital.net>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,76 +76,12 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Dec 24, 2019 at 4:15 AM Andy Lutomirski <luto@amacapital.net> wrote=
-:
->
->
->
-> > On Dec 24, 2019, at 7:53 PM, christophe leroy <christophe.leroy@c-s.fr>=
- wrote:
-> >
-> > =EF=BB=BF
-> >
-> >> Le 24/12/2019 =C3=A0 03:27, Andy Lutomirski a =C3=A9crit :
-> >>> On Mon, Dec 23, 2019 at 6:31 AM Christophe Leroy
-> >>> <christophe.leroy@c-s.fr> wrote:
-> >>>
-> >>> On powerpc, __arch_get_vdso_data() clobbers the link register,
-> >>> requiring the caller to set a stack frame in order to save it.
-> >>>
-> >>> As the parent function already has to set a stack frame and save
-> >>> the link register to call the C vdso function, retriving the
-> >>> vdso data pointer there is lighter.
-> >> I'm confused.  Can't you inline __arch_get_vdso_data()?  Or is the
-> >> issue that you can't retrieve the program counter on power without
-> >> clobbering the link register?
-> >
-> > Yes it can be inlined (I did it in V1 https://patchwork.ozlabs.org/patc=
-h/1180571/), but you can't do it without clobbering the link register, beca=
-use the only way to get the program counter is to do to as if you were call=
-ing another function but you call to the address which just follows where y=
-ou are, so that it sets LR which the simulated return address which corresp=
-onds to the address following the branch.
-> >
-> > static __always_inline
-> > const struct vdso_data *__arch_get_vdso_data(void)
-> > {
-> >    void *ptr;
-> >
-> >    asm volatile(
-> >        "    bcl    20, 31, .+4;\n"
-> >        "    mflr    %0;\n"
-> >        "    addi    %0, %0, __kernel_datapage_offset - (.-4);\n"
-> >        : "=3Db"(ptr) : : "lr");
-> >
-> >    return ptr + *(unsigned long *)ptr;
-> > }
-> >
-> >> I would imagine that this patch generates worse code on any
-> >> architecture with PC-relative addressing modes (which includes at
-> >> least x86_64, and I would guess includes most modern architectures).
-> >
-> > Why ? Powerpc is also using PC-relative addressing for all calls but in=
-direct calls.
->
-> I mean PC-relative access for data.  The data page is at a constant, know=
-n offset from the vDSO text.
->
-> I haven=E2=80=99t checked how much x86_64 benefits from this, but at leas=
-t the non-array fields ought to be accessible with a PC-relative access.
->
-> It should be possible to refactor a little bit so that the compiler can s=
-till see what=E2=80=99s going on.  Maybe your patch actually does this. I=
-=E2=80=99d want to look at the assembly.  This also might not matter much o=
-n x86_64 in particular, since x86_64 can convert a PC-relative address to a=
-n absolute address with a single instruction with no clobbers.
->
-> Does power have PC-relative data access?  If so, I wonder if the code can=
- be arranged so that even the array accesses don=E2=80=99t require computin=
-g an absolute address at any point.
+On Tue, Dec 24, 2019 at 08:15:11PM +0800, Andy Lutomirski wrote:
+> Does power have PC-relative data access?  If so, I wonder if the code can be arranged so that even the array accesses don’t require computing an absolute address at any point.
 
-Indeed the x86 code is also suboptimal, but at least the unnecessary
-absolute address calculation is cheap on x86_64.  Ideally we'd pass
-around offsets into the vdso data instead of passing pointers, and
-maybe the compiler will figure it out.  I can try to play with this in
-the morning.
+Not before ISA 3.0 (that is Power9).
+
+The bcl/mflr dance isn't *that* expensive, if you use it sparingly.
+
+
+Segher
