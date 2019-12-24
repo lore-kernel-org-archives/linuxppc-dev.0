@@ -7,22 +7,22 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B4807C2D0CF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Dec 2019 05:59:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90547C2D0CF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Dec 2019 06:01:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 580AF206B7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Dec 2019 05:59:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 32212206B7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Dec 2019 06:01:43 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="eHLEmCQ7";
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="Do92WA0M"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 580AF206B7
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="IbzIp6E6";
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="wZC2mhCu"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 32212206B7
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47hlt81sbXzDqN8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Dec 2019 16:59:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47hlwP0ffczDqHH
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Dec 2019 17:01:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=russell.cc (client-ip=66.111.4.25;
  helo=out1-smtp.messagingengine.com; envelope-from=ruscur@russell.cc;
@@ -30,61 +30,62 @@ Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=russell.cc header.i=@russell.cc header.b="eHLEmCQ7"; 
+ unprotected) header.d=russell.cc header.i=@russell.cc header.b="IbzIp6E6"; 
  dkim=pass (2048-bit key;
  unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.b="Do92WA0M"; dkim-atps=neutral
+ header.b="wZC2mhCu"; dkim-atps=neutral
 Received: from out1-smtp.messagingengine.com (out1-smtp.messagingengine.com
  [66.111.4.25])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47hlnq388szDqN6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Dec 2019 16:55:58 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47hlnx322DzDqN5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Dec 2019 16:56:05 +1100 (AEDT)
 Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
- by mailout.nyi.internal (Postfix) with ESMTP id 80A6522036;
- Tue, 24 Dec 2019 00:55:56 -0500 (EST)
+ by mailout.nyi.internal (Postfix) with ESMTP id 25F6822040;
+ Tue, 24 Dec 2019 00:56:03 -0500 (EST)
 Received: from mailfrontend2 ([10.202.2.163])
- by compute6.internal (MEProxy); Tue, 24 Dec 2019 00:55:56 -0500
+ by compute6.internal (MEProxy); Tue, 24 Dec 2019 00:56:03 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=
  from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding; s=fm3; bh=/ZAqtJdy+ln43
- ioqFQJBYAV6EX+9TBgNroal6pRoyiA=; b=eHLEmCQ7ftwOduXWG7E5KB3TYj48d
- Z2dQiqLAAZmDIfCgqpdc2aS2mu+rQ2z6PLq+XYNc9diFsNjqHdBayz6p+An8UfoF
- czoGB/PpWP29dl10Qcz56zJ7FgH2WMPRAQt0pUEnmgiX7jeuEdTgFzBYU+fL0+8u
- YfGZcMtKBlxNEQ0xnQmVpIMl/UZndWwPZrEIRoydU+5G/3TEHVla5wqPpn6Kw+l6
- bKivtbXlMEhzKbnZJryUODf9KuDY6y2QLxftceEo63ARFHge4/YucWk4oO7YYhHi
- N3GHMyUD5J/KrrP02OoB0Gdr0i+vGJ5qWwRGcMJfJK0v2RRpqqXlIRbbA==
+ :mime-version:content-transfer-encoding; s=fm3; bh=HNaf5NLW14hQr
+ LdxJDMbqeAu56lYddI2fvxI/Oi2Q/k=; b=IbzIp6E6KQyiIG9rgeFnW3fsle+lZ
+ JyV0i6l09BrMpOSmyF4VjAfSg2rF0BeoapfxwQ7n9Te6C4uLyHURjVFQBgq4dp2m
+ N08rF7QIym+65gl4tWtM29Gj0rCM88/JFtul1SWTr7NHLvEBwRPdq85OZoRZAXUW
+ 6MT1G5Ah4UNFDq64O1J5IYNEmvqaYhEyAlIjFw8U2toAed4Ho5PQ2zoH5uAGV1vG
+ wkBqqvU9y0BgwjJbyiBZOARyDyalRuK39jWXmQ2UEEG3uxpndETk2r6EEYOOSgHv
+ kqjiVq34f2LuycC8OXGW3pacbV3vr/MCSv+qTOc05YceqC8ClbzgSKQ/w==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
  messagingengine.com; h=cc:content-transfer-encoding:date:from
  :in-reply-to:message-id:mime-version:references:subject:to
  :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
- fm1; bh=/ZAqtJdy+ln43ioqFQJBYAV6EX+9TBgNroal6pRoyiA=; b=Do92WA0M
- 93EFff069P0gAjD/+Cu/Fv7+7sesresmXxESFxKwcs4Ymdaau352pSlJdCwD6M11
- Xo6c760BAfA4MKjUTSrm5XY9HiIjLOLg9Ws2DM8QvQ8QhVtP4oZ4xy+TNwLYfLee
- hrZM09F8070WA4+A0y6ZXFFxT5+aOhaydomRqjyWltQS4Nq7kIxPgdjgX3YkZW3i
- ZUqr41G7UN2hrUA6SUzzCU9eagXu+0ks/4b7vlM0mCFGKPEHP/q3UlcPsD14UNi0
- pC3J613TeVsKVP0hiDixbB8HSXs0EdhwFy0YdxaJPe0xpUZAqzlhfTkR1AB/trT7
- qi7LPOZ/Y/lXCQ==
-X-ME-Sender: <xms:bKgBXkO2pPr9s1Jhnj0Wl1HCzRUUD0NBaQvPL87VmCgaNepYEp0DGg>
+ fm1; bh=HNaf5NLW14hQrLdxJDMbqeAu56lYddI2fvxI/Oi2Q/k=; b=wZC2mhCu
+ 2+60kjZBIOrFAAgxXPXmngg4oD5xhdXASIxx17e7bchkcuPrmVkFbJSYshDyM4on
+ VCfiP2zO3UeZ3+mzBxqv2czUqXcv/zX7L6+71H0PchwCwvwjUVmXSm+6o3bBJagJ
+ PbXt7NGQ4mK3SpABlJsqvZ5G+V5OD0RpH/1x4Yf4eixAMszrM+rosaKNUcC5AL8e
+ N9JjqUHKuhdvUVkYqT4izSsthG7xC0/Gq109dar1+Ae3AAVLUaThnt1npiLjcN9g
+ Hq4XfJ7fAgDI6K47DUDnQnj0GDKTAVgSOzwwx0C+RznekoYeqeYD8QNnQVkXCv7o
+ iaFApKS9kyiz8Q==
+X-ME-Sender: <xms:c6gBXiNHcNCWIbdMxIBN09BHUhP2ulAqipcaINESYcHv5FQTLWs0gQ>
 X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedufedrvddvuddgieduucetufdoteggodetrfdotf
  fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
  uceurghilhhouhhtmecufedttdenucgfrhhlucfvnfffucdlfedtmdenucfjughrpefhvf
  fufffkofgjfhgggfestdekredtredttdenucfhrhhomheptfhushhsvghllhcuvehurhhr
  vgihuceorhhushgtuhhrsehruhhsshgvlhhlrdgttgeqnecukfhppeduvddvrdelledrke
  dvrddutdenucfrrghrrghmpehmrghilhhfrhhomheprhhushgtuhhrsehruhhsshgvlhhl
- rdgttgenucevlhhushhtvghrufhiiigvpedt
-X-ME-Proxy: <xmx:bKgBXuygWhvpFV2nGZHTj6Ciq75xkz-xKToFEZEAdkeZZZpNmhhjdQ>
- <xmx:bKgBXkXsB2agVORYohmu81jCBxw05fyNbFcyiB1seFhBvxgPWvtehg>
- <xmx:bKgBXgPzG6ktni5Z7F1HDnU0rFr_KOCEpW7NDIyQaEXXpOf1tzYoRA>
- <xmx:bKgBXroP5jXEeTw5TrqJU4twjI1xNlVkeHm827YIktWaIapWdrDs7w>
+ rdgttgenucevlhhushhtvghrufhiiigvpedv
+X-ME-Proxy: <xmx:c6gBXvsg3-G214m9zEYWPfdlLDVGscKUhTOwEWTxznb23bJuJqR0bQ>
+ <xmx:c6gBXt2DhgvIojHFT7-oGd6rf60aEp_n8RV0OHSwVhOQk3yuVTVjUw>
+ <xmx:c6gBXuynXM0eQ6JSF9oWj0PK0B0Nj9D1KYhUn3bo4wkIcupgosM60A>
+ <xmx:c6gBXsDTzI-x_DmI0wLvxJ8F8rB_0APx1NhNRK-TNx55kHffqdfg_Q>
 Received: from crackle.ozlabs.ibm.com (unknown [122.99.82.10])
- by mail.messagingengine.com (Postfix) with ESMTPA id 8299C30609A0;
- Tue, 24 Dec 2019 00:55:53 -0500 (EST)
+ by mail.messagingengine.com (Postfix) with ESMTPA id 289BD30607B4;
+ Tue, 24 Dec 2019 00:55:59 -0500 (EST)
 From: Russell Currey <ruscur@russell.cc>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v6 1/5] powerpc/mm: Implement set_memory() routines
-Date: Tue, 24 Dec 2019 16:55:41 +1100
-Message-Id: <20191224055545.178462-2-ruscur@russell.cc>
+Subject: [PATCH v6 3/5] powerpc/mm/ptdump: debugfs handler for W+X checks at
+ runtime
+Date: Tue, 24 Dec 2019 16:55:43 +1100
+Message-Id: <20191224055545.178462-4-ruscur@russell.cc>
 X-Mailer: git-send-email 2.24.1
 In-Reply-To: <20191224055545.178462-1-ruscur@russell.cc>
 References: <20191224055545.178462-1-ruscur@russell.cc>
@@ -107,178 +108,85 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The set_memory_{ro/rw/nx/x}() functions are required for STRICT_MODULE_RWX,
-and are generally useful primitives to have.  This implementation is
-designed to be completely generic across powerpc's many MMUs.
+Very rudimentary, just
 
-It's possible that this could be optimised to be faster for specific
-MMUs, but the focus is on having a generic and safe implementation for
-now.
+	echo 1 > [debugfs]/check_wx_pages
 
-This implementation does not handle cases where the caller is attempting
-to change the mapping of the page it is executing from, or if another
-CPU is concurrently using the page being altered.  These cases likely
-shouldn't happen, but a more complex implementation with MMU-specific code
-could safely handle them, so that is left as a TODO for now.
+and check the kernel log.  Useful for testing strict module RWX.
+
+Updated the Kconfig entry to reflect this.
+
+Also fixed a typo.
 
 Signed-off-by: Russell Currey <ruscur@russell.cc>
 ---
- arch/powerpc/Kconfig                  |  1 +
- arch/powerpc/include/asm/set_memory.h | 32 +++++++++++
- arch/powerpc/mm/Makefile              |  1 +
- arch/powerpc/mm/pageattr.c            | 83 +++++++++++++++++++++++++++
- 4 files changed, 117 insertions(+)
- create mode 100644 arch/powerpc/include/asm/set_memory.h
- create mode 100644 arch/powerpc/mm/pageattr.c
+ arch/powerpc/Kconfig.debug      |  6 ++++--
+ arch/powerpc/mm/ptdump/ptdump.c | 21 ++++++++++++++++++++-
+ 2 files changed, 24 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 1ec34e16ed65..f0b9b47b5353 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -133,6 +133,7 @@ config PPC
- 	select ARCH_HAS_PTE_SPECIAL
- 	select ARCH_HAS_MEMBARRIER_CALLBACKS
- 	select ARCH_HAS_SCALED_CPUTIME		if VIRT_CPU_ACCOUNTING_NATIVE && PPC_BOOK3S_64
-+	select ARCH_HAS_SET_MEMORY
- 	select ARCH_HAS_STRICT_KERNEL_RWX	if ((PPC_BOOK3S_64 || PPC32) && !RELOCATABLE && !HIBERNATION)
- 	select ARCH_HAS_TICK_BROADCAST		if GENERIC_CLOCKEVENTS_BROADCAST
- 	select ARCH_HAS_UACCESS_FLUSHCACHE
-diff --git a/arch/powerpc/include/asm/set_memory.h b/arch/powerpc/include/asm/set_memory.h
-new file mode 100644
-index 000000000000..5230ddb2fefd
---- /dev/null
-+++ b/arch/powerpc/include/asm/set_memory.h
-@@ -0,0 +1,32 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef _ASM_POWERPC_SET_MEMORY_H
-+#define _ASM_POWERPC_SET_MEMORY_H
+diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+index 4e1d39847462..7c14c9728bc0 100644
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -370,7 +370,7 @@ config PPC_PTDUMP
+ 	  If you are unsure, say N.
+ 
+ config PPC_DEBUG_WX
+-	bool "Warn on W+X mappings at boot"
++	bool "Warn on W+X mappings at boot & enable manual checks at runtime"
+ 	depends on PPC_PTDUMP
+ 	help
+ 	  Generate a warning if any W+X mappings are found at boot.
+@@ -384,7 +384,9 @@ config PPC_DEBUG_WX
+ 	  of other unfixed kernel bugs easier.
+ 
+ 	  There is no runtime or memory usage effect of this option
+-	  once the kernel has booted up - it's a one time check.
++	  once the kernel has booted up, it only automatically checks once.
 +
-+#define SET_MEMORY_RO	1
-+#define SET_MEMORY_RW	2
-+#define SET_MEMORY_NX	3
-+#define SET_MEMORY_X	4
++	  Enables the "check_wx_pages" debugfs entry for checking at runtime.
+ 
+ 	  If in doubt, say "Y".
+ 
+diff --git a/arch/powerpc/mm/ptdump/ptdump.c b/arch/powerpc/mm/ptdump/ptdump.c
+index 2f9ddc29c535..b6cba29ae4a0 100644
+--- a/arch/powerpc/mm/ptdump/ptdump.c
++++ b/arch/powerpc/mm/ptdump/ptdump.c
+@@ -4,7 +4,7 @@
+  *
+  * This traverses the kernel pagetables and dumps the
+  * information about the used sections of memory to
+- * /sys/kernel/debug/kernel_pagetables.
++ * /sys/kernel/debug/kernel_page_tables.
+  *
+  * Derived from the arm64 implementation:
+  * Copyright (c) 2014, The Linux Foundation, Laura Abbott.
+@@ -409,6 +409,25 @@ void ptdump_check_wx(void)
+ 	else
+ 		pr_info("Checked W+X mappings: passed, no W+X pages found\n");
+ }
 +
-+int change_memory_attr(unsigned long addr, int numpages, int action);
-+
-+static inline int set_memory_ro(unsigned long addr, int numpages)
++static int check_wx_debugfs_set(void *data, u64 val)
 +{
-+	return change_memory_attr(addr, numpages, SET_MEMORY_RO);
-+}
-+
-+static inline int set_memory_rw(unsigned long addr, int numpages)
-+{
-+	return change_memory_attr(addr, numpages, SET_MEMORY_RW);
-+}
-+
-+static inline int set_memory_nx(unsigned long addr, int numpages)
-+{
-+	return change_memory_attr(addr, numpages, SET_MEMORY_NX);
-+}
-+
-+static inline int set_memory_x(unsigned long addr, int numpages)
-+{
-+	return change_memory_attr(addr, numpages, SET_MEMORY_X);
-+}
-+
-+#endif
-diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-index 5e147986400d..d0a0bcbc9289 100644
---- a/arch/powerpc/mm/Makefile
-+++ b/arch/powerpc/mm/Makefile
-@@ -20,3 +20,4 @@ obj-$(CONFIG_HIGHMEM)		+= highmem.o
- obj-$(CONFIG_PPC_COPRO_BASE)	+= copro_fault.o
- obj-$(CONFIG_PPC_PTDUMP)	+= ptdump/
- obj-$(CONFIG_KASAN)		+= kasan/
-+obj-$(CONFIG_ARCH_HAS_SET_MEMORY) += pageattr.o
-diff --git a/arch/powerpc/mm/pageattr.c b/arch/powerpc/mm/pageattr.c
-new file mode 100644
-index 000000000000..15d5fb04f531
---- /dev/null
-+++ b/arch/powerpc/mm/pageattr.c
-@@ -0,0 +1,83 @@
-+// SPDX-License-Identifier: GPL-2.0
-+
-+/*
-+ * MMU-generic set_memory implementation for powerpc
-+ *
-+ * Copyright 2019, IBM Corporation.
-+ */
-+
-+#include <linux/mm.h>
-+#include <linux/set_memory.h>
-+
-+#include <asm/mmu.h>
-+#include <asm/page.h>
-+#include <asm/pgtable.h>
-+
-+
-+/*
-+ * Updates the attributes of a page in three steps:
-+ *
-+ * 1. invalidate the page table entry
-+ * 2. flush the TLB
-+ * 3. install the new entry with the updated attributes
-+ *
-+ * This is unsafe if the caller is attempting to change the mapping of the
-+ * page it is executing from, or if another CPU is concurrently using the
-+ * page being altered.
-+ *
-+ * TODO make the implementation resistant to this.
-+ */
-+static int __change_page_attr(pte_t *ptep, unsigned long addr, void *data)
-+{
-+	int action = *((int *)data);
-+	pte_t pte_val;
-+
-+	// invalidate the PTE so it's safe to modify
-+	pte_val = ptep_get_and_clear(&init_mm, addr, ptep);
-+	flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
-+
-+	// modify the PTE bits as desired, then apply
-+	switch (action) {
-+	case SET_MEMORY_RO:
-+		pte_val = pte_wrprotect(pte_val);
-+		break;
-+	case SET_MEMORY_RW:
-+		pte_val = pte_mkwrite(pte_val);
-+		break;
-+	case SET_MEMORY_NX:
-+		pte_val = pte_exprotect(pte_val);
-+		break;
-+	case SET_MEMORY_X:
-+		pte_val = pte_mkexec(pte_val);
-+		break;
-+	default:
-+		WARN_ON(true);
++	if (val != 1ULL)
 +		return -EINVAL;
-+	}
 +
-+	set_pte_at(&init_mm, addr, ptep, pte_val);
++	ptdump_check_wx();
 +
 +	return 0;
 +}
 +
-+static int change_page_attr(pte_t *ptep, unsigned long addr, void *data)
++DEFINE_SIMPLE_ATTRIBUTE(check_wx_fops, NULL, check_wx_debugfs_set, "%llu\n");
++
++static int ptdump_check_wx_init(void)
 +{
-+	int ret;
-+
-+	spin_lock(&init_mm.page_table_lock);
-+	ret = __change_page_attr(ptep, addr, data);
-+	spin_unlock(&init_mm.page_table_lock);
-+
-+	return ret;
++	return debugfs_create_file("check_wx_pages", 0200, NULL,
++				   NULL, &check_wx_fops) ? 0 : -ENOMEM;
 +}
-+
-+int change_memory_attr(unsigned long addr, int numpages, int action)
-+{
-+	unsigned long start = ALIGN_DOWN(addr, PAGE_SIZE);
-+	unsigned long size = numpages * PAGE_SIZE;
-+
-+	if (!numpages)
-+		return 0;
-+
-+	return apply_to_page_range(&init_mm, start, size, change_page_attr, &action);
-+}
++device_initcall(ptdump_check_wx_init);
+ #endif
+ 
+ static int ptdump_init(void)
 -- 
 2.24.1
 
