@@ -2,66 +2,74 @@ Return-Path: <SRS0=/BsL=2U=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 66D94C2D0CE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Dec 2019 08:05:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 71D67C2D0C2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Dec 2019 12:10:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0F97820718
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Dec 2019 08:05:50 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=126.com header.i=@126.com header.b="Y4yWol+a"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0F97820718
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=126.com
+	by mail.kernel.org (Postfix) with ESMTPS id D6FF02071E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Dec 2019 12:10:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D6FF02071E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47mVNr5k9CzDqB0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Dec 2019 19:05:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47mbq94286zDqCF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Dec 2019 23:10:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=126.com
- (client-ip=220.181.15.112; helo=m15-112.126.com;
- envelope-from=yingjie_bai@126.com; receiver=<UNKNOWN>)
+ spf=none (no SPF record) smtp.mailfrom=arndb.de
+ (client-ip=217.72.192.75; helo=mout.kundenserver.de;
+ envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=126.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=126.com header.i=@126.com header.b="Y4yWol+a"; 
- dkim-atps=neutral
-Received: from m15-112.126.com (m15-112.126.com [220.181.15.112])
- (using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=arndb.de
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47mVJV1VbnzDq9H
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Dec 2019 19:02:01 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=126.com;
- s=s110527; h=From:Subject:Date:Message-Id; bh=wKGzF3TmELm4mnLJnq
- TJbcvIyjvMxvdD5NnLsPiVBtg=; b=Y4yWol+aivCF2e7svS2KjVL0SXWordsENL
- ete8ATU/F6K6DtVXsnL0nD3D/SwSnAess+BtpnVj3lx/6ReMQQgWAI/rwNaJ2aTP
- Zvvp9XnBLaw6oN+CXIsQCZpx7UFrre9RR1GGaVPx+xVvEwQhLj/0dwGsPIrRg9T1
- heFoU9nR8=
-Received: from yingjieb-VirtualBox.int.nokia-sbell.com (unknown
- [114.87.110.56])
- by smtp2 (Coremail) with SMTP id DMmowADX+Zmnpgle0BNJBA--.64926S2;
- Mon, 30 Dec 2019 15:26:41 +0800 (CST)
-From: yingjie_bai@126.com
-To: Scott Wood <oss@buserror.net>,
-	Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH v2 1/2] powerpc32/booke: consistently return phys_addr_t in
- __pa()
-Date: Mon, 30 Dec 2019 15:26:19 +0800
-Message-Id: <20191230072623.25353-1-yingjie_bai@126.com>
-X-Mailer: git-send-email 2.17.1
-X-CM-TRANSID: DMmowADX+Zmnpgle0BNJBA--.64926S2
-X-Coremail-Antispam: 1Uf129KBjvdXoW7Gr48uFy7Zw13AFWfJw47Arb_yoWkGFbEya
- s7Aa1kurs5Wr97urnFya48Jr1DJa48GFn09F1xuw17AF4UA3W5Cws7t34kArs8ursrCrZx
- uFW0q343KF92kjkaLaAFLSUrUUUUUb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
- 9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IU0pnQUUUUUU==
-X-Originating-IP: [114.87.110.56]
-X-CM-SenderInfo: p1lqwyxlhbutbl6rjloofrz/1tbirxGb91pD8ekldgAAsA
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47mbmT1l0czDqB2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Dec 2019 23:08:07 +1100 (AEDT)
+Received: from mail-qv1-f53.google.com ([209.85.219.53]) by
+ mrelayeu.kundenserver.de (mreue109 [212.227.15.145]) with ESMTPSA (Nemesis)
+ id 1Ml6i2-1jScVZ35JM-00lW1C for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Dec
+ 2019 13:08:01 +0100
+Received: by mail-qv1-f53.google.com with SMTP id u1so11441039qvk.13
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Dec 2019 04:08:00 -0800 (PST)
+X-Gm-Message-State: APjAAAUtItJpEunNN7N+xjqr3H/hm3kSmznfMUuz4PDBU7zNAZwXTCp6
+ TI2j2bPI9SF0LuduGGVgpQ6Z7RiwUdWSeSEkv40=
+X-Google-Smtp-Source: APXvYqwgYmUQwo+iL/k4m54VB6r1wV0E9Nq8yE/j4nb6YZD4J7kjH+UJKaDQYBMfOQwb9P/Z8xhYwMz7551bLxAPNPc=
+X-Received: by 2002:a0c:bd20:: with SMTP id m32mr50936334qvg.197.1577707679673; 
+ Mon, 30 Dec 2019 04:07:59 -0800 (PST)
+MIME-Version: 1.0
+References: <cover.1577111363.git.christophe.leroy@c-s.fr>
+ <d0f8dfb26c025d3e3eee1b5f610161ca19b942df.1577111367.git.christophe.leroy@c-s.fr>
+In-Reply-To: <d0f8dfb26c025d3e3eee1b5f610161ca19b942df.1577111367.git.christophe.leroy@c-s.fr>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Mon, 30 Dec 2019 13:07:43 +0100
+X-Gmail-Original-Message-ID: <CAK8P3a36OgFuY72b_i6+0xBNGnaxS1SsRid+HrgQHPZtUJp3LQ@mail.gmail.com>
+Message-ID: <CAK8P3a36OgFuY72b_i6+0xBNGnaxS1SsRid+HrgQHPZtUJp3LQ@mail.gmail.com>
+Subject: Re: [RFC PATCH v2 05/10] lib: vdso: inline do_hres()
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Content-Type: text/plain; charset="UTF-8"
+X-Provags-ID: V03:K1:ZkcmCcfHZgs5iPF9ZB4TApfjH6KqqS1SG2tvC3ghWKy42hs1Nuw
+ /Ga19XLpUTSba0Clc3zSHhCRnYt1xoE4vO242CjLFRrf/o8eyO6sVOXKtoAYUlDw6TlM6CF
+ 5t23gEAHJLvINUu45dQMUT6aYEio+Emcjf5hwIK982o2c+TBHDkHWNLFh0f/Bt6tJnBAXw0
+ H3Q1FW+WngMr23CXW9Xzw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:uGd6ayO5sa4=:wwXJ9EwSg9V5iYvwWpvvhE
+ UsQuMcsH7GYAXi5kD+Rg+lRrJErqPl2YkvAJuy7Ov5uWJSTBPSO9WVKGDcpkZLVAe4xtJpoNQ
+ uCcqqB9spX3OARoIu/hDwHbfp20zY3yrPBF6AVlDpzNucYSxpYtfe2x8VVAkjyjYzLg1yO1fo
+ HgBp/6skm/tXol/V4JzX852I9PhkqvV6vfw01jgBTaCYlyCf55dG8qk49uWcStXC4dqz1pHGJ
+ TReX9te0iugoFnefuB63veVI0SjuhrQoogTDpsgBqM5S6zhflLnDo7rCkWuWWU8g0KnCRQ+m2
+ cyjC6FhLRdwiADzV3fxsHw9aDhsIGVncTPQWORnTdnZ2LYVhfX04TD4urT1oLCP7L80ApvLFx
+ zDlo/ADF7XjzBQDEF+CjE04jR9GP/equ3KE2KZP7ch0/xz/9Rh2UZva1ODxRFWExqrcRPLu9t
+ 9AT6w1UmG4Grf4hYscepCvCRIuX3HozxWeEbwZ7zccDSs6ETdhEPRqEtzc5ums0NqNO3yJMJg
+ 0cwdKAm4ihlQMdabotsvFrQMm0PZ7cYUKzca5ZyReJAo+5+GebItYAyvJdwijZzkkG+Z2CsBx
+ McdVweB/rpYW3KVrvhzZWFxnytA4f13l7p2tBkSEXnls3npIkNqiQVOZTr9qbG+bKbiV5CgVq
+ y6i1dSu/1UG8hVc8Xi8nmi9bk/OpDvHMWrjIZAO2/zf/ERXEWLXFux84jCgJoDSFrW9d+ArhK
+ Swpxq+qYqLQCb8M0R3+txVbL47nmb1PZpY6u6T+RBA8aChUVWEA+jx/qw5bLwlojexblw4v+J
+ qwlvMpW4pTcre9sXdz0yePxG9tNNq6gj4LLXFZlQ6aBzO0r5RpRqfjp9JtSZpszSSTafDrH/c
+ B/FUHZdkU8rFUdAZ5K8A==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,45 +81,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jason Yan <yanaijie@huawei.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org,
- Diana Craciun <diana.craciun@nxp.com>, Paul Mackerras <paulus@samba.org>,
- Allison Randal <allison@lohutok.net>, Bai Yingjie <byj.tea@gmail.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Cc: the arch/x86 maintainers <x86@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Andy Lutomirski <luto@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Vincenzo Frascino <vincenzo.frascino@arm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Bai Yingjie <byj.tea@gmail.com>
+On Mon, Dec 23, 2019 at 3:31 PM Christophe Leroy
+<christophe.leroy@c-s.fr> wrote:
+>
+> do_hres() is called from several places, so GCC doesn't inline
+> it at first.
+>
+> do_hres() takes a struct __kernel_timespec * parameter for
+> passing the result. In the 32 bits case, this parameter corresponds
+> to a local var in the caller. In order to provide a pointer
+> to this structure, the caller has to put it in its stack and
+> do_hres() has to write the result in the stack. This is suboptimal,
+> especially on RISC processor like powerpc.
+>
+> By making GCC inline the function, the struct __kernel_timespec
+> remains a local var using registers, avoiding the need to write and
+> read stack.
+>
+> The improvement is significant on powerpc.
+>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-When CONFIG_RELOCATABLE=y is set, VIRT_PHYS_OFFSET is a 64bit variable,
-thus __pa() returns as 64bit value.
-But when CONFIG_RELOCATABLE=n, __pa() returns 32bit value.
+Good idea, I can see how this ends up being an improvement
+for most of the callers.
 
-We'd make __pa() consistently return phys_addr_t, even if the upper bits
-are known to always be zero in a particular config.
-
-Signed-off-by: Bai Yingjie <byj.tea@gmail.com>
----
- arch/powerpc/include/asm/page.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-index 7f1fd41e3065..86332080399a 100644
---- a/arch/powerpc/include/asm/page.h
-+++ b/arch/powerpc/include/asm/page.h
-@@ -209,7 +209,7 @@ static inline bool pfn_valid(unsigned long pfn)
-  */
- #if defined(CONFIG_PPC32) && defined(CONFIG_BOOKE)
- #define __va(x) ((void *)(unsigned long)((phys_addr_t)(x) + VIRT_PHYS_OFFSET))
--#define __pa(x) ((unsigned long)(x) - VIRT_PHYS_OFFSET)
-+#define __pa(x) ((phys_addr_t)(unsigned long)(x) - VIRT_PHYS_OFFSET)
- #else
- #ifdef CONFIG_PPC64
- /*
--- 
-2.17.1
-
+Acked-by: Arnd Bergmann <arnd@arndb.de>
