@@ -2,94 +2,60 @@ Return-Path: <SRS0=LLvc=2Y=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+X-Spam-Status: No, score=-10.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03E67C3276C
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jan 2020 02:22:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9CE82C2D0C2
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jan 2020 10:59:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ABC3021D56
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jan 2020 02:22:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ABC3021D56
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=us.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 75B23222C3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jan 2020 10:59:58 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="IBpkPEJM"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 75B23222C3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47ppZd4SHlzDqDQ
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jan 2020 13:22:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=us.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=linuxram@us.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=us.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 47q23v2ZkWzDqDV
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jan 2020 21:59:55 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47ppXb0CrHzDqC4
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jan 2020 13:20:30 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0032J7Li108999
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Jan 2020 21:20:27 -0500
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2x6njcu5ed-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jan 2020 21:20:27 -0500
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Fri, 3 Jan 2020 02:20:26 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 3 Jan 2020 02:20:23 -0000
-Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
- [9.149.105.60])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0032KMuH50462858
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 3 Jan 2020 02:20:23 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D91F042041;
- Fri,  3 Jan 2020 02:20:22 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id CC0A942049;
- Fri,  3 Jan 2020 02:20:20 +0000 (GMT)
-Received: from oc0525413822.ibm.com (unknown [9.80.213.131])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Fri,  3 Jan 2020 02:20:20 +0000 (GMT)
-Date: Thu, 2 Jan 2020 18:20:17 -0800
-From: Ram Pai <linuxram@us.ibm.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH V3 2/2] KVM: PPC: Implement H_SVM_INIT_ABORT hcall
-References: <20191215021104.GA27378@us.ibm.com>
- <20191215021208.GB27378@us.ibm.com>
- <20200103001814.GD5556@oc0525413822.ibm.com>
- <20200103003233.GA16216@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47q21c1DzyzDqCK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jan 2020 21:57:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.b="IBpkPEJM"; dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 47q21Z5rYbz9sPK;
+ Fri,  3 Jan 2020 21:57:54 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1578049075;
+ bh=bqSX2iDNAZgwCMfGhfx9ExOLwqxWZ1cAcPCE85PldsQ=;
+ h=From:To:Cc:Subject:Date:From;
+ b=IBpkPEJMkrn1edHJezOu0b+wDFqTTH54HDrK0EjjQmXm9z9eO29XzBrNFbBFenWdn
+ nhO28xc9iIfJnGgDeVbnPmeocixV14Jn40A1ba1sagW8A3BnV2dxW7CSPG2yXPRNYD
+ yofDyShDbuBbZzxvnwEgZ1QJVvddzXSVRU8g+UWhX+VnnDpaj6alDgxRvDNelh7NAf
+ wN/S0Ivegb3xTLWk6DZ/6lvqN++LR9D3Xtw2pobW4ULTz1C/uMJafyUupv04sxapZF
+ 5lmbSMIfhhbaNc9MLbxrhCFpOnCiWjm0+yCA87KTo2tWyQEsdnhyROA9KnCH5S9K/e
+ 7VEftfsTbFkdQ==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-5.5-5 tag
+Date: Fri, 03 Jan 2020 21:57:51 +1100
+Message-ID: <87k168lscw.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200103003233.GA16216@us.ibm.com>
-User-Agent: Mutt/1.5.21 (2010-09-15)
-X-TM-AS-GCONF: 00
-x-cbid: 20010302-0020-0000-0000-0000039D642D
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20010302-0021-0000-0000-000021F4B42D
-Message-Id: <20200103022017.GF5556@oc0525413822.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
- definitions=2020-01-02_08:2020-01-02,2020-01-02 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=699 bulkscore=0
- spamscore=0 suspectscore=0 mlxscore=0 impostorscore=0 phishscore=0
- lowpriorityscore=0 adultscore=0 priorityscore=1501 malwarescore=0
- clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-1910280000 definitions=main-2001030020
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,46 +67,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-Cc: kvm-ppc@vger.kernel.org, Bharata B Rao <bharata@linux.ibm.com>,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org
+Cc: Jason@zx2c4.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jan 02, 2020 at 04:32:33PM -0800, Sukadev Bhattiprolu wrote:
-> Ram Pai [linuxram@us.ibm.com] wrote:
-> > > +unsigned long kvmppc_h_svm_init_abort(struct kvm *kvm)
-> > > +{
-> > > +	int i;
-> > > +
-> > > +	if (!(kvm->arch.secure_guest & KVMPPC_SECURE_INIT_START))
-> > > +		return H_UNSUPPORTED;
-> > 
-> > It should also return H_UNSUPPORTED when 
-> > (kvm->arch.secure_guest & KVMPPC_SECURE_INIT_DONE) is true.
-> 
-> If KVMPPC_SECURE_INIT_DONE is set, KVMPPC_SECURE_INIT_START is also
-> set - we never clear KVMPPC_SECURE_INIT_START right?
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
 
-I am concerned about the case, where the VM has successfully
-transitioned into a SVM, where both KVMPPC_SECURE_INIT_DONE and
-KVMPPC_SECURE_INIT_START are set.
+Hi Linus,
 
-In this scenario, if the UV makes a H_SVM_INIT_ABORT hcall, the
-Hypervisor will not return H_UNSUPPORTED, because
-KVMPPC_SECURE_INIT_START is set.
+Please pull two more powerpc fixes for 5.5:
 
-That is the reason, I think, we need to add another check as below.
+The following changes since commit 46cf053efec6a3a5f343fead837777efe8252a46:
 
-if (kvm->arch.secure_guest & KVMPPC_SECURE_INIT_DONE)
-	return H_UNSUPPORTED;
+  Linux 5.5-rc3 (2019-12-22 17:02:23 -0800)
+
+are available in the git repository at:
+
+  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-5.5-5
+
+for you to fetch changes up to 6da3eced8c5f3b03340b0c395bacd552c4d52411:
+
+  powerpc/spinlocks: Include correct header for static key (2019-12-30 21:20:41 +1100)
+
+- ------------------------------------------------------------------
+powerpc fixes for 5.5 #5
+
+One commit to fix a build error when CONFIG_JUMP_LABEL=n, introduced by our
+recent fix to is_shared_processor().
+
+A commit marking some SLB related functions as notrace, as tracing them triggers
+warnings.
+
+Thanks to:
+  Jason A. Donenfeld.
+
+- ------------------------------------------------------------------
+Jason A. Donenfeld (1):
+      powerpc/spinlocks: Include correct header for static key
+
+Michael Ellerman (1):
+      powerpc/mm: Mark get_slice_psize() & slice_addr_is_low() as notrace
 
 
+ arch/powerpc/include/asm/spinlock.h | 1 +
+ arch/powerpc/mm/slice.c             | 4 ++--
+ 2 files changed, 3 insertions(+), 2 deletions(-)
+-----BEGIN PGP SIGNATURE-----
 
-> 
-> Sukadev
-
--- 
-Ram Pai
-
+iQIzBAEBCAAdFiEEJFGtCPCthwEv2Y/bUevqPMjhpYAFAl4PHf0ACgkQUevqPMjh
+pYD6QxAAshIxGnQ7CfaqbjGRFgXCEEcOhJfR6+D/Kph43vzV5w4v/j0lk2mlydua
+eWL1MGvbby1K5rRtNyFJm8+6bScYHxo/GSdsCJ+8UNMt6hTYqlzjn3IqQs0pWQKO
+2kJu8/2TpUweemXDQSxWR9NqYuhj9TIKxlk6swdHBfUG/RvQOv+hRow1dPS1QzwG
+Euu30QiezEvf2wq7OXbeAub82k243FrRDp3+dMfsXAcYxLlmCDJCQgh91uVIA3yh
+PF8EuYbB8sqkJkH5wE2QT6cgssBwthrC9/J5/fVZnnyj9ObRJKt5sPMQ7WXG19D7
+TcsXLkHZiwhnas2j7Ze9HFJ7R99lPSy182w8VoSCHjyPB72O3EYVS+7IwvcfnwEe
+fBmTQUnR3ToByRig3TaErUZBSn2CSm3mmJTlXP38NOREExJijh92yfSeTlE+cdWD
+1B7KhrQlsZ+4cMTX5v3aJXlx02zbghFF7Sbdll7qgjPcDGc+cOTX6UkDmMGLwCN1
+0N78mX6YagjYf4Umh29uwwBJ7iXpVzHiSwqoZ79QVVUhAvU2TSvqUthCQZPLLcyy
+ssT2WQ3xiCvwS33O5N6arA/1vxB4deUW7ZQbOzPo4tcKDKrF52LnfgWtdJKai877
+RRD7jkKxBU0MPcZ4Ohamie/h25gAWDipbScrX8rlXh2zmoH/zB0=
+=W3Ow
+-----END PGP SIGNATURE-----
