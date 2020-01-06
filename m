@@ -2,74 +2,60 @@ Return-Path: <SRS0=nzsQ=23=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AAA33C33C8C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2020 18:55:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 112CFC33C8C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2020 19:07:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 28B33208C4
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2020 18:55:15 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=zytor.com header.i=@zytor.com header.b="ZMVxUZ9J"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 28B33208C4
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=zytor.com
+	by mail.kernel.org (Postfix) with ESMTPS id B9BFE207FF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2020 19:07:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B9BFE207FF
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=csclub.uwaterloo.ca
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47s4Sw3yg4zDqGM
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 05:55:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47s4l60xrszDqDq
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 06:07:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=zytor.com (client-ip=198.137.202.136; helo=mail.zytor.com;
- envelope-from=hpa@zytor.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=zytor.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=zytor.com header.i=@zytor.com header.b="ZMVxUZ9J"; 
- dkim-atps=neutral
-X-Greylist: delayed 3192 seconds by postgrey-1.36 at bilbo;
- Tue, 07 Jan 2020 05:53:23 AEDT
-Received: from mail.zytor.com (terminus.zytor.com [198.137.202.136])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=csclub.uwaterloo.ca (client-ip=129.97.134.17;
+ helo=caffeine.csclub.uwaterloo.ca; envelope-from=lsorense@csclub.uwaterloo.ca;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
+ header.from=csclub.uwaterloo.ca
+X-Greylist: delayed 649 seconds by postgrey-1.36 at bilbo;
+ Tue, 07 Jan 2020 06:05:34 AEDT
+Received: from caffeine.csclub.uwaterloo.ca (caffeine.csclub.uwaterloo.ca
+ [129.97.134.17])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47s4Qq6fVPzDq9l
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2020 05:53:23 +1100 (AEDT)
-Received: from carbon-x1.hos.anvin.org
- ([IPv6:2601:646:8600:3280:1098:42a1:36db:233c])
- (authenticated bits=0)
- by mail.zytor.com (8.15.2/8.15.2) with ESMTPSA id 006HxLts2985803
- (version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NO);
- Mon, 6 Jan 2020 09:59:21 -0800
-DKIM-Filter: OpenDKIM Filter v2.11.0 mail.zytor.com 006HxLts2985803
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zytor.com;
- s=2019122001; t=1578333565;
- bh=uFGtgLW/eUGZosJDUZ4/JsFg07VyLBe7Sl07+mpDDgQ=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=ZMVxUZ9JlU6up34Nb4pGcpMjDZpUuWN8ck9Y4jYgVb+4bZERRqJiFzIJhbIfziB1k
- ZNW7gtaTuWxOa78mC5Z+zWvyvNL35mkSsEZQpPBJS0ncqNieAs6YCfbCKRbkrwQtVp
- RcNn3KAZoKEYAi4ef6eQLTWSuxUbKuM7RXuWfbUO5ZflxcLL1hn2UBbGPOSqDE+xOY
- wijrfyuPLvBiBZoiKnCdjHJ9U/s6x0xqbbT7g3nNy9Gk9o9TiqnutL8djSuCUX49Qi
- Oy4XDW1jzUdxSDSG813dTCGe2xdRD1rCCDjOpb+PwCTaq1SfwtxgOn+n2Mp0OYFc4L
- +gnXlUsMkLtVw==
-Subject: Re: [PATCH v3 02/22] compat: provide compat_ptr() on all architectures
-To: Arnd Bergmann <arnd@arndb.de>, "James E.J. Bottomley" <jejb@linux.ibm.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>
-References: <20200102145552.1853992-1-arnd@arndb.de>
- <20200102145552.1853992-3-arnd@arndb.de>
-From: "H. Peter Anvin" <hpa@zytor.com>
-Message-ID: <e2c7b4d7-587e-f71c-f0df-810e8d9869f2@zytor.com>
-Date: Mon, 6 Jan 2020 09:59:16 -0800
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.3.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47s4ht5ST7zDqF5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2020 06:05:33 +1100 (AEDT)
+Received: by caffeine.csclub.uwaterloo.ca (Postfix, from userid 20367)
+ id F03164611D0; Mon,  6 Jan 2020 13:54:37 -0500 (EST)
+Date: Mon, 6 Jan 2020 13:54:37 -0500
+To: Romain Dolbeau <romain@dolbeau.org>
+Subject: Re: PPC64: G5 & 4k/64k page size (was: Re: Call for report -
+ G5/PPC970 status)
+Message-ID: <20200106185437.z2aiq3v4zxqmy2x4@csclub.uwaterloo.ca>
+References: <87eexbk3gw.fsf@linux.ibm.com>
+ <CADuzgbq-P8mgf9zLaxhdqUfQcqfRpSzjgRoofF84rp+-S064xg@mail.gmail.com>
+ <87mubxl82x.fsf@igel.home>
+ <CADuzgbqU-SVy5U_4Pkv2G8SJcT9JhyirhFGamnQusZBSRSgcPw@mail.gmail.com>
+ <87immlkytp.fsf@igel.home>
+ <CADuzgbo=Yr09hxrkbkwj7Crg0aUfx+RQZOt0sCSNOeYUfR0SmA@mail.gmail.com>
+ <87lfr62tbf.fsf@linux.ibm.com>
+ <CADuzgbq3V0F=vob-tB=rroBaLwNR4viS2-=39TRBMyQwdj+xuw@mail.gmail.com>
+ <874kx81xxt.fsf@linux.ibm.com>
+ <CADuzgbqtn7knixB+tO3m-r0m7fDDQXVA=z2EtGxsfQ_GjD0h7Q@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20200102145552.1853992-3-arnd@arndb.de>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CADuzgbqtn7knixB+tO3m-r0m7fDDQXVA=z2EtGxsfQ_GjD0h7Q@mail.gmail.com>
+User-Agent: NeoMutt/20170113 (1.7.2)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,54 +67,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mips@vger.kernel.org,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
- Will Deacon <will@kernel.org>, linux-s390@vger.kernel.org,
- Paul Burton <paulburton@kernel.org>, Helge Deller <deller@gmx.de>,
- x86@kernel.org, Christian Borntraeger <borntraeger@de.ibm.com>,
- Ingo Molnar <mingo@redhat.com>, oprofile-list@lists.sf.net,
- Catalin Marinas <catalin.marinas@arm.com>, James Hogan <jhogan@kernel.org>,
- Robert Richter <rric@kernel.org>, Vasily Gorbik <gor@linux.ibm.com>,
- Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
- linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ jjhdiederen <jjhdiederen@zonnet.nl>,
+ PowerPC List Debian <debian-powerpc@lists.debian.org>,
+ Andreas Schwab <schwab@linux-m68k.org>,
+ John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2020-01-02 06:55, Arnd Bergmann wrote:
-> In order to avoid needless #ifdef CONFIG_COMPAT checks,
-> move the compat_ptr() definition to linux/compat.h
-> where it can be seen by any file regardless of the
-> architecture.
+On Mon, Jan 06, 2020 at 07:18:30PM +0100, Romain Dolbeau wrote:
+> Applied, recompiled with 64 KiB pages, still crashes.
 > 
-> Only s390 needs a special definition, this can use the
-> self-#define trick we have elsewhere.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->  arch/arm64/include/asm/compat.h   | 17 -----------------
->  arch/mips/include/asm/compat.h    | 18 ------------------
->  arch/parisc/include/asm/compat.h  | 17 -----------------
->  arch/powerpc/include/asm/compat.h | 17 -----------------
->  arch/powerpc/oprofile/backtrace.c |  2 +-
->  arch/s390/include/asm/compat.h    |  6 +-----
->  arch/sparc/include/asm/compat.h   | 17 -----------------
->  arch/x86/include/asm/compat.h     | 17 -----------------
->  include/linux/compat.h            | 18 ++++++++++++++++++
->  9 files changed, 20 insertions(+), 109 deletions(-)
-> 
+> The backtrace seems more readable this time (and wasn't overwritten by
+> something else), bad photo here:
+> <http://www.dolbeau.name/dolbeau/files/Photo0033.jpg>
 
-For x86:
+Is it possible this has to do with nouveau and not supporting 64K page
+size on older nvidia chips?  My reading of the driver is that only
+NV50 and above has implemented support for anything other than 4K pages,
+so a geforce 6xxx series that I believe some of the G5 machines had would
+be a problem with 64K pages, while those with ATI cards would probably
+not have a problem.
 
-Reviewed-by: H. Peter Anvin <hpa@zytor.com>
+Maybe I read the driver changes wrong, but it sure looks like only
+NV50/G84 and up got the needed fixes a couple of years ago.
 
-It still suffers from the zero-one-infinity rule failure of the compat
-architecture as a whole, but that is a very different problem. In this case
-"compat" is obviously meaning "a 32-on-64 ABI" and simply centralizes a common
-API, which is a Good Thing[TM].
-
-	-hpa
-
+-- 
+Len Sorensen
