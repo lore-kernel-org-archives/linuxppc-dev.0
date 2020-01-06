@@ -2,60 +2,107 @@ Return-Path: <SRS0=nzsQ=23=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B94CC32771
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2020 09:04:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 48348C32771
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2020 09:47:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BAD5720848
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2020 09:04:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BAD5720848
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.cz
+	by mail.kernel.org (Postfix) with ESMTPS id BDA9E20848
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2020 09:47:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BDA9E20848
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47rqLq63jjzDqFZ
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2020 20:04:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47rrKB0S0jzDqFY
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2020 20:47:42 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47rrGt14HxzDqCV
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jan 2020 20:45:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz
- (client-ip=195.135.220.15; helo=mx2.suse.de; envelope-from=jack@suse.cz;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 47rrGs4gYBz8t0B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jan 2020 20:45:41 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 47rrGs4BfSz9sR1; Mon,  6 Jan 2020 20:45:41 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=psampat@linux.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=suse.cz
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47rqJS40FfzDq9k
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jan 2020 20:01:59 +1100 (AEDT)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx2.suse.de (Postfix) with ESMTP id B2328B027;
- Mon,  6 Jan 2020 09:01:55 +0000 (UTC)
-Received: by quack2.suse.cz (Postfix, from userid 1000)
- id 821931E0B47; Mon,  6 Jan 2020 10:01:47 +0100 (CET)
-Date: Mon, 6 Jan 2020 10:01:47 +0100
-From: Jan Kara <jack@suse.cz>
-To: John Hubbard <jhubbard@nvidia.com>
-Subject: Re: [PATCH v11 00/25] mm/gup: track dma-pinned pages: FOLL_PIN
-Message-ID: <20200106090147.GA9176@quack2.suse.cz>
-References: <20191219132607.GA410823@unreal>
- <a4849322-8e17-119e-a664-80d9f95d850b@nvidia.com>
- <20191219210743.GN17227@ziepe.ca> <20191220182939.GA10944@unreal>
- <1001a5fc-a71d-9c0f-1090-546c4913d8a2@nvidia.com>
- <20191222132357.GF13335@unreal>
- <49d57efe-85e1-6910-baf5-c18df1382206@nvidia.com>
- <20191225052612.GA212002@unreal>
- <b879d191-a07c-e808-e48f-2b9bd8ba4fa3@nvidia.com>
- <612aa292-ec45-295c-b56c-c622876620fa@nvidia.com>
+ by ozlabs.org (Postfix) with ESMTPS id 47rrGr5SqBz9sPJ
+ for <linuxppc-dev@ozlabs.org>; Mon,  6 Jan 2020 20:45:40 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0069gPXM135115
+ for <linuxppc-dev@ozlabs.org>; Mon, 6 Jan 2020 04:45:38 -0500
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2xb91nmr5u-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Mon, 06 Jan 2020 04:45:38 -0500
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <psampat@linux.ibm.com>;
+ Mon, 6 Jan 2020 09:45:36 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 6 Jan 2020 09:45:34 -0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0069jWMp33554560
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 6 Jan 2020 09:45:32 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C10DAAE055;
+ Mon,  6 Jan 2020 09:45:32 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 955C8AE04D;
+ Mon,  6 Jan 2020 09:45:31 +0000 (GMT)
+Received: from [9.124.31.198] (unknown [9.124.31.198])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon,  6 Jan 2020 09:45:31 +0000 (GMT)
+Subject: Re: [RFC 0/3] Integrate Support for self-save and determine
+To: Ram Pai <linuxram@us.ibm.com>
+References: <20191204093255.11849-1-psampat@linux.ibm.com>
+ <20200103230551.GB5562@oc0525413822.ibm.com>
+From: Pratik Sampat <psampat@linux.ibm.com>
+Date: Mon, 6 Jan 2020 15:15:30 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.3.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <612aa292-ec45-295c-b56c-c622876620fa@nvidia.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20200103230551.GB5562@oc0525413822.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
+X-TM-AS-GCONF: 00
+x-cbid: 20010609-0016-0000-0000-000002DAD016
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 20010609-0017-0000-0000-0000333D42AD
+Message-Id: <31b49402-8af9-fcd7-0c43-d8dd15ce78d7@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,18.0.572
+ definitions=2020-01-06_02:2020-01-06,2020-01-06 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0
+ suspectscore=0 adultscore=0 malwarescore=0 clxscore=1015 mlxlogscore=942
+ bulkscore=0 impostorscore=0 priorityscore=1501 spamscore=0 mlxscore=0
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-1910280000 definitions=main-2001060089
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,83 +114,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>,
- kvm@vger.kernel.org, linux-doc@vger.kernel.org,
- David Airlie <airlied@linux.ie>, Dave Chinner <david@fromorbit.com>,
- dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- linux-kselftest@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>,
- Maor Gottlieb <maorg@mellanox.com>, Leon Romanovsky <leon@kernel.org>,
- Jonathan Corbet <corbet@lwn.net>, linux-rdma@vger.kernel.org,
- Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>,
- Vlastimil Babka <vbabka@suse.cz>,
- =?iso-8859-1?Q?Bj=F6rn_T=F6pel?= <bjorn.topel@intel.com>,
- linux-media@vger.kernel.org, Shuah Khan <shuah@kernel.org>,
- Ran Rozenstein <ranro@mellanox.com>, linux-block@vger.kernel.org,
- =?iso-8859-1?B?Suly9G1l?= Glisse <jglisse@redhat.com>,
- Al Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>,
- Mauro Carvalho Chehab <mchehab@kernel.org>, bpf@vger.kernel.org,
- Magnus Karlsson <magnus.karlsson@intel.com>, Jens Axboe <axboe@kernel.dk>,
- netdev@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
- Daniel Vetter <daniel@ffwll.ch>, linux-fsdevel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S . Miller" <davem@davemloft.net>,
- Mike Kravetz <mike.kravetz@oracle.com>
+Cc: ego@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+ linuxppc-dev@ozlabs.org, pratik.sampat@in.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat 28-12-19 20:33:32, John Hubbard wrote:
-> On 12/27/19 1:56 PM, John Hubbard wrote:
-> ...
-> >> It is ancient verification test (~10y) which is not an easy task to
-> >> make it understandable and standalone :).
-> >>
-> > 
-> > Is this the only test that fails, btw? No other test failures or hints of
-> > problems?
-> > 
-> > (Also, maybe hopeless, but can *anyone* on the RDMA list provide some
-> > characterization of the test, such as how many pins per page, what page
-> > sizes are used? I'm still hoping to write a test to trigger something
-> > close to this...)
-> > 
-> > I do have a couple more ideas for test runs:
-> > 
-> > 1. Reduce GUP_PIN_COUNTING_BIAS to 1. That would turn the whole override of
-> > page->_refcount into a no-op, and so if all is well (it may not be!) with the
-> > rest of the patch, then we'd expect this problem to not reappear.
-> > 
-> > 2. Active /proc/vmstat *foll_pin* statistics unconditionally (just for these
-> > tests, of course), so we can see if there is a get/put mismatch. However, that
-> > will change the timing, and so it must be attempted independently of (1), in
-> > order to see if it ends up hiding the repro.
-> > 
-> > I've updated this branch to implement (1), but not (2), hoping you can give
-> > this one a spin?
-> > 
-> >     git@github.com:johnhubbard/linux.git  pin_user_pages_tracking_v11_with_diags
-> > 
-> > 
-> 
-> Also, looking ahead:
-> 
-> a) if the problem disappears with the latest above test, then we likely have
->    a huge page refcount overflow, and there are a couple of different ways to
->    fix it. 
-> 
-> b) if it still reproduces with the above, then it's some other random mistake,
->    and in that case I'd be inclined to do a sort of guided (or classic, unguided)
->    git bisect of the series. Because it could be any of several patches.
-> 
->    If that's too much trouble, then I'd have to fall back to submitting a few
->    patches at a time and working my way up to the tracking patch...
+Thanks for your comments Ram,
+>> A list of preferred SPRs are maintained in the kernel which contains two
+>> properties:
+>> 1. supported_mode: Helps in identifying if it strictly supports self
+>>                     save or restore or both.
+> Will be good to capture the information that, 'supported_mode' gets
+> initialized using the information from the device tree.
+>
+>> 2. preferred_mode: Calls out what mode is preferred for each SPR. It
+>>                     could be strictly self save or restore, or it can also
+>>                     determine the preference of  mode over the other if both
+>>                     are present by encapsulating the other in bitmask from
+>>                     LSB to MSB.
+> and 'preferred_mode'  is statically initialized.
+>
+Sure thing, I'll mention that.
 
-It could also be that an ordinary page reference is dropped with 'unpin'
-thus underflowing the page refcount...
+>> Below is a table to show the Scenario::Consequence when the self save and
+>> self restore modes are available or disabled in different combinations as
+>> perceived from the device tree thus giving complete backwards compatibly
+>> regardless of an older firmware running a newer kernel or vise-versa.
+>>
+>> SR = Self restore; SS = Self save
+>>
+>> .-----------------------------------.----------------------------------------.
+>> |             Scenario              |                Consequence             |
+>> :-----------------------------------+----------------------------------------:
+>> | Legacy Firmware. No SS or SR node | Self restore is called for all         |
+>> |                                   | supported SPRs                         |
+>> :-----------------------------------+----------------------------------------:
+>> | SR: !active SS: !active           | Deep stop states disabled              |
+>> :-----------------------------------+----------------------------------------:
+>> | SR: active SS: !active            | Self restore is called for all         |
+>> |                                   | supported SPRs                         |
+>> :-----------------------------------+----------------------------------------:
+>> | SR: active SS: active             | Goes through the preferences for each  |
+>> |                                   | SPR and executes of the modes          |
+>> |                                   | accordingly. Currently, Self restore is|
+>> |                                   | called for all the SPRs except PSSCR   |
+>> |                                   | which is self saved                    |
+>> :-----------------------------------+----------------------------------------:
+>> | SR: active(only HID0) SS: active  | Self save called for all supported     |
+>> |                                   | registers expect HID0 (as HID0 cannot  |
+>> |                                   | be self saved currently)               |
+> Not clear, how this will be conveyed to the hypervisor? Through the
+> device tree or through some other means?
+>
+This information will be conveyed through the device tree. I'll frame a sentence
+that makes this more explicit.
 
-								Honza
+>> :-----------------------------------+----------------------------------------:
+>> | SR: !active SS: active            | currently will disable deep states as  |
+>> |                                   | HID0 is needed to be self restored and |
+>> |                                   | cannot be self saved                   |
+>> '-----------------------------------'----------------------------------------'
+>>
+>> Pratik Rajesh Sampat (3):
+>>    powerpc/powernv: Interface to define support and preference for a SPR
+>>    powerpc/powernv: Introduce Self save support
+>>    powerpc/powernv: Parse device tree, population of SPR support
+>>
+>>   arch/powerpc/include/asm/opal-api.h        |   3 +-
+>>   arch/powerpc/include/asm/opal.h            |   1 +
+>>   arch/powerpc/platforms/powernv/idle.c      | 431 ++++++++++++++++++---
+>>   arch/powerpc/platforms/powernv/opal-call.c |   1 +
+>>   4 files changed, 379 insertions(+), 57 deletions(-)
+>>
+>> -- 
+>> 2.21.0
 
--- 
-Jan Kara <jack@suse.com>
-SUSE Labs, CR
