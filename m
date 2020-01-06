@@ -2,43 +2,82 @@ Return-Path: <SRS0=nzsQ=23=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A7553C32767
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2020 05:27:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E703C32767
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2020 05:30:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4A2AE215A4
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2020 05:27:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4A2AE215A4
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id C2AF2215A4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2020 05:30:12 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="B/CwpXbV"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C2AF2215A4
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47rkYM15PtzDq9d
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2020 16:27:51 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 47rkc25S5GzDq9G
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2020 16:30:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::441;
+ helo=mail-pf1-x441.google.com; envelope-from=dja@axtens.net;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=axtens.net
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=axtens.net header.i=@axtens.net header.b="B/CwpXbV"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
+ [IPv6:2607:f8b0:4864:20::441])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47rkSD218zzDq9G
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jan 2020 16:23:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 47rkSD0mxYz9sR4; Mon,  6 Jan 2020 16:23:23 +1100 (AEDT)
-X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 6da3eced8c5f3b03340b0c395bacd552c4d52411
-In-Reply-To: <20191223133147.129983-1-Jason@zx2c4.com>
-To: "Jason A. Donenfeld" <Jason@zx2c4.com>, pauld@redhat.com,
- longman@redhat.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/shared: include correct header for static key
-Message-Id: <47rkSD0mxYz9sR4@ozlabs.org>
-Date: Mon,  6 Jan 2020 16:23:23 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47rkYn3TwKzDq75
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jan 2020 16:28:12 +1100 (AEDT)
+Received: by mail-pf1-x441.google.com with SMTP id x184so26430043pfb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Jan 2020 21:28:12 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
+ h=from:to:cc:subject:in-reply-to:references:date:message-id
+ :mime-version; bh=ymhTcMEmDFG9TKBAl66QxLJ2ntfziG/odU0UA166lJg=;
+ b=B/CwpXbVt3NAU1qBeDI6Lzg+yNnfGsl+vtj89sjvSQ8lJb870b2kZTDO8VFoFr4jW0
+ jZ5A7irZ5E6FY0XzFQq8dnv7Wb2CicWzIg4yADZ1boeO+JyCk+hvl+g+cCMRxUyTCfck
+ uCgtoNg2zF3IUyVra9q3fmCi/fGbgRfEjefu4=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
+ :message-id:mime-version;
+ bh=ymhTcMEmDFG9TKBAl66QxLJ2ntfziG/odU0UA166lJg=;
+ b=OR6bEwBnjTIZbFzIydk9gLXRsUOi9EAFfxFPLHsABlS0k4/N3uGkVANQPCrsimfxhL
+ NpdjiC54zKh/m2olKFHkC52A7QHeh13Ul5BJjNEdv5FBq2BVMxWPnZMkHqZya/PpXPSE
+ gsxrPMeFDV8Lg4pG5bp9ziEWn1s1DihwwpJsUPJlHjOh3ZyKwp8JFNV7GXSkGoOJ7svu
+ uTG7hGio/I7sBtf1XvU8Hp+zTcBU9E24U3LZ4SO0dYPItAdCeQOFx4F9SKrmTjquqhHa
+ gUH76vENRaMeojqN/NHyUyyaz7rliaQrPYFkDpaogsWQknGIQCYijOZDlAwhiVfP+uC0
+ jrTQ==
+X-Gm-Message-State: APjAAAXk+XZbInXpTNm5t+XwTNs0qQ8OXrzO5OHr8GSlqk1ddD6Oegd2
+ CvcBZ1l068DNIUFpswBOIqqJBw==
+X-Google-Smtp-Source: APXvYqwLFfLytt/PqtgNJEI4iGFyg7rJ2DqmH5gW6HxA7fBWai+ycfQJPihyxISe4/AIybjVe+vI/g==
+X-Received: by 2002:aa7:8e8f:: with SMTP id
+ a15mr105811812pfr.153.1578288489198; 
+ Sun, 05 Jan 2020 21:28:09 -0800 (PST)
+Received: from localhost
+ (2001-44b8-1113-6700-3463-e857-4ed0-a740.static.ipv6.internode.on.net.
+ [2001:44b8:1113:6700:3463:e857:4ed0:a740])
+ by smtp.gmail.com with ESMTPSA id 5sm23204917pjt.28.2020.01.05.21.28.07
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Sun, 05 Jan 2020 21:28:08 -0800 (PST)
+From: Daniel Axtens <dja@axtens.net>
+To: Joel Stanley <joel@jms.id.au>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/config: Enable secuity features in skiroot
+In-Reply-To: <20200102073058.163746-1-joel@jms.id.au>
+References: <20200102073058.163746-1-joel@jms.id.au>
+Date: Mon, 06 Jan 2020 16:28:04 +1100
+Message-ID: <87k165nogr.fsf@dja-thinkpad.axtens.net>
+MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,28 +89,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Jason A. Donenfeld" <Jason@zx2c4.com>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2019-12-23 at 13:31:47 UTC, "Jason A. Donenfeld" wrote:
-> Recently, the spinlock implementation grew a static key optimization,
-> but the jump_label.h header include was left out, leading to build
-> errors:
-> 
-> linux/arch/powerpc/include/asm/spinlock.h:44:7: error: implicit declaration of function ‘static_branch_unlikely’ [-Werror=implicit-function-declaration]
->    44 |  if (!static_branch_unlikely(&shared_processor))
-> 
-> This commit adds the missing header.
-> 
-> Fixes: 656c21d6af5d ("powerpc/shared: Use static key to detect shared processor")
-> Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-> Signed-off-by: Jason A. Donenfeld <Jason@zx2c4.com>
+Joel Stanley <joel@jms.id.au> writes:
 
-Applied to powerpc fixes, thanks.
+> This turns on HARDENED_USERCOPY with HARDENED_USERCOPY_PAGESPAN, and
+> FORTIFY_SOURCE.
+>
+> It also enables SECURITY_LOCKDOWN_LSM with _EARLY and
+> LOCK_DOWN_KERNEL_FORCE_CONFIDENTIALITY options enabled.
 
-https://git.kernel.org/powerpc/c/6da3eced8c5f3b03340b0c395bacd552c4d52411
+This will completely disable xmon when combined with 69393cb03ccd
+("powerpc/xmon: Restrict when kernel is locked down"). I don't
+personally have a problem with this, but I think not disabling xmon has
+come up before as a requirement of some developers.
 
-cheers
+Is forcing integrity not sufficient? What confidential data held by the
+skiroot kernel are you trying to protect? If you just force integrity
+you'll get xmon in read-only mode, which should be fine for most
+debugging...
+
+Regards,
+Daniel
+
+>
+> MODULE_SIG is selected by lockdown, so it is still enabled.
+>
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
+> ---
+>  arch/powerpc/configs/skiroot_defconfig | 11 ++++++++++-
+>  1 file changed, 10 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/configs/skiroot_defconfig b/arch/powerpc/configs/skiroot_defconfig
+> index 069f67f12731..0a441c414a57 100644
+> --- a/arch/powerpc/configs/skiroot_defconfig
+> +++ b/arch/powerpc/configs/skiroot_defconfig
+> @@ -33,7 +33,6 @@ CONFIG_JUMP_LABEL=y
+>  CONFIG_STRICT_KERNEL_RWX=y
+>  CONFIG_MODULES=y
+>  CONFIG_MODULE_UNLOAD=y
+> -CONFIG_MODULE_SIG=y
+>  CONFIG_MODULE_SIG_FORCE=y
+>  CONFIG_MODULE_SIG_SHA512=y
+>  CONFIG_PARTITION_ADVANCED=y
+> @@ -297,5 +296,15 @@ CONFIG_WQ_WATCHDOG=y
+>  CONFIG_XMON=y
+>  CONFIG_XMON_DEFAULT=y
+>  CONFIG_ENCRYPTED_KEYS=y
+> +CONFIG_SECURITY=y
+> +CONFIG_HARDENED_USERCOPY=y
+> +# CONFIG_HARDENED_USERCOPY_FALLBACK is not set
+> +CONFIG_HARDENED_USERCOPY_PAGESPAN=y
+> +CONFIG_FORTIFY_SOURCE=y
+> +CONFIG_SECURITY_LOCKDOWN_LSM=y
+> +CONFIG_SECURITY_LOCKDOWN_LSM_EARLY=y
+> +CONFIG_LOCK_DOWN_KERNEL_FORCE_CONFIDENTIALITY=y
+> +# CONFIG_INTEGRITY is not set
+> +CONFIG_LSM="yama,loadpin,safesetid,integrity"
+>  # CONFIG_CRYPTO_ECHAINIV is not set
+>  # CONFIG_CRYPTO_HW is not set
+> -- 
+> 2.24.1
