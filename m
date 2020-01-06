@@ -6,49 +6,49 @@ X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C924C33C8C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2020 18:28:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CCFAC33C8C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2020 18:32:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AF49624676
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2020 18:28:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AF49624676
+	by mail.kernel.org (Postfix) with ESMTPS id 0307C2072E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2020 18:32:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0307C2072E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=dolbeau.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47s3tQ44tkzDqFh
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 05:28:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47s3z825VSzDqHR
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 05:32:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.221.67; helo=mail-wr1-f67.google.com;
+ smtp.mailfrom=gmail.com (client-ip=209.85.128.68; helo=mail-wm1-f68.google.com;
  envelope-from=romain.dolbeau@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=dolbeau.org
-Received: from mail-wr1-f67.google.com (mail-wr1-f67.google.com
- [209.85.221.67])
+Received: from mail-wm1-f68.google.com (mail-wm1-f68.google.com
+ [209.85.128.68])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47s3ft6S21zDqGM
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2020 05:18:46 +1100 (AEDT)
-Received: by mail-wr1-f67.google.com with SMTP id g17so50724570wro.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jan 2020 10:18:45 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47s3wK58Z0zDq6B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2020 05:30:24 +1100 (AEDT)
+Received: by mail-wm1-f68.google.com with SMTP id p17so16355217wma.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jan 2020 10:30:24 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc:content-transfer-encoding;
- bh=JppA8GA1YLeeCZAtmyLdFYdzL9Aeu/B5eNFBmTT5IAg=;
- b=gQr4peC5IfWIL4cGVySadhZ/cQI+GUWse+Ed/7I730thHHh6KhXqPqkc/4ocJB8I/D
- YRoctytDXlSAEvjbn7yh51G4BYIFETv/lJSO0xbEkKQpZvoHcwKpqLu/ToO5/Onu4ftB
- BzMfQrepiTdYir5DtoivnJYUdFFYYrrtWJjYnP9jT1Drkgv27cIUTX+vcUK0KAXrepe+
- pTGhU8Y9teYIdOo9Vok56mrQGGAT+3Fdr9XgPXWEkAyHFxladXdao438Fe6F33//g/QA
- cl6cDbV+kprFqa/lGiLhtm87Vz7nWgjdkKWC9yMaQLiKwL7RPH1ZrzWMXeoWf5BxZKrK
- GTyQ==
-X-Gm-Message-State: APjAAAXgVgrkxw6bg+3lmGmAtdk67xk+QKSpqssgHM1Bav3YQebeBu9g
- kbg5KYwQqqkNbAbgMAqEtrXkDRITXAGukvY7siw=
-X-Google-Smtp-Source: APXvYqzTNQO6UEXM84Nld03FxyXq5W+Q7umk3t5SaxlgQvnOox0V3dh+mpwM9bdbeUgp3Ak9hlbsQ6PXzMALNPiVz3s=
-X-Received: by 2002:a5d:65c5:: with SMTP id e5mr104197948wrw.311.1578334722132; 
- Mon, 06 Jan 2020 10:18:42 -0800 (PST)
+ bh=g/RartWOl0059XZqhmJOiYt+dbyuAnAwhtlap3FKPto=;
+ b=QQZNeSUsSOT4PH69Gm+mYcLiXihnJP/3aIF4rP5GH38ZJeYosxwbO/aGYDQaoN7kTn
+ uCStEtFZmsgFhEaCxy+X4Xb2rWfTLtDphgD+x9p6+SS4wkVZz97riMt3y/8qwDcyI2YI
+ fVRLpeiRrHCq9v+RxqsOGQ/ntWvTJlgBXh31/zxtanLNbL3qqbdhAwYfGDGrgSgPf3s8
+ Ue1Z9VnJWz97qeCcRradWRYv5nEaCmde86EIhaFwVAYOqFTg7m1ZCRJH9ti/lxHdtCMU
+ I7fJNVYQ/AKxblWAqFEIuchHB1gVBclQdXZer0bQtNlEZzlIVi8xVRVVQTdJ9/TlusG6
+ 8vfQ==
+X-Gm-Message-State: APjAAAU7rVrdo4octYWgUoU4N7ODwGPROMw+vF4tFZH9AO8h9ijSfbW+
+ ymJjqIlBPDatWYKkdTOJhrsvNN8wguAnKOO4sU4=
+X-Google-Smtp-Source: APXvYqxY1V+lkPFFro+8jvQrah2cT1oFYclC9mt44LvPrSmfKh3qD0LeuXdbF6TJDO4CbwBFK77RQql5nkTc8uH/g5M=
+X-Received: by 2002:a7b:c775:: with SMTP id x21mr35974536wmk.59.1578335421857; 
+ Mon, 06 Jan 2020 10:30:21 -0800 (PST)
 MIME-Version: 1.0
 References: <CADuzgbqYpv40NvAMGjo1cU2cNnij-2p4SYpWgM-Xn0v-8Qapsg@mail.gmail.com>
  <e87e2397-a8d4-c928-d3d4-7ae700603770@physik.fu-berlin.de>
@@ -63,16 +63,15 @@ References: <CADuzgbqYpv40NvAMGjo1cU2cNnij-2p4SYpWgM-Xn0v-8Qapsg@mail.gmail.com>
  <CADuzgbqU-SVy5U_4Pkv2G8SJcT9JhyirhFGamnQusZBSRSgcPw@mail.gmail.com>
  <87immlkytp.fsf@igel.home>
  <CADuzgbo=Yr09hxrkbkwj7Crg0aUfx+RQZOt0sCSNOeYUfR0SmA@mail.gmail.com>
- <87lfr62tbf.fsf@linux.ibm.com>
- <CADuzgbq3V0F=vob-tB=rroBaLwNR4viS2-=39TRBMyQwdj+xuw@mail.gmail.com>
- <874kx81xxt.fsf@linux.ibm.com>
-In-Reply-To: <874kx81xxt.fsf@linux.ibm.com>
+ <20191214103213.309bfbbb1f9c50fe47e733d9@zonnet.nl>
+ <B661D5F4-575C-4E64-BC68-537223FFB5B6@gmail.com>
+In-Reply-To: <B661D5F4-575C-4E64-BC68-537223FFB5B6@gmail.com>
 From: Romain Dolbeau <romain@dolbeau.org>
-Date: Mon, 6 Jan 2020 19:18:30 +0100
-Message-ID: <CADuzgbqtn7knixB+tO3m-r0m7fDDQXVA=z2EtGxsfQ_GjD0h7Q@mail.gmail.com>
+Date: Mon, 6 Jan 2020 19:30:10 +0100
+Message-ID: <CADuzgbpiN-=VgmZCHOyXFDEuj2L+aVzJGfibkvgfnPD_atNZMw@mail.gmail.com>
 Subject: Re: PPC64: G5 & 4k/64k page size (was: Re: Call for report -
  G5/PPC970 status)
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: Bertrand Dekoninck <bertrand.dekoninck@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -86,23 +85,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org,
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Jeroen Diederen <jjhdiederen@zonnet.nl>,
  PowerPC List Debian <debian-powerpc@lists.debian.org>,
- Andreas Schwab <schwab@linux-m68k.org>, jjhdiederen <jjhdiederen@zonnet.nl>,
- John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+ Andreas Schwab <schwab@linux-m68k.org>,
+ John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Le lun. 6 janv. 2020 =C3=A0 15:06, Aneesh Kumar K.V
-<aneesh.kumar@linux.ibm.com> a =C3=A9crit :
-> Can you try this change.
+Le dim. 5 janv. 2020 =C3=A0 16:06, Bertrand Dekoninck
+<bertrand.dekoninck@gmail.com> a =C3=A9crit :
+> I can now test on powermac 7,3 (with an ATI card)
+> How can I build a deb package of this kernel ? Or is there a package to d=
+ownload somewhere ?
 
-Applied, recompiled with 64 KiB pages, still crashes.
+I usually cross-compile on x86-64 from upstream sources. On a Debian
+Buster with the powerpc tools installed,
+it's just:
 
-The backtrace seems more readable this time (and wasn't overwritten by
-something else), bad photo here:
-<http://www.dolbeau.name/dolbeau/files/Photo0033.jpg>
+#####
+make ARCH=3Dpowerpc CROSS_COMPILE=3Dpowerpc64-linux-gnu- oldconfig && nice
+-19 make ARCH=3Dpowerpc CROSS_COMPILE=3Dpowerpc64-linux-gnu- -j56
+bindeb-pkg
+#####
+
+(alter the -j56 for your own build system). For the dependency, as far
+as I remember I only needed "gcc-powerpc64-linux-gnu" and
+dependencies. My '.config' is Debian's 5.3 plus default values for
+changes - with the exception of 4 KiB pages.
+
+I've also uploaded the working kernel with 4 KiB pages DEB here:
+<http://dl.free.fr/otB1KMEMR>, as it might be easier for a quick test.
 
 Cordially,
 
