@@ -2,63 +2,79 @@ Return-Path: <SRS0=nzsQ=23=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1FE7BC33C8C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2020 18:24:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C924C33C8C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2020 18:28:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CD0792077B
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2020 18:24:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CD0792077B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=buserror.net
+	by mail.kernel.org (Postfix) with ESMTPS id AF49624676
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2020 18:28:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AF49624676
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=dolbeau.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47s3nr5X6qzDqC5
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 05:24:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47s3tQ44tkzDqFh
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 05:28:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=209.85.221.67; helo=mail-wr1-f67.google.com;
+ envelope-from=romain.dolbeau@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=buserror.net
- (client-ip=165.227.176.147; helo=baldur.buserror.net;
- envelope-from=oss@buserror.net; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=buserror.net
-Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=dolbeau.org
+Received: from mail-wr1-f67.google.com (mail-wr1-f67.google.com
+ [209.85.221.67])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47s3X66LPgzDqFs
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2020 05:12:54 +1100 (AEDT)
-Received: from [2601:449:8480:af0:12bf:48ff:fe84:c9a0]
- by baldur.buserror.net with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
- (Exim 4.89) (envelope-from <oss@buserror.net>)
- id 1ioWlM-0008D1-Mb; Mon, 06 Jan 2020 12:06:01 -0600
-Message-ID: <d8cddd005901e64133e9ecbb14ec8fdf3269972d.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: yingjie_bai@126.com, Kumar Gala <galak@kernel.crashing.org>
-Date: Mon, 06 Jan 2020 12:05:59 -0600
-In-Reply-To: <20200106042957.26494-2-yingjie_bai@126.com>
-References: <20200106042957.26494-1-yingjie_bai@126.com>
- <20200106042957.26494-2-yingjie_bai@126.com>
-Organization: Red Hat
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47s3ft6S21zDqGM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2020 05:18:46 +1100 (AEDT)
+Received: by mail-wr1-f67.google.com with SMTP id g17so50724570wro.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jan 2020 10:18:45 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc:content-transfer-encoding;
+ bh=JppA8GA1YLeeCZAtmyLdFYdzL9Aeu/B5eNFBmTT5IAg=;
+ b=gQr4peC5IfWIL4cGVySadhZ/cQI+GUWse+Ed/7I730thHHh6KhXqPqkc/4ocJB8I/D
+ YRoctytDXlSAEvjbn7yh51G4BYIFETv/lJSO0xbEkKQpZvoHcwKpqLu/ToO5/Onu4ftB
+ BzMfQrepiTdYir5DtoivnJYUdFFYYrrtWJjYnP9jT1Drkgv27cIUTX+vcUK0KAXrepe+
+ pTGhU8Y9teYIdOo9Vok56mrQGGAT+3Fdr9XgPXWEkAyHFxladXdao438Fe6F33//g/QA
+ cl6cDbV+kprFqa/lGiLhtm87Vz7nWgjdkKWC9yMaQLiKwL7RPH1ZrzWMXeoWf5BxZKrK
+ GTyQ==
+X-Gm-Message-State: APjAAAXgVgrkxw6bg+3lmGmAtdk67xk+QKSpqssgHM1Bav3YQebeBu9g
+ kbg5KYwQqqkNbAbgMAqEtrXkDRITXAGukvY7siw=
+X-Google-Smtp-Source: APXvYqzTNQO6UEXM84Nld03FxyXq5W+Q7umk3t5SaxlgQvnOox0V3dh+mpwM9bdbeUgp3Ak9hlbsQ6PXzMALNPiVz3s=
+X-Received: by 2002:a5d:65c5:: with SMTP id e5mr104197948wrw.311.1578334722132; 
+ Mon, 06 Jan 2020 10:18:42 -0800 (PST)
+MIME-Version: 1.0
+References: <CADuzgbqYpv40NvAMGjo1cU2cNnij-2p4SYpWgM-Xn0v-8Qapsg@mail.gmail.com>
+ <e87e2397-a8d4-c928-d3d4-7ae700603770@physik.fu-berlin.de>
+ <CA+7wUsxBkmG-jW_UVBUuMriZbDkJko3kg0hzmMrVMoJLu2+rPw@mail.gmail.com>
+ <CADuzgbqoX3DQ6OVqdR6dw1oqnNn-Q0zLPshDi23DwDtYukDYdg@mail.gmail.com>
+ <CADuzgboWQtVqp7-Ru4uQQaPerkhLnaS9=WiwX2dD4-5VypT2MA@mail.gmail.com>
+ <CADuzgboYv69FQxQRvJ_Bd563OPO0e=USd+cTChfDK60D5x75hw@mail.gmail.com>
+ <b2256437-efe1-909d-1488-174b6522f9e0@physik.fu-berlin.de>
+ <87eexbk3gw.fsf@linux.ibm.com>
+ <CADuzgbq-P8mgf9zLaxhdqUfQcqfRpSzjgRoofF84rp+-S064xg@mail.gmail.com>
+ <87mubxl82x.fsf@igel.home>
+ <CADuzgbqU-SVy5U_4Pkv2G8SJcT9JhyirhFGamnQusZBSRSgcPw@mail.gmail.com>
+ <87immlkytp.fsf@igel.home>
+ <CADuzgbo=Yr09hxrkbkwj7Crg0aUfx+RQZOt0sCSNOeYUfR0SmA@mail.gmail.com>
+ <87lfr62tbf.fsf@linux.ibm.com>
+ <CADuzgbq3V0F=vob-tB=rroBaLwNR4viS2-=39TRBMyQwdj+xuw@mail.gmail.com>
+ <874kx81xxt.fsf@linux.ibm.com>
+In-Reply-To: <874kx81xxt.fsf@linux.ibm.com>
+From: Romain Dolbeau <romain@dolbeau.org>
+Date: Mon, 6 Jan 2020 19:18:30 +0100
+Message-ID: <CADuzgbqtn7knixB+tO3m-r0m7fDDQXVA=z2EtGxsfQ_GjD0h7Q@mail.gmail.com>
+Subject: Re: PPC64: G5 & 4k/64k page size (was: Re: Call for report -
+ G5/PPC970 status)
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.1 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 2601:449:8480:af0:12bf:48ff:fe84:c9a0
-X-SA-Exim-Rcpt-To: yingjie_bai@126.com, galak@kernel.crashing.org,
- byj.tea@gmail.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, christophe.leroy@c-s.fr, aneesh.kumar@linux.ibm.com,
- yanaijie@huawei.com, diana.craciun@nxp.com, nsaenzjulienne@suse.de,
- npiggin@gmail.com, tglx@linutronix.de, gregkh@linuxfoundation.org,
- allison@lohutok.net, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-X-SA-Exim-Mail-From: oss@buserror.net
-Subject: Re: [PATCH v3 2/2] powerpc/mpc85xx: also write addr_h to spin table
- for 64bit boot entry
-X-SA-Exim-Version: 4.2.1 (built Tue, 02 Aug 2016 21:08:31 +0000)
-X-SA-Exim-Scanned: Yes (on baldur.buserror.net)
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,37 +86,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jason Yan <yanaijie@huawei.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org,
- Diana Craciun <diana.craciun@nxp.com>, Paul Mackerras <paulus@samba.org>,
- Allison Randal <allison@lohutok.net>, Bai Yingjie <byj.tea@gmail.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ PowerPC List Debian <debian-powerpc@lists.debian.org>,
+ Andreas Schwab <schwab@linux-m68k.org>, jjhdiederen <jjhdiederen@zonnet.nl>,
+ John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2020-01-06 at 12:29 +0800, yingjie_bai@126.com wrote:
-> From: Bai Yingjie <byj.tea@gmail.com>
-> 
-> CPU like P4080 has 36bit physical address, its DDR physical
-> start address can be configured above 4G by LAW registers.
-> 
-> For such systems in which their physical memory start address was
-> configured higher than 4G, we need also to write addr_h into the spin
-> table of the target secondary CPU, so that addr_h and addr_l together
-> represent a 64bit physical address.
-> Otherwise the secondary core can not get correct entry to start from.
-> 
-> Signed-off-by: Bai Yingjie <byj.tea@gmail.com>
-> ---
->  arch/powerpc/platforms/85xx/smp.c | 9 +++++++++
->  1 file changed, 9 insertions(+)
+Le lun. 6 janv. 2020 =C3=A0 15:06, Aneesh Kumar K.V
+<aneesh.kumar@linux.ibm.com> a =C3=A9crit :
+> Can you try this change.
 
-Acked-by: Scott Wood <oss@buserror.net>
+Applied, recompiled with 64 KiB pages, still crashes.
 
--Scott
+The backtrace seems more readable this time (and wasn't overwritten by
+something else), bad photo here:
+<http://www.dolbeau.name/dolbeau/files/Photo0033.jpg>
 
+Cordially,
 
+--=20
+Romain Dolbeau
