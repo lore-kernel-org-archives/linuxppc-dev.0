@@ -3,51 +3,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2
-	autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0667BC33C8C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2020 17:56:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BA2AC33C8C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2020 18:21:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AB397206E6
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2020 17:56:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AB397206E6
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=goodmis.org
+	by mail.kernel.org (Postfix) with ESMTPS id 0EF842070E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2020 18:21:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0EF842070E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=buserror.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47s39Z5LnZzDqGG
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 04:56:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=srs0=ipd8=23=goodmis.org=rostedt@kernel.org; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47s3jj1KtKzDqGZ
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 05:21:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=goodmis.org
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ spf=none (no SPF record) smtp.mailfrom=buserror.net
+ (client-ip=165.227.176.147; helo=baldur.buserror.net;
+ envelope-from=oss@buserror.net; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=buserror.net
+Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47s37L0z1CzDqDm
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2020 04:54:53 +1100 (AEDT)
-Received: from gandalf.local.home (cpe-66-24-58-225.stny.res.rr.com
- [66.24.58.225])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id A93EC2146E;
- Mon,  6 Jan 2020 17:54:50 +0000 (UTC)
-Date: Mon, 6 Jan 2020 12:54:49 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Qian Cai <cai@lca.pw>
-Subject: Re: "ftrace: Rework event_create_dir()" triggers boot error messages
-Message-ID: <20200106125449.563a2047@gandalf.local.home>
-In-Reply-To: <3F343134-63CB-4D99-97AD-F512B8760C94@lca.pw>
-References: <0FA8C6E3-D9F5-416D-A1B0-5E4CD583A101@lca.pw>
- <20191218233101.73044ce3@rorschach.local.home>
- <3F343134-63CB-4D99-97AD-F512B8760C94@lca.pw>
-X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47s3Tw6695zDqFY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2020 05:10:59 +1100 (AEDT)
+Received: from [2601:449:8480:af0:12bf:48ff:fe84:c9a0]
+ by baldur.buserror.net with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.89) (envelope-from <oss@buserror.net>)
+ id 1ioWls-0008DE-B8; Mon, 06 Jan 2020 12:06:33 -0600
+Message-ID: <88cb950e3ad4040a368d946909d8818c4372894f.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Julia Lawall <Julia.Lawall@inria.fr>
+Date: Mon, 06 Jan 2020 12:06:31 -0600
+In-Reply-To: <1577900990-8588-6-git-send-email-Julia.Lawall@inria.fr>
+References: <1577900990-8588-1-git-send-email-Julia.Lawall@inria.fr>
+ <1577900990-8588-6-git-send-email-Julia.Lawall@inria.fr>
+Organization: Red Hat
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.1 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 2601:449:8480:af0:12bf:48ff:fe84:c9a0
+X-SA-Exim-Rcpt-To: Julia.Lawall@inria.fr, kernel-janitors@vger.kernel.org,
+ galak@kernel.crashing.org, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+X-SA-Exim-Mail-From: oss@buserror.net
+Subject: Re: [PATCH 05/10] powerpc/83xx: use resource_size
+X-SA-Exim-Version: 4.2.1 (built Tue, 02 Aug 2016 21:08:31 +0000)
+X-SA-Exim-Scanned: Yes (on baldur.buserror.net)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,41 +66,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Will Deacon <will@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
- Alexei Starovoitov <ast@kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- clang-built-linux@googlegroups.com, Catalin Marinas <catalin.marinas@arm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>,
- linux-arm-kernel@lists.infradead.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 6 Jan 2020 12:05:58 -0500
-Qian Cai <cai@lca.pw> wrote:
+On Wed, 2020-01-01 at 18:49 +0100, Julia Lawall wrote:
+> Use resource_size rather than a verbose computation on
+> the end and start fields.
+> 
+> The semantic patch that makes this change is as follows:
+> (http://coccinelle.lip6.fr/)
+> 
+> <smpl>
+> @@ struct resource ptr; @@
+> - (ptr.end - ptr.start + 1)
+> + resource_size(&ptr)
+> </smpl>
+> 
+> Signed-off-by: Julia Lawall <Julia.Lawall@inria.fr>
+> 
+> ---
+>  arch/powerpc/platforms/83xx/km83xx.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-> > diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscall=
-s.c
-> > index 53935259f701..abb70c71fe60 100644
-> > --- a/kernel/trace/trace_syscalls.c
-> > +++ b/kernel/trace/trace_syscalls.c
-> > @@ -269,7 +269,8 @@ static int __init syscall_enter_define_fields(struc=
-t trace_event_call *call)
-> > 	struct syscall_trace_enter trace;
-> > 	struct syscall_metadata *meta =3D call->data;
-> > 	int offset =3D offsetof(typeof(trace), args);
-> > -	int ret, i;
-> > +	int ret =3D 0;
-> > +	int i;
-> >=20
-> > 	for (i =3D 0; i < meta->nb_args; i++) {
-> > 		ret =3D trace_define_field(call, meta->types[i], =20
->=20
-> Steve, those errors are still there in today=E2=80=99s linux-next. Is thi=
-s patch on the way to the linux-next?
+Acked-by: Scott Wood <oss@buserror.net>
 
-No, because this bug is not in my tree.
+-Scott
 
-I'll send a proper patch to the tip folks.
 
--- Steve
