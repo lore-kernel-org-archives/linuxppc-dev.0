@@ -2,106 +2,71 @@ Return-Path: <SRS0=KFH9=24=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 75464C282DD
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 20:09:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB575C282DD
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 21:04:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DC2DC2080A
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 20:09:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DC2DC2080A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id A1EB0208C4
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 21:04:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A1EB0208C4
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=deltatee.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47sk3d655fzDqJH
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 07:09:01 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47sk1R3z2FzDqHn
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2020 07:07:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47slHm3cPSzDqNy
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 08:04:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=deltatee.com (client-ip=207.54.116.67; helo=ale.deltatee.com;
+ envelope-from=gunthorp@deltatee.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 47sk1R0CWhz8t0B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2020 07:07:07 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 47sk1Q6S9gz9sR1; Wed,  8 Jan 2020 07:07:06 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 47sk1Q2Mvlz9sPK
- for <linuxppc-dev@ozlabs.org>; Wed,  8 Jan 2020 07:07:05 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 007K5VGm082712
- for <linuxppc-dev@ozlabs.org>; Tue, 7 Jan 2020 15:07:04 -0500
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2xb925vfb7-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Tue, 07 Jan 2020 15:07:03 -0500
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <hbathini@linux.ibm.com>;
- Tue, 7 Jan 2020 20:07:01 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 7 Jan 2020 20:06:58 -0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 007K6v8G49348720
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 7 Jan 2020 20:06:57 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4DBBA5204E;
- Tue,  7 Jan 2020 20:06:57 +0000 (GMT)
-Received: from [9.85.95.152] (unknown [9.85.95.152])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 6847952054;
- Tue,  7 Jan 2020 20:06:55 +0000 (GMT)
-Subject: Re: [PATCH v6 1/6] Documentation/ABI: add ABI documentation for
- /sys/kernel/fadump_*
-To: Sourabh Jain <sourabhjain@linux.ibm.com>, mpe@ellerman.id.au
-References: <20191211160910.21656-1-sourabhjain@linux.ibm.com>
- <20191211160910.21656-2-sourabhjain@linux.ibm.com>
-From: Hari Bathini <hbathini@linux.ibm.com>
-Date: Wed, 8 Jan 2020 01:36:54 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.9.0
+ dmarc=none (p=none dis=none) header.from=deltatee.com
+Received: from ale.deltatee.com (ale.deltatee.com [207.54.116.67])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47slBl0QF6zDqNL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2020 08:00:12 +1100 (AEDT)
+Received: from cgy1-donard.priv.deltatee.com ([172.16.1.31])
+ by ale.deltatee.com with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.92) (envelope-from <gunthorp@deltatee.com>)
+ id 1iovxP-0007vw-0F; Tue, 07 Jan 2020 14:00:10 -0700
+Received: from gunthorp by cgy1-donard.priv.deltatee.com with local (Exim 4.92)
+ (envelope-from <gunthorp@deltatee.com>)
+ id 1iovxJ-0001zM-5J; Tue, 07 Jan 2020 14:00:01 -0700
+From: Logan Gunthorpe <logang@deltatee.com>
+To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ platform-driver-x86@vger.kernel.org, linux-mm@kvack.org,
+ Dan Williams <dan.j.williams@intel.com>, Michal Hocko <mhocko@kernel.org>,
+ David Hildenbrand <david@redhat.com>,
+ Andrew Morton <akpm@linux-foundation.org>
+Date: Tue,  7 Jan 2020 13:59:58 -0700
+Message-Id: <20200107205959.7575-8-logang@deltatee.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20200107205959.7575-1-logang@deltatee.com>
+References: <20200107205959.7575-1-logang@deltatee.com>
 MIME-Version: 1.0
-In-Reply-To: <20191211160910.21656-2-sourabhjain@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 20010720-0008-0000-0000-000003474AD0
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20010720-0009-0000-0000-00004A678D08
-Message-Id: <e1e2b967-2e21-cda4-eb0b-ca2b94da3020@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
- definitions=2020-01-07_07:2020-01-07,
- 2020-01-07 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1011 impostorscore=0
- malwarescore=0 bulkscore=0 adultscore=0 phishscore=0 mlxscore=0
- mlxlogscore=999 priorityscore=1501 suspectscore=0 lowpriorityscore=0
- spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-1910280000 definitions=main-2001070157
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 172.16.1.31
+X-SA-Exim-Rcpt-To: linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, platform-driver-x86@vger.kernel.org,
+ linux-mm@kvack.org, dan.j.williams@intel.com, akpm@linux-foundation.org,
+ hch@lst.de, catalin.marinas@arm.com, benh@kernel.crashing.org,
+ tglx@linutronix.de, david@redhat.com, mingo@redhat.com, bp@alien8.de,
+ dave.hansen@linux.intel.com, mhocko@kernel.org, will@kernel.org,
+ luto@kernel.org, peterz@infradead.org, ebadger@gigaio.com, logang@deltatee.com,
+ mhocko@suse.com
+X-SA-Exim-Mail-From: gunthorp@deltatee.com
+Subject: [PATCH v2 7/8] mm/memory_hotplug: Add pgprot_t to mhp_modifiers
+X-SA-Exim-Version: 4.2.1 (built Wed, 08 May 2019 21:11:16 +0000)
+X-SA-Exim-Scanned: Yes (on ale.deltatee.com)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,94 +78,208 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: corbet@lwn.net, mahesh@linux.vnet.ibm.com, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
- gregkh@linuxfoundation.org
+Cc: Eric Badger <ebadger@gigaio.com>, Peter Zijlstra <peterz@infradead.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>, Michal Hocko <mhocko@suse.com>,
+ Logan Gunthorpe <logang@deltatee.com>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will@kernel.org>,
+ Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+devm_memremap_pages() is currently used by the PCI P2PDMA code to create
+struct page mappings for IO memory. At present, these mappings are created
+with PAGE_KERNEL which implies setting the PAT bits to be WB. However, on
+x86, an mtrr register will typically override this and force the cache
+type to be UC-. In the case firmware doesn't set this register it is
+effectively WB and will typically result in a machine check exception
+when it's accessed.
 
-On 11/12/19 9:39 PM, Sourabh Jain wrote:
-> Add missing ABI documentation for existing FADump sysfs files.
-> 
-> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+Other arches are not currently likely to function correctly seeing they
+don't have any MTRR registers to fall back on.
 
-The patch series adds a new sysfs attribute that provides the amount of memory
-reserved for FADump. It also streamlines FADump specific sysfs interfaces.
-Thanks for looking into this.
+To solve this, add an argument to arch_add_memory() to explicitly
+set the pgprot value to a specific value.
 
-For the series...
+Of the arches that support MEMORY_HOTPLUG: x86_64, s390 and arm64 is a
+simple change to pass the pgprot_t down to their respective functions
+which set up the page tables. For x86_32, set the page tables explicitly
+using _set_memory_prot() (seeing they are already mapped). For sh, reject
+anything but PAGE_KERNEL settings -- this should be fine, for now, seeing
+sh doesn't support ZONE_DEVICE anyway.
 
-Reviewed-by: Hari Bathini <hbathini@linux.ibm.com>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: David Hildenbrand <david@redhat.com>
+Cc: Michal Hocko <mhocko@suse.com>
+Signed-off-by: Logan Gunthorpe <logang@deltatee.com>
+---
+ arch/arm64/mm/mmu.c            | 3 ++-
+ arch/ia64/mm/init.c            | 4 ++++
+ arch/powerpc/mm/mem.c          | 3 ++-
+ arch/s390/mm/init.c            | 2 +-
+ arch/sh/mm/init.c              | 3 +++
+ arch/x86/mm/init_32.c          | 5 +++++
+ arch/x86/mm/init_64.c          | 2 +-
+ include/linux/memory_hotplug.h | 2 ++
+ mm/memory_hotplug.c            | 2 +-
+ mm/memremap.c                  | 6 +++---
+ 10 files changed, 24 insertions(+), 8 deletions(-)
 
-> ---
->  Documentation/ABI/testing/sysfs-kernel-fadump_enabled     | 7 +++++++
->  Documentation/ABI/testing/sysfs-kernel-fadump_registered  | 8 ++++++++
->  Documentation/ABI/testing/sysfs-kernel-fadump_release_mem | 8 ++++++++
->  .../ABI/testing/sysfs-kernel-fadump_release_opalcore      | 7 +++++++
->  4 files changed, 30 insertions(+)
->  create mode 100644 Documentation/ABI/testing/sysfs-kernel-fadump_enabled
->  create mode 100644 Documentation/ABI/testing/sysfs-kernel-fadump_registered
->  create mode 100644 Documentation/ABI/testing/sysfs-kernel-fadump_release_mem
->  create mode 100644 Documentation/ABI/testing/sysfs-kernel-fadump_release_opalcore
-> 
-> diff --git a/Documentation/ABI/testing/sysfs-kernel-fadump_enabled b/Documentation/ABI/testing/sysfs-kernel-fadump_enabled
-> new file mode 100644
-> index 000000000000..f73632b1c006
-> --- /dev/null
-> +++ b/Documentation/ABI/testing/sysfs-kernel-fadump_enabled
-> @@ -0,0 +1,7 @@
-> +What:		/sys/kernel/fadump_enabled
-> +Date:		Feb 2012
-> +Contact:	linuxppc-dev@lists.ozlabs.org
-> +Description:	read only
-> +		Primarily used to identify whether the FADump is enabled in
-> +		the kernel or not.
-> +User:		Kdump service
-> diff --git a/Documentation/ABI/testing/sysfs-kernel-fadump_registered b/Documentation/ABI/testing/sysfs-kernel-fadump_registered
-> new file mode 100644
-> index 000000000000..dcf925e53f0f
-> --- /dev/null
-> +++ b/Documentation/ABI/testing/sysfs-kernel-fadump_registered
-> @@ -0,0 +1,8 @@
-> +What:		/sys/kernel/fadump_registered
-> +Date:		Feb 2012
-> +Contact:	linuxppc-dev@lists.ozlabs.org
-> +Description:	read/write
-> +		Helps to control the dump collect feature from userspace.
-> +		Setting 1 to this file enables the system to collect the
-> +		dump and 0 to disable it.
-> +User:		Kdump service
-> diff --git a/Documentation/ABI/testing/sysfs-kernel-fadump_release_mem b/Documentation/ABI/testing/sysfs-kernel-fadump_release_mem
-> new file mode 100644
-> index 000000000000..9c20d64ab48d
-> --- /dev/null
-> +++ b/Documentation/ABI/testing/sysfs-kernel-fadump_release_mem
-> @@ -0,0 +1,8 @@
-> +What:		/sys/kernel/fadump_release_mem
-> +Date:		Feb 2012
-> +Contact:	linuxppc-dev@lists.ozlabs.org
-> +Description:	write only
-> +		This is a special sysfs file and only available when
-> +		the system is booted to capture the vmcore using FADump.
-> +		It is used to release the memory reserved by FADump to
-> +		save the crash dump.
-> diff --git a/Documentation/ABI/testing/sysfs-kernel-fadump_release_opalcore b/Documentation/ABI/testing/sysfs-kernel-fadump_release_opalcore
-> new file mode 100644
-> index 000000000000..53313c1d4e7a
-> --- /dev/null
-> +++ b/Documentation/ABI/testing/sysfs-kernel-fadump_release_opalcore
-> @@ -0,0 +1,7 @@
-> +What:		/sys/kernel/fadump_release_opalcore
-> +Date:		Sep 2019
-> +Contact:	linuxppc-dev@lists.ozlabs.org
-> +Description:	write only
-> +		The sysfs file is available when the system is booted to
-> +		collect the dump on OPAL based machine. It used to release
-> +		the memory used to collect the opalcore.
-> 
-
+diff --git a/arch/arm64/mm/mmu.c b/arch/arm64/mm/mmu.c
+index 3320406579c3..9b214b0d268f 100644
+--- a/arch/arm64/mm/mmu.c
++++ b/arch/arm64/mm/mmu.c
+@@ -1058,7 +1058,8 @@ int arch_add_memory(int nid, u64 start, u64 size,
+ 		flags = NO_BLOCK_MAPPINGS | NO_CONT_MAPPINGS;
+ 
+ 	__create_pgd_mapping(swapper_pg_dir, start, __phys_to_virt(start),
+-			     size, PAGE_KERNEL, __pgd_pgtable_alloc, flags);
++			     size, modifiers->pgprot, __pgd_pgtable_alloc,
++			     flags);
+ 
+ 	memblock_clear_nomap(start, size);
+ 
+diff --git a/arch/ia64/mm/init.c b/arch/ia64/mm/init.c
+index daf438e08b96..5fd6ae4929c9 100644
+--- a/arch/ia64/mm/init.c
++++ b/arch/ia64/mm/init.c
+@@ -677,6 +677,10 @@ int arch_add_memory(int nid, u64 start, u64 size,
+ 	int ret;
+ 
+ 	ret = __add_pages(nid, start_pfn, nr_pages, modifiers);
++	if (modifiers->pgprot != PAGE_KERNEL)
++		return -EINVAL;
++
++	ret = __add_pages(nid, start_pfn, nr_pages, restrictions);
+ 	if (ret)
+ 		printk("%s: Problem encountered in __add_pages() as ret=%d\n",
+ 		       __func__,  ret);
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 631ee684721f..fddeaee53198 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -137,7 +137,8 @@ int __ref arch_add_memory(int nid, u64 start, u64 size,
+ 	resize_hpt_for_hotplug(memblock_phys_mem_size());
+ 
+ 	start = (unsigned long)__va(start);
+-	rc = create_section_mapping(start, start + size, nid, PAGE_KERNEL);
++	rc = create_section_mapping(start, start + size, nid,
++				    modifiers->pgprot);
+ 	if (rc) {
+ 		pr_warn("Unable to create mapping for hot added memory 0x%llx..0x%llx: %d\n",
+ 			start, start + size, rc);
+diff --git a/arch/s390/mm/init.c b/arch/s390/mm/init.c
+index ef19522ddad2..c65fb33f6a89 100644
+--- a/arch/s390/mm/init.c
++++ b/arch/s390/mm/init.c
+@@ -277,7 +277,7 @@ int arch_add_memory(int nid, u64 start, u64 size,
+ 	if (WARN_ON_ONCE(modifiers->altmap))
+ 		return -EINVAL;
+ 
+-	rc = vmem_add_mapping(start, size, PAGE_KERNEL);
++	rc = vmem_add_mapping(start, size, modifiers->pgprot);
+ 	if (rc)
+ 		return rc;
+ 
+diff --git a/arch/sh/mm/init.c b/arch/sh/mm/init.c
+index 7e64f42fb570..7071dc5bd2e4 100644
+--- a/arch/sh/mm/init.c
++++ b/arch/sh/mm/init.c
+@@ -412,6 +412,9 @@ int arch_add_memory(int nid, u64 start, u64 size,
+ 	unsigned long nr_pages = size >> PAGE_SHIFT;
+ 	int ret;
+ 
++	if (modifiers->pgprot != PAGE_KERNEL)
++		return -EINVAL;
++
+ 	/* We only have ZONE_NORMAL, so this is easy.. */
+ 	ret = __add_pages(nid, start_pfn, nr_pages, modifiers);
+ 	if (unlikely(ret))
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index 630d8a36fcd7..737da0dbc0d5 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -857,6 +857,11 @@ int arch_add_memory(int nid, u64 start, u64 size,
+ {
+ 	unsigned long start_pfn = start >> PAGE_SHIFT;
+ 	unsigned long nr_pages = size >> PAGE_SHIFT;
++	int ret;
++
++	ret = _set_memory_prot(start, nr_pages, modifiers->pgprot);
++	if (ret)
++		return ret;
+ 
+ 	return __add_pages(nid, start_pfn, nr_pages, modifiers);
+ }
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index 17ea0bfc0b83..cc9eb45ad120 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -868,7 +868,7 @@ int arch_add_memory(int nid, u64 start, u64 size,
+ 	unsigned long start_pfn = start >> PAGE_SHIFT;
+ 	unsigned long nr_pages = size >> PAGE_SHIFT;
+ 
+-	init_memory_mapping(start, start + size, PAGE_KERNEL);
++	init_memory_mapping(start, start + size, modifiers->pgprot);
+ 
+ 	return add_pages(nid, start_pfn, nr_pages, modifiers);
+ }
+diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
+index 2152efae2f4b..00dfb2016737 100644
+--- a/include/linux/memory_hotplug.h
++++ b/include/linux/memory_hotplug.h
+@@ -56,9 +56,11 @@ enum {
+ /*
+  * Restrictions for the memory hotplug:
+  * altmap: alternative allocator for memmap array
++ * pgprot: page protection flags to apply to newly added page tables
+  */
+ struct mhp_modifiers {
+ 	struct vmem_altmap *altmap;
++	pgprot_t pgprot;
+ };
+ 
+ /*
+diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+index 1bb3f92e087d..0888f821af06 100644
+--- a/mm/memory_hotplug.c
++++ b/mm/memory_hotplug.c
+@@ -1027,7 +1027,7 @@ static int online_memory_block(struct memory_block *mem, void *arg)
+  */
+ int __ref add_memory_resource(int nid, struct resource *res)
+ {
+-	struct mhp_modifiers modifiers = {};
++	struct mhp_modifiers modifiers = {.pgprot = PAGE_KERNEL};
+ 	u64 start, size;
+ 	bool new_node = false;
+ 	int ret;
+diff --git a/mm/memremap.c b/mm/memremap.c
+index e30be8ba706b..45ab4ef0643d 100644
+--- a/mm/memremap.c
++++ b/mm/memremap.c
+@@ -163,8 +163,8 @@ void *memremap_pages(struct dev_pagemap *pgmap, int nid)
+ 		 * We do not want any optional features only our own memmap
+ 		 */
+ 		.altmap = pgmap_altmap(pgmap),
++		.pgprot = PAGE_KERNEL,
+ 	};
+-	pgprot_t pgprot = PAGE_KERNEL;
+ 	int error, is_ram;
+ 	bool need_devmap_managed = true;
+ 
+@@ -252,8 +252,8 @@ void *memremap_pages(struct dev_pagemap *pgmap, int nid)
+ 	if (nid < 0)
+ 		nid = numa_mem_id();
+ 
+-	error = track_pfn_remap(NULL, &pgprot, PHYS_PFN(res->start), 0,
+-			resource_size(res));
++	error = track_pfn_remap(NULL, &modifiers.pgprot, PHYS_PFN(res->start),
++				0, resource_size(res));
+ 	if (error)
+ 		goto err_pfn_remap;
+ 
 -- 
-- Hari
+2.20.1
 
