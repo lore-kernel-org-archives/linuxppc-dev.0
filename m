@@ -2,76 +2,78 @@ Return-Path: <SRS0=KFH9=24=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F9C5C33C99
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 08:11:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 50D14C33C9E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 09:18:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D93642070E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 08:11:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D93642070E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
+	by mail.kernel.org (Postfix) with ESMTPS id C39A820880
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 09:18:50 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="ntHh7OhB"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C39A820880
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47sQ7M2Y0VzDqJj
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 19:11:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47sRdN2pvDzDqKN
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 20:18:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=arndb.de
- (client-ip=212.227.126.130; helo=mout.kundenserver.de;
- envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
+ spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arndb.de
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47sQ4p3G2pzDqJH
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2020 19:08:57 +1100 (AEDT)
-Received: from mail-qt1-f182.google.com ([209.85.160.182]) by
- mrelayeu.kundenserver.de (mreue010 [212.227.15.129]) with ESMTPSA (Nemesis)
- id 1N3suW-1joVWM45Sa-00zmbk for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jan
- 2020 09:08:51 +0100
-Received: by mail-qt1-f182.google.com with SMTP id k40so44646367qtk.8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jan 2020 00:08:49 -0800 (PST)
-X-Gm-Message-State: APjAAAWIbUfdfYLH5qVwEFib+/isPaSgIVCk0falLJgB/ZnI72PylZQh
- d4xgRIeKOhzJLb4YLGFgExEipFwmcqtMP7wK+Vc=
-X-Google-Smtp-Source: APXvYqwKEIiKCB0yEFWoleSSKNKnD8FxkV92VMH6CsqWOD/uB6nKGXweURlmBCLGX81V2orjzTiBfhUxphLe4QjQbqc=
-X-Received: by 2002:ac8:709a:: with SMTP id y26mr78377768qto.304.1578384528657; 
- Tue, 07 Jan 2020 00:08:48 -0800 (PST)
-MIME-Version: 1.0
-References: <20200102145552.1853992-1-arnd@arndb.de>
- <20200102145552.1853992-3-arnd@arndb.de>
- <87woa410nx.fsf@mpe.ellerman.id.au>
-In-Reply-To: <87woa410nx.fsf@mpe.ellerman.id.au>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 7 Jan 2020 09:08:31 +0100
-X-Gmail-Original-Message-ID: <CAK8P3a17GshP1KmCpvCkWGDGJLC_JrGUFQZTLbfe5+sSwTjyxw@mail.gmail.com>
-Message-ID: <CAK8P3a17GshP1KmCpvCkWGDGJLC_JrGUFQZTLbfe5+sSwTjyxw@mail.gmail.com>
-Subject: Re: [PATCH v3 02/22] compat: provide compat_ptr() on all architectures
-To: Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-X-Provags-ID: V03:K1:GmUsmxJ9DIL1H+mxDhhxXQ1Yxcm61AklCBd7VZxPTeUkSS4wKps
- uZI0bDoK18amNXiS2b3Gi/PYBZGWVAavQSVAfXIkq9sL2xehkTCiRZtNfY57ynfByRJykvq
- UbUYiyac/u0ie+7yP7VsDn4xzyw5TcLXX/lZbuOoMXBSBiX5zmzacDIorzF0dty0pZoviqD
- jfO/F2WF4KvduuP7m87ww==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:k6l0Axt4aJw=:uhdp+/n5ibchryxnNG8gqL
- fLaHJ4GuGzf2f1Q0mYsH8z4MpWaJ3mVKxp84q/mUMsbyJII596LUrqpSMk31G1Pb7qtclL32K
- GCjF0hOvcqAZgBqoKQUPykMfc9zHsHXQ5oJKfFcJr3kAK5YoWangz3YpHNHcBWS0KgUnMAdDP
- YGyzATNgLygRIL6galw/AiMOw+PgBZqgVyLapShVgF5FkyurhmtdEwAGHf7ZIrtXDRpfpWSjF
- zlKe+sbjjrQ+HEGSd/AIiaPscza90EpgA9SuHi9XEF1gJtx7A5QDnETDEdrukkFDRDLNKu823
- fbOZ7uw1s5hj9MBzMJfBx4aA0jzltQji8GAFjeZn4V+Z5O/qVU5ykUxgnmKDpyYK41lvlrYmG
- gD0YBMLgOWV39p9v12/vMt5pjNdKA8amskgZKVCWYBF8+JPxVf5m/4esGHaf6/xlrqFfw3vok
- +2Dyt4NpkJZcb+brVE43Fm1gkH7AtgKABsUWW0WN4XkWOIlTQmBelFzPcrbkUDYjVbC39/xFZ
- r1UBGhX0McqOjC72SXc47pz1oIq+g/IyQubpoPhenQSN0MEJyQJb74q/uzzBZho7jV1cedVXm
- azLKPOgH5pwEVNexluD0+GViaxLKcwGUeF3AYOiW5vrbR9jB0IeiajI49Ui/qF7mkYeWiySry
- SYF4tOunhVDWGwZhO3/PkQeGOVC+7mT1g37Ro88I3IyvcXv+xOWmjruh1LSsMmgv/FEN5iKzu
- 7i/gD4hKaHr4CFmZa1BFlsGGKMdrYrnBU1z6cQapsTZOdcvdugw3oK0ZWtG5dunRu93IG3com
- ElB5ZQY5ie5K6bDoV06YUaqNZe1NRvdVBK1J8NaIaEy+GuXPv914tgY+mCWWElX/Wq2JV8LDu
- NXxdzId8K4uysxc5PmIg==
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="ntHh7OhB"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47sRb22XtGzDqH2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2020 20:16:44 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 47sRZv5lLdz9v0Y4;
+ Tue,  7 Jan 2020 10:16:39 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=ntHh7OhB; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id OxK4M7SF_qq0; Tue,  7 Jan 2020 10:16:39 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 47sRZv4KRmz9v0Y2;
+ Tue,  7 Jan 2020 10:16:39 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1578388599; bh=ogZVZY/kn1mv+xJV69YBaTIh0up2D8ngI0X6/bQKCGU=;
+ h=From:Subject:To:Cc:Date:From;
+ b=ntHh7OhBWCQ0AznSgDaFKKfZdEfVoIOFEQ32uSMRU9FWI93IxBk4gNq7T0zQHAHEN
+ rEXONlhkL2OLjWfQYFEVcNd3W5QZQUa1Qz1B70IO4GGsRO/XbeANaCllz6fRGeAijg
+ jbEEBUQOLsBzTm57FNzgsXpKab82v7peaejA4lhU=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A797F8B7C5;
+ Tue,  7 Jan 2020 10:16:40 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id TS_nc42frYp0; Tue,  7 Jan 2020 10:16:40 +0100 (CET)
+Received: from po14934vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 732848B7BF;
+ Tue,  7 Jan 2020 10:16:40 +0100 (CET)
+Received: by po14934vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 3D01563806; Tue,  7 Jan 2020 09:16:40 +0000 (UTC)
+Message-Id: <d2c6dc65d27e83964eb05f16a126161ab6455eea.1578388585.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc/32: don't restore r0, r6-r8 on exception entry path
+ after trace_hardirqs_off()
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Tue,  7 Jan 2020 09:16:40 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,40 +85,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
- "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux <sparclinux@vger.kernel.org>, Will Deacon <will@kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>, Paul Burton <paulburton@kernel.org>,
- Helge Deller <deller@gmx.de>, the arch/x86 maintainers <x86@kernel.org>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- oprofile-list@lists.sf.net, Catalin Marinas <catalin.marinas@arm.com>,
- James Hogan <jhogan@kernel.org>, Robert Richter <rric@kernel.org>,
- Vasily Gorbik <gor@linux.ibm.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>,
- Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
- Parisc List <linux-parisc@vger.kernel.org>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Ralf Baechle <ralf@linux-mips.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jan 7, 2020 at 3:05 AM Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Arnd Bergmann <arnd@arndb.de> writes:
-> > +
-> > +static inline compat_uptr_t ptr_to_compat(void __user *uptr)
-> > +{
-> > +     return (u32)(unsigned long)uptr;
-> > +}
->
-> Is there a reason we cast to u32 directly instead of using compat_uptr_t?
+Since commit b86fb88855ea ("powerpc/32: implement fast entry for
+syscalls on non BOOKE") and commit 1a4b739bbb4f ("powerpc/32:
+implement fast entry for syscalls on BOOKE"), syscalls don't
+use the exception entry path anymore. It is therefore pointless
+to restore r0 and r6-r8 after calling trace_hardirqs_off().
 
-Probably Al found this to be more explicit at the time when he introduced
-it on all the architectures in 2005. I just moved it here and kept the
-definition.
+In the meantime, drop the '2:' label which is unused and misleading.
 
-       Arnd
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/kernel/entry_32.S | 11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
+
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 4a7cd22a8aaf..748a13788b9b 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -242,9 +242,8 @@ reenable_mmu:
+ 	 * r3 can be different from GPR3(r1) at this point, r9 and r11
+ 	 * contains the old MSR and handler address respectively,
+ 	 * r4 & r5 can contain page fault arguments that need to be passed
+-	 * along as well. r12, CCR, CTR, XER etc... are left clobbered as
+-	 * they aren't useful past this point (aren't syscall arguments),
+-	 * the rest is restored from the exception frame.
++	 * along as well. r0, r6-r8, r12, CCR, CTR, XER etc... are left
++	 * clobbered as they aren't useful past this point.
+ 	 */
+ 
+ 	stwu	r1,-32(r1)
+@@ -258,16 +257,12 @@ reenable_mmu:
+ 	 * lockdep
+ 	 */
+ 1:	bl	trace_hardirqs_off
+-2:	lwz	r5,24(r1)
++	lwz	r5,24(r1)
+ 	lwz	r4,20(r1)
+ 	lwz	r3,16(r1)
+ 	lwz	r11,12(r1)
+ 	lwz	r9,8(r1)
+ 	addi	r1,r1,32
+-	lwz	r0,GPR0(r1)
+-	lwz	r6,GPR6(r1)
+-	lwz	r7,GPR7(r1)
+-	lwz	r8,GPR8(r1)
+ 	mtctr	r11
+ 	mtlr	r9
+ 	bctr				/* jump to handler */
+-- 
+2.13.3
+
