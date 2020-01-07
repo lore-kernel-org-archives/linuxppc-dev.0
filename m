@@ -2,75 +2,80 @@ Return-Path: <SRS0=KFH9=24=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97C53C33C8C
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 17:32:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6BDA3C33C8C
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 17:36:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 58AF9208C4
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 17:32:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 58AF9208C4
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
+	by mail.kernel.org (Postfix) with ESMTPS id 7B45620848
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 17:36:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7B45620848
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=dolbeau.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47sfbH13rgzDqSZ
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 04:32:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47sfgn3JHFzDqLx
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 04:36:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=209.85.128.67; helo=mail-wm1-f67.google.com;
+ envelope-from=romain.dolbeau@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=arndb.de
- (client-ip=212.227.126.133; helo=mout.kundenserver.de;
- envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arndb.de
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=dolbeau.org
+Received: from mail-wm1-f67.google.com (mail-wm1-f67.google.com
+ [209.85.128.67])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47sf5g13S1zDqLt
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2020 04:10:30 +1100 (AEDT)
-Received: from mail-qv1-f48.google.com ([209.85.219.48]) by
- mrelayeu.kundenserver.de (mreue009 [212.227.15.129]) with ESMTPSA (Nemesis)
- id 1MuluN-1jgQQj34eR-00rrKe for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jan
- 2020 18:10:26 +0100
-Received: by mail-qv1-f48.google.com with SMTP id l14so145129qvu.12
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jan 2020 09:10:25 -0800 (PST)
-X-Gm-Message-State: APjAAAW4ndDpsrzrsL2xekmjRVlCD/zJo4QFERKtBh6tio3ZCm+MRnEQ
- nRwCnEXO5y0KxRhzvLONdK9iNvOp6cHkg3GnGJk=
-X-Google-Smtp-Source: APXvYqxwO5AyDQus85+IK5BIt7KfSsh7NvpnQb9bzWV5OgyrFYMfLh14xqWUd9CW/X7TSfP34I+W9RVMaa5KUvf/Vb8=
-X-Received: by 2002:a0c:bd20:: with SMTP id m32mr365813qvg.197.1578417023930; 
- Tue, 07 Jan 2020 09:10:23 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47sf9h63l5zDqHJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2020 04:14:00 +1100 (AEDT)
+Received: by mail-wm1-f67.google.com with SMTP id 20so329317wmj.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jan 2020 09:14:00 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc:content-transfer-encoding;
+ bh=QU5Lb3tIISSRv5nFcFZNbKakaAqpREIEd35+J2XwXOs=;
+ b=DrxZT72x8LeuVz6+BMARJcpuQoOErLsxppnC+CRbVp+nt+AuCq/IXnAXMAR/JQuQA7
+ iTOOFheN9ekHELsWJ2GWlMJ/iBvVrc5/wtOr7dKUlv8YB+CIoH+Oi293XD4QGoCVNNaD
+ KC2CTFCK2P8haue960PCYauK3OgdpqWQmQmmZGT4vbtmFPKStImDPzOLHNw9Xhd6LXWQ
+ g3d21dEewP14+SQhtW6WdYKYnGjXTKjyV5kWeUNFTK3a1B4OHSWlNidmlY46AIBEHyXF
+ 7OidogO5rYTo1lRHGhb8SV8LP7V1p1+B05CeppLqrOtHHiLfOeaAlzSKUzJAVfSaaJx7
+ 3H8A==
+X-Gm-Message-State: APjAAAXt31dQgQBpJjALmCodLuLcHLxw4VD7lMkLFS9kO9DE8F6VVVZD
+ +m4RXVuzSSESQ4lrMZ5zXoaeCD2OAoJCctaa0Bw=
+X-Google-Smtp-Source: APXvYqzhXd/9wP1y5lIujY1jpqVa1aAzPvMNKbhEW3NNjL7osiGgZDu7gcoJjRSeYSHx2t8AyTS+ifJD4qgm8htt+gU=
+X-Received: by 2002:a05:600c:2318:: with SMTP id
+ 24mr114367wmo.48.1578417236774; 
+ Tue, 07 Jan 2020 09:13:56 -0800 (PST)
 MIME-Version: 1.0
-References: <1578415992-24054-1-git-send-email-krzk@kernel.org>
- <1578415992-24054-9-git-send-email-krzk@kernel.org>
-In-Reply-To: <1578415992-24054-9-git-send-email-krzk@kernel.org>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 7 Jan 2020 18:10:07 +0100
-X-Gmail-Original-Message-ID: <CAK8P3a1RibnRU6SiVjrOy-q+ZDdKacQgD9mrft_aHMgA9hm3PA@mail.gmail.com>
-Message-ID: <CAK8P3a1RibnRU6SiVjrOy-q+ZDdKacQgD9mrft_aHMgA9hm3PA@mail.gmail.com>
-Subject: Re: [RFT 06/13] arc: Constify ioreadX() iomem argument (as in generic
- implementation)
-To: Krzysztof Kozlowski <krzk@kernel.org>
+References: <CADuzgbqYpv40NvAMGjo1cU2cNnij-2p4SYpWgM-Xn0v-8Qapsg@mail.gmail.com>
+ <e87e2397-a8d4-c928-d3d4-7ae700603770@physik.fu-berlin.de>
+ <CA+7wUsxBkmG-jW_UVBUuMriZbDkJko3kg0hzmMrVMoJLu2+rPw@mail.gmail.com>
+ <CADuzgbqoX3DQ6OVqdR6dw1oqnNn-Q0zLPshDi23DwDtYukDYdg@mail.gmail.com>
+ <CADuzgboWQtVqp7-Ru4uQQaPerkhLnaS9=WiwX2dD4-5VypT2MA@mail.gmail.com>
+ <CADuzgboYv69FQxQRvJ_Bd563OPO0e=USd+cTChfDK60D5x75hw@mail.gmail.com>
+ <b2256437-efe1-909d-1488-174b6522f9e0@physik.fu-berlin.de>
+ <87eexbk3gw.fsf@linux.ibm.com>
+ <CADuzgbq-P8mgf9zLaxhdqUfQcqfRpSzjgRoofF84rp+-S064xg@mail.gmail.com>
+ <87mubxl82x.fsf@igel.home>
+ <CADuzgbqU-SVy5U_4Pkv2G8SJcT9JhyirhFGamnQusZBSRSgcPw@mail.gmail.com>
+ <87immlkytp.fsf@igel.home>
+ <CADuzgbo=Yr09hxrkbkwj7Crg0aUfx+RQZOt0sCSNOeYUfR0SmA@mail.gmail.com>
+ <20191214103213.309bfbbb1f9c50fe47e733d9@zonnet.nl>
+ <B661D5F4-575C-4E64-BC68-537223FFB5B6@gmail.com>
+ <CADuzgbpiN-=VgmZCHOyXFDEuj2L+aVzJGfibkvgfnPD_atNZMw@mail.gmail.com>
+ <709f10b0-6b7f-8de2-3fac-1f4f6350afaf@gmail.com>
+In-Reply-To: <709f10b0-6b7f-8de2-3fac-1f4f6350afaf@gmail.com>
+From: Romain Dolbeau <romain@dolbeau.org>
+Date: Tue, 7 Jan 2020 18:13:45 +0100
+Message-ID: <CADuzgboKYD2CeXODpEH5Vboov4gr0fPG8ZmCTaqWw-3ve53MiQ@mail.gmail.com>
+Subject: Re: PPC64: G5 & 4k/64k page size
+To: Bertrand <bertrand.dekoninck@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
-X-Provags-ID: V03:K1:rLgxK+XwwobzkJ6cqUjcXz1KHRkqvZ4JN+MqFY1h21G5DKpM7dK
- TfuCp50JOgPGf+gug4ujWdjksmQ4IzVBxbzmct57VVAC0PH866GcQ8FQRnoQALgx8NB4ofT
- HT4+1QY025ZWGbrQcCtBQSKTjDbZDat63M/DJ0tzAj02zX4ExIDdPFCDRkvry9k2bQ/eez6
- /Vvjw6r4WWuPLsS3Z6RAw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:YC0wLCCEUj4=:LaK9vXcuk6Yd3BRtn02e1A
- kfIUWV2d00nuJYiJaFIWgRuaUjJzg7JqYh5ZLLB1hnJa0nGC0gYS3bu84hgpqfvT3OPKXr/fc
- TFnVKxxe9x/vC4whlQ3iUH7rKx/wzt9xo/UtGCSxQtmsML6Q42kgw8ysUNy9AUBUnppUiLuwR
- kZ6hrxh4A5iXowSY30YhtU13DaAjFgOF3rqBETCtD0WhBLIbQZko1hrwKhP2ysuHTSohT9RJH
- T5Uf4f8bfVmEpSuSJVtbGv3Hf2SSuw7Nl/K6CoQcnNTGPS5/q4sVb2kxufB0GYcCBoQgNwy2l
- coY9dQZcE//CNprOnYO4Vy0Dwh8O+bnf+mdr8ByiGfwZA0iu1RNWH3FrkGN+nlnRs9W5Dc+5e
- 2jctSfUIk5lgL5vZ8uYda7/TAMQEv4HmUuGjMGG24gAW35KNqPB+YnT/DCVyPg2kA9YqzIV7g
- CNivu9xjcoIvSEbWPfe0zbIpxNiWwy6pwLOvLZCqZoHmlD+lrhznzss56ofieexdXUDHaz+Hm
- /I/9t3r7hOL5A9gUTZBajdfUM70i1m0ZDNW4NAXXQMyzR2/ZAfGXTa8TrYSu7D9PWvYHPEp2n
- 7Fc7o8Kx34rOUIvvEqeYTZCyjmXntsg8pcr4LJLC3ITbgjvDHgvJznkZ8dWVh8C3I457ZLdVH
- xnHtV29VmFPnGwXy8qiy63AzJCBnOZ7GFzTdj//5zaI3DI1r3cNS5RVYxmc2qmhmQFSPjceZZ
- gH/Fbd4ddiZBOtRGyCJL8BYVLaD5fDpYFgdfgwkU4tYDc5Jsy8cvq2jOY7wxh59JCgy7bkqAJ
- Q6ZEMicSO4EPi0yyWXbaeUnOhg0NrBbQRWKd6lXAbPpKnHk7xlbXhNDIhNkhpn12JWUZBs8fp
- SnJP9aCvkpaKUhgDQzzw==
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,51 +87,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, Jiri Slaby <jirislaby@gmail.com>,
- "Michael S. Tsirkin" <mst@redhat.com>, David Airlie <airlied@linux.ie>,
- Jason Wang <jasowang@redhat.com>, dri-devel <dri-devel@lists.freedesktop.org>,
- virtualization@lists.linux-foundation.org,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- Networking <netdev@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
- linux-arch <linux-arch@vger.kernel.org>, Dave Jiang <dave.jiang@intel.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Helge Deller <deller@gmx.de>,
- Linux-sh list <linux-sh@vger.kernel.org>,
- Alexey Brodkin <abrodkin@synopsys.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>, Ben Skeggs <bskeggs@redhat.com>,
- ML nouveau <nouveau@lists.freedesktop.org>, Dave Airlie <airlied@redhat.com>,
- Matt Turner <mattst88@gmail.com>,
- "open list:SYNOPSYS ARC ARCHITECTURE" <linux-snps-arc@lists.infradead.org>,
- Nick Kossifidis <mickflemm@gmail.com>, Allen Hubbe <allenbh@gmail.com>,
- alpha <linux-alpha@vger.kernel.org>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Thomas Gleixner <tglx@linutronix.de>,
- Mauro Carvalho Chehab <mchehab@kernel.org>, Kalle Valo <kvalo@codeaurora.org>,
- Richard Henderson <rth@twiddle.net>,
- Parisc List <linux-parisc@vger.kernel.org>, Vineet Gupta <vgupta@synopsys.com>,
- linux-wireless <linux-wireless@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Luis Chamberlain <mcgrof@kernel.org>, Daniel Vetter <daniel@ffwll.ch>,
- Jon Mason <jdmason@kudzu.us>, linux-ntb@googlegroups.com,
- Andrew Morton <akpm@linux-foundation.org>,
- Linux Media Mailing List <linux-media@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Jeroen Diederen <jjhdiederen@zonnet.nl>,
+ PowerPC List Debian <debian-powerpc@lists.debian.org>,
+ Andreas Schwab <schwab@linux-m68k.org>,
+ John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jan 7, 2020 at 5:54 PM Krzysztof Kozlowski <krzk@kernel.org> wrote:
->
-> The ioreadX() helpers have inconsistent interface.  On some architectures
-> void *__iomem address argument is a pointer to const, on some not.
->
-> Implementations of ioreadX() do not modify the memory under the
-> address so they can be converted to a "const" version for const-safety
-> and consistency among architectures.
->
-> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+Le mar. 7 janv. 2020 =C3=A0 16:27, Bertrand <bertrand.dekoninck@gmail.com> =
+a =C3=A9crit :
+> I've tested the 5.5-rc package with the link you gave hereafter. When
+> you said "working kernel", did you mean it would not crash ? It doesn't
+> for me. I can boot successfully.
 
-The patch looks correct, but I would not bother here, as it has no
-effect on the compiler or its output.
+Yes, unlike the default Debian build, this one has 4 KiB page size.
+It's not a solution, but it's a workaround for those affected by the bug
+and perhaps a clue to the issue.
 
-      Arnd
+As your machine is booting regular 5.3 as well and seems not affected by
+the bug, can you share some details about it? (exact model, number
+of cores, ...).
+
+> The only weirdness I could notice is that my swap space wasn't mounted.
+
+No surprise, I think the on-disk format for the swap space hardwire
+the page size. There's even a '-p' option to 'mkswap' to specify a
+page size when creating the swap space.
+
+Cordially,
+
+--
+Romain Dolbeau
