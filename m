@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D77A6C33C9B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 21:14:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A491C47409
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 21:17:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8EE7320880
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 21:14:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8EE7320880
+	by mail.kernel.org (Postfix) with ESMTPS id CD4512072A
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 21:17:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CD4512072A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=deltatee.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47slW15wGpzDqGc
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 08:14:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47slZx14w7zDqG1
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 08:17:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=deltatee.com (client-ip=207.54.116.67; helo=ale.deltatee.com;
  envelope-from=gunthorp@deltatee.com; receiver=<UNKNOWN>)
@@ -28,15 +28,15 @@ Received: from ale.deltatee.com (ale.deltatee.com [207.54.116.67])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47slBl1hHtzDqNG
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2020 08:00:13 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47slBl6KwQzDqNb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2020 08:00:15 +1100 (AEDT)
 Received: from cgy1-donard.priv.deltatee.com ([172.16.1.31])
  by ale.deltatee.com with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
  (Exim 4.92) (envelope-from <gunthorp@deltatee.com>)
- id 1iovxO-0007vv-QG; Tue, 07 Jan 2020 14:00:09 -0700
+ id 1iovxO-0007vq-Dz; Tue, 07 Jan 2020 14:00:07 -0700
 Received: from gunthorp by cgy1-donard.priv.deltatee.com with local (Exim 4.92)
  (envelope-from <gunthorp@deltatee.com>)
- id 1iovxJ-0001zJ-1Y; Tue, 07 Jan 2020 14:00:01 -0700
+ id 1iovxI-0001z4-Ek; Tue, 07 Jan 2020 14:00:00 -0700
 From: Logan Gunthorpe <logang@deltatee.com>
 To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
@@ -45,8 +45,8 @@ To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  Dan Williams <dan.j.williams@intel.com>, Michal Hocko <mhocko@kernel.org>,
  David Hildenbrand <david@redhat.com>,
  Andrew Morton <akpm@linux-foundation.org>
-Date: Tue,  7 Jan 2020 13:59:57 -0700
-Message-Id: <20200107205959.7575-7-logang@deltatee.com>
+Date: Tue,  7 Jan 2020 13:59:52 -0700
+Message-Id: <20200107205959.7575-2-logang@deltatee.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20200107205959.7575-1-logang@deltatee.com>
 References: <20200107205959.7575-1-logang@deltatee.com>
@@ -61,10 +61,10 @@ X-SA-Exim-Rcpt-To: linux-arm-kernel@lists.infradead.org,
  hch@lst.de, catalin.marinas@arm.com, benh@kernel.crashing.org,
  tglx@linutronix.de, david@redhat.com, mingo@redhat.com, bp@alien8.de,
  dave.hansen@linux.intel.com, mhocko@kernel.org, will@kernel.org,
- luto@kernel.org, peterz@infradead.org, ebadger@gigaio.com, logang@deltatee.com,
- gor@linux.ibm.com, heiko.carstens@de.ibm.com, borntraeger@de.ibm.com
+ luto@kernel.org, peterz@infradead.org, ebadger@gigaio.com, logang@deltatee.com
 X-SA-Exim-Mail-From: gunthorp@deltatee.com
-Subject: [PATCH v2 6/8] s390/mm: Thread pgprot_t through vmem_add_mapping()
+Subject: [PATCH v2 1/8] mm/memory_hotplug: Drop the flags field from struct
+ mhp_restrictions
 X-SA-Exim-Version: 4.2.1 (built Wed, 08 May 2019 21:11:16 +0000)
 X-SA-Exim-Scanned: Yes (on ale.deltatee.com)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -78,12 +78,9 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Eric Badger <ebadger@gigaio.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>,
+Cc: Eric Badger <ebadger@gigaio.com>, Peter Zijlstra <peterz@infradead.org>,
  Catalin Marinas <catalin.marinas@arm.com>,
  Dave Hansen <dave.hansen@linux.intel.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
  Logan Gunthorpe <logang@deltatee.com>, Ingo Molnar <mingo@redhat.com>,
  Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
  Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will@kernel.org>,
@@ -92,109 +89,30 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In prepartion to support a pgprot_t argument for arch_add_memory().
+This variable is not used anywhere and should therefore be removed
+from the structure.
 
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Vasily Gorbik <gor@linux.ibm.com>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>
 Signed-off-by: Logan Gunthorpe <logang@deltatee.com>
 ---
- arch/s390/include/asm/pgtable.h |  3 ++-
- arch/s390/mm/extmem.c           |  3 ++-
- arch/s390/mm/init.c             |  2 +-
- arch/s390/mm/vmem.c             | 10 +++++-----
- 4 files changed, 10 insertions(+), 8 deletions(-)
+ include/linux/memory_hotplug.h | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/arch/s390/include/asm/pgtable.h b/arch/s390/include/asm/pgtable.h
-index 7b03037a8475..e667a1a96879 100644
---- a/arch/s390/include/asm/pgtable.h
-+++ b/arch/s390/include/asm/pgtable.h
-@@ -1640,7 +1640,8 @@ static inline swp_entry_t __swp_entry(unsigned long type, unsigned long offset)
+diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
+index ba0dca6aac6e..e47a29761088 100644
+--- a/include/linux/memory_hotplug.h
++++ b/include/linux/memory_hotplug.h
+@@ -55,11 +55,9 @@ enum {
  
- #define kern_addr_valid(addr)   (1)
- 
--extern int vmem_add_mapping(unsigned long start, unsigned long size);
-+extern int vmem_add_mapping(unsigned long start, unsigned long size,
-+			    pgprot_t prot);
- extern int vmem_remove_mapping(unsigned long start, unsigned long size);
- extern int s390_enable_sie(void);
- extern int s390_enable_skey(void);
-diff --git a/arch/s390/mm/extmem.c b/arch/s390/mm/extmem.c
-index fd0dae9d10f4..6cf7029a7b35 100644
---- a/arch/s390/mm/extmem.c
-+++ b/arch/s390/mm/extmem.c
-@@ -313,7 +313,8 @@ __segment_load (char *name, int do_nonshared, unsigned long *addr, unsigned long
- 		goto out_free;
- 	}
- 
--	rc = vmem_add_mapping(seg->start_addr, seg->end - seg->start_addr + 1);
-+	rc = vmem_add_mapping(seg->start_addr, seg->end - seg->start_addr + 1,
-+			      PAGE_KERNEL);
- 
- 	if (rc)
- 		goto out_free;
-diff --git a/arch/s390/mm/init.c b/arch/s390/mm/init.c
-index a0c88c1c9ad0..ef19522ddad2 100644
---- a/arch/s390/mm/init.c
-+++ b/arch/s390/mm/init.c
-@@ -277,7 +277,7 @@ int arch_add_memory(int nid, u64 start, u64 size,
- 	if (WARN_ON_ONCE(modifiers->altmap))
- 		return -EINVAL;
- 
--	rc = vmem_add_mapping(start, size);
-+	rc = vmem_add_mapping(start, size, PAGE_KERNEL);
- 	if (rc)
- 		return rc;
- 
-diff --git a/arch/s390/mm/vmem.c b/arch/s390/mm/vmem.c
-index b403fa14847d..8a5e95f184a2 100644
---- a/arch/s390/mm/vmem.c
-+++ b/arch/s390/mm/vmem.c
-@@ -66,7 +66,7 @@ pte_t __ref *vmem_pte_alloc(void)
  /*
-  * Add a physical memory range to the 1:1 mapping.
+  * Restrictions for the memory hotplug:
+- * flags:  MHP_ flags
+  * altmap: alternative allocator for memmap array
   */
--static int vmem_add_mem(unsigned long start, unsigned long size)
-+static int vmem_add_mem(unsigned long start, unsigned long size, pgprot_t prot)
- {
- 	unsigned long pgt_prot, sgt_prot, r3_prot;
- 	unsigned long pages4k, pages1m, pages2g;
-@@ -79,7 +79,7 @@ static int vmem_add_mem(unsigned long start, unsigned long size)
- 	pte_t *pt_dir;
- 	int ret = -ENOMEM;
+ struct mhp_restrictions {
+-	unsigned long flags;
+ 	struct vmem_altmap *altmap;
+ };
  
--	pgt_prot = pgprot_val(PAGE_KERNEL);
-+	pgt_prot = pgprot_val(prot);
- 	sgt_prot = pgprot_val(SEGMENT_KERNEL);
- 	r3_prot = pgprot_val(REGION3_KERNEL);
- 	if (!MACHINE_HAS_NX) {
-@@ -362,7 +362,7 @@ int vmem_remove_mapping(unsigned long start, unsigned long size)
- 	return ret;
- }
- 
--int vmem_add_mapping(unsigned long start, unsigned long size)
-+int vmem_add_mapping(unsigned long start, unsigned long size, pgprot_t prot)
- {
- 	struct memory_segment *seg;
- 	int ret;
-@@ -379,7 +379,7 @@ int vmem_add_mapping(unsigned long start, unsigned long size)
- 	if (ret)
- 		goto out_free;
- 
--	ret = vmem_add_mem(start, size);
-+	ret = vmem_add_mem(start, size, prot);
- 	if (ret)
- 		goto out_remove;
- 	goto out;
-@@ -403,7 +403,7 @@ void __init vmem_map_init(void)
- 	struct memblock_region *reg;
- 
- 	for_each_memblock(memory, reg)
--		vmem_add_mem(reg->base, reg->size);
-+		vmem_add_mem(reg->base, reg->size, PAGE_KERNEL);
- 	__set_memory((unsigned long)_stext,
- 		     (unsigned long)(_etext - _stext) >> PAGE_SHIFT,
- 		     SET_MEMORY_RO | SET_MEMORY_X);
 -- 
 2.20.1
 
