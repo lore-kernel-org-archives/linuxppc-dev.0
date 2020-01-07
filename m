@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 39638C33CA1
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 21:11:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D77A6C33C9B
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 21:14:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B5A1220880
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 21:11:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B5A1220880
+	by mail.kernel.org (Postfix) with ESMTPS id 8EE7320880
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 21:14:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8EE7320880
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=deltatee.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47slR92j3qzDqMC
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 08:11:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47slW15wGpzDqGc
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 08:14:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=deltatee.com (client-ip=207.54.116.67; helo=ale.deltatee.com;
  envelope-from=gunthorp@deltatee.com; receiver=<UNKNOWN>)
@@ -28,15 +28,15 @@ Received: from ale.deltatee.com (ale.deltatee.com [207.54.116.67])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47slBl0Rv8zDqNN
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47slBl1hHtzDqNG
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2020 08:00:13 +1100 (AEDT)
 Received: from cgy1-donard.priv.deltatee.com ([172.16.1.31])
  by ale.deltatee.com with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
  (Exim 4.92) (envelope-from <gunthorp@deltatee.com>)
- id 1iovxO-0007vr-Dy; Tue, 07 Jan 2020 14:00:11 -0700
+ id 1iovxO-0007vv-QG; Tue, 07 Jan 2020 14:00:09 -0700
 Received: from gunthorp by cgy1-donard.priv.deltatee.com with local (Exim 4.92)
  (envelope-from <gunthorp@deltatee.com>)
- id 1iovxI-0001z7-I2; Tue, 07 Jan 2020 14:00:00 -0700
+ id 1iovxJ-0001zJ-1Y; Tue, 07 Jan 2020 14:00:01 -0700
 From: Logan Gunthorpe <logang@deltatee.com>
 To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
@@ -45,8 +45,8 @@ To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  Dan Williams <dan.j.williams@intel.com>, Michal Hocko <mhocko@kernel.org>,
  David Hildenbrand <david@redhat.com>,
  Andrew Morton <akpm@linux-foundation.org>
-Date: Tue,  7 Jan 2020 13:59:53 -0700
-Message-Id: <20200107205959.7575-3-logang@deltatee.com>
+Date: Tue,  7 Jan 2020 13:59:57 -0700
+Message-Id: <20200107205959.7575-7-logang@deltatee.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20200107205959.7575-1-logang@deltatee.com>
 References: <20200107205959.7575-1-logang@deltatee.com>
@@ -61,10 +61,10 @@ X-SA-Exim-Rcpt-To: linux-arm-kernel@lists.infradead.org,
  hch@lst.de, catalin.marinas@arm.com, benh@kernel.crashing.org,
  tglx@linutronix.de, david@redhat.com, mingo@redhat.com, bp@alien8.de,
  dave.hansen@linux.intel.com, mhocko@kernel.org, will@kernel.org,
- luto@kernel.org, peterz@infradead.org, ebadger@gigaio.com, logang@deltatee.com
+ luto@kernel.org, peterz@infradead.org, ebadger@gigaio.com, logang@deltatee.com,
+ gor@linux.ibm.com, heiko.carstens@de.ibm.com, borntraeger@de.ibm.com
 X-SA-Exim-Mail-From: gunthorp@deltatee.com
-Subject: [PATCH v2 2/8] mm/memory_hotplug: Rename mhp_restrictions to
- mhp_modifiers
+Subject: [PATCH v2 6/8] s390/mm: Thread pgprot_t through vmem_add_mapping()
 X-SA-Exim-Version: 4.2.1 (built Wed, 08 May 2019 21:11:16 +0000)
 X-SA-Exim-Scanned: Yes (on ale.deltatee.com)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -78,9 +78,12 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Eric Badger <ebadger@gigaio.com>, Peter Zijlstra <peterz@infradead.org>,
+Cc: Eric Badger <ebadger@gigaio.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>,
  Catalin Marinas <catalin.marinas@arm.com>,
  Dave Hansen <dave.hansen@linux.intel.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
  Logan Gunthorpe <logang@deltatee.com>, Ingo Molnar <mingo@redhat.com>,
  Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
  Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will@kernel.org>,
@@ -89,310 +92,109 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The mhp_restrictions struct really doesn't specify anything resembling
-a restriction anymore so rename it to be mhp_modifiers.
+In prepartion to support a pgprot_t argument for arch_add_memory().
 
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Vasily Gorbik <gor@linux.ibm.com>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>
 Signed-off-by: Logan Gunthorpe <logang@deltatee.com>
 ---
- arch/arm64/mm/mmu.c            |  4 ++--
- arch/ia64/mm/init.c            |  4 ++--
- arch/powerpc/mm/mem.c          |  4 ++--
- arch/s390/mm/init.c            |  6 +++---
- arch/sh/mm/init.c              |  4 ++--
- arch/x86/mm/init_32.c          |  4 ++--
- arch/x86/mm/init_64.c          |  8 ++++----
- include/linux/memory_hotplug.h | 12 ++++++------
- mm/memory_hotplug.c            |  8 ++++----
- mm/memremap.c                  |  8 ++++----
- 10 files changed, 31 insertions(+), 31 deletions(-)
+ arch/s390/include/asm/pgtable.h |  3 ++-
+ arch/s390/mm/extmem.c           |  3 ++-
+ arch/s390/mm/init.c             |  2 +-
+ arch/s390/mm/vmem.c             | 10 +++++-----
+ 4 files changed, 10 insertions(+), 8 deletions(-)
 
-diff --git a/arch/arm64/mm/mmu.c b/arch/arm64/mm/mmu.c
-index 40797cbfba2d..3320406579c3 100644
---- a/arch/arm64/mm/mmu.c
-+++ b/arch/arm64/mm/mmu.c
-@@ -1050,7 +1050,7 @@ int p4d_free_pud_page(p4d_t *p4d, unsigned long addr)
+diff --git a/arch/s390/include/asm/pgtable.h b/arch/s390/include/asm/pgtable.h
+index 7b03037a8475..e667a1a96879 100644
+--- a/arch/s390/include/asm/pgtable.h
++++ b/arch/s390/include/asm/pgtable.h
+@@ -1640,7 +1640,8 @@ static inline swp_entry_t __swp_entry(unsigned long type, unsigned long offset)
  
- #ifdef CONFIG_MEMORY_HOTPLUG
- int arch_add_memory(int nid, u64 start, u64 size,
--			struct mhp_restrictions *restrictions)
-+		    struct mhp_modifiers *modifiers)
- {
- 	int flags = 0;
+ #define kern_addr_valid(addr)   (1)
  
-@@ -1063,7 +1063,7 @@ int arch_add_memory(int nid, u64 start, u64 size,
- 	memblock_clear_nomap(start, size);
- 
- 	return __add_pages(nid, start >> PAGE_SHIFT, size >> PAGE_SHIFT,
--			   restrictions);
-+			   modifiers);
- }
- void arch_remove_memory(int nid, u64 start, u64 size,
- 			struct vmem_altmap *altmap)
-diff --git a/arch/ia64/mm/init.c b/arch/ia64/mm/init.c
-index b01d68a2d5d9..daf438e08b96 100644
---- a/arch/ia64/mm/init.c
-+++ b/arch/ia64/mm/init.c
-@@ -670,13 +670,13 @@ mem_init (void)
- 
- #ifdef CONFIG_MEMORY_HOTPLUG
- int arch_add_memory(int nid, u64 start, u64 size,
--			struct mhp_restrictions *restrictions)
-+		    struct mhp_modifiers *modifiers)
- {
- 	unsigned long start_pfn = start >> PAGE_SHIFT;
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
- 	int ret;
- 
--	ret = __add_pages(nid, start_pfn, nr_pages, restrictions);
-+	ret = __add_pages(nid, start_pfn, nr_pages, modifiers);
- 	if (ret)
- 		printk("%s: Problem encountered in __add_pages() as ret=%d\n",
- 		       __func__,  ret);
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index f5535eae637f..9dd9c3c1be7f 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -127,7 +127,7 @@ static void flush_dcache_range_chunked(unsigned long start, unsigned long stop,
- }
- 
- int __ref arch_add_memory(int nid, u64 start, u64 size,
--			struct mhp_restrictions *restrictions)
-+			  struct mhp_modifiers *modifiers)
- {
- 	unsigned long start_pfn = start >> PAGE_SHIFT;
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
-@@ -143,7 +143,7 @@ int __ref arch_add_memory(int nid, u64 start, u64 size,
- 		return -EFAULT;
+-extern int vmem_add_mapping(unsigned long start, unsigned long size);
++extern int vmem_add_mapping(unsigned long start, unsigned long size,
++			    pgprot_t prot);
+ extern int vmem_remove_mapping(unsigned long start, unsigned long size);
+ extern int s390_enable_sie(void);
+ extern int s390_enable_skey(void);
+diff --git a/arch/s390/mm/extmem.c b/arch/s390/mm/extmem.c
+index fd0dae9d10f4..6cf7029a7b35 100644
+--- a/arch/s390/mm/extmem.c
++++ b/arch/s390/mm/extmem.c
+@@ -313,7 +313,8 @@ __segment_load (char *name, int do_nonshared, unsigned long *addr, unsigned long
+ 		goto out_free;
  	}
  
--	return __add_pages(nid, start_pfn, nr_pages, restrictions);
-+	return __add_pages(nid, start_pfn, nr_pages, modifiers);
- }
+-	rc = vmem_add_mapping(seg->start_addr, seg->end - seg->start_addr + 1);
++	rc = vmem_add_mapping(seg->start_addr, seg->end - seg->start_addr + 1,
++			      PAGE_KERNEL);
  
- void __ref arch_remove_memory(int nid, u64 start, u64 size,
+ 	if (rc)
+ 		goto out_free;
 diff --git a/arch/s390/mm/init.c b/arch/s390/mm/init.c
-index ac44bd76db4b..a0c88c1c9ad0 100644
+index a0c88c1c9ad0..ef19522ddad2 100644
 --- a/arch/s390/mm/init.c
 +++ b/arch/s390/mm/init.c
-@@ -268,20 +268,20 @@ device_initcall(s390_cma_mem_init);
- #endif /* CONFIG_CMA */
- 
- int arch_add_memory(int nid, u64 start, u64 size,
--		struct mhp_restrictions *restrictions)
-+		    struct mhp_modifiers *modifiers)
- {
- 	unsigned long start_pfn = PFN_DOWN(start);
- 	unsigned long size_pages = PFN_DOWN(size);
- 	int rc;
- 
--	if (WARN_ON_ONCE(restrictions->altmap))
-+	if (WARN_ON_ONCE(modifiers->altmap))
+@@ -277,7 +277,7 @@ int arch_add_memory(int nid, u64 start, u64 size,
+ 	if (WARN_ON_ONCE(modifiers->altmap))
  		return -EINVAL;
  
- 	rc = vmem_add_mapping(start, size);
+-	rc = vmem_add_mapping(start, size);
++	rc = vmem_add_mapping(start, size, PAGE_KERNEL);
  	if (rc)
  		return rc;
  
--	rc = __add_pages(nid, start_pfn, size_pages, restrictions);
-+	rc = __add_pages(nid, start_pfn, size_pages, modifiers);
- 	if (rc)
- 		vmem_remove_mapping(start, size);
- 	return rc;
-diff --git a/arch/sh/mm/init.c b/arch/sh/mm/init.c
-index d1b1ff2be17a..7e64f42fb570 100644
---- a/arch/sh/mm/init.c
-+++ b/arch/sh/mm/init.c
-@@ -406,14 +406,14 @@ void __init mem_init(void)
- 
- #ifdef CONFIG_MEMORY_HOTPLUG
- int arch_add_memory(int nid, u64 start, u64 size,
--			struct mhp_restrictions *restrictions)
-+		    struct mhp_modifiers *modifiers)
- {
- 	unsigned long start_pfn = PFN_DOWN(start);
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
- 	int ret;
- 
- 	/* We only have ZONE_NORMAL, so this is easy.. */
--	ret = __add_pages(nid, start_pfn, nr_pages, restrictions);
-+	ret = __add_pages(nid, start_pfn, nr_pages, modifiers);
- 	if (unlikely(ret))
- 		printk("%s: Failed, __add_pages() == %d\n", __func__, ret);
- 
-diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index 0a74407ef92e..e6fce2d547f0 100644
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -852,12 +852,12 @@ void __init mem_init(void)
- 
- #ifdef CONFIG_MEMORY_HOTPLUG
- int arch_add_memory(int nid, u64 start, u64 size,
--			struct mhp_restrictions *restrictions)
-+		    struct mhp_modifiers *modifiers)
- {
- 	unsigned long start_pfn = start >> PAGE_SHIFT;
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
- 
--	return __add_pages(nid, start_pfn, nr_pages, restrictions);
-+	return __add_pages(nid, start_pfn, nr_pages, modifiers);
- }
- 
- void arch_remove_memory(int nid, u64 start, u64 size,
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index bcfede46fe02..516133f555e9 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -844,11 +844,11 @@ static void update_end_of_memory_vars(u64 start, u64 size)
- }
- 
- int add_pages(int nid, unsigned long start_pfn, unsigned long nr_pages,
--				struct mhp_restrictions *restrictions)
-+	      struct mhp_modifiers *modifiers)
- {
- 	int ret;
- 
--	ret = __add_pages(nid, start_pfn, nr_pages, restrictions);
-+	ret = __add_pages(nid, start_pfn, nr_pages, modifiers);
- 	WARN_ON_ONCE(ret);
- 
- 	/* update max_pfn, max_low_pfn and high_memory */
-@@ -859,14 +859,14 @@ int add_pages(int nid, unsigned long start_pfn, unsigned long nr_pages,
- }
- 
- int arch_add_memory(int nid, u64 start, u64 size,
--			struct mhp_restrictions *restrictions)
-+		    struct mhp_modifiers *modifiers)
- {
- 	unsigned long start_pfn = start >> PAGE_SHIFT;
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
- 
- 	init_memory_mapping(start, start + size);
- 
--	return add_pages(nid, start_pfn, nr_pages, restrictions);
-+	return add_pages(nid, start_pfn, nr_pages, modifiers);
- }
- 
- #define PAGE_INUSE 0xFD
-diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
-index e47a29761088..2152efae2f4b 100644
---- a/include/linux/memory_hotplug.h
-+++ b/include/linux/memory_hotplug.h
-@@ -57,7 +57,7 @@ enum {
-  * Restrictions for the memory hotplug:
-  * altmap: alternative allocator for memmap array
+diff --git a/arch/s390/mm/vmem.c b/arch/s390/mm/vmem.c
+index b403fa14847d..8a5e95f184a2 100644
+--- a/arch/s390/mm/vmem.c
++++ b/arch/s390/mm/vmem.c
+@@ -66,7 +66,7 @@ pte_t __ref *vmem_pte_alloc(void)
+ /*
+  * Add a physical memory range to the 1:1 mapping.
   */
--struct mhp_restrictions {
-+struct mhp_modifiers {
- 	struct vmem_altmap *altmap;
- };
- 
-@@ -107,7 +107,7 @@ extern int restore_online_page_callback(online_page_callback_t callback);
- extern int try_online_node(int nid);
- 
- extern int arch_add_memory(int nid, u64 start, u64 size,
--			struct mhp_restrictions *restrictions);
-+			   struct mhp_modifiers *modifiers);
- extern u64 max_mem_size;
- 
- extern bool memhp_auto_online;
-@@ -125,17 +125,17 @@ extern void __remove_pages(unsigned long start_pfn, unsigned long nr_pages,
- 
- /* reasonably generic interface to expand the physical pages */
- extern int __add_pages(int nid, unsigned long start_pfn, unsigned long nr_pages,
--		       struct mhp_restrictions *restrictions);
-+		       struct mhp_modifiers *modifiers);
- 
- #ifndef CONFIG_ARCH_HAS_ADD_PAGES
- static inline int add_pages(int nid, unsigned long start_pfn,
--		unsigned long nr_pages, struct mhp_restrictions *restrictions)
-+		unsigned long nr_pages, struct mhp_modifiers *modifiers)
+-static int vmem_add_mem(unsigned long start, unsigned long size)
++static int vmem_add_mem(unsigned long start, unsigned long size, pgprot_t prot)
  {
--	return __add_pages(nid, start_pfn, nr_pages, restrictions);
-+	return __add_pages(nid, start_pfn, nr_pages, modifiers);
+ 	unsigned long pgt_prot, sgt_prot, r3_prot;
+ 	unsigned long pages4k, pages1m, pages2g;
+@@ -79,7 +79,7 @@ static int vmem_add_mem(unsigned long start, unsigned long size)
+ 	pte_t *pt_dir;
+ 	int ret = -ENOMEM;
+ 
+-	pgt_prot = pgprot_val(PAGE_KERNEL);
++	pgt_prot = pgprot_val(prot);
+ 	sgt_prot = pgprot_val(SEGMENT_KERNEL);
+ 	r3_prot = pgprot_val(REGION3_KERNEL);
+ 	if (!MACHINE_HAS_NX) {
+@@ -362,7 +362,7 @@ int vmem_remove_mapping(unsigned long start, unsigned long size)
+ 	return ret;
  }
- #else /* ARCH_HAS_ADD_PAGES */
- int add_pages(int nid, unsigned long start_pfn, unsigned long nr_pages,
--	      struct mhp_restrictions *restrictions);
-+	      struct mhp_modifiers *modifiers);
- #endif /* ARCH_HAS_ADD_PAGES */
  
- #ifdef CONFIG_NUMA
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index a91a072f2b2c..1bb3f92e087d 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -299,11 +299,11 @@ static int check_hotplug_memory_addressable(unsigned long pfn,
-  * add the new pages.
-  */
- int __ref __add_pages(int nid, unsigned long pfn, unsigned long nr_pages,
--		struct mhp_restrictions *restrictions)
-+		      struct mhp_modifiers *modifiers)
+-int vmem_add_mapping(unsigned long start, unsigned long size)
++int vmem_add_mapping(unsigned long start, unsigned long size, pgprot_t prot)
  {
- 	int err;
- 	unsigned long nr, start_sec, end_sec;
--	struct vmem_altmap *altmap = restrictions->altmap;
-+	struct vmem_altmap *altmap = modifiers->altmap;
- 
- 	err = check_hotplug_memory_addressable(pfn, nr_pages);
- 	if (err)
-@@ -1027,7 +1027,7 @@ static int online_memory_block(struct memory_block *mem, void *arg)
-  */
- int __ref add_memory_resource(int nid, struct resource *res)
- {
--	struct mhp_restrictions restrictions = {};
-+	struct mhp_modifiers modifiers = {};
- 	u64 start, size;
- 	bool new_node = false;
+ 	struct memory_segment *seg;
  	int ret;
-@@ -1055,7 +1055,7 @@ int __ref add_memory_resource(int nid, struct resource *res)
- 	new_node = ret;
+@@ -379,7 +379,7 @@ int vmem_add_mapping(unsigned long start, unsigned long size)
+ 	if (ret)
+ 		goto out_free;
  
- 	/* call arch's memory hotadd */
--	ret = arch_add_memory(nid, start, size, &restrictions);
-+	ret = arch_add_memory(nid, start, size, &modifiers);
- 	if (ret < 0)
- 		goto error;
+-	ret = vmem_add_mem(start, size);
++	ret = vmem_add_mem(start, size, prot);
+ 	if (ret)
+ 		goto out_remove;
+ 	goto out;
+@@ -403,7 +403,7 @@ void __init vmem_map_init(void)
+ 	struct memblock_region *reg;
  
-diff --git a/mm/memremap.c b/mm/memremap.c
-index c51c6bd2fe34..e30be8ba706b 100644
---- a/mm/memremap.c
-+++ b/mm/memremap.c
-@@ -158,7 +158,7 @@ void *memremap_pages(struct dev_pagemap *pgmap, int nid)
- {
- 	struct resource *res = &pgmap->res;
- 	struct dev_pagemap *conflict_pgmap;
--	struct mhp_restrictions restrictions = {
-+	struct mhp_modifiers modifiers = {
- 		/*
- 		 * We do not want any optional features only our own memmap
- 		 */
-@@ -272,7 +272,7 @@ void *memremap_pages(struct dev_pagemap *pgmap, int nid)
- 	 */
- 	if (pgmap->type == MEMORY_DEVICE_PRIVATE) {
- 		error = add_pages(nid, PHYS_PFN(res->start),
--				PHYS_PFN(resource_size(res)), &restrictions);
-+				PHYS_PFN(resource_size(res)), &modifiers);
- 	} else {
- 		error = kasan_add_zero_shadow(__va(res->start), resource_size(res));
- 		if (error) {
-@@ -281,7 +281,7 @@ void *memremap_pages(struct dev_pagemap *pgmap, int nid)
- 		}
- 
- 		error = arch_add_memory(nid, res->start, resource_size(res),
--					&restrictions);
-+					&modifiers);
- 	}
- 
- 	if (!error) {
-@@ -289,7 +289,7 @@ void *memremap_pages(struct dev_pagemap *pgmap, int nid)
- 
- 		zone = &NODE_DATA(nid)->node_zones[ZONE_DEVICE];
- 		move_pfn_range_to_zone(zone, PHYS_PFN(res->start),
--				PHYS_PFN(resource_size(res)), restrictions.altmap);
-+				PHYS_PFN(resource_size(res)), modifiers.altmap);
- 	}
- 
- 	mem_hotplug_done();
+ 	for_each_memblock(memory, reg)
+-		vmem_add_mem(reg->base, reg->size);
++		vmem_add_mem(reg->base, reg->size, PAGE_KERNEL);
+ 	__set_memory((unsigned long)_stext,
+ 		     (unsigned long)(_etext - _stext) >> PAGE_SHIFT,
+ 		     SET_MEMORY_RO | SET_MEMORY_X);
 -- 
 2.20.1
 
