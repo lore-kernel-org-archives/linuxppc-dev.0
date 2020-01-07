@@ -4,21 +4,21 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ABBC6C282DD
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 21:08:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39638C33CA1
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 21:11:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 67BDB2072A
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 21:08:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 67BDB2072A
+	by mail.kernel.org (Postfix) with ESMTPS id B5A1220880
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jan 2020 21:11:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B5A1220880
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=deltatee.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47slMf1QQZzDqJT
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 08:07:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47slR92j3qzDqMC
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 08:11:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=deltatee.com (client-ip=207.54.116.67; helo=ale.deltatee.com;
  envelope-from=gunthorp@deltatee.com; receiver=<UNKNOWN>)
@@ -28,15 +28,15 @@ Received: from ale.deltatee.com (ale.deltatee.com [207.54.116.67])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47slBl1kFrzDqNP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47slBl0Rv8zDqNN
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2020 08:00:13 +1100 (AEDT)
 Received: from cgy1-donard.priv.deltatee.com ([172.16.1.31])
  by ale.deltatee.com with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
  (Exim 4.92) (envelope-from <gunthorp@deltatee.com>)
- id 1iovxO-0007vy-Fh; Tue, 07 Jan 2020 14:00:09 -0700
+ id 1iovxO-0007vr-Dy; Tue, 07 Jan 2020 14:00:11 -0700
 Received: from gunthorp by cgy1-donard.priv.deltatee.com with local (Exim 4.92)
  (envelope-from <gunthorp@deltatee.com>)
- id 1iovxJ-0001zP-94; Tue, 07 Jan 2020 14:00:01 -0700
+ id 1iovxI-0001z7-I2; Tue, 07 Jan 2020 14:00:00 -0700
 From: Logan Gunthorpe <logang@deltatee.com>
 To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
@@ -45,8 +45,8 @@ To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  Dan Williams <dan.j.williams@intel.com>, Michal Hocko <mhocko@kernel.org>,
  David Hildenbrand <david@redhat.com>,
  Andrew Morton <akpm@linux-foundation.org>
-Date: Tue,  7 Jan 2020 13:59:59 -0700
-Message-Id: <20200107205959.7575-9-logang@deltatee.com>
+Date: Tue,  7 Jan 2020 13:59:53 -0700
+Message-Id: <20200107205959.7575-3-logang@deltatee.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20200107205959.7575-1-logang@deltatee.com>
 References: <20200107205959.7575-1-logang@deltatee.com>
@@ -61,11 +61,10 @@ X-SA-Exim-Rcpt-To: linux-arm-kernel@lists.infradead.org,
  hch@lst.de, catalin.marinas@arm.com, benh@kernel.crashing.org,
  tglx@linutronix.de, david@redhat.com, mingo@redhat.com, bp@alien8.de,
  dave.hansen@linux.intel.com, mhocko@kernel.org, will@kernel.org,
- luto@kernel.org, peterz@infradead.org, ebadger@gigaio.com, logang@deltatee.com,
- jgg@ziepe.ca
+ luto@kernel.org, peterz@infradead.org, ebadger@gigaio.com, logang@deltatee.com
 X-SA-Exim-Mail-From: gunthorp@deltatee.com
-Subject: [PATCH v2 8/8] mm/memremap: Set caching mode for PCI P2PDMA memory to
- WC
+Subject: [PATCH v2 2/8] mm/memory_hotplug: Rename mhp_restrictions to
+ mhp_modifiers
 X-SA-Exim-Version: 4.2.1 (built Wed, 08 May 2019 21:11:16 +0000)
 X-SA-Exim-Scanned: Yes (on ale.deltatee.com)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -81,7 +80,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Eric Badger <ebadger@gigaio.com>, Peter Zijlstra <peterz@infradead.org>,
  Catalin Marinas <catalin.marinas@arm.com>,
- Dave Hansen <dave.hansen@linux.intel.com>, Jason Gunthorpe <jgg@ziepe.ca>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
  Logan Gunthorpe <logang@deltatee.com>, Ingo Molnar <mingo@redhat.com>,
  Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
  Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will@kernel.org>,
@@ -90,42 +89,310 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-PCI BAR IO memory should never be mapped as WB, however prior to this
-the PAT bits were set WB and it was typically overridden by MTRR
-registers set by the firmware.
+The mhp_restrictions struct really doesn't specify anything resembling
+a restriction anymore so rename it to be mhp_modifiers.
 
-Set PCI P2PDMA memory to be WC (writecombining) as the only current
-user (the NVMe CMB) was originally mapped WC before the P2PDMA code
-replaced the mapping with devm_memremap_pages().
-
-Future use-cases may need to generalize this by adding flags to
-select the caching type, as some P2PDMA cases will not want WC.
-However, those use-cases are not upstream yet and this can be changed
-when they arrive.
-
-Cc: Dan Williams <dan.j.williams@intel.com>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Jason Gunthorpe <jgg@ziepe.ca>
 Signed-off-by: Logan Gunthorpe <logang@deltatee.com>
 ---
- mm/memremap.c | 3 +++
- 1 file changed, 3 insertions(+)
+ arch/arm64/mm/mmu.c            |  4 ++--
+ arch/ia64/mm/init.c            |  4 ++--
+ arch/powerpc/mm/mem.c          |  4 ++--
+ arch/s390/mm/init.c            |  6 +++---
+ arch/sh/mm/init.c              |  4 ++--
+ arch/x86/mm/init_32.c          |  4 ++--
+ arch/x86/mm/init_64.c          |  8 ++++----
+ include/linux/memory_hotplug.h | 12 ++++++------
+ mm/memory_hotplug.c            |  8 ++++----
+ mm/memremap.c                  |  8 ++++----
+ 10 files changed, 31 insertions(+), 31 deletions(-)
 
+diff --git a/arch/arm64/mm/mmu.c b/arch/arm64/mm/mmu.c
+index 40797cbfba2d..3320406579c3 100644
+--- a/arch/arm64/mm/mmu.c
++++ b/arch/arm64/mm/mmu.c
+@@ -1050,7 +1050,7 @@ int p4d_free_pud_page(p4d_t *p4d, unsigned long addr)
+ 
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ int arch_add_memory(int nid, u64 start, u64 size,
+-			struct mhp_restrictions *restrictions)
++		    struct mhp_modifiers *modifiers)
+ {
+ 	int flags = 0;
+ 
+@@ -1063,7 +1063,7 @@ int arch_add_memory(int nid, u64 start, u64 size,
+ 	memblock_clear_nomap(start, size);
+ 
+ 	return __add_pages(nid, start >> PAGE_SHIFT, size >> PAGE_SHIFT,
+-			   restrictions);
++			   modifiers);
+ }
+ void arch_remove_memory(int nid, u64 start, u64 size,
+ 			struct vmem_altmap *altmap)
+diff --git a/arch/ia64/mm/init.c b/arch/ia64/mm/init.c
+index b01d68a2d5d9..daf438e08b96 100644
+--- a/arch/ia64/mm/init.c
++++ b/arch/ia64/mm/init.c
+@@ -670,13 +670,13 @@ mem_init (void)
+ 
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ int arch_add_memory(int nid, u64 start, u64 size,
+-			struct mhp_restrictions *restrictions)
++		    struct mhp_modifiers *modifiers)
+ {
+ 	unsigned long start_pfn = start >> PAGE_SHIFT;
+ 	unsigned long nr_pages = size >> PAGE_SHIFT;
+ 	int ret;
+ 
+-	ret = __add_pages(nid, start_pfn, nr_pages, restrictions);
++	ret = __add_pages(nid, start_pfn, nr_pages, modifiers);
+ 	if (ret)
+ 		printk("%s: Problem encountered in __add_pages() as ret=%d\n",
+ 		       __func__,  ret);
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index f5535eae637f..9dd9c3c1be7f 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -127,7 +127,7 @@ static void flush_dcache_range_chunked(unsigned long start, unsigned long stop,
+ }
+ 
+ int __ref arch_add_memory(int nid, u64 start, u64 size,
+-			struct mhp_restrictions *restrictions)
++			  struct mhp_modifiers *modifiers)
+ {
+ 	unsigned long start_pfn = start >> PAGE_SHIFT;
+ 	unsigned long nr_pages = size >> PAGE_SHIFT;
+@@ -143,7 +143,7 @@ int __ref arch_add_memory(int nid, u64 start, u64 size,
+ 		return -EFAULT;
+ 	}
+ 
+-	return __add_pages(nid, start_pfn, nr_pages, restrictions);
++	return __add_pages(nid, start_pfn, nr_pages, modifiers);
+ }
+ 
+ void __ref arch_remove_memory(int nid, u64 start, u64 size,
+diff --git a/arch/s390/mm/init.c b/arch/s390/mm/init.c
+index ac44bd76db4b..a0c88c1c9ad0 100644
+--- a/arch/s390/mm/init.c
++++ b/arch/s390/mm/init.c
+@@ -268,20 +268,20 @@ device_initcall(s390_cma_mem_init);
+ #endif /* CONFIG_CMA */
+ 
+ int arch_add_memory(int nid, u64 start, u64 size,
+-		struct mhp_restrictions *restrictions)
++		    struct mhp_modifiers *modifiers)
+ {
+ 	unsigned long start_pfn = PFN_DOWN(start);
+ 	unsigned long size_pages = PFN_DOWN(size);
+ 	int rc;
+ 
+-	if (WARN_ON_ONCE(restrictions->altmap))
++	if (WARN_ON_ONCE(modifiers->altmap))
+ 		return -EINVAL;
+ 
+ 	rc = vmem_add_mapping(start, size);
+ 	if (rc)
+ 		return rc;
+ 
+-	rc = __add_pages(nid, start_pfn, size_pages, restrictions);
++	rc = __add_pages(nid, start_pfn, size_pages, modifiers);
+ 	if (rc)
+ 		vmem_remove_mapping(start, size);
+ 	return rc;
+diff --git a/arch/sh/mm/init.c b/arch/sh/mm/init.c
+index d1b1ff2be17a..7e64f42fb570 100644
+--- a/arch/sh/mm/init.c
++++ b/arch/sh/mm/init.c
+@@ -406,14 +406,14 @@ void __init mem_init(void)
+ 
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ int arch_add_memory(int nid, u64 start, u64 size,
+-			struct mhp_restrictions *restrictions)
++		    struct mhp_modifiers *modifiers)
+ {
+ 	unsigned long start_pfn = PFN_DOWN(start);
+ 	unsigned long nr_pages = size >> PAGE_SHIFT;
+ 	int ret;
+ 
+ 	/* We only have ZONE_NORMAL, so this is easy.. */
+-	ret = __add_pages(nid, start_pfn, nr_pages, restrictions);
++	ret = __add_pages(nid, start_pfn, nr_pages, modifiers);
+ 	if (unlikely(ret))
+ 		printk("%s: Failed, __add_pages() == %d\n", __func__, ret);
+ 
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index 0a74407ef92e..e6fce2d547f0 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -852,12 +852,12 @@ void __init mem_init(void)
+ 
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ int arch_add_memory(int nid, u64 start, u64 size,
+-			struct mhp_restrictions *restrictions)
++		    struct mhp_modifiers *modifiers)
+ {
+ 	unsigned long start_pfn = start >> PAGE_SHIFT;
+ 	unsigned long nr_pages = size >> PAGE_SHIFT;
+ 
+-	return __add_pages(nid, start_pfn, nr_pages, restrictions);
++	return __add_pages(nid, start_pfn, nr_pages, modifiers);
+ }
+ 
+ void arch_remove_memory(int nid, u64 start, u64 size,
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index bcfede46fe02..516133f555e9 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -844,11 +844,11 @@ static void update_end_of_memory_vars(u64 start, u64 size)
+ }
+ 
+ int add_pages(int nid, unsigned long start_pfn, unsigned long nr_pages,
+-				struct mhp_restrictions *restrictions)
++	      struct mhp_modifiers *modifiers)
+ {
+ 	int ret;
+ 
+-	ret = __add_pages(nid, start_pfn, nr_pages, restrictions);
++	ret = __add_pages(nid, start_pfn, nr_pages, modifiers);
+ 	WARN_ON_ONCE(ret);
+ 
+ 	/* update max_pfn, max_low_pfn and high_memory */
+@@ -859,14 +859,14 @@ int add_pages(int nid, unsigned long start_pfn, unsigned long nr_pages,
+ }
+ 
+ int arch_add_memory(int nid, u64 start, u64 size,
+-			struct mhp_restrictions *restrictions)
++		    struct mhp_modifiers *modifiers)
+ {
+ 	unsigned long start_pfn = start >> PAGE_SHIFT;
+ 	unsigned long nr_pages = size >> PAGE_SHIFT;
+ 
+ 	init_memory_mapping(start, start + size);
+ 
+-	return add_pages(nid, start_pfn, nr_pages, restrictions);
++	return add_pages(nid, start_pfn, nr_pages, modifiers);
+ }
+ 
+ #define PAGE_INUSE 0xFD
+diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
+index e47a29761088..2152efae2f4b 100644
+--- a/include/linux/memory_hotplug.h
++++ b/include/linux/memory_hotplug.h
+@@ -57,7 +57,7 @@ enum {
+  * Restrictions for the memory hotplug:
+  * altmap: alternative allocator for memmap array
+  */
+-struct mhp_restrictions {
++struct mhp_modifiers {
+ 	struct vmem_altmap *altmap;
+ };
+ 
+@@ -107,7 +107,7 @@ extern int restore_online_page_callback(online_page_callback_t callback);
+ extern int try_online_node(int nid);
+ 
+ extern int arch_add_memory(int nid, u64 start, u64 size,
+-			struct mhp_restrictions *restrictions);
++			   struct mhp_modifiers *modifiers);
+ extern u64 max_mem_size;
+ 
+ extern bool memhp_auto_online;
+@@ -125,17 +125,17 @@ extern void __remove_pages(unsigned long start_pfn, unsigned long nr_pages,
+ 
+ /* reasonably generic interface to expand the physical pages */
+ extern int __add_pages(int nid, unsigned long start_pfn, unsigned long nr_pages,
+-		       struct mhp_restrictions *restrictions);
++		       struct mhp_modifiers *modifiers);
+ 
+ #ifndef CONFIG_ARCH_HAS_ADD_PAGES
+ static inline int add_pages(int nid, unsigned long start_pfn,
+-		unsigned long nr_pages, struct mhp_restrictions *restrictions)
++		unsigned long nr_pages, struct mhp_modifiers *modifiers)
+ {
+-	return __add_pages(nid, start_pfn, nr_pages, restrictions);
++	return __add_pages(nid, start_pfn, nr_pages, modifiers);
+ }
+ #else /* ARCH_HAS_ADD_PAGES */
+ int add_pages(int nid, unsigned long start_pfn, unsigned long nr_pages,
+-	      struct mhp_restrictions *restrictions);
++	      struct mhp_modifiers *modifiers);
+ #endif /* ARCH_HAS_ADD_PAGES */
+ 
+ #ifdef CONFIG_NUMA
+diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+index a91a072f2b2c..1bb3f92e087d 100644
+--- a/mm/memory_hotplug.c
++++ b/mm/memory_hotplug.c
+@@ -299,11 +299,11 @@ static int check_hotplug_memory_addressable(unsigned long pfn,
+  * add the new pages.
+  */
+ int __ref __add_pages(int nid, unsigned long pfn, unsigned long nr_pages,
+-		struct mhp_restrictions *restrictions)
++		      struct mhp_modifiers *modifiers)
+ {
+ 	int err;
+ 	unsigned long nr, start_sec, end_sec;
+-	struct vmem_altmap *altmap = restrictions->altmap;
++	struct vmem_altmap *altmap = modifiers->altmap;
+ 
+ 	err = check_hotplug_memory_addressable(pfn, nr_pages);
+ 	if (err)
+@@ -1027,7 +1027,7 @@ static int online_memory_block(struct memory_block *mem, void *arg)
+  */
+ int __ref add_memory_resource(int nid, struct resource *res)
+ {
+-	struct mhp_restrictions restrictions = {};
++	struct mhp_modifiers modifiers = {};
+ 	u64 start, size;
+ 	bool new_node = false;
+ 	int ret;
+@@ -1055,7 +1055,7 @@ int __ref add_memory_resource(int nid, struct resource *res)
+ 	new_node = ret;
+ 
+ 	/* call arch's memory hotadd */
+-	ret = arch_add_memory(nid, start, size, &restrictions);
++	ret = arch_add_memory(nid, start, size, &modifiers);
+ 	if (ret < 0)
+ 		goto error;
+ 
 diff --git a/mm/memremap.c b/mm/memremap.c
-index 45ab4ef0643d..d36ff688b768 100644
+index c51c6bd2fe34..e30be8ba706b 100644
 --- a/mm/memremap.c
 +++ b/mm/memremap.c
-@@ -187,7 +187,10 @@ void *memremap_pages(struct dev_pagemap *pgmap, int nid)
+@@ -158,7 +158,7 @@ void *memremap_pages(struct dev_pagemap *pgmap, int nid)
+ {
+ 	struct resource *res = &pgmap->res;
+ 	struct dev_pagemap *conflict_pgmap;
+-	struct mhp_restrictions restrictions = {
++	struct mhp_modifiers modifiers = {
+ 		/*
+ 		 * We do not want any optional features only our own memmap
+ 		 */
+@@ -272,7 +272,7 @@ void *memremap_pages(struct dev_pagemap *pgmap, int nid)
+ 	 */
+ 	if (pgmap->type == MEMORY_DEVICE_PRIVATE) {
+ 		error = add_pages(nid, PHYS_PFN(res->start),
+-				PHYS_PFN(resource_size(res)), &restrictions);
++				PHYS_PFN(resource_size(res)), &modifiers);
+ 	} else {
+ 		error = kasan_add_zero_shadow(__va(res->start), resource_size(res));
+ 		if (error) {
+@@ -281,7 +281,7 @@ void *memremap_pages(struct dev_pagemap *pgmap, int nid)
  		}
- 		break;
- 	case MEMORY_DEVICE_DEVDAX:
-+		need_devmap_managed = false;
-+		break;
- 	case MEMORY_DEVICE_PCI_P2PDMA:
-+		modifiers.pgprot = pgprot_writecombine(modifiers.pgprot);
- 		need_devmap_managed = false;
- 		break;
- 	default:
+ 
+ 		error = arch_add_memory(nid, res->start, resource_size(res),
+-					&restrictions);
++					&modifiers);
+ 	}
+ 
+ 	if (!error) {
+@@ -289,7 +289,7 @@ void *memremap_pages(struct dev_pagemap *pgmap, int nid)
+ 
+ 		zone = &NODE_DATA(nid)->node_zones[ZONE_DEVICE];
+ 		move_pfn_range_to_zone(zone, PHYS_PFN(res->start),
+-				PHYS_PFN(resource_size(res)), restrictions.altmap);
++				PHYS_PFN(resource_size(res)), modifiers.altmap);
+ 	}
+ 
+ 	mem_hotplug_done();
 -- 
 2.20.1
 
