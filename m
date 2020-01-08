@@ -7,46 +7,46 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3FD60C282DD
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 20:17:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1EACFC282DD
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 20:19:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E50002053B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 20:17:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C3D3B2053B
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 20:19:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="kZmAdTXA"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E50002053B
+	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="m+nvoD3l"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C3D3B2053B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47tLCF65yLzDqTk
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jan 2020 07:17:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47tLFQ2lNdzDqNv
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jan 2020 07:19:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=krzk@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="kZmAdTXA"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="m+nvoD3l"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47tKy92WB7zDqW1
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2020 07:06:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47tKyM4swwzDqS6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2020 07:06:35 +1100 (AEDT)
 Received: from localhost.localdomain (unknown [83.218.167.187])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id D0CD320705;
- Wed,  8 Jan 2020 20:06:14 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id C73972072A;
+ Wed,  8 Jan 2020 20:06:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1578513983;
- bh=GncZJES9Pi+VGkKtqPts7U7bz/5zDiGW+ajpMZK1gUg=;
+ s=default; t=1578513992;
+ bh=HCaYTB1zjoRsDFDAYW5IZdMXtSdvLZDxsdHLQEpJXVw=;
  h=From:To:Subject:Date:In-Reply-To:References:From;
- b=kZmAdTXAIH93VZ7xMF5Tlek9euzWKJeDMcMLgREM96Lm0wU6+4tSnGhi3xZVs0qsy
- 7HMtGcLv4d3nPEcSEgyudvX4g/JRIQY1BmbYHTuBqturlEGI3oBAItsgQ9JvRd2+zR
- bWS5j+8gDixdaKa8O8oxs69s2fpbmcWBqAK1Jq2k=
+ b=m+nvoD3luPC+M4NYm9Cy4BcKfxdPdPUsJ31Cd7NkOVQ+WOFcAXwSaITpIPz1EqvoH
+ +eMoq0S0mICrEfHCjUhhQI8kcaAxgbrRKLZuMNnZxLLRWRLbcmGrTPANM+zEfxOomW
+ kmDDOtmeZ9MFoNKtMrTgtyh+9s8VZmSJxKatZzaI=
 From: Krzysztof Kozlowski <krzk@kernel.org>
 To: Richard Henderson <rth@twiddle.net>,
  Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
@@ -75,10 +75,10 @@ To: Richard Henderson <rth@twiddle.net>,
  linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
  linux-ntb@googlegroups.com, virtualization@lists.linux-foundation.org,
  linux-arch@vger.kernel.org
-Subject: [PATCH v2 4/9] virtio: pci: Constify ioreadX() iomem argument (as in
- generic implementation)
-Date: Wed,  8 Jan 2020 21:05:23 +0100
-Message-Id: <20200108200528.4614-5-krzk@kernel.org>
+Subject: [PATCH v2 5/9] arc: Constify ioreadX() iomem argument (as in generic
+ implementation)
+Date: Wed,  8 Jan 2020 21:05:24 +0100
+Message-Id: <20200108200528.4614-6-krzk@kernel.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200108200528.4614-1-krzk@kernel.org>
 References: <20200108200528.4614-1-krzk@kernel.org>
@@ -100,45 +100,37 @@ Sender: "Linuxppc-dev"
 The ioreadX() helpers have inconsistent interface.  On some architectures
 void *__iomem address argument is a pointer to const, on some not.
 
-Implementations of ioreadX() do not modify the memory under the address
-so they can be converted to a "const" version for const-safety and
-consistency among architectures.
+Implementations of ioreadX() do not modify the memory under the
+address so they can be converted to a "const" version for const-safety
+and consistency among architectures.
 
 Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
-Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
-
 ---
+ arch/arc/plat-axs10x/axs10x.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Changes since v1:
-1. Add Geert's review.
----
- drivers/virtio/virtio_pci_modern.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/virtio/virtio_pci_modern.c b/drivers/virtio/virtio_pci_modern.c
-index 7abcc50838b8..fc58db4ab6c3 100644
---- a/drivers/virtio/virtio_pci_modern.c
-+++ b/drivers/virtio/virtio_pci_modern.c
-@@ -26,16 +26,16 @@
-  * method, i.e. 32-bit accesses for 32-bit fields, 16-bit accesses
-  * for 16-bit fields and 8-bit accesses for 8-bit fields.
-  */
--static inline u8 vp_ioread8(u8 __iomem *addr)
-+static inline u8 vp_ioread8(const u8 __iomem *addr)
- {
- 	return ioread8(addr);
- }
--static inline u16 vp_ioread16 (__le16 __iomem *addr)
-+static inline u16 vp_ioread16 (const __le16 __iomem *addr)
- {
- 	return ioread16(addr);
- }
+diff --git a/arch/arc/plat-axs10x/axs10x.c b/arch/arc/plat-axs10x/axs10x.c
+index 63ea5a606ecd..180c260a8221 100644
+--- a/arch/arc/plat-axs10x/axs10x.c
++++ b/arch/arc/plat-axs10x/axs10x.c
+@@ -84,7 +84,7 @@ static void __init axs10x_print_board_ver(unsigned int creg, const char *str)
+ 		unsigned int val;
+ 	} board;
  
--static inline u32 vp_ioread32(__le32 __iomem *addr)
-+static inline u32 vp_ioread32(const __le32 __iomem *addr)
- {
- 	return ioread32(addr);
+-	board.val = ioread32((void __iomem *)creg);
++	board.val = ioread32((const void __iomem *)creg);
+ 	pr_info("AXS: %s FPGA Date: %u-%u-%u\n", str, board.d, board.m,
+ 		board.y);
  }
+@@ -95,7 +95,7 @@ static void __init axs10x_early_init(void)
+ 	char mb[32];
+ 
+ 	/* Determine motherboard version */
+-	if (ioread32((void __iomem *) CREG_MB_CONFIG) & (1 << 28))
++	if (ioread32((const void __iomem *) CREG_MB_CONFIG) & (1 << 28))
+ 		mb_rev = 3;	/* HT-3 (rev3.0) */
+ 	else
+ 		mb_rev = 2;	/* HT-2 (rev2.0) */
 -- 
 2.17.1
 
