@@ -2,62 +2,68 @@ Return-Path: <SRS0=bUJu=25=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8993C00523
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 08:14:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B579C00523
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 08:18:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 97D54205F4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 08:14:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 97D54205F4
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	by mail.kernel.org (Postfix) with ESMTPS id DED06205F4
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 08:18:07 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="MkwH+3Hk"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DED06205F4
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47t2932Sn9zDqQj
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 19:14:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47t2Ds5hrjzDqRK
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 19:18:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.210.68; helo=mail-ot1-f68.google.com;
- envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-m68k.org
-Received: from mail-ot1-f68.google.com (mail-ot1-f68.google.com
- [209.85.210.68])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=krzk@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="MkwH+3Hk"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47t27149DWzDqMg
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2020 19:13:01 +1100 (AEDT)
-Received: by mail-ot1-f68.google.com with SMTP id d7so2766158otf.5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jan 2020 00:13:01 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=fbJJB3WrQSG/aLI6W0tp/gWGqaTYGmXXjnwzN3HgNmk=;
- b=mXQBr1Ktzsz2PVMvrDXuTT/mM5fB6AYw22af8bN9eLzOZgZMyCnZ6NWtSK/IcUgzfZ
- +shtLSeGsYewOS+Wh62dEEWOg6gIDHMN1Nl04IbBfSwc2lRe4lE6wCjoHHfjJD/DJpUj
- iiLwKpCbRiet0OzpiPp7prkDMBFbOYser12Ae4XQ0f5bIMdjuhAATkp/OQi3iY7ejm6k
- CgEiAb7UxwlA5lcqHMPaf7HEDgIKUdIHCAnv5j+MPCqfHmPdd9U4dEBPWe4aLPTIvy7a
- YsJd28FCG4YsGvjtm5+fVrzqRalQ3O3Nxc6UVIuh+RomOnZfKaTJ7nznLOOtNRn+AXLh
- 1OlA==
-X-Gm-Message-State: APjAAAUdEcnH35DwN2Uvlm6MzaWZJppJyaXMGNTONxyhlfOO4zll4Oqi
- qdFnwoTJFFGhDp92mN04M4+IEcFZdLYMSBQh/2U=
-X-Google-Smtp-Source: APXvYqwmH7m1+9vDxuev+5inhGSC6vEDnCL0sxcZGlshqWSwfptz4C63wHebnfbZQpKCDEbUG2A5rdvMjyOud7C+JPk=
-X-Received: by 2002:a9d:dc1:: with SMTP id 59mr3308976ots.250.1578471178824;
- Wed, 08 Jan 2020 00:12:58 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47t2Bd0RzHzDqPw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2020 19:16:09 +1100 (AEDT)
+Received: from mail-lf1-f51.google.com (mail-lf1-f51.google.com
+ [209.85.167.51])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 08792208E4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2020 08:16:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1578471367;
+ bh=rJ6JYIGpzKdoDYXHO08q9UAkcS9JLwVuqyxgj7z6uFE=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=MkwH+3HkDf6s4f9UKMt0j3Yl68sYcovyitDwcZpCHeRNjfXvyP43W0pQEzIL5IC+w
+ aBar8tImI2nbpit8mmPjPSR8+0RwgOJ9/SVVIDrK7xO2Eu6wG+pemFk9N++KW5kzE4
+ p5mT60k4jBuix/ZvOoWmnjiIgd4PWx8KCVGOrzro=
+Received: by mail-lf1-f51.google.com with SMTP id r14so1747906lfm.5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jan 2020 00:16:06 -0800 (PST)
+X-Gm-Message-State: APjAAAXkgca42ntK1V8jBkTVDcXPKpqnBUfgN4uDDchgmCegI78dGwbX
+ xZi4hJKbT5fvCD0tu1TTHHyPumSk82haHZY/aGk=
+X-Google-Smtp-Source: APXvYqzyctxfRgINTLWoapcTorSxrwMRpnKV5L9AyMA5cZ3MIwnHpgXp0xHUle0Z4Qdrv46T+HnJLWxMDUPl2bIDDVM=
+X-Received: by 2002:ac2:5dc7:: with SMTP id x7mr2134684lfq.24.1578471362796;
+ Wed, 08 Jan 2020 00:16:02 -0800 (PST)
 MIME-Version: 1.0
 References: <1578415992-24054-1-git-send-email-krzk@kernel.org>
  <CAMuHMdW4ek0OYQDrrbcpZjNUTTP04nSbwkmiZvBmKcU=PQM9qA@mail.gmail.com>
 In-Reply-To: <CAMuHMdW4ek0OYQDrrbcpZjNUTTP04nSbwkmiZvBmKcU=PQM9qA@mail.gmail.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 8 Jan 2020 09:12:47 +0100
-Message-ID: <CAMuHMdUBmYtJKtSYzS_5u67hVZOqcKSgFY1rDGme6gLNRBJ_gA@mail.gmail.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Wed, 8 Jan 2020 09:15:50 +0100
+X-Gmail-Original-Message-ID: <CAJKOXPffZDPz6nAf8fGc-k76KiNWc2KXKJxkWuWjeDtEm1tTHA@mail.gmail.com>
+Message-ID: <CAJKOXPffZDPz6nAf8fGc-k76KiNWc2KXKJxkWuWjeDtEm1tTHA@mail.gmail.com>
 Subject: Re: [RFT 00/13] iomap: Constify ioreadX() iomem argument
-To: Krzysztof Kozlowski <krzk@kernel.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -102,9 +108,10 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Krzysztof,
-
-On Wed, Jan 8, 2020 at 9:07 AM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+On Wed, 8 Jan 2020 at 09:08, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+>
+> Hi Krzysztof,
+>
 > On Tue, Jan 7, 2020 at 5:53 PM Krzysztof Kozlowski <krzk@kernel.org> wrote:
 > > The ioread8/16/32() and others have inconsistent interface among the
 > > architectures: some taking address as const, some not.
@@ -116,19 +123,34 @@ On Wed, Jan 8, 2020 at 9:07 AM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 > It seems the "volatile" is missing from all but the implementations in
 > include/asm-generic/io.h.
 
-As my "volatile" comment applies to iowrite*(), too, probably that should be
-done in a separate patch.
+It's kind of separate issue although I could squash it to limit
+redundant changes.
 
-Hence with patches 1-5 squashed, and for patches 11-13:
-Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> > Patchset was really tested on all affected architectures.
 
-Gr{oetje,eeting}s,
+I just spot an error in my first message. I wanted to say:
+"Patchset was NOT really tested on all affected architectures."
 
-                        Geert
+Obviously.
 
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+> > Build testing is in progress - I hope auto-builders will point any issues.
+> >
+> >
+> > Todo
+> > ====
+> > Convert also string versions (ioread16_rep() etc) if this aproach looks OK.
+> >
+> >
+> > Merging
+> > =======
+> > The first 5 patches - iomap, alpha, sh, parisc and powerpc - should probably go
+> > via one tree, or even squashed into one.
+>
+> Yes, they should be squashed, cfr. Arnd's comment.
+> I also wouldn't bother doing the updates in patches 6-10.
+
+Indeed, thanks for comments.
+
+Best regards,
+Krzysztof
