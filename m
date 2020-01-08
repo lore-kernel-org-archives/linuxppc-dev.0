@@ -2,64 +2,61 @@ Return-Path: <SRS0=bUJu=25=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 75969C33C9E
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 08:12:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D8993C00523
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 08:14:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 348A6205F4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 08:12:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 348A6205F4
+	by mail.kernel.org (Postfix) with ESMTPS id 97D54205F4
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 08:14:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 97D54205F4
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47t26B0vmkzDqRM
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 19:12:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47t2932Sn9zDqQj
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 19:14:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.167.196;
- helo=mail-oi1-f196.google.com; envelope-from=geert.uytterhoeven@gmail.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=gmail.com (client-ip=209.85.210.68; helo=mail-ot1-f68.google.com;
+ envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux-m68k.org
-Received: from mail-oi1-f196.google.com (mail-oi1-f196.google.com
- [209.85.167.196])
+Received: from mail-ot1-f68.google.com (mail-ot1-f68.google.com
+ [209.85.210.68])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47t23v5vG1zDqLf
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2020 19:10:19 +1100 (AEDT)
-Received: by mail-oi1-f196.google.com with SMTP id p125so1867210oif.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jan 2020 00:10:19 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47t27149DWzDqMg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2020 19:13:01 +1100 (AEDT)
+Received: by mail-ot1-f68.google.com with SMTP id d7so2766158otf.5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jan 2020 00:13:01 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=zSvatSaXmaDcygklTO+AiD7URC1DncR275ZO9qcviaY=;
- b=SDJoGO2a6eE4aW0UJvTxAhNcIW2NE7092wf92AYp8rb0GZQcNNegBOScKQBRUhVeYT
- +Yv8Zi366sL/Y2twsMQ9QPoJ0Dn63Wqxx0x7qcVW2GY+2Kbg2VQAD9GMk5yzbcl1Vi/G
- txR/MlqeBng2OEgR2/XzZOX+za2Xfk9N4S8hkIfOaYT0hdO7iL/tZAZz9mxPLKYct0L6
- vv3dloLtac1u6bhHIgtffgCQGgOnMOFXaRpMsSq/B1YPUZwSqA/DsjbUhwerYl1Z6Cf2
- 6BNpxOavKwKNWdiA6JsCNISMUWJQ1h/a702g7jl3+pi6eYXwB50Jk6PzMa9cANquNmHt
- d7xw==
-X-Gm-Message-State: APjAAAVwMsyHZwQyw/kp0xCGdLyc+e1mOaVKVNvpbIiPRTHW0UmCkFXS
- khS3QjokMjKhjfIlhaA4rlYQg3SXwPimexK1HeQ=
-X-Google-Smtp-Source: APXvYqx7mMV6iu/aCjHaPWwxCajM/7EbWdhdn3wdjlil8XEXHsid4BFGqUofVL4JHvNq7QwetgrnnLwPgZu0svS796A=
-X-Received: by 2002:a05:6808:292:: with SMTP id
- z18mr2042282oic.131.1578471017446; 
- Wed, 08 Jan 2020 00:10:17 -0800 (PST)
+ bh=fbJJB3WrQSG/aLI6W0tp/gWGqaTYGmXXjnwzN3HgNmk=;
+ b=mXQBr1Ktzsz2PVMvrDXuTT/mM5fB6AYw22af8bN9eLzOZgZMyCnZ6NWtSK/IcUgzfZ
+ +shtLSeGsYewOS+Wh62dEEWOg6gIDHMN1Nl04IbBfSwc2lRe4lE6wCjoHHfjJD/DJpUj
+ iiLwKpCbRiet0OzpiPp7prkDMBFbOYser12Ae4XQ0f5bIMdjuhAATkp/OQi3iY7ejm6k
+ CgEiAb7UxwlA5lcqHMPaf7HEDgIKUdIHCAnv5j+MPCqfHmPdd9U4dEBPWe4aLPTIvy7a
+ YsJd28FCG4YsGvjtm5+fVrzqRalQ3O3Nxc6UVIuh+RomOnZfKaTJ7nznLOOtNRn+AXLh
+ 1OlA==
+X-Gm-Message-State: APjAAAUdEcnH35DwN2Uvlm6MzaWZJppJyaXMGNTONxyhlfOO4zll4Oqi
+ qdFnwoTJFFGhDp92mN04M4+IEcFZdLYMSBQh/2U=
+X-Google-Smtp-Source: APXvYqwmH7m1+9vDxuev+5inhGSC6vEDnCL0sxcZGlshqWSwfptz4C63wHebnfbZQpKCDEbUG2A5rdvMjyOud7C+JPk=
+X-Received: by 2002:a9d:dc1:: with SMTP id 59mr3308976ots.250.1578471178824;
+ Wed, 08 Jan 2020 00:12:58 -0800 (PST)
 MIME-Version: 1.0
 References: <1578415992-24054-1-git-send-email-krzk@kernel.org>
- <1578415992-24054-3-git-send-email-krzk@kernel.org>
-In-Reply-To: <1578415992-24054-3-git-send-email-krzk@kernel.org>
+ <CAMuHMdW4ek0OYQDrrbcpZjNUTTP04nSbwkmiZvBmKcU=PQM9qA@mail.gmail.com>
+In-Reply-To: <CAMuHMdW4ek0OYQDrrbcpZjNUTTP04nSbwkmiZvBmKcU=PQM9qA@mail.gmail.com>
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 8 Jan 2020 09:10:06 +0100
-Message-ID: <CAMuHMdXHhF6GhS1W8qS4j7Jv5YnxXjcRopT5QSA=+trc8qwFng@mail.gmail.com>
-Subject: Re: [RFT 02/13] alpha: Constify ioreadX() iomem argument (as in
- generic implementation)
+Date: Wed, 8 Jan 2020 09:12:47 +0100
+Message-ID: <CAMuHMdUBmYtJKtSYzS_5u67hVZOqcKSgFY1rDGme6gLNRBJ_gA@mail.gmail.com>
+Subject: Re: [RFT 00/13] iomap: Constify ioreadX() iomem argument
 To: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -107,37 +104,23 @@ Sender: "Linuxppc-dev"
 
 Hi Krzysztof,
 
-On Tue, Jan 7, 2020 at 5:53 PM Krzysztof Kozlowski <krzk@kernel.org> wrote:
-> The ioreadX() helpers have inconsistent interface.  On some architectures
-> void *__iomem address argument is a pointer to const, on some not.
+On Wed, Jan 8, 2020 at 9:07 AM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> On Tue, Jan 7, 2020 at 5:53 PM Krzysztof Kozlowski <krzk@kernel.org> wrote:
+> > The ioread8/16/32() and others have inconsistent interface among the
+> > architectures: some taking address as const, some not.
+> >
+> > It seems there is nothing really stopping all of them to take
+> > pointer to const.
 >
-> Implementations of ioreadX() do not modify the memory under the address
-> so they can be converted to a "const" version for const-safety and
-> consistency among architectures.
->
-> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> Shouldn't all of them take const volatile __iomem pointers?
+> It seems the "volatile" is missing from all but the implementations in
+> include/asm-generic/io.h.
 
-> --- a/arch/alpha/include/asm/io.h
-> +++ b/arch/alpha/include/asm/io.h
-> @@ -151,9 +151,9 @@ static inline void generic_##NAME(TYPE b, QUAL void __iomem *addr)  \
->         alpha_mv.mv_##NAME(b, addr);                                    \
->  }
->
-> -REMAP1(unsigned int, ioread8, /**/)
-> -REMAP1(unsigned int, ioread16, /**/)
-> -REMAP1(unsigned int, ioread32, /**/)
-> +REMAP1(unsigned int, ioread8, const)
-> +REMAP1(unsigned int, ioread16, const)
-> +REMAP1(unsigned int, ioread32, const)
+As my "volatile" comment applies to iowrite*(), too, probably that should be
+done in a separate patch.
 
-If these would become "const volatile", there would no longer be a need
-for the last parameter of the REMAP1() macro.
-
->  REMAP1(u8, readb, const volatile)
->  REMAP1(u16, readw, const volatile)
->  REMAP1(u32, readl, const volatile)
-
-Same for REMAP2() macro below, for iowrite*().
+Hence with patches 1-5 squashed, and for patches 11-13:
+Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
 Gr{oetje,eeting}s,
 
