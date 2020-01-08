@@ -7,77 +7,78 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4402CC33C99
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 00:08:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CC0FAC00523
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 05:08:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EC6182070E
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 00:08:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4012020705
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 05:08:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="JpP9IiaF"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC6182070E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nvidia.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="EMyNfvbX"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4012020705
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47sqNN1rNqzDqgs
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 11:08:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47sy2W1T52zDqQZ
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2020 16:08:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=nvidia.com (client-ip=216.228.121.143;
- helo=hqnvemgate24.nvidia.com; envelope-from=jhubbard@nvidia.com;
+ smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::644;
+ helo=mail-pl1-x644.google.com; envelope-from=dja@axtens.net;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nvidia.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="JpP9IiaF"; 
+ dmarc=none (p=none dis=none) header.from=axtens.net
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=axtens.net header.i=@axtens.net header.b="EMyNfvbX"; 
  dkim-atps=neutral
-Received: from hqnvemgate24.nvidia.com (hqnvemgate24.nvidia.com
- [216.228.121.143])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
+ [IPv6:2607:f8b0:4864:20::644])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47snXt4TwFzDqLr
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2020 09:46:05 +1100 (AEDT)
-Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by
- hqnvemgate24.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
- id <B5e1509f90003>; Tue, 07 Jan 2020 14:45:13 -0800
-Received: from hqmail.nvidia.com ([172.20.161.6])
- by hqpgpgate101.nvidia.com (PGP Universal service);
- Tue, 07 Jan 2020 14:46:01 -0800
-X-PGP-Universal: processed;
- by hqpgpgate101.nvidia.com on Tue, 07 Jan 2020 14:46:01 -0800
-Received: from HQMAIL105.nvidia.com (172.20.187.12) by HQMAIL101.nvidia.com
- (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Tue, 7 Jan
- 2020 22:46:01 +0000
-Received: from hqnvemgw03.nvidia.com (10.124.88.68) by HQMAIL105.nvidia.com
- (172.20.187.12) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
- Transport; Tue, 7 Jan 2020 22:46:01 +0000
-Received: from blueforge.nvidia.com (Not Verified[10.110.48.28]) by
- hqnvemgw03.nvidia.com with Trustwave SEG (v7, 5, 8, 10121)
- id <B5e150a290000>; Tue, 07 Jan 2020 14:46:01 -0800
-From: John Hubbard <jhubbard@nvidia.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v12 14/22] mm/process_vm_access: set FOLL_PIN via
- pin_user_pages_remote()
-Date: Tue, 7 Jan 2020 14:45:50 -0800
-Message-ID: <20200107224558.2362728-15-jhubbard@nvidia.com>
-X-Mailer: git-send-email 2.24.1
-In-Reply-To: <20200107224558.2362728-1-jhubbard@nvidia.com>
-References: <20200107224558.2362728-1-jhubbard@nvidia.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47sy0H042HzDqQQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2020 16:06:54 +1100 (AEDT)
+Received: by mail-pl1-x644.google.com with SMTP id p9so610748plk.9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jan 2020 21:06:54 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=Mu0dUFTj4thZCkpGdg4/BDePJJdw2Ae9SQvJCvq1Dek=;
+ b=EMyNfvbXJbFlHI38AQ1taZDy/DaQ57KejCvjq4TBFAd7EBiPVOG8Lq0NcHQXeDlloS
+ v+L5zMYqDh0BXIap6exnZaxeabYAOxtmUbbBQzzfc4wWzrZwXrFjFy2ZSFV0vHSXImnK
+ 0xmSpCeYG4072Ej1iqRakVPX7cDHm0V5PP8OI=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=Mu0dUFTj4thZCkpGdg4/BDePJJdw2Ae9SQvJCvq1Dek=;
+ b=tzPhXTc6JAdagE/dUpFYsh//uqYz6QRdh9KqUo/YgNAMSY7TKWCsp0TK8LcGdq4Di0
+ HAaMMpI7LBn6ZpyvIyFdjxNwUJKmFB6oP4hAE/LQ+G901heGkL7wBEBaxMgjnSNHx8K0
+ CPAphpawZels0BRsib65CfhPVtVgAYCUnwzqslzziaXAZ9GGRtrSFSohbytbqGWqRsHS
+ Z+lfRxtKtQbyqJKvTzsgYBVqacaOw5LxMIUKLi0qE7dTBhgmX36U9Smz6qJQIQ+pOb73
+ YfQuk4uetxXXWyGvtXhs+5I2wxLps2TMw8kUzd5iTedok+L3hH7l++kYMGMHmtikztHQ
+ TR4Q==
+X-Gm-Message-State: APjAAAWXHEXmfwgoJ7L60y6p67Pw3SLZzjGX9ILqKPnj0HbRwHLUDnH8
+ nj14dEFFY9NsLQOmVXVT+r0D+Xhr+QU=
+X-Google-Smtp-Source: APXvYqwkBYEyK68S9SHLHKUyyaqhbzeVR7yGXcITJnMiFqE2QG5yDtDU3anHiNjE+Vb5uW4lHNlSGQ==
+X-Received: by 2002:a17:902:8343:: with SMTP id
+ z3mr3438342pln.178.1578460011371; 
+ Tue, 07 Jan 2020 21:06:51 -0800 (PST)
+Received: from localhost
+ (2001-44b8-1113-6700-0092-67e7-3c5d-2c97.static.ipv6.internode.on.net.
+ [2001:44b8:1113:6700:92:67e7:3c5d:2c97])
+ by smtp.gmail.com with ESMTPSA id x132sm1380691pfc.148.2020.01.07.21.06.49
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 07 Jan 2020 21:06:50 -0800 (PST)
+From: Daniel Axtens <dja@axtens.net>
+To: linuxppc-dev@lists.ozlabs.org, herbert@gondor.apana.org.au,
+ linux-crypto@vger.kernel.org
+Subject: [PATCH] crypto: vmx/xts - reject inputs that are too short
+Date: Wed,  8 Jan 2020 16:06:46 +1100
+Message-Id: <20200108050646.29220-1-dja@axtens.net>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-X-NVConfidentiality: public
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
- t=1578437114; bh=kDX8Nc6MeGUSG1gZLdpe1GJZUoittrssGXDLg9QnS08=;
- h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
- In-Reply-To:References:MIME-Version:X-NVConfidentiality:
- Content-Type:Content-Transfer-Encoding;
- b=JpP9IiaFrIOkhzGOr5QEvyLuBGstIHpsBdX+bJI0Fn5Qlx128CGyXJuX9X+LStptX
- K60xZWLEFAWJQCylOcYixDdv1whobaFB8XQmMSyjgvZfP8uU58RQCVXDqd1qfhYv/1
- NaUu0RcBS5/mDSMruNtTrOqrS5DLHeL9Igh/77YXzgoY3JJVgXuuZm1M+tAb+isIEu
- g4eZ7afh2eDyaDvBkrYfgUb8xF4c8eecy0JGFv+a4ga1CaE73anB9/AHNPFLeiwG+i
- qpWwrc+X6KLvW9Tm9dlqJliOeqLKrAwkMmGZMAFRPN4Io0f54bY+iAUepMMX8ncDbu
- 2VTks30Kz5v2Q==
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,118 +90,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>,
- kvm@vger.kernel.org, linux-doc@vger.kernel.org,
- David Airlie <airlied@linux.ie>, Dave Chinner <david@fromorbit.com>,
- dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- linux-kselftest@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>,
- Jonathan Corbet <corbet@lwn.net>, linux-rdma@vger.kernel.org,
- Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>,
- Vlastimil Babka <vbabka@suse.cz>,
- =?UTF-8?q?Bj=C3=B6rn=20T=C3=B6pel?= <bjorn.topel@intel.com>,
- linux-media@vger.kernel.org, Shuah Khan <shuah@kernel.org>,
- John Hubbard <jhubbard@nvidia.com>, linux-block@vger.kernel.org,
- =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>,
- Al Viro <viro@zeniv.linux.org.uk>,
- "Kirill A . Shutemov" <kirill@shutemov.name>,
- Dan Williams <dan.j.williams@intel.com>,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
- Magnus Karlsson <magnus.karlsson@intel.com>, Jens Axboe <axboe@kernel.dk>,
- netdev@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
- Daniel Vetter <daniel@ffwll.ch>, linux-fsdevel@vger.kernel.org,
- bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "David S . Miller" <davem@davemloft.net>,
- Mike Kravetz <mike.kravetz@oracle.com>
+Cc: nayna@linux.ibm.com, pfsmorigo@gmail.com, ardb@kernel.org,
+ Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Convert process_vm_access to use the new pin_user_pages_remote()
-call, which sets FOLL_PIN. Setting FOLL_PIN is now required for
-code that requires tracking of pinned pages.
+When the kernel XTS implementation was extended to deal with ciphertext
+stealing in commit 8083b1bf8163 ("crypto: xts - add support for ciphertext
+stealing"), a check was added to reject inputs that were too short.
 
-Also, release the pages via put_user_page*().
+However, in the vmx enablement - commit 239668419349 ("crypto: vmx/xts -
+use fallback for ciphertext stealing"), that check wasn't added to the
+vmx implementation. This disparity leads to errors like the following:
 
-Also, rename "pages" to "pinned_pages", as this makes for
-easier reading of process_vm_rw_single_vec().
+alg: skcipher: p8_aes_xts encryption unexpectedly succeeded on test vector "random: len=0 klen=64"; expected_error=-22, cfg="random: inplace may_sleep use_finup src_divs=[<flush>66.99%@+10, 33.1%@alignmask+1155]"
 
-Reviewed-by: Jan Kara <jack@suse.cz>
-Reviewed-by: J=C3=A9r=C3=B4me Glisse <jglisse@redhat.com>
-Reviewed-by: Ira Weiny <ira.weiny@intel.com>
-Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+Return -EINVAL if asked to operate with a cryptlen smaller than the AES
+block size. This brings vmx in line with the generic implementation.
+
+Reported-by: Erhard Furtner <erhard_f@mailbox.org>
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=206049
+Fixes: 239668419349 ("crypto: vmx/xts - use fallback for ciphertext stealing")
+Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Cc: stable@vger.kernel.org # v5.4+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+[dja: commit message]
+Signed-off-by: Daniel Axtens <dja@axtens.net>
 ---
- mm/process_vm_access.c | 28 +++++++++++++++-------------
- 1 file changed, 15 insertions(+), 13 deletions(-)
+ drivers/crypto/vmx/aes_xts.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/mm/process_vm_access.c b/mm/process_vm_access.c
-index 357aa7bef6c0..fd20ab675b85 100644
---- a/mm/process_vm_access.c
-+++ b/mm/process_vm_access.c
-@@ -42,12 +42,11 @@ static int process_vm_rw_pages(struct page **pages,
- 		if (copy > len)
- 			copy =3D len;
-=20
--		if (vm_write) {
-+		if (vm_write)
- 			copied =3D copy_page_from_iter(page, offset, copy, iter);
--			set_page_dirty_lock(page);
--		} else {
-+		else
- 			copied =3D copy_page_to_iter(page, offset, copy, iter);
--		}
+diff --git a/drivers/crypto/vmx/aes_xts.c b/drivers/crypto/vmx/aes_xts.c
+index d59e736882f6..9fee1b1532a4 100644
+--- a/drivers/crypto/vmx/aes_xts.c
++++ b/drivers/crypto/vmx/aes_xts.c
+@@ -84,6 +84,9 @@ static int p8_aes_xts_crypt(struct skcipher_request *req, int enc)
+ 	u8 tweak[AES_BLOCK_SIZE];
+ 	int ret;
+ 
++	if (req->cryptlen < AES_BLOCK_SIZE)
++		return -EINVAL;
 +
- 		len -=3D copied;
- 		if (copied < copy && iov_iter_count(iter))
- 			return -EFAULT;
-@@ -96,7 +95,7 @@ static int process_vm_rw_single_vec(unsigned long addr,
- 		flags |=3D FOLL_WRITE;
-=20
- 	while (!rc && nr_pages && iov_iter_count(iter)) {
--		int pages =3D min(nr_pages, max_pages_per_loop);
-+		int pinned_pages =3D min(nr_pages, max_pages_per_loop);
- 		int locked =3D 1;
- 		size_t bytes;
-=20
-@@ -106,14 +105,15 @@ static int process_vm_rw_single_vec(unsigned long add=
-r,
- 		 * current/current->mm
- 		 */
- 		down_read(&mm->mmap_sem);
--		pages =3D get_user_pages_remote(task, mm, pa, pages, flags,
--					      process_pages, NULL, &locked);
-+		pinned_pages =3D pin_user_pages_remote(task, mm, pa, pinned_pages,
-+						     flags, process_pages,
-+						     NULL, &locked);
- 		if (locked)
- 			up_read(&mm->mmap_sem);
--		if (pages <=3D 0)
-+		if (pinned_pages <=3D 0)
- 			return -EFAULT;
-=20
--		bytes =3D pages * PAGE_SIZE - start_offset;
-+		bytes =3D pinned_pages * PAGE_SIZE - start_offset;
- 		if (bytes > len)
- 			bytes =3D len;
-=20
-@@ -122,10 +122,12 @@ static int process_vm_rw_single_vec(unsigned long add=
-r,
- 					 vm_write);
- 		len -=3D bytes;
- 		start_offset =3D 0;
--		nr_pages -=3D pages;
--		pa +=3D pages * PAGE_SIZE;
--		while (pages)
--			put_page(process_pages[--pages]);
-+		nr_pages -=3D pinned_pages;
-+		pa +=3D pinned_pages * PAGE_SIZE;
-+
-+		/* If vm_write is set, the pages need to be made dirty: */
-+		put_user_pages_dirty_lock(process_pages, pinned_pages,
-+					  vm_write);
- 	}
-=20
- 	return rc;
---=20
-2.24.1
+ 	if (!crypto_simd_usable() || (req->cryptlen % XTS_BLOCK_SIZE) != 0) {
+ 		struct skcipher_request *subreq = skcipher_request_ctx(req);
+ 
+-- 
+2.20.1
 
