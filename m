@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C3E5C32771
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jan 2020 08:16:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 693B9C32771
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jan 2020 08:27:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 76ED220673
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jan 2020 08:16:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 1AA5620673
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jan 2020 08:27:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="HQBqJeCO"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 76ED220673
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="QrDDSHXz"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1AA5620673
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47tf915W39zDqXr
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jan 2020 19:16:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47tfP14jQbzDqY0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jan 2020 19:27:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,52 +29,53 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=HQBqJeCO; dkim-atps=neutral
+ header.s=mail header.b=QrDDSHXz; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47tf7227NczDqGm
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2020 19:15:07 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47tfLy1wM4zDqX2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2020 19:25:30 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 47tf6s3zYvz9v3KW;
- Thu,  9 Jan 2020 09:15:01 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 47tfLs30h8z9v3XQ;
+ Thu,  9 Jan 2020 09:25:25 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=HQBqJeCO; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=QrDDSHXz; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id Gi7YKr0mKWYK; Thu,  9 Jan 2020 09:15:01 +0100 (CET)
+ with ESMTP id Fju97S-s3mM8; Thu,  9 Jan 2020 09:25:25 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 47tf6s2gGzz9v3KV;
- Thu,  9 Jan 2020 09:15:01 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 47tfLs1z8Vz9v3XM;
+ Thu,  9 Jan 2020 09:25:25 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1578557701; bh=aCJX3qfRGAn+3jSeLTC1vMzfBDwGoUIdPhX/7aLEOfc=;
- h=From:Subject:To:Cc:Date:From;
- b=HQBqJeCOIdc7xFwr0PRHYkj4U7bbp7zWf3xeRiO2hJAUEtL60jYN9+P1OJF6vinSV
- nyT7rLmW2/LHPUB+CNknG8UTjGOm5SyJC9B1RNM8gBNoKgp67fzQdnkDswZf1A0CZj
- 2+JzV/+Sp00UtvAhYVMkNPxsmLaHNYb2DpHj07Yg=
+ t=1578558325; bh=Anq1hyH2aL9sk2xmmZjvLgbNttOZtDCALsnDzW0G9vQ=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=QrDDSHXzPUf4RA7kKLqkxQv+PcjlDEH+aqqM2OiAQghychKnsJuIP/CI5KrHwcfTE
+ Pio4ScfISdPCQPl7SEAeSyD+JPmm8EiVaOHyQusnnpuAIUoe8LMrcZsk9Aznr/lZdk
+ blSPlUNPu7uif3nDAqZtYKITrflsOm8ZrgEDTxnw=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 54C348B816;
- Thu,  9 Jan 2020 09:15:02 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 451468B816;
+ Thu,  9 Jan 2020 09:25:26 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id fEx0BEfzzKAO; Thu,  9 Jan 2020 09:15:02 +0100 (CET)
+ with ESMTP id J1S0I2ywjlUg; Thu,  9 Jan 2020 09:25:26 +0100 (CET)
 Received: from localhost.localdomain (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0EDCA8B769;
- Thu,  9 Jan 2020 09:15:02 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id F2AFE8B769;
+ Thu,  9 Jan 2020 09:25:25 +0100 (CET)
 Received: by localhost.localdomain (Postfix, from userid 0)
- id B2EB063B8D; Thu,  9 Jan 2020 08:15:01 +0000 (UTC)
-Message-Id: <62477e446d9685459d4f27d193af6ff1bd69d55f.1578557581.git.christophe.leroy@c-s.fr>
+ id 1327D63B8D; Thu,  9 Jan 2020 08:25:26 +0000 (UTC)
+Message-Id: <788378c6c3ba5c5298caab7c7f95e6c3c88244b8.1578558199.git.christophe.leroy@c-s.fr>
+In-Reply-To: <7b065c5be35726af4066cab238ee35cabceda1fa.1578558199.git.christophe.leroy@c-s.fr>
+References: <7b065c5be35726af4066cab238ee35cabceda1fa.1578558199.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] init: fix misleading "This architecture does not have kernel
- memory protection" message
+Subject: [PATCH v3 2/2] powerpc/32: drop get_pteptr()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Andrew Morton <akpm@linux-foundation.org>, Kees Cook <keescook@chromium.org>
-Date: Thu,  9 Jan 2020 08:15:01 +0000 (UTC)
+ Mike Rapoport <rppt@linux.ibm.com>
+Date: Thu,  9 Jan 2020 08:25:26 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,42 +87,125 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This message leads to think that memory protection is not implemented
-for the said architecture, whereas absence of CONFIG_STRICT_KERNEL_RWX
-only means that memory protection has not been selected at
-compile time.
+Commit 8d30c14cab30 ("powerpc/mm: Rework I$/D$ coherency (v3)") and
+commit 90ac19a8b21b ("[POWERPC] Abolish iopa(), mm_ptov(),
+io_block_mapping() from arch/powerpc") removed the use of get_pteptr()
+outside of mm/pgtable_32.c
 
-Don't print this message when CONFIG_ARCH_HAS_STRICT_KERNEL_RWX is
-selected by the architecture. Instead, print "Kernel memory protection
-not selected by kernel config."
+In mm/pgtable_32.c, the only user of get_pteptr() is change_page_attr()
+which operates on kernel context and on lowmem pages only.
+
+Make virt_to_kpte() available outside of mm/mem.c and use it instead
+of get_pteptr(), and drop get_pteptr()
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- init/main.c | 5 +++++
- 1 file changed, 5 insertions(+)
+v3: new
+---
+ arch/powerpc/include/asm/pgtable.h |  5 +++++
+ arch/powerpc/mm/mem.c              |  5 -----
+ arch/powerpc/mm/pgtable_32.c       | 39 ++------------------------------------
+ 3 files changed, 7 insertions(+), 42 deletions(-)
 
-diff --git a/init/main.c b/init/main.c
-index 2cd736059416..fd31b15cc910 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -1090,6 +1090,11 @@ static void mark_readonly(void)
- 	} else
- 		pr_info("Kernel memory protection disabled.\n");
- }
-+#elif defined(CONFIG_ARCH_HAS_STRICT_KERNEL_RWX)
-+static inline void mark_readonly(void)
-+{
-+	pr_warn("Kernel memory protection not selected by kernel config.\n");
-+}
- #else
- static inline void mark_readonly(void)
+diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
+index b5e358c0ea7e..25588edc7601 100644
+--- a/arch/powerpc/include/asm/pgtable.h
++++ b/arch/powerpc/include/asm/pgtable.h
+@@ -51,6 +51,11 @@ static inline pmd_t *pmd_ptr_k(unsigned long va)
  {
+ 	return pmd_offset(pud_offset(pgd_offset_k(va), va), va);
+ }
++
++static inline pte_t *virt_to_kpte(unsigned long vaddr)
++{
++	return pte_offset_kernel(pmd_ptr_k(vaddr), vaddr);
++}
+ #endif
+ 
+ #include <asm/tlbflush.h>
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 942d41b88aa6..da6708a46ce9 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -65,11 +65,6 @@ pte_t *kmap_pte;
+ EXPORT_SYMBOL(kmap_pte);
+ pgprot_t kmap_prot;
+ EXPORT_SYMBOL(kmap_prot);
+-
+-static inline pte_t *virt_to_kpte(unsigned long vaddr)
+-{
+-	return pte_offset_kernel(pmd_ptr_k(vaddr), vaddr);
+-}
+ #endif
+ 
+ pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index 7d50cc01bbea..4e1e5237c16c 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -121,44 +121,9 @@ void __init mapin_ram(void)
+ 	}
+ }
+ 
+-/* Scan the real Linux page tables and return a PTE pointer for
+- * a virtual address in a context.
+- * Returns true (1) if PTE was found, zero otherwise.  The pointer to
+- * the PTE pointer is unmodified if PTE is not found.
+- */
+-static int
+-get_pteptr(struct mm_struct *mm, unsigned long addr, pte_t **ptep, pmd_t **pmdp)
+-{
+-        pgd_t	*pgd;
+-	pud_t	*pud;
+-        pmd_t	*pmd;
+-        pte_t	*pte;
+-        int     retval = 0;
+-
+-        pgd = pgd_offset(mm, addr & PAGE_MASK);
+-        if (pgd) {
+-		pud = pud_offset(pgd, addr & PAGE_MASK);
+-		if (pud && pud_present(*pud)) {
+-			pmd = pmd_offset(pud, addr & PAGE_MASK);
+-			if (pmd_present(*pmd)) {
+-				pte = pte_offset_map(pmd, addr & PAGE_MASK);
+-				if (pte) {
+-					retval = 1;
+-					*ptep = pte;
+-					if (pmdp)
+-						*pmdp = pmd;
+-					/* XXX caller needs to do pte_unmap, yuck */
+-				}
+-			}
+-		}
+-        }
+-        return(retval);
+-}
+-
+ static int __change_page_attr_noflush(struct page *page, pgprot_t prot)
+ {
+ 	pte_t *kpte;
+-	pmd_t *kpmd;
+ 	unsigned long address;
+ 
+ 	BUG_ON(PageHighMem(page));
+@@ -166,10 +131,10 @@ static int __change_page_attr_noflush(struct page *page, pgprot_t prot)
+ 
+ 	if (v_block_mapped(address))
+ 		return 0;
+-	if (!get_pteptr(&init_mm, address, &kpte, &kpmd))
++	kpte = virt_to_kpte(address);
++	if (!kpte)
+ 		return -EINVAL;
+ 	__set_pte_at(&init_mm, address, kpte, mk_pte(page, prot), 0);
+-	pte_unmap(kpte);
+ 
+ 	return 0;
+ }
 -- 
 2.13.3
 
