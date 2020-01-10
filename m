@@ -2,94 +2,55 @@ Return-Path: <SRS0=KC/l=27=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 88F5CC282DD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jan 2020 16:47:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9EB2DC282DD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jan 2020 17:11:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 39D69206ED
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jan 2020 16:47:49 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ok+PdgOk"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 39D69206ED
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 090532072E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jan 2020 17:11:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 090532072E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=mit.edu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47vTS23QhHzDqhN
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jan 2020 03:47:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::843;
- helo=mail-qt1-x843.google.com; envelope-from=arnaldo.melo@gmail.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 47vTzp61npzDqk5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jan 2020 04:11:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=mit.edu
+ (client-ip=18.9.28.11; helo=outgoing.mit.edu; envelope-from=tytso@mit.edu;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=Ok+PdgOk; dkim-atps=neutral
-Received: from mail-qt1-x843.google.com (mail-qt1-x843.google.com
- [IPv6:2607:f8b0:4864:20::843])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=mit.edu
+X-Greylist: delayed 205 seconds by postgrey-1.36 at bilbo;
+ Sat, 11 Jan 2020 04:10:00 AEDT
+Received: from outgoing.mit.edu (outgoing-auth-1.mit.edu [18.9.28.11])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47vTPf5FtqzDqgD
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jan 2020 03:45:37 +1100 (AEDT)
-Received: by mail-qt1-x843.google.com with SMTP id e5so2438207qtm.6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jan 2020 08:45:37 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:date:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to;
- bh=s80UcNQvKwGgKWzgf5mb0xu3daHQpbt1S8dMQfZFc54=;
- b=Ok+PdgOkxWfVNZDBHC7AxcoITL4nnSC4kT9KjSqRuC1eTjfmC3LmiPvnvS171U4tna
- EP8iijKW402NqG5BQx0coWKMEOVLMeGKc7ap98b6Rxbh9hPjWfSYFuB8E80W7o5tEa0O
- ek9FW+VSI8iQh6VP6skYcf093r9SVtaSVemJCMeYaE/PnLp/tTkEDChLmjDKQF0AdxlE
- fPjw+quRMzhLGO443NvQb4dIgcflvLFBLkxMtRcloEjnxDpZATC4idego7WSfiaP3Jw3
- BAz+Hsmc+r9gtv6eKgFDuF1OwZhT+5WqFpA+9hhpFHz1e0iBUICVW9826sBvrRCXXr80
- 32OQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:date:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=s80UcNQvKwGgKWzgf5mb0xu3daHQpbt1S8dMQfZFc54=;
- b=P44kH6OGynIdEJ3TtvQOpikMKQi1+lwM8TgsNaF2rbR7CLSQ92EtyKxynxKSRxCzd5
- hzkq/AYOWKErOTcPvF1ANfRPowo46SZvlmRSs0bLjpYMEJJEj/wSiHg+IGQvj7MIg1Ii
- vXyCh3T9aHUlDVUAcmephcdl/TYsSNVw7rqqdCZU8PMv78/pRax3me9VTzXLym51Iynw
- Pwlz6fotqqagKrIGn9B8Hu5iVgyfuD228WtD/g0X0Ot70vcibpdcdVUDvsLnipsPrWdZ
- hI/bvkP98/5depz+A9SwVHNyOlYZNBsl0TYmTCL69aHqN2NsFDN9ZQ8KPf44VDvYVS+8
- MZ4g==
-X-Gm-Message-State: APjAAAXUYOeDeVgQuAUFk5sE7et/uAxvmPCgcvXUdAwVmBAfMFTNneTn
- u0aiICBABZ/mg4WZQwZeWC8=
-X-Google-Smtp-Source: APXvYqynM7DSjiVb/K1cuj10GL5Qx3F6jhpXa1DeMyONRynlWzC2QHu0QHM7eFjM/sX/8EKaoo1NZQ==
-X-Received: by 2002:ac8:163c:: with SMTP id p57mr3289416qtj.106.1578674734400; 
- Fri, 10 Jan 2020 08:45:34 -0800 (PST)
-Received: from quaco.ghostprotocols.net ([179.97.37.151])
- by smtp.gmail.com with ESMTPSA id g81sm1091649qkb.70.2020.01.10.08.45.33
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 10 Jan 2020 08:45:33 -0800 (PST)
-From: Arnaldo Carvalho de Melo <arnaldo.melo@gmail.com>
-X-Google-Original-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-Received: by quaco.ghostprotocols.net (Postfix, from userid 1000)
- id BCA6F40DFD; Fri, 10 Jan 2020 13:45:31 -0300 (-03)
-Date: Fri, 10 Jan 2020 13:45:31 -0300
-To: Masami Hiramatsu <mhiramat@kernel.org>
-Subject: Re: [PATCH v4 2/9] perf/core: open access for CAP_SYS_PERFMON
- privileged process
-Message-ID: <20200110164531.GA2598@kernel.org>
-References: <c0460c78-b1a6-b5f7-7119-d97e5998f308@linux.intel.com>
- <c93309dc-b920-f5fa-f997-e8b2faf47b88@linux.intel.com>
- <20200108160713.GI2844@hirez.programming.kicks-ass.net>
- <cc239899-5c52-2fd0-286d-4bff18877937@linux.intel.com>
- <20200110140234.GO2844@hirez.programming.kicks-ass.net>
- <20200111005213.6dfd98fb36ace098004bde0e@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47vTxh4FJZzDqcm
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jan 2020 04:09:58 +1100 (AEDT)
+Received: from callcc.thunk.org (guestnat-104-133-0-111.corp.google.com
+ [104.133.0.111] (may be forged)) (authenticated bits=0)
+ (User authenticated as tytso@ATHENA.MIT.EDU)
+ by outgoing.mit.edu (8.14.7/8.12.4) with ESMTP id 00AH5xC3031814
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 10 Jan 2020 12:06:00 -0500
+Received: by callcc.thunk.org (Postfix, from userid 15806)
+ id 9E7ED4207DF; Fri, 10 Jan 2020 12:05:59 -0500 (EST)
+Date: Fri, 10 Jan 2020 12:05:59 -0500
+From: "Theodore Y. Ts'o" <tytso@mit.edu>
+To: Borislav Petkov <bp@alien8.de>
+Subject: Re: [PATCH v2 00/10] Impveovements for random.h/archrandom.h
+Message-ID: <20200110170559.GA304349@mit.edu>
+References: <20200110145422.49141-1-broonie@kernel.org>
+ <20200110155153.GG19453@zn.tnic>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200111005213.6dfd98fb36ace098004bde0e@kernel.org>
-X-Url: http://acmel.wordpress.com
+In-Reply-To: <20200110155153.GG19453@zn.tnic>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,57 +62,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Song Liu <songliubraving@fb.com>,
- Peter Zijlstra <peterz@infradead.org>,
- "joonas.lahtinen@linux.intel.com" <joonas.lahtinen@linux.intel.com>,
- Will Deacon <will.deacon@arm.com>, Alexei Starovoitov <ast@kernel.org>,
- Stephane Eranian <eranian@google.com>,
- "james.bottomley@hansenpartnership.com"
- <james.bottomley@hansenpartnership.com>, Paul Mackerras <paulus@samba.org>,
- Jiri Olsa <jolsa@redhat.com>, Andi Kleen <ak@linux.intel.com>,
- Alexey Budankov <alexey.budankov@linux.intel.com>,
- Igor Lubashev <ilubashe@akamai.com>, James Morris <jmorris@namei.org>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Ingo Molnar <mingo@redhat.com>, oprofile-list@lists.sf.net,
- Serge Hallyn <serge@hallyn.com>, Robert Richter <rric@kernel.org>,
- Kees Cook <keescook@chromium.org>, Jann Horn <jannh@google.com>,
- "selinux@vger.kernel.org" <selinux@vger.kernel.org>,
- "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>,
- "jani.nikula@linux.intel.com" <jani.nikula@linux.intel.com>,
- Lionel Landwerlin <lionel.g.landwerlin@intel.com>,
- "rodrigo.vivi@intel.com" <rodrigo.vivi@intel.com>,
- Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org,
- Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
- "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
- linux-kernel <linux-kernel@vger.kernel.org>,
- "linux-perf-users@vger.kernel.org" <linux-perf-users@vger.kernel.org>,
- "linux-security-module@vger.kernel.org"
- <linux-security-module@vger.kernel.org>,
- Casey Schaufler <casey@schaufler-ca.com>,
- "bpf@vger.kernel.org" <bpf@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ herbert@gondor.apana.org.au, x86@kernel.org,
+ Richard Henderson <richard.henderson@linaro.org>,
+ Mark Brown <broonie@kernel.org>, linux-crypto@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Em Sat, Jan 11, 2020 at 12:52:13AM +0900, Masami Hiramatsu escreveu:
-> On Fri, 10 Jan 2020 15:02:34 +0100 Peter Zijlstra <peterz@infradead.org> wrote:
-> > Again, this only allows attaching to previously created kprobes, it does
-> > not allow creating kprobes, right?
+On Fri, Jan 10, 2020 at 04:51:53PM +0100, Borislav Petkov wrote:
+> On Fri, Jan 10, 2020 at 02:54:12PM +0000, Mark Brown wrote:
+> > This is a resend of a series from Richard Henderson last posted back in
+> > November:
+> > 
+> >    https://lore.kernel.org/linux-arm-kernel/20191106141308.30535-1-rth@twiddle.net/
+> > 
+> > Back then Borislav said they looked good and asked if he should take
+> > them through the tip tree but things seem to have got lost since then.
+> 
+> Or, alternatively, akpm could take them. In any case, if someone else
+> ends up doing that, for the x86 bits:
+> 
+> Reviewed-by: Borislav Petkov <bp@suse.de>
 
-> > That is; I don't think CAP_SYS_PERFMON should be allowed to create
-> > kprobes.
+Or I can take them through the random.git tree, since we have a lot of
+changes this cycle going to Linus anyway.  Any objections?
 
-> > As might be clear; I don't actually know what the user-ABI is for
-> > creating kprobes.
-
-> There are 2 ABIs nowadays, ftrace and ebpf. perf-probe uses ftrace interface to
-> define new kprobe events, and those events are treated as completely same as
-> tracepoint events. On the other hand, ebpf tries to define new probe event
-> via perf_event interface. Above one is that interface. IOW, it creates new kprobe.
-
-Masami, any plans to make 'perf probe' use the perf_event_open()
-interface for creating kprobes/uprobes?
-
-- Arnaldo
+	     	   	    	  	   - Ted
