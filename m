@@ -2,64 +2,58 @@ Return-Path: <SRS0=KC/l=27=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C769C282DD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jan 2020 22:43:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C120C282DD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jan 2020 23:02:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A72C62072A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jan 2020 22:43:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A72C62072A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
+	by mail.kernel.org (Postfix) with ESMTPS id B5D342072E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jan 2020 23:02:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B5D342072E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ghiti.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47vdLs2nCwzDqXM
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jan 2020 09:43:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47vdly66Y0zDqkB
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jan 2020 10:02:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=linutronix.de
- (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
- envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
+ spf=none (no SPF record) smtp.mailfrom=ghiti.fr
+ (client-ip=217.70.178.242; helo=mslow2.mail.gandi.net;
+ envelope-from=alexandre@ghiti.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linutronix.de
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a0a:51c0:0:12e:550::1])
- (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47vdK22c4SzDqhm
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jan 2020 09:42:14 +1100 (AEDT)
-Received: from p5b06da22.dip0.t-ipconnect.de ([91.6.218.34]
- helo=nanos.tec.linutronix.de)
- by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
- (Exim 4.80) (envelope-from <tglx@linutronix.de>)
- id 1iq2yj-0006Fk-RI; Fri, 10 Jan 2020 23:42:05 +0100
-Received: by nanos.tec.linutronix.de (Postfix, from userid 1000)
- id 3A41A105BDB; Fri, 10 Jan 2020 23:42:05 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: Re: [RFC PATCH] powerpc/32: Switch VDSO to C implementation.
-In-Reply-To: <09d07ad3-47a2-db2f-2f14-e002b22d8d9e@c-s.fr>
-References: <8ce3582f7f7da9ff0286ced857e5aa2e5ae6746e.1571662378.git.christophe.leroy@c-s.fr>
- <alpine.DEB.2.21.1910212312520.2078@nanos.tec.linutronix.de>
- <f4486e86-3c0c-0eec-1639-0e5956cdb8f1@c-s.fr>
- <95bd2367-8edc-29db-faa3-7729661e05f2@c-s.fr>
- <alpine.DEB.2.21.1910261751140.10190@nanos.tec.linutronix.de>
- <439bce37-9c2c-2afe-9c9e-2f500472f9f8@c-s.fr>
- <alpine.DEB.2.21.1910262026340.10190@nanos.tec.linutronix.de>
- <207cef10-3da8-6a52-139c-0620b21b64af@c-s.fr>
- <87d0bslo7b.fsf@nanos.tec.linutronix.de>
- <09d07ad3-47a2-db2f-2f14-e002b22d8d9e@c-s.fr>
-Date: Fri, 10 Jan 2020 23:42:05 +0100
-Message-ID: <87h813rl1e.fsf@nanos.tec.linutronix.de>
+ dmarc=none (p=none dis=none) header.from=ghiti.fr
+Received: from mslow2.mail.gandi.net (mslow2.mail.gandi.net [217.70.178.242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47vd4R4jdKzDqgD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jan 2020 09:31:16 +1100 (AEDT)
+Received: from relay10.mail.gandi.net (unknown [217.70.178.230])
+ by mslow2.mail.gandi.net (Postfix) with ESMTP id AF6993ACEDB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jan 2020 22:28:56 +0000 (UTC)
+Received: from [192.168.0.12] (127.19.86.79.rev.sfr.net [79.86.19.127])
+ (Authenticated sender: alexandre@ghiti.fr)
+ by relay10.mail.gandi.net (Postfix) with ESMTPSA id 2EFE3240002;
+ Fri, 10 Jan 2020 22:28:18 +0000 (UTC)
+Subject: Re: Re: linux-next: build warning after merge of the bpf-next tree
+To: Stephen Rothwell <sfr@canb.auug.org.au>,
+ Daniel Borkmann <daniel@iogearbox.net>, Alexei Starovoitov <ast@kernel.org>,
+ Networking <netdev@vger.kernel.org>
+References: <20191018105657.4584ec67@canb.auug.org.au>
+ <20191028110257.6d6dba6e@canb.auug.org.au>
+From: Alexandre Ghiti <alexandre@ghiti.fr>
+Message-ID: <a367af4d-7267-2e94-74dc-2a2aac204080@ghiti.fr>
+Date: Fri, 10 Jan 2020 17:28:17 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Linutronix-Spam-Score: -1.0
-X-Linutronix-Spam-Level: -
-X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required, ALL_TRUSTED=-1,
- SHORTCIRCUIT=-0.0001
+In-Reply-To: <20191028110257.6d6dba6e@canb.auug.org.au>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: sv-FI
+X-Mailman-Approved-At: Sat, 11 Jan 2020 09:59:57 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,64 +65,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- luto@kernel.org, vincenzo.frascino@arm.com, linuxppc-dev@lists.ozlabs.org
+Cc: zong.li@sifive.com, Linux Next Mailing List <linux-next@vger.kernel.org>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe,
+Hi guys,
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
-> On 01/09/2020 02:05 PM, Thomas Gleixner wrote:
->> The reason why this is implemented in this way is that
->> __arch_get_hw_counter() needs a way to express that the clocksource of
->> the moment is not suitable for VDSO so that the syscall fallback gets
->> invoked.
->> 
->> Sure we could have used a pointer for the value and a return value
->> indicating the validity, but given the required uptime the resulting
->> code overhead seemed to be not worth it. At least not for me as I'm not
->> planning to be around 58 years from now :)
->> 
+On 10/27/19 8:02 PM, Stephen Rothwell wrote:
+> Hi all,
 >
-> I managed to get better code and better performance by splitting out the 
-> validity check as follows. Would it be suitable for all arches ?
-
-A quick test on x86 shows only a minimal impact, but it's in the
-noise. So from my side that's fine, but I can't talk for ARM[64]/MIPS
-
-> diff --git a/arch/powerpc/include/asm/vdso/gettimeofday.h 
-> b/arch/powerpc/include/asm/vdso/gettimeofday.h
-> index 689f51b0d8c9..11cdd6faa4ad 100644
-> --- a/arch/powerpc/include/asm/vdso/gettimeofday.h
-> +++ b/arch/powerpc/include/asm/vdso/gettimeofday.h
-> @@ -114,15 +114,17 @@ int clock_getres32_fallback(clockid_t _clkid, 
-> struct old_timespec32 *_ts)
->   	return ret;
->   }
+> On Fri, 18 Oct 2019 10:56:57 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>> Hi all,
+>>
+>> After merging the bpf-next tree, today's linux-next build (powerpc
+>> ppc64_defconfig) produced this warning:
+>>
+>> WARNING: 2 bad relocations
+>> c000000001998a48 R_PPC64_ADDR64    _binary__btf_vmlinux_bin_start
+>> c000000001998a50 R_PPC64_ADDR64    _binary__btf_vmlinux_bin_end
+>>
+>> Introduced by commit
+>>
+>>    8580ac9404f6 ("bpf: Process in-kernel BTF")
+> This warning now appears in the net-next tree build.
 >
-> -static __always_inline u64 __arch_get_hw_counter(s32 clock_mode)
-> +static __always_inline bool __arch_is_hw_counter_valid(s32 clock_mode)
->   {
->   	/*
->   	 * clock_mode == 0 implies that vDSO are enabled otherwise
->   	 * fallback on syscall.
->   	 */
-> -	if (clock_mode)
-> -		return ULLONG_MAX;
-> +	return clock_mode ? false : true;
+>
+I bump that thread up because Zong also noticed that 2 new relocations for
+those symbols appeared in my riscv relocatable kernel branch following 
+that commit.
 
-I don't think we need an arch specific function here. I rather convert
-the boolean of ARM[64] to the x86/MIPS way of VCLOCK_* modes and let the
-generic code check for clock_mode == VCLOCK_NONE.
+I also noticed 2 new relocations R_AARCH64_ABS64 appearing in arm64 kernel.
 
-There is some magic in ARM and MIPS which wants to be able to disable
-the whole thing at compile time, but that can be handled in the generic
-code with just an extra config switch.
+Those 2 weak undefined symbols have existed since commit
+341dfcf8d78e ("btf: expose BTF info through sysfs") but this is the fact
+to declare those symbols into btf.c that produced those relocations.
 
-I'll have a stab at that tomorrow.
+I'm not sure what this all means, but this is not something I expected 
+for riscv for
+a kernel linked with -shared/-fpie. Maybe should we just leave them to 
+zero ?
 
-Thanks,
+I think that deserves a deeper look if someone understands all this 
+better than I do.
 
-        tglx
+Alex
+
