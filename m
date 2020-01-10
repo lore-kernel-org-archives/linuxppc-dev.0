@@ -5,19 +5,19 @@ X-Spam-Level:
 X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A50A3C33CA2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jan 2020 10:17:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59C84C33CA2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jan 2020 10:19:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1F1E7206ED
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jan 2020 10:17:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1F1E7206ED
+	by mail.kernel.org (Postfix) with ESMTPS id 09EBD206ED
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jan 2020 10:19:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 09EBD206ED
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47vJnz4PvTzDqdZ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jan 2020 21:17:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47vJr24dShzDqdp
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jan 2020 21:19:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=srs0=rv0s=27=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
@@ -27,13 +27,13 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47vJl63GDQzDqcy
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jan 2020 21:15:13 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47vJn214g5zDqdj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jan 2020 21:16:54 +1100 (AEDT)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 205201] Booting halts if Dawicontrol DC-2976 UW SCSI board
  installed, unless RAM size limited to 3500M
-Date: Fri, 10 Jan 2020 10:15:11 +0000
+Date: Fri, 10 Jan 2020 10:16:50 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
@@ -43,13 +43,13 @@ X-Bugzilla-Version: 2.5
 X-Bugzilla-Keywords: 
 X-Bugzilla-Severity: normal
 X-Bugzilla-Who: rj.ronkko@gmail.com
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
+X-Bugzilla-Status: RESOLVED
+X-Bugzilla-Resolution: PATCH_ALREADY_AVAILABLE
 X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-205201-206035-CpWopiueK2@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: bug_status resolution
+Message-ID: <bug-205201-206035-vKPK1wQZn9@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-205201-206035@https.bugzilla.kernel.org/>
 References: <bug-205201-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -74,12 +74,12 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D205201
 
---- Comment #17 from Roland (rj.ronkko@gmail.com) ---
-Kernel 5.5 alpha 1 fixed the issue with Dawicontrol DC-2976 UW SCSI board. =
-Also
-a RTL 8169 ethernet card which had similar type of problem with earlier ker=
-nels
-works now with full (8 GB) Ram.
+Roland (rj.ronkko@gmail.com) changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEW                         |RESOLVED
+         Resolution|---                         |PATCH_ALREADY_AVAILABLE
 
 --=20
 You are receiving this mail because:
