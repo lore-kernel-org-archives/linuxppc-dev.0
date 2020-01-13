@@ -2,69 +2,61 @@ Return-Path: <SRS0=2lRn=3C=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7929EC33CAD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jan 2020 13:52:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BD11C33CAE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jan 2020 13:54:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E5B1F207FD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jan 2020 13:52:19 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Cf8izTSc"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E5B1F207FD
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 3D896207FD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jan 2020 13:54:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3D896207FD
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47xFQ81HLgzDqDh
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 00:52:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47xFT94fvJzDqM6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 00:54:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=timur@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=kaod.org (client-ip=46.105.72.238; helo=9.mo177.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=Cf8izTSc; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ dmarc=none (p=none dis=none) header.from=kaod.org
+X-Greylist: delayed 599 seconds by postgrey-1.36 at bilbo;
+ Tue, 14 Jan 2020 00:48:42 AEDT
+Received: from 9.mo177.mail-out.ovh.net (9.mo177.mail-out.ovh.net
+ [46.105.72.238])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47xFKv3Xp1zDqDD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2020 00:48:34 +1100 (AEDT)
-Received: from [192.168.1.20] (cpe-24-28-70-126.austin.res.rr.com
- [24.28.70.126])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id AFDE72081E;
- Mon, 13 Jan 2020 13:48:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1578923312;
- bh=ojdxLNukr1LCuPlXur/rQUkQqfSv9iZSOs2G8sP4wwY=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=Cf8izTScmMR/NCG22p5t4DbZrq1Zineva+mN68neN2TkESLjmmSXAShR876GXOsVv
- wYXJIQEZA7UYf0AHhrx7VHZnhpW1pWOLpkXbNqCCfutGZCS34/OqiUzKpsyhR18L56
- N2Qi8jK04c9AdLAkhWrZLnWA/rLYrgi1fMHVaBQQ=
-Subject: Re: [PATCH] evh_bytechan: fix out of bounds accesses
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby
- <jslaby@suse.com>, Scott Wood <swood@redhat.com>, york sun
- <york.sun@nxp.com>, b08248@gmail.com
-References: <20200109183912.5fcb52aa@canb.auug.org.au>
- <8736cj8rvr.fsf@mpe.ellerman.id.au>
-From: Timur Tabi <timur@kernel.org>
-Message-ID: <5f17b997-8a6c-841e-8868-c0877750e598@kernel.org>
-Date: Mon, 13 Jan 2020 07:48:30 -0600
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:68.0)
- Gecko/20100101 Thunderbird/68.3.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47xFL25cg2zDqDD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2020 00:48:39 +1100 (AEDT)
+Received: from player776.ha.ovh.net (unknown [10.108.57.141])
+ by mo177.mail-out.ovh.net (Postfix) with ESMTP id 7060611E28F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2020 14:31:11 +0100 (CET)
+Received: from kaod.org (82-64-250-170.subs.proxad.net [82.64.250.170])
+ (Authenticated sender: clg@kaod.org)
+ by player776.ha.ovh.net (Postfix) with ESMTPSA id 492D1E34B8E9;
+ Mon, 13 Jan 2020 13:31:05 +0000 (UTC)
+Subject: Re: [PATCH] powerpc/xive: discard ESB load value when interrupt is
+ invalid
+To: Michael Ellerman <mpe@ellerman.id.au>
+References: <20200113130118.27969-1-clg@kaod.org>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <76f76082-81ee-4957-c45b-151f0cd6e6b6@kaod.org>
+Date: Mon, 13 Jan 2020 14:31:04 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.2.2
 MIME-Version: 1.0
-In-Reply-To: <8736cj8rvr.fsf@mpe.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <20200113130118.27969-1-clg@kaod.org>
+Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 8151233854402563003
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedufedrvdejtddghedvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepuffvfhfhkffffgggjggtgfesthekredttdefjeenucfhrhhomhepveorughrihgtpgfnvggpifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucfkpheptddrtddrtddrtddpkedvrdeigedrvdehtddrudejtdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepphhlrgihvghrjeejiedrhhgrrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpegtlhhgsehkrghougdrohhrghdprhgtphhtthhopehlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhgnecuvehluhhsthgvrhfuihiivgeptd
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,26 +68,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: PowerPC Mailing List <linuxppc-dev@lists.ozlabs.org>
+Cc: Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Greg Kurz <groug@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 1/13/20 6:26 AM, Michael Ellerman wrote:
-> I've never heard of it, and I have no idea how to test it.
+On 1/13/20 2:01 PM, Cédric Le Goater wrote:
+> From: Frederic Barrat <fbarrat@linux.ibm.com>
 > 
-> It's not used by qemu, I guess there is/was a Freescale hypervisor that
-> used it.
+> A load on an ESB page returning all 1's means that the underlying
+> device has invalidated the access to the PQ state of the interrupt
+> through mmio. It may happen, for example when querying a PHB interrupt
+> while the PHB is in an error state.
+> 
+> In that case, we should consider the interrupt to be invalid when
+> checking its state in the irq_get_irqchip_state() handler.
 
-Yes, there is/was a Freescale hypervisor that I and a few others worked 
-on.  I've added a couple people on CC that might be able to tell the 
-current disposition of it.
 
-> But maybe it's time to remove it if it's not being maintained/used by
-> anyone?
+and we need also these tags :
 
-I wouldn't be completely opposed to that if there really are no more 
-users.  There really weren't any users even when I wrote the driver.
+Fixes: da15c03b047d ("powerpc/xive: Implement get_irqchip_state method for XIVE to fix shutdown race")
+Cc: stable@vger.kernel.org # v5.3+
 
-I haven't had a chance to study the patch, but my first instinct is that 
-there's got to be a better way to fix this than introducing a memcpy.
+
+
+> Cc: Paul Mackerras <paulus@ozlabs.org>
+> Signed-off-by: Frederic Barrat <fbarrat@linux.ibm.com>
+> [ clg: - wrote a commit log
+>        - introduced XIVE_ESB_INVALID ]
+> Signed-off-by: Cédric Le Goater <clg@kaod.org>
+> ---
+>  arch/powerpc/include/asm/xive-regs.h |  1 +
+>  arch/powerpc/sysdev/xive/common.c    | 15 ++++++++++++---
+>  2 files changed, 13 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/xive-regs.h b/arch/powerpc/include/asm/xive-regs.h
+> index f2dfcd50a2d3..33aee7490cbb 100644
+> --- a/arch/powerpc/include/asm/xive-regs.h
+> +++ b/arch/powerpc/include/asm/xive-regs.h
+> @@ -39,6 +39,7 @@
+>  
+>  #define XIVE_ESB_VAL_P		0x2
+>  #define XIVE_ESB_VAL_Q		0x1
+> +#define XIVE_ESB_INVALID	0xFF
+>  
+>  /*
+>   * Thread Management (aka "TM") registers
+> diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
+> index f5fadbd2533a..9651ca061828 100644
+> --- a/arch/powerpc/sysdev/xive/common.c
+> +++ b/arch/powerpc/sysdev/xive/common.c
+> @@ -972,12 +972,21 @@ static int xive_get_irqchip_state(struct irq_data *data,
+>  				  enum irqchip_irq_state which, bool *state)
+>  {
+>  	struct xive_irq_data *xd = irq_data_get_irq_handler_data(data);
+> +	u8 pq;
+>  
+>  	switch (which) {
+>  	case IRQCHIP_STATE_ACTIVE:
+> -		*state = !xd->stale_p &&
+> -			 (xd->saved_p ||
+> -			  !!(xive_esb_read(xd, XIVE_ESB_GET) & XIVE_ESB_VAL_P));
+> +		pq = xive_esb_read(xd, XIVE_ESB_GET);
+> +
+> +		/*
+> +		 * The esb value being all 1's means we couldn't get
+> +		 * the PQ state of the interrupt through mmio. It may
+> +		 * happen, for example when querying a PHB interrupt
+> +		 * while the PHB is in an error state. We consider the
+> +		 * interrupt to be inactive in that case.
+> +		 */
+> +		*state = (pq != XIVE_ESB_INVALID) && !xd->stale_p &&
+> +			(xd->saved_p || !!(pq & XIVE_ESB_VAL_P));
+>  		return 0;
+>  	default:
+>  		return -EINVAL;
+> 
+
