@@ -2,56 +2,81 @@ Return-Path: <SRS0=2lRn=3C=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5209AC33CA9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jan 2020 16:39:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C080C33CA9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jan 2020 17:12:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CB6E521569
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jan 2020 16:39:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CB6E521569
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 4D6C22075B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jan 2020 17:12:13 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="mBpCKKG/"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4D6C22075B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47xK7b1pFkzDqLt
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 03:39:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=87.98.172.162; helo=18.mo3.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47xKrp2TdLzDqNN
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 04:12:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 4196 seconds by postgrey-1.36 at bilbo;
- Tue, 14 Jan 2020 03:38:03 AEDT
-Received: from 18.mo3.mail-out.ovh.net (18.mo3.mail-out.ovh.net
- [87.98.172.162])
+ spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
+ header.s=mail header.b=mBpCKKG/; dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47xK5R6zgbzDqF1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2020 03:37:59 +1100 (AEDT)
-Received: from player778.ha.ovh.net (unknown [10.108.35.124])
- by mo3.mail-out.ovh.net (Postfix) with ESMTP id EFB8F23C32F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2020 14:01:27 +0100 (CET)
-Received: from kaod.org (82-64-250-170.subs.proxad.net [82.64.250.170])
- (Authenticated sender: clg@kaod.org)
- by player778.ha.ovh.net (Postfix) with ESMTPSA id 1171DE2A7B8B;
- Mon, 13 Jan 2020 13:01:21 +0000 (UTC)
-From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] powerpc/xive: discard ESB load value when interrupt is invalid
-Date: Mon, 13 Jan 2020 14:01:18 +0100
-Message-Id: <20200113130118.27969-1-clg@kaod.org>
-X-Mailer: git-send-email 2.21.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 7649082493662563249
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedufedrvdejtddggeejucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvufffkffogggtgfesthekredtredtjeenucfhrhhomhepveorughrihgtucfnvgcuifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucfkpheptddrtddrtddrtddpkedvrdeigedrvdehtddrudejtdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepphhlrgihvghrjeejkedrhhgrrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpegtlhhgsehkrghougdrohhrghdprhgtphhtthhopehlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhgnecuvehluhhsthgvrhfuihiivgeptd
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47xKmt0m5lzDqBg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2020 04:08:45 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 47xKmh6GKJz9txyv;
+ Mon, 13 Jan 2020 18:08:36 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=mBpCKKG/; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id 47SfHxDpbXMG; Mon, 13 Jan 2020 18:08:36 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 47xKmh5CtGz9txyq;
+ Mon, 13 Jan 2020 18:08:36 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1578935316; bh=FbDYhvBTgQ/Lrh5RwFYuCQEYwJvHYlZlnPbutz2hvUg=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=mBpCKKG/R/EQyJZFZ9dsTIMC+sg7c/c1wXtd7QEgOWLNi3i2AAC9Vfv/Ud7HFmFuU
+ HmlggOZhmWRHXKl/lKRl+RpCLeyu9Xi5gNGL0xjvd+JpWn5zcRECBbDM9OHFWWIXGo
+ YorKxdnV/93taISEusU2hS50irb55O/OVnGaRC+k=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0E6EF8B7C9;
+ Mon, 13 Jan 2020 18:08:42 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 6e0G3CbwxoJN; Mon, 13 Jan 2020 18:08:41 +0100 (CET)
+Received: from po14934vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D00BE8B7BE;
+ Mon, 13 Jan 2020 18:08:41 +0100 (CET)
+Received: by localhost.localdomain (Postfix, from userid 0)
+ id A66B564A1D; Mon, 13 Jan 2020 17:08:41 +0000 (UTC)
+Message-Id: <9f0f72424a8f0260470ecd50d5803db685285ba5.1578934751.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1578934751.git.christophe.leroy@c-s.fr>
+References: <cover.1578934751.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [RFC PATCH v3 03/12] lib: vdso: mark __cvdso_clock_getres() as static
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ arnd@arndb.de, tglx@linutronix.de, vincenzo.frascino@arm.com,
+ luto@kernel.org
+Date: Mon, 13 Jan 2020 17:08:41 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,74 +88,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Greg Kurz <groug@kaod.org>,
- =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+Cc: x86@kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-mips@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Frederic Barrat <fbarrat@linux.ibm.com>
+When __cvdso_clock_getres() became __cvdso_clock_getres_common()
+and a new __cvdso_clock_getres() was added, static qualifier was
+forgotten.
 
-A load on an ESB page returning all 1's means that the underlying
-device has invalidated the access to the PQ state of the interrupt
-through mmio. It may happen, for example when querying a PHB interrupt
-while the PHB is in an error state.
+This change allows the compiler to inline __cvdso_clock_getres_common(),
+and the performance improvement is significant:
 
-In that case, we should consider the interrupt to be invalid when
-checking its state in the irq_get_irqchip_state() handler.
+Before:
+clock-getres-realtime-coarse:    vdso: 984 nsec/call
+clock-getres-realtime:    vdso: 922 nsec/call
+clock-getres-monotonic-raw:    vdso: 968 nsec/call
 
-Cc: Paul Mackerras <paulus@ozlabs.org>
-Signed-off-by: Frederic Barrat <fbarrat@linux.ibm.com>
-[ clg: - wrote a commit log
-       - introduced XIVE_ESB_INVALID ]
-Signed-off-by: Cédric Le Goater <clg@kaod.org>
+After:
+clock-getres-realtime-coarse:    vdso: 753 nsec/call
+clock-getres-realtime:    vdso: 691 nsec/call
+clock-getres-monotonic-raw:    vdso: 737 nsec/call
+
+Fixes: 502a590a170b ("lib/vdso: Move fallback invocation to the callers")
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/xive-regs.h |  1 +
- arch/powerpc/sysdev/xive/common.c    | 15 ++++++++++++---
- 2 files changed, 13 insertions(+), 3 deletions(-)
+ lib/vdso/gettimeofday.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/include/asm/xive-regs.h b/arch/powerpc/include/asm/xive-regs.h
-index f2dfcd50a2d3..33aee7490cbb 100644
---- a/arch/powerpc/include/asm/xive-regs.h
-+++ b/arch/powerpc/include/asm/xive-regs.h
-@@ -39,6 +39,7 @@
+diff --git a/lib/vdso/gettimeofday.c b/lib/vdso/gettimeofday.c
+index 9ecfd3b547ba..42bd8ab955fa 100644
+--- a/lib/vdso/gettimeofday.c
++++ b/lib/vdso/gettimeofday.c
+@@ -221,6 +221,7 @@ int __cvdso_clock_getres_common(clockid_t clock, struct __kernel_timespec *res)
+ 	return 0;
+ }
  
- #define XIVE_ESB_VAL_P		0x2
- #define XIVE_ESB_VAL_Q		0x1
-+#define XIVE_ESB_INVALID	0xFF
- 
- /*
-  * Thread Management (aka "TM") registers
-diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-index f5fadbd2533a..9651ca061828 100644
---- a/arch/powerpc/sysdev/xive/common.c
-+++ b/arch/powerpc/sysdev/xive/common.c
-@@ -972,12 +972,21 @@ static int xive_get_irqchip_state(struct irq_data *data,
- 				  enum irqchip_irq_state which, bool *state)
++static __maybe_unused
+ int __cvdso_clock_getres(clockid_t clock, struct __kernel_timespec *res)
  {
- 	struct xive_irq_data *xd = irq_data_get_irq_handler_data(data);
-+	u8 pq;
- 
- 	switch (which) {
- 	case IRQCHIP_STATE_ACTIVE:
--		*state = !xd->stale_p &&
--			 (xd->saved_p ||
--			  !!(xive_esb_read(xd, XIVE_ESB_GET) & XIVE_ESB_VAL_P));
-+		pq = xive_esb_read(xd, XIVE_ESB_GET);
-+
-+		/*
-+		 * The esb value being all 1's means we couldn't get
-+		 * the PQ state of the interrupt through mmio. It may
-+		 * happen, for example when querying a PHB interrupt
-+		 * while the PHB is in an error state. We consider the
-+		 * interrupt to be inactive in that case.
-+		 */
-+		*state = (pq != XIVE_ESB_INVALID) && !xd->stale_p &&
-+			(xd->saved_p || !!(pq & XIVE_ESB_VAL_P));
- 		return 0;
- 	default:
- 		return -EINVAL;
+ 	int ret = __cvdso_clock_getres_common(clock, res);
 -- 
-2.21.1
+2.13.3
 
