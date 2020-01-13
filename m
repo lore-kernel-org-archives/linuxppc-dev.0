@@ -2,61 +2,123 @@ Return-Path: <SRS0=2lRn=3C=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BD11C33CAE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jan 2020 13:54:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E6E7DC33CAD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jan 2020 14:37:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3D896207FD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jan 2020 13:54:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3D896207FD
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 2EC8820678
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jan 2020 14:37:16 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="kDeLBWRE"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2EC8820678
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47xFT94fvJzDqM6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 00:54:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=46.105.72.238; helo=9.mo177.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47xGQ14v0YzDqMh
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 01:37:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 599 seconds by postgrey-1.36 at bilbo;
- Tue, 14 Jan 2020 00:48:42 AEDT
-Received: from 9.mo177.mail-out.ovh.net (9.mo177.mail-out.ovh.net
- [46.105.72.238])
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=40.107.7.78; helo=eur04-he1-obe.outbound.protection.outlook.com;
+ envelope-from=laurentiu.tudor@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256
+ header.s=selector2 header.b=kDeLBWRE; 
+ dkim-atps=neutral
+Received: from EUR04-HE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr70078.outbound.protection.outlook.com [40.107.7.78])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47xFL25cg2zDqDD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2020 00:48:39 +1100 (AEDT)
-Received: from player776.ha.ovh.net (unknown [10.108.57.141])
- by mo177.mail-out.ovh.net (Postfix) with ESMTP id 7060611E28F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2020 14:31:11 +0100 (CET)
-Received: from kaod.org (82-64-250-170.subs.proxad.net [82.64.250.170])
- (Authenticated sender: clg@kaod.org)
- by player776.ha.ovh.net (Postfix) with ESMTPSA id 492D1E34B8E9;
- Mon, 13 Jan 2020 13:31:05 +0000 (UTC)
-Subject: Re: [PATCH] powerpc/xive: discard ESB load value when interrupt is
- invalid
-To: Michael Ellerman <mpe@ellerman.id.au>
-References: <20200113130118.27969-1-clg@kaod.org>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <76f76082-81ee-4957-c45b-151f0cd6e6b6@kaod.org>
-Date: Mon, 13 Jan 2020 14:31:04 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.2.2
-MIME-Version: 1.0
-In-Reply-To: <20200113130118.27969-1-clg@kaod.org>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47xGMV0GClzDqG6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2020 01:35:00 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=kxzPXGlFA8rILM/uGIz3HUYblmm9BjqvQnMjUeIuPYrKL7aK9WybVeGBdLhGAZUDU5kwZj3ijOCVUAl0rDE+oF9tVw7QrF7VTpvddTC1cEEc8zO78NL/TKh3xD3w4bUsN+MwrSCGEFuZbNib0xAiFTca1IgOiB/rVQ/xvmlcWbJ5c76cw9f2b1pRNO22x5MqFuEqP21bMut23cRV3lmwohLMibEyxJNmMiB2rXwy8aRQWzy2DBaAuGUE8bljfBWG4KcJ8kLjsK4A5F3NwkLsbBHM2nGKXikG3X0O7UbAew+8m/wpIAlnOD3vrBF3gZLqGxfw/3dVWdWSA8wqpgYrXg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=gCfAqRZc49/w61gTa8gRyCi2jiF9TgVxvPJARmGYXic=;
+ b=ER6gk0T7Bb862Cw3766Ql8lo66yuw1rEbjRlllQibQkrAAnZjtYBcF250aUYh2poBLQ8y6UGot4xwi7RBQULVCHbKafQ7y3ZIeBhdn0Z5SSqZx3q93PJpE0DpK4nFm6+j8vyz1IZdoBbxPCSbrBNxxErydArcO9L43plRRlLqdbwEWQgmasfhjqO5wjmWssg+Km4jk84PxbX4LvFRLK2HoEXzb1pd4GrjbGCeY2x9ZPRB/uLEz/dWhJ13iTGRwR7RBgxwDJHkzjV/WLLnizmueKv4tQTgKsax2HkEGQVMWSe2ynG15Jr/ndP22uaPmjxxxRJKFcNdAisFKpMzBsmPA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=gCfAqRZc49/w61gTa8gRyCi2jiF9TgVxvPJARmGYXic=;
+ b=kDeLBWRE7QUiydxF1CibYtQYzTm6HW3eGfWLvyO/qO71kyIM5n1yo9frjF51ircAQdWP9VfhEV5+ph1BRSl2gIp7dIhPW+ZFB9W6WdzuvVpW1egkZnfl979oiKD4s6fDBLn70hIva5JnsOjqxxYqegZZwQRwu24vTCG+UoiCYHw=
+Received: from AM6PR04MB5878.eurprd04.prod.outlook.com (20.179.0.89) by
+ AM6PR04MB4454.eurprd04.prod.outlook.com (20.177.37.139) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.2623.10; Mon, 13 Jan 2020 14:34:51 +0000
+Received: from AM6PR04MB5878.eurprd04.prod.outlook.com
+ ([fe80::932:9fab:97d3:1a82]) by AM6PR04MB5878.eurprd04.prod.outlook.com
+ ([fe80::932:9fab:97d3:1a82%7]) with mapi id 15.20.2623.015; Mon, 13 Jan 2020
+ 14:34:51 +0000
+Received: from [10.171.82.13] (89.37.124.34) by
+ LO2P265CA0044.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:61::32) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.2623.9 via Frontend Transport; Mon, 13 Jan 2020 14:34:50 +0000
+From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+To: Timur Tabi <timur@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Stephen Rothwell <sfr@canb.auug.org.au>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, Scott Wood
+ <swood@redhat.com>, York Sun <york.sun@nxp.com>, "b08248@gmail.com"
+ <b08248@gmail.com>
+Subject: Re: [PATCH] evh_bytechan: fix out of bounds accesses
+Thread-Topic: [PATCH] evh_bytechan: fix out of bounds accesses
+Thread-Index: AQHVxr/zKCtNFfWOrE6GT6IEXEdd/Kfoi7oAgAAXDACAAAzwAA==
+Date: Mon, 13 Jan 2020 14:34:50 +0000
+Message-ID: <47d31d84-78ed-fd90-f3d9-8ce968126497@nxp.com>
+References: <20200109183912.5fcb52aa@canb.auug.org.au>
+ <8736cj8rvr.fsf@mpe.ellerman.id.au>
+ <5f17b997-8a6c-841e-8868-c0877750e598@kernel.org>
+In-Reply-To: <5f17b997-8a6c-841e-8868-c0877750e598@kernel.org>
+Accept-Language: en-US
 Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 8151233854402563003
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedufedrvdejtddghedvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepuffvfhfhkffffgggjggtgfesthekredttdefjeenucfhrhhomhepveorughrihgtpgfnvggpifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucfkpheptddrtddrtddrtddpkedvrdeigedrvdehtddrudejtdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepphhlrgihvghrjeejiedrhhgrrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpegtlhhgsehkrghougdrohhrghdprhgtphhtthhopehlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhgnecuvehluhhsthgvrhfuihiivgeptd
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-clientproxiedby: LO2P265CA0044.GBRP265.PROD.OUTLOOK.COM
+ (2603:10a6:600:61::32) To AM6PR04MB5878.eurprd04.prod.outlook.com
+ (2603:10a6:20b:a2::25)
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=laurentiu.tudor@nxp.com; 
+x-ms-exchange-messagesentrepresentingtype: 1
+x-originating-ip: [89.37.124.34]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-ht: Tenant
+x-ms-office365-filtering-correlation-id: 500e82f5-cfc2-45cb-b4f0-08d79835bf5e
+x-ms-traffictypediagnostic: AM6PR04MB4454:|AM6PR04MB4454:
+x-ms-exchange-transport-forked: True
+x-microsoft-antispam-prvs: <AM6PR04MB445463DA611A3F89EDD79491EC350@AM6PR04MB4454.eurprd04.prod.outlook.com>
+x-ms-oob-tlc-oobclassifiers: OLM:7691;
+x-forefront-prvs: 028166BF91
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10009020)(4636009)(39860400002)(136003)(376002)(346002)(396003)(366004)(199004)(189003)(316002)(956004)(2616005)(31686004)(66946007)(66556008)(26005)(186003)(16526019)(66476007)(54906003)(31696002)(52116002)(110136005)(16576012)(5660300002)(44832011)(66446008)(64756008)(86362001)(53546011)(8936002)(2906002)(36756003)(81166006)(81156014)(8676002)(478600001)(4326008)(966005)(71200400001)(6486002);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:AM6PR04MB4454;
+ H:AM6PR04MB5878.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; A:1; MX:1; 
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: ZCjRKktRR4w5Ncw9UqdXCfYWyfAgHJyQT60zlsSp1ro3fH3yWGuZB4EGD9UCesCvxpktjHW3e0nBCPsB0Vmo4eqSPSkAFchsIAYfDnGmGpjGxXPE0+wFn7RMMzxuNxXwRo0BHIgAwVU43Uc0Yvbrins0F5/ulReP37b6VsYSkEOMryTJs7emYK2ptpRm1oFaPuZY8B8LJhCYgdizgoeg0KTA6NqTh5B54iDwx/0F2Z9XWe90IZZGsqCe9pno/kaKd2u9PjyvSII5jOBkYKSUFEimGlg+D3ds1iugSAdSjiyzeiVmaogOXU7+pOICnC+rlzmMorG2XG1K0gBJlbGT+BTOxMNRbrpQqHqPcawl/Q8kNT3iPf49mW0RHEGAIhTVzAhYj5vedQIoHKnLvzss9Ov5+3dK1vVVzRm6mTQ97i9S4TBPfT5sZkdiDa05sWh2sOTmjpo4B+XpLDARNOJK7ujQR7imK3sEKnTk+NvM4DxjC2LGeavoPXVLaUsybKpS046VR1Ik/gkMJ3SEfN9Wow==
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <13049870CECCEB44AF5887455A45B91D@eurprd04.prod.outlook.com>
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 500e82f5-cfc2-45cb-b4f0-08d79835bf5e
+X-MS-Exchange-CrossTenant-originalarrivaltime: 13 Jan 2020 14:34:51.0366 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: 9hqP6nRalsZo4BBtUhzXfaq5ALLSjmwxus6NN8LqIQopplg4gOrDvr2ETo14kfnFwW+k/Hby+7TSBzNHeDRNEg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM6PR04MB4454
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,81 +130,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Greg Kurz <groug@kaod.org>
+Cc: Diana Madalina Craciun <diana.craciun@nxp.com>,
+ PowerPC Mailing List <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 1/13/20 2:01 PM, Cédric Le Goater wrote:
-> From: Frederic Barrat <fbarrat@linux.ibm.com>
-> 
-> A load on an ESB page returning all 1's means that the underlying
-> device has invalidated the access to the PQ state of the interrupt
-> through mmio. It may happen, for example when querying a PHB interrupt
-> while the PHB is in an error state.
-> 
-> In that case, we should consider the interrupt to be invalid when
-> checking its state in the irq_get_irqchip_state() handler.
-
-
-and we need also these tags :
-
-Fixes: da15c03b047d ("powerpc/xive: Implement get_irqchip_state method for XIVE to fix shutdown race")
-Cc: stable@vger.kernel.org # v5.3+
-
-
-
-> Cc: Paul Mackerras <paulus@ozlabs.org>
-> Signed-off-by: Frederic Barrat <fbarrat@linux.ibm.com>
-> [ clg: - wrote a commit log
->        - introduced XIVE_ESB_INVALID ]
-> Signed-off-by: Cédric Le Goater <clg@kaod.org>
-> ---
->  arch/powerpc/include/asm/xive-regs.h |  1 +
->  arch/powerpc/sysdev/xive/common.c    | 15 ++++++++++++---
->  2 files changed, 13 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/xive-regs.h b/arch/powerpc/include/asm/xive-regs.h
-> index f2dfcd50a2d3..33aee7490cbb 100644
-> --- a/arch/powerpc/include/asm/xive-regs.h
-> +++ b/arch/powerpc/include/asm/xive-regs.h
-> @@ -39,6 +39,7 @@
->  
->  #define XIVE_ESB_VAL_P		0x2
->  #define XIVE_ESB_VAL_Q		0x1
-> +#define XIVE_ESB_INVALID	0xFF
->  
->  /*
->   * Thread Management (aka "TM") registers
-> diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-> index f5fadbd2533a..9651ca061828 100644
-> --- a/arch/powerpc/sysdev/xive/common.c
-> +++ b/arch/powerpc/sysdev/xive/common.c
-> @@ -972,12 +972,21 @@ static int xive_get_irqchip_state(struct irq_data *data,
->  				  enum irqchip_irq_state which, bool *state)
->  {
->  	struct xive_irq_data *xd = irq_data_get_irq_handler_data(data);
-> +	u8 pq;
->  
->  	switch (which) {
->  	case IRQCHIP_STATE_ACTIVE:
-> -		*state = !xd->stale_p &&
-> -			 (xd->saved_p ||
-> -			  !!(xive_esb_read(xd, XIVE_ESB_GET) & XIVE_ESB_VAL_P));
-> +		pq = xive_esb_read(xd, XIVE_ESB_GET);
-> +
-> +		/*
-> +		 * The esb value being all 1's means we couldn't get
-> +		 * the PQ state of the interrupt through mmio. It may
-> +		 * happen, for example when querying a PHB interrupt
-> +		 * while the PHB is in an error state. We consider the
-> +		 * interrupt to be inactive in that case.
-> +		 */
-> +		*state = (pq != XIVE_ESB_INVALID) && !xd->stale_p &&
-> +			(xd->saved_p || !!(pq & XIVE_ESB_VAL_P));
->  		return 0;
->  	default:
->  		return -EINVAL;
-> 
-
+SGVsbG8sDQoNCk9uIDEzLjAxLjIwMjAgMTU6NDgsIFRpbXVyIFRhYmkgd3JvdGU6DQo+IE9uIDEv
+MTMvMjAgNjoyNiBBTSwgTWljaGFlbCBFbGxlcm1hbiB3cm90ZToNCj4+IEkndmUgbmV2ZXIgaGVh
+cmQgb2YgaXQsIGFuZCBJIGhhdmUgbm8gaWRlYSBob3cgdG8gdGVzdCBpdC4NCj4+DQo+PiBJdCdz
+IG5vdCB1c2VkIGJ5IHFlbXUsIEkgZ3Vlc3MgdGhlcmUgaXMvd2FzIGEgRnJlZXNjYWxlIGh5cGVy
+dmlzb3IgdGhhdA0KPj4gdXNlZCBpdC4NCj4gDQo+IFllcywgdGhlcmUgaXMvd2FzIGEgRnJlZXNj
+YWxlIGh5cGVydmlzb3IgdGhhdCBJIGFuZCBhIGZldyBvdGhlcnMgd29ya2VkIA0KPiBvbi7CoCBJ
+J3ZlIGFkZGVkIGEgY291cGxlIHBlb3BsZSBvbiBDQyB0aGF0IG1pZ2h0IGJlIGFibGUgdG8gdGVs
+bCB0aGUgDQo+IGN1cnJlbnQgZGlzcG9zaXRpb24gb2YgaXQuDQoNCk1vcmUgaW5mbyBvbiB0aGlz
+OiBpdCdzIG9wZW5zb3VyY2UgYW5kIGl0J3MgcHVibGlzaGVkIGhlcmUgWzFdLiBXZSBzdGlsbCAN
+CmNsYWltIHRvIG1haW50YWluIGl0IGJ1dCB0aGVyZSB3YXNuJ3QgbXVjaCBhY3Rpdml0eSBwYXN0
+IHllYXJzLCBhcyBvbmUgDQptaWdodCBub3RpY2UuDQoNCj4+IEJ1dCBtYXliZSBpdCdzIHRpbWUg
+dG8gcmVtb3ZlIGl0IGlmIGl0J3Mgbm90IGJlaW5nIG1haW50YWluZWQvdXNlZCBieQ0KPj4gYW55
+b25lPw0KPiANCj4gSSB3b3VsZG4ndCBiZSBjb21wbGV0ZWx5IG9wcG9zZWQgdG8gdGhhdCBpZiB0
+aGVyZSByZWFsbHkgYXJlIG5vIG1vcmUgDQo+IHVzZXJzLsKgIFRoZXJlIHJlYWxseSB3ZXJlbid0
+IGFueSB1c2VycyBldmVuIHdoZW4gSSB3cm90ZSB0aGUgZHJpdmVyLg0KDQpUaGVyZSBhcmUgYSBm
+ZXcgdXNlcnMgdGhhdCBJIGtub3cgb2YsIGJ1dCBJIGNhbid0IHRlbGwgaWYgdGhhdCdzIGVub3Vn
+aCANCnRvIGp1c3RpZnkga2VlcGluZyB0aGUgZHJpdmVyLg0KDQpbMV0gaHR0cHM6Ly9zb3VyY2Uu
+Y29kZWF1cm9yYS5vcmcvZXh0ZXJuYWwvcW9yaXEvcW9yaXEteW9jdG8tc2RrL2h5cGVydmlzb3Iv
+DQoNCi0tLQ0KQmVzdCBSZWdhcmRzLCBMYXVyZW50aXUNCg==
