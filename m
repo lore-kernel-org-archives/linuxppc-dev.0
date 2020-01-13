@@ -2,62 +2,69 @@ Return-Path: <SRS0=2lRn=3C=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B7C2C33CAD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jan 2020 12:45:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7929EC33CAD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jan 2020 13:52:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E8B8C2081E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jan 2020 12:45:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E5B1F207FD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jan 2020 13:52:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="iLyhMRJO"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E8B8C2081E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Cf8izTSc"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E5B1F207FD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47xCx316ttzDqM6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jan 2020 23:45:27 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 47xFQ81HLgzDqDh
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 00:52:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=timur@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=Cf8izTSc; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47xCqV4FDnzDqJ3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2020 23:40:38 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=iLyhMRJO; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 47xCqV1GvFz9sS3;
- Mon, 13 Jan 2020 23:40:38 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1578919238;
- bh=BeCTTENuA6Ry5iPRQA86/ZoWJkKG2p30hjyTYtCPTDo=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=iLyhMRJOgQuA6cAfS3kX+lI5n2uODzdJBnIqVKIv7KmWcU77TQCtFC3fDyDCURqpm
- aQ9VIkDKSiOduioreWN9qoEFYi9celMUH+TjNUMN1X556etGyoCpLT5+Gw8+7YDjdq
- 9B6JfKlvQzHO6fOFvfp2Xsb1QsKjYyzoWgJ9SewS71KnX0qj3KKAO4Q5lwBrg7utw4
- ThxBYpx+b1vD27s2PSnRFqlciDUO1vsqS6ZREvxF6MxGSvaJnL44ZiRidv/jKvY2PS
- NglIUxOotuBT+gI48JgLYhEQzgkssW85MXdsqKxKmTOqJHaJ0eGepjcdq3Eaj+D1q9
- ppPSz13nZybpg==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3] powerpc/smp: Use nid as fallback for package_id
-In-Reply-To: <20191216142119.5937-1-srikar@linux.vnet.ibm.com>
-References: <20191216142119.5937-1-srikar@linux.vnet.ibm.com>
-Date: Mon, 13 Jan 2020 23:40:41 +1100
-Message-ID: <87zher7cmu.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47xFKv3Xp1zDqDD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2020 00:48:34 +1100 (AEDT)
+Received: from [192.168.1.20] (cpe-24-28-70-126.austin.res.rr.com
+ [24.28.70.126])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id AFDE72081E;
+ Mon, 13 Jan 2020 13:48:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1578923312;
+ bh=ojdxLNukr1LCuPlXur/rQUkQqfSv9iZSOs2G8sP4wwY=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=Cf8izTScmMR/NCG22p5t4DbZrq1Zineva+mN68neN2TkESLjmmSXAShR876GXOsVv
+ wYXJIQEZA7UYf0AHhrx7VHZnhpW1pWOLpkXbNqCCfutGZCS34/OqiUzKpsyhR18L56
+ N2Qi8jK04c9AdLAkhWrZLnWA/rLYrgi1fMHVaBQQ=
+Subject: Re: [PATCH] evh_bytechan: fix out of bounds accesses
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby
+ <jslaby@suse.com>, Scott Wood <swood@redhat.com>, york sun
+ <york.sun@nxp.com>, b08248@gmail.com
+References: <20200109183912.5fcb52aa@canb.auug.org.au>
+ <8736cj8rvr.fsf@mpe.ellerman.id.au>
+From: Timur Tabi <timur@kernel.org>
+Message-ID: <5f17b997-8a6c-841e-8868-c0877750e598@kernel.org>
+Date: Mon, 13 Jan 2020 07:48:30 -0600
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:68.0)
+ Gecko/20100101 Thunderbird/68.3.1
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <8736cj8rvr.fsf@mpe.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,198 +76,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: PowerPC Mailing List <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Srikar,
+On 1/13/20 6:26 AM, Michael Ellerman wrote:
+> I've never heard of it, and I have no idea how to test it.
+> 
+> It's not used by qemu, I guess there is/was a Freescale hypervisor that
+> used it.
 
-Still some comments sorry ...
+Yes, there is/was a Freescale hypervisor that I and a few others worked 
+on.  I've added a couple people on CC that might be able to tell the 
+current disposition of it.
 
-Srikar Dronamraju <srikar@linux.vnet.ibm.com> writes:
-> Package_id is to find out all cores that are part of the same chip. On
-> PowerNV machines, package_id defaults to chip_id. However ibm,chip_id
-> property is not present in device-tree of PowerVM Lpars. Hence lscpu
-> output shows one core per socket and multiple cores.
->
-> To overcome this, use nid as the package_id on PowerVM Lpars.
->
-> Before the patch.
-> ---------------
-> Architecture:        ppc64le
-> Byte Order:          Little Endian
-> CPU(s):              128
-> On-line CPU(s) list: 0-127
-> Thread(s) per core:  8
-> Core(s) per socket:  1                           <----------------------
-> Socket(s):           16                          <----------------------
-> NUMA node(s):        2
-> Model:               2.2 (pvr 004e 0202)
-> Model name:          POWER9 (architected), altivec supported
-> Hypervisor vendor:   pHyp
-> Virtualization type: para
-> L1d cache:           32K
-> L1i cache:           32K
-> L2 cache:            512K
-> L3 cache:            10240K
-> NUMA node0 CPU(s):   0-63
-> NUMA node1 CPU(s):   64-127
->  #
->  # cat /sys/devices/system/cpu/cpu0/topology/physical_package_id
->  -1
->  #
->
-> After the patch
-> ---------------
-> Architecture:        ppc64le
-> Byte Order:          Little Endian
-> CPU(s):              128
-> On-line CPU(s) list: 0-127
-> Thread(s) per core:  8			<------------------------------
-> Core(s) per socket:  8			<------------------------------
-> Socket(s):           2
-> NUMA node(s):        2
-> Model:               2.2 (pvr 004e 0202)
-> Model name:          POWER9 (architected), altivec supported
-> Hypervisor vendor:   pHyp
-> Virtualization type: para
-> L1d cache:           32K
-> L1i cache:           32K
-> L2 cache:            512K
-> L3 cache:            10240K
-> NUMA node0 CPU(s):   0-63
-> NUMA node1 CPU(s):   64-127
->  #
->  # cat /sys/devices/system/cpu/cpu0/topology/physical_package_id
->  0
->  #
-> Now lscpu output is more in line with the system configuration.
->
-> Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-> Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> ---
-> Changelog from v2: https://patchwork.ozlabs.org/patch/1151649
-> - Rebased to v5.5-rc2
-> - Renamed the new function to cpu_to_nid
-> - Removed checks to fadump property. (Looked too excessive)
-> - Moved pseries specific code to pseries/lpar.c
->
-> Changelog from v1: https://patchwork.ozlabs.org/patch/1126145
-> - In v1 cpu_to_chip_id was overloaded to fallback on nid.  Michael
->   Ellerman wasn't comfortable with nid being shown up as chip_id.
->
->  arch/powerpc/include/asm/topology.h   |  7 ++++++-
->  arch/powerpc/kernel/smp.c             |  6 +++---
->  arch/powerpc/platforms/pseries/lpar.c | 22 ++++++++++++++++++++++
->  3 files changed, 31 insertions(+), 4 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
-> index 2f7e1ea5089e..7422ef913c75 100644
-> --- a/arch/powerpc/include/asm/topology.h
-> +++ b/arch/powerpc/include/asm/topology.h
-> @@ -130,11 +130,16 @@ static inline void shared_proc_topology_init(void) {}
->  
->  #ifdef CONFIG_SMP
->  #include <asm/cputable.h>
-> +#ifdef CONFIG_PPC_SPLPAR
-> +int cpu_to_nid(int);
-> +#else
-> +#define cpu_to_nid(cpu)		cpu_to_chip_id(cpu)
-> +#endif
+> But maybe it's time to remove it if it's not being maintained/used by
+> anyone?
 
-We already have cpu_to_node(), which returns the numa node (nid) for a
-given CPU, so I think introducing a new accessor with an almost
-identical name is going to cause confusion. ie. when should code use
-cpu_to_node() and when should it use cpu_to_nid()?
+I wouldn't be completely opposed to that if there really are no more 
+users.  There really weren't any users even when I wrote the driver.
 
->  #ifdef CONFIG_PPC64
->  #include <asm/smp.h>
->  
-> -#define topology_physical_package_id(cpu)	(cpu_to_chip_id(cpu))
-> +#define topology_physical_package_id(cpu)	(cpu_to_nid(cpu))
-
-I think you should be overriding topology_physical_package_id() instead
-of introducing cpu_to_nid().
-
->  #define topology_sibling_cpumask(cpu)	(per_cpu(cpu_sibling_map, cpu))
->  #define topology_core_cpumask(cpu)	(per_cpu(cpu_core_map, cpu))
->  #define topology_core_id(cpu)		(cpu_to_core_id(cpu))
-> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> index ea6adbf6a221..b0c1438d8d9a 100644
-> --- a/arch/powerpc/kernel/smp.c
-> +++ b/arch/powerpc/kernel/smp.c
-> @@ -1188,7 +1188,7 @@ static inline void add_cpu_to_smallcore_masks(int cpu)
->  static void add_cpu_to_masks(int cpu)
->  {
->  	int first_thread = cpu_first_thread_sibling(cpu);
-> -	int chipid = cpu_to_chip_id(cpu);
-> +	int nid = cpu_to_nid(cpu);
-
-And here you should be using topology_physical_package_id(), rather than
-cpu_to_nid() directly.
-
->  	int i;
->  
->  	/*
-> @@ -1217,11 +1217,11 @@ static void add_cpu_to_masks(int cpu)
->  	for_each_cpu(i, cpu_l2_cache_mask(cpu))
->  		set_cpus_related(cpu, i, cpu_core_mask);
->  
-> -	if (chipid == -1)
-> +	if (nid == -1)
->  		return;
->  
->  	for_each_cpu(i, cpu_online_mask)
-> -		if (cpu_to_chip_id(i) == chipid)
-> +		if (cpu_to_nid(i) == nid)
->  			set_cpus_related(cpu, i, cpu_core_mask);
->  }
->  
-> diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-> index 60cb29ae4739..99583b9f00e4 100644
-> --- a/arch/powerpc/platforms/pseries/lpar.c
-> +++ b/arch/powerpc/platforms/pseries/lpar.c
-> @@ -650,6 +650,28 @@ static int __init vcpudispatch_stats_procfs_init(void)
-
-I think this function should actually be in smp.c or numa.c
-
-That's because it will be called on non-pseries platforms when we build
-a multi platform kernel (pseries & powernv). So it's not really pseries
-specific code.
-
->  }
->  
->  machine_device_initcall(pseries, vcpudispatch_stats_procfs_init);
-> +
-> +int cpu_to_nid(cpu)
-> +{
-> +	int nid = cpu_to_chip_id(cpu);
-> +
-> +	/*
-> +	 * If the platform is PowerNV or Guest on KVM, ibm,chip-id is
-> +	 * defined. Hence we would return the chip-id as the
-> +	 * cpu_to_nid.
-> +	 */
-> +	if (nid == -1 && firmware_has_feature(FW_FEATURE_LPAR)) {
-> +		struct device_node *np = of_get_cpu_node(cpu, NULL);
-> +
-> +		if (np) {
-> +			nid = of_node_to_nid(np);
-> +			of_node_put(np);
-> +		}
-> +	}
-> +	return nid;
-> +}
-> +EXPORT_SYMBOL(cpu_to_nid);
-
-Should be GPL.
-
-
-cheers
+I haven't had a chance to study the patch, but my first instinct is that 
+there's got to be a better way to fix this than introducing a memcpy.
