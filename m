@@ -2,53 +2,72 @@ Return-Path: <SRS0=2lRn=3C=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BC450C33CAD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jan 2020 15:10:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1813AC33CA9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jan 2020 15:50:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 44237207E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jan 2020 15:10:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 44237207E0
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
+	by mail.kernel.org (Postfix) with ESMTPS id 8127C207FD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jan 2020 15:50:34 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="LDxUG2A4"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8127C207FD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47xH8f70HzzDqMg
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 02:10:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47xJ2b4BlvzDqDm
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 02:50:31 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=timur@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=linutronix.de
- (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
- envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linutronix.de
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a0a:51c0:0:12e:550::1])
- (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=LDxUG2A4; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47xH5z0tVNzDq9p
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2020 02:08:22 +1100 (AEDT)
-Received: from [5.158.153.52] (helo=nanos.tec.linutronix.de)
- by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
- (Exim 4.80) (envelope-from <tglx@linutronix.de>)
- id 1ir1K8-0003m8-Or; Mon, 13 Jan 2020 16:08:12 +0100
-Received: by nanos.tec.linutronix.de (Postfix, from userid 1000)
- id 50A5D105BF0; Mon, 13 Jan 2020 16:08:12 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Christophe Leroy <christophe.leroy@c-s.fr>, arnd@arndb.de,
- vincenzo.frascino@arm.com, luto@kernel.org
-Subject: Re: [PATCH] lib: vdso: mark __cvdso_clock_getres() as static
-In-Reply-To: <658045cd-3f97-946d-6920-bea772e9be24@c-s.fr>
-References: <e7becc50bee355e3872b84d91cc68ae8d7776bb9.1578764712.git.christophe.leroy@c-s.fr>
- <875zhhsr0h.fsf@nanos.tec.linutronix.de>
- <658045cd-3f97-946d-6920-bea772e9be24@c-s.fr>
-Date: Mon, 13 Jan 2020 16:08:12 +0100
-Message-ID: <87y2ubqtr7.fsf@nanos.tec.linutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47xJ011PlRzDqDL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2020 02:48:17 +1100 (AEDT)
+Received: from [192.168.1.20] (cpe-24-28-70-126.austin.res.rr.com
+ [24.28.70.126])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id BF6BB207FD;
+ Mon, 13 Jan 2020 15:48:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1578930494;
+ bh=64Y2efURakSLcN1lwIcBrqwPysF/1NY6SU6961vQ4U0=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=LDxUG2A4vSZEYOIHnyY94+K3xXGkoYr/z8jCLp2hY4S+xURYXjlU+6ifHpDGe9GRZ
+ R96F5O152C+D80khk3hT/J7ejEpPxWp87gRdqvAwubZ6DzY4ed1C7gI0m5YOLI1Ky+
+ qqLpvdSVjiOFUCoGpCGXI7eymqBbjDDT91GLecO8=
+Subject: Re: [PATCH] evh_bytechan: fix out of bounds accesses
+To: Laurentiu Tudor <laurentiu.tudor@nxp.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby
+ <jslaby@suse.com>, Scott Wood <swood@redhat.com>, York Sun
+ <york.sun@nxp.com>, "b08248@gmail.com" <b08248@gmail.com>
+References: <20200109183912.5fcb52aa@canb.auug.org.au>
+ <8736cj8rvr.fsf@mpe.ellerman.id.au>
+ <5f17b997-8a6c-841e-8868-c0877750e598@kernel.org>
+ <47d31d84-78ed-fd90-f3d9-8ce968126497@nxp.com>
+From: Timur Tabi <timur@kernel.org>
+Message-ID: <40f99b1b-0fe8-70a2-66e3-f42d51af581e@kernel.org>
+Date: Mon, 13 Jan 2020 09:48:12 -0600
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:68.0)
+ Gecko/20100101 Thunderbird/68.3.1
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <47d31d84-78ed-fd90-f3d9-8ce968126497@nxp.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,21 +79,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-mips@vger.kernel.org
+Cc: Diana Madalina Craciun <diana.craciun@nxp.com>,
+ PowerPC Mailing List <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
-> Is there a git tree with the latest VDSO status ?
->
-> https://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git?h=timers%2Fvdso 
-> is 6 monthes old.
+On 1/13/20 8:34 AM, Laurentiu Tudor wrote:
+> There are a few users that I know of, but I can't tell if that's enough
+> to justify keeping the driver.
+> 
+> [1]https://source.codeaurora.org/external/qoriq/qoriq-yocto-sdk/hypervisor/
 
-Will push a new one later today. I'll let you know.
-
-Thanks,
-
-        tglx
-
+IIRC, the driver is the only reasonable way to get a serial console from 
+a guest.  So if there are users of the hypervisor, then I think there's 
+a good chance at least one is using the byte channel driver.
