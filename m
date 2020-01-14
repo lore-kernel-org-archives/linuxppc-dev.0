@@ -2,72 +2,80 @@ Return-Path: <SRS0=enMn=3D=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 624B4C33C9E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 16:59:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AB66C33C9E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 17:56:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C17652465A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 16:59:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E449024656
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 17:56:28 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="kWHKHJJ6"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C17652465A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="eTvHwM2o"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E449024656
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47xxX23v5TzDqP3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2020 03:59:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47xynQ2dyHzDqS5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2020 04:56:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=sirena.org.uk
- (client-ip=172.104.155.198; helo=heliosphere.sirena.org.uk;
- envelope-from=broonie@sirena.org.uk; receiver=<UNKNOWN>)
+ spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
+ dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.a=rsa-sha256 header.s=20170815-heliosphere header.b=kWHKHJJ6; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
+ header.s=mail header.b=eTvHwM2o; dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47xykk6dpRzDqRZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jan 2020 04:54:05 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 47xykc37Nyz9txgx;
+ Tue, 14 Jan 2020 18:54:00 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=eTvHwM2o; dkim-adsp=pass;
  dkim-atps=neutral
-Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
- [172.104.155.198])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47xxTq74XbzDqLY
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jan 2020 03:57:50 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=sirena.org.uk; s=20170815-heliosphere; h=In-Reply-To:Content-Type:
- MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=I7zCUFSxCilOiygfJOrKMG+d9QBWeV+zMVpsSsqTMqc=; b=kWHKHJJ6ilFEWZ2bNlW/Xb26V
- zGRDUEUZTnDadH1LnqM1ADZMn4ilWGec89HluanPHUxhNrpUyJ3xZqFAI5s2Q4E86vFSN9IF7T4Nf
- gKE/KbbvYrjzJ3hSOsZPEkWNhP/YMZAWYoawaW2j8vSPiJajqf9hZ0l7gGfmHbxfE3+PY=;
-Received: from fw-tnat-cam7.arm.com ([217.140.106.55]
- helo=fitzroy.sirena.org.uk) by heliosphere.sirena.org.uk with esmtpsa
- (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
- (envelope-from <broonie@sirena.org.uk>)
- id 1irPVc-0001hW-7R; Tue, 14 Jan 2020 16:57:40 +0000
-Received: by fitzroy.sirena.org.uk (Postfix, from userid 1000)
- id ACA3ED01965; Tue, 14 Jan 2020 16:57:39 +0000 (GMT)
-Date: Tue, 14 Jan 2020 16:57:39 +0000
-From: Mark Brown <broonie@kernel.org>
-To: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
-Subject: Re: [PATCH v3] spi: fsl: simplify error path in of_fsl_spi_probe()
-Message-ID: <20200114165739.GC3897@sirena.org.uk>
-References: <2a4a7e11b37cfa0558d68f0d35e90d6da858b059.1579017697.git.christophe.leroy@c-s.fr>
- <b6d01fa02e659db911df63a79d825080f03dfcb8.camel@infinera.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="avNtfD0ffNO6L/9g"
-Content-Disposition: inline
-In-Reply-To: <b6d01fa02e659db911df63a79d825080f03dfcb8.camel@infinera.com>
-X-Cookie: Programming is an unnatural act.
-User-Agent: Mutt/1.10.1 (2018-07-13)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id 02RRu8SgBgJd; Tue, 14 Jan 2020 18:54:00 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 47xykc1zTtz9txgv;
+ Tue, 14 Jan 2020 18:54:00 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1579024440; bh=B0+TB2t6Mf/OCq6ADh5LqwrW8zgDmLQL+/a0NWwMyqI=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=eTvHwM2on4WsspJ/vCRKarI7o8Yws20UAfQNTEPcQYMneVScYOE8yhXmf1GOEngYz
+ jQFH+L2ywylAfm5HKHHocO5JVqWhDt96TQD8ggSvk1Roeu8S9u6O3D4EEr9etDUowl
+ OK9oMLXvOqFHuds0u8YEWasnc/27CaHLi1jN3RvM=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 028548B7EB;
+ Tue, 14 Jan 2020 18:54:02 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id MgB5gcRAG-D9; Tue, 14 Jan 2020 18:54:01 +0100 (CET)
+Received: from po14934vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C44C78B7E8;
+ Tue, 14 Jan 2020 18:54:01 +0100 (CET)
+Received: by po14934vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 9DC396381C; Tue, 14 Jan 2020 17:54:01 +0000 (UTC)
+Message-Id: <6f28085c2a1aa987093d50db17586633bbf8e206.1579024426.git.christophe.leroy@c-s.fr>
+In-Reply-To: <031dec5487bde9b2181c8b3c9800e1879cf98c1a.1579024426.git.christophe.leroy@c-s.fr>
+References: <031dec5487bde9b2181c8b3c9800e1879cf98c1a.1579024426.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH 2/5] powerpc/kconfig: move CONFIG_PPC32 into Kconfig.cputype
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ erhard_f@mailbox.org, dja@axtens.net
+Date: Tue, 14 Jan 2020 17:54:01 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,41 +87,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "lkp@intel.com" <lkp@intel.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-spi@vger.kernel.org" <linux-spi@vger.kernel.org>,
- "geert@linux-m68k.org" <geert@linux-m68k.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Move CONFIG_PPC32 at the same place as CONFIG_PPC64 for consistency.
 
---avNtfD0ffNO6L/9g
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/Kconfig                   | 4 ----
+ arch/powerpc/platforms/Kconfig.cputype | 4 ++++
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-On Tue, Jan 14, 2020 at 04:26:18PM +0000, Joakim Tjernlund wrote:
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index a247bbfb03d4..c2a604b9592b 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -1,10 +1,6 @@
+ # SPDX-License-Identifier: GPL-2.0
+ source "arch/powerpc/platforms/Kconfig.cputype"
+ 
+-config PPC32
+-	bool
+-	default y if !PPC64
+-
+ config 32BIT
+ 	bool
+ 	default y if PPC32
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index 8d7f9c3dc771..536a2efcb7f0 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -1,4 +1,8 @@
+ # SPDX-License-Identifier: GPL-2.0
++config PPC32
++	bool
++	default y if !PPC64
++
+ config PPC64
+ 	bool "64-bit kernel"
+ 	select ZLIB_DEFLATE
+-- 
+2.13.3
 
-> Don't you need to "undo" ioremap, irq etc. in case of later errors?
-
-Better, convert to devm_=20
-
---avNtfD0ffNO6L/9g
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAl4d8wIACgkQJNaLcl1U
-h9DBpgf/ZMWk7TuStHKbaJC0YfEaWwp2D/yVzYAISxxSeNvL25vQlQlFJe6YGYR0
-2KK5vLMxNaH1Vf6vhet00ClpsdinZt7Jx91tzaplblsKxlPbraf4tSs6USCdy5Iq
-kSgUDnJvxiQSMnoTjJOkMh/ee/2LJQtVnYB+XirIqI9YWfqAZLrgm/PfqUnNq5vG
-+g9nCJ3/RKsLQGb9VmbmXwMy5gVCj3u41aMoX9XDDgoayy1IZPWRIsBTIzUmmCLZ
-A5OhXxnxucHDkAMXjiHE+jmgPEC1LUV+JIBydgN7Z+ryBNvTeLXDTFbnavabBb3Q
-RaQCF+kEphOgL9A5QfgIkwmkUwtCtg==
-=SVwD
------END PGP SIGNATURE-----
-
---avNtfD0ffNO6L/9g--
