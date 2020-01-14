@@ -5,19 +5,19 @@ X-Spam-Level:
 X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BFB34C33C9E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 15:57:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 69135C33C9E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 15:59:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 704C1222C3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 15:57:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 704C1222C3
+	by mail.kernel.org (Postfix) with ESMTPS id 1C47F24679
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 15:59:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1C47F24679
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47xw8X50RZzDqQk
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2020 02:57:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47xwBh2sHmzDqQy
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2020 02:59:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=srs0=pbva=3d=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
@@ -27,12 +27,12 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47xw5J1PfQzDqPK
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jan 2020 02:54:59 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47xw6G1J7VzDqQt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jan 2020 02:55:50 +1100 (AEDT)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 206203] kmemleak reports various leaks in drivers/of/unittest.c
-Date: Tue, 14 Jan 2020 15:54:56 +0000
+Date: Tue, 14 Jan 2020 15:55:45 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
@@ -48,7 +48,7 @@ X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
 X-Bugzilla-Changed-Fields: attachments.created
-Message-ID: <bug-206203-206035-8NFu86gSsC@https.bugzilla.kernel.org/>
+Message-ID: <bug-206203-206035-yNObSR83Q5@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-206203-206035@https.bugzilla.kernel.org/>
 References: <bug-206203-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -73,10 +73,10 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D206203
 
---- Comment #1 from Erhard F. (erhard_f@mailbox.org) ---
-Created attachment 286803
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D286803&action=3Dedit
-dmesg (kernel 5.4.11, Talos II)
+--- Comment #2 from Erhard F. (erhard_f@mailbox.org) ---
+Created attachment 286805
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D286805&action=3Dedit
+kernel .config (kernel 5.4.11, Talos II)
 
 --=20
 You are receiving this mail because:
