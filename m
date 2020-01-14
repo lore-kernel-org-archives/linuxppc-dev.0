@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4BD3C33CB2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 16:17:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B2173C33C9E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 16:19:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 94CA124658
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 16:17:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5E8FC24658
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 16:19:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="OHnhLjdj"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 94CA124658
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="AjgZBkR4"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5E8FC24658
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47xwZh6HPGzDqHd
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2020 03:17:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47xwdp6hGLzDqQw
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2020 03:19:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=sirena.org.uk
  (client-ip=172.104.155.198; helo=heliosphere.sirena.org.uk;
@@ -29,40 +29,40 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.a=rsa-sha256 header.s=20170815-heliosphere header.b=OHnhLjdj; 
+ header.a=rsa-sha256 header.s=20170815-heliosphere header.b=AjgZBkR4; 
  dkim-atps=neutral
 Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
  [172.104.155.198])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47xwPk6SktzDqR6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jan 2020 03:09:14 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47xwQ618HYzDqKs
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jan 2020 03:09:33 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=sirena.org.uk; s=20170815-heliosphere; h=Date:Message-Id:In-Reply-To:
  Subject:Cc:To:From:Sender:Reply-To:MIME-Version:Content-Type:
  Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
  Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:References:
  List-Id:List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:
- List-Archive; bh=Pq8REMESzpH6q41kFJ7Xdz/mnGbbiWifWQ5pOJY+B+Q=; b=OHnhLjdjRfDE
- kHG9H27H5hJUUcJEp0KyT9sVJyzX6cjHyOJWj4gQGxmIj4whuU4H4uDSeymP86e03vIWog6BZzEaU
- JgmQDDltYrFCLUFhX3chRHWM2fDzk+uSgUkfTIDNTxDCD3qz5p1m6f5NVvHJURx4hjjC3/Kh0W5Kf
- on50A=;
+ List-Archive; bh=KnzzFRQVAj4uXpCR1TI5559XQTFDEbE+udZJZl8tRkY=; b=AjgZBkR4/z+z
+ z9IwW85L2iFBz4XQgi88yrN8+2uSRMke8qAS0fKmlyr6fgo39TSJGcxaMKfbgs3uOpv4STGJqGpWr
+ n3XmYbqbm0UOuw/Ae6LMTNLUvFwjP0SfJyhFd1hCa2Li3xfgI/ldJ+pXhKS/2051zCPM0j/YZYUkf
+ 0vlss=;
 Received: from fw-tnat-cam7.arm.com ([217.140.106.55]
  helo=fitzroy.sirena.org.uk) by heliosphere.sirena.org.uk with esmtpsa
  (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
  (envelope-from <broonie@sirena.org.uk>)
- id 1irOkb-0001Ul-Ic; Tue, 14 Jan 2020 16:09:05 +0000
+ id 1irOkv-0001ZG-7m; Tue, 14 Jan 2020 16:09:25 +0000
 Received: by fitzroy.sirena.org.uk (Postfix, from userid 1000)
- id 40A1AD02C7B; Tue, 14 Jan 2020 16:09:05 +0000 (GMT)
+ id EB622D02C77; Tue, 14 Jan 2020 16:09:24 +0000 (GMT)
 From: Mark Brown <broonie@kernel.org>
-To: Shengjiu Wang <shengjiu.wang@nxp.com>
-Subject: Applied "ASoC: dt-bindings: fsl_asrc: add compatible string for
- imx8qm & imx8qxp" to the asoc tree
-In-Reply-To: <b9352edb014c1ee8530c0fd8829c2b044b3da649.1575452454.git.shengjiu.wang@nxp.com>
-Message-Id: <applied-b9352edb014c1ee8530c0fd8829c2b044b3da649.1575452454.git.shengjiu.wang@nxp.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: Applied "spi: fsl: simplify error path in of_fsl_spi_probe()" to the
+ spi tree
+In-Reply-To: <2a4a7e11b37cfa0558d68f0d35e90d6da858b059.1579017697.git.christophe.leroy@c-s.fr>
+Message-Id: <applied-2a4a7e11b37cfa0558d68f0d35e90d6da858b059.1579017697.git.christophe.leroy@c-s.fr>
 X-Patchwork-Hint: ignore
-Date: Tue, 14 Jan 2020 16:09:05 +0000 (GMT)
+Date: Tue, 14 Jan 2020 16:09:24 +0000 (GMT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,23 +74,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, timur@kernel.org, Rob Herring <robh@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, tiwai@suse.com, lgirdwood@gmail.com,
- robh+dt@kernel.org, linux-kernel@vger.kernel.org, nicoleotsuka@gmail.com,
- Mark Brown <broonie@kernel.org>, Xiubo.Lee@gmail.com, perex@perex.cz,
- festevam@gmail.com
+Cc: devicetree@vger.kernel.org, kbuild test robot <lkp@intel.com>,
+ linux-kernel@vger.kernel.org, linux-spi@vger.kernel.org,
+ Mark Brown <broonie@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 The patch
 
-   ASoC: dt-bindings: fsl_asrc: add compatible string for imx8qm & imx8qxp
+   spi: fsl: simplify error path in of_fsl_spi_probe()
 
-has been applied to the asoc tree at
+has been applied to the spi tree at
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-5.6
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/spi.git for-5.6
 
 All being well this means that it will be integrated into the linux-next
 tree (usually sometime in the next 24 hours) and sent to Linus during
@@ -111,57 +109,78 @@ to this mail.
 Thanks,
 Mark
 
-From 8441f87eadf6d6bba542e7a5bf3888595248d888 Mon Sep 17 00:00:00 2001
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-Date: Wed, 4 Dec 2019 20:00:18 +0800
-Subject: [PATCH] ASoC: dt-bindings: fsl_asrc: add compatible string for imx8qm
- & imx8qxp
+From 2f3d8035b0f7a8e781b60e0884551dd8a1173a75 Mon Sep 17 00:00:00 2001
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Tue, 14 Jan 2020 16:02:40 +0000
+Subject: [PATCH] spi: fsl: simplify error path in of_fsl_spi_probe()
 
-Add compatible string "fsl,imx8qm-asrc" for imx8qm platform,
-"fsl,imx8qxp-asrc" for imx8qxp platform.
+No need to 'goto err;' for just doing a return.
+return directly from where the error happens.
 
-There are two asrc modules in imx8qm & imx8qxp, the clock mapping is
-different for each other, so add new property "fsl,asrc-clk-map"
-to distinguish them.
-
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-Acked-by: Rob Herring <robh@kernel.org>
-Link: https://lore.kernel.org/r/b9352edb014c1ee8530c0fd8829c2b044b3da649.1575452454.git.shengjiu.wang@nxp.com
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Link: https://lore.kernel.org/r/2a4a7e11b37cfa0558d68f0d35e90d6da858b059.1579017697.git.christophe.leroy@c-s.fr
 Signed-off-by: Mark Brown <broonie@kernel.org>
 ---
- Documentation/devicetree/bindings/sound/fsl,asrc.txt | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ drivers/spi/spi-fsl-spi.c | 27 ++++++++-------------------
+ 1 file changed, 8 insertions(+), 19 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/sound/fsl,asrc.txt b/Documentation/devicetree/bindings/sound/fsl,asrc.txt
-index 1d4d9f938689..cb9a25165503 100644
---- a/Documentation/devicetree/bindings/sound/fsl,asrc.txt
-+++ b/Documentation/devicetree/bindings/sound/fsl,asrc.txt
-@@ -8,7 +8,12 @@ three substreams within totally 10 channels.
+diff --git a/drivers/spi/spi-fsl-spi.c b/drivers/spi/spi-fsl-spi.c
+index fb4159ad6bf6..3b81772fea0d 100644
+--- a/drivers/spi/spi-fsl-spi.c
++++ b/drivers/spi/spi-fsl-spi.c
+@@ -706,8 +706,8 @@ static int of_fsl_spi_probe(struct platform_device *ofdev)
+ 	struct device_node *np = ofdev->dev.of_node;
+ 	struct spi_master *master;
+ 	struct resource mem;
+-	int irq = 0, type;
+-	int ret = -ENOMEM;
++	int irq, type;
++	int ret;
  
- Required properties:
+ 	ret = of_mpc8xxx_spi_probe(ofdev);
+ 	if (ret)
+@@ -722,10 +722,8 @@ static int of_fsl_spi_probe(struct platform_device *ofdev)
  
--  - compatible		: Contains "fsl,imx35-asrc" or "fsl,imx53-asrc".
-+  - compatible		: Compatible list, should contain one of the following
-+			  compatibles:
-+			  "fsl,imx35-asrc",
-+			  "fsl,imx53-asrc",
-+			  "fsl,imx8qm-asrc",
-+			  "fsl,imx8qxp-asrc",
+ 		if (spisel_boot) {
+ 			pinfo->immr_spi_cs = ioremap(get_immrbase() + IMMR_SPI_CS_OFFSET, 4);
+-			if (!pinfo->immr_spi_cs) {
+-				ret = -ENOMEM;
+-				goto err;
+-			}
++			if (!pinfo->immr_spi_cs)
++				return -ENOMEM;
+ 		}
+ #endif
+ 		/*
+@@ -744,24 +742,15 @@ static int of_fsl_spi_probe(struct platform_device *ofdev)
  
-   - reg			: Offset and length of the register set for the device.
+ 	ret = of_address_to_resource(np, 0, &mem);
+ 	if (ret)
+-		goto err;
++		return ret;
  
-@@ -35,6 +40,11 @@ Required properties:
+ 	irq = platform_get_irq(ofdev, 0);
+-	if (irq < 0) {
+-		ret = irq;
+-		goto err;
+-	}
++	if (irq < 0)
++		return irq;
  
-    - fsl,asrc-width	: Defines a mutual sample width used by DPCM Back Ends.
+ 	master = fsl_spi_probe(dev, &mem, irq);
+-	if (IS_ERR(master)) {
+-		ret = PTR_ERR(master);
+-		goto err;
+-	}
+-
+-	return 0;
  
-+   - fsl,asrc-clk-map   : Defines clock map used in driver. which is required
-+			  by imx8qm/imx8qxp platform
-+			  <0> - select the map for asrc0 in imx8qm/imx8qxp
-+			  <1> - select the map for asrc1 in imx8qm/imx8qxp
-+
- Optional properties:
+-err:
+-	return ret;
++	return PTR_ERR_OR_ZERO(master);
+ }
  
-    - big-endian		: If this property is absent, the little endian mode
+ static int of_fsl_spi_remove(struct platform_device *ofdev)
 -- 
 2.20.1
 
