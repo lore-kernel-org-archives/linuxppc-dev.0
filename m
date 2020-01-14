@@ -2,60 +2,90 @@ Return-Path: <SRS0=enMn=3D=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FE20C33C9E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 23:08:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EA2EC33C9E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 23:09:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F3E452187F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 23:08:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F3E452187F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
+	by mail.kernel.org (Postfix) with ESMTPS id 153782187F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 23:09:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 153782187F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47y5jH2p8NzDqSG
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2020 10:08:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47y5l74xbSzDqRf
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2020 10:09:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=mwb@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=linutronix.de
- (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
- envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linutronix.de
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a0a:51c0:0:12e:550::1])
- (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47y5fw59B1zDqQQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jan 2020 10:06:16 +1100 (AEDT)
-Received: from p5b06da22.dip0.t-ipconnect.de ([91.6.218.34]
- helo=nanos.tec.linutronix.de)
- by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
- (Exim 4.80) (envelope-from <tglx@linutronix.de>)
- id 1irVG6-0000Gr-Ci; Wed, 15 Jan 2020 00:06:02 +0100
-Received: by nanos.tec.linutronix.de (Postfix, from userid 1000)
- id D20E7105BC2; Wed, 15 Jan 2020 00:06:01 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- arnd@arndb.de, vincenzo.frascino@arm.com, luto@kernel.org
-Subject: Re: [RFC PATCH v3 08/12] lib: vdso: allow arches to provide vdso data
- pointer
-In-Reply-To: <381e547dbb3c48fd39d6cf208033bba38ad048fb.1578934751.git.christophe.leroy@c-s.fr>
-References: <cover.1578934751.git.christophe.leroy@c-s.fr>
- <381e547dbb3c48fd39d6cf208033bba38ad048fb.1578934751.git.christophe.leroy@c-s.fr>
-Date: Wed, 15 Jan 2020 00:06:01 +0100
-Message-ID: <87ftghbpuu.fsf@nanos.tec.linutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47y32409sQzDqRS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jan 2020 08:07:33 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 00EKvfcs114748; Tue, 14 Jan 2020 16:07:27 -0500
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
+ [169.55.85.253])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2xhfexe6my-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 14 Jan 2020 16:07:27 -0500
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+ by ppma01wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 00EL5qr7018058;
+ Tue, 14 Jan 2020 21:07:32 GMT
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by ppma01wdc.us.ibm.com with ESMTP id 2xf7507vn9-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 14 Jan 2020 21:07:32 +0000
+Received: from b03ledav003.gho.boulder.ibm.com
+ (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 00EL7P8657344270
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 14 Jan 2020 21:07:25 GMT
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B1E716A04D;
+ Tue, 14 Jan 2020 21:07:25 +0000 (GMT)
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4C17B6A054;
+ Tue, 14 Jan 2020 21:07:24 +0000 (GMT)
+Received: from oc8380061452.ibm.com (unknown [9.53.179.191])
+ by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Tue, 14 Jan 2020 21:07:24 +0000 (GMT)
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+From: Michael Bringmann <mwb@linux.ibm.com>
+Subject: [PATCH] Fix display of Maximum Memory
+Openpgp: preference=signencrypt
+Organization: IBM Linux Technology Center
+Message-ID: <55f25626-20ca-0acb-3571-ff636ca4632c@linux.ibm.com>
+Date: Tue, 14 Jan 2020 15:07:24 -0600
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.1
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Linutronix-Spam-Score: -1.0
-X-Linutronix-Spam-Level: -
-X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required, ALL_TRUSTED=-1,
- SHORTCIRCUIT=-0.0001
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
+ definitions=2020-01-14_06:2020-01-14,
+ 2020-01-14 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 impostorscore=0
+ lowpriorityscore=0 phishscore=0 bulkscore=0 mlxlogscore=992 clxscore=1011
+ suspectscore=0 malwarescore=0 mlxscore=0 priorityscore=1501 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-1910280000
+ definitions=main-2001140161
+X-Mailman-Approved-At: Wed, 15 Jan 2020 10:07:48 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,42 +97,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-mips@vger.kernel.org
+Cc: Gustavo Walbon <gwalbon@linux.ibm.com>, Paul Mackerras <paulus@samba.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
->  
->  static __maybe_unused int
-> +#ifdef VDSO_GETS_VD_PTR_FROM_ARCH
-> +__cvdso_clock_gettime_common(const struct vdso_data *vd, clockid_t clock,
-> +		      struct __kernel_timespec *ts)
-> +{
-> +#else
->  __cvdso_clock_gettime_common(clockid_t clock, struct __kernel_timespec *ts)
->  {
->  	const struct vdso_data *vd = __arch_get_vdso_data();
-> +#endif
->  	u32 msk;
+Correct overflow problem in calculation+display of Maximum Memory
+value to syscfg where 32bits is insufficient.
 
-If we do that, then there is no point in propagating this to the inner
-functions. It's perfectly fine to have this distinction at the outermost
-level.
+Signed-off-by: Michael Bringmann <mwb@linux.ibm.com>
+---
+ arch/powerpc/platforms/pseries/lparcfg.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-As a related question, I noticed that you keep all that ASM voodoo in
-the PPC specific code which provides the actual entry points. Is that
-ASM code really still necessary? All current users of the generic VDSO
-just do something like:
+diff --git a/arch/powerpc/platforms/pseries/lparcfg.c b/arch/powerpc/platforms/pseries/lparcfg.c
+index 4ee2594..183aeb7 100644
+--- a/arch/powerpc/platforms/pseries/lparcfg.c
++++ b/arch/powerpc/platforms/pseries/lparcfg.c
+@@ -435,12 +435,12 @@ static void parse_em_data(struct seq_file *m)
 
-int __vdso_clock_gettime(clockid_t clock, struct __kernel_timespec *ts)
-{
-        return __cvdso_clock_gettime(clock, ts);
-}
+ static void maxmem_data(struct seq_file *m)
+ {
+-       unsigned long maxmem = 0;
++       unsigned long long maxmem = 0;
 
-in the architecture code. Is there a reason why this can't work on PPC?
+-       maxmem += drmem_info->n_lmbs * drmem_info->lmb_size;
+-       maxmem += hugetlb_total_pages() * PAGE_SIZE;
++       maxmem += (unsigned long long)drmem_info->n_lmbs * (unsigned long long)drmem_info->lmb_size;
++       maxmem += (unsigned long long)hugetlb_total_pages() * (unsigned long long)PAGE_SIZE;
 
-Thanks,
+-       seq_printf(m, "MaxMem=%ld\n", maxmem);
++       seq_printf(m, "MaxMem=%llu\n", maxmem);
+ }
 
-        tglx
+ static int pseries_lparcfg_data(struct seq_file *m, void *v)
+-- 
+1.8.3.1
