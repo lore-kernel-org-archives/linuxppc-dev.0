@@ -2,62 +2,125 @@ Return-Path: <SRS0=enMn=3D=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E6CFC33CB1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 08:37:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B0A8C33CB1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 09:21:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DE2AB207FF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 08:37:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DE2AB207FF
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id B7EB9207FD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 09:21:08 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="U2ERUgUs"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B7EB9207FD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47xkNz4X4BzDqQC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 19:37:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=188.165.33.109; helo=10.mo4.mail-out.ovh.net;
- envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47xlLp1vm3zDqQb
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 20:21:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 1195 seconds by postgrey-1.36 at bilbo;
- Tue, 14 Jan 2020 19:36:06 AEDT
-Received: from 10.mo4.mail-out.ovh.net (10.mo4.mail-out.ovh.net
- [188.165.33.109])
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=40.107.8.53; helo=eur04-vi1-obe.outbound.protection.outlook.com;
+ envelope-from=laurentiu.tudor@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256
+ header.s=selector2 header.b=U2ERUgUs; 
+ dkim-atps=neutral
+Received: from EUR04-VI1-obe.outbound.protection.outlook.com
+ (mail-eopbgr80053.outbound.protection.outlook.com [40.107.8.53])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47xkLv01GqzDqJ8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2020 19:36:03 +1100 (AEDT)
-Received: from player714.ha.ovh.net (unknown [10.108.1.161])
- by mo4.mail-out.ovh.net (Postfix) with ESMTP id BD5FD21CF50
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2020 08:57:15 +0100 (CET)
-Received: from kaod.org (lns-bzn-46-82-253-208-248.adsl.proxad.net
- [82.253.208.248]) (Authenticated sender: groug@kaod.org)
- by player714.ha.ovh.net (Postfix) with ESMTPSA id D1362E1C6557;
- Tue, 14 Jan 2020 07:57:10 +0000 (UTC)
-Date: Tue, 14 Jan 2020 08:57:07 +0100
-From: Greg Kurz <groug@kaod.org>
-To: =?UTF-8?B?Q8OpZHJpYw==?= Le Goater <clg@kaod.org>
-Subject: Re: [PATCH] powerpc/xive: discard ESB load value when interrupt is
- invalid
-Message-ID: <20200114085707.56cb6ab2@bahia.lan>
-In-Reply-To: <5918d64a-8cac-c475-1bda-c0b37d49b47c@kaod.org>
-References: <20200113130118.27969-1-clg@kaod.org>
- <76f76082-81ee-4957-c45b-151f0cd6e6b6@kaod.org>
- <87r202alge.fsf@mpe.ellerman.id.au>
- <5918d64a-8cac-c475-1bda-c0b37d49b47c@kaod.org>
-X-Mailer: Claws Mail 3.17.4 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47xlJP6gh7zDq9W
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2020 20:18:59 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=icwqyOHJOZzbrh24eq27wgn9FpqdBFFtOyyUHZXGQHORzaShHZ/YjwcC8YaiV6bdReYKDmcqHqNucHTpvSeDajFZ2GL1/5CmRUbOhDGXrt5xve0a9R1OSBRG5Q8rQwwoNNYcytABlpRGP5/I6x7m3511mGSQngK4ThQsstmIRugjh1ajWCWRJil7KW2m0Wp/9Sway5xq+6zQulZcDRFDOLJylKqAmyd7v8gMvesLxob3I8zBZmf5SZjL2sQUYvw/q4rFmlD/FYMXXGhvLk54YaftcCRWK6M/tcgOwXNKLmlp5hAHHPFxLi20vCjp66ZNb7CyGoiYr1F3+JJ+Br1whA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=HCAeHVLnuAKA404Da1gLxidImbEoQbb7cppqruuhfHo=;
+ b=lz+ygtfnJTG/n81Tsw23uD+BewSexCk9nJqgOUTThZs8f3VVwty4AgA3tmtQFNy+Xt7znglBtT7VW4/wrdy0Bbvdv+vw9EkNhEwqQtLcJIb7FlE3+HiK8hfTvlIoSC98fdXWTWQuqkHZqN3lFWBkwgaKlN/yEQFWrkH9tFm4p7VX4CEWRET1C+dINJZb3q52Lr/SX2iS6hWV6pKaNYcQ4Q1yScLg1YBfRMOSo8jSpmDduMajEYlmfRszHnuLe72SAK3ISOCEgvz7aOwnNlj6eQI+X2FspfPaNr4DgSQsMWYZ3EoK98JEZHvfGOJSnzvCn4pkWncYfeOAfMcBBpLTgg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=HCAeHVLnuAKA404Da1gLxidImbEoQbb7cppqruuhfHo=;
+ b=U2ERUgUshVAKuxMqxF32Q2UPnbqimxoRJ7W/i1FVz1Nw4BZ5yidtE0JJ73Xs81K53qH6kqcqY/fA0ijzvfmJAsHHC4P2VmI+h1IMGtsUNUiTTomjYj0jwAcFW12dw0jLZ2/LfNodHIJ8+k+XVucHfk0Eh8bg5PPtCPKHfE7D5aA=
+Received: from AM6PR04MB5878.eurprd04.prod.outlook.com (20.179.0.89) by
+ AM6PR04MB4392.eurprd04.prod.outlook.com (20.177.39.30) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.2623.10; Tue, 14 Jan 2020 09:18:53 +0000
+Received: from AM6PR04MB5878.eurprd04.prod.outlook.com
+ ([fe80::932:9fab:97d3:1a82]) by AM6PR04MB5878.eurprd04.prod.outlook.com
+ ([fe80::932:9fab:97d3:1a82%7]) with mapi id 15.20.2623.017; Tue, 14 Jan 2020
+ 09:18:53 +0000
+Received: from [10.171.82.13] (89.37.124.34) by
+ LNXP265CA0015.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:5e::27) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.2623.9 via Frontend Transport; Tue, 14 Jan 2020 09:18:52 +0000
+From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Timur Tabi <timur@kernel.org>,
+ Stephen Rothwell <sfr@canb.auug.org.au>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, Scott Wood
+ <swood@redhat.com>, York Sun <york.sun@nxp.com>, "b08248@gmail.com"
+ <b08248@gmail.com>
+Subject: Re: [PATCH] evh_bytechan: fix out of bounds accesses
+Thread-Topic: [PATCH] evh_bytechan: fix out of bounds accesses
+Thread-Index: AQHVxr/zKCtNFfWOrE6GT6IEXEdd/Kfoi7oAgAAXDACAAC53AIAAkBCAgACIdgA=
+Date: Tue, 14 Jan 2020 09:18:53 +0000
+Message-ID: <50f587a7-ce2d-08e1-3b28-15afb04b6463@nxp.com>
+References: <20200109183912.5fcb52aa@canb.auug.org.au>
+ <8736cj8rvr.fsf@mpe.ellerman.id.au>
+ <5f17b997-8a6c-841e-8868-c0877750e598@kernel.org>
+ <47d31d84-78ed-fd90-f3d9-8ce968126497@nxp.com>
+ <87tv4yalmm.fsf@mpe.ellerman.id.au>
+In-Reply-To: <87tv4yalmm.fsf@mpe.ellerman.id.au>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-clientproxiedby: LNXP265CA0015.GBRP265.PROD.OUTLOOK.COM
+ (2603:10a6:600:5e::27) To AM6PR04MB5878.eurprd04.prod.outlook.com
+ (2603:10a6:20b:a2::25)
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=laurentiu.tudor@nxp.com; 
+x-ms-exchange-messagesentrepresentingtype: 1
+x-originating-ip: [89.37.124.34]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-ht: Tenant
+x-ms-office365-filtering-correlation-id: 09a15e7a-c0eb-446d-78f8-08d798d2c5f4
+x-ms-traffictypediagnostic: AM6PR04MB4392:|AM6PR04MB4392:
+x-ms-exchange-transport-forked: True
+x-microsoft-antispam-prvs: <AM6PR04MB439285AC7DBBB2F71F6BD259EC340@AM6PR04MB4392.eurprd04.prod.outlook.com>
+x-ms-oob-tlc-oobclassifiers: OLM:8882;
+x-forefront-prvs: 028256169F
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10009020)(4636009)(366004)(39860400002)(136003)(346002)(396003)(376002)(199004)(189003)(316002)(44832011)(956004)(478600001)(110136005)(2616005)(31696002)(66946007)(6486002)(66446008)(54906003)(66556008)(53546011)(52116002)(4326008)(16576012)(64756008)(66476007)(16526019)(186003)(5660300002)(31686004)(71200400001)(8676002)(26005)(81156014)(2906002)(36756003)(8936002)(81166006)(86362001);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:AM6PR04MB4392;
+ H:AM6PR04MB5878.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; A:1; MX:1; 
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: KapD0HP0aDeN5REw0MnI1xBIJKLq0el7WP3HeXInAety8D/xBUFYimFp+Wdr7xPcc4wJ7Nt3zAYEz2YeArdqqtoVjY8sLXjrQ4PX+qkBnXlfcl8ePmlBOY+K/LLhfBY1x7nSAozX8iB1Iz5qGX/b4sVfWsZ82fVSeRZDool106I8h9ETTAHHKgfUTV4byECYl1C94LuO4/nnu+NtvQ2Gam1HBF2BP/p35PnjVOrEz5shFVS467kVjpcrtJWyEQ20PplzxW+I602D6yyVToV5kPpswc6wjNZ3YwV/ai/65dGjxOgAyWkW03V7NjSmzeNjENjSZk7A5yhy+nF4y/8vDHt8OUgY/c5uDRTN+rs+8uytO/MMeiFi3KxSCnDyepAL9JbOE0gZu1eqlWO+qYGiSjM4JhWPz32V9l9E/L57Ifz5YxGL5YvfhN9e8NYRDYOI
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <CF60B7B425C2D64990D9140BD49224B4@eurprd04.prod.outlook.com>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Ovh-Tracer-Id: 8384295132092668299
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedufedrvdejuddgudduvdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpeffhffvuffkjghfofggtgfgsehtqhertdertdejnecuhfhrohhmpefirhgvghcumfhurhiiuceoghhrohhugheskhgrohgurdhorhhgqeenucfkpheptddrtddrtddrtddpkedvrddvheefrddvtdekrddvgeeknecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehplhgrhigvrhejudegrdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomhepghhrohhugheskhgrohgurdhorhhgpdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrghenucevlhhushhtvghrufhiiigvpedt
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 09a15e7a-c0eb-446d-78f8-08d798d2c5f4
+X-MS-Exchange-CrossTenant-originalarrivaltime: 14 Jan 2020 09:18:53.0550 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: x5MlcTvcKja/+uut0GnhE08n8UqU+uvhgzsoDkwibJ0APlU4XuwB95UGzVCsUiLETIERF4TqsSrzj+cXlZTTaA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM6PR04MB4392
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,62 +132,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Diana Madalina Craciun <diana.craciun@nxp.com>,
+ PowerPC Mailing List <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 14 Jan 2020 08:44:54 +0100
-C=C3=A9dric Le Goater <clg@kaod.org> wrote:
-
-> On 1/14/20 2:14 AM, Michael Ellerman wrote:
-> > C=C3=A9dric Le Goater <clg@kaod.org> writes:
-> >> On 1/13/20 2:01 PM, C=C3=A9dric Le Goater wrote:
-> >>> From: Frederic Barrat <fbarrat@linux.ibm.com>
-> >>>
-> >>> A load on an ESB page returning all 1's means that the underlying
-> >>> device has invalidated the access to the PQ state of the interrupt
-> >>> through mmio. It may happen, for example when querying a PHB interrupt
-> >>> while the PHB is in an error state.
-> >>>
-> >>> In that case, we should consider the interrupt to be invalid when
-> >>> checking its state in the irq_get_irqchip_state() handler.
-> >>
-> >>
-> >> and we need also these tags :
-> >>
-> >> Fixes: da15c03b047d ("powerpc/xive: Implement get_irqchip_state method=
- for XIVE to fix shutdown race")
-> >> Cc: stable@vger.kernel.org # v5.3+
-> >=20
-> > I added those, although it's v5.4+, as the offending commit was first
-> > included in v5.4-rc1.
->=20
-> Ah yes. I mistook the merge tag of the branch used for the PR (v5.3-rc2)
->=20
-
-You might want to use 'git tag --contains':
-
-[greg@bahia kernel-linus]$ git tag --contains da15c03b047d
-for-linus
-kvm-5.4-2
-next-20191118
-next-20191126
-tags/kvm-5.4-1
-tags/kvm-5.4-2
-v5.4
-v5.4-rc1
-v5.4-rc2
-v5.4-rc3
-v5.4-rc4
-v5.4-rc5
-v5.4-rc6
-v5.4-rc7
-v5.4-rc8
-v5.5-rc1
-
-> Thanks,
->=20
-> C.=20
->=20
-
+T24gMTQuMDEuMjAyMCAwMzoxMCwgTWljaGFlbCBFbGxlcm1hbiB3cm90ZToNCj4gTGF1cmVudGl1
+IFR1ZG9yIDxsYXVyZW50aXUudHVkb3JAbnhwLmNvbT4gd3JpdGVzOg0KPj4gSGVsbG8sDQo+Pg0K
+Pj4gT24gMTMuMDEuMjAyMCAxNTo0OCwgVGltdXIgVGFiaSB3cm90ZToNCj4+PiBPbiAxLzEzLzIw
+IDY6MjYgQU0sIE1pY2hhZWwgRWxsZXJtYW4gd3JvdGU6DQo+Pj4+IEkndmUgbmV2ZXIgaGVhcmQg
+b2YgaXQsIGFuZCBJIGhhdmUgbm8gaWRlYSBob3cgdG8gdGVzdCBpdC4NCj4+Pj4NCj4+Pj4gSXQn
+cyBub3QgdXNlZCBieSBxZW11LCBJIGd1ZXNzIHRoZXJlIGlzL3dhcyBhIEZyZWVzY2FsZSBoeXBl
+cnZpc29yIHRoYXQNCj4+Pj4gdXNlZCBpdC4NCj4+Pg0KPj4+IFllcywgdGhlcmUgaXMvd2FzIGEg
+RnJlZXNjYWxlIGh5cGVydmlzb3IgdGhhdCBJIGFuZCBhIGZldyBvdGhlcnMgd29ya2VkDQo+Pj4g
+b24uwqAgSSd2ZSBhZGRlZCBhIGNvdXBsZSBwZW9wbGUgb24gQ0MgdGhhdCBtaWdodCBiZSBhYmxl
+IHRvIHRlbGwgdGhlDQo+Pj4gY3VycmVudCBkaXNwb3NpdGlvbiBvZiBpdC4NCj4+DQo+PiBNb3Jl
+IGluZm8gb24gdGhpczogaXQncyBvcGVuc291cmNlIGFuZCBpdCdzIHB1Ymxpc2hlZCBoZXJlIFsx
+XS4gV2Ugc3RpbGwNCj4+IGNsYWltIHRvIG1haW50YWluIGl0IGJ1dCB0aGVyZSB3YXNuJ3QgbXVj
+aCBhY3Rpdml0eSBwYXN0IHllYXJzLCBhcyBvbmUNCj4+IG1pZ2h0IG5vdGljZS4NCj4+DQo+Pj4+
+IEJ1dCBtYXliZSBpdCdzIHRpbWUgdG8gcmVtb3ZlIGl0IGlmIGl0J3Mgbm90IGJlaW5nIG1haW50
+YWluZWQvdXNlZCBieQ0KPj4+PiBhbnlvbmU/DQo+Pj4NCj4+PiBJIHdvdWxkbid0IGJlIGNvbXBs
+ZXRlbHkgb3Bwb3NlZCB0byB0aGF0IGlmIHRoZXJlIHJlYWxseSBhcmUgbm8gbW9yZQ0KPj4+IHVz
+ZXJzLsKgIFRoZXJlIHJlYWxseSB3ZXJlbid0IGFueSB1c2VycyBldmVuIHdoZW4gSSB3cm90ZSB0
+aGUgZHJpdmVyLg0KPj4NCj4+IFRoZXJlIGFyZSBhIGZldyB1c2VycyB0aGF0IEkga25vdyBvZiwg
+YnV0IEkgY2FuJ3QgdGVsbCBpZiB0aGF0J3MgZW5vdWdoDQo+PiB0byBqdXN0aWZ5IGtlZXBpbmcg
+dGhlIGRyaXZlci4NCj4gDQo+IEl0IGlzLCBJIGRvbid0IHdhbnQgdG8gcmVtb3ZlIGNvZGUgdGhh
+dCBwZW9wbGUgYXJlIGFjdHVhbGx5IHVzaW5nLA0KPiB1bmxlc3MgaXQncyBjYXVzaW5nIHVuc3Vz
+dGFpbmFibGUgbWFpbnRlbmFuY2UgYnVyZGVuLg0KPiANCj4gQnV0IHRoaXMgc2hvdWxkIGJlIGVh
+c3kgZW5vdWdoIHRvIGdldCBmaXhlZC4NCg0KUmlnaHQuIEkgc2VlIHRoYXQgU3RlcGhlbiBhbHJl
+YWR5IGNhbWUgdXAgd2l0aCBhIHByb3Bvc2FsIGZvciBhIGZpeC4NCg0KPiBDb3VsZCB5b3Ugb3Ig
+c29tZW9uZSBlbHNlIGF0IE5YUCB2b2x1bnRlZXIgdG8gbWFpbnRhaW4gdGhpcyBkcml2ZXI/IFRo
+YXQNCj4gc2hvdWxkbid0IGludm9sdmUgbXVjaCB3b3JrLCBvdGhlciB0aGFuIGZpeGluZyBzbWFs
+bCB0aGluZ3MgbGlrZSB0aGlzDQo+IHdhcm5pbmcuDQoNCkkgY2FuIG9mZmVyIG15c2VsZi4gSSds
+bCBzZW5kIGEgTUFJTlRBSU5FUlMgcGF0Y2ggaWYgbm9ib2R5IGlzIGFnYWluc3QgaXQuDQoNCi0t
+LQ0KQmVzdCBSZWdhcmRzLCBMYXVyZW50aXUNCg==
