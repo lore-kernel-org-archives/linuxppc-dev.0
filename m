@@ -2,67 +2,65 @@ Return-Path: <SRS0=enMn=3D=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62583C33CA9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 01:16:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE21DC33CA9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 01:18:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0C19A207E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 01:16:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7EDE0207FF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 01:18:26 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="xjQfoiih"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0C19A207E0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="iiEg66QF"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7EDE0207FF
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47xXbn0BYNzDqMy
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 12:16:37 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=timur@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=xjQfoiih; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 47xXdr2HRwzDqP6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 12:18:24 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47xXWv0zrjzDqNG
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2020 12:13:15 +1100 (AEDT)
-Received: from [192.168.1.20] (cpe-24-28-70-126.austin.res.rr.com
- [24.28.70.126])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id C7143207FF;
- Tue, 14 Jan 2020 01:13:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1578964392;
- bh=0gpl/fZLuDcM6R2f88rRQhFEHgQPzojGamoAcz0JAow=;
- h=Subject:From:To:Cc:References:Date:In-Reply-To:From;
- b=xjQfoiihel1d1unJsEk43pkau7rk+TfPg80uNoSkr/zwFGN9pBWyGB4AsRfz+zR4o
- xlhYWpnWc49QiHgpWj7zDCvbJaVzR/qlB8fXR5X48NAHcgX7mv6lujb6d5pdXh7Yu8
- Sqpm1pJs28C298U+aQwAlLGph8h7xjwB68TqlgnI=
-Subject: Re: [PATCH] evh_bytechan: fix out of bounds accesses
-From: Timur Tabi <timur@kernel.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-References: <20200109183912.5fcb52aa@canb.auug.org.au>
- <CAOZdJXXiKgz=hOoiaTrxgbnwzyvp1Zfn3aCz+0__i17vyFngRg@mail.gmail.com>
- <20200114072522.3cd57195@canb.auug.org.au>
- <6ec4bc30-0526-672c-4261-3ad2cf69dd94@kernel.org>
-Message-ID: <726a71ce-b9e6-cec4-a4d0-ec6a8c604989@kernel.org>
-Date: Mon, 13 Jan 2020 19:13:10 -0600
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:68.0)
- Gecko/20100101 Thunderbird/68.3.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47xXXs2XYTzDqNP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2020 12:14:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=iiEg66QF; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 47xXXs0VLLz9s29;
+ Tue, 14 Jan 2020 12:14:05 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1578964445;
+ bh=5WG/hTgko72eJb6ASFMHgV3Z1SBkyLvrrVTGzmn5hO0=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=iiEg66QFo8Hf2feigqNc0bYtnRksK0+jNNzpr/xvPsYEOmOdXLH6FheBvl68A8AOj
+ aOzYmanBp5glgJwHJIHhs0bUlwpWnqj8yk82bJGAVUrxu7NKfQR6ODqX0tAYD2cq00
+ UDd8uh34XRVF4FVDqx260iXpVph8rYZ7/cZO17onoO3LOkSJwuy/tqAy2UgTrg41a8
+ SY8wBO+SIeTbNxxEyDDBbxulb5XiC+Bjs+A8cxH2LJMCa4gjdlL+XrG073q+r4Jqes
+ pbKB2TWd8h7/e3KNWK/3htCBun+3dAJLK4MNc/Lnjc6BAnWOweWCUJbiCi33xgW8Nl
+ tQcIw4QN6vgsw==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: =?utf-8?Q?C=C3=A9dric?= Le Goater <clg@kaod.org>
+Subject: Re: [PATCH] powerpc/xive: discard ESB load value when interrupt is
+ invalid
+In-Reply-To: <76f76082-81ee-4957-c45b-151f0cd6e6b6@kaod.org>
+References: <20200113130118.27969-1-clg@kaod.org>
+ <76f76082-81ee-4957-c45b-151f0cd6e6b6@kaod.org>
+Date: Tue, 14 Jan 2020 11:14:09 +1000
+Message-ID: <87r202alge.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <6ec4bc30-0526-672c-4261-3ad2cf69dd94@kernel.org>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,18 +72,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: b08248@gmail.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jiri Slaby <jslaby@suse.com>, york sun <york.sun@nxp.com>,
- PowerPC Mailing List <linuxppc-dev@lists.ozlabs.org>, swood@redhat.com
+Cc: Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Greg Kurz <groug@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 1/13/20 7:10 PM, Timur Tabi wrote:
-> 
-> I would prefer that ev_byte_channel_send() is updated to access only 
-> 'count' bytes.  If that means adding a memcpy to the 
-> ev_byte_channel_send() itself, then so be it.  Trying to figure out how 
-> to stuff n bytes into 4 32-bit registers is probably not worth the effort.
+C=C3=A9dric Le Goater <clg@kaod.org> writes:
+> On 1/13/20 2:01 PM, C=C3=A9dric Le Goater wrote:
+>> From: Frederic Barrat <fbarrat@linux.ibm.com>
+>>=20
+>> A load on an ESB page returning all 1's means that the underlying
+>> device has invalidated the access to the PQ state of the interrupt
+>> through mmio. It may happen, for example when querying a PHB interrupt
+>> while the PHB is in an error state.
+>>=20
+>> In that case, we should consider the interrupt to be invalid when
+>> checking its state in the irq_get_irqchip_state() handler.
+>
+>
+> and we need also these tags :
+>
+> Fixes: da15c03b047d ("powerpc/xive: Implement get_irqchip_state method fo=
+r XIVE to fix shutdown race")
+> Cc: stable@vger.kernel.org # v5.3+
 
-Looks like ev_byte_channel_receive() has the same bug, but in reverse.
+I added those, although it's v5.4+, as the offending commit was first
+included in v5.4-rc1.
+
+cheers
