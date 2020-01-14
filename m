@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 41061C33CB3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 18:00:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0DC59C33C9E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 18:02:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F191724656
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 18:00:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B98D92465A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 18:02:34 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="XUdrkmrF"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F191724656
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="qd0qrayg"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B98D92465A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47xyt52ycqzDqSC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2020 05:00:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47xywS2Vz0zDqSB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2020 05:02:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,51 +29,53 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=XUdrkmrF; dkim-atps=neutral
+ header.s=mail header.b=qd0qrayg; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47xykk6Rb0zDqJT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jan 2020 04:54:05 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47xykl3QZYzDqRZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jan 2020 04:54:07 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 47xykb50F1z9txgw;
- Tue, 14 Jan 2020 18:53:59 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 47xykf3hsjz9txh0;
+ Tue, 14 Jan 2020 18:54:02 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=XUdrkmrF; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=qd0qrayg; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id PPoCtav8nAJt; Tue, 14 Jan 2020 18:53:59 +0100 (CET)
+ with ESMTP id GrcxG9YlSurd; Tue, 14 Jan 2020 18:54:02 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 47xykb3pGFz9txgv;
- Tue, 14 Jan 2020 18:53:59 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 47xykf2YX9z9txgv;
+ Tue, 14 Jan 2020 18:54:02 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1579024439; bh=RD6AJmT7P3p5m/VjjJ7pHW8wtEX8tJmMu/xmc0pHx7o=;
- h=From:Subject:To:Cc:Date:From;
- b=XUdrkmrFNLoSO0Nu6KwGGPv3p7gD/bUfVtRPyvArzdV+9TQiJVxvLqpr7e8Y2e7+q
- PCaVlsxTISWHRUA9B4jFftwmLKhMzjssDfiT1G0K8KIoMZWhF6jWQLgvpBYnISzo7G
- SZ5s7dydvN2WE6WVWQARoFZ0mC4sYq1fP6lAq6gY=
+ t=1579024442; bh=Yr+rOwjm12MPfnMrRm677aZjNlYzK/jKvcaQ0UIMbBU=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=qd0qraygO7Uzlqxdi6TBN3BTtA9YqypOdVs/19BhysOWnlAKXjxfUe0eTHxN9BWmE
+ sMNXox3q7VwR2hQGM3lnE/kcFf4wwumncPweZYdNZw3RyIx5/0v5y5R24DrSBcgePI
+ It8QiEeY87b4SEJeggn/ZXsgdvDnRHfg7iHcAQ64=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 3FE018B7EB;
- Tue, 14 Jan 2020 18:54:01 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 153758B7EB;
+ Tue, 14 Jan 2020 18:54:04 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id seWaVykdEzNW; Tue, 14 Jan 2020 18:54:01 +0100 (CET)
+ with ESMTP id EWujLzpkxmUv; Tue, 14 Jan 2020 18:54:04 +0100 (CET)
 Received: from po14934vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D7FFE8B7E8;
- Tue, 14 Jan 2020 18:54:00 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D32788B7E8;
+ Tue, 14 Jan 2020 18:54:03 +0100 (CET)
 Received: by po14934vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 929AD6381C; Tue, 14 Jan 2020 17:54:00 +0000 (UTC)
-Message-Id: <031dec5487bde9b2181c8b3c9800e1879cf98c1a.1579024426.git.christophe.leroy@c-s.fr>
+ id AC0A36381C; Tue, 14 Jan 2020 17:54:03 +0000 (UTC)
+Message-Id: <84b27bf08b41c8343efd88e10f2eccd8e9f85593.1579024426.git.christophe.leroy@c-s.fr>
+In-Reply-To: <031dec5487bde9b2181c8b3c9800e1879cf98c1a.1579024426.git.christophe.leroy@c-s.fr>
+References: <031dec5487bde9b2181c8b3c9800e1879cf98c1a.1579024426.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 1/5] powerpc/32: add support of KASAN_VMALLOC
+Subject: [PATCH 4/5] powerpc/32: Simplify KASAN init
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  erhard_f@mailbox.org, dja@axtens.net
-Date: Tue, 14 Jan 2020 17:54:00 +0000 (UTC)
+Date: Tue, 14 Jan 2020 17:54:03 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,165 +92,86 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add support of KASAN_VMALLOC on PPC32.
-
-To allow this, the early shadow covering the VMALLOC space
-need to be removed once high_memory var is set and before
-freeing memblock.
-
-And the VMALLOC area need to be aligned such that boundaries
-are covered by a full shadow page.
+Since kasan_init_region() is not used anymore for modules,
+KASAN init is done while slab_is_available() is false.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-
 ---
-v3: added missing inclusion of asm/kasan.h needed when CONFIG_KASAN is not set.
+ arch/powerpc/mm/kasan/kasan_init_32.c | 26 +++++---------------------
+ 1 file changed, 5 insertions(+), 21 deletions(-)
 
-v2: rebased ; exclude specific module handling when CONFIG_KASAN_VMALLOC is set.
----
- arch/powerpc/Kconfig                         |  1 +
- arch/powerpc/include/asm/book3s/32/pgtable.h |  5 +++++
- arch/powerpc/include/asm/kasan.h             |  2 ++
- arch/powerpc/include/asm/nohash/32/pgtable.h |  5 +++++
- arch/powerpc/mm/kasan/kasan_init_32.c        | 33 +++++++++++++++++++++++++++-
- arch/powerpc/mm/mem.c                        |  4 ++++
- 6 files changed, 49 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 1ec34e16ed65..a247bbfb03d4 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -173,6 +173,7 @@ config PPC
- 	select HAVE_ARCH_HUGE_VMAP		if PPC_BOOK3S_64 && PPC_RADIX_MMU
- 	select HAVE_ARCH_JUMP_LABEL
- 	select HAVE_ARCH_KASAN			if PPC32
-+	select HAVE_ARCH_KASAN_VMALLOC		if PPC32
- 	select HAVE_ARCH_KGDB
- 	select HAVE_ARCH_MMAP_RND_BITS
- 	select HAVE_ARCH_MMAP_RND_COMPAT_BITS	if COMPAT
-diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
-index 0796533d37dd..5b39c11e884a 100644
---- a/arch/powerpc/include/asm/book3s/32/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
-@@ -193,7 +193,12 @@ int map_kernel_page(unsigned long va, phys_addr_t pa, pgprot_t prot);
- #else
- #define VMALLOC_START ((((long)high_memory + VMALLOC_OFFSET) & ~(VMALLOC_OFFSET-1)))
- #endif
-+
-+#ifdef CONFIG_KASAN_VMALLOC
-+#define VMALLOC_END	_ALIGN_DOWN(ioremap_bot, PAGE_SIZE << KASAN_SHADOW_SCALE_SHIFT)
-+#else
- #define VMALLOC_END	ioremap_bot
-+#endif
- 
- #ifndef __ASSEMBLY__
- #include <linux/sched.h>
-diff --git a/arch/powerpc/include/asm/kasan.h b/arch/powerpc/include/asm/kasan.h
-index 296e51c2f066..fbff9ff9032e 100644
---- a/arch/powerpc/include/asm/kasan.h
-+++ b/arch/powerpc/include/asm/kasan.h
-@@ -31,9 +31,11 @@
- void kasan_early_init(void);
- void kasan_mmu_init(void);
- void kasan_init(void);
-+void kasan_late_init(void);
- #else
- static inline void kasan_init(void) { }
- static inline void kasan_mmu_init(void) { }
-+static inline void kasan_late_init(void) { }
- #endif
- 
- #endif /* __ASSEMBLY */
-diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
-index 552b96eef0c8..60c4d829152e 100644
---- a/arch/powerpc/include/asm/nohash/32/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
-@@ -114,7 +114,12 @@ int map_kernel_page(unsigned long va, phys_addr_t pa, pgprot_t prot);
- #else
- #define VMALLOC_START ((((long)high_memory + VMALLOC_OFFSET) & ~(VMALLOC_OFFSET-1)))
- #endif
-+
-+#ifdef CONFIG_KASAN_VMALLOC
-+#define VMALLOC_END	_ALIGN_DOWN(ioremap_bot, PAGE_SIZE << KASAN_SHADOW_SCALE_SHIFT)
-+#else
- #define VMALLOC_END	ioremap_bot
-+#endif
- 
- /*
-  * Bits in a linux-style PTE.  These match the bits in the
 diff --git a/arch/powerpc/mm/kasan/kasan_init_32.c b/arch/powerpc/mm/kasan/kasan_init_32.c
-index 0e6ed4413eea..88036fb88350 100644
+index b782d92622b4..c4bf9ed04f88 100644
 --- a/arch/powerpc/mm/kasan/kasan_init_32.c
 +++ b/arch/powerpc/mm/kasan/kasan_init_32.c
-@@ -129,6 +129,31 @@ static void __init kasan_remap_early_shadow_ro(void)
- 	flush_tlb_kernel_range(KASAN_SHADOW_START, KASAN_SHADOW_END);
+@@ -34,7 +34,6 @@ static int __init kasan_init_shadow_page_tables(unsigned long k_start, unsigned
+ {
+ 	pmd_t *pmd;
+ 	unsigned long k_cur, k_next;
+-	pgprot_t prot = slab_is_available() ? kasan_prot_ro() : PAGE_KERNEL;
+ 
+ 	pmd = pmd_offset(pud_offset(pgd_offset_k(k_start), k_start), k_start);
+ 
+@@ -45,14 +44,11 @@ static int __init kasan_init_shadow_page_tables(unsigned long k_start, unsigned
+ 		if ((void *)pmd_page_vaddr(*pmd) != kasan_early_shadow_pte)
+ 			continue;
+ 
+-		if (slab_is_available())
+-			new = pte_alloc_one_kernel(&init_mm);
+-		else
+-			new = memblock_alloc(PTE_FRAG_SIZE, PTE_FRAG_SIZE);
++		new = memblock_alloc(PTE_FRAG_SIZE, PTE_FRAG_SIZE);
+ 
+ 		if (!new)
+ 			return -ENOMEM;
+-		kasan_populate_pte(new, prot);
++		kasan_populate_pte(new, PAGE_KERNEL);
+ 
+ 		smp_wmb(); /* See comment in __pte_alloc */
+ 
+@@ -63,39 +59,27 @@ static int __init kasan_init_shadow_page_tables(unsigned long k_start, unsigned
+ 			new = NULL;
+ 		}
+ 		spin_unlock(&init_mm.page_table_lock);
+-
+-		if (new && slab_is_available())
+-			pte_free_kernel(&init_mm, new);
+ 	}
+ 	return 0;
  }
  
-+static void __init kasan_unmap_early_shadow_vmalloc(void)
-+{
-+	unsigned long k_start = (unsigned long)kasan_mem_to_shadow((void *)VMALLOC_START);
-+	unsigned long k_end = (unsigned long)kasan_mem_to_shadow((void *)VMALLOC_END);
-+	unsigned long k_cur;
-+	phys_addr_t pa = __pa(kasan_early_shadow_page);
-+
-+	if (!early_mmu_has_feature(MMU_FTR_HPTE_TABLE)) {
-+		int ret = kasan_init_shadow_page_tables(k_start, k_end);
-+
-+		if (ret)
-+			panic("kasan: kasan_init_shadow_page_tables() failed");
-+	}
-+	for (k_cur = k_start & PAGE_MASK; k_cur < k_end; k_cur += PAGE_SIZE) {
-+		pmd_t *pmd = pmd_offset(pud_offset(pgd_offset_k(k_cur), k_cur), k_cur);
-+		pte_t *ptep = pte_offset_kernel(pmd, k_cur);
-+
-+		if ((pte_val(*ptep) & PTE_RPN_MASK) != pa)
-+			continue;
-+
-+		__set_pte_at(&init_mm, k_cur, ptep, __pte(0), 0);
-+	}
-+	flush_tlb_kernel_range(k_start, k_end);
-+}
-+
- void __init kasan_mmu_init(void)
+-static void __init *kasan_get_one_page(void)
+-{
+-	if (slab_is_available())
+-		return (void *)__get_free_page(GFP_KERNEL | __GFP_ZERO);
+-
+-	return memblock_alloc(PAGE_SIZE, PAGE_SIZE);
+-}
+-
+ static int __init kasan_init_region(void *start, size_t size)
  {
+ 	unsigned long k_start = (unsigned long)kasan_mem_to_shadow(start);
+ 	unsigned long k_end = (unsigned long)kasan_mem_to_shadow(start + size);
+ 	unsigned long k_cur;
  	int ret;
-@@ -165,7 +190,13 @@ void __init kasan_init(void)
- 	pr_info("KASAN init done\n");
- }
+-	void *block = NULL;
++	void *block;
  
--#ifdef CONFIG_MODULES
-+void __init kasan_late_init(void)
-+{
-+	if (IS_ENABLED(CONFIG_KASAN_VMALLOC))
-+		kasan_unmap_early_shadow_vmalloc();
-+}
-+
-+#if defined(CONFIG_MODULES) && !defined(CONFIG_KASAN_VMALLOC)
- void *module_alloc(unsigned long size)
- {
- 	void *base;
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index f5535eae637f..ef7b1119b2e2 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -49,6 +49,7 @@
- #include <asm/fixmap.h>
- #include <asm/swiotlb.h>
- #include <asm/rtas.h>
-+#include <asm/kasan.h>
+ 	ret = kasan_init_shadow_page_tables(k_start, k_end);
+ 	if (ret)
+ 		return ret;
  
- #include <mm/mmu_decl.h>
+-	if (!slab_is_available())
+-		block = memblock_alloc(k_end - k_start, PAGE_SIZE);
++	block = memblock_alloc(k_end - k_start, PAGE_SIZE);
  
-@@ -301,6 +302,9 @@ void __init mem_init(void)
+ 	for (k_cur = k_start & PAGE_MASK; k_cur < k_end; k_cur += PAGE_SIZE) {
+ 		pmd_t *pmd = pmd_offset(pud_offset(pgd_offset_k(k_cur), k_cur), k_cur);
+-		void *va = block ? block + k_cur - k_start : kasan_get_one_page();
++		void *va = block + k_cur - k_start;
+ 		pte_t pte = pfn_pte(PHYS_PFN(__pa(va)), PAGE_KERNEL);
  
- 	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE);
- 	set_max_mapnr(max_pfn);
-+
-+	kasan_late_init();
-+
- 	memblock_free_all();
- 
- #ifdef CONFIG_HIGHMEM
+ 		if (!va)
 -- 
 2.13.3
 
