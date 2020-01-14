@@ -3,56 +3,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64C32C33CB1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 08:31:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E6CFC33CB1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 08:37:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CE153207FD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 08:31:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CE153207FD
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id DE2AB207FF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 08:37:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DE2AB207FF
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47xkFh4blmzDqQV
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 19:31:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47xkNz4X4BzDqQC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 19:37:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kaod.org (client-ip=188.165.33.109; helo=10.mo4.mail-out.ovh.net;
+ envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=permerror (SPF Permanent Error: Unknown mechanism
- found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
- (client-ip=63.228.1.57; helo=gate.crashing.org;
- envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=kaod.org
+X-Greylist: delayed 1195 seconds by postgrey-1.36 at bilbo;
+ Tue, 14 Jan 2020 19:36:06 AEDT
+Received: from 10.mo4.mail-out.ovh.net (10.mo4.mail-out.ovh.net
+ [188.165.33.109])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47xkC452hszDqJq
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2020 19:29:20 +1100 (AEDT)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 00E8T7DC007757;
- Tue, 14 Jan 2020 02:29:07 -0600
-Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id 00E8T6b0007756;
- Tue, 14 Jan 2020 02:29:06 -0600
-X-Authentication-Warning: gate.crashing.org: segher set sender to
- segher@kernel.crashing.org using -f
-Date: Tue, 14 Jan 2020 02:29:06 -0600
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Timur Tabi <timur@kernel.org>
-Subject: Re: [PATCH] evh_bytechan: fix out of bounds accesses
-Message-ID: <20200114082906.GG3191@gate.crashing.org>
-References: <20200109183912.5fcb52aa@canb.auug.org.au>
- <CAOZdJXXiKgz=hOoiaTrxgbnwzyvp1Zfn3aCz+0__i17vyFngRg@mail.gmail.com>
- <20200114072522.3cd57195@canb.auug.org.au>
- <6ec4bc30-0526-672c-4261-3ad2cf69dd94@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6ec4bc30-0526-672c-4261-3ad2cf69dd94@kernel.org>
-User-Agent: Mutt/1.4.2.3i
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47xkLv01GqzDqJ8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2020 19:36:03 +1100 (AEDT)
+Received: from player714.ha.ovh.net (unknown [10.108.1.161])
+ by mo4.mail-out.ovh.net (Postfix) with ESMTP id BD5FD21CF50
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2020 08:57:15 +0100 (CET)
+Received: from kaod.org (lns-bzn-46-82-253-208-248.adsl.proxad.net
+ [82.253.208.248]) (Authenticated sender: groug@kaod.org)
+ by player714.ha.ovh.net (Postfix) with ESMTPSA id D1362E1C6557;
+ Tue, 14 Jan 2020 07:57:10 +0000 (UTC)
+Date: Tue, 14 Jan 2020 08:57:07 +0100
+From: Greg Kurz <groug@kaod.org>
+To: =?UTF-8?B?Q8OpZHJpYw==?= Le Goater <clg@kaod.org>
+Subject: Re: [PATCH] powerpc/xive: discard ESB load value when interrupt is
+ invalid
+Message-ID: <20200114085707.56cb6ab2@bahia.lan>
+In-Reply-To: <5918d64a-8cac-c475-1bda-c0b37d49b47c@kaod.org>
+References: <20200113130118.27969-1-clg@kaod.org>
+ <76f76082-81ee-4957-c45b-151f0cd6e6b6@kaod.org>
+ <87r202alge.fsf@mpe.ellerman.id.au>
+ <5918d64a-8cac-c475-1bda-c0b37d49b47c@kaod.org>
+X-Mailer: Claws Mail 3.17.4 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Ovh-Tracer-Id: 8384295132092668299
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedufedrvdejuddgudduvdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpeffhffvuffkjghfofggtgfgsehtqhertdertdejnecuhfhrohhmpefirhgvghcumfhurhiiuceoghhrohhugheskhgrohgurdhorhhgqeenucfkpheptddrtddrtddrtddpkedvrddvheefrddvtdekrddvgeeknecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehplhgrhigvrhejudegrdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomhepghhrohhugheskhgrohgurdhorhhgpdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrghenucevlhhushhtvghrufhiiigvpedt
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,25 +69,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, b08248@gmail.com,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>,
- york sun <york.sun@nxp.com>,
- PowerPC Mailing List <linuxppc-dev@lists.ozlabs.org>, swood@redhat.com
+Cc: Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jan 13, 2020 at 07:10:11PM -0600, Timur Tabi wrote:
-> Ah, I see now.  This is all coming back to me.
-> 
-> I would prefer that ev_byte_channel_send() is updated to access only 
-> 'count' bytes.  If that means adding a memcpy to the 
-> ev_byte_channel_send() itself, then so be it.  Trying to figure out how 
-> to stuff n bytes into 4 32-bit registers is probably not worth the effort.
+On Tue, 14 Jan 2020 08:44:54 +0100
+C=C3=A9dric Le Goater <clg@kaod.org> wrote:
 
-You have no working lswx I suppose?  :-)
+> On 1/14/20 2:14 AM, Michael Ellerman wrote:
+> > C=C3=A9dric Le Goater <clg@kaod.org> writes:
+> >> On 1/13/20 2:01 PM, C=C3=A9dric Le Goater wrote:
+> >>> From: Frederic Barrat <fbarrat@linux.ibm.com>
+> >>>
+> >>> A load on an ESB page returning all 1's means that the underlying
+> >>> device has invalidated the access to the PQ state of the interrupt
+> >>> through mmio. It may happen, for example when querying a PHB interrupt
+> >>> while the PHB is in an error state.
+> >>>
+> >>> In that case, we should consider the interrupt to be invalid when
+> >>> checking its state in the irq_get_irqchip_state() handler.
+> >>
+> >>
+> >> and we need also these tags :
+> >>
+> >> Fixes: da15c03b047d ("powerpc/xive: Implement get_irqchip_state method=
+ for XIVE to fix shutdown race")
+> >> Cc: stable@vger.kernel.org # v5.3+
+> >=20
+> > I added those, although it's v5.4+, as the offending commit was first
+> > included in v5.4-rc1.
+>=20
+> Ah yes. I mistook the merge tag of the branch used for the PR (v5.3-rc2)
+>=20
 
-/me slowly backs away
+You might want to use 'git tag --contains':
 
+[greg@bahia kernel-linus]$ git tag --contains da15c03b047d
+for-linus
+kvm-5.4-2
+next-20191118
+next-20191126
+tags/kvm-5.4-1
+tags/kvm-5.4-2
+v5.4
+v5.4-rc1
+v5.4-rc2
+v5.4-rc3
+v5.4-rc4
+v5.4-rc5
+v5.4-rc6
+v5.4-rc7
+v5.4-rc8
+v5.5-rc1
 
-Segher
+> Thanks,
+>=20
+> C.=20
+>=20
+
