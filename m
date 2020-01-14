@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36A4EC33CB3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 08:15:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59EA1C33CB1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 08:17:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DC9712053B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 08:15:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 03AAF2075B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 08:17:31 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="l4r9J0yC"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DC9712053B
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="qVJjeOJt"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 03AAF2075B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47xjv85CVqzDqPc
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 19:15:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47xjxP6hPvzDqPk
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 19:17:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,50 +29,50 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=l4r9J0yC; dkim-atps=neutral
+ header.s=mail header.b=qVJjeOJt; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47xjrT6wFSzDqJk
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47xjrT6hWRzDqJH
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2020 19:13:13 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 47xjrP2Dw5z9txpt;
- Tue, 14 Jan 2020 09:13:09 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 47xjrN48tlz9txps;
+ Tue, 14 Jan 2020 09:13:08 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=l4r9J0yC; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=qVJjeOJt; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id ZA4-nlv4eVuX; Tue, 14 Jan 2020 09:13:09 +0100 (CET)
+ with ESMTP id Ax4DlAU-LFRw; Tue, 14 Jan 2020 09:13:08 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 47xjrP1BwVz9txpr;
- Tue, 14 Jan 2020 09:13:09 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 47xjrN2hdfz9txpr;
+ Tue, 14 Jan 2020 09:13:08 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1578989589; bh=/7x/mycY9dv8CNXkK/5+j4m894fmSmqk/jtK+1OjjHA=;
+ t=1578989588; bh=nYNmObGRX5QXwkyrQ/z88cc0DXGjurU82OHj/0TKFB0=;
  h=From:Subject:To:Cc:Date:From;
- b=l4r9J0yCVpu7NK0emogqymwSAxTQMbXHpQ3o/qn2ZXKGN6eqt6S0WJ7Bt03mSow2P
- zQvXT9F+5CHYFTmMBs30ok3fMKF2jKaLzPoAnw5IVG/PMqMBW9CoYcuNCPRqka/oQL
- 89ZpXcThea2AfvixAwxyST5n95cybXvZs9Lk9Agg=
+ b=qVJjeOJtqePHi46tx2HmBZQ5Y0NPD/PYS74kgHj3x+gDrsQy6IDqCpp2mTtp1gFHI
+ DVgqicSNmXARCu2Sf/ml1wiDXDIOebbTuwOOBcg4IsGfiTy1dV6XW9dGfAO5oCrri6
+ 5YCoYtiBrBe97N8ND8Vt1bj3Ipj8acVpg64HCikc=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 295318B7D1;
- Tue, 14 Jan 2020 09:13:10 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 53F6F8B7D1;
+ Tue, 14 Jan 2020 09:13:09 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id ipU9AATOC6P7; Tue, 14 Jan 2020 09:13:10 +0100 (CET)
+ with ESMTP id PW_4TgoO8Lwi; Tue, 14 Jan 2020 09:13:09 +0100 (CET)
 Received: from po14934vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id ED3EB8B769;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 14D548B769;
  Tue, 14 Jan 2020 09:13:09 +0100 (CET)
 Received: by po14934vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id C04FD64A20; Tue, 14 Jan 2020 08:13:09 +0000 (UTC)
-Message-Id: <0d894839fdbb19070f0e1e4140363be4f2bb62fc.1578989540.git.christophe.leroy@c-s.fr>
+ id AC38064A20; Tue, 14 Jan 2020 08:13:08 +0000 (UTC)
+Message-Id: <37517da8310f4457f28921a4edb88fb21d27b62a.1578989531.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/ptdump: fix W+X verification
+Subject: [PATCH] powerpc/ptdump: fix W+X verification call in mark_rodata_ro()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue, 14 Jan 2020 08:13:09 +0000 (UTC)
+Date: Tue, 14 Jan 2020 08:13:08 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,37 +89,27 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Verification cannot rely on simple bit checking because on some
-platforms PAGE_RW is 0, checking that a page is not W means
-checking that PAGE_RO is set instead of checking that PAGE_RW
-is not set.
-
-Use pte helpers instead of checking bits.
+ptdump_check_wx() also have to be called when pages are mapped
+by blocks.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 Fixes: 453d87f6a8ae ("powerpc/mm: Warn if W+X pages found on boot")
 ---
- arch/powerpc/mm/ptdump/ptdump.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ arch/powerpc/mm/pgtable_32.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/mm/ptdump/ptdump.c b/arch/powerpc/mm/ptdump/ptdump.c
-index 4af0d5d9589e..206156255247 100644
---- a/arch/powerpc/mm/ptdump/ptdump.c
-+++ b/arch/powerpc/mm/ptdump/ptdump.c
-@@ -175,10 +175,12 @@ static void dump_addr(struct pg_state *st, unsigned long addr)
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index 73b84166d06a..5fb90edd865e 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -218,6 +218,7 @@ void mark_rodata_ro(void)
  
- static void note_prot_wx(struct pg_state *st, unsigned long addr)
- {
-+	pte_t pte = __pte(st->current_flags);
-+
- 	if (!IS_ENABLED(CONFIG_PPC_DEBUG_WX) || !st->check_wx)
+ 	if (v_block_mapped((unsigned long)_sinittext)) {
+ 		mmu_mark_rodata_ro();
++		ptdump_check_wx();
  		return;
+ 	}
  
--	if (!((st->current_flags & pgprot_val(PAGE_KERNEL_X)) == pgprot_val(PAGE_KERNEL_X)))
-+	if (!pte_write(pte) || !pte_exec(pte))
- 		return;
- 
- 	WARN_ONCE(1, "powerpc/mm: Found insecure W+X mapping at address %p/%pS\n",
 -- 
 2.13.3
 
