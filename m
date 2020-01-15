@@ -1,67 +1,85 @@
-Return-Path: <SRS0=enMn=3D=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=ZwH7=3E=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D4C02C33C9E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 23:32:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AA83AC33CB2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2020 05:43:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3CCCC222C3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jan 2020 23:32:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 136BF24656
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2020 05:43:02 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Gu0y5Rty"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3CCCC222C3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="sfBhmYet"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 136BF24656
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47y6Dj5l2GzDqSB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2020 10:32:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux-foundation.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=akpm@linux-foundation.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-foundation.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 47yGSh23vVzDqSM
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2020 16:43:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=Gu0y5Rty; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
+ header.s=mail header.b=sfBhmYet; dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47y69n6VltzDqDl
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jan 2020 10:29:32 +1100 (AEDT)
-Received: from localhost.localdomain (c-73-231-172-41.hsd1.ca.comcast.net
- [73.231.172.41])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 76F8C24679;
- Tue, 14 Jan 2020 23:29:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1579044570;
- bh=k4eU69C07g5/9QQrVCph8KAUUUUEi8RmXHDj6/HO/Ik=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=Gu0y5RtywBnxt/5MHNzmIuAGL99UYOUTR4MOUoFz/V8A0XNK0I0bw+ID9QXrLG+b9
- 4yxWu1bIpxAgRKCCzCYPru9Le6et10vSO5ADJMjyl++hjxh7tjrdlkd5kSXYwv5i4H
- zD3MC1qTDzqpxI561Q50RCSE3Ph+HIgvwbWCQkns=
-Date: Tue, 14 Jan 2020 15:29:29 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: John Hubbard <jhubbard@nvidia.com>
-Subject: Re: [PATCH v12 00/22] mm/gup: prereqs to track dma-pinned pages:
- FOLL_PIN
-Message-Id: <20200114152929.807fecabfe2258ae2707a88b@linux-foundation.org>
-In-Reply-To: <9d7f3c1a-6020-bdec-c513-80c5399e55d7@nvidia.com>
-References: <20200107224558.2362728-1-jhubbard@nvidia.com>
- <2a9145d4-586e-6489-64e4-0c54f47afaa1@nvidia.com>
- <9d7f3c1a-6020-bdec-c513-80c5399e55d7@nvidia.com>
-X-Mailer: Sylpheed 3.5.1 (GTK+ 2.24.31; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47yGQk4c1pzDqDp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jan 2020 16:41:15 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 47yGQX1mqXz9vJ9w;
+ Wed, 15 Jan 2020 06:41:08 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=sfBhmYet; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id Rdx1R27WK1OZ; Wed, 15 Jan 2020 06:41:08 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 47yGQX0hprz9vJ9v;
+ Wed, 15 Jan 2020 06:41:08 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1579066868; bh=bRfKh/Cnz206aPF3lzBprN9c8zs4SrTAq3h16N+7SHw=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=sfBhmYetSsi3Ss5SJ7e9KTZnHFjPXC9u/9eu80eR3zJl3thbTW15nJ05CUMBW0uVk
+ pIRVniOt4PsZXoKE66DQwekei9xTv9g5nPtQzUZ/+rKGbFbOWZ5En6M3LW7E8ukZE1
+ 5Qf6V6TbteuqusiEM6OBNedAG9HkllYRJ9h6BETA=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D655D8B77B;
+ Wed, 15 Jan 2020 06:41:08 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id Ph2qjykawEAp; Wed, 15 Jan 2020 06:41:08 +0100 (CET)
+Received: from [172.25.230.100] (po15451.idsi0.si.c-s.fr [172.25.230.100])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A9E618B774;
+ Wed, 15 Jan 2020 06:41:08 +0100 (CET)
+Subject: Re: [PATCH] Fix display of Maximum Memory
+To: Michael Bringmann <mwb@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+References: <55f25626-20ca-0acb-3571-ff636ca4632c@linux.ibm.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <41380afd-05f5-f36f-c857-041243c73ee3@c-s.fr>
+Date: Wed, 15 Jan 2020 06:41:08 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.1
+MIME-Version: 1.0
+In-Reply-To: <55f25626-20ca-0acb-3571-ff636ca4632c@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,52 +91,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>,
- kvm@vger.kernel.org, linux-doc@vger.kernel.org,
- David Airlie <airlied@linux.ie>, Dave Chinner <david@fromorbit.com>,
- dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- linux-kselftest@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>,
- Jonathan Corbet <corbet@lwn.net>, linux-rdma@vger.kernel.org,
- Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>,
- Vlastimil Babka <vbabka@suse.cz>,
- =?ISO-8859-1?Q?Bj=F6rn_T=F6pel?= <bjorn.topel@intel.com>,
- linux-media@vger.kernel.org, Shuah Khan <shuah@kernel.org>,
- linux-block@vger.kernel.org,
- =?ISO-8859-1?Q?J=E9r?= =?ISO-8859-1?Q?=F4me?= Glisse <jglisse@redhat.com>,
- Al Viro <viro@zeniv.linux.org.uk>,
- "Kirill A . Shutemov" <kirill@shutemov.name>,
- Dan Williams <dan.j.williams@intel.com>,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
- Magnus Karlsson <magnus.karlsson@intel.com>, Jens Axboe <axboe@kernel.dk>,
- netdev@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
- Daniel Vetter <daniel@ffwll.ch>, linux-fsdevel@vger.kernel.org,
- bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "David S . Miller" <davem@davemloft.net>,
- Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Gustavo Walbon <gwalbon@linux.ibm.com>, Paul Mackerras <paulus@samba.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 14 Jan 2020 12:15:08 -0800 John Hubbard <jhubbard@nvidia.com> wrote:
 
-> > 
-> > Hi Andrew and all,
-> > 
-> > To clarify: I'm hoping that this series can go into 5.6.
-> > 
-> > Meanwhile, I'm working on tracking down and solving the problem that Leon
-> > reported, in the "track FOLL_PIN pages" patch, and that patch is not part of
-> > this series.
-> > 
+
+Le 14/01/2020 à 22:07, Michael Bringmann a écrit :
+> Correct overflow problem in calculation+display of Maximum Memory
+> value to syscfg where 32bits is insufficient.
 > 
-> Hi Andrew and all,
+> Signed-off-by: Michael Bringmann <mwb@linux.ibm.com>
+> ---
+>   arch/powerpc/platforms/pseries/lparcfg.c | 8 ++++----
+>   1 file changed, 4 insertions(+), 4 deletions(-)
 > 
-> Any thoughts on this?
+> diff --git a/arch/powerpc/platforms/pseries/lparcfg.c b/arch/powerpc/platforms/pseries/lparcfg.c
+> index 4ee2594..183aeb7 100644
+> --- a/arch/powerpc/platforms/pseries/lparcfg.c
+> +++ b/arch/powerpc/platforms/pseries/lparcfg.c
+> @@ -435,12 +435,12 @@ static void parse_em_data(struct seq_file *m)
+> 
+>   static void maxmem_data(struct seq_file *m)
+>   {
+> -       unsigned long maxmem = 0;
+> +       unsigned long long maxmem = 0;
 
-5.6 is late.  But it was in -mm before (briefly) and appears to be
-mature and well-reviewed.
+What about using u64 instead, for readability ?
 
-I'll toss it in there and shall push it into -next hopefully today. 
-Let's decide 2-3 weeks hence.
+> 
+> -       maxmem += drmem_info->n_lmbs * drmem_info->lmb_size;
+> -       maxmem += hugetlb_total_pages() * PAGE_SIZE;
+> +       maxmem += (unsigned long long)drmem_info->n_lmbs * (unsigned long long)drmem_info->lmb_size;
 
+This line is likely too long. You only need to cast one of the two 
+operants to force a 64 bits multiply. And using u64 would shorten the line.
+
+Can both multiplications overflow ?
+
+Christophe
+
+> +       maxmem += (unsigned long long)hugetlb_total_pages() * (unsigned long long)PAGE_SIZE;
+> 
+> -       seq_printf(m, "MaxMem=%ld\n", maxmem);
+> +       seq_printf(m, "MaxMem=%llu\n", maxmem);
+>   }
+> 
+>   static int pseries_lparcfg_data(struct seq_file *m, void *v)
+> 
