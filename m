@@ -2,57 +2,83 @@ Return-Path: <SRS0=ZwH7=3E=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 874EBC32771
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2020 20:59:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9AB54C32771
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2020 21:22:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 462D32467C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2020 20:59:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 462D32467C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ghiti.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 13DBC2081E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2020 21:22:06 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="jj9z8sIt"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 13DBC2081E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nvidia.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47yfnw5FPZzDqST
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 07:59:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47ygJC5JlczDqTQ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 08:22:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=nvidia.com (client-ip=216.228.121.64;
+ helo=hqnvemgate25.nvidia.com; envelope-from=jhubbard@nvidia.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=ghiti.fr
- (client-ip=217.70.178.242; helo=mslow2.mail.gandi.net;
- envelope-from=alex@ghiti.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ghiti.fr
-Received: from mslow2.mail.gandi.net (mslow2.mail.gandi.net [217.70.178.242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47yflC2dHhzDqQG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 07:56:52 +1100 (AEDT)
-Received: from relay4-d.mail.gandi.net (unknown [217.70.183.196])
- by mslow2.mail.gandi.net (Postfix) with ESMTP id 530EF3A8C4C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jan 2020 20:47:30 +0000 (UTC)
-X-Originating-IP: 79.86.19.127
-Received: from debian.numericable.fr (127.19.86.79.rev.sfr.net [79.86.19.127])
- (Authenticated sender: alex@ghiti.fr)
- by relay4-d.mail.gandi.net (Postfix) with ESMTPSA id BA33EE0002;
- Wed, 15 Jan 2020 20:46:52 +0000 (UTC)
-From: Alexandre Ghiti <alex@ghiti.fr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- Alexei Starovoitov <ast@kernel.org>, linux-next@vger.kernel.org,
- Zong Li <zong.li@sifive.com>, Palmer Dabbelt <palmerdabbelt@google.com>
-Subject: [PATCH] powerpc: Do not consider weak unresolved symbol relocations
- as bad
-Date: Wed, 15 Jan 2020 15:46:48 -0500
-Message-Id: <20200115204648.7179-1-alex@ghiti.fr>
-X-Mailer: git-send-email 2.20.1
+ dmarc=pass (p=none dis=none) header.from=nvidia.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=nvidia.com header.i=@nvidia.com header.a=rsa-sha256
+ header.s=n1 header.b=jj9z8sIt; dkim-atps=neutral
+Received: from hqnvemgate25.nvidia.com (hqnvemgate25.nvidia.com
+ [216.228.121.64])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47ygFc14PgzDqKq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 08:19:47 +1100 (AEDT)
+Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by
+ hqnvemgate25.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+ id <B5e1f81da0000>; Wed, 15 Jan 2020 13:19:22 -0800
+Received: from hqmail.nvidia.com ([172.20.161.6])
+ by hqpgpgate101.nvidia.com (PGP Universal service);
+ Wed, 15 Jan 2020 13:19:42 -0800
+X-PGP-Universal: processed;
+ by hqpgpgate101.nvidia.com on Wed, 15 Jan 2020 13:19:42 -0800
+Received: from [10.110.48.28] (10.124.1.5) by HQMAIL107.nvidia.com
+ (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Wed, 15 Jan
+ 2020 21:19:42 +0000
+Subject: Re: [PATCH v12 04/22] mm: devmap: refactor 1-based refcounting for
+ ZONE_DEVICE pages
+To: Christoph Hellwig <hch@infradead.org>
+References: <20200107224558.2362728-1-jhubbard@nvidia.com>
+ <20200107224558.2362728-5-jhubbard@nvidia.com>
+ <20200115152306.GA19546@infradead.org>
+X-Nvconfidentiality: public
+From: John Hubbard <jhubbard@nvidia.com>
+Message-ID: <4707f191-86f8-db4a-c3de-0a84b415b658@nvidia.com>
+Date: Wed, 15 Jan 2020 13:19:41 -0800
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.4.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20200115152306.GA19546@infradead.org>
+X-Originating-IP: [10.124.1.5]
+X-ClientProxiedBy: HQMAIL105.nvidia.com (172.20.187.12) To
+ HQMAIL107.nvidia.com (172.20.187.13)
+Content-Type: text/plain; charset="utf-8"
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
+ t=1579123162; bh=GeG6npnwyerPXrXB3bHbzqY7iBJ1oGmlF7ZkUct1x7k=;
+ h=X-PGP-Universal:Subject:To:CC:References:X-Nvconfidentiality:From:
+ Message-ID:Date:User-Agent:MIME-Version:In-Reply-To:
+ X-Originating-IP:X-ClientProxiedBy:Content-Type:Content-Language:
+ Content-Transfer-Encoding;
+ b=jj9z8sItAejAXuqLJp407Y0oGvSfSmMgC2Khnl/UaD4X75Jfs+E4VVRGeSQsgj4wP
+ 14n675+NVsxapYKvaJVbv9kK8eZuWxvO3Y6Z1FaTdzbTeZYm8ghKmuNIE5C0gACdNX
+ GRKd75x36rcOJr0kw/HdaVzIwMxuti46gF1ZGWWpciXiVKzpgvI3qlfJhfyWO1skXq
+ uplmy/sgWDjhYQkuOFvVaYpZjSy0ueb1q0Sh/SzXH1k9SEC0ZieDiM/hkNzj/S5EwR
+ OOf7dWtMC6wOQv1+ifMLfIwYfX7dbiwP1/6cV/7beAaEJMsZqU2lquKgjSAKnqyNBE
+ 3XR6j/+C8nurA==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,115 +90,116 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexandre Ghiti <alex@ghiti.fr>
+Cc: Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>,
+ kvm@vger.kernel.org, linux-doc@vger.kernel.org,
+ David Airlie <airlied@linux.ie>, Dave Chinner <david@fromorbit.com>,
+ dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ linux-kselftest@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>,
+ Christoph Hellwig <hch@lst.de>, Jonathan Corbet <corbet@lwn.net>,
+ linux-rdma@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>,
+ Vlastimil Babka <vbabka@suse.cz>,
+ =?UTF-8?B?QmrDtnJuIFTDtnBlbA==?= <bjorn.topel@intel.com>,
+ linux-media@vger.kernel.org, Shuah Khan <shuah@kernel.org>,
+ linux-block@vger.kernel.org,
+ =?UTF-8?B?SsOpcsO0bWUgR2xpc3Nl?= <jglisse@redhat.com>,
+ Al Viro <viro@zeniv.linux.org.uk>,
+ "Kirill A . Shutemov" <kirill@shutemov.name>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>, bpf@vger.kernel.org,
+ Magnus Karlsson <magnus.karlsson@intel.com>, Jens Axboe <axboe@kernel.dk>,
+ netdev@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
+ Daniel Vetter <daniel@ffwll.ch>, linux-fsdevel@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S . Miller" <davem@davemloft.net>,
+ Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Commit 8580ac9404f6 ("bpf: Process in-kernel BTF") introduced two weak
-symbols that may be unresolved at link time which result in an absolute
-relocation to 0. relocs_check.sh emits the following warning:
+On 1/15/20 7:23 AM, Christoph Hellwig wrote:
+...
+> 
+> I'm really not sold on this scheme.  Note that I think it is
+> particularly bad, but it also doesn't seem any better than what
+> we had before, and it introduced quite a bit more code.
+> 
 
-"WARNING: 2 bad relocations
-c000000001a41478 R_PPC64_ADDR64    _binary__btf_vmlinux_bin_start
-c000000001a41480 R_PPC64_ADDR64    _binary__btf_vmlinux_bin_end"
+Hi Christoph,
 
-whereas those relocations are legitimate even for a relocatable kernel
-compiled with -pie option.
+All by itself, yes. But the very next patch (which needs a little 
+rework for other reasons, so not included here) needs to reuse some of 
+these functions within __unpin_devmap_managed_user_page():
 
-relocs_check.sh already excluded some weak unresolved symbols explicitly:
-remove those hardcoded symbols and add some logic that parses the symbols
-using nm, retrieves all the weak unresolved symbols and excludes those from
-the list of the potential bad relocations.
+    page_is_devmap_managed()
+    free_devmap_managed_page()
 
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Signed-off-by: Alexandre Ghiti <alex@ghiti.fr>
----
- arch/powerpc/Makefile.postlink     |  4 ++--
- arch/powerpc/tools/relocs_check.sh | 27 +++++++++++++++++++--------
- 2 files changed, 21 insertions(+), 10 deletions(-)
+That patch was posted as part of the v11 series [1], and it did this:
 
-diff --git a/arch/powerpc/Makefile.postlink b/arch/powerpc/Makefile.postlink
-index 134f12f89b92..2268396ff4bb 100644
---- a/arch/powerpc/Makefile.postlink
-+++ b/arch/powerpc/Makefile.postlink
-@@ -17,11 +17,11 @@ quiet_cmd_head_check = CHKHEAD $@
- quiet_cmd_relocs_check = CHKREL  $@
- ifdef CONFIG_PPC_BOOK3S_64
-       cmd_relocs_check =						\
--	$(CONFIG_SHELL) $(srctree)/arch/powerpc/tools/relocs_check.sh "$(OBJDUMP)" "$@" ; \
-+	$(CONFIG_SHELL) $(srctree)/arch/powerpc/tools/relocs_check.sh "$(OBJDUMP)" "$(NM)" "$@" ; \
- 	$(BASH) $(srctree)/arch/powerpc/tools/unrel_branch_check.sh "$(OBJDUMP)" "$@"
- else
-       cmd_relocs_check =						\
--	$(CONFIG_SHELL) $(srctree)/arch/powerpc/tools/relocs_check.sh "$(OBJDUMP)" "$@"
-+	$(CONFIG_SHELL) $(srctree)/arch/powerpc/tools/relocs_check.sh "$(OBJDUMP)" "$(NM)" "$@"
- endif
- 
- # `@true` prevents complaint when there is nothing to be done
-diff --git a/arch/powerpc/tools/relocs_check.sh b/arch/powerpc/tools/relocs_check.sh
-index 7b9fe0a567cf..783281b75d9d 100755
---- a/arch/powerpc/tools/relocs_check.sh
-+++ b/arch/powerpc/tools/relocs_check.sh
-@@ -10,14 +10,15 @@
- # based on relocs_check.pl
- # Copyright © 2009 IBM Corporation
- 
--if [ $# -lt 2 ]; then
--	echo "$0 [path to objdump] [path to vmlinux]" 1>&2
-+if [ $# -lt 3 ]; then
-+	echo "$0 [path to objdump] [path to nm] [path to vmlinux]" 1>&2
- 	exit 1
- fi
- 
- # Have Kbuild supply the path to objdump so we handle cross compilation.
- objdump="$1"
--vmlinux="$2"
-+nm="$2"
-+vmlinux="$3"
- 
- bad_relocs=$(
- $objdump -R "$vmlinux" |
-@@ -26,8 +27,6 @@ $objdump -R "$vmlinux" |
- 	# These relocations are okay
- 	# On PPC64:
- 	#	R_PPC64_RELATIVE, R_PPC64_NONE
--	#	R_PPC64_ADDR64 mach_<name>
--	#	R_PPC64_ADDR64 __crc_<name>
- 	# On PPC:
- 	#	R_PPC_RELATIVE, R_PPC_ADDR16_HI,
- 	#	R_PPC_ADDR16_HA,R_PPC_ADDR16_LO,
-@@ -38,15 +37,27 @@ R_PPC_ADDR16_LO
- R_PPC_ADDR16_HI
- R_PPC_ADDR16_HA
- R_PPC_RELATIVE
--R_PPC_NONE' |
--	grep -E -v '\<R_PPC64_ADDR64[[:space:]]+mach_' |
--	grep -E -v '\<R_PPC64_ADDR64[[:space:]]+__crc_'
-+R_PPC_NONE'
- )
- 
- if [ -z "$bad_relocs" ]; then
- 	exit 0
- fi
- 
-+# Remove from the bad relocations those that match an undefined weak symbol
-+# which will result in an absolute relocation to 0.
-+# Weak unresolved symbols are of that form in nm output:
-+# "                  w _binary__btf_vmlinux_bin_end"
-+undef_weak_symbols=$($nm "$vmlinux" | awk -e '$1 ~ /w/ { print $2 }')
++#ifdef CONFIG_DEV_PAGEMAP_OPS
++static bool __unpin_devmap_managed_user_page(struct page *page)
++{
++	int count;
 +
-+while IFS= read -r weak_symbol; do
-+	bad_relocs="$(echo -n "$bad_relocs" | sed "/$weak_symbol/d")"
-+done <<< "$undef_weak_symbols"
++	if (!page_is_devmap_managed(page))
++		return false;
 +
-+if [ -z "$bad_relocs" ]; then
-+	exit 0
-+fi
++	count = page_ref_sub_return(page, GUP_PIN_COUNTING_BIAS);
 +
- num_bad=$(echo "$bad_relocs" | wc -l)
- echo "WARNING: $num_bad bad relocations"
- echo "$bad_relocs"
++	__update_proc_vmstat(page, NR_FOLL_PIN_RETURNED, 1);
++	/*
++	 * devmap page refcounts are 1-based, rather than 0-based: if
++	 * refcount is 1, then the page is free and the refcount is
++	 * stable because nobody holds a reference on the page.
++	 */
++	if (count == 1)
++		free_devmap_managed_page(page);
++	else if (!count)
++		__put_page(page);
++
++	return true;
++}
++#else
++static bool __unpin_devmap_managed_user_page(struct page *page)
++{
++	return false;
++}
++#endif /* CONFIG_DEV_PAGEMAP_OPS */
++
++/**
++ * unpin_user_page() - release a dma-pinned page
++ * @page:            pointer to page to be released
++ *
++ * Pages that were pinned via pin_user_pages*() must be released via either
++ * unpin_user_page(), or one of the unpin_user_pages*() routines. This is so
++ * that such pages can be separately tracked and uniquely handled. In
++ * particular, interactions with RDMA and filesystems need special handling.
++ */
++void unpin_user_page(struct page *page)
++{
++	page = compound_head(page);
++
++	/*
++	 * For devmap managed pages we need to catch refcount transition from
++	 * GUP_PIN_COUNTING_BIAS to 1, when refcount reach one it means the
++	 * page is free and we need to inform the device driver through
++	 * callback. See include/linux/memremap.h and HMM for details.
++	 */
++	if (__unpin_devmap_managed_user_page(page))
++		return;
++
++	if (page_ref_sub_and_test(page, GUP_PIN_COUNTING_BIAS))
++		__put_page(page);
++
++	__update_proc_vmstat(page, NR_FOLL_PIN_RETURNED, 1);
++}
++EXPORT_SYMBOL(unpin_user_page);
+
+
+[1] https://lore.kernel.org/r/20191216222537.491123-24-jhubbard@nvidia.com  
+    [PATCH v11 23/25] mm/gup: track FOLL_PIN pages
+
+thanks,
 -- 
-2.20.1
-
+John Hubbard
+NVIDIA
