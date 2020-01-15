@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8543CC33CB3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2020 15:37:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EC6AC33CB1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2020 15:39:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3579E214AF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2020 15:37:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 116652053B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2020 15:39:35 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="PgZaXKgJ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3579E214AF
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="KTafuKCn"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 116652053B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47yWfs5J3gzDqNn
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 02:37:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47yWj154hMzDqNR
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 02:39:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -30,41 +30,40 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=bombadil.20170209 header.b=PgZaXKgJ; 
+ header.a=rsa-sha256 header.s=bombadil.20170209 header.b=KTafuKCn; 
  dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47yWQr5sCdzDqRn
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 02:27:16 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47yWVq50g2zDqDL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 02:30:43 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
  :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
  Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
  Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
  List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=D7e9eZKa6gYFU2IJRI9jG0xPpy15IcrwpA0ayX/o99E=; b=PgZaXKgJ+lATC1+pOarGwLB4N
- gVqkzUD6yqFNbLIZ6JmUEYhxMoFUKFdDsBv/2ACO3AOvmdipDDnnzf52Dsv06NFofsbTKEm8X5pw8
- PnESq2iyeoknuTRIXVGzLxBdTvhXqCsuznJpPO3DC9A4r54QE55RzMVGiLVH5j2ZZjRjnyA21d/Nl
- Zs8ERvuY3+JDrKvKmlbafnwcLPVNx3swnKqlzVo/0HLWk/lYHiD8IGh36E+8eMKrxQspu1MmvWDCw
- YmOoF4IudlL+Ok2mPmjz8OOAiLeU6G9TPbA1ggYhvCBPT3vnXA7qiY0LpO4OnaRM0YIaHuciss0sD
- Zagq8RXRQ==;
+ bh=hlxbWHBq8lfTBkbbWblALE5WfMIrcmCMtir+afT5h7g=; b=KTafuKCnLEQxrDndx0KF1DZxC
+ rnKdoLI6sypMh61W+oBSzZckG9nErVqXpqRux90/jnJHBoNxCmDRhLN16rsx5kcLMMQTzpNlRHW3V
+ Kn+EfBOj9xXDn+MMy1P1Ce1dDs4zbgiDeuR8jQgZiUt61hA4+gx5SghScUnsRQG1ziTZYHV9R9Zgf
+ pJxhgaR5AeWS3+N32IQliDA3Jqotb5XQKegSIoZaLpNN+GhynXNs1L5cGpIhmQbJynCGULBXCRnjC
+ vAgzg7hshbf2g9UxNsiPKchC1nKbZKVYFzdAbYAS/fNwV5Y2i+QhIqJe1mPDizEBhtnZaTAQECgQV
+ KQqONFysg==;
 Received: from hch by bombadil.infradead.org with local (Exim 4.92.3 #3 (Red
- Hat Linux)) id 1irkZ8-0000t8-J0; Wed, 15 Jan 2020 15:26:42 +0000
-Date: Wed, 15 Jan 2020 07:26:42 -0800
+ Hat Linux)) id 1irkce-0002dy-Qu; Wed, 15 Jan 2020 15:30:20 +0000
+Date: Wed, 15 Jan 2020 07:30:20 -0800
 From: Christoph Hellwig <hch@infradead.org>
 To: John Hubbard <jhubbard@nvidia.com>
-Subject: Re: [PATCH v12 22/22] mm, tree-wide: rename put_user_page*() to
- unpin_user_page*()
-Message-ID: <20200115152642.GE19546@infradead.org>
+Subject: Re: [PATCH v12 11/22] mm/gup: introduce pin_user_pages*() and FOLL_PIN
+Message-ID: <20200115153020.GF19546@infradead.org>
 References: <20200107224558.2362728-1-jhubbard@nvidia.com>
- <20200107224558.2362728-23-jhubbard@nvidia.com>
+ <20200107224558.2362728-12-jhubbard@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200107224558.2362728-23-jhubbard@nvidia.com>
+In-Reply-To: <20200107224558.2362728-12-jhubbard@nvidia.com>
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
  bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -85,8 +84,8 @@ Cc: Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>,
  linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
  linux-kselftest@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>,
  Jonathan Corbet <corbet@lwn.net>, linux-rdma@vger.kernel.org,
- Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>,
- Vlastimil Babka <vbabka@suse.cz>,
+ Mike Rapoport <rppt@linux.ibm.com>, Christoph Hellwig <hch@infradead.org>,
+ Jason Gunthorpe <jgg@ziepe.ca>, Vlastimil Babka <vbabka@suse.cz>,
  =?iso-8859-1?Q?Bj=F6rn_T=F6pel?= <bjorn.topel@intel.com>,
  linux-media@vger.kernel.org, Shuah Khan <shuah@kernel.org>,
  linux-block@vger.kernel.org,
@@ -105,6 +104,15 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Looks sensible:
+On Tue, Jan 07, 2020 at 02:45:47PM -0800, John Hubbard wrote:
+> Introduce pin_user_pages*() variations of get_user_pages*() calls,
+> and also pin_longterm_pages*() variations.
+> 
+> For now, these are placeholder calls, until the various call sites
+> are converted to use the correct get_user_pages*() or
+> pin_user_pages*() API.
 
-Reviewed-by: Christoph Hellwig <hch@lst.de>
+What do the pure placeholders buy us?  The API itself looks ok,
+but until it actually is properly implemented it doesn't help at
+all, and we've had all kinds of bad experiences with these sorts
+of stub APIs.
