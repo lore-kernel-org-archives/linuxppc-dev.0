@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DE20C33CB1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2020 15:29:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 06A27C33CB1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2020 15:32:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EF47D2053B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2020 15:29:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id AC3152053B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2020 15:31:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="ombu7jez"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EF47D2053B
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="kt1toREa"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AC3152053B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47yWT726lKzDqTJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 02:29:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47yWXF487jzDqQ5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 02:31:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -30,41 +30,41 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=bombadil.20170209 header.b=ombu7jez; 
+ header.a=rsa-sha256 header.s=bombadil.20170209 header.b=kt1toREa; 
  dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47yWLt71lCzDqNn
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 02:23:50 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47yWMp0LV5zDqRg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 02:24:37 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
  :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
  Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
  Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
  List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=l2WBiCb5duYJRA9nKpihqrJOH1Qjg6utSrFiu8qAdtc=; b=ombu7jezHtgAjR5gY0Ca1p6EL
- j1OGbU8PhNV+asUtavHigfoHe+XDUTdY5lsGrKJdtgDeZgKIAo0YJN64NNrked93fxKblR7re3vF8
- RPlY4sCsa5SlDDwkl9Kru1X4fwnnSa9MxcPtdsnuvyRgJz0b9G4X8zrrh7zh8y7UtzLJ4riBjMnzT
- xi677mOi81iVT3WGHgjfqw83+JDxsnZsnTES70mDJW7J7Le+Sds5nhwqsjc+CaqQscjJarvoHwpqC
- l1EI+YPFaDxkzKEgUisUIOl3m0iqxDeI4Kz7kyNtkfjkBTClki1XkSFhnSk5pzc4/KQKmJ+eceMk/
- PlajrNEkg==;
+ bh=l2WBiCb5duYJRA9nKpihqrJOH1Qjg6utSrFiu8qAdtc=; b=kt1toREaRLDGYTndUVzaGb7p9
+ 4zeDVCwBiZs82+gJOw8ApLKEpTy0mC5GUbNhVFA5KfiYe9u7a+02sfK6iUHuH3GqO7JyKWWTxL5WO
+ XJXowEu3dIe0bflVkoKGnA4BgFI96shpr59qEdmQ/za1/HynyW+NjgvQQYgDMntuvE52brpHwzlf9
+ PQw/cYKdoKRQqm5kefLFVXCIfxKI2GSaZ+qaQXsf5+xchS1TRQqgYmVpalizU0rR0G1ly666/uGa/
+ LQOAuVmGLN5YKeCRP/F4Tezz8xTR/7nWhjfkhr0gC65LubnNUIJYJUsiCibV9WK+cMuQQbNOak6nT
+ cnrhJQN/Q==;
 Received: from hch by bombadil.infradead.org with local (Exim 4.92.3 #3 (Red
- Hat Linux)) id 1irkW0-0007SG-Vl; Wed, 15 Jan 2020 15:23:28 +0000
-Date: Wed, 15 Jan 2020 07:23:28 -0800
+ Hat Linux)) id 1irkWt-0007oc-Go; Wed, 15 Jan 2020 15:24:23 +0000
+Date: Wed, 15 Jan 2020 07:24:23 -0800
 From: Christoph Hellwig <hch@infradead.org>
 To: John Hubbard <jhubbard@nvidia.com>
-Subject: Re: [PATCH v12 05/22] goldish_pipe: rename local pin_user_pages()
- routine
-Message-ID: <20200115152328.GB19546@infradead.org>
+Subject: Re: [PATCH v12 06/22] mm: fix get_user_pages_remote()'s handling of
+ FOLL_LONGTERM
+Message-ID: <20200115152423.GC19546@infradead.org>
 References: <20200107224558.2362728-1-jhubbard@nvidia.com>
- <20200107224558.2362728-6-jhubbard@nvidia.com>
+ <20200107224558.2362728-7-jhubbard@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200107224558.2362728-6-jhubbard@nvidia.com>
+In-Reply-To: <20200107224558.2362728-7-jhubbard@nvidia.com>
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
  bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -86,7 +86,7 @@ Cc: Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>,
  linux-kselftest@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>,
  Jonathan Corbet <corbet@lwn.net>, linux-rdma@vger.kernel.org,
  Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>,
- Vlastimil Babka <vbabka@suse.cz>,
+ Jason Gunthorpe <jgg@mellanox.com>, Vlastimil Babka <vbabka@suse.cz>,
  =?iso-8859-1?Q?Bj=F6rn_T=F6pel?= <bjorn.topel@intel.com>,
  linux-media@vger.kernel.org, Shuah Khan <shuah@kernel.org>,
  linux-block@vger.kernel.org,
