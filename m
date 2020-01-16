@@ -2,77 +2,86 @@ Return-Path: <SRS0=yMLg=3F=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E111DC33CB1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 08:42:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 52333C33CB1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 09:19:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8C9882073A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 08:42:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6DF142075B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 09:19:05 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Sc87hYnw"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8C9882073A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="kHJ/FujL"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6DF142075B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47yyP54gfVzDqZT
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 19:42:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::42b;
- helo=mail-wr1-x42b.google.com; envelope-from=yusufalti1997@gmail.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47yzCT6jnhzDqYk
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 20:19:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=Sc87hYnw; dkim-atps=neutral
-Received: from mail-wr1-x42b.google.com (mail-wr1-x42b.google.com
- [IPv6:2a00:1450:4864:20::42b])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
+ header.s=mail header.b=kHJ/FujL; dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47yxGJ2M2CzDqWv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 18:51:16 +1100 (AEDT)
-Received: by mail-wr1-x42b.google.com with SMTP id j42so18036428wrj.12
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jan 2020 23:51:16 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:from:date:message-id:subject:to;
- bh=wrweCBoX/Pi4rvOFKv5htgBRJr0uIF+ZUbw8BoxGagI=;
- b=Sc87hYnwkESQ06r8BKSD0GnYJYp/MpldCDD04PhRDNB9Vlvf6SBClbzrCNOnCZB9RI
- i/ULTx+t1CVMlQOJig2vqg1T9sntUZdDNowa0Hoi1kLefXPG15mj42IgiOnVJ+TlFdtI
- EXuNnw47Uma3P3AeGYVGgYKPvuetwUegrgpCOBf465DPTpl8dCP7ydnuZQLUBDMyEeyK
- eV0P1KMaHCy/6UflvN/u53Mv6DoFrhMFmqLom9sPcBq4hvDUmXr2tM/BLZfcXt640l77
- 8SER2SqO2yHMImxN2lI9RFy7HouQct96rKSR18Cu433qYch7KTrv6Oo+3qaS4fNhzWbP
- 7LbA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:from:date:message-id:subject:to;
- bh=wrweCBoX/Pi4rvOFKv5htgBRJr0uIF+ZUbw8BoxGagI=;
- b=idrlADso1HRN2n0ZT6CFLiI6hWw32oW3/4dwI2Tp6XaOzH82njV3XSzZ5hjgHapf6x
- Wj5Z+mO5wuw6CMnsrkMVo0nCSXlpOHXV3y6na20UvY5WcyUjkjrk1Y7/UcleBrZSll9t
- 9b8J6JAHCFtXQPtAeqfwXE1SmH4vFQKgbT8BEERXOg3TyruueyV4ED1gNw4rDBij84AG
- HSuYevs1uuEf23+4rHaaRBJLhOIJi8TObsJmcDW8vuo2g7g0jGo43x+KlO03qs7OSN7B
- VH7V1sWkfivMKF6RtPj+cdWGqWc3HM2NXpmIZ2cacD6j6DSICNpQM0fyKgSvDZM7BK2o
- WqwA==
-X-Gm-Message-State: APjAAAXsKLtBWnTU34kg9KgKvW2zo3cENcD/vE9O65hjkp8JZorVYZGw
- 0v0lqYW/X5b/kg4sfChv/A/5EAn8VMIKmbr4NDP2RLJj
-X-Google-Smtp-Source: APXvYqy5chy0cf9xlRCbkPQGZUG43SqYMIrgcg5P0pg01fdoke+YAY72nW3/3ZrHvj1uHBlEcWBmNDQKS4t4hMBPW/o=
-X-Received: by 2002:adf:8297:: with SMTP id 23mr1666333wrc.379.1579161072785; 
- Wed, 15 Jan 2020 23:51:12 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47yz8T1Yy6zDqXX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 20:16:24 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 47yz8L74yxz9tyQR;
+ Thu, 16 Jan 2020 10:16:18 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=kHJ/FujL; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id lt8jAOtwQ37r; Thu, 16 Jan 2020 10:16:18 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 47yz8L5yqZz9tyQP;
+ Thu, 16 Jan 2020 10:16:18 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1579166178; bh=zhSNNoA19/DJtyqK00k6NS1e1aITemDpv4Uo0GCOeHg=;
+ h=Subject:From:To:Cc:References:Date:In-Reply-To:From;
+ b=kHJ/FujLNVI5NHn588r9Xp2wHJbaCU+ZBkfGxNVcWiwtRBmZW0lfLLuD4NqyCZjiq
+ +rTgIsm7pFN1rx7YTTWhuMQluEkHnAwg5Mf/G4PgNahbW9tMt03xitw118O2by2nT9
+ rGG+pJM5Wh/XK2tpcgdQ3yLjIqpixSaM9eK0L1tQ=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id DA4C58B811;
+ Thu, 16 Jan 2020 10:16:19 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id FPW2Cv_UNA79; Thu, 16 Jan 2020 10:16:19 +0100 (CET)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 212448B810;
+ Thu, 16 Jan 2020 10:16:19 +0100 (CET)
+Subject: Re: [RFC PATCH v3 08/12] lib: vdso: allow arches to provide vdso data
+ pointer
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: Thomas Gleixner <tglx@linutronix.de>, luto@kernel.org
+References: <cover.1578934751.git.christophe.leroy@c-s.fr>
+ <381e547dbb3c48fd39d6cf208033bba38ad048fb.1578934751.git.christophe.leroy@c-s.fr>
+ <87ftghbpuu.fsf@nanos.tec.linutronix.de>
+ <d2de3211-9d7c-513e-fe0f-8bdce623fb65@c-s.fr>
+Message-ID: <b5fddcf8-99ff-fc0d-40c0-0eb81ad4e94a@c-s.fr>
+Date: Thu, 16 Jan 2020 10:16:18 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.1
 MIME-Version: 1.0
-From: =?UTF-8?Q?Yusuf_Alt=C4=B1parmak?= <yusufalti1997@gmail.com>
-Date: Thu, 16 Jan 2020 10:51:01 +0300
-Message-ID: <CAGzVRjz3dr87WPWCYm56FW0_cwr8tiexoJGa+nfqD4wmWE+YRw@mail.gmail.com>
-Subject: (PowerPC) PCI driver writeb() and readb() failures with 'machine
- check error'.
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary="000000000000c95d00059c3d16cd"
-X-Mailman-Approved-At: Thu, 16 Jan 2020 19:40:20 +1100
+In-Reply-To: <d2de3211-9d7c-513e-fe0f-8bdce623fb65@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,139 +93,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: arnd@arndb.de, x86@kernel.org, linux-kernel@vger.kernel.org,
+ linux-mips@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ vincenzo.frascino@arm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---000000000000c95d00059c3d16cd
-Content-Type: text/plain; charset="UTF-8"
+Thomas, Andy,
 
-Hello,
+Le 15/01/2020 à 07:15, Christophe Leroy a écrit :
+> 
+> 
+> Le 15/01/2020 à 00:06, Thomas Gleixner a écrit :
+>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>>>   static __maybe_unused int
+>>> +#ifdef VDSO_GETS_VD_PTR_FROM_ARCH
+>>> +__cvdso_clock_gettime_common(const struct vdso_data *vd, clockid_t 
+>>> clock,
+>>> +              struct __kernel_timespec *ts)
+>>> +{
+>>> +#else
+>>>   __cvdso_clock_gettime_common(clockid_t clock, struct 
+>>> __kernel_timespec *ts)
+>>>   {
+>>>       const struct vdso_data *vd = __arch_get_vdso_data();
+>>> +#endif
+>>>       u32 msk;
+>>
+>> If we do that, then there is no point in propagating this to the inner
+>> functions. It's perfectly fine to have this distinction at the outermost
+>> level.
+> 
+> In v2, I did it at the arch level (see 
+> https://patchwork.ozlabs.org/patch/1214983/). Andy was concerned about 
+> it being suboptimal for arches which (unlike powerpc) have PC related 
+> data addressing mode.
+> 
+> Wouldn't it be the same issue if doing it at the outermost level of 
+> generic VDSO ?
 
-I am having an important trouble while communicating with my PCI Endpoint
-devices MMIO. I am using T1042D4RDB-64B. PowerPC e5500 processor with
-kernel version 4.19 and default PCI driver is 'pcieport'. Kernel is built
-with Yocto 2.7.
+Any opinion on this ?
 
-I have a FPGA memory controller card which is programmed to light GPIO leds
-when it's memory is filled with data on PCI. I wrote a driver and tested it
-with x86 based Ubuntu and it's working as expected.
+ From your point of view, what should I do:
+A/ __arch_get_vdso_data() handled entirely at arch level and arches 
+handing over the vdso data pointer to generic C VDSO functions all the 
+time (as in my v2 series) ?
+B/ Data pointer being handed over all the way up for arches wanting to 
+do so, no changes at all for others (as in my v3 series) ?
+C/ __arch_get_vdso_data() being called at the outermost generic level 
+for arches not interested in handling data pointer from the caller (as 
+suggested by Thomas) ?
 
-I used same driver with T1042D4RDB-64B. Kernel is giving UNRECOVERABLE
-MACHINE CHECK error when I try to read the same area I wrote before. Leds
-are also not lighting so that this means write operation is not working
-too. Seems like ATMU is not transferring the transactions to PCI endpoint
-device.
+Andy, with A/ you were concerned about arches being able to do PC 
+related accesses. Would it be an issue for C/ as well ? If not, I guess 
+C/ would be cleaner than B/ allthought not as clean as A which doesn't 
+add any #ifdefery at all.
 
-I tried same code piece with another endpoint device ( This is a GPU ) and
-I had same problem again.
-
-I am seeking some help about this issue.
-
-*Detailed thread is here:*
-https://community.nxp.com/thread/522267
-
-*Driver code piece*
-pci_request_regions(dev, "IO-pci");
-pci_enable_device_mem(dev);
-printk(KERN_INFO "Physical address start:
-%lX",pci_resource_start(dev,BAR_IO));
-          printk(KERN_INFO "Physical address end:
-%lX",pci_resource_end(dev,BAR_IO));
-          iomapped_addr_start =
-ioremap(pci_resfreescaleource_start(dev,BAR_IO),pci_resource_len(dev,BAR_IO));
-          printk(KERN_INFO "Virtual address start:
-%lX",iomapped_addr_start);
-
-if(iomapped_addr_start != NULL || iomapped_addr_start != 0)
- {
-   for(i=0;i<pci_resource_len(dev,BAR_IO);i++)
-   {
-       printk(KERN_INFO "Before Write %lX \n",iomapped_addr_start+i);
-       writeb(5,iomapped_addr_start+i);
-       printk(KERN_INFO "Writed 5 \n");
-       printk(KERN_INFO "Readed %d",readb(iomapped_addr_start+i));
-   }
- }
-
-*Output:*
-Physical address start: 0x21000000
-Physical address end: 0x210007ff
-Virtual address start: 80000800888C0000
-Before Write 80000800888C0000
-
-Writed 5
-
-ntDlaibslaibnlgi nlgo clko cdke bduegbguginggi ngdu de ueto t ko erkenernl
-eltat
-  x
-
-80000001 cecar 0x020c0000 cecar2 0x00001010
-
-CaCuasuesde db yb y( f(rformom M MCSCSR=R=a0a00000):): L Looad Error Report
-
-KeKrenrenle lp apannici c -- n onott s ysynncicningg: Unrecoverable Machine
-chek
-
---000000000000c95d00059c3d16cd
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr"><div>Hello,</div><div><br></div><div>I am having an import=
-ant=20
-trouble while communicating with my PCI Endpoint devices MMIO. I am=20
-using T1042D4RDB-64B. PowerPC e5500 processor with kernel version 4.19 and =
-default PCI driver is &#39;pcieport&#39;. Kernel is built with Yocto 2.7.<b=
-r></div><div><br></div><div>I
- have a FPGA memory controller card which is programmed to light GPIO=20
-leds when it&#39;s memory is filled with data on PCI. I wrote a driver and=
-=20
-tested it with x86 based Ubuntu and it&#39;s working as expected.</div><div=
-><br></div><div>I
- used same driver with T1042D4RDB-64B. Kernel is giving UNRECOVERABLE=20
-MACHINE CHECK error when I try to read the same area I wrote before.=20
-Leds are also not lighting so that this means write operation is not=20
-working too. Seems like ATMU is not transferring the transactions to PCI
- endpoint device.</div><div><br></div><div>I tried same code piece with ano=
-ther endpoint device ( This is a GPU ) and I had same problem again.</div><=
-div><br></div><div>I am seeking some help about this issue.<br></div><div><=
-br></div><div><b>Detailed thread is here:</b><br></div><div><a href=3D"http=
-s://community.nxp.com/thread/522267" target=3D"_blank">https://community.nx=
-p.com/thread/522267</a></div><div><br></div><div><b>Driver code piece</b><b=
-r></div><div>pci_request_regions(dev, &quot;IO-pci&quot;); <br></div><div>	=
-pci_enable_device_mem(dev);</div><div>printk(KERN_INFO &quot;Physical addre=
-ss start: %lX&quot;,pci_resource_start(dev,BAR_IO));<br>=C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 printk(KERN_INFO &quot;Physical address end: %lX&quot;,pc=
-i_resource_end(dev,BAR_IO));<br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 iomapped=
-_addr_start =3D ioremap(pci_resfreescaleource_start(dev,BAR_IO),pci_resourc=
-e_len(dev,BAR_IO));<br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 printk(KERN_INFO =
-&quot;Virtual address start: %lX&quot;,iomapped_addr_start);</div><div><br>=
-</div><div>if(iomapped_addr_start !=3D NULL || iomapped_addr_start !=3D 0)<=
-br>	 =C2=A0{<br>=C2=A0=C2=A0 for(i=3D0;i&lt;pci_resource_len(dev,BAR_IO);i+=
-+)<br>	 =C2=A0 =C2=A0{ <br>=C2=A0 =C2=A0 =C2=A0=C2=A0 printk(KERN_INFO &quo=
-t;Before Write %lX \n&quot;,iomapped_addr_start+i);<br>=C2=A0 =C2=A0 =C2=A0=
-=C2=A0 writeb(5,iomapped_addr_start+i);<br>=C2=A0 =C2=A0 =C2=A0=C2=A0 print=
-k(KERN_INFO &quot;Writed 5 \n&quot;);<br>=C2=A0 =C2=A0 =C2=A0=C2=A0 printk(=
-KERN_INFO &quot;Readed %d&quot;,readb(iomapped_addr_start+i)); <br>=C2=A0=
-=C2=A0 }<br>=C2=A0}</div><div><br></div><div><b>Output:</b></div><div>Physi=
-cal address start: 0x21000000</div><div>Physical address end: 0x210007ff</d=
-iv><div>Virtual address start: 80000800888C0000</div><div>Before Write 8000=
-0800888C0000 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 <br>Writed 5 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0<br>ntDlaibslaibnlgi nlgo clko cdke bduegbguginggi ngdu de ueto t=
- ko erkenernl eltat<br>=C2=A0 x =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 <br>80000001 cecar 0x020c0000 cecar2 0x00001010 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 <br>CaCuasuesde db yb y( f(rformom M MCSCSR=
-=3DR=3Da0a00000):): L Looad Error Report =C2=A0 =C2=A0 <br>KeKrenrenle lp a=
-pannici c -- n onott s ysynncicningg: Unrecoverable Machine chek</div></div=
->
-
---000000000000c95d00059c3d16cd--
+Thanks
+Christophe
