@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D1D7C33CB1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 14:00:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D963DC33CB1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 14:03:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 302492075B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 14:00:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 302492075B
+	by mail.kernel.org (Postfix) with ESMTPS id 91FD82075B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 14:03:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 91FD82075B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47z5Rs4qR6zDqbB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 01:00:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47z5Wt4DCNzDqC0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 01:03:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=permerror (SPF Permanent Error: Unknown mechanism
  found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
@@ -29,28 +29,27 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47z5P66rjjzDqb9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 00:57:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47z5TD1HvRzDq6N
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 01:01:19 +1100 (AEDT)
 Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 00GDvUTL011806;
- Thu, 16 Jan 2020 07:57:30 -0600
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 00GE11kf011998;
+ Thu, 16 Jan 2020 08:01:01 -0600
 Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id 00GDvTmR011805;
- Thu, 16 Jan 2020 07:57:29 -0600
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id 00GE11aZ011997;
+ Thu, 16 Jan 2020 08:01:01 -0600
 X-Authentication-Warning: gate.crashing.org: segher set sender to
  segher@kernel.crashing.org using -f
-Date: Thu, 16 Jan 2020 07:57:29 -0600
+Date: Thu, 16 Jan 2020 08:01:01 -0600
 From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Gabriel Paubert <paubert@iram.es>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
 Subject: Re: z constraint in powerpc inline assembly ?
-Message-ID: <20200116135729.GP3191@gate.crashing.org>
+Message-ID: <20200116140101.GQ3191@gate.crashing.org>
 References: <d72263a1-fe17-3192-6930-35ec8394c699@c-s.fr>
- <20200116080608.GA29711@lt-gp.iram.es>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20200116080608.GA29711@lt-gp.iram.es>
+In-Reply-To: <d72263a1-fe17-3192-6930-35ec8394c699@c-s.fr>
 User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -68,60 +67,36 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jan 16, 2020 at 09:06:08AM +0100, Gabriel Paubert wrote:
-> On Thu, Jan 16, 2020 at 07:11:36AM +0100, Christophe Leroy wrote:
-> > Hi Segher,
-> > 
-> > I'm trying to see if we could enhance TCP checksum calculations by splitting
-> > inline assembly blocks to give GCC the opportunity to mix it with other
-> > stuff, but I'm getting difficulties with the carry.
-> > 
-> > As far as I can read in the documentation, the z constraint represents
-> > '‘XER[CA]’ carry bit (part of the XER register)'
+Hi!
+
+On Thu, Jan 16, 2020 at 07:11:36AM +0100, Christophe Leroy wrote:
+> I'm trying to see if we could enhance TCP checksum calculations by 
+> splitting inline assembly blocks to give GCC the opportunity to mix it 
+> with other stuff, but I'm getting difficulties with the carry.
 > 
-> Well, the documentation is very optimisitic. From the GCC source code
-> (thanks for switching to git last week-end ;-)), it is clear that the
-> carry is not, for the time being, properly modeled. 
+> As far as I can read in the documentation, the z constraint represents 
+> '‘XER[CA]’ carry bit (part of the XER register)'
+> 
+> I've tried the following, but I get errors. Can you help ?
+> 
+> unsigned long cksum(unsigned long a, unsigned long b, unsigned long c)
+> {
+> 	unsigned long sum;
+> 	unsigned long carry;
+> 
+> 	asm("addc %0, %2, %3" : "=r"(sum), "=z"(carry) : "r"(a), "r"(b));
+> 	asm("adde %0, %0, %2" : "+r"(sum), "+z"(carry) : "r"(c));
+> 	asm("addze %0, %0" : "+r"(sum) : "z"(carry));
+> 
+> 	return sum;
+> }
 
-What?  It certainly *is*, I spent ages on that back in 2014 and before.
-See gcc.gnu.org/PR64180 etc.
+The only register allowed by "z" is a fixed register.  You cannot use "z"
+in inline asm.
 
-You can not put the carry as input or output to an asm, of course: no C
-variable can be assigned to it.
-
-We don't do the "flag outputs" thing, either, as it is largely useless
-for Power (and using it would often make *worse* code).
-
-If you want to access a carry, write C code that does that operation.
-The compiler knows how to optimise it well.
-
-> Right now, in the machine description, all setters and users of the carry
-> are in the same block of generated instructions.
-
-No, they are not.  For over five years now.  (Since GCC 5).
-
-> For a start, all single instructions patterns that set the carry (and
-> do not use it) as a side effect should mention the they clobber the 
-> carry, otherwise inserting one between a setter and a user of the carry 
-> would break.
-
-And they do.
-
-All asms that change the carry should mention that, too, but this is
-automatically done for all inline asms, because there was a lot of code
-in the wild that does not clobber it.
-
-> This includes all arithmetic right shift (sra[wd]{,i}, 
-> subfic, addic{,\.} and I may have forgotten some.
-
-{add,subf}{ic,c,e,ze,me} and sra[wd][i] and their dots.  Sure.  And
-mcrxr and mcrxrx and mfxer and mtxer.  That's about it.
-
-We don't model the second carry at all yet btw, in GCC.  Not too many
-people know it exists even, so no big loss there.
-
-(One nasty was that addi. does not exist, so we used addic. where it was
-wanted before, so that had to change.)
+Just write this as C?  It should do a reasonable job of it.  If you want
+*good* code, you need to write it in *actual* assembler code, anyway (hand
+scheduled and everything).
 
 
 Segher
