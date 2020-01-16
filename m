@@ -2,65 +2,71 @@ Return-Path: <SRS0=yMLg=3F=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 57572C33CAF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 18:33:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 50DFDC33CB6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 18:36:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 12C5A206D7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 18:33:26 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Phentg8a"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 12C5A206D7
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id EFAF5207E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 18:35:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EFAF5207E0
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ACULAB.COM
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47zCW75mnWzDqcY
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 05:33:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47zCZ44vnRzDqC8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 05:35:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=aculab.com (client-ip=207.82.80.151;
+ helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=Phentg8a; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ dmarc=none (p=none dis=none) header.from=ACULAB.COM
+X-Greylist: delayed 1692 seconds by postgrey-1.36 at bilbo;
+ Fri, 17 Jan 2020 04:20:21 AEDT
+Received: from eu-smtp-delivery-151.mimecast.com
+ (eu-smtp-delivery-151.mimecast.com [207.82.80.151])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47z9qm2xSJzDqcG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 04:17:40 +1100 (AEDT)
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
- [73.47.72.35])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 5DE392075B;
- Thu, 16 Jan 2020 17:17:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1579195057;
- bh=47H3in3Ti6n0Ze1iwksWcpGbMYB5bXdY5ZkIePJCJvE=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=Phentg8aJqsy0qriHYlELIGpuykqFJgAU5Ukuk2KmmkkHOuPcD3nq1dZWfe4pOCMK
- 2ifG2scNGvc23d6efrW5kUkHpyFQMLEj6iEqQu1wMhh3E3Mhe4uFEDM9JS+tPiIizm
- Rm6Qwf129AtMvSfxOAB+cTiEMU6Kka3p90ICUd7s=
-From: Sasha Levin <sashal@kernel.org>
-To: linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 013/371] powerpc/kgdb: add
- kgdb_arch_set/remove_breakpoint()
-Date: Thu, 16 Jan 2020 12:11:21 -0500
-Message-Id: <20200116171719.16965-13-sashal@kernel.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20200116171719.16965-1-sashal@kernel.org>
-References: <20200116171719.16965-1-sashal@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47z9ts6LktzDqbr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 04:20:19 +1100 (AEDT)
+Received: from AcuMS.aculab.com (156.67.243.126 [156.67.243.126]) (Using
+ TLS) by relay.mimecast.com with ESMTP id
+ uk-mta-38-Ebi9GveDO2SkPFnm5FBdmw-1; Thu, 16 Jan 2020 17:20:14 +0000
+Received: from AcuMS.Aculab.com (fd9f:af1c:a25b:0:43c:695e:880f:8750) by
+ AcuMS.aculab.com (fd9f:af1c:a25b:0:43c:695e:880f:8750) with Microsoft SMTP
+ Server (TLS) id 15.0.1347.2; Thu, 16 Jan 2020 17:20:14 +0000
+Received: from AcuMS.Aculab.com ([fe80::43c:695e:880f:8750]) by
+ AcuMS.aculab.com ([fe80::43c:695e:880f:8750%12]) with mapi id 15.00.1347.000; 
+ Thu, 16 Jan 2020 17:20:14 +0000
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Christophe Leroy' <christophe.leroy@c-s.fr>, Segher Boessenkool
+ <segher@kernel.crashing.org>
+Subject: RE: z constraint in powerpc inline assembly ?
+Thread-Topic: z constraint in powerpc inline assembly ?
+Thread-Index: AQHVzDQOzi0mt2ZyZE2MkIeaLfMNoaftbd2ggAAZmxaAAAELIA==
+Date: Thu, 16 Jan 2020 17:20:14 +0000
+Message-ID: <50d031893e1b439d8b2aa5718fe68e65@AcuMS.aculab.com>
+References: <d72263a1-fe17-3192-6930-35ec8394c699@c-s.fr>
+ <e9af1690e51a4d89a8a5c0927eb8430a@AcuMS.aculab.com>
+ <20200116162151.GR3191@gate.crashing.org>
+ <0c217c4c-51cb-d5f3-237e-4fb4e2f6532c@c-s.fr>
+In-Reply-To: <0c217c4c-51cb-d5f3-237e-4fb4e2f6532c@c-s.fr>
+Accept-Language: en-GB, en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-exchange-transport-fromentityheader: Hosted
+x-originating-ip: [10.202.205.107]
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+X-MC-Unique: Ebi9GveDO2SkPFnm5FBdmw-1
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: aculab.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: base64
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,139 +78,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Sasha Levin <sashal@kernel.org>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-
-[ Upstream commit fb978ca207743badfe7efd9eebe68bcbb4969f79 ]
-
-Generic implementation fails to remove breakpoints after init
-when CONFIG_STRICT_KERNEL_RWX is selected:
-
-[   13.251285] KGDB: BP remove failed: c001c338
-[   13.259587] kgdbts: ERROR PUT: end of test buffer on 'do_fork_test' line 8 expected OK got $E14#aa
-[   13.268969] KGDB: re-enter exception: ALL breakpoints killed
-[   13.275099] CPU: 0 PID: 1 Comm: init Not tainted 4.18.0-g82bbb913ffd8 #860
-[   13.282836] Call Trace:
-[   13.285313] [c60e1ba0] [c0080ef0] kgdb_handle_exception+0x6f4/0x720 (unreliable)
-[   13.292618] [c60e1c30] [c000e97c] kgdb_handle_breakpoint+0x3c/0x98
-[   13.298709] [c60e1c40] [c000af54] program_check_exception+0x104/0x700
-[   13.305083] [c60e1c60] [c000e45c] ret_from_except_full+0x0/0x4
-[   13.310845] [c60e1d20] [c02a22ac] run_simple_test+0x2b4/0x2d4
-[   13.316532] [c60e1d30] [c0081698] put_packet+0xb8/0x158
-[   13.321694] [c60e1d60] [c00820b4] gdb_serial_stub+0x230/0xc4c
-[   13.327374] [c60e1dc0] [c0080af8] kgdb_handle_exception+0x2fc/0x720
-[   13.333573] [c60e1e50] [c000e928] kgdb_singlestep+0xb4/0xcc
-[   13.339068] [c60e1e70] [c000ae1c] single_step_exception+0x90/0xac
-[   13.345100] [c60e1e80] [c000e45c] ret_from_except_full+0x0/0x4
-[   13.350865] [c60e1f40] [c000e11c] ret_from_syscall+0x0/0x38
-[   13.356346] Kernel panic - not syncing: Recursive entry to debugger
-
-This patch creates powerpc specific version of
-kgdb_arch_set_breakpoint() and kgdb_arch_remove_breakpoint()
-using patch_instruction()
-
-Fixes: 1e0fc9d1eb2b ("powerpc/Kconfig: Enable STRICT_KERNEL_RWX for some configs")
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- arch/powerpc/include/asm/kgdb.h |  5 +++-
- arch/powerpc/kernel/kgdb.c      | 43 +++++++++++++++++++++++++++------
- 2 files changed, 39 insertions(+), 9 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/kgdb.h b/arch/powerpc/include/asm/kgdb.h
-index 9db24e77b9f4..a9e098a3b881 100644
---- a/arch/powerpc/include/asm/kgdb.h
-+++ b/arch/powerpc/include/asm/kgdb.h
-@@ -26,9 +26,12 @@
- #define BREAK_INSTR_SIZE	4
- #define BUFMAX			((NUMREGBYTES * 2) + 512)
- #define OUTBUFMAX		((NUMREGBYTES * 2) + 512)
-+
-+#define BREAK_INSTR		0x7d821008	/* twge r2, r2 */
-+
- static inline void arch_kgdb_breakpoint(void)
- {
--	asm(".long 0x7d821008"); /* twge r2, r2 */
-+	asm(stringify_in_c(.long BREAK_INSTR));
- }
- #define CACHE_FLUSH_IS_SAFE	1
- #define DBG_MAX_REG_NUM     70
-diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
-index 35e240a0a408..59c578f865aa 100644
---- a/arch/powerpc/kernel/kgdb.c
-+++ b/arch/powerpc/kernel/kgdb.c
-@@ -24,6 +24,7 @@
- #include <asm/processor.h>
- #include <asm/machdep.h>
- #include <asm/debug.h>
-+#include <asm/code-patching.h>
- #include <linux/slab.h>
- 
- /*
-@@ -144,7 +145,7 @@ static int kgdb_handle_breakpoint(struct pt_regs *regs)
- 	if (kgdb_handle_exception(1, SIGTRAP, 0, regs) != 0)
- 		return 0;
- 
--	if (*(u32 *) (regs->nip) == *(u32 *) (&arch_kgdb_ops.gdb_bpt_instr))
-+	if (*(u32 *)regs->nip == BREAK_INSTR)
- 		regs->nip += BREAK_INSTR_SIZE;
- 
- 	return 1;
-@@ -441,16 +442,42 @@ int kgdb_arch_handle_exception(int vector, int signo, int err_code,
- 	return -1;
- }
- 
-+int kgdb_arch_set_breakpoint(struct kgdb_bkpt *bpt)
-+{
-+	int err;
-+	unsigned int instr;
-+	unsigned int *addr = (unsigned int *)bpt->bpt_addr;
-+
-+	err = probe_kernel_address(addr, instr);
-+	if (err)
-+		return err;
-+
-+	err = patch_instruction(addr, BREAK_INSTR);
-+	if (err)
-+		return -EFAULT;
-+
-+	*(unsigned int *)bpt->saved_instr = instr;
-+
-+	return 0;
-+}
-+
-+int kgdb_arch_remove_breakpoint(struct kgdb_bkpt *bpt)
-+{
-+	int err;
-+	unsigned int instr = *(unsigned int *)bpt->saved_instr;
-+	unsigned int *addr = (unsigned int *)bpt->bpt_addr;
-+
-+	err = patch_instruction(addr, instr);
-+	if (err)
-+		return -EFAULT;
-+
-+	return 0;
-+}
-+
- /*
-  * Global data
-  */
--struct kgdb_arch arch_kgdb_ops = {
--#ifdef __LITTLE_ENDIAN__
--	.gdb_bpt_instr = {0x08, 0x10, 0x82, 0x7d},
--#else
--	.gdb_bpt_instr = {0x7d, 0x82, 0x10, 0x08},
--#endif
--};
-+struct kgdb_arch arch_kgdb_ops;
- 
- static int kgdb_not_implemented(struct pt_regs *regs)
- {
--- 
-2.20.1
+PiBZb3UgbWVhbiB0aGUgbXBjOHh4ICwgYnV0IEknbSBhbHNvIHVzaW5nIHRoZSBtcGM4MzJ4IHdo
+aWNoIGhhcyBhIGUzMDBjMg0KPiBjb3JlIGFuZCBpcyBjYXBhYmxlIG9mIGV4ZWN1dGluZyAyIGlu
+c25zIGluIHBhcmFsbGVsIGlmIG5vdCBpbiB0aGUgc2FtZQ0KPiBVbml0Lg0KDQpUaGF0IHNob3Vs
+ZCBsZXQgeW91IGRvIGEgbWVtb3J5IHJlYWQgYW5kIGFuIGFkZC4NCihJIGNhbid0IHJlbWVtYmVy
+IGlmIHRoZSBwcGMgaGFzICdhZGQgZnJvbSBtZW1vcnknIGJ1dCB0aGF0IGlzDQpsaWtlbHkgdG8g
+dXNlIGJvdGggdW5pdHMgYW55d2F5LikNCkFuIGluZmluaXRlbHkgdW5yb2xsZWQgbG9vcCB3aWxs
+IHRoZW4gYmUgNCBjbG9ja3MvYnl0ZSAoZm9yIDMyYml0KS4NCklmIHlvdSBnZXQgdG8gMyBmb3Ig
+YSByZWFsIGxvb3AgeW91IGFyZSBkb2luZyBvay4NCg0KUmVtZW1iZXIsIHVucm9sbCB0b28gbXVj
+aCBhbmQgeW91IGRpc3BsYWNlIG90aGVyIGNvZGUgZnJvbQ0KdGhlIGktY2FjaGUuIEFsc28gdGhl
+IGktY2FjaGUgbG9hZHMgdGhlbXNlbHZlcyBraWxsIHlvdS4NCihBIGhvdC1jYWNoZSBiZW5jaG1h
+cmsgd29uJ3Qgc2VlIHRoaXMuLi4pDQoNCglEYXZpZA0KDQotDQpSZWdpc3RlcmVkIEFkZHJlc3Mg
+TGFrZXNpZGUsIEJyYW1sZXkgUm9hZCwgTW91bnQgRmFybSwgTWlsdG9uIEtleW5lcywgTUsxIDFQ
+VCwgVUsNClJlZ2lzdHJhdGlvbiBObzogMTM5NzM4NiAoV2FsZXMpDQo=
 
