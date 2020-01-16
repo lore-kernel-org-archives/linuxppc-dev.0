@@ -2,58 +2,94 @@ Return-Path: <SRS0=yMLg=3F=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD275C33CAF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 21:34:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BED6BC33CAF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 23:55:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 816E420748
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 21:34:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 816E420748
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
+	by mail.kernel.org (Postfix) with ESMTPS id 34E30206B7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 23:55:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 34E30206B7
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47zHXW68TDzDrBZ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 08:34:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47zLfk0YrVzDrCl
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 10:55:26 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=mwb@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=linutronix.de
- (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
- envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linutronix.de
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a0a:51c0:0:12e:550::1])
- (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47zGxb4pXGzDqjv
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 08:08:03 +1100 (AEDT)
-Received: from p5b06da22.dip0.t-ipconnect.de ([91.6.218.34]
- helo=nanos.tec.linutronix.de)
- by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
- (Exim 4.80) (envelope-from <tglx@linutronix.de>)
- id 1isCMp-0001BF-Vb; Thu, 16 Jan 2020 22:07:52 +0100
-Received: by nanos.tec.linutronix.de (Postfix, from userid 1000)
- id 0F3B5101226; Thu, 16 Jan 2020 22:07:51 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andy Lutomirski <luto@kernel.org>
-Subject: Re: [RFC PATCH v4 08/11] lib: vdso: allow fixed clock mode
-In-Reply-To: <CALCETrX9+PZ1h6xex2WZcSqNT7W-6R-E95jv9hLhSdAzhMCrTA@mail.gmail.com>
-References: <cover.1579196675.git.christophe.leroy@c-s.fr>
- <1b278bc1f6859d4df734fb2cde61cf298e6e07fd.1579196675.git.christophe.leroy@c-s.fr>
- <874kwvf9by.fsf@nanos.tec.linutronix.de>
- <CALCETrX9+PZ1h6xex2WZcSqNT7W-6R-E95jv9hLhSdAzhMCrTA@mail.gmail.com>
-Date: Thu, 16 Jan 2020 22:07:51 +0100
-Message-ID: <871rrzf6u0.fsf@nanos.tec.linutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47zLbD61QDzDr3k
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 10:52:24 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 00GNbqqp011853; Thu, 16 Jan 2020 18:52:18 -0500
+Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.10])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2xk0qs1p3p-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 16 Jan 2020 18:52:18 -0500
+Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
+ by ppma02dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 00GNqGHf029549;
+ Thu, 16 Jan 2020 23:52:17 GMT
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by ppma02dal.us.ibm.com with ESMTP id 2xjvwnty1e-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 16 Jan 2020 23:52:17 +0000
+Received: from b03ledav002.gho.boulder.ibm.com
+ (b03ledav002.gho.boulder.ibm.com [9.17.130.233])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 00GNqFpH55705958
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 16 Jan 2020 23:52:15 GMT
+Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id BCB0C136051;
+ Thu, 16 Jan 2020 23:52:15 +0000 (GMT)
+Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 68694136053;
+ Thu, 16 Jan 2020 23:52:14 +0000 (GMT)
+Received: from oc8380061452.ibm.com (unknown [9.80.209.6])
+ by b03ledav002.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Thu, 16 Jan 2020 23:52:13 +0000 (GMT)
+Subject: Re: [PATCH v2] Fix display of Maximum Memory
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Gustavo Walbon <gwalbon@linux.ibm.com>,
+ Paul Mackerras <paulus@samba.org>
+References: <5577aef8-1d5a-ca95-ff0a-9c7b5977e5bf@linux.ibm.com>
+ <8736cg9cay.fsf@mpe.ellerman.id.au>
+From: Michael Bringmann <mwb@linux.ibm.com>
+Openpgp: preference=signencrypt
+Organization: IBM Linux Technology Center
+Message-ID: <bf5c536a-6ca4-0a1a-043d-69b002a34c17@linux.ibm.com>
+Date: Thu, 16 Jan 2020 17:52:13 -0600
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.1
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Linutronix-Spam-Score: -1.0
-X-Linutronix-Spam-Level: -
-X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required, ALL_TRUSTED=-1,
- SHORTCIRCUIT=-0.0001
+In-Reply-To: <8736cg9cay.fsf@mpe.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
+ definitions=2020-01-16_06:2020-01-16,
+ 2020-01-16 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ mlxlogscore=999
+ malwarescore=0 suspectscore=0 impostorscore=0 priorityscore=1501
+ adultscore=0 phishscore=0 mlxscore=0 lowpriorityscore=0 spamscore=0
+ bulkscore=0 clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-1910280000 definitions=main-2001160189
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,76 +101,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nathanl@linux.ibm.com, Arnd Bergmann <arnd@arndb.de>,
- X86 ML <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
- "open list:MIPS" <linux-mips@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, Andrew Lutomirski <luto@kernel.org>,
- Vincenzo Frascino <vincenzo.frascino@arm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Andy Lutomirski <luto@kernel.org> writes:
-> On Thu, Jan 16, 2020 at 12:14 PM Thomas Gleixner <tglx@linutronix.de> wrote:
->> Some architectures have a fixed clocksource which is known at compile
->> time and cannot be replaced or disabled at runtime, e.g. timebase on
->> PowerPC. For such cases the clock mode check in the VDSO code is
->> pointless.
+On 1/15/20 11:53 PM, Michael Ellerman wrote:
+> Michael Bringmann <mwb@linux.ibm.com> writes:
+>> Correct overflow problem in calculation+display of Maximum Memory
+>> value to syscfg where 32bits is insufficient.
 >>
-> I wonder if we should use this on x86 bare-metal if we have
-> sufficiently invariant TSC.  (Via static_cpu_has(), not compiled in.)
->
-> Maybe there is no such x86 machine.
+>> Signed-off-by: Michael Bringmann <mwb@linux.ibm.com>
+>> ---
+>>  arch/powerpc/platforms/pseries/lparcfg.c | 8 ++++----
+>>  1 file changed, 4 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/arch/powerpc/platforms/pseries/lparcfg.c b/arch/powerpc/platforms/pseries/lparcfg.c
+>> index e33e8bc..f00411c 100644
+>> --- a/arch/powerpc/platforms/pseries/lparcfg.c
+>> +++ b/arch/powerpc/platforms/pseries/lparcfg.c
+>> @@ -433,12 +433,12 @@ static void parse_em_data(struct seq_file *m)
+>>  
+>>  static void maxmem_data(struct seq_file *m)
+>>  {
+>> -	unsigned long maxmem = 0;
+>> +	u64 maxmem = 0;
+> 
+> This is 64-bit only code, so u64 == unsigned long.
+> 
+>> -	maxmem += drmem_info->n_lmbs * drmem_info->lmb_size;
+>> -	maxmem += hugetlb_total_pages() * PAGE_SIZE;
+>> +	maxmem += (u64)drmem_info->n_lmbs * drmem_info->lmb_size;
+> 
+> The only problem AFAICS is n_lmbs is int and lmb_size is u32, so this
+> multiplication will overflow.
+> 
+>> +	maxmem += (u64)hugetlb_total_pages() * PAGE_SIZE;
+> 
+> hugetlb_total_pages() already returns unsigned long.
+> 
+>> -	seq_printf(m, "MaxMem=%ld\n", maxmem);
+>> +	seq_printf(m, "MaxMem=%llu\n", maxmem);
+>>  }
+> 
+> This should be sufficient?
+> 
+> diff --git a/arch/powerpc/platforms/pseries/lparcfg.c b/arch/powerpc/platforms/pseries/lparcfg.c
+> index e33e8bc4b69b..38c306551f76 100644
+> --- a/arch/powerpc/platforms/pseries/lparcfg.c
+> +++ b/arch/powerpc/platforms/pseries/lparcfg.c
+> @@ -435,10 +435,10 @@ static void maxmem_data(struct seq_file *m)
+>  {
+>         unsigned long maxmem = 0;
+>  
+> -       maxmem += drmem_info->n_lmbs * drmem_info->lmb_size;
+> +       maxmem += (unsigned long)drmem_info->n_lmbs * drmem_info->lmb_size;
+>         maxmem += hugetlb_total_pages() * PAGE_SIZE;
+>  
+> -       seq_printf(m, "MaxMem=%ld\n", maxmem);
+> +       seq_printf(m, "MaxMem=%lu\n", maxmem);
+>  }
+>  
+>  static int pseries_lparcfg_data(struct seq_file *m, void *v)
+> 
+> 
+> cheers
+> 
 
-There might be some, but every time I started to trust the TSC a bit
-more someone reported the next variant of brokenness.
+Trying it out.
 
-Admittedly it has become better at least up to two sockets.
-
-For a start we could do that when the TSC is considered reliable, which
-is the case when:
-
-  - The TSC is the only available clocksource
-
-  - tsc=reliable is on the kernel command line
-
-> I really really want Intel or AMD to introduce machines where the TSC
-> pinky-swears to count in actual nanoseconds.
-
-and is guaranteed to be synchronized across any number of sockets/cpus
-and has an enforcable protection against BIOS writers.
-
-Ideally it'd have a writeable MSR attached which allows us to tweak the
-frequency in the PPM range via NTP/PTP.
-
-Guess how long quite some people including Linus and myself are asking
-for this?
-
-I know that Linus started bitching about the TSC before me, but it's
-already a bit over 20 years on my side when I first talked to Intel and
-AMD about the requirements for a reliable clocksource.
-
-Just to set the time lines straight.
-
-Constant frequency TSC surfaced on Intel in 2006 with the Core brand and
-on AMD in 2007 with Barcelona (Fam 10h).
-
-In 2008 the first TSC surfaced which was not affected by C-States and 5
-years later in 2013 some Atoms came out where TSC even worked accross
-S3.
-
-The > 2 socket issue is still not resolved AFAICT, but we got at least
-the TSC ADJUST MSR around 2012 which allowed us for the first time to
-reliably detect and mitigate BIOS wreckage.
-
-All the years I was envy on architectures which had simple designed and
-just reliably working timers forever.
-
-So now you can extrapolate how long it will take until you get your
-pinky-swearing pony :)
-
-Thanks,
-
-        tglx
+-- 
+Michael W. Bringmann
+Linux Technology Center
+IBM Corporation
+Tie-Line  363-5196
+External: (512) 286-5196
+Cell:       (512) 466-0650
+mwb@linux.ibm.com
