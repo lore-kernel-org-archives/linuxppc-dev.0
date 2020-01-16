@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E02CBC33CAF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 18:46:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46B6EC33CAF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 18:50:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 860482053B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 18:46:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E8713206B7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 18:50:10 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="LGs4ybOO"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 860482053B
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Fs7Ph4/L"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E8713206B7
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47zCpn2fQhzDqf2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 05:46:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47zCtS4F5vzDqgp
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 05:50:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
@@ -28,32 +28,32 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=LGs4ybOO; dkim-atps=neutral
+ header.s=default header.b=Fs7Ph4/L; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47zB0w4FVxzDqdZ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 04:25:36 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47zB1d1npnzDqX7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 04:26:13 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id E8430246DD;
- Thu, 16 Jan 2020 17:25:33 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 53CBC246BC;
+ Thu, 16 Jan 2020 17:26:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1579195534;
- bh=GaTkK/4xvNL6sxMd2wpZajtDaii9IKBLHXAmviFcU1w=;
+ s=default; t=1579195571;
+ bh=U0GllvyW/qZsgF/6DHdzP2hLFDdGfz0JdUTJSWqaqSY=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=LGs4ybOOwm54+5yEoZAATDDWTSqBnxPs7bnxVX9lJO2cC5r7lnwOdimPhIeeayjrJ
- bc/VgaODW8TLyqfw0M00Gf00RVETUA8Kd5mxxytce26s3o7DWUZovwz+22yEOh/VBY
- FUhQnvdICKviONtVwNJRKA8PTZjP4JOAEcKF5MWM=
+ b=Fs7Ph4/L1KtnOT0ns9c0DZ76dPKTrJc45BdHBR9q7z0C626Y2udrTJtDi8fgDz4vA
+ 3PbNM6Twvyd5pz7qLvDjd/XbezdXaZv+mIjzbwDjRzkqhhwEpgBAl9cYT0rtfjDhSI
+ iq9rNo9uQq/0LOPw7QXP/UX8rAI2YPU2g4LoBmwY=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 129/371] powerpc/mm: Check secondary hash page
- table
-Date: Thu, 16 Jan 2020 12:20:01 -0500
-Message-Id: <20200116172403.18149-72-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 155/371] soc/fsl/qe: Fix an error code in
+ qe_pin_request()
+Date: Thu, 16 Jan 2020 12:20:27 -0500
+Message-Id: <20200116172403.18149-98-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20200116172403.18149-1-sashal@kernel.org>
 References: <20200116172403.18149-1-sashal@kernel.org>
@@ -72,42 +72,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, Rashmica Gupta <rashmica.g@gmail.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, Dan Carpenter <dan.carpenter@oracle.com>,
+ Li Yang <leoyang.li@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Rashmica Gupta <rashmica.g@gmail.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
 
-[ Upstream commit 790845e2f12709d273d08ea7a2af7c2593689519 ]
+[ Upstream commit 5674a92ca4b7e5a6a19231edd10298d30324cd27 ]
 
-We were always calling base_hpte_find() with primary = true,
-even when we wanted to check the secondary table.
+We forgot to set "err" on this error path.
 
-mpe: I broke this when refactoring Rashmica's original patch.
-
-Fixes: 1515ab932156 ("powerpc/mm: Dump hash table")
-Signed-off-by: Rashmica Gupta <rashmica.g@gmail.com>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Fixes: 1a2d397a6eb5 ("gpio/powerpc: Eliminate duplication of of_get_named_gpio_flags()")
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+Signed-off-by: Li Yang <leoyang.li@nxp.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/mm/dump_hashpagetable.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/soc/fsl/qe/gpio.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/mm/dump_hashpagetable.c b/arch/powerpc/mm/dump_hashpagetable.c
-index 5c4c93dcff19..f666d74f05f5 100644
---- a/arch/powerpc/mm/dump_hashpagetable.c
-+++ b/arch/powerpc/mm/dump_hashpagetable.c
-@@ -343,7 +343,7 @@ static unsigned long hpte_find(struct pg_state *st, unsigned long ea, int psize)
+diff --git a/drivers/soc/fsl/qe/gpio.c b/drivers/soc/fsl/qe/gpio.c
+index 3b27075c21a7..5cbc5ce5ac15 100644
+--- a/drivers/soc/fsl/qe/gpio.c
++++ b/drivers/soc/fsl/qe/gpio.c
+@@ -152,8 +152,10 @@ struct qe_pin *qe_pin_request(struct device_node *np, int index)
+ 	if (err < 0)
+ 		goto err0;
+ 	gc = gpio_to_chip(err);
+-	if (WARN_ON(!gc))
++	if (WARN_ON(!gc)) {
++		err = -ENODEV;
+ 		goto err0;
++	}
  
- 	/* Look in secondary table */
- 	if (slot == -1)
--		slot = base_hpte_find(ea, psize, true, &v, &r);
-+		slot = base_hpte_find(ea, psize, false, &v, &r);
- 
- 	/* No entry found */
- 	if (slot == -1)
+ 	if (!of_device_is_compatible(gc->of_node, "fsl,mpc8323-qe-pario-bank")) {
+ 		pr_debug("%s: tried to get a non-qe pin\n", __func__);
 -- 
 2.20.1
 
