@@ -2,51 +2,90 @@ Return-Path: <SRS0=yMLg=3F=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B66BEC33CB1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 07:31:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0889FC33CB1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 07:57:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 713D8206D9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 07:31:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 713D8206D9
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gondor.apana.org.au
+	by mail.kernel.org (Postfix) with ESMTPS id 78C4620748
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 07:57:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 78C4620748
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47ywqC0w8mzDqWb
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 18:31:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gondor.apana.org.au (client-ip=216.24.177.18;
- helo=deadmen.hmeau.com; envelope-from=herbert@gondor.apana.org.au;
+	by lists.ozlabs.org (Postfix) with ESMTP id 47yxP00mshzDqYL
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 18:57:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=mahesh@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gondor.apana.org.au
-Received: from deadmen.hmeau.com (helcar.hmeau.com [216.24.177.18])
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47ywmb3Wr9zDqJm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 18:29:01 +1100 (AEDT)
-Received: from gondobar.mordor.me.apana.org.au ([192.168.128.4] helo=gondobar)
- by deadmen.hmeau.com with esmtps (Exim 4.89 #2 (Debian))
- id 1irzaL-0005Xm-15; Thu, 16 Jan 2020 15:28:57 +0800
-Received: from herbert by gondobar with local (Exim 4.89)
- (envelope-from <herbert@gondor.apana.org.au>)
- id 1irzaJ-0000n4-7f; Thu, 16 Jan 2020 15:28:55 +0800
-Date: Thu, 16 Jan 2020 15:28:55 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Daniel Axtens <dja@axtens.net>
-Subject: Re: [PATCH] crypto: vmx/xts - reject inputs that are too short
-Message-ID: <20200116072855.x3zktbdasy23xpp3@gondor.apana.org.au>
-References: <20200108050646.29220-1-dja@axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47yxLN554lzDqXN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 18:54:51 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 00G73tgt000707
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 02:04:02 -0500
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2xh7h9g5uy-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 02:03:59 -0500
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Thu, 16 Jan 2020 07:03:11 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 16 Jan 2020 07:03:09 -0000
+Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 00G738mT51773576
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 16 Jan 2020 07:03:08 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 77EE44204B;
+ Thu, 16 Jan 2020 07:03:08 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6B5284203F;
+ Thu, 16 Jan 2020 07:03:07 +0000 (GMT)
+Received: from in.ibm.com (unknown [9.193.100.186])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Thu, 16 Jan 2020 07:03:07 +0000 (GMT)
+Date: Thu, 16 Jan 2020 12:33:04 +0530
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [RFC PATCH] skiboot machine check handler
+References: <20191211100118.544-1-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200108050646.29220-1-dja@axtens.net>
-User-Agent: NeoMutt/20170113 (1.7.2)
+In-Reply-To: <20191211100118.544-1-npiggin@gmail.com>
+X-TM-AS-GCONF: 00
+x-cbid: 20011607-0008-0000-0000-00000349CB51
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 20011607-0009-0000-0000-00004A6A23EC
+Message-Id: <20200116070304.hks6zfsqholfolal@in.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
+ definitions=2020-01-16_02:2020-01-16,
+ 2020-01-15 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0
+ mlxlogscore=750 priorityscore=1501 spamscore=0 impostorscore=0
+ phishscore=0 bulkscore=0 adultscore=0 clxscore=1011 mlxscore=0
+ suspectscore=1 lowpriorityscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-1910280000 definitions=main-2001160058
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,40 +97,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: pfsmorigo@gmail.com, nayna@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-crypto@vger.kernel.org, ardb@kernel.org
+Reply-To: mahesh@linux.vnet.ibm.com
+Cc: skiboot@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jan 08, 2020 at 04:06:46PM +1100, Daniel Axtens wrote:
-> When the kernel XTS implementation was extended to deal with ciphertext
-> stealing in commit 8083b1bf8163 ("crypto: xts - add support for ciphertext
-> stealing"), a check was added to reject inputs that were too short.
+On 2019-12-11 20:01:18 Wed, Nicholas Piggin wrote:
+> Provide facilities to decode machine checks into human readable
+> strings, with only sufficient information required to deal with
+> them sanely.
 > 
-> However, in the vmx enablement - commit 239668419349 ("crypto: vmx/xts -
-> use fallback for ciphertext stealing"), that check wasn't added to the
-> vmx implementation. This disparity leads to errors like the following:
+> The old machine check stuff was over engineered. The philosophy
+> here is that OPAL should correct anything it possibly can, what
+> it can't handle but the OS might be able to do something with
+> (e.g., uncorrected memory error or SLB multi-hit), it passes back
+> to Linux. Anything else, the OS doesn't care. It doesn't want a
+> huge struct of severities and levels and originators etc that it
+> can't do anything with -- just provide human readable strings
+> for what happened and what was done with it.
 > 
-> alg: skcipher: p8_aes_xts encryption unexpectedly succeeded on test vector "random: len=0 klen=64"; expected_error=-22, cfg="random: inplace may_sleep use_finup src_divs=[<flush>66.99%@+10, 33.1%@alignmask+1155]"
+> A Linux driver for this will be able to cope with new processors.
 > 
-> Return -EINVAL if asked to operate with a cryptlen smaller than the AES
-> block size. This brings vmx in line with the generic implementation.
+> This also uses the same facility to decode machine checks in OPAL
+> boot.
 > 
-> Reported-by: Erhard Furtner <erhard_f@mailbox.org>
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=206049
-> Fixes: 239668419349 ("crypto: vmx/xts - use fallback for ciphertext stealing")
-> Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-> Cc: stable@vger.kernel.org # v5.4+
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> [dja: commit message]
-> Signed-off-by: Daniel Axtens <dja@axtens.net>
-> ---
->  drivers/crypto/vmx/aes_xts.c | 3 +++
->  1 file changed, 3 insertions(+)
+> The code is a bit in flux because it's sitting on top of a few
+> other RFC patches and not quite complete, just wanted opinions
+> about it.
 
-Patch applied.  Thanks.
--- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+opal_handle_mce() may have to be treated as special opal call. For MCE
+that occurs in OPAL context, Linux making opal call will clobber
+original opal call stack which hit MCE. Same is true with nested MCE in
+OPAL. Should it just continue using same r1 to avoid clobbering or have
+a separate stack for mce opal call ?
+
+Thanks,
+-Mahesh.
+
