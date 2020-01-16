@@ -2,48 +2,60 @@ Return-Path: <SRS0=yMLg=3F=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.2 required=3.0 tests=DATE_IN_PAST_03_06,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E975C32771
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 00:45:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B7B80C32771
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 01:50:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DD7982077B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 00:45:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DD7982077B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=the-dreams.de
+	by mail.kernel.org (Postfix) with ESMTPS id 1F6C7207E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 01:50:19 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="FOmJL3jA"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1F6C7207E0
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47ylqB5F0xzDqSr
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 11:45:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=the-dreams.de (client-ip=88.99.104.3; helo=pokefinder.org;
- envelope-from=wsa@the-dreams.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=the-dreams.de
-Received: from pokefinder.org (sauhun.de [88.99.104.3])
- by lists.ozlabs.org (Postfix) with ESMTP id 47ylmq2XnnzDqN3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 11:43:37 +1100 (AEDT)
-Received: from localhost (p54B33239.dip0.t-ipconnect.de [84.179.50.57])
- by pokefinder.org (Postfix) with ESMTPSA id 467852C0742;
- Wed, 15 Jan 2020 20:57:05 +0100 (CET)
-Date: Wed, 15 Jan 2020 20:57:05 +0100
-From: Wolfram Sang <wsa@the-dreams.de>
-To: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Subject: Re: [PATCH 00/12] i2c: convert subsystem to use
- i2c_new_client_device()
-Message-ID: <20200115195704.GC23789@ninjato>
-References: <20200107174748.9616-1-wsa+renesas@sang-engineering.com>
+	by lists.ozlabs.org (Postfix) with ESMTP id 47ynFj0q81zDqTg
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 12:50:17 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47ynC85WlwzDqGM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 12:48:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=FOmJL3jA; 
+ dkim-atps=neutral
+Received: by ozlabs.org (Postfix)
+ id 47ynC8494kz9sPW; Thu, 16 Jan 2020 12:48:04 +1100 (AEDT)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 47ynC8370Rz9sR0; Thu, 16 Jan 2020 12:48:04 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1579139284;
+ bh=+YhWDXh5QPyuV7X5QCYQEtp6OOXymylIF8nCCqmxVAk=;
+ h=From:To:Cc:Subject:Date:From;
+ b=FOmJL3jAwIVy4s4bSTU/qP6konFEudgNn4pUcNdlSH1viNErr/WZ/KHfB99BuK4RI
+ 6zZAZmO5EvU8B0lo4a/0QfpejcKuJCFela/xZrDVrTY92sugA3SEhWr64k2PSsWXU+
+ Ml55feoGmsOmiOKbxw10qUAIspiMnbvFQaJc5GnL6PfzmctE2rorcO6VonlGzNSfpZ
+ FkKqdqqjtDE93jhsTT6oRCUe69UTd+5fx6I82tfBKjv/Qe6tJFyVhOKhSPIIOE32Rb
+ 9JVCs0bXY+DhqRsN4Kvx2wKevO0nc5/vRqoMjl2oRikLu/m1DB7r1gNF6DCORsdEUU
+ /zMdjKFwVCf4A==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/9] powerpc/configs: Drop CONFIG_QLGE which moved to staging
+Date: Thu, 16 Jan 2020 11:48:00 +1000
+Message-Id: <20200116014808.15756-1-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.21.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="oTHb8nViIGeoXxdp"
-Content-Disposition: inline
-In-Reply-To: <20200107174748.9616-1-wsa+renesas@sang-engineering.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,59 +67,87 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-acpi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-i2c@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org
+Cc: joel@jms.id.au, dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+The QLGE driver moved to staging in commit 955315b0dc8c ("qlge: Move
+drivers/net/ethernet/qlogic/qlge/ to drivers/staging/qlge/"), meaning
+our defconfigs that enable it have no effect as we don't enable
+CONFIG_STAGING.
 
---oTHb8nViIGeoXxdp
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+It sounds like the device is obsolete, so drop the driver.
 
-On Tue, Jan 07, 2020 at 06:47:34PM +0100, Wolfram Sang wrote:
-> This patch series converts the I2C subsystem to use the new API. Drivers
-> have been build tested. There is one user left in the SMBus part of the
-> core which will need a seperate series because all users of this
-> function need to be checked/converted, too.
->=20
-> Except for documentation patches, the conversion has been done with a
-> coccinelle script and further simplification have been applied when
-> proofreading the patches.
->=20
-> A branch is here:
->=20
-> git://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git renesas/i2c/n=
-ew_client_device
->=20
-> Looking forward to comments...
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/configs/powernv_defconfig | 1 -
+ arch/powerpc/configs/ppc64_defconfig   | 1 -
+ arch/powerpc/configs/ppc6xx_defconfig  | 1 -
+ arch/powerpc/configs/pseries_defconfig | 1 -
+ arch/powerpc/configs/skiroot_defconfig | 1 -
+ 5 files changed, 5 deletions(-)
 
-Thanks for all the quick reviews and tests \o/
+diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
+index 32841456a573..71749377d164 100644
+--- a/arch/powerpc/configs/powernv_defconfig
++++ b/arch/powerpc/configs/powernv_defconfig
+@@ -181,7 +181,6 @@ CONFIG_MLX5_FPGA=y
+ CONFIG_MLX5_CORE_EN=y
+ CONFIG_MLX5_CORE_IPOIB=y
+ CONFIG_MYRI10GE=m
+-CONFIG_QLGE=m
+ CONFIG_NETXEN_NIC=m
+ CONFIG_USB_NET_DRIVERS=m
+ # CONFIG_WLAN is not set
+diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
+index b250e6f5a7ca..7e68cb222c7b 100644
+--- a/arch/powerpc/configs/ppc64_defconfig
++++ b/arch/powerpc/configs/ppc64_defconfig
+@@ -189,7 +189,6 @@ CONFIG_MLX4_EN=m
+ CONFIG_MYRI10GE=m
+ CONFIG_S2IO=m
+ CONFIG_PASEMI_MAC=y
+-CONFIG_QLGE=m
+ CONFIG_NETXEN_NIC=m
+ CONFIG_SUNGEM=y
+ CONFIG_GELIC_NET=m
+diff --git a/arch/powerpc/configs/ppc6xx_defconfig b/arch/powerpc/configs/ppc6xx_defconfig
+index 7e28919041cf..3e2f44f38ac5 100644
+--- a/arch/powerpc/configs/ppc6xx_defconfig
++++ b/arch/powerpc/configs/ppc6xx_defconfig
+@@ -507,7 +507,6 @@ CONFIG_FORCEDETH=m
+ CONFIG_HAMACHI=m
+ CONFIG_YELLOWFIN=m
+ CONFIG_QLA3XXX=m
+-CONFIG_QLGE=m
+ CONFIG_NETXEN_NIC=m
+ CONFIG_8139CP=m
+ CONFIG_8139TOO=m
+diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
+index 26126b4d4de3..6b68109e248f 100644
+--- a/arch/powerpc/configs/pseries_defconfig
++++ b/arch/powerpc/configs/pseries_defconfig
+@@ -169,7 +169,6 @@ CONFIG_IXGBE=m
+ CONFIG_I40E=m
+ CONFIG_MLX4_EN=m
+ CONFIG_MYRI10GE=m
+-CONFIG_QLGE=m
+ CONFIG_NETXEN_NIC=m
+ CONFIG_PPP=m
+ CONFIG_PPP_BSDCOMP=m
+diff --git a/arch/powerpc/configs/skiroot_defconfig b/arch/powerpc/configs/skiroot_defconfig
+index 069f67f12731..7ff1ff1ddc28 100644
+--- a/arch/powerpc/configs/skiroot_defconfig
++++ b/arch/powerpc/configs/skiroot_defconfig
+@@ -171,7 +171,6 @@ CONFIG_MYRI10GE=m
+ # CONFIG_NET_VENDOR_NVIDIA is not set
+ # CONFIG_NET_VENDOR_OKI is not set
+ # CONFIG_NET_VENDOR_PACKET_ENGINES is not set
+-CONFIG_QLGE=m
+ CONFIG_NETXEN_NIC=m
+ CONFIG_QED=m
+ CONFIG_QEDE=m
+-- 
+2.21.1
 
-Series applied to for-next, thanks!
-
-
---oTHb8nViIGeoXxdp
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAl4fbpAACgkQFA3kzBSg
-KbZsuxAAlGN3Qw/NoGCVgmD5F27FU32w32SIt3btqM+Smwb8h/YywvrdIxuaElC4
-U0FVB9Nt21/V6whDPbpRqNwtf3Wld5jgpFt3GinATmO0LBrYZM0qsrAWaf9Mnnaw
-KgDuO5MOsyLhxxgsT7ak2ASe6o+QzDUOxtGJJLgjEUxAcdF7MEVinFLPA1qOgGlu
-qTPNb+z3htcdaoLIVBvUBzS6xIt8HyD2XB71db4C1TqBfdoWI/kRIWn5Fd0Bjiv4
-EmUag6Gy7G0CTw0lzmYne+gSB/U8ugzpNDTWEyns4bxTVUGgyuAdWcPomJ9Duieq
-zA2yUvTbIX/L/smIXiJcXUOwgWiozVsY+oFpDp0lpg7ZaULiuCZbmcdbil6GRfqB
-qVfn8F94w1GRCQ5lNzMTuUbTIo/4w5HFMKQY23lJ8BMI26nVQ4+6YyUoZstLLyMA
-Np0s2EAUUGGO9IdMigfaJrVW7m0ukj1Je4S9a8OAE4eVuV89o1UjNdx0O7kV4BPI
-K0YpHnEvGaEiQB3MonKIE0jUL6WA1eXUUxsgQCBoXyPx9nmz5QzANoenIPmN8PBw
-sf8NAgK8ppLrkWjmbydI2GWMFFhp4gXdGFzvrjLahMNXZsHGLyK/ad9XS6+E54RD
-GynwEX6zU+0Znoa+3I2Po2bbPBRvuHSZqES3obLnS7x/VQ8Xz1w=
-=uUCI
------END PGP SIGNATURE-----
-
---oTHb8nViIGeoXxdp--
