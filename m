@@ -2,56 +2,59 @@ Return-Path: <SRS0=yMLg=3F=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E72C8C33CAF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 21:10:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29D57C33CAF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 21:13:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9E72520661
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 21:10:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9E72520661
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ghiti.fr
+	by mail.kernel.org (Postfix) with ESMTPS id D5CFC20728
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 21:13:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D5CFC20728
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47zH0K1TZVzDr1f
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 08:10:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47zH3S4yKdzDqfL
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 08:13:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=ghiti.fr
- (client-ip=217.70.178.242; helo=mslow2.mail.gandi.net;
- envelope-from=alex@ghiti.fr; receiver=<UNKNOWN>)
+ spf=none (no SPF record) smtp.mailfrom=linutronix.de
+ (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
+ envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ghiti.fr
-Received: from mslow2.mail.gandi.net (mslow2.mail.gandi.net [217.70.178.242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47zFGf4tYJzDqjx
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 06:52:40 +1100 (AEDT)
-Received: from relay10.mail.gandi.net (unknown [217.70.178.230])
- by mslow2.mail.gandi.net (Postfix) with ESMTP id 251063AA222
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 19:49:52 +0000 (UTC)
-Received: from [192.168.0.12] (127.19.86.79.rev.sfr.net [79.86.19.127])
- (Authenticated sender: alex@ghiti.fr)
- by relay10.mail.gandi.net (Postfix) with ESMTPSA id DC94C240002;
- Thu, 16 Jan 2020 19:49:19 +0000 (UTC)
-Subject: Re: [PATCH] powerpc: Do not consider weak unresolved symbol
- relocations as bad
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-References: <20200115204648.7179-1-alex@ghiti.fr>
- <20200116103932.2e603cf9@canb.auug.org.au>
-From: Alex Ghiti <alex@ghiti.fr>
-Message-ID: <ed319b1f-c6f4-7bad-f946-6c01fb202c7c@ghiti.fr>
-Date: Thu, 16 Jan 2020 14:49:19 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.3.0
+ dmarc=none (p=none dis=none) header.from=linutronix.de
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a0a:51c0:0:12e:550::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47zFN11fpSzDqdP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 06:57:20 +1100 (AEDT)
+Received: from p5b06da22.dip0.t-ipconnect.de ([91.6.218.34]
+ helo=nanos.tec.linutronix.de)
+ by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
+ (Exim 4.80) (envelope-from <tglx@linutronix.de>)
+ id 1isBGJ-0000KB-UP; Thu, 16 Jan 2020 20:57:04 +0100
+Received: by nanos.tec.linutronix.de (Postfix, from userid 1000)
+ id 6000B101226; Thu, 16 Jan 2020 20:57:03 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andy Lutomirski <luto@kernel.org>,
+ Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: Re: [RFC PATCH v4 10/11] lib: vdso: Allow arches to override the ns
+ shift operation
+In-Reply-To: <CALCETrWJcB9=MuSw5yx6arcb_np=E=awTyLRSi=r8BJySf_aXw@mail.gmail.com>
+References: <cover.1579196675.git.christophe.leroy@c-s.fr>
+ <c8ce9baaef0dc7273e4bcc31f353b17b655113d1.1579196675.git.christophe.leroy@c-s.fr>
+ <CALCETrWJcB9=MuSw5yx6arcb_np=E=awTyLRSi=r8BJySf_aXw@mail.gmail.com>
+Date: Thu, 16 Jan 2020 20:57:03 +0100
+Message-ID: <877e1rfa40.fsf@nanos.tec.linutronix.de>
 MIME-Version: 1.0
-In-Reply-To: <20200116103932.2e603cf9@canb.auug.org.au>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
+Content-Type: text/plain
+X-Linutronix-Spam-Score: -1.0
+X-Linutronix-Spam-Level: -
+X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required, ALL_TRUSTED=-1,
+ SHORTCIRCUIT=-0.0001
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,51 +66,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Palmer Dabbelt <palmerdabbelt@google.com>,
- Alexei Starovoitov <ast@kernel.org>, linux-kernel@vger.kernel.org,
- linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Zong Li <zong.li@sifive.com>, linuxppc-dev@lists.ozlabs.org
+Cc: nathanl@linux.ibm.com, Arnd Bergmann <arnd@arndb.de>,
+ X86 ML <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+ "open list:MIPS" <linux-mips@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Andrew Lutomirski <luto@kernel.org>,
+ Vincenzo Frascino <vincenzo.frascino@arm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Stephen,
+Andy Lutomirski <luto@kernel.org> writes:
+> On Thu, Jan 16, 2020 at 9:58 AM Christophe Leroy
+>
+> Would mul_u64_u64_shr() be a good alternative?  Could we adjust it to
+> assume the shift is less than 32?  That function exists to benefit
+> 32-bit arches.
 
-On 1/15/20 6:39 PM, Stephen Rothwell wrote:
-> Hi Alexandre,
->
-> Thanks for sorting this out.  Just a few comments below.
->
-> On Wed, 15 Jan 2020 15:46:48 -0500 Alexandre Ghiti <alex@ghiti.fr> wrote:
->>   
->>   # Have Kbuild supply the path to objdump so we handle cross compilation.
->                                              ^
-> "and nm"
->
->> +# Remove from the bad relocations those that match an undefined weak symbol
->> +# which will result in an absolute relocation to 0.
->> +# Weak unresolved symbols are of that form in nm output:
->> +# "                  w _binary__btf_vmlinux_bin_end"
->> +undef_weak_symbols=$($nm "$vmlinux" | awk -e '$1 ~ /w/ { print $2 }')
->> +
->> +while IFS= read -r weak_symbol; do
->> +	bad_relocs="$(echo -n "$bad_relocs" | sed "/$weak_symbol/d")"
->> +done <<< "$undef_weak_symbols"
-> This is not a bash script, and the above is a bashism :-(
-> Also, my version of awk (mawk) doesn't have a -e option.
->
-> How about something like :
->
-> undef_weak_symbols=$($nm "$vmlinux" | awk '$1 ~ /w/ { print $2 }')
-> if [ "$undef_weak_symbols" ]; then
-> 	bad_relocs="$(echo "$bad_relocs" | grep -F -w -v "$undef_weak_symbols")"
-> fi
->
-> Or do this near the top and add the grep to the others.
+We'd want mul_u64_u32_shr() for this. The rules for mult and shift are:
 
-Yes that's quite better, thanks, I'll send a new version tomorrow.
+     1 <= mult <= U32_MAX
 
-Thanks again,
+     1 <= shift <= 32
 
-Alex
+If we want to enforce a shift < 32 we need to limit that conditionally
+in the calculation/registration function.
+
+Thanks,
+
+        tglx
 
