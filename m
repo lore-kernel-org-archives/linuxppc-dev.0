@@ -2,92 +2,55 @@ Return-Path: <SRS0=yMLg=3F=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNWANTED_LANGUAGE_BODY,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C482DC32771
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 00:11:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 189B4C33CB2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 00:33:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 292B72081E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 00:11:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 292B72081E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 845F9222C3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 00:33:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 845F9222C3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47yl3F3MgGzDqT3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 11:11:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47ylXr3ZYyzDqR1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 11:33:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=none (no SPF record) smtp.mailfrom=linutronix.de
+ (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
+ envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linutronix.de
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a0a:51c0:0:12e:550::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47ykzn2zxJzDqBS
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 11:08:01 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 00G07JSI023046; Wed, 15 Jan 2020 19:07:54 -0500
-Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
- [169.55.91.170])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2xhbptb5h3-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 15 Jan 2020 19:07:53 -0500
-Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
- by ppma02wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 00G05geX001963;
- Thu, 16 Jan 2020 00:07:52 GMT
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by ppma02wdc.us.ibm.com with ESMTP id 2xj8nhst1f-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 16 Jan 2020 00:07:52 +0000
-Received: from b03ledav001.gho.boulder.ibm.com
- (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 00G07pKQ55116190
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 16 Jan 2020 00:07:51 GMT
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5533D6E04E;
- Thu, 16 Jan 2020 00:07:51 +0000 (GMT)
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2515A6E050;
- Thu, 16 Jan 2020 00:07:50 +0000 (GMT)
-Received: from oc6857751186.ibm.com (unknown [9.160.45.110])
- by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 16 Jan 2020 00:07:49 +0000 (GMT)
-Subject: Re: [PATCH v2] Fix display of Maximum Memory
-To: Michael Bringmann <mwb@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Gustavo Walbon <gwalbon@linux.ibm.com>, Paul Mackerras <paulus@samba.org>
-References: <5577aef8-1d5a-ca95-ff0a-9c7b5977e5bf@linux.ibm.com>
-From: Tyrel Datwyler <tyreld@linux.ibm.com>
-Message-ID: <7f8f6e88-8187-d690-13cb-dae0e47c313b@linux.ibm.com>
-Date: Wed, 15 Jan 2020 16:07:49 -0800
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.3.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47ylVD4vVZzDqPn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 11:30:59 +1100 (AEDT)
+Received: from p5b06da22.dip0.t-ipconnect.de ([91.6.218.34]
+ helo=nanos.tec.linutronix.de)
+ by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
+ (Exim 4.80) (envelope-from <tglx@linutronix.de>)
+ id 1irt3S-0004QP-Qv; Thu, 16 Jan 2020 01:30:35 +0100
+Received: by nanos.tec.linutronix.de (Postfix, from userid 1000)
+ id B7BBB10121C; Thu, 16 Jan 2020 01:30:33 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Hsin-Yi Wang <hsinyi@chromium.org>
+Subject: Re: [PATCH v5] reboot: support offline CPUs before reboot
+In-Reply-To: <20200115063410.131692-1-hsinyi@chromium.org>
+References: <20200115063410.131692-1-hsinyi@chromium.org>
+Date: Thu, 16 Jan 2020 01:30:33 +0100
+Message-ID: <8736cgxmxi.fsf@nanos.tec.linutronix.de>
 MIME-Version: 1.0
-In-Reply-To: <5577aef8-1d5a-ca95-ff0a-9c7b5977e5bf@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
- definitions=2020-01-15_03:2020-01-15,
- 2020-01-15 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 malwarescore=0
- bulkscore=0 phishscore=0 mlxlogscore=999 impostorscore=0 spamscore=0
- adultscore=0 lowpriorityscore=0 suspectscore=0 clxscore=1011
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-1910280000 definitions=main-2001150183
+Content-Type: text/plain
+X-Linutronix-Spam-Score: -1.0
+X-Linutronix-Spam-Level: -
+X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required, ALL_TRUSTED=-1,
+ SHORTCIRCUIT=-0.0001
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,48 +62,80 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Mark Rutland <mark.rutland@arm.com>, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
+ sparclinux@vger.kernel.org, Guenter Roeck <groeck@chromium.org>,
+ Will Deacon <will@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ linux-s390@vger.kernel.org, linux-csky@vger.kernel.org,
+ Aaro Koskinen <aaro.koskinen@nokia.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ linux-pm@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ Stephen Boyd <swboyd@chromium.org>, Josh Poimboeuf <jpoimboe@redhat.com>,
+ Pavankumar Kondeti <pkondeti@codeaurora.org>,
+ linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-mips@vger.kernel.org,
+ James Morse <james.morse@arm.com>, Jiri Kosina <jkosina@suse.cz>,
+ Vitaly Kuznetsov <vkuznets@redhat.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 1/15/20 6:53 AM, Michael Bringmann wrote:
-> Correct overflow problem in calculation+display of Maximum Memory
-> value to syscfg where 32bits is insufficient.
-> 
+Hsin-Yi Wang <hsinyi@chromium.org> writes:
 
-Probably needs the following Fixes tag:
+> Currently system reboots uses architecture specific codes (smp_send_stop)
+> to offline non reboot CPUs. Most architecture's implementation is looping
+> through all non reboot online CPUs and call ipi function to each of them. Some
+> architecture like arm64, arm, and x86... would set offline masks to cpu without
+> really offline them. This causes some race condition and kernel warning comes
+> out sometimes when system reboots.
 
-Fixes: 772b039fd9a7 ("powerpc/pseries: Export maximum memory value")
+'some race condition and kernel warning' is pretty useless information.
+Please describe exactly which kind of issues are caused by the current
+mechanism. Especially the race conditions are the interesting part (the
+warnings are just a consequence).
 
-otherwise,
+> This patch adds a config ARCH_OFFLINE_CPUS_ON_REBOOT, which would
+> offline cpus in
 
-Reviewed-by: Tyrel Datwyler <tyreld@linux.ibm.com>
+Please read Documentation/process/submitting-patches.rst and search for
+'This patch'.
 
-> Signed-off-by: Michael Bringmann <mwb@linux.ibm.com>
-> ---
->  arch/powerpc/platforms/pseries/lparcfg.c | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/pseries/lparcfg.c b/arch/powerpc/platforms/pseries/lparcfg.c
-> index e33e8bc..f00411c 100644
-> --- a/arch/powerpc/platforms/pseries/lparcfg.c
-> +++ b/arch/powerpc/platforms/pseries/lparcfg.c
-> @@ -433,12 +433,12 @@ static void parse_em_data(struct seq_file *m)
-> 
->  static void maxmem_data(struct seq_file *m)
->  {
-> -	unsigned long maxmem = 0;
-> +	u64 maxmem = 0;
-> 
-> -	maxmem += drmem_info->n_lmbs * drmem_info->lmb_size;
-> -	maxmem += hugetlb_total_pages() * PAGE_SIZE;
-> +	maxmem += (u64)drmem_info->n_lmbs * drmem_info->lmb_size;
-> +	maxmem += (u64)hugetlb_total_pages() * PAGE_SIZE;
-> 
-> -	seq_printf(m, "MaxMem=%ld\n", maxmem);
-> +	seq_printf(m, "MaxMem=%llu\n", maxmem);
->  }
-> 
->  static int pseries_lparcfg_data(struct seq_file *m, void *v)
-> 
+> migrate_to_reboot_cpu(). If non reboot cpus are all offlined here, the loop for
+> checking online cpus would be an empty loop.
 
+This does not make any sense. The issues which you are trying to solve
+are going to be still there when CONFIG_HOTPLUG_CPU is disabled.
+
+> If architecture don't enable this config, or some cpus somehow fails
+> to offline, it would fallback to ipi function.
+
+This is really a half baken solution which keeps the various pointlessly
+different pseudo reboot/kexec offlining implementations around. So with
+this we have yet more code which only works depending on kernel
+configuration and has the issue of potentially not being able to offline
+a CPU. IOW this is going to fail completely in cases where a system is
+in a state which prevents regular hotplug.
+
+The existing pseudo-offline functions have timeouts and eventually a
+fallback, e.g. the NMI fallback on x86. With this proposed regular
+offline solution this will just get stuck w/o a chance to force
+recovery.
+
+While I like the idea and surely agree that the ideal solution is to
+properly shutdown the CPUs on reboot, we need to take a step back and
+look at the minimum requirements for a regular shutdown/reboot and at
+the same time have a look at the requirements for emergency shutdown and
+kexec/kcrash. Having proper information about the race conditions and
+warnings you mentioned would be a good starting point.
+
+> Opt in this config for architectures that support CONFIG_HOTPLUG_CPU.
+
+This is not opt-in. You force that on all architectures which support
+CONFIG_HOTPLUG_CPU. The way we do this normally is to provide the
+infrastructure first and then have separate patches (one per
+architecture) enabling this, which allows the architecture maintainers
+to decide individually.
+
+Thanks,
+
+        tglx
