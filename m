@@ -2,66 +2,65 @@ Return-Path: <SRS0=yMLg=3F=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A4929C33CB3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 17:01:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A81FC33CAF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 17:04:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5F93124679
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 17:01:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5F93124679
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ACULAB.COM
+	by mail.kernel.org (Postfix) with ESMTPS id D510D20730
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 17:04:50 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="GB1NXzmP"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D510D20730
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47z9T16RmdzDqcM
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 04:01:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47z9Xv3DSxzDqch
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 04:04:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=aculab.com (client-ip=146.101.78.151;
- helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ACULAB.COM
-Received: from eu-smtp-delivery-151.mimecast.com
- (eu-smtp-delivery-151.mimecast.com [146.101.78.151])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=GB1NXzmP; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47z9Hf149MzDqZm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 03:53:16 +1100 (AEDT)
-Received: from AcuMS.aculab.com (156.67.243.126 [156.67.243.126]) (Using
- TLS) by relay.mimecast.com with ESMTP id
- uk-mta-254-HXiAV1JzMM-gb_hFxrnbMA-1; Thu, 16 Jan 2020 16:52:01 +0000
-Received: from AcuMS.Aculab.com (fd9f:af1c:a25b:0:43c:695e:880f:8750) by
- AcuMS.aculab.com (fd9f:af1c:a25b:0:43c:695e:880f:8750) with Microsoft SMTP
- Server (TLS) id 15.0.1347.2; Thu, 16 Jan 2020 16:52:00 +0000
-Received: from AcuMS.Aculab.com ([fe80::43c:695e:880f:8750]) by
- AcuMS.aculab.com ([fe80::43c:695e:880f:8750%12]) with mapi id 15.00.1347.000; 
- Thu, 16 Jan 2020 16:52:00 +0000
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Segher Boessenkool' <segher@kernel.crashing.org>
-Subject: RE: z constraint in powerpc inline assembly ?
-Thread-Topic: z constraint in powerpc inline assembly ?
-Thread-Index: AQHVzDQOzi0mt2ZyZE2MkIeaLfMNoaftbd2ggAAL2ICAAAJWMA==
-Date: Thu, 16 Jan 2020 16:52:00 +0000
-Message-ID: <1ebd93a2d006400f998772ec0ae50dd3@AcuMS.aculab.com>
-References: <d72263a1-fe17-3192-6930-35ec8394c699@c-s.fr>
- <e9af1690e51a4d89a8a5c0927eb8430a@AcuMS.aculab.com>
- <20200116162151.GR3191@gate.crashing.org>
-In-Reply-To: <20200116162151.GR3191@gate.crashing.org>
-Accept-Language: en-GB, en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-exchange-transport-fromentityheader: Hosted
-x-originating-ip: [10.202.205.107]
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47z9JJ5zl1zDqNH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 03:53:52 +1100 (AEDT)
+Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
+ [73.47.72.35])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 9831E21D56;
+ Thu, 16 Jan 2020 16:53:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1579193628;
+ bh=Fu7OV1q2drxb3QitiI52Q3VWJ6ir4zwen08E5sQltto=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=GB1NXzmPM1zSipcC2WnosnizDUmGvtmNBvvTNYqemQted6f/dFwyJHG1bFIZ6Qxe5
+ 5lNDf/uNK/cNCfFyQR9UO+Sw2gHnWLp2hpjN07L46/acg88h7doTYJjRf2l5jbIKv3
+ 7OCIC+6nX6YDK2x+LYRad81v3bAQmodIg77xIjv4=
+From: Sasha Levin <sashal@kernel.org>
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH AUTOSEL 5.4 162/205] powerpc/powernv: Disable native PCIe port
+ management
+Date: Thu, 16 Jan 2020 11:42:17 -0500
+Message-Id: <20200116164300.6705-162-sashal@kernel.org>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20200116164300.6705-1-sashal@kernel.org>
+References: <20200116164300.6705-1-sashal@kernel.org>
 MIME-Version: 1.0
-X-MC-Unique: HXiAV1JzMM-gb_hFxrnbMA-1
-X-Mimecast-Spam-Score: 0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+X-stable: review
+X-Patchwork-Hint: Ignore
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,79 +72,84 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Sasha Levin <sashal@kernel.org>, Oliver O'Halloran <oohall@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Segher Boessenkool
-> Sent: 16 January 2020 16:22
-...
-> > However a loop of 'add with carry' instructions may not be the
-> > fastest code by any means.
-> > Because the carry flag is needed for every 'adc' you can't do more
-> > that one adc per clock.
-> > This limits you to 8 bytes/clock on a 64bit system - even one
-> > that can schedule multiple memory reads and lots of instructions
-> > every clock.
-> >
-> > I don't know ppc, but on x86 you don't even get 1 adc per clock
-> > until very recent (Haswell I think) cpus.
-> > Sandy/Ivy bridge will do so if you add to alternate registers.
->=20
-> The carry bit is renamed just fine on all modern Power cpus.  On Power9
-> there is an extra carry bit, precisely so you can do two interleaved
-> chains.  And you can run lots of these insns at once, every cycle.
+From: Oliver O'Halloran <oohall@gmail.com>
 
-The limitation on old x86 was that each u-op could only have 2 inputs.
-Since adc needs 3 it always took 2 clocks.
-The first 'fix' still had an extra delay on the result register.
+[ Upstream commit 9d72dcef891030545f39ad386a30cf91df517fb2 ]
 
-There is also a big problem of false dependencies against the flags.
-PPC may not have this problem, but it makes it very difficult to
-loop carry any of the flags.
-Using 'dec' (which doesn't affect carry, but does set zero) is really slow.
+On PowerNV the PCIe topology is (currently) managed by the powernv platform
+code in Linux in cooperation with the platform firmware. Linux's native
+PCIe port service drivers operate independently of both and this can cause
+problems.
 
-Even though the latest x86 cpu have ADOX and ADCX (that use the
-overflow and carry flags) and can run in parallel the LOOP 'dec jump
-non-zero' instruction is microcoded and serialising!
-I have got 12 bytes/clock without too much unrolling, but it is hard
-work and probably not worth the effort.
+The main issue is that the portbus driver will conflict with the platform
+specific hotplug driver (pnv_php) over ownership of the MSI used to notify
+the host when a hotplug event occurs. The portbus driver claims this MSI on
+behalf of the individual port services because the same interrupt is used
+for hotplug events, PMEs (on root ports), and link bandwidth change
+notifications. The portbus driver will always claim the interrupt even if
+the individual port service drivers, such as pciehp, are compiled out.
 
-...
-> Christophe uses a very primitive 32-bit cpu, not even superscalar.  A
-> loop doing adde is pretty much optimal, probably wants some unrolling
-> though.
+The second, bigger, problem is that the hotplug port service driver
+fundamentally does not work on PowerNV. The platform assumes that all
+PCI devices have a corresponding arch-specific handle derived from the DT
+node for the device (pci_dn) and without one the platform will not allow
+a PCI device to be enabled. This problem is largely due to historical
+baggage, but it can't be resolved without significant re-factoring of the
+platform PCI support.
 
-Or interleaving so it does read_a, [read_b, adc_a, read_a, adc_b]* adc_a.
-That might be enough to get the loop 'for free' if there are memory stalls.
+We can fix these problems in the interim by setting the
+"pcie_ports_disabled" flag during platform initialisation. The flag
+indicates the platform owns the PCIe ports which stops the portbus driver
+from being registered.
 
-> Do normal 64-bit adds, and in parallel also accumulate the values shifted
-> right by 32 bits.  You can add 4G of them this way, and restore the 96-bi=
-t
-> actual sum from these two accumulators, so that you can fold it to a prop=
-er
-> ones' complement sum after the loop.
+This does have the side effect of disabling all port services drivers
+that is: AER, PME, BW notifications, hotplug, and DPC. However, this is
+not a huge disadvantage on PowerNV since these services are either unused
+or handled through other means.
 
-That is probably too many instructions per word - unless you are using
-simd ones.
+Fixes: 66725152fb9f ("PCI/hotplug: PowerPC PowerNV PCI hotplug driver")
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Link: https://lore.kernel.org/r/20191118065553.30362-1-oohall@gmail.com
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ arch/powerpc/platforms/powernv/pci.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-> But you can easily beat 8B/clock using vectors, or doing multiple additio=
-n
-> chains (interleaved) in parallel.  Not that it helps, your limiting facto=
-r
-> is the memory bandwidth anyway, if anything in the memory pipeline stalls
-> all your optimisations are for nothing.
-
-Yep, if the data isn't in the L1 cache anything complex is a waste of time.
-
-Unrolling too much just makes the top/bottom code take too long and
-then it dominates for a lot of 'real world' buffers.
-
-=09David
-
--
-Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1=
-PT, UK
-Registration No: 1397386 (Wales)
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index 2825d004dece..c0bea75ac27b 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -945,6 +945,23 @@ void __init pnv_pci_init(void)
+ 	if (!firmware_has_feature(FW_FEATURE_OPAL))
+ 		return;
+ 
++#ifdef CONFIG_PCIEPORTBUS
++	/*
++	 * On PowerNV PCIe devices are (currently) managed in cooperation
++	 * with firmware. This isn't *strictly* required, but there's enough
++	 * assumptions baked into both firmware and the platform code that
++	 * it's unwise to allow the portbus services to be used.
++	 *
++	 * We need to fix this eventually, but for now set this flag to disable
++	 * the portbus driver. The AER service isn't required since that AER
++	 * events are handled via EEH. The pciehp hotplug driver can't work
++	 * without kernel changes (and portbus binding breaks pnv_php). The
++	 * other services also require some thinking about how we're going
++	 * to integrate them.
++	 */
++	pcie_ports_disabled = true;
++#endif
++
+ 	/* Look for IODA IO-Hubs. */
+ 	for_each_compatible_node(np, NULL, "ibm,ioda-hub") {
+ 		pnv_pci_init_ioda_hub(np);
+-- 
+2.20.1
 
