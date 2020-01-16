@@ -2,67 +2,88 @@ Return-Path: <SRS0=yMLg=3F=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 646BAC33CB7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 06:44:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 630D3C33CB1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 06:48:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B890E2087E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 06:44:29 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="rZHWYGd4"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B890E2087E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 186B1206D9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 06:48:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 186B1206D9
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47yvn646BKzDqXR
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 17:44:26 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47yvt35L6RzDqT6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 17:48:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47yvkn28k4zDqRK
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 17:42:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=rZHWYGd4; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 47yvkm21R7z9sNx;
- Thu, 16 Jan 2020 17:42:24 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1579156944;
- bh=jGM/CA3ogVM7Lr0fo9k6o/pd3NvxUAI1LpN455WTxNk=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=rZHWYGd4nrpfpszgxVZsNCaGEWFDD9uV3qxIILaTPl7qFDhMrN90ooJpqgdvysWBx
- 0MRpbCxzwA3sArn592vEaqokSQFqnfP4OaErqA3MPMimKlsZgt8kC2fKFJ9NkuBV7Q
- dZloiNC19I6T1D8skkNtYLkIoHAYJStDuOpxsbd823Vo1rE9204ApXf5NLrEoRSZaC
- gLMRGLTwbwPSZNN4X0pt9xuWOtRnvFy/QbWX6Q8YOeKL2A7Kl6DIeEPjdMmMHJBbEj
- eKeE9Vbo4KD2/oxpqhF8kso9QW4ynL+3WjZGZmwpOhdesIP9riPWBMlKINAgFNoNJk
- Uh2B2iA2cshlA==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
- Christoph Hellwig <hch@infradead.org>
-Subject: Re: [linux-next/mainline][bisected 3acac06][ppc] Oops when unloading
- mpt3sas driver
-In-Reply-To: <1578980874.11996.3.camel@abdul.in.ibm.com>
-References: <1578489498.29952.11.camel@abdul>
- <1578560245.30409.0.camel@abdul.in.ibm.com>
- <20200109142218.GA16477@infradead.org>
- <1578980874.11996.3.camel@abdul.in.ibm.com>
-Date: Thu, 16 Jan 2020 16:42:30 +1000
-Message-ID: <87tv4v9a21.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47yvpy3gk7zDqF1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 17:46:02 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 00G6ircY122250; Thu, 16 Jan 2020 01:45:49 -0500
+Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
+ [169.63.121.186])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2xh7h9fp9w-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 16 Jan 2020 01:45:48 -0500
+Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
+ by ppma03wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 00G6fwSb024210;
+ Thu, 16 Jan 2020 06:45:48 GMT
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by ppma03wdc.us.ibm.com with ESMTP id 2xhmf9vv9c-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 16 Jan 2020 06:45:48 +0000
+Received: from b03ledav001.gho.boulder.ibm.com
+ (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 00G6jlWF17367344
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 16 Jan 2020 06:45:47 GMT
+Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 60AE96E050;
+ Thu, 16 Jan 2020 06:45:47 +0000 (GMT)
+Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B132C6E04C;
+ Thu, 16 Jan 2020 06:45:43 +0000 (GMT)
+Received: from skywalker.ibmuc.com (unknown [9.199.45.56])
+ by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Thu, 16 Jan 2020 06:45:43 +0000 (GMT)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: akpm@linux-foundation.org, peterz@infradead.org, will@kernel.org,
+ mpe@ellerman.id.au
+Subject: [PATCH v4 1/9] powerpc/mmu_gather: Enable RCU_TABLE_FREE even for
+ !SMP case
+Date: Thu, 16 Jan 2020 12:15:23 +0530
+Message-Id: <20200116064531.483522-2-aneesh.kumar@linux.ibm.com>
+X-Mailer: git-send-email 2.24.1
+In-Reply-To: <20200116064531.483522-1-aneesh.kumar@linux.ibm.com>
+References: <20200116064531.483522-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
+ definitions=2020-01-16_02:2020-01-16,
+ 2020-01-15 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0
+ mlxlogscore=999 priorityscore=1501 spamscore=0 impostorscore=0
+ phishscore=0 bulkscore=0 adultscore=0 clxscore=1011 mlxscore=0
+ suspectscore=2 lowpriorityscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-1910280000 definitions=main-2001160055
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,104 +95,137 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: sachinp <sachinp@linux.vnet.ibm.com>,
- linux-scsi <linux-scsi@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, jcmvbkbc@gmail.com,
- linux-next <linux-next@vger.kernel.org>, Oliver <oohall@gmail.com>,
- "aneesh.kumar" <aneesh.kumar@linux.vnet.ibm.com>,
- Brian King <brking@linux.vnet.ibm.com>, manvanth <manvanth@linux.vnet.ibm.com>
+Cc: linux-arch@vger.kernel.org, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Abdul Haleem <abdhalee@linux.vnet.ibm.com> writes:
-> On Thu, 2020-01-09 at 06:22 -0800, Christoph Hellwig wrote:
->> On Thu, Jan 09, 2020 at 02:27:25PM +0530, Abdul Haleem wrote:
->> > + CC Christoph Hellwig
->> 
->> The only thing this commit changed for the dma coherent case (which
->> ppc64 uses) is that we now look up the page to free by the DMA address
->> instead of the virtual address passed in.  Which suggests this call
->> stack passes in a broken dma address.  I suspect we somehow managed
->> to disable the ppc iommu bypass mode after allocating memory, which
->> would cause symptoms like this, and thus the commit is just exposing
->> a pre-existing problem.
->
-> Trace with printk added for page->addr, will this help ?
->
-> mpt3sas_cm0: removing handle(0x000f), sas_addr(0x500304801f080d3d)
-> mpt3sas_cm0: enclosure logical id(0x500304801f080d3f), slot(12)
-> mpt3sas_cm0: enclosure level(0x0000), connector name(     )
-> mpt3sas_cm0: mpt3sas_transport_port_remove: removed:
-> sas_addr(0x500304801f080d3f)
-> mpt3sas_cm0: expander_remove: handle(0x0009),
-> sas_addr(0x500304801f080d3f)
-> mpt3sas_cm0: sending diag reset !!
-> mpt3sas_cm0: diag reset: SUCCESS 
-> page->vaddr = 0xc000003f2d200000
-> page->vaddr = 0xc000003f2ef00000
-> page->vaddr = 0xc000003f38430000
-> page->vaddr = 0xc000003f3d7d0000
-> page->vaddr = 0xc000003f75760000
-> BUG: Unable to handle kernel data access on write at 0xc04a000000017c34
+A follow up patch is going to make sure we correctly invalidate page walk cache
+before we free page table pages. In order to keep things simple enable
+RCU_TABLE_FREE even for !SMP so that we don't have to fixup the !SMP case
+differently in the followup patch
 
-We also want the dma address, Abdul did another run resulting in:
+!SMP case is right now broken for radix translation w.r.t page walk cache flush.
+We can get interrupted in between page table free and that would imply we
+have page walk cache entries pointing to tables which got freed already.
 
-  mpt3sas_cm0: mpt3sas_transport_port_remove: removed: sas_addr(0x500304801f080d3f)
-  mpt3sas_cm0: expander_remove: handle(0x0009), sas_addr(0x500304801f080d3f)
-  mpt3sas_cm0: sending diag reset !!
-  mpt3sas_cm0: diag reset: SUCCESS
-  page->vaddr = 0xc000003fc5880000
-  page->dma = 0x800003fc5880000
-  page->vaddr = 0xc000003fc5900000
-  page->dma = 0x800003fc5900000
-  page->vaddr = 0xc000003fc5980000
-  page->dma = 0x800003fc5980000
-  page->vaddr = 0xc000003fc5990000
-  page->dma = 0x800003fc5990000
-  page->vaddr = 0xc000003fc7c70000
-  page->dma = 0x5f00000
-  BUG: Unable to handle kernel data access on write at 0xc04a000000017c34
-  Faulting instruction address: 0xc000000000300780
-  Oops: Kernel access of bad area, sig: 11 [#1]
-  LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=2048 DEBUG_PAGEALLOC NUMA PowerNV
-  Modules linked in: iptable_mangle xt_MASQUERADE iptable_nat nf_nat xt_conntrack nf_conntrack nf_defrag_ipv4 ipt_REJECT nf_reject_ipv4 xt_tcpudp tun bridge stp llc iptable_filter btrfs blake2b_generic xor zstd_decompress zstd_compress lzo_compress raid6_pq vmx_crypto gf128mul powernv_rng rng_core kvm_hv nfsd kvm binfmt_misc ip_tables x_tables xfs libcrc32c qla2xxx ixgbe nvme_fc nvme_fabrics mdio nvme_core i40e mpt3sas(-) raid_class scsi_transport_sas autofs4
-  CPU: 149 PID: 17518 Comm: rmmod Not tainted 5.5.0-rc5-next-20200108-autotest-00002-g36e1367-dirty #2
-  NIP:  c000000000300780 LR: c0000000001aabe4 CTR: c00000000004a030
-  REGS: c0000078ffab75d0 TRAP: 0380   Not tainted  (5.5.0-rc5-next-20200108-autotest-00002-g36e1367-dirty)
-  MSR:  9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>  CR: 24002424  XER: 20000000
-  CFAR: c0000000001aabe0 IRQMASK: 0
-  GPR00: c00000000004a0c8 c0000078ffab7860 c000000001321a00 c04a000000017c00
-  GPR04: 0000000000000000 c000003fc7c70000 003e000000017c00 0000000000000000
-  GPR08: 0000000000000000 c0000000013cd000 c04a000000017c34 0000000000000230
-  GPR12: c00000000004a030 c000007ffef35000 0000000000000000 0000000000000000
-  GPR16: 0000000000000000 0000000000000000 00000100140c0180 0000000010020098
-  GPR20: 0000000010020050 0000000010020038 0000000005f00000 c000000000d60870
-  GPR24: c000000000d60890 c000000000d608a8 0000000000000000 c0000000012a9818
-  GPR28: 0000000005f00000 c000003fc7c70000 0000000000010000 c000003fdaa4c8a8
-  NIP [c000000000300780] __free_pages+0x10/0x50
-  LR [c0000000001aabe4] dma_direct_free_pages+0x54/0x90
-  Call Trace:
-  [c0000078ffab7880] [c00000000004a0c8] dma_iommu_free_coherent+0x98/0xd0
-  [c0000078ffab78d0] [c0000000001a9c10] dma_free_attrs+0x110/0x120
-  [c0000078ffab7920] [c000000000317750] dma_pool_destroy+0x1d0/0x270
-  [c0000078ffab79d0] [c00800000dc51e98] _base_release_memory_pools+0x1d8/0x4b0 [mpt3sas]
-  [c0000078ffab7a60] [c00800000dc5b9f0] mpt3sas_base_detach+0x40/0x150 [mpt3sas]
-  [c0000078ffab7ad0] [c00800000dc6c92c] scsih_remove+0x24c/0x3e0 [mpt3sas]
-  [c0000078ffab7b90] [c0000000006199a4] pci_device_remove+0x64/0x110
-  [c0000078ffab7bd0] [c0000000006cf1a4] device_release_driver_internal+0x154/0x260
-  [c0000078ffab7c10] [c0000000006cf37c] driver_detach+0x8c/0x140
-  [c0000078ffab7c50] [c0000000006cd488] bus_remove_driver+0x78/0x100
-  [c0000078ffab7c80] [c0000000006d0090] driver_unregister+0x40/0x90
-  [c0000078ffab7cf0] [c0000000006190c8] pci_unregister_driver+0x38/0x110
-  [c0000078ffab7d40] [c00800000dc7f188] _mpt3sas_exit+0x50/0x4118 [mpt3sas]
-  [c0000078ffab7da0] [c0000000001dda18] sys_delete_module+0x1a8/0x2a0
-  [c0000078ffab7e20] [c00000000000b9d0] system_call+0x5c/0x68
-  Instruction dump:
-  88830051 2fa40000 41de0008 4bffe7fc 7d234b78 4bfffe94 60000000 60420000
-  3c4c0102 38421290 39430034 7c0004ac <7d005028> 3108ffff 7d00512d 40c2fff4
-  ---[ end trace b8cbc679eff3dfcc ]---
-  Segmentation fault
+Cc: <stable@vger.kernel.org>
+Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+---
+ arch/powerpc/Kconfig                         | 2 +-
+ arch/powerpc/include/asm/book3s/32/pgalloc.h | 8 --------
+ arch/powerpc/include/asm/book3s/64/pgalloc.h | 2 --
+ arch/powerpc/include/asm/nohash/pgalloc.h    | 8 --------
+ arch/powerpc/mm/book3s64/pgtable.c           | 7 -------
+ 5 files changed, 1 insertion(+), 26 deletions(-)
 
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 1ec34e16ed65..04240205f38c 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -222,7 +222,7 @@ config PPC
+ 	select HAVE_HARDLOCKUP_DETECTOR_PERF	if PERF_EVENTS && HAVE_PERF_EVENTS_NMI && !HAVE_HARDLOCKUP_DETECTOR_ARCH
+ 	select HAVE_PERF_REGS
+ 	select HAVE_PERF_USER_STACK_DUMP
+-	select HAVE_RCU_TABLE_FREE		if SMP
++	select HAVE_RCU_TABLE_FREE
+ 	select HAVE_RCU_TABLE_NO_INVALIDATE	if HAVE_RCU_TABLE_FREE
+ 	select HAVE_MMU_GATHER_PAGE_SIZE
+ 	select HAVE_REGS_AND_STACK_ACCESS_API
+diff --git a/arch/powerpc/include/asm/book3s/32/pgalloc.h b/arch/powerpc/include/asm/book3s/32/pgalloc.h
+index 998317702630..dc5c039eb28e 100644
+--- a/arch/powerpc/include/asm/book3s/32/pgalloc.h
++++ b/arch/powerpc/include/asm/book3s/32/pgalloc.h
+@@ -49,7 +49,6 @@ static inline void pgtable_free(void *table, unsigned index_size)
+ 
+ #define get_hugepd_cache_index(x)  (x)
+ 
+-#ifdef CONFIG_SMP
+ static inline void pgtable_free_tlb(struct mmu_gather *tlb,
+ 				    void *table, int shift)
+ {
+@@ -66,13 +65,6 @@ static inline void __tlb_remove_table(void *_table)
+ 
+ 	pgtable_free(table, shift);
+ }
+-#else
+-static inline void pgtable_free_tlb(struct mmu_gather *tlb,
+-				    void *table, int shift)
+-{
+-	pgtable_free(table, shift);
+-}
+-#endif
+ 
+ static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
+ 				  unsigned long address)
+diff --git a/arch/powerpc/include/asm/book3s/64/pgalloc.h b/arch/powerpc/include/asm/book3s/64/pgalloc.h
+index f6968c811026..a41e91bd0580 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgalloc.h
++++ b/arch/powerpc/include/asm/book3s/64/pgalloc.h
+@@ -19,9 +19,7 @@ extern struct vmemmap_backing *vmemmap_list;
+ extern pmd_t *pmd_fragment_alloc(struct mm_struct *, unsigned long);
+ extern void pmd_fragment_free(unsigned long *);
+ extern void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int shift);
+-#ifdef CONFIG_SMP
+ extern void __tlb_remove_table(void *_table);
+-#endif
+ void pte_frag_destroy(void *pte_frag);
+ 
+ static inline pgd_t *radix__pgd_alloc(struct mm_struct *mm)
+diff --git a/arch/powerpc/include/asm/nohash/pgalloc.h b/arch/powerpc/include/asm/nohash/pgalloc.h
+index 332b13b4ecdb..29c43665a753 100644
+--- a/arch/powerpc/include/asm/nohash/pgalloc.h
++++ b/arch/powerpc/include/asm/nohash/pgalloc.h
+@@ -46,7 +46,6 @@ static inline void pgtable_free(void *table, int shift)
+ 
+ #define get_hugepd_cache_index(x)	(x)
+ 
+-#ifdef CONFIG_SMP
+ static inline void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int shift)
+ {
+ 	unsigned long pgf = (unsigned long)table;
+@@ -64,13 +63,6 @@ static inline void __tlb_remove_table(void *_table)
+ 	pgtable_free(table, shift);
+ }
+ 
+-#else
+-static inline void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int shift)
+-{
+-	pgtable_free(table, shift);
+-}
+-#endif
+-
+ static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
+ 				  unsigned long address)
+ {
+diff --git a/arch/powerpc/mm/book3s64/pgtable.c b/arch/powerpc/mm/book3s64/pgtable.c
+index 75483b40fcb1..2bf7e1b4fd82 100644
+--- a/arch/powerpc/mm/book3s64/pgtable.c
++++ b/arch/powerpc/mm/book3s64/pgtable.c
+@@ -378,7 +378,6 @@ static inline void pgtable_free(void *table, int index)
+ 	}
+ }
+ 
+-#ifdef CONFIG_SMP
+ void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int index)
+ {
+ 	unsigned long pgf = (unsigned long)table;
+@@ -395,12 +394,6 @@ void __tlb_remove_table(void *_table)
+ 
+ 	return pgtable_free(table, index);
+ }
+-#else
+-void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int index)
+-{
+-	return pgtable_free(table, index);
+-}
+-#endif
+ 
+ #ifdef CONFIG_PROC_FS
+ atomic_long_t direct_pages_count[MMU_PAGE_COUNT];
+-- 
+2.24.1
 
-cheers
