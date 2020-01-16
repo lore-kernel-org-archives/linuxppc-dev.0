@@ -2,49 +2,83 @@ Return-Path: <SRS0=yMLg=3F=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E8E8AC33CB1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 10:50:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DAFF6C33CB1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 11:08:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9F9CC205F4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 10:50:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F9CC205F4
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.cz
+	by mail.kernel.org (Postfix) with ESMTPS id 76CD12072B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 11:08:52 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="hH7m43ST"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 76CD12072B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47z1DS3MxSzDqZy
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 21:50:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz
- (client-ip=195.135.220.15; helo=mx2.suse.de; envelope-from=lpechacek@suse.cz;
+	by lists.ozlabs.org (Postfix) with ESMTP id 47z1f956S4zDqZF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 22:08:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.helo=mo6-p01-ob.smtp.rzone.de (client-ip=2a01:238:20a:202:5301::6;
+ helo=mo6-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=suse.cz
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=xenosoft.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256
+ header.s=strato-dkim-0002 header.b=hH7m43ST; 
+ dkim-atps=neutral
+Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5301::6])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47z0lC19NPzDqXR
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 21:28:03 +1100 (AEDT)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx2.suse.de (Postfix) with ESMTP id 83CFFACB8;
- Thu, 16 Jan 2020 10:27:59 +0000 (UTC)
-Date: Thu, 16 Jan 2020 11:27:58 +0100
-From: Libor Pechacek <lpechacek@suse.cz>
-To: linuxppc-dev@lists.ozlabs.org, Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc: drmem: avoid NULL pointer dereference when drmem is
- unavailable
-Message-ID: <20200116102758.GC25138@fm.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47z1b80M0CzDqZF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 22:06:08 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1579172761;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=In-Reply-To:Date:Message-ID:From:References:To:Subject:
+ X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
+ bh=DzVwqWjiZk9RTH0OHTHksTRoKdVCSVfUgiVNd3dI1vg=;
+ b=hH7m43ST1RsITIjaRTXKvXW1twew6TFsS5OU2DW7o+Xk9fx59HTcrGrUQmv+pjbAOI
+ o+0px37tEKPk95NlNCluifMH3f/I3ifB4UyQxfRk6mI0LAGpqUInYH9GEpNxIG74ojnH
+ 5ZlBflhcrWUiPchTsuK8sNPDPNBVrEeyiRy+hXpTnUlivaibBFbNc4Qanveiqxq1ullt
+ Tb34+o6Jj7srBY8VJuwSV0IW4mFT8wFtwyIkWzWBeRu+4rhWrNsTMhw5UHUZ8FOh7/mv
+ rdEA9lPtlYX5o9zCswHRC7rrMvEop9QXji5Qzidv0XF0y8YXvQykZpQlGIwuj7AylT27
+ qRVg==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5DdBJSrwuuqxvPgGJxcR6e0MYA9IZCCrKOhys58/Dg=="
+X-RZG-CLASS-ID: mo00
+Received: from [IPv6:2a02:8109:89c0:ebfc:e1db:d4a8:b88d:b34e]
+ by smtp.strato.de (RZmta 46.1.4 AUTH) with ESMTPSA id c05c1aw0GB5tghQ
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+ (Client did not present a certificate);
+ Thu, 16 Jan 2020 12:05:55 +0100 (CET)
+Subject: [FSL P5020 P5040 PPC] Onboard SD card doesn't work anymore after the
+ 'mmc-v5.4-2' updates
+To: "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Darren Stevens <darren@stevens-zone.net>,
+ mad skateman <madskateman@gmail.com>, "R.T.Dickinson" <rtd2@xtra.co.nz>,
+ "contact@a-eon.com" <contact@a-eon.com>, Julian Margetson <runaway@candw.ms>
+References: <20200108093903.57620-1-hdegoede@redhat.com>
+ <20200108093903.57620-2-hdegoede@redhat.com>
+ <61bc9265-ece0-eeb6-d4a1-4631138ecf29@intel.com>
+ <8d67882d-04a8-0607-be4e-c1430b7fda21@redhat.com>
+ <84a32714-ba08-74a0-0c76-3c36db44dd68@intel.com>
+ <93446e09-5f12-800a-62fa-bf3ecea7273d@redhat.com>
+ <399ac7d5-2518-799a-595e-f6b6878cf4ab@intel.com>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <a9ab8946-c599-5f83-7527-2387a9e82e8a@xenosoft.de>
+Date: Thu, 16 Jan 2020 12:05:55 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.4.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-Mailman-Approved-At: Thu, 16 Jan 2020 21:48:09 +1100
+In-Reply-To: <399ac7d5-2518-799a-595e-f6b6878cf4ab@intel.com>
+Content-Type: multipart/mixed; boundary="------------6FAC0AE0BD11F9177C82AFB8"
+Content-Language: de-DE
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,118 +90,92 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>, David Hildenbrand <david@redhat.com>,
- Michal Suchanek <msuchanek@suse.cz>, stable@vger.kernel.org,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Leonardo Bras <leonardo@linux.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
- Allison Randal <allison@lohutok.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In KVM guests drmem structure is only zero initialized. Trying to
-manipulate DLPAR parameters results in a crash in this environment.
+This is a multi-part message in MIME format.
+--------------6FAC0AE0BD11F9177C82AFB8
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-$ echo "memory add count 1" > /sys/kernel/dlpar
-Oops: Kernel access of bad area, sig: 11 [#1]
-LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=2048 NUMA pSeries
-Modules linked in: af_packet(E) rfkill(E) nvram(E) vmx_crypto(E)
-gf128mul(E) e1000(E) virtio_balloon(E) rtc_generic(E) crct10dif_vpmsum(E)
-btrfs(E) blake2b_generic(E) libcrc32c(E) xor(E) raid6_pq(E) virtio_rng(E)
-virtio_blk(E) ohci_pci(E) ehci_pci(E) ohci_hcd(E) ehci_hcd(E)
-crc32c_vpmsum(E) usbcore(E) virtio_pci(E) virtio_ring(E) virtio(E) sg(E)
-dm_multipath(E) dm_mod(E) scsi_dh_rdac(E) scsi_dh_emc(E) scsi_dh_alua(E)
-scsi_mod(E)
-CPU: 1 PID: 4114 Comm: bash Kdump: loaded Tainted: G            E     5.5.0-rc6-2-default #1
-NIP:  c0000000000ff294 LR: c0000000000ff248 CTR: 0000000000000000
-REGS: c0000000fb9d3880 TRAP: 0300   Tainted: G            E      (5.5.0-rc6-2-default)
-MSR:  8000000000009033 <SF,EE,ME,IR,DR,RI,LE>  CR: 28242428  XER: 20000000
-CFAR: c0000000009a6c10 DAR: 0000000000000010 DSISR: 40000000 IRQMASK: 0
-GPR00: c0000000000ff248 c0000000fb9d3b10 c000000001682e00 0000000000000033
-GPR04: c0000000ff30bf90 c0000000ff394800 0000000000005110 ffffffffffffffe8
-GPR08: 0000000000000000 0000000000000000 00000000fe1c0000 0000000000000000
-GPR12: 0000000000002200 c00000003fffee00 0000000000000000 000000011cbc37c0
-GPR16: 000000011cb27ed0 0000000000000000 000000011cb6dd10 0000000000000000
-GPR20: 000000011cb7db28 000001003ce035f0 000000011cbc7828 000000011cbc6c70
-GPR24: 000001003cf01210 0000000000000000 c0000000ffade4e0 c000000002d7216b
-GPR28: 0000000000000001 c000000002d78560 0000000000000000 c0000000015458d0
-NIP [c0000000000ff294] dlpar_memory+0x6e4/0xd00
-LR [c0000000000ff248] dlpar_memory+0x698/0xd00
-Call Trace:
-[c0000000fb9d3b10] [c0000000000ff248] dlpar_memory+0x698/0xd00 (unreliable)
-[c0000000fb9d3ba0] [c0000000000f5990] handle_dlpar_errorlog+0xc0/0x190
-[c0000000fb9d3c10] [c0000000000f5c58] dlpar_store+0x198/0x4a0
-[c0000000fb9d3cd0] [c000000000c4cb00] kobj_attr_store+0x30/0x50
-[c0000000fb9d3cf0] [c0000000005a37b4] sysfs_kf_write+0x64/0x90
-[c0000000fb9d3d10] [c0000000005a2c90] kernfs_fop_write+0x1b0/0x290
-[c0000000fb9d3d60] [c0000000004a2bec] __vfs_write+0x3c/0x70
-[c0000000fb9d3d80] [c0000000004a6560] vfs_write+0xd0/0x260
-[c0000000fb9d3dd0] [c0000000004a69ac] ksys_write+0xdc/0x130
-[c0000000fb9d3e20] [c00000000000b478] system_call+0x5c/0x68
-Instruction dump:
-ebc90000 1ce70018 38e7ffe8 7cfe3a14 7fbe3840 419dff14 fb610068 7fc9f378
-39000000 4800000c 60000000 4195fef4 <81490010> 39290018 38c80001 7ea93840
----[ end trace cc2dd8152608c295 ]---
+Hi All,
 
-Taking closer look at the code, I can see that for_each_drmem_lmb is a
-macro expanding into `for (lmb = &drmem_info->lmbs[0]; lmb <=
-&drmem_info->lmbs[drmem_info->n_lmbs - 1]; lmb++)`. When drmem_info->lmbs
-is NULL, the loop would iterate through the whole address range if it
-weren't stopped by the NULL pointer dereference on the next line.
+We still need the attached patch for our onboard SD card interface 
+[1,2]. Could you please add this patch to the tree?
 
-This patch aligns for_each_drmem_lmb and for_each_drmem_lmb_in_range macro
-behavior with the common C semantics, where the end marker does not belong
-to the scanned range, and alters get_lmb_range() semantics. As a side
-effect, the wraparound observed in the crash is prevented.
+Thanks,
+Christian
 
-Fixes: 6c6ea53725b3 ("powerpc/mm: Separate ibm, dynamic-memory data from DT format")
-Cc: Michal Suchanek <msuchanek@suse.cz>
-Cc: stable@vger.kernel.org
-Signed-off-by: Libor Pechacek <lpechacek@suse.cz>
----
- arch/powerpc/include/asm/drmem.h                | 4 ++--
- arch/powerpc/platforms/pseries/hotplug-memory.c | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+[1] https://www.spinics.net/lists/linux-mmc/msg56211.html
+[2] 
+http://forum.hyperion-entertainment.com/viewtopic.php?f=58&t=4349&start=20#p49012
 
-diff --git a/arch/powerpc/include/asm/drmem.h b/arch/powerpc/include/asm/drmem.h
-index 3d76e1c388c2..28c3d936fdf3 100644
---- a/arch/powerpc/include/asm/drmem.h
-+++ b/arch/powerpc/include/asm/drmem.h
-@@ -27,12 +27,12 @@ struct drmem_lmb_info {
- extern struct drmem_lmb_info *drmem_info;
+
+--------------6FAC0AE0BD11F9177C82AFB8
+Content-Type: text/x-patch; charset=UTF-8;
+ name="coherent_cache-v3.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="coherent_cache-v3.patch"
+
+diff -rupN a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+--- a/arch/powerpc/kernel/setup-common.c	2019-12-03 18:05:52.436070217 +0100
++++ b/arch/powerpc/kernel/setup-common.c	2019-12-03 18:03:20.316629696 +0100
+@@ -780,6 +780,22 @@ static int __init check_cache_coherency(
+ late_initcall(check_cache_coherency);
+ #endif /* CONFIG_CHECK_CACHE_COHERENCY */
  
- #define for_each_drmem_lmb_in_range(lmb, start, end)		\
--	for ((lmb) = (start); (lmb) <= (end); (lmb)++)
-+	for ((lmb) = (start); (lmb) < (end); (lmb)++)
++#ifndef CONFIG_NOT_COHERENT_CACHE
++/*
++ * For historical reasons powerpc kernels are built with hard wired knowledge of
++ * whether or not DMA accesses are cache coherent. Additionally device trees on
++ * powerpc do not typically support the dma-coherent property.
++ *
++ * So when we know that DMA is coherent, override arch_of_dma_is_coherent() to
++ * tell the drivers/of code that all devices are coherent regardless of whether
++ * they have a dma-coherent property.
++ */
++bool arch_of_dma_is_coherent(struct device_node *np)
++{
++	return true;
++}
++#endif
++
+ #ifdef CONFIG_DEBUG_FS
+ struct dentry *powerpc_debugfs_root;
+ EXPORT_SYMBOL(powerpc_debugfs_root);
+diff -rupN a/drivers/of/address.c b/drivers/of/address.c
+--- a/drivers/of/address.c	2019-12-03 18:05:57.332052212 +0100
++++ b/drivers/of/address.c	2019-12-03 18:03:20.320629681 +0100
+@@ -990,6 +990,14 @@ out:
+ 	return ret;
+ }
  
- #define for_each_drmem_lmb(lmb)					\
- 	for_each_drmem_lmb_in_range((lmb),			\
- 		&drmem_info->lmbs[0],				\
--		&drmem_info->lmbs[drmem_info->n_lmbs - 1])
-+		&drmem_info->lmbs[drmem_info->n_lmbs])
++/*
++ * arch_of_dma_is_coherent - Arch hook to determine if device is coherent for DMA
++ */
++bool __weak arch_of_dma_is_coherent(struct device_node *np)
++{
++	return false;
++}
++
+ /**
+  * of_dma_is_coherent - Check if device is coherent
+  * @np:	device node
+@@ -999,8 +1007,12 @@ out:
+  */
+ bool of_dma_is_coherent(struct device_node *np)
+ {
+-	struct device_node *node = of_node_get(np);
++	struct device_node *node;
++
++	if (arch_of_dma_is_coherent(np))
++		return true;
  
- /*
-  * The of_drconf_cell_v1 struct defines the layout of the LMB data
-diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-index c126b94d1943..4ea6af002e27 100644
---- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -236,9 +236,9 @@ static int get_lmb_range(u32 drc_index, int n_lmbs,
- 	if (!start)
- 		return -EINVAL;
- 
--	end = &start[n_lmbs - 1];
-+	end = &start[n_lmbs];
- 
--	last_lmb = &drmem_info->lmbs[drmem_info->n_lmbs - 1];
-+	last_lmb = &drmem_info->lmbs[drmem_info->n_lmbs];
- 	if (end > last_lmb)
- 		return -EINVAL;
- 
--- 
-2.24.1
++	np = of_node_get(np);
+ 	while (node) {
+ 		if (of_property_read_bool(node, "dma-coherent")) {
+ 			of_node_put(node);
 
-
--- 
-Libor Pechacek
-SUSE Labs                                Remember to have fun...
+--------------6FAC0AE0BD11F9177C82AFB8--
