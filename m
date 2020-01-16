@@ -2,78 +2,98 @@ Return-Path: <SRS0=yMLg=3F=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D016C33CB1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 08:20:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 742EBC33CB1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 08:36:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0B4102077B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 08:20:04 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=iram.es header.i=@iram.es header.b="XN6XchAW"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0B4102077B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=iram.es
+	by mail.kernel.org (Postfix) with ESMTPS id EB88B20661
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 08:35:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EB88B20661
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47yxvQ70hWzDqYY
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 19:20:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47yyFn2FCYzDqWr
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 19:35:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=sandipan@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=iram.es
- (client-ip=130.206.19.148; helo=mx01.puc.rediris.es;
- envelope-from=paubert@iram.es; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=iram.es
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=iram.es header.i=@iram.es header.a=rsa-sha256
- header.s=DKIM header.b=XN6XchAW; dkim-atps=neutral
-X-Greylist: delayed 686 seconds by postgrey-1.36 at bilbo;
- Thu, 16 Jan 2020 19:18:02 AEDT
-Received: from mx01.puc.rediris.es (outbound5mad.lav.puc.rediris.es
- [130.206.19.148])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47yxs66t2fzDqNb
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 19:18:01 +1100 (AEDT)
-Received: from mta-out03.sim.rediris.es (mta-out03.sim.rediris.es
- [130.206.24.45])
- by mx01.puc.rediris.es  with ESMTP id 00G86IPu017464-00G86IPw017464
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
- Thu, 16 Jan 2020 09:06:18 +0100
-Received: from mta-out03.sim.rediris.es (localhost.localdomain [127.0.0.1])
- by mta-out03.sim.rediris.es (Postfix) with ESMTPS id 6AF50303A7C9;
- Thu, 16 Jan 2020 09:06:18 +0100 (CET)
-Received: from mta-out03.sim.rediris.es (localhost.localdomain [127.0.0.1])
- by mta-out03.sim.rediris.es (Postfix) with ESMTPS id 5E8B4303A7CA;
- Thu, 16 Jan 2020 09:06:18 +0100 (CET)
-Received: from lt-gp.iram.es (141.33.223.87.dynamic.jazztel.es [87.223.33.141])
- by mta-out03.sim.rediris.es (Postfix) with ESMTPA id E752E303A7C9;
- Thu, 16 Jan 2020 09:06:17 +0100 (CET)
-Date: Thu, 16 Jan 2020 09:06:08 +0100
-From: Gabriel Paubert <paubert@iram.es>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: Re: z constraint in powerpc inline assembly ?
-Message-ID: <20200116080608.GA29711@lt-gp.iram.es>
-References: <d72263a1-fe17-3192-6930-35ec8394c699@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47yyCV1ThKzDqWr
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 19:33:57 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 00G8WKMT021068
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 03:33:54 -0500
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2xhgs7mfcd-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 03:33:54 -0500
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.ibm.com>;
+ Thu, 16 Jan 2020 08:33:52 -0000
+Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 16 Jan 2020 08:33:47 -0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 00G8XkE138404580
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 16 Jan 2020 08:33:46 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2F830AE051;
+ Thu, 16 Jan 2020 08:33:46 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id CA152AE056;
+ Thu, 16 Jan 2020 08:33:43 +0000 (GMT)
+Received: from [9.124.35.38] (unknown [9.124.35.38])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu, 16 Jan 2020 08:33:43 +0000 (GMT)
+Subject: Re: [PATCH v15 23/23] selftests: vm: pkeys: Use the correct page size
+ on powerpc
+To: Michael Ellerman <mpe@ellerman.id.au>, shuahkh@osg.samsung.com,
+ linux-kselftest@vger.kernel.org
+References: <cover.1576645161.git.sandipan@linux.ibm.com>
+ <ff7c288e2a88ccfb3b79be30967646fe5b869683.1576645161.git.sandipan@linux.ibm.com>
+ <87h80x9ozr.fsf@mpe.ellerman.id.au>
+From: Sandipan Das <sandipan@linux.ibm.com>
+Date: Thu, 16 Jan 2020 14:03:43 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.3.1
 MIME-Version: 1.0
+In-Reply-To: <87h80x9ozr.fsf@mpe.ellerman.id.au>
 Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <d72263a1-fe17-3192-6930-35ec8394c699@c-s.fr>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; d=iram.es; s=DKIM;
- c=relaxed/relaxed; 
- h=date:from:to:cc:subject:message-id:references:mime-version:content-type;
- bh=1VrLvJTd3odHAKkqKDn1jaYs+2J/RHGEsWMdzm369i0=;
- b=XN6XchAWdiUSr19OmCpCFWAWP7R2ArDoTvH3vylj0JUGseqg9NcBYELFr62jv2vUa+cCTIareEzI
- SNS+SffCLAzcTgan6puoyZlKICLT5cr1cvASl45iXuoWsBgDFHgrjs1GErgYArbW5Igz2pBIkCrT
- orXJvF8cVOsSvF3l9hvoj8XuRUH5taZz8PYMGoSl/clKKVmcSjC3/CDMFCkPyVxb4lw+Fp7y3rRw
- p7ltKxyTUMZMBi/MIKaG3njdfyBiMcHD/ch0lJVqYaspm+4ajBKwd1c2tSf7F7nQ0jp75FrsvSy9
- D4yuOMBglCYICYyRM6Uvt6VGaOFGb5tXb1cV+w==
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 20011608-0016-0000-0000-000002DDC834
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 20011608-0017-0000-0000-000033405ED1
+Message-Id: <375ed2cc-22ea-ddbf-33d3-febed65eefc6@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
+ definitions=2020-01-16_02:2020-01-16,
+ 2020-01-15 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 mlxscore=0
+ malwarescore=0 suspectscore=0 mlxlogscore=999 impostorscore=0 spamscore=0
+ bulkscore=0 lowpriorityscore=0 clxscore=1015 priorityscore=1501
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-1910280000 definitions=main-2001160072
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,70 +105,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-arch@vger.kernel.org, fweimer@redhat.com, dave.hansen@intel.com,
+ aneesh.kumar@linux.ibm.com, x86@kernel.org, linuxram@us.ibm.com,
+ mhocko@kernel.org, linux-mm@kvack.org, mingo@redhat.com, msuchanek@suse.de,
+ linuxppc-dev@lists.ozlabs.org, bauerman@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jan 16, 2020 at 07:11:36AM +0100, Christophe Leroy wrote:
-> Hi Segher,
-> 
-> I'm trying to see if we could enhance TCP checksum calculations by splitting
-> inline assembly blocks to give GCC the opportunity to mix it with other
-> stuff, but I'm getting difficulties with the carry.
-> 
-> As far as I can read in the documentation, the z constraint represents
-> '‘XER[CA]’ carry bit (part of the XER register)'
+Hi Michael,
 
-Well, the documentation is very optimisitic. From the GCC source code
-(thanks for switching to git last week-end ;-)), it is clear that the
-carry is not, for the time being, properly modeled. 
+On 15/01/20 12:37 pm, Michael Ellerman wrote:
+> Sandipan Das <sandipan@linux.ibm.com> writes:
+>> Both 4K and 64K pages are supported on powerpc. Parts of
+>> the selftest code perform alignment computations based on
+>> the PAGE_SIZE macro which is currently hardcoded to 64K
+>> for powerpc. This causes some test failures on kernels
+>> configured with 4K page size.
+>>
+>> This problem is solved by determining the correct page
+>> size during the build process rather than hardcoding it
+>> in the header file.
+> 
+> Doing it at build time is wrong, the test could be built on a 4K system
+> and then run on a 64K system, or vice versa.
+> 
+> You should just use getpagesize() at runtime.
+> 
+> cheers
+> 
 
-Right now, in the machine description, all setters and users of the carry
-are in the same block of generated instructions.
+The reason I chose to do it this way was because PAGE_SIZE also determines
+the alignment for the function "lots_o_noops_around_write" (which is used
+by some of the test cases). Since __attribute__((__aligned__(X))) requires
+X to be a constant, I am not sure if there a way around this.
 
-For a start, all single instructions patterns that set the carry (and
-do not use it) as a side effect should mention the they clobber the 
-carry, otherwise inserting one between a setter and a user of the carry 
-would break. This includes all arithmetic right shift (sra[wd]{,i}, 
-subfic, addic{,\.} and I may have forgotten some.
+- Sandipan
 
-If you want to future proof your code just in case, you should also add
-an "xer" clobber to all instruction sequences that may modify the carry
-bit. But any inline assembly that touches XER might break if GCC is
-ugraded to properly model the carry bit, and a lot of code might need to
-be audited.
-
-	Gabriel
-
-> 
-> I've tried the following, but I get errors. Can you help ?
-> 
-> unsigned long cksum(unsigned long a, unsigned long b, unsigned long c)
-> {
-> 	unsigned long sum;
-> 	unsigned long carry;
-> 
-> 	asm("addc %0, %2, %3" : "=r"(sum), "=z"(carry) : "r"(a), "r"(b));
-> 	asm("adde %0, %0, %2" : "+r"(sum), "+z"(carry) : "r"(c));
-> 	asm("addze %0, %0" : "+r"(sum) : "z"(carry));
-> 
-> 	return sum;
-> }
-> 
-> 
-> 
-> csum.c: In function 'cksum':
-> csum.c:6:2: error: inconsistent operand constraints in an 'asm'
->   asm("addc %0, %2, %3" : "=r"(sum), "=z"(carry) : "r"(a), "r"(b));
->   ^
-> csum.c:7:2: error: inconsistent operand constraints in an 'asm'
->   asm("adde %0, %0, %2" : "+r"(sum), "+z"(carry) : "r"(c));
->   ^
-> csum.c:8:2: error: inconsistent operand constraints in an 'asm'
->   asm("addze %0, %0" : "+r"(sum) : "z"(carry));
->   ^
-> 
-> Thanks
-> Christophe
-> 
