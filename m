@@ -2,90 +2,79 @@ Return-Path: <SRS0=yMLg=3F=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0889FC33CB1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 07:57:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C0E11C33CB1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 08:09:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 78C4620748
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 07:57:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 78C4620748
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 6EBB22077B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 08:09:51 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="qfoDxmeh"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6EBB22077B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47yxP00mshzDqYL
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 18:57:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=mahesh@linux.vnet.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 47yxgc6PnVzDqYt
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2020 19:09:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::844;
+ helo=mail-qt1-x844.google.com; envelope-from=dvyukov@google.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
+ header.s=20161025 header.b=qfoDxmeh; dkim-atps=neutral
+Received: from mail-qt1-x844.google.com (mail-qt1-x844.google.com
+ [IPv6:2607:f8b0:4864:20::844])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47yxLN554lzDqXN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 18:54:51 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 00G73tgt000707
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 02:04:02 -0500
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2xh7h9g5uy-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 02:03:59 -0500
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Thu, 16 Jan 2020 07:03:11 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 16 Jan 2020 07:03:09 -0000
-Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 00G738mT51773576
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 16 Jan 2020 07:03:08 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 77EE44204B;
- Thu, 16 Jan 2020 07:03:08 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6B5284203F;
- Thu, 16 Jan 2020 07:03:07 +0000 (GMT)
-Received: from in.ibm.com (unknown [9.193.100.186])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Thu, 16 Jan 2020 07:03:07 +0000 (GMT)
-Date: Thu, 16 Jan 2020 12:33:04 +0530
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [RFC PATCH] skiboot machine check handler
-References: <20191211100118.544-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47yxdK0M7SzDqXd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 19:07:46 +1100 (AEDT)
+Received: by mail-qt1-x844.google.com with SMTP id 5so18199365qtz.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2020 00:07:46 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=7IBdjvFRag9yZE/BKc5brHAQDARDtIXaGhkF8uJXRlQ=;
+ b=qfoDxmehHt9zSJPjWabWfKApmNG47N0Q2/pjIts+XRh7UWc4ym2jspVC7dOFfypjnv
+ qnIVrd6DHS4ExoKZLCfn7EiaWjc0VJ+thpAfGN13cJj50S+8ZZzG+BJuvVxj4+JMY4+Z
+ R2R3sRy25/3S2Joee0sQyYVPnaXfnDYs0aGfjD1YGJjSt+TL0rdiQTLtodpF5kf/j6Pw
+ othExYiiQoemDJnBkRX0X7T10o0baCnxfWlv3KwtSYdf0iHOwTBM8pggRIyGf5JBaiRK
+ YBZSQa8lfcCAuhH2hwTvIHBU2LeyizZrqo97LUh1gq17vixbEJpIajFMOXrsvxxStmsS
+ +BEA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=7IBdjvFRag9yZE/BKc5brHAQDARDtIXaGhkF8uJXRlQ=;
+ b=ubJLtgCk0YeQDX+nsyQhEtcXDIRR7aSIVUNrc4lNMUXFM9XxCShKOvVpW/bqCc28bz
+ 3/mwaSCuwTwC5EmmPgqA3ImjLr55u16EdcD7Vy2yGgPoBdP3ZUHiAHeZDaVzvZnz6D61
+ yhoriJyL4FvIo/idnjRJWCJeDagrhk22bvioKL9ScgeMnICr2WC+erar/8WHbFXUmvaz
+ iNuPyGGOujpnpEPXmqUN0S9E3tXkx8h/OKRVg3FGiNuPo62vbQK7sK8Dpom5fk6TAX/Q
+ 1OVPwQfT3PHK9CwWSVNuk4bPlIqXUyvTIEf4UTKlSNLZD6V+HyrCKcrsrIByHkl8jpAu
+ ZCVg==
+X-Gm-Message-State: APjAAAXupDtVUjNzp3pNVJeR6O8fnfdrZ69XGJv686uZPEsCPhIXpzly
+ K6VvwCcAqIxUrkeJ/TtlGV6zBzdLTyvCYRD1kyuVIQ==
+X-Google-Smtp-Source: APXvYqzAhF+/72Zrdu85/2jD42Zoi8Td02RrL0uBou/vlg73GMNKwc0ffgSpLNGBhaZsCL3tktCpzfELeo9cOZYU61U=
+X-Received: by 2002:ac8:30f7:: with SMTP id w52mr1194993qta.380.1579162063680; 
+ Thu, 16 Jan 2020 00:07:43 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20191211100118.544-1-npiggin@gmail.com>
-X-TM-AS-GCONF: 00
-x-cbid: 20011607-0008-0000-0000-00000349CB51
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20011607-0009-0000-0000-00004A6A23EC
-Message-Id: <20200116070304.hks6zfsqholfolal@in.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
- definitions=2020-01-16_02:2020-01-16,
- 2020-01-15 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0
- mlxlogscore=750 priorityscore=1501 spamscore=0 impostorscore=0
- phishscore=0 bulkscore=0 adultscore=0 clxscore=1011 mlxscore=0
- suspectscore=1 lowpriorityscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-1910280000 definitions=main-2001160058
+References: <20200116062625.32692-1-dja@axtens.net>
+ <20200116062625.32692-4-dja@axtens.net>
+In-Reply-To: <20200116062625.32692-4-dja@axtens.net>
+From: Dmitry Vyukov <dvyukov@google.com>
+Date: Thu, 16 Jan 2020 09:07:32 +0100
+Message-ID: <CACT4Y+YpOm9cDk5Hi62iAwMFgiotzWjfiK4i9-9jkha_ZNwuvw@mail.gmail.com>
+Subject: Re: [PATCH v2 3/3] kasan: initialise array in kasan_memcmp test
+To: Daniel Axtens <dja@axtens.net>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,41 +86,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: mahesh@linux.vnet.ibm.com
-Cc: skiboot@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Cc: linux-s390 <linux-s390@vger.kernel.org>, linux-xtensa@linux-xtensa.org,
+ the arch/x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+ kasan-dev <kasan-dev@googlegroups.com>, Linux-MM <linux-mm@kvack.org>,
+ Alexander Potapenko <glider@google.com>,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2019-12-11 20:01:18 Wed, Nicholas Piggin wrote:
-> Provide facilities to decode machine checks into human readable
-> strings, with only sufficient information required to deal with
-> them sanely.
-> 
-> The old machine check stuff was over engineered. The philosophy
-> here is that OPAL should correct anything it possibly can, what
-> it can't handle but the OS might be able to do something with
-> (e.g., uncorrected memory error or SLB multi-hit), it passes back
-> to Linux. Anything else, the OS doesn't care. It doesn't want a
-> huge struct of severities and levels and originators etc that it
-> can't do anything with -- just provide human readable strings
-> for what happened and what was done with it.
-> 
-> A Linux driver for this will be able to cope with new processors.
-> 
-> This also uses the same facility to decode machine checks in OPAL
-> boot.
-> 
-> The code is a bit in flux because it's sitting on top of a few
-> other RFC patches and not quite complete, just wanted opinions
-> about it.
+On Thu, Jan 16, 2020 at 7:26 AM Daniel Axtens <dja@axtens.net> wrote:
+>
+> memcmp may bail out before accessing all the memory if the buffers
+> contain differing bytes. kasan_memcmp calls memcmp with a stack array.
+> Stack variables are not necessarily initialised (in the absence of a
+> compiler plugin, at least). Sometimes this causes the memcpy to bail
+> early thus fail to trigger kasan.
+>
+> Make sure the array initialised to zero in the code.
+>
+> No other test is dependent on the contents of an array on the stack.
+>
+> Cc: Andrey Ryabinin <aryabinin@virtuozzo.com>
+> Cc: Alexander Potapenko <glider@google.com>
+> Cc: Dmitry Vyukov <dvyukov@google.com>
+> Signed-off-by: Daniel Axtens <dja@axtens.net>
 
-opal_handle_mce() may have to be treated as special opal call. For MCE
-that occurs in OPAL context, Linux making opal call will clobber
-original opal call stack which hit MCE. Same is true with nested MCE in
-OPAL. Should it just continue using same r1 to avoid clobbering or have
-a separate stack for mce opal call ?
+Reviewed-by: Dmitry Vyukov <dvyukov@google.com>
 
-Thanks,
--Mahesh.
-
+> ---
+>  lib/test_kasan.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/lib/test_kasan.c b/lib/test_kasan.c
+> index a130d75b9385..519b0f259e97 100644
+> --- a/lib/test_kasan.c
+> +++ b/lib/test_kasan.c
+> @@ -619,7 +619,7 @@ static noinline void __init kasan_memcmp(void)
+>  {
+>         char *ptr;
+>         size_t size = 24;
+> -       int arr[9];
+> +       int arr[9] = {};
+>
+>         pr_info("out-of-bounds in memcmp\n");
+>         ptr = kmalloc(size, GFP_KERNEL | __GFP_ZERO);
+> --
+> 2.20.1
+>
+> --
+> You received this message because you are subscribed to the Google Groups "kasan-dev" group.
+> To unsubscribe from this group and stop receiving emails from it, send an email to kasan-dev+unsubscribe@googlegroups.com.
+> To view this discussion on the web visit https://groups.google.com/d/msgid/kasan-dev/20200116062625.32692-4-dja%40axtens.net.
