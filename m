@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D0B1C33CB1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 14:46:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 55A2EC33CB1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 14:52:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B995B2073A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 14:46:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B995B2073A
+	by mail.kernel.org (Postfix) with ESMTPS id B35022083E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 14:52:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B35022083E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47zkR91k7MzDqDQ
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jan 2020 01:46:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47zkY92rHMzDqw9
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jan 2020 01:51:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=sandipan@linux.ibm.com;
@@ -29,62 +29,62 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47zgsb4LPFzDqjp
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 23:50:59 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47zgsk1DdWzDq8v
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 23:51:05 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 00HClk3R113565
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 07:50:57 -0500
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2xk0qtuq25-1
+ 00HCm0AK078165
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 07:51:04 -0500
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2xk0qrc7bg-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 07:50:57 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 07:51:04 -0500
 Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.ibm.com>;
- Fri, 17 Jan 2020 12:50:55 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Fri, 17 Jan 2020 12:51:01 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 17 Jan 2020 12:50:50 -0000
+ Fri, 17 Jan 2020 12:50:58 -0000
 Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
  [9.149.105.232])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 00HComeG36176110
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 00HCousD49872976
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 17 Jan 2020 12:50:48 GMT
+ Fri, 17 Jan 2020 12:50:56 GMT
 Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 938A852059;
- Fri, 17 Jan 2020 12:50:48 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 8C36452050;
+ Fri, 17 Jan 2020 12:50:56 +0000 (GMT)
 Received: from fir03.in.ibm.com (unknown [9.121.59.65])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 2D98352054;
- Fri, 17 Jan 2020 12:50:46 +0000 (GMT)
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 2DD3A52052;
+ Fri, 17 Jan 2020 12:50:54 +0000 (GMT)
 From: Sandipan Das <sandipan@linux.ibm.com>
 To: shuah@kernel.org, linux-kselftest@vger.kernel.org
-Subject: [PATCH v16 16/23] selftests/vm/pkeys: Improve checks to determine
- pkey support
-Date: Fri, 17 Jan 2020 18:19:55 +0530
+Subject: [PATCH v16 19/23] selftests/vm/pkeys: Detect write violation on a
+ mapped access-denied-key page
+Date: Fri, 17 Jan 2020 18:19:58 +0530
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <cover.1579265066.git.sandipan@linux.ibm.com>
 References: <cover.1579265066.git.sandipan@linux.ibm.com>
 In-Reply-To: <cover.1579265066.git.sandipan@linux.ibm.com>
 References: <cover.1579265066.git.sandipan@linux.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 20011712-0016-0000-0000-000002DE4385
+x-cbid: 20011712-0020-0000-0000-000003A195B2
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20011712-0017-0000-0000-00003340DF61
-Message-Id: <0dfcb9e184190bc9f3928031113085e0cd28d844.1579265066.git.sandipan@linux.ibm.com>
+x-cbparentid: 20011712-0021-0000-0000-000021F918F3
+Message-Id: <b8cd7fa3341f1afae4cd427ef5cf68b8dbeb9154.1579265066.git.sandipan@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
  definitions=2020-01-17_03:2020-01-16,
  2020-01-17 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 phishscore=0
- malwarescore=0 clxscore=1015 mlxscore=0 suspectscore=2 adultscore=0
- bulkscore=0 lowpriorityscore=0 priorityscore=1501 spamscore=0
- mlxlogscore=825 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-1910280000 definitions=main-2001170102
+ mlxscore=0 lowpriorityscore=0
+ phishscore=0 adultscore=0 priorityscore=1501 spamscore=0 clxscore=1015
+ bulkscore=0 impostorscore=0 malwarescore=0 mlxlogscore=994 suspectscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-1910280000
+ definitions=main-2001170102
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,125 +106,49 @@ Sender: "Linuxppc-dev"
 
 From: Ram Pai <linuxram@us.ibm.com>
 
-For the pkeys subsystem to work, both the CPU and the
-kernel need to have support. So, additionally check if
-the kernel supports pkeys apart from the CPU feature
-checks.
+Detect write-violation on a page to which access-disabled
+key is associated much after the page is mapped.
 
 cc: Dave Hansen <dave.hansen@intel.com>
 cc: Florian Weimer <fweimer@redhat.com>
 Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+Acked-by: Dave Hansen <dave.hansen@intel.com>
 Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
 ---
- tools/testing/selftests/vm/pkey-helpers.h    | 30 ++++++++++++++++++++
- tools/testing/selftests/vm/pkey-powerpc.h    |  3 +-
- tools/testing/selftests/vm/pkey-x86.h        |  2 +-
- tools/testing/selftests/vm/protection_keys.c |  7 +++--
- 4 files changed, 37 insertions(+), 5 deletions(-)
+ tools/testing/selftests/vm/protection_keys.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-diff --git a/tools/testing/selftests/vm/pkey-helpers.h b/tools/testing/selftests/vm/pkey-helpers.h
-index ec3f87d53b7d..ac9076136fc8 100644
---- a/tools/testing/selftests/vm/pkey-helpers.h
-+++ b/tools/testing/selftests/vm/pkey-helpers.h
-@@ -76,6 +76,8 @@ extern void abort_hooks(void);
- 
- __attribute__((noinline)) int read_ptr(int *ptr);
- void expected_pkey_fault(int pkey);
-+int sys_pkey_alloc(unsigned long flags, unsigned long init_val);
-+int sys_pkey_free(unsigned long pkey);
- 
- #if defined(__i386__) || defined(__x86_64__) /* arch */
- #include "pkey-x86.h"
-@@ -186,4 +188,32 @@ static inline u32 *siginfo_get_pkey_ptr(siginfo_t *si)
- #endif
- }
- 
-+static inline int kernel_has_pkeys(void)
-+{
-+	/* try allocating a key and see if it succeeds */
-+	int ret = sys_pkey_alloc(0, 0);
-+	if (ret <= 0) {
-+		return 0;
-+	}
-+	sys_pkey_free(ret);
-+	return 1;
-+}
-+
-+static inline int is_pkeys_supported(void)
-+{
-+	/* check if the cpu supports pkeys */
-+	if (!cpu_has_pkeys()) {
-+		dprintf1("SKIP: %s: no CPU support\n", __func__);
-+		return 0;
-+	}
-+
-+	/* check if the kernel supports pkeys */
-+	if (!kernel_has_pkeys()) {
-+		dprintf1("SKIP: %s: no kernel support\n", __func__);
-+		return 0;
-+	}
-+
-+	return 1;
-+}
-+
- #endif /* _PKEYS_HELPER_H */
-diff --git a/tools/testing/selftests/vm/pkey-powerpc.h b/tools/testing/selftests/vm/pkey-powerpc.h
-index eaced8c198a2..a5e5157c4f7e 100644
---- a/tools/testing/selftests/vm/pkey-powerpc.h
-+++ b/tools/testing/selftests/vm/pkey-powerpc.h
-@@ -63,8 +63,9 @@ static inline void __write_pkey_reg(u64 pkey_reg)
- 			__func__, __read_pkey_reg(), pkey_reg);
- }
- 
--static inline int cpu_has_pku(void)
-+static inline int cpu_has_pkeys(void)
- {
-+	/* No simple way to determine this */
- 	return 1;
- }
- 
-diff --git a/tools/testing/selftests/vm/pkey-x86.h b/tools/testing/selftests/vm/pkey-x86.h
-index 296151309a30..207e8c180f39 100644
---- a/tools/testing/selftests/vm/pkey-x86.h
-+++ b/tools/testing/selftests/vm/pkey-x86.h
-@@ -97,7 +97,7 @@ static inline void __cpuid(unsigned int *eax, unsigned int *ebx,
- #define X86_FEATURE_PKU        (1<<3) /* Protection Keys for Userspace */
- #define X86_FEATURE_OSPKE      (1<<4) /* OS Protection Keys Enable */
- 
--static inline int cpu_has_pku(void)
-+static inline int cpu_has_pkeys(void)
- {
- 	unsigned int eax;
- 	unsigned int ebx;
 diff --git a/tools/testing/selftests/vm/protection_keys.c b/tools/testing/selftests/vm/protection_keys.c
-index a91d11c6a0ec..4a0677e618ac 100644
+index babe3f6310f2..38ac3211d214 100644
 --- a/tools/testing/selftests/vm/protection_keys.c
 +++ b/tools/testing/selftests/vm/protection_keys.c
-@@ -1377,7 +1377,7 @@ void test_mprotect_pkey_on_unsupported_cpu(int *ptr, u16 pkey)
- 	int size = PAGE_SIZE;
- 	int sret;
- 
--	if (cpu_has_pku()) {
-+	if (cpu_has_pkeys()) {
- 		dprintf1("SKIP: %s: no CPU support\n", __func__);
- 		return;
- 	}
-@@ -1446,12 +1446,13 @@ void pkey_setup_shadow(void)
- int main(void)
+@@ -1026,6 +1026,18 @@ void test_write_of_access_disabled_region(int *ptr, u16 pkey)
+ 	*ptr = __LINE__;
+ 	expected_pkey_fault(pkey);
+ }
++
++void test_write_of_access_disabled_region_with_page_already_mapped(int *ptr,
++			u16 pkey)
++{
++	*ptr = __LINE__;
++	dprintf1("disabling access; after accessing the page, "
++		" to PKEY[%02d], doing write\n", pkey);
++	pkey_access_deny(pkey);
++	*ptr = __LINE__;
++	expected_pkey_fault(pkey);
++}
++
+ void test_kernel_write_of_access_disabled_region(int *ptr, u16 pkey)
  {
- 	int nr_iterations = 22;
-+	int pkeys_supported = is_pkeys_supported();
- 
- 	setup_handlers();
- 
--	printf("has pku: %d\n", cpu_has_pku());
-+	printf("has pkeys: %d\n", pkeys_supported);
- 
--	if (!cpu_has_pku()) {
-+	if (!pkeys_supported) {
- 		int size = PAGE_SIZE;
- 		int *ptr;
- 
+ 	int ret;
+@@ -1422,6 +1434,7 @@ void (*pkey_tests[])(int *ptr, u16 pkey) = {
+ 	test_write_of_write_disabled_region,
+ 	test_write_of_write_disabled_region_with_page_already_mapped,
+ 	test_write_of_access_disabled_region,
++	test_write_of_access_disabled_region_with_page_already_mapped,
+ 	test_kernel_write_of_access_disabled_region,
+ 	test_kernel_write_of_write_disabled_region,
+ 	test_kernel_gup_of_access_disabled_region,
 -- 
 2.17.1
 
