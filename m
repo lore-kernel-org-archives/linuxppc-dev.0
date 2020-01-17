@@ -5,19 +5,19 @@ X-Spam-Level:
 X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B4A1C33C9E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 20:07:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DF19C33C9E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 20:12:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B7DF02072B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 20:07:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B7DF02072B
+	by mail.kernel.org (Postfix) with ESMTPS id D0AC22072B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 20:12:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D0AC22072B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47zsY147mXzDqyj
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jan 2020 07:07:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47zsg2640zzDqym
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jan 2020 07:12:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=srs0=idof=3g=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
@@ -27,13 +27,13 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47zsSR1w0FzDqtt
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jan 2020 07:03:19 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47zsd22DHrzDqrC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jan 2020 07:10:45 +1100 (AEDT)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 205283] BUG: KASAN: global-out-of-bounds in
  _copy_to_iter+0x3d4/0x5a8
-Date: Fri, 17 Jan 2020 20:03:16 +0000
+Date: Fri, 17 Jan 2020 20:01:41 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: CC platform_ppc-32@kernel-bugs.osdl.org
@@ -48,8 +48,8 @@ X-Bugzilla-Resolution:
 X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: fs_btrfs@kernel-bugs.kernel.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: attachments.isobsolete attachments.created
-Message-ID: <bug-205283-206035-eS7i8O6g2S@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-205283-206035-LsxJn3gAPG@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-205283-206035@https.bugzilla.kernel.org/>
 References: <bug-205283-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -74,17 +74,57 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D205283
 
-Erhard F. (erhard_f@mailbox.org) changed:
+--- Comment #12 from Erhard F. (erhard_f@mailbox.org) ---
+Applied your patch series on top of 5.5-rc6. CONFIG_KASAN_VMALLOC is not
+non-selectable but forced on by default.
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
- Attachment #286385|0                           |1
-        is obsolete|                            |
+Current situation is that the hit does not show up with KASAN and btrs modu=
+le
+unloading/re-loading.
 
---- Comment #14 from Erhard F. (erhard_f@mailbox.org) ---
-Created attachment 286867
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D286867&action=3Dedit
-dmesg (kernel 5.5.0-rc6+, PowerMac G4 DP)
+ # grep -i kasan .config
+CONFIG_HAVE_ARCH_KASAN=3Dy
+CONFIG_HAVE_ARCH_KASAN_VMALLOC=3Dy
+CONFIG_CC_HAS_KASAN_GENERIC=3Dy
+CONFIG_KASAN=3Dy
+CONFIG_KASAN_GENERIC=3Dy
+CONFIG_KASAN_OUTLINE=3Dy
+# CONFIG_KASAN_INLINE is not set
+CONFIG_KASAN_STACK=3D1
+CONFIG_KASAN_VMALLOC=3Dy
+# CONFIG_TEST_KASAN is not set
+CONFIG_KASAN_SHADOW_OFFSET=3D0xe0000000
+
+ # modprobe -r -v btrfs
+rmmod btrfs
+rmmod zlib_inflate
+rmmod raid6_pq
+rmmod zlib_deflate
+rmmod lzo_decompress
+rmmod lzo_compress
+rmmod zstd_compress
+rmmod zstd_decompress
+rmmod xor
+rmmod blake2b_generic
+ # modprobe -v btrfs
+insmod
+/lib/modules/5.5.0-rc6-PowerMacG4+/kernel/lib/zlib_inflate/zlib_inflate.ko=
+=20
+insmod /lib/modules/5.5.0-rc6-PowerMacG4+/kernel/lib/raid6/raid6_pq.ko=20
+insmod
+/lib/modules/5.5.0-rc6-PowerMacG4+/kernel/lib/zlib_deflate/zlib_deflate.ko=
+=20
+insmod /lib/modules/5.5.0-rc6-PowerMacG4+/kernel/lib/lzo/lzo_decompress.ko=
+=20
+insmod /lib/modules/5.5.0-rc6-PowerMacG4+/kernel/lib/lzo/lzo_compress.ko=20
+insmod /lib/modules/5.5.0-rc6-PowerMacG4+/kernel/lib/zstd/zstd_compress.ko=
+=20
+insmod /lib/modules/5.5.0-rc6-PowerMacG4+/kernel/lib/zstd/zstd_decompress.k=
+o=20
+insmod /lib/modules/5.5.0-rc6-PowerMacG4+/kernel/crypto/xor.ko=20
+insmod /lib/modules/5.5.0-rc6-PowerMacG4+/kernel/crypto/blake2b_generic.ko=
+=20
+insmod /lib/modules/5.5.0-rc6-PowerMacG4+/kernel/fs/btrfs/btrfs.ko
 
 --=20
 You are receiving this mail because:
