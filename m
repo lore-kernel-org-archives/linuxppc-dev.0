@@ -6,85 +6,84 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 80AABC33CB1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 14:59:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 310E2C33CB3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 15:04:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3DA662083E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 14:59:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3DA662083E
+	by mail.kernel.org (Postfix) with ESMTPS id E372B2192A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 15:04:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E372B2192A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47zkkB5WL1zDqt0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jan 2020 01:59:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47zkr55LwBzDqwN
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jan 2020 02:04:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=sandipan@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47zgsq4pC8zDqjp
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 23:51:11 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47zgsr29MVzDqkX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 23:51:12 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 00HCm3HL022277
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 07:51:04 -0500
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2xk0qsuxa5-1
+ 00HClLc1009635
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 07:51:06 -0500
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2xk0qvm4d1-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 07:51:04 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 07:51:06 -0500
 Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.ibm.com>;
- Fri, 17 Jan 2020 12:51:00 -0000
-Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Fri, 17 Jan 2020 12:51:04 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 17 Jan 2020 12:50:55 -0000
+ Fri, 17 Jan 2020 12:51:00 -0000
 Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
  [9.149.105.232])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 00HCo4Fd40894864
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 00HCoxo329949956
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 17 Jan 2020 12:50:04 GMT
+ Fri, 17 Jan 2020 12:50:59 GMT
 Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E4DF45206C;
- Fri, 17 Jan 2020 12:50:53 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 3BDEF52052;
+ Fri, 17 Jan 2020 12:50:59 +0000 (GMT)
 Received: from fir03.in.ibm.com (unknown [9.121.59.65])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 7F1D252057;
- Fri, 17 Jan 2020 12:50:51 +0000 (GMT)
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id D2E8E5205F;
+ Fri, 17 Jan 2020 12:50:56 +0000 (GMT)
 From: Sandipan Das <sandipan@linux.ibm.com>
 To: shuah@kernel.org, linux-kselftest@vger.kernel.org
-Subject: [PATCH v16 18/23] selftests/vm/pkeys: Associate key on a mapped page
- and detect write violation
-Date: Fri, 17 Jan 2020 18:19:57 +0530
+Subject: [PATCH v16 20/23] selftests/vm/pkeys: Introduce a sub-page allocator
+Date: Fri, 17 Jan 2020 18:19:59 +0530
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <cover.1579265066.git.sandipan@linux.ibm.com>
 References: <cover.1579265066.git.sandipan@linux.ibm.com>
 In-Reply-To: <cover.1579265066.git.sandipan@linux.ibm.com>
 References: <cover.1579265066.git.sandipan@linux.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 20011712-0020-0000-0000-000003A195B1
+x-cbid: 20011712-0012-0000-0000-0000037E43FF
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20011712-0021-0000-0000-000021F918F2
-Message-Id: <febb7e6b330c38ff78d4b13447cf5ccb5bf4d3e4.1579265066.git.sandipan@linux.ibm.com>
+x-cbparentid: 20011712-0013-0000-0000-000021BA7ADC
+Message-Id: <ecc55457e030144686e64033ef6987720f3094a9.1579265066.git.sandipan@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
  definitions=2020-01-17_03:2020-01-16,
  2020-01-17 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 mlxscore=0
- bulkscore=0 suspectscore=0 spamscore=0 mlxlogscore=999 lowpriorityscore=0
- adultscore=0 clxscore=1015 phishscore=0 priorityscore=1501 malwarescore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-1910280000
- definitions=main-2001170102
+ clxscore=1015 bulkscore=0
+ mlxscore=0 impostorscore=0 malwarescore=0 phishscore=0 adultscore=0
+ mlxlogscore=999 priorityscore=1501 spamscore=0 lowpriorityscore=0
+ suspectscore=2 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-1910280000 definitions=main-2001170102
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,48 +105,106 @@ Sender: "Linuxppc-dev"
 
 From: Ram Pai <linuxram@us.ibm.com>
 
-Detect write-violation on a page to which write-disabled
-key is associated much after the page is mapped.
+This introduces a new allocator that allocates 4K hardware
+pages to back 64K linux pages. This allocator is available
+only on powerpc.
 
 cc: Dave Hansen <dave.hansen@intel.com>
 cc: Florian Weimer <fweimer@redhat.com>
 Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-Acked-by: Dave Hansen <dave.hansen@intel.com>
+Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
 Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
 ---
- tools/testing/selftests/vm/protection_keys.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ tools/testing/selftests/vm/pkey-helpers.h    |  6 +++++
+ tools/testing/selftests/vm/pkey-powerpc.h    | 25 ++++++++++++++++++++
+ tools/testing/selftests/vm/pkey-x86.h        |  5 ++++
+ tools/testing/selftests/vm/protection_keys.c |  1 +
+ 4 files changed, 37 insertions(+)
 
-diff --git a/tools/testing/selftests/vm/protection_keys.c b/tools/testing/selftests/vm/protection_keys.c
-index 526ad2fea316..babe3f6310f2 100644
---- a/tools/testing/selftests/vm/protection_keys.c
-+++ b/tools/testing/selftests/vm/protection_keys.c
-@@ -1001,6 +1001,17 @@ void test_read_of_access_disabled_region_with_page_already_mapped(int *ptr,
+diff --git a/tools/testing/selftests/vm/pkey-helpers.h b/tools/testing/selftests/vm/pkey-helpers.h
+index ac9076136fc8..a6994385cd2a 100644
+--- a/tools/testing/selftests/vm/pkey-helpers.h
++++ b/tools/testing/selftests/vm/pkey-helpers.h
+@@ -28,6 +28,9 @@
+ extern int dprint_in_signal;
+ extern char dprint_in_signal_buffer[DPRINT_IN_SIGNAL_BUF_SIZE];
+ 
++extern int test_nr;
++extern int iteration_nr;
++
+ #ifdef __GNUC__
+ __attribute__((format(printf, 1, 2)))
+ #endif
+@@ -78,6 +81,9 @@ __attribute__((noinline)) int read_ptr(int *ptr);
+ void expected_pkey_fault(int pkey);
+ int sys_pkey_alloc(unsigned long flags, unsigned long init_val);
+ int sys_pkey_free(unsigned long pkey);
++int mprotect_pkey(void *ptr, size_t size, unsigned long orig_prot,
++		unsigned long pkey);
++void record_pkey_malloc(void *ptr, long size, int prot);
+ 
+ #if defined(__i386__) || defined(__x86_64__) /* arch */
+ #include "pkey-x86.h"
+diff --git a/tools/testing/selftests/vm/pkey-powerpc.h b/tools/testing/selftests/vm/pkey-powerpc.h
+index a5e5157c4f7e..7a4d73400338 100644
+--- a/tools/testing/selftests/vm/pkey-powerpc.h
++++ b/tools/testing/selftests/vm/pkey-powerpc.h
+@@ -106,4 +106,29 @@ void expect_fault_on_read_execonly_key(void *p1, int pkey)
+ /* 4-byte instructions * 16384 = 64K page */
+ #define __page_o_noops() asm(".rept 16384 ; nop; .endr")
+ 
++void *malloc_pkey_with_mprotect_subpage(long size, int prot, u16 pkey)
++{
++	void *ptr;
++	int ret;
++
++	dprintf1("doing %s(size=%ld, prot=0x%x, pkey=%d)\n", __func__,
++			size, prot, pkey);
++	pkey_assert(pkey < NR_PKEYS);
++	ptr = mmap(NULL, size, prot, MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
++	pkey_assert(ptr != (void *)-1);
++
++	ret = syscall(__NR_subpage_prot, ptr, size, NULL);
++	if (ret) {
++		perror("subpage_perm");
++		return PTR_ERR_ENOTSUP;
++	}
++
++	ret = mprotect_pkey((void *)ptr, PAGE_SIZE, prot, pkey);
++	pkey_assert(!ret);
++	record_pkey_malloc(ptr, size, prot);
++
++	dprintf1("%s() for pkey %d @ %p\n", __func__, pkey, ptr);
++	return ptr;
++}
++
+ #endif /* _PKEYS_POWERPC_H */
+diff --git a/tools/testing/selftests/vm/pkey-x86.h b/tools/testing/selftests/vm/pkey-x86.h
+index 207e8c180f39..4aea84ab3417 100644
+--- a/tools/testing/selftests/vm/pkey-x86.h
++++ b/tools/testing/selftests/vm/pkey-x86.h
+@@ -173,4 +173,9 @@ void expect_fault_on_read_execonly_key(void *p1, int pkey)
  	expected_pkey_fault(pkey);
  }
  
-+void test_write_of_write_disabled_region_with_page_already_mapped(int *ptr,
-+		u16 pkey)
++void *malloc_pkey_with_mprotect_subpage(long size, int prot, u16 pkey)
 +{
-+	*ptr = __LINE__;
-+	dprintf1("disabling write access; after accessing the page, "
-+		"to PKEY[%02d], doing write\n", pkey);
-+	pkey_write_deny(pkey);
-+	*ptr = __LINE__;
-+	expected_pkey_fault(pkey);
++	return PTR_ERR_ENOTSUP;
 +}
 +
- void test_write_of_write_disabled_region(int *ptr, u16 pkey)
- {
- 	dprintf1("disabling write access to PKEY[%02d], doing write\n", pkey);
-@@ -1409,6 +1420,7 @@ void (*pkey_tests[])(int *ptr, u16 pkey) = {
- 	test_read_of_access_disabled_region,
- 	test_read_of_access_disabled_region_with_page_already_mapped,
- 	test_write_of_write_disabled_region,
-+	test_write_of_write_disabled_region_with_page_already_mapped,
- 	test_write_of_access_disabled_region,
- 	test_kernel_write_of_access_disabled_region,
- 	test_kernel_write_of_write_disabled_region,
+ #endif /* _PKEYS_X86_H */
+diff --git a/tools/testing/selftests/vm/protection_keys.c b/tools/testing/selftests/vm/protection_keys.c
+index 38ac3211d214..4840a986e72e 100644
+--- a/tools/testing/selftests/vm/protection_keys.c
++++ b/tools/testing/selftests/vm/protection_keys.c
+@@ -844,6 +844,7 @@ void *malloc_pkey_mmap_dax(long size, int prot, u16 pkey)
+ void *(*pkey_malloc[])(long size, int prot, u16 pkey) = {
+ 
+ 	malloc_pkey_with_mprotect,
++	malloc_pkey_with_mprotect_subpage,
+ 	malloc_pkey_anon_huge,
+ 	malloc_pkey_hugetlb
+ /* can not do direct with the pkey_mprotect() API:
 -- 
 2.17.1
 
