@@ -2,90 +2,83 @@ Return-Path: <SRS0=8l9v=3G=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A256C33CB1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 13:23:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 268B1C33CB1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 13:26:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BD70F206B7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 13:23:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BD70F206B7
+	by mail.kernel.org (Postfix) with ESMTPS id 9DFAB206B7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 13:26:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9DFAB206B7
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47zhbY6dRzzDqsq
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jan 2020 00:23:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47zhfz1vlFzDqfb
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jan 2020 00:26:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=sandipan@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47zgnT0fdkzDqr6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 23:47:24 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 00HClIJZ136102
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 07:47:19 -0500
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2xk0qsuwfm-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47zgrp519kzDq8v
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 23:50:18 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 00HClFhs024358
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 07:50:15 -0500
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2xk0qu3y3m-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 07:47:18 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 07:50:15 -0500
 Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <kjain@linux.ibm.com>;
- Fri, 17 Jan 2020 12:47:08 -0000
-Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
- by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.ibm.com>;
+ Fri, 17 Jan 2020 12:50:11 -0000
+Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 17 Jan 2020 12:47:02 -0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 00HCl18v38338914
+ Fri, 17 Jan 2020 12:50:07 -0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 00HCnGHj49021200
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 17 Jan 2020 12:47:01 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 12C17AE057;
- Fri, 17 Jan 2020 12:47:01 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0D3F9AE051;
- Fri, 17 Jan 2020 12:46:56 +0000 (GMT)
-Received: from localhost.localdomain.com (unknown [9.199.44.232])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 17 Jan 2020 12:46:55 +0000 (GMT)
-From: Kajol Jain <kjain@linux.ibm.com>
-To: acme@kernel.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Subject: [RFC 5/6] perf/tools: Enhance JSON/metric infrastructure to handle "?"
-Date: Fri, 17 Jan 2020 18:16:19 +0530
-X-Mailer: git-send-email 2.21.0
-In-Reply-To: <20200117124620.26094-1-kjain@linux.ibm.com>
-References: <20200117124620.26094-1-kjain@linux.ibm.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ Fri, 17 Jan 2020 12:49:16 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A834952052;
+ Fri, 17 Jan 2020 12:50:05 +0000 (GMT)
+Received: from fir03.in.ibm.com (unknown [9.121.59.65])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 493AF5206D;
+ Fri, 17 Jan 2020 12:50:03 +0000 (GMT)
+From: Sandipan Das <sandipan@linux.ibm.com>
+To: shuah@kernel.org, linux-kselftest@vger.kernel.org
+Subject: [PATCH v16 00/23] selftests, powerpc, x86: Memory Protection Keys
+Date: Fri, 17 Jan 2020 18:19:39 +0530
+X-Mailer: git-send-email 2.17.1
 X-TM-AS-GCONF: 00
-x-cbid: 20011712-0012-0000-0000-0000037E43CB
+x-cbid: 20011712-0028-0000-0000-000003D1FF9F
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20011712-0013-0000-0000-000021BA7AA6
-Message-Id: <20200117124620.26094-6-kjain@linux.ibm.com>
+x-cbparentid: 20011712-0029-0000-0000-000024962AF2
+Message-Id: <cover.1579265066.git.sandipan@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
  definitions=2020-01-17_03:2020-01-16,
  2020-01-17 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- mlxlogscore=999 impostorscore=0 spamscore=0 phishscore=0 suspectscore=2
- priorityscore=1501 clxscore=1015 adultscore=0 mlxscore=0 bulkscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ bulkscore=0
+ lowpriorityscore=0 mlxlogscore=999 adultscore=0 malwarescore=0
+ phishscore=0 clxscore=1015 priorityscore=1501 impostorscore=0 spamscore=0
+ mlxscore=0 suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-1910280000 definitions=main-2001170102
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -98,328 +91,117 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ravi.bangoria@linux.ibm.com, maddy@linux.vnet.ibm.com, jmario@redhat.com,
- mpetlan@redhat.com, peterz@infradead.org, gregkh@linuxfoundation.org,
- linux-kernel@vger.kernel.org, alexander.shishkin@linux.intel.com,
- linux-perf-users@vger.kernel.org, ak@linux.intel.com, yao.jin@linux.intel.com,
- anju@linux.vnet.ibm.com, jolsa@kernel.org, kjain@linux.ibm.com,
- namhyung@kernel.org, mingo@kernel.org, kan.liang@linux.intel.com
+Cc: linux-arch@vger.kernel.org, fweimer@redhat.com, linux-mm@kvack.org,
+ aneesh.kumar@linux.ibm.com, x86@kernel.org, linuxram@us.ibm.com,
+ mhocko@kernel.org, dave.hansen@intel.com, mingo@redhat.com, msuchanek@suse.de,
+ linuxppc-dev@lists.ozlabs.org, bauerman@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Patch enhances current metric infrastructure to handle "?" in the metric
-expression. The "?" can be use for parameters whose value not known while
-creating metric events and which can be replace later at runtime to
-the proper value. It also add flexibility to create multiple events out
-of single metric event added in json file.
+Memory protection keys enables an application to protect its address
+space from inadvertent access by its own code.
 
-Patch adds function 'arch_get_runtimeparam' which is a arch specific
-function, returns the count of metric events need to be created.
-By default it return 1.
+This feature is now enabled on powerpc and has been available since
+4.16-rc1. The patches move the selftests to arch neutral directory
+and enhance their test coverage.
 
-One loop is added in function 'metricgroup__add_metric', which create
-multiple events at run time depend on return value of
-'arch_get_runtimeparam' and merge that event in 'group_list'.
+Tested on powerpc64 and x86_64 (Skylake-SP).
 
-This infrastructure needed for hv_24x7 socket/chip level events.
-"hv_24x7" chip level events needs specific chip-id to which the
-data is requested. Function 'arch_get_runtimeparam' implemented
-in header.c which extract number of sockets from sysfs file
-"sockets" under "/sys/devices/hv_24x7/interface/".
+Changelog
+---------
+Link to previous version (v15):
+https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=149238
 
-Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
----
- tools/perf/arch/powerpc/util/header.c |  40 +++++++++
- tools/perf/util/expr.h                |   1 +
- tools/perf/util/expr.y                |  17 +++-
- tools/perf/util/metricgroup.c         | 117 +++++++++++++++++---------
- tools/perf/util/metricgroup.h         |   1 +
- tools/perf/util/stat-shadow.c         |   5 ++
- 6 files changed, 138 insertions(+), 43 deletions(-)
+v16:
+	(1) Rebased on top of latest master.
+	(2) Switched to u64 instead of using an arch-dependent
+	    pkey_reg_t type for references to the pkey register
+	    based on suggestions from Dave, Michal and Michael.
+	(3) Removed build time determination of page size based
+	    on suggestion from Michael.
+	(4) Fixed comment before the definition of __page_o_noops()
+	    from patch 13 ("selftests/vm/pkeys: Introduce powerpc
+	    support").
 
-diff --git a/tools/perf/arch/powerpc/util/header.c b/tools/perf/arch/powerpc/util/header.c
-index 3b4cdfc5efd6..28425edb901c 100644
---- a/tools/perf/arch/powerpc/util/header.c
-+++ b/tools/perf/arch/powerpc/util/header.c
-@@ -7,6 +7,11 @@
- #include <string.h>
- #include <linux/stringify.h>
- #include "header.h"
-+#include "metricgroup.h"
-+#include "evlist.h"
-+#include <dirent.h>
-+#include "pmu.h"
-+#include <api/fs/fs.h>
- 
- #define mfspr(rn)       ({unsigned long rval; \
- 			 asm volatile("mfspr %0," __stringify(rn) \
-@@ -16,6 +21,8 @@
- #define PVR_VER(pvr)    (((pvr) >>  16) & 0xFFFF) /* Version field */
- #define PVR_REV(pvr)    (((pvr) >>   0) & 0xFFFF) /* Revison field */
- 
-+#define SOCKETS_INFO_FILE_PATH "/devices/hv_24x7/interface/"
-+
- int
- get_cpuid(char *buffer, size_t sz)
- {
-@@ -44,3 +51,36 @@ get_cpuid_str(struct perf_pmu *pmu __maybe_unused)
- 
- 	return bufp;
- }
-+
-+int arch_get_runtimeparam(void)
-+{
-+	int count = 0;
-+	DIR *dir;
-+	char path[PATH_MAX];
-+	const char *sysfs = sysfs__mountpoint();
-+	char filename[] = "sockets";
-+	FILE *file;
-+	char buf[16], *num;
-+	int data;
-+
-+	if (!sysfs)
-+		goto out;
-+	snprintf(path, PATH_MAX,
-+		 "%s" SOCKETS_INFO_FILE_PATH, sysfs);
-+	dir = opendir(path);
-+	if (!dir)
-+		goto out;
-+	strcat(path, filename);
-+	file = fopen(path, "r");
-+	if (!file)
-+		goto out;
-+
-+	data = fread(buf, 1, sizeof(buf), file);
-+	if (data == 0)
-+		goto out;
-+	count = strtol(buf, &num, 10);
-+out:
-+	if (!count)
-+		count = 1;
-+	return count;
-+}
-diff --git a/tools/perf/util/expr.h b/tools/perf/util/expr.h
-index 046160831f90..85ebea68b0c5 100644
---- a/tools/perf/util/expr.h
-+++ b/tools/perf/util/expr.h
-@@ -15,6 +15,7 @@ struct parse_ctx {
- 	struct parse_id ids[MAX_PARSE_ID];
- };
- 
-+extern int expr__runtimeparam;
- void expr__ctx_init(struct parse_ctx *ctx);
- void expr__add_id(struct parse_ctx *ctx, const char *id, double val);
- #ifndef IN_EXPR_Y
-diff --git a/tools/perf/util/expr.y b/tools/perf/util/expr.y
-index f9a20a39b64a..26c62b631525 100644
---- a/tools/perf/util/expr.y
-+++ b/tools/perf/util/expr.y
-@@ -36,6 +36,8 @@
- %type <num> expr if_expr
- 
- %{
-+int expr__runtimeparam;
-+
- static int expr__lex(YYSTYPE *res, const char **pp);
- 
- static void expr__error(double *final_val __maybe_unused,
-@@ -101,7 +103,7 @@ static int expr__symbol(YYSTYPE *res, const char *p, const char **pp)
- 	if (*p == '#')
- 		*dst++ = *p++;
- 
--	while (isalnum(*p) || *p == '_' || *p == '.' || *p == ':' || *p == '@' || *p == '\\') {
-+	while (isalnum(*p) || *p == '_' || *p == '.' || *p == ':' || *p == '@' || *p == '\\' || *p == '?') {
- 		if (p - s >= MAXIDLEN)
- 			return -1;
- 		/*
-@@ -112,6 +114,19 @@ static int expr__symbol(YYSTYPE *res, const char *p, const char **pp)
- 			*dst++ = '/';
- 		else if (*p == '\\')
- 			*dst++ = *++p;
-+		else if (*p == '?') {
-+			int size = snprintf(NULL, 0, "%d", expr__runtimeparam);
-+			char * paramval = (char *)malloc(size);
-+			int i = 0;
-+			if(!paramval)
-+				*dst++ = '0';
-+			else {
-+				sprintf(paramval, "%d", expr__runtimeparam);
-+				while(i < size)
-+					*dst++ = paramval[i++];
-+				free(paramval);
-+			}
-+		}
- 		else
- 			*dst++ = *p;
- 		p++;
-diff --git a/tools/perf/util/metricgroup.c b/tools/perf/util/metricgroup.c
-index 02aee946b6c1..ec87a120cd7e 100644
---- a/tools/perf/util/metricgroup.c
-+++ b/tools/perf/util/metricgroup.c
-@@ -399,6 +399,11 @@ void metricgroup__print(bool metrics, bool metricgroups, char *filter,
- 	strlist__delete(metriclist);
- }
- 
-+int __weak arch_get_runtimeparam(void)
-+{
-+	return 1;
-+}
-+
- static int metricgroup__add_metric(const char *metric, struct strbuf *events,
- 				   struct list_head *group_list)
- {
-@@ -419,52 +424,80 @@ static int metricgroup__add_metric(const char *metric, struct strbuf *events,
- 			continue;
- 		if (match_metric(pe->metric_group, metric) ||
- 		    match_metric(pe->metric_name, metric)) {
--			const char **ids;
--			int idnum;
--			struct egroup *eg;
--			bool no_group = false;
--
--			pr_debug("metric expr %s for %s\n", pe->metric_expr, pe->metric_name);
--
--			if (expr__find_other(pe->metric_expr,
--					     NULL, &ids, &idnum) < 0)
--				continue;
--			if (events->len > 0)
--				strbuf_addf(events, ",");
--			for (j = 0; j < idnum; j++) {
--				pr_debug("found event %s\n", ids[j]);
--				/*
--				 * Duration time maps to a software event and can make
--				 * groups not count. Always use it outside a
--				 * group.
--				 */
--				if (!strcmp(ids[j], "duration_time")) {
--					if (j > 0)
--						strbuf_addf(events, "}:W,");
--					strbuf_addf(events, "duration_time");
--					no_group = true;
-+			int k, count;
-+
-+			count = arch_get_runtimeparam();
-+
-+			/* This loop is added to create multiple
-+			 * events depend on count value and add
-+			 * those events to group_list.
-+			 */
-+			for (k = 0; k < count; k++) {
-+				const char **ids;
-+				int idnum;
-+				struct egroup *eg;
-+				bool no_group = false;
-+				char value[PATH_MAX];
-+
-+				pr_debug("metric expr %s for %s\n",
-+					 pe->metric_expr, pe->metric_name);
-+				expr__runtimeparam = k;
-+				if (expr__find_other(pe->metric_expr, NULL,
-+						     &ids, &idnum) < 0)
- 					continue;
-+				if (events->len > 0)
-+					strbuf_addf(events, ",");
-+				for (j = 0; j < idnum; j++) {
-+					pr_debug("found event %s\n", ids[j]);
-+					/*
-+					 * Duration time maps to a software
-+					 * event and can make groups not count.
-+					 * Always use it outside a group.
-+					 */
-+					if (!strcmp(ids[j], "duration_time")) {
-+						if (j > 0)
-+							strbuf_addf(events,
-+								    "}:W,");
-+						strbuf_addf(events,
-+							    "duration_time");
-+						no_group = true;
-+						continue;
-+					}
-+					strbuf_addf(events, "%s%s",
-+						    j == 0 || no_group ? "{" :
-+						    ",", ids[j]);
-+					no_group = false;
- 				}
--				strbuf_addf(events, "%s%s",
--					j == 0 || no_group ? "{" : ",",
--					ids[j]);
--				no_group = false;
--			}
--			if (!no_group)
--				strbuf_addf(events, "}:W");
-+				if (!no_group)
-+					strbuf_addf(events, "}:W");
- 
--			eg = malloc(sizeof(struct egroup));
--			if (!eg) {
--				ret = -ENOMEM;
--				break;
-+				eg = malloc(sizeof(struct egroup));
-+				if (!eg) {
-+					ret = -ENOMEM;
-+					break;
-+				}
-+				eg->ids = ids;
-+				eg->idnum = idnum;
-+				strcpy(value, pe->metric_name);
-+				if (strstr(pe->metric_name, "?")) {
-+					int size = snprintf(NULL, 0, "%d", k);
-+					char *param = (char *)malloc(size + 1);
-+
-+					if (!param) {
-+						strcat(value, "_0");
-+					} else {
-+						sprintf(param, "%c%d", '_', k);
-+						value[strlen(value) - 1] = '\0';
-+						strcat(value, param);
-+						free(param);
-+					}
-+				}
-+				eg->metric_name = strdup(value);
-+				eg->metric_expr = pe->metric_expr;
-+				eg->metric_unit = pe->unit;
-+				list_add_tail(&eg->nd, group_list);
-+				ret = 0;
- 			}
--			eg->ids = ids;
--			eg->idnum = idnum;
--			eg->metric_name = pe->metric_name;
--			eg->metric_expr = pe->metric_expr;
--			eg->metric_unit = pe->unit;
--			list_add_tail(&eg->nd, group_list);
--			ret = 0;
- 		}
- 	}
- 	return ret;
-diff --git a/tools/perf/util/metricgroup.h b/tools/perf/util/metricgroup.h
-index 475c7f912864..81224ba1270d 100644
---- a/tools/perf/util/metricgroup.h
-+++ b/tools/perf/util/metricgroup.h
-@@ -34,4 +34,5 @@ int metricgroup__parse_groups(const struct option *opt,
- void metricgroup__print(bool metrics, bool groups, char *filter,
- 			bool raw, bool details);
- bool metricgroup__has_metric(const char *metric);
-+int arch_get_runtimeparam(void);
- #endif
-diff --git a/tools/perf/util/stat-shadow.c b/tools/perf/util/stat-shadow.c
-index 2c41d47f6f83..147a39b1ff5b 100644
---- a/tools/perf/util/stat-shadow.c
-+++ b/tools/perf/util/stat-shadow.c
-@@ -780,7 +780,12 @@ static void generic_metric(struct perf_stat_config *config,
- 
- 	if (!metric_events[i]) {
- 		const char *p = metric_expr;
-+		if (strstr(p, "?")) {
-+			char *tmp = strrchr(metric_name, '_');
- 
-+			tmp++;
-+			expr__runtimeparam = strtol(tmp, &tmp, 10);
-+		}
- 		if (expr__parse(&ratio, &pctx, &p) == 0) {
- 			char *unit;
- 			char metric_bf[64];
+v15:
+	(1) Rebased on top of latest master.
+	(2) Addressed review comments from Dave Hansen.
+	(3) Moved code for getting or setting pkey bits to new
+	    helpers. These changes replace patch 7 of v14.
+	(4) Added a fix which ensures that the correct count of
+	    reserved keys is used across different platforms.
+	(5) Added a fix which ensures that the correct page size
+	    is used as powerpc supports both 4K and 64K pages.
+
+v14:
+	(1) Incorporated another round of comments from Dave Hansen.
+
+v13:
+	(1) Incorporated comments for Dave Hansen.
+	(2) Added one more test for correct pkey-0 behavior.
+
+v12:
+	(1) Fixed the offset of pkey field in the siginfo structure for
+	    x86_64 and powerpc. And tries to use the actual field
+	    if the headers have it defined.
+
+v11:
+	(1) Fixed a deadlock in the ptrace testcase.
+
+v10 and prior:
+	(1) Moved the testcase to arch neutral directory.
+	(2) Split the changes into incremental patches.
+
+Desnes A. Nunes do Rosario (1):
+  selftests/vm/pkeys: Fix number of reserved powerpc pkeys
+
+Ram Pai (17):
+  selftests/x86/pkeys: Move selftests to arch-neutral directory
+  selftests/vm: Rename all references to pkru to a generic name
+  selftests/vm: Move generic definitions to header file
+  selftests/vm: Typecast references to pkey register
+  selftests/vm: Fix pkey_disable_clear()
+  selftests/vm/pkeys: Fix assertion in pkey_disable_set/clear()
+  selftests/vm/pkeys: Fix alloc_random_pkey() to make it really random
+  selftests/vm/pkeys: Introduce generic pkey abstractions
+  selftests/vm/pkeys: Introduce powerpc support
+  selftests/vm/pkeys: Fix assertion in test_pkey_alloc_exhaust()
+  selftests/vm/pkeys: Improve checks to determine pkey support
+  selftests/vm/pkeys: Associate key on a mapped page and detect access
+    violation
+  selftests/vm/pkeys: Associate key on a mapped page and detect write
+    violation
+  selftests/vm/pkeys: Detect write violation on a mapped
+    access-denied-key page
+  selftests/vm/pkeys: Introduce a sub-page allocator
+  selftests/vm/pkeys: Test correct behaviour of pkey-0
+  selftests/vm/pkeys: Override access right definitions on powerpc
+
+Sandipan Das (3):
+  selftests: vm: pkeys: Add helpers for pkey bits
+  selftests: vm: pkeys: Use the correct huge page size
+  selftests: vm: pkeys: Use the correct page size on powerpc
+
+Thiago Jung Bauermann (2):
+  selftests/vm: Move some definitions to arch-specific header
+  selftests/vm: Make gcc check arguments of sigsafe_printf()
+
+ tools/testing/selftests/vm/.gitignore         |   1 +
+ tools/testing/selftests/vm/Makefile           |   1 +
+ tools/testing/selftests/vm/pkey-helpers.h     | 225 ++++++
+ tools/testing/selftests/vm/pkey-powerpc.h     | 136 ++++
+ tools/testing/selftests/vm/pkey-x86.h         | 181 +++++
+ .../selftests/{x86 => vm}/protection_keys.c   | 693 ++++++++++--------
+ tools/testing/selftests/x86/.gitignore        |   1 -
+ tools/testing/selftests/x86/pkey-helpers.h    | 219 ------
+ 8 files changed, 927 insertions(+), 530 deletions(-)
+ create mode 100644 tools/testing/selftests/vm/pkey-helpers.h
+ create mode 100644 tools/testing/selftests/vm/pkey-powerpc.h
+ create mode 100644 tools/testing/selftests/vm/pkey-x86.h
+ rename tools/testing/selftests/{x86 => vm}/protection_keys.c (74%)
+ delete mode 100644 tools/testing/selftests/x86/pkey-helpers.h
+
 -- 
-2.18.1
+2.17.1
 
