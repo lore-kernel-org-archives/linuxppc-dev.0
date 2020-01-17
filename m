@@ -5,19 +5,19 @@ X-Spam-Level:
 X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 113EEC33C9E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 20:05:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B4A1C33C9E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 20:07:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 820032082F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 20:05:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 820032082F
+	by mail.kernel.org (Postfix) with ESMTPS id B7DF02072B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 20:07:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B7DF02072B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47zsVM0dXpzDqKJ
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jan 2020 07:04:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 47zsY147mXzDqyj
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jan 2020 07:07:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=srs0=idof=3g=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
@@ -27,13 +27,13 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47zsRj0vFWzDqxf
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jan 2020 07:02:40 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47zsSR1w0FzDqtt
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jan 2020 07:03:19 +1100 (AEDT)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 205283] BUG: KASAN: global-out-of-bounds in
  _copy_to_iter+0x3d4/0x5a8
-Date: Fri, 17 Jan 2020 20:02:38 +0000
+Date: Fri, 17 Jan 2020 20:03:16 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: CC platform_ppc-32@kernel-bugs.osdl.org
@@ -49,7 +49,7 @@ X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: fs_btrfs@kernel-bugs.kernel.org
 X-Bugzilla-Flags: 
 X-Bugzilla-Changed-Fields: attachments.isobsolete attachments.created
-Message-ID: <bug-205283-206035-p08VV5Xn5t@https.bugzilla.kernel.org/>
+Message-ID: <bug-205283-206035-eS7i8O6g2S@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-205283-206035@https.bugzilla.kernel.org/>
 References: <bug-205283-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -78,13 +78,13 @@ Erhard F. (erhard_f@mailbox.org) changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
- Attachment #286387|0                           |1
+ Attachment #286385|0                           |1
         is obsolete|                            |
 
---- Comment #13 from Erhard F. (erhard_f@mailbox.org) ---
-Created attachment 286865
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D286865&action=3Dedit
-5.5.0-rc6+ kernel .config (PowerMac G4 DP)
+--- Comment #14 from Erhard F. (erhard_f@mailbox.org) ---
+Created attachment 286867
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D286867&action=3Dedit
+dmesg (kernel 5.5.0-rc6+, PowerMac G4 DP)
 
 --=20
 You are receiving this mail because:
