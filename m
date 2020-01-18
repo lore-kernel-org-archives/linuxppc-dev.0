@@ -1,92 +1,83 @@
-Return-Path: <SRS0=8l9v=3G=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=jb1v=3H=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB157C33C9E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 21:45:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C448C32771
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jan 2020 04:03:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6E95A2082F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2020 21:45:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6E95A2082F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id AC01A2072B
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jan 2020 04:03:52 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="oJRPpWc8"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AC01A2072B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 47zvkg35Z7zDqwt
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jan 2020 08:45:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=gromero@linux.vnet.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 48046t2VdczDr2j
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jan 2020 15:03:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::342;
+ helo=mail-ot1-x342.google.com; envelope-from=john.stultz@linaro.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
+ header.s=google header.b=oJRPpWc8; dkim-atps=neutral
+Received: from mail-ot1-x342.google.com (mail-ot1-x342.google.com
+ [IPv6:2607:f8b0:4864:20::342])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47zvdz6Q2PzDqwg
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jan 2020 08:41:43 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 00HKvD6V065111; Fri, 17 Jan 2020 15:57:26 -0500
-Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.11])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2xk0qu98e1-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 17 Jan 2020 15:57:26 -0500
-Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
- by ppma03dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 00HKoXCB004718;
- Fri, 17 Jan 2020 20:57:25 GMT
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by ppma03dal.us.ibm.com with ESMTP id 2xjuy1ntss-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 17 Jan 2020 20:57:25 +0000
-Received: from b03ledav006.gho.boulder.ibm.com
- (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 00HKvNMt38601128
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 17 Jan 2020 20:57:23 GMT
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 82E88C6057;
- Fri, 17 Jan 2020 20:57:23 +0000 (GMT)
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B23F7C6059;
- Fri, 17 Jan 2020 20:57:21 +0000 (GMT)
-Received: from oc6336877782.ibm.com (unknown [9.80.203.79])
- by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Fri, 17 Jan 2020 20:57:21 +0000 (GMT)
-Subject: Re: [PATCH 1/3] powerpc/tm: Clear the current thread's MSR[TS] after
- treclaim
-To: Gustavo Luiz Duarte <gustavold@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-References: <20200116220531.4715-1-gustavold@linux.ibm.com>
-From: Gustavo Romero <gromero@linux.vnet.ibm.com>
-Message-ID: <38205e7d-4025-c169-64c8-f12bc4f3a2aa@linux.vnet.ibm.com>
-Date: Fri, 17 Jan 2020 17:57:20 -0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48045B3nZFzDqWn
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jan 2020 15:02:19 +1100 (AEDT)
+Received: by mail-ot1-x342.google.com with SMTP id z9so22216647oth.5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2020 20:02:19 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=Vb5cyWLJV5ZR0F5iDmlf/8PvEYOZeZfUNSdNGtLvZJI=;
+ b=oJRPpWc86aW8ElClMpbeSmGps0a3/zd+opvvpOkEBC8hVNCtjdLp5PzynS4G4c56BU
+ 3VSWjMLxP2DgfZAY4Ynqq28PxgwynoAx/Ega1iY5vHADe1nx28Ss+oVjWt9i17loT/Tn
+ /hJnGFOj25AP5GZ9CftweA9mgLEHxvhOGHMWu4SjXw7OsNretKxT+LYInNxlwjS8R8tX
+ Kvx6LsE4imBsm/FB7RCiHcxLA7Gd4WNxHPzi9y/zW+G3PDYWzBmvAJI8YG+Bi4dU8j07
+ 3cRGWMsJ6Qcd04JnH4bRW0YK5AQHQQcVmjuz3NgVrXoa9eJdOhYIIChJqAExfXq0gD00
+ gpLg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=Vb5cyWLJV5ZR0F5iDmlf/8PvEYOZeZfUNSdNGtLvZJI=;
+ b=to9TEM8Ts9hlVnkxzpWwuBAoKeKkLpRbww2i6F8ZjtqaSaYsrmNJfTThj7Q14N/4J1
+ c7IayqihpiVbWNp3yPVrbJE2NU6KIQjO9Y7oWl5+eLzPTwiLqWJJk/CyTHNRsAUuRYVW
+ LQQbRmdkdD5FTewwpohRg/o8+4U58c+1dQJcUDxR0Q1seCZHitbERE2UBzzalzqgVtRu
+ HaxRBHTLrwAkllbJbwnXeGhwMe5034XP5CwlsUybbPsO99p1QBWu75OSrY6x+hMa8sRU
+ kGg44BHncl9kygE6GAMmD0quQE8l/raLgb4W8HRuxCKTPW6bC+eiS8Za2LPUxVFoUvsp
+ Z28Q==
+X-Gm-Message-State: APjAAAU6PEkZy22SkOh87gzJ07LxCvr8n2XGymV4fsSIsdeSSzTkHOPT
+ MeC373VScrKLqHhke2MWArMSXB5tphOuJJOC2+Ywfg==
+X-Google-Smtp-Source: APXvYqxzZjCff57xw2STewj8hvzXGMNapCy6Befwm57vvCLoE09f+Ii81TVHsJjBeSvPmeIU9AkG5ERsKsyGqT2FA8Q=
+X-Received: by 2002:a9d:66ca:: with SMTP id t10mr8495244otm.352.1579320135542; 
+ Fri, 17 Jan 2020 20:02:15 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20200116220531.4715-1-gustavold@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
- definitions=2020-01-17_05:2020-01-16,
- 2020-01-17 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 phishscore=0
- malwarescore=0 clxscore=1011 mlxscore=0 suspectscore=0 adultscore=0
- bulkscore=0 lowpriorityscore=0 priorityscore=1501 spamscore=0
- mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-1910280000 definitions=main-2001170161
+References: <cover.1569493933.git.shengjiu.wang@nxp.com>
+ <d728f65194e9978cbec4132b522d4fed420d704a.1569493933.git.shengjiu.wang@nxp.com>
+ <CANcMJZBy=yH+4YgZWwphiE-PO6d4hzhFK3XFtpN677ZAv_N4WQ@mail.gmail.com>
+ <CANcMJZCuU_-Xii=YT5Rp5DAyxboptJCrpp51jForuYUpeMuhmQ@mail.gmail.com>
+ <CAA+D8AP39bo6EsHvWhVXvAYAho_xMnWmePPAK6dBsOh5wsz48Q@mail.gmail.com>
+In-Reply-To: <CAA+D8AP39bo6EsHvWhVXvAYAho_xMnWmePPAK6dBsOh5wsz48Q@mail.gmail.com>
+From: John Stultz <john.stultz@linaro.org>
+Date: Fri, 17 Jan 2020 20:02:04 -0800
+Message-ID: <CALAqxLVapiMC-qPX4fza9cPCKFqvoi2KWhZkJa42DiHwOqGe8Q@mail.gmail.com>
+Subject: Re: [alsa-devel] [PATCH V6 3/4] ASoC: pcm_dmaengine: Extract
+ snd_dmaengine_pcm_refine_runtime_hwparams
+To: Shengjiu Wang <shengjiu.wang@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,263 +89,170 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, stable@vger.kernel.org, gromero@linux.ibm.com
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>, Linux-ALSA <alsa-devel@alsa-project.org>,
+ Lars-Peter Clausen <lars@metafoo.de>, Timur Tabi <timur@kernel.org>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>,
+ Shengjiu Wang <shengjiu.wang@nxp.com>, Takashi Iwai <tiwai@suse.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Rob Herring <robh+dt@kernel.org>, Mark Brown <broonie@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Gustavo,
+On Thu, Jan 16, 2020 at 11:11 PM Shengjiu Wang <shengjiu.wang@gmail.com> wrote:
+>
+> Hi
+>
+> On Thu, Jan 16, 2020 at 1:56 PM John Stultz <john.stultz@linaro.org> wrote:
+> >
+> > On Wed, Jan 8, 2020 at 8:58 PM John Stultz <john.stultz@linaro.org> wrote:
+> > > On Thu, Sep 26, 2019 at 6:50 PM Shengjiu Wang <shengjiu.wang@nxp.com> wrote:
+> > > >
+> > > > When set the runtime hardware parameters, we may need to query
+> > > > the capability of DMA to complete the parameters.
+> > > >
+> > > > This patch is to Extract this operation from
+> > > > dmaengine_pcm_set_runtime_hwparams function to a separate function
+> > > > snd_dmaengine_pcm_refine_runtime_hwparams, that other components
+> > > > which need this feature can call this function.
+> > > >
+> > > > Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+> > > > Reviewed-by: Nicolin Chen <nicoleotsuka@gmail.com>
+> > >
+> > > As a heads up, this patch seems to be causing a regression on the HiKey board.
+> > >
+> > > On boot up I'm seeing:
+> > > [   17.721424] hi6210_i2s f7118000.i2s: ASoC: can't open component
+> > > f7118000.i2s: -6
+> > >
+> > > And HDMI audio isn't working. With this patch reverted, audio works again.
+> > >
+> > >
+> > > > diff --git a/sound/core/pcm_dmaengine.c b/sound/core/pcm_dmaengine.c
+> > > > index 89a05926ac73..5749a8a49784 100644
+> > > > --- a/sound/core/pcm_dmaengine.c
+> > > > +++ b/sound/core/pcm_dmaengine.c
+> > > > @@ -369,4 +369,87 @@ int snd_dmaengine_pcm_close_release_chan(struct snd_pcm_substream *substream)
+> > > ...
+> > > > +       ret = dma_get_slave_caps(chan, &dma_caps);
+> > > > +       if (ret == 0) {
+> > > > +               if (dma_caps.cmd_pause && dma_caps.cmd_resume)
+> > > > +                       hw->info |= SNDRV_PCM_INFO_PAUSE | SNDRV_PCM_INFO_RESUME;
+> > > > +               if (dma_caps.residue_granularity <= DMA_RESIDUE_GRANULARITY_SEGMENT)
+> > > > +                       hw->info |= SNDRV_PCM_INFO_BATCH;
+> > > > +
+> > > > +               if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
+> > > > +                       addr_widths = dma_caps.dst_addr_widths;
+> > > > +               else
+> > > > +                       addr_widths = dma_caps.src_addr_widths;
+> > > > +       }
+> > >
+> > > It seems a failing ret from dma_get_slave_caps() here is being returned...
+> > >
+> > > > +
+> > > > +       /*
+> > > > +        * If SND_DMAENGINE_PCM_DAI_FLAG_PACK is set keep
+> > > > +        * hw.formats set to 0, meaning no restrictions are in place.
+> > > > +        * In this case it's the responsibility of the DAI driver to
+> > > > +        * provide the supported format information.
+> > > > +        */
+> > > > +       if (!(dma_data->flags & SND_DMAENGINE_PCM_DAI_FLAG_PACK))
+> > > > +               /*
+> > > > +                * Prepare formats mask for valid/allowed sample types. If the
+> > > > +                * dma does not have support for the given physical word size,
+> > > > +                * it needs to be masked out so user space can not use the
+> > > > +                * format which produces corrupted audio.
+> > > > +                * In case the dma driver does not implement the slave_caps the
+> > > > +                * default assumption is that it supports 1, 2 and 4 bytes
+> > > > +                * widths.
+> > > > +                */
+> > > > +               for (i = SNDRV_PCM_FORMAT_FIRST; i <= SNDRV_PCM_FORMAT_LAST; i++) {
+> > > > +                       int bits = snd_pcm_format_physical_width(i);
+> > > > +
+> > > > +                       /*
+> > > > +                        * Enable only samples with DMA supported physical
+> > > > +                        * widths
+> > > > +                        */
+> > > > +                       switch (bits) {
+> > > > +                       case 8:
+> > > > +                       case 16:
+> > > > +                       case 24:
+> > > > +                       case 32:
+> > > > +                       case 64:
+> > > > +                               if (addr_widths & (1 << (bits / 8)))
+> > > > +                                       hw->formats |= pcm_format_to_bits(i);
+> > > > +                               break;
+> > > > +                       default:
+> > > > +                               /* Unsupported types */
+> > > > +                               break;
+> > > > +                       }
+> > > > +               }
+> > > > +
+> > > > +       return ret;
+> > >
+> > > ... down here.
+> > >
+> > > Where as in the old code...
+> > >
+> > > > diff --git a/sound/soc/soc-generic-dmaengine-pcm.c b/sound/soc/soc-generic-dmaengine-pcm.c
+> > > > index 748f5f641002..b9f147eaf7c4 100644
+> > > > --- a/sound/soc/soc-generic-dmaengine-pcm.c
+> > > > +++ b/sound/soc/soc-generic-dmaengine-pcm.c
+> > >
+> > > > @@ -145,56 +140,12 @@ static int dmaengine_pcm_set_runtime_hwparams(struct snd_pcm_substream *substrea
+> > > >         if (pcm->flags & SND_DMAENGINE_PCM_FLAG_NO_RESIDUE)
+> > > >                 hw.info |= SNDRV_PCM_INFO_BATCH;
+> > > >
+> > > > -       ret = dma_get_slave_caps(chan, &dma_caps);
+> > > > -       if (ret == 0) {
+> > > > -               if (dma_caps.cmd_pause && dma_caps.cmd_resume)
+> > > > -                       hw.info |= SNDRV_PCM_INFO_PAUSE | SNDRV_PCM_INFO_RESUME;
+> > > > -               if (dma_caps.residue_granularity <= DMA_RESIDUE_GRANULARITY_SEGMENT)
+> > > > -                       hw.info |= SNDRV_PCM_INFO_BATCH;
+> > > > -
+> > > > -               if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
+> > > > -                       addr_widths = dma_caps.dst_addr_widths;
+> > > > -               else
+> > > > -                       addr_widths = dma_caps.src_addr_widths;
+> > > > -       }
+> > >
+> > > ...the ret from dma_get_slave_caps()  checked above, but is not
+> > > actually returned.
+> > >
+> > > Suggestions on how to sort this out?
+> >
+> > Just wanted to check in on this, as I'm still seeing this regression with -rc6.
+> >
+> Compare with the old code. it seems that we shouldn't check the return value.
+>
+> Could you help to test below changes?
+>
+> --- a/sound/soc/soc-generic-dmaengine-pcm.c
+> +++ b/sound/soc/soc-generic-dmaengine-pcm.c
+> @@ -138,12 +138,10 @@ dmaengine_pcm_set_runtime_hwparams(struct
+> snd_soc_component *component,
+>         if (pcm->flags & SND_DMAENGINE_PCM_FLAG_NO_RESIDUE)
+>                 hw.info |= SNDRV_PCM_INFO_BATCH;
+>
+> -       ret = snd_dmaengine_pcm_refine_runtime_hwparams(substream,
+> +       snd_dmaengine_pcm_refine_runtime_hwparams(substream,
+>                                                         dma_data,
+>                                                         &hw,
+>                                                         chan);
+> -       if (ret)
+> -               return ret;
+>
+>         return snd_soc_set_runtime_hwparams(substream, &hw);
+>  }
 
-Thanks for fixing that TM issue.
+Yes, thanks for taking a look at this! Your patch does appear to avoid
+the regression.
+(Though you'll want to drop the ret declaration to avoid "warning:
+unused variable 'ret'" compiler warnings.)
 
-On 01/16/2020 07:05 PM, Gustavo Luiz Duarte wrote:
-> Fixes: 2b0a576d15e0 ("powerpc: Add new transactional memory state to the signal context")
-> Cc: stable@vger.kernel.org # v3.9
-> Signed-off-by: Gustavo Luiz Duarte <gustavold@linux.ibm.com>
-> ---
->   arch/powerpc/kernel/signal.c    | 17 +++++++++++++++--
->   arch/powerpc/kernel/signal_32.c | 24 ++++++++++--------------
->   arch/powerpc/kernel/signal_64.c | 20 ++++++++------------
->   3 files changed, 33 insertions(+), 28 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
-> index e6c30cee6abf..1660be1061ac 100644
-> --- a/arch/powerpc/kernel/signal.c
-> +++ b/arch/powerpc/kernel/signal.c
-> @@ -200,14 +200,27 @@ unsigned long get_tm_stackpointer(struct task_struct *tsk)
->   	 * normal/non-checkpointed stack pointer.
->   	 */
->   
-> +	unsigned long ret = tsk->thread.regs->gpr[1];
-> +
->   #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
->   	BUG_ON(tsk != current);
->   
->   	if (MSR_TM_ACTIVE(tsk->thread.regs->msr)) {
-> +		preempt_disable();
->   		tm_reclaim_current(TM_CAUSE_SIGNAL);
->   		if (MSR_TM_TRANSACTIONAL(tsk->thread.regs->msr))
-> -			return tsk->thread.ckpt_regs.gpr[1];
-> +			ret = tsk->thread.ckpt_regs.gpr[1];
-> +
-> +		/* If we treclaim, we must immediately clear the current
-> +		 * thread's TM bits. Otherwise we might be preempted and have
-> +		 * the live MSR[TS] changed behind our back
-> +		 * (tm_recheckpoint_new_task() would recheckpoint).
-> +		 * Besides, we enter the signal handler in non-transactional
-> +		 * state.
-> +		 */
-> +		tsk->thread.regs->msr &= ~MSR_TS_MASK;
-> +		preempt_enable();
->   	}
->   #endif
-> -	return tsk->thread.regs->gpr[1];
-> +	return ret;
->   }
-> diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-> index 98600b276f76..132a092cd170 100644
-> --- a/arch/powerpc/kernel/signal_32.c
-> +++ b/arch/powerpc/kernel/signal_32.c
-> @@ -489,19 +489,11 @@ static int save_user_regs(struct pt_regs *regs, struct mcontext __user *frame,
->    */
->   static int save_tm_user_regs(struct pt_regs *regs,
->   			     struct mcontext __user *frame,
-> -			     struct mcontext __user *tm_frame, int sigret)
-> +			     struct mcontext __user *tm_frame, int sigret,
-> +			     unsigned long msr)
->   {
-> -	unsigned long msr = regs->msr;
-> -
->   	WARN_ON(tm_suspend_disabled);
->   
-> -	/* Remove TM bits from thread's MSR.  The MSR in the sigcontext
-> -	 * just indicates to userland that we were doing a transaction, but we
-> -	 * don't want to return in transactional state.  This also ensures
-> -	 * that flush_fp_to_thread won't set TIF_RESTORE_TM again.
-> -	 */
-> -	regs->msr &= ~MSR_TS_MASK;
-> -
->   	/* Save both sets of general registers */
->   	if (save_general_regs(&current->thread.ckpt_regs, frame)
->   	    || save_general_regs(regs, tm_frame))
-> @@ -912,6 +904,8 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
->   	int sigret;
->   	unsigned long tramp;
->   	struct pt_regs *regs = tsk->thread.regs;
-> +	/* Save the thread's msr before get_tm_stackpointer() changes it */
-> +	unsigned long msr = regs->msr;
->   
->   	BUG_ON(tsk != current);
->   
-> @@ -944,13 +938,13 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
->   
->   #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
->   	tm_frame = &rt_sf->uc_transact.uc_mcontext;
-> -	if (MSR_TM_ACTIVE(regs->msr)) {
-> +	if (MSR_TM_ACTIVE(msr)) {
->   		if (__put_user((unsigned long)&rt_sf->uc_transact,
->   			       &rt_sf->uc.uc_link) ||
->   		    __put_user((unsigned long)tm_frame,
->   			       &rt_sf->uc_transact.uc_regs))
->   			goto badframe;
-> -		if (save_tm_user_regs(regs, frame, tm_frame, sigret))
-> +		if (save_tm_user_regs(regs, frame, tm_frame, sigret, msr))
->   			goto badframe;
->   	}
->   	else
-> @@ -1369,6 +1363,8 @@ int handle_signal32(struct ksignal *ksig, sigset_t *oldset,
->   	int sigret;
->   	unsigned long tramp;
->   	struct pt_regs *regs = tsk->thread.regs;
-> +	/* Save the thread's msr before get_tm_stackpointer() changes it */
-> +	unsigned long msr = regs->msr;
->   
->   	BUG_ON(tsk != current);
->   
-> @@ -1402,9 +1398,9 @@ int handle_signal32(struct ksignal *ksig, sigset_t *oldset,
->   
->   #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
->   	tm_mctx = &frame->mctx_transact;
-> -	if (MSR_TM_ACTIVE(regs->msr)) {
-> +	if (MSR_TM_ACTIVE(msr)) {
->   		if (save_tm_user_regs(regs, &frame->mctx, &frame->mctx_transact,
-> -				      sigret))
-> +				      sigret, msr))
->   			goto badframe;
->   	}
->   	else
-> diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-> index 117515564ec7..e5b5f9738056 100644
-> --- a/arch/powerpc/kernel/signal_64.c
-> +++ b/arch/powerpc/kernel/signal_64.c
-> @@ -192,7 +192,8 @@ static long setup_sigcontext(struct sigcontext __user *sc,
->   static long setup_tm_sigcontexts(struct sigcontext __user *sc,
->   				 struct sigcontext __user *tm_sc,
->   				 struct task_struct *tsk,
-> -				 int signr, sigset_t *set, unsigned long handler)
-> +				 int signr, sigset_t *set, unsigned long handler,
-> +				 unsigned long msr)
->   {
->   	/* When CONFIG_ALTIVEC is set, we _always_ setup v_regs even if the
->   	 * process never used altivec yet (MSR_VEC is zero in pt_regs of
-> @@ -207,12 +208,11 @@ static long setup_tm_sigcontexts(struct sigcontext __user *sc,
->   	elf_vrreg_t __user *tm_v_regs = sigcontext_vmx_regs(tm_sc);
->   #endif
->   	struct pt_regs *regs = tsk->thread.regs;
-> -	unsigned long msr = tsk->thread.regs->msr;
->   	long err = 0;
->   
->   	BUG_ON(tsk != current);
->   
-> -	BUG_ON(!MSR_TM_ACTIVE(regs->msr));
-> +	BUG_ON(!MSR_TM_ACTIVE(msr));
->   
->   	WARN_ON(tm_suspend_disabled);
->   
-> @@ -222,13 +222,6 @@ static long setup_tm_sigcontexts(struct sigcontext __user *sc,
->   	 */
->   	msr |= tsk->thread.ckpt_regs.msr & (MSR_FP | MSR_VEC | MSR_VSX);
->   
-> -	/* Remove TM bits from thread's MSR.  The MSR in the sigcontext
-> -	 * just indicates to userland that we were doing a transaction, but we
-> -	 * don't want to return in transactional state.  This also ensures
-> -	 * that flush_fp_to_thread won't set TIF_RESTORE_TM again.
-> -	 */
-> -	regs->msr &= ~MSR_TS_MASK;
-> -
->   #ifdef CONFIG_ALTIVEC
->   	err |= __put_user(v_regs, &sc->v_regs);
->   	err |= __put_user(tm_v_regs, &tm_sc->v_regs);
-> @@ -824,6 +817,8 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
->   	unsigned long newsp = 0;
->   	long err = 0;
->   	struct pt_regs *regs = tsk->thread.regs;
-> +	/* Save the thread's msr before get_tm_stackpointer() changes it */
-> +	unsigned long msr = regs->msr;
->   
->   	BUG_ON(tsk != current);
->   
-> @@ -841,7 +836,7 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
->   	err |= __put_user(0, &frame->uc.uc_flags);
->   	err |= __save_altstack(&frame->uc.uc_stack, regs->gpr[1]);
->   #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-> -	if (MSR_TM_ACTIVE(regs->msr)) {
-> +	if (MSR_TM_ACTIVE(msr)) {
->   		/* The ucontext_t passed to userland points to the second
->   		 * ucontext_t (for transactional state) with its uc_link ptr.
->   		 */
-> @@ -849,7 +844,8 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
->   		err |= setup_tm_sigcontexts(&frame->uc.uc_mcontext,
->   					    &frame->uc_transact.uc_mcontext,
->   					    tsk, ksig->sig, NULL,
-> -					    (unsigned long)ksig->ka.sa.sa_handler);
-> +					    (unsigned long)ksig->ka.sa.sa_handler,
-> +					    msr);
->   	} else
->   #endif
->   	{
-> 
-
-The change needs to be improved in case CONFIG_PPC_TRANSACTIONAL_MEM=n, like:
-
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index 132a092cd170..1b090a76b444 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -904,8 +904,10 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
-         int sigret;
-         unsigned long tramp;
-         struct pt_regs *regs = tsk->thread.regs;
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-         /* Save the thread's msr before get_tm_stackpointer() changes it */
-         unsigned long msr = regs->msr;
-+#endif
-  
-         BUG_ON(tsk != current);
-  
-@@ -1363,8 +1365,10 @@ int handle_signal32(struct ksignal *ksig, sigset_t *oldset,
-         int sigret;
-         unsigned long tramp;
-         struct pt_regs *regs = tsk->thread.regs;
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-         /* Save the thread's msr before get_tm_stackpointer() changes it */
-         unsigned long msr = regs->msr;
-+#endif
-  
-         BUG_ON(tsk != current);
-  
-diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index e5b5f9738056..84ed2e77ef9c 100644
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -817,8 +817,10 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
-         unsigned long newsp = 0;
-         long err = 0;
-         struct pt_regs *regs = tsk->thread.regs;
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-         /* Save the thread's msr before get_tm_stackpointer() changes it */
-         unsigned long msr = regs->msr;
-+#endif
-  
-         BUG_ON(tsk != current);
-
-or -Werror=unused-variable will catch it like:
-
-/linux/arch/powerpc/kernel/signal_32.c: In function 'handle_rt_signal32':
-/linux/arch/powerpc/kernel/signal_32.c:908:16: error: unused variable 'msr' [-Werror=unused-variable]
-   908 |  unsigned long msr = regs->msr;
-       |                ^~~
-/linux/arch/powerpc/kernel/signal_32.c: In function 'handle_signal32':
-/linux/arch/powerpc/kernel/signal_32.c:1367:16: error: unused variable 'msr' [-Werror=unused-variable]
-  1367 |  unsigned long msr = regs->msr;
-       |
-
-
-Feel free to send a v2 only after Mikey's review.
-
-Otherwise, LGTM.
-
-Reviewed-by: Gustavo Romero <gromero@linux.ibm.com>
-
-Best regards,
-Gustavo
+thanks
+-john
