@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B3662C33CA1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jan 2020 09:17:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B030C33CA1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jan 2020 09:19:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6B807207E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jan 2020 09:17:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6B807207E0
+	by mail.kernel.org (Postfix) with ESMTPS id 5408F20684
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jan 2020 09:19:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5408F20684
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 481R062Kz3zDqPg
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jan 2020 20:17:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 481R2T1mrGzDq7w
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jan 2020 20:19:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=sandipan@linux.ibm.com;
@@ -29,64 +29,64 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 481Q6m5DRfzDqKM
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jan 2020 19:38:24 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 00K8cISo033516
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jan 2020 03:38:22 -0500
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2xmg7xr04a-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 481Q6q0jpmzDqWt
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jan 2020 19:38:26 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 00K8cFCJ104149
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jan 2020 03:38:23 -0500
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2xmgh9fsc8-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jan 2020 03:38:21 -0500
 Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.ibm.com>;
- Mon, 20 Jan 2020 08:37:21 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Mon, 20 Jan 2020 08:37:33 -0000
+Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 20 Jan 2020 08:37:18 -0000
+ Mon, 20 Jan 2020 08:37:29 -0000
 Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
  [9.149.105.61])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 00K8bGWK38993948
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 00K8abao47710510
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 20 Jan 2020 08:37:16 GMT
+ Mon, 20 Jan 2020 08:36:37 GMT
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9AFD611C058;
- Mon, 20 Jan 2020 08:37:16 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 72DD211C04A;
+ Mon, 20 Jan 2020 08:37:27 +0000 (GMT)
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 389D411C04C;
- Mon, 20 Jan 2020 08:37:14 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 0651011C054;
+ Mon, 20 Jan 2020 08:37:25 +0000 (GMT)
 Received: from fir03.in.ibm.com (unknown [9.121.59.65])
  by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 20 Jan 2020 08:37:14 +0000 (GMT)
+ Mon, 20 Jan 2020 08:37:24 +0000 (GMT)
 From: Sandipan Das <sandipan@linux.ibm.com>
 To: shuah@kernel.org, linux-kselftest@vger.kernel.org
-Subject: [PATCH v17 19/24] selftests/vm/pkeys: Associate key on a mapped page
- and detect write violation
-Date: Mon, 20 Jan 2020 14:06:16 +0530
+Subject: [PATCH v17 23/24] selftests/vm/pkeys: Override access right
+ definitions on powerpc
+Date: Mon, 20 Jan 2020 14:06:20 +0530
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <cover.1579507768.git.sandipan@linux.ibm.com>
 References: <cover.1579507768.git.sandipan@linux.ibm.com>
 In-Reply-To: <cover.1579507768.git.sandipan@linux.ibm.com>
 References: <cover.1579507768.git.sandipan@linux.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 20012008-0016-0000-0000-000002DEF947
+x-cbid: 20012008-0008-0000-0000-0000034AFE75
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20012008-0017-0000-0000-000033419BCE
-Message-Id: <45459f250aa2d382163c73f497ac6931901f148b.1579507768.git.sandipan@linux.ibm.com>
+x-cbparentid: 20012008-0009-0000-0000-00004A6B6053
+Message-Id: <9ef3a92391dc305b226df57d6f2d5ccb60421878.1579507768.git.sandipan@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
  definitions=2020-01-19_08:2020-01-16,
  2020-01-19 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 clxscore=1015
- lowpriorityscore=0 priorityscore=1501 impostorscore=0 suspectscore=0
- bulkscore=0 spamscore=0 adultscore=0 phishscore=0 mlxscore=0
- mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
+ suspectscore=0 bulkscore=0
+ lowpriorityscore=0 impostorscore=0 spamscore=0 phishscore=0
+ priorityscore=1501 clxscore=1015 mlxscore=0 mlxlogscore=863 malwarescore=0
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-1910280000 definitions=main-2001200077
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -109,48 +109,40 @@ Sender: "Linuxppc-dev"
 
 From: Ram Pai <linuxram@us.ibm.com>
 
-Detect write-violation on a page to which write-disabled
-key is associated much after the page is mapped.
+Some platforms hardcode the x86 values for PKEY_DISABLE_ACCESS
+and PKEY_DISABLE_WRITE such as those in:
+ /usr/include/bits/mman-shared.h.
+
+This overrides the definitions with correct values for powerpc.
 
 cc: Dave Hansen <dave.hansen@intel.com>
 cc: Florian Weimer <fweimer@redhat.com>
 Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-Acked-by: Dave Hansen <dave.hansen@intel.com>
 Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
 ---
- tools/testing/selftests/vm/protection_keys.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ tools/testing/selftests/vm/pkey-powerpc.h | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/tools/testing/selftests/vm/protection_keys.c b/tools/testing/selftests/vm/protection_keys.c
-index f65d384ef6a0..cb31a5cdf6d9 100644
---- a/tools/testing/selftests/vm/protection_keys.c
-+++ b/tools/testing/selftests/vm/protection_keys.c
-@@ -1002,6 +1002,17 @@ void test_read_of_access_disabled_region_with_page_already_mapped(int *ptr,
- 	expected_pkey_fault(pkey);
- }
+diff --git a/tools/testing/selftests/vm/pkey-powerpc.h b/tools/testing/selftests/vm/pkey-powerpc.h
+index d31665c48f5e..02bd4dd7d467 100644
+--- a/tools/testing/selftests/vm/pkey-powerpc.h
++++ b/tools/testing/selftests/vm/pkey-powerpc.h
+@@ -16,11 +16,13 @@
+ #define fpregs			fp_regs
+ #define si_pkey_offset		0x20
  
-+void test_write_of_write_disabled_region_with_page_already_mapped(int *ptr,
-+		u16 pkey)
-+{
-+	*ptr = __LINE__;
-+	dprintf1("disabling write access; after accessing the page, "
-+		"to PKEY[%02d], doing write\n", pkey);
-+	pkey_write_deny(pkey);
-+	*ptr = __LINE__;
-+	expected_pkey_fault(pkey);
-+}
-+
- void test_write_of_write_disabled_region(int *ptr, u16 pkey)
- {
- 	dprintf1("disabling write access to PKEY[%02d], doing write\n", pkey);
-@@ -1410,6 +1421,7 @@ void (*pkey_tests[])(int *ptr, u16 pkey) = {
- 	test_read_of_access_disabled_region,
- 	test_read_of_access_disabled_region_with_page_already_mapped,
- 	test_write_of_write_disabled_region,
-+	test_write_of_write_disabled_region_with_page_already_mapped,
- 	test_write_of_access_disabled_region,
- 	test_kernel_write_of_access_disabled_region,
- 	test_kernel_write_of_write_disabled_region,
+-#ifndef PKEY_DISABLE_ACCESS
++#ifdef PKEY_DISABLE_ACCESS
++#undef PKEY_DISABLE_ACCESS
+ # define PKEY_DISABLE_ACCESS	0x3  /* disable read and write */
+ #endif
+ 
+-#ifndef PKEY_DISABLE_WRITE
++#ifdef PKEY_DISABLE_WRITE
++#undef PKEY_DISABLE_WRITE
+ # define PKEY_DISABLE_WRITE	0x2
+ #endif
+ 
 -- 
 2.17.1
 
