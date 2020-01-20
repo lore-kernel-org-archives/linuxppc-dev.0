@@ -2,52 +2,58 @@ Return-Path: <SRS0=DTJJ=3J=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63EB5C2D0DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jan 2020 17:28:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE7BAC2D0DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jan 2020 17:30:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C4A6D21835
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jan 2020 17:28:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C4A6D21835
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id A5BAE21835
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jan 2020 17:30:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A5BAE21835
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 481dtJ5TlbzDqhK
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 04:28:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 481dwM1yVVzDqgM
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 04:30:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=mark.brown@arm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 481drD1YTkzDqg3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2020 04:26:33 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 516D331B;
- Mon, 20 Jan 2020 09:26:29 -0800 (PST)
-Received: from localhost (unknown [10.37.6.21])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id C1A193F68E;
- Mon, 20 Jan 2020 09:26:28 -0800 (PST)
-Date: Mon, 20 Jan 2020 17:26:27 +0000
-From: Mark Brown <broonie@kernel.org>
-To: "Theodore Y. Ts'o" <tytso@mit.edu>
-Subject: Re: [PATCH v2 00/10] Impveovements for random.h/archrandom.h
-Message-ID: <20200120172627.GH6852@sirena.org.uk>
-References: <20200110145422.49141-1-broonie@kernel.org>
- <20200110155153.GG19453@zn.tnic> <20200110170559.GA304349@mit.edu>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="AzNpbZlgThVzWita"
+ spf=permerror (SPF Permanent Error: Unknown mechanism
+ found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
+ (client-ip=63.228.1.57; helo=gate.crashing.org;
+ envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=kernel.crashing.org
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 481dt06PHRzDqgf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2020 04:28:08 +1100 (AEDT)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 00KHRXcN008864;
+ Mon, 20 Jan 2020 11:27:33 -0600
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id 00KHRW40008862;
+ Mon, 20 Jan 2020 11:27:32 -0600
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Mon, 20 Jan 2020 11:27:32 -0600
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: Re: [RFC PATCH v4 00/11] powerpc: switch VDSO to C implementation.
+Message-ID: <20200120172732.GC3191@gate.crashing.org>
+References: <cover.1579196675.git.christophe.leroy@c-s.fr>
+ <20200117085851.GS3191@gate.crashing.org>
+ <3027b6d2-47a9-a871-7c52-050a5f9c6ab7@c-s.fr>
+ <20200120151936.GB3191@gate.crashing.org>
+ <4b0e5941-c37e-3c85-3809-45f33ce35657@c-s.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200110170559.GA304349@mit.edu>
-X-Cookie: I invented skydiving in 1989!
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <4b0e5941-c37e-3c85-3809-45f33ce35657@c-s.fr>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,59 +65,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- herbert@gondor.apana.org.au, x86@kernel.org,
- Richard Henderson <richard.henderson@linaro.org>,
- Borislav Petkov <bp@alien8.de>, linux-crypto@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+Cc: nathanl@linux.ibm.com, arnd@arndb.de, x86@kernel.org,
+ linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, luto@kernel.org, tglx@linutronix.de,
+ vincenzo.frascino@arm.com, linuxppc-dev@lists.ozlabs.org,
  linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Mon, Jan 20, 2020 at 06:08:23PM +0100, Christophe Leroy wrote:
+> Not easy I think.
+> 
+> First we have the unavoidable ASM entry function that can't be dropped 
+> because of the CR[SO] bit the set on error or clear on no error and that 
+> can't be done in C.
 
---AzNpbZlgThVzWita
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Yup.
 
-On Fri, Jan 10, 2020 at 12:05:59PM -0500, Theodore Y. Ts'o wrote:
-> On Fri, Jan 10, 2020 at 04:51:53PM +0100, Borislav Petkov wrote:
-> > On Fri, Jan 10, 2020 at 02:54:12PM +0000, Mark Brown wrote:
+> In our ASM VDSO, fixed shifts are used, while in generic C VDSO, shifts 
+> are generic and read from the VDSO data.
 
-> > > This is a resend of a series from Richard Henderson last posted back in
-> > > November:
+Does that cost more than just a few cycles?
 
-> > >    https://lore.kernel.org/linux-arm-kernel/20191106141308.30535-1-rth@twiddle.net/
+> And there is still some funny code generated by GCC (8.1), like:
+> 
+>  620:	7d 29 3c 30 	srw     r9,r9,r7
+>  624:	21 87 00 20 	subfic  r12,r7,32
+>  628:	7d 07 3c 31 	srw.    r7,r8,r7
+>  62c:	7d 08 60 30 	slw     r8,r8,r12
+>  630:	7d 0b 4b 78 	or      r11,r8,r9
 
-> > > Back then Borislav said they looked good and asked if he should take
-> > > them through the tip tree but things seem to have got lost since then.
+(This can be done cheaper for fixed shifts, you can use rlwimi then).
 
-> > Or, alternatively, akpm could take them. In any case, if someone else
-> > ends up doing that, for the x86 bits:
+>  634:	39 40 00 00 	li      r10,0
+>  638:	40 82 00 84 	bne     6bc <__c_kernel_clock_gettime+0x114>
+>  63c:	81 23 00 24 	lwz     r9,36(r3)
+>  640:	81 05 00 00 	lwz     r8,0(r5)
+> ...
+>  6bc:	7d 69 5b 78 	mr      r9,r11
+>  6c0:	7c ea 3b 78 	mr      r10,r7
+>  6c4:	7d 2b 4b 78 	mr      r11,r9
+>  6c8:	4b ff ff 74 	b       63c <__c_kernel_clock_gettime+0x94>
+> 
+> This branch to 6bc is totally useless:
+> - copying r11 into r9 is pointless as r9 is overwritten in 63c
+> - copying back r9 into r11 is pointless as r11 has not been modified 
+> inbetween.
 
-> Or I can take them through the random.git tree, since we have a lot of
-> changes this cycle going to Linus anyway.  Any objections?
+Yeah, huh, how did that happen.
 
-I think the important thing here is that *someone* takes the patches.
-We've now got Ted and Borislav both saying they're OK applying the
-patches, an additional proposal that Andrew takes the patches, nobody
-saying anything negative about applying the patches and yet the patches
-are not applied.  The random tree sounds like a sensible enough tree to
-take this so if Ted picks them up perhaps that's most sensible?
+> - loading r10 with 0 then overwritting r10 with r7 when r7 is not 0 is 
+> pointless as well, could have directly put the result of srw. in r10.
 
---AzNpbZlgThVzWita
-Content-Type: application/pgp-signature; name="signature.asc"
+This may be harder to make the compiler do.
 
------BEGIN PGP SIGNATURE-----
+But the r9/r11 thing suggests you are preventing optimisation somewhere,
+maybe with some asm?  Do you have some small testcase I can compile?
 
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAl4l4sIACgkQJNaLcl1U
-h9BxEgf/RJIHZB+Cajrjtj2rRTGbAHO9kok/m6BSU0ERJzN1CQsdp4P19aWYHYmF
-XEM/Gca6c0PICes5FwW+XWozKxRdmcpBI36CaxYgqnkdOu9ydFaCC9vVNC33ot3d
-I0mGi3O7IvbFWglmZQhpD235hFGJYleeR2C9k3ZD4kJpp6aNTdWKVy/0qtVtOjk/
-PgAxQ2xBYwxIkofP/3sE8U/AbP0e+HlQglHv4zDNAeoU366QXcO0cQ1Xzf/5vra4
-oswWcyowcg9oEm6rFpmF5/1XMnB7dJEVX8OYOsrXHoS5TZuq81GZxke7Y6TynjS7
-ZBwLT8sRsdbZeyoNDJhcjqY4VrojIg==
-=jrbn
------END PGP SIGNATURE-----
 
---AzNpbZlgThVzWita--
+Segher
