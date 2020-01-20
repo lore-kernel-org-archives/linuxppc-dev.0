@@ -2,92 +2,71 @@ Return-Path: <SRS0=DTJJ=3J=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DFBFCC2D0DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jan 2020 10:58:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DCCDBC2D0DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jan 2020 11:22:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7015820674
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jan 2020 10:58:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7015820674
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 5F91E207E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jan 2020 11:22:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5F91E207E0
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 481TDC065dzDqLF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jan 2020 21:58:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=anju@linux.vnet.ibm.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 481TmF1HXkzDqPc
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jan 2020 22:22:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=linux.intel.com
+ (client-ip=134.134.136.20; helo=mga02.intel.com;
+ envelope-from=alexey.budankov@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ header.from=linux.intel.com
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 481T7H3S0GzDqGF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jan 2020 21:53:59 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 00KAn0ku035636
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jan 2020 05:53:56 -0500
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2xmfyxmvn1-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jan 2020 05:53:55 -0500
-Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Mon, 20 Jan 2020 10:53:53 -0000
-Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
- by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 20 Jan 2020 10:53:51 -0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 00KAro0L47513948
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 20 Jan 2020 10:53:50 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4F218A404D;
- Mon, 20 Jan 2020 10:53:50 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C0114A4059;
- Mon, 20 Jan 2020 10:53:48 +0000 (GMT)
-Received: from localhost.localdomain.com (unknown [9.102.27.81])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 20 Jan 2020 10:53:48 +0000 (GMT)
-From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Subject: [PATCH 2/2] powerpc/perf: Implement a global lock to avoid races
- between trace, core and thread imc events.
-Date: Mon, 20 Jan 2020 16:23:41 +0530
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20200120105341.25802-1-anju@linux.vnet.ibm.com>
-References: <20200120105341.25802-1-anju@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 481ThC61XmzDqcc
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jan 2020 22:19:06 +1100 (AEDT)
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+ by orsmga101.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 20 Jan 2020 03:19:02 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.70,341,1574150400"; d="scan'208";a="275015353"
+Received: from linux.intel.com ([10.54.29.200])
+ by FMSMGA003.fm.intel.com with ESMTP; 20 Jan 2020 03:19:01 -0800
+Received: from [10.125.252.193] (abudanko-mobl.ccr.corp.intel.com
+ [10.125.252.193])
+ by linux.intel.com (Postfix) with ESMTP id 168DE5802C1;
+ Mon, 20 Jan 2020 03:18:52 -0800 (PST)
+From: Alexey Budankov <alexey.budankov@linux.intel.com>
+Subject: [PATCH v5 0/10] Introduce CAP_PERFMON to secure system performance
+ monitoring and observability
+To: Peter Zijlstra <peterz@infradead.org>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ "jani.nikula@linux.intel.com" <jani.nikula@linux.intel.com>,
+ "joonas.lahtinen@linux.intel.com" <joonas.lahtinen@linux.intel.com>,
+ "rodrigo.vivi@intel.com" <rodrigo.vivi@intel.com>,
+ "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ "james.bottomley@hansenpartnership.com"
+ <james.bottomley@hansenpartnership.com>, Serge Hallyn <serge@hallyn.com>,
+ James Morris <jmorris@namei.org>, Will Deacon <will.deacon@arm.com>,
+ Mark Rutland <mark.rutland@arm.com>, Robert Richter <rric@kernel.org>,
+ Alexei Starovoitov <ast@kernel.org>
+Organization: Intel Corp.
+Message-ID: <0548c832-7f4b-dc4c-8883-3f2b6d351a08@linux.intel.com>
+Date: Mon, 20 Jan 2020 14:18:51 +0300
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:68.0) Gecko/20100101
+ Thunderbird/68.4.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 20012010-0028-0000-0000-000003D2C008
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20012010-0029-0000-0000-00002496F148
-Message-Id: <20200120105341.25802-2-anju@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
- definitions=2020-01-20_01:2020-01-20,
- 2020-01-20 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 adultscore=0
- bulkscore=0 impostorscore=0 lowpriorityscore=0 suspectscore=1
- mlxlogscore=999 clxscore=1015 mlxscore=0 spamscore=0 phishscore=0
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-1910280000 definitions=main-2001200096
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,342 +78,202 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nasastry@in.ibm.com, anju@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- maddy@linux.vnet.ibm.com
+Cc: Song Liu <songliubraving@fb.com>, Andi Kleen <ak@linux.intel.com>,
+ "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>,
+ Igor Lubashev <ilubashe@akamai.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ Stephane Eranian <eranian@google.com>,
+ "linux-perf-users@vger.kernel.org" <linux-perf-users@vger.kernel.org>,
+ "selinux@vger.kernel.org" <selinux@vger.kernel.org>,
+ "linux-security-module@vger.kernel.org"
+ <linux-security-module@vger.kernel.org>, oprofile-list@lists.sf.net,
+ Lionel Landwerlin <lionel.g.landwerlin@intel.com>,
+ Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Jiri Olsa <jolsa@redhat.com>, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-IMC(In-memory Collection Counters) does performance monitoring in
-two different modes, i.e accumulation mode(core-imc and thread-imc events),
-and trace mode(trace-imc events). A cpu thread can either be in
-accumulation-mode or trace-mode at a time and this is done via the LDBAR
-register in POWER architecture. The current design does not address the
-races between thread-imc and trace-imc events.
 
-Patch implements a global id and lock to avoid the races between
-core, trace and thread imc events. With this global id-lock
-implementation, the system can either run core, thread or trace imc
-events at a time. i.e. to run any core-imc events, thread/trace imc events
-should not be enabled/monitored.
- 
-Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+Currently access to perf_events, i915_perf and other performance monitoring and
+observability subsystems of the kernel is open for a privileged process [1] with
+CAP_SYS_ADMIN capability enabled in the process effective set [2].
+
+This patch set introduces CAP_PERFMON capability designed to secure system
+performance monitoring and observability operations so that CAP_PERFMON would
+assist CAP_SYS_ADMIN capability in its governing role for perf_events, i915_perf
+and other performance monitoring and observability subsystems of the kernel.
+
+CAP_PERFMON intends to take over CAP_SYS_ADMIN credentials related to system
+performance monitoring and observability operations and balance amount of
+CAP_SYS_ADMIN credentials following the recommendations in the capabilities man
+page [2] for CAP_SYS_ADMIN: "Note: this capability is overloaded; see Notes to
+kernel developers, below."
+
+CAP_PERFMON intends to harden system security and integrity during system
+performance monitoring and observability operations by decreasing attack surface
+that is available to a CAP_SYS_ADMIN privileged process [2]. Providing the access
+to system performance monitoring and observability operations under CAP_PERFMON
+capability singly, without the rest of CAP_SYS_ADMIN credentials, excludes chances
+to misuse the credentials and makes the operation more secure.
+
+For backward compatibility reasons access to system performance monitoring and
+observability subsystems of the kernel remains open for CAP_SYS_ADMIN privileged
+processes but CAP_SYS_ADMIN capability usage for secure system performance
+monitoring and observability operations is discouraged with respect to the
+designed CAP_PERFMON capability.
+
+CAP_PERFMON intends to meet the demand to secure system performance monitoring
+and observability operations in security sensitive, restricted, multiuser production
+environments (e.g. HPC clusters, cloud and virtual compute environments) where
+root or CAP_SYS_ADMIN credentials are not available to mass users of a system
+because of security considerations.
+
+Possible alternative solution to this capabilities balancing, system security
+hardening task could be to use the existing CAP_SYS_PTRACE capability to govern
+system performance monitoring and observability operations. However CAP_SYS_PTRACE
+capability still provides users with more credentials than are required for
+secure performance monitoring and observability operations and this excess is
+avoided by the designed CAP_PERFMON capability.
+
+Although the software running under CAP_PERFMON can not ensure avoidance of
+related hardware issues, the software can still mitigate those issues following
+the official embargoed hardware issues mitigation procedure [3]. The bugs in
+the software itself could be fixed following the standard kernel development
+process [4] to maintain and harden security of system performance monitoring
+and observability operations. After all, the patch set is shaped in the way
+that simplifies procedure for backtracking of possible issues and bugs [5] as
+much as possible.
+
+The patch set is for tip perf/core repository:
+git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip perf/core
+sha1: 5738891229a25e9e678122a843cbf0466a456d0c
+
 ---
- arch/powerpc/perf/imc-pmu.c | 177 +++++++++++++++++++++++++++++++-----
- 1 file changed, 153 insertions(+), 24 deletions(-)
+Changes in v5:
+- renamed CAP_SYS_PERFMON to CAP_PERFMON
+- extended perfmon_capable() with noaudit checks
+Changes in v4:
+- converted perfmon_capable() into an inline function
+- made perf_events kprobes, uprobes, hw breakpoints and namespaces data available
+  to CAP_SYS_PERFMON privileged processes
+- applied perfmon_capable() to drivers/perf and drivers/oprofile
+- extended __cmd_ftrace() with support of CAP_SYS_PERFMON
+Changes in v3:
+- implemented perfmon_capable() macros aggregating required capabilities checks
+Changes in v2:
+- made perf_events trace points available to CAP_SYS_PERFMON privileged processes
+- made perf_event_paranoid_check() treat CAP_SYS_PERFMON equally to CAP_SYS_ADMIN
+- applied CAP_SYS_PERFMON to i915_perf, bpf_trace, powerpc and parisc system
+  performance monitoring and observability related subsystems
 
-diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
-index cb50a9e1fd2d..2e220f199530 100644
---- a/arch/powerpc/perf/imc-pmu.c
-+++ b/arch/powerpc/perf/imc-pmu.c
-@@ -44,6 +44,16 @@ static DEFINE_PER_CPU(u64 *, trace_imc_mem);
- static struct imc_pmu_ref *trace_imc_refc;
- static int trace_imc_mem_size;
- 
-+/*
-+ * Global data structure used to avoid races between thread,
-+ * core and trace-imc
-+ */
-+static struct imc_pmu_ref imc_global_refc = {
-+	.lock = __MUTEX_INITIALIZER(imc_global_refc.lock),
-+	.id = 0,
-+	.refc = 0,
-+};
-+
- static struct imc_pmu *imc_event_to_pmu(struct perf_event *event)
- {
- 	return container_of(event->pmu, struct imc_pmu, pmu);
-@@ -759,6 +769,20 @@ static void core_imc_counters_release(struct perf_event *event)
- 		ref->refc = 0;
- 	}
- 	mutex_unlock(&ref->lock);
-+
-+	mutex_lock(&imc_global_refc.lock);
-+	if (imc_global_refc.id == IMC_DOMAIN_CORE) {
-+		imc_global_refc.refc--;
-+		/*
-+		 * If no other thread is running any core-imc
-+		 * event, set the global id to zero.
-+		 */
-+		if (imc_global_refc.refc <= 0) {
-+			imc_global_refc.refc = 0;
-+			imc_global_refc.id = 0;
-+		}
-+	}
-+	mutex_unlock(&imc_global_refc.lock);
- }
- 
- static int core_imc_event_init(struct perf_event *event)
-@@ -779,6 +803,22 @@ static int core_imc_event_init(struct perf_event *event)
- 	if (event->cpu < 0)
- 		return -EINVAL;
- 
-+	/*
-+	 * Take the global lock, and make sure
-+	 * no other thread is running any trace OR thread imc event
-+	 */
-+	mutex_lock(&imc_global_refc.lock);
-+	if (imc_global_refc.id == 0) {
-+		imc_global_refc.id = IMC_DOMAIN_CORE;
-+		imc_global_refc.refc++;
-+	} else if (imc_global_refc.id == IMC_DOMAIN_CORE) {
-+		imc_global_refc.refc++;
-+	} else {
-+		mutex_unlock(&imc_global_refc.lock);
-+		return -EBUSY;
-+	}
-+	mutex_unlock(&imc_global_refc.lock);
-+
- 	event->hw.idx = -1;
- 	pmu = imc_event_to_pmu(event);
- 
-@@ -877,7 +917,16 @@ static int ppc_thread_imc_cpu_online(unsigned int cpu)
- 
- static int ppc_thread_imc_cpu_offline(unsigned int cpu)
- {
--	mtspr(SPRN_LDBAR, 0);
-+	/*
-+	 * Toggle the bit 0 of LDBAR.
-+	 *
-+	 * If bit 0 of LDBAR is unset, it will stop posting
-+	 * the counetr data to memory.
-+	 * For thread-imc, bit 0 of LDBAR will be set to 1 in the
-+	 * event_add function. So toggle this bit here, to stop the updates
-+	 * to memory in the cpu_offline path.
-+	 */
-+	mtspr(SPRN_LDBAR, (mfspr(SPRN_LDBAR) ^ (1UL << 63)));
- 	return 0;
- }
- 
-@@ -889,6 +938,24 @@ static int thread_imc_cpu_init(void)
- 			  ppc_thread_imc_cpu_offline);
- }
- 
-+static void thread_imc_counters_release(struct perf_event *event)
-+{
-+
-+	mutex_lock(&imc_global_refc.lock);
-+	if (imc_global_refc.id == IMC_DOMAIN_THREAD) {
-+		imc_global_refc.refc--;
-+		/*
-+		 * If no other thread is running any thread-imc
-+		 * event, set the global id to zero.
-+		 */
-+		if (imc_global_refc.refc <= 0) {
-+			imc_global_refc.refc = 0;
-+			imc_global_refc.id = 0;
-+		}
-+	}
-+	mutex_unlock(&imc_global_refc.lock);
-+}
-+
- static int thread_imc_event_init(struct perf_event *event)
- {
- 	u32 config = event->attr.config;
-@@ -905,6 +972,27 @@ static int thread_imc_event_init(struct perf_event *event)
- 	if (event->hw.sample_period)
- 		return -EINVAL;
- 
-+	mutex_lock(&imc_global_refc.lock);
-+	/*
-+	 * Check if any other thread is running
-+	 * core-engine, if not set the global id to
-+	 * thread-imc.
-+	 */
-+	if (imc_global_refc.id == 0) {
-+		imc_global_refc.id = IMC_DOMAIN_THREAD;
-+		imc_global_refc.refc++;
-+	} else if (imc_global_refc.id == IMC_DOMAIN_THREAD) {
-+		/*
-+		 * Increase the ref count if the global id is
-+		 * set to thread-imc.
-+		 */
-+		imc_global_refc.refc++;
-+	} else {
-+		mutex_unlock(&imc_global_refc.lock);
-+		return -EBUSY;
-+	}
-+	mutex_unlock(&imc_global_refc.lock);
-+
- 	event->hw.idx = -1;
- 	pmu = imc_event_to_pmu(event);
- 
-@@ -917,6 +1005,7 @@ static int thread_imc_event_init(struct perf_event *event)
- 		return -EINVAL;
- 
- 	event->pmu->task_ctx_nr = perf_sw_context;
-+	event->destroy = thread_imc_counters_release;
- 	return 0;
- }
- 
-@@ -1063,10 +1152,12 @@ static void thread_imc_event_del(struct perf_event *event, int flags)
- 	int core_id;
- 	struct imc_pmu_ref *ref;
- 
--	mtspr(SPRN_LDBAR, 0);
--
- 	core_id = smp_processor_id() / threads_per_core;
- 	ref = &core_imc_refc[core_id];
-+	if (!ref) {
-+		pr_debug("imc: Failed to get event reference count\n");
-+		return;
-+	}
- 
- 	mutex_lock(&ref->lock);
- 	ref->refc--;
-@@ -1082,6 +1173,10 @@ static void thread_imc_event_del(struct perf_event *event, int flags)
- 		ref->refc = 0;
- 	}
- 	mutex_unlock(&ref->lock);
-+
-+	/* Toggle bit 0 of LDBAR */
-+	mtspr(SPRN_LDBAR, (mfspr(SPRN_LDBAR) ^ (1UL << 63)));
-+
- 	/*
- 	 * Take a snapshot and calculate the delta and update
- 	 * the event counter values.
-@@ -1133,7 +1228,8 @@ static int ppc_trace_imc_cpu_online(unsigned int cpu)
- 
- static int ppc_trace_imc_cpu_offline(unsigned int cpu)
- {
--	mtspr(SPRN_LDBAR, 0);
-+	/* Toggle bit 0 of LDBAR. */
-+	mtspr(SPRN_LDBAR, (mfspr(SPRN_LDBAR) ^ (1UL << 63)));
- 	return 0;
- }
- 
-@@ -1226,15 +1322,14 @@ static int trace_imc_event_add(struct perf_event *event, int flags)
- 	local_mem = get_trace_imc_event_base_addr();
- 	ldbar_value = ((u64)local_mem & THREAD_IMC_LDBAR_MASK) | TRACE_IMC_ENABLE;
- 
--	if (core_imc_refc)
--		ref = &core_imc_refc[core_id];
-+	/* trace-imc reference count */
-+	if (trace_imc_refc)
-+		ref = &trace_imc_refc[core_id];
- 	if (!ref) {
--		/* If core-imc is not enabled, use trace-imc reference count */
--		if (trace_imc_refc)
--			ref = &trace_imc_refc[core_id];
--		if (!ref)
--			return -EINVAL;
-+		pr_debug("imc: Failed to get the event reference count\n");
-+		return -EINVAL;
- 	}
-+
- 	mtspr(SPRN_LDBAR, ldbar_value);
- 	mutex_lock(&ref->lock);
- 	if (ref->refc == 0) {
-@@ -1242,13 +1337,11 @@ static int trace_imc_event_add(struct perf_event *event, int flags)
- 				get_hard_smp_processor_id(smp_processor_id()))) {
- 			mutex_unlock(&ref->lock);
- 			pr_err("trace-imc: Unable to start the counters for core %d\n", core_id);
--			mtspr(SPRN_LDBAR, 0);
- 			return -EINVAL;
- 		}
- 	}
- 	++ref->refc;
- 	mutex_unlock(&ref->lock);
--
- 	return 0;
- }
- 
-@@ -1274,16 +1367,13 @@ static void trace_imc_event_del(struct perf_event *event, int flags)
- 	int core_id = smp_processor_id() / threads_per_core;
- 	struct imc_pmu_ref *ref = NULL;
- 
--	if (core_imc_refc)
--		ref = &core_imc_refc[core_id];
-+	if (trace_imc_refc)
-+		ref = &trace_imc_refc[core_id];
- 	if (!ref) {
--		/* If core-imc is not enabled, use trace-imc reference count */
--		if (trace_imc_refc)
--			ref = &trace_imc_refc[core_id];
--		if (!ref)
--			return;
-+		pr_debug("imc: Failed to get event reference count\n");
-+		return;
- 	}
--	mtspr(SPRN_LDBAR, 0);
-+
- 	mutex_lock(&ref->lock);
- 	ref->refc--;
- 	if (ref->refc == 0) {
-@@ -1297,9 +1387,30 @@ static void trace_imc_event_del(struct perf_event *event, int flags)
- 		ref->refc = 0;
- 	}
- 	mutex_unlock(&ref->lock);
-+
-+	/* Toggle bit 0 of LDBAR */
-+	mtspr(SPRN_LDBAR, (mfspr(SPRN_LDBAR) ^ (1UL << 63)));
-+
- 	trace_imc_event_stop(event, flags);
- }
- 
-+static void trace_imc_counters_release(struct perf_event *event)
-+{
-+	mutex_lock(&imc_global_refc.lock);
-+	if (imc_global_refc.id == IMC_DOMAIN_TRACE) {
-+		imc_global_refc.refc--;
-+		/*
-+		 * If no other thread is running any trace-imc
-+		 * event, set the global id to zero.
-+		 */
-+		if (imc_global_refc.refc <= 0) {
-+			imc_global_refc.refc = 0;
-+			imc_global_refc.id = 0;
-+		}
-+	}
-+	mutex_unlock(&imc_global_refc.lock);
-+}
-+
- static int trace_imc_event_init(struct perf_event *event)
- {
- 	struct task_struct *target;
-@@ -1314,10 +1425,28 @@ static int trace_imc_event_init(struct perf_event *event)
- 	if (event->attr.sample_period == 0)
- 		return -ENOENT;
- 
-+	/*
-+	 * Take the global lock, and make sure
-+	 * no other thread is running any core/thread imc
-+	 * event
-+	 */
-+	mutex_lock(&imc_global_refc.lock);
-+	if (imc_global_refc.id == 0) {
-+		imc_global_refc.id = IMC_DOMAIN_TRACE;
-+		imc_global_refc.refc++;
-+	} else if (imc_global_refc.id == IMC_DOMAIN_TRACE) {
-+		imc_global_refc.refc++;
-+	} else {
-+		mutex_unlock(&imc_global_refc.lock);
-+		return -EBUSY;
-+	}
-+	mutex_unlock(&imc_global_refc.lock);
-+
- 	event->hw.idx = -1;
- 	target = event->hw.target;
- 
- 	event->pmu->task_ctx_nr = perf_hw_context;
-+	event->destroy = trace_imc_counters_release;
- 	return 0;
- }
- 
-@@ -1429,10 +1558,10 @@ static void cleanup_all_core_imc_memory(void)
- static void thread_imc_ldbar_disable(void *dummy)
- {
- 	/*
--	 * By Zeroing LDBAR, we disable thread-imc
--	 * updates.
-+	 * By toggling 0th bit of LDBAR, we disable thread-imc
-+	 * updates to memory.
- 	 */
--	mtspr(SPRN_LDBAR, 0);
-+	mtspr(SPRN_LDBAR, (mfspr(SPRN_LDBAR) ^ (1UL << 63)));
- }
- 
- void thread_imc_disable(void)
+---
+Alexey Budankov (10):
+  capabilities: introduce CAP_PERFMON to kernel and user space
+  perf/core: open access to the core for CAP_PERFMON privileged process
+  perf/core: open access to anon probes for CAP_PERFMON privileged process
+  perf tool: extend Perf tool with CAP_PERFMON capability support
+  drm/i915/perf: open access for CAP_PERFMON privileged process
+  trace/bpf_trace: open access for CAP_PERFMON privileged process
+  powerpc/perf: open access for CAP_PERFMON privileged process
+  parisc/perf: open access for CAP_PERFMON privileged process
+  drivers/perf: open access for CAP_PERFMON privileged process
+  drivers/oprofile: open access for CAP_PERFMON privileged process
+
+ arch/parisc/kernel/perf.c           |  2 +-
+ arch/powerpc/perf/imc-pmu.c         |  4 ++--
+ drivers/gpu/drm/i915/i915_perf.c    | 13 ++++++-------
+ drivers/oprofile/event_buffer.c     |  2 +-
+ drivers/perf/arm_spe_pmu.c          |  4 ++--
+ include/linux/capability.h          | 12 ++++++++++++
+ include/linux/perf_event.h          |  6 +++---
+ include/uapi/linux/capability.h     |  8 +++++++-
+ kernel/events/core.c                |  6 +++---
+ kernel/trace/bpf_trace.c            |  2 +-
+ security/selinux/include/classmap.h |  4 ++--
+ tools/perf/builtin-ftrace.c         |  5 +++--
+ tools/perf/design.txt               |  3 ++-
+ tools/perf/util/cap.h               |  4 ++++
+ tools/perf/util/evsel.c             | 10 +++++-----
+ tools/perf/util/util.c              |  1 +
+ 16 files changed, 55 insertions(+), 31 deletions(-)
+
+---
+Testing and validation (Intel Skylake, 8 cores, Fedora 29, 5.5.0-rc3+, x86_64):
+
+libcap library [4], [5], [6] and Perf tool can be used to apply CAP_PERFMON 
+capability for secure system performance monitoring and observability beyond the
+scope permitted by the system wide perf_event_paranoid kernel setting [7] and
+below are the steps for evaluation:
+
+  - patch, build and boot the kernel
+  - patch, build Perf tool e.g. to /home/user/perf
+  ...
+  # git clone git://git.kernel.org/pub/scm/libs/libcap/libcap.git libcap
+  # pushd libcap
+  # patch libcap/include/uapi/linux/capabilities.h with [PATCH 1]
+  # make
+  # pushd progs
+  # ./setcap "cap_perfmon,cap_sys_ptrace,cap_syslog=ep" /home/user/perf
+  # ./setcap -v "cap_perfmon,cap_sys_ptrace,cap_syslog=ep" /home/user/perf
+  /home/user/perf: OK
+  # ./getcap /home/user/perf
+  /home/user/perf = cap_sys_ptrace,cap_syslog,cap_perfmon+ep
+  # echo 2 > /proc/sys/kernel/perf_event_paranoid
+  # cat /proc/sys/kernel/perf_event_paranoid 
+  2
+  ...
+  $ /home/user/perf top
+    ... works as expected ...
+  $ cat /proc/`pidof perf`/status
+  Name:	perf
+  Umask:	0002
+  State:	S (sleeping)
+  Tgid:	2958
+  Ngid:	0
+  Pid:	2958
+  PPid:	9847
+  TracerPid:	0
+  Uid:	500	500	500	500
+  Gid:	500	500	500	500
+  FDSize:	256
+  ...
+  CapInh:	0000000000000000
+  CapPrm:	0000004400080000
+  CapEff:	0000004400080000 => 01000100 00000000 00001000 00000000 00000000
+                                     cap_perfmon,cap_sys_ptrace,cap_syslog
+  CapBnd:	0000007fffffffff
+  CapAmb:	0000000000000000
+  NoNewPrivs:	0
+  Seccomp:	0
+  Speculation_Store_Bypass:	thread vulnerable
+  Cpus_allowed:	ff
+  Cpus_allowed_list:	0-7
+  ...
+
+Usage of cap_perfmon effectively avoids unused credentials excess:
+
+- with cap_sys_admin:
+  CapEff:	0000007fffffffff => 01111111 11111111 11111111 11111111 11111111
+
+- with cap_perfmon:
+  CapEff:	0000004400080000 => 01000100 00000000 00001000 00000000 00000000
+                                    38   34               19
+                               perfmon   syslog           sys_ptrace
+
+---
+[1] https://www.kernel.org/doc/html/latest/admin-guide/perf-security.html
+[2] http://man7.org/linux/man-pages/man7/capabilities.7.html
+[3] https://www.kernel.org/doc/html/latest/process/embargoed-hardware-issues.html
+[4] https://www.kernel.org/doc/html/latest/admin-guide/security-bugs.html
+[5] https://www.kernel.org/doc/html/latest/process/management-style.html#decisions
+[6] http://man7.org/linux/man-pages/man8/setcap.8.html
+[7] https://git.kernel.org/pub/scm/libs/libcap/libcap.git
+[8] https://sites.google.com/site/fullycapable/, posix_1003.1e-990310.pdf
+[9] http://man7.org/linux/man-pages/man2/perf_event_open.2.html
+
 -- 
 2.20.1
-
