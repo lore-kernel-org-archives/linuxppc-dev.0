@@ -2,51 +2,64 @@ Return-Path: <SRS0=KLET=3K=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E566FC33CAA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 01:38:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AB348C32771
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 02:02:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6710322522
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 01:38:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6710322522
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1A9FF207FF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 02:02:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1A9FF207FF
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=perches.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 481rlz6lN7zDqdG
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 12:38:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.190; helo=huawei.com;
- envelope-from=chenzhou10@huawei.com; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 481sHP0qKlzDqkX
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 13:02:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
+ spf=none (no SPF record) smtp.mailfrom=perches.com
+ (client-ip=216.40.44.31; helo=smtprelay.hostedemail.com;
+ envelope-from=joe@perches.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=perches.com
+X-Greylist: delayed 449 seconds by postgrey-1.36 at bilbo;
+ Tue, 21 Jan 2020 13:00:52 AEDT
+Received: from smtprelay.hostedemail.com (smtprelay0031.hostedemail.com
+ [216.40.44.31])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 481rkF2LGPzDqch
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2020 12:36:59 +1100 (AEDT)
-Received: from DGGEMS402-HUB.china.huawei.com (unknown [172.30.72.60])
- by Forcepoint Email with ESMTP id 2A1821F9D21F6B68683B;
- Tue, 21 Jan 2020 09:36:53 +0800 (CST)
-Received: from localhost.localdomain.localdomain (10.175.113.25) by
- DGGEMS402-HUB.china.huawei.com (10.3.19.202) with Microsoft SMTP Server id
- 14.3.439.0; Tue, 21 Jan 2020 09:36:43 +0800
-From: Chen Zhou <chenzhou10@huawei.com>
-To: <benh@kernel.crashing.org>, <paulus@samba.org>, <mpe@ellerman.id.au>
-Subject: [PATCH -next] powerpc/maple: fix comparing pointer to 0
-Date: Tue, 21 Jan 2020 09:31:53 +0800
-Message-ID: <20200121013153.9937-1-chenzhou10@huawei.com>
-X-Mailer: git-send-email 2.20.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 481sFc5k14zDqW4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2020 13:00:50 +1100 (AEDT)
+Received: from smtprelay.hostedemail.com (10.5.19.251.rfc1918.com
+ [10.5.19.251])
+ by smtpgrave02.hostedemail.com (Postfix) with ESMTP id 10B091800864F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2020 01:53:30 +0000 (UTC)
+Received: from filter.hostedemail.com (clb03-v110.bra.tucows.net
+ [216.40.38.60])
+ by smtprelay04.hostedemail.com (Postfix) with ESMTP id 68169180A68AC;
+ Tue, 21 Jan 2020 01:53:17 +0000 (UTC)
+X-Session-Marker: 6A6F6540706572636865732E636F6D
+X-HE-Tag: shake46_56b5e3c028834
+X-Filterd-Recvd-Size: 1824
+Received: from XPS-9350.home (unknown [47.151.135.224])
+ (Authenticated sender: joe@perches.com)
+ by omf19.hostedemail.com (Postfix) with ESMTPA;
+ Tue, 21 Jan 2020 01:53:15 +0000 (UTC)
+Message-ID: <618f58cd46f0e4fd619cb2ee3c76665a28e30f4e.camel@perches.com>
+Subject: Re: [PATCH -next] powerpc/maple: fix comparing pointer to 0
+From: Joe Perches <joe@perches.com>
+To: Chen Zhou <chenzhou10@huawei.com>, benh@kernel.crashing.org, 
+ paulus@samba.org, mpe@ellerman.id.au
+Date: Mon, 20 Jan 2020 17:52:15 -0800
+In-Reply-To: <20200121013153.9937-1-chenzhou10@huawei.com>
+References: <20200121013153.9937-1-chenzhou10@huawei.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+User-Agent: Evolution 3.34.1-2 
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.175.113.25]
-X-CFilter-Loop: Reflected
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,37 +71,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: chenzhou10@huawei.com, gregkh@linuxfoundation.org,
- linux-kernel@vger.kernel.org, nivedita@alum.mit.edu, tglx@linutronix.de,
- linuxppc-dev@lists.ozlabs.org, allison@lohutok.net
+Cc: gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
+ nivedita@alum.mit.edu, tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org,
+ allison@lohutok.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fixes coccicheck warning:
-./arch/powerpc/platforms/maple/setup.c:232:15-16:
-	WARNING comparing pointer to 0
+On Tue, 2020-01-21 at 09:31 +0800, Chen Zhou wrote:
+> Fixes coccicheck warning:
+> ./arch/powerpc/platforms/maple/setup.c:232:15-16:
+> 	WARNING comparing pointer to 0
 
-Compare pointer-typed values to NULL rather than 0.
+Does anyone have or use these powerpc maple boards anymore?
 
-Signed-off-by: Chen Zhou <chenzhou10@huawei.com>
+Maybe the whole codebase should just be deleted instead.
+
+If not, setup.c has an unused DBG macro that could be removed too.
 ---
- arch/powerpc/platforms/maple/setup.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/platforms/maple/setup.c | 6 ------
+ 1 file changed, 6 deletions(-)
 
 diff --git a/arch/powerpc/platforms/maple/setup.c b/arch/powerpc/platforms/maple/setup.c
-index 47f7310..00a0780 100644
+index 47f7310..d6a083c 100644
 --- a/arch/powerpc/platforms/maple/setup.c
 +++ b/arch/powerpc/platforms/maple/setup.c
-@@ -229,7 +229,7 @@ static void __init maple_init_IRQ(void)
- 	root = of_find_node_by_path("/");
- 	naddr = of_n_addr_cells(root);
- 	opprop = of_get_property(root, "platform-open-pic", &opplen);
--	if (opprop != 0) {
-+	if (opprop) {
- 		openpic_addr = of_read_number(opprop, naddr);
- 		has_isus = (opplen > naddr);
- 		printk(KERN_DEBUG "OpenPIC addr: %lx, has ISUs: %d\n",
--- 
-2.7.4
+@@ -57,12 +57,6 @@
+ 
+ #include "maple.h"
+ 
+-#ifdef DEBUG
+-#define DBG(fmt...) udbg_printf(fmt)
+-#else
+-#define DBG(fmt...)
+-#endif
+-
+ static unsigned long maple_find_nvram_base(void)
+ {
+ 	struct device_node *rtcs;
+
 
