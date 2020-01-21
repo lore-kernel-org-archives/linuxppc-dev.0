@@ -2,59 +2,75 @@ Return-Path: <SRS0=KLET=3K=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_RHS_DOB autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F838C2D0CE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 11:19:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 86D34C2D0CE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 12:09:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5480E2253D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 11:19:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5480E2253D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=perches.com
+	by mail.kernel.org (Postfix) with ESMTPS id 062832073A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 12:09:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 062832073A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4825dj0WPNzDqPl
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 22:19:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4826lk4vrhzDqWn
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 23:09:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=209.85.221.66; helo=mail-wr1-f66.google.com;
+ envelope-from=mstsxfx@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=perches.com
- (client-ip=216.40.44.36; helo=smtprelay.hostedemail.com;
- envelope-from=joe@perches.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=perches.com
-Received: from smtprelay.hostedemail.com (smtprelay0036.hostedemail.com
- [216.40.44.36])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from mail-wr1-f66.google.com (mail-wr1-f66.google.com
+ [209.85.221.66])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4825bG4J60zDqQ5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2020 22:16:56 +1100 (AEDT)
-Received: from filter.hostedemail.com (clb03-v110.bra.tucows.net
- [216.40.38.60])
- by smtprelay06.hostedemail.com (Postfix) with ESMTP id 791E718224D9C;
- Tue, 21 Jan 2020 11:16:52 +0000 (UTC)
-X-Session-Marker: 6A6F6540706572636865732E636F6D
-X-HE-Tag: toys51_3bc2dfa430738
-X-Filterd-Recvd-Size: 2336
-Received: from XPS-9350.home (unknown [47.151.135.224])
- (Authenticated sender: joe@perches.com)
- by omf03.hostedemail.com (Postfix) with ESMTPA;
- Tue, 21 Jan 2020 11:16:50 +0000 (UTC)
-Message-ID: <24012ba289823e9e38c2f89116a5f61581ef3909.camel@perches.com>
-Subject: Re: [PATCH -next] powerpc/maple: fix comparing pointer to 0
-From: Joe Perches <joe@perches.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Date: Tue, 21 Jan 2020 03:15:49 -0800
-In-Reply-To: <20200121074723.GF3191@gate.crashing.org>
-References: <20200121013153.9937-1-chenzhou10@huawei.com>
- <618f58cd46f0e4fd619cb2ee3c76665a28e30f4e.camel@perches.com>
- <20200121074723.GF3191@gate.crashing.org>
-Content-Type: text/plain; charset="ISO-8859-1"
-User-Agent: Evolution 3.34.1-2 
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4826jQ46GgzDqQ9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2020 23:07:19 +1100 (AEDT)
+Received: by mail-wr1-f66.google.com with SMTP id g17so2931072wro.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2020 04:07:19 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to;
+ bh=8+eTFTZWY1O+bS0tfQzZZHJ2QVfVqRuc9/acRYq78eE=;
+ b=oeSLq7nmGn5KDRraRLqFq2RsaYXF8gTLp+vcma7l2DNMqpyWunBTQSFUJEzaBz7Zg+
+ zpbtFO7H6jwc2J+/DHUaefHGlKIjALv31JRjpcaaaDdf7Hxp4haBU8Gw+IxhoXuM1tRk
+ 6TojEs7ZftrW7DIPLH863nAP1UEb4YNzXO62I6/MdmRwsWyP6LL/y6b2WePP3td3v+Zb
+ ZjsLEl6eOVAgmJNYMTOujxGK8cM2U+BTVIyPwNcZZa1yt9Lo7J27aj/e/ZE87IN0emK5
+ 73unPns677hCaYHSNQ6VGLi55NvnswyrdnIhT2pIEosPD9+POOKo5JA1C9dDmJBkhPE9
+ OVIQ==
+X-Gm-Message-State: APjAAAVArSX0DaSDtIrmo6hUtee9AJZ+k6y1WqJvmX6gechixiKaSHAl
+ K7eGUIy2P0475Zzipb1Qfy0=
+X-Google-Smtp-Source: APXvYqyxpUkI3wcRNy1BJM6GIVX1qC65Wu9WoeWHqPOsSl8LeuToreKpatoaJ2IPUby2HJ4XnSMCzg==
+X-Received: by 2002:adf:f8c8:: with SMTP id f8mr4797172wrq.331.1579608436190; 
+ Tue, 21 Jan 2020 04:07:16 -0800 (PST)
+Received: from localhost (prg-ext-pat.suse.com. [213.151.95.130])
+ by smtp.gmail.com with ESMTPSA id z83sm3932163wmg.2.2020.01.21.04.07.14
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 21 Jan 2020 04:07:14 -0800 (PST)
+Date: Tue, 21 Jan 2020 13:07:14 +0100
+From: Michal Hocko <mhocko@kernel.org>
+To: David Hildenbrand <david@redhat.com>
+Subject: Re: [PATCH RFC v1] mm: is_mem_section_removable() overhaul
+Message-ID: <20200121120714.GJ29276@dhcp22.suse.cz>
+References: <20200117113353.GT19428@dhcp22.suse.cz>
+ <c82a0dd7-a99b-6def-83d4-a19fbdd405d9@redhat.com>
+ <20200117145233.GB19428@dhcp22.suse.cz>
+ <65606e2e-1cf7-de3b-10b1-33653cb41a52@redhat.com>
+ <20200117152947.GK19428@dhcp22.suse.cz>
+ <CAPcyv4hHHzdPp4SQ0sePzx7XEvD7U_B+vZDT00O6VbFY8kJqjw@mail.gmail.com>
+ <25a94f61-46a1-59a6-6b54-8cc6b35790d2@redhat.com>
+ <CAPcyv4jvmYRbX9i+1_LvHoTDGABadHbYH3NVkqczKsQ4fsf74g@mail.gmail.com>
+ <20200120074816.GG18451@dhcp22.suse.cz>
+ <a5f0bd8d-de5e-9f27-5c94-7746a3d20a95@redhat.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a5f0bd8d-de5e-9f27-5c94-7746a3d20a95@redhat.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,49 +82,86 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Chen Zhou <chenzhou10@huawei.com>, linux-kernel@vger.kernel.org,
- nivedita@alum.mit.edu, paulus@samba.org, gregkh@linuxfoundation.org,
- tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org, allison@lohutok.net
+Cc: Nathan Lynch <nathanl@linux.ibm.com>,
+ Stephen Rothwell <sfr@canb.auug.org.au>, Thomas Gleixner <tglx@linutronix.de>,
+ Anshuman Khandual <anshuman.khandual@arm.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Linux MM <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Leonardo Bras <leonardo@linux.ibm.com>,
+ Dan Williams <dan.j.williams@intel.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Allison Randal <allison@lohutok.net>, lantianyu1986@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2020-01-21 at 01:47 -0600, Segher Boessenkool wrote:
-> On Mon, Jan 20, 2020 at 05:52:15PM -0800, Joe Perches wrote:
-> > On Tue, 2020-01-21 at 09:31 +0800, Chen Zhou wrote:
-> > > Fixes coccicheck warning:
-> > > ./arch/powerpc/platforms/maple/setup.c:232:15-16:
-> > > 	WARNING comparing pointer to 0
+On Mon 20-01-20 10:14:44, David Hildenbrand wrote:
+> On 20.01.20 08:48, Michal Hocko wrote:
+> > On Fri 17-01-20 08:57:51, Dan Williams wrote:
+> > [...]
+> >> Unless the user is willing to hold the device_hotplug_lock over the
+> >> evaluation then the result is unreliable.
 > > 
-> > Does anyone have or use these powerpc maple boards anymore?
-> > 
-> > Maybe the whole codebase should just be deleted instead.
+> > Do we want to hold the device_hotplug_lock from this user readable file
+> > in the first place? My book says that this just waits to become a
+> > problem.
 > 
-> This is used for *all* non-Apple 970 systems (not running virtualized),
-> not just actual Maple.
+> It was the "big hammer" solution for this RFC.
+> 
+> I think we could do with a try_lock() on the device_lock() paired with a
+> device->removed flag. The latter is helpful for properly catching zombie
+> devices on the onlining/offlining path either way (and on my todo list).
 
-OK, then likely this Kconfig description should be updated
-(and the http://www.970eval.com link is no longer about powerpc)
+try_lock would be more considerate. It would at least make any potential
+hammering a bit harder.
 
-$ cat arch/powerpc/platforms/maple/Kconfig
-# SPDX-License-Identifier: GPL-2.0
-config PPC_MAPLE
-	depends on PPC64 && PPC_BOOK3S && CPU_BIG_ENDIAN
-	bool "Maple 970FX Evaluation Board"
-	select FORCE_PCI
-	select MPIC
-	select U3_DART
-	select MPIC_U3_HT_IRQS
-	select GENERIC_TBSYNC
-	select PPC_UDBG_16550
-	select PPC_970_NAP
-	select PPC_NATIVE
-	select PPC_RTAS
-	select MMIO_NVRAM
-	select ATA_NONSTANDARD if ATA
-	help
-	  This option enables support for the Maple 970FX Evaluation Board.
-	  For more information, refer to <http://www.970eval.com>
+> > Really, the interface is flawed and should have never been merged in the
+> > first place. We cannot simply remove it altogether I am afraid so let's
+> > at least remove the bogus code and pretend that the world is a better
+> > place where everything is removable except the reality sucks...
+> 
+> As I expressed already, the interface works as designed/documented and
+> has been used like that for years.
 
+It seems we do differ in the usefulness though. Using a crappy interface
+for years doesn't make it less crappy. I do realize we cannot remove the
+interface but we can remove issues with the implementation and I dare to
+say that most existing users wouldn't really notice.
 
+> I tend to agree that it never should have been merged like that.
+> 
+> We have (at least) two places that are racy (with concurrent memory
+> hotplug):
+> 
+> 1. /sys/.../memoryX/removable
+> - a) make it always return yes and make the interface useless
+> - b) add proper locking and keep it running as is (e.g., so David can
+>      identify offlineable memory blocks :) ).
+> 
+> 2. /sys/.../memoryX/valid_zones
+> - a) always return "none" if the memory is online
+> - b) add proper locking and keep it running as is
+> - c) cache the result ("zone") when a block is onlined (e.g., in
+> mem->zone. If it is NULL, either mixed zones or unknown)
+> 
+> At least 2. already scream for a proper device_lock() locking as the
+> mem->state is not stable across the function call.
+> 
+> 1a and 2a are the easiest solutions but remove all ways to identify if a
+> memory block could theoretically be offlined - without trying
+> (especially, also to identify the MOVABLE zone).
+> 
+> I tend to prefer 1b) and 2c), paired with proper device_lock() locking.
+> We don't affect existing use cases but are able to simplify the code +
+> fix the races.
+> 
+> What's your opinion? Any alternatives?
 
+1a) and 2c) if you ask me.
+-- 
+Michal Hocko
+SUSE Labs
