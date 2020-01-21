@@ -6,87 +6,88 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89EB0C2D0CE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 10:21:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 48592C2D0CE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 10:24:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 43DE72253D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 10:21:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 43DE72253D
+	by mail.kernel.org (Postfix) with ESMTPS id 03A872253D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 10:24:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 03A872253D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4824MY38M9zDqSq
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 21:21:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4824QX6c9czDqW8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 21:24:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=anju@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4824Gt6yG7zDqLd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2020 21:17:42 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4824H10ZFyzDqKD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2020 21:17:48 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 00LAHYfd066844
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2020 05:17:41 -0500
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2xmgdktk0r-1
+ 00LAHZPr124480
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2020 05:17:46 -0500
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2xmgbq3p1k-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2020 05:17:40 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2020 05:17:45 -0500
 Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Tue, 21 Jan 2020 10:17:38 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Tue, 21 Jan 2020 10:17:44 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 21 Jan 2020 10:17:36 -0000
+ Tue, 21 Jan 2020 10:17:41 -0000
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com
  (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 00LAHZ6046989484
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 00LAHefl37224614
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 21 Jan 2020 10:17:35 GMT
+ Tue, 21 Jan 2020 10:17:40 GMT
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4D7D6A405F;
- Tue, 21 Jan 2020 10:17:35 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 8DD9EA4067;
+ Tue, 21 Jan 2020 10:17:40 +0000 (GMT)
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id CF71FA405C;
- Tue, 21 Jan 2020 10:17:33 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 4B16EA4064;
+ Tue, 21 Jan 2020 10:17:39 +0000 (GMT)
 Received: from localhost.localdomain.com (unknown [9.199.62.176])
  by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 21 Jan 2020 10:17:33 +0000 (GMT)
+ Tue, 21 Jan 2020 10:17:39 +0000 (GMT)
 From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au
-Subject: [PATCH v2 1/5] powerpc/powernv: Re-enable imc trace-mode in kernel
-Date: Tue, 21 Jan 2020 15:47:24 +0530
+Subject: [PATCH v2 4/5] selftest/powerpc/pmc: Support to include interface
+ test for Memory Counter PMUs
+Date: Tue, 21 Jan 2020 15:47:27 +0530
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20200121101728.14858-1-anju@linux.vnet.ibm.com>
 References: <20200121101728.14858-1-anju@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 20012110-0028-0000-0000-000003D30B73
+x-cbid: 20012110-0012-0000-0000-0000037F508F
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20012110-0029-0000-0000-000024973FA1
-Message-Id: <20200121101728.14858-2-anju@linux.vnet.ibm.com>
+x-cbparentid: 20012110-0013-0000-0000-000021BB901B
+Message-Id: <20200121101728.14858-5-anju@linux.vnet.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
  definitions=2020-01-21_02:2020-01-21,
  2020-01-21 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 clxscore=1015
- bulkscore=0 suspectscore=1 mlxlogscore=930 lowpriorityscore=0 spamscore=0
- adultscore=0 malwarescore=0 impostorscore=0 phishscore=0
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-1910280000 definitions=main-2001210088
+ suspectscore=1 phishscore=0
+ mlxlogscore=999 spamscore=0 malwarescore=0 lowpriorityscore=0 adultscore=0
+ mlxscore=0 bulkscore=0 impostorscore=0 clxscore=1015 priorityscore=1501
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-1910280000
+ definitions=main-2001210088
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,42 +105,259 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-commit <249fad734a25> ""powerpc/perf: Disable trace_imc pmu"
-disables IMC(In-Memory Collection) trace-mode in kernel, since frequent
-mode switching between accumulation mode and trace mode via the spr LDBAR
-in the hardware can trigger a checkstop(system crash).
+From: Madhavan Srinivasan <maddy@linux.ibm.com>
 
-Patch to re-enable imc-trace mode in kernel.
+Patch to add support to include interface tests for
+memory counter PMUs as part of selftest.
+These PMUs are primarily used to understand socket/chip/core
+resourage usage. In PowerNV envirnoment, the perf interface
+registered to access these counters are called "In Memory Collection"
+(IMC) and in PowerVM, the perf interface registered to access
+these counters are called "hv_24x7".
 
-The following patch in this series will address the mode switching issue
-by implementing a global lock, and will restrict the usage of
-accumulation and trace-mode at a time.
+New folder "mem_counters" added under selftest/powerpc/pmu.
+This will include interface tests for both "imc" and "hv_24x7"
+pmus. Patch adds base/common functioned needed.
+To make blame easier, a place-holder test function added to
+this patch. Subsequent patch will fill in the actual test
+content.
 
-Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
 ---
- arch/powerpc/platforms/powernv/opal-imc.c | 9 +--------
- 1 file changed, 1 insertion(+), 8 deletions(-)
+ tools/testing/selftests/powerpc/pmu/Makefile  |  7 +-
+ .../powerpc/pmu/mem_counters/Makefile         | 21 ++++
+ .../pmu/mem_counters/imc_global_lock_test.c   | 21 ++++
+ .../powerpc/pmu/mem_counters/mem_counters.c   | 99 +++++++++++++++++++
+ .../powerpc/pmu/mem_counters/mem_counters.h   | 36 +++++++
+ 5 files changed, 182 insertions(+), 2 deletions(-)
+ create mode 100644 tools/testing/selftests/powerpc/pmu/mem_counters/Makefile
+ create mode 100644 tools/testing/selftests/powerpc/pmu/mem_counters/imc_global_lock_test.c
+ create mode 100644 tools/testing/selftests/powerpc/pmu/mem_counters/mem_counters.c
+ create mode 100644 tools/testing/selftests/powerpc/pmu/mem_counters/mem_counters.h
 
-diff --git a/arch/powerpc/platforms/powernv/opal-imc.c b/arch/powerpc/platforms/powernv/opal-imc.c
-index 000b350d4060..3b4518f4b643 100644
---- a/arch/powerpc/platforms/powernv/opal-imc.c
-+++ b/arch/powerpc/platforms/powernv/opal-imc.c
-@@ -278,14 +278,7 @@ static int opal_imc_counters_probe(struct platform_device *pdev)
- 			domain = IMC_DOMAIN_THREAD;
- 			break;
- 		case IMC_TYPE_TRACE:
--			/*
--			 * FIXME. Using trace_imc events to monitor application
--			 * or KVM thread performance can cause a checkstop
--			 * (system crash).
--			 * Disable it for now.
--			 */
--			pr_info_once("IMC: disabling trace_imc PMU\n");
--			domain = -1;
-+			domain = IMC_DOMAIN_TRACE;
- 			break;
- 		default:
- 			pr_warn("IMC Unknown Device type \n");
+diff --git a/tools/testing/selftests/powerpc/pmu/Makefile b/tools/testing/selftests/powerpc/pmu/Makefile
+index 19046db995fe..e352eceac0a9 100644
+--- a/tools/testing/selftests/powerpc/pmu/Makefile
++++ b/tools/testing/selftests/powerpc/pmu/Makefile
+@@ -8,7 +8,7 @@ EXTRA_SOURCES := ../harness.c event.c lib.c ../utils.c
+ top_srcdir = ../../../../..
+ include ../../lib.mk
+ 
+-all: $(TEST_GEN_PROGS) ebb
++all: $(TEST_GEN_PROGS) ebb mem_counters
+ 
+ $(TEST_GEN_PROGS): $(EXTRA_SOURCES)
+ 
+@@ -43,4 +43,7 @@ clean:
+ ebb:
+ 	TARGET=$@; BUILD_TARGET=$$OUTPUT/$$TARGET; mkdir -p $$BUILD_TARGET; $(MAKE) OUTPUT=$$BUILD_TARGET -k -C $$TARGET all
+ 
+-.PHONY: all run_tests clean ebb
++mem_counters:
++	TARGET=$@; BUILD_TARGET=$$OUTPUT/$$TARGET; mkdir -p $$BUILD_TARGET; $(MAKE) OUTPUT=$$BUILD_TARGET -k -C $$TARGET all
++
++.PHONY: all run_tests clean ebb mem_counters
+diff --git a/tools/testing/selftests/powerpc/pmu/mem_counters/Makefile b/tools/testing/selftests/powerpc/pmu/mem_counters/Makefile
+new file mode 100644
+index 000000000000..f39ebe30ab70
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/pmu/mem_counters/Makefile
+@@ -0,0 +1,21 @@
++# SPDX-License-Identifier: GPL-2.0
++include ../../../../../../scripts/Kbuild.include
++
++noarg:
++	$(MAKE) -C ../../
++
++CFLAGS += -m64
++
++# Toolchains may build PIE by default which breaks the assembly
++no-pie-option := $(call try-run, echo 'int main() { return 0; }' | \
++        $(CC) -Werror $(KBUILD_CPPFLAGS) $(CC_OPTION_CFLAGS) -no-pie -x c - -o "$$TMP", -no-pie)
++
++LDFLAGS += $(no-pie-option)
++
++TEST_GEN_PROGS := imc_global_lock_test
++
++top_srcdir = ../../../../../..
++include ../../../lib.mk
++
++$(TEST_GEN_PROGS): ../../harness.c ../../utils.c ../event.c ../lib.c ./mem_counters.c \
++			imc_global_lock_test.c
+diff --git a/tools/testing/selftests/powerpc/pmu/mem_counters/imc_global_lock_test.c b/tools/testing/selftests/powerpc/pmu/mem_counters/imc_global_lock_test.c
+new file mode 100644
+index 000000000000..ea687ffc1990
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/pmu/mem_counters/imc_global_lock_test.c
+@@ -0,0 +1,21 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright 2020, Madhavan Srinivasan, IBM Corp.
++ */
++
++#include "mem_counters.h"
++
++static int testcase(void)
++{
++	return 0;
++}
++
++static int imc_global_lock_test(void)
++{
++	return eat_cpu(testcase);
++}
++
++int main(void)
++{
++	return test_harness(imc_global_lock_test, "imc_global_lock_test");
++}
+diff --git a/tools/testing/selftests/powerpc/pmu/mem_counters/mem_counters.c b/tools/testing/selftests/powerpc/pmu/mem_counters/mem_counters.c
+new file mode 100644
+index 000000000000..b0ee1319f018
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/pmu/mem_counters/mem_counters.c
+@@ -0,0 +1,99 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright 2020, Madhavan Srinivasan, IBM Corp.
++ */
++
++#include "mem_counters.h"
++
++/*
++ * mem_counters.c will contain common/basic functions
++ * to support testcases for both In Memory Collection (IMC)
++ * and hv_24x7 counters.
++ */
++
++
++/*
++ * Since device type enum starts with 1,
++ * have the first entry in the array as a placeholder.
++ */
++const char mem_counters_dev_path[][30] = {
++	"",
++	"/sys/devices/thread_imc",
++	"/sys/devices/trace_imc",
++	"/sys/devices/core_imc",
++	"/sys/devices/hv_24x7",
++	"",
++};
++
++const char mem_counters_dev_type_path[][35] = {
++	"",
++	"/sys/devices/thread_imc/type",
++	"/sys/devices/trace_imc/type",
++	"/sys/devices/core_imc/type",
++	"/sys/devices/hv_24x7/type",
++	"",
++};
++
++
++static bool is_mem_counters_dev_registered(int dtype)
++{
++	if (!access(mem_counters_dev_path[dtype], F_OK))
++		return true;
++
++	return false;
++}
++
++bool is_mem_counters_device_enabled(int dtype)
++{
++	switch (dtype) {
++	case THREAD:
++		if (is_mem_counters_dev_registered(THREAD))
++			return true;
++	case TRACE:
++		if (is_mem_counters_dev_registered(TRACE))
++			return true;
++		break;
++	case CORE:
++		if (is_mem_counters_dev_registered(CORE))
++			return true;
++	case HV_24X7:
++		if (is_mem_counters_dev_registered(HV_24X7))
++			return true;
++	};
++
++	return false;
++}
++
++int get_mem_counters_pmu_type_val(int dtype)
++{
++	FILE *fp = NULL;
++	char buf[10];
++	int val;
++
++	fp = fopen(mem_counters_dev_type_path[dtype], "r");
++	if (!fp) {
++		perror("Failed to open\n");
++		return -1;
++	}
++
++	if (!fgets(buf, 10, fp)) {
++		perror("Failed to read\n");
++		return -1;
++	}
++
++	fclose(fp);
++	val = atoi(buf);
++	return val;
++}
++
++int setup_mem_counters_event(int dtype, struct event *e, u64 config, char *name)
++{
++	int val = get_mem_counters_pmu_type_val(dtype);
++
++	if (val > 0) {
++		event_init_opts(e, config, val, name);
++		return 0;
++	}
++
++	return -1;
++}
+diff --git a/tools/testing/selftests/powerpc/pmu/mem_counters/mem_counters.h b/tools/testing/selftests/powerpc/pmu/mem_counters/mem_counters.h
+new file mode 100644
+index 000000000000..16456e5fc9de
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/pmu/mem_counters/mem_counters.h
+@@ -0,0 +1,36 @@
++/* SPDX-License-Identifier: GPL-2.0-only
++ *
++ * Copyright 2020, Madhavan Srinivasan, IBM Corp.
++ */
++
++#ifndef _SELFTESTS_POWERPC_PMU_IMC_IMC_H
++#define _SELFTESTS_POWERPC_PMU_IMC_IMC_H
++
++#define _GNU_SOURCE
++#include <unistd.h>
++#include <sys/syscall.h>
++#include <string.h>
++#include <stdio.h>
++#include <stdbool.h>
++#include <error.h>
++#include <errno.h>
++#include <stdlib.h>
++#include <sys/ioctl.h>
++#include <sys/prctl.h>
++
++#include "../event.h"
++#include "../lib.h"
++
++
++enum MEM_COUNTERS_DEV_TYPE{
++	THREAD = 0x1,
++	TRACE,
++	CORE,
++	HV_24X7,
++};
++
++extern bool is_mem_counters_device_enabled(int dtype);
++extern int get_mem_counters_pmu_type_val(int dtype);
++extern int setup_mem_counters_event(int dtype, struct event *e, u64 config, char *name);
++
++#endif /* _SELFTESTS_POWERPC_PMU_IMC_IMC_H */
 -- 
 2.20.1
 
