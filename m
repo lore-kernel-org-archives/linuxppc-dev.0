@@ -2,86 +2,84 @@ Return-Path: <SRS0=KLET=3K=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A5CCC2D0DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 07:59:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E2CC5C33CAA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 08:23:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D0E0D22522
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 07:59:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5C2232253D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 08:23:11 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="MViYrRpM"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D0E0D22522
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="om3HH/h1"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5C2232253D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4821Ch2RSqzDqQ0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 18:59:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::541;
- helo=mail-pg1-x541.google.com; envelope-from=npiggin@gmail.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4821kh531XzDqWK
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 19:23:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=MViYrRpM; dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
+ header.s=mail header.b=om3HH/h1; dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48219k4ynTzDqMK;
- Tue, 21 Jan 2020 18:57:59 +1100 (AEDT)
-Received: by mail-pg1-x541.google.com with SMTP id 4so1040155pgd.6;
- Mon, 20 Jan 2020 23:57:59 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :user-agent:message-id:content-transfer-encoding;
- bh=H6tfjBbMRiA+FOFmJQ8Ny9edO+CaGsTBvI9qCjJ1dU4=;
- b=MViYrRpMJkw044igVelct/A1ct+ODOsKF730u9w/LZAjWjM6nM089vWhUwpafzl5fT
- r+JLwZNajsWo+o91PZ1DM7gH4UKOsMDStTkzNqqKLlWD0KJGj9przvpzOC7mQFngLXFz
- 817YxcMNlih0j8YX+x2ZkHCVWr8WAmzkZO5o/pKYGDbphw2R1vlKbPethKVOInD3r6uu
- 2AgjgVZxeNHyRGcqZs248LsP4hGwJV0fhaeIM/8Skz0ACANr/bn2TUOzwsmRgF7zF1o7
- 5adUjbm0emPLjHVLQki1BYKCHQ3VNT5LDWUI5zHbKQDfx2h+awkJhIMqCcEBIWQuSSwY
- +vNg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:user-agent:message-id:content-transfer-encoding;
- bh=H6tfjBbMRiA+FOFmJQ8Ny9edO+CaGsTBvI9qCjJ1dU4=;
- b=UsDov2NuDEdpFoUK0VCbZgapVXoZfPemFjYEmXIpSpa2tmnwgJ5v+jdOe/m+HZndEv
- P+jKr+vcOJO9Umh47wsvxGAHn2AV18+j0fmRkqxdSBrwYWMfzOONei58+19tfnkJTa8A
- h0O4XkDHdCwLFCLTYCYdAe4Uaqqa7NyNMLYJgoFfj8UaW0LN70tRMzGIECJZEBftHwzJ
- ONydZc+J67LWz+WfHZG4wTMLxyi++hAHoZgXJdOwpkG2HTZ9ljwM0H1WXPZGA2N6dbVU
- wJZ0aVfrX2x6ctpSTdQXxoeOH4zdj7o0l5UUekgONf/3oBmGfuk5au72JN4BU85+Ry8g
- 7UJg==
-X-Gm-Message-State: APjAAAW0maL0YMhqrcwvZTOx8aXFqdoWra2agwJoOmZdoOKu2e4COddf
- gHunGT2+UVebr5TTLAfvndE=
-X-Google-Smtp-Source: APXvYqxPDmoxdUxdGGW3fzI6k6bj7+91NB13hNxe1Ou+adHFYVFWCWNW2S/M/xT035fbWqEi6djU1g==
-X-Received: by 2002:a63:1f16:: with SMTP id f22mr3957562pgf.2.1579593475987;
- Mon, 20 Jan 2020 23:57:55 -0800 (PST)
-Received: from localhost (193-116-65-251.tpgi.com.au. [193.116.65.251])
- by smtp.gmail.com with ESMTPSA id h6sm24913090pfo.175.2020.01.20.23.57.54
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 20 Jan 2020 23:57:55 -0800 (PST)
-Date: Tue, 21 Jan 2020 17:54:53 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [RFC PATCH] skiboot machine check handler
-To: mahesh@linux.vnet.ibm.com
-References: <20191211100118.544-1-npiggin@gmail.com>
- <20200116070304.hks6zfsqholfolal@in.ibm.com>
-In-Reply-To: <20200116070304.hks6zfsqholfolal@in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4821hl6YPDzDqC7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2020 19:21:25 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4821hb2t7rz9txkq;
+ Tue, 21 Jan 2020 09:21:19 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=om3HH/h1; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id 51BydYp8UKfd; Tue, 21 Jan 2020 09:21:19 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4821hb1p5vz9v0yr;
+ Tue, 21 Jan 2020 09:21:19 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1579594879; bh=oGUF+BNPGftCGW3dISgEIF2yqNvo6BJ3zmTHJ4nPG3s=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=om3HH/h1IIoLi1XQBnSo1OU3BjcuIrUa1xNZFjufyFWs1+fdxZUPsFEUiVXhYzobi
+ KhErHAyC//pTb+n4I82rNwPuGjsHUugx1eAdR2HaaJZPmsp4K/8zQSv8jF4j5ncZzp
+ 6vU1RBtDhUr4z+m33RJ3n6MSuCQiG+yanG5JbDPo=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 2C2A48B7DB;
+ Tue, 21 Jan 2020 09:21:20 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id LAV7Ig-UZZ_C; Tue, 21 Jan 2020 09:21:20 +0100 (CET)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 729648B7D9;
+ Tue, 21 Jan 2020 09:21:18 +0100 (CET)
+Subject: Re: [PATCH] powerpc/sysdev: fix compile errors
+To: =?UTF-8?B?546L5paH6JmO?= <wenhu.wang@vivo.com>,
+ Andrew Donnellan <ajd@linux.ibm.com>
+References: <ANcAOwAACK7otVnG7VF8E4rQ.3.1579589949706.Hmail.wenhu.wang@vivo.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <a0cbb0cd-263b-0a14-04a8-bb5e40b3181e@c-s.fr>
+Date: Tue, 21 Jan 2020 09:21:18 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.1
 MIME-Version: 1.0
-User-Agent: astroid/0.15.0 (https://github.com/astroidmail/astroid)
-Message-Id: <1579593134.eyxah2cuhp.astroid@bobo.none>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <ANcAOwAACK7otVnG7VF8E4rQ.3.1579589949706.Hmail.wenhu.wang@vivo.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,50 +91,84 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: skiboot@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Cc: Kate Stewart <kstewart@linuxfoundation.org>, trivial@kernel.org,
+ wangwenhu <wenhu.pku@gmail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ Richard Fontana <rfontana@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ lonehugo@hotmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Mahesh J Salgaonkar's on January 16, 2020 5:03 pm:
-> On 2019-12-11 20:01:18 Wed, Nicholas Piggin wrote:
->> Provide facilities to decode machine checks into human readable
->> strings, with only sufficient information required to deal with
->> them sanely.
->>=20
->> The old machine check stuff was over engineered. The philosophy
->> here is that OPAL should correct anything it possibly can, what
->> it can't handle but the OS might be able to do something with
->> (e.g., uncorrected memory error or SLB multi-hit), it passes back
->> to Linux. Anything else, the OS doesn't care. It doesn't want a
->> huge struct of severities and levels and originators etc that it
->> can't do anything with -- just provide human readable strings
->> for what happened and what was done with it.
->>=20
->> A Linux driver for this will be able to cope with new processors.
->>=20
->> This also uses the same facility to decode machine checks in OPAL
->> boot.
->>=20
->> The code is a bit in flux because it's sitting on top of a few
->> other RFC patches and not quite complete, just wanted opinions
->> about it.
->=20
-> opal_handle_mce() may have to be treated as special opal call. For MCE
-> that occurs in OPAL context, Linux making opal call will clobber
-> original opal call stack which hit MCE. Same is true with nested MCE in
-> OPAL. Should it just continue using same r1 to avoid clobbering or have
-> a separate stack for mce opal call ?
 
-Ah, it wasn't clear in my message, sorry: this would only be made
-available to kernels which use the new calling convention where the
-kernel provides its own stack for OPAL to use.
 
-That may be controversial itself, that's another RFC but if we went
-ahead with that approach, then handling re-entrant interrupts like
-this becomes easy because Linux does all the hard work with NMI/MCE
-stacks etc.
+Le 21/01/2020 à 07:59, 王文虎 a écrit :
+> 发件人：Andrew Donnellan <ajd@linux.ibm.com>
+> 发送日期：2020-01-21 14:13:07
+> 收件人：wangwenhu <wenhu.pku@gmail.com>,Benjamin Herrenschmidt <benh@kernel.crashing.org>,Paul Mackerras <paulus@samba.org>,Michael Ellerman <mpe@ellerman.id.au>,Kate Stewart <kstewart@linuxfoundation.org>,Greg Kroah-Hartman <gregkh@linuxfoundation.org>,Richard Fontana <rfontana@redhat.com>,Thomas Gleixner <tglx@linutronix.de>,linuxppc-dev@lists.ozlabs.org,linux-kernel@vger.kernel.org
+> 抄送人：trivial@kernel.org,lonehugo@hotmail.com,wenhu.wang@vivo.com
+> 主题：Re: [PATCH] powerpc/sysdev: fix compile errors>On 21/1/20 4:31 pm, wangwenhu wrote:
+>>> From: wangwenhu <wenhu.wang@vivo.com>
+>>>
+>>> Include arch/powerpc/include/asm/io.h into fsl_85xx_cache_sram.c to
+>>> fix the implicit declaration compile errors when building Cache-Sram.
+>>>
+>>> arch/powerpc/sysdev/fsl_85xx_cache_sram.c: In function ‘instantiate_cache_sram’:
+>>> arch/powerpc/sysdev/fsl_85xx_cache_sram.c:97:26: error: implicit declaration of function ‘ioremap_coherent’; did you mean ‘bitmap_complement’? [-Werror=implicit-function-declaration]
+>>>     cache_sram->base_virt = ioremap_coherent(cache_sram->base_phys,
+>>>                             ^~~~~~~~~~~~~~~~
+>>>                             bitmap_complement
+>>> arch/powerpc/sysdev/fsl_85xx_cache_sram.c:97:24: error: assignment makes pointer from integer without a cast [-Werror=int-conversion]
+>>>     cache_sram->base_virt = ioremap_coherent(cache_sram->base_phys,
+>>>                           ^
+>>> arch/powerpc/sysdev/fsl_85xx_cache_sram.c:123:2: error: implicit declaration of function ‘iounmap’; did you mean ‘roundup’? [-Werror=implicit-function-declaration]
+>>>     iounmap(cache_sram->base_virt);
+>>>     ^~~~~~~
+>>>     roundup
+>>> cc1: all warnings being treated as errors
+>>>
+>>> Signed-off-by: wangwenhu <wenhu.wang@vivo.com>
+>>
+>> How long has this code been broken for?
+> 
+> It's been broken almost 15 months since the commit below:
+> "commit aa91796ec46339f2ed53da311bd3ea77a3e4dfe1
 
-Thanks,
-Nick
-=
+Can you then add a Fixes: tag ?
+
+Thanks
+Christophe
+
+> Author: Christophe Leroy <christophe.leroy@c-s.fr>
+> Date:   Tue Oct 9 13:51:41 2018 +0000
+> 
+>      powerpc: don't use ioremap_prot() nor __ioremap() unless really needed."
+> 
+> And we are working on it now for further development.
+> 
+>>
+>>> ---
+>>>    arch/powerpc/sysdev/fsl_85xx_cache_sram.c | 1 +
+>>>    1 file changed, 1 insertion(+)
+>>>
+>>> diff --git a/arch/powerpc/sysdev/fsl_85xx_cache_sram.c b/arch/powerpc/sysdev/fsl_85xx_cache_sram.c
+>>> index f6c665dac725..29b6868eff7d 100644
+>>> --- a/arch/powerpc/sysdev/fsl_85xx_cache_sram.c
+>>> +++ b/arch/powerpc/sysdev/fsl_85xx_cache_sram.c
+>>> @@ -17,6 +17,7 @@
+>>>    #include <linux/of_platform.h>
+>>>    #include <asm/pgtable.h>
+>>>    #include <asm/fsl_85xx_cache_sram.h>
+>>> +#include <asm/io.h>
+>>>
+>>>    #include "fsl_85xx_cache_ctlr.h"
+>>>
+>>
+>> -- 
+>> Andrew Donnellan              OzLabs, ADL Canberra
+>> ajd@linux.ibm.com             IBM Australia Limited
+>>
+> 
+> Wenhu
+> 
