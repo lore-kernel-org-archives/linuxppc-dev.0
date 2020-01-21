@@ -7,53 +7,52 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2C8CC33CAA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 04:34:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EAA59C33CAF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 04:36:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7121622314
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 04:34:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9B47824656
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 04:36:32 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="i3iq18bo"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7121622314
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="ni5i3HAn"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9B47824656
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 481wgM2n7FzDqM2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 15:34:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 481wjB1gq7zDqLB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 15:36:30 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 481wYq67WRzDqWw
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2020 15:30:07 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 481wYr4rDfzDqWv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2020 15:30:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=i3iq18bo; 
+ header.a=rsa-sha256 header.s=201909 header.b=ni5i3HAn; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 481wYq4f57z9sP6; Tue, 21 Jan 2020 15:30:07 +1100 (AEDT)
+ id 481wYr1p0sz9sRp; Tue, 21 Jan 2020 15:30:08 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 481wYq3VmCz9sRl; Tue, 21 Jan 2020 15:30:07 +1100 (AEDT)
+ id 481wYq6JsGz9sNF; Tue, 21 Jan 2020 15:30:07 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
  s=201909; t=1579581007;
- bh=NN3uQ0Wvk8ioLvU6n7tCJP575Z7UL6+fpTfJ8i14UUA=;
+ bh=mua+dEkm8zteum5SajFYO6zBLmixve00+B/1gz+lObU=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=i3iq18bo5TF70wlD3735WPtTAjJjV5bCEeIwS6tpv9FacqtUvfldR6gNStfjQ/NmY
- hyKMAojWUtZXKUsnN/ezgFwCUJtLBsoYy1RLIaJo44KE4NQCsiFrtMof32jgVBFwGJ
- afEyT8YsiMkc1Q1oJc6gLr5nIIr280LAjHSN0f5GFqZ0jFQqSnVj1IEP44Ikr01gQq
- BGd7lS7LkoTXI7cctBmK/JVGY77SmKXOaauCl4YcfqLAX1HxbA9wgw2Lnnmc9FGOtH
- ZkeecqSyI2Q60dtj9MNADlA4BPyvvr82i0gEnJA+lscMzRWM5aaesTR8NNAc6quQbW
- 1JCF0XKVkVAQg==
+ b=ni5i3HAnNFgvh9jV52a4uMQJiE0fs30DCTrhbbEgL75T+sWT19wopJvwD/ckNcVkC
+ VBTKTMY2odOsiwE/crK2bjwViaND9VlQOcx9lpZ5NMN2VVOsAAOIM801Ji7ms/kO39
+ pz6tMuVWglaZKOVpl0UjNIu7ZtlMNskJLeRzIp+qIBVtQNJXVPXFKfe4fSQfw22sOY
+ a++9avrgjWF04Xe/o46JKGHqpYzle9hwZ5dSy+FSW635/qVeeOWEstlNhAx0NtOwk6
+ 57vDUEMxrJCjznr0iRMXsKNSHpZ7yoy21yGoLqWNtWqHUYOzEe27B5CfgYjwZ5XGGG
+ FRsFN6iCju44Q==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 03/10] powerpc/configs: Drop NET_VENDOR_HP which moved to
- staging
-Date: Tue, 21 Jan 2020 15:29:53 +1100
-Message-Id: <20200121043000.16212-3-mpe@ellerman.id.au>
+Subject: [PATCH v2 04/10] powerpc/configs/skiroot: Drop HID_LOGITECH
+Date: Tue, 21 Jan 2020 15:29:54 +1100
+Message-Id: <20200121043000.16212-4-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.21.1
 In-Reply-To: <20200121043000.16212-1-mpe@ellerman.id.au>
 References: <20200121043000.16212-1-mpe@ellerman.id.au>
@@ -75,42 +74,33 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The HP network driver moved to staging in commit 52340b82cf1a ("hp100:
-Move 100BaseVG AnyLAN driver to staging") meaning we don't need to
-disable it any more in our defconfigs.
+Commit bdd08fff4915 ("HID: logitech: Add depends on LEDS_CLASS to
+Logitech Kconfig entry") made HID_LOGITECH depend on LEDS_CLASS which
+we do not enable, meaning we are not actually enabling those drivers
+any more.
+
+The Kconfig help text suggests USB HID compliant Logictech devices
+will continue to work without HID_LOGITECH, so just drop it.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/configs/44x/akebono_defconfig | 1 -
- arch/powerpc/configs/skiroot_defconfig     | 1 -
- 2 files changed, 2 deletions(-)
+ arch/powerpc/configs/skiroot_defconfig | 1 -
+ 1 file changed, 1 deletion(-)
 
 v2: No change.
 
-diff --git a/arch/powerpc/configs/44x/akebono_defconfig b/arch/powerpc/configs/44x/akebono_defconfig
-index f0c8a07cc274..7705a5c3f4ea 100644
---- a/arch/powerpc/configs/44x/akebono_defconfig
-+++ b/arch/powerpc/configs/44x/akebono_defconfig
-@@ -59,7 +59,6 @@ CONFIG_BLK_DEV_SD=y
- # CONFIG_NET_VENDOR_DLINK is not set
- # CONFIG_NET_VENDOR_EMULEX is not set
- # CONFIG_NET_VENDOR_EXAR is not set
--# CONFIG_NET_VENDOR_HP is not set
- CONFIG_IBM_EMAC=y
- # CONFIG_NET_VENDOR_MARVELL is not set
- # CONFIG_NET_VENDOR_MELLANOX is not set
 diff --git a/arch/powerpc/configs/skiroot_defconfig b/arch/powerpc/configs/skiroot_defconfig
-index eaaffe9ae8b9..3eee39c50941 100644
+index 3eee39c50941..74cffb854c0f 100644
 --- a/arch/powerpc/configs/skiroot_defconfig
 +++ b/arch/powerpc/configs/skiroot_defconfig
-@@ -146,7 +146,6 @@ CONFIG_CHELSIO_T1=m
- # CONFIG_NET_VENDOR_DLINK is not set
- CONFIG_BE2NET=m
- # CONFIG_NET_VENDOR_EZCHIP is not set
--# CONFIG_NET_VENDOR_HP is not set
- # CONFIG_NET_VENDOR_HUAWEI is not set
- CONFIG_E1000=m
- CONFIG_E1000E=m
+@@ -235,7 +235,6 @@ CONFIG_HID_CYPRESS=y
+ CONFIG_HID_EZKEY=y
+ CONFIG_HID_ITE=y
+ CONFIG_HID_KENSINGTON=y
+-CONFIG_HID_LOGITECH=y
+ CONFIG_HID_MICROSOFT=y
+ CONFIG_HID_MONTEREY=y
+ CONFIG_USB_HIDDEV=y
 -- 
 2.21.1
 
