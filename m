@@ -2,61 +2,90 @@ Return-Path: <SRS0=KLET=3K=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-9.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0DB7DC33CAA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 04:46:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E48BEC33CAA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 05:34:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B26EB217F4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 04:46:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9717821734
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 05:34:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="pBRY+qFm"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B26EB217F4
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="iVnEndIv"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9717821734
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 481wwV4zQxzDqMd
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 15:46:18 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 481wYy14PszDqXS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2020 15:30:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 481y0Z1xPrzDqVk
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 16:34:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1042;
+ helo=mail-pj1-x1042.google.com; envelope-from=wenhu.pku@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=pBRY+qFm; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix)
- id 481wYv0gVKz9sSV; Tue, 21 Jan 2020 15:30:11 +1100 (AEDT)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 481wYt6LNXz9sP6; Tue, 21 Jan 2020 15:30:10 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1579581010;
- bh=GYDIQ6HPJMCD94E8gKjYzDNuG0sdrQXzLzX8H2mVRvQ=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=pBRY+qFm9mqlPs7WspwXryoSRPEtMCRMn1bXN/dxXWI4ih5oMn+D2eZguFO4Tlowr
- bzzAmtfh5MqvzHiXH+uGcSiHTRG1faMH/STVfUYX84QsjtHzgoakUYjEF9mWQl2IZd
- WqS7gEZqQ0STqFRfBabU6WRS0sQD/bv2K+4WUmSlfoX+YlCKcIlz9EmQ3LAtnOTHZ6
- TOmvYeU8eUU2sZv24bE4El5pcY3umCJQAk49Z+wAl5BxZ9jG9H2qDpPnfPUCMuT9Re
- +JVf/NBLUco7QwzmNjVkSQF816Z+7Q0NWIDGeT6P7yqFVTvERYgZOA4inGHoGrND69
- TYWADnVdgpNhw==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 10/10] powerpc/configs/skiroot: Enable CONFIG_PRINTK_CALLER
-Date: Tue, 21 Jan 2020 15:30:00 +1100
-Message-Id: <20200121043000.16212-10-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.21.1
-In-Reply-To: <20200121043000.16212-1-mpe@ellerman.id.au>
-References: <20200121043000.16212-1-mpe@ellerman.id.au>
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=iVnEndIv; dkim-atps=neutral
+Received: from mail-pj1-x1042.google.com (mail-pj1-x1042.google.com
+ [IPv6:2607:f8b0:4864:20::1042])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 481xyT2x85zDqV4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2020 16:33:05 +1100 (AEDT)
+Received: by mail-pj1-x1042.google.com with SMTP id n96so800247pjc.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jan 2020 21:33:04 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=TBmFapcCP51v12ZDGyzoq6lMJzVpI9tiiDOrivNq+Hg=;
+ b=iVnEndIvNGIyZOZ9RqjwdHY9uDVvwBw4JJKU2ax6fZjyC66osU5fz8+e3ZQYYU0NEE
+ /sXWEs4x7EMZoOBdyeh4115F08CiB9HGKEa92/u2jNiSy2gSuSsDe6ydMLLcvpNeMBgb
+ SaLnIsJJEGr1HmOxSviZU00da9gwohbe0woK8muvcOZwwHAdd2XEC8HgHYNxZZOCnO6g
+ dKINdFN6JesG5erfBKiQXSXrTHYkyTfgPoJtILG6h2ITvJQT+hUhKP27578b+kXrBnY2
+ 8EwwPwfPI/gvoue/1h8csWrXhKnDy0hd/49wXWZ6JPcjmRCyRhuA41Fj7t9X8s8+XAUU
+ /o9A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=TBmFapcCP51v12ZDGyzoq6lMJzVpI9tiiDOrivNq+Hg=;
+ b=IAFLKZhkXFD2ZW9VGqGgmE8yG+4XZyNdxBt4u9ePE3YCcVqE8Hp4DHytnNCtunz4eS
+ 9BFiO/BCBnz9F5tK7nLFCuwDbVUfa7b81amxqpxz/Jn20j6xcibjdqLQU6j6/2JPUeKh
+ YMdYrZPtBc53lwkRmLa1RgGgxuo72huBrwMbvAwmRvSPbG2Avu1sOvearuHqBcYH2JMB
+ L1fqtaphAurCivMxTgpZ7r/yNxHwws7XXHus2U2TWaA3BTGRGWpbQcr67Qxjont+m80q
+ p1rZsLkTL2g1bwrKLg4g4ooeNU3dE3178ciI9COvRgjYonTFGaX9AU7+uBLHBVuHB4IC
+ GzkQ==
+X-Gm-Message-State: APjAAAXM6FB21gNSWICnTrYkdkCKUJdMTIBN3C1U5u70slXujcfEzW/3
+ BBZPvh1lTROfZwFz7Iu7os8=
+X-Google-Smtp-Source: APXvYqwKroEhv0VaxPVuiMrNnT6axI9f0V6DunSlymxW6i94xrEU3F5J8TuYo3jxshWCQYteKZDAKQ==
+X-Received: by 2002:a17:90a:c301:: with SMTP id
+ g1mr3290728pjt.88.1579584782048; 
+ Mon, 20 Jan 2020 21:33:02 -0800 (PST)
+Received: from ubuntu.localdomain ([218.189.25.99])
+ by smtp.gmail.com with ESMTPSA id b1sm31501216pfp.44.2020.01.20.21.32.58
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 20 Jan 2020 21:33:01 -0800 (PST)
+From: wangwenhu <wenhu.pku@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Kate Stewart <kstewart@linuxfoundation.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Richard Fontana <rfontana@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>, wangwenhu <wenhu.pku@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc/sysdev: fix compile errors
+Date: Mon, 20 Jan 2020 21:31:13 -0800
+Message-Id: <20200121053114.89676-1-wenhu.pku@gmail.com>
+X-Mailer: git-send-email 2.17.1
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -69,42 +98,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: oohall@gmail.com, joel@jms.id.au, dja@axtens.net
+Cc: lonehugo@hotmail.com, trivial@kernel.org, wenhu.wang@vivo.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This adds the CPU or thread number to printk messages. This can help
-decipher concurrent oopses that have been interleaved.
+From: wangwenhu <wenhu.wang@vivo.com>
 
-Example output, of PID1 (T1) triggering a warning:
+Include arch/powerpc/include/asm/io.h into fsl_85xx_cache_sram.c to
+fix the implicit declaration compile errors when building Cache-Sram.
 
-  [    1.581678][    T1] WARNING: CPU: 0 PID: 1 at crypto/rsa-pkcs1pad.c:539 pkcs1pad_verify+0x38/0x140
-  [    1.581681][    T1] Modules linked in:
-  [    1.581693][    T1] CPU: 0 PID: 1 Comm: swapper/0 Not tainted 5.5.0-rc5-gcc-8.2.0-00121-gf84c2e595927-dirty #1515
-  [    1.581700][    T1] NIP:  c000000000207d64 LR: c000000000207d3c CTR: c000000000207d2c
-  [    1.581708][    T1] REGS: c0000000fd2e7560 TRAP: 0700   Not tainted  (5.5.0-rc5-gcc-8.2.0-00121-gf84c2e595927-dirty)
-  [    1.581712][    T1] MSR:  9000000000029033 <SF,HV,EE,ME,IR,DR,RI,LE>  CR: 44000222  XER: 00040000
+arch/powerpc/sysdev/fsl_85xx_cache_sram.c: In function ‘instantiate_cache_sram’:
+arch/powerpc/sysdev/fsl_85xx_cache_sram.c:97:26: error: implicit declaration of function ‘ioremap_coherent’; did you mean ‘bitmap_complement’? [-Werror=implicit-function-declaration]
+  cache_sram->base_virt = ioremap_coherent(cache_sram->base_phys,
+                          ^~~~~~~~~~~~~~~~
+                          bitmap_complement
+arch/powerpc/sysdev/fsl_85xx_cache_sram.c:97:24: error: assignment makes pointer from integer without a cast [-Werror=int-conversion]
+  cache_sram->base_virt = ioremap_coherent(cache_sram->base_phys,
+                        ^
+arch/powerpc/sysdev/fsl_85xx_cache_sram.c:123:2: error: implicit declaration of function ‘iounmap’; did you mean ‘roundup’? [-Werror=implicit-function-declaration]
+  iounmap(cache_sram->base_virt);
+  ^~~~~~~
+  roundup
+cc1: all warnings being treated as errors
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: wangwenhu <wenhu.wang@vivo.com>
 ---
- arch/powerpc/configs/skiroot_defconfig | 1 +
+ arch/powerpc/sysdev/fsl_85xx_cache_sram.c | 1 +
  1 file changed, 1 insertion(+)
 
-v2: New.
-
-diff --git a/arch/powerpc/configs/skiroot_defconfig b/arch/powerpc/configs/skiroot_defconfig
-index ca6f1842aa29..ae1d7137a84e 100644
---- a/arch/powerpc/configs/skiroot_defconfig
-+++ b/arch/powerpc/configs/skiroot_defconfig
-@@ -294,6 +294,7 @@ CONFIG_LIBCRC32C=y
- # CONFIG_XZ_DEC_ARMTHUMB is not set
- # CONFIG_XZ_DEC_SPARC is not set
- CONFIG_PRINTK_TIME=y
-+CONFIG_PRINTK_CALLER=y
- CONFIG_MAGIC_SYSRQ=y
- CONFIG_SLUB_DEBUG_ON=y
- CONFIG_SCHED_STACK_END_CHECK=y
+diff --git a/arch/powerpc/sysdev/fsl_85xx_cache_sram.c b/arch/powerpc/sysdev/fsl_85xx_cache_sram.c
+index f6c665dac725..29b6868eff7d 100644
+--- a/arch/powerpc/sysdev/fsl_85xx_cache_sram.c
++++ b/arch/powerpc/sysdev/fsl_85xx_cache_sram.c
+@@ -17,6 +17,7 @@
+ #include <linux/of_platform.h>
+ #include <asm/pgtable.h>
+ #include <asm/fsl_85xx_cache_sram.h>
++#include <asm/io.h>
+ 
+ #include "fsl_85xx_cache_ctlr.h"
+ 
 -- 
-2.21.1
+2.17.1
 
