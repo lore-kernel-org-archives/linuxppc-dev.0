@@ -2,58 +2,88 @@ Return-Path: <SRS0=KLET=3K=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4280AC33CAA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 05:58:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 96E1AC33CAA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 06:00:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EDCFF22314
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 05:58:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EDCFF22314
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=buserror.net
+	by mail.kernel.org (Postfix) with ESMTPS id 3E1FA24125
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 06:00:45 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="WV0dvGFU"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3E1FA24125
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 481yWd2tGczDqcn
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 16:58:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 481yZM3c1fzDqdn
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 17:00:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=buserror.net
- (client-ip=165.227.176.147; helo=baldur.buserror.net;
- envelope-from=oss@buserror.net; receiver=<UNKNOWN>)
+ spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=buserror.net
-Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
+ header.s=mail header.b=WV0dvGFU; dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 481yTh2YVwzDqd7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2020 16:56:40 +1100 (AEDT)
-Received: from [2601:449:8480:af0:12bf:48ff:fe84:c9a0]
- by baldur.buserror.net with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
- (Exim 4.89) (envelope-from <oss@buserror.net>)
- id 1itmQK-0006oP-A0; Mon, 20 Jan 2020 23:50:00 -0600
-Message-ID: <0948b2f469c5e9d9241477e7f0cba677bbcd1780.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: =?UTF-8?Q?=E7=8E=8B=E6=96=87=E8=99=8E?= <wenhu.wang@vivo.com>
-Date: Mon, 20 Jan 2020 23:49:59 -0600
-In-Reply-To: <AFAA8AA0CH7o6kMJF-XfXKq9.3.1579584019640.Hmail.wenhu.wang@vivo.com>
-References: <AFAA8AA0CH7o6kMJF-XfXKq9.3.1579584019640.Hmail.wenhu.wang@vivo.com>
-Organization: Red Hat
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.1 
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 481yXT4SjczDqc1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2020 16:59:04 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 481yXL64VTz9ty3Y;
+ Tue, 21 Jan 2020 06:58:58 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=WV0dvGFU; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id PHTZgmKWrw3Y; Tue, 21 Jan 2020 06:58:58 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 481yXL4vJKz9ty3X;
+ Tue, 21 Jan 2020 06:58:58 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1579586338; bh=S4GlmXILbwAbseJ3N4t+VG0i0jAmUowOEGM6twfSvl8=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=WV0dvGFUSU+rn7UwNLs5jFnXVUnawCjgqjTRPGXZHtb36bii2OPU2yJnCJaHZEbrm
+ 1/qdndZLfzCLb8rqntTFyMZIMklzT9Y0HpFlWiIYe98STQP7vp4NZX8FBFbzwlvEHy
+ fRSLQJSq7lBb0RBy+x4phR5Nox55vLKrUFtdaJG4=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D21118B78F;
+ Tue, 21 Jan 2020 06:58:58 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id Xg_Kupstu5q6; Tue, 21 Jan 2020 06:58:58 +0100 (CET)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 21A858B776;
+ Tue, 21 Jan 2020 06:58:54 +0100 (CET)
+Subject: Re: [PATCH] powerpc/sysdev: fix compile errors
+To: wangwenhu <wenhu.pku@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Kate Stewart <kstewart@linuxfoundation.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Richard Fontana <rfontana@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20200121053114.89676-1-wenhu.pku@gmail.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <9d32c935-a193-b339-1950-3443cb022780@c-s.fr>
+Date: Tue, 21 Jan 2020 06:58:54 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.1
+MIME-Version: 1.0
+In-Reply-To: <20200121053114.89676-1-wenhu.pku@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
 Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2601:449:8480:af0:12bf:48ff:fe84:c9a0
-X-SA-Exim-Rcpt-To: wenhu.wang@vivo.com, wenhu.pku@gmail.com,
- galak@kernel.crashing.org, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, trivial@kernel.org, harninder.rai@nxp.com
-X-SA-Exim-Mail-From: oss@buserror.net
-Subject: Re: [PATCH] powerpc/Kconfig: Make FSL_85XX_CACHE_SRAM configurable
-X-SA-Exim-Version: 4.2.1 (built Tue, 02 Aug 2016 21:08:31 +0000)
-X-SA-Exim-Scanned: Yes (on baldur.buserror.net)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,71 +95,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rai Harninder <harninder.rai@nxp.com>, trivial@kernel.org,
- linux-kernel@vger.kernel.org, wangwenhu <wenhu.pku@gmail.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: lonehugo@hotmail.com, trivial@kernel.org, wenhu.wang@vivo.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2020-01-21 at 13:20 +0800, 王文虎 wrote:
-> From: Scott Wood <oss@buserror.net>
-> Date: 2020-01-21 11:25:25
-> To:  wangwenhu <wenhu.pku@gmail.com>,Kumar Gala <galak@kernel.crashing.org>,
-> Benjamin Herrenschmidt <benh@kernel.crashing.org>,Paul Mackerras <
-> paulus@samba.org>,Michael Ellerman <mpe@ellerman.id.au>,
-> linuxppc-dev@lists.ozlabs.org,linux-kernel@vger.kernel.org
-> Cc:  trivial@kernel.org,wenhu.wang@vivo.com,Rai Harninder <
-> harninder.rai@nxp.com>
-> Subject: Re: [PATCH] powerpc/Kconfig: Make FSL_85XX_CACHE_SRAM
-> configurable>On Mon, 2020-01-20 at 06:43 -0800, wangwenhu wrote:
-> > > From: wangwenhu <wenhu.wang@vivo.com>
-> > > 
-> > > When generating .config file with menuconfig on Freescale BOOKE
-> > > SOC, FSL_85XX_CACHE_SRAM is not configurable for the lack of
-> > > description in the Kconfig field, which makes it impossible
-> > > to support L2Cache-Sram driver. Add a description to make it
-> > > configurable.
-> > > 
-> > > Signed-off-by: wangwenhu <wenhu.wang@vivo.com>
-> > 
-> > The intent was that drivers using the SRAM API would select the
-> > symbol.  What
-> > is the use case for selecting it manually?
-> > 
+
+
+Le 21/01/2020 à 06:31, wangwenhu a écrit :
+> From: wangwenhu <wenhu.wang@vivo.com>
 > 
-> With a repository of multiple products(meaning different defconfigs) and
-> multiple
-> developers, the Kconfigs of the Kernel Source Tree change frequently. So the
-> "make menuconfig"
-> process is needed for defconfigs' re-generating or updating for the
-> complexity of dependencies
-> between different features defined in the Kconfigs.
+> Include arch/powerpc/include/asm/io.h into fsl_85xx_cache_sram.c to
+> fix the implicit declaration compile errors when building Cache-Sram.
 
-That doesn't answer my question of how the SRAM code would be useful other
-than to some other driver that uses the API (which would use "select").  There
-is no userspace API.  You could use the kernel command line to configure the
-SRAM but you need to get the address of it for it to be useful.
+It is usually better to include <linux/io.h> instead of <asm/io.h>
 
-> > Since this code was added almost ten years ago and there are still no (in-
-> > tree?) users of the API, we should just remove the sram code (unless this
-> > prods someone to submit such a user very soon).
-> > 
-> 
-> Yes, pretty long a time. But we DO really use the API now for
-> PPCE500/Freescale SoC.
-
-I do not see any users in the kernel tree.  Are you talking about out-of-tree
-code, or something that you've submitted or will submit soon?  Or are you
-accessing it via /dev/mem?
-
-> Like sometimes we need to reset the whole RAM, then the L2-Cache would be
-> used as
-> SRAM for backup using. Since it is useful for us now, a re-consideration is
-> recommanded.
-
-Where is the code that would do this?
-
--Scott
-> 
-
+Christophe
