@@ -5,19 +5,19 @@ X-Spam-Level:
 X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 089CCC2D0CE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 13:06:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 74C00C2D0CE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 13:14:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 18E102070C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 13:06:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 18E102070C
+	by mail.kernel.org (Postfix) with ESMTPS id 24DB021569
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jan 2020 13:14:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 24DB021569
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48281K0Wh6zDqQ8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jan 2020 00:06:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4828Bc6rdSzDqNs
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jan 2020 00:14:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=srs0=dqi7=3k=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
@@ -27,13 +27,13 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4827tR4LZMzDqV7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2020 00:00:15 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4827vD6Pw0zDqVB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2020 00:00:56 +1100 (AEDT)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 205099] KASAN hit at raid6_pq: BUG: Unable to handle kernel
  data access at 0x00f0fd0d
-Date: Tue, 21 Jan 2020 13:00:12 +0000
+Date: Tue, 21 Jan 2020 13:00:54 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
@@ -48,8 +48,8 @@ X-Bugzilla-Resolution:
 X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-205099-206035-HogvAi6Kh2@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: attachments.created
+Message-ID: <bug-205099-206035-SIBCmXWae6@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-205099-206035@https.bugzilla.kernel.org/>
 References: <bug-205099-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -74,23 +74,12 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D205099
 
---- Comment #22 from Erhard F. (erhard_f@mailbox.org) ---
-(In reply to Christophe Leroy from comment #19)
-> Can you tell exactly where it stops during the boot ? Or take a photo of =
-the
-> screen ?
-I'll attach a photo shortly.
-
-> In parallele, could you try (without VMAP_STACK) increasing
-> CONFIG_THREAD_SHIFT to 14 ? It will double the size of the stacks.
-I can confirm that with CONFIG_THREAD_SHIFT=3D14 the G4 runs good again with
-INLINE KASAN + KASAN_VMALLOC enabled (as seen in attached dmesg). No KASAN =
-hit
-at raid6_pq, no poblem with btrfs.
-
-Though with CONFIG_THREAD_SHIFT=3D14 + OUTLINE KASAN + KASAN_VMALLOC I stil=
-l get
-this KASAN hit at raid6_pq.
+--- Comment #23 from Erhard F. (erhard_f@mailbox.org) ---
+Created attachment 286929
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D286929&action=3Dedit
+dmesg (kernel 5.5-rc6+, KASAN_VMALLOC + CONFIG_THREAD_SHIFT=3D14 + OUTLINE =
+KASAN,
+PowerMac G4 DP)
 
 --=20
 You are receiving this mail because:
