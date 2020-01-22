@@ -2,95 +2,88 @@ Return-Path: <SRS0=NP7W=3L=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F821C32771
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jan 2020 05:54:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E7C2FC32771
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jan 2020 06:54:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DD39E24656
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jan 2020 05:54:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DD39E24656
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4A15B24656
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jan 2020 06:54:11 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="Zey8fdjO"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4A15B24656
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 482ZNs4p0RzDqR0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jan 2020 16:54:37 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 482ZJk49xfzDqQ0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2020 16:51:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 482bjV3NllzDqQb
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jan 2020 17:54:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 482ZJk1nyHz8t85
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2020 16:51:02 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 482ZJk16N7z9sRd; Wed, 22 Jan 2020 16:51:02 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=sukadev@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
+ header.s=mail header.b=Zey8fdjO; dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 482ZJj45rbz9sRR;
- Wed, 22 Jan 2020 16:51:00 +1100 (AEDT)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 00M5lRnF149464; Wed, 22 Jan 2020 00:50:57 -0500
-Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.10])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2xkwq8ktyt-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 22 Jan 2020 00:50:57 -0500
-Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
- by ppma02dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 00M5lPZ0006575;
- Wed, 22 Jan 2020 05:50:56 GMT
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26]) by ppma02dal.us.ibm.com with ESMTP id 2xksn72wv0-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 22 Jan 2020 05:50:56 +0000
-Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
- [9.57.199.110])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 00M5otAL11338328
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 22 Jan 2020 05:50:55 GMT
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C31CFAE060;
- Wed, 22 Jan 2020 05:50:55 +0000 (GMT)
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 34509AE05C;
- Wed, 22 Jan 2020 05:50:55 +0000 (GMT)
-Received: from suka-w540.usor.ibm.com (unknown [9.70.94.45])
- by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
- Wed, 22 Jan 2020 05:50:55 +0000 (GMT)
-From: Sukadev Bhattiprolu <sukadev@linux.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@ozlabs.org>, 
- linuxram@us.ibm.com, maddy@linux.ibm.com
-Subject: [PATCH v4 1/2] powerpc/pseries/svm: Use FW_FEATURE to detect SVM
-Date: Tue, 21 Jan 2020 21:50:53 -0800
-Message-Id: <20200122055054.6482-1-sukadev@linux.ibm.com>
-X-Mailer: git-send-email 2.17.2
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
- definitions=2020-01-17_05:2020-01-16,
- 2020-01-17 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 malwarescore=0
- suspectscore=0 phishscore=0 adultscore=0 priorityscore=1501 mlxscore=0
- lowpriorityscore=0 mlxlogscore=999 impostorscore=0 spamscore=0
- clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-1910280000 definitions=main-2001220051
+ by lists.ozlabs.org (Postfix) with ESMTPS id 482bgH07tBzDqQP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2020 17:52:08 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 482bg62dYRz9v1G1;
+ Wed, 22 Jan 2020 07:52:02 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=Zey8fdjO; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id oG7b4NC5O0Sq; Wed, 22 Jan 2020 07:52:02 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 482bg619Vtz9v1G0;
+ Wed, 22 Jan 2020 07:52:02 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1579675922; bh=AYb/CdJwlLdwhR85yWkNEPcYAl+1WHLldoMOxAkLGpM=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=Zey8fdjOenKuqzua5w7ccePCzStkQRBuJaWxnsJVniBNEICcjqz/Qq/mZfkoDcKWj
+ m7jTcAVVcCwoLKA8mePd5gFGZTjv/4HtUxHQIysp9aTF3f5X20ObtxEcM/gKav5zr+
+ TtH/cAfLoGS2ZgGfk8V5vjYRKFaDLsXnVLmJ2Heg=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E56D58B7EC;
+ Wed, 22 Jan 2020 07:52:02 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id T8XazIT7FdGs; Wed, 22 Jan 2020 07:52:02 +0100 (CET)
+Received: from [172.25.230.100] (po15451.idsi0.si.c-s.fr [172.25.230.100])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id BF7998B776;
+ Wed, 22 Jan 2020 07:52:02 +0100 (CET)
+Subject: Re: GCC bug ? Re: [PATCH v2 10/10] powerpc/32s: Implement Kernel
+ Userspace Access Protection
+To: Segher Boessenkool <segher@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+References: <cover.1552292207.git.christophe.leroy@c-s.fr>
+ <a2847248a92cb1641b1740fa121c5a30593ae662.1552292207.git.christophe.leroy@c-s.fr>
+ <87ftqfu7j1.fsf@concordia.ellerman.id.au>
+ <a008a182-f1db-073c-7d38-27bfd1fd8676@c-s.fr>
+ <20200121195501.GJ3191@gate.crashing.org>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <af9ad296-401c-cb5c-868a-7a6f91d1e8bc@c-s.fr>
+Date: Wed, 22 Jan 2020 07:52:02 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.1
+MIME-Version: 1.0
+In-Reply-To: <20200121195501.GJ3191@gate.crashing.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,92 +95,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use FW_FEATURE_SVM to detect a secure guest (SVM). This would be
-more efficient than calling mfmsr() frequently.
 
-Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.ibm.com>
----
- arch/powerpc/include/asm/firmware.h       | 3 ++-
- arch/powerpc/include/asm/svm.h            | 6 +++++-
- arch/powerpc/kernel/paca.c                | 6 +++++-
- arch/powerpc/platforms/pseries/firmware.c | 3 +++
- 4 files changed, 15 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
-index b3e214a97f3a..23cffcec8a55 100644
---- a/arch/powerpc/include/asm/firmware.h
-+++ b/arch/powerpc/include/asm/firmware.h
-@@ -51,6 +51,7 @@
- #define FW_FEATURE_BLOCK_REMOVE ASM_CONST(0x0000001000000000)
- #define FW_FEATURE_PAPR_SCM 	ASM_CONST(0x0000002000000000)
- #define FW_FEATURE_ULTRAVISOR	ASM_CONST(0x0000004000000000)
-+#define FW_FEATURE_SVM		ASM_CONST(0x0000008000000000)
- 
- #ifndef __ASSEMBLY__
- 
-@@ -69,7 +70,7 @@ enum {
- 		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN |
- 		FW_FEATURE_HPT_RESIZE | FW_FEATURE_DRMEM_V2 |
- 		FW_FEATURE_DRC_INFO | FW_FEATURE_BLOCK_REMOVE |
--		FW_FEATURE_PAPR_SCM | FW_FEATURE_ULTRAVISOR,
-+		FW_FEATURE_PAPR_SCM | FW_FEATURE_ULTRAVISOR | FW_FEATURE_SVM,
- 	FW_FEATURE_PSERIES_ALWAYS = 0,
- 	FW_FEATURE_POWERNV_POSSIBLE = FW_FEATURE_OPAL | FW_FEATURE_ULTRAVISOR,
- 	FW_FEATURE_POWERNV_ALWAYS = 0,
-diff --git a/arch/powerpc/include/asm/svm.h b/arch/powerpc/include/asm/svm.h
-index 85580b30aba4..1d056c70fa87 100644
---- a/arch/powerpc/include/asm/svm.h
-+++ b/arch/powerpc/include/asm/svm.h
-@@ -10,9 +10,13 @@
- 
- #ifdef CONFIG_PPC_SVM
- 
-+/*
-+ * Note that this is not usable in early boot - before FW
-+ * features were probed
-+ */
- static inline bool is_secure_guest(void)
- {
--	return mfmsr() & MSR_S;
-+	return firmware_has_feature(FW_FEATURE_SVM);
- }
- 
- void dtl_cache_ctor(void *addr);
-diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
-index 949eceb254d8..3cba33a99549 100644
---- a/arch/powerpc/kernel/paca.c
-+++ b/arch/powerpc/kernel/paca.c
-@@ -120,7 +120,11 @@ static struct lppaca * __init new_lppaca(int cpu, unsigned long limit)
- 	if (early_cpu_has_feature(CPU_FTR_HVMODE))
- 		return NULL;
- 
--	if (is_secure_guest())
-+	/*
-+	 * Firmware features may not have been probed yet, so check
-+	 * MSR rather than FW_FEATURE_SVM in is_secure_guest().
-+	 */
-+	if (mfmsr() & MSR_S)
- 		lp = alloc_shared_lppaca(LPPACA_SIZE, 0x400, limit, cpu);
- 	else
- 		lp = alloc_paca_data(LPPACA_SIZE, 0x400, limit, cpu);
-diff --git a/arch/powerpc/platforms/pseries/firmware.c b/arch/powerpc/platforms/pseries/firmware.c
-index d4a8f1702417..c98527fb4937 100644
---- a/arch/powerpc/platforms/pseries/firmware.c
-+++ b/arch/powerpc/platforms/pseries/firmware.c
-@@ -175,4 +175,7 @@ static int __init probe_fw_features(unsigned long node, const char *uname, int
- void __init pseries_probe_fw_features(void)
- {
- 	of_scan_flat_dt(probe_fw_features, NULL);
-+
-+	if (mfmsr() & MSR_S)
-+		powerpc_firmware_features |= FW_FEATURE_SVM;
- }
--- 
-2.17.2
+Le 21/01/2020 à 20:55, Segher Boessenkool a écrit :
+> On Tue, Jan 21, 2020 at 05:22:32PM +0000, Christophe Leroy wrote:
+>> g1() should return 3, not 5.
+> 
+> What makes you say that?
 
+What makes me say that is that NULL is obviously a constant pointer and 
+I think we are all expecting gcc to see it as a constant during kernel 
+build, ie at -O2
+
+> 
+> "A return of 0 does not indicate that the
+>   value is _not_ a constant, but merely that GCC cannot prove it is a
+>   constant with the specified value of the '-O' option."
+> 
+> (And the rules it uses for this are *not* the same as C "constant
+> expressions" or C "integer constant expression" or C "arithmetic
+> constant expression" or anything like that -- which should be already
+> obvious from that it changes with different -Ox).
+> 
+> You can use builtin_constant_p to have the compiler do something better
+> if the compiler feels like it, but not anything more.  Often people
+> want stronger guarantees, but when they see how much less often it then
+> returns "true", they do not want that either.
+> 
+
+in asm/book3s/64/kup-radix.h we have:
+
+static inline void allow_user_access(void __user *to, const void __user 
+*from,
+				     unsigned long size)
+{
+	// This is written so we can resolve to a single case at build time
+	if (__builtin_constant_p(to) && to == NULL)
+		set_kuap(AMR_KUAP_BLOCK_WRITE);
+	else if (__builtin_constant_p(from) && from == NULL)
+		set_kuap(AMR_KUAP_BLOCK_READ);
+	else
+		set_kuap(0);
+}
+
+and in asm/kup.h we have:
+
+static inline void allow_read_from_user(const void __user *from, 
+unsigned long size)
+{
+	allow_user_access(NULL, from, size);
+}
+
+static inline void allow_write_to_user(void __user *to, unsigned long size)
+{
+	allow_user_access(to, NULL, size);
+}
+
+
+If GCC doesn't see NULL as a constant, then the above doesn't work as 
+expected.
+
+What's surprising and frustrating is that if you remove the 
+__builtin_constant_p() and only leave the NULL check, then GCC sees it 
+as a constant and drops the other leg.
+
+So if we remove the __builtin_constant_p(to) and leave only the (to == 
+NULL), it will work as expected for allow_read_from_user(). But for the 
+others where (to) is not a constant, the NULL test will remain together 
+with the associated leg.
+
+Christophe
