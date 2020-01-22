@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A1D4C2D0DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jan 2020 13:09:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BB4AC2D0DB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jan 2020 13:12:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E01AE24689
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jan 2020 13:09:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0AFF720678
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jan 2020 13:12:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="Id0p0/pu"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E01AE24689
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="O5WSDQYU"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0AFF720678
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 482m305WLvzDqV8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jan 2020 00:09:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 482m5v5RC7zDqTv
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jan 2020 00:12:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,55 +29,54 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=Id0p0/pu; dkim-atps=neutral
+ header.s=mail header.b=O5WSDQYU; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 482lrX6GdRzDqSK
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jan 2020 00:00:42 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 482lrY0NJPzDqT5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jan 2020 00:00:43 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 482lrM6r0Bz9v4T1;
- Wed, 22 Jan 2020 14:00:35 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 482lrR2trSz9v4T6;
+ Wed, 22 Jan 2020 14:00:39 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=Id0p0/pu; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=O5WSDQYU; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id ER69ev4z_Xec; Wed, 22 Jan 2020 14:00:35 +0100 (CET)
+ with ESMTP id 4nbWYbYP4Gr5; Wed, 22 Jan 2020 14:00:39 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 482lrM51BQz9v4T0;
- Wed, 22 Jan 2020 14:00:35 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 482lrR1szqz9v4T4;
+ Wed, 22 Jan 2020 14:00:39 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1579698035; bh=IYuSNHph3xeKS9BqJ4P2sNK404BWtsrlVrUfzRg8JZc=;
- h=From:Subject:To:Cc:Date:From;
- b=Id0p0/punrqkIoihRIjlOTDIJUf8EAaYY/45qzeAcFcpIvcYgWSV7dABhL2qWd+Rd
- OrZCEwEeHWaDFQsMYorxbrJexxNque0AKSTnLknGxGBn0IXYhJ8P0sIFr5JDMOEa91
- sZ3Li+AyYuqq/Ks/DIu38NLCzSiqIwLU7TDPZFEo=
+ t=1579698039; bh=iFbImthIOlCPbURK2OGGbKh/yT9m4I8aqMlWfZTcU+E=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=O5WSDQYUFN5WmBLlV7O7THG41xuhILXKO98/NXe+lxig1aGv17e6ZnyrB6MRXu2jG
+ NKawLj1k3m9pU27WuQZl9Hxp658ypN/7l88qegRA3KkX1sbFpaYV32f6js0KjkO8M0
+ JSprLI+a3mhuKSTS0CsmbIguNDPym/7m/92wTCsE=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CD87C8B803;
- Wed, 22 Jan 2020 14:00:36 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4E6698B7FC;
+ Wed, 22 Jan 2020 14:00:40 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id shOjK1liW11x; Wed, 22 Jan 2020 14:00:36 +0100 (CET)
+ with ESMTP id eOSvAb_poZnv; Wed, 22 Jan 2020 14:00:40 +0100 (CET)
 Received: from po14934vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.230.100])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D917D8B7FA;
- Wed, 22 Jan 2020 14:00:35 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C78FE8B7FA;
+ Wed, 22 Jan 2020 14:00:39 +0100 (CET)
 Received: by po14934vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 9179F651E0; Wed, 22 Jan 2020 13:00:35 +0000 (UTC)
-Message-Id: <a02d3426f93f7eb04960a4d9140902d278cab0bb.1579697910.git.christophe.leroy@c-s.fr>
+ id BF986651E0; Wed, 22 Jan 2020 13:00:39 +0000 (UTC)
+Message-Id: <36561aa79bfe4c6b8085ebd87a1967ea639fb878.1579697910.git.christophe.leroy@c-s.fr>
+In-Reply-To: <a02d3426f93f7eb04960a4d9140902d278cab0bb.1579697910.git.christophe.leroy@c-s.fr>
+References: <a02d3426f93f7eb04960a4d9140902d278cab0bb.1579697910.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v1 1/6] fs/readdir: Fix filldir() and filldir64() use of
- user_access_begin()
+Subject: [PATCH v1 5/6] powerpc/32s: prepare prevent_user_access() for
+ user_access_end()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Andrew Morton <akpm@linux-foundation.org>
-Date: Wed, 22 Jan 2020 13:00:35 +0000 (UTC)
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Wed, 22 Jan 2020 13:00:39 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,64 +94,86 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Some architectures grand full access to userspace regardless of the
-address/len passed to user_access_begin(), but other architectures
-only grand access to the requested area.
+In preparation of implementing user_access_begin and friends
+on powerpc, the book3s/32 version of prevent_user_access() need
+to be prepared for user_access_end().
 
-For exemple, on 32 bits powerpc (book3s/32), access is granted by
-segments of 256 Mbytes.
+user_access_end() doesn't provide the address and size which
+were passed to user_access_begin(), required by prevent_user_access()
+to know which segment to modify.
 
-Modify filldir() and filldir64() to request the real area they need
-to get access to.
+The list of segments which where unprotected by allow_user_access()
+are available in current->kuap. But we don't want prevent_user_access()
+to read this all the time, especially everytime it is 0 (for instance
+because the access was not a write access).
 
-Fixes: 9f79b78ef744 ("Convert filldir[64]() from __put_user() to unsafe_put_user()")
+Implement a special direction case named KUAP_SELF. In this case only,
+the addr and end are retrieved from current->kuap.
+
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- fs/readdir.c | 20 ++++++--------------
- 1 file changed, 6 insertions(+), 14 deletions(-)
+ arch/powerpc/include/asm/book3s/32/kup.h | 25 ++++++++++++++++++------
+ arch/powerpc/include/asm/kup.h           |  1 +
+ 2 files changed, 20 insertions(+), 6 deletions(-)
 
-diff --git a/fs/readdir.c b/fs/readdir.c
-index d26d5ea4de7b..ef04e5e76c59 100644
---- a/fs/readdir.c
-+++ b/fs/readdir.c
-@@ -236,15 +236,11 @@ static int filldir(struct dir_context *ctx, const char *name, int namlen,
- 	if (dirent && signal_pending(current))
- 		return -EINTR;
+diff --git a/arch/powerpc/include/asm/book3s/32/kup.h b/arch/powerpc/include/asm/book3s/32/kup.h
+index 3c1798e56b55..a99fc3428ac9 100644
+--- a/arch/powerpc/include/asm/book3s/32/kup.h
++++ b/arch/powerpc/include/asm/book3s/32/kup.h
+@@ -117,6 +117,7 @@ static __always_inline void allow_user_access(void __user *to, const void __user
+ 		return;
  
--	/*
--	 * Note! This range-checks 'previous' (which may be NULL).
--	 * The real range was checked in getdents
--	 */
--	if (!user_access_begin(dirent, sizeof(*dirent)))
-+	if (dirent && unlikely(put_user(offset, &dirent->d_off)))
- 		goto efault;
--	if (dirent)
--		unsafe_put_user(offset, &dirent->d_off, efault_end);
- 	dirent = buf->current_dir;
-+	if (!user_access_begin(dirent, reclen))
-+		goto efault;
- 	unsafe_put_user(d_ino, &dirent->d_ino, efault_end);
- 	unsafe_put_user(reclen, &dirent->d_reclen, efault_end);
- 	unsafe_put_user(d_type, (char __user *) dirent + reclen - 1, efault_end);
-@@ -323,15 +319,11 @@ static int filldir64(struct dir_context *ctx, const char *name, int namlen,
- 	if (dirent && signal_pending(current))
- 		return -EINTR;
+ 	end = min(addr + size, TASK_SIZE);
++
+ 	current->thread.kuap = (addr & 0xf0000000) | ((((end - 1) >> 28) + 1) & 0xf);
+ 	kuap_update_sr(mfsrin(addr) & ~SR_KS, addr, end);	/* Clear Ks */
+ }
+@@ -127,15 +128,27 @@ static __always_inline void prevent_user_access(void __user *to, const void __us
+ 	u32 addr, end;
  
--	/*
--	 * Note! This range-checks 'previous' (which may be NULL).
--	 * The real range was checked in getdents
--	 */
--	if (!user_access_begin(dirent, sizeof(*dirent)))
-+	if (dirent && unlikely(put_user(offset, &dirent->d_off)))
- 		goto efault;
--	if (dirent)
--		unsafe_put_user(offset, &dirent->d_off, efault_end);
- 	dirent = buf->current_dir;
-+	if (!user_access_begin(dirent, reclen))
-+		goto efault;
- 	unsafe_put_user(ino, &dirent->d_ino, efault_end);
- 	unsafe_put_user(reclen, &dirent->d_reclen, efault_end);
- 	unsafe_put_user(d_type, &dirent->d_type, efault_end);
+ 	BUILD_BUG_ON(!__builtin_constant_p(dir));
+-	if (!(dir & KUAP_W))
+-		return;
+ 
+-	addr = (__force u32)to;
++	if (dir == KUAP_SELF) {
++		u32 kuap = current->thread.kuap;
+ 
+-	if (unlikely(addr >= TASK_SIZE || !size))
+-		return;
++		if (unlikely(!kuap))
++			return;
++
++		addr = kuap & 0xf0000000;
++		end = kuap << 28;
++	} else {
++		if (!(dir & KUAP_W))
++			return;
++
++		addr = (__force u32)to;
++
++		if (unlikely(addr >= TASK_SIZE || !size))
++			return;
++
++		end = min(addr + size, TASK_SIZE);
++	}
+ 
+-	end = min(addr + size, TASK_SIZE);
+ 	current->thread.kuap = 0;
+ 	kuap_update_sr(mfsrin(addr) | SR_KS, addr, end);	/* set Ks */
+ }
+diff --git a/arch/powerpc/include/asm/kup.h b/arch/powerpc/include/asm/kup.h
+index 49fd977a498e..0676df6f3f86 100644
+--- a/arch/powerpc/include/asm/kup.h
++++ b/arch/powerpc/include/asm/kup.h
+@@ -5,6 +5,7 @@
+ #define KUAP_R		1
+ #define KUAP_W		2
+ #define KUAP_RW		(KUAP_R | KUAP_W)
++#define KUAP_SELF	4
+ 
+ #ifdef CONFIG_PPC64
+ #include <asm/book3s/64/kup-radix.h>
 -- 
 2.25.0
 
