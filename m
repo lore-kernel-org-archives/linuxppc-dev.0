@@ -2,25 +2,25 @@ Return-Path: <SRS0=YyhJ=3M=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C544BC2D0DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jan 2020 12:46:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A1894C2D0DB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jan 2020 13:06:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 727D821835
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jan 2020 12:46:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 07E7924655
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jan 2020 13:06:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="M+c4fJVZ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 727D821835
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="nBdpb5YM"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 07E7924655
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 483MTB4CLCzDqXC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jan 2020 23:46:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 483Mww3zcgzDqVV
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jan 2020 00:06:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,62 +29,52 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=M+c4fJVZ; dkim-atps=neutral
+ header.s=mail header.b=nBdpb5YM; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 483MPr5PGzzDqCx
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jan 2020 23:43:11 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 483MnW5CKrzDqS6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2020 00:00:00 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 483MPk32vtz9vB4D;
- Thu, 23 Jan 2020 13:43:06 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 483Mn75tf2z9vB4d;
+ Thu, 23 Jan 2020 13:59:55 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=M+c4fJVZ; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=nBdpb5YM; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id MKcSH7ytUAbU; Thu, 23 Jan 2020 13:43:06 +0100 (CET)
+ with ESMTP id 2VSHYc83-jVL; Thu, 23 Jan 2020 13:59:55 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 483MPk1fHkz9vB4C;
- Thu, 23 Jan 2020 13:43:06 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 483Mn74sRwz9vB4X;
+ Thu, 23 Jan 2020 13:59:55 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1579783386; bh=5u98EOtP2WKcTg/wP4g+30sC+JrkYBCOJLlRu95fhRc=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=M+c4fJVZVBnhS3LrJqZpaNaPKS4omcdwek4cx3zgeBhOVTUQxWipdFpZ3dDE3jsb7
- 0vzFt2dnk9ceZD4rJtPz5HH55nBprFw7Z9bgGytv+K2FL9rBFrU7xN6VvBJEmk9AqC
- 23kWu25GIwSDC3iQWt5qcsPySMvP0N41mgpbhqEk=
+ t=1579784395; bh=9n0DhrUtn+3U5yRRYzDBPdkThpSiP75IUKn1XEEM8og=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=nBdpb5YMmUh2lNpfEL+Gta03snuJRNE2vRku/B1r85tUbHzfLEgwusl207xVbrUJB
+ gOCwiorGN+yt7yJ7p3OV21jba8iolfaF/JPi8vpOLbwlQbD8eRLND3hd5OHauAx+T2
+ Uf3flEYujkol17gOoxK1ddCLi6P4WItJSw1b8TkI=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 5537F8B82B;
- Thu, 23 Jan 2020 13:43:07 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id BB0C98B82C;
+ Thu, 23 Jan 2020 13:59:56 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id IWp1L7UGbtAy; Thu, 23 Jan 2020 13:43:07 +0100 (CET)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 871D98B826;
- Thu, 23 Jan 2020 13:43:06 +0100 (CET)
-Subject: Re: [PATCH v2 1/6] fs/readdir: Fix filldir() and filldir64() use of
- user_access_begin()
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Andrew Morton <akpm@linux-foundation.org>
-References: <12a4be679e43de1eca6e5e2173163f27e2f25236.1579715466.git.christophe.leroy@c-s.fr>
- <87muaeidyc.fsf@mpe.ellerman.id.au> <87k15iidrq.fsf@mpe.ellerman.id.au>
+ with ESMTP id 14fKxtcIuTAx; Thu, 23 Jan 2020 13:59:56 +0100 (CET)
+Received: from po14934vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 804798B826;
+ Thu, 23 Jan 2020 13:59:56 +0100 (CET)
+Received: by po14934vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 5757E651C0; Thu, 23 Jan 2020 12:59:56 +0000 (UTC)
+Message-Id: <8374d73eced8ac93d756e606ca64c6c3140c8ea8.1579783936.git.christophe.leroy@c-s.fr>
+In-Reply-To: <fed4f49349913cb6739dac647ba6a61d56b989d2.1579783936.git.christophe.leroy@c-s.fr>
+References: <fed4f49349913cb6739dac647ba6a61d56b989d2.1579783936.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <f7b34529-0548-dc0d-c263-549acbb26ddc@c-s.fr>
-Date: Thu, 23 Jan 2020 13:43:06 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.9.1
-MIME-Version: 1.0
-In-Reply-To: <87k15iidrq.fsf@mpe.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Subject: [PATCH v3 5/7] powerpc/32s: Drop NULL addr verification
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Thu, 23 Jan 2020 12:59:56 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,46 +92,61 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+NULL addr is a user address. Don't waste time checking it. If
+someone tries to access it, it will SIGFAULT the same way as for
+address 1, so no need to make it special.
 
+The special case is when not doing a write, in that case we want
+to drop the entire function. This is now handled by 'dir' param
+and not by the nulity of 'to' anymore.
 
-Le 23/01/2020 à 13:00, Michael Ellerman a écrit :
-> Michael Ellerman <mpe@ellerman.id.au> writes:
->> Hi Christophe,
->>
->> This patch is independent of the rest of the series AFAICS
-> 
-> And of course having hit send I immediately realise that's not true.
+Also make beginning of prevent_user_access() similar
+to beginning of allow_user_access(), and tell the compiler
+that writing in kernel space or with a 0 length is unlikely
 
-Without this, book3s/32 fails booting. (And without patch 2, it even 
-hangs, looping forever in do_page_fault()).
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+v2: no change
+v3: no change
+---
+ arch/powerpc/include/asm/book3s/32/kup.h | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/book3s/32/kup.h b/arch/powerpc/include/asm/book3s/32/kup.h
+index d765515bd1c1..3c1798e56b55 100644
+--- a/arch/powerpc/include/asm/book3s/32/kup.h
++++ b/arch/powerpc/include/asm/book3s/32/kup.h
+@@ -113,7 +113,7 @@ static __always_inline void allow_user_access(void __user *to, const void __user
+ 
+ 	addr = (__force u32)to;
+ 
+-	if (!addr || addr >= TASK_SIZE || !size)
++	if (unlikely(addr >= TASK_SIZE || !size))
+ 		return;
+ 
+ 	end = min(addr + size, TASK_SIZE);
+@@ -124,16 +124,18 @@ static __always_inline void allow_user_access(void __user *to, const void __user
+ static __always_inline void prevent_user_access(void __user *to, const void __user *from,
+ 						u32 size, unsigned long dir)
+ {
+-	u32 addr = (__force u32)to;
+-	u32 end = min(addr + size, TASK_SIZE);
++	u32 addr, end;
+ 
+ 	BUILD_BUG_ON(!__builtin_constant_p(dir));
+ 	if (!(dir & KUAP_W))
+ 		return;
+ 
+-	if (!addr || addr >= TASK_SIZE || !size)
++	addr = (__force u32)to;
++
++	if (unlikely(addr >= TASK_SIZE || !size))
+ 		return;
+ 
++	end = min(addr + size, TASK_SIZE);
+ 	current->thread.kuap = 0;
+ 	kuap_update_sr(mfsrin(addr) | SR_KS, addr, end);	/* set Ks */
+ }
+-- 
+2.25.0
 
-> 
->> So I'll take patches 2-6 via powerpc and assume this patch will go via
->> Linus or Al or elsewhere.
-> 
-> So I guess I'll wait and see what happens with patch 1.
-
-We could eventually opt out user_access_begin() for 
-CONFIG_PPC_BOOK3S_32, then you could take patches 3 and 6. That's enough 
-to have user_access_begin() and stuff for 8xx and RADIX.
-
-Patch 2 should be taken as well as a fix, and can be kept independant of 
-the series (once we have patch 1, we normally don't hit the problem 
-fixed by patch 2).
-
-Won't don't need patch 4 until we want user_access_begin() supported by 
-book3s/32
-
-
-However, I'm about to send out a v3 with a different approach. It 
-modifies the core part where user_access_begin() is returning an opaque 
-value used by user_access_end(). And it also tells user_access_begin() 
-whether it's a read or a write, so that we can limit unlocking to write 
-acccesses on book3s/32, and fine grain rights on book3s/64.
-
-Maybe you would prefer this change on top of first step, in which case 
-I'll be able to make a v4 rebasing all this on top of patch 3 and 6 of 
-v3 series. Tell me what you prefer.
-
-Christophe
