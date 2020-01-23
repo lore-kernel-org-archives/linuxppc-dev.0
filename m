@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C7A2C2D0DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jan 2020 13:13:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C9BF6C2D0DB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jan 2020 13:16:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EC6372467B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jan 2020 13:13:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4E2012467B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jan 2020 13:16:34 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="OwwVj0lJ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC6372467B
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="cpigVkHf"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4E2012467B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 483N5F638rzDqXB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jan 2020 00:13:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 483N8J1BxWzDqX7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jan 2020 00:16:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,53 +29,59 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=OwwVj0lJ; dkim-atps=neutral
+ header.s=mail header.b=cpigVkHf; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 483MnW5Bz7zDqQd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jan 2020 23:59:59 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 483MnW5BvfzDqQQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jan 2020 23:59:57 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 483Mn65Rbbz9vB4c;
- Thu, 23 Jan 2020 13:59:54 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 483Mn46sR5z9vB4Z;
+ Thu, 23 Jan 2020 13:59:52 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=OwwVj0lJ; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=cpigVkHf; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id YupXVbyZvbC2; Thu, 23 Jan 2020 13:59:54 +0100 (CET)
+ with ESMTP id ye82euo1eSlt; Thu, 23 Jan 2020 13:59:52 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 483Mn64DTFz9vB4X;
- Thu, 23 Jan 2020 13:59:54 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 483Mn45Rmtz9vB4X;
+ Thu, 23 Jan 2020 13:59:52 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1579784394; bh=KHjVev/0JBmVbBC1xdcedLkGg2vPxpY9MoOGz7cIty8=;
+ t=1579784392; bh=y3mCq62z8QvBHB/lDe1I9sTNmtZcrMNh5y5Vki0onEE=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=OwwVj0lJkx5qJ84nPcZiLu3SkTyipMGnH7P1UHHVeh4xJohOWSNMXGPF5UJpevvxJ
- KyyZojBtxbAzE7wwBWGXQrd95I1gjydW6oJ8jHz6KEosp7nF/1X5h1PdwhT4XJzZNl
- QngcQPS5vYCIVpzRIRs+1lQuHWxqORtawVZNwelw=
+ b=cpigVkHfJgSSTDA00DxU2scK4Rca1sAxhbjcOWb8jiWHowf2s1qShrxF+apnrpyXN
+ L93hAuZNOjAXZqV1WnCT8GVRnd8hPVboEyKyK1neBsuGJrcG6uagLhkUCI3C/6/2si
+ +I2qMd4mFfI3MY/I7H1HrpG47DrkCldDbPruXlkQ=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D030F8B82C;
- Thu, 23 Jan 2020 13:59:55 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0B6F18B82C;
+ Thu, 23 Jan 2020 13:59:54 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id u-vpBJS8Yh3Y; Thu, 23 Jan 2020 13:59:55 +0100 (CET)
+ with ESMTP id yFkjLN7K3l7s; Thu, 23 Jan 2020 13:59:53 +0100 (CET)
 Received: from po14934vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 769698B826;
- Thu, 23 Jan 2020 13:59:55 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 6F9738B826;
+ Thu, 23 Jan 2020 13:59:53 +0100 (CET)
 Received: by po14934vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 4EEED651C0; Thu, 23 Jan 2020 12:59:55 +0000 (UTC)
-Message-Id: <5557b2d5115d450ef50ab45249dad4fb31a03c5c.1579783936.git.christophe.leroy@c-s.fr>
+ id 3DE38651C0; Thu, 23 Jan 2020 12:59:53 +0000 (UTC)
+Message-Id: <e11a8f0670251267f87e3114e0bdbacb1eb72980.1579783936.git.christophe.leroy@c-s.fr>
 In-Reply-To: <fed4f49349913cb6739dac647ba6a61d56b989d2.1579783936.git.christophe.leroy@c-s.fr>
 References: <fed4f49349913cb6739dac647ba6a61d56b989d2.1579783936.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 4/7] powerpc/kuap: Fix set direction in
- allow/prevent_user_access()
+Subject: [PATCH v3 2/7] uaccess: Tell user_access_begin() if it's for a write
+ or not
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Thu, 23 Jan 2020 12:59:55 +0000 (UTC)
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Alexander Viro <viro@zeniv.linux.org.uk>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>,
+ Jani Nikula <jani.nikula@linux.intel.com>
+Date: Thu, 23 Jan 2020 12:59:53 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,248 +93,423 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-mm@kvack.org,
+ linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-__builtin_constant_p() always return 0 for pointers, so on RADIX
-we always end up opening both direction (by writing 0 in SPR29):
+On 32 bits powerPC (book3s/32), only write accesses to user are
+protected and there is no point spending time on unlocking for reads.
 
-0000000000000170 <._copy_to_user>:
-...
- 1b0:	4c 00 01 2c 	isync
- 1b4:	39 20 00 00 	li      r9,0
- 1b8:	7d 3d 03 a6 	mtspr   29,r9
- 1bc:	4c 00 01 2c 	isync
- 1c0:	48 00 00 01 	bl      1c0 <._copy_to_user+0x50>
-			1c0: R_PPC64_REL24	.__copy_tofrom_user
-...
-0000000000000220 <._copy_from_user>:
-...
- 2ac:	4c 00 01 2c 	isync
- 2b0:	39 20 00 00 	li      r9,0
- 2b4:	7d 3d 03 a6 	mtspr   29,r9
- 2b8:	4c 00 01 2c 	isync
- 2bc:	7f c5 f3 78 	mr      r5,r30
- 2c0:	7f 83 e3 78 	mr      r3,r28
- 2c4:	48 00 00 01 	bl      2c4 <._copy_from_user+0xa4>
-			2c4: R_PPC64_REL24	.__copy_tofrom_user
-...
+On 64 bits powerpc (book3s/64 at least), access can be granted
+read only, write only or read/write.
 
-Use an explicit parameter for direction selection, so that GCC
-is able to see it is a constant:
-
-00000000000001b0 <._copy_to_user>:
-...
- 1f0:	4c 00 01 2c 	isync
- 1f4:	3d 20 40 00 	lis     r9,16384
- 1f8:	79 29 07 c6 	rldicr  r9,r9,32,31
- 1fc:	7d 3d 03 a6 	mtspr   29,r9
- 200:	4c 00 01 2c 	isync
- 204:	48 00 00 01 	bl      204 <._copy_to_user+0x54>
-			204: R_PPC64_REL24	.__copy_tofrom_user
-...
-0000000000000260 <._copy_from_user>:
-...
- 2ec:	4c 00 01 2c 	isync
- 2f0:	39 20 ff ff 	li      r9,-1
- 2f4:	79 29 00 04 	rldicr  r9,r9,0,0
- 2f8:	7d 3d 03 a6 	mtspr   29,r9
- 2fc:	4c 00 01 2c 	isync
- 300:	7f c5 f3 78 	mr      r5,r30
- 304:	7f 83 e3 78 	mr      r3,r28
- 308:	48 00 00 01 	bl      308 <._copy_from_user+0xa8>
-			308: R_PPC64_REL24	.__copy_tofrom_user
-...
+Add an argument to user_access_begin() to tell when it's for write and
+return an opaque key that will be used by user_access_end() to know
+what was done by user_access_begin().
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
-v2: no change
-v3: no change
+v3: new
 ---
- arch/powerpc/include/asm/book3s/32/kup.h      | 13 ++++++--
- .../powerpc/include/asm/book3s/64/kup-radix.h | 11 +++----
- arch/powerpc/include/asm/kup.h                | 30 ++++++++++++++-----
- arch/powerpc/include/asm/nohash/32/kup-8xx.h  |  4 +--
- arch/powerpc/include/asm/uaccess.h            |  4 +--
- 5 files changed, 43 insertions(+), 19 deletions(-)
+ arch/x86/include/asm/uaccess.h                 |  5 +++--
+ drivers/gpu/drm/i915/gem/i915_gem_execbuffer.c | 15 ++++++++++-----
+ fs/readdir.c                                   | 16 ++++++++++------
+ include/linux/uaccess.h                        |  4 ++--
+ kernel/compat.c                                | 16 ++++++++++------
+ kernel/exit.c                                  | 17 +++++++++++------
+ lib/strncpy_from_user.c                        |  6 ++++--
+ lib/strnlen_user.c                             |  6 ++++--
+ lib/usercopy.c                                 |  8 +++++---
+ 9 files changed, 59 insertions(+), 34 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/32/kup.h b/arch/powerpc/include/asm/book3s/32/kup.h
-index d88008c8eb85..d765515bd1c1 100644
---- a/arch/powerpc/include/asm/book3s/32/kup.h
-+++ b/arch/powerpc/include/asm/book3s/32/kup.h
-@@ -102,11 +102,13 @@ static inline void kuap_update_sr(u32 sr, u32 addr, u32 end)
- 	isync();	/* Context sync required after mtsrin() */
+diff --git a/arch/x86/include/asm/uaccess.h b/arch/x86/include/asm/uaccess.h
+index 61d93f062a36..05eccdc0366a 100644
+--- a/arch/x86/include/asm/uaccess.h
++++ b/arch/x86/include/asm/uaccess.h
+@@ -709,7 +709,8 @@ extern struct movsl_mask {
+  * checking before using them, but you have to surround them with the
+  * user_access_begin/end() pair.
+  */
+-static __must_check __always_inline bool user_access_begin(const void __user *ptr, size_t len)
++static __must_check __always_inline unsigned long
++user_access_begin(const void __user *ptr, size_t len, bool write)
+ {
+ 	if (unlikely(!access_ok(ptr,len)))
+ 		return 0;
+@@ -717,7 +718,7 @@ static __must_check __always_inline bool user_access_begin(const void __user *pt
+ 	return 1;
+ }
+ #define user_access_begin(a,b)	user_access_begin(a,b)
+-#define user_access_end()	__uaccess_end()
++#define user_access_end(x)	__uaccess_end()
+ 
+ #define user_access_save()	smap_save()
+ #define user_access_restore(x)	smap_restore(x)
+diff --git a/drivers/gpu/drm/i915/gem/i915_gem_execbuffer.c b/drivers/gpu/drm/i915/gem/i915_gem_execbuffer.c
+index bc3a67226163..509bfb6116ac 100644
+--- a/drivers/gpu/drm/i915/gem/i915_gem_execbuffer.c
++++ b/drivers/gpu/drm/i915/gem/i915_gem_execbuffer.c
+@@ -1615,6 +1615,7 @@ static int eb_copy_relocations(const struct i915_execbuffer *eb)
+ 	const unsigned int count = eb->buffer_count;
+ 	unsigned int i;
+ 	int err;
++	unsigned long key;
+ 
+ 	for (i = 0; i < count; i++) {
+ 		const unsigned int nreloc = eb->exec[i].relocation_count;
+@@ -1662,14 +1663,15 @@ static int eb_copy_relocations(const struct i915_execbuffer *eb)
+ 		 * happened we would make the mistake of assuming that the
+ 		 * relocations were valid.
+ 		 */
+-		if (!user_access_begin(urelocs, size))
++		key = user_access_begin(urelocs, size, true);
++		if (!key)
+ 			goto end;
+ 
+ 		for (copied = 0; copied < nreloc; copied++)
+ 			unsafe_put_user(-1,
+ 					&urelocs[copied].presumed_offset,
+ 					end_user);
+-		user_access_end();
++		user_access_end(key);
+ 
+ 		eb->exec[i].relocs_ptr = (uintptr_t)relocs;
+ 	}
+@@ -1677,7 +1679,7 @@ static int eb_copy_relocations(const struct i915_execbuffer *eb)
+ 	return 0;
+ 
+ end_user:
+-	user_access_end();
++	user_access_end(key);
+ end:
+ 	kvfree(relocs);
+ 	err = -EFAULT;
+@@ -2906,6 +2908,7 @@ i915_gem_execbuffer2_ioctl(struct drm_device *dev, void *data,
+ 		struct drm_i915_gem_exec_object2 __user *user_exec_list =
+ 			u64_to_user_ptr(args->buffers_ptr);
+ 		unsigned int i;
++		unsigned long key;
+ 
+ 		/* Copy the new buffer offsets back to the user's exec list. */
+ 		/*
+@@ -2915,7 +2918,9 @@ i915_gem_execbuffer2_ioctl(struct drm_device *dev, void *data,
+ 		 * And this range already got effectively checked earlier
+ 		 * when we did the "copy_from_user()" above.
+ 		 */
+-		if (!user_access_begin(user_exec_list, count * sizeof(*user_exec_list)))
++		key = user_access_begin(user_exec_list,
++					count * sizeof(*user_exec_list), true);
++		if (!key)
+ 			goto end;
+ 
+ 		for (i = 0; i < args->buffer_count; i++) {
+@@ -2929,7 +2934,7 @@ i915_gem_execbuffer2_ioctl(struct drm_device *dev, void *data,
+ 					end_user);
+ 		}
+ end_user:
+-		user_access_end();
++		user_access_end(key);
+ end:;
+ 	}
+ 
+diff --git a/fs/readdir.c b/fs/readdir.c
+index 4b466cbb0f3a..47b9ef97e16e 100644
+--- a/fs/readdir.c
++++ b/fs/readdir.c
+@@ -221,6 +221,7 @@ static int filldir(struct dir_context *ctx, const char *name, int namlen,
+ 	int reclen = ALIGN(offsetof(struct linux_dirent, d_name) + namlen + 2,
+ 		sizeof(long));
+ 	int prev_reclen;
++	unsigned long key;
+ 
+ 	buf->error = verify_dirent_name(name, namlen);
+ 	if (unlikely(buf->error))
+@@ -238,7 +239,8 @@ static int filldir(struct dir_context *ctx, const char *name, int namlen,
+ 		return -EINTR;
+ 	dirent = buf->current_dir;
+ 	prev = (void __user *)dirent - prev_reclen;
+-	if (!user_access_begin(prev, reclen + prev_reclen))
++	key = user_access_begin(prev, reclen + prev_reclen, true);
++	if (!key)
+ 		goto efault;
+ 
+ 	/* This might be 'dirent->d_off', but if so it will get overwritten */
+@@ -247,14 +249,14 @@ static int filldir(struct dir_context *ctx, const char *name, int namlen,
+ 	unsafe_put_user(reclen, &dirent->d_reclen, efault_end);
+ 	unsafe_put_user(d_type, (char __user *) dirent + reclen - 1, efault_end);
+ 	unsafe_copy_dirent_name(dirent->d_name, name, namlen, efault_end);
+-	user_access_end();
++	user_access_end(key);
+ 
+ 	buf->current_dir = (void __user *)dirent + reclen;
+ 	buf->prev_reclen = reclen;
+ 	buf->count -= reclen;
+ 	return 0;
+ efault_end:
+-	user_access_end();
++	user_access_end(key);
+ efault:
+ 	buf->error = -EFAULT;
+ 	return -EFAULT;
+@@ -311,6 +313,7 @@ static int filldir64(struct dir_context *ctx, const char *name, int namlen,
+ 	int reclen = ALIGN(offsetof(struct linux_dirent64, d_name) + namlen + 1,
+ 		sizeof(u64));
+ 	int prev_reclen;
++	unsigned long key;
+ 
+ 	buf->error = verify_dirent_name(name, namlen);
+ 	if (unlikely(buf->error))
+@@ -323,7 +326,8 @@ static int filldir64(struct dir_context *ctx, const char *name, int namlen,
+ 		return -EINTR;
+ 	dirent = buf->current_dir;
+ 	prev = (void __user *)dirent - prev_reclen;
+-	if (!user_access_begin(prev, reclen + prev_reclen))
++	key = user_access_begin(prev, reclen + prev_reclen, true);
++	if (!key)
+ 		goto efault;
+ 
+ 	/* This might be 'dirent->d_off', but if so it will get overwritten */
+@@ -332,7 +336,7 @@ static int filldir64(struct dir_context *ctx, const char *name, int namlen,
+ 	unsafe_put_user(reclen, &dirent->d_reclen, efault_end);
+ 	unsafe_put_user(d_type, &dirent->d_type, efault_end);
+ 	unsafe_copy_dirent_name(dirent->d_name, name, namlen, efault_end);
+-	user_access_end();
++	user_access_end(key);
+ 
+ 	buf->prev_reclen = reclen;
+ 	dirent = (void __user *)dirent + reclen;
+@@ -341,7 +345,7 @@ static int filldir64(struct dir_context *ctx, const char *name, int namlen,
+ 	return 0;
+ 
+ efault_end:
+-	user_access_end();
++	user_access_end(key);
+ efault:
+ 	buf->error = -EFAULT;
+ 	return -EFAULT;
+diff --git a/include/linux/uaccess.h b/include/linux/uaccess.h
+index 67f016010aad..394f5029a727 100644
+--- a/include/linux/uaccess.h
++++ b/include/linux/uaccess.h
+@@ -369,8 +369,8 @@ extern long strnlen_unsafe_user(const void __user *unsafe_addr, long count);
+ 	probe_kernel_read(&retval, addr, sizeof(retval))
+ 
+ #ifndef user_access_begin
+-#define user_access_begin(ptr,len) access_ok(ptr, len)
+-#define user_access_end() do { } while (0)
++#define user_access_begin(ptr, len, write) access_ok(ptr, len)
++#define user_access_end(x) do { } while (0)
+ #define unsafe_op_wrap(op, err) do { if (unlikely(op)) goto err; } while (0)
+ #define unsafe_get_user(x,p,e) unsafe_op_wrap(__get_user(x,p),e)
+ #define unsafe_put_user(x,p,e) unsafe_op_wrap(__put_user(x,p),e)
+diff --git a/kernel/compat.c b/kernel/compat.c
+index 95005f849c68..4bcbe1cd761b 100644
+--- a/kernel/compat.c
++++ b/kernel/compat.c
+@@ -258,12 +258,14 @@ long compat_get_bitmap(unsigned long *mask, const compat_ulong_t __user *umask,
+ 		       unsigned long bitmap_size)
+ {
+ 	unsigned long nr_compat_longs;
++	unsigned long key;
+ 
+ 	/* align bitmap up to nearest compat_long_t boundary */
+ 	bitmap_size = ALIGN(bitmap_size, BITS_PER_COMPAT_LONG);
+ 	nr_compat_longs = BITS_TO_COMPAT_LONGS(bitmap_size);
+ 
+-	if (!user_access_begin(umask, bitmap_size / 8))
++	key = user_access_begin(umask, bitmap_size / 8, false);
++	if (!key)
+ 		return -EFAULT;
+ 
+ 	while (nr_compat_longs > 1) {
+@@ -275,11 +277,11 @@ long compat_get_bitmap(unsigned long *mask, const compat_ulong_t __user *umask,
+ 	}
+ 	if (nr_compat_longs)
+ 		unsafe_get_user(*mask, umask++, Efault);
+-	user_access_end();
++	user_access_end(key);
+ 	return 0;
+ 
+ Efault:
+-	user_access_end();
++	user_access_end(key);
+ 	return -EFAULT;
  }
  
--static inline void allow_user_access(void __user *to, const void __user *from, u32 size)
-+static __always_inline void allow_user_access(void __user *to, const void __user *from,
-+					      u32 size, unsigned long dir)
+@@ -287,12 +289,14 @@ long compat_put_bitmap(compat_ulong_t __user *umask, unsigned long *mask,
+ 		       unsigned long bitmap_size)
  {
- 	u32 addr, end;
+ 	unsigned long nr_compat_longs;
++	unsigned long key;
  
--	if (__builtin_constant_p(to) && to == NULL)
-+	BUILD_BUG_ON(!__builtin_constant_p(dir));
-+	if (!(dir & KUAP_W))
- 		return;
+ 	/* align bitmap up to nearest compat_long_t boundary */
+ 	bitmap_size = ALIGN(bitmap_size, BITS_PER_COMPAT_LONG);
+ 	nr_compat_longs = BITS_TO_COMPAT_LONGS(bitmap_size);
  
- 	addr = (__force u32)to;
-@@ -119,11 +121,16 @@ static inline void allow_user_access(void __user *to, const void __user *from, u
- 	kuap_update_sr(mfsrin(addr) & ~SR_KS, addr, end);	/* Clear Ks */
+-	if (!user_access_begin(umask, bitmap_size / 8))
++	key = user_access_begin(umask, bitmap_size / 8, true);
++	if (!key)
+ 		return -EFAULT;
+ 
+ 	while (nr_compat_longs > 1) {
+@@ -303,10 +307,10 @@ long compat_put_bitmap(compat_ulong_t __user *umask, unsigned long *mask,
+ 	}
+ 	if (nr_compat_longs)
+ 		unsafe_put_user((compat_ulong_t)*mask, umask++, Efault);
+-	user_access_end();
++	user_access_end(key);
+ 	return 0;
+ Efault:
+-	user_access_end();
++	user_access_end(key);
+ 	return -EFAULT;
  }
  
--static inline void prevent_user_access(void __user *to, const void __user *from, u32 size)
-+static __always_inline void prevent_user_access(void __user *to, const void __user *from,
-+						u32 size, unsigned long dir)
- {
- 	u32 addr = (__force u32)to;
- 	u32 end = min(addr + size, TASK_SIZE);
+diff --git a/kernel/exit.c b/kernel/exit.c
+index 2833ffb0c211..1cb9c8a879d2 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -1553,6 +1553,7 @@ SYSCALL_DEFINE5(waitid, int, which, pid_t, upid, struct siginfo __user *,
+ 	struct waitid_info info = {.status = 0};
+ 	long err = kernel_waitid(which, upid, &info, options, ru ? &r : NULL);
+ 	int signo = 0;
++	unsigned long key;
  
-+	BUILD_BUG_ON(!__builtin_constant_p(dir));
-+	if (!(dir & KUAP_W))
-+		return;
+ 	if (err > 0) {
+ 		signo = SIGCHLD;
+@@ -1563,7 +1564,8 @@ SYSCALL_DEFINE5(waitid, int, which, pid_t, upid, struct siginfo __user *,
+ 	if (!infop)
+ 		return err;
+ 
+-	if (!user_access_begin(infop, sizeof(*infop)))
++	key = user_access_begin(infop, sizeof(*infop), true);
++	if (!key)
+ 		return -EFAULT;
+ 
+ 	unsafe_put_user(signo, &infop->si_signo, Efault);
+@@ -1572,10 +1574,10 @@ SYSCALL_DEFINE5(waitid, int, which, pid_t, upid, struct siginfo __user *,
+ 	unsafe_put_user(info.pid, &infop->si_pid, Efault);
+ 	unsafe_put_user(info.uid, &infop->si_uid, Efault);
+ 	unsafe_put_user(info.status, &infop->si_status, Efault);
+-	user_access_end();
++	user_access_end(key);
+ 	return err;
+ Efault:
+-	user_access_end();
++	user_access_end(key);
+ 	return -EFAULT;
+ }
+ 
+@@ -1673,6 +1675,8 @@ COMPAT_SYSCALL_DEFINE5(waitid,
+ 	struct waitid_info info = {.status = 0};
+ 	long err = kernel_waitid(which, pid, &info, options, uru ? &ru : NULL);
+ 	int signo = 0;
++	unsigned long key;
 +
- 	if (!addr || addr >= TASK_SIZE || !size)
- 		return;
+ 	if (err > 0) {
+ 		signo = SIGCHLD;
+ 		err = 0;
+@@ -1690,7 +1694,8 @@ COMPAT_SYSCALL_DEFINE5(waitid,
+ 	if (!infop)
+ 		return err;
  
-diff --git a/arch/powerpc/include/asm/book3s/64/kup-radix.h b/arch/powerpc/include/asm/book3s/64/kup-radix.h
-index dbbd22cb80f5..f11315306d41 100644
---- a/arch/powerpc/include/asm/book3s/64/kup-radix.h
-+++ b/arch/powerpc/include/asm/book3s/64/kup-radix.h
-@@ -77,20 +77,21 @@ static inline void set_kuap(unsigned long value)
- 	isync();
+-	if (!user_access_begin(infop, sizeof(*infop)))
++	key = user_access_begin(infop, sizeof(*infop), true);
++	if (!key)
+ 		return -EFAULT;
+ 
+ 	unsafe_put_user(signo, &infop->si_signo, Efault);
+@@ -1699,10 +1704,10 @@ COMPAT_SYSCALL_DEFINE5(waitid,
+ 	unsafe_put_user(info.pid, &infop->si_pid, Efault);
+ 	unsafe_put_user(info.uid, &infop->si_uid, Efault);
+ 	unsafe_put_user(info.status, &infop->si_status, Efault);
+-	user_access_end();
++	user_access_end(key);
+ 	return err;
+ Efault:
+-	user_access_end();
++	user_access_end(key);
+ 	return -EFAULT;
  }
- 
--static inline void allow_user_access(void __user *to, const void __user *from,
--				     unsigned long size)
-+static __always_inline void allow_user_access(void __user *to, const void __user *from,
-+					      unsigned long size, unsigned long dir)
- {
- 	// This is written so we can resolve to a single case at build time
--	if (__builtin_constant_p(to) && to == NULL)
-+	BUILD_BUG_ON(!__builtin_constant_p(dir));
-+	if (dir == KUAP_R)
- 		set_kuap(AMR_KUAP_BLOCK_WRITE);
--	else if (__builtin_constant_p(from) && from == NULL)
-+	else if (dir == KUAP_W)
- 		set_kuap(AMR_KUAP_BLOCK_READ);
- 	else
- 		set_kuap(0);
- }
- 
- static inline void prevent_user_access(void __user *to, const void __user *from,
--				       unsigned long size)
-+				       unsigned long size, unsigned long dir)
- {
- 	set_kuap(AMR_KUAP_BLOCKED);
- }
-diff --git a/arch/powerpc/include/asm/kup.h b/arch/powerpc/include/asm/kup.h
-index 812e66f31934..ff57bfcb88f7 100644
---- a/arch/powerpc/include/asm/kup.h
-+++ b/arch/powerpc/include/asm/kup.h
-@@ -2,6 +2,10 @@
- #ifndef _ASM_POWERPC_KUP_H_
- #define _ASM_POWERPC_KUP_H_
- 
-+#define KUAP_R		1
-+#define KUAP_W		2
-+#define KUAP_RW		(KUAP_R | KUAP_W)
-+
- #ifdef CONFIG_PPC64
- #include <asm/book3s/64/kup-radix.h>
  #endif
-@@ -42,9 +46,9 @@ void setup_kuap(bool disabled);
- #else
- static inline void setup_kuap(bool disabled) { }
- static inline void allow_user_access(void __user *to, const void __user *from,
--				     unsigned long size) { }
-+				     unsigned long size, unsigned long dir) { }
- static inline void prevent_user_access(void __user *to, const void __user *from,
--				       unsigned long size) { }
-+				       unsigned long size, unsigned long dir) { }
- static inline bool
- bad_kuap_fault(struct pt_regs *regs, unsigned long address, bool is_write)
+diff --git a/lib/strncpy_from_user.c b/lib/strncpy_from_user.c
+index dccb95af6003..7184fb766439 100644
+--- a/lib/strncpy_from_user.c
++++ b/lib/strncpy_from_user.c
+@@ -113,12 +113,14 @@ long strncpy_from_user(char *dst, const char __user *src, long count)
+ 	if (likely(src_addr < max_addr)) {
+ 		unsigned long max = max_addr - src_addr;
+ 		long retval;
++		unsigned long key;
+ 
+ 		kasan_check_write(dst, count);
+ 		check_object_size(dst, count, false);
+-		if (user_access_begin(src, max)) {
++		key = user_access_begin(src, max, false);
++		if (key) {
+ 			retval = do_strncpy_from_user(dst, src, count, max);
+-			user_access_end();
++			user_access_end(key);
+ 			return retval;
+ 		}
+ 	}
+diff --git a/lib/strnlen_user.c b/lib/strnlen_user.c
+index 6c0005d5dd5c..819e355b8608 100644
+--- a/lib/strnlen_user.c
++++ b/lib/strnlen_user.c
+@@ -108,10 +108,12 @@ long strnlen_user(const char __user *str, long count)
+ 	if (likely(src_addr < max_addr)) {
+ 		unsigned long max = max_addr - src_addr;
+ 		long retval;
++		unsigned long key;
+ 
+-		if (user_access_begin(str, max)) {
++		key = user_access_begin(str, max, false);
++		if (key) {
+ 			retval = do_strnlen_user(str, count, max);
+-			user_access_end();
++			user_access_end(key);
+ 			return retval;
+ 		}
+ 	}
+diff --git a/lib/usercopy.c b/lib/usercopy.c
+index cbb4d9ec00f2..9e03ca88ad32 100644
+--- a/lib/usercopy.c
++++ b/lib/usercopy.c
+@@ -51,6 +51,7 @@ int check_zeroed_user(const void __user *from, size_t size)
  {
-@@ -54,24 +58,36 @@ bad_kuap_fault(struct pt_regs *regs, unsigned long address, bool is_write)
+ 	unsigned long val;
+ 	uintptr_t align = (uintptr_t) from % sizeof(unsigned long);
++	unsigned long key;
  
- static inline void allow_read_from_user(const void __user *from, unsigned long size)
- {
--	allow_user_access(NULL, from, size);
-+	allow_user_access(NULL, from, size, KUAP_R);
+ 	if (unlikely(size == 0))
+ 		return 1;
+@@ -58,7 +59,8 @@ int check_zeroed_user(const void __user *from, size_t size)
+ 	from -= align;
+ 	size += align;
+ 
+-	if (!user_access_begin(from, size))
++	key = user_access_begin(from, size, false);
++	if (!key)
+ 		return -EFAULT;
+ 
+ 	unsafe_get_user(val, (unsigned long __user *) from, err_fault);
+@@ -79,10 +81,10 @@ int check_zeroed_user(const void __user *from, size_t size)
+ 		val &= aligned_byte_mask(size);
+ 
+ done:
+-	user_access_end();
++	user_access_end(key);
+ 	return (val == 0);
+ err_fault:
+-	user_access_end();
++	user_access_end(key);
+ 	return -EFAULT;
  }
- 
- static inline void allow_write_to_user(void __user *to, unsigned long size)
- {
--	allow_user_access(to, NULL, size);
-+	allow_user_access(to, NULL, size, KUAP_W);
-+}
-+
-+static inline void allow_read_write_user(void __user *to, const void __user *from,
-+					 unsigned long size)
-+{
-+	allow_user_access(to, from, size, KUAP_RW);
- }
- 
- static inline void prevent_read_from_user(const void __user *from, unsigned long size)
- {
--	prevent_user_access(NULL, from, size);
-+	prevent_user_access(NULL, from, size, KUAP_R);
- }
- 
- static inline void prevent_write_to_user(void __user *to, unsigned long size)
- {
--	prevent_user_access(to, NULL, size);
-+	prevent_user_access(to, NULL, size, KUAP_W);
-+}
-+
-+static inline void prevent_read_write_user(void __user *to, const void __user *from,
-+					   unsigned long size)
-+{
-+	prevent_user_access(to, from, size, KUAP_RW);
- }
- 
- #endif /* !__ASSEMBLY__ */
- 
--#endif /* _ASM_POWERPC_KUP_H_ */
-+#endif /* _ASM_POWERPC_KUAP_H_ */
-diff --git a/arch/powerpc/include/asm/nohash/32/kup-8xx.h b/arch/powerpc/include/asm/nohash/32/kup-8xx.h
-index f2fea603b929..1d70c80366fd 100644
---- a/arch/powerpc/include/asm/nohash/32/kup-8xx.h
-+++ b/arch/powerpc/include/asm/nohash/32/kup-8xx.h
-@@ -35,13 +35,13 @@
- #include <asm/reg.h>
- 
- static inline void allow_user_access(void __user *to, const void __user *from,
--				     unsigned long size)
-+				     unsigned long size, unsigned long dir)
- {
- 	mtspr(SPRN_MD_AP, MD_APG_INIT);
- }
- 
- static inline void prevent_user_access(void __user *to, const void __user *from,
--				       unsigned long size)
-+				       unsigned long size, unsigned long dir)
- {
- 	mtspr(SPRN_MD_AP, MD_APG_KUAP);
- }
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index c92fe7fe9692..cafad1960e76 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -313,9 +313,9 @@ raw_copy_in_user(void __user *to, const void __user *from, unsigned long n)
- 	unsigned long ret;
- 
- 	barrier_nospec();
--	allow_user_access(to, from, n);
-+	allow_read_write_user(to, from, n);
- 	ret = __copy_tofrom_user(to, from, n);
--	prevent_user_access(to, from, n);
-+	prevent_read_write_user(to, from, n);
- 	return ret;
- }
- #endif /* __powerpc64__ */
+ EXPORT_SYMBOL(check_zeroed_user);
 -- 
 2.25.0
 
