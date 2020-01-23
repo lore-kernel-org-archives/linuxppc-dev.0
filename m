@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A1894C2D0DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jan 2020 13:06:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A8DDC2D0DB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jan 2020 13:11:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 07E7924655
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jan 2020 13:06:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id AB35D24655
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jan 2020 13:11:28 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="nBdpb5YM"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 07E7924655
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="cMtJQAFE"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AB35D24655
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 483Mww3zcgzDqVV
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jan 2020 00:06:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 483N2P4ql3zDqS6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jan 2020 00:11:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,52 +29,54 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=nBdpb5YM; dkim-atps=neutral
+ header.s=mail header.b=cMtJQAFE; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 483MnW5CKrzDqS6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2020 00:00:00 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 483MnW5C0ZzDqRW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jan 2020 23:59:56 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 483Mn75tf2z9vB4d;
- Thu, 23 Jan 2020 13:59:55 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 483Mn35jc3z9vB4Y;
+ Thu, 23 Jan 2020 13:59:51 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=nBdpb5YM; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=cMtJQAFE; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 2VSHYc83-jVL; Thu, 23 Jan 2020 13:59:55 +0100 (CET)
+ with ESMTP id t-xxTia2otsD; Thu, 23 Jan 2020 13:59:51 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 483Mn74sRwz9vB4X;
- Thu, 23 Jan 2020 13:59:55 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 483Mn34ZCWz9vB4X;
+ Thu, 23 Jan 2020 13:59:51 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1579784395; bh=9n0DhrUtn+3U5yRRYzDBPdkThpSiP75IUKn1XEEM8og=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=nBdpb5YMmUh2lNpfEL+Gta03snuJRNE2vRku/B1r85tUbHzfLEgwusl207xVbrUJB
- gOCwiorGN+yt7yJ7p3OV21jba8iolfaF/JPi8vpOLbwlQbD8eRLND3hd5OHauAx+T2
- Uf3flEYujkol17gOoxK1ddCLi6P4WItJSw1b8TkI=
+ t=1579784391; bh=u5CrsfyCaTFJUOottFM+3vIgDy4gsnvhbgkMgcGLTTo=;
+ h=From:Subject:To:Cc:Date:From;
+ b=cMtJQAFExU8asQxxieqo6GC6YKTxr5Jl/y/t9rbfuWH1sClMhVErgyDQWQPBvuIn+
+ GU3xh3j5Te71uKNMI7wyXFIrZ7P1Dv9XDndroFQ8VPN/Vu0YnJjRpZzYPGMhCcpW5d
+ W4iqAStZIDFlh0ytcJGyoD2q45EjFOXE792HAeX4=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id BB0C98B82C;
- Thu, 23 Jan 2020 13:59:56 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id DCE6B8B82C;
+ Thu, 23 Jan 2020 13:59:52 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 14fKxtcIuTAx; Thu, 23 Jan 2020 13:59:56 +0100 (CET)
+ with ESMTP id yUXeLRtE7w0P; Thu, 23 Jan 2020 13:59:52 +0100 (CET)
 Received: from po14934vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 804798B826;
- Thu, 23 Jan 2020 13:59:56 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 8A9BD8B826;
+ Thu, 23 Jan 2020 13:59:52 +0100 (CET)
 Received: by po14934vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 5757E651C0; Thu, 23 Jan 2020 12:59:56 +0000 (UTC)
-Message-Id: <8374d73eced8ac93d756e606ca64c6c3140c8ea8.1579783936.git.christophe.leroy@c-s.fr>
-In-Reply-To: <fed4f49349913cb6739dac647ba6a61d56b989d2.1579783936.git.christophe.leroy@c-s.fr>
-References: <fed4f49349913cb6739dac647ba6a61d56b989d2.1579783936.git.christophe.leroy@c-s.fr>
+ id 3E63F651C0; Thu, 23 Jan 2020 12:59:52 +0000 (UTC)
+Message-Id: <fed4f49349913cb6739dac647ba6a61d56b989d2.1579783936.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 5/7] powerpc/32s: Drop NULL addr verification
+Subject: [PATCH v3 1/7] fs/readdir: Fix filldir() and filldir64() use of
+ user_access_begin()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Thu, 23 Jan 2020 12:59:56 +0000 (UTC)
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Alexander Viro <viro@zeniv.linux.org.uk>,
+ Andrew Morton <akpm@linux-foundation.org>
+Date: Thu, 23 Jan 2020 12:59:52 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,61 +94,201 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-NULL addr is a user address. Don't waste time checking it. If
-someone tries to access it, it will SIGFAULT the same way as for
-address 1, so no need to make it special.
+Some architectures grant full access to userspace regardless of the
+address/len passed to user_access_begin(), but other architectures
+only grant access to the requested area.
 
-The special case is when not doing a write, in that case we want
-to drop the entire function. This is now handled by 'dir' param
-and not by the nulity of 'to' anymore.
+For example, on 32 bits powerpc (book3s/32), access is granted by
+segments of 256 Mbytes.
 
-Also make beginning of prevent_user_access() similar
-to beginning of allow_user_access(), and tell the compiler
-that writing in kernel space or with a 0 length is unlikely
+Modify filldir() and filldir64() to request the real area they need
+to get access to, i.e. the area covering the parent dirent (if any)
+and the contiguous current dirent.
 
+Suggested-by: Linus Torvalds <torvalds@linux-foundation.org>
+Fixes: 9f79b78ef744 ("Convert filldir[64]() from __put_user() to unsafe_put_user()")
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
-v2: no change
-v3: no change
+v2: have user_access_begin() cover both parent dirent (if any) and current dirent
+v3: replaced by patch from Linus
 ---
- arch/powerpc/include/asm/book3s/32/kup.h | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ fs/readdir.c | 70 +++++++++++++++++++++++++---------------------------
+ 1 file changed, 34 insertions(+), 36 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/32/kup.h b/arch/powerpc/include/asm/book3s/32/kup.h
-index d765515bd1c1..3c1798e56b55 100644
---- a/arch/powerpc/include/asm/book3s/32/kup.h
-+++ b/arch/powerpc/include/asm/book3s/32/kup.h
-@@ -113,7 +113,7 @@ static __always_inline void allow_user_access(void __user *to, const void __user
- 
- 	addr = (__force u32)to;
- 
--	if (!addr || addr >= TASK_SIZE || !size)
-+	if (unlikely(addr >= TASK_SIZE || !size))
- 		return;
- 
- 	end = min(addr + size, TASK_SIZE);
-@@ -124,16 +124,18 @@ static __always_inline void allow_user_access(void __user *to, const void __user
- static __always_inline void prevent_user_access(void __user *to, const void __user *from,
- 						u32 size, unsigned long dir)
+diff --git a/fs/readdir.c b/fs/readdir.c
+index d26d5ea4de7b..4b466cbb0f3a 100644
+--- a/fs/readdir.c
++++ b/fs/readdir.c
+@@ -206,7 +206,7 @@ struct linux_dirent {
+ struct getdents_callback {
+ 	struct dir_context ctx;
+ 	struct linux_dirent __user * current_dir;
+-	struct linux_dirent __user * previous;
++	int prev_reclen;
+ 	int count;
+ 	int error;
+ };
+@@ -214,12 +214,13 @@ struct getdents_callback {
+ static int filldir(struct dir_context *ctx, const char *name, int namlen,
+ 		   loff_t offset, u64 ino, unsigned int d_type)
  {
--	u32 addr = (__force u32)to;
--	u32 end = min(addr + size, TASK_SIZE);
-+	u32 addr, end;
+-	struct linux_dirent __user * dirent;
++	struct linux_dirent __user *dirent, *prev;
+ 	struct getdents_callback *buf =
+ 		container_of(ctx, struct getdents_callback, ctx);
+ 	unsigned long d_ino;
+ 	int reclen = ALIGN(offsetof(struct linux_dirent, d_name) + namlen + 2,
+ 		sizeof(long));
++	int prev_reclen;
  
- 	BUILD_BUG_ON(!__builtin_constant_p(dir));
- 	if (!(dir & KUAP_W))
- 		return;
- 
--	if (!addr || addr >= TASK_SIZE || !size)
-+	addr = (__force u32)to;
+ 	buf->error = verify_dirent_name(name, namlen);
+ 	if (unlikely(buf->error))
+@@ -232,28 +233,24 @@ static int filldir(struct dir_context *ctx, const char *name, int namlen,
+ 		buf->error = -EOVERFLOW;
+ 		return -EOVERFLOW;
+ 	}
+-	dirent = buf->previous;
+-	if (dirent && signal_pending(current))
++	prev_reclen = buf->prev_reclen;
++	if (prev_reclen && signal_pending(current))
+ 		return -EINTR;
+-
+-	/*
+-	 * Note! This range-checks 'previous' (which may be NULL).
+-	 * The real range was checked in getdents
+-	 */
+-	if (!user_access_begin(dirent, sizeof(*dirent)))
+-		goto efault;
+-	if (dirent)
+-		unsafe_put_user(offset, &dirent->d_off, efault_end);
+ 	dirent = buf->current_dir;
++	prev = (void __user *)dirent - prev_reclen;
++	if (!user_access_begin(prev, reclen + prev_reclen))
++		goto efault;
 +
-+	if (unlikely(addr >= TASK_SIZE || !size))
- 		return;
++	/* This might be 'dirent->d_off', but if so it will get overwritten */
++	unsafe_put_user(offset, &prev->d_off, efault_end);
+ 	unsafe_put_user(d_ino, &dirent->d_ino, efault_end);
+ 	unsafe_put_user(reclen, &dirent->d_reclen, efault_end);
+ 	unsafe_put_user(d_type, (char __user *) dirent + reclen - 1, efault_end);
+ 	unsafe_copy_dirent_name(dirent->d_name, name, namlen, efault_end);
+ 	user_access_end();
  
-+	end = min(addr + size, TASK_SIZE);
- 	current->thread.kuap = 0;
- 	kuap_update_sr(mfsrin(addr) | SR_KS, addr, end);	/* set Ks */
- }
+-	buf->previous = dirent;
+-	dirent = (void __user *)dirent + reclen;
+-	buf->current_dir = dirent;
++	buf->current_dir = (void __user *)dirent + reclen;
++	buf->prev_reclen = reclen;
+ 	buf->count -= reclen;
+ 	return 0;
+ efault_end:
+@@ -267,7 +264,6 @@ SYSCALL_DEFINE3(getdents, unsigned int, fd,
+ 		struct linux_dirent __user *, dirent, unsigned int, count)
+ {
+ 	struct fd f;
+-	struct linux_dirent __user * lastdirent;
+ 	struct getdents_callback buf = {
+ 		.ctx.actor = filldir,
+ 		.count = count,
+@@ -285,8 +281,10 @@ SYSCALL_DEFINE3(getdents, unsigned int, fd,
+ 	error = iterate_dir(f.file, &buf.ctx);
+ 	if (error >= 0)
+ 		error = buf.error;
+-	lastdirent = buf.previous;
+-	if (lastdirent) {
++	if (buf.prev_reclen) {
++		struct linux_dirent __user *lastdirent;
++		lastdirent = (void __user *)buf.current_dir - buf.prev_reclen;
++
+ 		if (put_user(buf.ctx.pos, &lastdirent->d_off))
+ 			error = -EFAULT;
+ 		else
+@@ -299,7 +297,7 @@ SYSCALL_DEFINE3(getdents, unsigned int, fd,
+ struct getdents_callback64 {
+ 	struct dir_context ctx;
+ 	struct linux_dirent64 __user * current_dir;
+-	struct linux_dirent64 __user * previous;
++	int prev_reclen;
+ 	int count;
+ 	int error;
+ };
+@@ -307,11 +305,12 @@ struct getdents_callback64 {
+ static int filldir64(struct dir_context *ctx, const char *name, int namlen,
+ 		     loff_t offset, u64 ino, unsigned int d_type)
+ {
+-	struct linux_dirent64 __user *dirent;
++	struct linux_dirent64 __user *dirent, *prev;
+ 	struct getdents_callback64 *buf =
+ 		container_of(ctx, struct getdents_callback64, ctx);
+ 	int reclen = ALIGN(offsetof(struct linux_dirent64, d_name) + namlen + 1,
+ 		sizeof(u64));
++	int prev_reclen;
+ 
+ 	buf->error = verify_dirent_name(name, namlen);
+ 	if (unlikely(buf->error))
+@@ -319,30 +318,28 @@ static int filldir64(struct dir_context *ctx, const char *name, int namlen,
+ 	buf->error = -EINVAL;	/* only used if we fail.. */
+ 	if (reclen > buf->count)
+ 		return -EINVAL;
+-	dirent = buf->previous;
+-	if (dirent && signal_pending(current))
++	prev_reclen = buf->prev_reclen;
++	if (prev_reclen && signal_pending(current))
+ 		return -EINTR;
+-
+-	/*
+-	 * Note! This range-checks 'previous' (which may be NULL).
+-	 * The real range was checked in getdents
+-	 */
+-	if (!user_access_begin(dirent, sizeof(*dirent)))
+-		goto efault;
+-	if (dirent)
+-		unsafe_put_user(offset, &dirent->d_off, efault_end);
+ 	dirent = buf->current_dir;
++	prev = (void __user *)dirent - prev_reclen;
++	if (!user_access_begin(prev, reclen + prev_reclen))
++		goto efault;
++
++	/* This might be 'dirent->d_off', but if so it will get overwritten */
++	unsafe_put_user(offset, &prev->d_off, efault_end);
+ 	unsafe_put_user(ino, &dirent->d_ino, efault_end);
+ 	unsafe_put_user(reclen, &dirent->d_reclen, efault_end);
+ 	unsafe_put_user(d_type, &dirent->d_type, efault_end);
+ 	unsafe_copy_dirent_name(dirent->d_name, name, namlen, efault_end);
+ 	user_access_end();
+ 
+-	buf->previous = dirent;
++	buf->prev_reclen = reclen;
+ 	dirent = (void __user *)dirent + reclen;
+ 	buf->current_dir = dirent;
+ 	buf->count -= reclen;
+ 	return 0;
++
+ efault_end:
+ 	user_access_end();
+ efault:
+@@ -354,7 +351,6 @@ int ksys_getdents64(unsigned int fd, struct linux_dirent64 __user *dirent,
+ 		    unsigned int count)
+ {
+ 	struct fd f;
+-	struct linux_dirent64 __user * lastdirent;
+ 	struct getdents_callback64 buf = {
+ 		.ctx.actor = filldir64,
+ 		.count = count,
+@@ -372,9 +368,11 @@ int ksys_getdents64(unsigned int fd, struct linux_dirent64 __user *dirent,
+ 	error = iterate_dir(f.file, &buf.ctx);
+ 	if (error >= 0)
+ 		error = buf.error;
+-	lastdirent = buf.previous;
+-	if (lastdirent) {
++	if (buf.prev_reclen) {
++		struct linux_dirent64 __user *lastdirent;
+ 		typeof(lastdirent->d_off) d_off = buf.ctx.pos;
++
++		lastdirent = (void __user *)buf.current_dir - buf.prev_reclen;
+ 		if (__put_user(d_off, &lastdirent->d_off))
+ 			error = -EFAULT;
+ 		else
 -- 
 2.25.0
 
