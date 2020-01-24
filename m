@@ -2,69 +2,78 @@ Return-Path: <SRS0=JQJc=3N=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CA088C35242
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jan 2020 13:27:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 02031C2D0DB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jan 2020 17:06:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6E2092075D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jan 2020 13:27:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6E2092075D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	by mail.kernel.org (Postfix) with ESMTPS id 5448020709
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jan 2020 17:06:18 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="A3qsmNly"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5448020709
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4840Ky2krwzDqXq
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Jan 2020 00:27:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=nefkom.net (client-ip=2001:a60:0:28:0:1:25:1;
- helo=mail-out.m-online.net; envelope-from=whitebox@nefkom.net;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-m68k.org
-X-Greylist: delayed 526 seconds by postgrey-1.36 at bilbo;
- Sat, 25 Jan 2020 00:23:05 AEDT
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:28:0:1:25:1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4845Bv2VqDzDqg8
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Jan 2020 04:06:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
+ header.s=mail header.b=A3qsmNly; dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4840FP1YkJzDqZp
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jan 2020 00:23:04 +1100 (AEDT)
-Received: from frontend01.mail.m-online.net (unknown [192.168.8.182])
- by mail-out.m-online.net (Postfix) with ESMTP id 4840334LS5z1rcCL;
- Fri, 24 Jan 2020 14:14:07 +0100 (CET)
-Received: from localhost (dynscan1.mnet-online.de [192.168.6.70])
- by mail.m-online.net (Postfix) with ESMTP id 4840333w79z1qtfj;
- Fri, 24 Jan 2020 14:14:07 +0100 (CET)
-X-Virus-Scanned: amavisd-new at mnet-online.de
-Received: from mail.mnet-online.de ([192.168.8.182])
- by localhost (dynscan1.mail.m-online.net [192.168.6.70]) (amavisd-new,
- port 10024)
- with ESMTP id OTsYTgp8ntPR; Fri, 24 Jan 2020 14:14:06 +0100 (CET)
-X-Auth-Info: xmms9xcLKLS2+MW3eS4U+yowtELEEjqovyRjmONM1OFC0M9wZJ1K7vO9b17vJEyA
-Received: from igel.home (ppp-46-244-165-242.dynamic.mnet-online.de
- [46.244.165.242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.mnet-online.de (Postfix) with ESMTPSA;
- Fri, 24 Jan 2020 14:14:06 +0100 (CET)
-Received: by igel.home (Postfix, from userid 1000)
- id 05AB72C008F; Fri, 24 Jan 2020 14:14:05 +0100 (CET)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Subject: Re: vmlinux ELF header sometimes corrupt
-References: <71aa76d0-a3b8-b4f3-a7c3-766cfb75412f@rasmusvillemoes.dk>
-X-Yow: TAILFINS!!  ...click...
-Date: Fri, 24 Jan 2020 14:14:05 +0100
-In-Reply-To: <71aa76d0-a3b8-b4f3-a7c3-766cfb75412f@rasmusvillemoes.dk> (Rasmus
- Villemoes's message of "Wed, 22 Jan 2020 18:52:21 +0100")
-Message-ID: <87sgk5m1ya.fsf@igel.home>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48458M12VkzDqbh
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jan 2020 04:04:00 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 48458B3zJfz9v0MC;
+ Fri, 24 Jan 2020 18:03:54 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=A3qsmNly; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id PlrBI8ncfS8t; Fri, 24 Jan 2020 18:03:54 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 48458B1zkFz9v0M8;
+ Fri, 24 Jan 2020 18:03:54 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1579885434; bh=mrhcIGGf29wPqKelAuVacdgsgYagP0iavvcKEGj+5FI=;
+ h=From:Subject:To:Cc:Date:From;
+ b=A3qsmNlyynmqC5scs6xaMpM8BusLtOt/41xLmy7BykDfEOf4zxA3bllbpVQoyOXhk
+ Eb+sQYh0jfA/rV3WrY5uwNVoadrNFv5HZHgZrvhPd65yfhokdfuNAydFR/8nJkP5cf
+ KZZHCT1tLe8KSp+agMP7XVYhGic0VJP3i5gNbmpI=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 680488B86A;
+ Fri, 24 Jan 2020 18:03:54 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id FQF1SzBxpfT8; Fri, 24 Jan 2020 18:03:54 +0100 (CET)
+Received: from po14934vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 46D5E8B86B;
+ Fri, 24 Jan 2020 18:03:49 +0100 (CET)
+Received: by po14934vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 3C582651F6; Fri, 24 Jan 2020 17:03:48 +0000 (UTC)
+Message-Id: <872477f7c7552d3bb7baf0b302398fcd42c5fcfd.1579885334.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc/32: Add missing context synchronisation with
+ CONFIG_VMAP_STACK
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Fri, 24 Jan 2020 17:03:48 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,26 +85,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>,
- Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Jan 22 2020, Rasmus Villemoes wrote:
+After reactivation of data translation by modifying MSR[DR], a isync
+is required to ensure the translation is effective.
 
-> So the inode number and mtime/ctime are exactly the same, but for some
-> reason Blocks: has changed? This is on an ext4 filesystem, but I don't
-> suspect the filesystem to be broken, because it's always just vmlinux
-> that ends up corrupt, and always in exactly this way with the first 52
-> bytes having been wiped.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+Rebased on powerpc/merge-test
 
-Note that the size of the ELF header (Elf32_Ehdr) is 52 bytes.
+@mpe: If not too late:
+- change to head_32.h should be squashed into "powerpc/32: prepare for CONFIG_VMAP_STACK"
+- change to head_32.S should be squashed into "powerpc/32s: Enable CONFIG_VMAP_STACK"
 
-Andreas.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/kernel/head_32.S | 1 +
+ arch/powerpc/kernel/head_32.h | 2 ++
+ 2 files changed, 3 insertions(+)
 
+diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+index cb7864091641..0493fcac6409 100644
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -277,6 +277,7 @@ MachineCheck:
+ #ifdef CONFIG_VMAP_STACK
+ 	li	r11, MSR_KERNEL & ~(MSR_IR | MSR_RI) /* can take DTLB miss */
+ 	mtmsr	r11
++	isync
+ #endif
+ #ifdef CONFIG_PPC_CHRP
+ 	mfspr	r11, SPRN_SPRG_THREAD
+diff --git a/arch/powerpc/kernel/head_32.h b/arch/powerpc/kernel/head_32.h
+index 73a035b40dbf..a6a5fbbf8504 100644
+--- a/arch/powerpc/kernel/head_32.h
++++ b/arch/powerpc/kernel/head_32.h
+@@ -43,6 +43,7 @@
+ 	.ifeq	\for_rtas
+ 	li	r11, MSR_KERNEL & ~(MSR_IR | MSR_RI) /* can take DTLB miss */
+ 	mtmsr	r11
++	isync
+ 	.endif
+ 	subi	r11, r1, INT_FRAME_SIZE		/* use r1 if kernel */
+ #else
+@@ -123,6 +124,7 @@
+ #ifdef CONFIG_VMAP_STACK
+ 	li	r9, MSR_KERNEL & ~(MSR_IR | MSR_RI) /* can take DTLB miss */
+ 	mtmsr	r9
++	isync
+ #endif
+ 	tovirt_vmstack r12, r12
+ 	tophys_novmstack r11, r11
 -- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 7578 EB47 D4E5 4D69 2510  2552 DF73 E780 A9DA AEC1
-"And now for something completely different."
+2.25.0
+
