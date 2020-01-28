@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77806C2D0DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2020 22:13:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3ECBC2D0DB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2020 22:16:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 304AB21739
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2020 22:13:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 304AB21739
+	by mail.kernel.org (Postfix) with ESMTPS id 8B58A21739
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2020 22:16:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8B58A21739
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=namei.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 486gqx2D4MzDqN1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 09:13:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 486gtZ2yFrzDqLx
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 09:16:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=namei.org
  (client-ip=65.99.196.166; helo=namei.org; envelope-from=jmorris@namei.org;
@@ -28,20 +28,20 @@ Authentication-Results: lists.ozlabs.org;
 Received: from namei.org (namei.org [65.99.196.166])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 486glw5grTzDqMp
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2020 09:10:20 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 486gmH0523zDqKj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2020 09:10:38 +1100 (AEDT)
 Received: from localhost (localhost [127.0.0.1])
- by namei.org (8.14.4/8.14.4) with ESMTP id 00SLHB5E004552;
- Tue, 28 Jan 2020 21:17:11 GMT
-Date: Wed, 29 Jan 2020 08:17:11 +1100 (AEDT)
+ by namei.org (8.14.4/8.14.4) with ESMTP id 00SLHXhJ004567;
+ Tue, 28 Jan 2020 21:17:33 GMT
+Date: Wed, 29 Jan 2020 08:17:33 +1100 (AEDT)
 From: James Morris <jmorris@namei.org>
 To: Alexey Budankov <alexey.budankov@linux.intel.com>
-Subject: Re: [PATCH v6 06/10] trace/bpf_trace: open access for CAP_PERFMON
+Subject: Re: [PATCH v6 07/10] powerpc/perf: open access for CAP_PERFMON
  privileged process
-In-Reply-To: <4fdbe164-d83d-a52f-4e8c-fe8bd15c6f8c@linux.intel.com>
-Message-ID: <alpine.LRH.2.21.2001290816510.2204@namei.org>
+In-Reply-To: <3ce8fc61-a61f-5efc-9167-94f5d39b6f1b@linux.intel.com>
+Message-ID: <alpine.LRH.2.21.2001290817160.2204@namei.org>
 References: <74d524ab-ac11-a7b8-1052-eba10f117e09@linux.intel.com>
- <4fdbe164-d83d-a52f-4e8c-fe8bd15c6f8c@linux.intel.com>
+ <3ce8fc61-a61f-5efc-9167-94f5d39b6f1b@linux.intel.com>
 User-Agent: Alpine 2.21 (LRH 202 2017-01-01)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -84,30 +84,37 @@ Sender: "Linuxppc-dev"
 
 On Tue, 28 Jan 2020, Alexey Budankov wrote:
 
-> 
 > Signed-off-by: Alexey Budankov <alexey.budankov@linux.intel.com>
 > ---
->  kernel/trace/bpf_trace.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  arch/powerpc/perf/imc-pmu.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/kernel/trace/bpf_trace.c b/kernel/trace/bpf_trace.c
-> index e5ef4ae9edb5..334f1d71ebb1 100644
-> --- a/kernel/trace/bpf_trace.c
-> +++ b/kernel/trace/bpf_trace.c
-> @@ -1395,7 +1395,7 @@ int perf_event_query_prog_array(struct perf_event *event, void __user *info)
->  	u32 *ids, prog_cnt, ids_len;
->  	int ret;
+> diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
+> index cb50a9e1fd2d..e837717492e4 100644
+> --- a/arch/powerpc/perf/imc-pmu.c
+> +++ b/arch/powerpc/perf/imc-pmu.c
+> @@ -898,7 +898,7 @@ static int thread_imc_event_init(struct perf_event *event)
+>  	if (event->attr.type != event->pmu->type)
+>  		return -ENOENT;
 >  
 > -	if (!capable(CAP_SYS_ADMIN))
 > +	if (!perfmon_capable())
->  		return -EPERM;
->  	if (event->attr.type != PERF_TYPE_TRACEPOINT)
->  		return -EINVAL;
+>  		return -EACCES;
+>  
+>  	/* Sampling not supported */
+> @@ -1307,7 +1307,7 @@ static int trace_imc_event_init(struct perf_event *event)
+>  	if (event->attr.type != event->pmu->type)
+>  		return -ENOENT;
+>  
+> -	if (!capable(CAP_SYS_ADMIN))
+> +	if (!perfmon_capable())
+>  		return -EACCES;
+>  
+>  	/* Return if this is a couting event */
 > 
 
 
 Acked-by: James Morris <jamorris@linux.microsoft.com>
-
 
 -- 
 James Morris
