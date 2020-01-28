@@ -2,49 +2,60 @@ Return-Path: <SRS0=Ynhu=3R=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D17BC2D0DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2020 22:18:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 66DB8C2D0DB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2020 22:20:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B9FC021739
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2020 22:18:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B9FC021739
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=namei.org
+	by mail.kernel.org (Postfix) with ESMTPS id 0498421739
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2020 22:20:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0498421739
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codesourcery.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 486gxC3j2wzDqN9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 09:18:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=namei.org
- (client-ip=65.99.196.166; helo=namei.org; envelope-from=jmorris@namei.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=namei.org
-Received: from namei.org (namei.org [65.99.196.166])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 486gmh3XltzDqMb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2020 09:11:00 +1100 (AEDT)
-Received: from localhost (localhost [127.0.0.1])
- by namei.org (8.14.4/8.14.4) with ESMTP id 00SLGe9n004527;
- Tue, 28 Jan 2020 21:16:40 GMT
-Date: Wed, 29 Jan 2020 08:16:40 +1100 (AEDT)
-From: James Morris <jmorris@namei.org>
-To: Alexey Budankov <alexey.budankov@linux.intel.com>
-Subject: Re: [PATCH v6 03/10] perf/core: open access to probes for CAP_PERFMON
- privileged process
-In-Reply-To: <6cdc10f2-31e5-6d71-7d71-c6b5250b74f1@linux.intel.com>
-Message-ID: <alpine.LRH.2.21.2001290816290.2204@namei.org>
-References: <74d524ab-ac11-a7b8-1052-eba10f117e09@linux.intel.com>
- <6cdc10f2-31e5-6d71-7d71-c6b5250b74f1@linux.intel.com>
-User-Agent: Alpine 2.21 (LRH 202 2017-01-01)
+	by lists.ozlabs.org (Postfix) with ESMTP id 486gz22qdSzDqP6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 09:19:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=mentor.com (client-ip=68.232.129.153; helo=esa1.mentor.iphmx.com;
+ envelope-from=joseph_myers@mentor.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=codesourcery.com
+X-Greylist: delayed 71 seconds by postgrey-1.36 at bilbo;
+ Wed, 29 Jan 2020 09:18:09 AEDT
+Received: from esa1.mentor.iphmx.com (esa1.mentor.iphmx.com [68.232.129.153])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 486gwx4DgTzDqNk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2020 09:18:09 +1100 (AEDT)
+IronPort-SDR: TUrtB2YQ/xGSHlj7fQMGW6gSnLbKpaIe22p5uAY352NaxZm3X8LZN7L7AOFF5NlGpjIH/NhU8e
+ hdHXRb9VNr5ef9HNJK7/AT4htp7T2QXrxVT7j631mHtKFfOj2lJtKoB2TCGsYKbspY1XZj+zf0
+ ZMOjpc52ebMUo5lldO6rquzLRPvNNmkpsLiVH/L7PPXidnrYDm9ZZFQfuIyY5Hc27c9PhXerXn
+ zzYwUiQzlvknAnaqRa5e8dMAd7PnjOMd4YSGye1g3K6VFggkeCAUs+bj7Glh7mKyI1nJyYMrBp
+ M1Y=
+X-IronPort-AV: E=Sophos;i="5.70,375,1574150400"; d="scan'208";a="47197600"
+Received: from orw-gwy-02-in.mentorg.com ([192.94.38.167])
+ by esa1.mentor.iphmx.com with ESMTP; 28 Jan 2020 14:16:55 -0800
+IronPort-SDR: AhhLI590DNwEACU9QrL8HRDues2kuCIAx6QoBzjC7lEsIeJCYoq3zAFpwOs12ZCm2pPqRLEIvR
+ IfOXzSoK5OBg==
+Date: Tue, 28 Jan 2020 22:14:48 +0000
+From: Joseph Myers <joseph@codesourcery.com>
+X-X-Sender: jsm28@digraph.polyomino.org.uk
+To: Florian Weimer <fweimer@redhat.com>
+Subject: Re: powerpc Linux scv support and scv system call ABI proposal
+In-Reply-To: <87tv4fd8wp.fsf@oldenburg2.str.redhat.com>
+Message-ID: <alpine.DEB.2.21.2001282210470.22424@digraph.polyomino.org.uk>
+References: <1580207907.c96c1lh9t0.astroid@bobo.none>
+ <87tv4fd8wp.fsf@oldenburg2.str.redhat.com>
+User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="US-ASCII"
+X-Originating-IP: [137.202.0.90]
+X-ClientProxiedBy: SVR-IES-MBX-08.mgc.mentorg.com (139.181.222.8) To
+ svr-ies-mbx-01.mgc.mentorg.com (139.181.222.1)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,67 +67,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Song Liu <songliubraving@fb.com>, Peter Zijlstra <peterz@infradead.org>,
- Alexei Starovoitov <ast@kernel.org>,
- Lionel Landwerlin <lionel.g.landwerlin@intel.com>,
- "james.bottomley@hansenpartnership.com"
- <james.bottomley@hansenpartnership.com>, Paul Mackerras <paulus@samba.org>,
- Jiri Olsa <jolsa@redhat.com>, Andi Kleen <ak@linux.intel.com>,
- Igor Lubashev <ilubashe@akamai.com>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Ingo Molnar <mingo@redhat.com>, oprofile-list@lists.sf.net,
- Serge Hallyn <serge@hallyn.com>, Robert Richter <rric@kernel.org>,
- Will Deacon <will@kernel.org>,
- "selinux@vger.kernel.org" <selinux@vger.kernel.org>,
- "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Stephane Eranian <eranian@google.com>, Namhyung Kim <namhyung@kernel.org>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
- "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
- linux-kernel <linux-kernel@vger.kernel.org>,
- "linux-perf-users@vger.kernel.org" <linux-perf-users@vger.kernel.org>,
- "linux-security-module@vger.kernel.org"
- <linux-security-module@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: libc-alpha@sourceware.org,
+ Tulio Magno Quites Machado Filho <tuliom@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 28 Jan 2020, Alexey Budankov wrote:
+On Tue, 28 Jan 2020, Florian Weimer wrote:
 
-> 
-> Open access to monitoring via kprobes and uprobes and eBPF tracing for
-> CAP_PERFMON privileged process. Providing the access under CAP_PERFMON
-> capability singly, without the rest of CAP_SYS_ADMIN credentials, excludes
-> chances to misuse the credentials and makes operation more secure.
-> 
-> perf kprobes and uprobes are used by ftrace and eBPF. perf probe uses
-> ftrace to define new kprobe events, and those events are treated as
-> tracepoint events. eBPF defines new probes via perf_event_open interface
-> and then the probes are used in eBPF tracing.
-> 
-> CAP_PERFMON implements the principal of least privilege for performance
-> monitoring and observability operations (POSIX IEEE 1003.1e 2.2.2.39 principle
-> of least privilege: A security design principle that states that a process or
-> program be granted only those privileges (e.g., capabilities) necessary to
-> accomplish its legitimate function, and only for the time that such privileges
-> are actually required)
-> 
-> For backward compatibility reasons access to perf_events subsystem remains
-> open for CAP_SYS_ADMIN privileged processes but CAP_SYS_ADMIN usage for
-> secure perf_events monitoring is discouraged with respect to CAP_PERFMON
-> capability.
-> 
-> Signed-off-by: Alexey Budankov <alexey.budankov@linux.intel.com>
-> ---
->  kernel/events/core.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+> I don't think we can save LR in a regular register around the system
+> call, explicitly in the inline asm statement, because we still have to
+> generate proper unwinding information using CFI directives, something
+> that you cannot do from within the asm statement.
 
-
-Acked-by: James Morris <jamorris@linux.microsoft.com>
-
+What other architectures in glibc have done for code sequences for 
+syscalls that are problematic for compiler-generated CFI is made the C 
+syscall macros call separate functions defined in a .S file (see 
+sysdeps/unix/sysv/linux/arm/libc-do-syscall.S, 
+sysdeps/unix/sysv/linux/i386/libc-do-syscall.S, 
+sysdeps/unix/sysv/linux/mips/mips32/mips-syscall[567].S).  I don't know if 
+you can do that in this case and still get the performance benefits of the 
+new instruction.
 
 -- 
-James Morris
-<jmorris@namei.org>
-
+Joseph S. Myers
+joseph@codesourcery.com
