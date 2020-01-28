@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8320C2D0DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2020 21:24:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD71AC2D0DB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2020 21:26:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 597762173E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2020 21:24:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 597762173E
+	by mail.kernel.org (Postfix) with ESMTPS id 650732173E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2020 21:26:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 650732173E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=namei.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 486fl24GGNzDqMt
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 08:24:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 486fnH0nJyzDqM6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 08:26:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=namei.org
  (client-ip=65.99.196.166; helo=namei.org; envelope-from=jmorris@namei.org;
@@ -28,20 +28,20 @@ Authentication-Results: lists.ozlabs.org;
 Received: from namei.org (namei.org [65.99.196.166])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 486ffP1rg2zDqLr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2020 08:20:28 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 486ffj46ydzDqM6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2020 08:20:42 +1100 (AEDT)
 Received: from localhost (localhost [127.0.0.1])
- by namei.org (8.14.4/8.14.4) with ESMTP id 00SLI4pL004594;
- Tue, 28 Jan 2020 21:18:04 GMT
-Date: Wed, 29 Jan 2020 08:18:04 +1100 (AEDT)
+ by namei.org (8.14.4/8.14.4) with ESMTP id 00SLIGx1004605;
+ Tue, 28 Jan 2020 21:18:16 GMT
+Date: Wed, 29 Jan 2020 08:18:16 +1100 (AEDT)
 From: James Morris <jmorris@namei.org>
 To: Alexey Budankov <alexey.budankov@linux.intel.com>
-Subject: Re: [PATCH v6 09/10] drivers/perf: open access for CAP_PERFMON
+Subject: Re: [PATCH v6 10/10] drivers/oprofile: open access for CAP_PERFMON
  privileged process
-In-Reply-To: <f2877038-da53-f981-4ddb-4e6c1c27c60f@linux.intel.com>
-Message-ID: <alpine.LRH.2.21.2001290817560.2204@namei.org>
+In-Reply-To: <eff5e211-7114-f854-f53f-08491f9dcc26@linux.intel.com>
+Message-ID: <alpine.LRH.2.21.2001290818090.2204@namei.org>
 References: <74d524ab-ac11-a7b8-1052-eba10f117e09@linux.intel.com>
- <f2877038-da53-f981-4ddb-4e6c1c27c60f@linux.intel.com>
+ <eff5e211-7114-f854-f53f-08491f9dcc26@linux.intel.com>
 User-Agent: Alpine 2.21 (LRH 202 2017-01-01)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -85,10 +85,10 @@ Sender: "Linuxppc-dev"
 On Tue, 28 Jan 2020, Alexey Budankov wrote:
 
 > 
-> Open access to monitoring for CAP_PERFMON privileged process.
-> Providing the access under CAP_PERFMON capability singly, without the
-> rest of CAP_SYS_ADMIN credentials, excludes chances to misuse the
-> credentials and makes operation more secure.
+> Open access to monitoring for CAP_PERFMON privileged process. Providing
+> the access under CAP_PERFMON capability singly, without the rest of
+> CAP_SYS_ADMIN credentials, excludes chances to misuse the credentials and
+> makes operation more secure.
 > 
 > CAP_PERFMON implements the principal of least privilege for performance
 > monitoring and observability operations (POSIX IEEE 1003.1e 2.2.2.39 principle
@@ -103,36 +103,26 @@ On Tue, 28 Jan 2020, Alexey Budankov wrote:
 > 
 > Signed-off-by: Alexey Budankov <alexey.budankov@linux.intel.com>
 > ---
->  drivers/perf/arm_spe_pmu.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
+>  drivers/oprofile/event_buffer.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
 
 Acked-by: James Morris <jamorris@linux.microsoft.com>
 
-
-> diff --git a/drivers/perf/arm_spe_pmu.c b/drivers/perf/arm_spe_pmu.c
-> index 4e4984a55cd1..5dff81bc3324 100644
-> --- a/drivers/perf/arm_spe_pmu.c
-> +++ b/drivers/perf/arm_spe_pmu.c
-> @@ -274,7 +274,7 @@ static u64 arm_spe_event_to_pmscr(struct perf_event *event)
->  	if (!attr->exclude_kernel)
->  		reg |= BIT(SYS_PMSCR_EL1_E1SPE_SHIFT);
+> 
+> diff --git a/drivers/oprofile/event_buffer.c b/drivers/oprofile/event_buffer.c
+> index 12ea4a4ad607..6c9edc8bbc95 100644
+> --- a/drivers/oprofile/event_buffer.c
+> +++ b/drivers/oprofile/event_buffer.c
+> @@ -113,7 +113,7 @@ static int event_buffer_open(struct inode *inode, struct file *file)
+>  {
+>  	int err = -EPERM;
 >  
-> -	if (IS_ENABLED(CONFIG_PID_IN_CONTEXTIDR) && capable(CAP_SYS_ADMIN))
-> +	if (IS_ENABLED(CONFIG_PID_IN_CONTEXTIDR) && perfmon_capable())
->  		reg |= BIT(SYS_PMSCR_EL1_CX_SHIFT);
+> -	if (!capable(CAP_SYS_ADMIN))
+> +	if (!perfmon_capable())
+>  		return -EPERM;
 >  
->  	return reg;
-> @@ -700,7 +700,7 @@ static int arm_spe_pmu_event_init(struct perf_event *event)
->  		return -EOPNOTSUPP;
->  
->  	reg = arm_spe_event_to_pmscr(event);
-> -	if (!capable(CAP_SYS_ADMIN) &&
-> +	if (!perfmon_capable() &&
->  	    (reg & (BIT(SYS_PMSCR_EL1_PA_SHIFT) |
->  		    BIT(SYS_PMSCR_EL1_CX_SHIFT) |
->  		    BIT(SYS_PMSCR_EL1_PCT_SHIFT))))
+>  	if (test_and_set_bit_lock(0, &buffer_opened))
 > 
 
 -- 
