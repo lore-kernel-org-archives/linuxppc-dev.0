@@ -6,44 +6,42 @@ X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A6DBAC2D0DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2020 21:22:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A8320C2D0DB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2020 21:24:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2A5CE2173E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2020 21:22:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2A5CE2173E
+	by mail.kernel.org (Postfix) with ESMTPS id 597762173E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2020 21:24:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 597762173E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=namei.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 486fhq1JpJzDqLx
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 08:22:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 486fl24GGNzDqMt
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 08:24:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=namei.org
  (client-ip=65.99.196.166; helo=namei.org; envelope-from=jmorris@namei.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=namei.org
-X-Greylist: delayed 66 seconds by postgrey-1.36 at bilbo;
- Wed, 29 Jan 2020 08:20:11 AEDT
 Received: from namei.org (namei.org [65.99.196.166])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 486ff32WXlzDqBd
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2020 08:20:11 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 486ffP1rg2zDqLr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2020 08:20:28 +1100 (AEDT)
 Received: from localhost (localhost [127.0.0.1])
- by namei.org (8.14.4/8.14.4) with ESMTP id 00SLHk4L004579;
- Tue, 28 Jan 2020 21:17:46 GMT
-Date: Wed, 29 Jan 2020 08:17:46 +1100 (AEDT)
+ by namei.org (8.14.4/8.14.4) with ESMTP id 00SLI4pL004594;
+ Tue, 28 Jan 2020 21:18:04 GMT
+Date: Wed, 29 Jan 2020 08:18:04 +1100 (AEDT)
 From: James Morris <jmorris@namei.org>
 To: Alexey Budankov <alexey.budankov@linux.intel.com>
-Subject: Re: [PATCH v6 08/10] parisc/perf: open access for CAP_PERFMON
+Subject: Re: [PATCH v6 09/10] drivers/perf: open access for CAP_PERFMON
  privileged process
-In-Reply-To: <17be72ff-dc52-72ef-fbcc-0e9ec8b61604@linux.intel.com>
-Message-ID: <alpine.LRH.2.21.2001290817390.2204@namei.org>
+In-Reply-To: <f2877038-da53-f981-4ddb-4e6c1c27c60f@linux.intel.com>
+Message-ID: <alpine.LRH.2.21.2001290817560.2204@namei.org>
 References: <74d524ab-ac11-a7b8-1052-eba10f117e09@linux.intel.com>
- <17be72ff-dc52-72ef-fbcc-0e9ec8b61604@linux.intel.com>
+ <f2877038-da53-f981-4ddb-4e6c1c27c60f@linux.intel.com>
 User-Agent: Alpine 2.21 (LRH 202 2017-01-01)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -105,26 +103,37 @@ On Tue, 28 Jan 2020, Alexey Budankov wrote:
 > 
 > Signed-off-by: Alexey Budankov <alexey.budankov@linux.intel.com>
 > ---
->  arch/parisc/kernel/perf.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/parisc/kernel/perf.c b/arch/parisc/kernel/perf.c
-> index 676683641d00..c4208d027794 100644
-> --- a/arch/parisc/kernel/perf.c
-> +++ b/arch/parisc/kernel/perf.c
-> @@ -300,7 +300,7 @@ static ssize_t perf_write(struct file *file, const char __user *buf,
->  	else
->  		return -EFAULT;
->  
-> -	if (!capable(CAP_SYS_ADMIN))
-> +	if (!perfmon_capable())
->  		return -EACCES;
->  
->  	if (count != sizeof(uint32_t))
+>  drivers/perf/arm_spe_pmu.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
 
 
 Acked-by: James Morris <jamorris@linux.microsoft.com>
+
+
+> diff --git a/drivers/perf/arm_spe_pmu.c b/drivers/perf/arm_spe_pmu.c
+> index 4e4984a55cd1..5dff81bc3324 100644
+> --- a/drivers/perf/arm_spe_pmu.c
+> +++ b/drivers/perf/arm_spe_pmu.c
+> @@ -274,7 +274,7 @@ static u64 arm_spe_event_to_pmscr(struct perf_event *event)
+>  	if (!attr->exclude_kernel)
+>  		reg |= BIT(SYS_PMSCR_EL1_E1SPE_SHIFT);
+>  
+> -	if (IS_ENABLED(CONFIG_PID_IN_CONTEXTIDR) && capable(CAP_SYS_ADMIN))
+> +	if (IS_ENABLED(CONFIG_PID_IN_CONTEXTIDR) && perfmon_capable())
+>  		reg |= BIT(SYS_PMSCR_EL1_CX_SHIFT);
+>  
+>  	return reg;
+> @@ -700,7 +700,7 @@ static int arm_spe_pmu_event_init(struct perf_event *event)
+>  		return -EOPNOTSUPP;
+>  
+>  	reg = arm_spe_event_to_pmscr(event);
+> -	if (!capable(CAP_SYS_ADMIN) &&
+> +	if (!perfmon_capable() &&
+>  	    (reg & (BIT(SYS_PMSCR_EL1_PA_SHIFT) |
+>  		    BIT(SYS_PMSCR_EL1_CX_SHIFT) |
+>  		    BIT(SYS_PMSCR_EL1_PCT_SHIFT))))
+> 
 
 -- 
 James Morris
