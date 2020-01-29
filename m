@@ -6,38 +6,37 @@ X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 81ED8C33CB2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 05:55:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B69B1C33CB2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 05:57:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3A9EA2063A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 05:55:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3A9EA2063A
+	by mail.kernel.org (Postfix) with ESMTPS id 745022063A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 05:57:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 745022063A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 486t4Y171zzDqR6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 16:55:25 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 486t6g1f6NzDqQw
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 16:57:15 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 486sDn6k04zDqMm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2020 16:17:29 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 486sDp5KRnzDqMn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2020 16:17:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 486sDn1mr8z9sSD; Wed, 29 Jan 2020 16:17:29 +1100 (AEDT)
+ id 486sDp3hCcz9sSG; Wed, 29 Jan 2020 16:17:30 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 30e813cf46ccaeea6508607632e49b4a1d743d2a
-In-Reply-To: <1577634178-22530-2-git-send-email-Julia.Lawall@inria.fr>
-To: Julia Lawall <Julia.Lawall@inria.fr>,
- Frederic Barrat <fbarrat@linux.ibm.com>
+X-powerpc-patch-commit: bfbe37f0ce994e7a9945653d7624fadc5c500a9f
+In-Reply-To: <1577900990-8588-6-git-send-email-Julia.Lawall@inria.fr>
+To: Julia Lawall <Julia.Lawall@inria.fr>, Scott Wood <oss@buserror.net>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH 1/4] misc: cxl: use mmgrab
-Message-Id: <486sDn1mr8z9sSD@ozlabs.org>
-Date: Wed, 29 Jan 2020 16:17:29 +1100 (AEDT)
+Subject: Re: [PATCH 05/10] powerpc/83xx: use resource_size
+Message-Id: <486sDp3hCcz9sSG@ozlabs.org>
+Date: Wed, 29 Jan 2020 16:17:30 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,32 +48,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, 2019-12-29 at 15:42:55 UTC, Julia Lawall wrote:
-> Mmgrab was introduced in commit f1f1007644ff ("mm: add new mmgrab()
-> helper") and most of the kernel was updated to use it. Update a
-> remaining file.
+On Wed, 2020-01-01 at 17:49:45 UTC, Julia Lawall wrote:
+> Use resource_size rather than a verbose computation on
+> the end and start fields.
 > 
 > The semantic patch that makes this change is as follows:
 > (http://coccinelle.lip6.fr/)
 > 
 > <smpl>
-> @@ expression e; @@
-> - atomic_inc(&e->mm_count);
-> + mmgrab(e);
+> @@ struct resource ptr; @@
+> - (ptr.end - ptr.start + 1)
+> + resource_size(&ptr)
 > </smpl>
 > 
 > Signed-off-by: Julia Lawall <Julia.Lawall@inria.fr>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/30e813cf46ccaeea6508607632e49b4a1d743d2a
+https://git.kernel.org/powerpc/c/bfbe37f0ce994e7a9945653d7624fadc5c500a9f
 
 cheers
