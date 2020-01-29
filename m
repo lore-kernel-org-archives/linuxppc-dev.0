@@ -2,42 +2,44 @@ Return-Path: <SRS0=BLMX=3S=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E62CC33CB2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 06:08:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 38486C33CB2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 06:10:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D4D91206A2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 06:08:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D4D91206A2
+	by mail.kernel.org (Postfix) with ESMTPS id D470D206A2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 06:10:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D470D206A2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 486tMz2cDdzDqQG
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 17:08:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 486tPn1YBBzDqSj
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 17:10:21 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 486sF01nybzDqNQ
+ by lists.ozlabs.org (Postfix) with ESMTPS id 486sF01p3LzDqNV
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2020 16:17:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 486sDt3Vvnz9sS9; Wed, 29 Jan 2020 16:17:34 +1100 (AEDT)
+ id 486sDx5BY5z9sRl; Wed, 29 Jan 2020 16:17:37 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 3ab3f3c9df348324029e3fbdf381f551b1df8f1e
-In-Reply-To: <20200110070207.439-2-oohall@gmail.com>
-To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+X-powerpc-patch-commit: e26ad936dd89d79f66c2b567f700e0c2a7103070
+In-Reply-To: <37517da8310f4457f28921a4edb88fb21d27b62a.1578989531.git.christophe.leroy@c-s.fr>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH 1/5] powerpc/pci: Fold pcibios_setup_device() into
- pcibios_bus_add_device()
-Message-Id: <486sDt3Vvnz9sS9@ozlabs.org>
-Date: Wed, 29 Jan 2020 16:17:34 +1100 (AEDT)
+Subject: Re: [PATCH] powerpc/ptdump: fix W+X verification call in
+ mark_rodata_ro()
+Message-Id: <486sDx5BY5z9sRl@ozlabs.org>
+Date: Wed, 29 Jan 2020 16:17:37 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,19 +51,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Oliver O'Halloran <oohall@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2020-01-10 at 07:02:03 UTC, Oliver O'Halloran wrote:
-> pcibios_bus_add_device() is the only caller of pcibios_setup_device().
-> Fold them together since there's no real reason to keep them separate.
+On Tue, 2020-01-14 at 08:13:08 UTC, Christophe Leroy wrote:
+> ptdump_check_wx() also have to be called when pages are mapped
+> by blocks.
 > 
-> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Fixes: 453d87f6a8ae ("powerpc/mm: Warn if W+X pages found on boot")
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/3ab3f3c9df348324029e3fbdf381f551b1df8f1e
+https://git.kernel.org/powerpc/c/e26ad936dd89d79f66c2b567f700e0c2a7103070
 
 cheers
