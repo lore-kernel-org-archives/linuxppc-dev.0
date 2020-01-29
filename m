@@ -6,38 +6,38 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02423C33CB2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 05:25:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CC731C33CB2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 05:26:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B103720720
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 05:25:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B103720720
+	by mail.kernel.org (Postfix) with ESMTPS id 7C85820720
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 05:26:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7C85820720
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 486sPj0jqlzDqNS
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 16:25:13 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 486sRh1y6hzDqR1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 16:26:56 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 486sDd6HJrzDqN8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2020 16:17:21 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 486sDf5871zDqMn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2020 16:17:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 486sDd4KmBz9sRY; Wed, 29 Jan 2020 16:17:21 +1100 (AEDT)
+ id 486sDf2z6sz9s1x; Wed, 29 Jan 2020 16:17:22 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 1fb4124ca9d456656a324f1ee29b7bf942f59ac8
-In-Reply-To: <20190821062655.19735-1-oohall@gmail.com>
+X-powerpc-patch-commit: 4e0942c0302b5ad76b228b1a7b8c09f658a1d58a
+In-Reply-To: <20191016012536.22588-1-oohall@gmail.com>
 To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH 1/3] powerpc/sriov: Remove VF eeh_dev state when disabling
- SR-IOV
-Message-Id: <486sDd4KmBz9sRY@ozlabs.org>
-Date: Wed, 29 Jan 2020 16:17:21 +1100 (AEDT)
+Subject: Re: [PATCH] powerpc/eeh: Only dump stack once if an MMIO loop is
+ detected
+Message-Id: <486sDf2z6sz9s1x@ozlabs.org>
+Date: Wed, 29 Jan 2020 16:17:22 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,23 +49,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: sbobroff@linux.ibm.com, Oliver O'Halloran <oohall@gmail.com>
+Cc: Sam Bobroff <sbobroff@linux.ibm.com>, Oliver O'Halloran <oohall@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2019-08-21 at 06:26:53 UTC, Oliver O'Halloran wrote:
-> When disabling virtual functions on an SR-IOV adapter we currently do not
-> correctly remove the EEH state for the now-dead virtual functions. When
-> removing the pci_dn that was created for the VF when SR-IOV was enabled
-> we free the corresponding eeh_dev without removing it from the child device
-> list of the eeh_pe that contained it. This can result in crashes due to the
-> use-after-free.
+On Wed, 2019-10-16 at 01:25:36 UTC, Oliver O'Halloran wrote:
+> Many drivers don't check for errors when they get a 0xFFs response from an
+> MMIO load. As a result after an EEH event occurs a driver can get stuck in
+> a polling loop unless it some kind of internal timeout logic.
 > 
+> Currently EEH tries to detect and report stuck drivers by dumping a stack
+> trace after eeh_dev_check_failure() is called EEH_MAX_FAILS times on an
+> already frozen PE. The value of EEH_MAX_FAILS was chosen so that a dump
+> would occur every few seconds if the driver was spinning in a loop. This
+> results in a lot of spurious stack traces in the kernel log.
+> 
+> Fix this by limiting it to printing one stack trace for each PE freeze. If
+> the driver is truely stuck the kernel's hung task detector is better suited
+> to reporting the probelm anyway.
+> 
+> Cc: Sam Bobroff <sbobroff@linux.ibm.com>
 > Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/1fb4124ca9d456656a324f1ee29b7bf942f59ac8
+https://git.kernel.org/powerpc/c/4e0942c0302b5ad76b228b1a7b8c09f658a1d58a
 
 cheers
