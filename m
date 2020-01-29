@@ -2,89 +2,87 @@ Return-Path: <SRS0=BLMX=3S=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BA13DC2D0DB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 14:09:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 19BC3C2D0DB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 15:31:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 740CD2070E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 14:09:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 740CD2070E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8F262206F0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2020 15:31:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8F262206F0
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48752J6xK7zDqSQ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jan 2020 01:09:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4876rs1qS8zDqDd
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jan 2020 02:31:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4874l55flrzDqQy
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2020 00:56:01 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 00TDnw0W075645
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2020 08:55:59 -0500
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2xu5qb36vg-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4876pM4ZvLzDqDd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2020 02:28:58 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 00TFHNXR040288
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2020 10:28:56 -0500
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2xtfh0vswa-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2020 08:55:59 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2020 10:28:56 -0500
 Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
- Wed, 29 Jan 2020 13:53:22 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.ibm.com>;
+ Wed, 29 Jan 2020 15:28:54 -0000
+Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 29 Jan 2020 13:53:20 -0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 00TDrJCT43843606
+ Wed, 29 Jan 2020 15:28:51 -0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 00TFRwGD10289520
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 29 Jan 2020 13:53:20 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id CC524A405F;
- Wed, 29 Jan 2020 13:53:19 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 31B45A405B;
- Wed, 29 Jan 2020 13:53:18 +0000 (GMT)
-Received: from srikart450.in.ibm.com (unknown [9.193.110.254])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 29 Jan 2020 13:53:17 +0000 (GMT)
-From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v6 4/5] powerpc/numa: Early request for home node associativity
-Date: Wed, 29 Jan 2020 19:23:00 +0530
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200129135301.24739-1-srikar@linux.vnet.ibm.com>
-References: <20200129135301.24739-1-srikar@linux.vnet.ibm.com>
+ Wed, 29 Jan 2020 15:27:58 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 548E05204E;
+ Wed, 29 Jan 2020 15:28:50 +0000 (GMT)
+Received: from vajain21.in.ibm.com (unknown [9.109.195.195])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 1DF5A5204F;
+ Wed, 29 Jan 2020 15:28:48 +0000 (GMT)
+From: Vaibhav Jain <vaibhav@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [RFC PATCH 0/6] powerpc/papr_scm: Implement support for reporting
+ DIMM health and stats
+Date: Wed, 29 Jan 2020 20:58:38 +0530
+X-Mailer: git-send-email 2.24.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 20012913-0028-0000-0000-000003D5803D
+x-cbid: 20012915-0008-0000-0000-0000034DD43B
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20012913-0029-0000-0000-00002499CBAA
-Message-Id: <20200129135301.24739-5-srikar@linux.vnet.ibm.com>
+x-cbparentid: 20012915-0009-0000-0000-00004A6E5198
+Message-Id: <20200129152844.71286-1-vaibhav@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
  definitions=2020-01-29_03:2020-01-28,
  2020-01-29 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 phishscore=0
- adultscore=0 mlxlogscore=999 suspectscore=0 priorityscore=1501
- malwarescore=0 mlxscore=0 clxscore=1015 bulkscore=0 spamscore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-1911200001 definitions=main-2001290115
+ adultscore=0 mlxscore=0
+ lowpriorityscore=0 suspectscore=0 mlxlogscore=999 bulkscore=0
+ malwarescore=0 spamscore=0 phishscore=0 priorityscore=1501 clxscore=1015
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-1911200001 definitions=main-2001290128
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,127 +94,101 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>,
- Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>
+Cc: Vaibhav Jain <vaibhav@linux.ibm.com>, Oliver O'Halloran <oohall@gmail.com>,
+ Alastair D'Silva <alastair@au1.ibm.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently the kernel detects if its running on a shared lpar platform
-and requests home node associativity before the scheduler sched_domains
-are setup. However between the time NUMA setup is initialized and the
-request for home node associativity, workqueue initializes its per node
-cpumask. The per node workqueue possible cpumask may turn invalid
-after home node associativity resulting in weird situations like
-workqueue possible cpumask being a subset of workqueue online cpumask.
+The PAPR standard provides suitable mechanisms to query the health and
+performance stats of an NVDIMM via various hcalls as described in Ref[2]. Until
+now these stats were never fetched in the papr_scm modules nor exposed to the
+user-space tools like 'ndctl'. This is partly due to PAPR platform not having
+support for ACPI and NFIT. Hence 'ndctl' is unable to query and report the dimm
+health status and a user had no way to determine the current health status of
+a NDVIMM.
 
-This can be fixed by requesting home node associativity earlier just
-before NUMA setup. However at the NUMA setup time, kernel may not be in
-a position to detect if its running on a shared lpar platform. So
-request for home node associativity and if the request fails, fallback
-on the device tree property.
+To overcome this limitation this RFC patch-set proposes a new set of
+Dimm-Specific-Methods(DSM) for querying and fetching health and stat information
+for dimms that support PAPR and provides an implementation in kernel for these
+DSM in papr_scm modules. These changes coupled with draft/proposed ndtcl changes
+located at Ref[4] should provide a way for user to retributive NVDIMM status
+using ndtcl. Below is a sample output using proposed kernel + ndctl for PAPR
+NVDIMM in an emulation environment:
 
-Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
-Reported-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
----
-Changelog (v5->v6):
-- Handled comments from Michael Ellerman
-  * hardware-id is now deciphered in vphn_get_nid
-  * No need to pass extra bool
+ # ndctl list -DH
+[
+  {
+    "dev":"nmem0",
+    "health":{
+      "health_state":"fatal",
+      "life_used_percentage":60,
+      "shutdown_state":"dirty"
+    }
+  }
+]
 
-Changelog (v2->v3):
-- Handled comments from Nathan Lynch
-  * Use first thread of the core for cpu-to-node map.
-  * get hardware-id in numa_setup_cpu
+PAPR Dimm-Specific-Methods(DSM)
+================================
 
-Changelog (v1->v2):
-- Handled comments from Nathan Lynch
-  * Dont depend on pacas to be setup for the hwid
+As the name suggests DSMs are used by vendor specific code in libndctl to
+execute certain operations or fetch certain information for NVDIMMS. DSMs
+can be sent to papr_scm module via libndctl (userspace) and libnvdimm(kernel)
+using the ND_CMD_CALL ioctl which can be handled in the dimm control function
+papr_scm_ndctl(). For PAPR this RFC proposes two DSMs that directly map to
+hcalls provided by PHYP to query NVDIMM health and stats. These DSMs are:
 
- arch/powerpc/mm/numa.c | 41 ++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 40 insertions(+), 1 deletion(-)
+* DSM_PAPR_SCM_HEALTH: Which map to hcall H_SCM_HEALTH and returns dimm health.
 
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 63ec0c3..ee7400f 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -461,6 +461,41 @@ static int of_drconf_to_nid_single(struct drmem_lmb *lmb)
- 	return nid;
- }
- 
-+#ifdef CONFIG_PPC_SPLPAR
-+static int vphn_get_nid(long lcpu)
-+{
-+	__be32 associativity[VPHN_ASSOC_BUFSIZE] = {0};
-+	long rc, hwid;
-+
-+	/*
-+	 * On a shared lpar, device tree will not have node associativity.
-+	 * At this time lppaca, or its __old_status field may not be
-+	 * updated. Hence kernel cannot detect if its on a shared lpar. So
-+	 * request an explicit associativity irrespective of whether the
-+	 * lpar is shared or dedicated. Use the device tree property as a
-+	 * fallback. cpu_to_phys_id is only valid between
-+	 * smp_setup_cpu_maps() and smp_setup_pacas().
-+	 */
-+	if (firmware_has_feature(FW_FEATURE_VPHN)) {
-+		if (cpu_to_phys_id)
-+			hwid = cpu_to_phys_id[lcpu];
-+		else
-+			hwid = get_hard_smp_processor_id(lcpu);
-+
-+		rc = hcall_vphn(hwid, VPHN_FLAG_VCPU, associativity);
-+		if (rc == H_SUCCESS)
-+			return associativity_to_nid(associativity);
-+	}
-+
-+	return NUMA_NO_NODE;
-+}
-+#else
-+static int vphn_get_nid(long unused)
-+{
-+	return NUMA_NO_NODE;
-+}
-+#endif  /* CONFIG_PPC_SPLPAR */
-+
- /*
-  * Figure out to which domain a cpu belongs and stick it there.
-  * Return the id of the domain used.
-@@ -485,6 +520,10 @@ static int numa_setup_cpu(unsigned long lcpu)
- 		return nid;
- 	}
- 
-+	nid = vphn_get_nid(lcpu);
-+	if (nid != NUMA_NO_NODE)
-+		goto out_present;
-+
- 	cpu = of_get_cpu_node(lcpu, NULL);
- 
- 	if (!cpu) {
-@@ -496,6 +535,7 @@ static int numa_setup_cpu(unsigned long lcpu)
- 	}
- 
- 	nid = of_node_to_nid_single(cpu);
-+	of_node_put(cpu);
- 
- out_present:
- 	if (nid < 0 || !node_possible(nid))
-@@ -515,7 +555,6 @@ static int numa_setup_cpu(unsigned long lcpu)
- 	}
- 
- 	map_cpu_to_node(lcpu, nid);
--	of_node_put(cpu);
- out:
- 	return nid;
- }
+* DSM_PAPR_SCM_STATS: Which map to hcall H_SCM_PERFORMANCE_STATS and returns
+  		      dimm performance stats.
+
+The ioctl ND_CMD_CALL can also transfer data between
+user-space and kernel via 'envelopes'. The envelop is part of a
+'struct nd_cmd_pkg' which in return is wrapped in a user defined struct which
+in our case is called 'struct nd_pkg_papr_scm' (packaged). These struct is
+defined as:
+
+struct nd_pkg_papr_scm {
+	struct nd_cmd_pkg hdr;		/* Package header containing sub-cmd */
+	uint32_t cmd_status;		/* Out: Sub-cmd status returned back */
+	uint8_t payload[];		/* Out: Sub-cmd data buffer */
+};
+
+The 'payload' field of the package holds the libnvdimm defined 'envelope' which
+is used to send/receive data from userspace buffer (libndctl). This RFC uses this
+field to copy the results of hcalls that are executed in response to the DSM
+commands.
+
+Please note that results of hcalls are not interpreted (with few exceptions) in
+papr_scm module at all. Instead they are directly copied to the 'payload' field
+and sent to userspace(libndctl) for interpretation. This essentially means that
+the papr_scm module simply acts as a conduit for libndctl to issue hcalls and
+fetch its output. This should make parsing and interpreting with output buffers
+of hcalls easier as it can be performed in userspace.
+
+References:
+[1]: "Power Architecture Platform Reference"
+      https://en.wikipedia.org/wiki/Power_Architecture_Platform_Reference
+[2]: "[DOC,v2] powerpc: Provide initial documentation for PAPR hcalls"
+     https://patchwork.ozlabs.org/patch/1154292/
+[3]: "Linux on Power Architecture Platform Reference"
+     https://members.openpowerfoundation.org/document/dl/469
+[4]: https://github.com/vaibhav92/ndctl/tree/papr_scm_health
+
+Vaibhav Jain (6):
+  powerpc/papr_scm: Provide support for fetching dimm health information
+  powerpc/papr_scm: Fetch dimm performance stats from PHYP
+  UAPI: ndctl: Introduce NVDIMM_FAMILY_PAPR as a new NVDIMM DSM family
+  powerpc/papr_scm: Add support for handling PAPR DSM commands
+  powerpc/papr_scm: Implement support for DSM_PAPR_SCM_HEALTH
+  powerpc/papr_scm: Implement support for DSM_PAPR_SCM_STATS
+
+ arch/powerpc/platforms/pseries/papr_scm.c | 314 +++++++++++++++++++++-
+ include/uapi/linux/ndctl.h                |   1 +
+ 2 files changed, 306 insertions(+), 9 deletions(-)
+
 -- 
-1.8.3.1
+2.24.1
 
