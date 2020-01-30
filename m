@@ -2,26 +2,26 @@ Return-Path: <SRS0=bRiG=3T=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B2C7FC33C9E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jan 2020 07:29:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 78C8EC33C9E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jan 2020 07:31:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 69D3A206D5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jan 2020 07:29:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 69D3A206D5
+	by mail.kernel.org (Postfix) with ESMTPS id 30BBB206D5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jan 2020 07:31:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 30BBB206D5
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 487X6q5RjrzDqWZ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jan 2020 18:29:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 487X9L2YwzzDqs6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jan 2020 18:31:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=sandipan@linux.ibm.com;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=rppt@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
@@ -29,65 +29,69 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 487WVQ2FMpzDqYX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2020 18:01:33 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 487X5152QlzDqfL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2020 18:28:05 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 00U703Sf067948
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2020 02:01:30 -0500
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2xu5qbx4g4-1
+ 00U7PPcu072736
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2020 02:28:01 -0500
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2xueh6v64s-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2020 02:01:30 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2020 02:28:00 -0500
 Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.ibm.com>;
- Thu, 30 Jan 2020 07:01:28 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.ibm.com>;
+ Thu, 30 Jan 2020 07:27:57 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 30 Jan 2020 07:01:24 -0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 00U71NZl19660994
+ Thu, 30 Jan 2020 07:27:47 -0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 00U7Rk2i44564690
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 30 Jan 2020 07:01:23 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 714814C04E;
- Thu, 30 Jan 2020 07:01:23 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D621B4C046;
- Thu, 30 Jan 2020 07:01:21 +0000 (GMT)
-Received: from fir03.in.ibm.com (unknown [9.121.59.65])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 30 Jan 2020 07:01:21 +0000 (GMT)
-From: Sandipan Das <sandipan@linux.ibm.com>
-To: shuah@kernel.org, skhan@linuxfoundation.org,
- linux-kselftest@vger.kernel.org
-Subject: [PATCH 1/2] selftests: vm: Do not override definition of ARCH
-Date: Thu, 30 Jan 2020 12:31:18 +0530
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <cover.1580367152.git.sandipan@linux.ibm.com>
-References: <cover.1580367152.git.sandipan@linux.ibm.com>
-In-Reply-To: <cover.1580367152.git.sandipan@linux.ibm.com>
-References: <cover.1580367152.git.sandipan@linux.ibm.com>
+ Thu, 30 Jan 2020 07:27:47 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id BD406AE051;
+ Thu, 30 Jan 2020 07:27:46 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4C847AE04D;
+ Thu, 30 Jan 2020 07:27:43 +0000 (GMT)
+Received: from linux.ibm.com (unknown [9.148.8.154])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Thu, 30 Jan 2020 07:27:43 +0000 (GMT)
+Date: Thu, 30 Jan 2020 09:27:41 +0200
+From: Mike Rapoport <rppt@linux.ibm.com>
+To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Subject: Re: [PATCH V12] mm/debug: Add tests validating architecture page
+ table helpers
+References: <1580174873-18117-1-git-send-email-anshuman.khandual@arm.com>
+ <14882A91-17DE-4ABD-ABF2-08E7CCEDF660@lca.pw>
+ <214c0d53-eb34-9b0c-2e4e-1aa005146331@arm.com>
+ <016A776F-EFD9-4D2B-A3A9-788008617D95@lca.pw>
+ <20200129232044.2d133d98@thinkpad>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200129232044.2d133d98@thinkpad>
 X-TM-AS-GCONF: 00
-x-cbid: 20013007-0020-0000-0000-000003A5453F
+x-cbid: 20013007-0008-0000-0000-0000034DFF2E
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20013007-0021-0000-0000-000021FCF921
-Message-Id: <471a73600bf9f59a59484726f50f81d7f54f4b2f.1580367152.git.sandipan@linux.ibm.com>
+x-cbparentid: 20013007-0009-0000-0000-00004A6E7E76
+Message-Id: <20200130072741.GA23707@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
  definitions=2020-01-30_01:2020-01-28,
  2020-01-30 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 phishscore=0
- adultscore=0 mlxlogscore=999 suspectscore=0 priorityscore=1501
- malwarescore=0 mlxscore=0 clxscore=1015 bulkscore=0 spamscore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-1911200001 definitions=main-2001300046
+ spamscore=0 mlxscore=0
+ clxscore=1015 lowpriorityscore=0 suspectscore=56 impostorscore=0
+ adultscore=0 malwarescore=0 bulkscore=0 phishscore=0 priorityscore=1501
+ mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-1911200001 definitions=main-2001300050
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,63 +103,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kamalesh@linux.vnet.ibm.com, linux-mm@kvack.org, mhiramat@kernel.org,
- aneesh.kumar@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <Mark.Rutland@arm.com>, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ James Hogan <jhogan@kernel.org>,
+ Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Michal Hocko <mhocko@kernel.org>,
+ Linux-MM <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
+ sparclinux@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+ linux-s390@vger.kernel.org, x86@kernel.org,
+ Russell King - ARM Linux <linux@armlinux.org.uk>,
+ Matthew Wilcox <willy@infradead.org>, Steven Price <Steven.Price@arm.com>,
+ Jason Gunthorpe <jgg@ziepe.ca>, linux-arm-kernel@lists.infradead.org,
+ linux-snps-arc@lists.infradead.org, Ingo Molnar <mingo@kernel.org>,
+ Kees Cook <keescook@chromium.org>,
+ Anshuman Khandual <anshuman.khandual@arm.com>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Mark Brown <broonie@kernel.org>, Qian Cai <cai@lca.pw>,
+ "Kirill A . Shutemov" <kirill@shutemov.name>,
+ Dan Williams <dan.j.williams@intel.com>, Vlastimil Babka <vbabka@suse.cz>,
+ Sri Krishna chowdary <schowdary@nvidia.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Dave Hansen <dave.hansen@intel.com>, linux-mips@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, linux-kernel@vger.kernel.org,
+ Paul Burton <paul.burton@mips.com>, Mike Rapoport <rppt@linux.vnet.ibm.com>,
+ Vineet Gupta <vgupta@synopsys.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Independent builds of the vm selftests is currently broken
-because commit 7549b3364201 overrides the value of ARCH with
-the machine name from uname. This does not always match the
-architecture names used for tasks like header installation.
+On Wed, Jan 29, 2020 at 11:20:44PM +0100, Gerald Schaefer wrote:
+> On Mon, 27 Jan 2020 22:33:08 -0500
+> 
+> For example, who would have thought that pXd_bad() is supposed to
+> report large entries as bad? It's not really documented anywhere,
 
-E.g. for building tests on powerpc64, we need ARCH=powerpc
-and not ARCH=ppc64 or ARCH=ppc64le. Otherwise, the build
-fails as shown below.
+A bit off-topic,
 
-  $ uname -m
-  ppc64le
+@Anshuman, maybe you could start a Documentation/ patch that describes at
+least some of the pXd_whaterver()?
+Or that would be too much to ask? ;-)
 
-  $ make -C tools/testing/selftests/vm
-  make: Entering directory '/home/sandipan/linux/tools/testing/selftests/vm'
-  make --no-builtin-rules ARCH=ppc64le -C ../../../.. headers_install
-  make[1]: Entering directory '/home/sandipan/linux'
-  Makefile:653: arch/ppc64le/Makefile: No such file or directory
-  make[1]: *** No rule to make target 'arch/ppc64le/Makefile'.  Stop.
-  make[1]: Leaving directory '/home/sandipan/linux'
-  ../lib.mk:50: recipe for target 'khdr' failed
-  make: *** [khdr] Error 2
-  make: Leaving directory '/home/sandipan/linux/tools/testing/selftests/vm'
+> so we just checked them for sanity like normal entries, which
+> apparently worked fine so far, but for how long?
 
-Fixes: 7549b3364201 ("selftests: vm: Build/Run 64bit tests only on 64bit arch")
-Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
----
- tools/testing/selftests/vm/Makefile | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/tools/testing/selftests/vm/Makefile b/tools/testing/selftests/vm/Makefile
-index 7f9a8a8c31da..3f2e2f0ccbc9 100644
---- a/tools/testing/selftests/vm/Makefile
-+++ b/tools/testing/selftests/vm/Makefile
-@@ -1,7 +1,7 @@
- # SPDX-License-Identifier: GPL-2.0
- # Makefile for vm selftests
- uname_M := $(shell uname -m 2>/dev/null || echo not)
--ARCH ?= $(shell echo $(uname_M) | sed -e 's/aarch64.*/arm64/')
-+MACHINE ?= $(shell echo $(uname_M) | sed -e 's/aarch64.*/arm64/')
- 
- CFLAGS = -Wall -I ../../../../usr/include $(EXTRA_CFLAGS)
- LDLIBS = -lrt
-@@ -19,7 +19,7 @@ TEST_GEN_FILES += thuge-gen
- TEST_GEN_FILES += transhuge-stress
- TEST_GEN_FILES += userfaultfd
- 
--ifneq (,$(filter $(ARCH),arm64 ia64 mips64 parisc64 ppc64 riscv64 s390x sh64 sparc64 x86_64))
-+ifneq (,$(filter $(MACHINE),arm64 ia64 mips64 parisc64 ppc64 riscv64 s390x sh64 sparc64 x86_64))
- TEST_GEN_FILES += va_128TBswitch
- TEST_GEN_FILES += virtual_address_range
- endif
 -- 
-2.17.1
+Sincerely yours,
+Mike.
 
