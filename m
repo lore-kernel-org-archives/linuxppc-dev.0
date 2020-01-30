@@ -2,91 +2,61 @@ Return-Path: <SRS0=bRiG=3T=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB56AC2D0DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jan 2020 20:13:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BEBEEC2D0DB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jan 2020 20:19:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7815720CC7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jan 2020 20:13:57 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="EM7GjmqY"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7815720CC7
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 779F120CC7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jan 2020 20:19:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 779F120CC7
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ghiti.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 487s4g51thzDqZq
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jan 2020 07:13:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::342;
- helo=mail-ot1-x342.google.com; envelope-from=ndfont@gmail.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 487sCB5vHFzDqZq
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jan 2020 07:19:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=EM7GjmqY; dkim-atps=neutral
-Received: from mail-ot1-x342.google.com (mail-ot1-x342.google.com
- [IPv6:2607:f8b0:4864:20::342])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 487lfx6qm5zDqXt
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2020 03:09:39 +1100 (AEDT)
-Received: by mail-ot1-x342.google.com with SMTP id 66so3599020otd.9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2020 08:09:39 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=subject:to:cc:references:from:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=c85UXDffSb2PXv2XpV6UzKNMBIzxhdNtxwM+oiL4ZfE=;
- b=EM7GjmqYIBO2WAnrvccmL3zonHAn+mRqth2qs6/SwOaauF5pna+ED/XapC1LRHMnRO
- QwwPWQbR+MZN5cas22iyUJowvCXZgVBOfVffSDO7v6Er/pLrZ6F7RFFEUJ8q54bxcBTu
- UWl0Sf3pEf6ylzzoMRw/vic+iXLSmxw0hpzN+uaw+B7b6zfatIE7GKrrAsf+S1AWc7XZ
- Gkk7bsBtQIgXRWdWxYuEAQEXvYMDlcNwBvBDkurnNzoadv4JoU1r51YCOLwiCutwifOs
- iI/8KZ8vrOnrmyGsM6DyN0MScG7siymJysokG5qKl9uSO7riuU19hy7Hk9trrySjGfJ1
- sP8A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=c85UXDffSb2PXv2XpV6UzKNMBIzxhdNtxwM+oiL4ZfE=;
- b=W3cxUdjKs+2l99LwK8RsJa0LnMrFxN9p8XN3JLmEVVoTt0dtc4nRUf47RFXsNubNR5
- cUmqTKpkzr8xZIPQA9lJKvco2kmHD82ZGV2fa12Of11yALnOnZKWl/Hqg8dhOm60NabC
- D4LsoPZZEq17N8YqyWKV1tgvD2hovTOkVmuYmL81MTWU/zDq6LWM1/cBL+tnO14QMicA
- J86GhsQGC9insbKJMZWOBjZw8A1YGU/31WKxm/Htf7CX4i4wewtKY9zGfC+6T7mx1FRJ
- j+pWrqwADrhuEK7G3o+/IWoT95nqivSqiWLqod9g1dKpS1I1NxDHOB9cIg2xiAcd+xAO
- 7XuA==
-X-Gm-Message-State: APjAAAUgWf3C4zMs/hZ6dsPsVofrhmnuq4+w53ek2SMxOPgcE6epKECD
- Q/2My0W93qN6UMl9WJchVg==
-X-Google-Smtp-Source: APXvYqwa9xjKXt29xk4s3SxDL1xFfz94p2+LDPjwwMGl0PNRiE7Fyb8nzl+Z4QUOT8sgvoLMeuA5iw==
-X-Received: by 2002:a9d:7590:: with SMTP id s16mr3832406otk.89.1580400573885; 
- Thu, 30 Jan 2020 08:09:33 -0800 (PST)
-Received: from [10.236.30.189] ([165.204.77.1])
- by smtp.gmail.com with ESMTPSA id m15sm1969943otr.65.2020.01.30.08.09.33
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Thu, 30 Jan 2020 08:09:33 -0800 (PST)
-Subject: Re: [PATCH] powerpc/drmem: cache LMBs in xarray to accelerate lookup
-To: Scott Cheloha <cheloha@linux.ibm.com>, Nathan Lynch <nathanl@linux.ibm.com>
-References: <20200128221113.17158-1-cheloha@linux.ibm.com>
- <87pnf3i188.fsf@linux.ibm.com>
- <20200129181013.lz6q5lpntnhwclqi@rascal.austin.ibm.com>
-From: "Fontenot, Nathan" <ndfont@gmail.com>
-Message-ID: <4dfb2f93-7af8-8c5f-854c-22afead18a8c@gmail.com>
-Date: Thu, 30 Jan 2020 10:09:32 -0600
-User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.4.2
+ spf=none (no SPF record) smtp.mailfrom=ghiti.fr
+ (client-ip=217.70.178.242; helo=mslow2.mail.gandi.net;
+ envelope-from=alex@ghiti.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=ghiti.fr
+Received: from mslow2.mail.gandi.net (mslow2.mail.gandi.net [217.70.178.242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 487s8d0lyLzDqCt
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2020 07:17:18 +1100 (AEDT)
+Received: from relay4-d.mail.gandi.net (unknown [217.70.183.196])
+ by mslow2.mail.gandi.net (Postfix) with ESMTP id 9D3C63A84FA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2020 20:08:42 +0000 (UTC)
+X-Originating-IP: 79.86.19.127
+Received: from [192.168.0.12] (127.19.86.79.rev.sfr.net [79.86.19.127])
+ (Authenticated sender: alex@ghiti.fr)
+ by relay4-d.mail.gandi.net (Postfix) with ESMTPSA id EC913E0008;
+ Thu, 30 Jan 2020 20:08:10 +0000 (UTC)
+Subject: Re: [PATCH v2] powerpc: Do not consider weak unresolved symbol
+ relocations as bad
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Stephen Rothwell <sfr@canb.auug.org.au>, Alexei Starovoitov
+ <ast@kernel.org>, linux-next@vger.kernel.org, Zong Li <zong.li@sifive.com>,
+ Palmer Dabbelt <palmerdabbelt@google.com>
+References: <20200118170335.21440-1-alex@ghiti.fr>
+From: Alex Ghiti <alex@ghiti.fr>
+Message-ID: <8a8d45c6-4ad2-c682-abfb-3d97188d0d45@ghiti.fr>
+Date: Thu, 30 Jan 2020 15:07:10 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.3.0
 MIME-Version: 1.0
-In-Reply-To: <20200129181013.lz6q5lpntnhwclqi@rascal.austin.ibm.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20200118170335.21440-1-alex@ghiti.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Mailman-Approved-At: Fri, 31 Jan 2020 07:10:29 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,52 +68,121 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Rick Lindsley <ricklind@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 1/29/2020 12:10 PM, Scott Cheloha wrote:
-> On Tue, Jan 28, 2020 at 05:56:55PM -0600, Nathan Lynch wrote:
->> Scott Cheloha <cheloha@linux.ibm.com> writes:
->>> LMB lookup is currently an O(n) linear search.  This scales poorly when
->>> there are many LMBs.
->>>
->>> If we cache each LMB by both its base address and its DRC index
->>> in an xarray we can cut lookups to O(log n), greatly accelerating
->>> drmem initialization and memory hotplug.
->>>
->>> This patch introduces two xarrays of of LMBs and fills them during
->>> drmem initialization.  The patch also adds two interfaces for LMB
->>> lookup.
->>
->> Good but can you replace the array of LMBs altogether
->> (drmem_info->lmbs)? xarray allows iteration over the members if needed.
-> 
-> I don't think we can without potentially changing the current behavior.
-> 
-> The current behavior in dlpar_memory_{add,remove}_by_ic() is to advance
-> linearly through the array from the LMB with the matching DRC index.
-> 
-> Iteration through the xarray via xa_for_each_start() will return LMBs
-> indexed with monotonically increasing DRC indices.> 
-> Are they equivalent?  Or can we have an LMB with a smaller DRC index
-> appear at a greater offset in the array?
-> 
-> If the following condition is possible:
-> 
-> 	drmem_info->lmbs[i].drc_index > drmem_info->lmbs[j].drc_index
-> 
-> where i < j, then we have a possible behavior change because
-> xa_for_each_start() may not return a contiguous array slice.  It might
-> "leap backwards" in the array.  Or it might skip over a chunk of LMBs.
-> 
+On 1/18/20 12:03 PM, Alexandre Ghiti wrote:
+> Commit 8580ac9404f6 ("bpf: Process in-kernel BTF") introduced two weak
+> symbols that may be unresolved at link time which result in an absolute
+> relocation to 0. relocs_check.sh emits the following warning:
+>
+> "WARNING: 2 bad relocations
+> c000000001a41478 R_PPC64_ADDR64    _binary__btf_vmlinux_bin_start
+> c000000001a41480 R_PPC64_ADDR64    _binary__btf_vmlinux_bin_end"
+>
+> whereas those relocations are legitimate even for a relocatable kernel
+> compiled with -pie option.
+>
+> relocs_check.sh already excluded some weak unresolved symbols explicitly:
+> remove those hardcoded symbols and add some logic that parses the symbols
+> using nm, retrieves all the weak unresolved symbols and excludes those from
+> the list of the potential bad relocations.
+>
+> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> Signed-off-by: Alexandre Ghiti <alex@ghiti.fr>
+> ---
+>
+> Changes in v2:
+> - Follow Stephen advice of using grep -F instead of looping over weak symbols
+>    using read, patch is way smaller and cleaner.
+> - Add missing nm in comment
+>
+>   arch/powerpc/Makefile.postlink     |  4 ++--
+>   arch/powerpc/tools/relocs_check.sh | 20 ++++++++++++--------
+>   2 files changed, 14 insertions(+), 10 deletions(-)
+>
+> diff --git a/arch/powerpc/Makefile.postlink b/arch/powerpc/Makefile.postlink
+> index 134f12f89b92..2268396ff4bb 100644
+> --- a/arch/powerpc/Makefile.postlink
+> +++ b/arch/powerpc/Makefile.postlink
+> @@ -17,11 +17,11 @@ quiet_cmd_head_check = CHKHEAD $@
+>   quiet_cmd_relocs_check = CHKREL  $@
+>   ifdef CONFIG_PPC_BOOK3S_64
+>         cmd_relocs_check =						\
+> -	$(CONFIG_SHELL) $(srctree)/arch/powerpc/tools/relocs_check.sh "$(OBJDUMP)" "$@" ; \
+> +	$(CONFIG_SHELL) $(srctree)/arch/powerpc/tools/relocs_check.sh "$(OBJDUMP)" "$(NM)" "$@" ; \
+>   	$(BASH) $(srctree)/arch/powerpc/tools/unrel_branch_check.sh "$(OBJDUMP)" "$@"
+>   else
+>         cmd_relocs_check =						\
+> -	$(CONFIG_SHELL) $(srctree)/arch/powerpc/tools/relocs_check.sh "$(OBJDUMP)" "$@"
+> +	$(CONFIG_SHELL) $(srctree)/arch/powerpc/tools/relocs_check.sh "$(OBJDUMP)" "$(NM)" "$@"
+>   endif
+>   
+>   # `@true` prevents complaint when there is nothing to be done
+> diff --git a/arch/powerpc/tools/relocs_check.sh b/arch/powerpc/tools/relocs_check.sh
+> index 7b9fe0a567cf..014e00e74d2b 100755
+> --- a/arch/powerpc/tools/relocs_check.sh
+> +++ b/arch/powerpc/tools/relocs_check.sh
+> @@ -10,14 +10,21 @@
+>   # based on relocs_check.pl
+>   # Copyright © 2009 IBM Corporation
+>   
+> -if [ $# -lt 2 ]; then
+> -	echo "$0 [path to objdump] [path to vmlinux]" 1>&2
+> +if [ $# -lt 3 ]; then
+> +	echo "$0 [path to objdump] [path to nm] [path to vmlinux]" 1>&2
+>   	exit 1
+>   fi
+>   
+> -# Have Kbuild supply the path to objdump so we handle cross compilation.
+> +# Have Kbuild supply the path to objdump and nm so we handle cross compilation.
+>   objdump="$1"
+> -vmlinux="$2"
+> +nm="$2"
+> +vmlinux="$3"
+> +
+> +# Remove from the bad relocations those that match an undefined weak symbol
+> +# which will result in an absolute relocation to 0.
+> +# Weak unresolved symbols are of that form in nm output:
+> +# "                  w _binary__btf_vmlinux_bin_end"
+> +undef_weak_symbols=$($nm "$vmlinux" | awk '$1 ~ /w/ { print $2 }')
+>   
+>   bad_relocs=$(
+>   $objdump -R "$vmlinux" |
+> @@ -26,8 +33,6 @@ $objdump -R "$vmlinux" |
+>   	# These relocations are okay
+>   	# On PPC64:
+>   	#	R_PPC64_RELATIVE, R_PPC64_NONE
+> -	#	R_PPC64_ADDR64 mach_<name>
+> -	#	R_PPC64_ADDR64 __crc_<name>
+>   	# On PPC:
+>   	#	R_PPC_RELATIVE, R_PPC_ADDR16_HI,
+>   	#	R_PPC_ADDR16_HA,R_PPC_ADDR16_LO,
+> @@ -39,8 +44,7 @@ R_PPC_ADDR16_HI
+>   R_PPC_ADDR16_HA
+>   R_PPC_RELATIVE
+>   R_PPC_NONE' |
+> -	grep -E -v '\<R_PPC64_ADDR64[[:space:]]+mach_' |
+> -	grep -E -v '\<R_PPC64_ADDR64[[:space:]]+__crc_'
+> +	([ "$undef_weak_symbols" ] && grep -F -w -v "$undef_weak_symbols" || cat)
+>   )
+>   
+>   if [ -z "$bad_relocs" ]; then
 
-The LMB array should have each LMB in monotonically increasing DRC Index
-value. Note that this is set up based on the DT property but I don't recall
-ever seeing the DT specify LMBs out of order or not being contiguous.
 
-I am not very familiar with xarrays but it appears this should be possible.
+Hi guys,
 
--Nathan
+
+Any thought about that ?
+
+I do think this patch makes the whole check about absolute relocations 
+clearer.
+And in the future, it will avoid anyone to spend some time on those 
+"bad" relocations
+which actually aren't.
+
+Thanks,
+
+Alex
+
