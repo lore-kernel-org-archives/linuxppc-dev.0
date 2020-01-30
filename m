@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F3D0C2D0DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jan 2020 16:15:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36283C2D0DB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jan 2020 16:17:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B5ADB2082E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jan 2020 16:15:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id DC29D20707
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jan 2020 16:17:31 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="tElhNhyd"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B5ADB2082E
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="Flnvqj48"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DC29D20707
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 487lp23rdPzDqbr
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jan 2020 03:15:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 487lqs3YFHzDqcG
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jan 2020 03:17:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,55 +29,55 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=tElhNhyd; dkim-atps=neutral
+ header.s=mail header.b=Flnvqj48; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 487ldh4qTKzDqSk
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2020 03:08:39 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 487ldj0TGlzDqSY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2020 03:08:40 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 487ldZ5dPYz9v6KP;
- Thu, 30 Jan 2020 17:08:34 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 487ldc2tlWz9v6KN;
+ Thu, 30 Jan 2020 17:08:36 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=tElhNhyd; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=Flnvqj48; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 7XZjh1vsHG97; Thu, 30 Jan 2020 17:08:34 +0100 (CET)
+ with ESMTP id tulGZmQ36mb7; Thu, 30 Jan 2020 17:08:36 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 487ldZ3QtGz9v6KN;
- Thu, 30 Jan 2020 17:08:34 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 487ldc1nW7z9v6KL;
+ Thu, 30 Jan 2020 17:08:36 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1580400514; bh=sfGFxmiLk0piqyU/qQus80qwW8Tg3vU9asN8yDMG0JY=;
+ t=1580400516; bh=UmmY6RKPs52swsiEhL0YnHgxeG0I3aYWBOfOGx8ZwIo=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=tElhNhydrFaWKvthIHYHJmYYKmkdr8NX5tPQ7uruBxcZ+VpMsl26/gjtoX0x7wtxL
- sP6VbjfzfAUgSKPycuJizg4DJL5nEcTP8IDrfkl8nf/ezal9DTWEVB0HtZB3+IoUSU
- m9eScOMUd5Iro8OYS339Or4y2ljA9uppySqmVCvg=
+ b=Flnvqj48dfl8/yndb1mTKcf8DvCaGWKFUHsNdNN6X0s9vFR8mJHJFxRx4Bw/iqeZR
+ WM43eamWwOAhqv82frlTiWiUBAamKwg23Lnp84EA89xdkD58T84GgLlDir5uq96mER
+ gfHbj/fuHJ7GkkqPhWRcgg/ywtnIB9mhdgAz6mF0=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C1ED88B87D;
- Thu, 30 Jan 2020 17:08:35 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id CB2328B87B;
+ Thu, 30 Jan 2020 17:08:37 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id fMGaFitaHfsU; Thu, 30 Jan 2020 17:08:35 +0100 (CET)
+ with ESMTP id rAi9O2jk2ZVc; Thu, 30 Jan 2020 17:08:37 +0100 (CET)
 Received: from po14934vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 712078B877;
- Thu, 30 Jan 2020 17:08:35 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 7D5798B877;
+ Thu, 30 Jan 2020 17:08:37 +0100 (CET)
 Received: by po14934vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 3C7AE65283; Thu, 30 Jan 2020 16:08:35 +0000 (UTC)
-Message-Id: <4016b89e2db7f7b510613496a9531135d9adc9ba.1580399657.git.christophe.leroy@c-s.fr>
+ id 4827E65283; Thu, 30 Jan 2020 16:08:37 +0000 (UTC)
+Message-Id: <abf97996602ef07223fec30c005df78e5ed41b2e.1580399657.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1580399657.git.christophe.leroy@c-s.fr>
 References: <cover.1580399657.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v5 1/6] powerpc/vdso64: Switch from __get_datapage() to
- get_datapage inline macro
+Subject: [PATCH v5 3/6] lib/vdso: Allow architectures to provide the vdso data
+ pointer
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  nathanl@linux.ibm.com, arnd@arndb.de, tglx@linutronix.de,
  vincenzo.frascino@arm.com, luto@kernel.org
-Date: Thu, 30 Jan 2020 16:08:35 +0000 (UTC)
+Date: Thu, 30 Jan 2020 16:08:37 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,155 +95,195 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On the same way as already done on PPC32, drop __get_datapage()
-function and use get_datapage inline macro instead.
+On powerpc, __arch_get_vdso_data() clobbers the link register,
+requiring the caller to save it.
 
-See commit ec0895f08f99 ("powerpc/vdso32: inline __get_datapage()")
+As the parent function already has to set a stack frame and saves
+the link register before calling the C vdso function, retriving the
+vdso data pointer there is lighter.
+
+Give architectures the opportunity to hand the vdso data pointer
+to C vdso functions.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/vdso64/cacheflush.S   |  9 ++++----
- arch/powerpc/kernel/vdso64/datapage.S     | 28 +++--------------------
- arch/powerpc/kernel/vdso64/gettimeofday.S |  8 +++----
- 3 files changed, 11 insertions(+), 34 deletions(-)
+ lib/vdso/gettimeofday.c | 83 +++++++++++++++++++++++++++++++++--------
+ 1 file changed, 67 insertions(+), 16 deletions(-)
 
-diff --git a/arch/powerpc/kernel/vdso64/cacheflush.S b/arch/powerpc/kernel/vdso64/cacheflush.S
-index 526f5ba2593e..cab14324242b 100644
---- a/arch/powerpc/kernel/vdso64/cacheflush.S
-+++ b/arch/powerpc/kernel/vdso64/cacheflush.S
-@@ -8,6 +8,7 @@
- #include <asm/processor.h>
- #include <asm/ppc_asm.h>
- #include <asm/vdso.h>
-+#include <asm/vdso_datapage.h>
- #include <asm/asm-offsets.h>
+diff --git a/lib/vdso/gettimeofday.c b/lib/vdso/gettimeofday.c
+index f8b8ec5e63ac..72d65dd50cb4 100644
+--- a/lib/vdso/gettimeofday.c
++++ b/lib/vdso/gettimeofday.c
+@@ -206,9 +206,9 @@ static __always_inline int do_coarse(const struct vdso_data *vd, clockid_t clk,
+ }
  
- 	.text
-@@ -24,14 +25,12 @@ V_FUNCTION_BEGIN(__kernel_sync_dicache)
-   .cfi_startproc
- 	mflr	r12
-   .cfi_register lr,r12
--	mr	r11,r3
--	bl	V_LOCAL_FUNC(__get_datapage)
-+	get_datapage	r10, r0
- 	mtlr	r12
--	mr	r10,r3
+ static __maybe_unused int
+-__cvdso_clock_gettime_common(clockid_t clock, struct __kernel_timespec *ts)
++__cvdso_clock_gettime_common(const struct vdso_data *vd, clockid_t clock,
++			     struct __kernel_timespec *ts)
+ {
+-	const struct vdso_data *vd = __arch_get_vdso_data();
+ 	u32 msk;
  
- 	lwz	r7,CFG_DCACHE_BLOCKSZ(r10)
- 	addi	r5,r7,-1
--	andc	r6,r11,r5		/* round low to line bdy */
-+	andc	r6,r3,r5		/* round low to line bdy */
- 	subf	r8,r6,r4		/* compute length */
- 	add	r8,r8,r5		/* ensure we get enough */
- 	lwz	r9,CFG_DCACHE_LOGBLOCKSZ(r10)
-@@ -48,7 +47,7 @@ V_FUNCTION_BEGIN(__kernel_sync_dicache)
+ 	/* Check for negative values or invalid clocks */
+@@ -233,23 +233,33 @@ __cvdso_clock_gettime_common(clockid_t clock, struct __kernel_timespec *ts)
+ }
  
- 	lwz	r7,CFG_ICACHE_BLOCKSZ(r10)
- 	addi	r5,r7,-1
--	andc	r6,r11,r5		/* round low to line bdy */
-+	andc	r6,r3,r5		/* round low to line bdy */
- 	subf	r8,r6,r4		/* compute length */
- 	add	r8,r8,r5
- 	lwz	r9,CFG_ICACHE_LOGBLOCKSZ(r10)
-diff --git a/arch/powerpc/kernel/vdso64/datapage.S b/arch/powerpc/kernel/vdso64/datapage.S
-index dc84f5ae3802..067247d3efb9 100644
---- a/arch/powerpc/kernel/vdso64/datapage.S
-+++ b/arch/powerpc/kernel/vdso64/datapage.S
-@@ -10,35 +10,13 @@
- #include <asm/asm-offsets.h>
- #include <asm/unistd.h>
- #include <asm/vdso.h>
-+#include <asm/vdso_datapage.h>
+ static __maybe_unused int
+-__cvdso_clock_gettime(clockid_t clock, struct __kernel_timespec *ts)
++__cvdso_clock_gettime_data(const struct vdso_data *vd, clockid_t clock,
++			   struct __kernel_timespec *ts)
+ {
+-	int ret = __cvdso_clock_gettime_common(clock, ts);
++	int ret = __cvdso_clock_gettime_common(vd, clock, ts);
  
- 	.text
- .global	__kernel_datapage_offset;
- __kernel_datapage_offset:
- 	.long	0
+ 	if (unlikely(ret))
+ 		return clock_gettime_fallback(clock, ts);
+ 	return 0;
+ }
  
--V_FUNCTION_BEGIN(__get_datapage)
--  .cfi_startproc
--	/* We don't want that exposed or overridable as we want other objects
--	 * to be able to bl directly to here
--	 */
--	.protected __get_datapage
--	.hidden __get_datapage
--
--	mflr	r0
--  .cfi_register lr,r0
--
--	bcl	20,31,data_page_branch
--data_page_branch:
--	mflr	r3
--	mtlr	r0
--	addi	r3, r3, __kernel_datapage_offset-data_page_branch
--	lwz	r0,0(r3)
--  .cfi_restore lr
--	add	r3,r0,r3
--	blr
--  .cfi_endproc
--V_FUNCTION_END(__get_datapage)
--
- /*
-  * void *__kernel_get_syscall_map(unsigned int *syscall_count) ;
-  *
-@@ -53,7 +31,7 @@ V_FUNCTION_BEGIN(__kernel_get_syscall_map)
- 	mflr	r12
-   .cfi_register lr,r12
- 	mr	r4,r3
--	bl	V_LOCAL_FUNC(__get_datapage)
-+	get_datapage	r3, r0
- 	mtlr	r12
- 	addi	r3,r3,CFG_SYSCALL_MAP64
- 	cmpldi	cr0,r4,0
-@@ -75,7 +53,7 @@ V_FUNCTION_BEGIN(__kernel_get_tbfreq)
-   .cfi_startproc
- 	mflr	r12
-   .cfi_register lr,r12
--	bl	V_LOCAL_FUNC(__get_datapage)
-+	get_datapage	r3, r0
- 	ld	r3,CFG_TB_TICKS_PER_SEC(r3)
- 	mtlr	r12
- 	crclr	cr0*4+so
-diff --git a/arch/powerpc/kernel/vdso64/gettimeofday.S b/arch/powerpc/kernel/vdso64/gettimeofday.S
-index 1c9a04703250..e54c4ce4d356 100644
---- a/arch/powerpc/kernel/vdso64/gettimeofday.S
-+++ b/arch/powerpc/kernel/vdso64/gettimeofday.S
-@@ -26,7 +26,7 @@ V_FUNCTION_BEGIN(__kernel_gettimeofday)
++static __maybe_unused int
++__cvdso_clock_gettime(clockid_t clock, struct __kernel_timespec *ts)
++{
++	const struct vdso_data *vd = __arch_get_vdso_data();
++
++	return __cvdso_clock_gettime_data(vd, clock, ts);
++}
++
+ #ifdef BUILD_VDSO32
+ static __maybe_unused int
+-__cvdso_clock_gettime32(clockid_t clock, struct old_timespec32 *res)
++__cvdso_clock_gettime32_data(const struct vdso_data *vd, clockid_t clock,
++			     struct old_timespec32 *res)
+ {
+ 	struct __kernel_timespec ts;
+ 	int ret;
  
- 	mr	r11,r3			/* r11 holds tv */
- 	mr	r10,r4			/* r10 holds tz */
--	bl	V_LOCAL_FUNC(__get_datapage)	/* get data page */
-+	get_datapage	r3, r0
- 	cmpldi	r11,0			/* check if tv is NULL */
- 	beq	2f
- 	lis	r7,1000000@ha		/* load up USEC_PER_SEC */
-@@ -71,7 +71,7 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
- 	mflr	r12			/* r12 saves lr */
-   .cfi_register lr,r12
- 	mr	r11,r4			/* r11 saves tp */
--	bl	V_LOCAL_FUNC(__get_datapage)	/* get data page */
-+	get_datapage	r3, r0
- 	lis	r7,NSEC_PER_SEC@h	/* want nanoseconds */
- 	ori	r7,r7,NSEC_PER_SEC@l
- 	beq	cr5,70f
-@@ -188,7 +188,7 @@ V_FUNCTION_BEGIN(__kernel_clock_getres)
+-	ret = __cvdso_clock_gettime_common(clock, &ts);
++	ret = __cvdso_clock_gettime_common(vd, clock, &ts);
  
- 	mflr	r12
-   .cfi_register lr,r12
--	bl	V_LOCAL_FUNC(__get_datapage)
-+	get_datapage	r3, r0
- 	lwz	r5, CLOCK_HRTIMER_RES(r3)
- 	mtlr	r12
- 	li	r3,0
-@@ -221,7 +221,7 @@ V_FUNCTION_BEGIN(__kernel_time)
-   .cfi_register lr,r12
+ 	if (unlikely(ret))
+ 		return clock_gettime32_fallback(clock, res);
+@@ -260,13 +270,21 @@ __cvdso_clock_gettime32(clockid_t clock, struct old_timespec32 *res)
  
- 	mr	r11,r3			/* r11 holds t */
--	bl	V_LOCAL_FUNC(__get_datapage)
-+	get_datapage	r3, r0
+ 	return ret;
+ }
+-#endif /* BUILD_VDSO32 */
  
- 	ld	r4,STAMP_XTIME_SEC(r3)
+ static __maybe_unused int
+-__cvdso_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz)
++__cvdso_clock_gettime32(clockid_t clock, struct old_timespec32 *res)
+ {
+ 	const struct vdso_data *vd = __arch_get_vdso_data();
  
++	return __cvdso_clock_gettime32_data(vd, clock, res);
++}
++#endif /* BUILD_VDSO32 */
++
++static __maybe_unused int
++__cvdso_gettimeofday_data(const struct vdso_data *vd,
++			  struct __kernel_old_timeval *tv, struct timezone *tz)
++{
++
+ 	if (likely(tv != NULL)) {
+ 		struct __kernel_timespec ts;
+ 
+@@ -289,10 +307,18 @@ __cvdso_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz)
+ 	return 0;
+ }
+ 
+-#ifdef VDSO_HAS_TIME
+-static __maybe_unused __kernel_old_time_t __cvdso_time(__kernel_old_time_t *time)
++static __maybe_unused int
++__cvdso_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz)
+ {
+ 	const struct vdso_data *vd = __arch_get_vdso_data();
++
++	return __cvdso_gettimeofday_data(vd, tv, tz);
++}
++
++#ifdef VDSO_HAS_TIME
++static __maybe_unused __kernel_old_time_t
++__cvdso_time_data(const struct vdso_data *vd, __kernel_old_time_t *time)
++{
+ 	__kernel_old_time_t t;
+ 
+ 	if (IS_ENABLED(CONFIG_TIME_NS) && vd->clock_mode == VCLOCK_TIMENS)
+@@ -305,13 +331,20 @@ static __maybe_unused __kernel_old_time_t __cvdso_time(__kernel_old_time_t *time
+ 
+ 	return t;
+ }
++
++static __maybe_unused __kernel_old_time_t __cvdso_time(__kernel_old_time_t *time)
++{
++	const struct vdso_data *vd = __arch_get_vdso_data();
++
++	return __cvdso_time_data(vd, time);
++}
+ #endif /* VDSO_HAS_TIME */
+ 
+ #ifdef VDSO_HAS_CLOCK_GETRES
+ static __maybe_unused
+-int __cvdso_clock_getres_common(clockid_t clock, struct __kernel_timespec *res)
++int __cvdso_clock_getres_common(const struct vdso_data *vd, clockid_t clock,
++				struct __kernel_timespec *res)
+ {
+-	const struct vdso_data *vd = __arch_get_vdso_data();
+ 	u32 msk;
+ 	u64 ns;
+ 
+@@ -349,23 +382,33 @@ int __cvdso_clock_getres_common(clockid_t clock, struct __kernel_timespec *res)
+ }
+ 
+ static __maybe_unused
+-int __cvdso_clock_getres(clockid_t clock, struct __kernel_timespec *res)
++int __cvdso_clock_getres_data(const struct vdso_data *vd, clockid_t clock,
++			      struct __kernel_timespec *res)
+ {
+-	int ret = __cvdso_clock_getres_common(clock, res);
++	int ret = __cvdso_clock_getres_common(vd, clock, res);
+ 
+ 	if (unlikely(ret))
+ 		return clock_getres_fallback(clock, res);
+ 	return 0;
+ }
+ 
++static __maybe_unused
++int __cvdso_clock_getres(clockid_t clock, struct __kernel_timespec *res)
++{
++	const struct vdso_data *vd = __arch_get_vdso_data();
++
++	return __cvdso_clock_getres_data(vd, clock, res);
++}
++
+ #ifdef BUILD_VDSO32
+ static __maybe_unused int
+-__cvdso_clock_getres_time32(clockid_t clock, struct old_timespec32 *res)
++__cvdso_clock_getres_time32_data(const struct vdso_data *vd, clockid_t clock,
++				 struct old_timespec32 *res)
+ {
+ 	struct __kernel_timespec ts;
+ 	int ret;
+ 
+-	ret = __cvdso_clock_getres_common(clock, &ts);
++	ret = __cvdso_clock_getres_common(vd, clock, &ts);
+ 
+ 	if (unlikely(ret))
+ 		return clock_getres32_fallback(clock, res);
+@@ -376,5 +419,13 @@ __cvdso_clock_getres_time32(clockid_t clock, struct old_timespec32 *res)
+ 	}
+ 	return ret;
+ }
++
++static __maybe_unused int
++__cvdso_clock_getres_time32(clockid_t clock, struct old_timespec32 *res)
++{
++	const struct vdso_data *vd = __arch_get_vdso_data();
++
++	return __cvdso_clock_getres_time32_data(vd, clock, res);
++}
+ #endif /* BUILD_VDSO32 */
+ #endif /* VDSO_HAS_CLOCK_GETRES */
 -- 
 2.25.0
 
