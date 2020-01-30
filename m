@@ -2,23 +2,23 @@ Return-Path: <SRS0=bRiG=3T=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B6F7C33C9E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jan 2020 06:50:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15285C33C9E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jan 2020 06:52:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 232D1206D5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jan 2020 06:50:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 232D1206D5
+	by mail.kernel.org (Postfix) with ESMTPS id C12B3206F0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jan 2020 06:52:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C12B3206F0
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 487WFY0ZmvzDqYp
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jan 2020 17:50:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 487WHK6Vw1zDqWN
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jan 2020 17:51:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=sandipan@linux.ibm.com;
@@ -29,64 +29,60 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 487Vyt4z4HzDqSj
+ by lists.ozlabs.org (Postfix) with ESMTPS id 487Vyv2C5WzDqTn
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2020 17:37:42 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 00U6aQRx009309
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 00U6bbL2096837
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2020 01:37:37 -0500
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2xubct245s-1
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2xttnuh650-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2020 01:37:36 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2020 01:37:37 -0500
 Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.ibm.com>;
- Thu, 30 Jan 2020 06:37:34 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Thu, 30 Jan 2020 06:37:15 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 30 Jan 2020 06:37:31 -0000
+ Thu, 30 Jan 2020 06:37:11 -0000
 Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
  [9.149.105.58])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 00U6bTWK51970154
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 00U6b9vh32964682
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 30 Jan 2020 06:37:29 GMT
+ Thu, 30 Jan 2020 06:37:09 GMT
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 74AD94C044;
- Thu, 30 Jan 2020 06:37:29 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 8D9A14C040;
+ Thu, 30 Jan 2020 06:37:09 +0000 (GMT)
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E5EF74C04A;
- Thu, 30 Jan 2020 06:37:26 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 0B8034C050;
+ Thu, 30 Jan 2020 06:37:07 +0000 (GMT)
 Received: from fir03.in.ibm.com (unknown [9.121.59.65])
  by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 30 Jan 2020 06:37:26 +0000 (GMT)
+ Thu, 30 Jan 2020 06:37:06 +0000 (GMT)
 From: Sandipan Das <sandipan@linux.ibm.com>
 To: shuah@kernel.org, skhan@linuxfoundation.org,
  linux-kselftest@vger.kernel.org
-Subject: [PATCH v18 07/24] selftests: vm: pkeys: Add helpers for pkey bits
-Date: Thu, 30 Jan 2020 12:06:49 +0530
+Subject: [PATCH v18 00/24] selftests, powerpc, x86: Memory Protection Keys
+Date: Thu, 30 Jan 2020 12:06:42 +0530
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <cover.1580365432.git.sandipan@linux.ibm.com>
-References: <cover.1580365432.git.sandipan@linux.ibm.com>
-In-Reply-To: <cover.1580365432.git.sandipan@linux.ibm.com>
-References: <cover.1580365432.git.sandipan@linux.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 20013006-0016-0000-0000-000002E1F2E5
+x-cbid: 20013006-4275-0000-0000-0000039C3381
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20013006-0017-0000-0000-00003344BBBD
-Message-Id: <38d1f83a8282c76b453e38b11c66d44de851f44a.1580365432.git.sandipan@linux.ibm.com>
+x-cbparentid: 20013006-4276-0000-0000-000038B0505C
+Message-Id: <cover.1580365432.git.sandipan@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
  definitions=2020-01-30_01:2020-01-28,
  2020-01-30 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 mlxlogscore=738
- clxscore=1015 adultscore=0 phishscore=0 suspectscore=0 malwarescore=0
- priorityscore=1501 spamscore=0 mlxscore=0 lowpriorityscore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ mlxscore=0 malwarescore=0
+ spamscore=0 impostorscore=0 phishscore=0 bulkscore=0 suspectscore=0
+ adultscore=0 priorityscore=1501 mlxlogscore=999 lowpriorityscore=0
+ clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-1911200001 definitions=main-2001300042
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -107,151 +103,126 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This introduces some functions that help with setting
-or clearing bits of a particular pkey. This also adds
-an abstraction for getting a pkey's bit position in
-the pkey register as this may vary across architectures.
+Memory protection keys enables an application to protect its address
+space from inadvertent access by its own code.
 
-Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
----
- tools/testing/selftests/vm/pkey-helpers.h    | 22 ++++++++++++++
- tools/testing/selftests/vm/pkey-x86.h        |  5 +++
- tools/testing/selftests/vm/protection_keys.c | 32 ++++++--------------
- 3 files changed, 36 insertions(+), 23 deletions(-)
+This feature is now enabled on powerpc and has been available since
+4.16-rc1. The patches move the selftests to arch neutral directory
+and enhance their test coverage.
 
-diff --git a/tools/testing/selftests/vm/pkey-helpers.h b/tools/testing/selftests/vm/pkey-helpers.h
-index dfbce49269ce..0e3da7c8d628 100644
---- a/tools/testing/selftests/vm/pkey-helpers.h
-+++ b/tools/testing/selftests/vm/pkey-helpers.h
-@@ -80,6 +80,28 @@ extern void abort_hooks(void);
- #error Architecture not supported
- #endif /* arch */
- 
-+#define PKEY_MASK	(PKEY_DISABLE_ACCESS | PKEY_DISABLE_WRITE)
-+
-+static inline u64 set_pkey_bits(u64 reg, int pkey, u64 flags)
-+{
-+	u32 shift = pkey_bit_position(pkey);
-+	/* mask out bits from pkey in old value */
-+	reg &= ~((u64)PKEY_MASK << shift);
-+	/* OR in new bits for pkey */
-+	reg |= (flags & PKEY_MASK) << shift;
-+	return reg;
-+}
-+
-+static inline u64 get_pkey_bits(u64 reg, int pkey)
-+{
-+	u32 shift = pkey_bit_position(pkey);
-+	/*
-+	 * shift down the relevant bits to the lowest two, then
-+	 * mask off all the other higher bits
-+	 */
-+	return ((reg >> shift) & PKEY_MASK);
-+}
-+
- extern u64 shadow_pkey_reg;
- 
- static inline u64 _read_pkey_reg(int line)
-diff --git a/tools/testing/selftests/vm/pkey-x86.h b/tools/testing/selftests/vm/pkey-x86.h
-index 6ffea27e2d2d..def2a1bcf6a5 100644
---- a/tools/testing/selftests/vm/pkey-x86.h
-+++ b/tools/testing/selftests/vm/pkey-x86.h
-@@ -118,6 +118,11 @@ static inline int cpu_has_pku(void)
- 	return 1;
- }
- 
-+static inline u32 pkey_bit_position(int pkey)
-+{
-+	return pkey * PKEY_BITS_PER_PKEY;
-+}
-+
- #define XSTATE_PKEY_BIT	(9)
- #define XSTATE_PKEY	0x200
- 
-diff --git a/tools/testing/selftests/vm/protection_keys.c b/tools/testing/selftests/vm/protection_keys.c
-index efa35cc6f6b9..bed9d4de12b4 100644
---- a/tools/testing/selftests/vm/protection_keys.c
-+++ b/tools/testing/selftests/vm/protection_keys.c
-@@ -334,25 +334,13 @@ pid_t fork_lazy_child(void)
- 
- static u32 hw_pkey_get(int pkey, unsigned long flags)
- {
--	u32 mask = (PKEY_DISABLE_ACCESS|PKEY_DISABLE_WRITE);
- 	u64 pkey_reg = __read_pkey_reg();
--	u64 shifted_pkey_reg;
--	u32 masked_pkey_reg;
- 
- 	dprintf1("%s(pkey=%d, flags=%lx) = %x / %d\n",
- 			__func__, pkey, flags, 0, 0);
- 	dprintf2("%s() raw pkey_reg: %016llx\n", __func__, pkey_reg);
- 
--	shifted_pkey_reg = (pkey_reg >> (pkey * PKEY_BITS_PER_PKEY));
--	dprintf2("%s() shifted_pkey_reg: %016llx\n", __func__,
--			shifted_pkey_reg);
--	masked_pkey_reg = shifted_pkey_reg & mask;
--	dprintf2("%s() masked  pkey_reg: %x\n", __func__, masked_pkey_reg);
--	/*
--	 * shift down the relevant bits to the lowest two, then
--	 * mask off all the other high bits.
--	 */
--	return masked_pkey_reg;
-+	return (u32) get_pkey_bits(pkey_reg, pkey);
- }
- 
- static int hw_pkey_set(int pkey, unsigned long rights, unsigned long flags)
-@@ -364,12 +352,8 @@ static int hw_pkey_set(int pkey, unsigned long rights, unsigned long flags)
- 	/* make sure that 'rights' only contains the bits we expect: */
- 	assert(!(rights & ~mask));
- 
--	/* copy old pkey_reg */
--	new_pkey_reg = old_pkey_reg;
--	/* mask out bits from pkey in old value: */
--	new_pkey_reg &= ~(mask << (pkey * PKEY_BITS_PER_PKEY));
--	/* OR in new bits for pkey: */
--	new_pkey_reg |= (rights << (pkey * PKEY_BITS_PER_PKEY));
-+	/* modify bits accordingly in old pkey_reg and assign it */
-+	new_pkey_reg = set_pkey_bits(old_pkey_reg, pkey, rights);
- 
- 	__write_pkey_reg(new_pkey_reg);
- 
-@@ -403,7 +387,7 @@ void pkey_disable_set(int pkey, int flags)
- 	ret = hw_pkey_set(pkey, pkey_rights, syscall_flags);
- 	assert(!ret);
- 	/* pkey_reg and flags have the same format */
--	shadow_pkey_reg |= flags << (pkey * 2);
-+	shadow_pkey_reg = set_pkey_bits(shadow_pkey_reg, pkey, pkey_rights);
- 	dprintf1("%s(%d) shadow: 0x%016llx\n",
- 		__func__, pkey, shadow_pkey_reg);
- 
-@@ -437,7 +421,7 @@ void pkey_disable_clear(int pkey, int flags)
- 	pkey_rights |= flags;
- 
- 	ret = hw_pkey_set(pkey, pkey_rights, 0);
--	shadow_pkey_reg &= ~(flags << (pkey * 2));
-+	shadow_pkey_reg = set_pkey_bits(shadow_pkey_reg, pkey, pkey_rights);
- 	pkey_assert(ret >= 0);
- 
- 	pkey_rights = hw_pkey_get(pkey, syscall_flags);
-@@ -513,7 +497,8 @@ int alloc_pkey(void)
- 			shadow_pkey_reg);
- 	if (ret) {
- 		/* clear both the bits: */
--		shadow_pkey_reg &= ~(0x3      << (ret * 2));
-+		shadow_pkey_reg = set_pkey_bits(shadow_pkey_reg, ret,
-+						~PKEY_MASK);
- 		dprintf4("%s()::%d, ret: %d pkey_reg: 0x%016llx"
- 				" shadow: 0x%016llx\n",
- 				__func__,
-@@ -523,7 +508,8 @@ int alloc_pkey(void)
- 		 * move the new state in from init_val
- 		 * (remember, we cheated and init_val == pkey_reg format)
- 		 */
--		shadow_pkey_reg |=  (init_val << (ret * 2));
-+		shadow_pkey_reg = set_pkey_bits(shadow_pkey_reg, ret,
-+						init_val);
- 	}
- 	dprintf4("%s()::%d, ret: %d pkey_reg: 0x%016llx"
- 			" shadow: 0x%016llx\n",
+Tested on powerpc64 and x86_64 (Skylake-SP).
+
+Link to development branch:
+https://github.com/sandip4n/linux/tree/pkey-selftests
+
+Changelog
+---------
+Link to previous version (v17):
+https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=154174
+
+v18:
+	(1) Fixed issues with x86 multilib builds based on
+	    feedback from Dave.
+	(2) Moved patch 2 to the end of the series.
+
+v17:
+	(1) Fixed issues with i386 builds when running on x86_64
+	    based on feedback from Dave.
+	(2) Replaced patch 6 from previous version with patch 7.
+	    This addresses u64 format specifier related concerns
+	    that Michael had raised in v15.
+
+v16:
+	(1) Rebased on top of latest master.
+	(2) Switched to u64 instead of using an arch-dependent
+	    pkey_reg_t type for references to the pkey register
+	    based on suggestions from Dave, Michal and Michael.
+	(3) Removed build time determination of page size based
+	    on suggestion from Michael.
+	(4) Fixed comment before the definition of __page_o_noops()
+	    from patch 13 ("selftests/vm/pkeys: Introduce powerpc
+	    support").
+
+v15:
+	(1) Rebased on top of latest master.
+	(2) Addressed review comments from Dave Hansen.
+	(3) Moved code for getting or setting pkey bits to new
+	    helpers. These changes replace patch 7 of v14.
+	(4) Added a fix which ensures that the correct count of
+	    reserved keys is used across different platforms.
+	(5) Added a fix which ensures that the correct page size
+	    is used as powerpc supports both 4K and 64K pages.
+
+v14:
+	(1) Incorporated another round of comments from Dave Hansen.
+
+v13:
+	(1) Incorporated comments for Dave Hansen.
+	(2) Added one more test for correct pkey-0 behavior.
+
+v12:
+	(1) Fixed the offset of pkey field in the siginfo structure for
+	    x86_64 and powerpc. And tries to use the actual field
+	    if the headers have it defined.
+
+v11:
+	(1) Fixed a deadlock in the ptrace testcase.
+
+v10 and prior:
+	(1) Moved the testcase to arch neutral directory.
+	(2) Split the changes into incremental patches.
+
+Desnes A. Nunes do Rosario (1):
+  selftests/vm/pkeys: Fix number of reserved powerpc pkeys
+
+Ram Pai (16):
+  selftests/x86/pkeys: Move selftests to arch-neutral directory
+  selftests/vm/pkeys: Rename all references to pkru to a generic name
+  selftests/vm/pkeys: Move generic definitions to header file
+  selftests/vm/pkeys: Fix pkey_disable_clear()
+  selftests/vm/pkeys: Fix assertion in pkey_disable_set/clear()
+  selftests/vm/pkeys: Fix alloc_random_pkey() to make it really random
+  selftests/vm/pkeys: Introduce generic pkey abstractions
+  selftests/vm/pkeys: Introduce powerpc support
+  selftests/vm/pkeys: Fix assertion in test_pkey_alloc_exhaust()
+  selftests/vm/pkeys: Improve checks to determine pkey support
+  selftests/vm/pkeys: Associate key on a mapped page and detect access
+    violation
+  selftests/vm/pkeys: Associate key on a mapped page and detect write
+    violation
+  selftests/vm/pkeys: Detect write violation on a mapped
+    access-denied-key page
+  selftests/vm/pkeys: Introduce a sub-page allocator
+  selftests/vm/pkeys: Test correct behaviour of pkey-0
+  selftests/vm/pkeys: Override access right definitions on powerpc
+
+Sandipan Das (5):
+  selftests: vm: pkeys: Use sane types for pkey register
+  selftests: vm: pkeys: Add helpers for pkey bits
+  selftests: vm: pkeys: Use the correct huge page size
+  selftests: vm: pkeys: Use the correct page size on powerpc
+  selftests: vm: pkeys: Fix multilib builds for x86
+
+Thiago Jung Bauermann (2):
+  selftests/vm/pkeys: Move some definitions to arch-specific header
+  selftests/vm/pkeys: Make gcc check arguments of sigsafe_printf()
+
+ tools/testing/selftests/vm/.gitignore         |   1 +
+ tools/testing/selftests/vm/Makefile           |  73 ++
+ tools/testing/selftests/vm/pkey-helpers.h     | 225 ++++++
+ tools/testing/selftests/vm/pkey-powerpc.h     | 136 ++++
+ tools/testing/selftests/vm/pkey-x86.h         | 181 +++++
+ .../selftests/{x86 => vm}/protection_keys.c   | 696 ++++++++++--------
+ tools/testing/selftests/x86/.gitignore        |   1 -
+ tools/testing/selftests/x86/Makefile          |   2 +-
+ tools/testing/selftests/x86/pkey-helpers.h    | 219 ------
+ 9 files changed, 1002 insertions(+), 532 deletions(-)
+ create mode 100644 tools/testing/selftests/vm/pkey-helpers.h
+ create mode 100644 tools/testing/selftests/vm/pkey-powerpc.h
+ create mode 100644 tools/testing/selftests/vm/pkey-x86.h
+ rename tools/testing/selftests/{x86 => vm}/protection_keys.c (74%)
+ delete mode 100644 tools/testing/selftests/x86/pkey-helpers.h
+
 -- 
 2.17.1
 
