@@ -2,61 +2,52 @@ Return-Path: <SRS0=bRiG=3T=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BEBEEC2D0DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jan 2020 20:19:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F6ABC2D0DB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jan 2020 20:24:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 779F120CC7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jan 2020 20:19:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 779F120CC7
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ghiti.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 4E32A20708
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jan 2020 20:24:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4E32A20708
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 487sCB5vHFzDqZq
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jan 2020 07:19:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 487sK15ZJ5zDqMC
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jan 2020 07:24:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=intel.com (client-ip=134.134.136.126; helo=mga18.intel.com;
+ envelope-from=dan.j.williams@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=ghiti.fr
- (client-ip=217.70.178.242; helo=mslow2.mail.gandi.net;
- envelope-from=alex@ghiti.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ghiti.fr
-Received: from mslow2.mail.gandi.net (mslow2.mail.gandi.net [217.70.178.242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 487s8d0lyLzDqCt
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2020 07:17:18 +1100 (AEDT)
-Received: from relay4-d.mail.gandi.net (unknown [217.70.183.196])
- by mslow2.mail.gandi.net (Postfix) with ESMTP id 9D3C63A84FA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2020 20:08:42 +0000 (UTC)
-X-Originating-IP: 79.86.19.127
-Received: from [192.168.0.12] (127.19.86.79.rev.sfr.net [79.86.19.127])
- (Authenticated sender: alex@ghiti.fr)
- by relay4-d.mail.gandi.net (Postfix) with ESMTPSA id EC913E0008;
- Thu, 30 Jan 2020 20:08:10 +0000 (UTC)
-Subject: Re: [PATCH v2] powerpc: Do not consider weak unresolved symbol
- relocations as bad
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Stephen Rothwell <sfr@canb.auug.org.au>, Alexei Starovoitov
- <ast@kernel.org>, linux-next@vger.kernel.org, Zong Li <zong.li@sifive.com>,
- Palmer Dabbelt <palmerdabbelt@google.com>
-References: <20200118170335.21440-1-alex@ghiti.fr>
-From: Alex Ghiti <alex@ghiti.fr>
-Message-ID: <8a8d45c6-4ad2-c682-abfb-3d97188d0d45@ghiti.fr>
-Date: Thu, 30 Jan 2020 15:07:10 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.3.0
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 487sG42vT0zDqWN
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2020 07:22:03 +1100 (AEDT)
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+ by orsmga106.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 30 Jan 2020 12:22:00 -0800
+X-IronPort-AV: E=Sophos;i="5.70,382,1574150400"; d="scan'208";a="277896295"
+Received: from dwillia2-desk3.jf.intel.com (HELO
+ dwillia2-desk3.amr.corp.intel.com) ([10.54.39.16])
+ by fmsmga003-auth.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 30 Jan 2020 12:21:58 -0800
+Subject: [PATCH 0/5] libnvdimm: Cross-arch compatible namespace alignment
+From: Dan Williams <dan.j.williams@intel.com>
+To: linux-nvdimm@lists.01.org
+Date: Thu, 30 Jan 2020 12:05:54 -0800
+Message-ID: <158041475480.3889308.655103391935006598.stgit@dwillia2-desk3.amr.corp.intel.com>
+User-Agent: StGit/0.18-3-g996c
 MIME-Version: 1.0
-In-Reply-To: <20200118170335.21440-1-alex@ghiti.fr>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Content-Language: en-US
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,121 +59,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linux-kernel@vger.kernel.org, Vishal Verma <vishal.l.verma@intel.com>,
+ Jeff Moyer <jmoyer@redhat.com>, Oliver O'Halloran <oohall@gmail.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 1/18/20 12:03 PM, Alexandre Ghiti wrote:
-> Commit 8580ac9404f6 ("bpf: Process in-kernel BTF") introduced two weak
-> symbols that may be unresolved at link time which result in an absolute
-> relocation to 0. relocs_check.sh emits the following warning:
->
-> "WARNING: 2 bad relocations
-> c000000001a41478 R_PPC64_ADDR64    _binary__btf_vmlinux_bin_start
-> c000000001a41480 R_PPC64_ADDR64    _binary__btf_vmlinux_bin_end"
->
-> whereas those relocations are legitimate even for a relocatable kernel
-> compiled with -pie option.
->
-> relocs_check.sh already excluded some weak unresolved symbols explicitly:
-> remove those hardcoded symbols and add some logic that parses the symbols
-> using nm, retrieves all the weak unresolved symbols and excludes those from
-> the list of the potential bad relocations.
->
-> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> Signed-off-by: Alexandre Ghiti <alex@ghiti.fr>
-> ---
->
-> Changes in v2:
-> - Follow Stephen advice of using grep -F instead of looping over weak symbols
->    using read, patch is way smaller and cleaner.
-> - Add missing nm in comment
->
->   arch/powerpc/Makefile.postlink     |  4 ++--
->   arch/powerpc/tools/relocs_check.sh | 20 ++++++++++++--------
->   2 files changed, 14 insertions(+), 10 deletions(-)
->
-> diff --git a/arch/powerpc/Makefile.postlink b/arch/powerpc/Makefile.postlink
-> index 134f12f89b92..2268396ff4bb 100644
-> --- a/arch/powerpc/Makefile.postlink
-> +++ b/arch/powerpc/Makefile.postlink
-> @@ -17,11 +17,11 @@ quiet_cmd_head_check = CHKHEAD $@
->   quiet_cmd_relocs_check = CHKREL  $@
->   ifdef CONFIG_PPC_BOOK3S_64
->         cmd_relocs_check =						\
-> -	$(CONFIG_SHELL) $(srctree)/arch/powerpc/tools/relocs_check.sh "$(OBJDUMP)" "$@" ; \
-> +	$(CONFIG_SHELL) $(srctree)/arch/powerpc/tools/relocs_check.sh "$(OBJDUMP)" "$(NM)" "$@" ; \
->   	$(BASH) $(srctree)/arch/powerpc/tools/unrel_branch_check.sh "$(OBJDUMP)" "$@"
->   else
->         cmd_relocs_check =						\
-> -	$(CONFIG_SHELL) $(srctree)/arch/powerpc/tools/relocs_check.sh "$(OBJDUMP)" "$@"
-> +	$(CONFIG_SHELL) $(srctree)/arch/powerpc/tools/relocs_check.sh "$(OBJDUMP)" "$(NM)" "$@"
->   endif
->   
->   # `@true` prevents complaint when there is nothing to be done
-> diff --git a/arch/powerpc/tools/relocs_check.sh b/arch/powerpc/tools/relocs_check.sh
-> index 7b9fe0a567cf..014e00e74d2b 100755
-> --- a/arch/powerpc/tools/relocs_check.sh
-> +++ b/arch/powerpc/tools/relocs_check.sh
-> @@ -10,14 +10,21 @@
->   # based on relocs_check.pl
->   # Copyright © 2009 IBM Corporation
->   
-> -if [ $# -lt 2 ]; then
-> -	echo "$0 [path to objdump] [path to vmlinux]" 1>&2
-> +if [ $# -lt 3 ]; then
-> +	echo "$0 [path to objdump] [path to nm] [path to vmlinux]" 1>&2
->   	exit 1
->   fi
->   
-> -# Have Kbuild supply the path to objdump so we handle cross compilation.
-> +# Have Kbuild supply the path to objdump and nm so we handle cross compilation.
->   objdump="$1"
-> -vmlinux="$2"
-> +nm="$2"
-> +vmlinux="$3"
-> +
-> +# Remove from the bad relocations those that match an undefined weak symbol
-> +# which will result in an absolute relocation to 0.
-> +# Weak unresolved symbols are of that form in nm output:
-> +# "                  w _binary__btf_vmlinux_bin_end"
-> +undef_weak_symbols=$($nm "$vmlinux" | awk '$1 ~ /w/ { print $2 }')
->   
->   bad_relocs=$(
->   $objdump -R "$vmlinux" |
-> @@ -26,8 +33,6 @@ $objdump -R "$vmlinux" |
->   	# These relocations are okay
->   	# On PPC64:
->   	#	R_PPC64_RELATIVE, R_PPC64_NONE
-> -	#	R_PPC64_ADDR64 mach_<name>
-> -	#	R_PPC64_ADDR64 __crc_<name>
->   	# On PPC:
->   	#	R_PPC_RELATIVE, R_PPC_ADDR16_HI,
->   	#	R_PPC_ADDR16_HA,R_PPC_ADDR16_LO,
-> @@ -39,8 +44,7 @@ R_PPC_ADDR16_HI
->   R_PPC_ADDR16_HA
->   R_PPC_RELATIVE
->   R_PPC_NONE' |
-> -	grep -E -v '\<R_PPC64_ADDR64[[:space:]]+mach_' |
-> -	grep -E -v '\<R_PPC64_ADDR64[[:space:]]+__crc_'
-> +	([ "$undef_weak_symbols" ] && grep -F -w -v "$undef_weak_symbols" || cat)
->   )
->   
->   if [ -z "$bad_relocs" ]; then
+Aneesh reports that PowerPC requires 16MiB alignment for the address
+range passed to devm_memremap_pages(), and Jeff reports that it is
+possible to create a misaligned namespace which blocks future namespace
+creation in that region. Both of these issues require namespace
+alignment to be managed at the region level rather than padding at the
+namespace level which has been a broken approach to date.
+
+Introduce memremap_compat_align() to indicate the hard requirements of
+an arch's memremap_pages() implementation. Use the maximum known
+memremap_compat_align() to set the default namespace alignment for
+libnvdimm. Consult that alignment when allocating free space. Finally,
+allow the default region alignment to be overridden to maintain the same
+namespace creation capability as previous kernels.
+
+The ndctl unit tests, which have some misaligned namespace assumptions,
+are updated to use the alignment override where necessary.
+
+Thanks to Aneesh for early feedback and testing on this improved
+alignment handling.
+
+---
+
+Dan Williams (5):
+      mm/memremap_pages: Kill unused __devm_memremap_pages()
+      mm/memremap_pages: Introduce memremap_compat_align()
+      libnvdimm/namespace: Enforce memremap_compat_align()
+      libnvdimm/region: Introduce NDD_LABELING
+      libnvdimm/region: Introduce an 'align' attribute
 
 
-Hi guys,
-
-
-Any thought about that ?
-
-I do think this patch makes the whole check about absolute relocations 
-clearer.
-And in the future, it will avoid anyone to spend some time on those 
-"bad" relocations
-which actually aren't.
-
-Thanks,
-
-Alex
-
+ arch/powerpc/include/asm/io.h             |   10 ++
+ arch/powerpc/platforms/pseries/papr_scm.c |    2 
+ drivers/acpi/nfit/core.c                  |    4 +
+ drivers/nvdimm/dimm.c                     |    2 
+ drivers/nvdimm/dimm_devs.c                |   95 +++++++++++++++++----
+ drivers/nvdimm/namespace_devs.c           |   21 ++++-
+ drivers/nvdimm/nd.h                       |    3 -
+ drivers/nvdimm/pfn_devs.c                 |    2 
+ drivers/nvdimm/region_devs.c              |  132 ++++++++++++++++++++++++++---
+ include/linux/io.h                        |   23 +++++
+ include/linux/libnvdimm.h                 |    2 
+ include/linux/mmzone.h                    |    1 
+ 12 files changed, 255 insertions(+), 42 deletions(-)
