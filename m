@@ -2,85 +2,48 @@ Return-Path: <SRS0=gGQT=3U=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B0F81C33CB2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jan 2020 05:16:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C08E6C33CB2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jan 2020 05:33:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1F38A20663
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jan 2020 05:16:32 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=intel-com.20150623.gappssmtp.com header.i=@intel-com.20150623.gappssmtp.com header.b="YB4BUNeP"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1F38A20663
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4607B2067C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jan 2020 05:33:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4607B2067C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48856j1jhpzDqfq
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jan 2020 16:16:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=2607:f8b0:4864:20::243;
- helo=mail-oi1-x243.google.com; envelope-from=dan.j.williams@intel.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4885Vq2LTTzDqf6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jan 2020 16:33:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lst.de
+ (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=intel-com.20150623.gappssmtp.com
- header.i=@intel-com.20150623.gappssmtp.com header.a=rsa-sha256
- header.s=20150623 header.b=YB4BUNeP; dkim-atps=neutral
-Received: from mail-oi1-x243.google.com (mail-oi1-x243.google.com
- [IPv6:2607:f8b0:4864:20::243])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=lst.de
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48854v09lGzDqcq
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2020 16:14:48 +1100 (AEDT)
-Received: by mail-oi1-x243.google.com with SMTP id c16so6134695oic.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2020 21:14:48 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=intel-com.20150623.gappssmtp.com; s=20150623;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc:content-transfer-encoding;
- bh=PMcuS4LHry0i7DZ7ldtekzqzj8KrQxFLARw5rUFC3dY=;
- b=YB4BUNePIM6enPmASfYT3cwjHuMA+cOwjd5AU1JFMP5dn8Yq9YXqx0L53gjl6Gyzkl
- 5kG1BNLepiYkWJbao814Aj5KzNKw/SxFciSCG9pAPQ1Vl31Lb+FRijSu2RlvWwqxmz1V
- t5OFCVsaMUxgTHH27jx3c7DfQTOYiNeCNZHhh4U1dkxfAuDoeJ0RoCD5pWybXaXBKCgR
- 5lg6a4vN6IMCyAVqu8i3QQhIjzPPi0qOUgutCMcqCoyTr/+f3QgmReQ1QgRvUUQDoQAM
- nEeQT5nqUOxl1z7kuLI9kthwhBXP3Zyf9wOXQ/9C1+PkspbY4Qep23XKZEohNh4rbaAF
- 79HA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc:content-transfer-encoding;
- bh=PMcuS4LHry0i7DZ7ldtekzqzj8KrQxFLARw5rUFC3dY=;
- b=n7m/caC5M8bPdiBd1SymCKsTOfjAq8mmRhVf6BQU+aKfENV7DZiALs7XTVdpl6Ecws
- XZNq7zOdqpZXnkmJBXcAsrp+Bnbde/ua7W10XtubFZzMaB+dZnkx/uvUkxFUzRAFdv7o
- JCKfqXcERXDBSmRozvarNLopdl/nnXDrZS8BkDw9uVRQ4p47ICBVfGRmI3n+VRu5WklN
- Zz5NVAKRQkuw1crP3654zjQuJxchAGq1lzJkPJp7QLRwKWR4Zs1ljFT2NGyDMdAmOK7U
- +4S6APH0JiQCD39yssE9aGXqa6yKKQsXlzOZrF525cAqtkK0039i4K9rNmLFgj4Yiu9U
- ev9A==
-X-Gm-Message-State: APjAAAVoVr+o8LR+NF1351Fd/F3Te4c9XTsN9UUbD5jMltebAvcdx32y
- Ptz+LDjDiwVzQoqYuImQz59IqVRL6/6/2s0aF6irwg==
-X-Google-Smtp-Source: APXvYqxj9SjLEO7AhYfAHVo9xLBu9Nup8mW6BzzYMbNeUvMlioFhNe3oNXeD4an0sNTe/yFKjrfStHsB04BMKeaIBuc=
-X-Received: by 2002:a05:6808:a83:: with SMTP id q3mr5446118oij.0.1580447684795; 
- Thu, 30 Jan 2020 21:14:44 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4885St6vNrzDqd3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2020 16:32:13 +1100 (AEDT)
+Received: by verein.lst.de (Postfix, from userid 2407)
+ id E952568B20; Fri, 31 Jan 2020 06:32:07 +0100 (CET)
+Date: Fri, 31 Jan 2020 06:32:07 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Dan Williams <dan.j.williams@intel.com>
+Subject: Re: [PATCH 1/5] mm/memremap_pages: Kill unused __devm_memremap_pages()
+Message-ID: <20200131053207.GC17457@lst.de>
+References: <158041475480.3889308.655103391935006598.stgit@dwillia2-desk3.amr.corp.intel.com>
+ <158041476158.3889308.4221100673554151124.stgit@dwillia2-desk3.amr.corp.intel.com>
 MIME-Version: 1.0
-References: <20191025044721.16617-1-alastair@au1.ibm.com>
- <20191025044721.16617-10-alastair@au1.ibm.com>
- <3ba57ce6-9135-0d83-b99d-1c5b0c744855@linux.ibm.com>
- <df24e47c2bd9472c7be06c6c266b2a250c30068f.camel@au1.ibm.com>
-In-Reply-To: <df24e47c2bd9472c7be06c6c266b2a250c30068f.camel@au1.ibm.com>
-From: Dan Williams <dan.j.williams@intel.com>
-Date: Thu, 30 Jan 2020 21:14:33 -0800
-Message-ID: <CAPcyv4iwiMS6VZLvJad-Z9Psu9LRwfhqO643EzVRsk89qy6dwA@mail.gmail.com>
-Subject: Re: [PATCH 09/10] powerpc: Enable OpenCAPI Storage Class Memory
- driver on bare metal
-To: "Alastair D'Silva" <alastair@au1.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <158041476158.3889308.4221100673554151124.stgit@dwillia2-desk3.amr.corp.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,84 +55,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Oscar Salvador <osalvador@suse.com>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Geert Uytterhoeven <geert+renesas@glider.be>,
- David Hildenbrand <david@redhat.com>,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Wei Yang <richard.weiyang@gmail.com>, Keith Busch <keith.busch@intel.com>,
- Linux MM <linux-mm@kvack.org>, Michal Hocko <mhocko@suse.com>,
- Paul Mackerras <paulus@samba.org>, Ira Weiny <ira.weiny@intel.com>,
- Andrew Donnellan <ajd@linux.ibm.com>, Dave Jiang <dave.jiang@intel.com>,
- linux-nvdimm <linux-nvdimm@lists.01.org>,
- Vishal Verma <vishal.l.verma@intel.com>, Krzysztof Kozlowski <krzk@kernel.org>,
- Anju T Sudhakar <anju@linux.vnet.ibm.com>,
- Pavel Tatashin <pasha.tatashin@soleen.com>, Arnd Bergmann <arnd@arndb.de>,
- Greg Kurz <groug@kaod.org>, Qian Cai <cai@lca.pw>,
- =?UTF-8?Q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>,
- Thomas Gleixner <tglx@linutronix.de>, Hari Bathini <hbathini@linux.ibm.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
- Frederic Barrat <fbarrat@linux.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: vishal.l.verma@intel.com, linuxppc-dev@lists.ozlabs.org,
+ Christoph Hellwig <hch@lst.de>, linux-kernel@vger.kernel.org,
+ linux-nvdimm@lists.01.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jan 30, 2020 at 8:57 PM Alastair D'Silva <alastair@au1.ibm.com> wro=
-te:
->
-> On Fri, 2019-11-08 at 08:10 +0100, Frederic Barrat wrote:
-> >
-> > Le 25/10/2019 =C3=A0 06:47, Alastair D'Silva a =C3=A9crit :
-> > > From: Alastair D'Silva <alastair@d-silva.org>
-> > >
-> > > Enable OpenCAPI Storage Class Memory driver on bare metal
-> > >
-> > > Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
-> > > ---
-> > >   arch/powerpc/configs/powernv_defconfig | 4 ++++
-> > >   1 file changed, 4 insertions(+)
-> > >
-> > > diff --git a/arch/powerpc/configs/powernv_defconfig
-> > > b/arch/powerpc/configs/powernv_defconfig
-> > > index 6658cceb928c..45c0eff94964 100644
-> > > --- a/arch/powerpc/configs/powernv_defconfig
-> > > +++ b/arch/powerpc/configs/powernv_defconfig
-> > > @@ -352,3 +352,7 @@ CONFIG_KVM_BOOK3S_64=3Dm
-> > >   CONFIG_KVM_BOOK3S_64_HV=3Dm
-> > >   CONFIG_VHOST_NET=3Dm
-> > >   CONFIG_PRINTK_TIME=3Dy
-> > > +CONFIG_OCXL_SCM=3Dm
-> > > +CONFIG_DEV_DAX=3Dy
-> > > +CONFIG_DEV_DAX_PMEM=3Dy
+On Thu, Jan 30, 2020 at 12:06:01PM -0800, Dan Williams wrote:
+> Kill this definition that was introduced in commit 41e94a851304 ("add
+> devm_memremap_pages") add never used.
+> 
+> Cc: Christoph Hellwig <hch@lst.de>
+> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 
-This specific line is not needed since DEV_DAX_PMEM already defaults to DEV=
-_DAX.
+Looks good,
 
-> > > +CONFIG_FS_DAX=3Dy
-> >
-> > If this really the intent or do we want to activate DAX only if
-> > CONFIG_OCXL_SCM is enabled?
-> >
-> >    Fred
->
-> We had a bit of a play around with reworking this the other day.
->
-> Putting them in as depends didn't make sense, as they are "soft"
-> dependancies - the driver works and you can do some things without DAX.
->
-> Adding them as selects was rejected as selecting symbols that can also
-> be manually select is discouraged.
->
-> We ended up going full circle and adding them back to the defconfig.
-
-This dovetails with a suggestion Dave made a while back [1]. Given all
-the pieces that need to be turned on to have a "feature complete"
-persistent memory enabled build it would be nice to have general
-config symbols that go and select all the necessary dependencies for
-DAX, and let the rest happen by default.
-
-[1]: https://lore.kernel.org/lkml/20161129021052.GF28177@dastard/
+Reviewed-by: Christoph Hellwig <hch@lst.de>
