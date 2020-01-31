@@ -2,97 +2,66 @@ Return-Path: <SRS0=gGQT=3U=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 41152C2D0DB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jan 2020 00:43:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F203C33CB2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jan 2020 04:42:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C116F20708
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jan 2020 00:43:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C116F20708
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 7C4C22082E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jan 2020 04:42:22 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="KTJ86Ltz"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7C4C22082E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 487z3v6kcVzDqdG
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jan 2020 11:43:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4884MH4XVzzDqfN
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jan 2020 15:42:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com;
+ smtp.mailfrom=linux-foundation.org (client-ip=198.145.29.99;
+ helo=mail.kernel.org; envelope-from=akpm@linux-foundation.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=KTJ86Ltz; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 487z290rfkzDqRf
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2020 11:42:08 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 00V0ftaF146574
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2020 19:42:06 -0500
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2xv7e23nfm-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2020 19:42:06 -0500
-Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 00V0g5qX147148
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2020 19:42:05 -0500
-Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.10])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2xv7e23mph-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 30 Jan 2020 19:42:05 -0500
-Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
- by ppma02dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 00V0UZAA029403;
- Fri, 31 Jan 2020 00:37:52 GMT
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by ppma02dal.us.ibm.com with ESMTP id 2xrda7cctb-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 31 Jan 2020 00:37:52 +0000
-Received: from b03ledav006.gho.boulder.ibm.com
- (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 00V0bp0Q57409926
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 31 Jan 2020 00:37:51 GMT
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 47DEDC605A;
- Fri, 31 Jan 2020 00:37:51 +0000 (GMT)
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D4B9CC6057;
- Fri, 31 Jan 2020 00:37:50 +0000 (GMT)
-Received: from oc6857751186.ibm.com (unknown [9.160.94.103])
- by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Fri, 31 Jan 2020 00:37:50 +0000 (GMT)
-Subject: Re: [PATCH 1/2] pseries/vio: Remove stray #ifdef CONFIG_PPC_PSERIES
-To: "Oliver O'Halloran" <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <20200130063153.19915-1-oohall@gmail.com>
-From: Tyrel Datwyler <tyreld@linux.ibm.com>
-Message-ID: <77837502-29e3-8ad0-51b5-e0934f199a14@linux.ibm.com>
-Date: Thu, 30 Jan 2020 16:37:50 -0800
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.3.0
-MIME-Version: 1.0
-In-Reply-To: <20200130063153.19915-1-oohall@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4884KY4KqpzDqcY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2020 15:40:48 +1100 (AEDT)
+Received: from localhost.localdomain (c-73-231-172-41.hsd1.ca.comcast.net
+ [73.231.172.41])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 450982082E;
+ Fri, 31 Jan 2020 04:40:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1580445646;
+ bh=I1bprH72sBDpBLlNpiBikRkPHYR7/BghqHOcxjCEAK4=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=KTJ86Ltz5/4t5M/elu56oUoQxaYD2kUaKl59LcSNvFiS/2A372D2zgeGhW6X45eXW
+ /ApHeOMbSoMhUe88x8B3tdfdiXr1CvDwgTN5PemK83Kuzog8w7sw/PDR2kBEmiWZUU
+ q0KsnusYGXqcjKS0a3zPncUGHPr1Z3Mmr6OW+hRY=
+Date: Thu, 30 Jan 2020 20:40:43 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Oscar Salvador <osalvador@suse.de>
+Subject: Re: [PATCH v6 00/10] mm/memory_hotplug: Shrink zones before
+ removing memory
+Message-Id: <20200130204043.29e21049775e3a637db733e0@linux-foundation.org>
+In-Reply-To: <20191203133633.GA2600@linux>
+References: <20191006085646.5768-1-david@redhat.com>
+ <ac27f0e1-26e9-dfc1-3ee1-cbee7ad847bf@redhat.com>
+ <20191203133633.GA2600@linux>
+X-Mailer: Sylpheed 3.5.1 (GTK+ 2.24.31; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
- definitions=2020-01-30_09:2020-01-30,
- 2020-01-30 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 clxscore=1015
- priorityscore=1501 malwarescore=0 phishscore=0 suspectscore=0
- mlxlogscore=999 adultscore=0 lowpriorityscore=0 spamscore=0 mlxscore=0
- bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-1911200001 definitions=main-2001310001
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,15 +73,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Mark Rutland <mark.rutland@arm.com>, Pankaj Gupta <pagupta@redhat.com>,
+ Michal Hocko <mhocko@suse.com>, linux-ia64@vger.kernel.org,
+ David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
+ Wei Yang <richard.weiyang@gmail.com>, linux-mm@kvack.org,
+ Pavel Tatashin <pavel.tatashin@microsoft.com>, Rich Felker <dalias@libc.org>,
+ Alexander Potapenko <glider@google.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ Alexander Duyck <alexander.h.duyck@linux.intel.com>,
+ Ira Weiny <ira.weiny@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Qian Cai <cai@lca.pw>, linux-s390@vger.kernel.org, Yu Zhao <yuzhao@google.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Jason Gunthorpe <jgg@ziepe.ca>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>, linux-sh@vger.kernel.org,
+ "Matthew Wilcox \(Oracle\)" <willy@infradead.org>,
+ Mike Rapoport <rppt@linux.ibm.com>, Halil Pasic <pasic@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Gerald Schaefer <gerald.schaefer@de.ibm.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Pavel Tatashin <pasha.tatashin@soleen.com>,
+ Vasily Gorbik <gor@linux.ibm.com>,
+ Anshuman Khandual <anshuman.khandual@arm.com>,
+ Vlastimil Babka <vbabka@suse.cz>, Will Deacon <will@kernel.org>,
+ Robin Murphy <robin.murphy@arm.com>, Jun Yao <yaojun8558363@gmail.com>,
+ Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
+ Dan Williams <dan.j.williams@intel.com>, linux-arm-kernel@lists.infradead.org,
+ Tony Luck <tony.luck@intel.com>, Mel Gorman <mgorman@techsingularity.net>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Steve Capper <steve.capper@arm.com>, linux-kernel@vger.kernel.org,
+ Logan Gunthorpe <logang@deltatee.com>,
+ Wei Yang <richardw.yang@linux.intel.com>, Paul Mackerras <paulus@samba.org>,
+ Tom Lendacky <thomas.lendacky@amd.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 1/29/20 10:31 PM, Oliver O'Halloran wrote:
-> vio.c requires CONFIG_IBMVIO which in turn depends on PPC_PSERIES.
-> In other words, this ifdef is pointless. At a guess it's a carry-over
-> from pre-history.
-> 
-> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+On Tue, 3 Dec 2019 14:36:38 +0100 Oscar Salvador <osalvador@suse.de> wrote:
 
-Reviewed-by: Tyrel Datwyler <tyreld@linux.ibm.com>
+> On Mon, Dec 02, 2019 at 10:09:51AM +0100, David Hildenbrand wrote:
+> > @Michal, @Oscar, can some of you at least have a patch #5 now so we can
+> > proceed with that? (the other patches can stay in -next some time longer)
+> 
+> Hi, 
+> 
+> I will be having a look at patch#5 shortly.
+> 
+> Thanks for the reminder
+
+Things haven't improved a lot :(
+
+mm-memmap_init-update-variable-name-in-memmap_init_zone.patch
+mm-memory_hotplug-poison-memmap-in-remove_pfn_range_from_zone.patch
+mm-memory_hotplug-we-always-have-a-zone-in-find_smallestbiggest_section_pfn.patch
+mm-memory_hotplug-dont-check-for-all-holes-in-shrink_zone_span.patch
+mm-memory_hotplug-drop-local-variables-in-shrink_zone_span.patch
+mm-memory_hotplug-cleanup-__remove_pages.patch
+
+The first patch has reviews, the remainder are unloved.
