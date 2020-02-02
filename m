@@ -6,91 +6,83 @@ X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89DEAC35249
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Feb 2020 00:12:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 519BFC35240
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Feb 2020 04:39:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6911F20661
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Feb 2020 00:12:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B84D1206E6
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Feb 2020 04:39:42 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="bzZqisX4"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6911F20661
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="T7l4+/A3"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B84D1206E6
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 489BHQ0SXSzDqfq
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Feb 2020 11:12:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 489JCJ216qzDqdf
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Feb 2020 15:39:40 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 489BFs11cdzDqGc
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Feb 2020 11:11:29 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 489J9g1MjZzDqcm
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Feb 2020 15:38:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=xenosoft.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256
- header.s=strato-dkim-0002 header.b=bzZqisX4; 
- dkim-atps=neutral
+ dmarc=none (p=none dis=none) header.from=infradead.org
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 489BFr4dt0z8tPV
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Feb 2020 11:11:28 +1100 (AEDT)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 489J9f4lWSz8tFp
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Feb 2020 15:38:14 +1100 (AEDT)
 Received: by ozlabs.org (Postfix)
- id 489BFr4PDyz9sRW; Sun,  2 Feb 2020 11:11:28 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
- smtp.helo=mo6-p01-ob.smtp.rzone.de (client-ip=2a01:238:20a:202:5301::5;
- helo=mo6-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de;
- receiver=<UNKNOWN>)
+ id 489J9f3HhWz9sRY; Sun,  2 Feb 2020 15:38:14 +1100 (AEDT)
 Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=xenosoft.de
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
+ envelope-from=rdunlap@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256
- header.s=strato-dkim-0002 header.b=bzZqisX4; 
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.a=rsa-sha256 header.s=bombadil.20170209 header.b=T7l4+/A3; 
  dkim-atps=neutral
-X-Greylist: delayed 157 seconds by postgrey-1.36 at bilbo;
- Sun, 02 Feb 2020 11:11:26 AEDT
-Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5301::5])
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 489BFp4gkzz9s29
- for <linuxppc-dev@ozlabs.org>; Sun,  2 Feb 2020 11:11:26 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1580602282;
- s=strato-dkim-0002; d=xenosoft.de;
- h=In-Reply-To:Date:Message-ID:Subject:From:References:Cc:To:
- X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
- bh=M2p6BlJKlzc7zwD9OCcddn1toLSZU/FWLhGgP48heGQ=;
- b=bzZqisX4TTdFe6F8iDg017ER9VXqXGVvqCrMOlFfFVPNGfYIT9WO/4EF3nyrvox6Sa
- E6NUuKhqGxrFx9z2T14iSIu9yoDMKeYWZHQRkuMID5QLSgRzibc4jlelMNhQvkVNejMl
- ZpDoL5UCnvCvnCp+KKML6wGRseWq4M6VQ6+o2mtpytF3DI1+tKlRsTfTP6U2ZsncJM4T
- F8qr2ZaH9iNf+Py0YThXmPDVBxMXcJPIh914MTKDXP3YqQnJ5XRySyG1qEz+fxMQPDH0
- gSnpJGonsbIhHFeIe0egeo49Dh96u5Aek/jrPpEn3rC8227f00OMVyx8XG/MZduJhulr
- QdVg==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5DdBJSrwuuqxvPhSLlpvF7aofGh9KUohSyVOsmPy"
-X-RZG-CLASS-ID: mo00
-Received: from [IPv6:2a02:8109:89c0:ebfc:188b:8a2:e727:e5f1]
- by smtp.strato.de (RZmta 46.1.12 AUTH)
- with ESMTPSA id 40bcf3w1208HBpI
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
- (Client did not present a certificate);
- Sun, 2 Feb 2020 01:08:17 +0100 (CET)
-To: Michael Ellerman <mpe@ellerman.id.au>
+ by ozlabs.org (Postfix) with ESMTPS id 489J9d5whtz9sRW;
+ Sun,  2 Feb 2020 15:38:11 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
+ Content-Type:In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:
+ Subject:Sender:Reply-To:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=4oWUZJaR7Jx+L3WxZYUTftOrPw0KXFITkchU6eONNQ8=; b=T7l4+/A3xrUaQ52FJYISmxjnG
+ duMEZTL96r95Umj+7OgsE+FIk3i0RC11BPcq5vSR88P1L6PQ/+njvBj7lf2gdLCAHlsX+FOBg9DqO
+ QxAM9/lQXJUr8oiveKu19VxkDskDkaQGwAOv29Has4EKNvva0RQx8JwaDFkv0wDXVV6BwUV5GIp/a
+ BYtForHRfejzD3vR0REa6j2y/s99V41bG/bmlNC8ohl3Y3UgBBTfkUi/je8SQRpm7J4XnrvBH0Nnu
+ vk7aX3Y0Z6UqKQoQ/msYTtf+sX0t9w5oej3LFg05ncHlnUgg/6DFicMgXsTD1snYT65GNUZZZsqH/
+ T3pN4f51Q==;
+Received: from [2601:1c0:6280:3f0:897c:6038:c71d:ecac]
+ by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+ id 1iy717-0006gy-4o; Sun, 02 Feb 2020 04:37:53 +0000
+Subject: Re: Latest Git kernel: avahi-daemon[2410]: ioctl(): Inappropriate
+ ioctl for device
+To: Christian Zigotzky <chzigotzky@xenosoft.de>,
+ Michael Ellerman <mpe@ellerman.id.au>
 References: <20200126115247.13402-1-mpe@ellerman.id.au>
  <CAPDyKFrbYmV6_nV6psVLq6VRKMXf0PXpemBbj48yjOr3P130BA@mail.gmail.com>
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Subject: Latest Git kernel: avahi-daemon[2410]: ioctl(): Inappropriate ioctl
- for device
-Message-ID: <58a6d45c-0712-18df-1b14-2f04cf12a1cb@xenosoft.de>
-Date: Sun, 2 Feb 2020 01:08:17 +0100
+ <58a6d45c-0712-18df-1b14-2f04cf12a1cb@xenosoft.de>
+From: Randy Dunlap <rdunlap@infradead.org>
+Message-ID: <c9c7de30-dea8-f162-f049-a16b2bcf7b7c@infradead.org>
+Date: Sat, 1 Feb 2020 20:37:49 -0800
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.4.2
+ Thunderbird/68.4.1
 MIME-Version: 1.0
-In-Reply-To: <CAPDyKFrbYmV6_nV6psVLq6VRKMXf0PXpemBbj48yjOr3P130BA@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <58a6d45c-0712-18df-1b14-2f04cf12a1cb@xenosoft.de>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 7bit
-Content-Language: de-DE
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,6 +95,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: DTML <devicetree@vger.kernel.org>, Darren Stevens <darren@stevens-zone.net>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
  linuxppc-dev@ozlabs.org, "contact@a-eon.com" <contact@a-eon.com>,
  "R.T.Dickinson" <rtd2@xtra.co.nz>, Christoph Hellwig <hch@lst.de>
@@ -110,23 +103,28 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello,
+[might be network related, so adding netdev mailing list]
 
-We regularly compile and test Linux kernels every day during the merge 
-window. Since Thuesday we have very high CPU loads because of the avahi 
-daemon on our desktop Linux systems (Ubuntu, Debian etc).
+On 2/1/20 4:08 PM, Christian Zigotzky wrote:
+> Hello,
+> 
+> We regularly compile and test Linux kernels every day during the merge window. Since Thuesday we have very high CPU loads because of the avahi daemon on our desktop Linux systems (Ubuntu, Debian etc).
+> 
+> Error message: avahi-daemon[2410]: ioctl(): Inappropriate ioctl for device
+> 
+> Could you please test the latest Git kernel?
+> 
+> It is possible to deactivate the avahi daemon with the following lines in the file "/etc/avahi/avahi-daemon.conf":
+> 
+> use-ipv4=no
+> use-ipv6=no
+> 
+> But this is only a temporary solution.
+> 
+> Thanks,
+> Christian
 
-Error message: avahi-daemon[2410]: ioctl(): Inappropriate ioctl for device
 
-Could you please test the latest Git kernel?
+-- 
+~Randy
 
-It is possible to deactivate the avahi daemon with the following lines 
-in the file "/etc/avahi/avahi-daemon.conf":
-
-use-ipv4=no
-use-ipv6=no
-
-But this is only a temporary solution.
-
-Thanks,
-Christian
