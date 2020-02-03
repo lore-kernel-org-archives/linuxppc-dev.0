@@ -2,88 +2,85 @@ Return-Path: <SRS0=3qbC=3X=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2AABCC3524D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Feb 2020 15:50:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DA093C35247
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Feb 2020 16:11:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D46F32080C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Feb 2020 15:50:16 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=lca.pw header.i=@lca.pw header.b="kUu9P+c9"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D46F32080C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lca.pw
+	by mail.kernel.org (Postfix) with ESMTPS id 37AC32080D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Feb 2020 16:11:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 37AC32080D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48BC2Z0yNszDqMm
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Feb 2020 02:50:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48BCWZ0JkJzDqMg
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Feb 2020 03:11:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=gustavold@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=lca.pw
- (client-ip=2607:f8b0:4864:20::843; helo=mail-qt1-x843.google.com;
- envelope-from=cai@lca.pw; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lca.pw
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=lca.pw header.i=@lca.pw header.a=rsa-sha256
- header.s=google header.b=kUu9P+c9; dkim-atps=neutral
-Received: from mail-qt1-x843.google.com (mail-qt1-x843.google.com
- [IPv6:2607:f8b0:4864:20::843])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48BC0S3Q0VzDqFv
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Feb 2020 02:48:22 +1100 (AEDT)
-Received: by mail-qt1-x843.google.com with SMTP id d5so11805584qto.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Feb 2020 07:48:22 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lca.pw; s=google;
- h=message-id:subject:from:to:cc:date:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=YNMOJs1FPm/l462+AObUcJBpy8J/6Ie1z+BZTrXlP78=;
- b=kUu9P+c9Xi/sRwQmUmgRczJtLr5gqK+yFzRIYgulkIKq53mKQTosQf2B1M6rGAi1Vz
- zf6l65bkbMXSBdMvkcorvRBREKJsVTppzgxLeEe94RRQYYE5rTfTkBy5PLm4V1jr5ZQ2
- 8/TkMtxS7aFoHnfHuQCreV0p97LuOHmi4sH1PeQhHzRc+prSAziRCba+Efew+79NFeug
- 7sAupOPSdzNPuzEGx/PoF+bkDk7yc1blkxEFffDT9NhTb2wE5i6A49kcGqskeWYy690O
- nI+R4iCW7RBwWJK/FMvjoUPLd2pEL4Dy23U+/NizYdlcaK8tA1r3cfCm2lrDynXLFW6Q
- 69MA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:message-id:subject:from:to:cc:date:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=YNMOJs1FPm/l462+AObUcJBpy8J/6Ie1z+BZTrXlP78=;
- b=siNNFaLNJVNDbcUlEVWoIDxf3jxxpFj8arZJzklEmSu0uCkMcoDpAodC8zimIaDg2G
- +w45ijOY76+674JYz2C3bEC8ahmcJEwbdF2enqllw/2l2KfW1mgg6eW+aobxae44WPMf
- Adq8t1hcGw8cjDTQXuv0GfB/TUwbc+bU075gWvnY1jjprZXtDOF6/pn+RFPXMlYQfyE4
- nZ+TuHYRk8qAjYj2Mapewrrye6Uq4y3oubO28SbLz7MrIBVoyEvw4iC+//pq2swZtV75
- Tz9gO8AFLBp6qAqJsC3B2Qe/prSCYgGs+2FHFHJkY7ypxGk0Iqw89gzGq5xZV9y925+0
- Go8A==
-X-Gm-Message-State: APjAAAUnp32cQpIKi6MBSmtrsXa6psPWQfwMLDUcfOOWfLAmJDRfRZMq
- IuodPL/24PAsZ/hpHAOOvgGYnQ==
-X-Google-Smtp-Source: APXvYqzzoz8hW5WNsRr+QGAP5pmz1r20ujicRCSbC4RPyZEQg2Pm/930hS/RB0M0ITiwlO80rrs//A==
-X-Received: by 2002:ac8:7695:: with SMTP id g21mr22123082qtr.99.1580744899546; 
- Mon, 03 Feb 2020 07:48:19 -0800 (PST)
-Received: from dhcp-41-57.bos.redhat.com (nat-pool-bos-t.redhat.com.
- [66.187.233.206])
- by smtp.gmail.com with ESMTPSA id n132sm9814556qke.58.2020.02.03.07.48.15
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 03 Feb 2020 07:48:18 -0800 (PST)
-Message-ID: <1580744894.7365.3.camel@lca.pw>
-Subject: Re: [PATCH V12] mm/debug: Add tests validating architecture page
- table helpers
-From: Qian Cai <cai@lca.pw>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Mon, 03 Feb 2020 10:48:14 -0500
-In-Reply-To: <8e94a073-4045-89aa-6a3b-24847ad7c858@c-s.fr>
-References: <473d8198-3ac4-af3b-e2ec-c0698a3565d3@c-s.fr>
- <2C4ADFAE-7BB4-42B7-8F54-F036EA7A4316@lca.pw>
- <8e94a073-4045-89aa-6a3b-24847ad7c858@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.22.6 (3.22.6-10.el7) 
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48BCTL53ZRzDqLC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Feb 2020 03:09:57 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 013G9SOn126301; Mon, 3 Feb 2020 11:09:55 -0500
+Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
+ [169.63.214.131])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2xx9361ww2-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 03 Feb 2020 11:09:54 -0500
+Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
+ by ppma01dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 013G6T8v021049;
+ Mon, 3 Feb 2020 16:09:53 GMT
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24]) by ppma01dal.us.ibm.com with ESMTP id 2xw0y6enkq-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 03 Feb 2020 16:09:53 +0000
+Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
+ [9.57.199.110])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 013G9q7S41681176
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 3 Feb 2020 16:09:52 GMT
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8EC37AE062;
+ Mon,  3 Feb 2020 16:09:52 +0000 (GMT)
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 728B7AE064;
+ Mon,  3 Feb 2020 16:09:51 +0000 (GMT)
+Received: from moss.ibm.com (unknown [9.85.192.4])
+ by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
+ Mon,  3 Feb 2020 16:09:50 +0000 (GMT)
+From: Gustavo Luiz Duarte <gustavold@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 2/3] selftests/powerpc: Add tm-signal-pagefault test
+Date: Mon,  3 Feb 2020 13:09:05 -0300
+Message-Id: <20200203160906.24482-2-gustavold@linux.ibm.com>
+X-Mailer: git-send-email 2.21.1
+In-Reply-To: <20200203160906.24482-1-gustavold@linux.ibm.com>
+References: <20200203160906.24482-1-gustavold@linux.ibm.com>
+MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
+ definitions=2020-02-03_05:2020-02-02,
+ 2020-02-03 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=1
+ mlxlogscore=999 mlxscore=0 malwarescore=0 clxscore=1015 adultscore=0
+ bulkscore=0 phishscore=0 spamscore=0 impostorscore=0 priorityscore=1501
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-1911200001 definitions=main-2002030119
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,72 +92,345 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <Mark.Rutland@arm.com>, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
- James Hogan <jhogan@kernel.org>,
- Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Michal Hocko <mhocko@kernel.org>,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- kasan-dev <kasan-dev@googlegroups.com>, sparclinux@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, linux-s390@vger.kernel.org,
- x86@kernel.org, Russell King - ARM Linux <linux@armlinux.org.uk>,
- Matthew Wilcox <willy@infradead.org>, Steven Price <Steven.Price@arm.com>,
- Jason Gunthorpe <jgg@ziepe.ca>, Gerald Schaefer <gerald.schaefer@de.ibm.com>,
- linux-snps-arc@lists.infradead.org, Ingo Molnar <mingo@kernel.org>,
- Kees Cook <keescook@chromium.org>,
- Anshuman Khandual <Anshuman.Khandual@arm.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Mark Brown <broonie@kernel.org>, "Kirill A . Shutemov" <kirill@shutemov.name>,
- Dan Williams <dan.j.williams@intel.com>, Vlastimil Babka <vbabka@suse.cz>,
- linux-arm-kernel@lists.infradead.org,
- Sri Krishna chowdary <schowdary@nvidia.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Dave Hansen <dave.hansen@intel.com>, linux-mips@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, linux-kernel@vger.kernel.org,
- Paul Burton <paul.burton@mips.com>, Mike Rapoport <rppt@linux.vnet.ibm.com>,
- Vineet Gupta <vgupta@synopsys.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Cc: mikey@neuling.org, Gustavo Luiz Duarte <gustavold@linux.ibm.com>,
+ gromero@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2020-02-03 at 16:14 +0100, Christophe Leroy wrote:
-> 
-> Le 02/02/2020 à 12:26, Qian Cai a écrit :
-> > 
-> > 
-> > > On Jan 30, 2020, at 9:13 AM, Christophe Leroy <christophe.leroy@c-s.fr> wrote:
-> > > 
-> > > config DEBUG_VM_PGTABLE
-> > >     bool "Debug arch page table for semantics compliance" if ARCH_HAS_DEBUG_VM_PGTABLE || EXPERT
-> > >     depends on MMU
-> > >     default 'n' if !ARCH_HAS_DEBUG_VM_PGTABLE
-> > >     default 'y' if DEBUG_VM
-> > 
-> > Does it really necessary to potentially force all bots to run this? Syzbot, kernel test robot etc? Does it ever pay off for all their machine times there?
-> > 
-> 
-> Machine time ?
-> 
-> On a 32 bits powerpc running at 132 MHz, the tests takes less than 10ms. 
-> Is it worth taking the risk of not detecting faults by not selecting it 
-> by default ?
+This test triggers a TM Bad Thing by raising a signal in transactional state
+and forcing a pagefault to happen in kernelspace when the kernel signal
+handling code first touches the user signal stack.
 
-The risk is quite low as Catalin mentioned this thing is not to detect
-regressions but rather for arch/mm maintainers.
+This is inspired by the test tm-signal-context-force-tm but uses userfaultfd to
+make the test deterministic. While this test always triggers the bug in one
+run, I had to execute tm-signal-context-force-tm several times (the test runs
+5000 times each execution) to trigger the same bug.
 
-I do appreciate the efforts to get everyone as possible to run this thing,
-so it get more notices once it is broken. However, DEBUG_VM seems like such
-a generic Kconfig those days that have even been enabled by default for
-Fedora Linux, so I would rather see a more sensitive default been taken
-even though the test runtime is fairly quickly on a small machine for now.
+tm-signal-context-force-tm is kept instead of replaced because, while this test
+is more reliable and triggers the same bug, tm-signal-context-force-tm has a
+better coverage, in the sense that by running the test several times it might
+trigger the pagefault and/or be preempted at different places.
 
-> 
-> [    5.656916] debug_vm_pgtable: debug_vm_pgtable: Validating 
-> architecture page table helpers
-> [    5.665661] debug_vm_pgtable: debug_vm_pgtable: Validated 
-> architecture page table helpers
+Signed-off-by: Gustavo Luiz Duarte <gustavold@linux.ibm.com>
+---
+ tools/testing/selftests/powerpc/tm/.gitignore |   1 +
+ tools/testing/selftests/powerpc/tm/Makefile   |   3 +-
+ .../powerpc/tm/tm-signal-pagefault.c          | 272 ++++++++++++++++++
+ 3 files changed, 275 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/tm/tm-signal-pagefault.c
+
+diff --git a/tools/testing/selftests/powerpc/tm/.gitignore b/tools/testing/selftests/powerpc/tm/.gitignore
+index 98f2708d86cc..e1c72a4a3e91 100644
+--- a/tools/testing/selftests/powerpc/tm/.gitignore
++++ b/tools/testing/selftests/powerpc/tm/.gitignore
+@@ -13,6 +13,7 @@ tm-signal-context-chk-vmx
+ tm-signal-context-chk-vsx
+ tm-signal-context-force-tm
+ tm-signal-sigreturn-nt
++tm-signal-pagefault
+ tm-vmx-unavail
+ tm-unavailable
+ tm-trap
+diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
+index b15a1a325bd0..b1d99736f8b8 100644
+--- a/tools/testing/selftests/powerpc/tm/Makefile
++++ b/tools/testing/selftests/powerpc/tm/Makefile
+@@ -5,7 +5,7 @@ SIGNAL_CONTEXT_CHK_TESTS := tm-signal-context-chk-gpr tm-signal-context-chk-fpu
+ TEST_GEN_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack \
+ 	tm-vmxcopy tm-fork tm-tar tm-tmspr tm-vmx-unavail tm-unavailable tm-trap \
+ 	$(SIGNAL_CONTEXT_CHK_TESTS) tm-sigreturn tm-signal-sigreturn-nt \
+-	tm-signal-context-force-tm tm-poison
++	tm-signal-context-force-tm tm-poison tm-signal-pagefault
+ 
+ top_srcdir = ../../../../..
+ include ../../lib.mk
+@@ -22,6 +22,7 @@ $(OUTPUT)/tm-resched-dscr: ../pmu/lib.c
+ $(OUTPUT)/tm-unavailable: CFLAGS += -O0 -pthread -m64 -Wno-error=uninitialized -mvsx
+ $(OUTPUT)/tm-trap: CFLAGS += -O0 -pthread -m64
+ $(OUTPUT)/tm-signal-context-force-tm: CFLAGS += -pthread -m64
++$(OUTPUT)/tm-signal-pagefault: CFLAGS += -pthread -m64
+ 
+ SIGNAL_CONTEXT_CHK_TESTS := $(patsubst %,$(OUTPUT)/%,$(SIGNAL_CONTEXT_CHK_TESTS))
+ $(SIGNAL_CONTEXT_CHK_TESTS): tm-signal.S
+diff --git a/tools/testing/selftests/powerpc/tm/tm-signal-pagefault.c b/tools/testing/selftests/powerpc/tm/tm-signal-pagefault.c
+new file mode 100644
+index 000000000000..3a2166101d94
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/tm/tm-signal-pagefault.c
+@@ -0,0 +1,272 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright 2020, Gustavo Luiz Duarte, IBM Corp.
++ *
++ * This test starts a transaction and triggers a signal, forcing a pagefault to
++ * happen when the kernel signal handling code touches the user signal stack.
++ *
++ * In order to avoid pre-faulting the signal stack memory and to force the
++ * pagefault to happen precisely in the kernel signal handling code, the
++ * pagefault handling is done in userspace using the userfaultfd facility.
++ *
++ * Further pagefaults are triggered by crafting the signal handler's ucontext
++ * to point to additional memory regions managed by the userfaultfd, so using
++ * the same mechanism used to avoid pre-faulting the signal stack memory.
++ *
++ * On failure (bug is present) kernel crashes or never returns control back to
++ * userspace. If bug is not present, tests completes almost immediately.
++ */
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <linux/userfaultfd.h>
++#include <poll.h>
++#include <unistd.h>
++#include <sys/ioctl.h>
++#include <sys/syscall.h>
++#include <fcntl.h>
++#include <sys/mman.h>
++#include <pthread.h>
++#include <signal.h>
++
++#include "tm.h"
++
++
++#define UF_MEM_SIZE 655360	/* 10 x 64k pages */
++
++/* Memory handled by userfaultfd */
++static char *uf_mem;
++static size_t uf_mem_offset = 0;
++
++/*
++ * Data that will be copied into the faulting pages (instead of zero-filled
++ * pages). This is used to make the test more reliable and avoid segfaulting
++ * when we return from the signal handler. Since we are making the signal
++ * handler's ucontext point to newly allocated memory, when that memory is
++ * paged-in it will contain the expected content.
++ */
++static char backing_mem[UF_MEM_SIZE];
++
++static size_t pagesize;
++
++/*
++ * Return a chunk of at least 'size' bytes of memory that will be handled by
++ * userfaultfd. If 'backing_data' is not NULL, its content will be save to
++ * 'backing_mem' and then copied into the faulting pages when the page fault
++ * is handled.
++ */
++void *get_uf_mem(size_t size, void *backing_data)
++{
++	void *ret;
++
++	if (uf_mem_offset + size > UF_MEM_SIZE) {
++		fprintf(stderr, "Requesting more uf_mem than expected!\n");
++		exit(EXIT_FAILURE);
++	}
++
++	ret = &uf_mem[uf_mem_offset];
++
++	/* Save the data that will be copied into the faulting page */
++	if (backing_data != NULL)
++		memcpy(&backing_mem[uf_mem_offset], backing_data, size);
++
++	/* Reserve the requested amount of uf_mem */
++	uf_mem_offset += size;
++	/* Keep uf_mem_offset aligned to the page size (round up) */
++	uf_mem_offset = (uf_mem_offset + pagesize - 1) & ~(pagesize - 1);
++
++	return ret;
++}
++
++void *fault_handler_thread(void *arg)
++{
++	struct uffd_msg msg;	/* Data read from userfaultfd */
++	long uffd;		/* userfaultfd file descriptor */
++	struct uffdio_copy uffdio_copy;
++	struct pollfd pollfd;
++	ssize_t nread, offset;
++
++	uffd = (long) arg;
++
++	for (;;) {
++		pollfd.fd = uffd;
++		pollfd.events = POLLIN;
++		if (poll(&pollfd, 1, -1) == -1) {
++			perror("poll() failed");
++			exit(EXIT_FAILURE);
++		}
++
++		nread = read(uffd, &msg, sizeof(msg));
++		if (nread == 0) {
++			fprintf(stderr, "read(): EOF on userfaultfd\n");
++			exit(EXIT_FAILURE);
++		}
++
++		if (nread == -1) {
++			perror("read() failed");
++			exit(EXIT_FAILURE);
++		}
++
++		/* We expect only one kind of event */
++		if (msg.event != UFFD_EVENT_PAGEFAULT) {
++			fprintf(stderr, "Unexpected event on userfaultfd\n");
++			exit(EXIT_FAILURE);
++		}
++
++		/*
++		 * We need to handle page faults in units of pages(!).
++		 * So, round faulting address down to page boundary.
++		 */
++		uffdio_copy.dst = msg.arg.pagefault.address & ~(pagesize-1);
++
++		offset = (char *) uffdio_copy.dst - uf_mem;
++		uffdio_copy.src = (unsigned long) &backing_mem[offset];
++
++		uffdio_copy.len = pagesize;
++		uffdio_copy.mode = 0;
++		uffdio_copy.copy = 0;
++		if (ioctl(uffd, UFFDIO_COPY, &uffdio_copy) == -1) {
++			perror("ioctl-UFFDIO_COPY failed");
++			exit(EXIT_FAILURE);
++		}
++	}
++}
++
++void setup_uf_mem(void)
++{
++	long uffd;		/* userfaultfd file descriptor */
++	pthread_t thr;
++	struct uffdio_api uffdio_api;
++	struct uffdio_register uffdio_register;
++	int ret;
++
++	pagesize = sysconf(_SC_PAGE_SIZE);
++
++	/* Create and enable userfaultfd object */
++	uffd = syscall(__NR_userfaultfd, O_CLOEXEC | O_NONBLOCK);
++	if (uffd == -1) {
++		perror("userfaultfd() failed");
++		exit(EXIT_FAILURE);
++	}
++	uffdio_api.api = UFFD_API;
++	uffdio_api.features = 0;
++	if (ioctl(uffd, UFFDIO_API, &uffdio_api) == -1) {
++		perror("ioctl-UFFDIO_API failed");
++		exit(EXIT_FAILURE);
++	}
++
++	/*
++	 * Create a private anonymous mapping. The memory will be demand-zero
++	 * paged, that is, not yet allocated. When we actually touch the memory
++	 * the related page will be allocated via the userfaultfd mechanism.
++	 */
++	uf_mem = mmap(NULL, UF_MEM_SIZE, PROT_READ | PROT_WRITE,
++		      MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
++	if (uf_mem == MAP_FAILED) {
++		perror("mmap() failed");
++		exit(EXIT_FAILURE);
++	}
++
++	/*
++	 * Register the memory range of the mapping we've just mapped to be
++	 * handled by the userfaultfd object. In 'mode' we request to track
++	 * missing pages (i.e. pages that have not yet been faulted-in).
++	 */
++	uffdio_register.range.start = (unsigned long) uf_mem;
++	uffdio_register.range.len = UF_MEM_SIZE;
++	uffdio_register.mode = UFFDIO_REGISTER_MODE_MISSING;
++	if (ioctl(uffd, UFFDIO_REGISTER, &uffdio_register) == -1) {
++		perror("ioctl-UFFDIO_REGISTER");
++		exit(EXIT_FAILURE);
++	}
++
++	/* Create a thread that will process the userfaultfd events */
++	ret = pthread_create(&thr, NULL, fault_handler_thread, (void *) uffd);
++	if (ret != 0) {
++		fprintf(stderr, "pthread_create(): Error. Returned %d\n", ret);
++		exit(EXIT_FAILURE);
++	}
++}
++
++/*
++ * Assumption: the signal was delivered while userspace was in transactional or
++ * suspended state, i.e. uc->uc_link != NULL.
++ */
++void signal_handler(int signo, siginfo_t *si, void *uc)
++{
++	ucontext_t *ucp = uc;
++
++	/* Skip 'trap' after returning, otherwise we get a SIGTRAP again */
++	ucp->uc_link->uc_mcontext.regs->nip += 4;
++
++	ucp->uc_mcontext.v_regs =
++		get_uf_mem(sizeof(elf_vrreg_t), ucp->uc_mcontext.v_regs);
++
++	ucp->uc_link->uc_mcontext.v_regs =
++		get_uf_mem(sizeof(elf_vrreg_t), ucp->uc_link->uc_mcontext.v_regs);
++
++	ucp->uc_link = get_uf_mem(sizeof(ucontext_t), ucp->uc_link);
++}
++
++int tm_signal_pagefault(void)
++{
++	struct sigaction sa;
++	stack_t ss;
++
++	SKIP_IF(!have_htm());
++
++	setup_uf_mem();
++
++	/*
++	 * Set an alternative stack that will generate a page fault when the
++	 * signal is raised. The page fault will be treated via userfaultfd,
++	 * i.e. via fault_handler_thread.
++	 */
++	ss.ss_sp = get_uf_mem(SIGSTKSZ, NULL);
++	ss.ss_size = SIGSTKSZ;
++	ss.ss_flags = 0;
++	if (sigaltstack(&ss, NULL) == -1) {
++		perror("sigaltstack() failed");
++		exit(EXIT_FAILURE);
++	}
++
++	sa.sa_flags = SA_SIGINFO | SA_ONSTACK;
++	sa.sa_sigaction = signal_handler;
++	if (sigaction(SIGTRAP, &sa, NULL) == -1) {
++		perror("sigaction() failed");
++		exit(EXIT_FAILURE);
++	}
++
++	/* Trigger a SIGTRAP in transactional state */
++	asm __volatile__(
++			"tbegin.;"
++			"beq    1f;"
++			"trap;"
++			"1: ;"
++			: : : "memory");
++
++	/* Trigger a SIGTRAP in suspended state */
++	asm __volatile__(
++			"tbegin.;"
++			"beq    1f;"
++			"tsuspend.;"
++			"trap;"
++			"tresume.;"
++			"1: ;"
++			: : : "memory");
++
++	return EXIT_SUCCESS;
++}
++
++int main(int argc, char **argv)
++{
++	/*
++	 * Depending on kernel config, the TM Bad Thing might not result in a
++	 * crash, instead the kernel never returns control back to userspace, so
++	 * set a tight timeout. If the test passes it completes almost
++	 * immediately.
++	 */
++	test_harness_set_timeout(2);
++	return test_harness(tm_signal_pagefault, "tm_signal_pagefault");
++}
+-- 
+2.21.1
 
