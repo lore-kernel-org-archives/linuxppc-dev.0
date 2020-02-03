@@ -2,86 +2,49 @@ Return-Path: <SRS0=3qbC=3X=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 92B13C35247
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Feb 2020 17:21:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 87965C35247
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Feb 2020 18:50:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 418882051A
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Feb 2020 17:21:49 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="TBfGDlMp"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 418882051A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id E46662080D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Feb 2020 18:50:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E46662080D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48BF4B6d4pzDqPj
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Feb 2020 04:21:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48BH2Z4cSQzDqPl
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Feb 2020 05:50:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
+ (client-ip=195.135.220.15; helo=mx2.suse.de;
+ envelope-from=nsaenzjulienne@suse.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=TBfGDlMp; dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48BDyW69nDzDqPS
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Feb 2020 04:16:51 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 48BDyM0Gd0z9vC0j;
- Mon,  3 Feb 2020 18:16:43 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=TBfGDlMp; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id L2EgvSc5tJns; Mon,  3 Feb 2020 18:16:42 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 48BDyL5k3bz9vC0h;
- Mon,  3 Feb 2020 18:16:42 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1580750202; bh=CbGM+lhkMhDFeqH22kN9rGKdr+DO5kF57vrZYdUevkk=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=TBfGDlMpIs3iBnu1efmB/bvuM3U13ivka5Z4Mm2uZgaA1D0UVGDvJV0N5HTaaM+JN
- QBGASI28LFCqKPYZ5HGxOyKfb42DgiIxn0G+TFQx9n9IR+CT9iaWKsVDl0y8lNiplc
- pBDzIisDVtmnHs4n6EKOXL7Msf97rs+MltEXZ/wE=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 21B988B7B5;
- Mon,  3 Feb 2020 18:16:48 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id ZylV4ap6PF-H; Mon,  3 Feb 2020 18:16:48 +0100 (CET)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A3BFA8B7AC;
- Mon,  3 Feb 2020 18:16:47 +0100 (CET)
-Subject: Re: [PATCH] powerpc/32s: Slenderize _tlbia() for powerpc 603/603e
-To: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>,
- "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
- "paulus@samba.org" <paulus@samba.org>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>
-References: <12f4f4f0ff89aeab3b937fc96c84fb35e1b2517e.1580748445.git.christophe.leroy@c-s.fr>
- <bfab6635148b83deed8ac9fcbb19dde8c32fb988.camel@infinera.com>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <5771d787-67f5-f29c-2a9e-0ea7194cffa1@c-s.fr>
-Date: Mon, 3 Feb 2020 18:16:47 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.4.2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48BH0Z4BwHzDqKv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Feb 2020 05:48:43 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx2.suse.de (Postfix) with ESMTP id 190D2AE6F;
+ Mon,  3 Feb 2020 18:48:40 +0000 (UTC)
+From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+To: linux@armlinux.org.uk, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kbuild@vger.kernel.org
+Subject: [PATCH 2/2] ARM: add multi_v7_lpae_defconfig
+Date: Mon,  3 Feb 2020 19:48:19 +0100
+Message-Id: <20200203184820.4433-3-nsaenzjulienne@suse.de>
+X-Mailer: git-send-email 2.25.0
+In-Reply-To: <20200203184820.4433-1-nsaenzjulienne@suse.de>
+References: <20200203184820.4433-1-nsaenzjulienne@suse.de>
 MIME-Version: 1.0
-In-Reply-To: <bfab6635148b83deed8ac9fcbb19dde8c32fb988.camel@infinera.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -94,60 +57,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: f.fainelli@gmail.com, linux-kernel@vger.kernel.org,
+ yamada.masahiro@socionext.com, bcm-kernel-feedback-list@broadcom.com,
+ linux-rpi-kernel@lists.infradead.org,
+ Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+The only missing configuration option preventing us from using
+multi_v7_defconfig with the Raspberry Pi 4 is ARM_LPAE. It's needed as
+the PCIe controller found on the SoC depends on 64bit addressing, yet
+can't be included as not all v7 boards support LPAE.
 
+Introduce multi_v7_lpae_defconfig, built off multi_v7_defconfig, which will
+avoid us having to duplicate and maintain multiple similar configurations.
 
-Le 03/02/2020 à 17:57, Joakim Tjernlund a écrit :
-> On Mon, 2020-02-03 at 16:47 +0000, Christophe Leroy wrote:
->> CAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe.
->>
->>
->> _tlbia() is a function used only on 603/603e core, ie on CPUs which
->> don't have a hash table.
->>
->> _tlbia() uses the tlbia macro which implements a loop of 1024 tlbie.
->>
->> On the 603/603e core, flushing the entire TLB requires no more than
->> 32 tlbie.
->>
->> Replace tlbia by a loop of 32 tlbie.
->>
->> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->> ---
->>   arch/powerpc/mm/book3s32/hash_low.S | 13 ++++++++-----
->>   1 file changed, 8 insertions(+), 5 deletions(-)
->>
->> diff --git a/arch/powerpc/mm/book3s32/hash_low.S b/arch/powerpc/mm/book3s32/hash_low.S
->> index c11b0a005196..a5039ad10429 100644
->> --- a/arch/powerpc/mm/book3s32/hash_low.S
->> +++ b/arch/powerpc/mm/book3s32/hash_low.S
->> @@ -696,18 +696,21 @@ _GLOBAL(_tlbia)
->>          bne-    10b
->>          stwcx.  r8,0,r9
->>          bne-    10b
->> +#endif /* CONFIG_SMP */
->> +       li      r5, 32
->> +       lis     r4, KERNELBASE@h
->> +       mtctr   r5
->>          sync
->> -       tlbia
->> +0:     tlbie   r4
->> +       addi    r4, r4, 0x1000
-> 
-> Is page size always 4096 here or does it not matter ?
+Needless to say the Raspberry Pi 4 is not the only platform that can
+benefit from this new configuration.
 
-603 and its derivatives (G2, e300, ...) only support 4k pages.
+Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
 
-And regardless, the reference manual says:
+---
 
-The tlbia instruction is not implemented on the MPC603e and when its 
-opcode is encountered, an illegal instruction program exception is 
-generated. To invalidate all entries of both TLBs, 32 tlbie instructions 
-must be executed, incrementing the value in EA[15–19] by 1 each time
+Changes since RFC:
+ - Move config merge function into scripts folder
+---
+ arch/arm/Makefile            | 4 ++++
+ arch/arm/configs/lpae.config | 1 +
+ 2 files changed, 5 insertions(+)
+ create mode 100644 arch/arm/configs/lpae.config
 
-Christophe
+diff --git a/arch/arm/Makefile b/arch/arm/Makefile
+index 16d41efea7f2..1f4f9a90561d 100644
+--- a/arch/arm/Makefile
++++ b/arch/arm/Makefile
+@@ -359,6 +359,10 @@ archclean:
+ # My testing targets (bypasses dependencies)
+ bp:;	$(Q)$(MAKE) $(build)=$(boot) MACHINE=$(MACHINE) $(boot)/bootpImage
+ 
++include $(srctree)/scripts/Makefile.defconf
++PHONY += multi_v7_lpae_defconfig
++multi_v7_lpae_defconfig:
++	$(call merge_into_defconfig,multi_v7_defconfig,lpae)
+ 
+ define archhelp
+   echo  '* zImage        - Compressed kernel image (arch/$(ARCH)/boot/zImage)'
+diff --git a/arch/arm/configs/lpae.config b/arch/arm/configs/lpae.config
+new file mode 100644
+index 000000000000..19bab134e014
+--- /dev/null
++++ b/arch/arm/configs/lpae.config
+@@ -0,0 +1 @@
++CONFIG_ARM_LPAE=y
+-- 
+2.25.0
+
