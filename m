@@ -2,43 +2,44 @@ Return-Path: <SRS0=jJTS=3Y=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,URIBL_DBL_ABUSE_MALW autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91C76C2D0B1
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Feb 2020 12:16:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 384ACC2D0B1
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Feb 2020 12:18:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 486CB20730
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Feb 2020 12:16:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 486CB20730
+	by mail.kernel.org (Postfix) with ESMTPS id E52FD20730
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Feb 2020 12:18:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E52FD20730
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48BkFB0DWFzDqQf
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Feb 2020 23:16:14 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 48BkHr5KMGzDqBM
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Feb 2020 23:18:32 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48BjwJ0vGQzDqLH
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Feb 2020 23:01:36 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48BjwL3sLZzDqLv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Feb 2020 23:01:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 48BjwH6lP2zB3ww; Tue,  4 Feb 2020 23:01:35 +1100 (AEDT)
+ id 48BjwK1mspzB3x2; Tue,  4 Feb 2020 23:01:36 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 76be4414be4a0d17e29e2337167bf976533149cd
-In-Reply-To: <ff8729c1-3a4b-c720-48ba-a1a42b0ef892@infradead.org>
-To: Randy Dunlap <rdunlap@infradead.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>
+X-powerpc-patch-commit: 41196224883a64e56e0ef237c19eb837058df071
+In-Reply-To: <fc8390a33c2a470105f01abbcbdc7916c30c0a54.1580301269.git.christophe.leroy@c-s.fr>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH RESEND] powerpc: indent to improve Kconfig readability
-Message-Id: <48BjwH6lP2zB3ww@ozlabs.org>
-Date: Tue,  4 Feb 2020 23:01:35 +1100 (AEDT)
+Subject: Re: [PATCH] powerpc/32s: Fix kasan_early_hash_table() for
+ CONFIG_VMAP_STACK
+Message-Id: <48BjwK1mspzB3x2@ozlabs.org>
+Date: Tue,  4 Feb 2020 23:01:36 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,24 +51,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2020-01-29 at 02:22:25 UTC, Randy Dunlap wrote:
-> From: Randy Dunlap <rdunlap@infradead.org>
+On Wed, 2020-01-29 at 12:34:36 UTC, Christophe Leroy wrote:
+> On book3s/32 CPUs that are handling MMU through a hash table,
+> MMU_init_hw() function was adapted for VMAP_STACK in order to
+> handle virtual addresses instead of physical addresses in the
+> low level hash functions.
 > 
-> Indent a Kconfig continuation line to improve readability.
+> When using KASAN, the same adaptations are required for the
+> early hash table set up by kasan_early_hash_table() function.
 > 
-> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: linuxppc-dev@lists.ozlabs.org
+> Fixes: cd08f109e262 ("powerpc/32s: Enable CONFIG_VMAP_STACK")
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/76be4414be4a0d17e29e2337167bf976533149cd
+https://git.kernel.org/powerpc/c/41196224883a64e56e0ef237c19eb837058df071
 
 cheers
