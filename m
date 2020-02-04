@@ -1,83 +1,69 @@
-Return-Path: <SRS0=3qbC=3X=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=jJTS=3Y=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A060FC35247
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Feb 2020 20:29:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 204F4C35247
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Feb 2020 01:48:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 52A582087E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Feb 2020 20:29:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9139C2086A
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Feb 2020 01:48:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="yZNSUeOU"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 52A582087E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="IWzFutDt"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9139C2086A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48BKDH0fJhzDqP8
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Feb 2020 07:29:03 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48BFmn5Y3GzDqC0
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Feb 2020 04:53:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 48BSJw5XbgzDqP0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Feb 2020 12:48:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux-foundation.org (client-ip=198.145.29.99;
+ helo=mail.kernel.org; envelope-from=akpm@linux-foundation.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=yZNSUeOU; dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 48BFmn463Fz8t3y
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Feb 2020 04:53:29 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 48BFmn3Zzlz9sRY; Tue,  4 Feb 2020 04:53:29 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=kuba@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=yZNSUeOU; dkim-atps=neutral
+ header.s=default header.b=IWzFutDt; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 48BFmn0xpmz9sRR
- for <linuxppc-dev@ozlabs.org>; Tue,  4 Feb 2020 04:53:28 +1100 (AEDT)
-Received: from cakuba.hsd1.ca.comcast.net (unknown [199.201.64.133])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48BSH66WDTzDqGn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Feb 2020 12:46:57 +1100 (AEDT)
+Received: from localhost.localdomain (c-73-231-172-41.hsd1.ca.comcast.net
+ [73.231.172.41])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 4530B2087E;
- Mon,  3 Feb 2020 17:53:26 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 6D90E20732;
+ Tue,  4 Feb 2020 01:46:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1580752406;
- bh=+F911pBIa8UlZE0vunHO6BITHlbAp/snKVv81Rwfgu4=;
+ s=default; t=1580780815;
+ bh=L7qyiSaKYCSiXFTQrei6zHPTHLJYHqYmnQdeCSNYJUw=;
  h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=yZNSUeOU9BuVDZG2NfZ2Cjbin6LdM35W5BRwsUTgG2fMGQpmbEIRG55wlqFO2Q1vb
- KZ03OAq6Q/zN85eIgsgOpx1N/Aw2Rg4CgvUUg7goyX16hRidDcTC32/9skI+kg/PKA
- XdgO+q/Pevl+hIOGqxPWBzNuO70YsRXXDwtYhRI8=
-Date: Mon, 3 Feb 2020 09:53:25 -0800
-From: Jakub Kicinski <kuba@kernel.org>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>
-Subject: Re: Latest Git kernel: avahi-daemon[2410]: ioctl(): Inappropriate
- ioctl for device
-Message-ID: <20200203095325.24c3ab1c@cakuba.hsd1.ca.comcast.net>
-In-Reply-To: <9624aebf-edb9-a3b0-1a29-b61df6b7ba2f@xenosoft.de>
-References: <20200126115247.13402-1-mpe@ellerman.id.au>
- <CAPDyKFrbYmV6_nV6psVLq6VRKMXf0PXpemBbj48yjOr3P130BA@mail.gmail.com>
- <58a6d45c-0712-18df-1b14-2f04cf12a1cb@xenosoft.de>
- <75aab3c9-1cb6-33bf-5de1-e05bbd98b6fb@c-s.fr>
- <9624aebf-edb9-a3b0-1a29-b61df6b7ba2f@xenosoft.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Approved-At: Tue, 04 Feb 2020 07:27:33 +1100
+ b=IWzFutDti1oCSWF1rKXWbGepy5r6blJTGBSX9wsjZ0oqHgkfm4NxusQXKFZZqkXS4
+ NPCAIbBhdT0BVAZ8ppji0sqcwu4XIHKjpjrvicl1df/vB4ckh6YRbrrE3EDakSdqrT
+ RtE2FA9knl1TQs3a2jK8E9n8CkAtByewbWYTl5bY=
+Date: Mon, 3 Feb 2020 17:46:53 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Hildenbrand <david@redhat.com>
+Subject: Re: [PATCH v6 00/10] mm/memory_hotplug: Shrink zones before
+ removing memory
+Message-Id: <20200203174653.74630ef5744c68be55374b0d@linux-foundation.org>
+In-Reply-To: <f7ed4448-8f41-599d-4689-914eeaf84d6d@redhat.com>
+References: <20191006085646.5768-1-david@redhat.com>
+ <ac27f0e1-26e9-dfc1-3ee1-cbee7ad847bf@redhat.com>
+ <20191203133633.GA2600@linux>
+ <20200130204043.29e21049775e3a637db733e0@linux-foundation.org>
+ <f7ed4448-8f41-599d-4689-914eeaf84d6d@redhat.com>
+X-Mailer: Sylpheed 3.5.1 (GTK+ 2.24.31; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,68 +75,118 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: DTML <devicetree@vger.kernel.org>, Darren Stevens <darren@stevens-zone.net>,
- mad skateman <madskateman@gmail.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linuxppc-dev@ozlabs.org, "contact@a-eon.com" <contact@a-eon.com>,
- "R.T.Dickinson" <rtd2@xtra.co.nz>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- Christoph Hellwig <hch@lst.de>
+Cc: Mark Rutland <mark.rutland@arm.com>, Pankaj Gupta <pagupta@redhat.com>,
+ Michal Hocko <mhocko@suse.com>, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Wei Yang <richard.weiyang@gmail.com>, linux-mm@kvack.org,
+ Pavel Tatashin <pavel.tatashin@microsoft.com>, Rich Felker <dalias@libc.org>,
+ Alexander Potapenko <glider@google.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ Alexander Duyck <alexander.h.duyck@linux.intel.com>,
+ Ira Weiny <ira.weiny@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Qian Cai <cai@lca.pw>, linux-s390@vger.kernel.org, Yu Zhao <yuzhao@google.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Jason Gunthorpe <jgg@ziepe.ca>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>, x86@kernel.org,
+ "Matthew Wilcox \(Oracle\)" <willy@infradead.org>,
+ Mike Rapoport <rppt@linux.ibm.com>, Halil Pasic <pasic@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Gerald Schaefer <gerald.schaefer@de.ibm.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Pavel Tatashin <pasha.tatashin@soleen.com>,
+ Vasily Gorbik <gor@linux.ibm.com>,
+ Anshuman Khandual <anshuman.khandual@arm.com>,
+ Vlastimil Babka <vbabka@suse.cz>, Will Deacon <will@kernel.org>,
+ Robin Murphy <robin.murphy@arm.com>, Jun Yao <yaojun8558363@gmail.com>,
+ Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
+ Dan Williams <dan.j.williams@intel.com>, linux-arm-kernel@lists.infradead.org,
+ Oscar Salvador <osalvador@suse.de>, Tony Luck <tony.luck@intel.com>,
+ Mel Gorman <mgorman@techsingularity.net>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Steve Capper <steve.capper@arm.com>, linux-kernel@vger.kernel.org,
+ Logan Gunthorpe <logang@deltatee.com>,
+ Wei Yang <richardw.yang@linux.intel.com>, Paul Mackerras <paulus@samba.org>,
+ Tom Lendacky <thomas.lendacky@amd.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, 2 Feb 2020 16:02:18 +0100, Christian Zigotzky wrote:
-> On 02 February 2020 at 09:19 am, Christophe Leroy wrote:
-> > Hello,
-> >
-> > Le 02/02/2020 =C3=A0 01:08, Christian Zigotzky a =C3=A9crit=C2=A0: =20
-> >> Hello,
-> >>
-> >> We regularly compile and test Linux kernels every day during the=20
-> >> merge window. Since Thuesday we have very high CPU loads because of=20
-> >> the avahi daemon on our desktop Linux systems (Ubuntu, Debian etc).
-> >>
-> >> Error message: avahi-daemon[2410]: ioctl(): Inappropriate ioctl for=20
-> >> device =20
-> >
-> > Do you know which ioctl, on which device ?
-> > Can you take a trace of running avahi-daemon with 'strace' ?
-> >
-> > Can you bisect ?
-> >
-> > Christophe =20
-> Hi Christophe,
-> Hi All,
->=20
-> I figured out that the avahi-daemon has a problem with the IPv6 address=20
-> of a network interface since the Git kernel from Thursday. (Log attached)
-> This generates high CPU usage because the avahi-daemon tries to access=20
-> the IPv6 address again and again and thereby it produces a lot of log=20
-> messages.
->=20
-> We figured out that the networking updates aren't responsible for this=20
-> issue because we created a test kernel on Wednesday. The issue is=20
-> somewhere in the commits from Wednesday night to Thursday (CET).
+On Fri, 31 Jan 2020 10:18:34 +0100 David Hildenbrand <david@redhat.com> wrote:
 
-FWIW Thursday is when the latest networking pull came in, so could well
-be networking related..
+> On 31.01.20 05:40, Andrew Morton wrote:
+> > On Tue, 3 Dec 2019 14:36:38 +0100 Oscar Salvador <osalvador@suse.de> wrote:
+> > 
+> >> On Mon, Dec 02, 2019 at 10:09:51AM +0100, David Hildenbrand wrote:
+> >>> @Michal, @Oscar, can some of you at least have a patch #5 now so we can
+> >>> proceed with that? (the other patches can stay in -next some time longer)
+> >>
+> >> Hi, 
+> >>
+> >> I will be having a look at patch#5 shortly.
+> >>
+> >> Thanks for the reminder
+> > 
+> > Things haven't improved a lot :(
+> > 
+> > mm-memmap_init-update-variable-name-in-memmap_init_zone.patch
+> > mm-memory_hotplug-poison-memmap-in-remove_pfn_range_from_zone.patch
+> > mm-memory_hotplug-we-always-have-a-zone-in-find_smallestbiggest_section_pfn.patch
+> > mm-memory_hotplug-dont-check-for-all-holes-in-shrink_zone_span.patch
+> > mm-memory_hotplug-drop-local-variables-in-shrink_zone_span.patch
+> > mm-memory_hotplug-cleanup-__remove_pages.patch
+> > 
+> > The first patch has reviews, the remainder are unloved.
+> 
+> Trying hard not to rant about the review mentality on this list, but I'm
+> afraid I can't totally bite my tongue ... :)
+> 
+> Now, this is an uncomfortable situation for you and me. You have to ping
+> people about review and patches are stuck in your tree. I have a growing
+> list of patches that are somewhat considered "done", but well,
+> not-upstream-at-all. I have patches that are long in RHEL and were
+> properly tested, but could get dropped any time because -ENOREVIEW.
+> 
+> Our process nowadays seems to be, to only upstream what has an ACK/RB
+> (fixes/features/cleanups).
 
-> Please compile the latest Git kernel and test it with a desktop linux=20
-> distribution for example Ubuntu. In my point of view there are many=20
-> desktop machines affected. Many server systems don't use the avahi=20
-> daemon so they aren't affected.
->=20
-> It's possible to deactivate the access to the IPv6 address with the=20
-> following line in the file "/etc/avahi/avahi-daemon.conf":
->=20
-> use-ipv6=3Dno
->=20
-> After a reboot the CPU usage is normal again. This is only a temporary=20
-> solution.
->=20
-> Unfortunately I don't have the time for bisecting next week. I have a=20
-> lot of other work to do. In my point of view it is very important that=20
-> you also compile the latest Git kernels. Then you will see the issue and=
-=20
-> then you have a better possibility to fix the issue.
+Yes, we've been doing this for a couple of years now.  I make an
+exception for Vitaly's zswap patches because he appears to be the only
+person who knows the code (since Harry's internship ended).
+
+I think this is the first time we've hit a significant logjam. 
+Presumably the holiday season contributed to this.
+
+It isn't clear to me that we've gained much from this policy.  But
+until this cycle I've seen little harm.
+
+> I can understand this is desirable (yet, I am
+> not sure if this makes sense with the current take-and-not-give-back
+> review mentality on this list).
+> 
+> Although it will make upstreaming stuff *even harder* and *even slower*,
+> maybe we should start to only queue patches that have an ACK/RB, so they
+> won't get blocked by this later on? At least that makes your life easier
+> and people won't have to eventually follow up on patches that have been
+> in linux-next for months.
+
+The merge rate would still be the review rate, but the resulting merges
+would be of less tested code.
+
+> Note: the result will be that many of my patches will still not get
+> reviewed, won't get queued/upstreamed, I will continuously ping and
+> resend, I will lose interest because I have better things to do, I will
+> lose interest in our code quality, I will lose interest to review.
+> 
+> (side note: some people might actually enjoy me sending less cleanup
+> patches, so this approach might be desirable for some ;) )
+> 
+> One alternative is to send patches upstream once they have been lying
+> around in linux-next for $RANDOM number of months, because they
+> obviously saw some testing and nobody started to yell at them once
+> stumbling over them on linux-mm.
+
+Yes, I think that's the case with these patches and I've sent them to
+Linus.  Hopefully Michel will be able to find time to look them over in
+the next month or so.
+
