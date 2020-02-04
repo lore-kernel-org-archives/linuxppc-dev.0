@@ -3,44 +3,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 52A33C2D0B1
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Feb 2020 12:20:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A619C2D0B1
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Feb 2020 12:23:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B8B8120730
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Feb 2020 12:20:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B8B8120730
+	by mail.kernel.org (Postfix) with ESMTPS id 3ECF52084E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Feb 2020 12:23:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3ECF52084E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48BkLZ6nTHzDq69
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Feb 2020 23:20:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48BkPB3RjvzDqNw
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Feb 2020 23:23:10 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48BjwN5LD2zDqLv
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Feb 2020 23:01:40 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48BjyJ3DsMzDqMC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Feb 2020 23:03:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 48BjwN1rjLzB3x3; Tue,  4 Feb 2020 23:01:38 +1100 (AEDT)
+ id 48BjyF4dRPzB3ww; Tue,  4 Feb 2020 23:03:17 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 34b5a946a9543ce38d8ad1aacc4362533a813db7
-In-Reply-To: <20200130195223.3843-1-krzk@kernel.org>
-To: Krzysztof Kozlowski <krzk@kernel.org>,
+X-powerpc-patch-commit: 6ec20aa2e510b6297906c45f009aa08b2d97269a
+In-Reply-To: <f48244e9485ada0a304ed33ccbb8da271180c80d.1579866752.git.christophe.leroy@c-s.fr>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Geert Uytterhoeven <geert+renesas@glider.be>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: configs: Cleanup old Kconfig options
-Message-Id: <48BjwN1rjLzB3x3@ozlabs.org>
-Date: Tue,  4 Feb 2020 23:01:38 +1100 (AEDT)
+Subject: Re: [PATCH v4 2/7] powerpc/32s: Fix bad_kuap_fault()
+Message-Id: <48BjyF4dRPzB3ww@ozlabs.org>
+Date: Tue,  4 Feb 2020 23:03:17 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -52,26 +50,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2020-01-30 at 19:52:23 UTC, Krzysztof Kozlowski wrote:
-> CONFIG_ENABLE_WARN_DEPRECATED is gone since
-> commit 771c035372a0 ("deprecate the '__deprecated' attribute warnings
-> entirely and for good").
+On Fri, 2020-01-24 at 11:54:40 UTC, Christophe Leroy wrote:
+> At the moment, bad_kuap_fault() reports a fault only if a bad access
+> to userspace occurred while access to userspace was not granted.
 > 
-> CONFIG_IOSCHED_DEADLINE and CONFIG_IOSCHED_CFQ are gone since
-> commit f382fb0bcef4 ("block: remove legacy IO schedulers").
+> But if a fault occurs for a write outside the allowed userspace
+> segment(s) that have been unlocked, bad_kuap_fault() fails to
+> detect it and the kernel loops forever in do_page_fault().
 > 
-> The IOSCHED_DEADLINE was replaced by MQ_IOSCHED_DEADLINE and it will be
-> now enabled by default (along with MQ_IOSCHED_KYBER).
+> Fix it by checking that the accessed address is within the allowed
+> range.
 > 
-> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> Fixes: a68c31fc01ef ("powerpc/32s: Implement Kernel Userspace Access Protection")
+> Cc: stable@vger.kernel.org # v5.2+
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Link: https://lore.kernel.org/r/1e07c7de4ffdd9cda35d1ffe8258af75579d3e91.1579715466.git.christophe.leroy@c-s.fr
 
-Applied to powerpc next, thanks.
+Patches 2-7 applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/34b5a946a9543ce38d8ad1aacc4362533a813db7
+https://git.kernel.org/powerpc/c/6ec20aa2e510b6297906c45f009aa08b2d97269a
 
 cheers
