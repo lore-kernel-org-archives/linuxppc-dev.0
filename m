@@ -2,57 +2,57 @@ Return-Path: <SRS0=GzqQ=3Z=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E393EC33CA1
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 09:27:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B1CAC33CA1
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 10:01:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6BF0220659
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 09:27:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6BF0220659
+	by mail.kernel.org (Postfix) with ESMTPS id C5C092051A
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 10:01:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C5C092051A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48CGSQ2lVyzDqDQ
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 20:27:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48CHBl6fQ5zDqRb
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 21:01:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=linux.intel.com
- (client-ip=192.55.52.115; helo=mga14.intel.com;
+ (client-ip=192.55.52.88; helo=mga01.intel.com;
  envelope-from=richardw.yang@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux.intel.com
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48CGQY1SBhzDqDF
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Feb 2020 20:26:11 +1100 (AEDT)
-X-Amp-Result: UNSCANNABLE
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48CH8f6PzszDqJl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Feb 2020 20:59:13 +1100 (AEDT)
+X-Amp-Result: UNKNOWN
+X-Amp-Original-Verdict: FILE UNKNOWN
 X-Amp-File-Uploaded: False
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
- by fmsmga103.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 05 Feb 2020 01:26:03 -0800
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+ by fmsmga101.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 05 Feb 2020 01:59:10 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.70,405,1574150400"; d="scan'208";a="225776927"
+X-IronPort-AV: E=Sophos;i="5.70,405,1574150400"; d="scan'208";a="343395725"
 Received: from richard.sh.intel.com (HELO localhost) ([10.239.159.54])
- by fmsmga008.fm.intel.com with ESMTP; 05 Feb 2020 01:26:00 -0800
-Date: Wed, 5 Feb 2020 17:26:16 +0800
+ by fmsmga001.fm.intel.com with ESMTP; 05 Feb 2020 01:59:07 -0800
+Date: Wed, 5 Feb 2020 17:59:24 +0800
 From: Wei Yang <richardw.yang@linux.intel.com>
 To: David Hildenbrand <david@redhat.com>
-Subject: Re: [PATCH v6 07/10] mm/memory_hotplug: We always have a zone in
- find_(smallest|biggest)_section_pfn
-Message-ID: <20200205092616.GB24162@richard>
+Subject: Re: [PATCH v6 08/10] mm/memory_hotplug: Don't check for "all holes"
+ in shrink_zone_span()
+Message-ID: <20200205095924.GC24162@richard>
 References: <20191006085646.5768-1-david@redhat.com>
- <20191006085646.5768-8-david@redhat.com>
- <20200205085709.GA24162@richard>
- <80d3baea-2076-ed07-1216-27d8aa8c8734@redhat.com>
+ <20191006085646.5768-9-david@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <80d3baea-2076-ed07-1216-27d8aa8c8734@redhat.com>
+In-Reply-To: <20191006085646.5768-9-david@redhat.com>
 User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -77,34 +77,101 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Feb 05, 2020 at 09:59:41AM +0100, David Hildenbrand wrote:
->On 05.02.20 09:57, Wei Yang wrote:
->> On Sun, Oct 06, 2019 at 10:56:43AM +0200, David Hildenbrand wrote:
->>> With shrink_pgdat_span() out of the way, we now always have a valid
->>> zone.
->>>
->>> Cc: Andrew Morton <akpm@linux-foundation.org>
->>> Cc: Oscar Salvador <osalvador@suse.de>
->>> Cc: David Hildenbrand <david@redhat.com>
->>> Cc: Michal Hocko <mhocko@suse.com>
->>> Cc: Pavel Tatashin <pasha.tatashin@soleen.com>
->>> Cc: Dan Williams <dan.j.williams@intel.com>
->>> Cc: Wei Yang <richardw.yang@linux.intel.com>
->>> Signed-off-by: David Hildenbrand <david@redhat.com>
->> 
->> Reviewed-by: Wei Yang <richardw.yang@linux.intel.com>
+On Sun, Oct 06, 2019 at 10:56:44AM +0200, David Hildenbrand wrote:
+>If we have holes, the holes will automatically get detected and removed
+>once we remove the next bigger/smaller section. The extra checks can
+>go.
 >
->Just FYI, the patches are now upstream, so the rb's can no longer be
->applied. (but we can send fixes if we find that something is broken ;)
->). Thanks!
+>Cc: Andrew Morton <akpm@linux-foundation.org>
+>Cc: Oscar Salvador <osalvador@suse.de>
+>Cc: Michal Hocko <mhocko@suse.com>
+>Cc: David Hildenbrand <david@redhat.com>
+>Cc: Pavel Tatashin <pasha.tatashin@soleen.com>
+>Cc: Dan Williams <dan.j.williams@intel.com>
+>Cc: Wei Yang <richardw.yang@linux.intel.com>
+>Signed-off-by: David Hildenbrand <david@redhat.com>
+>---
+> mm/memory_hotplug.c | 34 +++++++---------------------------
+> 1 file changed, 7 insertions(+), 27 deletions(-)
 >
+>diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+>index f294918f7211..8dafa1ba8d9f 100644
+>--- a/mm/memory_hotplug.c
+>+++ b/mm/memory_hotplug.c
+>@@ -393,6 +393,9 @@ static void shrink_zone_span(struct zone *zone, unsigned long start_pfn,
+> 		if (pfn) {
+> 			zone->zone_start_pfn = pfn;
+> 			zone->spanned_pages = zone_end_pfn - pfn;
+>+		} else {
+>+			zone->zone_start_pfn = 0;
+>+			zone->spanned_pages = 0;
+> 		}
+> 	} else if (zone_end_pfn == end_pfn) {
+> 		/*
+>@@ -405,34 +408,11 @@ static void shrink_zone_span(struct zone *zone, unsigned long start_pfn,
+> 					       start_pfn);
+> 		if (pfn)
+> 			zone->spanned_pages = pfn - zone_start_pfn + 1;
+>+		else {
+>+			zone->zone_start_pfn = 0;
+>+			zone->spanned_pages = 0;
+>+		}
+> 	}
 
-Thanks for reminding. :-)
+If it is me, I would like to take out these two similar logic out.
 
+For example:
+
+	if () {
+	} else if () {
+	} else {
+		goto out;
+	}
+
+
+	/* The zone has no valid section */
+	if (!pfn) {
+			zone->zone_start_pfn = 0;
+			zone->spanned_pages = 0;
+	}
+
+out:
+	zone_span_writeunlock(zone);
+
+Well, this is just my personal taste :-)
+
+>-
+>-	/*
+>-	 * The section is not biggest or smallest mem_section in the zone, it
+>-	 * only creates a hole in the zone. So in this case, we need not
+>-	 * change the zone. But perhaps, the zone has only hole data. Thus
+>-	 * it check the zone has only hole or not.
+>-	 */
+>-	pfn = zone_start_pfn;
+>-	for (; pfn < zone_end_pfn; pfn += PAGES_PER_SUBSECTION) {
+>-		if (unlikely(!pfn_to_online_page(pfn)))
+>-			continue;
+>-
+>-		if (page_zone(pfn_to_page(pfn)) != zone)
+>-			continue;
+>-
+>-		/* Skip range to be removed */
+>-		if (pfn >= start_pfn && pfn < end_pfn)
+>-			continue;
+>-
+>-		/* If we find valid section, we have nothing to do */
+>-		zone_span_writeunlock(zone);
+>-		return;
+>-	}
+>-
+>-	/* The zone has no valid section */
+>-	zone->zone_start_pfn = 0;
+>-	zone->spanned_pages = 0;
+> 	zone_span_writeunlock(zone);
+> }
+> 
 >-- 
->Thanks,
->
->David / dhildenb
+>2.21.0
 
 -- 
 Wei Yang
