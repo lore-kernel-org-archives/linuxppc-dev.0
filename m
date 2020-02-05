@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63621C35254
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 13:20:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 763A8C35254
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 13:22:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DD676217BA
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 13:20:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id F2A162072B
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 13:22:50 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="gZngu8wL"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DD676217BA
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="GB6fL4VP"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F2A162072B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48CMcT3zY9zDqDG
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2020 00:20:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48CMgY2WhpzDqRF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2020 00:22:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=redhat.com (client-ip=205.139.110.120;
  helo=us-smtp-1.mimecast.com; envelope-from=david@redhat.com;
@@ -29,38 +29,39 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=gZngu8wL; 
+ header.s=mimecast20190719 header.b=GB6fL4VP; 
  dkim-atps=neutral
 Received: from us-smtp-1.mimecast.com (us-smtp-delivery-1.mimecast.com
  [205.139.110.120])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48CMZ22xKzzDqNw
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2020 00:18:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48CMb56nsvzDqRD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2020 00:18:57 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1580908679;
+ s=mimecast20190719; t=1580908734;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
- bh=bQRosDyT5knNhAFB0Owcc8ODBi7Hr/p2PlLRbaYlR78=;
- b=gZngu8wLQn4lZ1pNBJGwuyMeBR2s8Go2JtrnmzAcISEXZw2xKj5p7zBmua4+M9zAMy4DyU
- UNR0yh9GkpuB1zGssxKtThaizeZaSv+3p2DzH03Liat6/RV42y/RUiCsv490Ndogon7kUp
- UWd1t+o/au4riXe3MJZjKWroP0EH+IQ=
+ bh=hNc1+9pos96pDdq8HqhnC04/g8UEcltPv/djMZaPm1I=;
+ b=GB6fL4VPyRVM3/Jodf2sAlSRI3nx42GQrSrsbN/qSdyzRA4Csf3TDLYg0+oNktf5C971Xm
+ sV4hbVtMpKScAl0hvYK0wQ/TVNr8Trwk75oO6tSNQfbFuYVzCVcWHI/di7xj0BEfzNL4jh
+ pTy0Mux6+W4FTYRLYKVHv1ORFec5SvU=
 Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
  [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-290-87rC3MGMMfmQQ58s65JV-Q-1; Wed, 05 Feb 2020 08:17:53 -0500
-X-MC-Unique: 87rC3MGMMfmQQ58s65JV-Q-1
-Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.phx2.redhat.com
- [10.5.11.22])
+ us-mta-142-ojmElPlVNB2zczex8wCAwA-1; Wed, 05 Feb 2020 08:18:49 -0500
+X-MC-Unique: ojmElPlVNB2zczex8wCAwA-1
+Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
+ [10.5.11.23])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 4E625108C1E2;
- Wed,  5 Feb 2020 13:17:51 +0000 (UTC)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 8291B113784D;
+ Wed,  5 Feb 2020 13:18:47 +0000 (UTC)
 Received: from [10.36.116.217] (ovpn-116-217.ams2.redhat.com [10.36.116.217])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 23BB810016DA;
- Wed,  5 Feb 2020 13:17:47 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id A1A4019C7F;
+ Wed,  5 Feb 2020 13:18:44 +0000 (UTC)
 Subject: Re: [PATCH v6 10/10] mm/memory_hotplug: Cleanup __remove_pages()
+From: David Hildenbrand <david@redhat.com>
 To: Segher Boessenkool <segher@kernel.crashing.org>
 References: <20191006085646.5768-1-david@redhat.com>
  <20191006085646.5768-11-david@redhat.com> <20200204094652.GE6494@linux>
@@ -68,7 +69,7 @@ References: <20191006085646.5768-1-david@redhat.com>
  <20200204131353.GJ22482@gate.crashing.org>
  <0e2f700c-b01b-8c16-99c2-2648967fc203@redhat.com>
  <20200205125149.GS22482@gate.crashing.org>
-From: David Hildenbrand <david@redhat.com>
+ <32e06c13-222c-4486-3914-df2807cf2a2b@redhat.com>
 Autocrypt: addr=david@redhat.com; prefer-encrypt=mutual; keydata=
  mQINBFXLn5EBEAC+zYvAFJxCBY9Tr1xZgcESmxVNI/0ffzE/ZQOiHJl6mGkmA1R7/uUpiCjJ
  dBrn+lhhOYjjNefFQou6478faXE6o2AhmebqT4KiQoUQFV4R7y1KMEKoSyy8hQaK1umALTdL
@@ -113,16 +114,16 @@ Autocrypt: addr=david@redhat.com; prefer-encrypt=mutual; keydata=
  njnuI31KBiLUks+paRkHQlFcgS2N3gkRBzH7xSZ+t7Re3jvXdXEzKBbQ+dC3lpJB0wPnyMcX
  FOTT3aZT7IgePkt5iC/BKBk3hqKteTnJFeVIT7EC+a6YUFg=
 Organization: Red Hat GmbH
-Message-ID: <32e06c13-222c-4486-3914-df2807cf2a2b@redhat.com>
-Date: Wed, 5 Feb 2020 14:17:47 +0100
+Message-ID: <8f4752f5-c676-f56e-8cd2-239898aba2fd@redhat.com>
+Date: Wed, 5 Feb 2020 14:18:43 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
  Thunderbird/68.3.1
 MIME-Version: 1.0
-In-Reply-To: <20200205125149.GS22482@gate.crashing.org>
+In-Reply-To: <32e06c13-222c-4486-3914-df2807cf2a2b@redhat.com>
 Content-Type: text/plain; charset=windows-1252
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.22
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -145,57 +146,14 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 05.02.20 13:51, Segher Boessenkool wrote:
-> On Tue, Feb 04, 2020 at 02:38:51PM +0100, David Hildenbrand wrote:
->> On 04.02.20 14:13, Segher Boessenkool wrote:
->>> On Tue, Feb 04, 2020 at 01:41:06PM +0100, David Hildenbrand wrote:
->>>> It's a pattern commonly used in compilers and emulators to calculate the
->>>> number of bytes to the next block/alignment. (we're missing a macro
->>>> (like we have ALIGN_UP/IS_ALIGNED) for that - but it's hard to come up
->>>> with a good name (e.g., SIZE_TO_NEXT_ALIGN) .
+> I'm sorry to have to correct you again for some corner cases:
 > 
->>> You can just write the easy to understand
->>>
->>>   ...  ALIGN_UP(x) - x  ...
->>
->> you mean
->>
->> ALIGN_UP(x, PAGES_PER_SECTION) - x
->>
->> but ...
->>
->>> which is better *without* having a separate name.  Does that not
->>> generate good machine code for you?
->>
->> 1. There is no ALIGN_UP. "SECTION_ALIGN_UP(x) - x" would be possible
+> ALIGN_UP(1, 4096) - 4096 = 0
 > 
-> Erm, you started it ;-)
-
-Yeah, I was thinking in the wrong code base :)
-
+> Again, not as easy as it seems ...
 > 
->> 2. It would be wrong if x is already aligned.
->>
->> e.g., let's use 4096 for simplicity as we all know that value by heart
->> (for both x and the block size).
->>
->> a) -(4096 | -4096) -> 4096
->>
->> b) #define ALIGN_UP(x, a) ((x + a - 1) & -(a))
->>
->> ALIGN_UP(4096, 4096) - 4096 -> 0
->>
->> Not as easy as it seems ...
-> 
-> If you always want to return a number >= 1, it it simply
->   ALIGN_UP(x + 1) - x
 
-
-I'm sorry to have to correct you again for some corner cases:
-
-ALIGN_UP(1, 4096) - 4096 = 0
-
-Again, not as easy as it seems ...
+Eh, wait, I'm messing up things. Will double check :)
 
 -- 
 Thanks,
