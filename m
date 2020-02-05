@@ -2,64 +2,59 @@ Return-Path: <SRS0=GzqQ=3Z=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 90D2FC2D0B1
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 03:07:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 98BC5C35249
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 03:14:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EBDE82085B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 03:07:08 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="oLjjl/Qm"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EBDE82085B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 048FD2085B
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 03:14:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 048FD2085B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48C6163RYfzDq7j
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 14:07:06 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48C69M2Xy5zDqGW
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 14:14:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.191; helo=huawei.com;
+ envelope-from=yanaijie@huawei.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=huawei.com
+X-Greylist: delayed 941 seconds by postgrey-1.36 at bilbo;
+ Wed, 05 Feb 2020 14:12:26 AEDT
+Received: from huawei.com (szxga05-in.huawei.com [45.249.212.191])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48C5yq43XgzDqL5
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Feb 2020 14:05:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=oLjjl/Qm; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 48C5yp0hsYz9sSR;
- Wed,  5 Feb 2020 14:05:05 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1580871907;
- bh=Dy2HNszoS5jMHuHyexeNZ1i6v2XpVUmuydKw/9Caj58=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=oLjjl/QmMaQUGkaI425lp8ZqbybG1H7xgmO+WmWq3t6CGe3Ydfi2omMvBob16Z5TS
- LHkGOmvtvcpZoOVFbp1xrUN8gFyM+NV2mLZMiM0QNEI7mXLXmjvRfPJAaikuMqME9U
- DdqyIDLQ8fMvvU9O3fXj+2ZNog4M9YaBI1kKj0vVSxuvesokyfqnXtxONTr0BTRBPw
- GW6r4NuLz+BlK//+r3+ZzGcMec3ZhTxzZS+gLGPQpEtFPtWSi10F20kXho2mhO2xk1
- C2dHxfOWKKQ1nfwjw5I8ncgxAzNir+zHOoAFGWZtbmPWBsUWAIawAKTavRpdoKHRah
- /1o2zj3OuuW7Q==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Dan Williams <dan.j.williams@intel.com>, linux-nvdimm@lists.01.org
-Subject: Re: [PATCH 2/5] mm/memremap_pages: Introduce memremap_compat_align()
-In-Reply-To: <158041476763.3889308.13149849631980018039.stgit@dwillia2-desk3.amr.corp.intel.com>
-References: <158041475480.3889308.655103391935006598.stgit@dwillia2-desk3.amr.corp.intel.com>
- <158041476763.3889308.13149849631980018039.stgit@dwillia2-desk3.amr.corp.intel.com>
-Date: Wed, 05 Feb 2020 14:05:02 +1100
-Message-ID: <875zgl3fa9.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48C67G12RkzDq6M
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Feb 2020 14:12:22 +1100 (AEDT)
+Received: from DGGEMS406-HUB.china.huawei.com (unknown [172.30.72.58])
+ by Forcepoint Email with ESMTP id AE3CF58F06CF40550DAB;
+ Wed,  5 Feb 2020 10:56:36 +0800 (CST)
+Received: from huawei.com (10.175.124.28) by DGGEMS406-HUB.china.huawei.com
+ (10.3.19.206) with Microsoft SMTP Server id 14.3.439.0; Wed, 5 Feb 2020
+ 10:56:30 +0800
+From: Jason Yan <yanaijie@huawei.com>
+To: <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
+ <diana.craciun@nxp.com>, <christophe.leroy@c-s.fr>,
+ <benh@kernel.crashing.org>, <paulus@samba.org>, <npiggin@gmail.com>,
+ <keescook@chromium.org>, <kernel-hardening@lists.openwall.com>,
+ <oss@buserror.net>
+Subject: [PATCH v2 4/6] powerpc/fsl_booke/64: do not clear the BSS for the
+ second pass
+Date: Wed, 5 Feb 2020 10:55:25 +0800
+Message-ID: <20200205025527.28640-5-yanaijie@huawei.com>
+X-Mailer: git-send-email 2.17.2
+In-Reply-To: <20200205025527.28640-1-yanaijie@huawei.com>
+References: <20200205025527.28640-1-yanaijie@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain
+X-Originating-IP: [10.175.124.28]
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,78 +66,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linux-kernel@vger.kernel.org, Jeff Moyer <jmoyer@redhat.com>,
- Paul Mackerras <paulus@samba.org>, vishal.l.verma@intel.com,
- linuxppc-dev@lists.ozlabs.org, hch@lst.de
+Cc: Jason Yan <yanaijie@huawei.com>, linux-kernel@vger.kernel.org,
+ zhaohongjiang@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Dan Williams <dan.j.williams@intel.com> writes:
-> The "sub-section memory hotplug" facility allows memremap_pages() users
-> like libnvdimm to compensate for hardware platforms like x86 that have a
-> section size larger than their hardware memory mapping granularity.  The
-> compensation that sub-section support affords is being tolerant of
-> physical memory resources shifting by units smaller (64MiB on x86) than
-> the memory-hotplug section size (128 MiB). Where the platform
-> physical-memory mapping granularity is limited by the number and
-> capability of address-decode-registers in the memory controller.
->
-> While the sub-section support allows memremap_pages() to operate on
-> sub-section (2MiB) granularity, the Power architecture may still
-> require 16MiB alignment on "!radix_enabled()" platforms.
->
-> In order for libnvdimm to be able to detect and manage this per-arch
-> limitation, introduce memremap_compat_align() as a common minimum
-> alignment across all driver-facing memory-mapping interfaces, and let
-> Power override it to 16MiB in the "!radix_enabled()" case.
->
-> The assumption / requirement for 16MiB to be a viable
-> memremap_compat_align() value is that Power does not have platforms
-> where its equivalent of address-decode-registers never hardware remaps a
-> persistent memory resource on smaller than 16MiB boundaries.
->
-> Based on an initial patch by Aneesh.
->
-> Link: http://lore.kernel.org/r/CAPcyv4gBGNP95APYaBcsocEa50tQj9b5h__83vgngjq3ouGX_Q@mail.gmail.com
-> Reported-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-> Reported-by: Jeff Moyer <jmoyer@redhat.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-> ---
->  arch/powerpc/include/asm/io.h |   10 ++++++++++
->  drivers/nvdimm/pfn_devs.c     |    2 +-
->  include/linux/io.h            |   23 +++++++++++++++++++++++
->  include/linux/mmzone.h        |    1 +
->  4 files changed, 35 insertions(+), 1 deletion(-)
+The BSS section has already cleared out in the first pass. No need to
+clear it again. This can save some time when booting with KASLR
+enabled.
 
-The powerpc change here looks fine to me.
+Signed-off-by: Jason Yan <yanaijie@huawei.com>
+Cc: Scott Wood <oss@buserror.net>
+Cc: Diana Craciun <diana.craciun@nxp.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Kees Cook <keescook@chromium.org>
+---
+ arch/powerpc/kernel/head_64.S | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index b4ececc4323d..9ae7fd8bbf7c 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -914,6 +914,13 @@ start_here_multiplatform:
+ 	bl      relative_toc
+ 	tovirt(r2,r2)
+ 
++	/* Do not clear the BSS for the second pass if randomized */
++	LOAD_REG_ADDR(r3, kernstart_virt_addr)
++	lwz     r3,0(r3)
++	LOAD_REG_IMMEDIATE(r4, KERNELBASE)
++	cmpw	r3,r4
++	bne	4f
++
+ 	/* Clear out the BSS. It may have been done in prom_init,
+ 	 * already but that's irrelevant since prom_init will soon
+ 	 * be detached from the kernel completely. Besides, we need
+-- 
+2.17.2
 
-cheers
-
-> diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
-> index a63ec938636d..0fa2dc483008 100644
-> --- a/arch/powerpc/include/asm/io.h
-> +++ b/arch/powerpc/include/asm/io.h
-> @@ -734,6 +734,16 @@ extern void __iomem * __ioremap_at(phys_addr_t pa, void *ea,
->  				   unsigned long size, pgprot_t prot);
->  extern void __iounmap_at(void *ea, unsigned long size);
->  
-> +#ifdef CONFIG_SPARSEMEM
-> +static inline unsigned long memremap_compat_align(void)
-> +{
-> +	if (radix_enabled())
-> +		return SUBSECTION_SIZE;
-> +	return (1UL << mmu_psize_defs[mmu_linear_psize].shift);
-> +}
-> +#define memremap_compat_align memremap_compat_align
-> +#endif
-> +
->  /*
->   * When CONFIG_PPC_INDIRECT_PIO is set, we use the generic iomap implementation
->   * which needs some additional definitions here. They basically allow PIO
