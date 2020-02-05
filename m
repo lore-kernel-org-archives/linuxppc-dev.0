@@ -2,57 +2,93 @@ Return-Path: <SRS0=GzqQ=3Z=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 19C16C35249
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 03:27:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 813A2C35249
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 04:22:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 812AC21582
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 03:27:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 812AC21582
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id DDB2D21741
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 04:22:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DDB2D21741
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48C6SL2B5LzDqQC
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 14:27:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.191; helo=huawei.com;
- envelope-from=yanaijie@huawei.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga05-in.huawei.com [45.249.212.191])
+	by lists.ozlabs.org (Postfix) with ESMTP id 48C7gl5xCRzDqQT
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 15:22:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48C6QF74CFzDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Feb 2020 14:25:22 +1100 (AEDT)
-Received: from DGGEMS406-HUB.china.huawei.com (unknown [172.30.72.58])
- by Forcepoint Email with ESMTP id A71009E9B5537D97F0EA;
- Wed,  5 Feb 2020 10:56:36 +0800 (CST)
-Received: from huawei.com (10.175.124.28) by DGGEMS406-HUB.china.huawei.com
- (10.3.19.206) with Microsoft SMTP Server id 14.3.439.0; Wed, 5 Feb 2020
- 10:56:27 +0800
-From: Jason Yan <yanaijie@huawei.com>
-To: <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
- <diana.craciun@nxp.com>, <christophe.leroy@c-s.fr>,
- <benh@kernel.crashing.org>, <paulus@samba.org>, <npiggin@gmail.com>,
- <keescook@chromium.org>, <kernel-hardening@lists.openwall.com>,
- <oss@buserror.net>
-Subject: [PATCH v2 1/6] powerpc/fsl_booke/kaslr: refactor kaslr_legal_offset()
- and kaslr_early_init()
-Date: Wed, 5 Feb 2020 10:55:22 +0800
-Message-ID: <20200205025527.28640-2-yanaijie@huawei.com>
-X-Mailer: git-send-email 2.17.2
-In-Reply-To: <20200205025527.28640-1-yanaijie@huawei.com>
-References: <20200205025527.28640-1-yanaijie@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48C7dP40yrzDq63
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Feb 2020 15:20:09 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0154IgxB065034; Tue, 4 Feb 2020 23:20:01 -0500
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
+ [169.53.41.122])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2xyhn27wn4-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 04 Feb 2020 23:20:00 -0500
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+ by ppma04dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 0154F1Iw002400;
+ Wed, 5 Feb 2020 04:20:00 GMT
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29]) by ppma04dal.us.ibm.com with ESMTP id 2xykc99w38-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 05 Feb 2020 04:20:00 +0000
+Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
+ [9.57.199.106])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0154JxPk40894772
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 5 Feb 2020 04:19:59 GMT
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3A3F02805A;
+ Wed,  5 Feb 2020 04:19:59 +0000 (GMT)
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id F06EA28058;
+ Wed,  5 Feb 2020 04:19:58 +0000 (GMT)
+Received: from sofia.ibm.com (unknown [9.124.31.110])
+ by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
+ Wed,  5 Feb 2020 04:19:58 +0000 (GMT)
+Received: by sofia.ibm.com (Postfix, from userid 1000)
+ id 26C4F2E3006; Wed,  5 Feb 2020 09:49:56 +0530 (IST)
+Date: Wed, 5 Feb 2020 09:49:56 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/3] powerpc/sysfs: Show idle_purr and idle_spurr for
+ every CPU
+Message-ID: <20200205041956.GA5401@in.ibm.com>
+References: <1574856072-30972-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1574856072-30972-3-git-send-email-ego@linux.vnet.ibm.com>
+ <1575564547.si4rk0s96p.naveen@linux.ibm.com>
+ <20200203045013.GC13468@in.ibm.com>
+ <1580802180.jpxk9s8apz.naveen@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.175.124.28]
-X-CFilter-Loop: Reflected
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1580802180.jpxk9s8apz.naveen@linux.ibm.com>
+User-Agent: Mutt/1.5.23 (2014-03-12)
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
+ definitions=2020-02-04_09:2020-02-04,
+ 2020-02-04 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ impostorscore=0 malwarescore=0 suspectscore=0 phishscore=0 clxscore=1015
+ adultscore=0 mlxlogscore=999 bulkscore=0 spamscore=0 lowpriorityscore=0
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2001150001 definitions=main-2002050034
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,123 +100,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jason Yan <yanaijie@huawei.com>, linux-kernel@vger.kernel.org,
- zhaohongjiang@huawei.com
+Reply-To: ego@linux.vnet.ibm.com
+Cc: Nathan Lynch <nathanl@linux.ibm.com>, ego@linux.vnet.ibm.com,
+ Tyrel Datwyler <tyreld@linux.ibm.com>, linux-kernel@vger.kernel.org,
+ Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Some code refactor in kaslr_legal_offset() and kaslr_early_init(). No
-functional change. This is a preparation for KASLR fsl_booke64.
+Hi Naveen,
 
-Signed-off-by: Jason Yan <yanaijie@huawei.com>
-Cc: Scott Wood <oss@buserror.net>
-Cc: Diana Craciun <diana.craciun@nxp.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Kees Cook <keescook@chromium.org>
----
- arch/powerpc/mm/nohash/kaslr_booke.c | 40 ++++++++++++++--------------
- 1 file changed, 20 insertions(+), 20 deletions(-)
+On Tue, Feb 04, 2020 at 01:22:19PM +0530, Naveen N. Rao wrote:
+> Gautham R Shenoy wrote:
+> >Hi Naveen,
+> >
+> >On Thu, Dec 05, 2019 at 10:23:58PM +0530, Naveen N. Rao wrote:
+> >>>diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+> >>>index 80a676d..42ade55 100644
+> >>>--- a/arch/powerpc/kernel/sysfs.c
+> >>>+++ b/arch/powerpc/kernel/sysfs.c
+> >>>@@ -1044,6 +1044,36 @@ static ssize_t show_physical_id(struct device *dev,
+> >>> }
+> >>> static DEVICE_ATTR(physical_id, 0444, show_physical_id, NULL);
+> >>>
+> >>>+static ssize_t idle_purr_show(struct device *dev,
+> >>>+			      struct device_attribute *attr, char *buf)
+> >>>+{
+> >>>+	struct cpu *cpu = container_of(dev, struct cpu, dev);
+> >>>+	unsigned int cpuid = cpu->dev.id;
+> >>>+	struct lppaca *cpu_lppaca_ptr = paca_ptrs[cpuid]->lppaca_ptr;
+> >>>+	u64 idle_purr_cycles = be64_to_cpu(cpu_lppaca_ptr->wait_state_cycles);
+> >>>+
+> >>>+	return sprintf(buf, "%llx\n", idle_purr_cycles);
+> >>>+}
+> >>>+static DEVICE_ATTR_RO(idle_purr);
+> >>>+
+> >>>+DECLARE_PER_CPU(u64, idle_spurr_cycles);
+> >>>+static ssize_t idle_spurr_show(struct device *dev,
+> >>>+			       struct device_attribute *attr, char *buf)
+> >>>+{
+> >>>+	struct cpu *cpu = container_of(dev, struct cpu, dev);
+> >>>+	unsigned int cpuid = cpu->dev.id;
+> >>>+	u64 *idle_spurr_cycles_ptr = per_cpu_ptr(&idle_spurr_cycles, cpuid);
+> >>
+> >>Is it possible for a user to read stale values if a particular cpu is in an
+> >>extended cede? Is it possible to use smp_call_function_single() to force the
+> >>cpu out of idle?
+> >
+> >Yes, if the CPU whose idle_spurr cycle is being read is still in idle,
+> >then we will miss reporting the delta spurr cycles for this last
+> >idle-duration. Yes, we can use an smp_call_function_single(), though
+> >that will introduce IPI noise. How often will idle_[s]purr be read ?
+> 
+> Since it is possible for a cpu to go into extended cede for multiple seconds
+> during which time it is possible to mis-report utilization, I think it is
+> better to ensure that the sysfs interface for idle_[s]purr report the proper
+> values through use of IPI.
+>
 
-diff --git a/arch/powerpc/mm/nohash/kaslr_booke.c b/arch/powerpc/mm/nohash/kaslr_booke.c
-index 4a75f2d9bf0e..07b036e98353 100644
---- a/arch/powerpc/mm/nohash/kaslr_booke.c
-+++ b/arch/powerpc/mm/nohash/kaslr_booke.c
-@@ -25,6 +25,7 @@ struct regions {
- 	unsigned long pa_start;
- 	unsigned long pa_end;
- 	unsigned long kernel_size;
-+	unsigned long linear_sz;
- 	unsigned long dtb_start;
- 	unsigned long dtb_end;
- 	unsigned long initrd_start;
-@@ -260,11 +261,23 @@ static __init void get_cell_sizes(const void *fdt, int node, int *addr_cells,
- 		*size_cells = fdt32_to_cpu(*prop);
- }
- 
--static unsigned long __init kaslr_legal_offset(void *dt_ptr, unsigned long index,
--					       unsigned long offset)
-+static unsigned long __init kaslr_legal_offset(void *dt_ptr, unsigned long random)
- {
- 	unsigned long koffset = 0;
- 	unsigned long start;
-+	unsigned long index;
-+	unsigned long offset;
-+
-+	/*
-+	 * Decide which 64M we want to start
-+	 * Only use the low 8 bits of the random seed
-+	 */
-+	index = random & 0xFF;
-+	index %= regions.linear_sz / SZ_64M;
-+
-+	/* Decide offset inside 64M */
-+	offset = random % (SZ_64M - regions.kernel_size);
-+	offset = round_down(offset, SZ_16K);
- 
- 	while ((long)index >= 0) {
- 		offset = memstart_addr + index * SZ_64M + offset;
-@@ -289,10 +302,9 @@ static inline __init bool kaslr_disabled(void)
- static unsigned long __init kaslr_choose_location(void *dt_ptr, phys_addr_t size,
- 						  unsigned long kernel_sz)
- {
--	unsigned long offset, random;
-+	unsigned long random;
- 	unsigned long ram, linear_sz;
- 	u64 seed;
--	unsigned long index;
- 
- 	kaslr_get_cmdline(dt_ptr);
- 	if (kaslr_disabled())
-@@ -333,22 +345,12 @@ static unsigned long __init kaslr_choose_location(void *dt_ptr, phys_addr_t size
- 	regions.dtb_start = __pa(dt_ptr);
- 	regions.dtb_end = __pa(dt_ptr) + fdt_totalsize(dt_ptr);
- 	regions.kernel_size = kernel_sz;
-+	regions.linear_sz = linear_sz;
- 
- 	get_initrd_range(dt_ptr);
- 	get_crash_kernel(dt_ptr, ram);
- 
--	/*
--	 * Decide which 64M we want to start
--	 * Only use the low 8 bits of the random seed
--	 */
--	index = random & 0xFF;
--	index %= linear_sz / SZ_64M;
--
--	/* Decide offset inside 64M */
--	offset = random % (SZ_64M - kernel_sz);
--	offset = round_down(offset, SZ_16K);
--
--	return kaslr_legal_offset(dt_ptr, index, offset);
-+	return kaslr_legal_offset(dt_ptr, random);
- }
- 
- /*
-@@ -358,8 +360,6 @@ static unsigned long __init kaslr_choose_location(void *dt_ptr, phys_addr_t size
-  */
- notrace void __init kaslr_early_init(void *dt_ptr, phys_addr_t size)
- {
--	unsigned long tlb_virt;
--	phys_addr_t tlb_phys;
- 	unsigned long offset;
- 	unsigned long kernel_sz;
- 
-@@ -375,8 +375,8 @@ notrace void __init kaslr_early_init(void *dt_ptr, phys_addr_t size)
- 	is_second_reloc = 1;
- 
- 	if (offset >= SZ_64M) {
--		tlb_virt = round_down(kernstart_virt_addr, SZ_64M);
--		tlb_phys = round_down(kernstart_addr, SZ_64M);
-+		unsigned long tlb_virt = round_down(kernstart_virt_addr, SZ_64M);
-+		phys_addr_t tlb_phys = round_down(kernstart_addr, SZ_64M);
- 
- 		/* Create kernel map to relocate in */
- 		create_kaslr_tlb_entry(1, tlb_virt, tlb_phys);
--- 
-2.17.2
+Fair enough.
 
+
+> With repect to lparstat, the read interval is user-specified and just gets
+> passed onto sleep().
+
+Ok. So I guess currently you will be sending smp_call_function every
+time you read a PURR and SPURR. That number will now increase by 2
+times when we read idle_purr and idle_spurr.
+
+
+> 
+> - Naveen
+> 
+
+--
+Thanks and Regards
+gautham.
