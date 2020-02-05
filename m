@@ -2,74 +2,74 @@ Return-Path: <SRS0=GzqQ=3Z=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 763A8C35254
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 13:22:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 729E4C35254
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 13:24:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F2A162072B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 13:22:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2191E2072B
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 13:24:49 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="GB6fL4VP"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F2A162072B
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Q0kvsaxe"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2191E2072B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48CMgY2WhpzDqRF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2020 00:22:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48CMjq0YzgzDqR5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2020 00:24:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=205.139.110.120;
- helo=us-smtp-1.mimecast.com; envelope-from=david@redhat.com;
+ smtp.mailfrom=redhat.com (client-ip=205.139.110.61;
+ helo=us-smtp-delivery-1.mimecast.com; envelope-from=david@redhat.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=GB6fL4VP; 
+ header.s=mimecast20190719 header.b=Q0kvsaxe; 
  dkim-atps=neutral
-Received: from us-smtp-1.mimecast.com (us-smtp-delivery-1.mimecast.com
- [205.139.110.120])
+Received: from us-smtp-delivery-1.mimecast.com (us-smtp-2.mimecast.com
+ [205.139.110.61])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48CMb56nsvzDqRD
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2020 00:18:57 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48CMdX6WQNzDqRJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2020 00:21:03 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1580908734;
+ s=mimecast20190719; t=1580908861;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
- bh=hNc1+9pos96pDdq8HqhnC04/g8UEcltPv/djMZaPm1I=;
- b=GB6fL4VPyRVM3/Jodf2sAlSRI3nx42GQrSrsbN/qSdyzRA4Csf3TDLYg0+oNktf5C971Xm
- sV4hbVtMpKScAl0hvYK0wQ/TVNr8Trwk75oO6tSNQfbFuYVzCVcWHI/di7xj0BEfzNL4jh
- pTy0Mux6+W4FTYRLYKVHv1ORFec5SvU=
+ bh=k30HWzyr2VHDAxbOSWiUW17hdh6rPreuhEPLrt3uSUA=;
+ b=Q0kvsaxeEJRS/yQw36SJUQL1RNxcAzBKleehz+kECiFw5lZQDFkTumMSTFwY8rTboCm+On
+ KGwcI/rVoADfSyr7YXQQaLljLENewjbG+BdtFn4SJiL2EhFB2s+hM3lKgEATVyr8pzIKy8
+ Y+/V6uV0OVbsabP1LsoEwB0TqfwetHQ=
 Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
  [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-142-ojmElPlVNB2zczex8wCAwA-1; Wed, 05 Feb 2020 08:18:49 -0500
-X-MC-Unique: ojmElPlVNB2zczex8wCAwA-1
-Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
- [10.5.11.23])
+ us-mta-354-KTGJBMZwMwCDQ2xsLl-Lbg-1; Wed, 05 Feb 2020 08:20:58 -0500
+X-MC-Unique: KTGJBMZwMwCDQ2xsLl-Lbg-1
+Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.phx2.redhat.com
+ [10.5.11.22])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 8291B113784D;
- Wed,  5 Feb 2020 13:18:47 +0000 (UTC)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 767B210054E3;
+ Wed,  5 Feb 2020 13:20:56 +0000 (UTC)
 Received: from [10.36.116.217] (ovpn-116-217.ams2.redhat.com [10.36.116.217])
- by smtp.corp.redhat.com (Postfix) with ESMTP id A1A4019C7F;
- Wed,  5 Feb 2020 13:18:44 +0000 (UTC)
-Subject: Re: [PATCH v6 10/10] mm/memory_hotplug: Cleanup __remove_pages()
-From: David Hildenbrand <david@redhat.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 8BA3910018FF;
+ Wed,  5 Feb 2020 13:20:53 +0000 (UTC)
+Subject: Re: [PATCH v6 08/10] mm/memory_hotplug: Don't check for "all holes"
+ in shrink_zone_span()
+To: Baoquan He <bhe@redhat.com>
 References: <20191006085646.5768-1-david@redhat.com>
- <20191006085646.5768-11-david@redhat.com> <20200204094652.GE6494@linux>
- <5d698f94-af18-0714-bc97-14b6c520572c@redhat.com>
- <20200204131353.GJ22482@gate.crashing.org>
- <0e2f700c-b01b-8c16-99c2-2648967fc203@redhat.com>
- <20200205125149.GS22482@gate.crashing.org>
- <32e06c13-222c-4486-3914-df2807cf2a2b@redhat.com>
+ <20191006085646.5768-9-david@redhat.com>
+ <20200204142516.GD26758@MiWiFi-R3L-srv>
+ <e0006cc4-d448-89c6-38c0-51da7fc08715@redhat.com>
+ <20200205124329.GE26758@MiWiFi-R3L-srv>
+From: David Hildenbrand <david@redhat.com>
 Autocrypt: addr=david@redhat.com; prefer-encrypt=mutual; keydata=
  mQINBFXLn5EBEAC+zYvAFJxCBY9Tr1xZgcESmxVNI/0ffzE/ZQOiHJl6mGkmA1R7/uUpiCjJ
  dBrn+lhhOYjjNefFQou6478faXE6o2AhmebqT4KiQoUQFV4R7y1KMEKoSyy8hQaK1umALTdL
@@ -114,16 +114,16 @@ Autocrypt: addr=david@redhat.com; prefer-encrypt=mutual; keydata=
  njnuI31KBiLUks+paRkHQlFcgS2N3gkRBzH7xSZ+t7Re3jvXdXEzKBbQ+dC3lpJB0wPnyMcX
  FOTT3aZT7IgePkt5iC/BKBk3hqKteTnJFeVIT7EC+a6YUFg=
 Organization: Red Hat GmbH
-Message-ID: <8f4752f5-c676-f56e-8cd2-239898aba2fd@redhat.com>
-Date: Wed, 5 Feb 2020 14:18:43 +0100
+Message-ID: <cd353848-301a-025d-dd66-44d76e1bbc44@redhat.com>
+Date: Wed, 5 Feb 2020 14:20:52 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
  Thunderbird/68.3.1
 MIME-Version: 1.0
-In-Reply-To: <32e06c13-222c-4486-3914-df2807cf2a2b@redhat.com>
-Content-Type: text/plain; charset=windows-1252
+In-Reply-To: <20200205124329.GE26758@MiWiFi-R3L-srv>
+Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.22
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -146,16 +146,75 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> I'm sorry to have to correct you again for some corner cases:
-> 
-> ALIGN_UP(1, 4096) - 4096 = 0
-> 
-> Again, not as easy as it seems ...
-> 
+On 05.02.20 13:43, Baoquan He wrote:
+> On 02/04/20 at 03:42pm, David Hildenbrand wrote:
+>> On 04.02.20 15:25, Baoquan He wrote:
+>>> On 10/06/19 at 10:56am, David Hildenbrand wrote:
+>>>> If we have holes, the holes will automatically get detected and remo=
+ved
+>>>> once we remove the next bigger/smaller section. The extra checks can
+>>>> go.
+>>>>
+>>>> Cc: Andrew Morton <akpm@linux-foundation.org>
+>>>> Cc: Oscar Salvador <osalvador@suse.de>
+>>>> Cc: Michal Hocko <mhocko@suse.com>
+>>>> Cc: David Hildenbrand <david@redhat.com>
+>>>> Cc: Pavel Tatashin <pasha.tatashin@soleen.com>
+>>>> Cc: Dan Williams <dan.j.williams@intel.com>
+>>>> Cc: Wei Yang <richardw.yang@linux.intel.com>
+>>>> Signed-off-by: David Hildenbrand <david@redhat.com>
+>>>> ---
+>>>>  mm/memory_hotplug.c | 34 +++++++---------------------------
+>>>>  1 file changed, 7 insertions(+), 27 deletions(-)
+>>>>
+>>>> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+>>>> index f294918f7211..8dafa1ba8d9f 100644
+>>>> --- a/mm/memory_hotplug.c
+>>>> +++ b/mm/memory_hotplug.c
+>>>> @@ -393,6 +393,9 @@ static void shrink_zone_span(struct zone *zone, =
+unsigned long start_pfn,
+>>>>  		if (pfn) {
+>>>>  			zone->zone_start_pfn =3D pfn;
+>>>>  			zone->spanned_pages =3D zone_end_pfn - pfn;
+>>>> +		} else {
+>>>> +			zone->zone_start_pfn =3D 0;
+>>>> +			zone->spanned_pages =3D 0;
+>>>>  		}
+>>>>  	} else if (zone_end_pfn =3D=3D end_pfn) {
+>>>>  		/*
+>>>> @@ -405,34 +408,11 @@ static void shrink_zone_span(struct zone *zone=
+, unsigned long start_pfn,
+>>>>  					       start_pfn);
+>>>>  		if (pfn)
+>>>>  			zone->spanned_pages =3D pfn - zone_start_pfn + 1;
+>>>> +		else {
+>>>> +			zone->zone_start_pfn =3D 0;
+>>>> +			zone->spanned_pages =3D 0;
+>>>
+>>> Thinking in which case (zone_start_pfn !=3D start_pfn) and it comes h=
+ere.
+>>
+>> Could only happen in case the zone_start_pfn would have been "out of t=
+he
+>> zone already". If you ask me: unlikely :)
+>=20
+> Yeah, I also think it's unlikely to come here.
+>=20
+> The 'if (zone_start_pfn =3D=3D start_pfn)' checking also covers the cas=
+e
+> (zone_start_pfn =3D=3D start_pfn && zone_end_pfn =3D=3D end_pfn). So th=
+is
+> zone_start_pfn/spanned_pages resetting can be removed to avoid
+> confusion.
 
-Eh, wait, I'm messing up things. Will double check :)
+At least I would find it more confusing without it (or want a comment
+explaining why this does not have to be handled and why the !pfn case is
+not possible).
 
--- 
+Anyhow, that patch is already upstream and I don't consider this high
+priority. Thanks :)
+
+--=20
 Thanks,
 
 David / dhildenb
