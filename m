@@ -2,100 +2,55 @@ Return-Path: <SRS0=GzqQ=3Z=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82BE2C35249
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 08:09:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D541CC33CA1
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 08:58:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 79DC12082E
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 08:09:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 79DC12082E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id D24EB20659
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 08:58:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D24EB20659
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48CDkR4CmCzDqRM
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 19:09:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=naveen.n.rao@linux.vnet.ibm.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48CFpm6sVxzDqRn
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 19:58:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.helo=mga12.intel.com (client-ip=192.55.52.136; helo=mga12.intel.com;
+ envelope-from=richardw.yang@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ header.from=linux.intel.com
+Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48CDhD6rcYzDqLW
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Feb 2020 19:07:56 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 01587XtS073716
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Feb 2020 03:07:53 -0500
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2xyhn3w9ah-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Feb 2020 03:07:53 -0500
-Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 5 Feb 2020 08:07:50 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 5 Feb 2020 08:07:48 -0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 01587lc145875350
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 5 Feb 2020 08:07:47 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0D01EA404D;
- Wed,  5 Feb 2020 08:07:47 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id AE019A4059;
- Wed,  5 Feb 2020 08:07:46 +0000 (GMT)
-Received: from localhost (unknown [9.124.35.138])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed,  5 Feb 2020 08:07:46 +0000 (GMT)
-Date: Wed, 05 Feb 2020 13:37:45 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/3] powerpc/sysfs: Show idle_purr and idle_spurr for
- every CPU
-To: Christophe Leroy <christophe.leroy@c-s.fr>, "Gautham R. Shenoy"
- <ego@linux.vnet.ibm.com>, Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Nathan Lynch <nathanl@linux.ibm.com>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Tyrel Datwyler
- <tyreld@linux.ibm.com>
-References: <1574856072-30972-1-git-send-email-ego@linux.vnet.ibm.com>
- <1574856072-30972-3-git-send-email-ego@linux.vnet.ibm.com>
- <b26cedb0-8b12-71b6-63d2-990186cd49e5@c-s.fr>
-In-Reply-To: <b26cedb0-8b12-71b6-63d2-990186cd49e5@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48CFmx21SwzDqDr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Feb 2020 19:56:59 +1100 (AEDT)
+X-Amp-Result: UNSCANNABLE
+X-Amp-File-Uploaded: False
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+ by fmsmga106.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 05 Feb 2020 00:56:55 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.70,405,1574150400"; d="scan'208";a="279310541"
+Received: from richard.sh.intel.com (HELO localhost) ([10.239.159.54])
+ by FMSMGA003.fm.intel.com with ESMTP; 05 Feb 2020 00:56:53 -0800
+Date: Wed, 5 Feb 2020 16:57:09 +0800
+From: Wei Yang <richardw.yang@linux.intel.com>
+To: David Hildenbrand <david@redhat.com>
+Subject: Re: [PATCH v6 07/10] mm/memory_hotplug: We always have a zone in
+ find_(smallest|biggest)_section_pfn
+Message-ID: <20200205085709.GA24162@richard>
+References: <20191006085646.5768-1-david@redhat.com>
+ <20191006085646.5768-8-david@redhat.com>
 MIME-Version: 1.0
-User-Agent: astroid/v0.15-13-gb675b421 (https://github.com/astroidmail/astroid)
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-TM-AS-GCONF: 00
-x-cbid: 20020508-0016-0000-0000-000002E3D0EB
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20020508-0017-0000-0000-00003346AFF0
-Message-Id: <1580889776.690kj4ppmj.naveen@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
- definitions=2020-02-05_02:2020-02-04,
- 2020-02-05 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015
- lowpriorityscore=0 phishscore=0 mlxlogscore=999 impostorscore=0 mlxscore=0
- suspectscore=0 priorityscore=1501 malwarescore=0 bulkscore=0 spamscore=0
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2001150001 definitions=main-2002050066
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20191006085646.5768-8-david@redhat.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,39 +62,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Reply-To: Wei Yang <richardw.yang@linux.intel.com>
+Cc: linux-s390@vger.kernel.org, Michal Hocko <mhocko@suse.com>,
+ linux-ia64@vger.kernel.org, Pavel Tatashin <pasha.tatashin@soleen.com>,
+ linux-sh@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, Wei Yang <richardw.yang@linux.intel.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Dan Williams <dan.j.williams@intel.com>, linux-arm-kernel@lists.infradead.org,
+ Oscar Salvador <osalvador@suse.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy wrote:
->=20
->=20
-> Le 27/11/2019 =C3=A0 13:01, Gautham R. Shenoy a =C3=A9crit=C2=A0:
->> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
->>=20
->> On Pseries LPARs, to calculate utilization, we need to know the
->> [S]PURR ticks when the CPUs were busy or idle.
->>=20
->> The total PURR and SPURR ticks are already exposed via the per-cpu
->> sysfs files /sys/devices/system/cpu/cpuX/purr and
->> /sys/devices/system/cpu/cpuX/spurr.
->>=20
->> This patch adds support for exposing the idle PURR and SPURR ticks via
->> /sys/devices/system/cpu/cpuX/idle_purr and
->> /sys/devices/system/cpu/cpuX/idle_spurr.
->=20
-> Might be a candid question, but I see in arch/powerpc/kernel/time.c that=20
-> PURR/SPURR are already taken into account by the kernel to calculate=20
-> utilisation when CONFIG_VIRT_CPU_ACCOUNTING_NATIVE is selected.
->=20
-> As far as I understand, you are wanting to expose this to userland to=20
-> redo the calculation there. What is wrong with the values reported by=20
-> the kernel ?
+On Sun, Oct 06, 2019 at 10:56:43AM +0200, David Hildenbrand wrote:
+>With shrink_pgdat_span() out of the way, we now always have a valid
+>zone.
+>
+>Cc: Andrew Morton <akpm@linux-foundation.org>
+>Cc: Oscar Salvador <osalvador@suse.de>
+>Cc: David Hildenbrand <david@redhat.com>
+>Cc: Michal Hocko <mhocko@suse.com>
+>Cc: Pavel Tatashin <pasha.tatashin@soleen.com>
+>Cc: Dan Williams <dan.j.williams@intel.com>
+>Cc: Wei Yang <richardw.yang@linux.intel.com>
+>Signed-off-by: David Hildenbrand <david@redhat.com>
 
-As you point out, it is only done with=20
-CONFIG_VIRT_CPU_ACCOUNTING_NATIVE, but isn't available with NO_HZ_FULL,=20
-which happens to be the distro default nowadays.
+Reviewed-by: Wei Yang <richardw.yang@linux.intel.com>
 
-- Naveen
 
+-- 
+Wei Yang
+Help you, Help me
