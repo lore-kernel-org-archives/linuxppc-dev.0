@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 33F67C35249
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 03:21:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9D9CC35249
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 03:23:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E01B02085B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 03:21:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E01B02085B
+	by mail.kernel.org (Postfix) with ESMTPS id 3C308214AF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 03:23:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3C308214AF
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48C6Kf3zyYzDqQF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 14:21:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48C6MR6Nh8zDqRC
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2020 14:22:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=huawei.com (client-ip=45.249.212.35; helo=huawei.com;
  envelope-from=yanaijie@huawei.com; receiver=<UNKNOWN>)
@@ -28,24 +28,24 @@ Authentication-Results: lists.ozlabs.org;
 Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48C6FP5CN4zDqGx
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Feb 2020 14:17:45 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48C6FT713dzDqMX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Feb 2020 14:17:49 +1100 (AEDT)
 Received: from DGGEMS406-HUB.china.huawei.com (unknown [172.30.72.60])
- by Forcepoint Email with ESMTP id 9D844A9A9D028905D014;
+ by Forcepoint Email with ESMTP id A41588CE0A3BFBCBC63E;
  Wed,  5 Feb 2020 10:56:41 +0800 (CST)
 Received: from huawei.com (10.175.124.28) by DGGEMS406-HUB.china.huawei.com
  (10.3.19.206) with Microsoft SMTP Server id 14.3.439.0; Wed, 5 Feb 2020
- 10:56:31 +0800
+ 10:56:32 +0800
 From: Jason Yan <yanaijie@huawei.com>
 To: <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
  <diana.craciun@nxp.com>, <christophe.leroy@c-s.fr>,
  <benh@kernel.crashing.org>, <paulus@samba.org>, <npiggin@gmail.com>,
  <keescook@chromium.org>, <kernel-hardening@lists.openwall.com>,
  <oss@buserror.net>
-Subject: [PATCH v2 5/6] powerpc/fsl_booke/64: clear the original kernel if
- randomized
-Date: Wed, 5 Feb 2020 10:55:26 +0800
-Message-ID: <20200205025527.28640-6-yanaijie@huawei.com>
+Subject: [PATCH v2 6/6] powerpc/fsl_booke/kaslr: rename kaslr-booke32.rst to
+ kaslr-booke.rst and add 64bit part
+Date: Wed, 5 Feb 2020 10:55:27 +0800
+Message-ID: <20200205025527.28640-7-yanaijie@huawei.com>
 X-Mailer: git-send-email 2.17.2
 In-Reply-To: <20200205025527.28640-1-yanaijie@huawei.com>
 References: <20200205025527.28640-1-yanaijie@huawei.com>
@@ -70,7 +70,8 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The original kernel still exists in the memory, clear it now.
+Now we support both 32 and 64 bit KASLR for fsl booke. Add document for
+64 bit part and rename kaslr-booke32.rst to kaslr-booke.rst.
 
 Signed-off-by: Jason Yan <yanaijie@huawei.com>
 Cc: Scott Wood <oss@buserror.net>
@@ -82,25 +83,70 @@ Cc: Paul Mackerras <paulus@samba.org>
 Cc: Nicholas Piggin <npiggin@gmail.com>
 Cc: Kees Cook <keescook@chromium.org>
 ---
- arch/powerpc/mm/nohash/kaslr_booke.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ .../{kaslr-booke32.rst => kaslr-booke.rst}    | 35 ++++++++++++++++---
+ 1 file changed, 31 insertions(+), 4 deletions(-)
+ rename Documentation/powerpc/{kaslr-booke32.rst => kaslr-booke.rst} (59%)
 
-diff --git a/arch/powerpc/mm/nohash/kaslr_booke.c b/arch/powerpc/mm/nohash/kaslr_booke.c
-index c6f5c1db1394..ed1277059368 100644
---- a/arch/powerpc/mm/nohash/kaslr_booke.c
-+++ b/arch/powerpc/mm/nohash/kaslr_booke.c
-@@ -378,8 +378,10 @@ notrace void __init kaslr_early_init(void *dt_ptr, phys_addr_t size)
- 	unsigned int *__kaslr_offset = (unsigned int *)(KERNELBASE + 0x58);
- 	unsigned int *__run_at_load = (unsigned int *)(KERNELBASE + 0x5c);
+diff --git a/Documentation/powerpc/kaslr-booke32.rst b/Documentation/powerpc/kaslr-booke.rst
+similarity index 59%
+rename from Documentation/powerpc/kaslr-booke32.rst
+rename to Documentation/powerpc/kaslr-booke.rst
+index 8b259fdfdf03..42121fed8249 100644
+--- a/Documentation/powerpc/kaslr-booke32.rst
++++ b/Documentation/powerpc/kaslr-booke.rst
+@@ -1,15 +1,18 @@
+ .. SPDX-License-Identifier: GPL-2.0
  
--	if (*__run_at_load == 1)
-+	if (*__run_at_load == 1) {
-+		kaslr_late_init();
- 		return;
-+	}
+-===========================
+-KASLR for Freescale BookE32
+-===========================
++=========================
++KASLR for Freescale BookE
++=========================
  
- 	/* Setup flat device-tree pointer */
- 	initial_boot_params = dt_ptr;
+ The word KASLR stands for Kernel Address Space Layout Randomization.
+ 
+ This document tries to explain the implementation of the KASLR for
+-Freescale BookE32. KASLR is a security feature that deters exploit
++Freescale BookE. KASLR is a security feature that deters exploit
+ attempts relying on knowledge of the location of kernel internals.
+ 
++KASLR for Freescale BookE32
++-------------------------
++
+ Since CONFIG_RELOCATABLE has already supported, what we need to do is
+ map or copy kernel to a proper place and relocate. Freescale Book-E
+ parts expect lowmem to be mapped by fixed TLB entries(TLB1). The TLB1
+@@ -38,5 +41,29 @@ bit of the entropy to decide the index of the 64M zone. Then we chose a
+ 
+                               kernstart_virt_addr
+ 
++
++KASLR for Freescale BookE64
++---------------------------
++
++The implementation for Freescale BookE64 is similar as BookE32. One
++difference is that Freescale BookE64 set up a TLB mapping of 1G during
++booting. Another difference is that ppc64 needs the kernel to be
++64K-aligned. So we can randomize the kernel in this 1G mapping and make
++it 64K-aligned. This can save some code to creat another TLB map at early
++boot. The disadvantage is that we only have about 1G/64K = 16384 slots to
++put the kernel in::
++
++    KERNELBASE
++
++          64K                     |--> kernel <--|
++           |                      |              |
++        +--+--+--+    +--+--+--+--+--+--+--+--+--+    +--+--+
++        |  |  |  |....|  |  |  |  |  |  |  |  |  |....|  |  |
++        +--+--+--+    +--+--+--+--+--+--+--+--+--+    +--+--+
++        |                         |                        1G
++        |----->   offset    <-----|
++
++                              kernstart_virt_addr
++
+ To enable KASLR, set CONFIG_RANDOMIZE_BASE = y. If KASLR is enable and you
+ want to disable it at runtime, add "nokaslr" to the kernel cmdline.
 -- 
 2.17.2
 
