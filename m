@@ -2,24 +2,23 @@ Return-Path: <SRS0=dZYZ=32=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04E93C35247
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2020 03:02:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2816CC35247
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2020 03:03:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7713020720
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2020 03:02:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7713020720
+	by mail.kernel.org (Postfix) with ESMTPS id CE76520720
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2020 03:03:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CE76520720
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48Cjrw5z3hzDqTq
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2020 14:02:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48Cjtm5tJWzDqVT
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2020 14:03:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=huawei.com (client-ip=45.249.212.35; helo=huawei.com;
  envelope-from=yanaijie@huawei.com; receiver=<UNKNOWN>)
@@ -28,27 +27,24 @@ Authentication-Results: lists.ozlabs.org;
 Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48Cjp83xQYzDqTL
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48Cjp8452xzDqTM
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2020 13:59:41 +1100 (AEDT)
-Received: from DGGEMS401-HUB.china.huawei.com (unknown [172.30.72.59])
- by Forcepoint Email with ESMTP id 52DF747A5013EB16FEA8;
+Received: from DGGEMS401-HUB.china.huawei.com (unknown [172.30.72.58])
+ by Forcepoint Email with ESMTP id 2D99B7C3F8276CE31737;
  Thu,  6 Feb 2020 10:59:35 +0800 (CST)
 Received: from huawei.com (10.175.124.28) by DGGEMS401-HUB.china.huawei.com
  (10.3.19.201) with Microsoft SMTP Server id 14.3.439.0; Thu, 6 Feb 2020
- 10:59:27 +0800
+ 10:59:25 +0800
 From: Jason Yan <yanaijie@huawei.com>
 To: <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
  <diana.craciun@nxp.com>, <christophe.leroy@c-s.fr>,
  <benh@kernel.crashing.org>, <paulus@samba.org>, <npiggin@gmail.com>,
  <keescook@chromium.org>, <kernel-hardening@lists.openwall.com>,
  <oss@buserror.net>
-Subject: [PATCH v3 2/6] powerpc/fsl_booke/64: introduce reloc_kernel_entry()
- helper
-Date: Thu, 6 Feb 2020 10:58:21 +0800
-Message-ID: <20200206025825.22934-3-yanaijie@huawei.com>
+Subject: [PATCH v3 0/6] implement KASLR for powerpc/fsl_booke/64
+Date: Thu, 6 Feb 2020 10:58:19 +0800
+Message-ID: <20200206025825.22934-1-yanaijie@huawei.com>
 X-Mailer: git-send-email 2.17.2
-In-Reply-To: <20200206025825.22934-1-yanaijie@huawei.com>
-References: <20200206025825.22934-1-yanaijie@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-Originating-IP: [10.175.124.28]
@@ -70,61 +66,60 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Like the 32bit code, we introduce reloc_kernel_entry() helper to prepare
-for the KASLR 64bit version. And move the C declaration of this function
-out of CONFIG_PPC32 and use long instead of int for the parameter 'addr'.
+This is a try to implement KASLR for Freescale BookE64 which is based on
+my earlier implementation for Freescale BookE32:
+https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=131718
 
-Signed-off-by: Jason Yan <yanaijie@huawei.com>
-Cc: Scott Wood <oss@buserror.net>
-Cc: Diana Craciun <diana.craciun@nxp.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Kees Cook <keescook@chromium.org>
----
- arch/powerpc/kernel/exceptions-64e.S | 13 +++++++++++++
- arch/powerpc/mm/mmu_decl.h           |  3 ++-
- 2 files changed, 15 insertions(+), 1 deletion(-)
+The implementation for Freescale BookE64 is similar as BookE32. One
+difference is that Freescale BookE64 set up a TLB mapping of 1G during
+booting. Another difference is that ppc64 needs the kernel to be
+64K-aligned. So we can randomize the kernel in this 1G mapping and make
+it 64K-aligned. This can save some code to creat another TLB map at
+early boot. The disadvantage is that we only have about 1G/64K = 16384
+slots to put the kernel in.
 
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index e4076e3c072d..1b9b174bee86 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -1679,3 +1679,16 @@ _GLOBAL(setup_ehv_ivors)
- _GLOBAL(setup_lrat_ivor)
- 	SET_IVOR(42, 0x340) /* LRAT Error */
- 	blr
-+
-+/*
-+ * Return to the start of the relocated kernel and run again
-+ * r3 - virtual address of fdt
-+ * r4 - entry of the kernel
-+ */
-+_GLOBAL(reloc_kernel_entry)
-+	mfmsr	r7
-+	rlwinm	r7, r7, 0, ~(MSR_IS | MSR_DS)
-+
-+	mtspr	SPRN_SRR0,r4
-+	mtspr	SPRN_SRR1,r7
-+	rfi
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index 8e99649c24fc..3e1c85c7d10b 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -140,9 +140,10 @@ extern void adjust_total_lowmem(void);
- extern int switch_to_as1(void);
- extern void restore_to_as0(int esel, int offset, void *dt_ptr, int bootcpu);
- void create_kaslr_tlb_entry(int entry, unsigned long virt, phys_addr_t phys);
--void reloc_kernel_entry(void *fdt, int addr);
- extern int is_second_reloc;
- #endif
-+
-+void reloc_kernel_entry(void *fdt, long addr);
- extern void loadcam_entry(unsigned int index);
- extern void loadcam_multi(int first_idx, int num, int tmp_idx);
- 
+    KERNELBASE
+
+          64K                     |--> kernel <--|
+           |                      |              |
+        +--+--+--+    +--+--+--+--+--+--+--+--+--+    +--+--+
+        |  |  |  |....|  |  |  |  |  |  |  |  |  |....|  |  |
+        +--+--+--+    +--+--+--+--+--+--+--+--+--+    +--+--+
+        |                         |                        1G
+        |----->   offset    <-----|
+
+                              kernstart_virt_addr
+
+I'm not sure if the slot numbers is enough or the design has any
+defects. If you have some better ideas, I would be happy to hear that.
+
+Thank you all.
+
+v2->v3:
+  Fix build error when KASLR is disabled.
+v1->v2:
+  Add __kaslr_offset for the secondary cpu boot up.
+
+Jason Yan (6):
+  powerpc/fsl_booke/kaslr: refactor kaslr_legal_offset() and
+    kaslr_early_init()
+  powerpc/fsl_booke/64: introduce reloc_kernel_entry() helper
+  powerpc/fsl_booke/64: implement KASLR for fsl_booke64
+  powerpc/fsl_booke/64: do not clear the BSS for the second pass
+  powerpc/fsl_booke/64: clear the original kernel if randomized
+  powerpc/fsl_booke/kaslr: rename kaslr-booke32.rst to kaslr-booke.rst
+    and add 64bit part
+
+ .../{kaslr-booke32.rst => kaslr-booke.rst}    | 35 +++++++--
+ arch/powerpc/Kconfig                          |  2 +-
+ arch/powerpc/kernel/exceptions-64e.S          | 23 ++++++
+ arch/powerpc/kernel/head_64.S                 | 14 ++++
+ arch/powerpc/kernel/setup_64.c                |  4 +-
+ arch/powerpc/mm/mmu_decl.h                    | 19 ++---
+ arch/powerpc/mm/nohash/kaslr_booke.c          | 71 +++++++++++++------
+ 7 files changed, 132 insertions(+), 36 deletions(-)
+ rename Documentation/powerpc/{kaslr-booke32.rst => kaslr-booke.rst} (59%)
+
 -- 
 2.17.2
 
