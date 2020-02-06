@@ -2,87 +2,116 @@ Return-Path: <SRS0=dZYZ=32=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 803B6C35247
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2020 20:33:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46E50C35247
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2020 22:07:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2D959214AF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2020 20:33:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id AA24F20658
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2020 22:07:51 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="t31A+SbT"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2D959214AF
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="BMnv4GKJ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AA24F20658
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48D9B54z9dzDqcR
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Feb 2020 07:33:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::644;
- helo=mail-pl1-x644.google.com; envelope-from=groeck7@gmail.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48DCGr2fb0zDqSS
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Feb 2020 09:07:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=roeck-us.net
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=t31A+SbT; dkim-atps=neutral
-Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
- [IPv6:2607:f8b0:4864:20::644])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=40.107.20.78; helo=eur05-db8-obe.outbound.protection.outlook.com;
+ envelope-from=leoyang.li@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256
+ header.s=selector2 header.b=BMnv4GKJ; 
+ dkim-atps=neutral
+Received: from EUR05-DB8-obe.outbound.protection.outlook.com
+ (mail-db8eur05on2078.outbound.protection.outlook.com [40.107.20.78])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48D98B4nkhzDqYM
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2020 07:31:52 +1100 (AEDT)
-Received: by mail-pl1-x644.google.com with SMTP id c23so26660plz.4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Feb 2020 12:31:52 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=sender:date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=mPfBWVjSrQlutcw1BrAjL4XXYPCEqBan2GAZ0ciyj6I=;
- b=t31A+SbTqXDM3lEZg4KVayrqxz74VfDSMz0w2WvaMJXsYL+/wwwhrDYGEX2qgqmKyS
- T9ENHQjxDjxiYZAQ35oSiJpV/SQn15eayrkfZJQv9jG0sXDmaERveWlSnAjoDYNh+bbx
- WDpQAd2lWiS0RqL1JIdMx+3Cc9HT6I8SWPZK/Hlt3ZZo16vX0lZ5PD0rmELFccZh70an
- UC8dwfmSlUYELL5HjybT4BbBLDBT20kVPbo5MOWC9WI/bxqb77W4J1rv0/AIdMvHeTQG
- sXirGfv/kByGfH7S/dFS+IkZMUn+NgMFrWwyWWKgJBAXYnmDnVlBjkhI1ILmbIp1rPQC
- IYtQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:sender:date:from:to:cc:subject:message-id
- :references:mime-version:content-disposition:in-reply-to:user-agent;
- bh=mPfBWVjSrQlutcw1BrAjL4XXYPCEqBan2GAZ0ciyj6I=;
- b=DgU2SEkQvq0TY+gbB6znUx29bBfY8yAHhlzK1t+uJ5IG6YHgst7879GfJ3vMkIztGg
- NtsnK1IePeVNItDO9p65/SINx6vAv5u3qvlo3Yz66RAOZRSW549R3IPmYVB+mOi3t7l5
- ycrzcgzZu+iSv9II+JwZdB8ye+oV157e2EAdoJ18R/CaHVa9BJiPbVCgLuHUGxo/Uo2N
- 8YUjrO6w2dRuC3btqh6m2GYE4xVoRCGKH1sNvg6xmqV7ag4YvOOqDzEaP7K+vnNCODnK
- zr570nrl2qHBPLiQbRlF3a2I9/Hm95QMrw5KQlje9AhmgAiavsDyjBmmmJ05izl6Kmns
- HGNQ==
-X-Gm-Message-State: APjAAAVtWw1c8AimunvgBw3NW5A4yPgqWPfdA6PXuqktYx6LapYqD2V2
- 5q1ukhbDtLXqz+h80/rclBo=
-X-Google-Smtp-Source: APXvYqzUg01IbqeYCsdPP/DQ0kp6K10e48GyKhji0m1indNoTWW7YrDDzFrVl7ixXMHgdWzthxpSVQ==
-X-Received: by 2002:a17:90a:a881:: with SMTP id
- h1mr6727767pjq.50.1581021109086; 
- Thu, 06 Feb 2020 12:31:49 -0800 (PST)
-Received: from localhost ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
- by smtp.gmail.com with ESMTPSA id h13sm161679pjc.9.2020.02.06.12.31.47
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 06 Feb 2020 12:31:48 -0800 (PST)
-Date: Thu, 6 Feb 2020 12:31:46 -0800
-From: Guenter Roeck <linux@roeck-us.net>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH v5 17/17] powerpc/32s: Enable CONFIG_VMAP_STACK
-Message-ID: <20200206203146.GA23248@roeck-us.net>
-References: <cover.1576916812.git.christophe.leroy@c-s.fr>
- <2e2509a242fd5f3e23df4a06530c18060c4d321e.1576916812.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48DCD96Y7gzDq9T
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2020 09:05:26 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=Jt+kP+ui1kZmQVTRzLzkvLtY/OIE8V45WB3VcIahHak8LX+nNTuFFMf5rd0WE9GAeaECoet8IEcaelSo9Nm3iIHJoUQt6UvInwpZZJC/tT1o1hCL9261bJ1256T1g51A09lNknCxanpiR4OZtE8M84mreRShTt9L8FSR5RzZh4/JpQKbjmqZiLhK2ZOWntmzJDDZfjAOqkHQPhthZ0qHdhf68qXGQ0dxGvSWCzrBGvDTa5O2X5rCKTL3LtlhlJ9g2bq3MTMeUxD+2FJyIBIS0H9MI43HgteWAxZAr7NQqDjI0eOeglRnYf0WznVSznO8SKQYyZQo51AdS0bLbzLNSA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=qdR4gpIVxJd550kKdP/INW3feEywfXEHvXdc41R5k/w=;
+ b=oY7455CFUjEd1JOVnvEV03ZtLIEC4D/004Q7o2PYTA7wW6eFcpATh+cP5KnQyjGgZB/5BcKp2Ml+Rhm2z6Yk8YxzrckoLRlMUEBdpPp8r1mbBTw0zR/OKEMoMC1TQ2Q9GMCQEDcqod2LYd04RIynkqiCvGPg/A6JNOhH4ouy4mpvyFeJ3iA0pFFbG1uwI7uB8BFlVpQ2yJwhZ6GqZYllmEJnpO9NYYG8l6EW98ieYpdWSS1tUzPJ9Treu47l7Tyn6UvVn59SKRHuj6izyvfEsXr2QEG1eGE9B50eN/EWV5BbT4ZN+ZaGXzBNpYu70tA8FIrryq12oneyQP3ejI/BRQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=qdR4gpIVxJd550kKdP/INW3feEywfXEHvXdc41R5k/w=;
+ b=BMnv4GKJix6xK6i34ZE7OjsGCzt8n0j7hTGxlc/y2UkrU3jQ4ZK/LAjQ5xbIZ/BQeFdQn0dqs4AxJtmIcw6nUGddreV4+aOI/OGSzxVlNqQvhe4x1AubAgmX1CNbVqak7P+G9qkSqI2NLYs/af3s6vHwJYjGZw4VmEgOQBCf9QI=
+Received: from VE1PR04MB6687.eurprd04.prod.outlook.com (20.179.234.30) by
+ VE1PR04MB6432.eurprd04.prod.outlook.com (20.179.234.85) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.2707.21; Thu, 6 Feb 2020 22:05:19 +0000
+Received: from VE1PR04MB6687.eurprd04.prod.outlook.com
+ ([fe80::b896:5bc0:c4dd:bd23]) by VE1PR04MB6687.eurprd04.prod.outlook.com
+ ([fe80::b896:5bc0:c4dd:bd23%2]) with mapi id 15.20.2686.036; Thu, 6 Feb 2020
+ 22:05:19 +0000
+From: Leo Li <leoyang.li@nxp.com>
+To: "Roy Pledge (OSS)" <roy.pledge@oss.nxp.com>, Youri Querry
+ <youri.querry_1@nxp.com>, Roy Pledge <roy.pledge@nxp.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, Ioana Ciornei
+ <ioana.ciornei@nxp.com>, Alexandru Marginean <alexandru.marginean@nxp.com>
+Subject: RE: [PATCH 0/3] soc: fsl: dpio: Enable QMAN batch enqueuing
+Thread-Topic: [PATCH 0/3] soc: fsl: dpio: Enable QMAN batch enqueuing
+Thread-Index: AQHVsQ3AyGczVLMI40Km2qz47OLo96gO+P6AgAAW+uA=
+Date: Thu, 6 Feb 2020 22:05:19 +0000
+Message-ID: <VE1PR04MB668700BA28E1E9DE514AD5488F1D0@VE1PR04MB6687.eurprd04.prod.outlook.com>
+References: <1576170032-3124-1-git-send-email-youri.querry_1@nxp.com>
+ <a46accbc-becf-ad23-8504-70ce619e2b11@oss.nxp.com>
+In-Reply-To: <a46accbc-becf-ad23-8504-70ce619e2b11@oss.nxp.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=leoyang.li@nxp.com; 
+x-originating-ip: [64.157.242.222]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-ht: Tenant
+x-ms-office365-filtering-correlation-id: 0382b7c3-6a3c-4355-4cad-08d7ab50a7ef
+x-ms-traffictypediagnostic: VE1PR04MB6432:|VE1PR04MB6432:
+x-ms-exchange-transport-forked: True
+x-microsoft-antispam-prvs: <VE1PR04MB643236A60493745F840737C88F1D0@VE1PR04MB6432.eurprd04.prod.outlook.com>
+x-ms-oob-tlc-oobclassifiers: OLM:8882;
+x-forefront-prvs: 0305463112
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10009020)(4636009)(376002)(136003)(346002)(396003)(366004)(39860400002)(189003)(199004)(71200400001)(8936002)(8676002)(478600001)(81166006)(81156014)(76116006)(66946007)(64756008)(66446008)(66476007)(66556008)(316002)(110136005)(7696005)(6636002)(33656002)(86362001)(6506007)(55016002)(186003)(53546011)(26005)(9686003)(5660300002)(2906002)(52536014);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:VE1PR04MB6432;
+ H:VE1PR04MB6687.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; MX:1; A:1; 
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: fr662aR0DVwp3goEk+SXzvkBd+dJGznF/JAq8qis15MrrrQkM9QuzOWq1QEmFpacH3BsxL6Az+aAZBbilyr8QjoZZoBNdbOYaMITZwjKSpb3+tBdwmX8I1BJO13fmbvhJywXQ0LzDYqFt4wm05YTD/CTfZvIfdrMz+abvNd0fOIT0G5eGg+ffDOCPZSOxUCtQJ5Pk6Pp9/WUsMgqtHYniwMlts+EofzkpIw9AMcLXLaVDdjO8ItaIpkBEHeRfY4E9a8RXtII8ryIe+Kc/DpnPxli9YgngsAacgb0sPw+SfQ6EhK+JJ2vzNr2KLur/X2UuB+hjleNkIArvMXTSUV2w/w09kYzF9KzjW7jM3myB15EmGEuRJyq+Ipit/FLlwidZA9tNfLtFasNQQuJRO3gYBonL/t4Fa8V1yREycjrIZdLxKf9AWozKzzyu4iu7WSd
+x-ms-exchange-antispam-messagedata: TTvY70DYDQ7jBSXvSMhHYHoNiqHsLSXEYSFXELJmzTd7PcjalPwUH+v2z0XL7UkTkY1jxEP5iB/NDUcDRhAoDsR2j9e1CLI14eGU62Y3mIfDnkus0tqe02/K8+mvM9QDm4tqqzxqD8t0LlOmJJM9og==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2e2509a242fd5f3e23df4a06530c18060c4d321e.1576916812.git.christophe.leroy@c-s.fr>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 0382b7c3-6a3c-4355-4cad-08d7ab50a7ef
+X-MS-Exchange-CrossTenant-originalarrivaltime: 06 Feb 2020 22:05:19.8266 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: mH2645N//jIobiWvbF/TsSmdqlVR2s+Y8YPAEaMynyfJuQ1DbwZQzYdiaZzgD3bpqZ5sfoTasZEo2b63uNlbDw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VE1PR04MB6432
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,55 +123,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Dec 21, 2019 at 08:32:38AM +0000, Christophe Leroy wrote:
-> A few changes to retrieve DAR and DSISR from struct regs
-> instead of retrieving them directly, as they may have
-> changed due to a TLB miss.
-> 
-> Also modifies hash_page() and friends to work with virtual
-> data addresses instead of physical ones. Same on load_up_fpu()
-> and load_up_altivec().
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-
-This patch results in qemu boot failures (mac99 with pmac32_defconfig).
-Images fail silently; there is no console output. Reverting the patch
-fixes the problem. Bisect log is attached below.
-
-Assuming this was tested on real hardware, am I correct to assume that qemu
-for ppc32 (more specifically, qemu's mac99 and g3beige machines) no longer
-works with the upstream kernel ?
-
-Thanks,
-Guenter
-
----
-# bad: [33b40134e5cfbbccad7f3040d1919889537a3df7] Merge git://git.kernel.org/pub/scm/linux/kernel/git/netdev/net
-# good: [d4e9056daedca3891414fe3c91de3449a5dad0f2] initramfs: do not show compression mode choice if INITRAMFS_SOURCE is empty
-git bisect start '33b40134e5cf' 'd4e9056daedc'
-# good: [9717c1cea16e3eae81ca226f4c3670bb799b61ad] Merge tag 'drm-next-2020-02-04' of git://anongit.freedesktop.org/drm/drm
-git bisect good 9717c1cea16e3eae81ca226f4c3670bb799b61ad
-# bad: [4c25df5640ae6e4491ee2c50d3f70c1559ef037d] Merge branch 'topic/user-access-begin' into next
-git bisect bad 4c25df5640ae6e4491ee2c50d3f70c1559ef037d
-# good: [846a17a53aeeee426cbc1252f517a6660eab1427] powerpc/powernv: Use common code for the symbol_map export
-git bisect good 846a17a53aeeee426cbc1252f517a6660eab1427
-# good: [afe1ec5ab83029baf0f8368a255dc6b998bde576] powerpc/8xx: Split breakpoint exception
-git bisect good afe1ec5ab83029baf0f8368a255dc6b998bde576
-# bad: [43e76cd368fbb67e767da5363ffeaa3989993c8c] powerpc: Do not consider weak unresolved symbol relocations as bad
-git bisect bad 43e76cd368fbb67e767da5363ffeaa3989993c8c
-# bad: [af1725d2493dcad4eeb7e63141678181fcd8a2ff] powerpc/kconfig: Move CONFIG_PPC32 into Kconfig.cputype
-git bisect bad af1725d2493dcad4eeb7e63141678181fcd8a2ff
-# good: [94dd54c51a410b9ffa6356c3ed2ab0317f998ded] powerpc/32s: Avoid crossing page boundary while changing SRR0/1.
-git bisect good 94dd54c51a410b9ffa6356c3ed2ab0317f998ded
-# bad: [0f9aee0cb9da7db7d96f63cfa2dc5e4f1bffeb87] powerpc/mm: Don't log user reads to 0xffffffff
-git bisect bad 0f9aee0cb9da7db7d96f63cfa2dc5e4f1bffeb87
-# bad: [cd08f109e26231b279bcc0388428afcac6408ec6] powerpc/32s: Enable CONFIG_VMAP_STACK
-git bisect bad cd08f109e26231b279bcc0388428afcac6408ec6
-# first bad commit: [cd08f109e26231b279bcc0388428afcac6408ec6] powerpc/32s: Enable CONFIG_VMAP_STACK
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUm95IFBsZWRnZSAoT1NT
+KSA8cm95LnBsZWRnZUBvc3MubnhwLmNvbT4NCj4gU2VudDogVGh1cnNkYXksIEZlYnJ1YXJ5IDYs
+IDIwMjAgMjo0MCBQTQ0KPiBUbzogWW91cmkgUXVlcnJ5IDx5b3VyaS5xdWVycnlfMUBueHAuY29t
+PjsgUm95IFBsZWRnZQ0KPiA8cm95LnBsZWRnZUBueHAuY29tPjsgTGVvIExpIDxsZW95YW5nLmxp
+QG54cC5jb20+OyBsaW51eC0NCj4ga2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2
+QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LWFybS0NCj4ga2VybmVsQGxpc3RzLmluZnJhZGVhZC5v
+cmc7IElvYW5hIENpb3JuZWkgPGlvYW5hLmNpb3JuZWlAbnhwLmNvbT47DQo+IEFsZXhhbmRydSBN
+YXJnaW5lYW4gPGFsZXhhbmRydS5tYXJnaW5lYW5AbnhwLmNvbT4NCj4gU3ViamVjdDogUmU6IFtQ
+QVRDSCAwLzNdIHNvYzogZnNsOiBkcGlvOiBFbmFibGUgUU1BTiBiYXRjaCBlbnF1ZXVpbmcNCj4g
+DQo+IE9uIDEyLzEyLzIwMTkgMTI6MDEgUE0sIFlvdXJpIFF1ZXJyeSB3cm90ZToNCj4gPiBUaGlz
+IHBhdGNoIHNldCBjb25zaXN0cyBvZjoNCj4gPiAtIFdlIGFkZGVkIGFuIGludGVyZmFjZSB0byBl
+bnF1ZXVlIHNldmVyYWwgcGFja2V0cyBhdCBhIHRpbWUgYW5kDQo+ID4gICAgaW1wcm92ZSBwZXJm
+b3JtYW5jZS4NCj4gPiAtIE1ha2UgdGhlIGFsZ29yaXRobSBkZWNpc2lvbnMgb25jZSBhdCBpbml0
+aWFsaXphdGlvbiBhbmQgdXNlDQo+ID4gICAgZnVuY3Rpb24gcG9pbnRlcnMgdG8gaW1wcm92ZSBw
+ZXJmb3JtYW5jZS4NCj4gPiAtIFJlcGxhY2VkIHRoZSBRTUFOIGVucXVldWUgYXJyYXkgbW9kZSBh
+bGdvcml0aG0gd2l0aCBhIHJpbmcNCj4gPiAgICBtb2RlIGFsZ29yaXRobS4gVGhpcyBpcyB0byBt
+YWtlIHRoZSBlbnF1ZXVlIG9mIHNldmVyYWwgZnJhbWVzDQo+ID4gICAgYXQgYSB0aW1lIG1vcmUg
+ZWZmZWN0aXZlLg0KPiA+DQo+ID4gWW91cmkgUXVlcnJ5ICgzKToNCj4gPiAgICBzb2M6IGZzbDog
+ZHBpbzogQWRkaW5nIFFNQU4gbXVsdGlwbGUgZW5xdWV1ZSBpbnRlcmZhY2UuDQo+ID4gICAgc29j
+OiBmc2w6IGRwaW86IFFNQU4gcGVyZm9ybWFuY2UgaW1wcm92ZW1lbnQuIEZ1bmN0aW9uIHBvaW50
+ZXINCj4gPiAgICAgIGluZGlyZWN0aW9uLg0KPiA+ICAgIHNvYzogZnNsOiBkcGlvOiBSZXBsYWNl
+IFFNQU4gYXJyYXkgbW9kZSBieSByaW5nIG1vZGUgZW5xdWV1ZS4NCj4gPg0KPiA+ICAgZHJpdmVy
+cy9zb2MvZnNsL2RwaW8vZHBpby1zZXJ2aWNlLmMgfCAgNjkgKysrLQ0KPiA+ICAgZHJpdmVycy9z
+b2MvZnNsL2RwaW8vcWJtYW4tcG9ydGFsLmMgfCA3NjYNCj4gKysrKysrKysrKysrKysrKysrKysr
+KysrKysrKysrKystLS0tDQo+ID4gICBkcml2ZXJzL3NvYy9mc2wvZHBpby9xYm1hbi1wb3J0YWwu
+aCB8IDE1OCArKysrKysrLQ0KPiA+ICAgaW5jbHVkZS9zb2MvZnNsL2RwYWEyLWlvLmggICAgICAg
+ICAgfCAgIDYgKy0NCj4gPiAgIDQgZmlsZXMgY2hhbmdlZCwgOTA3IGluc2VydGlvbnMoKyksIDky
+IGRlbGV0aW9ucygtKQ0KPiA+DQo+IEFja2VkLWJ5OiBSb3kgUGxlZGdlIDxyb3kucGxlZGdlQG54
+cC5jb20+DQo+IA0KPiBMZW8gLSBjYW4geW91IGxvb2sgYXQgdGhpcyBzZXJpZXMgc28gd2UgY2Fu
+IGdldCBpdCBpbnRlZ3JhdGVkPyBUaGFua3MNCg0KU3VyZS4gIFRoYW5rcyBmb3IgdGhlIHJldmll
+dy4gIEkgd2lsbCBxdWV1ZSB0aGVtIHVwIGZvciB2NS43Lg0KDQpSZWdhcmRzLA0KTGVvDQo=
