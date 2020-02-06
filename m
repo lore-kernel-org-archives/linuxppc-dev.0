@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CFFAC2D0B1
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2020 08:13:19 +0000 (UTC)
-Received: from lists.ozlabs.org (unknown [203.11.71.2])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DF258C2D0B1
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2020 08:43:42 +0000 (UTC)
+Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 725CC20720
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2020 08:13:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5E0AC20838
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2020 08:43:42 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="d1QUD3BB"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 725CC20720
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="wkjVDANm"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5E0AC20838
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48Crlv6SvzzDqZw
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2020 19:13:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48CsQz5Yx5zDqZm
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2020 19:43:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -30,49 +30,50 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=d1QUD3BB; dkim-atps=neutral
+ header.s=mail header.b=wkjVDANm; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48CrkB1XCCzDqX7
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2020 19:11:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48CsP91qdLzDqQT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2020 19:42:05 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 48Crk336LBz9vBmq;
- Thu,  6 Feb 2020 09:11:39 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 48CsP44jN9z9vC0r;
+ Thu,  6 Feb 2020 09:42:00 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=d1QUD3BB; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=wkjVDANm; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id umdXHmaXceAF; Thu,  6 Feb 2020 09:11:39 +0100 (CET)
+ with ESMTP id 2lcOikkEyzC2; Thu,  6 Feb 2020 09:42:00 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 48Crk31hrdz9vBmm;
- Thu,  6 Feb 2020 09:11:39 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 48CsP43hxRz9vC0n;
+ Thu,  6 Feb 2020 09:42:00 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1580976699; bh=2NfLAdBOBoIleIWFQnQiqKoyTFtAwdYJziIrr8QnJqY=;
+ t=1580978520; bh=89Y1BOmA6wd1Qv1aLetSGC2roM1Y6EfmkaNgZWi44Bs=;
  h=From:Subject:To:Cc:Date:From;
- b=d1QUD3BBMiMmM2CIRGFCTURsOR0UonsCQqNFdwjV4PsIS/GdEXf6jeOpPt8L51O1a
- i8lDwnApbHsfTTi4e9QE2bZeearbiSbLrw/OgmWeLeVL1r+G6pH/UhNnyDdNYBvz+l
- 4b9AWV2oir8oSikMqsLmbDrIGdaj157ptTiUbUDw=
+ b=wkjVDANm8pbO0N3AKTilK3eCwh8bumOVKS5vfWKUrOYOvLd6ZaUIcXBSVPjSmTBF5
+ AxrjfEnc382MsgT0Ui6v/WgrJ5MrsZ8rI4UsEs44JCQQakGPkP1SYEk1kpDnL1SxOa
+ dJewoePk7SdTIQO0dfgnZdaPFmr2x/li07lS00j4=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 194708B863;
- Thu,  6 Feb 2020 09:11:40 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 5FC0A8B863;
+ Thu,  6 Feb 2020 09:42:01 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id An7XLW9YJR2C; Thu,  6 Feb 2020 09:11:40 +0100 (CET)
+ with ESMTP id MqOjk89_hQPt; Thu,  6 Feb 2020 09:42:01 +0100 (CET)
 Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B2D738B85F;
- Thu,  6 Feb 2020 09:11:39 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0CA8F8B85F;
+ Thu,  6 Feb 2020 09:42:01 +0100 (CET)
 Received: by localhost.localdomain (Postfix, from userid 0)
- id 64DAB652B7; Thu,  6 Feb 2020 08:11:39 +0000 (UTC)
-Message-Id: <668b6ff463849ceee01f726fbf3e7110687575ec.1580976576.git.christophe.leroy@c-s.fr>
+ id BCF98652B7; Thu,  6 Feb 2020 08:42:00 +0000 (UTC)
+Message-Id: <9a404a13c871c4bd0ba9ede68f69a1225180dd7e.1580978385.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] selftest/lkdtm: Don't pollute 'git status'
-To: Kees Cook <keescook@chromium.org>, Shuah Khan <skhan@linuxfoundation.org>
-Date: Thu,  6 Feb 2020 08:11:39 +0000 (UTC)
+Subject: [PATCH] selftests/vm: Fix map_hugetlb length used for testing read
+ and write
+To: Michael Ellerman <mpe@ellerman.id.au>, Shuah Khan <shuah@kernel.org>
+Date: Thu,  6 Feb 2020 08:42:00 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,37 +86,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Commit 46d1a0f03d66 ("selftests/lkdtm: Add tests for LKDTM targets")
-added generation of lkdtm test scripts.
+Commit fa7b9a805c79 ("tools/selftest/vm: allow choosing mem size and
+page size in map_hugetlb") added the possibility to change the size
+of memory mapped for the test, but left the read and write test using
+the default value. This is unnoticed when mapping a length greater
+than the default one, but segfaults otherwise.
 
-Ignore those generated scripts when performing 'git status'
+Fix read_bytes() and write_bytes() by giving them the real length.
 
-Fixes: 46d1a0f03d66 ("selftests/lkdtm: Add tests for LKDTM targets")
+Also fix the call to munmap().
+
+Fixes: fa7b9a805c79 ("tools/selftest/vm: allow choosing mem size and page size in map_hugetlb")
+Cc: stable@vger.kernel.org
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- .gitignore | 4 ++++
- 1 file changed, 4 insertions(+)
+ tools/testing/selftests/vm/map_hugetlb.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/.gitignore b/.gitignore
-index b849a72d69d5..bb05dce58f8e 100644
---- a/.gitignore
-+++ b/.gitignore
-@@ -100,6 +100,10 @@ modules.order
- /include/ksym/
- /arch/*/include/generated/
+diff --git a/tools/testing/selftests/vm/map_hugetlb.c b/tools/testing/selftests/vm/map_hugetlb.c
+index 5a2d7b8efc40..6af951900aa3 100644
+--- a/tools/testing/selftests/vm/map_hugetlb.c
++++ b/tools/testing/selftests/vm/map_hugetlb.c
+@@ -45,20 +45,20 @@ static void check_bytes(char *addr)
+ 	printf("First hex is %x\n", *((unsigned int *)addr));
+ }
  
-+# Generated lkdtm tests
-+/tools/testing/selftests/lkdtm/*.sh
-+!/tools/testing/selftests/lkdtm/run.sh
-+
- # stgit generated dirs
- patches-*
+-static void write_bytes(char *addr)
++static void write_bytes(char *addr, size_t length)
+ {
+ 	unsigned long i;
  
+-	for (i = 0; i < LENGTH; i++)
++	for (i = 0; i < length; i++)
+ 		*(addr + i) = (char)i;
+ }
+ 
+-static int read_bytes(char *addr)
++static int read_bytes(char *addr, size_t length)
+ {
+ 	unsigned long i;
+ 
+ 	check_bytes(addr);
+-	for (i = 0; i < LENGTH; i++)
++	for (i = 0; i < length; i++)
+ 		if (*(addr + i) != (char)i) {
+ 			printf("Mismatch at %lu\n", i);
+ 			return 1;
+@@ -96,11 +96,11 @@ int main(int argc, char **argv)
+ 
+ 	printf("Returned address is %p\n", addr);
+ 	check_bytes(addr);
+-	write_bytes(addr);
+-	ret = read_bytes(addr);
++	write_bytes(addr, length);
++	ret = read_bytes(addr, length);
+ 
+ 	/* munmap() length of MAP_HUGETLB memory must be hugepage aligned */
+-	if (munmap(addr, LENGTH)) {
++	if (munmap(addr, length)) {
+ 		perror("munmap");
+ 		exit(1);
+ 	}
 -- 
 2.25.0
 
