@@ -2,85 +2,77 @@ Return-Path: <SRS0=dZYZ=32=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA942C2D0B1
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2020 06:29:31 +0000 (UTC)
-Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CFFAC2D0B1
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2020 08:13:19 +0000 (UTC)
+Received: from lists.ozlabs.org (unknown [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 98E7A20838
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2020 06:29:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 725CC20720
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2020 08:13:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="We1aMY9o"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 98E7A20838
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="d1QUD3BB"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 725CC20720
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48CpS91sMTzDqb9
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2020 17:29:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::544;
- helo=mail-pg1-x544.google.com; envelope-from=oohall@gmail.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48Crlv6SvzzDqZw
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2020 19:13:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=We1aMY9o; dkim-atps=neutral
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
- [IPv6:2607:f8b0:4864:20::544])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
+ header.s=mail header.b=d1QUD3BB; dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48CpNy0hzVzDq6J
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2020 17:26:41 +1100 (AEDT)
-Received: by mail-pg1-x544.google.com with SMTP id j15so2225895pgm.6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Feb 2020 22:26:41 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=+CKU3q/wSKm6tOqHSFjsb14Tj10WgTny/z1NuPUFjuw=;
- b=We1aMY9ozbOL8+wA1RiiATcYoksuKnyQ3DerR5Wj2mvyBai0bJfyId2D9gMoUboTlI
- gKSb91nagZgEFpH7dX12g/KdU7wP06sC74oD1RI7+9JvLeR7Fq8zMzvt0bcSPbD85rA1
- sxpDqn9/8J8mPyOq0O3v/MZTcYXqLqrdjlW/wk0vm+RRVxlJHxlvMNKX9DZgKL/ke4QL
- 6PIiw4jJShsnLZa+cuh2exPcSKpc6PTeSVfI3RBwMCaO5ukRlZd04298fqemPFH0ooJa
- o6PvX/2bZ1N2KKx9iLQzx3ue1X1Ks3RPceN+6VKpwOl7MuAH7lm4hfXKzIA9zOQSETiJ
- fEIQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=+CKU3q/wSKm6tOqHSFjsb14Tj10WgTny/z1NuPUFjuw=;
- b=siBk/bME54QWmFFpFNiPVsePRsGyvahxX5FNHwiDdEtVregl6hhBwMPiZIBOcoleSo
- VrGcYG1o4IInnXr8xgRp4brnNE8mwh6xx9fihBi0DRlrLnz+swd4jcd35+DUpS998GAX
- lRIbFAu/Wjozwjl6USNdGdesvzn90EADzKTcGH9tVU/OsFFQ97tEUMWbHZlLnfKMOR1u
- sh3ij9NOVakxBrse0UhVJKv2NHEgHf2IqShWNkF/4e+TtZj76DnUDJVL167WBm1vaEQ8
- daGANH/d1Q15MWjxT4cjk7JyxI8VL46AKnBNJ/0KCnLgZFNVL1QPSe7HWeP/ONTu+zfX
- ESXQ==
-X-Gm-Message-State: APjAAAVkzEjshjbk0IUr22qcMbnxmc9Z47mEOCliau2ytiKZMwVCE/dF
- XtNDAfQMIhW7I6PuFVjH2YoNmwGc
-X-Google-Smtp-Source: APXvYqzNb/9mp+kFnjtGO01tEElRlw0ulSJ5xHQ6YGVK8D7SKf65ErN2adFh962eKgGezD5/bYwfTw==
-X-Received: by 2002:a63:a1e:: with SMTP id 30mr2074194pgk.238.1580970400024;
- Wed, 05 Feb 2020 22:26:40 -0800 (PST)
-Received: from wafer.ozlabs.ibm.com ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id y24sm1895588pge.72.2020.02.05.22.26.38
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 05 Feb 2020 22:26:39 -0800 (PST)
-From: Oliver O'Halloran <oohall@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] cpufreq/powernv: Fix unsafe notifiers
-Date: Thu,  6 Feb 2020 17:26:22 +1100
-Message-Id: <20200206062622.28235-2-oohall@gmail.com>
-X-Mailer: git-send-email 2.21.1
-In-Reply-To: <20200206062622.28235-1-oohall@gmail.com>
-References: <20200206062622.28235-1-oohall@gmail.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48CrkB1XCCzDqX7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2020 19:11:44 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 48Crk336LBz9vBmq;
+ Thu,  6 Feb 2020 09:11:39 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=d1QUD3BB; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id umdXHmaXceAF; Thu,  6 Feb 2020 09:11:39 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 48Crk31hrdz9vBmm;
+ Thu,  6 Feb 2020 09:11:39 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1580976699; bh=2NfLAdBOBoIleIWFQnQiqKoyTFtAwdYJziIrr8QnJqY=;
+ h=From:Subject:To:Cc:Date:From;
+ b=d1QUD3BBMiMmM2CIRGFCTURsOR0UonsCQqNFdwjV4PsIS/GdEXf6jeOpPt8L51O1a
+ i8lDwnApbHsfTTi4e9QE2bZeearbiSbLrw/OgmWeLeVL1r+G6pH/UhNnyDdNYBvz+l
+ 4b9AWV2oir8oSikMqsLmbDrIGdaj157ptTiUbUDw=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 194708B863;
+ Thu,  6 Feb 2020 09:11:40 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id An7XLW9YJR2C; Thu,  6 Feb 2020 09:11:40 +0100 (CET)
+Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B2D738B85F;
+ Thu,  6 Feb 2020 09:11:39 +0100 (CET)
+Received: by localhost.localdomain (Postfix, from userid 0)
+ id 64DAB652B7; Thu,  6 Feb 2020 08:11:39 +0000 (UTC)
+Message-Id: <668b6ff463849ceee01f726fbf3e7110687575ec.1580976576.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] selftest/lkdtm: Don't pollute 'git status'
+To: Kees Cook <keescook@chromium.org>, Shuah Khan <skhan@linuxfoundation.org>
+Date: Thu,  6 Feb 2020 08:11:39 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,62 +84,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- Oliver O'Halloran <oohall@gmail.com>
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The PowerNV cpufreq driver registers two notifiers: one to catch throttle
-messages from the OCC and one to bump the CPU frequency back to normal
-before a reboot. Both require the cpufreq driver to be registered in order
-to function since the notifier callbacks use various cpufreq_*() functions.
+Commit 46d1a0f03d66 ("selftests/lkdtm: Add tests for LKDTM targets")
+added generation of lkdtm test scripts.
 
-Right now we register both notifiers before we've initialised the driver.
-This seems to work, but we should head off any protential problems by
-registering the notifiers after the driver is initialised.
+Ignore those generated scripts when performing 'git status'
 
-Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+Fixes: 46d1a0f03d66 ("selftests/lkdtm: Add tests for LKDTM targets")
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- drivers/cpufreq/powernv-cpufreq.c | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+ .gitignore | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 1806b1d..03798c4 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -1114,9 +1114,6 @@ static int __init powernv_cpufreq_init(void)
- 	if (rc)
- 		goto out;
+diff --git a/.gitignore b/.gitignore
+index b849a72d69d5..bb05dce58f8e 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -100,6 +100,10 @@ modules.order
+ /include/ksym/
+ /arch/*/include/generated/
  
--	register_reboot_notifier(&powernv_cpufreq_reboot_nb);
--	opal_message_notifier_register(OPAL_MSG_OCC, &powernv_cpufreq_opal_nb);
--
- 	if (powernv_pstate_info.wof_enabled)
- 		powernv_cpufreq_driver.boost_enabled = true;
- 	else
-@@ -1125,15 +1122,17 @@ static int __init powernv_cpufreq_init(void)
- 	rc = cpufreq_register_driver(&powernv_cpufreq_driver);
- 	if (rc) {
- 		pr_info("Failed to register the cpufreq driver (%d)\n", rc);
--		goto cleanup_notifiers;
-+		goto cleanup;
- 	}
- 
- 	if (powernv_pstate_info.wof_enabled)
- 		cpufreq_enable_boost_support();
- 
-+	register_reboot_notifier(&powernv_cpufreq_reboot_nb);
-+	opal_message_notifier_register(OPAL_MSG_OCC, &powernv_cpufreq_opal_nb);
++# Generated lkdtm tests
++/tools/testing/selftests/lkdtm/*.sh
++!/tools/testing/selftests/lkdtm/run.sh
 +
- 	return 0;
--cleanup_notifiers:
--	unregister_all_notifiers();
-+cleanup:
- 	clean_chip_info();
- out:
- 	pr_info("Platform driver disabled. System does not support PState control\n");
+ # stgit generated dirs
+ patches-*
+ 
 -- 
-2.9.5
+2.25.0
 
