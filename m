@@ -2,58 +2,60 @@ Return-Path: <SRS0=m3RD=33=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
+X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 223DDC352A2
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Feb 2020 11:42:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A680EC352A2
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Feb 2020 12:24:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 95B9220720
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Feb 2020 11:42:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 95B9220720
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
+	by mail.kernel.org (Postfix) with ESMTPS id 0D24B20720
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Feb 2020 12:24:09 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="OF+Zx8hv"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0D24B20720
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48DYMF0vczzDq5y
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Feb 2020 22:42:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=linutronix.de
- (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
- envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linutronix.de
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a0a:51c0:0:12e:550::1])
- (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 48DZGt2M9JzDqg5
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Feb 2020 23:24:06 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48DYGj5SBLzDqfC
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2020 22:38:53 +1100 (AEDT)
-Received: from p5b06da22.dip0.t-ipconnect.de ([91.6.218.34]
- helo=nanos.tec.linutronix.de)
- by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
- (Exim 4.80) (envelope-from <tglx@linutronix.de>)
- id 1j01xc-000288-1g; Fri, 07 Feb 2020 12:38:12 +0100
-Received: by nanos.tec.linutronix.de (Postfix, from userid 1000)
- id 7CCA5100375; Fri,  7 Feb 2020 11:38:11 +0000 (GMT)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Alexey Budankov <alexey.budankov@linux.intel.com>,
- Stephen Smalley <sds@tycho.nsa.gov>, Serge Hallyn <serge@hallyn.com>,
- James Morris <jmorris@namei.org>
-Subject: Re: [PATCH v5 01/10] capabilities: introduce CAP_PERFMON to kernel
- and user space
-In-Reply-To: <2b608e26-354b-3df9-aea9-58e56dc0c5e5@linux.intel.com>
-Date: Fri, 07 Feb 2020 11:38:11 +0000
-Message-ID: <875zgizkyk.fsf@nanos.tec.linutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48DZDG0QvrzDqYS
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2020 23:21:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=OF+Zx8hv; 
+ dkim-atps=neutral
+Received: by ozlabs.org (Postfix)
+ id 48DZDF1b7Mz9sRK; Fri,  7 Feb 2020 23:21:49 +1100 (AEDT)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 48DZDF00BSz9sRR; Fri,  7 Feb 2020 23:21:48 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1581078109;
+ bh=g/KeOf5Jv0EvaNmKpPEBitWGF4E028qE3B5GuMBcYRg=;
+ h=From:To:Cc:Subject:Date:From;
+ b=OF+Zx8hvfz/uuykarwzDoB+tJj0ThwIKxleZTxUOLsshzmGJ8b9mgvpULm4NxE0ZP
+ ZouocT1V3zddCiLImCX52dIbc1n6vTyRMtBWPrZX0B0uvpg8JNvuuLO7B+joBGjJid
+ UVabMoG7J2JAnsi4Z04DUf6fUim4I+12mSkrGQS3k0ZNn+zBGLAHg7mFQ2SgmtfwDi
+ 2ITtHecOoboCifswS7iZgJn5scVfDehSFuIBdxY12KsTXUkCnte7UKgsxVW94UIzbd
+ 0r4Xm9HhKBO3u4h5ctEB+fGw4zWJuu+7ZeiPi676+WHscu8dI1H8wnIsJUHiXzjvzS
+ DUTF4aU16Lr1w==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/futex: Fix incorrect user access blocking
+Date: Fri,  7 Feb 2020 23:21:45 +1100
+Message-Id: <20200207122145.11928-1-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.21.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-X-Linutronix-Spam-Score: -1.0
-X-Linutronix-Spam-Level: -
-X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required, ALL_TRUSTED=-1,
- SHORTCIRCUIT=-0.0001
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,67 +67,104 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Song Liu <songliubraving@fb.com>,
- Peter Zijlstra <peterz@infradead.org>,
- "joonas.lahtinen@linux.intel.com" <joonas.lahtinen@linux.intel.com>,
- Will Deacon <will.deacon@arm.com>, Alexei Starovoitov <ast@kernel.org>,
- Lionel Landwerlin <lionel.g.landwerlin@intel.com>,
- Paul Mackerras <paulus@samba.org>, Jiri Olsa <jolsa@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>,
- Andi Kleen <ak@linux.intel.com>, Igor Lubashev <ilubashe@akamai.com>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Ingo Molnar <mingo@redhat.com>, oprofile-list@lists.sf.net,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
- Robert Richter <rric@kernel.org>,
- "selinux@vger.kernel.org" <selinux@vger.kernel.org>,
- "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>,
- "jani.nikula@linux.intel.com" <jani.nikula@linux.intel.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- "rodrigo.vivi@intel.com" <rodrigo.vivi@intel.com>,
- Namhyung Kim <namhyung@kernel.org>, Stephane Eranian <eranian@google.com>,
- "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
- linux-kernel <linux-kernel@vger.kernel.org>,
- Andy Lutomirski <luto@amacapital.net>,
- "linux-perf-users@vger.kernel.org" <linux-perf-users@vger.kernel.org>,
- "linux-security-module@vger.kernel.org"
- <linux-security-module@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Alexey Budankov <alexey.budankov@linux.intel.com> writes:
-> On 22.01.2020 17:25, Alexey Budankov wrote:
->> On 22.01.2020 17:07, Stephen Smalley wrote:
->>>> It keeps the implementation simple and readable. The implementation is=
- more
->>>> performant in the sense of calling the API - one capable() call for CA=
-P_PERFMON
->>>> privileged process.
->>>>
->>>> Yes, it bloats audit log for CAP_SYS_ADMIN privileged and unprivileged=
- processes,
->>>> but this bloating also advertises and leverages using more secure CAP_=
-PERFMON
->>>> based approach to use perf_event_open system call.
->>>
->>> I can live with that.=C2=A0 We just need to document that when you see
->>> both a CAP_PERFMON and a CAP_SYS_ADMIN audit message for a process,
->>> try only allowing CAP_PERFMON first and see if that resolves the
->>> issue.=C2=A0 We have a similar issue with CAP_DAC_READ_SEARCH versus
->>> CAP_DAC_OVERRIDE.
->>=20
->> perf security [1] document can be updated, at least, to align and docume=
-nt=20
->> this audit logging specifics.
->
-> And I plan to update the document right after this patch set is accepted.
-> Feel free to let me know of the places in the kernel docs that also
-> require update w.r.t CAP_PERFMON extension.
+The early versions of our kernel user access prevention (KUAP) were
+written by Russell and Christophe, and didn't have separate
+read/write access.
 
-The documentation update wants be part of the patch set and not planned
-to be done _after_ the patch set is merged.
+At some point I picked up the series and added the read/write access,
+but I failed to update the usages in futex.h to correctly allow read
+and write.
 
-Thanks,
+However we didn't notice because of another bug which was causing the
+low-level code to always enable read and write. That bug was fixed
+recently in commit 1d8f739b07bd ("powerpc/kuap: Fix set direction in
+allow/prevent_user_access()").
 
-        tglx
+futex_atomic_cmpxchg_inatomic() is passed the user address as %3 and
+does:
+
+  1:     lwarx   %1,  0, %3
+         cmpw    0,  %1, %4
+         bne-    3f
+  2:     stwcx.  %5,  0, %3
+
+Which clearly loads and stores from/to %3. The logic in
+arch_futex_atomic_op_inuser() is similar, so fix both of them to use
+allow_read_write_user().
+
+Without this fix, and with PPC_KUAP_DEBUG=y, we see eg:
+
+  Bug: Read fault blocked by AMR!
+  WARNING: CPU: 94 PID: 149215 at arch/powerpc/include/asm/book3s/64/kup-radix.h:126 __do_page_fault+0x600/0xf30
+  CPU: 94 PID: 149215 Comm: futex_requeue_p Tainted: G        W         5.5.0-rc7-gcc9x-g4c25df5640ae #1
+  ...
+  NIP [c000000000070680] __do_page_fault+0x600/0xf30
+  LR [c00000000007067c] __do_page_fault+0x5fc/0xf30
+  Call Trace:
+  [c00020138e5637e0] [c00000000007067c] __do_page_fault+0x5fc/0xf30 (unreliable)
+  [c00020138e5638c0] [c00000000000ada8] handle_page_fault+0x10/0x30
+  --- interrupt: 301 at cmpxchg_futex_value_locked+0x68/0xd0
+      LR = futex_lock_pi_atomic+0xe0/0x1f0
+  [c00020138e563bc0] [c000000000217b50] futex_lock_pi_atomic+0x80/0x1f0 (unreliable)
+  [c00020138e563c30] [c00000000021b668] futex_requeue+0x438/0xb60
+  [c00020138e563d60] [c00000000021c6cc] do_futex+0x1ec/0x2b0
+  [c00020138e563d90] [c00000000021c8b8] sys_futex+0x128/0x200
+  [c00020138e563e20] [c00000000000b7ac] system_call+0x5c/0x68
+
+Fixes: de78a9c42a79 ("powerpc: Add a framework for Kernel Userspace Access Protection")
+Cc: stable@vger.kernel.org # v5.2+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/futex.h | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/futex.h b/arch/powerpc/include/asm/futex.h
+index eea28ca679db..bc7d9d06a6d9 100644
+--- a/arch/powerpc/include/asm/futex.h
++++ b/arch/powerpc/include/asm/futex.h
+@@ -35,7 +35,7 @@ static inline int arch_futex_atomic_op_inuser(int op, int oparg, int *oval,
+ {
+ 	int oldval = 0, ret;
+ 
+-	allow_write_to_user(uaddr, sizeof(*uaddr));
++	allow_read_write_user(uaddr, uaddr, sizeof(*uaddr));
+ 	pagefault_disable();
+ 
+ 	switch (op) {
+@@ -62,7 +62,7 @@ static inline int arch_futex_atomic_op_inuser(int op, int oparg, int *oval,
+ 
+ 	*oval = oldval;
+ 
+-	prevent_write_to_user(uaddr, sizeof(*uaddr));
++	prevent_read_write_user(uaddr, uaddr, sizeof(*uaddr));
+ 	return ret;
+ }
+ 
+@@ -76,7 +76,8 @@ futex_atomic_cmpxchg_inatomic(u32 *uval, u32 __user *uaddr,
+ 	if (!access_ok(uaddr, sizeof(u32)))
+ 		return -EFAULT;
+ 
+-	allow_write_to_user(uaddr, sizeof(*uaddr));
++	allow_read_write_user(uaddr, uaddr, sizeof(*uaddr));
++
+         __asm__ __volatile__ (
+         PPC_ATOMIC_ENTRY_BARRIER
+ "1:     lwarx   %1,0,%3         # futex_atomic_cmpxchg_inatomic\n\
+@@ -97,7 +98,8 @@ futex_atomic_cmpxchg_inatomic(u32 *uval, u32 __user *uaddr,
+         : "cc", "memory");
+ 
+ 	*uval = prev;
+-	prevent_write_to_user(uaddr, sizeof(*uaddr));
++	prevent_read_write_user(uaddr, uaddr, sizeof(*uaddr));
++
+         return ret;
+ }
+ 
+-- 
+2.21.1
+
