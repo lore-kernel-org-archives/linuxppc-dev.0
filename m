@@ -2,51 +2,93 @@ Return-Path: <SRS0=oxDq=34=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D74CCC35250
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Feb 2020 14:18:47 +0000 (UTC)
-Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F0D62C35250
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Feb 2020 16:10:51 +0000 (UTC)
+Received: from lists.ozlabs.org (unknown [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9452D2082E
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Feb 2020 14:18:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9452D2082E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=wanadoo.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 669E620661
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Feb 2020 16:10:51 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="GFUfvb+Z"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 669E620661
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48FDmj2s40zDqXv
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Feb 2020 01:18:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=wanadoo.fr
- (client-ip=80.12.242.130; helo=smtp.smtpout.orange.fr;
- envelope-from=christophe.jaillet@wanadoo.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=wanadoo.fr
-Received: from smtp.smtpout.orange.fr (smtp08.smtpout.orange.fr
- [80.12.242.130])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 48FHG10dkyzDqbG
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Feb 2020 03:10:49 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48FDZ140vbzDqXT
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Feb 2020 01:09:29 +1100 (AEDT)
-Received: from localhost.localdomain ([93.22.133.23]) by mwinf5d31 with ME
- id 0E9R220070WSqZ103E9RbC; Sat, 08 Feb 2020 15:09:26 +0100
-X-ME-Helo: localhost.localdomain
-X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
-X-ME-Date: Sat, 08 Feb 2020 15:09:26 +0100
-X-ME-IP: 93.22.133.23
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-To: oss@buserror.net, galak@kernel.crashing.org, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au
-Subject: [PATCH 2/2] powerpc/83xx: Add some error handling in
- 'quirk_mpc8360e_qe_enet10()'
-Date: Sat,  8 Feb 2020 15:09:20 +0100
-Message-Id: <20200208140920.7652-1-christophe.jaillet@wanadoo.fr>
-X-Mailer: git-send-email 2.20.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48FHD965ffzDqWT
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Feb 2020 03:09:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=xenosoft.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256
+ header.s=strato-dkim-0002 header.b=GFUfvb+Z; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 48FHD90pJCz8sk5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Feb 2020 03:09:13 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 48FHD9082Mz9sRR; Sun,  9 Feb 2020 03:09:13 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.helo=mo6-p01-ob.smtp.rzone.de (client-ip=2a01:238:20a:202:5301::3;
+ helo=mo6-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=xenosoft.de
+Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256
+ header.s=strato-dkim-0002 header.b=GFUfvb+Z; 
+ dkim-atps=neutral
+Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5301::3])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 48FHD81hKXz9sRQ
+ for <linuxppc-dev@ozlabs.org>; Sun,  9 Feb 2020 03:09:11 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1581178146;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=In-Reply-To:Date:Message-ID:References:Cc:To:From:Subject:
+ X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
+ bh=PdihAqfeKD54YbNb2He1peHtwOFZYOu4uAedog826qA=;
+ b=GFUfvb+ZwZcPLaeP/tiRtTW46ywyj5clteoyC5jXMGNDCfiCKQCKpP/dLZy67CFyik
+ oDw7L9dkaOHSdZ6YfcxqF1VPbZAjX21XMi64gXgnhXLS3Lkd7YzEH6fvuzcyttYyHHF+
+ PYo05pL0WY0K1ojkaPqwSq6FCVHKcpd5c6slmKigQ5dSOBFNAVQPXA2iTCxwEAWbGEO6
+ OXyzShrX8y3SJ2p/k2PmIN7X3cO7BXMtx68LHX8BtJeqd9TTKFBCct44ym2Z+v9SpVly
+ pkkmQ7TJapxKVibfBta24i9sffKcjxfRX0XWlGkjEOVueeXwfy9eG3wZ8GLnsdUtJMJH
+ /15g==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5DdBJSrwuuqxvPgBLiaxlASBVL8WJv/OkCrDe9HRcQ=="
+X-RZG-CLASS-ID: mo00
+Received: from [IPv6:2a02:8109:89c0:ebfc:b8e6:ddd1:f1d2:d845]
+ by smtp.strato.de (RZmta 46.1.12 AUTH)
+ with ESMTPSA id 40bcf3w18G8eit4
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+ (Client did not present a certificate);
+ Sat, 8 Feb 2020 17:08:40 +0100 (CET)
+Subject: Re: Latest Git kernel: avahi-daemon[2410]: ioctl(): Inappropriate
+ ioctl for device
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+To: Arnd Bergmann <arnd@arndb.de>
+References: <CAK8P3a39L5i4aEbKe9CiW6unbioL=T8GqXC007mXxUu+_j84FA@mail.gmail.com>
+ <834D35CA-F0D5-43EC-97B2-2E97B4DA7703@xenosoft.de>
+Message-ID: <b8e3a03c-4aeb-5582-78df-144450b03927@xenosoft.de>
+Date: Sat, 8 Feb 2020 17:08:40 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.4.2
 MIME-Version: 1.0
+In-Reply-To: <834D35CA-F0D5-43EC-97B2-2E97B4DA7703@xenosoft.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 8bit
+Content-Language: de-DE
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,48 +100,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel-janitors@vger.kernel.org,
- Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: DTML <devicetree@vger.kernel.org>, Darren Stevens <darren@stevens-zone.net>,
+ mad skateman <madskateman@gmail.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@ozlabs.org, "contact@a-eon.com" <contact@a-eon.com>,
+ "R.T.Dickinson" <rtd2@xtra.co.nz>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ Jakub Kicinski <kuba@kernel.org>, Christoph Hellwig <hch@lst.de>,
+ Christian Zigotzky <info@xenosoft.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In some error handling path, we should call "of_node_put(np_par)" or
-some resource may be leaking in case of error.
+On 08 February 2020 at 07:59 am, Christian Zigotzky wrote:
+>
+>> On 7. Feb 2020, at 18:08, Arnd Bergmann <arnd@arndb.de> wrote:
+>>
+>> ﻿On Fri, Feb 7, 2020 at 3:34 PM Christian Zigotzky
+>> <chzigotzky@xenosoft.de> wrote:
+>>> Hello Arnd,
+>>>
+>>> We regularly compile and test Linux kernels every day during the merge
+>>> window. Since Thursday last week we have very high CPU usage because of
+>>> the avahi daemon on our desktop Linux systems (Ubuntu, Debian etc). The
+>>> avahi daemon produces a lot of the following log message. This generates
+>>> high CPU usage.
+>>>
+>>> Error message: avahi-daemon[2410]: ioctl(): Inappropriate ioctl for device
+>>>
+>>> strace /usr/sbin/avahi-daemon:
+>>>
+>> Thanks a lot for the detailed analysis, with this I immediately saw
+>> what went wrong in my
+>> original commit and I sent you a fix. Please test to ensure that this
+>> correctly addresses
+>> the problem.
+>>
+>>         Arnd
+> Hi Arnd,
+>
+> Thanks a lot for your patch! I will test it as soon as possible.
+>
+> Cheers,
+> Christian
 
-Fixes: 8159df72d43e ("83xx: add support for the kmeter1 board.")
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
----
- arch/powerpc/platforms/83xx/km83xx.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+Hi Arnd,
 
-diff --git a/arch/powerpc/platforms/83xx/km83xx.c b/arch/powerpc/platforms/83xx/km83xx.c
-index 306be75faec7..bcdc2c203ec9 100644
---- a/arch/powerpc/platforms/83xx/km83xx.c
-+++ b/arch/powerpc/platforms/83xx/km83xx.c
-@@ -60,10 +60,12 @@ static void quirk_mpc8360e_qe_enet10(void)
- 	ret = of_address_to_resource(np_par, 0, &res);
- 	if (ret) {
- 		pr_warn("%s couldn't map par_io registers\n", __func__);
--		return;
-+		goto out;
- 	}
- 
- 	base = ioremap(res.start, resource_size(&res));
-+	if (!base)
-+		goto out;
- 
- 	/*
- 	 * set output delay adjustments to default values according
-@@ -111,6 +113,7 @@ static void quirk_mpc8360e_qe_enet10(void)
- 		setbits32((base + 0xac), 0x0000c000);
- 	}
- 	iounmap(base);
-+out:
- 	of_node_put(np_par);
- }
- 
--- 
-2.20.1
+I successfully compiled the latest Git kernel with your patch today. The 
+avahi daemon works fine now. That means your patch has solved the avahi 
+issue.
 
+Thanks for your patch and have a nice weekend!
+
+Cheers,
+Christian
