@@ -2,84 +2,62 @@ Return-Path: <SRS0=hDs2=35=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D3DE0C35250
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Feb 2020 11:07:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2601DC35250
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Feb 2020 13:01:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4635A20726
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Feb 2020 11:07:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 93AAB20708
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Feb 2020 13:01:09 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="Qw9UMzcj"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4635A20726
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="q0pvgGxm"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 93AAB20708
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48FmTn3YwQzDqCx
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Feb 2020 22:07:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
+	by lists.ozlabs.org (Postfix) with ESMTP id 48Fq0f3517zDqN5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Feb 2020 00:01:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
+ helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=Qw9UMzcj; dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=q0pvgGxm; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48FmRB2BGWzDq9d
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Feb 2020 22:05:23 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 48FmQz3zZBz9tySS;
- Sun,  9 Feb 2020 12:05:15 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=Qw9UMzcj; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id wdzNqoxRiBnb; Sun,  9 Feb 2020 12:05:15 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 48FmQz2cFXz9tySM;
- Sun,  9 Feb 2020 12:05:15 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1581246315; bh=mrAy96DdN5jD7Y6nw4oukJ3Td2B0N27N3fUyvkGcR60=;
- h=Subject:From:To:Cc:References:Date:In-Reply-To:From;
- b=Qw9UMzcjyyxy4mRIwfp34wbLghNhCY7IAmgM84CJKAIHl+a616gDp4QVTZtWcupqB
- /LSSf5r7VCTuGKnyEAO4B1IgHSorac19FQ8ehwZmqEU6pO+qZhPj13ept1QhY1PW6g
- GVsRqLJws4DT3o+aYbNlruTNty4qa4AbzUoyYWlo=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 66B398B76F;
- Sun,  9 Feb 2020 12:05:18 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id NbJ8fhf_lVMn; Sun,  9 Feb 2020 12:05:18 +0100 (CET)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E11548B755;
- Sun,  9 Feb 2020 12:05:17 +0100 (CET)
-Subject: Re: [PATCH] powerpc/hugetlb: Fix 8M hugepages on 8xx
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- aneesh.kumar@linux.ibm.com
-References: <e744db1529271d11a3fdcdf641617846907b6ffd.1580997012.git.christophe.leroy@c-s.fr>
-Message-ID: <c55a9b41-bc6f-4521-f556-c3ddc6c5d968@c-s.fr>
-Date: Sun, 9 Feb 2020 12:05:17 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.4.2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48FpvF6jfwzDqM7
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Feb 2020 23:56:23 +1100 (AEDT)
+Received: from localhost (unknown [38.98.37.135])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id E6F9720733;
+ Sun,  9 Feb 2020 12:56:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1581252981;
+ bh=wEuQkILbzCrkndaHaGMt/QtlgcEM66cBemstNp3v6fc=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=q0pvgGxmXPCg+rjYkFKJt2HyuXWgGZhiT7YOmln8fKJBzYM12o/J5X1vbWBzh0oeF
+ Lq/3rIDWIZgfAtdZxifVETZ/neuldW0mlzsYEYkBkP6uqbgHtUa1VwGzmeUklx18du
+ uCFghsuR0sqpWrr+L2oCz8XA374intx0hYUB0BqE=
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 2/6] powerpc: kvm: no need to check return value of
+ debugfs_create functions
+Date: Sun,  9 Feb 2020 11:58:57 +0100
+Message-Id: <20200209105901.1620958-2-gregkh@linuxfoundation.org>
+X-Mailer: git-send-email 2.25.0
+In-Reply-To: <20200209105901.1620958-1-gregkh@linuxfoundation.org>
+References: <20200209105901.1620958-1-gregkh@linuxfoundation.org>
 MIME-Version: 1.0
-In-Reply-To: <e744db1529271d11a3fdcdf641617846907b6ffd.1580997012.git.christophe.leroy@c-s.fr>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -92,137 +70,134 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+When calling debugfs functions, there is no need to ever check the
+return value.  The function can work or not, but the code logic should
+never do something different based on this.
 
+Because of this cleanup, we get to remove a few fields in struct
+kvm_arch that are now unused.
 
-Le 06/02/2020 à 14:50, Christophe Leroy a écrit :
-> Commit 55c8fc3f4930 ("powerpc/8xx: reintroduce 16K pages with HW
-> assistance") redefined pte_t as a struct of 4 pte_basic_t, because
-> in 16K pages mode there are four identical entries in the page table.
-> But hugepd entries for 8k pages require only one entrie of size
-> pte_basic_t. So there is no point in creating a cache for 4 entries
-> page tables.
-> 
-> Also, with HW assistance the entries must be 4k aligned, the 8xx
-> drops the last 12 bits. Redefine HUGEPD_SHIFT_MASK to mask them out.
-> 
-> Calculate PTE_T_ORDER using the size of pte_basic_t instead of pte_t.
-> 
-> In 16k mode, define a specific set_huge_pte_at() function which writes
-> the pte in a single entry instead of using set_pte_at() which writes
-> 4 identical entries. Define set_pte_filter() inline otherwise GCC
-> doesn't inline it anymore because it is now used twice, and that gives
-> a pretty suboptimal code because of pte_t being a struct of 4 entries.
-> This function is also used for 512k pages which only require one entry
-> as well allthough replicating it four times is harmless as 512k pages
-> entries are spread every 128 bytes in the table.
+Cc: Paul Mackerras <paulus@ozlabs.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: kvm-ppc@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ arch/powerpc/include/asm/kvm_host.h    |  3 ---
+ arch/powerpc/kvm/book3s_64_mmu_hv.c    |  5 ++---
+ arch/powerpc/kvm/book3s_64_mmu_radix.c |  5 ++---
+ arch/powerpc/kvm/book3s_hv.c           |  9 ++-------
+ arch/powerpc/kvm/timing.c              | 13 +++----------
+ 5 files changed, 9 insertions(+), 26 deletions(-)
 
-That's not enough. We also need to change huge_ptep_set_access_flags(), 
-huge_pte_clear(), huge_ptep_set_wrprotect() and huge_ptep_get_and_clear()
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 6e8b8ffd06ad..877f8aa2bc1e 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -308,8 +308,6 @@ struct kvm_arch {
+ 	pgd_t *pgtable;
+ 	u64 process_table;
+ 	struct dentry *debugfs_dir;
+-	struct dentry *htab_dentry;
+-	struct dentry *radix_dentry;
+ 	struct kvm_resize_hpt *resize_hpt; /* protected by kvm->lock */
+ #endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
+ #ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
+@@ -830,7 +828,6 @@ struct kvm_vcpu_arch {
+ 	struct kvmhv_tb_accumulator cede_time;	/* time napping inside guest */
+ 
+ 	struct dentry *debugfs_dir;
+-	struct dentry *debugfs_timings;
+ #endif /* CONFIG_KVM_BOOK3S_HV_EXIT_TIMING */
+ };
+ 
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index 6c372f5c61b6..8b4eac0c9dcd 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -2138,9 +2138,8 @@ static const struct file_operations debugfs_htab_fops = {
+ 
+ void kvmppc_mmu_debugfs_init(struct kvm *kvm)
+ {
+-	kvm->arch.htab_dentry = debugfs_create_file("htab", 0400,
+-						    kvm->arch.debugfs_dir, kvm,
+-						    &debugfs_htab_fops);
++	debugfs_create_file("htab", 0400, kvm->arch.debugfs_dir, kvm,
++			    &debugfs_htab_fops);
+ }
+ 
+ void kvmppc_mmu_book3s_hv_init(struct kvm_vcpu *vcpu)
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+index 803940d79b73..1d75ed684b53 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+@@ -1376,9 +1376,8 @@ static const struct file_operations debugfs_radix_fops = {
+ 
+ void kvmhv_radix_debugfs_init(struct kvm *kvm)
+ {
+-	kvm->arch.radix_dentry = debugfs_create_file("radix", 0400,
+-						     kvm->arch.debugfs_dir, kvm,
+-						     &debugfs_radix_fops);
++	debugfs_create_file("radix", 0400, kvm->arch.debugfs_dir, kvm,
++			    &debugfs_radix_fops);
+ }
+ 
+ int kvmppc_radix_init(void)
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 2cefd071b848..33be4d93248a 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -2258,14 +2258,9 @@ static void debugfs_vcpu_init(struct kvm_vcpu *vcpu, unsigned int id)
+ 	struct kvm *kvm = vcpu->kvm;
+ 
+ 	snprintf(buf, sizeof(buf), "vcpu%u", id);
+-	if (IS_ERR_OR_NULL(kvm->arch.debugfs_dir))
+-		return;
+ 	vcpu->arch.debugfs_dir = debugfs_create_dir(buf, kvm->arch.debugfs_dir);
+-	if (IS_ERR_OR_NULL(vcpu->arch.debugfs_dir))
+-		return;
+-	vcpu->arch.debugfs_timings =
+-		debugfs_create_file("timings", 0444, vcpu->arch.debugfs_dir,
+-				    vcpu, &debugfs_timings_ops);
++	debugfs_create_file("timings", 0444, vcpu->arch.debugfs_dir, vcpu,
++			    &debugfs_timings_ops);
+ }
+ 
+ #else /* CONFIG_KVM_BOOK3S_HV_EXIT_TIMING */
+diff --git a/arch/powerpc/kvm/timing.c b/arch/powerpc/kvm/timing.c
+index bfe4f106cffc..8e4791c6f2af 100644
+--- a/arch/powerpc/kvm/timing.c
++++ b/arch/powerpc/kvm/timing.c
+@@ -207,19 +207,12 @@ static const struct file_operations kvmppc_exit_timing_fops = {
+ void kvmppc_create_vcpu_debugfs(struct kvm_vcpu *vcpu, unsigned int id)
+ {
+ 	static char dbg_fname[50];
+-	struct dentry *debugfs_file;
+ 
+ 	snprintf(dbg_fname, sizeof(dbg_fname), "vm%u_vcpu%u_timing",
+ 		 current->pid, id);
+-	debugfs_file = debugfs_create_file(dbg_fname, 0666,
+-					kvm_debugfs_dir, vcpu,
+-					&kvmppc_exit_timing_fops);
+-
+-	if (!debugfs_file) {
+-		printk(KERN_ERR"%s: error creating debugfs file %s\n",
+-			__func__, dbg_fname);
+-		return;
+-	}
++	debugfs_create_file(dbg_fname, 0666, kvm_debugfs_dir, vcpu,
++			    &kvmppc_exit_timing_fops);
++
+ 
+ 	vcpu->arch.debugfs_exit_timing = debugfs_file;
+ }
+-- 
+2.25.0
 
-Will leave it as is at the time being, in parallele I'm working on 
-getting rid of CONFIG_PPC_MM_SLICES for the 8xx and that fix that.
-
-Christophe
-
-> 
-> Fixes: 22569b881d37 ("powerpc/8xx: Enable 8M hugepage support with HW assistance")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
->   arch/powerpc/include/asm/hugetlb.h |  5 +++++
->   arch/powerpc/include/asm/page.h    |  5 +++++
->   arch/powerpc/mm/hugetlbpage.c      |  3 ++-
->   arch/powerpc/mm/pgtable.c          | 19 ++++++++++++++++++-
->   4 files changed, 30 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/hugetlb.h b/arch/powerpc/include/asm/hugetlb.h
-> index bd6504c28c2f..f43cfbcf014f 100644
-> --- a/arch/powerpc/include/asm/hugetlb.h
-> +++ b/arch/powerpc/include/asm/hugetlb.h
-> @@ -64,6 +64,11 @@ static inline void arch_clear_hugepage_flags(struct page *page)
->   {
->   }
->   
-> +#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PPC_16K_PAGES)
-> +#define __HAVE_ARCH_HUGE_SET_HUGE_PTE_AT
-> +void set_huge_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep, pte_t pte);
-> +#endif
-> +
->   #include <asm-generic/hugetlb.h>
->   
->   #else /* ! CONFIG_HUGETLB_PAGE */
-> diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-> index 86332080399a..080a0bf8e54b 100644
-> --- a/arch/powerpc/include/asm/page.h
-> +++ b/arch/powerpc/include/asm/page.h
-> @@ -295,8 +295,13 @@ static inline bool pfn_valid(unsigned long pfn)
->   /*
->    * Some number of bits at the level of the page table that points to
->    * a hugepte are used to encode the size.  This masks those bits.
-> + * On 8xx, HW assistance requires 4k alignment for the hugepte.
->    */
-> +#ifdef CONFIG_PPC_8xx
-> +#define HUGEPD_SHIFT_MASK     0xfff
-> +#else
->   #define HUGEPD_SHIFT_MASK     0x3f
-> +#endif
->   
->   #ifndef __ASSEMBLY__
->   
-> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-> index 73d4873fc7f8..c61032580185 100644
-> --- a/arch/powerpc/mm/hugetlbpage.c
-> +++ b/arch/powerpc/mm/hugetlbpage.c
-> @@ -30,7 +30,8 @@ bool hugetlb_disabled = false;
->   
->   #define hugepd_none(hpd)	(hpd_val(hpd) == 0)
->   
-> -#define PTE_T_ORDER	(__builtin_ffs(sizeof(pte_t)) - __builtin_ffs(sizeof(void *)))
-> +#define PTE_T_ORDER	(__builtin_ffs(sizeof(pte_basic_t)) - \
-> +			 __builtin_ffs(sizeof(void *)))
->   
->   pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr, unsigned long sz)
->   {
-> diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
-> index e3759b69f81b..7a38eaa6ca72 100644
-> --- a/arch/powerpc/mm/pgtable.c
-> +++ b/arch/powerpc/mm/pgtable.c
-> @@ -100,7 +100,7 @@ static pte_t set_pte_filter_hash(pte_t pte) { return pte; }
->    * as we don't have two bits to spare for _PAGE_EXEC and _PAGE_HWEXEC so
->    * instead we "filter out" the exec permission for non clean pages.
->    */
-> -static pte_t set_pte_filter(pte_t pte)
-> +static inline pte_t set_pte_filter(pte_t pte)
->   {
->   	struct page *pg;
->   
-> @@ -259,6 +259,23 @@ int huge_ptep_set_access_flags(struct vm_area_struct *vma,
->   	return changed;
->   #endif
->   }
-> +
-> +#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PPC_16K_PAGES)
-> +void set_huge_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep, pte_t pte)
-> +{
-> +	/*
-> +	 * Make sure hardware valid bit is not set. We don't do
-> +	 * tlb flush for this update.
-> +	 */
-> +	VM_WARN_ON(pte_hw_valid(*ptep) && !pte_protnone(*ptep));
-> +
-> +	pte = pte_mkpte(pte);
-> +
-> +	pte = set_pte_filter(pte);
-> +
-> +	ptep->pte = pte_val(pte);
-> +}
-> +#endif
->   #endif /* CONFIG_HUGETLB_PAGE */
->   
->   #ifdef CONFIG_DEBUG_VM
-> 
