@@ -2,26 +2,25 @@ Return-Path: <SRS0=nxP5=37=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5783EC352A3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Feb 2020 06:41:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AA99C352A3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Feb 2020 06:46:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 034D420708
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Feb 2020 06:41:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 36E8E20708
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Feb 2020 06:46:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="UIz1NNOU"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 034D420708
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="eiJDqafS"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 36E8E20708
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48GtTF5tkZzDqLt
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Feb 2020 17:41:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48GtbM3WytzDqNX
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Feb 2020 17:46:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -30,56 +29,67 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=UIz1NNOU; dkim-atps=neutral
+ header.s=mail header.b=eiJDqafS; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48GtRB4cP1zDqCY
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Feb 2020 17:39:16 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48Grzp2MLvzDqBP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Feb 2020 16:33:55 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 48GtR164nyz9v4jt;
- Tue, 11 Feb 2020 07:39:09 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 48Grzf3xCbz9v3Zl;
+ Tue, 11 Feb 2020 06:33:50 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=UIz1NNOU; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=eiJDqafS; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id NfWLAfnsQiTU; Tue, 11 Feb 2020 07:39:09 +0100 (CET)
+ with ESMTP id zkhy9QdmXM9w; Tue, 11 Feb 2020 06:33:50 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 48GtR14xqNz9v4js;
- Tue, 11 Feb 2020 07:39:09 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 48Grzf2Rpnz9v3ZZ;
+ Tue, 11 Feb 2020 06:33:50 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1581403149; bh=6GYmNKyF2VN0X3iKM/bCSGm4v4LphVlwXsC9UkhwOr0=;
+ t=1581399230; bh=Mwmnj2Mh3WwfnwZCWtQm8v+ZNM5AU+v+3fKB+Vt+2i0=;
  h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=UIz1NNOUB9TyLUoGJll5exw13tfAcRM2jl0WLuRHyhSUNqn7GofKu90GMkNtt++/9
- SNywV9HHtoH3sdcn6wJ7RYEVoNr/+SmOHehcbeQ6pSr5QcRa7zalO8uwqcPkpHn7Ad
- d2RHQWI1cI13mRHVcNIPQixZg5ld4JIV+gnuJiCw=
+ b=eiJDqafSfDYphjROC10Vnz8Xn4zZIPklngVdYVaguBX5QmUxSbROO5kAJ30wvAhzg
+ 0fV39U/k7ykq9c6fVHRsjt4aiC/Qv+CenzoBQFemfXJIaflYEGRvsm8/278XrXInkJ
+ zdjMm7FlftlG1Bdd/ww1KQhN8+LUDsKmilPkcQWI=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 889218B78A;
- Tue, 11 Feb 2020 07:39:10 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 112868B787;
+ Tue, 11 Feb 2020 06:33:51 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 57E1gQSttYNM; Tue, 11 Feb 2020 07:39:10 +0100 (CET)
+ with ESMTP id fAOO4UrrOOMa; Tue, 11 Feb 2020 06:33:50 +0100 (CET)
 Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id DC2308B776;
- Tue, 11 Feb 2020 07:39:09 +0100 (CET)
-Subject: Re: [PATCH v2 09/13] powerpc/xmon: Dump prefixed instructions
-To: Jordan Niethe <jniethe5@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <20200211053355.21574-1-jniethe5@gmail.com>
- <20200211053355.21574-10-jniethe5@gmail.com>
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D691D8B776;
+ Tue, 11 Feb 2020 06:33:47 +0100 (CET)
+Subject: Re: [PATCH V13] mm/debug: Add tests validating architecture page
+ table helpers
+To: Anshuman Khandual <anshuman.khandual@arm.com>,
+ Russell King - ARM Linux admin <linux@armlinux.org.uk>
+References: <1580897674-16456-1-git-send-email-anshuman.khandual@arm.com>
+ <202002060619.wEOdAZU1%lkp@intel.com>
+ <78d3ce6b-e100-2561-6b09-124c29731d1a@arm.com>
+ <20200209205231.44d098f8749e88190b8ba10c@linux-foundation.org>
+ <955229f7-f161-f720-0e75-a3163f63817d@arm.com>
+ <aef1048f-68c4-d14f-e669-8f288ba9ac7a@c-s.fr>
+ <20200210100200.GB25745@shell.armlinux.org.uk>
+ <7cb3a5bb-eaea-a01c-4047-e3c000b7ad1d@c-s.fr>
+ <20200210110639.GC25745@shell.armlinux.org.uk>
+ <82317d50-57a2-ce84-7557-21635d57448e@arm.com>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <52a33d2b-0dd7-1e29-564d-3ec982b36ef9@c-s.fr>
-Date: Tue, 11 Feb 2020 07:39:09 +0100
+Message-ID: <aa540cd6-93a0-1be4-cdff-c9af43ed7d8e@c-s.fr>
+Date: Tue, 11 Feb 2020 06:33:47 +0100
 User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
  Thunderbird/68.4.2
 MIME-Version: 1.0
-In-Reply-To: <20200211053355.21574-10-jniethe5@gmail.com>
+In-Reply-To: <82317d50-57a2-ce84-7557-21635d57448e@arm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: fr
 Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Tue, 11 Feb 2020 17:44:38 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,132 +101,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: bala24@linux.ibm.com, alistair@popple.id.au, mpe@ellerman.id.a,
- dja@axtens.net
+Cc: Mark Rutland <mark.rutland@arm.com>, uclinux-h8-devel@lists.sourceforge.jp,
+ linux-m68k@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ James Hogan <jhogan@kernel.org>,
+ Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Michal Hocko <mhocko@kernel.org>,
+ linux-mm@kvack.org, Dave Hansen <dave.hansen@intel.com>,
+ Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
+ linux-hexagon@vger.kernel.org, linux-riscv@lists.infradead.org,
+ Thomas Gleixner <tglx@linutronix.de>, linux-s390@vger.kernel.org,
+ kbuild test robot <lkp@intel.com>, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Max Filippov <jcmvbkbc@gmail.com>, x86@kernel.org,
+ Matthew Wilcox <willy@infradead.org>, Steven Price <Steven.Price@arm.com>,
+ Jason Gunthorpe <jgg@ziepe.ca>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Gerald Schaefer <gerald.schaefer@de.ibm.com>, Mark Salter <msalter@redhat.com>,
+ Matt Turner <mattst88@gmail.com>, linux-snps-arc@lists.infradead.org,
+ Ingo Molnar <mingo@kernel.org>, linux-xtensa@linux-xtensa.org,
+ Kees Cook <keescook@chromium.org>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>, linux-alpha@vger.kernel.org,
+ Aurelien Jacquiot <jacquiot.aurelien@gmail.com>, linux-c6x-dev@linux-c6x.org,
+ Mark Brown <broonie@kernel.org>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ Paul Walmsley <paul.walmsley@sifive.com>,
+ "Kirill A . Shutemov" <kirill@shutemov.name>,
+ Dan Williams <dan.j.williams@intel.com>, Guan Xuetao <gxt@pku.edu.cn>,
+ Vlastimil Babka <vbabka@suse.cz>, Richard Henderson <rth@twiddle.net>,
+ linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>,
+ Michal Simek <monstr@monstr.eu>, kbuild-all@lists.01.org,
+ Brian Cain <bcain@codeaurora.org>, Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-mips@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, linux-kernel@vger.kernel.org,
+ Paul Burton <paul.burton@mips.com>, Mike Rapoport <rppt@linux.vnet.ibm.com>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Vineet Gupta <vgupta@synopsys.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, Qian Cai <cai@lca.pw>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
 
-Le 11/02/2020 à 06:33, Jordan Niethe a écrit :
-> Currently when xmon is dumping instructions it reads a word at a time
-> and then prints that instruction (either as a hex number or by
-> disassembling it). For prefixed instructions it would be nice to show
-> its prefix and suffix as together. Use read_instr() so that if a prefix
-> is encountered its suffix is loaded too. Then print these in the form:
->      prefix:suffix
-> Xmon uses the disassembly routines from GNU binutils. These currently do
-> not support prefixed instructions so we will not disassemble the
-> prefixed instructions yet.
+Le 11/02/2020 à 03:25, Anshuman Khandual a écrit :
 > 
-> Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
-> ---
-> v2: Rename sufx to suffix
-> ---
->   arch/powerpc/xmon/xmon.c | 50 +++++++++++++++++++++++++++++++---------
->   1 file changed, 39 insertions(+), 11 deletions(-)
 > 
-> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-> index 0b085642bbe7..513901ee18b0 100644
-> --- a/arch/powerpc/xmon/xmon.c
-> +++ b/arch/powerpc/xmon/xmon.c
-> @@ -2903,6 +2903,21 @@ prdump(unsigned long adrs, long ndump)
->   	}
->   }
->   
-> +static bool instrs_are_equal(unsigned long insta, unsigned long suffixa,
-> +			     unsigned long instb, unsigned long suffixb)
-> +{
-> +	if (insta != instb)
-> +		return false;
-> +
-> +	if (!IS_PREFIX(insta) && !IS_PREFIX(instb))
-> +		return true;
-> +
-> +	if (IS_PREFIX(insta) && IS_PREFIX(instb))
-> +		return suffixa == suffixb;
-> +
-> +	return false;
-> +}
-> +
->   typedef int (*instruction_dump_func)(unsigned long inst, unsigned long addr);
->   
->   static int
-> @@ -2911,12 +2926,11 @@ generic_inst_dump(unsigned long adr, long count, int praddr,
->   {
->   	int nr, dotted;
->   	unsigned long first_adr;
-> -	unsigned int inst, last_inst = 0;
-> -	unsigned char val[4];
-> +	unsigned int inst, suffix, last_inst = 0, last_suffix = 0;
->   
->   	dotted = 0;
-> -	for (first_adr = adr; count > 0; --count, adr += 4) {
-> -		nr = mread(adr, val, 4);
-> +	for (first_adr = adr; count > 0; --count, adr += nr) {
-> +		nr = read_instr(adr, &inst, &suffix);
->   		if (nr == 0) {
->   			if (praddr) {
->   				const char *x = fault_chars[fault_type];
-> @@ -2924,8 +2938,9 @@ generic_inst_dump(unsigned long adr, long count, int praddr,
->   			}
->   			break;
->   		}
-> -		inst = GETWORD(val);
-> -		if (adr > first_adr && inst == last_inst) {
-> +		if (adr > first_adr && instrs_are_equal(inst, suffix,
-> +							last_inst,
-> +							last_suffix)) {
->   			if (!dotted) {
->   				printf(" ...\n");
->   				dotted = 1;
-> @@ -2934,11 +2949,24 @@ generic_inst_dump(unsigned long adr, long count, int praddr,
->   		}
->   		dotted = 0;
->   		last_inst = inst;
-> -		if (praddr)
-> -			printf(REG"  %.8x", adr, inst);
-> -		printf("\t");
-> -		dump_func(inst, adr);
-> -		printf("\n");
-> +		last_suffix = suffix;
-> +		if (IS_PREFIX(inst)) {
-> +			if (praddr)
-> +				printf(REG"  %.8x:%.8x", adr, inst, suffix);
-> +			printf("\t");
-> +			/*
-> +			 * Just use this until binutils ppc disassembly
-> +			 * prints prefixed instructions.
-> +			 */
-> +			printf("%.8x:%.8x", inst, suffix);
-> +			printf("\n");
-> +		} else {
-> +			if (praddr)
-> +				printf(REG"  %.8x", adr, inst);
-> +			printf("\t");
-> +			dump_func(inst, adr);
-> +			printf("\n");
-> +		}
+> On 02/10/2020 04:36 PM, Russell King - ARM Linux admin wrote:
+>> There are good reasons for the way ARM does stuff.  The generic crap was
+>> written without regard for the circumstances that ARM has, and thus is
+>> entirely unsuitable for 32-bit ARM.
+> 
+> Since we dont have an agreement here, lets just settle with disabling the
+> test for now on platforms where the build fails. CONFIG_EXPERT is enabling
+> this test for better adaptability and coverage, hence how about re framing
+> the config like this ? This at the least conveys the fact that EXPERT only
+> works when platform is neither IA64 or ARM.
 
-What about:
+Agreed
 
+> 
+> config DEBUG_VM_PGTABLE
+> 	bool "Debug arch page table for semantics compliance"
+> 	depends on MMU
+> 	depends on ARCH_HAS_DEBUG_VM_PGTABLE || (EXPERT &&  !(IA64 || ARM))
 
-		if (pr_addr) {
-			printf(REG"  %.8x", adr, inst);
-			if (IS_PREFIX(inst))
-				printf(":%.8x", suffix);
-		}
-		printf("\t");
-		if (IS_PREFIX(inst))
-			printf("%.8x:%.8x", inst, suffix);
-		else
-			dump_func(inst, adr);
-		printf("\n");
+I think it's maybe better to have a dedicated depends line:
 
->   	}
->   	return adr - first_adr;
->   }
+depends on !IA64 && !ARM
+depends on ARCH_HAS_DEBUG_VM_PGTABLE || EXPERT
+
+The day arm and/or ia64 is ready for building the test, we can remove 
+that depends.
+
+> 	default n if !ARCH_HAS_DEBUG_VM_PGTABLE
+> 	default y if DEBUG_VM
 > 
 
 Christophe
