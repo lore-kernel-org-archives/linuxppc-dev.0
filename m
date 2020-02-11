@@ -2,60 +2,85 @@ Return-Path: <SRS0=nxP5=37=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,HK_RANDOM_FROM,HTML_MESSAGE,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6712C35242
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Feb 2020 04:15:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 68C5AC35242
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Feb 2020 04:30:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5E96E20842
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Feb 2020 04:15:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5E96E20842
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=free.fr
+	by mail.kernel.org (Postfix) with ESMTPS id E3C2720661
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Feb 2020 04:30:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E3C2720661
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48GqF854YYzDqJl
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Feb 2020 15:15:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48Gqb02XWHzDqJm
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Feb 2020 15:30:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=leonardo@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=free.fr
- (client-ip=2a01:e0c:1:1599::12; helo=smtp3-g21.free.fr;
- envelope-from=dftxbs3e@free.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=free.fr
-Received: from smtp3-g21.free.fr (smtp3-g21.free.fr [IPv6:2a01:e0c:1:1599::12])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48GpsB2XkSzDqGW
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Feb 2020 14:57:58 +1100 (AEDT)
-Received: from [IPv6:2a01:e0a:2a2:1590:3130:d4af:7a6d:562c] (unknown
- [IPv6:2a01:e0a:2a2:1590:3130:d4af:7a6d:562c])
- by smtp3-g21.free.fr (Postfix) with ESMTP id E31EB13F846
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Feb 2020 04:57:52 +0100 (CET)
-To: linuxppc-dev@lists.ozlabs.org
-From: dftxbs3e <dftxbs3e@free.fr>
-Autocrypt: addr=dftxbs3e@free.fr; keydata=
- mDMEW0o6qRYJKwYBBAHaRw8BAQdAbzmHTymig5H3K1qe5lc6O1Xfij3iBbOBd6I3KJyEZSO0
- G2RmdHhiczNlIDxkZnR4YnMzZUBmcmVlLmZyPoiWBBMWCAA+FiEEKM08rOoS3GtxJLfLtx4S
- 8Z+hqHsFAltKOqkCGwMFCQlmAYAFCwkIBwIGFQoJCAsCBBYCAwECHgECF4AACgkQtx4S8Z+h
- qHvjGAD+JgSjdZXX2K4hhsT9I2fbXbUfXm/QdIrZuYPsyv2PoP0A/RP5UIDWs5nhVq43AiF0
- TAm8nDyGol5naZ29BP85QAEKuDgEW0o6qRIKKwYBBAGXVQEFAQEHQB6eBz8MftqVte4x2lyG
- so13JoTSbSZ3iGlX6brVhkw+AwEIB4h+BBgWCAAmFiEEKM08rOoS3GtxJLfLtx4S8Z+hqHsF
- AltKOqkCGwwFCQlmAYAACgkQtx4S8Z+hqHuyPQD9FS4KPlZWunp51NWYGBAkqLM0pnhfGsNm
- gaW5YDQmWmgBALmWjkK7/SmreApokoV3TDKs4ACAKm1fEQuddUvKYogG
-Subject: QEMU/KVM snapshot restore bug
-Message-ID: <7544eb90-71a6-3709-c530-9c83beb943a7@free.fr>
-Date: Tue, 11 Feb 2020 04:57:52 +0100
-User-Agent: Mozilla/5.0 (X11; Linux ppc64le; rv:68.0) Gecko/20100101
- Thunderbird/68.4.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48GqXx4w62zDqBc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Feb 2020 15:29:05 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 01B4SeWA085221; Mon, 10 Feb 2020 23:28:54 -0500
+Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
+ [169.63.214.131])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2y1tndsjtw-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 10 Feb 2020 23:28:54 -0500
+Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
+ by ppma01dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 01B4QUH4014697;
+ Tue, 11 Feb 2020 04:28:53 GMT
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28]) by ppma01dal.us.ibm.com with ESMTP id 2y1mm6yuh7-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 11 Feb 2020 04:28:53 +0000
+Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
+ [9.57.199.110])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 01B4SqE550397458
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 11 Feb 2020 04:28:52 GMT
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9E2B6AE05C;
+ Tue, 11 Feb 2020 04:28:52 +0000 (GMT)
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 673A1AE060;
+ Tue, 11 Feb 2020 04:28:49 +0000 (GMT)
+Received: from LeoBras (unknown [9.85.155.18])
+ by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
+ Tue, 11 Feb 2020 04:28:49 +0000 (GMT)
+Message-ID: <1cd9c970771ba9f08621ae8357340c93f386bc24.camel@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/8xx: Fix clearing of bits 20-23 in ITLB miss
+From: Leonardo Bras <leonardo@linux.ibm.com>
+To: christophe.leroy@c-s.fr, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au
+Date: Tue, 11 Feb 2020 01:28:44 -0300
+Content-Type: multipart/signed; micalg="pgp-sha256";
+ protocol="application/pgp-signature"; boundary="=-xDAOyXIsHMs0j4R39yqj"
+User-Agent: Evolution 3.34.3 (3.34.3-1.fc31) 
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="z9EEU70xtk5sGfdhyN5KFJiDM2cVRbTcE"
-X-Mailman-Approved-At: Tue, 11 Feb 2020 15:13:01 +1100
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
+ definitions=2020-02-10_08:2020-02-10,
+ 2020-02-10 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0
+ lowpriorityscore=0 malwarescore=0 suspectscore=0 bulkscore=0 phishscore=0
+ impostorscore=0 adultscore=0 priorityscore=1501 clxscore=1015 mlxscore=0
+ mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2001150001 definitions=main-2002110030
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,238 +92,84 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---z9EEU70xtk5sGfdhyN5KFJiDM2cVRbTcE
-Content-Type: multipart/mixed; boundary="6TmxDB2JUcAy1tt3mCRasuGFEUMDqivGw";
- protected-headers="v1"
-From: dftxbs3e <dftxbs3e@free.fr>
-To: linuxppc-dev@lists.ozlabs.org
-Message-ID: <7544eb90-71a6-3709-c530-9c83beb943a7@free.fr>
-Subject: QEMU/KVM snapshot restore bug
 
---6TmxDB2JUcAy1tt3mCRasuGFEUMDqivGw
-Content-Type: multipart/alternative;
- boundary="------------2952CCD2A75C0BEA4D61AAB8"
-Content-Language: en-US
-
-This is a multi-part message in MIME format.
---------------2952CCD2A75C0BEA4D61AAB8
-Content-Type: text/plain; charset=utf-8
+--=-xDAOyXIsHMs0j4R39yqj
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hello,
+Christophe Leroy <christophe.leroy@c-s.fr> writes:
 
-I took a snapshot of a ppc64 (big endian) VM from a ppc64 (little endian)=
- host using `virsh snapshot-create-as --domain <name> --name <name>`
+> In ITLB miss handled the line supposed to clear bits 20-23 on the
+> L2 ITLB entry is buggy and does indeed nothing, leading to undefined
+> value which could allow execution when it shouldn't.
+>
+> Properly do the clearing with the relevant instruction.
+>
+> Fixes: 74fabcadfd43 ("powerpc/8xx: don't use r12/SPRN_SPRG_SCRATCH2 in TL=
+B Miss handlers")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+>  arch/powerpc/kernel/head_8xx.S | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8x=
+x.S
+> index 9922306ae512..073a651787df 100644
+> --- a/arch/powerpc/kernel/head_8xx.S
+> +++ b/arch/powerpc/kernel/head_8xx.S
+> @@ -256,7 +256,7 @@ InstructionTLBMiss:
+>  	 * set.  All other Linux PTE bits control the behavior
+>  	 * of the MMU.
+>  	 */
+> -	rlwimi	r10, r10, 0, 0x0f00	/* Clear bits 20-23 */
+> +	rlwinm	r10, r10, 0, ~0x0f00	/* Clear bits 20-23 */
+>  	rlwimi	r10, r10, 4, 0x0400	/* Copy _PAGE_EXEC into bit 21 */
+>  	ori	r10, r10, RPN_PATTERN | 0x200 /* Set 22 and 24-27 */
+>  	mtspr	SPRN_MI_RPN, r10	/* Update TLB entry */
+> --=20
+> 2.25.0
 
-Then I restarted my system and tried restoring the snapshot:
+Looks a valid change.
+rlwimi  r10, r10, 0, 0x0f00 means:=20
+r10 =3D ((r10 << 0) & 0x0f00) | (r10 & ~0x0f00) which ends up being
+r10 =3D r10=20
 
-# virsh snapshot-revert --domain <name> --snapshotname <name>
-error: internal error: process exited while connecting to monitor: 2020-0=
-2-11T03:18:08.110582Z qemu-system-ppc64: KVM_SET_DEVICE_ATTR failed: Grou=
-p 3 attr 0x0000000000001309: Device or resource busy
-2020-02-11T03:18:08.110605Z qemu-system-ppc64: error while loading state =
-for instance 0x0 of device 'spapr'
-2020-02-11T03:18:08.112843Z qemu-system-ppc64: Error -1 while loading VM =
-state
+On ISA, rlwinm is recommended for clearing high order bits.
+rlwinm  r10, r10, 0, ~0x0f00 means:
+r10 =3D (r10 << 0) & ~0x0f00
 
-And dmesg shows each time the restore command is executed:
+Which does exactly what the comments suggests.
 
-[  180.176606] WARNING: CPU: 16 PID: 5528 at arch/powerpc/kvm/book3s_xive=
-=2Ec:345 xive_try_pick_queue+0x40/0xb8 [kvm]
-[  180.176608] Modules linked in: vhost_net vhost tap kvm_hv kvm xt_CHECK=
-SUM xt_MASQUERADE nf_nat_tftp nf_conntrack_tftp tun bridge 8021q garp mrp=
- stp llc rfkill nf_conntrack_netbios_ns nf_conntrack_broadcast xt_CT ip6t=
-_REJECT nf_reject_ipv6 ip6t_rpfilter ipt_REJECT nf_reject_ipv4 xt_conntra=
-ck ebtable_nat ebtable_broute ip6table_nat ip6table_mangle ip6table_raw i=
-p6table_security iptable_nat nf_nat iptable_mangle iptable_raw iptable_se=
-curity nf_conntrack nf_defrag_ipv6 nf_defrag_ipv4 ip_set nfnetlink ebtabl=
-e_filter ebtables ip6table_filter ip6_tables iptable_filter sunrpc raid1 =
-at24 regmap_i2c snd_hda_codec_hdmi snd_hda_intel snd_intel_dspcfg joydev =
-snd_hda_codec snd_hda_core ofpart snd_hwdep crct10dif_vpmsum snd_seq ipmi=
-_powernv powernv_flash ipmi_devintf snd_seq_device mtd ipmi_msghandler rt=
-c_opal snd_pcm opal_prd i2c_opal snd_timer snd soundcore lz4 lz4_compress=
- zram ip_tables xfs libcrc32c dm_crypt amdgpu ast drm_vram_helper mfd_cor=
-e i2c_algo_bit gpu_sched drm_kms_helper mpt3sas
-[  180.176652]  syscopyarea sysfillrect sysimgblt fb_sys_fops ttm drm vmx=
-_crypto tg3 crc32c_vpmsum nvme raid_class scsi_transport_sas nvme_core dr=
-m_panel_orientation_quirks i2c_core fuse
-[  180.176663] CPU: 16 PID: 5528 Comm: qemu-system-ppc Not tainted 5.4.17=
--200.fc31.ppc64le #1
-[  180.176665] NIP:  c00800000a883c80 LR: c00800000a886db8 CTR: c00800000=
-a88a9e0
-[  180.176667] REGS: c000000767a17890 TRAP: 0700   Not tainted  (5.4.17-2=
-00.fc31.ppc64le)
-[  180.176668] MSR:  9000000000029033 <SF,HV,EE,ME,IR,DR,RI,LE>  CR: 4822=
-4248  XER: 20040000
-[  180.176673] CFAR: c00800000a886db4 IRQMASK: 0=20
-               GPR00: c00800000a886db8 c000000767a17b20 c00800000a8aed00 =
-c0002005468a4480=20
-               GPR04: 0000000000000000 0000000000000000 0000000000000000 =
-0000000000000001=20
-               GPR08: c0002007142b2400 c0002007142b2400 0000000000000000 =
-c00800000a8910f0=20
-               GPR12: c00800000a88a488 c0000007fffed000 0000000000000000 =
-0000000000000000=20
-               GPR16: 0000000149524180 00007ffff39bda78 00007ffff39bda30 =
-000000000000025c=20
-               GPR20: 0000000000000000 0000000000000003 c0002006f13a0000 =
-0000000000000000=20
-               GPR24: 0000000000001359 0000000000000000 c0000002f8c96c38 =
-c0000002f8c80000=20
-               GPR28: 0000000000000000 c0002006f13a0000 c0002006f13a4038 =
-c000000767a17be4=20
-[  180.176688] NIP [c00800000a883c80] xive_try_pick_queue+0x40/0xb8 [kvm]=
+FWIW:
+Reviwed-by: Leonardo Bras <leonardo@linux.ibm.com>
 
-[  180.176693] LR [c00800000a886db8] kvmppc_xive_select_target+0x100/0x21=
-0 [kvm]
-[  180.176694] Call Trace:
-[  180.176696] [c000000767a17b20] [c000000767a17b70] 0xc000000767a17b70 (=
-unreliable)
-[  180.176701] [c000000767a17b70] [c00800000a88b420] kvmppc_xive_native_s=
-et_attr+0xf98/0x1760 [kvm]
-[  180.176705] [c000000767a17cc0] [c00800000a86392c] kvm_device_ioctl+0xf=
-4/0x180 [kvm]
-[  180.176710] [c000000767a17d10] [c0000000005380b0] do_vfs_ioctl+0xaa0/0=
-xd90
-[  180.176712] [c000000767a17dd0] [c000000000538464] sys_ioctl+0xc4/0x110=
-
-[  180.176716] [c000000767a17e20] [c00000000000b9d0] system_call+0x5c/0x6=
-8
-[  180.176717] Instruction dump:
-[  180.176719] 794ad182 0b0a0000 2c290000 41820080 89490010 2c0a0000 4182=
-0074 78883664=20
-[  180.176723] 7d094214 e9480070 7d470074 78e7d182 <0b070000> 2c2a0000 41=
-820054 81480078=20
-[  180.176727] ---[ end trace 056a6dd275e20684 ]---
-
-Let me know if I can provide more information
-
-Thanks
-
-
---------------2952CCD2A75C0BEA4D61AAB8
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-
-<html>
-  <head>
-
-    <meta http-equiv=3D"content-type" content=3D"text/html; charset=3DUTF=
--8">
-  </head>
-  <body>
-    <pre>Hello,</pre>
-    <pre>I took a snapshot of a ppc64 (big endian) VM from a ppc64 (littl=
-e endian) host using `virsh snapshot-create-as --domain &lt;name&gt; --na=
-me &lt;name&gt;`</pre>
-    <pre>Then I restarted my system and tried restoring the snapshot:
-</pre>
-    <pre># virsh snapshot-revert --domain &lt;name&gt; --snapshotname &lt=
-;name&gt;
-error: internal error: process exited while connecting to monitor: 2020-0=
-2-11T03:18:08.110582Z qemu-system-ppc64: KVM_SET_DEVICE_ATTR failed: Grou=
-p 3 attr 0x0000000000001309: Device or resource busy
-2020-02-11T03:18:08.110605Z qemu-system-ppc64: error while loading state =
-for instance 0x0 of device 'spapr'
-2020-02-11T03:18:08.112843Z qemu-system-ppc64: Error -1 while loading VM =
-state</pre>
-    <pre>And dmesg shows each time the restore command is executed:</pre>=
-
-    <pre>[  180.176606] WARNING: CPU: 16 PID: 5528 at arch/powerpc/kvm/bo=
-ok3s_xive.c:345 xive_try_pick_queue+0x40/0xb8 [kvm]
-[  180.176608] Modules linked in: vhost_net vhost tap kvm_hv kvm xt_CHECK=
-SUM xt_MASQUERADE nf_nat_tftp nf_conntrack_tftp tun bridge 8021q garp mrp=
- stp llc rfkill nf_conntrack_netbios_ns nf_conntrack_broadcast xt_CT ip6t=
-_REJECT nf_reject_ipv6 ip6t_rpfilter ipt_REJECT nf_reject_ipv4 xt_conntra=
-ck ebtable_nat ebtable_broute ip6table_nat ip6table_mangle ip6table_raw i=
-p6table_security iptable_nat nf_nat iptable_mangle iptable_raw iptable_se=
-curity nf_conntrack nf_defrag_ipv6 nf_defrag_ipv4 ip_set nfnetlink ebtabl=
-e_filter ebtables ip6table_filter ip6_tables iptable_filter sunrpc raid1 =
-at24 regmap_i2c snd_hda_codec_hdmi snd_hda_intel snd_intel_dspcfg joydev =
-snd_hda_codec snd_hda_core ofpart snd_hwdep crct10dif_vpmsum snd_seq ipmi=
-_powernv powernv_flash ipmi_devintf snd_seq_device mtd ipmi_msghandler rt=
-c_opal snd_pcm opal_prd i2c_opal snd_timer snd soundcore lz4 lz4_compress=
- zram ip_tables xfs libcrc32c dm_crypt amdgpu ast drm_vram_helper mfd_cor=
-e i2c_algo_bit gpu_sched drm_kms_helper mpt3sas
-[  180.176652]  syscopyarea sysfillrect sysimgblt fb_sys_fops ttm drm vmx=
-_crypto tg3 crc32c_vpmsum nvme raid_class scsi_transport_sas nvme_core dr=
-m_panel_orientation_quirks i2c_core fuse
-[  180.176663] CPU: 16 PID: 5528 Comm: qemu-system-ppc Not tainted 5.4.17=
--200.fc31.ppc64le #1
-[  180.176665] NIP:  c00800000a883c80 LR: c00800000a886db8 CTR: c00800000=
-a88a9e0
-[  180.176667] REGS: c000000767a17890 TRAP: 0700   Not tainted  (5.4.17-2=
-00.fc31.ppc64le)
-[  180.176668] MSR:  9000000000029033 &lt;SF,HV,EE,ME,IR,DR,RI,LE&gt;  CR=
-: 48224248  XER: 20040000
-[  180.176673] CFAR: c00800000a886db4 IRQMASK: 0=20
-               GPR00: c00800000a886db8 c000000767a17b20 c00800000a8aed00 =
-c0002005468a4480=20
-               GPR04: 0000000000000000 0000000000000000 0000000000000000 =
-0000000000000001=20
-               GPR08: c0002007142b2400 c0002007142b2400 0000000000000000 =
-c00800000a8910f0=20
-               GPR12: c00800000a88a488 c0000007fffed000 0000000000000000 =
-0000000000000000=20
-               GPR16: 0000000149524180 00007ffff39bda78 00007ffff39bda30 =
-000000000000025c=20
-               GPR20: 0000000000000000 0000000000000003 c0002006f13a0000 =
-0000000000000000=20
-               GPR24: 0000000000001359 0000000000000000 c0000002f8c96c38 =
-c0000002f8c80000=20
-               GPR28: 0000000000000000 c0002006f13a0000 c0002006f13a4038 =
-c000000767a17be4=20
-[  180.176688] NIP [c00800000a883c80] xive_try_pick_queue+0x40/0xb8 [kvm]=
-
-[  180.176693] LR [c00800000a886db8] kvmppc_xive_select_target+0x100/0x21=
-0 [kvm]
-[  180.176694] Call Trace:
-[  180.176696] [c000000767a17b20] [c000000767a17b70] 0xc000000767a17b70 (=
-unreliable)
-[  180.176701] [c000000767a17b70] [c00800000a88b420] kvmppc_xive_native_s=
-et_attr+0xf98/0x1760 [kvm]
-[  180.176705] [c000000767a17cc0] [c00800000a86392c] kvm_device_ioctl+0xf=
-4/0x180 [kvm]
-[  180.176710] [c000000767a17d10] [c0000000005380b0] do_vfs_ioctl+0xaa0/0=
-xd90
-[  180.176712] [c000000767a17dd0] [c000000000538464] sys_ioctl+0xc4/0x110=
-
-[  180.176716] [c000000767a17e20] [c00000000000b9d0] system_call+0x5c/0x6=
-8
-[  180.176717] Instruction dump:
-[  180.176719] 794ad182 0b0a0000 2c290000 41820080 89490010 2c0a0000 4182=
-0074 78883664=20
-[  180.176723] 7d094214 e9480070 7d470074 78e7d182 &lt;0b070000&gt; 2c2a0=
-000 41820054 81480078=20
-[  180.176727] ---[ end trace 056a6dd275e20684 ]---
-
-Let me know if I can provide more information
-
-Thanks
-</pre>
-  </body>
-</html>
-
---------------2952CCD2A75C0BEA4D61AAB8--
-
---6TmxDB2JUcAy1tt3mCRasuGFEUMDqivGw--
-
---z9EEU70xtk5sGfdhyN5KFJiDM2cVRbTcE
+--=-xDAOyXIsHMs0j4R39yqj
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iHUEARYIAB0WIQQozTys6hLca3Ekt8u3HhLxn6GoewUCXkImQAAKCRC3HhLxn6Go
-e6hvAQDBgM8cIpMBBx1MKDtTQYptGp4RJqD1iior1QgnjdjC4gEAtfFBqcFwLsD2
-VNXfEBF8XktvGOtAC37ZuVEprYaSTwk=
-=ocGM
+iQIzBAABCAAdFiEEMdeUgIzgjf6YmUyOlQYWtz9SttQFAl5CLXwACgkQlQYWtz9S
+ttTvxg/+P4NqENWap51cZFh1Umvzrmqhy+i/SX1us+WFPUoW7paLgqSPZDz5G1iq
+4NotVXJCw1ZC5hf7bYBzIsFjfB5pLPSjUExie/P5O9yNvOjon3BOdrcwdx5p8sfS
+5Xca8szD9e6Om/YVrTmvY3aIhorGTtVboyCZ/xZIZjdcSh5wC7fyGQE0+eK2Cu5w
+6tIHwdvwO0/Z/ovOo/hQlprh8Zz24R7qJVOae8LAUMENSeNN5tNUW5YCTYJOsuR8
+RQ/4NzFw5DBRhZtPcJxBh7wZ/GDvRr5s1eIGgft1L4IWqUap73GI34VaeClVKRZD
+/EW5JThmcbmN2DlyOw1BRs4yrrJD5jXbMQlj6TXeSXrzGLs4azyGHS2K3/XbGBYv
+C+x/+PsDx5/otJe2OWWjuypyy9GI/LQiTCQUZfrUaDafNP1EiP/UiyKLbhsMacAB
+hB/mRHoTXvIMK/qa7+QYoAqPIlVTQXKTZmOwGXPQtSvi7NNFpX55DjU28SWguJsi
+eRXdo0/imfSJUCz9HPzg5DjfVK94BuZtSX2+w8P99Ic6mEbIN/BBW1vffoT1vT1B
+a8LXCpXdbZwyiuKAwiwDDqX0s0XjYLDo/7L3qCmgKPkYBrY3etAfr/eohV6UlxAF
+8k6d/nDfltv3B2G0DxlzfBgFR1RUlYfJIVQYe0DPdgxNUohwn4A=
+=LkZr
 -----END PGP SIGNATURE-----
 
---z9EEU70xtk5sGfdhyN5KFJiDM2cVRbTcE--
+--=-xDAOyXIsHMs0j4R39yqj--
+
