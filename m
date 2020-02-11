@@ -2,25 +2,26 @@ Return-Path: <SRS0=nxP5=37=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AA99C352A3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Feb 2020 06:46:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E0CDC352A3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Feb 2020 06:48:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 36E8E20708
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Feb 2020 06:46:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id BEE2B20708
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Feb 2020 06:48:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="eiJDqafS"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 36E8E20708
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="bG4vKByj"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BEE2B20708
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48GtbM3WytzDqNX
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Feb 2020 17:46:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48GtdT5DznzDqJR
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Feb 2020 17:48:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,67 +30,57 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=eiJDqafS; dkim-atps=neutral
+ header.s=mail header.b=bG4vKByj; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48Grzp2MLvzDqBP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Feb 2020 16:33:55 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48Gtbb1D0HzDq83
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Feb 2020 17:46:35 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 48Grzf3xCbz9v3Zl;
- Tue, 11 Feb 2020 06:33:50 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 48GtbW1zZ2z9v4k2;
+ Tue, 11 Feb 2020 07:46:31 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=eiJDqafS; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=bG4vKByj; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id zkhy9QdmXM9w; Tue, 11 Feb 2020 06:33:50 +0100 (CET)
+ with ESMTP id 8AVFjcvSjdwk; Tue, 11 Feb 2020 07:46:31 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 48Grzf2Rpnz9v3ZZ;
- Tue, 11 Feb 2020 06:33:50 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 48GtbW0mDTz9v4k1;
+ Tue, 11 Feb 2020 07:46:31 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1581399230; bh=Mwmnj2Mh3WwfnwZCWtQm8v+ZNM5AU+v+3fKB+Vt+2i0=;
+ t=1581403591; bh=CfS90PJDXd7ciwM1CoDr/0z6lK+kxHZC4z7ijwcEBGY=;
  h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=eiJDqafSfDYphjROC10Vnz8Xn4zZIPklngVdYVaguBX5QmUxSbROO5kAJ30wvAhzg
- 0fV39U/k7ykq9c6fVHRsjt4aiC/Qv+CenzoBQFemfXJIaflYEGRvsm8/278XrXInkJ
- zdjMm7FlftlG1Bdd/ww1KQhN8+LUDsKmilPkcQWI=
+ b=bG4vKByj9PM06+wzfFf+pgv/SnearNd9Tv+Bbzw5IJVNEdi1OtE0ZujLbVkp7EG2t
+ h8ztXyTrBlBo5IozQ+DmmhPFB8MdD9H4JgY9qXr7raVmtSSeKrC+6eJCbfww9G2RwE
+ dkO3VLcxVMSnfDAeRU0jFVaLQ9t+wJGzSR4ai988=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 112868B787;
- Tue, 11 Feb 2020 06:33:51 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id F271B8B78C;
+ Tue, 11 Feb 2020 07:46:31 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id fAOO4UrrOOMa; Tue, 11 Feb 2020 06:33:50 +0100 (CET)
+ with ESMTP id 86Jp_LQHABd9; Tue, 11 Feb 2020 07:46:31 +0100 (CET)
 Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D691D8B776;
- Tue, 11 Feb 2020 06:33:47 +0100 (CET)
-Subject: Re: [PATCH V13] mm/debug: Add tests validating architecture page
- table helpers
-To: Anshuman Khandual <anshuman.khandual@arm.com>,
- Russell King - ARM Linux admin <linux@armlinux.org.uk>
-References: <1580897674-16456-1-git-send-email-anshuman.khandual@arm.com>
- <202002060619.wEOdAZU1%lkp@intel.com>
- <78d3ce6b-e100-2561-6b09-124c29731d1a@arm.com>
- <20200209205231.44d098f8749e88190b8ba10c@linux-foundation.org>
- <955229f7-f161-f720-0e75-a3163f63817d@arm.com>
- <aef1048f-68c4-d14f-e669-8f288ba9ac7a@c-s.fr>
- <20200210100200.GB25745@shell.armlinux.org.uk>
- <7cb3a5bb-eaea-a01c-4047-e3c000b7ad1d@c-s.fr>
- <20200210110639.GC25745@shell.armlinux.org.uk>
- <82317d50-57a2-ce84-7557-21635d57448e@arm.com>
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3C1508B776;
+ Tue, 11 Feb 2020 07:46:31 +0100 (CET)
+Subject: Re: [PATCH v2 10/13] powerpc/kprobes: Support kprobes on prefixed
+ instructions
+To: Jordan Niethe <jniethe5@gmail.com>, linuxppc-dev@lists.ozlabs.org
+References: <20200211053355.21574-1-jniethe5@gmail.com>
+ <20200211053355.21574-11-jniethe5@gmail.com>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <aa540cd6-93a0-1be4-cdff-c9af43ed7d8e@c-s.fr>
-Date: Tue, 11 Feb 2020 06:33:47 +0100
+Message-ID: <4557dfcc-064f-6c94-7620-df13370b6cfb@c-s.fr>
+Date: Tue, 11 Feb 2020 07:46:31 +0100
 User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
  Thunderbird/68.4.2
 MIME-Version: 1.0
-In-Reply-To: <82317d50-57a2-ce84-7557-21635d57448e@arm.com>
+In-Reply-To: <20200211053355.21574-11-jniethe5@gmail.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: fr
 Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Tue, 11 Feb 2020 17:44:38 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,79 +92,147 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, uclinux-h8-devel@lists.sourceforge.jp,
- linux-m68k@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
- James Hogan <jhogan@kernel.org>,
- Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Michal Hocko <mhocko@kernel.org>,
- linux-mm@kvack.org, Dave Hansen <dave.hansen@intel.com>,
- Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
- linux-hexagon@vger.kernel.org, linux-riscv@lists.infradead.org,
- Thomas Gleixner <tglx@linutronix.de>, linux-s390@vger.kernel.org,
- kbuild test robot <lkp@intel.com>, Yoshinori Sato <ysato@users.sourceforge.jp>,
- Max Filippov <jcmvbkbc@gmail.com>, x86@kernel.org,
- Matthew Wilcox <willy@infradead.org>, Steven Price <Steven.Price@arm.com>,
- Jason Gunthorpe <jgg@ziepe.ca>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Gerald Schaefer <gerald.schaefer@de.ibm.com>, Mark Salter <msalter@redhat.com>,
- Matt Turner <mattst88@gmail.com>, linux-snps-arc@lists.infradead.org,
- Ingo Molnar <mingo@kernel.org>, linux-xtensa@linux-xtensa.org,
- Kees Cook <keescook@chromium.org>,
- Masahiro Yamada <yamada.masahiro@socionext.com>, linux-alpha@vger.kernel.org,
- Aurelien Jacquiot <jacquiot.aurelien@gmail.com>, linux-c6x-dev@linux-c6x.org,
- Mark Brown <broonie@kernel.org>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Paul Walmsley <paul.walmsley@sifive.com>,
- "Kirill A . Shutemov" <kirill@shutemov.name>,
- Dan Williams <dan.j.williams@intel.com>, Guan Xuetao <gxt@pku.edu.cn>,
- Vlastimil Babka <vbabka@suse.cz>, Richard Henderson <rth@twiddle.net>,
- linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>,
- Michal Simek <monstr@monstr.eu>, kbuild-all@lists.01.org,
- Brian Cain <bcain@codeaurora.org>, Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-mips@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, linux-kernel@vger.kernel.org,
- Paul Burton <paul.burton@mips.com>, Mike Rapoport <rppt@linux.vnet.ibm.com>,
- Palmer Dabbelt <palmer@dabbelt.com>, Vineet Gupta <vgupta@synopsys.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, Qian Cai <cai@lca.pw>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Cc: bala24@linux.ibm.com, alistair@popple.id.au, mpe@ellerman.id.a,
+ dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
 
-Le 11/02/2020 à 03:25, Anshuman Khandual a écrit :
+Le 11/02/2020 à 06:33, Jordan Niethe a écrit :
+> A prefixed instruction is composed of a word prefix followed by a word
+> suffix. It does not make sense to be able to have a kprobe on the suffix
+> of a prefixed instruction, so make this impossible.
 > 
+> Kprobes work by replacing an instruction with a trap and saving that
+> instruction to be single stepped out of place later. Currently there is
+> not enough space allocated to keep a prefixed instruction for single
+> stepping. Increase the amount of space allocated for holding the
+> instruction copy.
 > 
-> On 02/10/2020 04:36 PM, Russell King - ARM Linux admin wrote:
->> There are good reasons for the way ARM does stuff.  The generic crap was
->> written without regard for the circumstances that ARM has, and thus is
->> entirely unsuitable for 32-bit ARM.
+> kprobe_post_handler() expects all instructions to be 4 bytes long which
+> means that it does not function correctly for prefixed instructions.
+> Add checks for prefixed instructions which will use a length of 8 bytes
+> instead.
 > 
-> Since we dont have an agreement here, lets just settle with disabling the
-> test for now on platforms where the build fails. CONFIG_EXPERT is enabling
-> this test for better adaptability and coverage, hence how about re framing
-> the config like this ? This at the least conveys the fact that EXPERT only
-> works when platform is neither IA64 or ARM.
-
-Agreed
-
+> For optprobes we normally patch in loading the instruction we put a
+> probe on into r4 before calling emulate_step(). We now make space and
+> patch in loading the suffix into r5 as well.
 > 
-> config DEBUG_VM_PGTABLE
-> 	bool "Debug arch page table for semantics compliance"
-> 	depends on MMU
-> 	depends on ARCH_HAS_DEBUG_VM_PGTABLE || (EXPERT &&  !(IA64 || ARM))
-
-I think it's maybe better to have a dedicated depends line:
-
-depends on !IA64 && !ARM
-depends on ARCH_HAS_DEBUG_VM_PGTABLE || EXPERT
-
-The day arm and/or ia64 is ready for building the test, we can remove 
-that depends.
-
-> 	default n if !ARCH_HAS_DEBUG_VM_PGTABLE
-> 	default y if DEBUG_VM
+> Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
+> ---
+>   arch/powerpc/include/asm/kprobes.h   |  5 +--
+>   arch/powerpc/kernel/kprobes.c        | 47 +++++++++++++++++++++-------
+>   arch/powerpc/kernel/optprobes.c      | 32 ++++++++++---------
+>   arch/powerpc/kernel/optprobes_head.S |  6 ++++
+>   4 files changed, 63 insertions(+), 27 deletions(-)
 > 
+> diff --git a/arch/powerpc/include/asm/kprobes.h b/arch/powerpc/include/asm/kprobes.h
+> index 66b3f2983b22..0d44ce8a3163 100644
+> --- a/arch/powerpc/include/asm/kprobes.h
+> +++ b/arch/powerpc/include/asm/kprobes.h
+> @@ -38,12 +38,13 @@ extern kprobe_opcode_t optprobe_template_entry[];
+>   extern kprobe_opcode_t optprobe_template_op_address[];
+>   extern kprobe_opcode_t optprobe_template_call_handler[];
+>   extern kprobe_opcode_t optprobe_template_insn[];
+> +extern kprobe_opcode_t optprobe_template_suffix[];
+>   extern kprobe_opcode_t optprobe_template_call_emulate[];
+>   extern kprobe_opcode_t optprobe_template_ret[];
+>   extern kprobe_opcode_t optprobe_template_end[];
+>   
+> -/* Fixed instruction size for powerpc */
+> -#define MAX_INSN_SIZE		1
+> +/* Prefixed instructions are two words */
+> +#define MAX_INSN_SIZE		2
+>   #define MAX_OPTIMIZED_LENGTH	sizeof(kprobe_opcode_t)	/* 4 bytes */
+>   #define MAX_OPTINSN_SIZE	(optprobe_template_end - optprobe_template_entry)
+>   #define RELATIVEJUMP_SIZE	sizeof(kprobe_opcode_t)	/* 4 bytes */
+> diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
+> index 24a56f062d9e..b061deba4fe7 100644
+> --- a/arch/powerpc/kernel/kprobes.c
+> +++ b/arch/powerpc/kernel/kprobes.c
+> @@ -104,17 +104,30 @@ kprobe_opcode_t *kprobe_lookup_name(const char *name, unsigned int offset)
+>   
+>   int arch_prepare_kprobe(struct kprobe *p)
+>   {
+> +	int len;
+>   	int ret = 0;
+> +	struct kprobe *prev;
+>   	kprobe_opcode_t insn = *p->addr;
+> +	kprobe_opcode_t prefix = *(p->addr - 1);
+>   
+> +	preempt_disable();
+>   	if ((unsigned long)p->addr & 0x03) {
+>   		printk("Attempt to register kprobe at an unaligned address\n");
+>   		ret = -EINVAL;
+>   	} else if (IS_MTMSRD(insn) || IS_RFID(insn) || IS_RFI(insn)) {
+>   		printk("Cannot register a kprobe on rfi/rfid or mtmsr[d]\n");
+>   		ret = -EINVAL;
+> +	} else if (IS_PREFIX(prefix)) {
+> +		printk("Cannot register a kprobe on the second word of prefixed instruction\n");
+> +		ret = -EINVAL;
+> +	}
+> +	prev = get_kprobe(p->addr - 1);
+> +	if (prev && IS_PREFIX(*prev->ainsn.insn)) {
+> +		printk("Cannot register a kprobe on the second word of prefixed instruction\n");
+> +		ret = -EINVAL;
+>   	}
+>   
+> +
+>   	/* insn must be on a special executable page on ppc64.  This is
+>   	 * not explicitly required on ppc32 (right now), but it doesn't hurt */
+>   	if (!ret) {
+> @@ -124,14 +137,18 @@ int arch_prepare_kprobe(struct kprobe *p)
+>   	}
+>   
+>   	if (!ret) {
+> -		memcpy(p->ainsn.insn, p->addr,
+> -				MAX_INSN_SIZE * sizeof(kprobe_opcode_t));
+> +		if (IS_PREFIX(insn))
+> +			len = MAX_INSN_SIZE * sizeof(kprobe_opcode_t);
+> +		else
+> +			len = sizeof(kprobe_opcode_t);
+> +		memcpy(p->ainsn.insn, p->addr, len);
+
+This code is about to get changed, see 
+https://patchwork.ozlabs.org/patch/1232619/
+
+>   		p->opcode = *p->addr;
+>   		flush_icache_range((unsigned long)p->ainsn.insn,
+>   			(unsigned long)p->ainsn.insn + sizeof(kprobe_opcode_t));
+>   	}
+>   
+>   	p->ainsn.boostable = 0;
+> +	preempt_enable_no_resched();
+>   	return ret;
+>   }
+>   NOKPROBE_SYMBOL(arch_prepare_kprobe);
+> @@ -216,10 +233,11 @@ NOKPROBE_SYMBOL(arch_prepare_kretprobe);
+>   static int try_to_emulate(struct kprobe *p, struct pt_regs *regs)
+>   {
+>   	int ret;
+> -	unsigned int insn = *p->ainsn.insn;
+> +	unsigned int insn = p->ainsn.insn[0];
+> +	unsigned int suffix = p->ainsn.insn[1];
+>   
+>   	/* regs->nip is also adjusted if emulate_step returns 1 */
+> -	ret = emulate_step(regs, insn, PPC_NO_SUFFIX);
+> +	ret = emulate_step(regs, insn, suffix);
+>   	if (ret > 0) {
+>   		/*
+>   		 * Once this instruction has been boosted
+> @@ -233,7 +251,11 @@ static int try_to_emulate(struct kprobe *p, struct pt_regs *regs)
+>   		 * So, we should never get here... but, its still
+>   		 * good to catch them, just in case...
+>   		 */
+> -		printk("Can't step on instruction %x\n", insn);
+> +		if (!IS_PREFIX(insn))
+> +			printk("Can't step on instruction %x\n", insn);
+> +		else
+> +			printk("Can't step on instruction %x %x\n", insn,
+> +			       suffix);
+
+Maybe %x:%x as in xmon ?
 
 Christophe
