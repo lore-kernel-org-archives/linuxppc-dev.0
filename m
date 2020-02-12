@@ -2,107 +2,79 @@ Return-Path: <SRS0=Z2Z0=4A=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 957A6C2BA83
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Feb 2020 11:34:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3575EC2BA83
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Feb 2020 11:50:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1CACF20714
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Feb 2020 11:34:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1CACF20714
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 663A120675
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Feb 2020 11:50:17 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="qf70Hdit"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 663A120675
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48Hcwk6vcwzDqDr
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Feb 2020 22:33:58 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48Hcdn0ZSnzDqNk
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2020 22:21:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48HdHV2C5GzDqK3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Feb 2020 22:50:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 48Hcdl0XN1z8sxX
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2020 22:20:59 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 48Hcdk3xYvz9sPJ; Wed, 12 Feb 2020 22:20:58 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=psampat@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
+ header.s=mail header.b=qf70Hdit; dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 48Hcdj4ZK0z9sRJ
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Feb 2020 22:20:57 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 01CBKrsj069998
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Feb 2020 06:20:55 -0500
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2y3wxskm08-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Feb 2020 06:20:54 -0500
-Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <psampat@linux.ibm.com>;
- Wed, 12 Feb 2020 11:20:23 -0000
-Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
- by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 12 Feb 2020 11:20:22 -0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 01CBJQkg27066718
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 12 Feb 2020 11:19:26 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B55F0A407A;
- Wed, 12 Feb 2020 11:20:19 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 810CCA4065;
- Wed, 12 Feb 2020 11:20:17 +0000 (GMT)
-Received: from pratiks-thinkpad.ibmuc.com (unknown [9.199.42.59])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 12 Feb 2020 11:20:17 +0000 (GMT)
-From: Pratik Rajesh Sampat <psampat@linux.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, 
- svaidy@linux.ibm.com, ego@linux.vnet.ibm.com, linuxram@us.ibm.com,
- pratik.sampat@in.ibm.com, psampat@linux.ibm.com, pratik.r.sampat@gmail.com
-Subject: [PATCH v4 1/3] powerpc/powernv: Interface to define support and
- preference for a SPR
-Date: Wed, 12 Feb 2020 16:50:11 +0530
-X-Mailer: git-send-email 2.24.1
-In-Reply-To: <cover.1581505210.git.psampat@linux.ibm.com>
-References: <cover.1581505210.git.psampat@linux.ibm.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 20021211-0012-0000-0000-0000038621A1
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20021211-0013-0000-0000-000021C2A090
-Message-Id: <edc684b3c6981eed330f751ef644cb7239e30bd8.1581505210.git.psampat@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
- definitions=2020-02-12_06:2020-02-11,
- 2020-02-12 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 adultscore=0
- impostorscore=0 priorityscore=1501 malwarescore=0 clxscore=1015
- suspectscore=0 mlxlogscore=999 spamscore=0 mlxscore=0 lowpriorityscore=0
- bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2001150001 definitions=main-2002120092
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48HdDr6DBgzDqKw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2020 22:47:56 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 48HdDl3vNxz9tx09;
+ Wed, 12 Feb 2020 12:47:51 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=qf70Hdit; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id CoRWjQV6bqEz; Wed, 12 Feb 2020 12:47:51 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 48HdDl2jnMz9tx08;
+ Wed, 12 Feb 2020 12:47:51 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1581508071; bh=JPPwEesFVmrGnks8bsErewkvEdXo2gX6RvukgLNbfW8=;
+ h=From:Subject:To:Cc:Date:From;
+ b=qf70Hditg9SGLUPpqrBRojBhG0vY+kaLkflh+SQzzH7if4tF+iWcsV5BecmiJgVHi
+ tY2ADe5vqKtQs2qwU3+rzoX0blbxnhfT1CYShQwE+2ec/wDTgCKUD0Q9mLw1cT7T7J
+ TQm6ylL3/533BW9w322ngN/V65QmASKqqKhyjYW0=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 80C558B815;
+ Wed, 12 Feb 2020 12:47:52 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 9bFFTGQ7uaEm; Wed, 12 Feb 2020 12:47:52 +0100 (CET)
+Received: from pc16570vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
+ [172.25.230.102])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 468508B80D;
+ Wed, 12 Feb 2020 12:47:52 +0100 (CET)
+Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id F0793652BC; Wed, 12 Feb 2020 11:47:51 +0000 (UTC)
+Message-Id: <5ba4e23c19bae7f4f2fe79e4810a74ceb9902381.1581508027.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc/32s: Fix DSI and ISI exceptions for CONFIG_VMAP_STACK
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Erhard F. <erhard_f@mailbox.org>
+Date: Wed, 12 Feb 2020 11:47:51 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,440 +86,411 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Define a bitmask interface to determine support for the Self Restore,
-Self Save or both.
+hash_page() needs to read page tables from kernel memory. When entire
+kernel memory is mapped by BATs, which is normally the case when
+CONFIG_STRICT_KERNEL_RWX is not set, it works even if the page hosting
+the page table is not referenced in the MMU hash table.
 
-Also define an interface to determine the preference of that SPR to
-be strictly saved or restored or encapsulated with an order of preference.
+However, if the page where the page table resides is not covered by
+a BAT, a DSI fault can be encountered from hash_page(), and it loops
+forever. This can happen when CONFIG_STRICT_KERNEL_RWX is selected
+and the alignment of the different regions is too small to allow
+covering the entire memory with BATs. This also happens when
+CONFIG_DEBUG_PAGEALLOC is selected or when booting with 'nobats'
+flag.
 
-The preference bitmask is shown as below:
-----------------------------
-|... | 2nd pref | 1st pref |
-----------------------------
-MSB			  LSB
+Also, if the page containing the kernel stack is not present in the
+MMU hash table, registers cannot be saved and a recursive DSI fault
+is encountered.
 
-The preference from higher to lower is from LSB to MSB with a shift of 8
-bits.
-Example:
-Prefer self save first, if not available then prefer self
-restore
-The preference mask for this scenario will be seen as below.
-((SELF_RESTORE_STRICT << PREFERENCE_SHIFT) | SELF_SAVE_STRICT)
----------------------------------
-|... | Self restore | Self save |
----------------------------------
-MSB			        LSB
+To allow hash_page() to properly do its job at all time and load the
+MMU hash table whenever needed, it must run with data MMU disabled.
+This means it must be called before re-enabling data MMU. To allow
+this, registers clobbered by hash_page() and create_hpte() have to
+be save in the thread struct together with SRR0, SSR1, DAR and DSISR.
 
-Finally, declare a list of preferred SPRs which encapsulate the bitmaks
-for preferred and supported with defaults of both being set to support
-legacy firmware.
+This also fixes the Oops reported by Erhard when create_hpte() is
+called by add_hash_page().
 
-This commit also implements using the above interface and retains the
-legacy functionality of self restore.
-
-Signed-off-by: Pratik Rajesh Sampat <psampat@linux.ibm.com>
-Reviewed-by: Ram Pai <linuxram@us.ibm.com>
+Fixes: cd08f109e262 ("powerpc/32s: Enable CONFIG_VMAP_STACK")
+Reported-by: Erhard F. <erhard_f@mailbox.org>
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=206501
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/platforms/powernv/idle.c | 316 +++++++++++++++++++++-----
- 1 file changed, 259 insertions(+), 57 deletions(-)
+ arch/powerpc/include/asm/processor.h |   4 +
+ arch/powerpc/kernel/asm-offsets.c    |  11 +++
+ arch/powerpc/kernel/head_32.S        | 119 +++++++++++++++++++++++++++
+ arch/powerpc/mm/book3s32/hash_low.S  |  52 ++++++------
+ arch/powerpc/mm/book3s32/mmu.c       |   7 +-
+ 5 files changed, 158 insertions(+), 35 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index 78599bca66c2..03fe835aadd1 100644
---- a/arch/powerpc/platforms/powernv/idle.c
-+++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -32,9 +32,112 @@
- #define P9_STOP_SPR_MSR 2000
- #define P9_STOP_SPR_PSSCR      855
- 
-+/* Interface for the stop state supported and preference */
-+#define SELF_RESTORE_TYPE    0
-+#define SELF_SAVE_TYPE       1
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index 8387698bd5b6..437481a329ce 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -168,6 +168,10 @@ struct thread_struct {
+ 	unsigned long	srr1;
+ 	unsigned long	dar;
+ 	unsigned long	dsisr;
++#ifdef CONFIG_PPC_BOOK3S_32
++	unsigned long	r0, r3, r4, r5, r6, r8, r9;
++	unsigned long	lr, ctr;
++#endif
+ #endif
+ 	/* Debug Registers */
+ 	struct debug_reg debug;
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index c25e562f1cd9..6519f9011ca6 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -132,6 +132,17 @@ int main(void)
+ 	OFFSET(SRR1, thread_struct, srr1);
+ 	OFFSET(DAR, thread_struct, dar);
+ 	OFFSET(DSISR, thread_struct, dsisr);
++#ifdef CONFIG_PPC_BOOK3S_32
++	OFFSET(THR0, thread_struct, r0);
++	OFFSET(THR3, thread_struct, r3);
++	OFFSET(THR4, thread_struct, r4);
++	OFFSET(THR5, thread_struct, r5);
++	OFFSET(THR6, thread_struct, r6);
++	OFFSET(THR8, thread_struct, r8);
++	OFFSET(THR9, thread_struct, r9);
++	OFFSET(THLR, thread_struct, lr);
++	OFFSET(THCTR, thread_struct, ctr);
++#endif
+ #endif
+ #ifdef CONFIG_SPE
+ 	OFFSET(THREAD_EVR0, thread_struct, evr[0]);
+diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+index 0493fcac6409..061dee186737 100644
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -301,6 +301,36 @@ MachineCheck:
+ 	. = 0x300
+ 	DO_KVM  0x300
+ DataAccess:
++#ifdef CONFIG_VMAP_STACK
++	mtspr	SPRN_SPRG_SCRATCH0,r10
++	mtspr	SPRN_SPRG_SCRATCH1,r11
++	mfspr	r10, SPRN_SPRG_THREAD
++	mfspr	r11, SPRN_DAR
++	stw	r11, DAR(r10)
++	mfspr	r11, SPRN_DSISR
++	stw	r11, DSISR(r10)
++	mfspr	r11, SPRN_SRR0
++	stw	r11, SRR0(r10)
++	mfspr	r11, SPRN_SRR1		/* check whether user or kernel */
++	stw	r11, SRR1(r10)
++	mfcr	r10
++BEGIN_MMU_FTR_SECTION
++	mfspr	r11, SPRN_DSISR
++#ifdef CONFIG_PPC_KUAP
++	andis.	r11, r11, (DSISR_BAD_FAULT_32S | DSISR_DABRMATCH | DSISR_PROTFAULT)@h
++#else
++	andis.	r11, r11, (DSISR_BAD_FAULT_32S | DSISR_DABRMATCH)@h
++#endif
++	beq	hash_page_dsi
++.Lhash_page_dsi_cont:
++	mfspr	r11, SPRN_SRR1		/* check whether user or kernel */
++END_MMU_FTR_SECTION_IFSET(MMU_FTR_HPTE_TABLE)
++	andi.	r11, r11, MSR_PR
 +
-+#define NR_PREFERENCES    2
-+#define PREFERENCE_SHIFT  4
-+#define PREFERENCE_MASK   0xf
++	EXCEPTION_PROLOG_1
++	EXCEPTION_PROLOG_2 handle_dar_dsisr=1
++	b	handle_page_fault_tramp_1
++#else	/* CONFIG_VMAP_STACK */
+ 	EXCEPTION_PROLOG handle_dar_dsisr=1
+ 	get_and_save_dar_dsisr_on_stack	r4, r5, r11
+ BEGIN_MMU_FTR_SECTION
+@@ -316,11 +346,32 @@ BEGIN_MMU_FTR_SECTION
+ FTR_SECTION_ELSE
+ 	b	handle_page_fault_tramp_2
+ ALT_MMU_FTR_SECTION_END_IFSET(MMU_FTR_HPTE_TABLE)
++#endif	/* CONFIG_VMAP_STACK */
+ 
+ /* Instruction access exception. */
+ 	. = 0x400
+ 	DO_KVM  0x400
+ InstructionAccess:
++#ifdef CONFIG_VMAP_STACK
++	mtspr	SPRN_SPRG_SCRATCH0,r10
++	mtspr	SPRN_SPRG_SCRATCH1,r11
++	mfspr	r10, SPRN_SPRG_THREAD
++	mfspr	r11, SPRN_SRR0
++	stw	r11, SRR0(r10)
++	mfspr	r11, SPRN_SRR1		/* check whether user or kernel */
++	stw	r11, SRR1(r10)
++	mfcr	r10
++BEGIN_MMU_FTR_SECTION
++	andis.	r11, r11, SRR1_ISI_NOPT@h	/* no pte found? */
++	bne	hash_page_isi
++.Lhash_page_isi_cont:
++	mfspr	r11, SPRN_SRR1		/* check whether user or kernel */
++END_MMU_FTR_SECTION_IFSET(MMU_FTR_HPTE_TABLE)
++	andi.	r11, r11, MSR_PR
 +
-+#define UNSUPPORTED         0x0
-+#define SELF_RESTORE_STRICT 0x1
-+#define SELF_SAVE_STRICT    0x2
++	EXCEPTION_PROLOG_1
++	EXCEPTION_PROLOG_2
++#else	/* CONFIG_VMAP_STACK */
+ 	EXCEPTION_PROLOG
+ 	andis.	r0,r9,SRR1_ISI_NOPT@h	/* no pte found? */
+ 	beq	1f			/* if so, try to put a PTE */
+@@ -329,6 +380,7 @@ InstructionAccess:
+ BEGIN_MMU_FTR_SECTION
+ 	bl	hash_page
+ END_MMU_FTR_SECTION_IFSET(MMU_FTR_HPTE_TABLE)
++#endif	/* CONFIG_VMAP_STACK */
+ 1:	mr	r4,r12
+ 	andis.	r5,r9,DSISR_SRR1_MATCH_32S@h /* Filter relevant SRR1 bits */
+ 	stw	r4, _DAR(r11)
+@@ -652,8 +704,75 @@ handle_page_fault_tramp_1:
+ handle_page_fault_tramp_2:
+ 	EXC_XFER_LITE(0x300, handle_page_fault)
+ 
++#ifdef CONFIG_VMAP_STACK
++.macro save_regs_thread		thread
++	stw	r0, THR0(\thread)
++	stw	r3, THR3(\thread)
++	stw	r4, THR4(\thread)
++	stw	r5, THR5(\thread)
++	stw	r6, THR6(\thread)
++	stw	r8, THR8(\thread)
++	stw	r9, THR9(\thread)
++	mflr	r0
++	stw	r0, THLR(\thread)
++	mfctr	r0
++	stw	r0, THCTR(\thread)
++.endm
 +
-+/*
-+ * Bitmask defining the kind of preferences available.
-+ * Note : The higher to lower preference is from LSB to MSB, with a shift of
-+ * 4 bits.
-+ * ----------------------------
-+ * |    | 2nd pref | 1st pref |
-+ * ----------------------------
-+ * MSB			      LSB
-+ */
-+/* Prefer Restore if available, otherwise unsupported */
-+#define PREFER_SELF_RESTORE_ONLY	SELF_RESTORE_STRICT
-+/* Prefer Save if available, otherwise unsupported */
-+#define PREFER_SELF_SAVE_ONLY		SELF_SAVE_STRICT
-+/* Prefer Restore when available, otherwise prefer Save */
-+#define PREFER_RESTORE_SAVE		((SELF_SAVE_STRICT << \
-+					  PREFERENCE_SHIFT)\
-+					  | SELF_RESTORE_STRICT)
-+/* Prefer Save when available, otherwise prefer Restore*/
-+#define PREFER_SAVE_RESTORE		((SELF_RESTORE_STRICT <<\
-+					  PREFERENCE_SHIFT)\
-+					  | SELF_SAVE_STRICT)
- static u32 supported_cpuidle_states;
- struct pnv_idle_states_t *pnv_idle_states;
- int nr_pnv_idle_states;
-+/* Caching the lpcr & ptcr support to use later */
-+static bool is_lpcr_self_save;
-+static bool is_ptcr_self_save;
++.macro restore_regs_thread	thread
++	lwz	r0, THLR(\thread)
++	mtlr	r0
++	lwz	r0, THCTR(\thread)
++	mtctr	r0
++	lwz	r0, THR0(\thread)
++	lwz	r3, THR3(\thread)
++	lwz	r4, THR4(\thread)
++	lwz	r5, THR5(\thread)
++	lwz	r6, THR6(\thread)
++	lwz	r8, THR8(\thread)
++	lwz	r9, THR9(\thread)
++.endm
 +
-+struct preferred_sprs {
-+	u64 spr;
-+	u32 preferred_mode;
-+	u32 supported_mode;
-+};
++hash_page_dsi:
++	mr	r11, r10
++	mfspr	r10, SPRN_SPRG_THREAD
++	save_regs_thread	r10
++	lwz	r3, DSISR(r10)
++	mfdar	r4
++	lwz	r9, SRR1(r10)
++	rlwinm	r3, r3, 32 - 15, 21, 21		/* DSISR_STORE -> _PAGE_RW */
++	bl	hash_page
++	mfspr	r10, SPRN_SPRG_THREAD
++	restore_regs_thread r10
++	mr	r10, r11
++	b	.Lhash_page_dsi_cont
 +
-+/*
-+ * Preferred mode: Order of precedence when both self-save and self-restore
-+ *		   supported
-+ * Supported mode: Default support. Can be overwritten during system
-+ *		   initialization
-+ */
-+struct preferred_sprs preferred_sprs[] = {
-+	{
-+		.spr = SPRN_HSPRG0,
-+		.preferred_mode = PREFER_RESTORE_SAVE,
-+		.supported_mode = SELF_RESTORE_STRICT,
-+	},
-+	{
-+		.spr = SPRN_LPCR,
-+		.preferred_mode = PREFER_RESTORE_SAVE,
-+		.supported_mode = SELF_RESTORE_STRICT,
-+	},
-+	{
-+		.spr = SPRN_PTCR,
-+		.preferred_mode = PREFER_SAVE_RESTORE,
-+		.supported_mode = SELF_RESTORE_STRICT,
-+	},
-+	{
-+		.spr = SPRN_HMEER,
-+		.preferred_mode = PREFER_RESTORE_SAVE,
-+		.supported_mode = SELF_RESTORE_STRICT,
-+	},
-+	{
-+		.spr = SPRN_HID0,
-+		.preferred_mode = PREFER_RESTORE_SAVE,
-+		.supported_mode = SELF_RESTORE_STRICT,
-+	},
-+	{
-+		.spr = P9_STOP_SPR_MSR,
-+		.preferred_mode = PREFER_RESTORE_SAVE,
-+		.supported_mode = SELF_RESTORE_STRICT,
-+	},
-+	{
-+		.spr = P9_STOP_SPR_PSSCR,
-+		.preferred_mode = PREFER_SAVE_RESTORE,
-+		.supported_mode = SELF_RESTORE_STRICT,
-+	},
-+	{
-+		.spr = SPRN_HID1,
-+		.preferred_mode = PREFER_RESTORE_SAVE,
-+		.supported_mode = SELF_RESTORE_STRICT,
-+	},
-+	{
-+		.spr = SPRN_HID4,
-+		.preferred_mode = PREFER_RESTORE_SAVE,
-+		.supported_mode = SELF_RESTORE_STRICT,
-+	},
-+	{
-+		.spr = SPRN_HID5,
-+		.preferred_mode = PREFER_RESTORE_SAVE,
-+		.supported_mode = SELF_RESTORE_STRICT,
-+	}
-+};
++hash_page_isi:
++	mr	r11, r10
++	mfspr	r10, SPRN_SPRG_THREAD
++	save_regs_thread	r10
++	li	r3, 0
++	lwz	r4, SRR0(r10)
++	lwz	r9, SRR1(r10)
++	bl	hash_page
++	mfspr	r10, SPRN_SPRG_THREAD
++	restore_regs_thread r10
++	mr	r10, r11
++	b	.Lhash_page_isi_cont
 +
-+const int nr_preferred_sprs = ARRAY_SIZE(preferred_sprs);
- 
- /*
-  * The default stop state that will be used by ppc_md.power_save
-@@ -61,78 +164,170 @@ static bool deepest_stop_found;
- 
- static unsigned long power7_offline_type;
- 
--static int pnv_save_sprs_for_deep_states(void)
-+static int pnv_self_restore_sprs(u64 pir, int cpu, u64 spr)
- {
--	int cpu;
-+	u64 reg_val;
- 	int rc;
- 
--	/*
--	 * hid0, hid1, hid4, hid5, hmeer and lpcr values are symmetric across
--	 * all cpus at boot. Get these reg values of current cpu and use the
--	 * same across all cpus.
--	 */
--	uint64_t lpcr_val	= mfspr(SPRN_LPCR);
--	uint64_t hid0_val	= mfspr(SPRN_HID0);
--	uint64_t hid1_val	= mfspr(SPRN_HID1);
--	uint64_t hid4_val	= mfspr(SPRN_HID4);
--	uint64_t hid5_val	= mfspr(SPRN_HID5);
--	uint64_t hmeer_val	= mfspr(SPRN_HMEER);
--	uint64_t msr_val = MSR_IDLE;
--	uint64_t psscr_val = pnv_deepest_stop_psscr_val;
--
--	for_each_present_cpu(cpu) {
--		uint64_t pir = get_hard_smp_processor_id(cpu);
--		uint64_t hsprg0_val = (uint64_t)paca_ptrs[cpu];
--
--		rc = opal_slw_set_reg(pir, SPRN_HSPRG0, hsprg0_val);
-+	switch (spr) {
-+	case SPRN_HSPRG0:
-+		reg_val = (uint64_t)paca_ptrs[cpu];
-+		rc = opal_slw_set_reg(pir, SPRN_HSPRG0, reg_val);
- 		if (rc != 0)
- 			return rc;
--
--		rc = opal_slw_set_reg(pir, SPRN_LPCR, lpcr_val);
-+		break;
-+	case SPRN_LPCR:
-+		reg_val = mfspr(SPRN_LPCR);
-+		rc = opal_slw_set_reg(pir, SPRN_LPCR, reg_val);
- 		if (rc != 0)
- 			return rc;
--
-+		break;
-+	case P9_STOP_SPR_MSR:
-+		reg_val = MSR_IDLE;
- 		if (cpu_has_feature(CPU_FTR_ARCH_300)) {
--			rc = opal_slw_set_reg(pir, P9_STOP_SPR_MSR, msr_val);
-+			rc = opal_slw_set_reg(pir, P9_STOP_SPR_MSR, reg_val);
- 			if (rc)
- 				return rc;
--
--			rc = opal_slw_set_reg(pir,
--					      P9_STOP_SPR_PSSCR, psscr_val);
--
-+		}
-+		break;
-+	case P9_STOP_SPR_PSSCR:
-+		reg_val = pnv_deepest_stop_psscr_val;
-+		if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+			rc = opal_slw_set_reg(pir, P9_STOP_SPR_PSSCR, reg_val);
- 			if (rc)
- 				return rc;
- 		}
--
--		/* HIDs are per core registers */
-+		break;
-+	case SPRN_HMEER:
-+		reg_val = mfspr(SPRN_HMEER);
- 		if (cpu_thread_in_core(cpu) == 0) {
--
--			rc = opal_slw_set_reg(pir, SPRN_HMEER, hmeer_val);
--			if (rc != 0)
-+			rc = opal_slw_set_reg(pir, SPRN_HMEER, reg_val);
-+			if (rc)
- 				return rc;
--
--			rc = opal_slw_set_reg(pir, SPRN_HID0, hid0_val);
--			if (rc != 0)
-+		}
-+		break;
-+	case SPRN_HID0:
-+		reg_val = mfspr(SPRN_HID0);
-+		if (cpu_thread_in_core(cpu) == 0) {
-+			rc = opal_slw_set_reg(pir, SPRN_HID0, reg_val);
-+			if (rc)
- 				return rc;
-+		}
-+		break;
-+	case SPRN_HID1:
-+		reg_val = mfspr(SPRN_HID1);
-+		if (cpu_thread_in_core(cpu) == 0 &&
-+		    !cpu_has_feature(CPU_FTR_ARCH_300)) {
-+			rc = opal_slw_set_reg(pir, SPRN_HID1, reg_val);
-+			if (rc)
-+				return rc;
-+		}
-+		break;
-+	case SPRN_HID4:
-+		reg_val = mfspr(SPRN_HID4);
-+		if (cpu_thread_in_core(cpu) == 0 &&
-+		    !cpu_has_feature(CPU_FTR_ARCH_300)) {
-+			rc = opal_slw_set_reg(pir, SPRN_HID4, reg_val);
-+			if (rc)
-+				return rc;
-+		}
-+		break;
-+	case SPRN_HID5:
-+		reg_val = mfspr(SPRN_HID5);
-+		if (cpu_thread_in_core(cpu) == 0 &&
-+		    !cpu_has_feature(CPU_FTR_ARCH_300)) {
-+			rc = opal_slw_set_reg(pir, SPRN_HID5, reg_val);
-+			if (rc)
-+				return rc;
-+		}
-+		break;
-+	case SPRN_PTCR:
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+	return 0;
-+}
- 
--			/* Only p8 needs to set extra HID regiters */
--			if (!cpu_has_feature(CPU_FTR_ARCH_300)) {
--
--				rc = opal_slw_set_reg(pir, SPRN_HID1, hid1_val);
--				if (rc != 0)
--					return rc;
--
--				rc = opal_slw_set_reg(pir, SPRN_HID4, hid4_val);
--				if (rc != 0)
--					return rc;
--
--				rc = opal_slw_set_reg(pir, SPRN_HID5, hid5_val);
--				if (rc != 0)
--					return rc;
-+static int pnv_self_save_restore_sprs(void)
-+{
-+	int rc, index, cpu, k;
-+	u64 pir;
-+	struct preferred_sprs curr_spr;
-+	bool is_initialized;
-+	u32 preferred;
++	.globl fast_hash_page_return
++fast_hash_page_return:
++	mfspr	r10, SPRN_SPRG_THREAD
++	restore_regs_thread r10
++	mtcr	r11
++	mfspr	r10, SPRN_SPRG_SCRATCH0
++	mfspr	r11, SPRN_SPRG_SCRATCH1
++	SYNC
++	RFI
 +
-+	is_lpcr_self_save = false;
-+	is_ptcr_self_save = false;
-+	for_each_present_cpu(cpu) {
-+		pir = get_hard_smp_processor_id(cpu);
-+		for (index = 0; index < nr_preferred_sprs; index++) {
-+			curr_spr = preferred_sprs[index];
-+			is_initialized = false;
-+			/*
-+			 * Go through each of the preferences
-+			 * Check if it is preferred as well as supported
-+			 */
-+			for (k = 0; k < NR_PREFERENCES; k++) {
-+				preferred = curr_spr.preferred_mode
-+						& PREFERENCE_MASK;
-+				if (preferred & curr_spr.supported_mode
-+				    & SELF_RESTORE_STRICT) {
-+					is_initialized = true;
-+					rc = pnv_self_restore_sprs(pir, cpu,
-+								curr_spr.spr);
-+					if (rc != 0)
-+						return rc;
-+					break;
-+				}
-+				preferred_sprs[index].preferred_mode =
-+					preferred_sprs[index].preferred_mode >>
-+					PREFERENCE_SHIFT;
-+				curr_spr = preferred_sprs[index];
-+			}
-+			if (!is_initialized) {
-+				if (preferred_sprs[index].spr == SPRN_PTCR ||
-+				    (cpu_has_feature(CPU_FTR_ARCH_300) &&
-+				    (preferred_sprs[index].spr == SPRN_HID1 ||
-+				     preferred_sprs[index].spr == SPRN_HID4 ||
-+				     preferred_sprs[index].spr == SPRN_HID5)))
-+					continue;
-+				return OPAL_UNSUPPORTED;
- 			}
- 		}
- 	}
-+	return 0;
-+}
+ stack_overflow:
+ 	vmap_stack_overflow_exception
++#endif
  
-+static int pnv_save_sprs_for_deep_states(void)
-+{
-+	int rc;
-+	int index;
-+
-+	/*
-+	 * Iterate over the preffered SPRs and if even one of them is
-+	 * still unsupported We cut support for deep stop states
-+	 */
-+	for (index = 0; index < nr_preferred_sprs; index++) {
-+		if (preferred_sprs[index].supported_mode == UNSUPPORTED) {
-+			if (preferred_sprs[index].spr == SPRN_PTCR ||
-+			    (cpu_has_feature(CPU_FTR_ARCH_300) &&
-+			    (preferred_sprs[index].spr == SPRN_HID1 ||
-+			     preferred_sprs[index].spr == SPRN_HID4 ||
-+			     preferred_sprs[index].spr == SPRN_HID5)))
-+				continue;
-+			return OPAL_UNSUPPORTED;
-+		}
-+	}
-+	/*
-+	 * Try to self-restore the registers that can be self restored if self
-+	 * restore is active, try the same for the registers that
-+	 * can be self saved too.
-+	 * Note : If both are supported, self restore is given more priority
-+	 */
-+	rc = pnv_self_save_restore_sprs();
-+	if (rc != 0)
-+		return rc;
- 	return 0;
- }
+ AltiVecUnavailable:
+ 	EXCEPTION_PROLOG
+diff --git a/arch/powerpc/mm/book3s32/hash_low.S b/arch/powerpc/mm/book3s32/hash_low.S
+index c11b0a005196..2015c4f96238 100644
+--- a/arch/powerpc/mm/book3s32/hash_low.S
++++ b/arch/powerpc/mm/book3s32/hash_low.S
+@@ -25,12 +25,6 @@
+ #include <asm/feature-fixups.h>
+ #include <asm/code-patching-asm.h>
  
-@@ -658,7 +853,8 @@ static unsigned long power9_idle_stop(unsigned long psscr, bool mmu_on)
- 		mmcr0		= mfspr(SPRN_MMCR0);
- 	}
- 	if ((psscr & PSSCR_RL_MASK) >= pnv_first_spr_loss_level) {
--		sprs.lpcr	= mfspr(SPRN_LPCR);
-+		if (!is_lpcr_self_save)
-+			sprs.lpcr	= mfspr(SPRN_LPCR);
- 		sprs.hfscr	= mfspr(SPRN_HFSCR);
- 		sprs.fscr	= mfspr(SPRN_FSCR);
- 		sprs.pid	= mfspr(SPRN_PID);
-@@ -672,7 +868,8 @@ static unsigned long power9_idle_stop(unsigned long psscr, bool mmu_on)
- 		sprs.mmcr1	= mfspr(SPRN_MMCR1);
- 		sprs.mmcr2	= mfspr(SPRN_MMCR2);
+-#ifdef CONFIG_VMAP_STACK
+-#define ADDR_OFFSET	0
+-#else
+-#define ADDR_OFFSET	PAGE_OFFSET
+-#endif
+-
+ #ifdef CONFIG_SMP
+ 	.section .bss
+ 	.align	2
+@@ -53,8 +47,8 @@ mmu_hash_lock:
+ 	.text
+ _GLOBAL(hash_page)
+ #ifdef CONFIG_SMP
+-	lis	r8, (mmu_hash_lock - ADDR_OFFSET)@h
+-	ori	r8, r8, (mmu_hash_lock - ADDR_OFFSET)@l
++	lis	r8, (mmu_hash_lock - PAGE_OFFSET)@h
++	ori	r8, r8, (mmu_hash_lock - PAGE_OFFSET)@l
+ 	lis	r0,0x0fff
+ 	b	10f
+ 11:	lwz	r6,0(r8)
+@@ -72,12 +66,9 @@ _GLOBAL(hash_page)
+ 	cmplw	0,r4,r0
+ 	ori	r3,r3,_PAGE_USER|_PAGE_PRESENT /* test low addresses as user */
+ 	mfspr	r5, SPRN_SPRG_PGDIR	/* phys page-table root */
+-#ifdef CONFIG_VMAP_STACK
+-	tovirt(r5, r5)
+-#endif
+ 	blt+	112f			/* assume user more likely */
+-	lis	r5, (swapper_pg_dir - ADDR_OFFSET)@ha	/* if kernel address, use */
+-	addi	r5 ,r5 ,(swapper_pg_dir - ADDR_OFFSET)@l	/* kernel page table */
++	lis	r5, (swapper_pg_dir - PAGE_OFFSET)@ha	/* if kernel address, use */
++	addi	r5 ,r5 ,(swapper_pg_dir - PAGE_OFFSET)@l	/* kernel page table */
+ 	rlwimi	r3,r9,32-12,29,29	/* MSR_PR -> _PAGE_USER */
+ 112:
+ #ifndef CONFIG_PTE_64BIT
+@@ -89,9 +80,6 @@ _GLOBAL(hash_page)
+ 	lwzx	r8,r8,r5		/* Get L1 entry */
+ 	rlwinm.	r8,r8,0,0,20		/* extract pt base address */
+ #endif
+-#ifdef CONFIG_VMAP_STACK
+-	tovirt(r8, r8)
+-#endif
+ #ifdef CONFIG_SMP
+ 	beq-	hash_page_out		/* return if no mapping */
+ #else
+@@ -143,30 +131,36 @@ retry:
+ 	bne-	retry			/* retry if someone got there first */
  
--		sprs.ptcr	= mfspr(SPRN_PTCR);
-+		if (!is_ptcr_self_save)
-+			sprs.ptcr	= mfspr(SPRN_PTCR);
- 		sprs.rpr	= mfspr(SPRN_RPR);
- 		sprs.tscr	= mfspr(SPRN_TSCR);
- 		if (!firmware_has_feature(FW_FEATURE_ULTRAVISOR))
-@@ -756,7 +953,8 @@ static unsigned long power9_idle_stop(unsigned long psscr, bool mmu_on)
- 		goto core_woken;
+ 	mfsrin	r3,r4			/* get segment reg for segment */
++#ifndef CONFIG_VMAP_STACK
+ 	mfctr	r0
+ 	stw	r0,_CTR(r11)
++#endif
+ 	bl	create_hpte		/* add the hash table entry */
  
- 	/* Per-core SPRs */
--	mtspr(SPRN_PTCR,	sprs.ptcr);
-+	if (!is_ptcr_self_save)
-+		mtspr(SPRN_PTCR,	sprs.ptcr);
- 	mtspr(SPRN_RPR,		sprs.rpr);
- 	mtspr(SPRN_TSCR,	sprs.tscr);
+ #ifdef CONFIG_SMP
+ 	eieio
+-	lis	r8, (mmu_hash_lock - ADDR_OFFSET)@ha
++	lis	r8, (mmu_hash_lock - PAGE_OFFSET)@ha
+ 	li	r0,0
+-	stw	r0, (mmu_hash_lock - ADDR_OFFSET)@l(r8)
++	stw	r0, (mmu_hash_lock - PAGE_OFFSET)@l(r8)
+ #endif
  
-@@ -777,7 +975,8 @@ static unsigned long power9_idle_stop(unsigned long psscr, bool mmu_on)
- 	atomic_unlock_and_stop_thread_idle();
++#ifdef CONFIG_VMAP_STACK
++	b	fast_hash_page_return
++#else
+ 	/* Return from the exception */
+ 	lwz	r5,_CTR(r11)
+ 	mtctr	r5
+ 	lwz	r0,GPR0(r11)
+ 	lwz	r8,GPR8(r11)
+ 	b	fast_exception_return
++#endif
  
- 	/* Per-thread SPRs */
--	mtspr(SPRN_LPCR,	sprs.lpcr);
-+	if (!is_lpcr_self_save)
-+		mtspr(SPRN_LPCR,	sprs.lpcr);
- 	mtspr(SPRN_HFSCR,	sprs.hfscr);
- 	mtspr(SPRN_FSCR,	sprs.fscr);
- 	mtspr(SPRN_PID,		sprs.pid);
-@@ -956,8 +1155,11 @@ void pnv_program_cpu_hotplug_lpcr(unsigned int cpu, u64 lpcr_val)
- 	 * Program the LPCR via stop-api only if the deepest stop state
- 	 * can lose hypervisor context.
+ #ifdef CONFIG_SMP
+ hash_page_out:
+ 	eieio
+-	lis	r8, (mmu_hash_lock - ADDR_OFFSET)@ha
++	lis	r8, (mmu_hash_lock - PAGE_OFFSET)@ha
+ 	li	r0,0
+-	stw	r0, (mmu_hash_lock - ADDR_OFFSET)@l(r8)
++	stw	r0, (mmu_hash_lock - PAGE_OFFSET)@l(r8)
+ 	blr
+ #endif /* CONFIG_SMP */
+ 
+@@ -341,7 +335,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_NEED_COHERENT)
+ 	patch_site	1f, patch__hash_page_A1
+ 	patch_site	2f, patch__hash_page_A2
+ 	/* Get the address of the primary PTE group in the hash table (r3) */
+-0:	lis	r0, (Hash_base - ADDR_OFFSET)@h	/* base address of hash table */
++0:	lis	r0, (Hash_base - PAGE_OFFSET)@h	/* base address of hash table */
+ 1:	rlwimi	r0,r3,LG_PTEG_SIZE,HASH_LEFT,HASH_RIGHT    /* VSID -> hash */
+ 2:	rlwinm	r3,r4,20+LG_PTEG_SIZE,HASH_LEFT,HASH_RIGHT /* PI -> hash */
+ 	xor	r3,r3,r0		/* make primary hash */
+@@ -355,10 +349,10 @@ END_FTR_SECTION_IFCLR(CPU_FTR_NEED_COHERENT)
+ 	beq+	10f			/* no PTE: go look for an empty slot */
+ 	tlbie	r4
+ 
+-	lis	r4, (htab_hash_searches - ADDR_OFFSET)@ha
+-	lwz	r6, (htab_hash_searches - ADDR_OFFSET)@l(r4)
++	lis	r4, (htab_hash_searches - PAGE_OFFSET)@ha
++	lwz	r6, (htab_hash_searches - PAGE_OFFSET)@l(r4)
+ 	addi	r6,r6,1			/* count how many searches we do */
+-	stw	r6, (htab_hash_searches - ADDR_OFFSET)@l(r4)
++	stw	r6, (htab_hash_searches - PAGE_OFFSET)@l(r4)
+ 
+ 	/* Search the primary PTEG for a PTE whose 1st (d)word matches r5 */
+ 	mtctr	r0
+@@ -390,10 +384,10 @@ END_FTR_SECTION_IFCLR(CPU_FTR_NEED_COHERENT)
+ 	beq+	found_empty
+ 
+ 	/* update counter of times that the primary PTEG is full */
+-	lis	r4, (primary_pteg_full - ADDR_OFFSET)@ha
+-	lwz	r6, (primary_pteg_full - ADDR_OFFSET)@l(r4)
++	lis	r4, (primary_pteg_full - PAGE_OFFSET)@ha
++	lwz	r6, (primary_pteg_full - PAGE_OFFSET)@l(r4)
+ 	addi	r6,r6,1
+-	stw	r6, (primary_pteg_full - ADDR_OFFSET)@l(r4)
++	stw	r6, (primary_pteg_full - PAGE_OFFSET)@l(r4)
+ 
+ 	patch_site	0f, patch__hash_page_C
+ 	/* Search the secondary PTEG for an empty slot */
+@@ -427,8 +421,8 @@ END_FTR_SECTION_IFCLR(CPU_FTR_NEED_COHERENT)
+ 	 * lockup here but that shouldn't happen
  	 */
--	if (supported_cpuidle_states & OPAL_PM_LOSE_FULL_CONTEXT)
--		opal_slw_set_reg(pir, SPRN_LPCR, lpcr_val);
-+	if (supported_cpuidle_states & OPAL_PM_LOSE_FULL_CONTEXT) {
-+		if (!is_lpcr_self_save)
-+			opal_slw_set_reg(pir, SPRN_LPCR,
-+					 lpcr_val);
-+	}
- }
  
- /*
+-1:	lis	r4, (next_slot - ADDR_OFFSET)@ha	/* get next evict slot */
+-	lwz	r6, (next_slot - ADDR_OFFSET)@l(r4)
++1:	lis	r4, (next_slot - PAGE_OFFSET)@ha	/* get next evict slot */
++	lwz	r6, (next_slot - PAGE_OFFSET)@l(r4)
+ 	addi	r6,r6,HPTE_SIZE			/* search for candidate */
+ 	andi.	r6,r6,7*HPTE_SIZE
+ 	stw	r6,next_slot@l(r4)
+diff --git a/arch/powerpc/mm/book3s32/mmu.c b/arch/powerpc/mm/book3s32/mmu.c
+index 0a1c65a2c565..b47c75f5386d 100644
+--- a/arch/powerpc/mm/book3s32/mmu.c
++++ b/arch/powerpc/mm/book3s32/mmu.c
+@@ -413,7 +413,7 @@ void __init MMU_init_hw(void)
+ void __init MMU_init_hw_patch(void)
+ {
+ 	unsigned int hmask = Hash_mask >> (16 - LG_HPTEG_SIZE);
+-	unsigned int hash;
++	unsigned int hash = (unsigned int)Hash - PAGE_OFFSET;
+ 
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("hash:patch", 0x345);
+@@ -425,11 +425,6 @@ void __init MMU_init_hw_patch(void)
+ 	/*
+ 	 * Patch up the instructions in hashtable.S:create_hpte
+ 	 */
+-	if (IS_ENABLED(CONFIG_VMAP_STACK))
+-		hash = (unsigned int)Hash;
+-	else
+-		hash = (unsigned int)Hash - PAGE_OFFSET;
+-
+ 	modify_instruction_site(&patch__hash_page_A0, 0xffff, hash >> 16);
+ 	modify_instruction_site(&patch__hash_page_A1, 0x7c0, hash_mb << 6);
+ 	modify_instruction_site(&patch__hash_page_A2, 0x7c0, hash_mb2 << 6);
 -- 
-2.17.1
+2.25.0
 
