@@ -2,57 +2,163 @@ Return-Path: <SRS0=Z2Z0=4A=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E2A95C2BA83
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Feb 2020 12:23:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B9B4C2BA83
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Feb 2020 13:34:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 91B3620675
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Feb 2020 12:23:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 91B3620675
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 3FA912082F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Feb 2020 13:34:32 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=tycho.nsa.gov header.i=@tycho.nsa.gov header.b="dTj/HpjM"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3FA912082F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=tycho.nsa.gov
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48Hf2F3NQnzDqQm
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Feb 2020 23:23:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48Hgbn243MzDqQL
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Feb 2020 00:34:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=46.105.34.113; helo=3.mo7.mail-out.ovh.net;
- envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 2397 seconds by postgrey-1.36 at bilbo;
- Wed, 12 Feb 2020 23:21:23 AEDT
-Received: from 3.mo7.mail-out.ovh.net (3.mo7.mail-out.ovh.net [46.105.34.113])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48HdzR1sFWzDqN5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2020 23:21:19 +1100 (AEDT)
-Received: from player697.ha.ovh.net (unknown [10.108.57.49])
- by mo7.mail-out.ovh.net (Postfix) with ESMTP id 457E0152224
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2020 12:05:18 +0100 (CET)
-Received: from kaod.org (lns-bzn-46-82-253-208-248.adsl.proxad.net
- [82.253.208.248]) (Authenticated sender: groug@kaod.org)
- by player697.ha.ovh.net (Postfix) with ESMTPSA id D70AAF4AA807;
- Wed, 12 Feb 2020 11:05:15 +0000 (UTC)
-Date: Wed, 12 Feb 2020 12:05:08 +0100
-From: Greg Kurz <groug@kaod.org>
-To: dftxbs3e <dftxbs3e@free.fr>
-Subject: Re: QEMU/KVM snapshot restore bug
-Message-ID: <20200212120508.18be4f0c@bahia.lan>
-In-Reply-To: <7544eb90-71a6-3709-c530-9c83beb943a7@free.fr>
-References: <7544eb90-71a6-3709-c530-9c83beb943a7@free.fr>
-X-Mailer: Claws Mail 3.17.4 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
+ smtp.mailfrom=tycho.nsa.gov (client-ip=214.24.27.198;
+ helo=updc19pa23.eemsg.mail.mil; envelope-from=sds@tycho.nsa.gov;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none)
+ header.from=tycho.nsa.gov
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=tycho.nsa.gov header.i=@tycho.nsa.gov header.a=rsa-sha256
+ header.s=tycho.nsa.gov header.b=dTj/HpjM; 
+ dkim-atps=neutral
+Received: from UPDC19PA23.eemsg.mail.mil (UPDC19PA23.eemsg.mail.mil
+ [214.24.27.198])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48HgXm4rYSzDqJC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Feb 2020 00:31:49 +1100 (AEDT)
+X-EEMSG-check-017: 58377259|UPDC19PA23_ESA_OUT05.csd.disa.mil
+X-IronPort-AV: E=Sophos;i="5.70,428,1574121600"; d="scan'208";a="58377259"
+Received: from emsm-gh1-uea10.ncsc.mil ([214.29.60.2])
+ by UPDC19PA23.eemsg.mail.mil with ESMTP/TLS/DHE-RSA-AES256-SHA256;
+ 12 Feb 2020 13:31:42 +0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=tycho.nsa.gov; i=@tycho.nsa.gov; q=dns/txt;
+ s=tycho.nsa.gov; t=1581514302; x=1613050302;
+ h=subject:to:cc:references:from:message-id:date:
+ mime-version:in-reply-to:content-transfer-encoding;
+ bh=4E6NdF8sYemfNDGEjWXx29tiVX+0McGJ92YpwPd8UrY=;
+ b=dTj/HpjMFK+CwtnbH1SUjnUs2qiieY9aegIGStqkXVcTHbj+T2exW639
+ aIjwWvVLPAP4BJLSKBWac+8oco+GIVASc643tIjmyfDuS3Jpo/WOEHcpW
+ N4WtMkFSwcMQUuHeM/VVNNBrbJDLXsHT0nA685D5I+aOvoNrJ+EabyQan
+ lviQytvbflrE+FZfn1MomFLbGsE6U8+jeqeux1VOF3JwK0dfG2zEoMXNx
+ M7GAWD6zAnydXscQnpbc9UpmuoTUcvOKl1eI/W7yGPxyLWItRD226wxjc
+ bszB71lu6n34OjpkpqGDTPaCE/VjLtQLHfxiYNpEgBwB7LG/no1CKEixq w==;
+X-IronPort-AV: E=Sophos;i="5.70,428,1574121600"; d="scan'208";a="32966495"
+IronPort-PHdr: =?us-ascii?q?9a23=3AQxEdcxMOstBwQrwplEYl6mtUPXoX/o7sNwtQ0K?=
+ =?us-ascii?q?IMzox0Kf37r8bcNUDSrc9gkEXOFd2Cra4d16yI7uu9AyQp2tWojjMrSNR0TR?=
+ =?us-ascii?q?gLiMEbzUQLIfWuLgnFFsPsdDEwB89YVVVorDmROElRH9viNRWJ+iXhpTEdFQ?=
+ =?us-ascii?q?/iOgVrO+/7BpDdj9it1+C15pbffxhEiCCybL9vIxi6twTcu8kZjYZiNKo61w?=
+ =?us-ascii?q?fErGZPd+lKymxkIk6ekQzh7cmq5p5j9CpQu/Ml98FeVKjxYro1Q79FAjk4Km?=
+ =?us-ascii?q?45/MLkuwXNQguJ/XscT34ZkgFUDAjf7RH1RYn+vy3nvedgwiaaPMn2TbcpWT?=
+ =?us-ascii?q?S+6qpgVRHlhDsbOzM/7WrakdJ7gr5Frx29phx/24/Ub5+TNPpiZaPWYNcWSX?=
+ =?us-ascii?q?NcUspNSyBNB4WxYIUVD+oFIO1WsY/zqVUTphe6HAWhCufixjpOi3Tr36M1zv?=
+ =?us-ascii?q?4hHBnb0gI+EdIAsHfaotv7O6gdU++60KbGwC7fb/5Vwzrx9JTEfx4jrPyKQL?=
+ =?us-ascii?q?l+cdDRyU4qFw7dk1uQtZLqPyuV1usTtWiQ8vduVee1hG4jrwF+vDiuzdorh4?=
+ =?us-ascii?q?nSm40V0UvJ9Tl5wYkpJd24T1R3Ydi/EJRKrS2aOIx2Qt07TmxupS00yaUGtI?=
+ =?us-ascii?q?amcCUFx5kr3R7SZ+Gdf4SW7R/vSvydLSp+iXl4YrywnQyy/lKlyuDkU8m010?=
+ =?us-ascii?q?tFoTRdn9nXs3ANywTT6s+aSvth5kuh2SiA1wTU6uxcPUA7j7DbK588wr4rjJ?=
+ =?us-ascii?q?YTsELDHiHxmEXtkqCZal8o+vSo6uv7YrXmoYWQN4lohQHlLqsigMm/AeU8Mg?=
+ =?us-ascii?q?QWXmib//qz1KH78EHkT7hHgec6n6nEvJzAO8gWqbC1DxVI3oo77hawFTam0N?=
+ =?us-ascii?q?AWnXkdK1JFfQqKj5P0NFHVO/34Efe+jEiskDds3fzGOKbhDY/XInjMl7fhY6?=
+ =?us-ascii?q?5x61RAxwor0dBf+5VUB6kbL/L3REDwu8LXDx8jPwOv3uboFc9y1oUdWWKIHK?=
+ =?us-ascii?q?+UK6fSsV6O5uIyLOiAfo4VuDDhK/c74/7il2M2mVgYfaOxx5sYdGi4Huh6I0?=
+ =?us-ascii?q?WeeXfjmNMBHnkFvwUgTezmkkaCUSJJaHaoWKI8+DY7CIO6DYfEWICgm7OB3C?=
+ =?us-ascii?q?KhEZ1XYmBKEEyDEXDtd4+cQfcDdDqSItN9kjwDTbWhU5Eu1Q2wuw/gyrtqNe?=
+ =?us-ascii?q?vU+isWtZL5ztd6+vPcmgsv+jBuCMSdyW6NRXlunmwUXz82wLx/oUtlx1iZza?=
+ =?us-ascii?q?d4huJXGMdQ5/xXSAc6M4DTz+hgB9D1QALBcc+DSEy6TdW+HTExUtUxzscLY0?=
+ =?us-ascii?q?Z8HdWigRfD0jGwA7ALirOLBIY78r7G03ftIMZ9zm7M1LM9gFk+XstPKWqmi7?=
+ =?us-ascii?q?Z99wfJAY7Jkl+Vl6CrdaQfwS7N8H2MwHGKvEFZVg5wTKrEUWoeZkvQsdT2+E?=
+ =?us-ascii?q?fCQ6WyBrQgNwtL0dSCJbdSat31kVVGQ+/uONbZY2K2nWe/Hw2IyqmIbIXwe2?=
+ =?us-ascii?q?UdwCTdCE4anAAV5nuGMQk+BiG8o2PRFjBuFFTvY1/y/ul6sn+0Ukg0zwSSZU?=
+ =?us-ascii?q?17y7W14gIVheCbS/4LxLIEvzouqy91HFay2NLaEcSApwt/fKVdet494VFH1X?=
+ =?us-ascii?q?7HuAx5JJCvM6dihlsGeQRto0zuzwl3CplHkcUyt3wl0gxyKaKD3VNCaTyYx5?=
+ =?us-ascii?q?bwNaPTKmXo4B+vcbTZ2kre0NaX/KcP5+40q1L5vAGmDkAi6Wlo08FJ03uA4Z?=
+ =?us-ascii?q?XHFBISXojsUkYz6hh6vKrXYjIn6IPRznJjK7O4sjjY29ImHOEl0Aqvf89DMK?=
+ =?us-ascii?q?OYEw//C8gaB9CwJ+ExhVepahYEM/5I9K4xJcymceGK2K+2M+p6hj2mkHxN4J?=
+ =?us-ascii?q?ph3UKU6yp8VunI0o4Hw/6C2wuISSz8gE26vcDwhYBEeTYSHm+7ySf6BI9cfa?=
+ =?us-ascii?q?1ycpwNCWe1PcK3wM1+iIT3W35E8l6sGUkG2NSpeRqTd1zxxxFf1UMSoXa/gy?=
+ =?us-ascii?q?u30yR0ky01rqqYxCHO2PrtdAAIOmFVX2RijU3jIYywj9EaWkikdRQmlByg5U?=
+ =?us-ascii?q?zi3ahUuLx/L3XPQUdPZyX2LWRiUqyqtrqYYs5P84glsSNNX+S5f1+aS6Txox?=
+ =?us-ascii?q?wA0yPsB2Fe3iw0dym2upXlmBx3kGycLHd3rHrdY81/2AnQ68bASv5W2DoLXz?=
+ =?us-ascii?q?N3iSPSBlSmI9ap+tCUnY/Zsu+iT2KhSoFTcS7zwIOFriS7/25qDQeln/Cuht?=
+ =?us-ascii?q?3nFRI10Snm2NRxTyrIthP8bpP32KS9NOJtZlNoC0Pk68pmBoF+lZM9hIsK2X?=
+ =?us-ascii?q?gbmpqY5nkHnnnpMdVdx63+aGABRTkRw97a+ALlwlFsLmqVx4LlUXWQ2tFuZ8?=
+ =?us-ascii?q?KmYm4N2SIy8dpKCKGK47xAhyd1pUC4rQ3Ja/hngjgd0ecu6GIdg+wRugotyS?=
+ =?us-ascii?q?GdAqsIEkRDJyzjiQmH79Cko6VLfmqgbb+w1E9ml9C7EL6Cuh1cWGr+epo6By?=
+ =?us-ascii?q?Bw7d5yMFbN0H3194Hld8PcbdMVth2IjRjAi/JZJ442lvoPnSBnI37yvWU5y+?=
+ =?us-ascii?q?4nihxjxY+1vJKdJGVr/aK2GBhYOyb6Z8MU/THtgqJekdiM04+zGZVhHy0BXI?=
+ =?us-ascii?q?H0QvKwDDISqfPnOh6PED04t3eUAqDQHRSf6Eh4tH/ACZOrOGuSJHYDzNVuXg?=
+ =?us-ascii?q?WSJEtagAoMRjU1goY5Fhy2xMzmaEp2/DQR6UD3qxRWzOJnKgfwUn3FqAezaj?=
+ =?us-ascii?q?c0SYOfLBpV7gFD4UfYKsie7uN1HyFF8Zyttg2NKmqHZwtWCWEFQFCLB1fmPr?=
+ =?us-ascii?q?O2/9nP7/CYBvaiL/vJebiOr/ZRV/KIxZOvz4tm+TmMO96MPnZ8Ff073FRMXX?=
+ =?us-ascii?q?RjF8TegTUPRDQdlzjRYM6DuBe85ip3o9ik8PTsXgLv6o+PC7pPMdp04RC5m7?=
+ =?us-ascii?q?mDN++WhCZ2MjtY2IgDyWXUx7gY2V4YkztueCW1EbQcqS7NS7rdmqtWDx4cbS?=
+ =?us-ascii?q?N8Ks9I47gz3gVXPc7UkNX12aN2j/ErEVdFUV3hmseyaMwLJWG9KE3IBEKROL?=
+ =?us-ascii?q?uaIj3Lxtn9YbmgRr1IkOVUqxqwtC6HE0/sOjSCmCLkVxSuMeFKkSGbIAZeuI?=
+ =?us-ascii?q?a7chZsBmnvVs/pZQOjOt9tkTI22aE0hm/NNWMENTh8ckVNrqCf7C9BgfVwBX?=
+ =?us-ascii?q?ZB7nx7IumAgCuZ8ebYJYgMsfdxASR7ifha4HIkxLtR9i1EQ+Z1mCTKpN50v1?=
+ =?us-ascii?q?6mivWPyiZgUBdWrjZLhYSLvVhtOKnA7ZlPR2rL/A8X7WWRFxQLp8JpCtjou6?=
+ =?us-ascii?q?9N19jPkLz8JSxc89Lb48QcHdLYKMGZP3o7NxrmBjrUABECTT6xOmHVn1Zdn+?=
+ =?us-ascii?q?2K9n2Jspg6rYDhmIEQRb9fVVw1EO4aC0t+EdwcL5d4QCkknaSYjMEW/3q+qg?=
+ =?us-ascii?q?feRMFAspDATPKSDu3lKCyFgrlcexsI3bT4IJwSNo39x0xtdF16kJ3FG0reUt?=
+ =?us-ascii?q?FAuSlhbg4voEVR63hyVGMz21j7ZQyz/XAcC+W0nh0qigt5eeQh7jDs4004Jl?=
+ =?us-ascii?q?DSvis/jFExmcn5gTCWaDPxKKawXYdLCyv7rkQxKon0Qxx0bQ2pgUNpLynER7?=
+ =?us-ascii?q?1PgLt6b2xrixHTuYFJGfFCSa1IehgQxeuYZ/8wy1RTtj2nxVNb5evCEZZikA?=
+ =?us-ascii?q?oqcZixr3NPwwJjdMI6KbXNK6VX0FhdnaaOvi6z1uAt2w8SPUEN8WKWeCESo0?=
+ =?us-ascii?q?MILaMqJy2y/uxj8QaCgSdMeHAQV/o2pfJn7kc9O+WGzyL93L9PM1q+N/aaL6?=
+ =?us-ascii?q?+AuGjPi9SIQlUu2UMMjERF+bl20dw/c0qPTUwvzb2RFxoTNcXYNA5acdBd+2?=
+ =?us-ascii?q?XJcSaJq+XNzop/P5+hGeDwUe+OqKEUj1qgHAYoGYQM88sAEoC00E7GN8fnIq?=
+ =?us-ascii?q?cJyQg25Av1PlWFF+9EeAyEkDgZucGz1px30pdHJjEbH2p9NT+75rHNpg8lmP?=
+ =?us-ascii?q?CDRss5Ym8GXosYMXI7QMq6mzZDv3RHAjm30+YZxxab4z/4pyTQFyX8YsFnZP?=
+ =?us-ascii?q?eVfhNsFMq29S8k86i4k1LX9IvRJ33iP9R4ptDP8f8ap4qAC/5MSbl9rlvcm4?=
+ =?us-ascii?q?5DSnOwVm7AC8K6KILoa4ktcdz7EHK6Xka5iz0rU8eidOqqe4GMjBHlVM5+rY?=
+ =?us-ascii?q?WS2jMkK4fpHzUTCxph4ese6Kt6ZgodS546ZwP48QU4K6G7Zgyf14P9bXyqLG?=
+ =?us-ascii?q?5tU/RHzei8L4dSxi4oY/7ynGAsVbkm3uK39ggLX5hMgRbAk6XwL7JCWDT+Ty?=
+ =?us-ascii?q?QOMz7EojA0wi04bbc/?=
+X-IPAS-Result: =?us-ascii?q?A2BPBACF/ENe/wHyM5BmHgELHIN4gWwBIBIqhBSJA4ZlA?=
+ =?us-ascii?q?QEBAQEBBoE3iXCRSQkBAQEBAQEBAQE3AQGEQAKCbTgTAhABAQEEAQEBAQEFA?=
+ =?us-ascii?q?wEBbIVDgjspAYMCAQUdBg8BBUEQCQIYAgImAgJXBg0GAgEBgmM/glclj1Gbe?=
+ =?us-ascii?q?YEyhUqDSIE+gQ4qjD55gQeBEScPgl0+h1uCXgSNTYJPh298lm+CRIJOikaJN?=
+ =?us-ascii?q?QYcgkiIEpA7Lat0IoFYKwgCGAghD4MnUBgNjikXFY4sIwMwApFfAQE?=
+Received: from tarius.tycho.ncsc.mil (HELO tarius.infosec.tycho.ncsc.mil)
+ ([144.51.242.1])
+ by EMSM-GH1-UEA10.NCSC.MIL with ESMTP; 12 Feb 2020 13:31:40 +0000
+Received: from moss-pluto.infosec.tycho.ncsc.mil (moss-pluto [192.168.25.131])
+ by tarius.infosec.tycho.ncsc.mil (8.14.7/8.14.4) with ESMTP id
+ 01CDU4TT018798; Wed, 12 Feb 2020 08:30:10 -0500
+Subject: Re: [PATCH v5 01/10] capabilities: introduce CAP_PERFMON to kernel
+ and user space
+To: Alexey Budankov <alexey.budankov@linux.intel.com>
+References: <0548c832-7f4b-dc4c-8883-3f2b6d351a08@linux.intel.com>
+ <9b77124b-675d-5ac7-3741-edec575bd425@linux.intel.com>
+ <64cab472-806e-38c4-fb26-0ffbee485367@tycho.nsa.gov>
+ <05297eff-8e14-ccdf-55a4-870c64516de8@linux.intel.com>
+ <CAADnVQK-JzK-GUk4KOozn4c1xr=7TiCpB9Fi0QDC9nE6iVn8iQ@mail.gmail.com>
+ <537bdb28-c9e4-f44f-d665-25250065a6bb@linux.intel.com>
+ <63d9700f-231d-7973-5307-3e56a48c54cb@linux.intel.com>
+ <d7213569-9578-7201-6106-f5ebc95bd6be@tycho.nsa.gov>
+ <2e38c33d-f085-1320-8cc2-45f74b6ad86d@linux.intel.com>
+From: Stephen Smalley <sds@tycho.nsa.gov>
+Message-ID: <dd6a1382-7b2f-a6e6-a1ac-009566d7f556@tycho.nsa.gov>
+Date: Wed, 12 Feb 2020 08:32:07 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.4.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/T9huF3rT6uFj22Bw1jih7qj";
- protocol="application/pgp-signature"; micalg=pgp-sha256
-X-Ovh-Tracer-Id: 15847604140800645579
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: 0
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedugedrieehgddvgecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecunecujfgurhepfffhvffukfgjfhfogggtsehgtderreertddvnecuhfhrohhmpefirhgvghcumfhurhiiuceoghhrohhugheskhgrohgurdhorhhgqeenucfkpheptddrtddrtddrtddpkedvrddvheefrddvtdekrddvgeeknecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepphhlrgihvghrieeljedrhhgrrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpehgrhhouhhgsehkrghougdrohhrghdprhgtphhtthhopehlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhg
+In-Reply-To: <2e38c33d-f085-1320-8cc2-45f74b6ad86d@linux.intel.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,159 +170,97 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org,
- =?UTF-8?B?Q8OpZHJpYw==?= Le Goater <clg@kaod.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Song Liu <songliubraving@fb.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ "joonas.lahtinen@linux.intel.com" <joonas.lahtinen@linux.intel.com>,
+ Will Deacon <will.deacon@arm.com>, Alexei Starovoitov <ast@kernel.org>,
+ Stephane Eranian <eranian@google.com>,
+ "james.bottomley@hansenpartnership.com"
+ <james.bottomley@hansenpartnership.com>, Paul Mackerras <paulus@samba.org>,
+ Jiri Olsa <jolsa@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>,
+ Andi Kleen <ak@linux.intel.com>, Igor Lubashev <ilubashe@akamai.com>,
+ James Morris <jmorris@namei.org>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Ingo Molnar <mingo@redhat.com>, oprofile-list@lists.sf.net,
+ Serge Hallyn <serge@hallyn.com>, Robert Richter <rric@kernel.org>,
+ "selinux@vger.kernel.org" <selinux@vger.kernel.org>,
+ "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>,
+ "jani.nikula@linux.intel.com" <jani.nikula@linux.intel.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ "rodrigo.vivi@intel.com" <rodrigo.vivi@intel.com>,
+ Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+ "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ Lionel Landwerlin <lionel.g.landwerlin@intel.com>,
+ Andy Lutomirski <luto@amacapital.net>,
+ "linux-perf-users@vger.kernel.org" <linux-perf-users@vger.kernel.org>,
+ "linux-security-module@vger.kernel.org"
+ <linux-security-module@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---Sig_/T9huF3rT6uFj22Bw1jih7qj
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On 2/12/20 3:53 AM, Alexey Budankov wrote:
+> Hi Stephen,
+> 
+> On 22.01.2020 17:07, Stephen Smalley wrote:
+>> On 1/22/20 5:45 AM, Alexey Budankov wrote:
+>>>
+>>> On 21.01.2020 21:27, Alexey Budankov wrote:
+>>>>
+>>>> On 21.01.2020 20:55, Alexei Starovoitov wrote:
+>>>>> On Tue, Jan 21, 2020 at 9:31 AM Alexey Budankov
+>>>>> <alexey.budankov@linux.intel.com> wrote:
+>>>>>>
+>>>>>>
+>>>>>> On 21.01.2020 17:43, Stephen Smalley wrote:
+>>>>>>> On 1/20/20 6:23 AM, Alexey Budankov wrote:
+>>>>>>>>
+> <SNIP>
+>>>>>>>> Introduce CAP_PERFMON capability designed to secure system performance
+>>>>>>>
+>>>>>>> Why _noaudit()?  Normally only used when a permission failure is non-fatal to the operation.  Otherwise, we want the audit message.
+>>>
+>>> So far so good, I suggest using the simplest version for v6:
+>>>
+>>> static inline bool perfmon_capable(void)
+>>> {
+>>>      return capable(CAP_PERFMON) || capable(CAP_SYS_ADMIN);
+>>> }
+>>>
+>>> It keeps the implementation simple and readable. The implementation is more
+>>> performant in the sense of calling the API - one capable() call for CAP_PERFMON
+>>> privileged process.
+>>>
+>>> Yes, it bloats audit log for CAP_SYS_ADMIN privileged and unprivileged processes,
+>>> but this bloating also advertises and leverages using more secure CAP_PERFMON
+>>> based approach to use perf_event_open system call.
+>>
+>> I can live with that.  We just need to document that when you see both a CAP_PERFMON and a CAP_SYS_ADMIN audit message for a process, try only allowing CAP_PERFMON first and see if that resolves the issue.  We have a similar issue with CAP_DAC_READ_SEARCH versus CAP_DAC_OVERRIDE.
+> 
+> I am trying to reproduce this double logging with CAP_PERFMON.
+> I am using the refpolicy version with enabled perf_event tclass [1], in permissive mode.
+> When running perf stat -a I am observing this AVC audit messages:
+> 
+> type=AVC msg=audit(1581496695.666:8691): avc:  denied  { open } for  pid=2779 comm="perf" scontext=user_u:user_r:user_systemd_t tcontext=user_u:user_r:user_systemd_t tclass=perf_event permissive=1
+> type=AVC msg=audit(1581496695.666:8691): avc:  denied  { kernel } for  pid=2779 comm="perf" scontext=user_u:user_r:user_systemd_t tcontext=user_u:user_r:user_systemd_t tclass=perf_event permissive=1
+> type=AVC msg=audit(1581496695.666:8691): avc:  denied  { cpu } for  pid=2779 comm="perf" scontext=user_u:user_r:user_systemd_t tcontext=user_u:user_r:user_systemd_t tclass=perf_event permissive=1
+> type=AVC msg=audit(1581496695.666:8692): avc:  denied  { write } for  pid=2779 comm="perf" scontext=user_u:user_r:user_systemd_t tcontext=user_u:user_r:user_systemd_t tclass=perf_event permissive=1
+> 
+> However there is no capability related messages around. I suppose my refpolicy should
+> be modified somehow to observe capability related AVCs.
+> 
+> Could you please comment or clarify on how to enable caps related AVCs in order
+> to test the concerned logging.
 
-On Tue, 11 Feb 2020 04:57:52 +0100
-dftxbs3e <dftxbs3e@free.fr> wrote:
-
-> Hello,
->=20
-> I took a snapshot of a ppc64 (big endian) VM from a ppc64 (little endian)=
- host using `virsh snapshot-create-as --domain <name> --name <name>`
->=20
-
-A big endian guest doing XIVE ?!? I'm pretty sure we didn't do much testing=
-, if
-any, on such a setup... What distro is used in the VM ?
-
-> Then I restarted my system and tried restoring the snapshot:
->=20
-> # virsh snapshot-revert --domain <name> --snapshotname <name>
-> error: internal error: process exited while connecting to monitor: 2020-0=
-2-11T03:18:08.110582Z qemu-system-ppc64: KVM_SET_DEVICE_ATTR failed: Group =
-3 attr 0x0000000000001309: Device or resource busy
-> 2020-02-11T03:18:08.110605Z qemu-system-ppc64: error while loading state =
-for instance 0x0 of device 'spapr'
-> 2020-02-11T03:18:08.112843Z qemu-system-ppc64: Error -1 while loading VM =
-state
->=20
-
-This indicates that QEMU failed to configure the source targeting
-for the HW interrupt 0x1309, which is an MSI interrupt used by
-a PCI device plugged in the default PHB. Especially, -EBUSY means
-
-    -EBUSY:  No CPU available to serve interrupt
-
-> And dmesg shows each time the restore command is executed:
->=20
-> [  180.176606] WARNING: CPU: 16 PID: 5528 at arch/powerpc/kvm/book3s_xive=
-.c:345 xive_try_pick_queue+0x40/0xb8 [kvm]
-
-This warning means that we have vCPU without a configured event queue.
-
-Since kvmppc_xive_select_target() is trying all vCPUs before bailing out
-with -EBUSY, you might be seeing several WARNINGs (1 per vCPU) in dmesg,
-correct ?
-
-Anyway, this looks wrong since QEMU is supposed to have already configured
-the event queues at this point... Not sure what's happening here...
-
-> [  180.176608] Modules linked in: vhost_net vhost tap kvm_hv kvm xt_CHECK=
-SUM xt_MASQUERADE nf_nat_tftp nf_conntrack_tftp tun bridge 8021q garp mrp s=
-tp llc rfkill nf_conntrack_netbios_ns nf_conntrack_broadcast xt_CT ip6t_REJ=
-ECT nf_reject_ipv6 ip6t_rpfilter ipt_REJECT nf_reject_ipv4 xt_conntrack ebt=
-able_nat ebtable_broute ip6table_nat ip6table_mangle ip6table_raw ip6table_=
-security iptable_nat nf_nat iptable_mangle iptable_raw iptable_security nf_=
-conntrack nf_defrag_ipv6 nf_defrag_ipv4 ip_set nfnetlink ebtable_filter ebt=
-ables ip6table_filter ip6_tables iptable_filter sunrpc raid1 at24 regmap_i2=
-c snd_hda_codec_hdmi snd_hda_intel snd_intel_dspcfg joydev snd_hda_codec sn=
-d_hda_core ofpart snd_hwdep crct10dif_vpmsum snd_seq ipmi_powernv powernv_f=
-lash ipmi_devintf snd_seq_device mtd ipmi_msghandler rtc_opal snd_pcm opal_=
-prd i2c_opal snd_timer snd soundcore lz4 lz4_compress zram ip_tables xfs li=
-bcrc32c dm_crypt amdgpu ast drm_vram_helper mfd_core i2c_algo_bit gpu_sched=
- drm_kms_helper mpt3sas
-> [  180.176652]  syscopyarea sysfillrect sysimgblt fb_sys_fops ttm drm vmx=
-_crypto tg3 crc32c_vpmsum nvme raid_class scsi_transport_sas nvme_core drm_=
-panel_orientation_quirks i2c_core fuse
-> [  180.176663] CPU: 16 PID: 5528 Comm: qemu-system-ppc Not tainted 5.4.17=
--200.fc31.ppc64le #1
-> [  180.176665] NIP:  c00800000a883c80 LR: c00800000a886db8 CTR: c00800000=
-a88a9e0
-> [  180.176667] REGS: c000000767a17890 TRAP: 0700   Not tainted  (5.4.17-2=
-00.fc31.ppc64le)
-> [  180.176668] MSR:  9000000000029033 <SF,HV,EE,ME,IR,DR,RI,LE>  CR: 4822=
-4248  XER: 20040000
-> [  180.176673] CFAR: c00800000a886db4 IRQMASK: 0=20
->                GPR00: c00800000a886db8 c000000767a17b20 c00800000a8aed00 =
-c0002005468a4480=20
->                GPR04: 0000000000000000 0000000000000000 0000000000000000 =
-0000000000000001=20
->                GPR08: c0002007142b2400 c0002007142b2400 0000000000000000 =
-c00800000a8910f0=20
->                GPR12: c00800000a88a488 c0000007fffed000 0000000000000000 =
-0000000000000000=20
->                GPR16: 0000000149524180 00007ffff39bda78 00007ffff39bda30 =
-000000000000025c=20
->                GPR20: 0000000000000000 0000000000000003 c0002006f13a0000 =
-0000000000000000=20
->                GPR24: 0000000000001359 0000000000000000 c0000002f8c96c38 =
-c0000002f8c80000=20
->                GPR28: 0000000000000000 c0002006f13a0000 c0002006f13a4038 =
-c000000767a17be4=20
-> [  180.176688] NIP [c00800000a883c80] xive_try_pick_queue+0x40/0xb8 [kvm]
-> [  180.176693] LR [c00800000a886db8] kvmppc_xive_select_target+0x100/0x21=
-0 [kvm]
-> [  180.176694] Call Trace:
-> [  180.176696] [c000000767a17b20] [c000000767a17b70] 0xc000000767a17b70 (=
-unreliable)
-> [  180.176701] [c000000767a17b70] [c00800000a88b420] kvmppc_xive_native_s=
-et_attr+0xf98/0x1760 [kvm]
-> [  180.176705] [c000000767a17cc0] [c00800000a86392c] kvm_device_ioctl+0xf=
-4/0x180 [kvm]
-> [  180.176710] [c000000767a17d10] [c0000000005380b0] do_vfs_ioctl+0xaa0/0=
-xd90
-> [  180.176712] [c000000767a17dd0] [c000000000538464] sys_ioctl+0xc4/0x110
-> [  180.176716] [c000000767a17e20] [c00000000000b9d0] system_call+0x5c/0x68
-> [  180.176717] Instruction dump:
-> [  180.176719] 794ad182 0b0a0000 2c290000 41820080 89490010 2c0a0000 4182=
-0074 78883664=20
-> [  180.176723] 7d094214 e9480070 7d470074 78e7d182 <0b070000> 2c2a0000 41=
-820054 81480078=20
-> [  180.176727] ---[ end trace 056a6dd275e20684 ]---
->=20
-> Let me know if I can provide more information
-
-Yeah, QEMU command line, QEMU version, guest kernel version can help. Also,
-what kind of workload is running inside the guest ? Is this easy to reprodu=
-ce ?
-
-Cheers,
-
---
-Greg
-
->=20
-> Thanks
->=20
+The new perfmon permission has to be defined in your policy; you'll have 
+a message in dmesg about "Permission perfmon in class capability2 not 
+defined in policy.".  You can either add it to the common cap2 
+definition in refpolicy/policy/flask/access_vectors and rebuild your 
+policy or extract your base module as CIL, add it there, and insert the 
+updated module.
 
 
---Sig_/T9huF3rT6uFj22Bw1jih7qj
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEtIKLr5QxQM7yo0kQcdTV5YIvc9YFAl5D2+QACgkQcdTV5YIv
-c9YQeg/+J+X1kELtocJSsC2+uK3JFvCi5T7sSPw5MBKQ7H0m2oqvlANM+ZsinNLU
-1Uqcq4GJMCNkgxnl4T9y6GlnrvrQlM1wWGhAwV8AEPRzTIcgvuwtMhg/0YJGtNfj
-CX6MGb+Ggy/EQfzDdYi4UNB/KTnyyUhoiXsLTKnyctBNiBiKnQUmgEc83joD7DS9
-PeTrQIunQq+bFGYhuqcRIQ/D9+0Ml+13/GzNpFzieG4lwd5Xao9sSojQqy6MrtDi
-tf0KtJsas8AcExYYse2VsTiJ7CqVSjUtmA6swXOXHcDL6uhObkCmZtiaqNVz8dXa
-kLzJynLOzGlhwUI/MJ17t2dc27PRBZ60/SbJicooBzk8INMptoUSbP4t/SbeaFC7
-uqs1Ky86n4w5Mh2ZhdMxJ6VG8VmB5De25WPVNH19CfqH1wCHFZudFRQIf+V0eoL6
-YMvZa+lIux+4X7s4/BGJ6O9QvkNfWrBkd04nVSZZZVopejGHuQTNuS2Kb/1Ym+Kf
-wiNvZTXQIvFLE3AhFMOEPM7XDbKxoTV+pctv2fWEM679RjzIG5fMIYOCiLy7842O
-zxES4xYkAQQT2K/9MCaSTHQ9i46Z9Ypxh2hlcCcjj+n4OtvkUuPCqKYHBddjBEZ6
-7jouqVlFAl5vOS7fvSTRSSm+wxZGtWERqlyt+HwgveoL0/qkwZo=
-=Jgum
------END PGP SIGNATURE-----
-
---Sig_/T9huF3rT6uFj22Bw1jih7qj--
