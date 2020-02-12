@@ -2,82 +2,72 @@ Return-Path: <SRS0=Z2Z0=4A=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BF2CAC2BA83
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Feb 2020 04:52:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A303BC2BA83
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Feb 2020 05:13:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6752720656
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Feb 2020 04:52:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 196012073C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Feb 2020 05:13:27 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="n6PgVM4f"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6752720656
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="i7D2bxT6"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 196012073C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48HS1H1p78zDqJH
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Feb 2020 15:52:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::1043;
- helo=mail-pj1-x1043.google.com; envelope-from=dja@axtens.net;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48HSTd0dlqzDqLJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Feb 2020 16:13:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=axtens.net
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256
- header.s=google header.b=n6PgVM4f; dkim-atps=neutral
-Received: from mail-pj1-x1043.google.com (mail-pj1-x1043.google.com
- [IPv6:2607:f8b0:4864:20::1043])
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
+ envelope-from=rdunlap@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.a=rsa-sha256 header.s=bombadil.20170209 header.b=i7D2bxT6; 
+ dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48HRz55XxZzDq7k
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2020 15:50:25 +1100 (AEDT)
-Received: by mail-pj1-x1043.google.com with SMTP id e9so329944pjr.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Feb 2020 20:50:24 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=+oVPvQYZ57JSkGJKBEtm8Vi5/NLPdNTgXIEbFWeOrRU=;
- b=n6PgVM4fCmQYjv9krDgVCuJcW0ipp3KCnktWO33+mxf3VLbEioZCXAWMlV9M+6yrHF
- lv3MDlmPGN6BO2DC++139K8lYJhAlP5NS6flJeh3KWsXg6k1hYYqNyYcBg4SCxJzEsDz
- QeaU0BQtHp2md0cJZTsKCCw3cdL/0n1RFPgRk=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=+oVPvQYZ57JSkGJKBEtm8Vi5/NLPdNTgXIEbFWeOrRU=;
- b=jaXW66dweP4Njgo49YS1Pe5PwPL8Z2aBBJpQXZFrZ9D2H58FZYspzn97QryWx1p3Eh
- FVThYVnsZAhcZ98E8wrfo44bwFdM/f20YRBWcuV9aUlasdFWvY91JNl3lad0OrMBeHvz
- DcUqtSFHj+h+DcDvmsjNn6cR+GZ7QxvNniYPL/q3fYs1YXVVxRsUX9XzVWe8QY2y4GPG
- ZWc/wCd1YeTb8GBoVl4iVdzvLn1IlRrRLAFyz9bd01SPJzpKIa6xchmUBS7yOaxiLVZ3
- pBTI4CyRUtX7tFq+kDFMSL6P67Kcb+Umr49a1MHIcschIfdUzCSS6W6UsUzBhrYxOxhA
- PqJA==
-X-Gm-Message-State: APjAAAUgsEOK31JuyAd9soQMPnWuGZHN6joos43KZZpDlH6gtUCabewA
- Cz3iOVCaTBS0j7rNCoGGnWRwZgZxO8g=
-X-Google-Smtp-Source: APXvYqwalH2M2BbZ8kkG363MMYIRki3NkQLSdxybD+zQ3Eixc4w7J0934Q633QKOvVXZyooLSZvwKg==
-X-Received: by 2002:a17:902:b944:: with SMTP id
- h4mr6394143pls.92.1581483021337; 
- Tue, 11 Feb 2020 20:50:21 -0800 (PST)
-Received: from localhost
- (2001-44b8-1113-6700-65dc-9b98-63a7-c7a4.static.ipv6.internode.on.net.
- [2001:44b8:1113:6700:65dc:9b98:63a7:c7a4])
- by smtp.gmail.com with ESMTPSA id x4sm6039430pff.143.2020.02.11.20.50.19
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 11 Feb 2020 20:50:20 -0800 (PST)
-From: Daniel Axtens <dja@axtens.net>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: setup_64: hack around kcov + devicetree limitations
-Date: Wed, 12 Feb 2020 15:50:14 +1100
-Message-Id: <20200212045014.1678-1-dja@axtens.net>
-X-Mailer: git-send-email 2.20.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48HSRS47B3zDqGl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2020 16:11:32 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
+ Content-Type:In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:
+ Subject:Sender:Reply-To:Content-ID:Content-Description;
+ bh=OTFD/SNJffQD3DOz5VRTovqxb+aXKeZm5TMlIiwyLbY=; b=i7D2bxT62GMcsQBA/OG+IFzNG6
+ lmiouuAQCXjnQ5VxYf05qkah31TKIuACoAxAW/5IFUiktzYFxUYyxLUwOa5cDZQaEZLyZ4anQLGOA
+ 6J2hKd+ITQCBXqX3V7JmOEaILq2ppan2KDM3uBu1yRtWB1n6Vyl9lWTuUPaoW8IoHfPYotYNcOszQ
+ oF4zMTRyLmKiVzrlXh4SPmFZuxY0nzcKrrsJr2cQ5aEBf9ag8H74ZyJwekTQn1J2syYa5aWHk5Lmq
+ 9UmNgg0EF5Hv3xwppCVqhUZjBcXSW/WcBBUEnbKhPaqYR0rx537FQfxsrDeO/gD8sFJFKg15P6ZlS
+ bVAWmY6A==;
+Received: from [2601:1c0:6280:3f0::19c2]
+ by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+ id 1j1kJ5-0007Y5-TA; Wed, 12 Feb 2020 05:11:27 +0000
+Subject: Re: [PATCH 0/3] Add new module driver for new ASRC
+To: Shengjiu Wang <shengjiu.wang@nxp.com>, timur@kernel.org,
+ nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com,
+ broonie@kernel.org, alsa-devel@alsa-project.org, lgirdwood@gmail.com,
+ perex@perex.cz, tiwai@suse.com, robh+dt@kernel.org, mark.rutland@arm.com,
+ devicetree@vger.kernel.org
+References: <cover.1581475981.git.shengjiu.wang@nxp.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Message-ID: <2ab5cc65-026a-10fd-1216-b0d83baf37a6@infradead.org>
+Date: Tue, 11 Feb 2020 21:11:26 -0800
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.4.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <cover.1581475981.git.shengjiu.wang@nxp.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,109 +79,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ajd@linux.ibm.com, Daniel Axtens <dja@axtens.net>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-kcov instrumentation is collected the __sanitizer_cov_trace_pc hook in
-kernel/kcov.c. The compiler inserts these hooks into every basic block
-unless kcov is disabled for that file.
+On 2/11/20 8:30 PM, Shengjiu Wang wrote:
+> Add new module driver for new ASRC in i.MX815/865
+> 
+> Shengjiu Wang (3):
+>   ASoC: fsl_asrc: Move common definition to fsl_asrc_common
+>   ASoC: dt-bindings: fsl_easrc: Add document for EASRC
+>   ASoC: fsl_easrc: Add EASRC ASoC CPU DAI and platform drivers
+> 
+>  .../devicetree/bindings/sound/fsl,easrc.txt   |   57 +
+>  sound/soc/fsl/fsl_asrc.h                      |   11 +-
+>  sound/soc/fsl/fsl_asrc_common.h               |   22 +
+>  sound/soc/fsl/fsl_easrc.c                     | 2265 +++++++++++++++++
+>  sound/soc/fsl/fsl_easrc.h                     |  668 +++++
+>  sound/soc/fsl/fsl_easrc_dma.c                 |  440 ++++
+>  6 files changed, 3453 insertions(+), 10 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/sound/fsl,easrc.txt
+>  create mode 100644 sound/soc/fsl/fsl_asrc_common.h
+>  create mode 100644 sound/soc/fsl/fsl_easrc.c
+>  create mode 100644 sound/soc/fsl/fsl_easrc.h
+>  create mode 100644 sound/soc/fsl/fsl_easrc_dma.c
+> 
 
-We then have a deep call-chain:
- - __sanitizer_cov_trace_pc calls to check_kcov_mode()
- - check_kcov_mode() (kernel/kcov.c) calls in_task()
- - in_task() (include/linux/preempt.h) calls preempt_count().
- - preempt_count() (include/asm-generic/preempt.h) calls
-     current_thread_info()
- - because powerpc has THREAD_INFO_IN_TASK, current_thread_info()
-     (include/linux/thread_info.h) is defined to 'current'
- - current (arch/powerpc/include/asm/current.h) is defined to
-     get_current().
- - get_current (same file) loads an offset of r13.
- - arch/powerpc/include/asm/paca.h makes r13 a register variable
-     called local_paca - it is the PACA for the current CPU, so
-     this has the effect of loading the current task from PACA.
- - get_current returns the current task from PACA,
- - current_thread_info returns the task cast to a thread_info
- - preempt_count dereferences the thread_info to load preempt_count
- - that value is used by in_task and so on up the chain
+Hi,
 
-The problem is:
+Is this patch series missing Kconfig, Makefile, and possibly
+MAINTAINERS patches?
 
- - kcov instrumentation is enabled for arch/powerpc/kernel/dt_cpu_ftrs.c
-
- - even if it were not, dt_cpu_ftrs_init calls generic dt parsing code
-   which should definitely have instrumentation enabled.
-
- - setup_64.c calls dt_cpu_ftrs_init before it sets up a PACA.
-
- - It's not clear that we can move PACA setup before dt_cpu_ftrs_init as
-   the PACA setup refers to CPU features - setup_paca() looks at
-   early_cpu_has_feature(CPU_FTR_HVMODE)
-
- - If we don't set up a paca, r13 will contain unpredictable data.
-
- - In a zImage compiled with kcov and KASAN, we see r13 containing a value
-   that leads to dereferencing invalid memory (something like
-   912a72603d420015).
-
- - Weirdly, the same kernel as a vmlinux loaded directly by qemu does not
-   crash. Investigating with gdb, it seems that in the vmlinux boot case,
-   r13 is near enough to zero that we just happen to be able to read that
-   part of memory (we're operating with translation off at this point) and
-   the current pointer also happens to land in readable memory and
-   everything just works.
-
-There's no generic kill switch for kcov (as far as I can tell), and we
-don't want to have to turn off instrumentation in the generic dt parsing
-code (which lives outside arch/powerpc/) just because we don't have a real
-paca or task yet.
-
-So: create a fake task and preload it into our fake PACA. Load the paca
-just into r13 (local_paca) before we call into dt_cpu_ftrs_init. This fake
-task persists just for the first part of the setup process before we set
-up the real PACAs.
-
-Translations get switched on once we leave early_setup, so I think we'd
-already catch any other cases where the PACA or task aren't set up.
-
-Fixes: fb0b0a73b223 ("powerpc: Enable kcov")
-Cc: Andrew Donnellan <ajd@linux.ibm.com>
-Signed-off-by: Daniel Axtens <dja@axtens.net>
-
----
-
-I haven't made the setup conditional on kcov being compiled in, but I
-guess I could if we think it's worth it?
----
- arch/powerpc/kernel/setup_64.c | 13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index e05e6dd67ae6..26f1b8539f8e 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -281,7 +281,18 @@ void __init record_spr_defaults(void)
- 
- void __init early_setup(unsigned long dt_ptr)
- {
--	static __initdata struct paca_struct boot_paca;
-+	/*
-+	 * We need to get something valid into local_paca/r13 asap if we
-+	 * are using kcov. dt_cpu_ftrs_init will call coverage-enabled code
-+	 * in the generic dt library, and that will try to call in_task().
-+	 * We need a minimal paca that at least provides a valid __current.
-+	 * We can't use the usual initialise/setup/fixup path as that relies
-+	 * on a CPU feature.
-+	 */
-+	static __initdata struct task_struct task = {};
-+	static __initdata struct paca_struct boot_paca = { .__current = &task };
-+
-+	local_paca = &boot_paca;
- 
- 	/* -------- printk is _NOT_ safe to use here ! ------- */
- 
+thanks.
 -- 
-2.20.1
+~Randy
 
