@@ -2,61 +2,89 @@ Return-Path: <SRS0=Z2Z0=4A=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AA1F5C2BA83
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Feb 2020 11:55:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DB0C4C2BA83
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Feb 2020 12:18:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5E3AF2073C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Feb 2020 11:55:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5E3AF2073C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 45E2C20714
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Feb 2020 12:18:51 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="XWCVr0we"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 45E2C20714
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48HdPR4fQFzDqNv
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Feb 2020 22:55:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48HdwS44mNzDqHw
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Feb 2020 23:18:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=srs0=kj7i=4a=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
+ smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::644;
+ helo=mail-pl1-x644.google.com; envelope-from=dja@axtens.net;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=bugzilla.kernel.org
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=axtens.net
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256
+ header.s=google header.b=XWCVr0we; dkim-atps=neutral
+Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
+ [IPv6:2607:f8b0:4864:20::644])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48HdLw1bNczDqCk
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2020 22:53:12 +1100 (AEDT)
-From: bugzilla-daemon@bugzilla.kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 206501] Kernel 5.6-rc1 fails to boot on a PowerMac G4 3,6 with
- CONFIG_VMAP_STACK=y: Oops! Machine check, sig: 7  [#1]
-Date: Wed, 12 Feb 2020 11:53:09 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
-X-Bugzilla-Product: Platform Specific/Hardware
-X-Bugzilla-Component: PPC-32
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: christophe.leroy@c-s.fr
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-206501-206035-evy6HkBINC@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-206501-206035@https.bugzilla.kernel.org/>
-References: <bug-206501-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48Hdsr6k1JzDqLV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2020 23:16:32 +1100 (AEDT)
+Received: by mail-pl1-x644.google.com with SMTP id ay11so914896plb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2020 04:16:32 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
+ h=from:to:cc:subject:in-reply-to:references:date:message-id
+ :mime-version:content-transfer-encoding;
+ bh=ORoK11ERH5m7YuJvIylQ/MWzmpJfOKr+pxcrwqBrMvQ=;
+ b=XWCVr0we/B0Dnr38QeVN0NAFBB7OHmJ6catF4Y/m8KUXV6l1ibCWIyD6aROfJdFo9Q
+ ys5FzIM1S4R9WZVpjIF+j0u96+EHCi/Uhcf05fseXW6fudw77tn/uCmRGDs36XDbemzz
+ 0r6x9Ef6eJ3zC+P5L1ag/zMCrB7t/hSxhwWhM=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
+ :message-id:mime-version:content-transfer-encoding;
+ bh=ORoK11ERH5m7YuJvIylQ/MWzmpJfOKr+pxcrwqBrMvQ=;
+ b=bdwZ29Eo+J/3HgWaFcaSig5ulI7APPW4CgM87P7Y+WfuKjLHAh4xVNt3Ak7xuDZr2l
+ vtisYjSs5YWWSBmCAFeAKnd5lrl8Y/h81fMHTV0ZMDJm16hE+QYmC9xPBmZ2jcYl3lMY
+ FpITjro1wTCo2nvg7c5tvMvKlbYnOjvP8dRcF1acvhr36cG3BZryeFf916s+RxcyIhmy
+ iTuv61sCAnSLqJ4NWKXYd2oyGaNKdKdoh+RnLDoMjYES95z+5AJHyFWdh4wwU2JKrLkz
+ UuJm2PG4UV0RfldRoU+JceFSKIgQhqMcZKWBphc4nRMtwUsnPe11A7y2djSHCPjjOh9U
+ KUdw==
+X-Gm-Message-State: APjAAAXF1KVDXpIaCKTLQXvj5vCOJJONMTOaEc725+Y/k8+aX7dFJyT4
+ M98oXqSA8IxYqziS/D3eGCnEeA==
+X-Google-Smtp-Source: APXvYqzZYTz24FDyHd0eRpGzSXdXy/ZDf7dLI/ImpCx1ChsLkUO9NJ/LKn0a3OCf6UX0E41BiUUemA==
+X-Received: by 2002:a17:902:34d:: with SMTP id
+ 71mr7957844pld.140.1581509789395; 
+ Wed, 12 Feb 2020 04:16:29 -0800 (PST)
+Received: from localhost
+ (2001-44b8-1113-6700-65dc-9b98-63a7-c7a4.static.ipv6.internode.on.net.
+ [2001:44b8:1113:6700:65dc:9b98:63a7:c7a4])
+ by smtp.gmail.com with ESMTPSA id z27sm749357pfj.107.2020.02.12.04.16.24
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 12 Feb 2020 04:16:25 -0800 (PST)
+From: Daniel Axtens <dja@axtens.net>
+To: Christophe Leroy <christophe.leroy@c-s.fr>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, kasan-dev@googlegroups.com,
+ aneesh.kumar@linux.ibm.com, bsingharora@gmail.com
+Subject: Re: [PATCH v6 4/4] powerpc: Book3S 64-bit "heavyweight" KASAN support
+In-Reply-To: <5e392944-50ac-ed06-5896-2664894335d9@c-s.fr>
+References: <20200212054724.7708-1-dja@axtens.net>
+ <20200212054724.7708-5-dja@axtens.net>
+ <224745f3-db66-fe46-1459-d1d41867b4f3@c-s.fr>
+ <87imkcru6b.fsf@dja-thinkpad.axtens.net>
+ <5e392944-50ac-ed06-5896-2664894335d9@c-s.fr>
+Date: Wed, 12 Feb 2020 23:16:21 +1100
+Message-ID: <87ftfgrofe.fsf@dja-thinkpad.axtens.net>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,12 +100,93 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D206501
+Christophe Leroy <christophe.leroy@c-s.fr> writes:
 
---- Comment #3 from Christophe Leroy (christophe.leroy@c-s.fr) ---
-Could you also test the patch https://patchwork.ozlabs.org/patch/1236804/
-instead of the above patch.
+> Le 12/02/2020 =C3=A0 11:12, Daniel Axtens a =C3=A9crit=C2=A0:
+>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>>=20
+>>> Le 12/02/2020 =C3=A0 06:47, Daniel Axtens a =C3=A9crit=C2=A0:
+>>>> diff --git a/arch/powerpc/include/asm/kasan.h b/arch/powerpc/include/a=
+sm/kasan.h
+>>>> index fbff9ff9032e..2911fdd3a6a0 100644
+>>>> --- a/arch/powerpc/include/asm/kasan.h
+>>>> +++ b/arch/powerpc/include/asm/kasan.h
+>>>> @@ -2,6 +2,8 @@
+>>>>    #ifndef __ASM_KASAN_H
+>>>>    #define __ASM_KASAN_H
+>>>>=20=20=20=20
+>>>> +#include <asm/page.h>
+>>>> +
+>>>>    #ifdef CONFIG_KASAN
+>>>>    #define _GLOBAL_KASAN(fn)	_GLOBAL(__##fn)
+>>>>    #define _GLOBAL_TOC_KASAN(fn)	_GLOBAL_TOC(__##fn)
+>>>> @@ -14,29 +16,41 @@
+>>>>=20=20=20=20
+>>>>    #ifndef __ASSEMBLY__
+>>>>=20=20=20=20
+>>>> -#include <asm/page.h>
+>>>> -
+>>>>    #define KASAN_SHADOW_SCALE_SHIFT	3
+>>>>=20=20=20=20
+>>>>    #define KASAN_SHADOW_START	(KASAN_SHADOW_OFFSET + \
+>>>>    				 (PAGE_OFFSET >> KASAN_SHADOW_SCALE_SHIFT))
+>>>>=20=20=20=20
+>>>> +#ifdef CONFIG_KASAN_SHADOW_OFFSET
+>>>>    #define KASAN_SHADOW_OFFSET	ASM_CONST(CONFIG_KASAN_SHADOW_OFFSET)
+>>>> +#endif
+>>>>=20=20=20=20
+>>>> +#ifdef CONFIG_PPC32
+>>>>    #define KASAN_SHADOW_END	0UL
+>>>>=20=20=20=20
+>>>> -#define KASAN_SHADOW_SIZE	(KASAN_SHADOW_END - KASAN_SHADOW_START)
+>>>> +#ifdef CONFIG_KASAN
+>>>> +void kasan_late_init(void);
+>>>> +#else
+>>>> +static inline void kasan_late_init(void) { }
+>>>> +#endif
+>>>> +
+>>>> +#endif
+>>>> +
+>>>> +#ifdef CONFIG_PPC_BOOK3S_64
+>>>> +#define KASAN_SHADOW_END	(KASAN_SHADOW_OFFSET + \
+>>>> +				 (RADIX_VMEMMAP_END >> KASAN_SHADOW_SCALE_SHIFT))
+>>>> +
+>>>> +static inline void kasan_late_init(void) { }
+>>>> +#endif
+>>>>=20=20=20=20
+>>>>    #ifdef CONFIG_KASAN
+>>>>    void kasan_early_init(void);
+>>>>    void kasan_mmu_init(void);
+>>>>    void kasan_init(void);
+>>>> -void kasan_late_init(void);
+>>>>    #else
+>>>>    static inline void kasan_init(void) { }
+>>>>    static inline void kasan_mmu_init(void) { }
+>>>> -static inline void kasan_late_init(void) { }
+>>>>    #endif
+>>>
+>>> Why modify all this kasan_late_init() stuff ?
+>>>
+>>> This function is only called from kasan init_32.c, it is never called by
+>>> PPC64, so you should not need to modify anything at all.
+>>=20
+>> I got a compile error for a missing symbol. I'll repro it and attach it.
+>>=20
+>
+> Oops, sorry. I looked too quickly. It is defined in kasan_init_32.c and=20
+> called from mm/mem.c
+>
+> We don't have a performance issue here, since this is called only once=20
+> during startup. Could you define an empty kasan_late_init() in=20
+> init_book3s_64.c instead ?
 
---=20
-You are receiving this mail because:
-You are watching the assignee of the bug.=
+Yeah, I can do that, will respin tomorrow.
+
+Would you mind having a quick check of the documentation changes in
+patches 2 and 4? I just want to confirm I've accurately captured the
+state of ppc32 kasan work.
+
+Thanks!
+Daniel
+>
+> Christophe
