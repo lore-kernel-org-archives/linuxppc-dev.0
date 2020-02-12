@@ -2,64 +2,59 @@ Return-Path: <SRS0=Z2Z0=4A=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23D73C2BA83
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Feb 2020 03:46:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 601CBC2BA83
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Feb 2020 04:38:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BB5B02073C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Feb 2020 03:46:13 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=neuling.org header.i=@neuling.org header.b="TFl8ycTo"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BB5B02073C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=neuling.org
+	by mail.kernel.org (Postfix) with ESMTPS id C6C21206ED
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Feb 2020 04:38:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C6C21206ED
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48HQXz5YySzDqKN
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Feb 2020 14:46:11 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48HQVr1GR8zDqJt
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2020 14:44:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48HRhw3MCmzDqNJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Feb 2020 15:38:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=neuling.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=neuling.org header.i=@neuling.org header.a=rsa-sha256
- header.s=201811 header.b=TFl8ycTo; dkim-atps=neutral
-Received: from neuling.org (localhost [127.0.0.1])
- by ozlabs.org (Postfix) with ESMTP id 48HQVq2L1kz9s29;
- Wed, 12 Feb 2020 14:44:19 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=neuling.org;
- s=201811; t=1581479059;
- bh=vHvxgr9Mi4kVU4CP+DLd8jLZICVO9UpdLx4IRY8/qAc=;
- h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
- b=TFl8ycTowgf15CJA30P9wKR0Qk6bpdlEFhoGn9MjMkQU7T5LYHPkWySg+SlXE12X3
- fCQ8pfyWR+gG9m4Uy4Y4i4EKfy/CVMLaLn9jxyAgyKMetLmhUwlY4HdmQzYTCRzrtM
- xuchTnNhSJAPanXtVv1RgVhjOxKX2UQNMLabej6VAK/a4BGMQjy9/apaPx0XwaveHW
- OVB6OMj6MrpYDq0th8hozc5uL6zdrEhHqkWj3SGYC/siPo6uQHt73MusUoX2wPc1dE
- UMjwTYu1mguWl2kJuI7Fs6+VBsC3vgsSIPk5De0QISt60MKI28PucWHANsN5APwwJ/
- 6ikU8sJMHnonQ==
-Received: by neuling.org (Postfix, from userid 1000)
- id B4D462C1FF6; Wed, 12 Feb 2020 14:44:18 +1100 (AEDT)
-Message-ID: <c88cd4e86f3d1874c277b5052e030625dd373f90.camel@neuling.org>
-Subject: Re: [PATCH v3 1/3] powerpc/tm: Fix clearing MSR[TS] in current when
- reclaiming on signal delivery
-From: Michael Neuling <mikey@neuling.org>
-To: Gustavo Luiz Duarte <gustavold@linux.ibm.com>, 
- linuxppc-dev@lists.ozlabs.org
-Date: Wed, 12 Feb 2020 14:44:18 +1100
-In-Reply-To: <20200211033831.11165-1-gustavold@linux.ibm.com>
-References: <20200211033831.11165-1-gustavold@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.34.3 (3.34.3-1.fc31) 
-MIME-Version: 1.0
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.21; helo=inva021.nxp.com;
+ envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48HRfM5tLBzDqK5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2020 15:35:46 +1100 (AEDT)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 2AE5F2256C7;
+ Wed, 12 Feb 2020 05:35:43 +0100 (CET)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
+ [165.114.16.14])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 1027E2256CC;
+ Wed, 12 Feb 2020 05:35:36 +0100 (CET)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net
+ [10.192.224.44])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 6787C402B7;
+ Wed, 12 Feb 2020 12:35:27 +0800 (SGT)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
+ festevam@gmail.com, broonie@kernel.org, alsa-devel@alsa-project.org,
+ lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com, robh+dt@kernel.org,
+ mark.rutland@arm.com, devicetree@vger.kernel.org
+Subject: [PATCH 1/3] ASoC: fsl_asrc: Move common definition to fsl_asrc_common
+Date: Wed, 12 Feb 2020 12:30:01 +0800
+Message-Id: <916c5542c7248ee3dc9ebe5324b80beb2af9d1fa.1581475981.git.shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <cover.1581475981.git.shengjiu.wang@nxp.com>
+References: <cover.1581475981.git.shengjiu.wang@nxp.com>
+In-Reply-To: <cover.1581475981.git.shengjiu.wang@nxp.com>
+References: <cover.1581475981.git.shengjiu.wang@nxp.com>
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,19 +66,78 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: stable@vger.kernel.org, gromero@linux.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> Found with tm-signal-context-force-tm kernel selftest.
->=20
-> v3: Subject and comment improvements.
-> v2: Fix build failure when tm is disabled.
->=20
-> Fixes: 2b0a576d15e0 ("powerpc: Add new transactional memory state to the
-> signal context")
-> Cc: stable@vger.kernel.org # v3.9
-> Signed-off-by: Gustavo Luiz Duarte <gustavold@linux.ibm.com>
+There is a new ASRC included in i.MX serial platform, there
+are some common definition can be shared with each other.
+So move the common definition to a separate header file.
 
-Acked-By: Michael Neuling <mikey@neuling.org>
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+---
+ sound/soc/fsl/fsl_asrc.h        | 11 +----------
+ sound/soc/fsl/fsl_asrc_common.h | 21 +++++++++++++++++++++
+ 2 files changed, 22 insertions(+), 10 deletions(-)
+ create mode 100644 sound/soc/fsl/fsl_asrc_common.h
+
+diff --git a/sound/soc/fsl/fsl_asrc.h b/sound/soc/fsl/fsl_asrc.h
+index 8a821132d9d0..e8abb27ffeda 100644
+--- a/sound/soc/fsl/fsl_asrc.h
++++ b/sound/soc/fsl/fsl_asrc.h
+@@ -10,8 +10,7 @@
+ #ifndef _FSL_ASRC_H
+ #define _FSL_ASRC_H
+ 
+-#define IN	0
+-#define OUT	1
++#include  "fsl_asrc_common.h"
+ 
+ #define ASRC_DMA_BUFFER_NUM		2
+ #define ASRC_INPUTFIFO_THRESHOLD	32
+@@ -283,14 +282,6 @@
+ #define ASRMCR1i_OW16_MASK		(1 << ASRMCR1i_OW16_SHIFT)
+ #define ASRMCR1i_OW16(v)		((v) << ASRMCR1i_OW16_SHIFT)
+ 
+-
+-enum asrc_pair_index {
+-	ASRC_INVALID_PAIR = -1,
+-	ASRC_PAIR_A = 0,
+-	ASRC_PAIR_B = 1,
+-	ASRC_PAIR_C = 2,
+-};
+-
+ #define ASRC_PAIR_MAX_NUM	(ASRC_PAIR_C + 1)
+ 
+ enum asrc_inclk {
+diff --git a/sound/soc/fsl/fsl_asrc_common.h b/sound/soc/fsl/fsl_asrc_common.h
+new file mode 100644
+index 000000000000..8acc55778ff2
+--- /dev/null
++++ b/sound/soc/fsl/fsl_asrc_common.h
+@@ -0,0 +1,21 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Copyright 2019 NXP
++ *
++ */
++
++#ifndef _FSL_ASRC_COMMON_H
++#define _FSL_ASRC_COMMON_H
++
++/* directions */
++#define IN	0
++#define OUT	1
++
++enum asrc_pair_index {
++	ASRC_INVALID_PAIR = -1,
++	ASRC_PAIR_A = 0,
++	ASRC_PAIR_B = 1,
++	ASRC_PAIR_C = 2,
++};
++
++#endif /* _FSL_ASRC_COMMON_H */
+-- 
+2.21.0
+
