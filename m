@@ -2,73 +2,89 @@ Return-Path: <SRS0=qWQb=4B=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F33EAC3B189
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Feb 2020 09:07:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DD0ADC2BA83
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Feb 2020 09:40:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3D85220848
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Feb 2020 09:07:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3D85220848
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9B93B20848
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Feb 2020 09:40:14 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="QijSSUZm"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9B93B20848
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rasmusvillemoes.dk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48J9d82zdKzDqWb
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Feb 2020 20:07:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=linux.intel.com
- (client-ip=134.134.136.100; helo=mga07.intel.com;
- envelope-from=alexey.budankov@linux.intel.com; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48JBLz2xcBzDqTF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Feb 2020 20:40:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=rasmusvillemoes.dk (client-ip=2a00:1450:4864:20::243;
+ helo=mail-lj1-x243.google.com; envelope-from=linux@rasmusvillemoes.dk;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.intel.com
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ header.from=rasmusvillemoes.dk
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk
+ header.a=rsa-sha256 header.s=google header.b=QijSSUZm; 
+ dkim-atps=neutral
+Received: from mail-lj1-x243.google.com (mail-lj1-x243.google.com
+ [IPv6:2a00:1450:4864:20::243])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48J9b90YkMzDqTD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Feb 2020 20:05:39 +1100 (AEDT)
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
- by orsmga105.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 13 Feb 2020 01:05:35 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.70,436,1574150400"; d="scan'208";a="267006589"
-Received: from linux.intel.com ([10.54.29.200])
- by fmsmga002.fm.intel.com with ESMTP; 13 Feb 2020 01:05:33 -0800
-Received: from [10.125.252.71] (abudanko-mobl.ccr.corp.intel.com
- [10.125.252.71])
- by linux.intel.com (Postfix) with ESMTP id 49A115802C1;
- Thu, 13 Feb 2020 01:05:25 -0800 (PST)
-Subject: Re: [PATCH v5 01/10] capabilities: introduce CAP_PERFMON to kernel
- and user space
-To: Stephen Smalley <sds@tycho.nsa.gov>
-References: <0548c832-7f4b-dc4c-8883-3f2b6d351a08@linux.intel.com>
- <9b77124b-675d-5ac7-3741-edec575bd425@linux.intel.com>
- <64cab472-806e-38c4-fb26-0ffbee485367@tycho.nsa.gov>
- <05297eff-8e14-ccdf-55a4-870c64516de8@linux.intel.com>
- <CAADnVQK-JzK-GUk4KOozn4c1xr=7TiCpB9Fi0QDC9nE6iVn8iQ@mail.gmail.com>
- <537bdb28-c9e4-f44f-d665-25250065a6bb@linux.intel.com>
- <63d9700f-231d-7973-5307-3e56a48c54cb@linux.intel.com>
- <d7213569-9578-7201-6106-f5ebc95bd6be@tycho.nsa.gov>
- <2e38c33d-f085-1320-8cc2-45f74b6ad86d@linux.intel.com>
- <dd6a1382-7b2f-a6e6-a1ac-009566d7f556@tycho.nsa.gov>
- <8141da2e-49cf-c02d-69e9-8a7cbdc91431@linux.intel.com>
- <7c367905-e8c9-7665-d923-c850e05c757a@tycho.nsa.gov>
- <280e6644-c129-15f6-ea5c-0f66bf764e0f@tycho.nsa.gov>
- <950cc6a4-5823-d607-1210-6f62c96cf67f@linux.intel.com>
- <46751eb9-deca-53cc-95fb-1602cfdf62a2@tycho.nsa.gov>
-From: Alexey Budankov <alexey.budankov@linux.intel.com>
-Organization: Intel Corp.
-Message-ID: <874115a9-fb11-b7f4-7e92-46aedc5f26af@linux.intel.com>
-Date: Thu, 13 Feb 2020 12:05:24 +0300
-User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.4.2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48JBJJ3lSVzDqTF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Feb 2020 20:37:51 +1100 (AEDT)
+Received: by mail-lj1-x243.google.com with SMTP id n18so5785684ljo.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Feb 2020 01:37:50 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=rasmusvillemoes.dk; s=google;
+ h=subject:to:cc:references:from:message-id:date:user-agent
+ :mime-version:in-reply-to:content-language:content-transfer-encoding;
+ bh=abAWSR2K9H6Y7+jBghj7Y02LAAu4P/DFtVh1G9MzXxs=;
+ b=QijSSUZmAvV9r/UmfLRddFu/lj5MAcoPgRZbVa3v9j5jiiATXWzyL/BvURW3lz3KW7
+ iMjlFqEHYvawzlPHLR/6TBOqcOgIPA8kR1X2nWq5kW9cvm8JEMkz8Q9hVcUSVr23HHE4
+ ZwjkFtmmfIky8bGKUhfgRMyi8KT/hNbFyFmrU=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=abAWSR2K9H6Y7+jBghj7Y02LAAu4P/DFtVh1G9MzXxs=;
+ b=Pviv1v/MJQfxTSbU2o0qg/B6PU/cJLb+ofEcUlfLx82ltRSQ51jjiARe0hRqIBxmK8
+ hR+HbYRWXrL1QyxoXlkV4b+gkIW9tRAGa9afy/6fSK2SonB4Fg6bqcZ162Q/Wy9zqwjO
+ HWFnEQIetoJpUqB17HLSnQLoIE8qxiLeDfmIig9wpcuJdAfZLo+xWH4q1ejYO2EqTsEi
+ pIGAti7+c3znAoQ3OyCkXIS0l2lFOoD7xZoqcR3Z8zTJ3IqkFTey8BpgU5LJmb0OLKNt
+ sdjgwgib8SN3hU0Ej8zmcpwjxl8Y7yA+cQbFd3w5nVz+aXbbmOH7dQm71ObWuRs7Pfvq
+ tnEQ==
+X-Gm-Message-State: APjAAAXQ3HjtDSuGyGBcPmx3wMHm9LHDTPidkGqQFb8I7W5CetByPPWu
+ uAKwXW53ny88lYkVCOZFuu9aGw==
+X-Google-Smtp-Source: APXvYqyZFOrtSR7eABF1EXRChiVl4lCT5gyFw0WU8p2xdTyGdZA18sFRm59BfuNt7mQK9C5WtPUKtw==
+X-Received: by 2002:a05:651c:232:: with SMTP id
+ z18mr11013557ljn.85.1581586666416; 
+ Thu, 13 Feb 2020 01:37:46 -0800 (PST)
+Received: from [172.16.11.50] ([81.216.59.226])
+ by smtp.gmail.com with ESMTPSA id r9sm1151939lfc.72.2020.02.13.01.37.45
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Thu, 13 Feb 2020 01:37:45 -0800 (PST)
+Subject: Re: [Regression 5.6-rc1][Bisected b6231ea2b3c6] Powerpc 8xx doesn't
+ boot anymore
+To: Christophe Leroy <christophe.leroy@c-s.fr>, Li Yang <leoyang.li@nxp.com>, 
+ Qiang Zhao <qiang.zhao@nxp.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+References: <0d45fa64-51ee-0052-cb34-58c770c5b3ce@c-s.fr>
+ <aee10440-c244-7c93-d3bb-fd29d8a83be4@c-s.fr>
+From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Message-ID: <59487f8a-fd2e-703d-d954-d263f756a3a0@rasmusvillemoes.dk>
+Date: Thu, 13 Feb 2020 10:37:44 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.4.1
 MIME-Version: 1.0
-In-Reply-To: <46751eb9-deca-53cc-95fb-1602cfdf62a2@tycho.nsa.gov>
+In-Reply-To: <aee10440-c244-7c93-d3bb-fd29d8a83be4@c-s.fr>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
@@ -83,274 +99,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Song Liu <songliubraving@fb.com>,
- Peter Zijlstra <peterz@infradead.org>,
- "joonas.lahtinen@linux.intel.com" <joonas.lahtinen@linux.intel.com>,
- Will Deacon <will.deacon@arm.com>, Alexei Starovoitov <ast@kernel.org>,
- Stephane Eranian <eranian@google.com>,
- "james.bottomley@hansenpartnership.com"
- <james.bottomley@hansenpartnership.com>, Paul Mackerras <paulus@samba.org>,
- Jiri Olsa <jolsa@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>,
- Andi Kleen <ak@linux.intel.com>, Igor Lubashev <ilubashe@akamai.com>,
- James Morris <jmorris@namei.org>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Ingo Molnar <mingo@redhat.com>, oprofile-list@lists.sf.net,
- Serge Hallyn <serge@hallyn.com>, Robert Richter <rric@kernel.org>,
- "selinux@vger.kernel.org" <selinux@vger.kernel.org>,
- "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>,
- "jani.nikula@linux.intel.com" <jani.nikula@linux.intel.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- "rodrigo.vivi@intel.com" <rodrigo.vivi@intel.com>,
- Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
- "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
- linux-kernel <linux-kernel@vger.kernel.org>,
- Lionel Landwerlin <lionel.g.landwerlin@intel.com>,
- Andy Lutomirski <luto@amacapital.net>,
- "linux-perf-users@vger.kernel.org" <linux-perf-users@vger.kernel.org>,
- "linux-security-module@vger.kernel.org"
- <linux-security-module@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Scott Wood <oss@buserror.net>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ LKML <linux-kernel@vger.kernel.org>, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-On 12.02.2020 20:09, Stephen Smalley wrote:
-> On 2/12/20 11:56 AM, Alexey Budankov wrote:
->>
->>
->> On 12.02.2020 18:45, Stephen Smalley wrote:
->>> On 2/12/20 10:21 AM, Stephen Smalley wrote:
->>>> On 2/12/20 8:53 AM, Alexey Budankov wrote:
->>>>> On 12.02.2020 16:32, Stephen Smalley wrote:
->>>>>> On 2/12/20 3:53 AM, Alexey Budankov wrote:
->>>>>>> Hi Stephen,
->>>>>>>
->>>>>>> On 22.01.2020 17:07, Stephen Smalley wrote:
->>>>>>>> On 1/22/20 5:45 AM, Alexey Budankov wrote:
->>>>>>>>>
->>>>>>>>> On 21.01.2020 21:27, Alexey Budankov wrote:
->>>>>>>>>>
->>>>>>>>>> On 21.01.2020 20:55, Alexei Starovoitov wrote:
->>>>>>>>>>> On Tue, Jan 21, 2020 at 9:31 AM Alexey Budankov
->>>>>>>>>>> <alexey.budankov@linux.intel.com> wrote:
->>>>>>>>>>>>
->>>>>>>>>>>>
->>>>>>>>>>>> On 21.01.2020 17:43, Stephen Smalley wrote:
->>>>>>>>>>>>> On 1/20/20 6:23 AM, Alexey Budankov wrote:
->>>>>>>>>>>>>>
->>>>>>> <SNIP>
->>>>>>>>>>>>>> Introduce CAP_PERFMON capability designed to secure system performance
->>>>>>>>>>>>>
->>>>>>>>>>>>> Why _noaudit()?  Normally only used when a permission failure is non-fatal to the operation.  Otherwise, we want the audit message.
->>>>>>>>>
->>>>>>>>> So far so good, I suggest using the simplest version for v6:
->>>>>>>>>
->>>>>>>>> static inline bool perfmon_capable(void)
->>>>>>>>> {
->>>>>>>>>        return capable(CAP_PERFMON) || capable(CAP_SYS_ADMIN);
->>>>>>>>> }
->>>>>>>>>
->>>>>>>>> It keeps the implementation simple and readable. The implementation is more
->>>>>>>>> performant in the sense of calling the API - one capable() call for CAP_PERFMON
->>>>>>>>> privileged process.
->>>>>>>>>
->>>>>>>>> Yes, it bloats audit log for CAP_SYS_ADMIN privileged and unprivileged processes,
->>>>>>>>> but this bloating also advertises and leverages using more secure CAP_PERFMON
->>>>>>>>> based approach to use perf_event_open system call.
->>>>>>>>
->>>>>>>> I can live with that.  We just need to document that when you see both a CAP_PERFMON and a CAP_SYS_ADMIN audit message for a process, try only allowing CAP_PERFMON first and see if that resolves the issue.  We have a similar issue with CAP_DAC_READ_SEARCH versus CAP_DAC_OVERRIDE.
->>>>>>>
->>>>>>> I am trying to reproduce this double logging with CAP_PERFMON.
->>>>>>> I am using the refpolicy version with enabled perf_event tclass [1], in permissive mode.
->>>>>>> When running perf stat -a I am observing this AVC audit messages:
->>>>>>>
->>>>>>> type=AVC msg=audit(1581496695.666:8691): avc:  denied  { open } for  pid=2779 comm="perf" scontext=user_u:user_r:user_systemd_t tcontext=user_u:user_r:user_systemd_t tclass=perf_event permissive=1
->>>>>>> type=AVC msg=audit(1581496695.666:8691): avc:  denied  { kernel } for  pid=2779 comm="perf" scontext=user_u:user_r:user_systemd_t tcontext=user_u:user_r:user_systemd_t tclass=perf_event permissive=1
->>>>>>> type=AVC msg=audit(1581496695.666:8691): avc:  denied  { cpu } for  pid=2779 comm="perf" scontext=user_u:user_r:user_systemd_t tcontext=user_u:user_r:user_systemd_t tclass=perf_event permissive=1
->>>>>>> type=AVC msg=audit(1581496695.666:8692): avc:  denied  { write } for  pid=2779 comm="perf" scontext=user_u:user_r:user_systemd_t tcontext=user_u:user_r:user_systemd_t tclass=perf_event permissive=1
->>>>>>>
->>>>>>> However there is no capability related messages around. I suppose my refpolicy should
->>>>>>> be modified somehow to observe capability related AVCs.
->>>>>>>
->>>>>>> Could you please comment or clarify on how to enable caps related AVCs in order
->>>>>>> to test the concerned logging.
->>>>>>
->>>>>> The new perfmon permission has to be defined in your policy; you'll have a message in dmesg about "Permission perfmon in class capability2 not defined in policy.".  You can either add it to the common cap2 definition in refpolicy/policy/flask/access_vectors and rebuild your policy or extract your base module as CIL, add it there, and insert the updated module.
->>>>>
->>>>> Yes, I already have it like this:
->>>>> common cap2
->>>>> {
->>>>> <------>mac_override<--># unused by SELinux
->>>>> <------>mac_admin
->>>>> <------>syslog
->>>>> <------>wake_alarm
->>>>> <------>block_suspend
->>>>> <------>audit_read
->>>>> <------>perfmon
->>>>> }
->>>>>
->>>>> dmesg stopped reporting perfmon as not defined but audit.log still doesn't report CAP_PERFMON denials.
->>>>> BTW, audit even doesn't report CAP_SYS_ADMIN denials, however perfmon_capable() does check for it.
->>>>
->>>> Some denials may be silenced by dontaudit rules; semodule -DB will strip those and semodule -B will restore them.  Other possibility is that the process doesn't have CAP_PERFMON in its effective set and therefore never reaches SELinux at all; denied first by the capability module.
->>>
->>> Also, the fact that your denials are showing up in user_systemd_t suggests that something is off in your policy or userspace/distro; I assume that is a domain type for the systemd --user instance, but your shell and commands shouldn't be running in that domain (user_t would be more appropriate for that).
->>
->> It is user_t for local terminal session:
->> ps -Z
->> LABEL                             PID TTY          TIME CMD
->> user_u:user_r:user_t            11317 pts/9    00:00:00 bash
->> user_u:user_r:user_t            11796 pts/9    00:00:00 ps
->>
->> For local terminal root session:
->> ps -Z
->> LABEL                             PID TTY          TIME CMD
->> user_u:user_r:user_su_t          2926 pts/3    00:00:00 bash
->> user_u:user_r:user_su_t         10995 pts/3    00:00:00 ps
->>
->> For remote ssh session:
->> ps -Z
->> LABEL                             PID TTY          TIME CMD
->> user_u:user_r:user_t             7540 pts/8    00:00:00 ps
->> user_u:user_r:user_systemd_t     8875 pts/8    00:00:00 bash
+On 12/02/2020 15.50, Christophe Leroy wrote:
 > 
-> That's a bug in either your policy or your userspace/distro integration.  In any event, unless user_systemd_t is allowed all capability2 permissions by your policy, you should see the denials if CAP_PERFMON is set in the effective capability set of the process.
 > 
+> On 02/12/2020 02:24 PM, Christophe Leroy wrote:
 
-That all seems to be true. After instrumentation, rebuilding and rebooting, in CAP_PERFMON case:
+>> In your commit text you explain that cpm_muram_init() is called via
+>> subsys_initcall. But console init is done before that, so it cannot work.
+>>
+>> Do you have a fix for that ?
+>>
+> 
+> The following patch allows powerpc 8xx to boot again. Don't know if
+> that's the good place and way to do the fix though.
+> 
+> ---
+> diff --git a/drivers/tty/serial/cpm_uart/cpm_uart_core.c
+> b/drivers/tty/serial/cpm_uart/cpm_uart_core.c
+> index 4cabded8390b..341d682ec6eb 100644
+> --- a/drivers/tty/serial/cpm_uart/cpm_uart_core.c
+> +++ b/drivers/tty/serial/cpm_uart/cpm_uart_core.c
+> @@ -1351,6 +1351,7 @@ static int __init cpm_uart_console_setup(struct
+> console *co, char *options)
+>          clrbits32(&pinfo->sccp->scc_gsmrl, SCC_GSMRL_ENR | SCC_GSMRL_ENT);
+>      }
+> 
+> +    cpm_muram_init();
+>      ret = cpm_uart_allocbuf(pinfo, 1);
+> 
+>      if (ret)
 
-$ getcap perf
-perf = cap_sys_ptrace,cap_syslog,cap_perfmon+ep
+Hmm, that seems to be a somewhat random place, making it hard to see
+that it is indeed early enough. Would it work to put it inside the
+console_initcall that registers the cpm console? I.e.
 
-$ perf stat -a
+static int __init cpm_uart_console_init(void)
+{
++       cpm_muram_init();
+        register_console(&cpm_scc_uart_console);
+        return 0;
+}
 
-type=AVC msg=audit(1581580399.165:784): avc:  denied  { open } for  pid=8859 comm="perf" scontext=user_u:user_r:user_t tcontext=user_u:user_r:user_t tclass=perf_event permissive=1
-type=AVC msg=audit(1581580399.165:785): avc:  denied  { perfmon } for  pid=8859 comm="perf" capability=38  scontext=user_u:user_r:user_t tcontext=user_u:user_r:user_t tclass=capability2 permissive=1
-type=AVC msg=audit(1581580399.165:786): avc:  denied  { kernel } for  pid=8859 comm="perf" scontext=user_u:user_r:user_t tcontext=user_u:user_r:user_t tclass=perf_event permissive=1
-type=AVC msg=audit(1581580399.165:787): avc:  denied  { cpu } for  pid=8859 comm="perf" scontext=user_u:user_r:user_t tcontext=user_u:user_r:user_t tclass=perf_event permissive=1
-type=AVC msg=audit(1581580399.165:788): avc:  denied  { write } for  pid=8859 comm="perf" scontext=user_u:user_r:user_t tcontext=user_u:user_r:user_t tclass=perf_event permissive=1
-type=AVC msg=audit(1581580408.078:791): avc:  denied  { read } for  pid=8859 comm="perf" scontext=user_u:user_r:user_t tcontext=user_u:user_r:user_t tclass=perf_event permissive=1
+console_initcall(cpm_uart_console_init);
 
-dmesg:
-
-[  137.877713] security_capable(0000000071f7ee6e, 000000009dd7a5fc, CAP_PERFMON, 0) = ?
-[  137.877774] cread_has_capability(CAP_PERFMON) = 0
-[  137.877775] prior avc_audit(CAP_PERFMON)
-[  137.877779] security_capable(0000000071f7ee6e, 000000009dd7a5fc, CAP_PERFMON, 0) = 0
-
-[  137.877784] security_capable(0000000071f7ee6e, 000000009dd7a5fc, CAP_PERFMON, 0) = ?
-[  137.877785] cread_has_capability(CAP_PERFMON) = 0
-[  137.877786] security_capable(0000000071f7ee6e, 000000009dd7a5fc, CAP_PERFMON, 0) = 0
-
-[  137.877794] security_capable(0000000071f7ee6e, 000000009dd7a5fc, CAP_PERFMON, 0) = ?
-[  137.877795] cread_has_capability(CAP_PERFMON) = 0
-[  137.877796] security_capable(0000000071f7ee6e, 000000009dd7a5fc, CAP_PERFMON, 0) = 0
-
-...
-
-in CAP_SYS_ADMIN case:
-
-$ getcap perf
-perf = cap_sys_ptrace,cap_sys_admin,cap_syslog+ep
-
-$ perf stat -a
-
-type=AVC msg=audit(1581580747.928:835): avc:  denied  { open } for  pid=8927 comm="perf" scontext=user_u:user_r:user_t tcontext=user_u:user_r:user_t tclass=perf_event permissive=1
-type=AVC msg=audit(1581580747.928:836): avc:  denied  { cpu } for  pid=8927 comm="perf" scontext=user_u:user_r:user_t tcontext=user_u:user_r:user_t tclass=perf_event permissive=1
-type=AVC msg=audit(1581580747.928:837): avc:  denied  { kernel } for  pid=8927 comm="perf" scontext=user_u:user_r:user_t tcontext=user_u:user_r:user_t tclass=perf_event permissive=1
-type=AVC msg=audit(1581580747.928:838): avc:  denied  { read } for  pid=8927 comm="perf" scontext=user_u:user_r:user_t tcontext=user_u:user_r:user_t tclass=perf_event permissive=1
-type=AVC msg=audit(1581580747.928:839): avc:  denied  { write } for  pid=8927 comm="perf" scontext=user_u:user_r:user_t tcontext=user_u:user_r:user_t tclass=perf_event permissive=1
-...
-
-$ perf record -- ls
-...
-type=AVC msg=audit(1581580747.930:843): avc:  denied  { sys_ptrace } for  pid=8927 comm="perf" capability=19  scontext=user_u:user_r:user_t tcontext=user_u:user_r:user_t tclass=capability permissive=1
-...
-
-dmesg:
-
-[  276.714266] security_capable(000000006b09ad8a, 000000009dd7a5fc, CAP_PERFMON, 0) = ?
-[  276.714268] security_capable(000000006b09ad8a, 000000009dd7a5fc, CAP_PERFMON, 0) = -1
-
-[  276.714269] security_capable(000000006b09ad8a, 000000009dd7a5fc, CAP_SYS_ADMIN, 0) = ?
-[  276.714270] cread_has_capability(CAP_SYS_ADMIN) = 0
-[  276.714270] security_capable(000000006b09ad8a, 000000009dd7a5fc, CAP_SYS_ADMIN, 0) = 0
-
-[  276.714287] security_capable(000000006b09ad8a, 000000009dd7a5fc, CAP_PERFMON, 0) = ?
-[  276.714287] security_capable(000000006b09ad8a, 000000009dd7a5fc, CAP_PERFMON, 0) = -1
-
-[  276.714288] security_capable(000000006b09ad8a, 000000009dd7a5fc, CAP_SYS_ADMIN, 0) = ?
-[  276.714288] cread_has_capability(CAP_SYS_ADMIN) = 0
-[  276.714289] security_capable(000000006b09ad8a, 000000009dd7a5fc, CAP_SYS_ADMIN, 0) = 0
-
-[  276.714294] security_capable(000000006b09ad8a, 000000009dd7a5fc, CAP_PERFMON, 0) = ?
-[  276.714295] security_capable(000000006b09ad8a, 000000009dd7a5fc, CAP_PERFMON, 0) = -1
-
-[  276.714295] security_capable(000000006b09ad8a, 000000009dd7a5fc, CAP_SYS_ADMIN, 0) = ?
-[  276.714296] cread_has_capability(CAP_SYS_ADMIN) = 0
-[  276.714296] security_capable(000000006b09ad8a, 000000009dd7a5fc, CAP_SYS_ADMIN, 0) = 0
-
-...
-
-in unprivileged case:
-
-$ getcap perf
-perf =
-
-$ perf stat -a; perf record -a
-
-...
-
-dmesg:
-
-[  947.275611] security_capable(00000000d3a75377, 000000009dd7a5fc, CAP_PERFMON, 0) = ?
-[  947.275613] security_capable(00000000d3a75377, 000000009dd7a5fc, CAP_PERFMON, 0) = -1
-
-[  947.275614] security_capable(00000000d3a75377, 000000009dd7a5fc, CAP_SYS_ADMIN, 0) = ?
-[  947.275615] security_capable(00000000d3a75377, 000000009dd7a5fc, CAP_SYS_ADMIN, 0) = -1
-
-[  947.275636] security_capable(00000000d3a75377, 000000009dd7a5fc, CAP_PERFMON, 0) = ?
-[  947.275637] security_capable(00000000d3a75377, 000000009dd7a5fc, CAP_PERFMON, 0) = -1
-
-[  947.275638] security_capable(00000000d3a75377, 000000009dd7a5fc, CAP_SYS_ADMIN, 0) = ?
-[  947.275638] security_capable(00000000d3a75377, 000000009dd7a5fc, CAP_SYS_ADMIN, 0) = -1
-
-...
-
-So it looks like CAP_PERFMON and CAP_SYS_ADMIN are not ever logged by AVC simultaneously,
-in the current LSM and perfmon_capable() implementations.
-
-If perfmon is granted:
-	perfmon is not logged by capabilities, perfmon is logged by AVC,
-	no check for sys_admin by perfmon_capable().
-
-If perfmon is not granted but sys_admin is granted:
-	perfmon is not logged by capabilities, AVC logging is not called for perfmon,
-	sys_admin is not logged by capabilities, sys_admin is not logged by AVC, for some intended reason?
-
-No caps are granted:
-	AVC logging is not called either for perfmon or for sys_admin.
-
-BTW, is there a way to may be drop some AV cache so denials would appear in audit in the next AV access?
-
-Well, I guess you have initially mentioned some case similar to this (note that ids are not the same but pids= are):
-
-type=AVC msg=audit(1581580399.165:784): avc:  denied  { open } for  pid=8859 comm="perf" scontext=user_u:user_r:user_t tcontext=user_u:user_r:user_t tclass=perf_event permissive=1
-type=AVC msg=audit(1581580399.165:785): avc:  denied  { perfmon } for  pid=8859 comm="perf" capability=38  scontext=user_u:user_r:user_t tcontext=user_u:user_r:user_t tclass=capability2 permissive=1
-type=AVC msg=audit(          .   :   ): avc:  denied  { sys_admin } for  pid=8859 comm="perf" capability=21  scontext=user_u:user_r:user_t tcontext=user_u:user_r:user_t tclass=capability2 permissive=1
-type=AVC msg=audit(1581580399.165:786): avc:  denied  { kernel } for  pid=8859 comm="perf" scontext=user_u:user_r:user_t tcontext=user_u:user_r:user_t tclass=perf_event permissive=1
-type=AVC msg=audit(1581580399.165:787): avc:  denied  { cpu } for  pid=8859 comm="perf" scontext=user_u:user_r:user_t tcontext=user_u:user_r:user_t tclass=perf_event permissive=1
-type=AVC msg=audit(1581580399.165:788): avc:  denied  { write } for  pid=8859 comm="perf" scontext=user_u:user_r:user_t tcontext=user_u:user_r:user_t tclass=perf_event permissive=1
-type=AVC msg=audit(1581580408.078:791): avc:  denied  { read } for  pid=8859 comm="perf" scontext=user_u:user_r:user_t tcontext=user_u:user_r:user_t tclass=perf_event permissive=1
-
-So the message could be like this:
-
-"If audit logs for a process using perf_events related syscalls i.e. perf_event_open(), read(), write(),
- ioctl(), mmap() contain denials both for CAP_PERFMON and CAP_SYS_ADMIN capabilities then providing the
- process with CAP_PERFMON capability singly is the secure preferred approach to resolve access denials 
- to performance monitoring and observability operations."
-
-~Alexey
+Rasmus
