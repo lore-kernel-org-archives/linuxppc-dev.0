@@ -2,62 +2,62 @@ Return-Path: <SRS0=qWQb=4B=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 060DCC352A3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Feb 2020 19:51:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F61CC352A3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Feb 2020 20:02:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A8999206DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Feb 2020 19:51:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A8999206DB
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 00DF7217F4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Feb 2020 20:02:41 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="oqoOKlMQ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 00DF7217F4
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48JRvr0YYZzDqWc
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Feb 2020 06:51:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48JS9D0kh8zDqSN
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Feb 2020 07:02:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=srs0=xohv=4b=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
+ smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
+ helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=bugzilla.kernel.org
+ header.from=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=oqoOKlMQ; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48JRsw5RzBzDqRS
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2020 06:49:24 +1100 (AEDT)
-From: bugzilla-daemon@bugzilla.kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 206501] Kernel 5.6-rc1 fails to boot on a PowerMac G4 3,6 with
- CONFIG_VMAP_STACK=y: Oops! Machine check, sig: 7  [#1]
-Date: Thu, 13 Feb 2020 19:49:21 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
-X-Bugzilla-Product: Platform Specific/Hardware
-X-Bugzilla-Component: PPC-32
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: erhard_f@mailbox.org
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-206501-206035-5MS0BJLJqu@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-206501-206035@https.bugzilla.kernel.org/>
-References: <bug-206501-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48JS6P1wgZzDqLn
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2020 07:00:11 +1100 (AEDT)
+Received: from localhost (unknown [104.132.1.104])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id C481921734;
+ Thu, 13 Feb 2020 20:00:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1581624008;
+ bh=KnHHKVe1n67O5ZYl7TzEtlRCPIGA53LFZUcP+UZsmYQ=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=oqoOKlMQBYw9F9M+411L6xVqQwUVwuJhMEWjAlE313tBT8KpWqsV3XMSSnB5e7Br8
+ DNkECUcNMjr9j4gYT7Uthte8mJ95tYe52py1tC/NDCGKwnPPXjWuayrTR+DFx8Uh1L
+ aqYU0b094x2ZJiTMkfxhKzY7LmoGcgZZiYkQVFqk=
+Date: Thu, 13 Feb 2020 12:00:08 -0800
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Subject: Re: [PATCH] serial: cpm_uart: call cpm_muram_init before registering
+ console
+Message-ID: <20200213200008.GB3815621@kroah.com>
+References: <20200213114342.21712-1-linux@rasmusvillemoes.dk>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200213114342.21712-1-linux@rasmusvillemoes.dk>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,15 +69,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Timur Tabi <timur@kernel.org>, linux-kernel@vger.kernel.org,
+ Li Yang <leoyang.li@nxp.com>, Scott Wood <oss@buserror.net>,
+ linux-serial@vger.kernel.org, Jiri Slaby <jslaby@suse.com>,
+ linuxppc-dev@lists.ozlabs.org, Qiang Zhao <qiang.zhao@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D206501
+On Thu, Feb 13, 2020 at 12:43:42PM +0100, Rasmus Villemoes wrote:
+> Christophe reports that powerpc 8xx silently fails to 5.6-rc1. It turns
+> out I was wrong about nobody relying on the lazy initialization of the
+> cpm/qe muram in commit b6231ea2b3c6 (soc: fsl: qe: drop broken lazy
+> call of cpm_muram_init()).
+> 
+> Rather than reinstating the somewhat dubious lazy call (initializing a
+> currently held spinlock, and implicitly doing a GFP_KERNEL under that
+> spinlock), make sure that cpm_muram_init() is called early enough - I
+> thought the calls from the subsys_initcalls were good enough, but when
+> used by console drivers, that's obviously not the
+> case. cpm_muram_init() is safe to call twice (there's an early return
+> if it is already initialized), so keep the call from cpm_init() - in
+> case SERIAL_CPM_CONSOLE=n.
+> 
+> Reported-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Fixes: b6231ea2b3c6 (soc: fsl: qe: drop broken lazy call of cpm_muram_init())
+> Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+> ---
+> 
+> Christophe, can I get you to add a formal Tested-by?
+> 
+> I'm not sure which tree this should go through.
 
---- Comment #10 from Erhard F. (erhard_f@mailbox.org) ---
-Sure. Thanks!
+I can take it, thanks.
 
---=20
-You are receiving this mail because:
-You are watching the assignee of the bug.=
+greg k-h
