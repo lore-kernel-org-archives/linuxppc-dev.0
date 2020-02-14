@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85BEBC2BA83
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Feb 2020 16:38:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9303BC3B19F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Feb 2020 16:42:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3D593217F4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Feb 2020 16:38:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 11E4224684
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Feb 2020 16:42:05 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="J1Y8ZGNJ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3D593217F4
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="tCG6Xo9h"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 11E4224684
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48JzZf4HLbzDqCR
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Feb 2020 03:38:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48JzgH0dTMzDqcg
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Feb 2020 03:42:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
@@ -28,32 +28,32 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=J1Y8ZGNJ; dkim-atps=neutral
+ header.s=default header.b=tCG6Xo9h; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48Jyhz2g08zDqXq
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48Jyhz2jG6zDqY0
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Feb 2020 02:58:27 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id ED992206D7;
- Fri, 14 Feb 2020 15:58:24 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id C4B172082F;
+ Fri, 14 Feb 2020 15:58:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1581695905;
- bh=ZODufpkoPxhKGDUVFpS1KtfdoQy0axXfQ6zc5KDAAWg=;
+ s=default; t=1581695904;
+ bh=ISVgM2uaL0NDzsSwfis/vLF2Fomgdr3iu2TfHqtIxR0=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=J1Y8ZGNJqZgE3RvXQH5CLaezyF6ttZ+5gPe3PKukWkA2faSC688hLHXvtsd4IShbQ
- 5V/4ECbMFK04IhgVPVVkTPrcxurzv2jl8PesbRMAoqIraDyAg807753+wK75FIO81d
- sOKHDahVoeQH7TanhefiedwhAE2xwAC78TzxEvf4=
+ b=tCG6Xo9hxkJdSKLsvkg+Lox9zvy9yNkgYsxNYI5ACsa1ACU1OF1trS8/esCmLNnKA
+ 723JPKX0KSVXo8mOc22lWxp+A/urhkTIUWbWC6G0Q/YQPWcuypW9OlYwAfLgrlGDbY
+ N7a7nWPazpmnw5nVi1rbPmPpqpmi3Vx+18wtdQB8=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.5 446/542] powerpc/sriov: Remove VF eeh_dev state
- when disabling SR-IOV
-Date: Fri, 14 Feb 2020 10:47:18 -0500
-Message-Id: <20200214154854.6746-446-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.5 445/542] powerpc/ptdump: Only enable PPC_CHECK_WX
+ with STRICT_KERNEL_RWX
+Date: Fri, 14 Feb 2020 10:47:17 -0500
+Message-Id: <20200214154854.6746-445-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20200214154854.6746-1-sashal@kernel.org>
 References: <20200214154854.6746-1-sashal@kernel.org>
@@ -72,61 +72,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sam Bobroff <sbobroff@linux.ibm.com>, Oliver O'Halloran <oohall@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, Sasha Levin <sashal@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Sasha Levin <sashal@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Oliver O'Halloran <oohall@gmail.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
 
-[ Upstream commit 1fb4124ca9d456656a324f1ee29b7bf942f59ac8 ]
+[ Upstream commit f509247b08f2dcf7754d9ed85ad69a7972aa132b ]
 
-When disabling virtual functions on an SR-IOV adapter we currently do not
-correctly remove the EEH state for the now-dead virtual functions. When
-removing the pci_dn that was created for the VF when SR-IOV was enabled
-we free the corresponding eeh_dev without removing it from the child device
-list of the eeh_pe that contained it. This can result in crashes due to the
-use-after-free.
+ptdump_check_wx() is called from mark_rodata_ro() which only exists
+when CONFIG_STRICT_KERNEL_RWX is selected.
 
-Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
-Reviewed-by: Sam Bobroff <sbobroff@linux.ibm.com>
-Tested-by: Sam Bobroff <sbobroff@linux.ibm.com>
+Fixes: 453d87f6a8ae ("powerpc/mm: Warn if W+X pages found on boot")
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Link: https://lore.kernel.org/r/20190821062655.19735-1-oohall@gmail.com
+Link: https://lore.kernel.org/r/922d4939c735c6b52b4137838bcc066fffd4fc33.1578989545.git.christophe.leroy@c-s.fr
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/kernel/pci_dn.c | 15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
+ arch/powerpc/Kconfig.debug | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
-index 9524009ca1ae4..d876eda926094 100644
---- a/arch/powerpc/kernel/pci_dn.c
-+++ b/arch/powerpc/kernel/pci_dn.c
-@@ -244,9 +244,22 @@ void remove_dev_pci_data(struct pci_dev *pdev)
- 				continue;
+diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+index 4e1d398474627..0b063830eea84 100644
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -371,7 +371,7 @@ config PPC_PTDUMP
  
- #ifdef CONFIG_EEH
--			/* Release EEH device for the VF */
-+			/*
-+			 * Release EEH state for this VF. The PCI core
-+			 * has already torn down the pci_dev for this VF, but
-+			 * we're responsible to removing the eeh_dev since it
-+			 * has the same lifetime as the pci_dn that spawned it.
-+			 */
- 			edev = pdn_to_eeh_dev(pdn);
- 			if (edev) {
-+				/*
-+				 * We allocate pci_dn's for the totalvfs count,
-+				 * but only only the vfs that were activated
-+				 * have a configured PE.
-+				 */
-+				if (edev->pe)
-+					eeh_rmv_from_parent_pe(edev);
-+
- 				pdn->edev = NULL;
- 				kfree(edev);
- 			}
+ config PPC_DEBUG_WX
+ 	bool "Warn on W+X mappings at boot"
+-	depends on PPC_PTDUMP
++	depends on PPC_PTDUMP && STRICT_KERNEL_RWX
+ 	help
+ 	  Generate a warning if any W+X mappings are found at boot.
+ 
 -- 
 2.20.1
 
