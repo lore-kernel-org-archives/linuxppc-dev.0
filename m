@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B415C2BA83
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Feb 2020 17:56:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E965C3B1B1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Feb 2020 17:59:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3F7E120848
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Feb 2020 17:56:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C6029222C4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Feb 2020 17:59:39 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="L7LhNgIG"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3F7E120848
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="dUp1conf"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C6029222C4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48K1KN6wb4zDqd7
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Feb 2020 04:56:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48K1Nn0X49zDqJt
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Feb 2020 04:59:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
@@ -28,31 +28,32 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=L7LhNgIG; dkim-atps=neutral
+ header.s=default header.b=dUp1conf; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48JyyY6g8XzDqHv
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Feb 2020 03:10:13 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48Jyyh6l8PzDqVR
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Feb 2020 03:10:20 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 3ECA02468E;
- Fri, 14 Feb 2020 16:10:10 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 03ADB2468F;
+ Fri, 14 Feb 2020 16:10:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1581696611;
- bh=ONxDg8UBSF0eZbElzoFn8SmqwlRSm4oFuWTBHP90bZ4=;
+ s=default; t=1581696618;
+ bh=VxGyWnEba5VNmYC+QZbrZ1DU0OE8ldnVhLLrAP06RRA=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=L7LhNgIGUJaCufgKXjtk/q4x7Dn2JMm77Bx9bBkD9IWXV6I8X24sTELRau92EQ4c0
- 51+KDzeH+uQxEGesWFRUjz6Nm3FADv75xtwULQvuGn+k2ZoEq/bGVW12pUGAmxbA+b
- /23X90yo1v9+HgLL5ob7s+yC3HVIzs79adGqouA8=
+ b=dUp1confT9OiNuyhsL/IHtuZH1zvIMv/MEUqT/t2fGV8WDDAW9KwQO+OFdA9u2R4Y
+ 5Bmx+Z4wOLoIdxMMHMlXzDbN3eA/qoS/4qKbONQMQwjf7RZdytNwd5sqCOOs2d6snD
+ II/c5eJxFsOZjDSPTvcV3mOV71DujtwObc6whJe4=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.4 394/459] PCI/AER: Initialize aer_fifo
-Date: Fri, 14 Feb 2020 11:00:44 -0500
-Message-Id: <20200214160149.11681-394-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.4 400/459] powerpc/pseries/lparcfg: Fix display of
+ Maximum Memory
+Date: Fri, 14 Feb 2020 11:00:50 -0500
+Message-Id: <20200214160149.11681-400-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20200214160149.11681-1-sashal@kernel.org>
 References: <20200214160149.11681-1-sashal@kernel.org>
@@ -71,54 +72,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, Sasha Levin <sashal@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, Dongdong Liu <liudongdong3@huawei.com>,
- linux-pci@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, Michael Bringmann <mwb@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Dongdong Liu <liudongdong3@huawei.com>
+From: Michael Bringmann <mwb@linux.ibm.com>
 
-[ Upstream commit d95f20c4f07020ebc605f3b46af4b6db9eb5fc99 ]
+[ Upstream commit f1dbc1c5c70d0d4c60b5d467ba941fba167c12f6 ]
 
-Previously we did not call INIT_KFIFO() for aer_fifo.  This leads to
-kfifo_put() sometimes returning 0 (queue full) when in fact it is not.
+Correct overflow problem in calculation and display of Maximum Memory
+value to syscfg.
 
-It is easy to reproduce the problem by using aer-inject:
-
-  $ aer-inject -s :82:00.0 multiple-corr-nonfatal
-
-The content of the multiple-corr-nonfatal file is as below:
-
-  AER
-  COR RCVR
-  HL 0 1 2 3
-  AER
-  UNCOR POISON_TLP
-  HL 4 5 6 7
-
-Fixes: 27c1ce8bbed7 ("PCI/AER: Use kfifo for tracking events instead of reimplementing it")
-Link: https://lore.kernel.org/r/1579767991-103898-1-git-send-email-liudongdong3@huawei.com
-Signed-off-by: Dongdong Liu <liudongdong3@huawei.com>
-Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+Signed-off-by: Michael Bringmann <mwb@linux.ibm.com>
+[mpe: Only n_lmbs needs casting to unsigned long]
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Link: https://lore.kernel.org/r/5577aef8-1d5a-ca95-ff0a-9c7b5977e5bf@linux.ibm.com
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/pci/pcie/aer.c | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/platforms/pseries/lparcfg.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-index b45bc47d04fe4..271aecfbc3bf3 100644
---- a/drivers/pci/pcie/aer.c
-+++ b/drivers/pci/pcie/aer.c
-@@ -1387,6 +1387,7 @@ static int aer_probe(struct pcie_device *dev)
- 		return -ENOMEM;
+diff --git a/arch/powerpc/platforms/pseries/lparcfg.c b/arch/powerpc/platforms/pseries/lparcfg.c
+index e33e8bc4b69bd..38c306551f76b 100644
+--- a/arch/powerpc/platforms/pseries/lparcfg.c
++++ b/arch/powerpc/platforms/pseries/lparcfg.c
+@@ -435,10 +435,10 @@ static void maxmem_data(struct seq_file *m)
+ {
+ 	unsigned long maxmem = 0;
  
- 	rpc->rpd = port;
-+	INIT_KFIFO(rpc->aer_fifo);
- 	set_service_data(dev, rpc);
+-	maxmem += drmem_info->n_lmbs * drmem_info->lmb_size;
++	maxmem += (unsigned long)drmem_info->n_lmbs * drmem_info->lmb_size;
+ 	maxmem += hugetlb_total_pages() * PAGE_SIZE;
  
- 	status = devm_request_threaded_irq(device, dev->irq, aer_irq, aer_isr,
+-	seq_printf(m, "MaxMem=%ld\n", maxmem);
++	seq_printf(m, "MaxMem=%lu\n", maxmem);
+ }
+ 
+ static int pseries_lparcfg_data(struct seq_file *m, void *v)
 -- 
 2.20.1
 
