@@ -2,70 +2,108 @@ Return-Path: <SRS0=2Csg=4F=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9FF3DC34022
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2020 20:51:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 23374C34022
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2020 20:58:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 195E2207FD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2020 20:51:45 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="jIpukE23"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 195E2207FD
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id CF3CF2070B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2020 20:58:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CF3CF2070B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48Lx3y6GCxzDqTy
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Feb 2020 07:51:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=bombadil.infradead.org (client-ip=2607:7c80:54:e::133;
- helo=bombadil.infradead.org; envelope-from=mchehab@bombadil.infradead.org;
+	by lists.ozlabs.org (Postfix) with ESMTP id 48LxCR53RQzDqX0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Feb 2020 07:58:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=leonardo@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=bombadil.20170209 header.b=jIpukE23; 
- dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48Lq3Z1s0MzDqXL
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Feb 2020 03:20:58 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=Sender:Content-Transfer-Encoding:
- MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
- Reply-To:Content-Type:Content-ID:Content-Description;
- bh=qG7uZEs5ZQjxVvahtWw+edjEtqyiOL4CWOMINZp7934=; b=jIpukE231DX1ILjjBvfd6tvqr2
- yXSoHBSg+66L1BXbQwLVh8VK/gkUrNrN35dJWko/hQhq45EOE57xjrRAnYzrULG4oGjyvRkftYwzH
- AVgRRSj2fTJ0xnhIjI8hKnVTWIhp7nNVkl55P5VwNEuulYWeIw/DM/yRV7fW6ZIAQrkYHYNF0Iuke
- mtRctHzbTU3+pjj4oY6JZqgEdgonzrC8ygar/Mu+ua+vBIh9yPxkc6VDeIGjh4LFml3q+a8TR7HNJ
- KdmuObk0U2ZQHAE2frmR8ouoFZXKVapzAWDvJ6mrlLNmPfPDCmEQpOA1JIH4NGjbWVU/3P7XY+Abf
- BoqHDKGQ==;
-Received: from tmo-109-126.customers.d1-online.com ([80.187.109.126]
- helo=bombadil.infradead.org)
- by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1j3j8Y-00042K-De; Mon, 17 Feb 2020 16:20:51 +0000
-Received: from mchehab by bombadil.infradead.org with local (Exim 4.92.3)
- (envelope-from <mchehab@bombadil.infradead.org>)
- id 1j3j8W-000fqF-Fd; Mon, 17 Feb 2020 17:20:44 +0100
-From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-To: Linux Doc Mailing List <linux-doc@vger.kernel.org>
-Subject: [PATCH v2 21/24] docs: powerpc: convert vcpudispatch_stats.txt to ReST
-Date: Mon, 17 Feb 2020 17:20:39 +0100
-Message-Id: <73b1f05f20281a423718a4d3996a6f34d66e4622.1581956285.git.mchehab+huawei@kernel.org>
-X-Mailer: git-send-email 2.24.1
-In-Reply-To: <cover.1581956285.git.mchehab+huawei@kernel.org>
-References: <cover.1581956285.git.mchehab+huawei@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48Lx9L1D0pzDqWb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Feb 2020 07:56:21 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 01HKs5qa128250; Mon, 17 Feb 2020 15:55:58 -0500
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2y6e2eksny-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 17 Feb 2020 15:55:58 -0500
+Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 01HKtvTY131496;
+ Mon, 17 Feb 2020 15:55:57 -0500
+Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.27])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2y6e2eksnn-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 17 Feb 2020 15:55:57 -0500
+Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
+ by ppma05wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 01HKtuKf019357;
+ Mon, 17 Feb 2020 20:55:56 GMT
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23]) by ppma05wdc.us.ibm.com with ESMTP id 2y6896cn7s-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 17 Feb 2020 20:55:56 +0000
+Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
+ [9.57.199.109])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 01HKtuc442664230
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 17 Feb 2020 20:55:56 GMT
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 070CA112061;
+ Mon, 17 Feb 2020 20:55:56 +0000 (GMT)
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C7D81112063;
+ Mon, 17 Feb 2020 20:55:52 +0000 (GMT)
+Received: from leobras.br.ibm.com (unknown [9.18.235.152])
+ by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP;
+ Mon, 17 Feb 2020 20:55:52 +0000 (GMT)
+Message-ID: <d0789485cc353a99e19c2d2ca4b5a628a33a312d.camel@linux.ibm.com>
+Subject: Re: [PATCH v6 02/11] mm/gup: Use functions to track lockless pgtbl
+ walks on gup_pgd_range
+From: Leonardo Bras <leonardo@linux.ibm.com>
+To: John Hubbard <jhubbard@nvidia.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
+ Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>, Andrew Morton
+ <akpm@linux-foundation.org>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <christophe.leroy@c-s.fr>, Steven Price
+ <steven.price@arm.com>, Robin Murphy <robin.murphy@arm.com>, Mahesh
+ Salgaonkar <mahesh@linux.vnet.ibm.com>, Balbir Singh
+ <bsingharora@gmail.com>, Reza Arbab <arbab@linux.ibm.com>, Thomas Gleixner
+ <tglx@linutronix.de>, Allison Randal <allison@lohutok.net>, Greg
+ Kroah-Hartman <gregkh@linuxfoundation.org>, Mike Rapoport
+ <rppt@linux.ibm.com>, Michal Suchanek <msuchanek@suse.de>
+Date: Mon, 17 Feb 2020 17:55:49 -0300
+In-Reply-To: <0c2f5a89-4890-fd84-6a6d-e470ba110399@nvidia.com>
+References: <20200206030900.147032-1-leonardo@linux.ibm.com>
+ <20200206030900.147032-3-leonardo@linux.ibm.com>
+ <760c238043196e0628c8c0eff48a8e938ef539ba.camel@linux.ibm.com>
+ <0c2f5a89-4890-fd84-6a6d-e470ba110399@nvidia.com>
+Content-Type: multipart/signed; micalg="pgp-sha256";
+ protocol="application/pgp-signature"; boundary="=-KK5vvDthaVYFFka5IIPv"
+User-Agent: Evolution 3.34.3 (3.34.3-1.fc31) 
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Tue, 18 Feb 2020 07:50:00 +1100
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
+ definitions=2020-02-17_12:2020-02-17,
+ 2020-02-17 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0
+ mlxlogscore=999 mlxscore=0 suspectscore=0 clxscore=1015 lowpriorityscore=0
+ impostorscore=0 phishscore=0 bulkscore=0 adultscore=0 priorityscore=1501
+ spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2001150001 definitions=main-2002170170
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,89 +115,82 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jonathan Corbet <corbet@lwn.net>,
- Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-arch@vger.kernel.org, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-- Add a SPDX header;
-- Use standard markup for document title;
-- Adjust identation on lists and add blank lines where
-  needed;
-- Add it to the powerpc index.rst file.
 
-Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
----
- Documentation/powerpc/index.rst                 |  1 +
- ...ispatch_stats.txt => vcpudispatch_stats.rst} | 17 ++++++++++++-----
- 2 files changed, 13 insertions(+), 5 deletions(-)
- rename Documentation/powerpc/{vcpudispatch_stats.txt => vcpudispatch_stats.rst} (94%)
+--=-KK5vvDthaVYFFka5IIPv
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/Documentation/powerpc/index.rst b/Documentation/powerpc/index.rst
-index 0d45f0fc8e57..29b90b1b6f20 100644
---- a/Documentation/powerpc/index.rst
-+++ b/Documentation/powerpc/index.rst
-@@ -30,6 +30,7 @@ powerpc
-     syscall64-abi
-     transactional_memory
-     ultravisor
-+    vcpudispatch_stats
- 
- .. only::  subproject and html
- 
-diff --git a/Documentation/powerpc/vcpudispatch_stats.txt b/Documentation/powerpc/vcpudispatch_stats.rst
-similarity index 94%
-rename from Documentation/powerpc/vcpudispatch_stats.txt
-rename to Documentation/powerpc/vcpudispatch_stats.rst
-index e21476bfd78c..5704657a5987 100644
---- a/Documentation/powerpc/vcpudispatch_stats.txt
-+++ b/Documentation/powerpc/vcpudispatch_stats.rst
-@@ -1,5 +1,8 @@
--VCPU Dispatch Statistics:
--=========================
-+.. SPDX-License-Identifier: GPL-2.0
-+
-+========================
-+VCPU Dispatch Statistics
-+========================
- 
- For Shared Processor LPARs, the POWER Hypervisor maintains a relatively
- static mapping of the LPAR processors (vcpus) to physical processor
-@@ -20,25 +23,29 @@ The statistics themselves are available by reading the procfs file
- a vcpu as represented by the first field, followed by 8 numbers.
- 
- The first number corresponds to:
-+
- 1. total vcpu dispatches since the beginning of statistics collection
- 
- The next 4 numbers represent vcpu dispatch dispersions:
-+
- 2. number of times this vcpu was dispatched on the same processor as last
-    time
- 3. number of times this vcpu was dispatched on a different processor core
-    as last time, but within the same chip
- 4. number of times this vcpu was dispatched on a different chip
- 5. number of times this vcpu was dispatches on a different socket/drawer
--(next numa boundary)
-+   (next numa boundary)
- 
- The final 3 numbers represent statistics in relation to the home node of
- the vcpu:
-+
- 6. number of times this vcpu was dispatched in its home node (chip)
- 7. number of times this vcpu was dispatched in a different node
- 8. number of times this vcpu was dispatched in a node further away (numa
--distance)
-+   distance)
-+
-+An example output::
- 
--An example output:
-     $ sudo cat /proc/powerpc/vcpudispatch_stats
-     cpu0 6839 4126 2683 30 0 6821 18 0
-     cpu1 2515 1274 1229 12 0 2509 6 0
--- 
-2.24.1
+Hello John, comments inline;
+
+On Fri, 2020-02-07 at 14:54 -0800, John Hubbard wrote:
+> On 2/5/20 7:25 PM, Leonardo Bras wrote:
+> > On Thu, 2020-02-06 at 00:08 -0300, Leonardo Bras wrote:
+> > >                 gup_pgd_range(addr, end, gup_flags, pages, &nr);
+> > > -               local_irq_enable();
+> > > +               end_lockless_pgtbl_walk(IRQS_ENABLED);
+> > >                 ret =3D nr;
+> > >         }
+> > > =20
+> >=20
+> > Just noticed IRQS_ENABLED is not available on other archs than ppc64.
+> > I will fix this for v7.
+> >=20
+>=20
+> What's the fix going to look like, approximately?
+
+I am not sure what is the best approach yet.=20
+
+1. On irq_mask =3D=3D 0, always enable irq on end_lockless_pgtbl_walk().
+   Not sure how bat would that affect other archs.
+
+2. Add another function like end_lockless_pgtbl_walk_irqen() that
+always enables IRQ.
+
+3. Add another parameter in end_lockless_pgtbl_walk(), so that caller
+can choose ii IRQ must be enabled.
+
+Also, not sure if internal_get_user_pages_fast() can possibly be called
+with IRQ disabled, and then return with it enabled. Maybe just
+saving/restoring should be fine.
+
+Other suggestions are welcome.
+
+>=20
+>=20
+> thanks,
+
+Best regards,
+
+Leonardo Bras
+
+--=-KK5vvDthaVYFFka5IIPv
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEMdeUgIzgjf6YmUyOlQYWtz9SttQFAl5K/dUACgkQlQYWtz9S
+ttSomhAAti45bC0hpcyFr3ix4l0vnXi071xBs+ZLvF+V2qK1wpmBPe1ke3hfm45y
+7rd5whdeNR8cPfsXPKwerT1oB7rJXhiGQa5Vt1pNlvFXVKs+IBZr+S7JAJjIFxW+
+nPHLV4LaOnkRgg8p1tusLTJXXkPD/PYBqVu5vwWk4cI/uXmO6MjQ9ARPpc0bQYUY
+Ds8v/GoaVuGn1kf2YVIUtJlQSF2gdKAxUnTh6hmUXcwpB0Ao3tKeE+4bESkipSRg
+vlJ3aJpi72K160R3b+UwGjHLAixSsRr3pSvkqKU/B2lUEaJO99mu01NWR/X4OtVc
+8h1+tgjwjZSiIa0DJfwn44beonO8oHFTE1VpmZMxpwVMoRxVUvzIrhuDaLfKlSIE
+dlbKs43NjTvwQu5RScWqDR5u2w6q7LLXtCoLbq9JDDOf8kt9GX6SOp3NLopWqY4x
+/BSh0UYIkBlBCAY/LXdNL1C0D8g/h8MpoOyxyKzsmZQmgLJPEtDq/Gqkdsf4jtBq
+E3Ma6KYyl0wTfbQtp7iNERDukt0R2j8+meZ5ad2WUJ7GujVCp/S8ky+88jLB8eNx
+o96tDhPvhT0VBcfIrGsnAnE1CyJFgFiBF4k7Xwi7To6z5teTWfhc5z6mDfBgVH1l
+lhtHrLkT3aJxP48InKKPe7TMb2ghIzHMy9bSC1AaIgEW5zxzr8A=
+=UpXg
+-----END PGP SIGNATURE-----
+
+--=-KK5vvDthaVYFFka5IIPv--
 
