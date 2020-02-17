@@ -2,85 +2,63 @@ Return-Path: <SRS0=2Csg=4F=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,HK_RANDOM_FROM,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E555C7619B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2020 02:52:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BF08C3B1BF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2020 02:54:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3FA9220857
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2020 02:52:28 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dSE9fj4j"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3FA9220857
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3BEC32086A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2020 02:54:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3BEC32086A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=free.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48LT6d36vpzDqMk
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2020 13:52:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::541;
- helo=mail-pg1-x541.google.com; envelope-from=oohall@gmail.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 48LT8b270LzDqMk
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2020 13:54:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=free.fr
+ (client-ip=212.27.42.3; helo=smtp3-g21.free.fr; envelope-from=dftxbs3e@free.fr;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=dSE9fj4j; dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=free.fr
+Received: from smtp3-g21.free.fr (smtp3-g21.free.fr [212.27.42.3])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48LT2T2QsDzDqck
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Feb 2020 13:48:49 +1100 (AEDT)
-Received: by mail-pg1-x541.google.com with SMTP id d9so8276197pgu.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Feb 2020 18:48:48 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=bfN31QyEQ318P9jrNAVw/XcIMKnKFHouc6kwP9vybhY=;
- b=dSE9fj4jSvv20UVihW0FPffedIHVrk+55J5JUWZorQDqPSzKgkvVwUtoNdpBG9F7Eb
- h7xlZondo3K5e34WckXyoQr3tgMqvDG7NapN9g7hJclrbuOCXCcBUEjRD8YU3tksIE71
- 7J8IGwnZTOzVXErnGvnGIR4EoSBoy364LzhWWzoA1PN/wwWpzgUNAC8olCxQQZ8DL5IF
- 2hGbPW++iomZhT8qAToJDIwoQdHvDyAIvlh7n8oUemsgHOnZaLFcUf9L1Sh0p4ulvwgA
- B+2xiBGOTc/RwSWN/sD/BhGX3M0XOd5UQ9NgKeEkcXTQPjehLNJJueNUAsP40RqzYlXT
- WAEw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=bfN31QyEQ318P9jrNAVw/XcIMKnKFHouc6kwP9vybhY=;
- b=tIn/ehV9nP6Im7SyQhnInHix4lw09cWT4FW8I1Wizg1FakIfYqChqGYY+TL3/h0XtV
- FuXvjPK9Rj2UW1XNEb9SQUymClRhTER8ZYZTlHuGGvAUB8nTmzm3PaJshDtiTtGQE1aw
- 2ZjLyLHWQ4+jvhMR2m9YPGZu1EFguTPIj+dijxvkI6WQrIjJnQOQfKZhKKHf2eXbBmyx
- QtA7hZvktdmJ00XbMzg7fQRRwXdWKbIAkwuNx2u8uFdG6Kwg1OYYwSpjdhHzsmXT3pQD
- mZndwO01/D8qFemramkr2JY4C3HmoOF13RiX9YzfW0o5u9/Db8EZKpjnSDsBs8TGhrY3
- HEMQ==
-X-Gm-Message-State: APjAAAXXcZsa68gi+A5xTGMuf2Bi9wme1+r53gmRlwhFE/sExvIOawkw
- D7ERbGqXyQYSWiaaAuQcIoFeYJSe
-X-Google-Smtp-Source: APXvYqxj6hx8QZzkewxwRiRnPukKQns8gHjO3F60vRYAotSPzZMpPt5t/E2bmUVg7asLPm119NsDBg==
-X-Received: by 2002:a63:78b:: with SMTP id 133mr15177678pgh.379.1581907725288; 
- Sun, 16 Feb 2020 18:48:45 -0800 (PST)
-Received: from wafer.ozlabs.ibm.com ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id c3sm14641731pfj.159.2020.02.16.18.48.43
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 16 Feb 2020 18:48:44 -0800 (PST)
-From: Oliver O'Halloran <oohall@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] powerpc/powernv: Add explicit fast-reboot support
-Date: Mon, 17 Feb 2020 13:48:33 +1100
-Message-Id: <20200217024833.30580-2-oohall@gmail.com>
-X-Mailer: git-send-email 2.21.1
-In-Reply-To: <20200217024833.30580-1-oohall@gmail.com>
-References: <20200217024833.30580-1-oohall@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48LT345FrkzDqft
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Feb 2020 13:49:18 +1100 (AEDT)
+Received: from [IPv6:2a01:e0a:2a2:1590:3130:d4af:7a6d:562c] (unknown
+ [IPv6:2a01:e0a:2a2:1590:3130:d4af:7a6d:562c])
+ by smtp3-g21.free.fr (Postfix) with ESMTP id 7BD3013F85F;
+ Mon, 17 Feb 2020 03:49:09 +0100 (CET)
+To: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>,
+ linuxppc-dev@lists.ozlabs.org, Greg Kurz <groug@kaod.org>
+References: <7544eb90-71a6-3709-c530-9c83beb943a7@free.fr>
+ <06cc1954-9bf5-0178-668e-130411ea1b13@kaod.org>
+From: dftxbs3e <dftxbs3e@free.fr>
+Autocrypt: addr=dftxbs3e@free.fr; keydata=
+ mDMEW0o6qRYJKwYBBAHaRw8BAQdAbzmHTymig5H3K1qe5lc6O1Xfij3iBbOBd6I3KJyEZSO0
+ G2RmdHhiczNlIDxkZnR4YnMzZUBmcmVlLmZyPoiWBBMWCAA+FiEEKM08rOoS3GtxJLfLtx4S
+ 8Z+hqHsFAltKOqkCGwMFCQlmAYAFCwkIBwIGFQoJCAsCBBYCAwECHgECF4AACgkQtx4S8Z+h
+ qHvjGAD+JgSjdZXX2K4hhsT9I2fbXbUfXm/QdIrZuYPsyv2PoP0A/RP5UIDWs5nhVq43AiF0
+ TAm8nDyGol5naZ29BP85QAEKuDgEW0o6qRIKKwYBBAGXVQEFAQEHQB6eBz8MftqVte4x2lyG
+ so13JoTSbSZ3iGlX6brVhkw+AwEIB4h+BBgWCAAmFiEEKM08rOoS3GtxJLfLtx4S8Z+hqHsF
+ AltKOqkCGwwFCQlmAYAACgkQtx4S8Z+hqHuyPQD9FS4KPlZWunp51NWYGBAkqLM0pnhfGsNm
+ gaW5YDQmWmgBALmWjkK7/SmreApokoV3TDKs4ACAKm1fEQuddUvKYogG
+Subject: Re: QEMU/KVM snapshot restore bug
+Message-ID: <49161ca3-941a-4f8b-f0ef-cce49ab0f9cd@free.fr>
+Date: Mon, 17 Feb 2020 03:48:06 +0100
+User-Agent: Mozilla/5.0 (X11; Linux ppc64le; rv:68.0) Gecko/20100101
+ Thunderbird/68.4.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <06cc1954-9bf5-0178-668e-130411ea1b13@kaod.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="QTVk8I6gqh3r5ZoaRchFdxkDkB424mEom"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,51 +70,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Oliver O'Halloran <oohall@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add a way to manually invoke a fast-reboot rather than setting the NVRAM
-flag. The idea is to allow userspace to invoke a fast-reboot using the
-optional string argument to the reboot() system call, or using the xmon
-zr command so we don't need to leave around a persistent changes on
-a system to use the feature.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--QTVk8I6gqh3r5ZoaRchFdxkDkB424mEom
+Content-Type: multipart/mixed; boundary="apjvUl1G9qEB38yotgm2WJuQgCST1jDnZ";
+ protected-headers="v1"
+From: dftxbs3e <dftxbs3e@free.fr>
+To: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>,
+ linuxppc-dev@lists.ozlabs.org, Greg Kurz <groug@kaod.org>
+Message-ID: <49161ca3-941a-4f8b-f0ef-cce49ab0f9cd@free.fr>
+Subject: Re: QEMU/KVM snapshot restore bug
+References: <7544eb90-71a6-3709-c530-9c83beb943a7@free.fr>
+ <06cc1954-9bf5-0178-668e-130411ea1b13@kaod.org>
+In-Reply-To: <06cc1954-9bf5-0178-668e-130411ea1b13@kaod.org>
 
-Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
----
-Companion skiboot patch:
-http://lists.ozlabs.org/pipermail/skiboot/2020-February/016420.html
----
- arch/powerpc/include/asm/opal-api.h    | 1 +
- arch/powerpc/platforms/powernv/setup.c | 2 ++
- 2 files changed, 3 insertions(+)
+--apjvUl1G9qEB38yotgm2WJuQgCST1jDnZ
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Content-Language: en-US
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index c1f25a7..1dffa3c 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -1067,6 +1067,7 @@ enum {
- 	OPAL_REBOOT_PLATFORM_ERROR	= 1,
- 	OPAL_REBOOT_FULL_IPL		= 2,
- 	OPAL_REBOOT_MPIPL		= 3,
-+	OPAL_REBOOT_FAST		= 4,
- };
- 
- /* Argument to OPAL_PCI_TCE_KILL */
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index a8fe630..3bc188d 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -237,6 +237,8 @@ static void  __noreturn pnv_restart(char *cmd)
- 			rc = opal_cec_reboot2(OPAL_REBOOT_MPIPL, NULL);
- 		else if (strcmp(cmd, "error") == 0)
- 			rc = opal_cec_reboot2(OPAL_REBOOT_PLATFORM_ERROR, NULL);
-+		else if (strcmp(cmd, "fast") == 0)
-+			rc = opal_cec_reboot2(OPAL_REBOOT_FAST, NULL);
- 		else
- 			rc = OPAL_UNSUPPORTED;
- 
--- 
-2.9.5
+On 2/16/20 7:16 PM, C=C3=A9dric Le Goater wrote:
+>
+> I think this is fixed by commit f55750e4e4fb ("spapr/xive: Mask the EAS=
+ when=20
+> allocating an IRQ") which is not in QEMU 4.1.1. The same problem should=
+ also=20
+> occur with LE guests.=20
+>
+> Could you possibly regenerate the QEMU rpm with this patch ?=20
+>
+> Thanks,
+>
+> C.
 
+Hello!
+
+I applied the patch and reinstalled the RPM then tried to restore the
+snapshot I created previously and it threw the same error.
+
+Do I need to re-create the snapshot and/or restart the machine? I have
+important workloads running so that'll be possible only in a few days if
+needed.
+
+Thanks
+
+
+
+--apjvUl1G9qEB38yotgm2WJuQgCST1jDnZ--
+
+--QTVk8I6gqh3r5ZoaRchFdxkDkB424mEom
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEARYIAB0WIQQozTys6hLca3Ekt8u3HhLxn6GoewUCXkn/JQAKCRC3HhLxn6Go
+e8zWAP437YQ4BoFV4R96iIb2VlG/IZGxhJrSUqM9aOkDzwB3xQD/WzHme2r6uQTQ
+QzHQpUTvGluhlTL0PqeCF/e1Jha9awE=
+=GC/4
+-----END PGP SIGNATURE-----
+
+--QTVk8I6gqh3r5ZoaRchFdxkDkB424mEom--
