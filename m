@@ -2,50 +2,49 @@ Return-Path: <SRS0=2Csg=4F=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AE018C7619D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2020 08:18:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C482BC761A1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2020 08:20:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6BCD320725
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2020 08:18:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6BCD320725
+	by mail.kernel.org (Postfix) with ESMTPS id 5A54920725
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2020 08:20:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5A54920725
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48LcLR3Ps6zDqlZ
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2020 19:18:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48LcNd05s6zDqkk
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2020 19:20:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=linux.intel.com
- (client-ip=192.55.52.93; helo=mga11.intel.com;
+ (client-ip=134.134.136.31; helo=mga06.intel.com;
  envelope-from=alexey.budankov@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux.intel.com
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+Received: from mga06.intel.com (mga06.intel.com [134.134.136.31])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48Lc8g364zzDqgl
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Feb 2020 19:09:39 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48Lc9X6npVzDqjn
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Feb 2020 19:10:23 +1100 (AEDT)
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
- by fmsmga102.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 17 Feb 2020 00:09:37 -0800
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+ by orsmga104.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 17 Feb 2020 00:10:21 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.70,451,1574150400"; d="scan'208";a="229122673"
+X-IronPort-AV: E=Sophos;i="5.70,451,1574150400"; d="scan'208";a="382108150"
 Received: from linux.intel.com ([10.54.29.200])
- by fmsmga008.fm.intel.com with ESMTP; 17 Feb 2020 00:09:36 -0800
+ by orsmga004.jf.intel.com with ESMTP; 17 Feb 2020 00:10:21 -0800
 Received: from [10.125.252.180] (abudanko-mobl.ccr.corp.intel.com
  [10.125.252.180])
- by linux.intel.com (Postfix) with ESMTP id 8F97A5804A2;
- Mon, 17 Feb 2020 00:09:30 -0800 (PST)
-Subject: [PATCH v7 06/12] trace/bpf_trace: open access for CAP_PERFMON
- privileged process
+ by linux.intel.com (Postfix) with ESMTP id 49E2458052E;
+ Mon, 17 Feb 2020 00:10:15 -0800 (PST)
+Subject: [PATCH v7 07/12] powerpc/perf: open access for CAP_PERFMON privileged
+ process
 From: Alexey Budankov <alexey.budankov@linux.intel.com>
 To: James Morris <jmorris@namei.org>, Serge Hallyn <serge@hallyn.com>,
  Stephen Smalley <sds@tycho.nsa.gov>, Peter Zijlstra <peterz@infradead.org>,
@@ -56,8 +55,8 @@ To: James Morris <jmorris@namei.org>, Serge Hallyn <serge@hallyn.com>,
  Thomas Gleixner <tglx@linutronix.de>
 References: <c8de937a-0b3a-7147-f5ef-69f467e87a13@linux.intel.com>
 Organization: Intel Corp.
-Message-ID: <fc689865-f8ff-1e85-ac0c-b2f1c28b7eb6@linux.intel.com>
-Date: Mon, 17 Feb 2020 11:09:29 +0300
+Message-ID: <b144d52b-6040-4660-46d1-2c8c58e98e7e@linux.intel.com>
+Date: Mon, 17 Feb 2020 11:10:14 +0300
 User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:68.0) Gecko/20100101
  Thunderbird/68.5.0
 MIME-Version: 1.0
@@ -94,41 +93,50 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
-Open access to bpf_trace monitoring for CAP_PERFMON privileged process.
-Providing the access under CAP_PERFMON capability singly, without the
-rest of CAP_SYS_ADMIN credentials, excludes chances to misuse the
-credentials and makes operation more secure.
+Open access to monitoring for CAP_PERFMON privileged process.
+Providing the access under CAP_PERFMON capability singly, without
+the rest of CAP_SYS_ADMIN credentials, excludes chances to misuse
+the credentials and makes operation more secure.
 
 CAP_PERFMON implements the principal of least privilege for performance
 monitoring and observability operations (POSIX IEEE 1003.1e 2.2.2.39
 principle of least privilege: A security design principle that states
 that a process or program be granted only those privileges (e.g.,
-capabilities) necessary to accomplish its legitimate function, and only
-for the time that such privileges are actually required)
+capabilities) necessary to accomplish its legitimate function, and
+only for the time that such privileges are actually required)
 
-For backward compatibility reasons access to bpf_trace monitoring
-remains open for CAP_SYS_ADMIN privileged processes but CAP_SYS_ADMIN
-usage for secure bpf_trace monitoring is discouraged with respect to
-CAP_PERFMON capability.
+For backward compatibility reasons access to the monitoring remains
+open for CAP_SYS_ADMIN privileged processes but CAP_SYS_ADMIN usage
+for secure monitoring is discouraged with respect to CAP_PERFMON
+capability.
 
 Signed-off-by: Alexey Budankov <alexey.budankov@linux.intel.com>
 ---
- kernel/trace/bpf_trace.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/perf/imc-pmu.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/trace/bpf_trace.c b/kernel/trace/bpf_trace.c
-index 19e793aa441a..70e8249eebe5 100644
---- a/kernel/trace/bpf_trace.c
-+++ b/kernel/trace/bpf_trace.c
-@@ -1416,7 +1416,7 @@ int perf_event_query_prog_array(struct perf_event *event, void __user *info)
- 	u32 *ids, prog_cnt, ids_len;
- 	int ret;
+diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
+index cb50a9e1fd2d..e837717492e4 100644
+--- a/arch/powerpc/perf/imc-pmu.c
++++ b/arch/powerpc/perf/imc-pmu.c
+@@ -898,7 +898,7 @@ static int thread_imc_event_init(struct perf_event *event)
+ 	if (event->attr.type != event->pmu->type)
+ 		return -ENOENT;
  
 -	if (!capable(CAP_SYS_ADMIN))
 +	if (!perfmon_capable())
- 		return -EPERM;
- 	if (event->attr.type != PERF_TYPE_TRACEPOINT)
- 		return -EINVAL;
+ 		return -EACCES;
+ 
+ 	/* Sampling not supported */
+@@ -1307,7 +1307,7 @@ static int trace_imc_event_init(struct perf_event *event)
+ 	if (event->attr.type != event->pmu->type)
+ 		return -ENOENT;
+ 
+-	if (!capable(CAP_SYS_ADMIN))
++	if (!perfmon_capable())
+ 		return -EACCES;
+ 
+ 	/* Return if this is a couting event */
 -- 
 2.20.1
 
