@@ -6,44 +6,44 @@ X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C482BC761A1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2020 08:20:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E551BC7619D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2020 08:22:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5A54920725
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2020 08:20:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5A54920725
+	by mail.kernel.org (Postfix) with ESMTPS id 9F6642067D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2020 08:22:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F6642067D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48LcNd05s6zDqkk
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2020 19:20:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48LcRY5JXzzDqBx
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2020 19:22:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=linux.intel.com
- (client-ip=134.134.136.31; helo=mga06.intel.com;
+ (client-ip=134.134.136.20; helo=mga02.intel.com;
  envelope-from=alexey.budankov@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux.intel.com
-Received: from mga06.intel.com (mga06.intel.com [134.134.136.31])
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48Lc9X6npVzDqjn
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Feb 2020 19:10:23 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48LcBJ1tWszDqjM
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Feb 2020 19:11:03 +1100 (AEDT)
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
 Received: from orsmga004.jf.intel.com ([10.7.209.38])
- by orsmga104.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 17 Feb 2020 00:10:21 -0800
+ by orsmga101.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 17 Feb 2020 00:11:01 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.70,451,1574150400"; d="scan'208";a="382108150"
+X-IronPort-AV: E=Sophos;i="5.70,451,1574150400"; d="scan'208";a="382108423"
 Received: from linux.intel.com ([10.54.29.200])
- by orsmga004.jf.intel.com with ESMTP; 17 Feb 2020 00:10:21 -0800
+ by orsmga004.jf.intel.com with ESMTP; 17 Feb 2020 00:11:01 -0800
 Received: from [10.125.252.180] (abudanko-mobl.ccr.corp.intel.com
  [10.125.252.180])
- by linux.intel.com (Postfix) with ESMTP id 49E2458052E;
- Mon, 17 Feb 2020 00:10:15 -0800 (PST)
-Subject: [PATCH v7 07/12] powerpc/perf: open access for CAP_PERFMON privileged
+ by linux.intel.com (Postfix) with ESMTP id 71F155804A2;
+ Mon, 17 Feb 2020 00:10:55 -0800 (PST)
+Subject: [PATCH v7 08/12] parisc/perf: open access for CAP_PERFMON privileged
  process
 From: Alexey Budankov <alexey.budankov@linux.intel.com>
 To: James Morris <jmorris@namei.org>, Serge Hallyn <serge@hallyn.com>,
@@ -55,8 +55,8 @@ To: James Morris <jmorris@namei.org>, Serge Hallyn <serge@hallyn.com>,
  Thomas Gleixner <tglx@linutronix.de>
 References: <c8de937a-0b3a-7147-f5ef-69f467e87a13@linux.intel.com>
 Organization: Intel Corp.
-Message-ID: <b144d52b-6040-4660-46d1-2c8c58e98e7e@linux.intel.com>
-Date: Mon, 17 Feb 2020 11:10:14 +0300
+Message-ID: <29e45605-7a3c-944b-7bea-5959f8ff0793@linux.intel.com>
+Date: Mon, 17 Feb 2020 11:10:54 +0300
 User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:68.0) Gecko/20100101
  Thunderbird/68.5.0
 MIME-Version: 1.0
@@ -102,8 +102,8 @@ CAP_PERFMON implements the principal of least privilege for performance
 monitoring and observability operations (POSIX IEEE 1003.1e 2.2.2.39
 principle of least privilege: A security design principle that states
 that a process or program be granted only those privileges (e.g.,
-capabilities) necessary to accomplish its legitimate function, and
-only for the time that such privileges are actually required)
+capabilities) necessary to accomplish its legitimate function, and only
+for the time that such privileges are actually required)
 
 For backward compatibility reasons access to the monitoring remains
 open for CAP_SYS_ADMIN privileged processes but CAP_SYS_ADMIN usage
@@ -112,31 +112,22 @@ capability.
 
 Signed-off-by: Alexey Budankov <alexey.budankov@linux.intel.com>
 ---
- arch/powerpc/perf/imc-pmu.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/parisc/kernel/perf.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
-index cb50a9e1fd2d..e837717492e4 100644
---- a/arch/powerpc/perf/imc-pmu.c
-+++ b/arch/powerpc/perf/imc-pmu.c
-@@ -898,7 +898,7 @@ static int thread_imc_event_init(struct perf_event *event)
- 	if (event->attr.type != event->pmu->type)
- 		return -ENOENT;
+diff --git a/arch/parisc/kernel/perf.c b/arch/parisc/kernel/perf.c
+index e1a8fee3ad49..d46b6709ec56 100644
+--- a/arch/parisc/kernel/perf.c
++++ b/arch/parisc/kernel/perf.c
+@@ -300,7 +300,7 @@ static ssize_t perf_write(struct file *file, const char __user *buf,
+ 	else
+ 		return -EFAULT;
  
 -	if (!capable(CAP_SYS_ADMIN))
 +	if (!perfmon_capable())
  		return -EACCES;
  
- 	/* Sampling not supported */
-@@ -1307,7 +1307,7 @@ static int trace_imc_event_init(struct perf_event *event)
- 	if (event->attr.type != event->pmu->type)
- 		return -ENOENT;
- 
--	if (!capable(CAP_SYS_ADMIN))
-+	if (!perfmon_capable())
- 		return -EACCES;
- 
- 	/* Return if this is a couting event */
+ 	if (count != sizeof(uint32_t))
 -- 
 2.20.1
 
