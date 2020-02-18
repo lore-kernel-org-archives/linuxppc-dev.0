@@ -1,109 +1,65 @@
-Return-Path: <SRS0=2Csg=4F=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=izeg=4G=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+X-Spam-Status: No, score=-6.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23374C34022
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2020 20:58:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6F5DC34022
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Feb 2020 00:42:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CF3CF2070B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2020 20:58:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CF3CF2070B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1BE0820718
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Feb 2020 00:42:07 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=neuling.org header.i=@neuling.org header.b="riURPvaO"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1BE0820718
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=neuling.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48LxCR53RQzDqX0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Feb 2020 07:58:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=leonardo@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 48M29n024hzDqpK
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Feb 2020 11:42:05 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48Lx9L1D0pzDqWb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Feb 2020 07:56:21 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 01HKs5qa128250; Mon, 17 Feb 2020 15:55:58 -0500
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2y6e2eksny-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 17 Feb 2020 15:55:58 -0500
-Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 01HKtvTY131496;
- Mon, 17 Feb 2020 15:55:57 -0500
-Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.27])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2y6e2eksnn-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 17 Feb 2020 15:55:57 -0500
-Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
- by ppma05wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 01HKtuKf019357;
- Mon, 17 Feb 2020 20:55:56 GMT
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23]) by ppma05wdc.us.ibm.com with ESMTP id 2y6896cn7s-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 17 Feb 2020 20:55:56 +0000
-Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
- [9.57.199.109])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 01HKtuc442664230
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 17 Feb 2020 20:55:56 GMT
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 070CA112061;
- Mon, 17 Feb 2020 20:55:56 +0000 (GMT)
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C7D81112063;
- Mon, 17 Feb 2020 20:55:52 +0000 (GMT)
-Received: from leobras.br.ibm.com (unknown [9.18.235.152])
- by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP;
- Mon, 17 Feb 2020 20:55:52 +0000 (GMT)
-Message-ID: <d0789485cc353a99e19c2d2ca4b5a628a33a312d.camel@linux.ibm.com>
-Subject: Re: [PATCH v6 02/11] mm/gup: Use functions to track lockless pgtbl
- walks on gup_pgd_range
-From: Leonardo Bras <leonardo@linux.ibm.com>
-To: John Hubbard <jhubbard@nvidia.com>, Benjamin Herrenschmidt
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48M27n39LZzDqV6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Feb 2020 11:40:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=neuling.org
+Received: from neuling.org (localhost [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTP id 48M27j6S7gz9sRG;
+ Tue, 18 Feb 2020 11:40:16 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=neuling.org;
+ s=201811; t=1581986421;
+ bh=a0CFJXOA/uHY0JLhnZ7YRoOw1DBU5yBkXfyphVoZqaw=;
+ h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
+ b=riURPvaOIY/l3TBvQIHGCqvUskxenUh/6gsfrm9JOnY0Wn5ee7mhK17nN5HqmLI3w
+ FRgy96RTFxnr43ast5mbiADEaCxKowK+zpBH9cSck1QMhYmmpTR/jc+JlY6BQX3Nbg
+ zo4yGVR79WhyRkWzRMIioZnl2lE0xzD0FXrF5vX1CJnmRPZKNg0uExWgllZRo+Gt2N
+ x05gFp1mZpvDlNuqZtgsDNbx1OYxjv0kkj2Js0qU3qU6lxoeYdZXWT2sduaoruRwtD
+ SIFEERFL+Kd/cu4zfd5Uz1rUqGFMWDaxUcTZETl8yw/HGXs+eenjd3c7GcDyEtVE48
+ SDLKlx6eVJMUA==
+Received: by neuling.org (Postfix, from userid 1000)
+ id D6F952C01C8; Tue, 18 Feb 2020 11:40:16 +1100 (AEDT)
+Message-ID: <99897b3e22a9131c22c0d9c36bee3d55bff3336b.camel@neuling.org>
+Subject: Re: [PATCH] powerpc/chrp: Fix enter_rtas() with CONFIG_VMAP_STACK
+From: Michael Neuling <mikey@neuling.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>, Benjamin Herrenschmidt
  <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
- Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>, Andrew Morton
- <akpm@linux-foundation.org>, "Aneesh Kumar K.V"
- <aneesh.kumar@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <christophe.leroy@c-s.fr>, Steven Price
- <steven.price@arm.com>, Robin Murphy <robin.murphy@arm.com>, Mahesh
- Salgaonkar <mahesh@linux.vnet.ibm.com>, Balbir Singh
- <bsingharora@gmail.com>, Reza Arbab <arbab@linux.ibm.com>, Thomas Gleixner
- <tglx@linutronix.de>, Allison Randal <allison@lohutok.net>, Greg
- Kroah-Hartman <gregkh@linuxfoundation.org>, Mike Rapoport
- <rppt@linux.ibm.com>, Michal Suchanek <msuchanek@suse.de>
-Date: Mon, 17 Feb 2020 17:55:49 -0300
-In-Reply-To: <0c2f5a89-4890-fd84-6a6d-e470ba110399@nvidia.com>
-References: <20200206030900.147032-1-leonardo@linux.ibm.com>
- <20200206030900.147032-3-leonardo@linux.ibm.com>
- <760c238043196e0628c8c0eff48a8e938ef539ba.camel@linux.ibm.com>
- <0c2f5a89-4890-fd84-6a6d-e470ba110399@nvidia.com>
-Content-Type: multipart/signed; micalg="pgp-sha256";
- protocol="application/pgp-signature"; boundary="=-KK5vvDthaVYFFka5IIPv"
+ Ellerman <mpe@ellerman.id.au>
+Date: Tue, 18 Feb 2020 11:40:16 +1100
+In-Reply-To: <40126489-adf8-1b65-8974-25bca584bc9b@c-s.fr>
+References: <159ecb0ab021c07fd2f383d4a083a43d16d67b92.1581669187.git.christophe.leroy@c-s.fr>
+ <04cdd26307a1eaebeacc039b207db92e0b6820bb.camel@neuling.org>
+ <40126489-adf8-1b65-8974-25bca584bc9b@c-s.fr>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.34.3 (3.34.3-1.fc31) 
 MIME-Version: 1.0
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
- definitions=2020-02-17_12:2020-02-17,
- 2020-02-17 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0
- mlxlogscore=999 mlxscore=0 suspectscore=0 clxscore=1015 lowpriorityscore=0
- impostorscore=0 phishscore=0 bulkscore=0 adultscore=0 priorityscore=1501
- spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2001150001 definitions=main-2002170170
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -115,82 +71,94 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kvm-ppc@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
---=-KK5vvDthaVYFFka5IIPv
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-Hello John, comments inline;
-
-On Fri, 2020-02-07 at 14:54 -0800, John Hubbard wrote:
-> On 2/5/20 7:25 PM, Leonardo Bras wrote:
-> > On Thu, 2020-02-06 at 00:08 -0300, Leonardo Bras wrote:
-> > >                 gup_pgd_range(addr, end, gup_flags, pages, &nr);
-> > > -               local_irq_enable();
-> > > +               end_lockless_pgtbl_walk(IRQS_ENABLED);
-> > >                 ret =3D nr;
-> > >         }
-> > > =20
+On Mon, 2020-02-17 at 07:40 +0100, Christophe Leroy wrote:
+>=20
+> Le 16/02/2020 =C3=A0 23:40, Michael Neuling a =C3=A9crit :
+> > On Fri, 2020-02-14 at 08:33 +0000, Christophe Leroy wrote:
+> > > With CONFIG_VMAP_STACK, data MMU has to be enabled
+> > > to read data on the stack.
 > >=20
-> > Just noticed IRQS_ENABLED is not available on other archs than ppc64.
-> > I will fix this for v7.
+> > Can you describe what goes wrong without this? Some oops message? rtas =
+blows
+> > up?
+> > Get corrupt data?
+>=20
+> Larry reported a machine check. Or in fact, he reported a Oops in=20
+> kprobe_handler(), that Oops being a bug in kprobe_handle() triggered by=
+=20
+> this machine check.
+>=20
+> By converting a VM address to a phys-like address as if is was linear=20
+> mem, you get in the dark. Either there is some physical memory at that=
+=20
+> address and you corrupt it. Or there is none and you get a machine check.
+
+Excellent. Please put that in the commit message.
+
+> > Also can you say what you're actually doing (ie turning on MSR[DR])
+>=20
+> Euh ... I'm saying that data MMU has to be enabled, so I'm enabling it.
+
+Yeah, it's a minor point.
+
 > >=20
+> > > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> > > ---
+> > >   arch/powerpc/kernel/entry_32.S | 9 +++++++--
+> > >   1 file changed, 7 insertions(+), 2 deletions(-)
+> > >=20
+> > > diff --git a/arch/powerpc/kernel/entry_32.S
+> > > b/arch/powerpc/kernel/entry_32.S
+> > > index 0713daa651d9..bc056d906b51 100644
+> > > --- a/arch/powerpc/kernel/entry_32.S
+> > > +++ b/arch/powerpc/kernel/entry_32.S
+> > > @@ -1354,12 +1354,17 @@ _GLOBAL(enter_rtas)
+> > >   	mtspr	SPRN_SRR0,r8
+> > >   	mtspr	SPRN_SRR1,r9
+> > >   	RFI
+> > > -1:	tophys(r9,r1)
+> > > +1:	tophys_novmstack r9, r1
+> > > +#ifdef CONFIG_VMAP_STACKisntruction
+> > > +	li	r0, MSR_KERNEL & ~MSR_IR	/* can take DTLB miss */
+> >=20
+> > You're potentially turning on more than MSR DR here. This should be cle=
+ar in
+> > the
+> > commit message.
 >=20
-> What's the fix going to look like, approximately?
+> Am I ?
+>=20
+> At the time of the RFI just above, SRR1 contains the value of r9 which=
+=20
+> has been set 2 lines before to MSR_KERNEL & ~(MSR_IR|MSR_DR).
+>=20
+> What should be clear in the commit message ?
 
-I am not sure what is the best approach yet.=20
+You're right. I was just looking at the patch and not the code. It's cleare=
+r in
+the code.
 
-1. On irq_mask =3D=3D 0, always enable irq on end_lockless_pgtbl_walk().
-   Not sure how bat would that affect other archs.
-
-2. Add another function like end_lockless_pgtbl_walk_irqen() that
-always enables IRQ.
-
-3. Add another parameter in end_lockless_pgtbl_walk(), so that caller
-can choose ii IRQ must be enabled.
-
-Also, not sure if internal_get_user_pages_fast() can possibly be called
-with IRQ disabled, and then return with it enabled. Maybe just
-saving/restoring should be fine.
-
-Other suggestions are welcome.
+Mikey
 
 >=20
+> > > +	mtmsr	r0
+> > > +	isync
+> > > +#endif
+> > >   	lwz	r8,INT_FRAME_SIZE+4(r9)	/* get return address */
+> > >   	lwz	r9,8(r9)	/* original msr value */
+> > >   	addi	r1,r1,INT_FRAME_SIZE
+> > >   	li	r0,0
+> > > -	tophys(r7, r2)
+> > > +	tophys_novmstack r7, r2
+> > >   	stw	r0, THREAD + RTAS_SP(r7)
+> > >   	mtspr	SPRN_SRR0,r8
+> > >   	mtspr	SPRN_SRR1,r9
 >=20
-> thanks,
-
-Best regards,
-
-Leonardo Bras
-
---=-KK5vvDthaVYFFka5IIPv
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEMdeUgIzgjf6YmUyOlQYWtz9SttQFAl5K/dUACgkQlQYWtz9S
-ttSomhAAti45bC0hpcyFr3ix4l0vnXi071xBs+ZLvF+V2qK1wpmBPe1ke3hfm45y
-7rd5whdeNR8cPfsXPKwerT1oB7rJXhiGQa5Vt1pNlvFXVKs+IBZr+S7JAJjIFxW+
-nPHLV4LaOnkRgg8p1tusLTJXXkPD/PYBqVu5vwWk4cI/uXmO6MjQ9ARPpc0bQYUY
-Ds8v/GoaVuGn1kf2YVIUtJlQSF2gdKAxUnTh6hmUXcwpB0Ao3tKeE+4bESkipSRg
-vlJ3aJpi72K160R3b+UwGjHLAixSsRr3pSvkqKU/B2lUEaJO99mu01NWR/X4OtVc
-8h1+tgjwjZSiIa0DJfwn44beonO8oHFTE1VpmZMxpwVMoRxVUvzIrhuDaLfKlSIE
-dlbKs43NjTvwQu5RScWqDR5u2w6q7LLXtCoLbq9JDDOf8kt9GX6SOp3NLopWqY4x
-/BSh0UYIkBlBCAY/LXdNL1C0D8g/h8MpoOyxyKzsmZQmgLJPEtDq/Gqkdsf4jtBq
-E3Ma6KYyl0wTfbQtp7iNERDukt0R2j8+meZ5ad2WUJ7GujVCp/S8ky+88jLB8eNx
-o96tDhPvhT0VBcfIrGsnAnE1CyJFgFiBF4k7Xwi7To6z5teTWfhc5z6mDfBgVH1l
-lhtHrLkT3aJxP48InKKPe7TMb2ghIzHMy9bSC1AaIgEW5zxzr8A=
-=UpXg
------END PGP SIGNATURE-----
-
---=-KK5vvDthaVYFFka5IIPv--
+> Christophe
+>=20
 
