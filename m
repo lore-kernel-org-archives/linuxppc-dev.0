@@ -2,60 +2,51 @@ Return-Path: <SRS0=izeg=4G=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 37693C34026
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Feb 2020 11:22:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AAA48C34026
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Feb 2020 11:28:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D834E2173E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Feb 2020 11:22:41 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="Ra3wq7GF"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D834E2173E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 651D321D56
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Feb 2020 11:28:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 651D321D56
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=virtuozzo.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48MJNq2t2kzDqbc
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Feb 2020 22:22:35 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48MJWY12RKzDqbY
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Feb 2020 22:28:25 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=virtuozzo.com (client-ip=185.231.240.75; helo=relay.sw.ru;
+ envelope-from=ktkhai@virtuozzo.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=virtuozzo.com
+Received: from relay.sw.ru (relay.sw.ru [185.231.240.75])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48MJJn5YQkzDqVs
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Feb 2020 22:19:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=Ra3wq7GF; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix)
- id 48MJJm5qzsz9sRf; Tue, 18 Feb 2020 22:19:04 +1100 (AEDT)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 48MJJm4kBgz9sRk; Tue, 18 Feb 2020 22:19:04 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1582024744;
- bh=wOr2GBV5ekrEdUCRGWoPKLzHSJeH0L9Gcqv1tuXDEBE=;
- h=From:To:Cc:Subject:Date:From;
- b=Ra3wq7GFPxdlQXKgTzlbJXdEZ9gG+gBZ7c9rRZ89t1n8iUZwsrk/OyeqXSrDvSkrh
- k/fuxhFBHR3XzsIyS6XTivw1J6jhRFbzsY6bZZQLdckyp4k47ZBrfG0RCnfDTgzLAI
- dJLKPeozlUE/8r3zuoSprH5RM16LOCsDo+KV5bPJOo943gfXkd3pQY7YLUW9BY6q3B
- ypKV4ToswimqzoZr3T6uU9viyhZGRMwwS57w+5uyPDYiX8LLqPj4rIGWiYjGBSolbN
- 0sNOEMvPa28/WqFCAAhFgBBgEFOLDM3gXB29lqoe+WbYp3QMhMyJA6cFP/pRvLTeNm
- XQQS6Iqq3chpA==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/Makefile: Mark phony targets as PHONY
-Date: Tue, 18 Feb 2020 22:18:42 +1100
-Message-Id: <20200218111842.1641-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.21.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48MJR10Kp4zDqCD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Feb 2020 22:24:27 +1100 (AEDT)
+Received: from dhcp-172-16-24-104.sw.ru ([172.16.24.104])
+ by relay.sw.ru with esmtp (Exim 4.92.3)
+ (envelope-from <ktkhai@virtuozzo.com>)
+ id 1j40Su-0003ZA-M2; Tue, 18 Feb 2020 13:50:56 +0300
+Subject: Re: [5.6.0-rc2-next-20200218/powerpc] Boot failure on POWER9
+To: Sachin Sant <sachinp@linux.vnet.ibm.com>,
+ Linux-Next Mailing List <linux-next@vger.kernel.org>
+References: <3381CD91-AB3D-4773-BA04-E7A072A63968@linux.vnet.ibm.com>
+From: Kirill Tkhai <ktkhai@virtuozzo.com>
+Message-ID: <cf6be5f5-4bbc-0d34-fb64-33fd37bc48d9@virtuozzo.com>
+Date: Tue, 18 Feb 2020 13:50:56 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.4.2
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <3381CD91-AB3D-4773-BA04-E7A072A63968@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,89 +58,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: masahiroy@kernel.org, linux-kbuild@vger.kernel.org
+Cc: Michal Hocko <mhocko@suse.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Some of our phony targets are not marked as such. This can lead to
-confusing errors, eg:
+Hi, Sachin,
 
-  $ make clean
-  $ touch install
-  $ make install
-  make: 'install' is up to date.
-  $
+On 18.02.2020 13:45, Sachin Sant wrote:
+> Todays next fails to boot on a POWER9 PowerVM logical partition
+> with following trace:
+> 
+> [    8.767660] random: systemd: uninitialized urandom read (16 bytes read)
+> [    8.768629] BUG: Kernel NULL pointer dereference on read at 0x000073b0
+> [    8.768635] Faulting instruction address: 0xc0000000003d55f4
+> [    8.768641] Oops: Kernel access of bad area, sig: 11 [#1]
+> [    8.768645] LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=2048 NUMA pSeries
+> [    8.768650] Modules linked in:
+> [    8.768655] CPU: 19 PID: 1 Comm: systemd Not tainted 5.6.0-rc2-next-20200218-autotest #1
+> [    8.768660] NIP:  c0000000003d55f4 LR: c0000000003d5b94 CTR: 0000000000000000
+> [    8.768666] REGS: c0000008b37836d0 TRAP: 0300   Not tainted  (5.6.0-rc2-next-20200218-autotest)
+> [    8.768671] MSR:  8000000000009033 <SF,EE,ME,IR,DR,RI,LE>  CR: 24004844  XER: 00000000
+> [    8.768679] CFAR: c00000000000dec4 DAR: 00000000000073b0 DSISR: 40000000 IRQMASK: 1
+> [    8.768679] GPR00: c0000000003d5b94 c0000008b3783960 c00000000155d400 c0000008b301f500
+> [    8.768679] GPR04: 0000000000000dc0 0000000000000002 c0000000003443d8 c0000008bb398620
+> [    8.768679] GPR08: 00000008ba2f0000 0000000000000001 0000000000000000 0000000000000000
+> [    8.768679] GPR12: 0000000024004844 c00000001ec52a00 0000000000000000 0000000000000000
+> [    8.768679] GPR16: c0000008a1b20048 c000000001595898 c000000001750c18 0000000000000002
+> [    8.768679] GPR20: c000000001750c28 c000000001624470 0000000fffffffe0 5deadbeef0000122
+> [    8.768679] GPR24: 0000000000000001 0000000000000dc0 0000000000000002 c0000000003443d8
+> [    8.768679] GPR28: c0000008b301f500 c0000008bb398620 0000000000000000 c00c000002287180
+> [    8.768727] NIP [c0000000003d55f4] ___slab_alloc+0x1f4/0x760
+> [    8.768732] LR [c0000000003d5b94] __slab_alloc+0x34/0x60
+> [    8.768735] Call Trace:
+> [    8.768739] [c0000008b3783960] [c0000000003d5734] ___slab_alloc+0x334/0x760 (unreliable)
+> [    8.768745] [c0000008b3783a40] [c0000000003d5b94] __slab_alloc+0x34/0x60
+> [    8.768751] [c0000008b3783a70] [c0000000003d6fa0] __kmalloc_node+0x110/0x490
+> [    8.768757] [c0000008b3783af0] [c0000000003443d8] kvmalloc_node+0x58/0x110
+> [    8.768763] [c0000008b3783b30] [c0000000003fee38] mem_cgroup_css_online+0x108/0x270
+> [    8.768769] [c0000008b3783b90] [c000000000235aa8] online_css+0x48/0xd0
+> [    8.768775] [c0000008b3783bc0] [c00000000023eaec] cgroup_apply_control_enable+0x2ec/0x4d0
+> [    8.768781] [c0000008b3783ca0] [c000000000242318] cgroup_mkdir+0x228/0x5f0
+> [    8.768786] [c0000008b3783d10] [c00000000051e170] kernfs_iop_mkdir+0x90/0xf0
+> [    8.768792] [c0000008b3783d50] [c00000000043dc00] vfs_mkdir+0x110/0x230
+> [    8.768797] [c0000008b3783da0] [c000000000441c90] do_mkdirat+0xb0/0x1a0
+> [    8.768804] [c0000008b3783e20] [c00000000000b278] system_call+0x5c/0x68
+> [    8.768808] Instruction dump:
+> [    8.768811] 7c421378 e95f0000 714a0001 4082fff0 4bffff64 60000000 60000000 faa10088
+> [    8.768818] 3ea2000c 3ab57070 7b4a1f24 7d55502a <e94a73b0> 2faa0000 409e0394 3d02002a
+> [    8.768826] ---[ end trace 631af2cb73507891 ]---
+> [    8.770876]
+> [    9.770887] Kernel panic - not syncing: Fatal exception
+> 
+> Bisect reveals the problem was introduced in next-20200217 by following commit 
+> 
+> commit a75056fc1e7c 
+> mm/memcontrol.c: allocate shrinker_map on appropriate NUMA node
+> 
+> I can boot the kernel successfully if the patch is reverted. 
 
-Fix it by adding them to the PHONY variable which is marked phony in
-the top-level Makefile. In arch/powerpc/boot/Makefile we do it
-manually.
 
-Suggested-by: Masahiro Yamada <masahiroy@kernel.org>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/Makefile      | 6 ++++++
- arch/powerpc/boot/Makefile | 2 ++
- 2 files changed, 8 insertions(+)
+could you please test your boot with original patch from here:
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index f35730548e42..cbe5ca4f0ee5 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -298,6 +298,7 @@ $(BOOT_TARGETS2): vmlinux
- 	$(Q)$(MAKE) $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
- 
- 
-+PHONY += bootwrapper_install
- bootwrapper_install:
- 	$(Q)$(MAKE) $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
- 
-@@ -403,9 +404,11 @@ define archhelp
-   @echo '  (minus the .dts extension).'
- endef
- 
-+PHONY += install
- install:
- 	$(Q)$(MAKE) $(build)=$(boot) install
- 
-+PHONY += vdso_install
- vdso_install:
- ifdef CONFIG_PPC64
- 	$(Q)$(MAKE) $(build)=arch/$(ARCH)/kernel/vdso64 $@
-@@ -425,6 +428,7 @@ archprepare: checkbin
- ifdef CONFIG_STACKPROTECTOR
- prepare: stack_protector_prepare
- 
-+PHONY += stack_protector_prepare
- stack_protector_prepare: prepare0
- ifdef CONFIG_PPC64
- 	$(eval KBUILD_CFLAGS += -mstack-protector-guard-offset=$(shell awk '{if ($$2 == "PACA_CANARY") print $$3;}' include/generated/asm-offsets.h))
-@@ -436,10 +440,12 @@ endif
- ifdef CONFIG_SMP
- prepare: task_cpu_prepare
- 
-+PHONY += task_cpu_prepare
- task_cpu_prepare: prepare0
- 	$(eval KBUILD_CFLAGS += -D_TASK_CPU=$(shell awk '{if ($$2 == "TASK_CPU") print $$3;}' include/generated/asm-offsets.h))
- endif
- 
-+PHONY += checkbin
- # Check toolchain versions:
- # - gcc-4.6 is the minimum kernel-wide version so nothing required.
- checkbin:
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 0556bf4fc9e9..58d4b4667206 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -445,6 +445,8 @@ install: $(CONFIGURE) $(addprefix $(obj)/, $(image-y))
- zInstall: $(CONFIGURE) $(addprefix $(obj)/, $(image-y))
- 	sh -x $(srctree)/$(src)/install.sh "$(KERNELRELEASE)" vmlinux System.map "$(INSTALL_PATH)" $^
- 
-+.PHONY: install zInstall
-+
- # anything not in $(targets)
- clean-files += $(image-) $(initrd-) cuImage.* dtbImage.* treeImage.* \
- 	zImage zImage.initrd zImage.chrp zImage.coff zImage.holly \
--- 
-2.21.1
+https://patchwork.kernel.org/patch/11360007/
 
+?
