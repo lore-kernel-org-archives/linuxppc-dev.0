@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CEF3C34026
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Feb 2020 19:48:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 61FC1C34026
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Feb 2020 19:50:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CB64521D56
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Feb 2020 19:48:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CB64521D56
+	by mail.kernel.org (Postfix) with ESMTPS id EA42F21D56
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Feb 2020 19:50:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EA42F21D56
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=namei.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48MWcj2jz7zDqWJ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Feb 2020 06:48:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48MWfR07x3zDqfs
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Feb 2020 06:50:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=namei.org
  (client-ip=65.99.196.166; helo=namei.org; envelope-from=jmorris@namei.org;
@@ -28,20 +28,20 @@ Authentication-Results: lists.ozlabs.org;
 Received: from namei.org (namei.org [65.99.196.166])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48MWXz1DJ0zDqJN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2020 06:45:22 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48MWYT6KRDzDqLZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2020 06:45:49 +1100 (AEDT)
 Received: from localhost (localhost [127.0.0.1])
- by namei.org (8.14.4/8.14.4) with ESMTP id 01IJhv9J016349;
- Tue, 18 Feb 2020 19:43:58 GMT
-Date: Wed, 19 Feb 2020 06:43:57 +1100 (AEDT)
+ by namei.org (8.14.4/8.14.4) with ESMTP id 01IJiQMI016417;
+ Tue, 18 Feb 2020 19:44:26 GMT
+Date: Wed, 19 Feb 2020 06:44:26 +1100 (AEDT)
 From: James Morris <jmorris@namei.org>
 To: Alexey Budankov <alexey.budankov@linux.intel.com>
-Subject: Re: [PATCH v7 09/12] drivers/perf: open access for CAP_PERFMON
+Subject: Re: [PATCH v7 10/12] drivers/oprofile: open access for CAP_PERFMON
  privileged process
-In-Reply-To: <48baecd5-a015-3dbf-f774-9f2caee13893@linux.intel.com>
-Message-ID: <alpine.LRH.2.21.2002190643390.10165@namei.org>
+In-Reply-To: <046beedf-e074-58e2-579d-df535799169c@linux.intel.com>
+Message-ID: <alpine.LRH.2.21.2002190644070.10165@namei.org>
 References: <c8de937a-0b3a-7147-f5ef-69f467e87a13@linux.intel.com>
- <48baecd5-a015-3dbf-f774-9f2caee13893@linux.intel.com>
+ <046beedf-e074-58e2-579d-df535799169c@linux.intel.com>
 User-Agent: Alpine 2.21 (LRH 202 2017-01-01)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
