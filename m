@@ -2,84 +2,44 @@ Return-Path: <SRS0=ebxO=4H=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A1F45C34047
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Feb 2020 12:11:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36479C34047
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Feb 2020 12:43:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EC64324654
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Feb 2020 12:11:10 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="XonlV0Z+"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC64324654
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id A1F2324654
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Feb 2020 12:43:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A1F2324654
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48MxQN2snHzDqWp
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Feb 2020 23:11:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=XonlV0Z+; dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 48My8B3M01zDq7j
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Feb 2020 23:43:54 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48MxLs5dv0zDqTq
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2020 23:08:01 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 48MxLg3psQz9v9Dt;
- Wed, 19 Feb 2020 13:07:55 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=XonlV0Z+; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id AFyfJZVf4xTO; Wed, 19 Feb 2020 13:07:55 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 48MxLg2Kzcz9v9Ds;
- Wed, 19 Feb 2020 13:07:55 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1582114075; bh=SUPm/xbOXqzg/7rTrLgpDJn6K3q1CABhJDtHqKqTUfA=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=XonlV0Z+kSYp9DXtpHiZkNHEHxFMw6PZijdFfIFeuIK/K+RCtqkXv0VtzGY+2wuZu
- xOicb9401xVMMs8rHDmTPmm6KlS2ffHsw+cSbAZdq3j0YAum02eQePHOFl9npiNl8S
- akY+ce7GONPJifLUkacYEEGeIusgoWWVvfKmbJes=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 8CDA98B83F;
- Wed, 19 Feb 2020 13:07:56 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id ix2R2LHOLPeo; Wed, 19 Feb 2020 13:07:56 +0100 (CET)
-Received: from [172.25.230.102] (po15451.idsi0.si.c-s.fr [172.25.230.102])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B4B6E8B837;
- Wed, 19 Feb 2020 13:07:55 +0100 (CET)
-Subject: Re: [PATCH v2 07/13] powerpc: add support for folded p4d page tables
-To: Mike Rapoport <rppt@kernel.org>
-References: <20200216081843.28670-1-rppt@kernel.org>
- <20200216081843.28670-8-rppt@kernel.org>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <5b7c3929-5833-8ceb-85c8-a8e92e6a138e@c-s.fr>
-Date: Wed, 19 Feb 2020 13:07:55 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.5.0
-MIME-Version: 1.0
-In-Reply-To: <20200216081843.28670-8-rppt@kernel.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48My3X5FnJzDq5n
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2020 23:39:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 48My3W5Zfyz9sSL; Wed, 19 Feb 2020 23:39:51 +1100 (AEDT)
+X-powerpc-patch-notification: thanks
+X-powerpc-patch-commit: f2b67ef90b0d5eca0f2255e02cf2f620bc0ddcdb
+In-Reply-To: <90ec56a2315be602494619ed0223bba3b0b8d619.1580997007.git.christophe.leroy@c-s.fr>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, aneesh.kumar@linux.ibm.com
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/hugetlb: Fix 512k hugepages on 8xx with 16k page
+ size
+Message-Id: <48My3W5Zfyz9sSL@ozlabs.org>
+Date: Wed, 19 Feb 2020 23:39:51 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,124 +51,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
- Geert Uytterhoeven <geert+renesas@glider.be>, linux-sh@vger.kernel.org,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- linux-hexagon@vger.kernel.org, Will Deacon <will@kernel.org>,
- kvmarm@lists.cs.columbia.edu, Jonas Bonn <jonas@southpole.se>,
- linux-arch@vger.kernel.org, Brian Cain <bcain@codeaurora.org>,
- Marc Zyngier <maz@kernel.org>, Russell King <linux@armlinux.org.uk>,
- Ley Foon Tan <ley.foon.tan@intel.com>, Mike Rapoport <rppt@linux.ibm.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Julien Thierry <julien.thierry.kdev@gmail.com>,
- uclinux-h8-devel@lists.sourceforge.jp, Fenghua Yu <fenghua.yu@intel.com>,
- Arnd Bergmann <arnd@arndb.de>, Suzuki K Poulose <suzuki.poulose@arm.com>,
- kvm-ppc@vger.kernel.org,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- openrisc@lists.librecores.org, Stafford Horne <shorne@gmail.com>,
- Guan Xuetao <gxt@pku.edu.cn>, linux-arm-kernel@lists.infradead.org,
- Tony Luck <tony.luck@intel.com>, Yoshinori Sato <ysato@users.sourceforge.jp>,
- linux-kernel@vger.kernel.org, James Morse <james.morse@arm.com>,
- nios2-dev@lists.rocketboards.org, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-Le 16/02/2020 à 09:18, Mike Rapoport a écrit :
-> From: Mike Rapoport <rppt@linux.ibm.com>
+On Thu, 2020-02-06 at 13:50:28 UTC, Christophe Leroy wrote:
+> Commit 55c8fc3f4930 ("powerpc/8xx: reintroduce 16K pages with HW
+> assistance") redefined pte_t as a struct of 4 pte_basic_t, because
+> in 16K pages mode there are four identical entries in the
+> page table. But the size of hugepage tables is calculated based
+> of the size of (void *). Therefore, we end up with page tables
+> of size 1k instead of 4k for 512k pages.
 > 
-> Implement primitives necessary for the 4th level folding, add walks of p4d
-> level where appropriate and replace 5level-fixup.h with pgtable-nop4d.h.
+> As 512k hugepage tables are the same size as standard page tables,
+> ie 4k, use the standard page tables instead of PGT_CACHE tables.
 > 
-> Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
-> Tested-by: Christophe Leroy <christophe.leroy@c-s.fr> # 8xx and 83xx
-> ---
->   arch/powerpc/include/asm/book3s/32/pgtable.h  |  1 -
->   arch/powerpc/include/asm/book3s/64/hash.h     |  4 +-
->   arch/powerpc/include/asm/book3s/64/pgalloc.h  |  4 +-
->   arch/powerpc/include/asm/book3s/64/pgtable.h  | 58 ++++++++++--------
->   arch/powerpc/include/asm/book3s/64/radix.h    |  6 +-
->   arch/powerpc/include/asm/nohash/32/pgtable.h  |  1 -
->   arch/powerpc/include/asm/nohash/64/pgalloc.h  |  2 +-
->   .../include/asm/nohash/64/pgtable-4k.h        | 32 +++++-----
->   arch/powerpc/include/asm/nohash/64/pgtable.h  |  6 +-
->   arch/powerpc/include/asm/pgtable.h            |  8 +++
->   arch/powerpc/kvm/book3s_64_mmu_radix.c        | 59 ++++++++++++++++---
->   arch/powerpc/lib/code-patching.c              |  7 ++-
->   arch/powerpc/mm/book3s32/mmu.c                |  2 +-
->   arch/powerpc/mm/book3s32/tlb.c                |  4 +-
->   arch/powerpc/mm/book3s64/hash_pgtable.c       |  4 +-
->   arch/powerpc/mm/book3s64/radix_pgtable.c      | 19 ++++--
->   arch/powerpc/mm/book3s64/subpage_prot.c       |  6 +-
->   arch/powerpc/mm/hugetlbpage.c                 | 28 +++++----
->   arch/powerpc/mm/kasan/kasan_init_32.c         |  8 +--
->   arch/powerpc/mm/mem.c                         |  4 +-
->   arch/powerpc/mm/nohash/40x.c                  |  4 +-
->   arch/powerpc/mm/nohash/book3e_pgtable.c       | 15 +++--
->   arch/powerpc/mm/pgtable.c                     | 25 +++++++-
->   arch/powerpc/mm/pgtable_32.c                  | 28 +++++----
->   arch/powerpc/mm/pgtable_64.c                  | 10 ++--
->   arch/powerpc/mm/ptdump/hashpagetable.c        | 20 ++++++-
->   arch/powerpc/mm/ptdump/ptdump.c               | 22 ++++++-
->   arch/powerpc/xmon/xmon.c                      | 17 +++++-
->   28 files changed, 284 insertions(+), 120 deletions(-)
-> 
-> diff --git a/arch/powerpc/mm/ptdump/ptdump.c b/arch/powerpc/mm/ptdump/ptdump.c
-> index 206156255247..7bd4b81d5b5d 100644
-> --- a/arch/powerpc/mm/ptdump/ptdump.c
-> +++ b/arch/powerpc/mm/ptdump/ptdump.c
-> @@ -277,9 +277,9 @@ static void walk_pmd(struct pg_state *st, pud_t *pud, unsigned long start)
->   	}
->   }
->   
-> -static void walk_pud(struct pg_state *st, pgd_t *pgd, unsigned long start)
-> +static void walk_pud(struct pg_state *st, p4d_t *p4d, unsigned long start)
->   {
-> -	pud_t *pud = pud_offset(pgd, 0);
-> +	pud_t *pud = pud_offset(p4d, 0);
->   	unsigned long addr;
->   	unsigned int i;
->   
-> @@ -293,6 +293,22 @@ static void walk_pud(struct pg_state *st, pgd_t *pgd, unsigned long start)
->   	}
->   }
->   
-> +static void walk_p4d(struct pg_state *st, pgd_t *pgd, unsigned long start)
-> +{
-> +	p4d_t *p4d = p4d_offset(pgd, 0);
-> +	unsigned long addr;
-> +	unsigned int i;
-> +
-> +	for (i = 0; i < PTRS_PER_P4D; i++, p4d++) {
-> +		addr = start + i * P4D_SIZE;
-> +		if (!p4d_none(*p4d) && !p4d_is_leaf(*p4d))
-> +			/* p4d exists */
-> +			walk_pud(st, p4d, addr);
-> +		else
-> +			note_page(st, addr, 2, p4d_val(*p4d));
+> Fixes: 3fb69c6a1a13 ("powerpc/8xx: Enable 512k hugepage support with HW assistance")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Level 2 is already used by walk_pud().
+Applied to powerpc fixes, thanks.
 
-I think you have to increment the level used in walk_pud() and 
-walk_pmd() and walk_pte()
+https://git.kernel.org/powerpc/c/f2b67ef90b0d5eca0f2255e02cf2f620bc0ddcdb
 
-> +	}
-> +}
-> +
->   static void walk_pagetables(struct pg_state *st)
->   {
->   	unsigned int i;
-> @@ -306,7 +322,7 @@ static void walk_pagetables(struct pg_state *st)
->   	for (i = pgd_index(addr); i < PTRS_PER_PGD; i++, pgd++, addr += PGDIR_SIZE) {
->   		if (!pgd_none(*pgd) && !pgd_is_leaf(*pgd))
->   			/* pgd exists */
-> -			walk_pud(st, pgd, addr);
-> +			walk_p4d(st, pgd, addr);
->   		else
->   			note_page(st, addr, 1, pgd_val(*pgd));
->   	}
-
-Christophe
+cheers
