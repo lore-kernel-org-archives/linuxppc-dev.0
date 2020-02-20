@@ -7,52 +7,53 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 16B91C11D04
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Feb 2020 11:56:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D8473C11D04
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Feb 2020 11:58:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B9F4020722
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Feb 2020 11:56:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8951520722
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Feb 2020 11:58:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="JVaN2k6D"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B9F4020722
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="f1aKv4c0"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8951520722
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48NY2v5rhkzDqHG
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Feb 2020 22:56:23 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 48NY5S0CqYzDqV9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Feb 2020 22:58:36 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48NXxb4hM1zDqDS
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2020 22:51:47 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48NXxd0rTYzDqDS
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2020 22:51:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=JVaN2k6D; 
+ header.a=rsa-sha256 header.s=201909 header.b=f1aKv4c0; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 48NXxb3YDCz9sR4; Thu, 20 Feb 2020 22:51:47 +1100 (AEDT)
+ id 48NXxc59CZz9sR4; Thu, 20 Feb 2020 22:51:48 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 48NXxb1b7Xz9sRs; Thu, 20 Feb 2020 22:51:47 +1100 (AEDT)
+ id 48NXxc4D2gz9sRm; Thu, 20 Feb 2020 22:51:48 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1582199507;
- bh=86l/kbZLVUpuHg6YbEexdjNFc6my3ik18yJ0IXjuWIY=;
+ s=201909; t=1582199508;
+ bh=xsNNtlV7KxA66FpWLHwmFXdgUQFYhOEfB6fa2VtDGDo=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=JVaN2k6DCLwkFfDt7B7KIrcPRcCjqBa+gfe33jQc+SyklS2aghhfXuIOxjx6E6RLk
- /Thz9VuG7E6PwONQShNIDdGN32dO47dTqPR8H6T80gvsCwhBZ/qEWLuXknBshd2tjA
- ouJ3RXM4m3cATZMl5FRuP8uL8jbX1T5KyIQXTXzRIbHsbQwkKTvZHdRpmNZGUj3jeP
- 3J9dc3VNOWMpXJOsc5zT7FMFytoV0Xnpe1FEuW2Gri0xoICHZ+CIpFL8rEUm0fsUqa
- DGF/bY5vePlYuluc6dBB5aeX9qbg8eS1ja0CX91RlyVqWBP6srtLUjK846Kf1HFsSU
- 7dhLVJOgnPEHg==
+ b=f1aKv4c0f2IqMufxyDIMF6+FEgCxpUyKgJg4HKRHjdhsm/4O420J7ovHavSBaphe1
+ JgUspdJtxRf0FNKAf0W1KCayxlh5NC7Gct4FtkH+b3uIdDFkImARqId5aONkOVJ+nz
+ R2KcaRshpNq/PGMuzf1ejrHDdbXc5X1ekIHwODhHpXPC6OazgNd0xSzpKKpMJ7JDo0
+ HpbtlPMhFvztSZMzkEjBSNNG4NMzfhhLGmEzc8MTt1AogKsG+PxzT4KRAU3Z2Oy7MV
+ FoYfAagjcV8vBzeMgEqSouBgbobIuqBSmK30Tb42+acNWFmDKE55wf+ffvjE04CQGY
+ hkIEHLO7Zsa0A==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v3 2/5] powerpc: Add current_stack_pointer as a register global
-Date: Thu, 20 Feb 2020 22:51:38 +1100
-Message-Id: <20200220115141.2707-2-mpe@ellerman.id.au>
+Subject: [PATCH v3 3/5] powerpc/irq: Use current_stack_pointer in
+ check_stack_overflow()
+Date: Thu, 20 Feb 2020 22:51:39 +1100
+Message-Id: <20200220115141.2707-3-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.21.1
 In-Reply-To: <20200220115141.2707-1-mpe@ellerman.id.au>
 References: <20200220115141.2707-1-mpe@ellerman.id.au>
@@ -75,40 +76,37 @@ Sender: "Linuxppc-dev"
 
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 
-current_stack_frame() doesn't return the stack pointer, but the
-caller's stack frame. See commit bfe9a2cfe91a ("powerpc: Reimplement
-__get_SP() as a function not a define") and commit
-acf620ecf56c ("powerpc: Rename __get_SP() to current_stack_pointer()")
-for details.
+The purpose of check_stack_overflow() is to verify that the stack has
+not overflowed.
 
-In some cases this is overkill or incorrect, as it doesn't return the
-current value of r1.
+To really know whether the stack pointer is still within boundaries,
+the check must be done directly on the value of r1.
 
-So add a current_stack_pointer register global to get the value of r1
-directly.
+So use current_stack_pointer, which returns the current value of r1,
+rather than current_stack_frame() which causes a frame to be created
+and then returns that value.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-[mpe: Split out of other patch, tweak change log]
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Link: https://lore.kernel.org/r/435e0030e942507766cbef5bc95f906262d2ccf2.1579849665.git.christophe.leroy@c-s.fr
 ---
- arch/powerpc/include/asm/reg.h | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/kernel/irq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 1b1ffdba6097..da5cab038e25 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -1450,6 +1450,8 @@ static inline void mtsrin(u32 val, u32 idx)
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 02118c18434d..c7d6f5cdffdb 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -602,7 +602,7 @@ static inline void check_stack_overflow(void)
+ #ifdef CONFIG_DEBUG_STACKOVERFLOW
+ 	long sp;
  
- extern unsigned long current_stack_frame(void);
+-	sp = current_stack_frame() & (THREAD_SIZE-1);
++	sp = current_stack_pointer & (THREAD_SIZE - 1);
  
-+register unsigned long current_stack_pointer asm("r1");
-+
- extern unsigned long scom970_read(unsigned int address);
- extern void scom970_write(unsigned int address, unsigned long value);
- 
+ 	/* check for stack overflow: is there less than 2KB free? */
+ 	if (unlikely(sp < 2048)) {
 -- 
 2.21.1
 
-v3: Split out, and use current_stack_pointer not get_sp()
+v3: s/get_sp()/current_stack_pointer/
