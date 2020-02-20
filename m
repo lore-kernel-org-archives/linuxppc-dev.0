@@ -2,58 +2,89 @@ Return-Path: <SRS0=DuU+=4I=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 109D6C5ACC4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Feb 2020 03:35:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3F08C34031
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Feb 2020 05:36:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 88918208C4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Feb 2020 03:35:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 88918208C4
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id 6C85024656
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Feb 2020 05:36:55 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=fossix-org.20150623.gappssmtp.com header.i=@fossix-org.20150623.gappssmtp.com header.b="POZtORHd"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C85024656
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=fossix.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48NKwM39TVzDqSl
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Feb 2020 14:34:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.32; helo=huawei.com;
- envelope-from=yanaijie@huawei.com; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48NNd12c7vzDqSc
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Feb 2020 16:36:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga06-in.huawei.com [45.249.212.32])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=none (no SPF record) smtp.mailfrom=fossix.org
+ (client-ip=2607:f8b0:4864:20::642; helo=mail-pl1-x642.google.com;
+ envelope-from=santosh@fossix.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=fossix.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=fossix-org.20150623.gappssmtp.com
+ header.i=@fossix-org.20150623.gappssmtp.com header.a=rsa-sha256
+ header.s=20150623 header.b=POZtORHd; dkim-atps=neutral
+Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
+ [IPv6:2607:f8b0:4864:20::642])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48NKth72LlzDqQr
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2020 14:33:28 +1100 (AEDT)
-Received: from DGGEMS406-HUB.china.huawei.com (unknown [172.30.72.58])
- by Forcepoint Email with ESMTP id C5214A729CD34109C880;
- Thu, 20 Feb 2020 11:33:21 +0800 (CST)
-Received: from [127.0.0.1] (10.173.221.195) by DGGEMS406-HUB.china.huawei.com
- (10.3.19.206) with Microsoft SMTP Server id 14.3.439.0;
- Thu, 20 Feb 2020 11:33:13 +0800
-Subject: Re: [PATCH v3 0/6] implement KASLR for powerpc/fsl_booke/64
-From: Jason Yan <yanaijie@huawei.com>
-To: <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
- <diana.craciun@nxp.com>, <christophe.leroy@c-s.fr>,
- <benh@kernel.crashing.org>, <paulus@samba.org>, <npiggin@gmail.com>,
- <keescook@chromium.org>, <kernel-hardening@lists.openwall.com>,
- <oss@buserror.net>
-References: <20200206025825.22934-1-yanaijie@huawei.com>
- <636f16fd-cc7b-ee2e-7496-c06bdc10c7af@huawei.com>
-Message-ID: <c20b8e8b-5e70-4897-85c3-2d8d3c5454d7@huawei.com>
-Date: Thu, 20 Feb 2020 11:33:12 +0800
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101
- Thunderbird/68.4.2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48NNb83CfgzDqRR
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2020 16:35:13 +1100 (AEDT)
+Received: by mail-pl1-x642.google.com with SMTP id g6so1086089plp.6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2020 21:35:13 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=fossix-org.20150623.gappssmtp.com; s=20150623;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=NKOsDlonI6ZZnqYhj8NP6zsInFEyFSvYMOHlkhHk/d4=;
+ b=POZtORHdgH72O8bDBEfA5gjhoqk2cdAjFNd2Zi3GjYKTTbjLRikgh4fk0PMZrJ6i5M
+ z28UPuMvpAmF4Hr3CA7uqZsLEG38XcJ8pc5TyCufQ2P7OJUg5nk7ZGpfoHVGHVT4CDhU
+ AFMSG5nHpmp1cR0bMtiuC/l3v7Ie96ScSk3ry7coQjDNDRzRl+wcuiesnNlOnFEze+ZY
+ b9XPs7QqHNRy61xALzh3VdA6zAOrTev0+/x1MHHyHaOuU0s54570Lm3zFFk2JspXsyX6
+ yaheXMTYlQHMiQFUnBHQfdIKftLgdTYm0AWeTIa587H0XDsgQHoUZLg52utgAnCAsb3F
+ 25hw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=NKOsDlonI6ZZnqYhj8NP6zsInFEyFSvYMOHlkhHk/d4=;
+ b=q6OApkWf7UK24oEzGmZYnKJcRXEtkeg77wqTycvIOPby11UkSlX7HHCIjs0bFReQxg
+ Rq0xpJt+TojqSufLuE7USgYtH3E0owpO6NmWLu1dfmsgsRg9cgcAKpn2UZPL8FgfZeLt
+ RDjCgWUX3AvkhXa944ZFmQdBxxOpeV9P5gs6gZ7y4GLndTTkiPHDpQhd5U5okWmCEnHa
+ mIENp7GDPFBzFXkQhZgkX1aPxA245Nv3LraJlQeJZJg79RyCYgrsUHhUrPVCqUb6w8WU
+ ZbPiDOLzX5Xwe8YNk1DSBRX1BZQ9DVHvfThVFcPL9c0zj6mQs3aYZ3hafwMoiHWBnjVy
+ 191A==
+X-Gm-Message-State: APjAAAWIwnmJ+kGZvk5vj7HWIuom+nsVeoutm36KakYU+QptMpAiQ1MN
+ 9U/ckzPIb5eQHRy0oOSza6SEMZ0kiDc=
+X-Google-Smtp-Source: APXvYqyyPoeNybZrSmK+0WHyI+lggbO8N/MMUcjHQHOypDxitVIxCh0Lsjl5NTHnErYegDfvoTyeuw==
+X-Received: by 2002:a17:902:6a8c:: with SMTP id
+ n12mr29129863plk.191.1582176909748; 
+ Wed, 19 Feb 2020 21:35:09 -0800 (PST)
+Received: from santosiv.in.ibm.com ([129.41.84.71])
+ by smtp.gmail.com with ESMTPSA id r11sm1664262pgi.9.2020.02.19.21.35.07
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 19 Feb 2020 21:35:09 -0800 (PST)
+From: Santosh Sivaraj <santosh@fossix.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	stable@vger.kernel.org
+Subject: [PATCH 1/6] asm-generic/tlb: Track freeing of page-table directories
+ in struct mmu_gather
+Date: Thu, 20 Feb 2020 11:04:52 +0530
+Message-Id: <20200220053457.930231-2-santosh@fossix.org>
+X-Mailer: git-send-email 2.24.1
+In-Reply-To: <20200220053457.930231-1-santosh@fossix.org>
+References: <20200220053457.930231-1-santosh@fossix.org>
 MIME-Version: 1.0
-In-Reply-To: <636f16fd-cc7b-ee2e-7496-c06bdc10c7af@huawei.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.173.221.195]
-X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,76 +96,109 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, zhaohongjiang@huawei.com
+Cc: peterz@infradead.org, aneesh.kumar@linux.ibm.com,
+ akshay.adiga@linux.ibm.com, Will Deacon <will.deacon@arm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-ping...
+From: Peter Zijlstra <peterz@infradead.org>
 
-on 2020/2/13 11:00, Jason Yan wrote:
-> Hi everyone, any comments or suggestions?
-> 
-> Thanks,
-> Jason
-> 
-> on 2020/2/6 10:58, Jason Yan wrote:
->> This is a try to implement KASLR for Freescale BookE64 which is based on
->> my earlier implementation for Freescale BookE32:
->> https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=131718
->>
->> The implementation for Freescale BookE64 is similar as BookE32. One
->> difference is that Freescale BookE64 set up a TLB mapping of 1G during
->> booting. Another difference is that ppc64 needs the kernel to be
->> 64K-aligned. So we can randomize the kernel in this 1G mapping and make
->> it 64K-aligned. This can save some code to creat another TLB map at
->> early boot. The disadvantage is that we only have about 1G/64K = 16384
->> slots to put the kernel in.
->>
->>      KERNELBASE
->>
->>            64K                     |--> kernel <--|
->>             |                      |              |
->>          +--+--+--+    +--+--+--+--+--+--+--+--+--+    +--+--+
->>          |  |  |  |....|  |  |  |  |  |  |  |  |  |....|  |  |
->>          +--+--+--+    +--+--+--+--+--+--+--+--+--+    +--+--+
->>          |                         |                        1G
->>          |----->   offset    <-----|
->>
->>                                kernstart_virt_addr
->>
->> I'm not sure if the slot numbers is enough or the design has any
->> defects. If you have some better ideas, I would be happy to hear that.
->>
->> Thank you all.
->>
->> v2->v3:
->>    Fix build error when KASLR is disabled.
->> v1->v2:
->>    Add __kaslr_offset for the secondary cpu boot up.
->>
->> Jason Yan (6):
->>    powerpc/fsl_booke/kaslr: refactor kaslr_legal_offset() and
->>      kaslr_early_init()
->>    powerpc/fsl_booke/64: introduce reloc_kernel_entry() helper
->>    powerpc/fsl_booke/64: implement KASLR for fsl_booke64
->>    powerpc/fsl_booke/64: do not clear the BSS for the second pass
->>    powerpc/fsl_booke/64: clear the original kernel if randomized
->>    powerpc/fsl_booke/kaslr: rename kaslr-booke32.rst to kaslr-booke.rst
->>      and add 64bit part
->>
->>   .../{kaslr-booke32.rst => kaslr-booke.rst}    | 35 +++++++--
->>   arch/powerpc/Kconfig                          |  2 +-
->>   arch/powerpc/kernel/exceptions-64e.S          | 23 ++++++
->>   arch/powerpc/kernel/head_64.S                 | 14 ++++
->>   arch/powerpc/kernel/setup_64.c                |  4 +-
->>   arch/powerpc/mm/mmu_decl.h                    | 19 ++---
->>   arch/powerpc/mm/nohash/kaslr_booke.c          | 71 +++++++++++++------
->>   7 files changed, 132 insertions(+), 36 deletions(-)
->>   rename Documentation/powerpc/{kaslr-booke32.rst => kaslr-booke.rst} 
->> (59%)
->>
-> 
-> 
-> .
+Some architectures require different TLB invalidation instructions
+depending on whether it is only the last-level of page table being
+changed, or whether there are also changes to the intermediate
+(directory) entries higher up the tree.
+
+Add a new bit to the flags bitfield in struct mmu_gather so that the
+architecture code can operate accordingly if it's the intermediate
+levels being invalidated.
+
+Signed-off-by: Peter Zijlstra <peterz@infradead.org>
+Signed-off-by: Will Deacon <will.deacon@arm.com>
+Cc: <stable@vger.kernel.org> # 4.19
+Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
+[santosh: prerequisite for tlbflush backports]
+---
+ include/asm-generic/tlb.h | 31 +++++++++++++++++++++++--------
+ 1 file changed, 23 insertions(+), 8 deletions(-)
+
+diff --git a/include/asm-generic/tlb.h b/include/asm-generic/tlb.h
+index b3353e21f3b3..97306b32d8d2 100644
+--- a/include/asm-generic/tlb.h
++++ b/include/asm-generic/tlb.h
+@@ -97,12 +97,22 @@ struct mmu_gather {
+ #endif
+ 	unsigned long		start;
+ 	unsigned long		end;
+-	/* we are in the middle of an operation to clear
+-	 * a full mm and can make some optimizations */
+-	unsigned int		fullmm : 1,
+-	/* we have performed an operation which
+-	 * requires a complete flush of the tlb */
+-				need_flush_all : 1;
++	/*
++	 * we are in the middle of an operation to clear
++	 * a full mm and can make some optimizations
++	 */
++	unsigned int		fullmm : 1;
++
++	/*
++	 * we have performed an operation which
++	 * requires a complete flush of the tlb
++	 */
++	unsigned int		need_flush_all : 1;
++
++	/*
++	 * we have removed page directories
++	 */
++	unsigned int		freed_tables : 1;
+ 
+ 	struct mmu_gather_batch *active;
+ 	struct mmu_gather_batch	local;
+@@ -137,6 +147,7 @@ static inline void __tlb_reset_range(struct mmu_gather *tlb)
+ 		tlb->start = TASK_SIZE;
+ 		tlb->end = 0;
+ 	}
++	tlb->freed_tables = 0;
+ }
+ 
+ static inline void tlb_flush_mmu_tlbonly(struct mmu_gather *tlb)
+@@ -278,6 +289,7 @@ static inline void tlb_remove_check_page_size_change(struct mmu_gather *tlb,
+ #define pte_free_tlb(tlb, ptep, address)			\
+ 	do {							\
+ 		__tlb_adjust_range(tlb, address, PAGE_SIZE);	\
++		tlb->freed_tables = 1;			\
+ 		__pte_free_tlb(tlb, ptep, address);		\
+ 	} while (0)
+ #endif
+@@ -285,7 +297,8 @@ static inline void tlb_remove_check_page_size_change(struct mmu_gather *tlb,
+ #ifndef pmd_free_tlb
+ #define pmd_free_tlb(tlb, pmdp, address)			\
+ 	do {							\
+-		__tlb_adjust_range(tlb, address, PAGE_SIZE);		\
++		__tlb_adjust_range(tlb, address, PAGE_SIZE);	\
++		tlb->freed_tables = 1;			\
+ 		__pmd_free_tlb(tlb, pmdp, address);		\
+ 	} while (0)
+ #endif
+@@ -295,6 +308,7 @@ static inline void tlb_remove_check_page_size_change(struct mmu_gather *tlb,
+ #define pud_free_tlb(tlb, pudp, address)			\
+ 	do {							\
+ 		__tlb_adjust_range(tlb, address, PAGE_SIZE);	\
++		tlb->freed_tables = 1;			\
+ 		__pud_free_tlb(tlb, pudp, address);		\
+ 	} while (0)
+ #endif
+@@ -304,7 +318,8 @@ static inline void tlb_remove_check_page_size_change(struct mmu_gather *tlb,
+ #ifndef p4d_free_tlb
+ #define p4d_free_tlb(tlb, pudp, address)			\
+ 	do {							\
+-		__tlb_adjust_range(tlb, address, PAGE_SIZE);		\
++		__tlb_adjust_range(tlb, address, PAGE_SIZE);	\
++		tlb->freed_tables = 1;			\
+ 		__p4d_free_tlb(tlb, pudp, address);		\
+ 	} while (0)
+ #endif
+-- 
+2.24.1
 
