@@ -2,83 +2,87 @@ Return-Path: <SRS0=DuU+=4I=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B67AC761A1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Feb 2020 05:38:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A70BC34031
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Feb 2020 05:39:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DF64D24656
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Feb 2020 05:38:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 19A7224656
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Feb 2020 05:39:43 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=fossix-org.20150623.gappssmtp.com header.i=@fossix-org.20150623.gappssmtp.com header.b="LiGpsSJw"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF64D24656
+	dkim=pass (2048-bit key) header.d=fossix-org.20150623.gappssmtp.com header.i=@fossix-org.20150623.gappssmtp.com header.b="0lhG2GFY"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 19A7224656
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=fossix.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48NNfb5bvrzDqXW
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Feb 2020 16:38:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48NNhF1dMGzDqSg
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Feb 2020 16:39:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=fossix.org
- (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com;
+ (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
  envelope-from=santosh@fossix.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=fossix.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=fossix-org.20150623.gappssmtp.com
  header.i=@fossix-org.20150623.gappssmtp.com header.a=rsa-sha256
- header.s=20150623 header.b=LiGpsSJw; dkim-atps=neutral
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
- [IPv6:2607:f8b0:4864:20::441])
+ header.s=20150623 header.b=0lhG2GFY; dkim-atps=neutral
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48NNb756z2zDqRM
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2020 16:35:10 +1100 (AEDT)
-Received: by mail-pf1-x441.google.com with SMTP id 84so1329295pfy.6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2020 21:35:10 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48NNb80V1KzDqRN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2020 16:35:15 +1100 (AEDT)
+Received: by mail-pl1-x643.google.com with SMTP id g6so1091430plt.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2020 21:35:15 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=fossix-org.20150623.gappssmtp.com; s=20150623;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=sKm1MlIEqICiKl98BAwahnWrPOiQX0P3G2oQRircgsw=;
- b=LiGpsSJwILX3x1TKtOk/SWkE5PqYzjYz/HztQvxKIryNvRRtPJjg/T9i0J+AYg7Tpy
- 1PmfPb037cZZVu3DojOYSZVhVWeW86Wz47YRR/RtqiWIBlpPW6qFHFpux6UB0zR1SVHz
- S1NuwBUumoQzgs/BN39mCEogaqAdT9oBbuFI8yD5+10nq0i8m9tJURtjMBeGTASnQqPF
- U/WI8Nw4bQ7CjEfjSnmH8Iz0VWYLM1QFXedk2lafFjh1kr1j8pEo6FoIH2I7w8mbtt4y
- Ot/32mfDt+QGsTpgqcssXHV1YGMyj/EUTUqX/FM9K22OaxEGAn72lxNnrCX5c5OIdZFm
- dM2g==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=Uf/3nLWcXhbl/6GJxMwHl9q5mCS/THiKWZJhEc1olLc=;
+ b=0lhG2GFYeKV570i50/67LM1vJjcfaNmOT9bUNhSNEgN9hwvww6QTPKjnFEyH/9cJ9p
+ 9v4FmhOVljz7K97aKfrpFwWzpzPtTdHFOfGIIdKV2afuxmBrtz+kQPcAEjyAqwvsMnIM
+ bbghOF6K3rDqm7dkfkUTL5eRKDr6Gh9t0vzWBIJa4m4/2SkSBZ2EheCHPW4Tp/fp12sZ
+ w7Y5Jzw1S8rQL1L9OKUxQqtJUq167DzTKR/93GTxYvNYOuYAbpHwtzsRtBp0lN2NJTIl
+ EFKFSlqJMo9sc9H5nzGbPjprxCSBAyDrzrDTaUDR05mWFHBqZsz9URcq9qvo9i6VLsgk
+ Yo/Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=sKm1MlIEqICiKl98BAwahnWrPOiQX0P3G2oQRircgsw=;
- b=G0rE1ipdvjWHIxF8D2HaeGmaoRIVtQSrupy7GvMwMv/YqMtUJ2rYh6t0vQwcBdyr4C
- WxDh7GTbupWna21PtdHQXDmab5cnBJBU+BRcQKbsb3vCagSnsZPI7fLhevcSk2NOV7Ii
- wDXSOLTxQIHZs6jlq4ME1EsGQql+raZ8q8LKdEO7CRLHFgwwPhJDSHHq0+IUz8kF0r4E
- 2YQGfFSSDNJ3yB72RS2Ubr6E+kI8T0mmfZ6yd5NvCd9cM/1X4vW2+AZZTyd8hVO+qnFH
- pYDqVoxdl8bDvuYSNYDKFlaT5L75ZnDOFduvVCU7cwSaTTi1Wwzlnblx3kAPuj1fsPW9
- ib/A==
-X-Gm-Message-State: APjAAAXKdoVdOKjiyVIAgGhYSytET6h6UB2+VP87bZKlkQBvDNIiwDBg
- AnsXMJCU6o/sXmDWdYLY53Un30VjX24=
-X-Google-Smtp-Source: APXvYqwsLC75ue0/RjU/zYa6DFXsUaBkkmJb0okKfCSO8U9YZFIgVVg1vqpuT6zDnmq1RZ3r45NA5Q==
-X-Received: by 2002:a62:7a8a:: with SMTP id
- v132mr31783219pfc.111.1582176906864; 
- Wed, 19 Feb 2020 21:35:06 -0800 (PST)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=Uf/3nLWcXhbl/6GJxMwHl9q5mCS/THiKWZJhEc1olLc=;
+ b=RXM2A6agkFFXVS5Gj27LYNrevnhEIbuIk6TjcUdnkqYKEW1McWtXC3UyNYV42LgVpm
+ ualQuowTfvvE/9NWlLFm56FW2dvDt36Qkwl3iUBejwDemGl0ZA5XD14xxf8P2c3TK8b9
+ FFVc1JhQF/7OW/+75GLBoCRHhZz7fm7ZXEQX+3TT1Qsf2rsfgge9KetBb2oT98cT+aP5
+ 9o4ogGSRN9aAH+tkyxGlb/XKrB1wI0/GAF1UUzOmbCqb3Erigef/c+5ZKqmCmYahNI78
+ bJLiJxg0h8/YNt3UtPlqkDvzTrngjDcaEXvGZzQxcn7viGMhBMDHj+Ed7Ul2/HJTOgWk
+ AlNQ==
+X-Gm-Message-State: APjAAAUl9Mgf4wNAy5FQ/mHilztCtcV6hM24H+5S+NQWtHV/jFKJYB9u
+ f83CGHNow3h/VhhAikInf3/2cFQH4aM=
+X-Google-Smtp-Source: APXvYqx5S81E7+9tro0CWQKy/yL8WIeqcw1yLD0OGzLeog+PG7t4YXVagmC8KvpDRv3j9CkkAF86Cg==
+X-Received: by 2002:a17:90a:a617:: with SMTP id
+ c23mr1654859pjq.32.1582176912790; 
+ Wed, 19 Feb 2020 21:35:12 -0800 (PST)
 Received: from santosiv.in.ibm.com ([129.41.84.71])
- by smtp.gmail.com with ESMTPSA id r11sm1664262pgi.9.2020.02.19.21.35.04
+ by smtp.gmail.com with ESMTPSA id r11sm1664262pgi.9.2020.02.19.21.35.10
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 19 Feb 2020 21:35:06 -0800 (PST)
+ Wed, 19 Feb 2020 21:35:12 -0800 (PST)
 From: Santosh Sivaraj <santosh@fossix.org>
 To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
 	stable@vger.kernel.org
-Subject: [PATCH 0/6] Memory corruption may occur due to incorrent tlb flush
-Date: Thu, 20 Feb 2020 11:04:51 +0530
-Message-Id: <20200220053457.930231-1-santosh@fossix.org>
+Subject: [PATCH 2/6] asm-generic/tlb: Track which levels of the page tables
+ have been cleared
+Date: Thu, 20 Feb 2020 11:04:53 +0530
+Message-Id: <20200220053457.930231-3-santosh@fossix.org>
 X-Mailer: git-send-email 2.24.1
+In-Reply-To: <20200220053457.930231-1-santosh@fossix.org>
+References: <20200220053457.930231-1-santosh@fossix.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -93,53 +97,188 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: peterz@infradead.org, aneesh.kumar@linux.ibm.com,
- akshay.adiga@linux.ibm.com
+ akshay.adiga@linux.ibm.com, Will Deacon <will.deacon@arm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The TLB flush optimisation (a46cc7a90f: powerpc/mm/radix: Improve TLB/PWC
-flushes) may result in random memory corruption. Any concurrent page-table walk
-could end up with a Use-after-Free. Even on UP this might give issues, since
-mmu_gather is preemptible these days. An interrupt or preempted task accessing
-user pages might stumble into the free page if the hardware caches page
-directories.
+From: Will Deacon <will.deacon@arm.com>
 
-The series is a backport of the fix sent by Peter [1].
+It is common for architectures with hugepage support to require only a
+single TLB invalidation operation per hugepage during unmap(), rather than
+iterating through the mapping at a PAGE_SIZE increment. Currently,
+however, the level in the page table where the unmap() operation occurs
+is not stored in the mmu_gather structure, therefore forcing
+architectures to issue additional TLB invalidation operations or to give
+up and over-invalidate by e.g. invalidating the entire TLB.
 
-The first three patches are dependencies for the last patch (avoid potential
-double flush). If the performance impact due to double flush is considered
-trivial then the first three patches and last patch may be dropped.
+Ideally, we could add an interval rbtree to the mmu_gather structure,
+which would allow us to associate the correct mapping granule with the
+various sub-mappings within the range being invalidated. However, this
+is costly in terms of book-keeping and memory management, so instead we
+approximate by keeping track of the page table levels that are cleared
+and provide a means to query the smallest granule required for invalidation.
 
-[1] https://patchwork.kernel.org/cover/11284843/
---
-Aneesh Kumar K.V (1):
-  powerpc/mmu_gather: enable RCU_TABLE_FREE even for !SMP case
+Signed-off-by: Will Deacon <will.deacon@arm.com>
+Cc: <stable@vger.kernel.org> # 4.19
+Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
+[santosh: prerequisite for upcoming tlbflush backports]
+---
+ include/asm-generic/tlb.h | 58 +++++++++++++++++++++++++++++++++------
+ mm/memory.c               |  4 ++-
+ 2 files changed, 53 insertions(+), 9 deletions(-)
 
-Peter Zijlstra (4):
-  asm-generic/tlb: Track freeing of page-table directories in struct
-    mmu_gather
-  asm-generic/tlb, arch: Invert CONFIG_HAVE_RCU_TABLE_INVALIDATE
-  mm/mmu_gather: invalidate TLB correctly on batch allocation failure
-    and flush
-  asm-generic/tlb: avoid potential double flush
-
-Will Deacon (1):
-  asm-generic/tlb: Track which levels of the page tables have been
-    cleared
-
- arch/Kconfig                                 |   3 -
- arch/powerpc/Kconfig                         |   2 +-
- arch/powerpc/include/asm/book3s/32/pgalloc.h |   8 --
- arch/powerpc/include/asm/book3s/64/pgalloc.h |   2 -
- arch/powerpc/include/asm/tlb.h               |  11 ++
- arch/powerpc/mm/pgtable-book3s64.c           |   7 --
- arch/sparc/include/asm/tlb_64.h              |   9 ++
- arch/x86/Kconfig                             |   1 -
- include/asm-generic/tlb.h                    | 103 ++++++++++++++++---
- mm/memory.c                                  |  20 ++--
- 10 files changed, 122 insertions(+), 44 deletions(-)
-
+diff --git a/include/asm-generic/tlb.h b/include/asm-generic/tlb.h
+index 97306b32d8d2..f2b9dc9cbaf8 100644
+--- a/include/asm-generic/tlb.h
++++ b/include/asm-generic/tlb.h
+@@ -114,6 +114,14 @@ struct mmu_gather {
+ 	 */
+ 	unsigned int		freed_tables : 1;
+ 
++	/*
++	 * at which levels have we cleared entries?
++	 */
++	unsigned int		cleared_ptes : 1;
++	unsigned int		cleared_pmds : 1;
++	unsigned int		cleared_puds : 1;
++	unsigned int		cleared_p4ds : 1;
++
+ 	struct mmu_gather_batch *active;
+ 	struct mmu_gather_batch	local;
+ 	struct page		*__pages[MMU_GATHER_BUNDLE];
+@@ -148,6 +156,10 @@ static inline void __tlb_reset_range(struct mmu_gather *tlb)
+ 		tlb->end = 0;
+ 	}
+ 	tlb->freed_tables = 0;
++	tlb->cleared_ptes = 0;
++	tlb->cleared_pmds = 0;
++	tlb->cleared_puds = 0;
++	tlb->cleared_p4ds = 0;
+ }
+ 
+ static inline void tlb_flush_mmu_tlbonly(struct mmu_gather *tlb)
+@@ -197,6 +209,25 @@ static inline void tlb_remove_check_page_size_change(struct mmu_gather *tlb,
+ }
+ #endif
+ 
++static inline unsigned long tlb_get_unmap_shift(struct mmu_gather *tlb)
++{
++	if (tlb->cleared_ptes)
++		return PAGE_SHIFT;
++	if (tlb->cleared_pmds)
++		return PMD_SHIFT;
++	if (tlb->cleared_puds)
++		return PUD_SHIFT;
++	if (tlb->cleared_p4ds)
++		return P4D_SHIFT;
++
++	return PAGE_SHIFT;
++}
++
++static inline unsigned long tlb_get_unmap_size(struct mmu_gather *tlb)
++{
++	return 1UL << tlb_get_unmap_shift(tlb);
++}
++
+ /*
+  * In the case of tlb vma handling, we can optimise these away in the
+  * case where we're doing a full MM flush.  When we're doing a munmap,
+@@ -230,13 +261,19 @@ static inline void tlb_remove_check_page_size_change(struct mmu_gather *tlb,
+ #define tlb_remove_tlb_entry(tlb, ptep, address)		\
+ 	do {							\
+ 		__tlb_adjust_range(tlb, address, PAGE_SIZE);	\
++		tlb->cleared_ptes = 1;				\
+ 		__tlb_remove_tlb_entry(tlb, ptep, address);	\
+ 	} while (0)
+ 
+-#define tlb_remove_huge_tlb_entry(h, tlb, ptep, address)	     \
+-	do {							     \
+-		__tlb_adjust_range(tlb, address, huge_page_size(h)); \
+-		__tlb_remove_tlb_entry(tlb, ptep, address);	     \
++#define tlb_remove_huge_tlb_entry(h, tlb, ptep, address)	\
++	do {							\
++		unsigned long _sz = huge_page_size(h);		\
++		__tlb_adjust_range(tlb, address, _sz);		\
++		if (_sz == PMD_SIZE)				\
++			tlb->cleared_pmds = 1;			\
++		else if (_sz == PUD_SIZE)			\
++			tlb->cleared_puds = 1;			\
++		__tlb_remove_tlb_entry(tlb, ptep, address);	\
+ 	} while (0)
+ 
+ /**
+@@ -250,6 +287,7 @@ static inline void tlb_remove_check_page_size_change(struct mmu_gather *tlb,
+ #define tlb_remove_pmd_tlb_entry(tlb, pmdp, address)			\
+ 	do {								\
+ 		__tlb_adjust_range(tlb, address, HPAGE_PMD_SIZE);	\
++		tlb->cleared_pmds = 1;					\
+ 		__tlb_remove_pmd_tlb_entry(tlb, pmdp, address);		\
+ 	} while (0)
+ 
+@@ -264,6 +302,7 @@ static inline void tlb_remove_check_page_size_change(struct mmu_gather *tlb,
+ #define tlb_remove_pud_tlb_entry(tlb, pudp, address)			\
+ 	do {								\
+ 		__tlb_adjust_range(tlb, address, HPAGE_PUD_SIZE);	\
++		tlb->cleared_puds = 1;					\
+ 		__tlb_remove_pud_tlb_entry(tlb, pudp, address);		\
+ 	} while (0)
+ 
+@@ -289,7 +328,8 @@ static inline void tlb_remove_check_page_size_change(struct mmu_gather *tlb,
+ #define pte_free_tlb(tlb, ptep, address)			\
+ 	do {							\
+ 		__tlb_adjust_range(tlb, address, PAGE_SIZE);	\
+-		tlb->freed_tables = 1;			\
++		tlb->freed_tables = 1;				\
++		tlb->cleared_pmds = 1;				\
+ 		__pte_free_tlb(tlb, ptep, address);		\
+ 	} while (0)
+ #endif
+@@ -298,7 +338,8 @@ static inline void tlb_remove_check_page_size_change(struct mmu_gather *tlb,
+ #define pmd_free_tlb(tlb, pmdp, address)			\
+ 	do {							\
+ 		__tlb_adjust_range(tlb, address, PAGE_SIZE);	\
+-		tlb->freed_tables = 1;			\
++		tlb->freed_tables = 1;				\
++		tlb->cleared_puds = 1;				\
+ 		__pmd_free_tlb(tlb, pmdp, address);		\
+ 	} while (0)
+ #endif
+@@ -308,7 +349,8 @@ static inline void tlb_remove_check_page_size_change(struct mmu_gather *tlb,
+ #define pud_free_tlb(tlb, pudp, address)			\
+ 	do {							\
+ 		__tlb_adjust_range(tlb, address, PAGE_SIZE);	\
+-		tlb->freed_tables = 1;			\
++		tlb->freed_tables = 1;				\
++		tlb->cleared_p4ds = 1;				\
+ 		__pud_free_tlb(tlb, pudp, address);		\
+ 	} while (0)
+ #endif
+@@ -319,7 +361,7 @@ static inline void tlb_remove_check_page_size_change(struct mmu_gather *tlb,
+ #define p4d_free_tlb(tlb, pudp, address)			\
+ 	do {							\
+ 		__tlb_adjust_range(tlb, address, PAGE_SIZE);	\
+-		tlb->freed_tables = 1;			\
++		tlb->freed_tables = 1;				\
+ 		__p4d_free_tlb(tlb, pudp, address);		\
+ 	} while (0)
+ #endif
+diff --git a/mm/memory.c b/mm/memory.c
+index bbf0cc4066c8..1832c5ed6ac0 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -267,8 +267,10 @@ void arch_tlb_finish_mmu(struct mmu_gather *tlb,
+ {
+ 	struct mmu_gather_batch *batch, *next;
+ 
+-	if (force)
++	if (force) {
++		__tlb_reset_range(tlb);
+ 		__tlb_adjust_range(tlb, start, end - start);
++	}
+ 
+ 	tlb_flush_mmu(tlb);
+ 
 -- 
 2.24.1
 
