@@ -7,92 +7,93 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C39DAC11D24
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 04:00:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 961C1C11D24
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 04:02:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7B188207FD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 04:00:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7B188207FD
+	by mail.kernel.org (Postfix) with ESMTPS id 51D8C207FD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 04:02:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 51D8C207FD
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48NyRL07PBzDqLf
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 15:00:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48NyTC1jsczDq5t
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 15:02:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=au1.ibm.com (client-ip=148.163.158.5;
+ smtp.mailfrom=au1.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=alastair@au1.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=au1.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48NxkK35D7zDqZX
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48NxkL0YYVzDqZx
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2020 14:28:25 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 01L3KH67104674
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2020 22:28:22 -0500
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2y8ubqh1k8-1
+ 01L3JKRe021296
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2020 22:28:23 -0500
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2y8ucnrcfc-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2020 22:28:22 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2020 22:28:23 -0500
 Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
- Fri, 21 Feb 2020 03:28:19 -0000
-Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Fri, 21 Feb 2020 03:28:18 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 21 Feb 2020 03:28:11 -0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 01L3SA5u32702822
+ Fri, 21 Feb 2020 03:28:10 -0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 01L3S9bV59768912
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 21 Feb 2020 03:28:10 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8B08311C04A;
- Fri, 21 Feb 2020 03:28:10 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3EB4C11C058;
- Fri, 21 Feb 2020 03:28:10 +0000 (GMT)
+ Fri, 21 Feb 2020 03:28:09 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 41E0EAE058;
+ Fri, 21 Feb 2020 03:28:09 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E8A25AE057;
+ Fri, 21 Feb 2020 03:28:08 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 21 Feb 2020 03:28:10 +0000 (GMT)
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri, 21 Feb 2020 03:28:08 +0000 (GMT)
 Received: from adsilva.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
  (using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 418CAA03EA;
- Fri, 21 Feb 2020 14:28:04 +1100 (AEDT)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 0E4E7A03BA;
+ Fri, 21 Feb 2020 14:28:03 +1100 (AEDT)
 From: "Alastair D'Silva" <alastair@au1.ibm.com>
 To: alastair@d-silva.org
-Subject: [PATCH v3 27/27] MAINTAINERS: Add myself & nvdimm/ocxl to ocxl
-Date: Fri, 21 Feb 2020 14:27:20 +1100
+Subject: [PATCH v3 08/27] ocxl: Emit a log message showing how much LPC memory
+ was detected
+Date: Fri, 21 Feb 2020 14:27:01 +1100
 X-Mailer: git-send-email 2.24.1
 In-Reply-To: <20200221032720.33893-1-alastair@au1.ibm.com>
 References: <20200221032720.33893-1-alastair@au1.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 20022103-4275-0000-0000-000003A3FE64
+x-cbid: 20022103-0012-0000-0000-00000388D1CD
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20022103-4276-0000-0000-000038B80C7A
-Message-Id: <20200221032720.33893-28-alastair@au1.ibm.com>
+x-cbparentid: 20022103-0013-0000-0000-000021C56A6D
+Message-Id: <20200221032720.33893-9-alastair@au1.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
  definitions=2020-02-20_19:2020-02-19,
  2020-02-20 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 clxscore=1015
- priorityscore=1501 suspectscore=1 spamscore=0 bulkscore=0 impostorscore=0
- mlxlogscore=538 lowpriorityscore=0 malwarescore=0 phishscore=0 mlxscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2001150001
- definitions=main-2002210020
+ malwarescore=0 adultscore=0
+ impostorscore=0 spamscore=0 phishscore=0 mlxlogscore=560
+ priorityscore=1501 clxscore=1015 suspectscore=1 bulkscore=0 mlxscore=0
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2001150001 definitions=main-2002210020
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -130,38 +131,29 @@ Sender: "Linuxppc-dev"
 
 From: Alastair D'Silva <alastair@d-silva.org>
 
-The OpenCAPI Persistent Memory driver will be maintained as part ofi
-the ppc tree.
-
-I'm also adding myself as an author of the driver & contributor to
-the generic ocxl driver.
+This patch emits a message showing how much LPC memory & special purpose
+memory was detected on an OCXL device.
 
 Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 ---
- MAINTAINERS | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/misc/ocxl/config.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index f8670989ec91..3fb9a9f576a7 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -12064,13 +12064,16 @@ F:	tools/objtool/
- OCXL (Open Coherent Accelerator Processor Interface OpenCAPI) DRIVER
- M:	Frederic Barrat <fbarrat@linux.ibm.com>
- M:	Andrew Donnellan <ajd@linux.ibm.com>
-+M:	Alastair D'Silva <alastair@d-silva.org>
- L:	linuxppc-dev@lists.ozlabs.org
- S:	Supported
- F:	arch/powerpc/platforms/powernv/ocxl.c
-+F:	arch/powerpc/platforms/powernv/pmem/*
- F:	arch/powerpc/include/asm/pnv-ocxl.h
- F:	drivers/misc/ocxl/
- F:	include/misc/ocxl*
- F:	include/uapi/misc/ocxl.h
-+F:	include/uapi/nvdimm/ocxl-pmem.h
- F:	Documentation/userspace-api/accelerators/ocxl.rst
+diff --git a/drivers/misc/ocxl/config.c b/drivers/misc/ocxl/config.c
+index a62e3d7db2bf..701ae6216abf 100644
+--- a/drivers/misc/ocxl/config.c
++++ b/drivers/misc/ocxl/config.c
+@@ -568,6 +568,10 @@ static int read_afu_lpc_memory_info(struct pci_dev *dev,
+ 		afu->special_purpose_mem_size =
+ 			total_mem_size - lpc_mem_size;
+ 	}
++
++	dev_info(&dev->dev, "Probed LPC memory of %#llx bytes and special purpose memory of %#llx bytes\n",
++		afu->lpc_mem_size, afu->special_purpose_mem_size);
++
+ 	return 0;
+ }
  
- OMAP AUDIO SUPPORT
 -- 
 2.24.1
 
