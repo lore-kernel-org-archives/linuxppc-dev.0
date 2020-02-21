@@ -7,93 +7,93 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64745C11D24
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 04:11:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C7268C11D24
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 04:13:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1F84520716
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 04:11:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1F84520716
+	by mail.kernel.org (Postfix) with ESMTPS id 76DA120716
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 04:13:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 76DA120716
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48Nygs1SbpzDr73
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 15:11:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48Nyk547r2zDr37
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 15:13:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=au1.ibm.com (client-ip=148.163.158.5;
+ smtp.mailfrom=au1.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=alastair@au1.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=au1.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48NxkM6BhkzDqZL
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2020 14:28:27 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 01L3KFsV077603
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2020 22:28:24 -0500
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2y9tkcgj4a-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48Nxlk5GF4zDqZN
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2020 14:29:38 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 01L3T8QN111226
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2020 22:29:36 -0500
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2y8ubvvwk7-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2020 22:28:24 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2020 22:29:35 -0500
 Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
- Fri, 21 Feb 2020 03:28:21 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Fri, 21 Feb 2020 03:29:32 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 21 Feb 2020 03:28:11 -0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 01L3SAF852232288
+ Fri, 21 Feb 2020 03:29:26 -0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 01L3SAFD49086646
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 21 Feb 2020 03:28:10 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B1D98A405B;
+ Fri, 21 Feb 2020 03:28:11 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D8936AE04D;
  Fri, 21 Feb 2020 03:28:10 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 16A03A405C;
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 32941AE045;
  Fri, 21 Feb 2020 03:28:10 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
  Fri, 21 Feb 2020 03:28:10 +0000 (GMT)
 Received: from adsilva.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
  (using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id ACDD4A03E0;
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id CA2C4A03E2;
  Fri, 21 Feb 2020 14:28:03 +1100 (AEDT)
 From: "Alastair D'Silva" <alastair@au1.ibm.com>
 To: alastair@d-silva.org
-Subject: [PATCH v3 19/27] powerpc/powernv/pmem: Add an IOCTL to report
- controller statistics
-Date: Fri, 21 Feb 2020 14:27:12 +1100
+Subject: [PATCH v3 21/27] powerpc/powernv/pmem: Add an IOCTL to request
+ controller health & perf data
+Date: Fri, 21 Feb 2020 14:27:14 +1100
 X-Mailer: git-send-email 2.24.1
 In-Reply-To: <20200221032720.33893-1-alastair@au1.ibm.com>
 References: <20200221032720.33893-1-alastair@au1.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 20022103-0012-0000-0000-00000388D1D2
+x-cbid: 20022103-0020-0000-0000-000003AC221B
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20022103-0013-0000-0000-000021C56A71
-Message-Id: <20200221032720.33893-20-alastair@au1.ibm.com>
+x-cbparentid: 20022103-0021-0000-0000-000022042A3E
+Message-Id: <20200221032720.33893-22-alastair@au1.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
  definitions=2020-02-20_19:2020-02-19,
  2020-02-20 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015
- lowpriorityscore=0 suspectscore=1 spamscore=0 malwarescore=0 adultscore=0
- phishscore=0 priorityscore=1501 impostorscore=0 bulkscore=0 mlxscore=0
- mlxlogscore=608 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2001150001 definitions=main-2002210020
+ impostorscore=0 phishscore=0
+ spamscore=0 priorityscore=1501 mlxlogscore=618 bulkscore=0 malwarescore=0
+ lowpriorityscore=0 clxscore=1015 adultscore=0 mlxscore=0 suspectscore=1
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2001150001
+ definitions=main-2002210021
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -131,252 +131,60 @@ Sender: "Linuxppc-dev"
 
 From: Alastair D'Silva <alastair@d-silva.org>
 
-The controller can report a number of statistics that are useful
-in evaluating the performance and reliability of the card.
+When health & performance data is requested from the controller,
+it responds with an error log containing the requested information.
 
-This patch exposes this information via an IOCTL.
+This patch allows the request to me issued via an IOCTL.
 
 Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 ---
- arch/powerpc/platforms/powernv/pmem/ocxl.c | 185 +++++++++++++++++++++
- include/uapi/nvdimm/ocxl-pmem.h            |  17 ++
- 2 files changed, 202 insertions(+)
+ arch/powerpc/platforms/powernv/pmem/ocxl.c | 16 ++++++++++++++++
+ include/uapi/nvdimm/ocxl-pmem.h            |  1 +
+ 2 files changed, 17 insertions(+)
 
 diff --git a/arch/powerpc/platforms/powernv/pmem/ocxl.c b/arch/powerpc/platforms/powernv/pmem/ocxl.c
-index 2cabafe1fc58..009d4fd29e7d 100644
+index e46696d3cc36..081883a8247a 100644
 --- a/arch/powerpc/platforms/powernv/pmem/ocxl.c
 +++ b/arch/powerpc/platforms/powernv/pmem/ocxl.c
-@@ -758,6 +758,186 @@ static int ioctl_controller_dump_complete(struct ocxlpmem *ocxlpmem)
- 				    GLOBAL_MMIO_HCI_CONTROLLER_DUMP_COLLECTED);
+@@ -1000,6 +1000,18 @@ static int ioctl_event_check(struct ocxlpmem *ocxlpmem, u64 __user *uarg)
+ 	return rc;
  }
  
 +/**
-+ * controller_stats_header_parse() - Parse the first 64 bits of the controller stats admin command response
++ * req_controller_health_perf() - Request controller health & performance data
 + * @ocxlpmem: the device metadata
-+ * @length: out, returns the number of bytes in the response (excluding the 64 bit header)
++ * Return: 0 on success, negative on failure
 + */
-+static int controller_stats_header_parse(struct ocxlpmem *ocxlpmem,
-+	u32 *length)
++int req_controller_health_perf(struct ocxlpmem *ocxlpmem)
 +{
-+	int rc;
-+	u64 val;
-+
-+	u16 data_identifier;
-+	u32 data_length;
-+
-+	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-+				     ocxlpmem->admin_command.data_offset,
-+				     OCXL_LITTLE_ENDIAN, &val);
-+	if (rc)
-+		return rc;
-+
-+	data_identifier = val >> 48;
-+	data_length = val & 0xFFFFFFFF;
-+
-+	if (data_identifier != 0x4353) { // 'CS'
-+		dev_err(&ocxlpmem->dev,
-+			"Bad data identifier for controller stats, expected 'CS', got '%-.*s'\n",
-+			2, (char *)&data_identifier);
-+		return -EINVAL;
-+	}
-+
-+	*length = data_length;
-+	return 0;
-+}
-+
-+static int ioctl_controller_stats(struct ocxlpmem *ocxlpmem,
-+				  struct ioctl_ocxl_pmem_controller_stats __user *uarg)
-+{
-+	struct ioctl_ocxl_pmem_controller_stats args;
-+	u32 length;
-+	int rc;
-+	u64 val;
-+
-+	memset(&args, '\0', sizeof(args));
-+
-+	mutex_lock(&ocxlpmem->admin_command.lock);
-+
-+	rc = admin_command_request(ocxlpmem, ADMIN_COMMAND_CONTROLLER_STATS);
-+	if (rc)
-+		goto out;
-+
-+	rc = ocxl_global_mmio_write64(ocxlpmem->ocxl_afu,
-+				      ocxlpmem->admin_command.request_offset + 0x08,
-+				      OCXL_LITTLE_ENDIAN, 0);
-+	if (rc)
-+		goto out;
-+
-+	rc = admin_command_execute(ocxlpmem);
-+	if (rc)
-+		goto out;
-+
-+
-+	rc = admin_command_complete_timeout(ocxlpmem,
-+					    ADMIN_COMMAND_CONTROLLER_STATS);
-+	if (rc < 0) {
-+		dev_warn(&ocxlpmem->dev, "Controller stats timed out\n");
-+		goto out;
-+	}
-+
-+	rc = admin_response(ocxlpmem);
-+	if (rc < 0)
-+		goto out;
-+	if (rc != STATUS_SUCCESS) {
-+		warn_status(ocxlpmem,
-+			    "Unexpected status from controller stats", rc);
-+		goto out;
-+	}
-+
-+	rc = controller_stats_header_parse(ocxlpmem, &length);
-+	if (rc)
-+		goto out;
-+
-+	if (length != 0x140)
-+		warn_status(ocxlpmem,
-+			    "Unexpected length for controller stats data, expected 0x140, got 0x%x",
-+			    length);
-+
-+	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-+				     ocxlpmem->admin_command.data_offset + 0x08 + 0x08,
-+				     OCXL_LITTLE_ENDIAN, &val);
-+	if (rc)
-+		goto out;
-+
-+	args.reset_count = val >> 32;
-+	args.reset_uptime = val & 0xFFFFFFFF;
-+
-+	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-+				     ocxlpmem->admin_command.data_offset + 0x08 + 0x10,
-+				     OCXL_LITTLE_ENDIAN, &val);
-+	if (rc)
-+		goto out;
-+
-+	args.power_on_uptime = val >> 32;
-+
-+	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-+				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x08,
-+				     OCXL_LITTLE_ENDIAN, &args.host_load_count);
-+	if (rc)
-+		goto out;
-+
-+	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-+				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x10,
-+				     OCXL_LITTLE_ENDIAN, &args.host_store_count);
-+	if (rc)
-+		goto out;
-+
-+	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-+				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x18,
-+				     OCXL_LITTLE_ENDIAN, &args.media_read_count);
-+	if (rc)
-+		goto out;
-+
-+	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-+				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x20,
-+				     OCXL_LITTLE_ENDIAN, &args.media_write_count);
-+	if (rc)
-+		goto out;
-+
-+	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-+				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x28,
-+				     OCXL_LITTLE_ENDIAN, &args.cache_hit_count);
-+	if (rc)
-+		goto out;
-+
-+	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-+				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x30,
-+				     OCXL_LITTLE_ENDIAN, &args.cache_miss_count);
-+	if (rc)
-+		goto out;
-+
-+	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-+				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x38,
-+				     OCXL_LITTLE_ENDIAN, &args.media_read_latency);
-+	if (rc)
-+		goto out;
-+
-+	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-+				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x40,
-+				     OCXL_LITTLE_ENDIAN, &args.media_write_latency);
-+	if (rc)
-+		goto out;
-+
-+	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-+				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x48,
-+				     OCXL_LITTLE_ENDIAN, &args.cache_read_latency);
-+	if (rc)
-+		goto out;
-+
-+	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-+				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x50,
-+				     OCXL_LITTLE_ENDIAN, &args.cache_write_latency);
-+	if (rc)
-+		goto out;
-+
-+	if (copy_to_user(uarg, &args, sizeof(args))) {
-+		rc = -EFAULT;
-+		goto out;
-+	}
-+
-+	rc = admin_response_handled(ocxlpmem);
-+	if (rc)
-+		goto out;
-+
-+	rc = 0;
-+	goto out;
-+
-+out:
-+	mutex_unlock(&ocxlpmem->admin_command.lock);
-+	return rc;
++	return ocxl_global_mmio_set64(ocxlpmem->ocxl_afu, GLOBAL_MMIO_HCI,
++				      OCXL_LITTLE_ENDIAN,
++				      GLOBAL_MMIO_HCI_REQ_HEALTH_PERF);
 +}
 +
  static long file_ioctl(struct file *file, unsigned int cmd, unsigned long args)
  {
  	struct ocxlpmem *ocxlpmem = file->private_data;
-@@ -781,6 +961,11 @@ static long file_ioctl(struct file *file, unsigned int cmd, unsigned long args)
- 	case IOCTL_OCXL_PMEM_CONTROLLER_DUMP_COMPLETE:
- 		rc = ioctl_controller_dump_complete(ocxlpmem);
+@@ -1037,6 +1049,10 @@ static long file_ioctl(struct file *file, unsigned int cmd, unsigned long args)
+ 	case IOCTL_OCXL_PMEM_EVENT_CHECK:
+ 		rc = ioctl_event_check(ocxlpmem, (u64 __user *)args);
  		break;
 +
-+	case IOCTL_OCXL_PMEM_CONTROLLER_STATS:
-+		rc = ioctl_controller_stats(ocxlpmem,
-+					    (struct ioctl_ocxl_pmem_controller_stats __user *)args);
++	case IOCTL_OCXL_PMEM_REQUEST_HEALTH:
++		rc = req_controller_health_perf(ocxlpmem);
 +		break;
  	}
  
  	return rc;
 diff --git a/include/uapi/nvdimm/ocxl-pmem.h b/include/uapi/nvdimm/ocxl-pmem.h
-index d4d8512d03f7..add223aa2fdb 100644
+index 988eb0bc413d..0d03abb44001 100644
 --- a/include/uapi/nvdimm/ocxl-pmem.h
 +++ b/include/uapi/nvdimm/ocxl-pmem.h
-@@ -50,6 +50,22 @@ struct ioctl_ocxl_pmem_controller_dump_data {
- 	__u64 reserved[8];
- };
- 
-+struct ioctl_ocxl_pmem_controller_stats {
-+	__u32 reset_count;
-+	__u32 reset_uptime; /* seconds */
-+	__u32 power_on_uptime; /* seconds */
-+	__u64 host_load_count;
-+	__u64 host_store_count;
-+	__u64 media_read_count;
-+	__u64 media_write_count;
-+	__u64 cache_hit_count;
-+	__u64 cache_miss_count;
-+	__u64 media_read_latency; /* nanoseconds */
-+	__u64 media_write_latency; /* nanoseconds */
-+	__u64 cache_read_latency; /* nanoseconds */
-+	__u64 cache_write_latency; /* nanoseconds */
-+};
-+
- /* ioctl numbers */
- #define OCXL_PMEM_MAGIC 0x5C
- /* SCM devices */
-@@ -57,5 +73,6 @@ struct ioctl_ocxl_pmem_controller_dump_data {
- #define IOCTL_OCXL_PMEM_CONTROLLER_DUMP			_IO(OCXL_PMEM_MAGIC, 0x02)
- #define IOCTL_OCXL_PMEM_CONTROLLER_DUMP_DATA		_IOWR(OCXL_PMEM_MAGIC, 0x03, struct ioctl_ocxl_pmem_controller_dump_data)
- #define IOCTL_OCXL_PMEM_CONTROLLER_DUMP_COMPLETE	_IO(OCXL_PMEM_MAGIC, 0x04)
-+#define IOCTL_OCXL_PMEM_CONTROLLER_STATS		_IO(OCXL_PMEM_MAGIC, 0x05)
+@@ -90,5 +90,6 @@ struct ioctl_ocxl_pmem_eventfd {
+ #define IOCTL_OCXL_PMEM_CONTROLLER_STATS		_IO(OCXL_PMEM_MAGIC, 0x05)
+ #define IOCTL_OCXL_PMEM_EVENTFD				_IOW(OCXL_PMEM_MAGIC, 0x06, struct ioctl_ocxl_pmem_eventfd)
+ #define IOCTL_OCXL_PMEM_EVENT_CHECK			_IOR(OCXL_PMEM_MAGIC, 0x07, __u64)
++#define IOCTL_OCXL_PMEM_REQUEST_HEALTH			_IO(OCXL_PMEM_MAGIC, 0x08)
  
  #endif /* _UAPI_OCXL_SCM_H */
 -- 
