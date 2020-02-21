@@ -4,94 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 59384C11D24
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 03:41:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 753DAC11D24
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 03:43:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1414C208C4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 03:41:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1414C208C4
+	by mail.kernel.org (Postfix) with ESMTPS id 2F0BC208C4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 03:43:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2F0BC208C4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48Ny1W436XzDqRx
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 14:41:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48Ny3M0hfWzDqn4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 14:43:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=au1.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=alastair@au1.ibm.com;
+ smtp.mailfrom=au1.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=alastair@au1.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=au1.ibm.com
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48NxkH4GTrzDqZL
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2020 14:28:23 +1100 (AEDT)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48NxkJ4RNzzDqZN
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2020 14:28:24 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 01L3K7oj028508
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2020 22:28:20 -0500
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2y92xf23hn-1
+ 01L3KCvX143777
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2020 22:28:22 -0500
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2y8ubc195f-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2020 22:28:20 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2020 22:28:22 -0500
 Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
- Fri, 21 Feb 2020 03:28:17 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Fri, 21 Feb 2020 03:28:18 -0000
+Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 21 Feb 2020 03:28:10 -0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 01L3S9Kg59768916
+ Fri, 21 Feb 2020 03:28:12 -0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 01L3SB1932702828
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 21 Feb 2020 03:28:09 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 928ADAE045;
- Fri, 21 Feb 2020 03:28:09 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E7655AE051;
- Fri, 21 Feb 2020 03:28:08 +0000 (GMT)
+ Fri, 21 Feb 2020 03:28:11 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 211175204F;
+ Fri, 21 Feb 2020 03:28:11 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 21 Feb 2020 03:28:08 +0000 (GMT)
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id BE8B352057;
+ Fri, 21 Feb 2020 03:28:10 +0000 (GMT)
 Received: from adsilva.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
  (using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id EEA46A03B7;
- Fri, 21 Feb 2020 14:28:02 +1100 (AEDT)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 2E244A03E9;
+ Fri, 21 Feb 2020 14:28:04 +1100 (AEDT)
 From: "Alastair D'Silva" <alastair@au1.ibm.com>
 To: alastair@d-silva.org
-Subject: [PATCH v3 07/27] ocxl: Add functions to map/unmap LPC memory
-Date: Fri, 21 Feb 2020 14:27:00 +1100
+Subject: [PATCH v3 26/27] powerpc/powernv/pmem: Expose the firmware version in
+ sysfs
+Date: Fri, 21 Feb 2020 14:27:19 +1100
 X-Mailer: git-send-email 2.24.1
 In-Reply-To: <20200221032720.33893-1-alastair@au1.ibm.com>
 References: <20200221032720.33893-1-alastair@au1.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 20022103-0008-0000-0000-00000354F599
+x-cbid: 20022103-4275-0000-0000-000003A3FE63
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20022103-0009-0000-0000-00004A76073A
-Message-Id: <20200221032720.33893-8-alastair@au1.ibm.com>
+x-cbparentid: 20022103-4276-0000-0000-000038B80C7C
+Message-Id: <20200221032720.33893-27-alastair@au1.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
  definitions=2020-02-20_19:2020-02-19,
  2020-02-20 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 adultscore=0
- clxscore=1015 lowpriorityscore=0 phishscore=0 bulkscore=0 spamscore=0
- suspectscore=1 malwarescore=0 priorityscore=1501 impostorscore=0
- mlxlogscore=794 classifier=spam adjust=0 reason=mlx scancount=1
+ bulkscore=0
+ priorityscore=1501 phishscore=0 adultscore=0 mlxscore=0 clxscore=1015
+ impostorscore=0 lowpriorityscore=0 mlxlogscore=845 suspectscore=1
+ spamscore=0 malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2001150001 definitions=main-2002210020
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -130,130 +127,36 @@ Sender: "Linuxppc-dev"
 
 From: Alastair D'Silva <alastair@d-silva.org>
 
-Add functions to map/unmap LPC memory
+This information will be used by ndctl in userspace to help users identify
+the device.
 
 Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 ---
- drivers/misc/ocxl/core.c          | 51 +++++++++++++++++++++++++++++++
- drivers/misc/ocxl/ocxl_internal.h |  3 ++
- include/misc/ocxl.h               | 21 +++++++++++++
- 3 files changed, 75 insertions(+)
+ arch/powerpc/platforms/powernv/pmem/ocxl_sysfs.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/drivers/misc/ocxl/core.c b/drivers/misc/ocxl/core.c
-index 2531c6cf19a0..75ff14e3882a 100644
---- a/drivers/misc/ocxl/core.c
-+++ b/drivers/misc/ocxl/core.c
-@@ -210,6 +210,56 @@ static void unmap_mmio_areas(struct ocxl_afu *afu)
- 	release_fn_bar(afu->fn, afu->config.global_mmio_bar);
+diff --git a/arch/powerpc/platforms/powernv/pmem/ocxl_sysfs.c b/arch/powerpc/platforms/powernv/pmem/ocxl_sysfs.c
+index 7829e4bc887d..84b23cc3e8b7 100644
+--- a/arch/powerpc/platforms/powernv/pmem/ocxl_sysfs.c
++++ b/arch/powerpc/platforms/powernv/pmem/ocxl_sysfs.c
+@@ -16,8 +16,17 @@ static ssize_t serial_show(struct device *device, struct device_attribute *attr,
+ 	return scnprintf(buf, PAGE_SIZE, "%llu\n", fn_config->serial);
  }
  
-+int ocxl_afu_map_lpc_mem(struct ocxl_afu *afu)
++static ssize_t fw_version_show(struct device *device,
++			       struct device_attribute *attr, char *buf)
 +{
-+	struct pci_dev *dev = to_pci_dev(afu->fn->dev.parent);
++	struct ocxlpmem *ocxlpmem = container_of(device, struct ocxlpmem, dev);
 +
-+	if ((afu->config.lpc_mem_size + afu->config.special_purpose_mem_size) == 0)
-+		return 0;
-+
-+	afu->lpc_base_addr = ocxl_link_lpc_map(afu->fn->link, dev);
-+	if (afu->lpc_base_addr == 0)
-+		return -EINVAL;
-+
-+	if (afu->config.lpc_mem_size > 0) {
-+		afu->lpc_res.start = afu->lpc_base_addr + afu->config.lpc_mem_offset;
-+		afu->lpc_res.end = afu->lpc_res.start + afu->config.lpc_mem_size - 1;
-+	}
-+
-+	if (afu->config.special_purpose_mem_size > 0) {
-+		afu->special_purpose_res.start = afu->lpc_base_addr +
-+						 afu->config.special_purpose_mem_offset;
-+		afu->special_purpose_res.end = afu->special_purpose_res.start +
-+					       afu->config.special_purpose_mem_size - 1;
-+	}
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(ocxl_afu_map_lpc_mem);
-+
-+struct resource *ocxl_afu_lpc_mem(struct ocxl_afu *afu)
-+{
-+	return &afu->lpc_res;
-+}
-+EXPORT_SYMBOL_GPL(ocxl_afu_lpc_mem);
-+
-+static void unmap_lpc_mem(struct ocxl_afu *afu)
-+{
-+	struct pci_dev *dev = to_pci_dev(afu->fn->dev.parent);
-+
-+	if (afu->lpc_res.start || afu->special_purpose_res.start) {
-+		void *link = afu->fn->link;
-+
-+		// only release the link when the the last consumer calls release
-+		ocxl_link_lpc_release(link, dev);
-+
-+		afu->lpc_res.start = 0;
-+		afu->lpc_res.end = 0;
-+		afu->special_purpose_res.start = 0;
-+		afu->special_purpose_res.end = 0;
-+	}
++	return scnprintf(buf, PAGE_SIZE, "%s\n", ocxlpmem->fw_version);
 +}
 +
- static int configure_afu(struct ocxl_afu *afu, u8 afu_idx, struct pci_dev *dev)
- {
- 	int rc;
-@@ -251,6 +301,7 @@ static int configure_afu(struct ocxl_afu *afu, u8 afu_idx, struct pci_dev *dev)
- 
- static void deconfigure_afu(struct ocxl_afu *afu)
- {
-+	unmap_lpc_mem(afu);
- 	unmap_mmio_areas(afu);
- 	reclaim_afu_pasid(afu);
- 	reclaim_afu_actag(afu);
-diff --git a/drivers/misc/ocxl/ocxl_internal.h b/drivers/misc/ocxl/ocxl_internal.h
-index d0c8c4838f42..ce0cac1da416 100644
---- a/drivers/misc/ocxl/ocxl_internal.h
-+++ b/drivers/misc/ocxl/ocxl_internal.h
-@@ -52,6 +52,9 @@ struct ocxl_afu {
- 	void __iomem *global_mmio_ptr;
- 	u64 pp_mmio_start;
- 	void *private;
-+	u64 lpc_base_addr; /* Covers both LPC & special purpose memory */
-+	struct resource lpc_res;
-+	struct resource special_purpose_res;
+ static struct device_attribute attrs[] = {
+ 	__ATTR_RO(serial),
++	__ATTR_RO(fw_version),
  };
  
- enum ocxl_context_status {
-diff --git a/include/misc/ocxl.h b/include/misc/ocxl.h
-index 357ef1aadbc0..d8b0b4d46bfb 100644
---- a/include/misc/ocxl.h
-+++ b/include/misc/ocxl.h
-@@ -203,6 +203,27 @@ int ocxl_irq_set_handler(struct ocxl_context *ctx, int irq_id,
- 
- // AFU Metadata
- 
-+/**
-+ * ocxl_afu_map_lpc_mem() - Map the LPC system & special purpose memory for an AFU
-+ * Do not call this during device discovery, as there may me multiple
-+ * devices on a link, and the memory is mapped for the whole link, not
-+ * just one device. It should only be called after all devices have
-+ * registered their memory on the link.
-+ *
-+ * @afu: The AFU that has the LPC memory to map
-+ *
-+ * Returns 0 on success, negative on failure
-+ */
-+int ocxl_afu_map_lpc_mem(struct ocxl_afu *afu);
-+
-+/**
-+ * ocxl_afu_lpc_mem() - Get the physical address range of LPC memory for an AFU
-+ * @afu: The AFU associated with the LPC memory
-+ *
-+ * Returns a pointer to the resource struct for the physical address range
-+ */
-+struct resource *ocxl_afu_lpc_mem(struct ocxl_afu *afu);
-+
- /**
-  * ocxl_afu_config() - Get a pointer to the config for an AFU
-  * @afu: a pointer to the AFU to get the config for
+ int ocxlpmem_sysfs_add(struct ocxlpmem *ocxlpmem)
 -- 
 2.24.1
 
