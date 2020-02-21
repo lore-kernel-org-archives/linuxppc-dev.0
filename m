@@ -1,72 +1,99 @@
-Return-Path: <SRS0=DuU+=4I=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=2k7A=4J=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 26F90C11D00
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Feb 2020 23:58:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 68A62C11D00
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 03:32:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6E82120882
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Feb 2020 23:58:39 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="RZ2aMDVr"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6E82120882
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
+	by mail.kernel.org (Postfix) with ESMTPS id 23FFA20716
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 03:32:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 23FFA20716
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48Ns4F0z0FzDqb5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 10:58:37 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48Nxpg5hwtzDqWG
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 14:32:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=au1.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=alastair@au1.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=au1.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48Ns2j0zKSzDqZB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2020 10:57:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=canb.auug.org.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
- header.a=rsa-sha256 header.s=201702 header.b=RZ2aMDVr; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 48Ns2g4jDMz9sRR;
- Fri, 21 Feb 2020 10:57:15 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
- s=201702; t=1582243036;
- bh=V8qEeao60i8XnCSQ/mKGsp0NMVZHYJxJle5OdSEx3II=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=RZ2aMDVrX8i/iS1ljA9sOWG2HUgEOjoBiDRuegXIohUL8qbfNXLIwpvvsc4wph+xk
- BTbOdm/AhYgcDG6ApPG3SXGzX+mIGDIKNyrulqUhSq+BzuhF97ErKLeiDmvWCT5JS2
- SRbOCgZrC+wHtMK6N9Wx9PZEslx1KPLWqtaq6aPrK+D7KVNsrc0l+ydRnhG1WHYbvk
- e+XwsI8BS8Kpoc0np8DuQJZqWEwI98SnwBwFVjEUjvqx1SHMdH+sCf5zDEP7/r4iMZ
- qDCw2/cs0APYl4vmdgbnYjTZ4ceA9P41BXOQCrdczMe9IOevQ3J5laPhOpdyUaDBbI
- +OGUeF27l3adg==
-Date: Fri, 21 Feb 2020 10:57:15 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Laurentiu Tudor <laurentiu.tudor@nxp.com>
-Subject: Re: [PATCH] evh_bytechan: fix out of bounds accesses
-Message-ID: <20200221105715.35c1d2e8@canb.auug.org.au>
-In-Reply-To: <20200116113714.06208a73@canb.auug.org.au>
-References: <20200109183912.5fcb52aa@canb.auug.org.au>
- <CAOZdJXXiKgz=hOoiaTrxgbnwzyvp1Zfn3aCz+0__i17vyFngRg@mail.gmail.com>
- <20200114072522.3cd57195@canb.auug.org.au>
- <6ec4bc30-0526-672c-4261-3ad2cf69dd94@kernel.org>
- <20200114173141.29564b25@canb.auug.org.au>
- <1d8f8ee6-65ac-de6c-0e0b-c9bb499c0e02@kernel.org>
- <20200116064234.7a139623@canb.auug.org.au>
- <9f3311d12d418b87832ba5de1372bb76ffccbd45.camel@redhat.com>
- <20200116113714.06208a73@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48NxkD2K44zDqZF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2020 14:28:20 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 01L3KC3P143797
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2020 22:28:17 -0500
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2y8ubc193j-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2020 22:28:17 -0500
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
+ Fri, 21 Feb 2020 03:28:14 -0000
+Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 21 Feb 2020 03:28:08 -0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 01L3S7o531523282
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 21 Feb 2020 03:28:07 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 871E0A4040;
+ Fri, 21 Feb 2020 03:28:07 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 330E5A404D;
+ Fri, 21 Feb 2020 03:28:07 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri, 21 Feb 2020 03:28:07 +0000 (GMT)
+Received: from adsilva.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
+ (using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 93FA8A0278;
+ Fri, 21 Feb 2020 14:28:02 +1100 (AEDT)
+From: "Alastair D'Silva" <alastair@au1.ibm.com>
+To: alastair@d-silva.org
+Subject: [PATCH v3 02/27] mm/memory_hotplug: Allow
+ check_hotplug_memory_addressable to be called from drivers
+Date: Fri, 21 Feb 2020 14:26:55 +1100
+X-Mailer: git-send-email 2.24.1
+In-Reply-To: <20200221032720.33893-1-alastair@au1.ibm.com>
+References: <20200221032720.33893-1-alastair@au1.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/fJV_4rFg+0zr+QgBJ9k/618";
- protocol="application/pgp-signature"; micalg=pgp-sha256
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 20022103-0008-0000-0000-00000354F594
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 20022103-0009-0000-0000-00004A760737
+Message-Id: <20200221032720.33893-3-alastair@au1.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
+ definitions=2020-02-20_19:2020-02-19,
+ 2020-02-20 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0
+ priorityscore=1501 phishscore=0 adultscore=0 mlxscore=0 clxscore=1015
+ impostorscore=0 lowpriorityscore=0 mlxlogscore=999 suspectscore=3
+ spamscore=0 malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2001150001 definitions=main-2002210020
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,82 +105,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Timur Tabi <timur@kernel.org>, b08248@gmail.com,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>,
- york sun <york.sun@nxp.com>,
- PowerPC Mailing List <linuxppc-dev@lists.ozlabs.org>,
- Scott Wood <swood@redhat.com>
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Oliver O'Halloran <oohall@gmail.com>,
+ Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
+ Ira Weiny <ira.weiny@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Rob Herring <robh@kernel.org>, Dave Jiang <dave.jiang@intel.com>,
+ linux-nvdimm@lists.01.org, "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ Krzysztof Kozlowski <krzk@kernel.org>,
+ Anju T Sudhakar <anju@linux.vnet.ibm.com>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kurz <groug@kaod.org>, Nicholas Piggin <npiggin@gmail.com>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
+ Dan Williams <dan.j.williams@intel.com>, Hari Bathini <hbathini@linux.ibm.com>,
+ linux-mm@kvack.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linux-kernel@vger.kernel.org, Vishal Verma <vishal.l.verma@intel.com>,
+ Frederic Barrat <fbarrat@linux.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---Sig_/fJV_4rFg+0zr+QgBJ9k/618
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+From: Alastair D'Silva <alastair@d-silva.org>
 
-Hi all,
+When setting up OpenCAPI connected persistent memory, the range check may
+not be performed until quite late (or perhaps not at all, if the user does
+not establish a DAX device).
 
-On Thu, 16 Jan 2020 11:37:14 +1100 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
-> On Wed, 15 Jan 2020 14:01:35 -0600 Scott Wood <swood@redhat.com> wrote:
-> >
-> > On Thu, 2020-01-16 at 06:42 +1100, Stephen Rothwell wrote: =20
-> > > Hi Timur,
-> > >=20
-> > > On Wed, 15 Jan 2020 07:25:45 -0600 Timur Tabi <timur@kernel.org> wrot=
-e:   =20
-> > > > On 1/14/20 12:31 AM, Stephen Rothwell wrote:   =20
-> > > > > +/**
-> > > > > + * ev_byte_channel_send - send characters to a byte stream
-> > > > > + * @handle: byte stream handle
-> > > > > + * @count: (input) num of chars to send, (output) num chars sent
-> > > > > + * @bp: pointer to chars to send
-> > > > > + *
-> > > > > + * Returns 0 for success, or an error code.
-> > > > > + */
-> > > > > +static unsigned int ev_byte_channel_send(unsigned int handle,
-> > > > > +	unsigned int *count, const char *bp)     =20
-> > > >=20
-> > > > Well, now you've moved this into the .c file and it is no longer=20
-> > > > available to other callers.  Anything wrong with keeping it in the =
-.h
-> > > > file?   =20
-> > >=20
-> > > There are currently no other callers - are there likely to be in the
-> > > future?  Even if there are, is it time critical enough that it needs =
-to
-> > > be inlined everywhere?   =20
-> >=20
-> > It's not performance critical and there aren't likely to be other users=
- --
-> > just a matter of what's cleaner.  FWIW I'd rather see the original patc=
-h,
-> > that keeps the raw asm hcall stuff as simple wrappers in one place. =20
->=20
-> And I don't mind either way :-)
->=20
-> I just want to get rid of the warnings.
+This patch makes the range check callable so we can perform the check while
+probing the OpenCAPI SCM device.
 
-Any progress with this?
---=20
-Cheers,
-Stephen Rothwell
+Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+---
+ include/linux/memory_hotplug.h | 5 +++++
+ mm/memory_hotplug.c            | 4 ++--
+ 2 files changed, 7 insertions(+), 2 deletions(-)
 
---Sig_/fJV_4rFg+0zr+QgBJ9k/618
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
+diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
+index f4d59155f3d4..34a69aecc45e 100644
+--- a/include/linux/memory_hotplug.h
++++ b/include/linux/memory_hotplug.h
+@@ -337,6 +337,11 @@ static inline void __remove_memory(int nid, u64 start, u64 size) {}
+ extern void set_zone_contiguous(struct zone *zone);
+ extern void clear_zone_contiguous(struct zone *zone);
+ 
++#ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
++int check_hotplug_memory_addressable(unsigned long pfn,
++		unsigned long nr_pages);
++#endif /* CONFIG_MEMORY_HOTPLUG_SPARSE */
++
+ extern void __ref free_area_init_core_hotplug(int nid);
+ extern int __add_memory(int nid, u64 start, u64 size);
+ extern int add_memory(int nid, u64 start, u64 size);
+diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+index 0a54ffac8c68..14945f033594 100644
+--- a/mm/memory_hotplug.c
++++ b/mm/memory_hotplug.c
+@@ -276,8 +276,8 @@ static int check_pfn_span(unsigned long pfn, unsigned long nr_pages,
+ 	return 0;
+ }
+ 
+-static int check_hotplug_memory_addressable(unsigned long pfn,
+-					    unsigned long nr_pages)
++int check_hotplug_memory_addressable(unsigned long pfn,
++				     unsigned long nr_pages)
+ {
+ 	const u64 max_addr = PFN_PHYS(pfn + nr_pages) - 1;
+ 
+-- 
+2.24.1
 
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAl5PHNsACgkQAVBC80lX
-0Gyj2Af/dCsAs2UGM2273EmGGsqvmw4xDYxvpHm11P5XZdEIBhMwhor7NxikQ2nE
-FW9TeOrmLIcc3wA9UYkR+rtcaIFG6d7YHihRn/wkESF88eQrA+3mKbvmLDh4h/9G
-g24ChAtmBl16RcY+kK16NrCi4lx+Edj7xQFEXmnqH/E6TOHTMXjl5QomhR4zmStZ
-LdQFmgA31pJYhN0oOmNp2WMFMisz3kxqNSqL7g9JzL+nYIlYhg1rbOmS2+bXF+1R
-YI9hORIugB/Chox22mXW+TmWpatByLkNvInKjFidU4EVCaEcVdhvu0lw1tu3l9zD
-e7Ts66x+lv58WC/WQAi4qG67W2XjgA==
-=fxM6
------END PGP SIGNATURE-----
-
---Sig_/fJV_4rFg+0zr+QgBJ9k/618--
