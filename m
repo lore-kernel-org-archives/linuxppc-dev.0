@@ -7,91 +7,90 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 857B4C11D24
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 04:03:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CBFE7C11D28
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 04:04:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 15CED207FD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 04:03:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 15CED207FD
+	by mail.kernel.org (Postfix) with ESMTPS id 614A7207FD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 04:04:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 614A7207FD
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48NyVp2CMfzDqnG
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 15:03:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48NyXJ6D5NzDqS3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 15:04:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=au1.ibm.com (client-ip=148.163.156.1;
+ smtp.mailfrom=au1.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=alastair@au1.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=au1.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48NxkL2czMzDqZL
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2020 14:28:26 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48NxkL0rMtzDqZF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2020 14:28:25 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 01L3JGsO067505
+ 01L3JntU013377
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2020 22:28:23 -0500
 Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2y8ubvvvv1-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2y8uc21hjt-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2020 22:28:23 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2020 22:28:22 -0500
 Received: from localhost
  by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
- Fri, 21 Feb 2020 03:28:19 -0000
-Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+ Fri, 21 Feb 2020 03:28:17 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
  by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 21 Feb 2020 03:28:12 -0000
+ Fri, 21 Feb 2020 03:28:10 -0000
 Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
  [9.149.105.61])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 01L3RFqH44302716
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 01L3S9pC48693446
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 21 Feb 2020 03:27:15 GMT
+ Fri, 21 Feb 2020 03:28:09 GMT
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id F21A511C04C;
- Fri, 21 Feb 2020 03:28:10 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 9990811C05B;
+ Fri, 21 Feb 2020 03:28:09 +0000 (GMT)
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 02DE611C050;
- Fri, 21 Feb 2020 03:28:10 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id EA29011C04A;
+ Fri, 21 Feb 2020 03:28:08 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
  by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 21 Feb 2020 03:28:09 +0000 (GMT)
+ Fri, 21 Feb 2020 03:28:08 +0000 (GMT)
 Received: from adsilva.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
  (using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 92484A03DE;
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 1E591A03BC;
  Fri, 21 Feb 2020 14:28:03 +1100 (AEDT)
 From: "Alastair D'Silva" <alastair@au1.ibm.com>
 To: alastair@d-silva.org
-Subject: [PATCH v3 17/27] powerpc/powernv/pmem: Implement the Read Error Log
- command
-Date: Fri, 21 Feb 2020 14:27:10 +1100
+Subject: [PATCH v3 10/27] powerpc: Add driver for OpenCAPI Persistent Memory
+Date: Fri, 21 Feb 2020 14:27:03 +1100
 X-Mailer: git-send-email 2.24.1
 In-Reply-To: <20200221032720.33893-1-alastair@au1.ibm.com>
 References: <20200221032720.33893-1-alastair@au1.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 20022103-0012-0000-0000-00000388D1D0
+x-cbid: 20022103-0012-0000-0000-00000388D1CE
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20022103-0013-0000-0000-000021C56A73
-Message-Id: <20200221032720.33893-18-alastair@au1.ibm.com>
+x-cbparentid: 20022103-0013-0000-0000-000021C56A6E
+Message-Id: <20200221032720.33893-11-alastair@au1.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
  definitions=2020-02-20_19:2020-02-19,
  2020-02-20 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 phishscore=0
- spamscore=0 priorityscore=1501 mlxlogscore=999 bulkscore=0 malwarescore=0
- lowpriorityscore=0 clxscore=1015 adultscore=0 mlxscore=0 suspectscore=3
+ adultscore=0 spamscore=0
+ phishscore=0 impostorscore=0 mlxscore=0 mlxlogscore=999 priorityscore=1501
+ lowpriorityscore=0 bulkscore=0 clxscore=1015 suspectscore=4 malwarescore=0
  classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2001150001
  definitions=main-2002210020
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -131,393 +130,597 @@ Sender: "Linuxppc-dev"
 
 From: Alastair D'Silva <alastair@d-silva.org>
 
-The read error log command extracts information from the controller's
-internal error log.
+This driver exposes LPC memory on OpenCAPI pmem cards
+as an NVDIMM, allowing the existing nvram infrastructure
+to be used.
 
-This patch exposes this information in 2 ways:
-- During probe, if an error occurs & a log is available, print it to the
-  console
-- After probe, make the error log available to userspace via an IOCTL.
-  Userspace is notified of pending error logs in a later patch
-  ("powerpc/powernv/pmem: Forward events to userspace")
+Namespace metadata is stored on the media itself, so
+scm_reserve_metadata() maps 1 section's worth of PMEM storage
+at the start to hold this. The rest of the PMEM range is registered
+with libnvdimm as an nvdimm. scm_ndctl_config_read/write/size() provide
+callbacks to libnvdimm to access the metadata.
 
 Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 ---
- arch/powerpc/platforms/powernv/pmem/ocxl.c    | 269 ++++++++++++++++++
- .../platforms/powernv/pmem/ocxl_internal.h    |   1 +
- include/uapi/nvdimm/ocxl-pmem.h               |  46 +++
- 3 files changed, 316 insertions(+)
- create mode 100644 include/uapi/nvdimm/ocxl-pmem.h
+ arch/powerpc/platforms/powernv/Kconfig        |   3 +
+ arch/powerpc/platforms/powernv/Makefile       |   1 +
+ arch/powerpc/platforms/powernv/pmem/Kconfig   |  15 +
+ arch/powerpc/platforms/powernv/pmem/Makefile  |   7 +
+ arch/powerpc/platforms/powernv/pmem/ocxl.c    | 473 ++++++++++++++++++
+ .../platforms/powernv/pmem/ocxl_internal.h    |  28 ++
+ 6 files changed, 527 insertions(+)
+ create mode 100644 arch/powerpc/platforms/powernv/pmem/Kconfig
+ create mode 100644 arch/powerpc/platforms/powernv/pmem/Makefile
+ create mode 100644 arch/powerpc/platforms/powernv/pmem/ocxl.c
+ create mode 100644 arch/powerpc/platforms/powernv/pmem/ocxl_internal.h
 
-diff --git a/arch/powerpc/platforms/powernv/pmem/ocxl.c b/arch/powerpc/platforms/powernv/pmem/ocxl.c
-index 63109a870d2c..2b64504f9129 100644
---- a/arch/powerpc/platforms/powernv/pmem/ocxl.c
-+++ b/arch/powerpc/platforms/powernv/pmem/ocxl.c
-@@ -447,10 +447,219 @@ static int file_release(struct inode *inode, struct file *file)
- 	return 0;
- }
- 
-+/**
-+ * error_log_header_parse() - Parse the first 64 bits of the error log command response
-+ * @ocxlpmem: the device metadata
-+ * @length: out, returns the number of bytes in the response (excluding the 64 bit header)
-+ */
-+static int error_log_header_parse(struct ocxlpmem *ocxlpmem, u16 *length)
-+{
-+	int rc;
-+	u64 val;
+diff --git a/arch/powerpc/platforms/powernv/Kconfig b/arch/powerpc/platforms/powernv/Kconfig
+index 938803eab0ad..fc8976af0e52 100644
+--- a/arch/powerpc/platforms/powernv/Kconfig
++++ b/arch/powerpc/platforms/powernv/Kconfig
+@@ -50,3 +50,6 @@ config PPC_VAS
+ config SCOM_DEBUGFS
+ 	bool "Expose SCOM controllers via debugfs"
+ 	depends on DEBUG_FS
 +
-+	u16 data_identifier;
-+	u32 data_length;
++source "arch/powerpc/platforms/powernv/pmem/Kconfig"
 +
-+	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-+				     ocxlpmem->admin_command.data_offset,
-+				     OCXL_LITTLE_ENDIAN, &val);
-+	if (rc)
-+		return rc;
-+
-+	data_identifier = val >> 48;
-+	data_length = val & 0xFFFF;
-+
-+	if (data_identifier != 0x454C) { // 'EL'
-+		dev_err(&ocxlpmem->dev,
-+			"Bad data identifier for error log data, expected 'EL', got '%2s' (%#x), data_length=%u\n",
-+			(char *)&data_identifier,
-+			(unsigned int)data_identifier, data_length);
-+		return -EINVAL;
-+	}
-+
-+	*length = data_length;
-+	return 0;
-+}
-+
-+static int error_log_offset_0x08(struct ocxlpmem *ocxlpmem,
-+				 u32 *log_identifier, u32 *program_ref_code)
-+{
-+	int rc;
-+	u64 val;
-+
-+	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-+				     ocxlpmem->admin_command.data_offset + 0x08,
-+				     OCXL_LITTLE_ENDIAN, &val);
-+	if (rc)
-+		return rc;
-+
-+	*log_identifier = val >> 32;
-+	*program_ref_code = val & 0xFFFFFFFF;
-+
-+	return 0;
-+}
-+
-+static int read_error_log(struct ocxlpmem *ocxlpmem,
-+			  struct ioctl_ocxl_pmem_error_log *log, bool buf_is_user)
-+{
-+	u64 val;
-+	u16 user_buf_length;
-+	u16 buf_length;
-+	u16 i;
-+	int rc;
-+
-+	if (log->buf_size % 8)
-+		return -EINVAL;
-+
-+	rc = ocxlpmem_chi(ocxlpmem, &val);
-+	if (rc)
-+		goto out;
-+
-+	if (!(val & GLOBAL_MMIO_CHI_ELA))
-+		return -EAGAIN;
-+
-+	user_buf_length = log->buf_size;
-+
-+	mutex_lock(&ocxlpmem->admin_command.lock);
-+
-+	rc = admin_command_request(ocxlpmem, ADMIN_COMMAND_ERRLOG);
-+	if (rc)
-+		goto out;
-+
-+	rc = admin_command_execute(ocxlpmem);
-+	if (rc)
-+		goto out;
-+
-+	rc = admin_command_complete_timeout(ocxlpmem, ADMIN_COMMAND_ERRLOG);
-+	if (rc < 0) {
-+		dev_warn(&ocxlpmem->dev, "Read error log timed out\n");
-+		goto out;
-+	}
-+
-+	rc = admin_response(ocxlpmem);
-+	if (rc < 0)
-+		goto out;
-+	if (rc != STATUS_SUCCESS) {
-+		warn_status(ocxlpmem, "Unexpected status from retrieve error log", rc);
-+		goto out;
-+	}
-+
-+
-+	rc = error_log_header_parse(ocxlpmem, &log->buf_size);
-+	if (rc)
-+		goto out;
-+	// log->buf_size now contains the returned buffer size, not the user size
-+
-+	rc = error_log_offset_0x08(ocxlpmem, &log->log_identifier,
-+				       &log->program_reference_code);
-+	if (rc)
-+		goto out;
-+
-+	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-+				     ocxlpmem->admin_command.data_offset + 0x10,
-+				     OCXL_LITTLE_ENDIAN, &val);
-+	if (rc)
-+		goto out;
-+
-+	log->error_log_type = val >> 56;
-+	log->action_flags = (log->error_log_type == OCXL_PMEM_ERROR_LOG_TYPE_GENERAL) ?
-+			    (val >> 32) & 0xFFFFFF : 0;
-+	log->power_on_seconds = val & 0xFFFFFFFF;
-+
-+	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-+				     ocxlpmem->admin_command.data_offset + 0x18,
-+				     OCXL_LITTLE_ENDIAN, &log->timestamp);
-+	if (rc)
-+		goto out;
-+
-+	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-+				     ocxlpmem->admin_command.data_offset + 0x20,
-+				     OCXL_HOST_ENDIAN, &log->wwid[0]);
-+	if (rc)
-+		goto out;
-+
-+	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-+				     ocxlpmem->admin_command.data_offset + 0x28,
-+				     OCXL_HOST_ENDIAN, &log->wwid[1]);
-+	if (rc)
-+		goto out;
-+
-+	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-+				     ocxlpmem->admin_command.data_offset + 0x30,
-+				     OCXL_HOST_ENDIAN, (u64 *)log->fw_revision);
-+	if (rc)
-+		goto out;
-+	log->fw_revision[8] = '\0';
-+
-+	buf_length = (user_buf_length < log->buf_size) ?
-+		     user_buf_length : log->buf_size;
-+	for (i = 0; i < buf_length + 0x48; i += 8) {
-+		u64 val;
-+
-+		rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-+					     ocxlpmem->admin_command.data_offset + i,
-+					     OCXL_HOST_ENDIAN, &val);
-+		if (rc)
-+			goto out;
-+
-+		if (buf_is_user) {
-+			if (copy_to_user(&log->buf[i], &val, sizeof(u64))) {
-+				rc = -EFAULT;
-+				goto out;
-+			}
-+		} else
-+			log->buf[i] = val;
-+	}
-+
-+	rc = admin_response_handled(ocxlpmem);
-+	if (rc)
-+		goto out;
-+
-+out:
-+	mutex_unlock(&ocxlpmem->admin_command.lock);
-+	return rc;
-+
-+}
-+
-+static int ioctl_error_log(struct ocxlpmem *ocxlpmem,
-+		struct ioctl_ocxl_pmem_error_log __user *uarg)
-+{
-+	struct ioctl_ocxl_pmem_error_log args;
-+	int rc;
-+
-+	if (copy_from_user(&args, uarg, sizeof(args)))
-+		return -EFAULT;
-+
-+	rc = read_error_log(ocxlpmem, &args, true);
-+	if (rc)
-+		return rc;
-+
-+	if (copy_to_user(uarg, &args, sizeof(args)))
-+		return -EFAULT;
-+
-+	return 0;
-+}
-+
-+static long file_ioctl(struct file *file, unsigned int cmd, unsigned long args)
-+{
-+	struct ocxlpmem *ocxlpmem = file->private_data;
-+	int rc = -EINVAL;
-+
-+	switch (cmd) {
-+	case IOCTL_OCXL_PMEM_ERROR_LOG:
-+		rc = ioctl_error_log(ocxlpmem,
-+				     (struct ioctl_ocxl_pmem_error_log __user *)args);
-+		break;
-+	}
-+	return rc;
-+}
-+
- static const struct file_operations fops = {
- 	.owner		= THIS_MODULE,
- 	.open		= file_open,
- 	.release	= file_release,
-+	.unlocked_ioctl = file_ioctl,
-+	.compat_ioctl   = file_ioctl,
- };
- 
- /**
-@@ -527,6 +736,60 @@ static int read_device_metadata(struct ocxlpmem *ocxlpmem)
- 	return 0;
- }
- 
-+static const char *decode_error_log_type(u8 error_log_type)
-+{
-+	switch (error_log_type) {
-+	case 0x00:
-+		return "general";
-+	case 0x01:
-+		return "predictive failure";
-+	case 0x02:
-+		return "thermal warning";
-+	case 0x03:
-+		return "data loss";
-+	case 0x04:
-+		return "health & performance";
-+	default:
-+		return "unknown";
-+	}
-+}
-+
-+static void dump_error_log(struct ocxlpmem *ocxlpmem)
-+{
-+	struct ioctl_ocxl_pmem_error_log log;
-+	u32 buf_size;
-+	u8 *buf;
-+	int rc;
-+
-+	if (ocxlpmem->admin_command.data_size == 0)
-+		return;
-+
-+	buf_size = ocxlpmem->admin_command.data_size - 0x48;
-+	buf = kzalloc(buf_size, GFP_KERNEL);
-+	if (!buf)
-+		return;
-+
-+	log.buf = buf;
-+	log.buf_size = buf_size;
-+
-+	rc = read_error_log(ocxlpmem, &log, false);
-+	if (rc < 0)
-+		goto out;
-+
-+	dev_warn(&ocxlpmem->dev,
-+		 "OCXL PMEM Error log: WWID=0x%016llx%016llx LID=0x%x PRC=%x type=0x%x %s, Uptime=%u seconds timestamp=0x%llx\n",
-+		 log.wwid[0], log.wwid[1],
-+		 log.log_identifier, log.program_reference_code,
-+		 log.error_log_type,
-+		 decode_error_log_type(log.error_log_type),
-+		 log.power_on_seconds, log.timestamp);
-+	print_hex_dump(KERN_WARNING, "buf", DUMP_PREFIX_OFFSET, 16, 1, buf,
-+		       log.buf_size, false);
-+
-+out:
-+	kfree(buf);
-+}
-+
- /**
-  * probe_function0() - Set up function 0 for an OpenCAPI persistent memory device
-  * This is important as it enables templates higher than 0 across all other functions,
-@@ -568,6 +831,7 @@ static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	struct ocxlpmem *ocxlpmem;
- 	int rc;
- 	u16 elapsed, timeout;
-+	u64 chi;
- 
- 	if (PCI_FUNC(pdev->devfn) == 0)
- 		return probe_function0(pdev);
-@@ -667,6 +931,11 @@ static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	return 0;
- 
- err:
-+	if (ocxlpmem &&
-+		    (ocxlpmem_chi(ocxlpmem, &chi) == 0) &&
-+		    (chi & GLOBAL_MMIO_CHI_ELA))
-+		dump_error_log(ocxlpmem);
-+
- 	/*
- 	 * Further cleanup is done in the release handler via free_ocxlpmem()
- 	 * This allows us to keep the character device live to handle IOCTLs to
-diff --git a/arch/powerpc/platforms/powernv/pmem/ocxl_internal.h b/arch/powerpc/platforms/powernv/pmem/ocxl_internal.h
-index d2d81fec7bb1..b953ee522ed4 100644
---- a/arch/powerpc/platforms/powernv/pmem/ocxl_internal.h
-+++ b/arch/powerpc/platforms/powernv/pmem/ocxl_internal.h
-@@ -5,6 +5,7 @@
- #include <linux/cdev.h>
- #include <misc/ocxl.h>
- #include <linux/libnvdimm.h>
-+#include <uapi/nvdimm/ocxl-pmem.h>
- #include <linux/mm.h>
- 
- #define LABEL_AREA_SIZE	(1UL << PA_SECTION_SHIFT)
-diff --git a/include/uapi/nvdimm/ocxl-pmem.h b/include/uapi/nvdimm/ocxl-pmem.h
+diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
+index c0f8120045c3..0bbd72988b6f 100644
+--- a/arch/powerpc/platforms/powernv/Makefile
++++ b/arch/powerpc/platforms/powernv/Makefile
+@@ -21,3 +21,4 @@ obj-$(CONFIG_PPC_VAS)	+= vas.o vas-window.o vas-debug.o
+ obj-$(CONFIG_OCXL_BASE)	+= ocxl.o
+ obj-$(CONFIG_SCOM_DEBUGFS) += opal-xscom.o
+ obj-$(CONFIG_PPC_SECURE_BOOT) += opal-secvar.o
++obj-$(CONFIG_LIBNVDIMM) += pmem/
+diff --git a/arch/powerpc/platforms/powernv/pmem/Kconfig b/arch/powerpc/platforms/powernv/pmem/Kconfig
 new file mode 100644
-index 000000000000..b10f8ac0c20f
+index 000000000000..c5d927520920
 --- /dev/null
-+++ b/include/uapi/nvdimm/ocxl-pmem.h
-@@ -0,0 +1,46 @@
-+/* SPDX-License-Identifier: GPL-2.0+ WITH Linux-syscall-note */
-+/* Copyright 2017 IBM Corp. */
-+#ifndef _UAPI_OCXL_SCM_H
-+#define _UAPI_OCXL_SCM_H
++++ b/arch/powerpc/platforms/powernv/pmem/Kconfig
+@@ -0,0 +1,15 @@
++# SPDX-License-Identifier: GPL-2.0-only
++if LIBNVDIMM
 +
-+#include <linux/types.h>
-+#include <linux/ioctl.h>
++config OCXL_PMEM
++	tristate "OpenCAPI Persistent Memory"
++	depends on LIBNVDIMM && PPC_POWERNV && PCI && EEH && ZONE_DEVICE && OCXL
++	help
++	  Exposes devices that implement the OpenCAPI Storage Class Memory
++	  specification as persistent memory regions. You may also want
++	  DEV_DAX, DEV_DAX_PMEM & FS_DAX if you plan on using DAX devices
++	  stacked on top of this driver.
 +
-+#define OCXL_PMEM_ERROR_LOG_ACTION_RESET	(1 << (32-32))
-+#define OCXL_PMEM_ERROR_LOG_ACTION_CHKFW	(1 << (53-32))
-+#define OCXL_PMEM_ERROR_LOG_ACTION_REPLACE	(1 << (54-32))
-+#define OCXL_PMEM_ERROR_LOG_ACTION_DUMP		(1 << (55-32))
++	  Select N if unsure.
 +
-+#define OCXL_PMEM_ERROR_LOG_TYPE_GENERAL		(0x00)
-+#define OCXL_PMEM_ERROR_LOG_TYPE_PREDICTIVE_FAILURE	(0x01)
-+#define OCXL_PMEM_ERROR_LOG_TYPE_THERMAL_WARNING	(0x02)
-+#define OCXL_PMEM_ERROR_LOG_TYPE_DATA_LOSS		(0x03)
-+#define OCXL_PMEM_ERROR_LOG_TYPE_HEALTH_PERFORMANCE	(0x04)
++endif
+diff --git a/arch/powerpc/platforms/powernv/pmem/Makefile b/arch/powerpc/platforms/powernv/pmem/Makefile
+new file mode 100644
+index 000000000000..1c55c4193175
+--- /dev/null
++++ b/arch/powerpc/platforms/powernv/pmem/Makefile
+@@ -0,0 +1,7 @@
++# SPDX-License-Identifier: GPL-2.0
 +
-+struct ioctl_ocxl_pmem_error_log {
-+	__u32 log_identifier; /* out */
-+	__u32 program_reference_code; /* out */
-+	__u32 action_flags; /* out, recommended course of action */
-+	__u32 power_on_seconds; /* out, Number of seconds the controller has been on when the error occurred */
-+	__u64 timestamp; /* out, relative time since the current IPL */
-+	__u64 wwid[2]; /* out, the NAA formatted WWID associated with the controller */
-+	char  fw_revision[8+1]; /* out, firmware revision as null terminated text */
-+	__u16 buf_size; /* in/out, buffer size provided/required.
-+			 * If required is greater than provided, the buffer
-+			 * will be truncated to the amount provided. If its
-+			 * less, then only the required bytes will be populated.
-+			 * If it is 0, then there are no more error log entries.
-+			 */
-+	__u8  error_log_type;
-+	__u8  reserved1;
-+	__u32 reserved2;
-+	__u64 reserved3[2];
-+	__u8 *buf; /* pointer to output buffer */
++ccflags-$(CONFIG_PPC_WERROR)	+= -Werror
++
++obj-$(CONFIG_OCXL_PMEM) += ocxlpmem.o
++
++ocxlpmem-y := ocxl.o
+diff --git a/arch/powerpc/platforms/powernv/pmem/ocxl.c b/arch/powerpc/platforms/powernv/pmem/ocxl.c
+new file mode 100644
+index 000000000000..3c4eeb5dcc0f
+--- /dev/null
++++ b/arch/powerpc/platforms/powernv/pmem/ocxl.c
+@@ -0,0 +1,473 @@
++// SPDX-License-Id
++// Copyright 2019 IBM Corp.
++
++/*
++ * A driver for OpenCAPI devices that implement the Storage Class
++ * Memory specification.
++ */
++
++#include <linux/module.h>
++#include <misc/ocxl.h>
++#include <linux/ndctl.h>
++#include <linux/mm_types.h>
++#include <linux/memory_hotplug.h>
++#include "ocxl_internal.h"
++
++
++static const struct pci_device_id ocxlpmem_pci_tbl[] = {
++	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x0625), },
++	{ }
 +};
 +
-+/* ioctl numbers */
-+#define OCXL_PMEM_MAGIC 0x5C
-+/* SCM devices */
-+#define IOCTL_OCXL_PMEM_ERROR_LOG			_IOWR(OCXL_PMEM_MAGIC, 0x01, struct ioctl_ocxl_pmem_error_log)
++MODULE_DEVICE_TABLE(pci, ocxlpmem_pci_tbl);
 +
-+#endif /* _UAPI_OCXL_SCM_H */
++#define NUM_MINORS 256 // Total to reserve
++
++static dev_t ocxlpmem_dev;
++static struct class *ocxlpmem_class;
++static struct mutex minors_idr_lock;
++static struct idr minors_idr;
++
++/**
++ * ndctl_config_write() - Handle a ND_CMD_SET_CONFIG_DATA command from ndctl
++ * @ocxlpmem: the device metadata
++ * @command: the incoming data to write
++ * Return: 0 on success, negative on failure
++ */
++static int ndctl_config_write(struct ocxlpmem *ocxlpmem,
++			      struct nd_cmd_set_config_hdr *command)
++{
++	if (command->in_offset + command->in_length > LABEL_AREA_SIZE)
++		return -EINVAL;
++
++	memcpy_flushcache(ocxlpmem->metadata_addr + command->in_offset, command->in_buf,
++			  command->in_length);
++
++	return 0;
++}
++
++/**
++ * ndctl_config_read() - Handle a ND_CMD_GET_CONFIG_DATA command from ndctl
++ * @ocxlpmem: the device metadata
++ * @command: the read request
++ * Return: 0 on success, negative on failure
++ */
++static int ndctl_config_read(struct ocxlpmem *ocxlpmem,
++			     struct nd_cmd_get_config_data_hdr *command)
++{
++	if (command->in_offset + command->in_length > LABEL_AREA_SIZE)
++		return -EINVAL;
++
++	memcpy_mcsafe(command->out_buf, ocxlpmem->metadata_addr + command->in_offset,
++		      command->in_length);
++
++	return 0;
++}
++
++/**
++ * ndctl_config_size() - Handle a ND_CMD_GET_CONFIG_SIZE command from ndctl
++ * @command: the read request
++ * Return: 0 on success, negative on failure
++ */
++static int ndctl_config_size(struct nd_cmd_get_config_size *command)
++{
++	command->status = 0;
++	command->config_size = LABEL_AREA_SIZE;
++	command->max_xfer = PAGE_SIZE;
++
++	return 0;
++}
++
++static int ndctl(struct nvdimm_bus_descriptor *nd_desc,
++		 struct nvdimm *nvdimm,
++		 unsigned int cmd, void *buf, unsigned int buf_len, int *cmd_rc)
++{
++	struct ocxlpmem *ocxlpmem = container_of(nd_desc, struct ocxlpmem, bus_desc);
++
++	switch (cmd) {
++	case ND_CMD_GET_CONFIG_SIZE:
++		*cmd_rc = ndctl_config_size(buf);
++		return 0;
++
++	case ND_CMD_GET_CONFIG_DATA:
++		*cmd_rc = ndctl_config_read(ocxlpmem, buf);
++		return 0;
++
++	case ND_CMD_SET_CONFIG_DATA:
++		*cmd_rc = ndctl_config_write(ocxlpmem, buf);
++		return 0;
++
++	default:
++		return -ENOTTY;
++	}
++}
++
++/**
++ * reserve_metadata() - Reserve space for nvdimm metadata
++ * @ocxlpmem: the device metadata
++ * @lpc_mem: The resource representing the LPC memory of the OpenCAPI device
++ */
++static int reserve_metadata(struct ocxlpmem *ocxlpmem,
++			    struct resource *lpc_mem)
++{
++	ocxlpmem->metadata_addr = devm_memremap(&ocxlpmem->dev, lpc_mem->start,
++						LABEL_AREA_SIZE, MEMREMAP_WB);
++	if (IS_ERR(ocxlpmem->metadata_addr))
++		return PTR_ERR(ocxlpmem->metadata_addr);
++
++	return 0;
++}
++
++/**
++ * register_lpc_mem() - Discover persistent memory on a device and register it with the NVDIMM subsystem
++ * @ocxlpmem: the device metadata
++ * Return: 0 on success
++ */
++static int register_lpc_mem(struct ocxlpmem *ocxlpmem)
++{
++	struct nd_region_desc region_desc;
++	struct nd_mapping_desc nd_mapping_desc;
++	struct resource *lpc_mem;
++	const struct ocxl_afu_config *config;
++	const struct ocxl_fn_config *fn_config;
++	int rc;
++	unsigned long nvdimm_cmd_mask = 0;
++	unsigned long nvdimm_flags = 0;
++	int target_node;
++	char serial[16+1];
++
++	// Set up the reserved metadata area
++	rc = ocxl_afu_map_lpc_mem(ocxlpmem->ocxl_afu);
++	if (rc < 0)
++		return rc;
++
++	lpc_mem = ocxl_afu_lpc_mem(ocxlpmem->ocxl_afu);
++	if (lpc_mem == NULL || lpc_mem->start == 0)
++		return -EINVAL;
++
++	config = ocxl_afu_config(ocxlpmem->ocxl_afu);
++	fn_config = ocxl_function_config(ocxlpmem->ocxl_fn);
++
++	rc = reserve_metadata(ocxlpmem, lpc_mem);
++	if (rc)
++		return rc;
++
++	ocxlpmem->bus_desc.provider_name = "ocxl-pmem";
++	ocxlpmem->bus_desc.ndctl = ndctl;
++	ocxlpmem->bus_desc.module = THIS_MODULE;
++
++	ocxlpmem->nvdimm_bus = nvdimm_bus_register(&ocxlpmem->dev,
++						   &ocxlpmem->bus_desc);
++	if (!ocxlpmem->nvdimm_bus)
++		return -EINVAL;
++
++	ocxlpmem->pmem_res.start = (u64)lpc_mem->start + LABEL_AREA_SIZE;
++	ocxlpmem->pmem_res.end = (u64)lpc_mem->start + config->lpc_mem_size - 1;
++	ocxlpmem->pmem_res.name = "OpenCAPI persistent memory";
++
++	set_bit(ND_CMD_GET_CONFIG_SIZE, &nvdimm_cmd_mask);
++	set_bit(ND_CMD_GET_CONFIG_DATA, &nvdimm_cmd_mask);
++	set_bit(ND_CMD_SET_CONFIG_DATA, &nvdimm_cmd_mask);
++
++	set_bit(NDD_ALIASING, &nvdimm_flags);
++
++	snprintf(serial, sizeof(serial), "%llx", fn_config->serial);
++	nd_mapping_desc.nvdimm = nvdimm_create(ocxlpmem->nvdimm_bus, ocxlpmem,
++				 NULL, nvdimm_flags, nvdimm_cmd_mask,
++				 0, NULL);
++	if (!nd_mapping_desc.nvdimm)
++		return -ENOMEM;
++
++	if (nvdimm_bus_check_dimm_count(ocxlpmem->nvdimm_bus, 1))
++		return -EINVAL;
++
++	nd_mapping_desc.start = ocxlpmem->pmem_res.start;
++	nd_mapping_desc.size = resource_size(&ocxlpmem->pmem_res);
++	nd_mapping_desc.position = 0;
++
++	ocxlpmem->nd_set.cookie1 = fn_config->serial + 1; // allow for empty serial
++	ocxlpmem->nd_set.cookie2 = fn_config->serial + 1;
++
++	target_node = of_node_to_nid(ocxlpmem->pdev->dev.of_node);
++
++	memset(&region_desc, 0, sizeof(region_desc));
++	region_desc.res = &ocxlpmem->pmem_res;
++	region_desc.numa_node = NUMA_NO_NODE;
++	region_desc.target_node = target_node;
++	region_desc.num_mappings = 1;
++	region_desc.mapping = &nd_mapping_desc;
++	region_desc.nd_set = &ocxlpmem->nd_set;
++
++	set_bit(ND_REGION_PAGEMAP, &region_desc.flags);
++	/*
++	 * NB: libnvdimm copies the data from ndr_desc into it's own
++	 * structures so passing a stack pointer is fine.
++	 */
++	ocxlpmem->nd_region = nvdimm_pmem_region_create(ocxlpmem->nvdimm_bus,
++							&region_desc);
++	if (!ocxlpmem->nd_region)
++		return -EINVAL;
++
++	dev_info(&ocxlpmem->dev,
++		 "Onlining %lluMB of persistent memory\n",
++		 nd_mapping_desc.size / SZ_1M);
++
++	return 0;
++}
++
++/**
++ * allocate_minor() - Allocate a minor number to use for an OpenCAPI pmem device
++ * @ocxlpmem: the device metadata
++ * Return: the allocated minor number
++ */
++static int allocate_minor(struct ocxlpmem *ocxlpmem)
++{
++	int minor;
++
++	mutex_lock(&minors_idr_lock);
++	minor = idr_alloc(&minors_idr, ocxlpmem, 0, NUM_MINORS, GFP_KERNEL);
++	mutex_unlock(&minors_idr_lock);
++	return minor;
++}
++
++static void free_minor(struct ocxlpmem *ocxlpmem)
++{
++	mutex_lock(&minors_idr_lock);
++	idr_remove(&minors_idr, MINOR(ocxlpmem->dev.devt));
++	mutex_unlock(&minors_idr_lock);
++}
++
++/**
++ * free_ocxlpmem() - Free all members of an ocxlpmem struct
++ * @ocxlpmem: the device struct to clear
++ */
++static void free_ocxlpmem(struct ocxlpmem *ocxlpmem)
++{
++	int rc;
++
++	if (ocxlpmem->nvdimm_bus)
++		nvdimm_bus_unregister(ocxlpmem->nvdimm_bus);
++
++	free_minor(ocxlpmem);
++
++	if (ocxlpmem->metadata_addr)
++		devm_memunmap(&ocxlpmem->dev, ocxlpmem->metadata_addr);
++
++	if (ocxlpmem->ocxl_context) {
++		rc = ocxl_context_detach(ocxlpmem->ocxl_context);
++		if (rc == -EBUSY)
++			dev_warn(&ocxlpmem->dev, "Timeout detaching ocxl context\n");
++		else
++			ocxl_context_free(ocxlpmem->ocxl_context);
++
++	}
++
++	if (ocxlpmem->ocxl_afu)
++		ocxl_afu_put(ocxlpmem->ocxl_afu);
++
++	if (ocxlpmem->ocxl_fn)
++		ocxl_function_close(ocxlpmem->ocxl_fn);
++
++	kfree(ocxlpmem);
++}
++
++/**
++ * free_ocxlpmem_dev() - Free an OpenCAPI persistent memory device
++ * @dev: The device struct
++ */
++static void free_ocxlpmem_dev(struct device *dev)
++{
++	struct ocxlpmem *ocxlpmem = container_of(dev, struct ocxlpmem, dev);
++
++	free_ocxlpmem(ocxlpmem);
++}
++
++/**
++ * ocxlpmem_register() - Register an OpenCAPI pmem device with the kernel
++ * @ocxlpmem: the device metadata
++ * Return: 0 on success, negative on failure
++ */
++static int ocxlpmem_register(struct ocxlpmem *ocxlpmem)
++{
++	int rc;
++	int minor = allocate_minor(ocxlpmem);
++
++	if (minor < 0)
++		return minor;
++
++	ocxlpmem->dev.release = free_ocxlpmem_dev;
++	rc = dev_set_name(&ocxlpmem->dev, "ocxlpmem%d", minor);
++	if (rc < 0)
++		return rc;
++
++	ocxlpmem->dev.devt = MKDEV(MAJOR(ocxlpmem_dev), minor);
++	ocxlpmem->dev.class = ocxlpmem_class;
++	ocxlpmem->dev.parent = &ocxlpmem->pdev->dev;
++
++	return device_register(&ocxlpmem->dev);
++}
++
++/**
++ * ocxlpmem_remove() - Free an OpenCAPI persistent memory device
++ * @pdev: the PCI device information struct
++ */
++static void ocxlpmem_remove(struct pci_dev *pdev)
++{
++	if (PCI_FUNC(pdev->devfn) == 0) {
++		struct ocxlpmem_function0 *func0 = pci_get_drvdata(pdev);
++
++		if (func0) {
++			ocxl_function_close(func0->ocxl_fn);
++			func0->ocxl_fn = NULL;
++		}
++	} else {
++		struct ocxlpmem *ocxlpmem = pci_get_drvdata(pdev);
++
++		if (ocxlpmem)
++			device_unregister(&ocxlpmem->dev);
++	}
++}
++
++/**
++ * probe_function0() - Set up function 0 for an OpenCAPI persistent memory device
++ * This is important as it enables templates higher than 0 across all other functions,
++ * which in turn enables higher bandwidth accesses
++ * @pdev: the PCI device information struct
++ * Return: 0 on success, negative on failure
++ */
++static int probe_function0(struct pci_dev *pdev)
++{
++	struct ocxlpmem_function0 *func0 = NULL;
++	struct ocxl_fn *fn;
++
++	func0 = kzalloc(sizeof(*func0), GFP_KERNEL);
++	if (!func0)
++		return -ENOMEM;
++
++	func0->pdev = pdev;
++	fn = ocxl_function_open(pdev);
++	if (IS_ERR(fn)) {
++		kfree(func0);
++		dev_err(&pdev->dev, "failed to open OCXL function\n");
++		return PTR_ERR(fn);
++	}
++	func0->ocxl_fn = fn;
++
++	pci_set_drvdata(pdev, func0);
++
++	return 0;
++}
++
++/**
++ * probe() - Init an OpenCAPI persistent memory device
++ * @pdev: the PCI device information struct
++ * @ent: The entry from ocxlpmem_pci_tbl
++ * Return: 0 on success, negative on failure
++ */
++static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
++{
++	struct ocxlpmem *ocxlpmem;
++	int rc;
++
++	if (PCI_FUNC(pdev->devfn) == 0)
++		return probe_function0(pdev);
++	else if (PCI_FUNC(pdev->devfn) != 1)
++		return 0;
++
++	ocxlpmem = kzalloc(sizeof(*ocxlpmem), GFP_KERNEL);
++	if (!ocxlpmem) {
++		dev_err(&pdev->dev, "Could not allocate OpenCAPI persistent memory metadata\n");
++		rc = -ENOMEM;
++		goto err;
++	}
++	ocxlpmem->pdev = pdev;
++
++	pci_set_drvdata(pdev, ocxlpmem);
++
++	ocxlpmem->ocxl_fn = ocxl_function_open(pdev);
++	if (IS_ERR(ocxlpmem->ocxl_fn)) {
++		kfree(ocxlpmem);
++		pci_set_drvdata(pdev, NULL);
++		dev_err(&pdev->dev, "failed to open OCXL function\n");
++		rc = PTR_ERR(ocxlpmem->ocxl_fn);
++		goto err;
++	}
++
++	ocxlpmem->ocxl_afu = ocxl_function_fetch_afu(ocxlpmem->ocxl_fn, 0);
++	if (ocxlpmem->ocxl_afu == NULL) {
++		dev_err(&pdev->dev, "Could not get OCXL AFU from function\n");
++		rc = -ENXIO;
++		goto err;
++	}
++
++	ocxl_afu_get(ocxlpmem->ocxl_afu);
++
++	// Resources allocated below here are cleaned up in the release handler
++
++	rc = ocxlpmem_register(ocxlpmem);
++	if (rc) {
++		dev_err(&pdev->dev, "Could not register OpenCAPI persistent memory device with the kernel\n");
++		goto err;
++	}
++
++	rc = ocxl_context_alloc(&ocxlpmem->ocxl_context, ocxlpmem->ocxl_afu, NULL);
++	if (rc) {
++		dev_err(&pdev->dev, "Could not allocate OCXL context\n");
++		goto err;
++	}
++
++	rc = ocxl_context_attach(ocxlpmem->ocxl_context, 0, NULL);
++	if (rc) {
++		dev_err(&pdev->dev, "Could not attach ocxl context\n");
++		goto err;
++	}
++
++	rc = register_lpc_mem(ocxlpmem);
++	if (rc) {
++		dev_err(&pdev->dev, "Could not register OpenCAPI persistent memory with libnvdimm\n");
++		goto err;
++	}
++
++	return 0;
++
++err:
++	/*
++	 * Further cleanup is done in the release handler via free_ocxlpmem()
++	 * This allows us to keep the character device live to handle IOCTLs to
++	 * investigate issues if the card has an error
++	 */
++
++	dev_err(&pdev->dev,
++		"Error detected, will not register OpenCAPI persistent memory\n");
++	return rc;
++}
++
++static struct pci_driver pci_driver = {
++	.name = "ocxl-pmem",
++	.id_table = ocxlpmem_pci_tbl,
++	.probe = probe,
++	.remove = ocxlpmem_remove,
++	.shutdown = ocxlpmem_remove,
++};
++
++static int __init ocxlpmem_init(void)
++{
++	int rc = 0;
++
++	rc = pci_register_driver(&pci_driver);
++	if (rc)
++		return rc;
++
++	return 0;
++}
++
++static void ocxlpmem_exit(void)
++{
++	pci_unregister_driver(&pci_driver);
++}
++
++module_init(ocxlpmem_init);
++module_exit(ocxlpmem_exit);
++
++MODULE_DESCRIPTION("OpenCAPI Persistent Memory");
++MODULE_LICENSE("GPL");
+diff --git a/arch/powerpc/platforms/powernv/pmem/ocxl_internal.h b/arch/powerpc/platforms/powernv/pmem/ocxl_internal.h
+new file mode 100644
+index 000000000000..0faf3740e9b8
+--- /dev/null
++++ b/arch/powerpc/platforms/powernv/pmem/ocxl_internal.h
+@@ -0,0 +1,28 @@
++// SPDX-License-Identifier: GPL-2.0+
++// Copyright 2019 IBM Corp.
++
++#include <linux/pci.h>
++#include <misc/ocxl.h>
++#include <linux/libnvdimm.h>
++#include <linux/mm.h>
++
++#define LABEL_AREA_SIZE	(1UL << PA_SECTION_SHIFT)
++
++struct ocxlpmem_function0 {
++	struct pci_dev *pdev;
++	struct ocxl_fn *ocxl_fn;
++};
++
++struct ocxlpmem {
++	struct device dev;
++	struct pci_dev *pdev;
++	struct ocxl_fn *ocxl_fn;
++	struct nd_interleave_set nd_set;
++	struct nvdimm_bus_descriptor bus_desc;
++	struct nvdimm_bus *nvdimm_bus;
++	struct ocxl_afu *ocxl_afu;
++	struct ocxl_context *ocxl_context;
++	void *metadata_addr;
++	struct resource pmem_res;
++	struct nd_region *nd_region;
++};
 -- 
 2.24.1
 
