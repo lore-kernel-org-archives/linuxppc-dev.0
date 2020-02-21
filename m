@@ -6,73 +6,73 @@ X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FFEEC35656
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 16:23:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B095C35646
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 16:26:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BD59020578
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 16:23:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3CF7420578
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 16:26:09 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=intel-com.20150623.gappssmtp.com header.i=@intel-com.20150623.gappssmtp.com header.b="macUat4O"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BD59020578
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=intel-com.20150623.gappssmtp.com header.i=@intel-com.20150623.gappssmtp.com header.b="cBEVhpXs"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3CF7420578
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48PGwj1NkZzDqjy
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Feb 2020 03:23:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48PGzg2x7vzDqp7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Feb 2020 03:26:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=2607:f8b0:4864:20::344;
- helo=mail-ot1-x344.google.com; envelope-from=dan.j.williams@intel.com;
+ smtp.mailfrom=intel.com (client-ip=2607:f8b0:4864:20::343;
+ helo=mail-ot1-x343.google.com; envelope-from=dan.j.williams@intel.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=intel-com.20150623.gappssmtp.com
  header.i=@intel-com.20150623.gappssmtp.com header.a=rsa-sha256
- header.s=20150623 header.b=macUat4O; dkim-atps=neutral
-Received: from mail-ot1-x344.google.com (mail-ot1-x344.google.com
- [IPv6:2607:f8b0:4864:20::344])
+ header.s=20150623 header.b=cBEVhpXs; dkim-atps=neutral
+Received: from mail-ot1-x343.google.com (mail-ot1-x343.google.com
+ [IPv6:2607:f8b0:4864:20::343])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48PGv71H8JzDqfV
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Feb 2020 03:22:04 +1100 (AEDT)
-Received: by mail-ot1-x344.google.com with SMTP id j20so2505596otq.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2020 08:22:04 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48PGxr0dJDzDqfN
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Feb 2020 03:24:31 +1100 (AEDT)
+Received: by mail-ot1-x343.google.com with SMTP id 77so2490596oty.6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2020 08:24:31 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=intel-com.20150623.gappssmtp.com; s=20150623;
  h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=UESijwJloetNY8FQMqP4NxBHBgGttqQPvE09CZ9ft1c=;
- b=macUat4OhBw9DARYl7llLCgFZklb66CEJoh9cIMr3g6yESO7cALxWGslA+R7qYKrGs
- fnmKfZrgf4oKCpJCyarWrJ4UiLB6zsowKF7ZaP0X5hmt/PWvNfkyVseLF0OX092PDlNh
- jqCgungkXvg9muNuvc5UtdxiEdiRd0oLyrZ/CRtK1Bzzz9Flyiem04hAk0SnwwqncSRj
- n0Fom0Ouu0dm1sw7gA89tp1HgNtirvu3zy3vksqHoGrMdeXGvWUKxjkOg4Wc2zD/XO1c
- 7fzVCJned9Xt5eFtyLaspUTh2m87sc7K+o9d2P0JWiSzZMGN6vItAdbq1RvCK9sWLksv
- 9zPg==
+ :cc; bh=2necOtKPRGOvCKSmF/mkYAKx6vUj3EgsCgdFv1SUhI0=;
+ b=cBEVhpXst0AzntwHO7MAAC8tPgH/lHhw3JRg1tiTU84YvfHSiop6h5HEb7dD7ijKuo
+ Tkw/ZNf20go4KH7TnldYOoZEAs0/HjhdC6mtapS6+Q3y/I7Q+YrEMV84Zr3jKw37sWpE
+ U9Jl8f/7cOVM1MQYH54S4Vp6WSWKpzS2B9dUJOJpX4zoeMiFs4UP17D4CccHDAg8ZFR1
+ vCZ/8RYSCxh9NQiUxEt36OEadxPUC7ds7oA0vIxw+TkYSm380z9btYwB+23YYwbo8b8g
+ 7XRdvaaGovLDozll686+2N7fCxFPusnOHgUUDjTiUfiXQ3pTNjxbkIR85nNqgJmQT6GQ
+ 8i+g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=UESijwJloetNY8FQMqP4NxBHBgGttqQPvE09CZ9ft1c=;
- b=Dab3PsEhKPDh60eT/32k9Uc2YamLK/0/BRIvqhAG+sQtB486QhUJZFiQ0da4C6D31s
- gQTC8twd/ZO/QQqjGh9xgtF0/lQgiZ87um8eHn7//hp7pKuPKePnk2uuG+/rNREFfmWq
- wL6rhXi6pr4NyQh92r1997ce0RdHx309w4H6nh1A7R2mNclOEenMTWlxHg+CQ6w6+rFt
- L5mOkKZQCFTaseaxqs7nai9OIZd/kKtkA8eihsnf/VKqH3XyOEZJ1llWvXf1GkzNFprf
- 8z+lwaLXb9AShcTfAVVt7xVNoS/mupQKjYidTnYk1JImXFQMvGe5KRhlbyYTBKvKwby0
- MC3Q==
-X-Gm-Message-State: APjAAAUZPN6vaftYE3ZAzvl6mR/c6RWOSU8+vLEb07eKAIgOrWhKRQXA
- cGsZl8J3Ux/AjR8RQtTDUpa/FA2z17dxWIeWix8IZA==
-X-Google-Smtp-Source: APXvYqxUQtP3b4zLuYjsw3PWW1Xh6/3l8dvciMnwM+axT86fN3Vik9tAcpduTQUxrlW/YBnslPiYEUOP0aEHD0RypMw=
-X-Received: by 2002:a05:6830:134c:: with SMTP id
- r12mr6522827otq.126.1582302121655; 
- Fri, 21 Feb 2020 08:22:01 -0800 (PST)
+ bh=2necOtKPRGOvCKSmF/mkYAKx6vUj3EgsCgdFv1SUhI0=;
+ b=Q/5tX7ItHk+pSjZYVutexWBIdmbz3O+IZcfUJtSVxkmvQzQchZ8CpWGnlADd7YG4HZ
+ ZE6hKCxf9iqAOQsrRKs/GvOiATsUNQUiCHMp7wk4aayeUIZWgNZ/pzdqNBTXv4B5gA8E
+ yvhFOww+iWmYPItUxsDAK1TUebeHfdUk345QjwG4kLBzhsU8vjQPSO33iJwS/7IknZuw
+ wMnKmAtCHyzDQYQOtL19hO+aIGHc/DgYUSp7n9mqws1V57GSbJXadI8c1H6d6N2q+D2Z
+ 5kAfiAYy06FqEK06CUOt08HJA/EuWLwV+3t2DbA/fOU9FBvK7UuU2zlkYMwZnEMO9Geg
+ uy5g==
+X-Gm-Message-State: APjAAAVVt7ly4f+sSL8G88wEArLsSaNqmam1UDLHH27yECWt7Epv2HvW
+ 9nxbe10PnhxqGcb0QQUrzqq2N8Q/w4nKxrj+VohL+Q==
+X-Google-Smtp-Source: APXvYqxaf5u3WFzaIFaCrcTuxeBbhT11NwRGTSO9X8QeSchk7dKOD/6D3Clq0uqWRzW41IL9WLcTtDJa9yoQ436XJig=
+X-Received: by 2002:a9d:64d8:: with SMTP id n24mr27053866otl.71.1582302269868; 
+ Fri, 21 Feb 2020 08:24:29 -0800 (PST)
 MIME-Version: 1.0
 References: <20200221032720.33893-1-alastair@au1.ibm.com>
-In-Reply-To: <20200221032720.33893-1-alastair@au1.ibm.com>
+ <CAPcyv4j2hut1YDrotC=QkcM+S0SZwpd9_4hD2aChn+cKD+62oA@mail.gmail.com>
+In-Reply-To: <CAPcyv4j2hut1YDrotC=QkcM+S0SZwpd9_4hD2aChn+cKD+62oA@mail.gmail.com>
 From: Dan Williams <dan.j.williams@intel.com>
-Date: Fri, 21 Feb 2020 08:21:50 -0800
-Message-ID: <CAPcyv4j2hut1YDrotC=QkcM+S0SZwpd9_4hD2aChn+cKD+62oA@mail.gmail.com>
+Date: Fri, 21 Feb 2020 08:24:18 -0800
+Message-ID: <CAPcyv4hzZt0oqWN8y_K70h3C1S1jNw6jfNF3jPujCFmLW+MSvw@mail.gmail.com>
 Subject: Re: [PATCH v3 00/27] Add support for OpenCAPI Persistent Memory
  devices
 To: "Alastair D'Silva" <alastair@au1.ibm.com>
@@ -114,29 +114,25 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Feb 20, 2020 at 7:28 PM Alastair D'Silva <alastair@au1.ibm.com> wrote:
+On Fri, Feb 21, 2020 at 8:21 AM Dan Williams <dan.j.williams@intel.com> wrote:
 >
-> From: Alastair D'Silva <alastair@d-silva.org>
+> On Thu, Feb 20, 2020 at 7:28 PM Alastair D'Silva <alastair@au1.ibm.com> wrote:
+> >
+> > From: Alastair D'Silva <alastair@d-silva.org>
+> >
+> > This series adds support for OpenCAPI Persistent Memory devices, exposing
+> > them as nvdimms so that we can make use of the existing infrastructure.
 >
-> This series adds support for OpenCAPI Persistent Memory devices, exposing
-> them as nvdimms so that we can make use of the existing infrastructure.
+> A single sentence to introduce:
+>
+> 24 files changed, 3029 insertions(+), 97 deletions(-)
+>
+> ...is inadequate. What are OpenCAPI Persistent Memory devices? How do
+> they compare, in terms relevant to libnvdimm, to other persistent
+> memory devices? What challenges do they pose to the existing enabling?
+> What is the overall approach taken with this 27 patch break down? What
+> are the changes since v2, v1? If you incorporated someone's review
+> feedback note it in the cover letter changelog, if you didn't
 
-A single sentence to introduce:
-
-24 files changed, 3029 insertions(+), 97 deletions(-)
-
-...is inadequate. What are OpenCAPI Persistent Memory devices? How do
-they compare, in terms relevant to libnvdimm, to other persistent
-memory devices? What challenges do they pose to the existing enabling?
-What is the overall approach taken with this 27 patch break down? What
-are the changes since v2, v1? If you incorporated someone's review
-feedback note it in the cover letter changelog, if you didn't
-incorporate someone's feedback note that too with an explanation.
-
-In short, provide a bridge document for someone familiar with the
-upstream infrastructure, but not necessarily steeped in powernv /
-OpenCAPI platform details, to get started with this code.
-
-For now, no need to resend the whole series, just reply to this
-message with a fleshed out cover letter and then incorporate it going
-forward for v4+.
+Assumptions and tradeoffs the implementation considered are also
+critical for reviewing the approach.
