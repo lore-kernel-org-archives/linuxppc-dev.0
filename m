@@ -6,89 +6,88 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3712DC11D2B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 04:20:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 27B88C11D24
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 05:20:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E2ACC20722
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 04:20:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E2ACC20722
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 875FD20637
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 05:20:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 875FD20637
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48Nyt35nrczDqWt
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 15:20:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=au1.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=alastair@au1.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 48P0Cx5fX2zDqcj
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2020 16:20:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=au1.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48Nxy12PMvzDqP6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2020 14:38:33 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48P09q5N6czDqbv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2020 16:18:55 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 01L3ZolY125404
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2020 22:38:29 -0500
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2y93kgmpqk-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2020 22:38:29 -0500
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
- Fri, 21 Feb 2020 03:28:16 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 21 Feb 2020 03:28:08 -0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 01L3S89x51314814
+ 01L5F90x047607; Fri, 21 Feb 2020 00:18:50 -0500
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2y8ubxkpaa-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 21 Feb 2020 00:18:49 -0500
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 01L5BtNu031660;
+ Fri, 21 Feb 2020 05:18:49 GMT
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by ppma03dal.us.ibm.com with ESMTP id 2y6897q2ej-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 21 Feb 2020 05:18:49 +0000
+Received: from b03ledav002.gho.boulder.ibm.com
+ (b03ledav002.gho.boulder.ibm.com [9.17.130.233])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 01L5IlTP50266414
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 21 Feb 2020 03:28:08 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id EE38F52052;
- Fri, 21 Feb 2020 03:28:07 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 45FC35204E;
- Fri, 21 Feb 2020 03:28:07 +0000 (GMT)
-Received: from adsilva.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
- (using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id A59CDA027A;
- Fri, 21 Feb 2020 14:28:02 +1100 (AEDT)
-From: "Alastair D'Silva" <alastair@au1.ibm.com>
-To: alastair@d-silva.org
-Subject: [PATCH v3 03/27] powerpc: Map & release OpenCAPI LPC memory
-Date: Fri, 21 Feb 2020 14:26:56 +1100
-X-Mailer: git-send-email 2.24.1
-In-Reply-To: <20200221032720.33893-1-alastair@au1.ibm.com>
-References: <20200221032720.33893-1-alastair@au1.ibm.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ Fri, 21 Feb 2020 05:18:48 GMT
+Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C6E21136055;
+ Fri, 21 Feb 2020 05:18:47 +0000 (GMT)
+Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7E29E136053;
+ Fri, 21 Feb 2020 05:18:47 +0000 (GMT)
+Received: from sofia.ibm.com (unknown [9.124.31.110])
+ by b03ledav002.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Fri, 21 Feb 2020 05:18:47 +0000 (GMT)
+Received: by sofia.ibm.com (Postfix, from userid 1000)
+ id 1BBC92E3ACC; Fri, 21 Feb 2020 10:48:44 +0530 (IST)
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: Nathan Lynch <nathanl@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.ibm.com>
+Subject: [PATCH v2 2/5] powerpc/idle: Add accessor function to always read
+ latest idle PURR
+Date: Fri, 21 Feb 2020 10:48:31 +0530
+Message-Id: <1582262314-8319-3-git-send-email-ego@linux.vnet.ibm.com>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1582262314-8319-1-git-send-email-ego@linux.vnet.ibm.com>
+References: <1582262314-8319-1-git-send-email-ego@linux.vnet.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 20022103-4275-0000-0000-000003A3FE60
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20022103-4276-0000-0000-000038B80C78
-Message-Id: <20200221032720.33893-4-alastair@au1.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
  definitions=2020-02-20_19:2020-02-19,
  2020-02-20 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 spamscore=0
- clxscore=1015 phishscore=0 mlxlogscore=480 impostorscore=0
- priorityscore=1501 adultscore=0 lowpriorityscore=0 malwarescore=0
- suspectscore=3 mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2001150001 definitions=main-2002210021
+ mlxscore=0 bulkscore=0
+ lowpriorityscore=0 spamscore=0 suspectscore=0 mlxlogscore=999
+ clxscore=1015 malwarescore=0 adultscore=0 impostorscore=0 phishscore=0
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2001150001 definitions=main-2002210035
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,108 +99,208 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Oliver O'Halloran <oohall@gmail.com>,
- Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
- Ira Weiny <ira.weiny@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
- Rob Herring <robh@kernel.org>, Dave Jiang <dave.jiang@intel.com>,
- linux-nvdimm@lists.01.org, "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
- Krzysztof Kozlowski <krzk@kernel.org>,
- Anju T Sudhakar <anju@linux.vnet.ibm.com>,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
- Greg Kurz <groug@kaod.org>, Nicholas Piggin <npiggin@gmail.com>,
- =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
- Dan Williams <dan.j.williams@intel.com>, Hari Bathini <hbathini@linux.ibm.com>,
- linux-mm@kvack.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linux-kernel@vger.kernel.org, Vishal Verma <vishal.l.verma@intel.com>,
- Frederic Barrat <fbarrat@linux.ibm.com>, Paul Mackerras <paulus@samba.org>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Alastair D'Silva <alastair@d-silva.org>
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-This patch adds platform support to map & release LPC memory.
+Currently when CPU goes idle, we take a snapshot of PURR via
+idle_loop_prolog() which is used at the CPU idle exit to compute the
+idle PURR cycles via the function idle_loop_epilog().  Thus, the value
+of idle PURR cycle thus read before idle_loop_prolog() and after
+idle_loop_epilog() is always correct.
 
-Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+However, if we were to read the idle PURR cycles from an interrupt
+context between idle_loop_prolog() and idle_loop_epilog() (this will
+be done in a future patch), then, the value of the idle PURR thus read
+will not include the cycles spent in the most recent idle period.
+
+This patch addresses the issue by providing accessor function to read
+the idle PURR such such that it includes the cycles spent in the most
+recent idle period, if we read it between idle_loop_prolog() and
+idle_loop_epilog(). In order to achieve it, the patch saves the
+snapshot of PURR in idle_loop_prolog() in a per-cpu variable, instead
+of on the stack, so that it can be accessed from an interrupt context.
+
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/pnv-ocxl.h   |  4 +++
- arch/powerpc/platforms/powernv/ocxl.c | 43 +++++++++++++++++++++++++++
- 2 files changed, 47 insertions(+)
+ arch/powerpc/include/asm/idle.h        | 46 +++++++++++++++++++++++++++-------
+ arch/powerpc/platforms/pseries/setup.c |  7 +++---
+ drivers/cpuidle/cpuidle-pseries.c      | 15 +++++------
+ 3 files changed, 46 insertions(+), 22 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pnv-ocxl.h b/arch/powerpc/include/asm/pnv-ocxl.h
-index 7de82647e761..0b2a6707e555 100644
---- a/arch/powerpc/include/asm/pnv-ocxl.h
-+++ b/arch/powerpc/include/asm/pnv-ocxl.h
-@@ -32,5 +32,9 @@ extern int pnv_ocxl_spa_remove_pe_from_cache(void *platform_data, int pe_handle)
+diff --git a/arch/powerpc/include/asm/idle.h b/arch/powerpc/include/asm/idle.h
+index f32a7d8..126a217 100644
+--- a/arch/powerpc/include/asm/idle.h
++++ b/arch/powerpc/include/asm/idle.h
+@@ -2,10 +2,27 @@
+ #define _ASM_POWERPC_IDLE_H
+ #include <asm/runlatch.h>
  
- extern int pnv_ocxl_alloc_xive_irq(u32 *irq, u64 *trigger_addr);
- extern void pnv_ocxl_free_xive_irq(u32 irq);
-+#ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
-+u64 pnv_ocxl_platform_lpc_setup(struct pci_dev *pdev, u64 size);
-+void pnv_ocxl_platform_lpc_release(struct pci_dev *pdev);
-+#endif
- 
- #endif /* _ASM_PNV_OCXL_H */
-diff --git a/arch/powerpc/platforms/powernv/ocxl.c b/arch/powerpc/platforms/powernv/ocxl.c
-index 8c65aacda9c8..f2edbcc67361 100644
---- a/arch/powerpc/platforms/powernv/ocxl.c
-+++ b/arch/powerpc/platforms/powernv/ocxl.c
-@@ -475,6 +475,49 @@ void pnv_ocxl_spa_release(void *platform_data)
- }
- EXPORT_SYMBOL_GPL(pnv_ocxl_spa_release);
- 
-+#ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
-+u64 pnv_ocxl_platform_lpc_setup(struct pci_dev *pdev, u64 size)
-+{
-+	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
-+	struct pnv_phb *phb = hose->private_data;
-+	u32 bdfn = pci_dev_id(pdev);
-+	__be64 base_addr_be64;
-+	u64 base_addr;
-+	int rc;
+-static inline void idle_loop_prolog(unsigned long *in_purr)
++DECLARE_PER_CPU(u64, idle_entry_purr_snap);
 +
-+	rc = opal_npu_mem_alloc(phb->opal_id, bdfn, size, &base_addr_be64);
-+	if (rc) {
-+		dev_warn(&pdev->dev,
-+			 "OPAL could not allocate LPC memory, rc=%d\n", rc);
-+		return 0;
++static inline void snapshot_purr_idle_entry(void)
++{
++	*this_cpu_ptr(&idle_entry_purr_snap) = mfspr(SPRN_PURR);
++}
++
++static inline void update_idle_purr_accounting(void)
++{
++	u64 wait_cycles;
++	u64 in_purr = *this_cpu_ptr(&idle_entry_purr_snap);
++
++	wait_cycles = be64_to_cpu(get_lppaca()->wait_state_cycles);
++	wait_cycles += mfspr(SPRN_PURR) - in_purr;
++	get_lppaca()->wait_state_cycles = cpu_to_be64(wait_cycles);
++}
++
++static inline void idle_loop_prolog(void)
+ {
+ 	ppc64_runlatch_off();
+-	*in_purr = mfspr(SPRN_PURR);
++	snapshot_purr_idle_entry();
+ 	/*
+ 	 * Indicate to the HV that we are idle. Now would be
+ 	 * a good time to find other work to dispatch.
+@@ -13,15 +30,26 @@ static inline void idle_loop_prolog(unsigned long *in_purr)
+ 	get_lppaca()->idle = 1;
+ }
+ 
+-static inline void idle_loop_epilog(unsigned long in_purr)
++static inline void idle_loop_epilog(void)
+ {
+-	u64 wait_cycles;
+-
+-	wait_cycles = be64_to_cpu(get_lppaca()->wait_state_cycles);
+-	wait_cycles += mfspr(SPRN_PURR) - in_purr;
+-	get_lppaca()->wait_state_cycles = cpu_to_be64(wait_cycles);
++	update_idle_purr_accounting();
+ 	get_lppaca()->idle = 0;
+-
+ 	ppc64_runlatch_on();
+ }
++
++static inline u64 read_this_idle_purr(void)
++{
++	/*
++	 * If we are reading from an idle context, update the
++	 * idle-purr cycles corresponding to the last idle period.
++	 * Since the idle context is not yet over, take a fresh
++	 * snapshot of the idle-purr.
++	 */
++	if (unlikely(get_lppaca()->idle == 1)) {
++		update_idle_purr_accounting();
++		snapshot_purr_idle_entry();
 +	}
 +
-+	base_addr = be64_to_cpu(base_addr_be64);
-+
-+	rc = check_hotplug_memory_addressable(base_addr >> PAGE_SHIFT,
-+					      size >> PAGE_SHIFT);
-+	if (rc)
-+		return 0;
-+
-+	return base_addr;
++	return be64_to_cpu(get_lppaca()->wait_state_cycles);
 +}
-+EXPORT_SYMBOL_GPL(pnv_ocxl_platform_lpc_setup);
-+
-+void pnv_ocxl_platform_lpc_release(struct pci_dev *pdev)
-+{
-+	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
-+	struct pnv_phb *phb = hose->private_data;
-+	u32 bdfn = pci_dev_id(pdev);
-+	int rc;
-+
-+	rc = opal_npu_mem_release(phb->opal_id, bdfn);
-+	if (rc)
-+		dev_warn(&pdev->dev,
-+			 "OPAL reported rc=%d when releasing LPC memory\n", rc);
-+}
-+EXPORT_SYMBOL_GPL(pnv_ocxl_platform_lpc_release);
-+#endif
-+
- int pnv_ocxl_spa_remove_pe_from_cache(void *platform_data, int pe_handle)
+ #endif
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index ffd4d59..e9f2cefa 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -318,10 +318,9 @@ static int alloc_dispatch_log_kmem_cache(void)
+ }
+ machine_early_initcall(pseries, alloc_dispatch_log_kmem_cache);
+ 
++DEFINE_PER_CPU(u64, idle_entry_purr_snap);
+ static void pseries_lpar_idle(void)
  {
- 	struct spa_data *data = (struct spa_data *) platform_data;
+-	unsigned long in_purr;
+-
+ 	/*
+ 	 * Default handler to go into low thread priority and possibly
+ 	 * low power mode by ceding processor to hypervisor
+@@ -331,7 +330,7 @@ static void pseries_lpar_idle(void)
+ 		return;
+ 
+ 	/* Indicate to hypervisor that we are idle. */
+-	idle_loop_prolog(&in_purr);
++	idle_loop_prolog();
+ 
+ 	/*
+ 	 * Yield the processor to the hypervisor.  We return if
+@@ -342,7 +341,7 @@ static void pseries_lpar_idle(void)
+ 	 */
+ 	cede_processor();
+ 
+-	idle_loop_epilog(in_purr);
++	idle_loop_epilog();
+ }
+ 
+ /*
+diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
+index fc9dee9c..98d3832 100644
+--- a/drivers/cpuidle/cpuidle-pseries.c
++++ b/drivers/cpuidle/cpuidle-pseries.c
+@@ -36,12 +36,11 @@ static int snooze_loop(struct cpuidle_device *dev,
+ 			struct cpuidle_driver *drv,
+ 			int index)
+ {
+-	unsigned long in_purr;
+ 	u64 snooze_exit_time;
+ 
+ 	set_thread_flag(TIF_POLLING_NRFLAG);
+ 
+-	idle_loop_prolog(&in_purr);
++	idle_loop_prolog();
+ 	local_irq_enable();
+ 	snooze_exit_time = get_tb() + snooze_timeout;
+ 
+@@ -65,7 +64,7 @@ static int snooze_loop(struct cpuidle_device *dev,
+ 
+ 	local_irq_disable();
+ 
+-	idle_loop_epilog(in_purr);
++	idle_loop_epilog();
+ 
+ 	return index;
+ }
+@@ -91,9 +90,8 @@ static int dedicated_cede_loop(struct cpuidle_device *dev,
+ 				struct cpuidle_driver *drv,
+ 				int index)
+ {
+-	unsigned long in_purr;
+ 
+-	idle_loop_prolog(&in_purr);
++	idle_loop_prolog();
+ 	get_lppaca()->donate_dedicated_cpu = 1;
+ 
+ 	HMT_medium();
+@@ -102,7 +100,7 @@ static int dedicated_cede_loop(struct cpuidle_device *dev,
+ 	local_irq_disable();
+ 	get_lppaca()->donate_dedicated_cpu = 0;
+ 
+-	idle_loop_epilog(in_purr);
++	idle_loop_epilog();
+ 
+ 	return index;
+ }
+@@ -111,9 +109,8 @@ static int shared_cede_loop(struct cpuidle_device *dev,
+ 			struct cpuidle_driver *drv,
+ 			int index)
+ {
+-	unsigned long in_purr;
+ 
+-	idle_loop_prolog(&in_purr);
++	idle_loop_prolog();
+ 
+ 	/*
+ 	 * Yield the processor to the hypervisor.  We return if
+@@ -125,7 +122,7 @@ static int shared_cede_loop(struct cpuidle_device *dev,
+ 	check_and_cede_processor();
+ 
+ 	local_irq_disable();
+-	idle_loop_epilog(in_purr);
++	idle_loop_epilog();
+ 
+ 	return index;
+ }
 -- 
-2.24.1
+1.9.4
 
