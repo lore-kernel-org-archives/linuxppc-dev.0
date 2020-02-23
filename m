@@ -2,98 +2,48 @@ Return-Path: <SRS0=8Gu8=4L=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91348C35669
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Feb 2020 02:53:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 14254C35666
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Feb 2020 19:32:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0904E20702
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Feb 2020 02:53:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0904E20702
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8284720836
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Feb 2020 19:32:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8284720836
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48Q8rx3z3GzDqhb
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Feb 2020 13:53:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=sukadev@linux.vnet.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48Q8qD6fxJzDqN5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Feb 2020 13:51:49 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 01N2oOV8007363; Sat, 22 Feb 2020 21:51:24 -0500
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2yb0g1xs8t-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Sat, 22 Feb 2020 21:51:24 -0500
-Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 01N2oul4008880;
- Sat, 22 Feb 2020 21:51:23 -0500
-Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
- [169.53.41.122])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2yb0g1xs8j-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Sat, 22 Feb 2020 21:51:23 -0500
-Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
- by ppma04dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 01N2oHBH019872;
- Sun, 23 Feb 2020 02:51:22 GMT
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28]) by ppma04dal.us.ibm.com with ESMTP id 2yaux6287y-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Sun, 23 Feb 2020 02:51:22 +0000
-Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
- [9.57.199.108])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 01N2pLH740698272
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Sun, 23 Feb 2020 02:51:21 GMT
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 38F5FB205F;
- Sun, 23 Feb 2020 02:51:21 +0000 (GMT)
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1958DB2065;
- Sun, 23 Feb 2020 02:51:21 +0000 (GMT)
-Received: from suka-w540.localdomain (unknown [9.70.94.45])
- by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
- Sun, 23 Feb 2020 02:51:21 +0000 (GMT)
-Received: by suka-w540.localdomain (Postfix, from userid 1000)
- id 74DF52E22BE; Sat, 22 Feb 2020 18:51:19 -0800 (PST)
-Date: Sat, 22 Feb 2020 18:51:19 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Kajol Jain <kjain@linux.ibm.com>
-Subject: Re: [PATCH v2 1/8] powerpc/perf/hv-24x7: Fix inconsistent output
- values incase multiple hv-24x7 events run
-Message-ID: <20200223025119.GA17174@us.ibm.com>
-References: <20200221061022.3047-1-kjain@linux.ibm.com>
- <20200221061022.3047-2-kjain@linux.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200221061022.3047-2-kjain@linux.ibm.com>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
- definitions=2020-02-22_08:2020-02-21,
- 2020-02-22 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- malwarescore=0 impostorscore=0 bulkscore=0 adultscore=0 phishscore=0
- priorityscore=1501 spamscore=0 mlxlogscore=999 suspectscore=0 mlxscore=0
- clxscore=1011 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2001150001 definitions=main-2002230022
+	by lists.ozlabs.org (Postfix) with ESMTP id 48Qb2D0qSpzDqR6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2020 06:32:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
+ (client-ip=217.140.110.172; helo=foss.arm.com;
+ envelope-from=qais.yousef@arm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+ by lists.ozlabs.org (Postfix) with ESMTP id 48QZys2fRhzDqBW
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Feb 2020 06:29:55 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3D692101E;
+ Sun, 23 Feb 2020 11:29:54 -0800 (PST)
+Received: from e107158-lin.cambridge.arm.com (e107158-lin.cambridge.arm.com
+ [10.1.195.21])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 437293F6CF;
+ Sun, 23 Feb 2020 11:29:52 -0800 (PST)
+From: Qais Yousef <qais.yousef@arm.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH v3 01/15] cpu: Add new {add,remove}_cpu() functions
+Date: Sun, 23 Feb 2020 19:29:28 +0000
+Message-Id: <20200223192942.18420-2-qais.yousef@arm.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200223192942.18420-1-qais.yousef@arm.com>
+References: <20200223192942.18420-1-qais.yousef@arm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,55 +55,107 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, maddy@linux.vnet.ibm.com, peterz@infradead.org,
- yao.jin@linux.intel.com, mingo@kernel.org, kan.liang@linux.intel.com,
- ak@linux.intel.com, alexander.shishkin@linux.intel.com,
- anju@linux.vnet.ibm.com, mamatha4@linux.vnet.ibm.com,
- ravi.bangoria@linux.ibm.com, acme@kernel.org, jmario@redhat.com,
- namhyung@kernel.org, tglx@linutronix.de, mpetlan@redhat.com,
- gregkh@linuxfoundation.org, linux-perf-users@vger.kernel.org, jolsa@kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: Juergen Gross <jgross@suse.com>, Mark Rutland <mark.rutland@arm.com>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-parisc@vger.kernel.org,
+ "Paul E . McKenney" <paulmck@kernel.org>, Helge Deller <deller@gmx.de>,
+ x86@kernel.org, linux-kernel@vger.kernel.org,
+ "David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org,
+ xen-devel@lists.xenproject.org, linuxppc-dev@lists.ozlabs.org,
+ Qais Yousef <qais.yousef@arm.com>, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Kajol Jain [kjain@linux.ibm.com] wrote:
-> Commit 2b206ee6b0df ("powerpc/perf/hv-24x7: Display change in counter
-> values")' added to print _change_ in the counter value rather then raw
-> value for 24x7 counters. Incase of transactions, the event count
-> is set to 0 at the beginning of the transaction. It also sets
-> the event's prev_count to the raw value at the time of initialization.
-> Because of setting event count to 0, we are seeing some weird behaviour,
-> whenever we run multiple 24x7 events at a time.
+The new functions use device_{online,offline}() which are userspace
+safe.
 
-Interesting. Are we taking delta of a delta and ending up with large
-negative values in the -I case?  However...
+This is in preparation to move cpu_{up, down} kernel users to use
+a safer interface that is not racy with userspace.
 
-<snip>
+Suggested-by: "Paul E. McKenney" <paulmck@kernel.org>
+Signed-off-by: Qais Yousef <qais.yousef@arm.com>
+CC: Thomas Gleixner <tglx@linutronix.de>
+CC: "Paul E. McKenney" <paulmck@kernel.org>
+CC: Helge Deller <deller@gmx.de>
+CC: Michael Ellerman <mpe@ellerman.id.au>
+CC: "David S. Miller" <davem@davemloft.net>
+CC: Juergen Gross <jgross@suse.com>
+CC: Mark Rutland <mark.rutland@arm.com>
+CC: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+CC: xen-devel@lists.xenproject.org
+CC: linux-parisc@vger.kernel.org
+CC: sparclinux@vger.kernel.org
+CC: linuxppc-dev@lists.ozlabs.org
+CC: linux-arm-kernel@lists.infradead.org
+CC: x86@kernel.org
+CC: linux-kernel@vger.kernel.org
+---
+ include/linux/cpu.h |  2 ++
+ kernel/cpu.c        | 24 ++++++++++++++++++++++++
+ 2 files changed, 26 insertions(+)
 
-> 
-> Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
-> ---
->  arch/powerpc/perf/hv-24x7.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
-> index 573e0b309c0c..6dbbf70232aa 100644
-> --- a/arch/powerpc/perf/hv-24x7.c
-> +++ b/arch/powerpc/perf/hv-24x7.c
-> @@ -1409,7 +1409,7 @@ static void h_24x7_event_read(struct perf_event *event)
->  			 * that would require issuing a hcall, which would then
->  			 * defeat the purpose of using the txn interface.
->  			 */
-> -			local64_set(&event->count, 0);
-> +			local64_add(0, &event->count);
+diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+index 1ca2baf817ed..cf8cf38dca43 100644
+--- a/include/linux/cpu.h
++++ b/include/linux/cpu.h
+@@ -89,6 +89,7 @@ extern ssize_t arch_cpu_release(const char *, size_t);
+ #ifdef CONFIG_SMP
+ extern bool cpuhp_tasks_frozen;
+ int cpu_up(unsigned int cpu);
++int add_cpu(unsigned int cpu);
+ void notify_cpu_starting(unsigned int cpu);
+ extern void cpu_maps_update_begin(void);
+ extern void cpu_maps_update_done(void);
+@@ -118,6 +119,7 @@ extern void cpu_hotplug_disable(void);
+ extern void cpu_hotplug_enable(void);
+ void clear_tasks_mm_cpumask(int cpu);
+ int cpu_down(unsigned int cpu);
++int remove_cpu(unsigned int cpu);
+ 
+ #else /* CONFIG_HOTPLUG_CPU */
+ 
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index 9c706af713fb..069802f7010f 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -1057,6 +1057,18 @@ int cpu_down(unsigned int cpu)
+ }
+ EXPORT_SYMBOL(cpu_down);
+ 
++int remove_cpu(unsigned int cpu)
++{
++	int ret;
++
++	lock_device_hotplug();
++	ret = device_offline(get_cpu_device(cpu));
++	unlock_device_hotplug();
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(remove_cpu);
++
+ #else
+ #define takedown_cpu		NULL
+ #endif /*CONFIG_HOTPLUG_CPU*/
+@@ -1209,6 +1221,18 @@ int cpu_up(unsigned int cpu)
+ }
+ EXPORT_SYMBOL_GPL(cpu_up);
+ 
++int add_cpu(unsigned int cpu)
++{
++	int ret;
++
++	lock_device_hotplug();
++	ret = device_online(get_cpu_device(cpu));
++	unlock_device_hotplug();
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(add_cpu);
++
+ #ifdef CONFIG_PM_SLEEP_SMP
+ static cpumask_var_t frozen_cpus;
+ 
+-- 
+2.17.1
 
-... not sure, how adding zero to the count helps. Should we just remove the
-line (and the comment block above it)?  Or does it help to clear the event
-count in ->start_txn() rather than on read()?
-
-How does the change impact the counts when run without the -I?
-
-Thanks for chasing this down.
-
-Sukadev
