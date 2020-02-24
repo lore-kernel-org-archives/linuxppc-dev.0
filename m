@@ -2,111 +2,98 @@ Return-Path: <SRS0=vDV2=4M=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EFF02C3567B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2020 09:25:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BD3CC3567B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2020 09:28:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5440620714
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2020 09:25:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2A64B20714
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2020 09:28:20 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="pITX30Se"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5440620714
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="T94v3JSl"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2A64B20714
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48QxWG41Y0zDqHL
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2020 20:25:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48QxZB2708zDq8X
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2020 20:28:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=oracle.com (client-ip=156.151.31.85; helo=userp2120.oracle.com;
+ envelope-from=dan.carpenter@oracle.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=40.107.14.41; helo=eur01-ve1-obe.outbound.protection.outlook.com;
- envelope-from=zhiqiang.hou@nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256
- header.s=selector2 header.b=pITX30Se; 
+ dmarc=pass (p=none dis=none) header.from=oracle.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256
+ header.s=corp-2020-01-29 header.b=T94v3JSl; 
  dkim-atps=neutral
-Received: from EUR01-VE1-obe.outbound.protection.outlook.com
- (mail-eopbgr140041.outbound.protection.outlook.com [40.107.14.41])
+X-Greylist: delayed 10062 seconds by postgrey-1.36 at bilbo;
+ Mon, 24 Feb 2020 20:23:51 AEDT
+Received: from userp2120.oracle.com (userp2120.oracle.com [156.151.31.85])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48QxS16MshzDqQ6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Feb 2020 20:22:54 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=IR5bmWyjoSZtYDIjpU+uGCV6x3DD82ehKArV0tHGd+WKg+BKAsmF0dQZ7RGnqEN1eQwFe9B9hgp0E4eKQp4YqjMlwU8uoLS9JUaFc4+johYURjFHPr5o28GLc+3hydr437yECONlwKgogKLqiJeVN5qRsngiwqTrlQIxnavW/hawGqQhrpyWxx0x2YxMCZGZhxOJQoO3/YuY5KZjhTqAgoDkaaKSubhdddDuYCY4OApVys5lnI2nCZfRKGio9lg/2Fy5FYgOkBmZIG1AXgI49Yds+viDlynbJTWC7KXFgnxFmNMn4HSiqf9ikePWF9K+cQgNkVD8smLr+3E8zIRGmw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=de1aR3MFLCX7Yz5h5aV2dNt/PB6gDlUvr9xuHi6g/Kg=;
- b=KfooYzX42txGeCCCJh0QJjbONCO0ofZzvSdsBhA203tbdDOoo9ZRKOoWD+RHo1Xc7p2d91+0n7lBCK72tvnM76Hv4OH2SeMWWvhOu8XnLWtlnHqYiWel2yBC1KkC6XYWKBbUWhSiuwy4cWegXqdrRRMSh1dHKh+NXnMWA8vQ3Jaj0n9tm4oai3b19inPhpgP9SD9EmEqt4wXrXbceuxjVLFI2h574Xk/CWexV3vTJeOw/uYJi5QdeeZ/aiqwlsQhOztv+MbIopLFlx8TZBtzJR6/PTeSnOvab0LsJK4SZ1eQfLqpXVxTc6hLnxB7wFG3pNeYWgDj9jju0hHZhGkLZw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2; 
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=de1aR3MFLCX7Yz5h5aV2dNt/PB6gDlUvr9xuHi6g/Kg=;
- b=pITX30SeeFFups8+DfN1kNyZ2/CWHfnVcvsc0XvmbzKvWKWlQsiU2pA0sva+f9Ys8mi1H7arjA5BkaYcgxfduSC4JMHhfOqwdjXbHDb3p3ZLiNs1vJ9jg/+9ZhmlPW1sCUIDbq11ZeG2U2n6OK3Nj7OHBzNwkzToJ6+QpixZImU=
-Received: from DB8PR04MB6747.eurprd04.prod.outlook.com (20.179.250.159) by
- DB8PR04MB6907.eurprd04.prod.outlook.com (52.133.242.10) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.2750.18; Mon, 24 Feb 2020 09:22:48 +0000
-Received: from DB8PR04MB6747.eurprd04.prod.outlook.com
- ([fe80::104b:e88b:b0d3:cdaa]) by DB8PR04MB6747.eurprd04.prod.outlook.com
- ([fe80::104b:e88b:b0d3:cdaa%4]) with mapi id 15.20.2750.021; Mon, 24 Feb 2020
- 09:22:48 +0000
-From: "Z.q. Hou" <zhiqiang.hou@nxp.com>
-To: Michael Walle <michael@walle.cc>, Shawn Guo <shawnguo@kernel.org>
-Subject: RE: [PATCH v6 2/3] arm64: dts: ls1028a: Add PCIe controller DT nodes
-Thread-Topic: [PATCH v6 2/3] arm64: dts: ls1028a: Add PCIe controller DT nodes
-Thread-Index: AQHVYUIA2y+cYTzIk0ebobZ1u8h9/agrEWeAgAAI9wCAAALoAIAAB6mw
-Date: Mon, 24 Feb 2020 09:22:47 +0000
-Message-ID: <DB8PR04MB67474FF5451A647C4495526F84EC0@DB8PR04MB6747.eurprd04.prod.outlook.com>
-References: <20190902034319.14026-2-xiaowei.bao@nxp.com>
- <20200224081105.13878-1-michael@walle.cc> <20200224084307.GD27688@dragon>
- <a3aeabddc82ca86e3dca9c26081a0077@walle.cc>
-In-Reply-To: <a3aeabddc82ca86e3dca9c26081a0077@walle.cc>
-Accept-Language: zh-CN, en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=zhiqiang.hou@nxp.com; 
-x-originating-ip: [223.72.66.225]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-ht: Tenant
-x-ms-office365-filtering-correlation-id: ca9c9c18-6fe0-4b13-f624-08d7b90b1d51
-x-ms-traffictypediagnostic: DB8PR04MB6907:|DB8PR04MB6907:
-x-ms-exchange-transport-forked: True
-x-microsoft-antispam-prvs: <DB8PR04MB6907C3D2C62A2BECF5EC59FA84EC0@DB8PR04MB6907.eurprd04.prod.outlook.com>
-x-ms-oob-tlc-oobclassifiers: OLM:4941;
-x-forefront-prvs: 032334F434
-x-forefront-antispam-report: SFV:NSPM;
- SFS:(10009020)(4636009)(366004)(346002)(376002)(136003)(396003)(39860400002)(199004)(189003)(7416002)(5660300002)(86362001)(55016002)(9686003)(8676002)(81156014)(81166006)(8936002)(6506007)(53546011)(7696005)(33656002)(52536014)(66476007)(478600001)(66556008)(110136005)(66446008)(316002)(64756008)(4326008)(54906003)(2906002)(71200400001)(26005)(186003)(76116006)(66946007);
- DIR:OUT; SFP:1101; SCL:1; SRVR:DB8PR04MB6907;
- H:DB8PR04MB6747.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
- PTR:InfoNoRecords; A:1; MX:1; 
-received-spf: None (protection.outlook.com: nxp.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: ZLC5LPh151g4wdlqKVWYmB6xZrbqy8oRG5AL708l4N2PZlbdrJirG+vQpviXR0IAFSesM9C4IdL5RfcR7LjDZkVQn5YPB/RqSEmg1u4t/32jcVQ+cN6n/qo+NHEXqhoP5B6cA+e2aQOj2pKxUS6JiY5baCUobcu4d6Wy7JDsw5Ag0RlBNzF7T58Md5D2l+uheka0mm02rjtKXdCBLVbeVMDZdzY9U8uXFoumaXdckRqyO5sBu5yS7+XE5YuVa5qonTr/jIUGPHnqCJzuocSiHSuodQLwlMM0LVPFHndWVpAKND9nuS2V/+igNj32HzX+jwG8YSPaL0bQ2q7/edeRMTA22Gabhi59tTWTB42MTecLxg+wtAIClVL+1HqHFKqN3fIr0iY6pZLipa3XWY1xacm7Z9CgOKBTKI/i18LV37RehNrJyWoYfofpNhYkNv/Z
-x-ms-exchange-antispam-messagedata: imaKY1Jdo5rbJ3B5eMwzk84/xhMgymnR7hYn8mBOLH20nKyi+MKJuGrz0zmpHeMrjqA3TnwuIXs1kzekNmY4KYKjDabSUeh99hEczcBJTSDhj6+at1EBsQPdoGU5/VLNzk7kGFgvsbGXuHY8dWh0YQ==
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48QxT40f0czDqVq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Feb 2020 20:23:51 +1100 (AEDT)
+Received: from pps.filterd (userp2120.oracle.com [127.0.0.1])
+ by userp2120.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 01O6ZCQB148301;
+ Mon, 24 Feb 2020 06:35:51 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
+ h=date : from : to : cc
+ : subject : message-id : references : mime-version : content-type :
+ in-reply-to; s=corp-2020-01-29;
+ bh=qvvE/QeaFeeWvi/ZddnrDx5vkFAlwi415cDHF7+KM3Q=;
+ b=T94v3JSljCelxXlRsVLe9P13vnGTez4Pmixsn20wAhCZGBwBYR+iOXCiP6SH3RlxdRlA
+ 3pkUrkI+xBYuSn6yF08lfauBBShUfIW4PuQPoVad9kb9qlcqUcRZV3RtZuFumrgiS/bZ
+ cr4z0BoxeqG65NviRh0/muLrZvJeOeTL8Vr5Qp3UieerOSYeMLgEtIQWLpLmWFLM2QG8
+ AR8NOstuLywh+PpJectwnUQOqb4TXpc6KMKD1rlXVcx1lOCHUoufXeIvTpMxhpyK4cTr
+ fSO4z4eoEdsoGpXYbWatayLl+LiGNet61SR2ll4lgymBvIS8FWcUIXPCU2X+BMPSQKtN gw== 
+Received: from userp3030.oracle.com (userp3030.oracle.com [156.151.31.80])
+ by userp2120.oracle.com with ESMTP id 2yavxrd616-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 24 Feb 2020 06:35:51 +0000
+Received: from pps.filterd (userp3030.oracle.com [127.0.0.1])
+ by userp3030.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 01O6W4U5038129;
+ Mon, 24 Feb 2020 06:35:51 GMT
+Received: from userv0122.oracle.com (userv0122.oracle.com [156.151.31.75])
+ by userp3030.oracle.com with ESMTP id 2ybdsfvyb1-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 24 Feb 2020 06:35:51 +0000
+Received: from abhmp0006.oracle.com (abhmp0006.oracle.com [141.146.116.12])
+ by userv0122.oracle.com (8.14.4/8.14.4) with ESMTP id 01O6Ze0E008125;
+ Mon, 24 Feb 2020 06:35:40 GMT
+Received: from kadam (/129.205.23.165) by default (Oracle Beehive Gateway v4.0)
+ with ESMTP ; Sun, 23 Feb 2020 22:35:39 -0800
+Date: Mon, 24 Feb 2020 09:35:29 +0300
+From: Dan Carpenter <dan.carpenter@oracle.com>
+To: Colin King <colin.king@canonical.com>
+Subject: Re: [PATCH][next] soc: fsl: dpio: fix dereference of pointer p
+ before null check
+Message-ID: <20200224063529.GA3286@kadam>
+References: <20200221231143.30131-1-colin.king@canonical.com>
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: ca9c9c18-6fe0-4b13-f624-08d7b90b1d51
-X-MS-Exchange-CrossTenant-originalarrivaltime: 24 Feb 2020 09:22:48.2924 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: aRHElNM7C0zIZEpnbQHcYXwE7AGqhUrY0LIN+IWSSzYxLUFQDqj7qrX/t6g23l2WLRBFeDg61J4+kWrdnyBj8w==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB8PR04MB6907
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200221231143.30131-1-colin.king@canonical.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9540
+ signatures=668685
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0
+ suspectscore=0 spamscore=0
+ malwarescore=0 mlxscore=0 bulkscore=0 mlxlogscore=999 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2001150001
+ definitions=main-2002240056
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9540
+ signatures=668685
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 impostorscore=0
+ lowpriorityscore=0
+ spamscore=0 clxscore=1011 suspectscore=0 bulkscore=0 mlxlogscore=999
+ malwarescore=0 phishscore=0 adultscore=0 priorityscore=1501 mlxscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2001150001
+ definitions=main-2002240056
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -118,49 +105,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "lorenzo.pieralisi@arm.com" <lorenzo.pieralisi@arm.com>,
- Xiaowei Bao <xiaowei.bao@nxp.com>, Roy Zang <roy.zang@nxp.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Leo Li <leoyang.li@nxp.com>, "M.h. Lian" <minghuan.lian@nxp.com>,
- "robh+dt@kernel.org" <robh+dt@kernel.org>, Mingkai Hu <mingkai.hu@nxp.com>,
- "bhelgaas@google.com" <bhelgaas@google.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: linux-kernel@vger.kernel.org, Roy Pledge <Roy.Pledge@nxp.com>,
+ kernel-janitors@vger.kernel.org, Youri Querry <youri.querry_1@nxp.com>,
+ Li Yang <leoyang.li@nxp.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-SGkgTWljaGFlbCBhbmQgU2hhd24sDQoNCkknbGwgdXBkYXRlIHRoZSBwYXRjaCB3aXRoIGlvbW11
-LW1hcCBwcm9wZXJ0eS4NCg0KVGhhbmtzLA0KWmhpcWlhbmcNCg0KPiAtLS0tLU9yaWdpbmFsIE1l
-c3NhZ2UtLS0tLQ0KPiBGcm9tOiBNaWNoYWVsIFdhbGxlIDxtaWNoYWVsQHdhbGxlLmNjPg0KPiBT
-ZW50OiAyMDIwxOoy1MIyNMjVIDE2OjU0DQo+IFRvOiBTaGF3biBHdW8gPHNoYXduZ3VvQGtlcm5l
-bC5vcmc+DQo+IENjOiBYaWFvd2VpIEJhbyA8eGlhb3dlaS5iYW9AbnhwLmNvbT47IFoucS4gSG91
-DQo+IDx6aGlxaWFuZy5ob3VAbnhwLmNvbT47IGJoZWxnYWFzQGdvb2dsZS5jb207DQo+IGRldmlj
-ZXRyZWVAdmdlci5rZXJuZWwub3JnOyBMZW8gTGkgPGxlb3lhbmcubGlAbnhwLmNvbT47DQo+IGxp
-bnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZzsgbGludXgta2VybmVsQHZnZXIua2Vy
-bmVsLm9yZzsNCj4gbGludXgtcGNpQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxpc3Rz
-Lm96bGFicy5vcmc7DQo+IGxvcmVuem8ucGllcmFsaXNpQGFybS5jb207IG1hcmsucnV0bGFuZEBh
-cm0uY29tOyBNLmguIExpYW4NCj4gPG1pbmdodWFuLmxpYW5AbnhwLmNvbT47IE1pbmdrYWkgSHUg
-PG1pbmdrYWkuaHVAbnhwLmNvbT47DQo+IHJvYmgrZHRAa2VybmVsLm9yZzsgUm95IFphbmcgPHJv
-eS56YW5nQG54cC5jb20+DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjYgMi8zXSBhcm02NDogZHRz
-OiBsczEwMjhhOiBBZGQgUENJZSBjb250cm9sbGVyIERUDQo+IG5vZGVzDQo+IA0KPiBIaSBTaGF3
-biwgYWxsLA0KPiANCj4gQW0gMjAyMC0wMi0yNCAwOTo0Mywgc2NocmllYiBTaGF3biBHdW86DQo+
-ID4gT24gTW9uLCBGZWIgMjQsIDIwMjAgYXQgMDk6MTE6MDVBTSArMDEwMCwgTWljaGFlbCBXYWxs
-ZSB3cm90ZToNCj4gPj4gSGkgWGlhb3dlaSwgSGkgU2hhd24sDQo+ID4+DQo+ID4+ID4gTFMxMDI4
-YSBpbXBsZW1lbnRzIDIgUENJZSAzLjAgY29udHJvbGxlcnMuDQo+ID4+DQo+ID4+IFBhdGNoIDEv
-MyBhbmQgMy8zIGFyZSBpbiBMaW51cycgdHJlZSBidXQgbm9ib2R5IHNlZW1zIHRvIGNhcmUgYWJv
-dXQNCj4gPj4gdGhpcyBwYXRjaCBhbnltb3JlIDooDQo+ID4+DQo+ID4+IFRoaXMgZG9lc24ndCB3
-b3JrIHdlbGwgd2l0aCB0aGUgSU9NTVUsIGJlY2F1c2UgdGhlIGlvbW11LW1hcCBwcm9wZXJ0eQ0K
-PiA+PiBpcyBtaXNzaW5nLiBUaGUgYm9vdGxvYWRlciBuZWVkcyB0aGUgJnNtbXUgcGhhbmRsZSB0
-byBmaXh1cCB0aGUNCj4gPj4gZW50cnkuDQo+ID4+IFNlZQ0KPiA+PiBiZWxvdy4NCj4gPj4NCj4g
-Pj4gU2hhd24sIHdpbGwgeW91IGFkZCB0aGlzIHBhdGNoIHRvIHlvdXIgdHJlZSBvbmNlIGl0cyBm
-aXhlZCwNCj4gPj4gY29uc2lkZXJpbmcgaXQganVzdCBhZGRzIHRoZSBkZXZpY2UgdHJlZSBub2Rl
-IGZvciB0aGUgTFMxMDI4QT8NCj4gPg0KPiA+IFRoZSBwYXRjaC90aHJlYWQgaXMgYSBiaXQgYWdl
-ZC4gIFlvdSBtYXkgd2FudCB0byBzZW5kIGFuIHVwZGF0ZWQgcGF0Y2gNCj4gPiBmb3IgZGlzY3Vz
-c2lvbi4NCj4gDQo+IFNvIHNob3VsZCBJIGp1c3QgcGljayB1cCB0aGUgcGF0Y2ggYWRkIG15IHR3
-byBmaXhlcyBhbmQgc2VuZCBpdCBhZ2Fpbj8NCj4gV2hhdCBhYm91dA0KPiB0aGUgU2lnbmVkLW9m
-Zi1ieSB0YWdzPyBMZWF2ZSB0aGVtPyBSZXBsYWNlIHRoZW0/IEFkZCBtaW5lPw0KPiANCj4gLW1p
-Y2hhZWwNCg==
+On Fri, Feb 21, 2020 at 11:11:43PM +0000, Colin King wrote:
+> ---
+>  drivers/soc/fsl/dpio/qbman-portal.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/soc/fsl/dpio/qbman-portal.c b/drivers/soc/fsl/dpio/qbman-portal.c
+> index 740ee0d19582..d1f49caa5b13 100644
+> --- a/drivers/soc/fsl/dpio/qbman-portal.c
+> +++ b/drivers/soc/fsl/dpio/qbman-portal.c
+> @@ -249,10 +249,11 @@ struct qbman_swp *qbman_swp_init(const struct qbman_swp_desc *d)
+>  	u32 mask_size;
+>  	u32 eqcr_pi;
+>  
+> -	spin_lock_init(&p->access_spinlock);
+> -
+>  	if (!p)
+>  		return NULL;
+> +
+> +	spin_lock_init(&p->access_spinlock);
+
+Allocations in the declaration blog are not super common in the kernel,
+but they're more bug prone.  Generally, it's not beautiful to call a
+function which can fail in the allocation block.
+
+regards,
+dan carpenter
+
