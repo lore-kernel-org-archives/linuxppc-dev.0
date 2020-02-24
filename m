@@ -2,120 +2,65 @@ Return-Path: <SRS0=vDV2=4M=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 37B4CC3567B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2020 10:58:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DC7E4C3567B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2020 11:06:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D38392080D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2020 10:58:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4846020726
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2020 11:06:03 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=cern.onmicrosoft.com header.i=@cern.onmicrosoft.com header.b="treHLM/w"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D38392080D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=cern.ch
+	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="GeJYJdfx"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4846020726
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48QzYl0jM2zDqXf
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2020 21:58:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=cern.ch
- (client-ip=40.107.21.68; helo=eur05-vi1-obe.outbound.protection.outlook.com;
- envelope-from=federico.vaga@cern.ch; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=cern.ch
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=cern.onmicrosoft.com header.i=@cern.onmicrosoft.com
- header.a=rsa-sha256 header.s=selector2-cern-onmicrosoft-com header.b=treHLM/w;
- dkim-atps=neutral
-Received: from EUR05-VI1-obe.outbound.protection.outlook.com
- (mail-vi1eur05on2068.outbound.protection.outlook.com [40.107.21.68])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 48Qzkx01gHzDqSy
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2020 22:06:01 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48QxXW0svczDqFH
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Feb 2020 20:26:49 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=eLhB7iH5YDJQd/UPqkLrfmxKIxhuOEeRo6o8Gcea5ND0iEi6k7xi2hbTiBGcZD6y9L8ZIeZ7GxgbKqzuCARa7/dxorkh2FV0tXrKJ8Ra3ueH2QOrhQR2BVB9ND61nTS6hiqe52Hw857jN0gmuASJvbtl52mlJGUcpB2VhpnKZ3Dqw7UEFFnx46aiueqYaDFc9MbpOdSY7X8GibnhUFK14SWvLTiaNrgW0TRlPxoyU6EH2PvLqam6QUHSR+kw1fqJbcKG+OWGwxp35cemaWPZDxuu4U7JyGfSybZXsBGdp7BbXCLhaHHQ+/HKYILfLsUnsj5/tYpZ96zDQo9S5zqmXw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=tmGwAKElI2u+A0z/EETBIou5ic5kIe13D9NL0wb7U2M=;
- b=CGZrT9/zeWLslICwnV47CvnyCi4tEwQUvjqq4frvluTbtOh5IsXbUWZuRHjfuSArjnFQ7V8qGqVtI2g+xSErDkkqpOSMvLUpueUfM/Y9a9cvMUxhhRbsXuIIRghZMWr0aoiTyBh0F+ZkCM8+Y3hBx6wkGKIKjlk/4z7TKSRnyf7C+/w9hY+f31izRZKM57PBovCQDJhle01mAgeJWMacphqeZc477gRYs6vLNoJsWtMM5xovPP/PM0OZc9LqnyZrXo8PTjlcKfMmfh2jHrdSdSA+MTMjrhYqLuJajloIZjDMLL7d3s9hytgzdiyLTjnyRxL1AizGgpggJZlBlsKWag==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 188.184.36.50) smtp.rcpttodomain=kernel.org smtp.mailfrom=cern.ch;
- dmarc=bestguesspass action=none header.from=cern.ch; dkim=none (message not
- signed); arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cern.onmicrosoft.com; 
- s=selector2-cern-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=tmGwAKElI2u+A0z/EETBIou5ic5kIe13D9NL0wb7U2M=;
- b=treHLM/wuTE3F8KbK3ygj/ORGGmbE9HBEQqYgWyAmRwvSPW5jnP+JZ60wkplYx3/8FOYO8MRW3svCyvPlLsPYQKPlKNIaLUHO55uV6xCD9MQs9BFPL7WD+jRjhSKWoD25d/Kj3n/1EbzSGqtTHjsNsdj0qDL4wKrkQGEOj305CA=
-Received: from AM0PR06CA0026.eurprd06.prod.outlook.com (2603:10a6:208:ab::39)
- by HE1PR0601MB2617.eurprd06.prod.outlook.com (2603:10a6:3:4c::8) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.2750.22; Mon, 24 Feb
- 2020 09:26:42 +0000
-Received: from VE1EUR02FT030.eop-EUR02.prod.protection.outlook.com
- (2a01:111:f400:7e06::205) by AM0PR06CA0026.outlook.office365.com
- (2603:10a6:208:ab::39) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.2750.18 via Frontend
- Transport; Mon, 24 Feb 2020 09:26:42 +0000
-Authentication-Results: spf=pass (sender IP is 188.184.36.50)
- smtp.mailfrom=cern.ch; kernel.org; dkim=none (message not signed)
- header.d=none;kernel.org; dmarc=bestguesspass action=none
- header.from=cern.ch;
-Received-SPF: Pass (protection.outlook.com: domain of cern.ch designates
- 188.184.36.50 as permitted sender) receiver=protection.outlook.com;
- client-ip=188.184.36.50; helo=cernmxgwlb4.cern.ch;
-Received: from cernmxgwlb4.cern.ch (188.184.36.50) by
- VE1EUR02FT030.mail.protection.outlook.com (10.152.12.127) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- 15.20.2750.18 via Frontend Transport; Mon, 24 Feb 2020 09:26:41 +0000
-Received: from cernfe04.cern.ch (188.184.36.41) by cernmxgwlb4.cern.ch
- (188.184.36.50) with Microsoft SMTP Server (TLS) id 14.3.487.0; Mon, 24 Feb
- 2020 10:26:40 +0100
-Received: from pcbe13614.localnet (2001:1458:202:121::100:40) by smtp.cern.ch
- (2001:1458:201:66::100:14) with Microsoft SMTP Server (TLS) id
- 14.3.487.0; Mon, 24 Feb 2020 10:26:38 +0100
-From: Federico Vaga <federico.vaga@cern.ch>
-To: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-Subject: Re: [PATCH 3/7] docs: fix broken references to text files
-Date: Mon, 24 Feb 2020 10:26:39 +0100
-Message-ID: <3929512.qvrp2sLpzG@pcbe13614>
-In-Reply-To: <5cfeed6df208b74913312a1c97235ee615180f91.1582361737.git.mchehab+huawei@kernel.org>
-References: <cover.1582361737.git.mchehab+huawei@kernel.org>
- <5cfeed6df208b74913312a1c97235ee615180f91.1582361737.git.mchehab+huawei@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48QzhS1RSzzDqQZ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Feb 2020 22:03:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=GeJYJdfx; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 48QzhR4VK7z9sP7;
+ Mon, 24 Feb 2020 22:03:51 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1582542231;
+ bh=fcegNANegdW2YGsHf2YhTSfHu8ZoUriijsKGVDkpJkk=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=GeJYJdfxpOoFGlB8YLIbSJjvq3RNTaOgQERNOfzq3FWxcGrrp1eSTaoWmGVFfVLUy
+ 603Yj6egKJ5TlIb+t/OyDIar3vLlKtldxoXdPulBSnJjXTyyJdDVv7GAvMS6Dj/hRd
+ 30d31clZHjOuhyZ7ySv5EzzU8mdbLlG3Nds+CaLCwasiAYpEW5wppNxhixJg39u8GW
+ lrc+9SA637DRNRPoBtjb1rdy+tUsG+rHc221zy2XHQyxpbPCJ4PQuD6AsFzbAqfLUc
+ qlxSWfOp73cbNcsKRIDs7vBv5TwhceitHmt0jvZQM6+b+nJSuabSfyH13smMVe9FGt
+ a9Ftpwiq7DH2Q==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc: Include .BTF section
+In-Reply-To: <1582516561.ya4ydk7t7x.naveen@linux.ibm.com>
+References: <20200220113132.857132-1-naveen.n.rao@linux.vnet.ibm.com>
+ <8736b0j090.fsf@mpe.ellerman.id.au>
+ <1582516561.ya4ydk7t7x.naveen@linux.ibm.com>
+Date: Mon, 24 Feb 2020 22:03:51 +1100
+Message-ID: <87zhd8z1pk.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
-X-Originating-IP: [2001:1458:202:121::100:40]
-X-EOPAttributedMessage: 0
-X-Forefront-Antispam-Report: CIP:188.184.36.50; IPV:; CTRY:CH; EFV:NLI;
- SFV:NSPM;
- SFS:(10009020)(376002)(39860400002)(136003)(346002)(396003)(199004)(189003)(186003)(9686003)(16526019)(33716001)(26005)(2906002)(478600001)(9576002)(426003)(8676002)(44832011)(3450700001)(336012)(246002)(53546011)(8936002)(7416002)(4326008)(86362001)(7636002)(356004)(70206006)(316002)(54906003)(70586007)(5660300002)(39026012);
- DIR:OUT; SFP:1101; SCL:1; SRVR:HE1PR0601MB2617; H:cernmxgwlb4.cern.ch; FPR:;
- SPF:Pass; LANG:en; PTR:cernmx11.cern.ch; A:1; MX:1; 
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 07a24c03-738e-4624-7506-08d7b90ba88c
-X-MS-TrafficTypeDiagnostic: HE1PR0601MB2617:
-X-Microsoft-Antispam-PRVS: <HE1PR0601MB2617DD6A6BADE420AB7F4408EFEC0@HE1PR0601MB2617.eurprd06.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:2803;
-X-Forefront-PRVS: 032334F434
-X-MS-Exchange-SenderADCheck: 1
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 0qIX6XFVupoujn6tnMIXACZrhD5q3UXodzvYwqyh0hsK1Lsu+/pJ+LkIjl/NeexA/acueRAQl6tWpe3CFd900UWE/3Dp2zl9mkWVMfYl1qYpVkPmqLAGWnMEDEKi64JQPs3cOzEfTL3WjHbAxZ5gqNC3mLax0dvKusUdgcmqXKLya466pUHPmvk05PkmAw4VpLa35W1pVnc1avg4zQD+W+XccjzAi6cB/jeg95xVwyZEdY7wigcHbjHbZjeUw5bGbym667i307aOvjm5Vli7k+a11ZX1tZ2pjiiBWvLEYzJaJJQ2pSEH9ApQf6ZUYQ5f7TlyJmnEtMyipzP+fXgRIINxHtYghfwKLsQ7Fb2NPkqtE2mY/QN0LGNAE519BJMKJ2V6htEDDIZVXfSjSq9NkQg4un3jbv63EjF6kc6RkQ3fn2TRPhmkbiqtoHaEDIQdUEz7oStS5w1dmTB8Bw7vHuPaRBQq1lv0uJabtpvDjKCWQdNtDjiBIr3Z5wRpVLzv
-X-OriginatorOrg: cern.ch
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Feb 2020 09:26:41.7248 (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 07a24c03-738e-4624-7506-08d7b90ba88c
-X-MS-Exchange-CrossTenant-Id: c80d3499-4a40-4a8c-986e-abce017d6b19
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=c80d3499-4a40-4a8c-986e-abce017d6b19; Ip=[188.184.36.50];
- Helo=[cernmxgwlb4.cern.ch]
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: HE1PR0601MB2617
-X-Mailman-Approved-At: Mon, 24 Feb 2020 21:56:16 +1100
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -127,50 +72,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: federico.vaga@cern.ch
-Cc: linux-arch@vger.kernel.org, linux-nfs@vger.kernel.org, kvm@vger.kernel.org,
- Jonathan Corbet <corbet@lwn.net>, linux-rdma@vger.kernel.org,
- netdev@vger.kernel.org, Linux Doc Mailing List <linux-doc@vger.kernel.org>,
- linux-unionfs@vger.kernel.org, kvm-ppc@vger.kernel.org, linux-mm@kvack.org,
- dri-devel@lists.freedesktop.org, linux-fsdevel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, kvmarm@lists.cs.columbia.edu,
- linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Saturday, February 22, 2020 10:00:03 AM CET Mauro Carvalho Chehab wrote:
-> Several references got broken due to txt to ReST conversion.
->=20
-> Several of them can be automatically fixed with:
->=20
-> 	scripts/documentation-file-ref-check --fix
->=20
-> Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-> ---
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+> Michael Ellerman wrote:
+>> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+>>> Selecting CONFIG_DEBUG_INFO_BTF results in the below warning from ld:
+>>>   ld: warning: orphan section `.BTF' from `.btf.vmlinux.bin.o' being placed in section `.BTF'
+>>>
+>>> Include .BTF section in vmlinux explicitly to fix the same.
+>> 
+>> I don't see any other architectures doing this in their linker script.
+>> Why are we special?
+>
+> I think this is due to commit 83a092cf95f28 ("powerpc: Link warning for 
+> orphan sections"):
+> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=83a092cf95f28
+
+Oh haha, right :}
+
+> PS: I also see a linker warning for '.gnu.hash' if I enable 
+> CONFIG_RELOCATABLE, but I couldn't decipher what that was for, and if it 
+> should be retained.
+
+Yeah, Joel tried to remove it but it caused breakage:
+
+  https://lore.kernel.org/linuxppc-dev/87d0pwqweg.fsf@concordia.ellerman.id.au/
 
 
->  26) If any ioctl's are added by the patch, then also update
-> -    ``Documentation/ioctl/ioctl-number.rst``.
-> +    ``Documentation/userspace-api/ioctl/ioctl-number.rst``.
->=20
->  27) If your modified source code depends on or uses any of the kernel
->      APIs or features that are related to the following ``Kconfig`` symbo=
-ls,
-> diff --git a/Documentation/translations/it_IT/process/submit-checklist.rst
-> b/Documentation/translations/it_IT/process/submit-checklist.rst index
-> 995ee69fab11..3e575502690f 100644
-> --- a/Documentation/translations/it_IT/process/submit-checklist.rst
-> +++ b/Documentation/translations/it_IT/process/submit-checklist.rst
-> @@ -117,7 +117,7 @@ sottomissione delle patch, in particolare
->      sorgenti che ne spieghi la logica: cosa fanno e perch=E9.
->=20
->  25) Se la patch aggiunge nuove chiamate ioctl, allora aggiornate
-> -    ``Documentation/ioctl/ioctl-number.rst``.
-> +    ``Documentation/userspace-api/ioctl/ioctl-number.rst``.
+I never got around to looking at it.
 
-
-Acked-By: Federico Vaga <federico.vaga@vaga.pv.it>
-
-
-
+cheers
