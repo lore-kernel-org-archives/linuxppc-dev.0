@@ -2,67 +2,120 @@ Return-Path: <SRS0=vDV2=4M=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 315BAC3567B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2020 10:55:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 37B4CC3567B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2020 10:58:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D62882080D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2020 10:55:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D38392080D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2020 10:58:04 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="sBs1S4Fp"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D62882080D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	dkim=pass (1024-bit key) header.d=cern.onmicrosoft.com header.i=@cern.onmicrosoft.com header.b="treHLM/w"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D38392080D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=cern.ch
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48QzW41NFqzDqGp
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2020 21:55:44 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48QzT41F7RzDqJk
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Feb 2020 21:54:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=sBs1S4Fp; 
+	by lists.ozlabs.org (Postfix) with ESMTP id 48QzYl0jM2zDqXf
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2020 21:58:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=cern.ch
+ (client-ip=40.107.21.68; helo=eur05-vi1-obe.outbound.protection.outlook.com;
+ envelope-from=federico.vaga@cern.ch; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=cern.ch
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=cern.onmicrosoft.com header.i=@cern.onmicrosoft.com
+ header.a=rsa-sha256 header.s=selector2-cern-onmicrosoft-com header.b=treHLM/w;
  dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 48QzT36SWzz9sP7;
- Mon, 24 Feb 2020 21:53:59 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1582541640;
- bh=k0BqyixTJoNetYX9suYhia4s7kCRC36DzGPHDhr3mo4=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=sBs1S4FpxMEXaNkDN3F4/M+KmkKLxfXttli0RCvqhL7K0iXzNvYnQOLL8hpByXajJ
- elAusZETQUdwRNVzw/k2kVnAsF3uY5Sezbek1ohH3yEgcD5fSzgQHMRPxzpx1itG9W
- 0WnCODRM2k/kHQs/waNxhsn/FBVaFepVm+oZB4561D4dI5IaArWHx3wMynGgdSDSrR
- tF8MtVXpq8amG8WM9LJG4w9E+FeQiNHYU8HJp+gZuhXs6BFYL+hYRIfqnjDwJ+2dFi
- dQx4daUIcze42+VBgCFd0n4iIHcjLo0cCH1J5fc0WDsJuihqZdLoIbBtveQJ8QOQsU
- Ali8Himjep26Q==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Michael Neuling <mikey@neuling.org>
-Subject: Re: [RFC PATCH v2 00/12] Reduce ifdef mess in ptrace
-In-Reply-To: <5b5d8f61-c9aa-1afd-6001-44a17f00c1a6@c-s.fr>
-References: <cover.1561735587.git.christophe.leroy@c-s.fr>
- <f62b0f67-c418-3734-0b07-65aea7537a78@c-s.fr>
- <7b86733f81c7e15d81ab14b98c8998011ed54880.camel@neuling.org>
- <5b5d8f61-c9aa-1afd-6001-44a17f00c1a6@c-s.fr>
-Date: Mon, 24 Feb 2020 21:54:00 +1100
-Message-ID: <8736b01cjb.fsf@mpe.ellerman.id.au>
+Received: from EUR05-VI1-obe.outbound.protection.outlook.com
+ (mail-vi1eur05on2068.outbound.protection.outlook.com [40.107.21.68])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48QxXW0svczDqFH
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Feb 2020 20:26:49 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=eLhB7iH5YDJQd/UPqkLrfmxKIxhuOEeRo6o8Gcea5ND0iEi6k7xi2hbTiBGcZD6y9L8ZIeZ7GxgbKqzuCARa7/dxorkh2FV0tXrKJ8Ra3ueH2QOrhQR2BVB9ND61nTS6hiqe52Hw857jN0gmuASJvbtl52mlJGUcpB2VhpnKZ3Dqw7UEFFnx46aiueqYaDFc9MbpOdSY7X8GibnhUFK14SWvLTiaNrgW0TRlPxoyU6EH2PvLqam6QUHSR+kw1fqJbcKG+OWGwxp35cemaWPZDxuu4U7JyGfSybZXsBGdp7BbXCLhaHHQ+/HKYILfLsUnsj5/tYpZ96zDQo9S5zqmXw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=tmGwAKElI2u+A0z/EETBIou5ic5kIe13D9NL0wb7U2M=;
+ b=CGZrT9/zeWLslICwnV47CvnyCi4tEwQUvjqq4frvluTbtOh5IsXbUWZuRHjfuSArjnFQ7V8qGqVtI2g+xSErDkkqpOSMvLUpueUfM/Y9a9cvMUxhhRbsXuIIRghZMWr0aoiTyBh0F+ZkCM8+Y3hBx6wkGKIKjlk/4z7TKSRnyf7C+/w9hY+f31izRZKM57PBovCQDJhle01mAgeJWMacphqeZc477gRYs6vLNoJsWtMM5xovPP/PM0OZc9LqnyZrXo8PTjlcKfMmfh2jHrdSdSA+MTMjrhYqLuJajloIZjDMLL7d3s9hytgzdiyLTjnyRxL1AizGgpggJZlBlsKWag==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 188.184.36.50) smtp.rcpttodomain=kernel.org smtp.mailfrom=cern.ch;
+ dmarc=bestguesspass action=none header.from=cern.ch; dkim=none (message not
+ signed); arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cern.onmicrosoft.com; 
+ s=selector2-cern-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=tmGwAKElI2u+A0z/EETBIou5ic5kIe13D9NL0wb7U2M=;
+ b=treHLM/wuTE3F8KbK3ygj/ORGGmbE9HBEQqYgWyAmRwvSPW5jnP+JZ60wkplYx3/8FOYO8MRW3svCyvPlLsPYQKPlKNIaLUHO55uV6xCD9MQs9BFPL7WD+jRjhSKWoD25d/Kj3n/1EbzSGqtTHjsNsdj0qDL4wKrkQGEOj305CA=
+Received: from AM0PR06CA0026.eurprd06.prod.outlook.com (2603:10a6:208:ab::39)
+ by HE1PR0601MB2617.eurprd06.prod.outlook.com (2603:10a6:3:4c::8) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.2750.22; Mon, 24 Feb
+ 2020 09:26:42 +0000
+Received: from VE1EUR02FT030.eop-EUR02.prod.protection.outlook.com
+ (2a01:111:f400:7e06::205) by AM0PR06CA0026.outlook.office365.com
+ (2603:10a6:208:ab::39) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.2750.18 via Frontend
+ Transport; Mon, 24 Feb 2020 09:26:42 +0000
+Authentication-Results: spf=pass (sender IP is 188.184.36.50)
+ smtp.mailfrom=cern.ch; kernel.org; dkim=none (message not signed)
+ header.d=none;kernel.org; dmarc=bestguesspass action=none
+ header.from=cern.ch;
+Received-SPF: Pass (protection.outlook.com: domain of cern.ch designates
+ 188.184.36.50 as permitted sender) receiver=protection.outlook.com;
+ client-ip=188.184.36.50; helo=cernmxgwlb4.cern.ch;
+Received: from cernmxgwlb4.cern.ch (188.184.36.50) by
+ VE1EUR02FT030.mail.protection.outlook.com (10.152.12.127) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ 15.20.2750.18 via Frontend Transport; Mon, 24 Feb 2020 09:26:41 +0000
+Received: from cernfe04.cern.ch (188.184.36.41) by cernmxgwlb4.cern.ch
+ (188.184.36.50) with Microsoft SMTP Server (TLS) id 14.3.487.0; Mon, 24 Feb
+ 2020 10:26:40 +0100
+Received: from pcbe13614.localnet (2001:1458:202:121::100:40) by smtp.cern.ch
+ (2001:1458:201:66::100:14) with Microsoft SMTP Server (TLS) id
+ 14.3.487.0; Mon, 24 Feb 2020 10:26:38 +0100
+From: Federico Vaga <federico.vaga@cern.ch>
+To: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Subject: Re: [PATCH 3/7] docs: fix broken references to text files
+Date: Mon, 24 Feb 2020 10:26:39 +0100
+Message-ID: <3929512.qvrp2sLpzG@pcbe13614>
+In-Reply-To: <5cfeed6df208b74913312a1c97235ee615180f91.1582361737.git.mchehab+huawei@kernel.org>
+References: <cover.1582361737.git.mchehab+huawei@kernel.org>
+ <5cfeed6df208b74913312a1c97235ee615180f91.1582361737.git.mchehab+huawei@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
+X-Originating-IP: [2001:1458:202:121::100:40]
+X-EOPAttributedMessage: 0
+X-Forefront-Antispam-Report: CIP:188.184.36.50; IPV:; CTRY:CH; EFV:NLI;
+ SFV:NSPM;
+ SFS:(10009020)(376002)(39860400002)(136003)(346002)(396003)(199004)(189003)(186003)(9686003)(16526019)(33716001)(26005)(2906002)(478600001)(9576002)(426003)(8676002)(44832011)(3450700001)(336012)(246002)(53546011)(8936002)(7416002)(4326008)(86362001)(7636002)(356004)(70206006)(316002)(54906003)(70586007)(5660300002)(39026012);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:HE1PR0601MB2617; H:cernmxgwlb4.cern.ch; FPR:;
+ SPF:Pass; LANG:en; PTR:cernmx11.cern.ch; A:1; MX:1; 
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: 07a24c03-738e-4624-7506-08d7b90ba88c
+X-MS-TrafficTypeDiagnostic: HE1PR0601MB2617:
+X-Microsoft-Antispam-PRVS: <HE1PR0601MB2617DD6A6BADE420AB7F4408EFEC0@HE1PR0601MB2617.eurprd06.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:2803;
+X-Forefront-PRVS: 032334F434
+X-MS-Exchange-SenderADCheck: 1
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 0qIX6XFVupoujn6tnMIXACZrhD5q3UXodzvYwqyh0hsK1Lsu+/pJ+LkIjl/NeexA/acueRAQl6tWpe3CFd900UWE/3Dp2zl9mkWVMfYl1qYpVkPmqLAGWnMEDEKi64JQPs3cOzEfTL3WjHbAxZ5gqNC3mLax0dvKusUdgcmqXKLya466pUHPmvk05PkmAw4VpLa35W1pVnc1avg4zQD+W+XccjzAi6cB/jeg95xVwyZEdY7wigcHbjHbZjeUw5bGbym667i307aOvjm5Vli7k+a11ZX1tZ2pjiiBWvLEYzJaJJQ2pSEH9ApQf6ZUYQ5f7TlyJmnEtMyipzP+fXgRIINxHtYghfwKLsQ7Fb2NPkqtE2mY/QN0LGNAE519BJMKJ2V6htEDDIZVXfSjSq9NkQg4un3jbv63EjF6kc6RkQ3fn2TRPhmkbiqtoHaEDIQdUEz7oStS5w1dmTB8Bw7vHuPaRBQq1lv0uJabtpvDjKCWQdNtDjiBIr3Z5wRpVLzv
+X-OriginatorOrg: cern.ch
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Feb 2020 09:26:41.7248 (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 07a24c03-738e-4624-7506-08d7b90ba88c
+X-MS-Exchange-CrossTenant-Id: c80d3499-4a40-4a8c-986e-abce017d6b19
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=c80d3499-4a40-4a8c-986e-abce017d6b19; Ip=[188.184.36.50];
+ Helo=[cernmxgwlb4.cern.ch]
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: HE1PR0601MB2617
+X-Mailman-Approved-At: Mon, 24 Feb 2020 21:56:16 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,44 +127,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Reply-To: federico.vaga@cern.ch
+Cc: linux-arch@vger.kernel.org, linux-nfs@vger.kernel.org, kvm@vger.kernel.org,
+ Jonathan Corbet <corbet@lwn.net>, linux-rdma@vger.kernel.org,
+ netdev@vger.kernel.org, Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+ linux-unionfs@vger.kernel.org, kvm-ppc@vger.kernel.org, linux-mm@kvack.org,
+ dri-devel@lists.freedesktop.org, linux-fsdevel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, kvmarm@lists.cs.columbia.edu,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
-> Le 24/02/2020 =C3=A0 03:15, Michael Neuling a =C3=A9crit=C2=A0:
->> Christophe,
->>> Le 28/06/2019 =C3=A0 17:47, Christophe Leroy a =C3=A9crit :
->>>> The purpose of this series is to reduce the amount of #ifdefs
->>>> in ptrace.c
->>>
->>> Any feedback on this series which aims at fixing the issue you opened at
->>> https://github.com/linuxppc/issues/issues/128 ?
->>=20
->> Yeah, sorry my bad. You did all the hard work and I ignored it.
->>=20
->> I like the approach and is a long the lines I was thinking. Putting it i=
-n a
->> ptrace subdir, splitting out adv_debug_regs, TM, SPE, Alitivec, VSX.
->> ppc_gethwdinfo() looks a lot nicer now too (that was some of the worst o=
-f it).
->>=20
->> I've not gone through it with a fine tooth comb though. There is (rightl=
-y) a lot
->> of code moved around which could have introduced some issues.
->>=20
->> It applies on v5.2 but are you planning on updating it to a newer base?
->>=20
->
-> As you noticed there is a lot of code moved around, and rebasing=20
-> produces a lot of conflicts. So I didn't want to spend hours to rebase=20
-> and rebase without being sure it was the right approach.
->
-> Now that I got a positive feedback I'll consider rebasing it, hopping=20
-> that Michael will pick it up.
+On Saturday, February 22, 2020 10:00:03 AM CET Mauro Carvalho Chehab wrote:
+> Several references got broken due to txt to ReST conversion.
+>=20
+> Several of them can be automatically fixed with:
+>=20
+> 	scripts/documentation-file-ref-check --fix
+>=20
+> Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+> ---
 
-I would love to.
 
-cheers
+>  26) If any ioctl's are added by the patch, then also update
+> -    ``Documentation/ioctl/ioctl-number.rst``.
+> +    ``Documentation/userspace-api/ioctl/ioctl-number.rst``.
+>=20
+>  27) If your modified source code depends on or uses any of the kernel
+>      APIs or features that are related to the following ``Kconfig`` symbo=
+ls,
+> diff --git a/Documentation/translations/it_IT/process/submit-checklist.rst
+> b/Documentation/translations/it_IT/process/submit-checklist.rst index
+> 995ee69fab11..3e575502690f 100644
+> --- a/Documentation/translations/it_IT/process/submit-checklist.rst
+> +++ b/Documentation/translations/it_IT/process/submit-checklist.rst
+> @@ -117,7 +117,7 @@ sottomissione delle patch, in particolare
+>      sorgenti che ne spieghi la logica: cosa fanno e perch=E9.
+>=20
+>  25) Se la patch aggiunge nuove chiamate ioctl, allora aggiornate
+> -    ``Documentation/ioctl/ioctl-number.rst``.
+> +    ``Documentation/userspace-api/ioctl/ioctl-number.rst``.
+
+
+Acked-By: Federico Vaga <federico.vaga@vaga.pv.it>
+
+
+
