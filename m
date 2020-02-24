@@ -2,57 +2,57 @@ Return-Path: <SRS0=vDV2=4M=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C491DC35DEA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2020 23:43:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED8E7C35DEA
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2020 23:45:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6DAB82084E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2020 23:43:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5EC432176D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2020 23:45:41 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="aDw4Utfh"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6DAB82084E
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="EKKOQ3bB"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5EC432176D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48RJYK2Nm8zDqC7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Feb 2020 10:43:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48RJbR1n4mzDq7W
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Feb 2020 10:45:39 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48RJHZ1vfpzDqB0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2020 10:31:54 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48RJHb49BlzDq8X
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2020 10:31:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=aDw4Utfh; 
+ header.a=rsa-sha256 header.s=201909 header.b=EKKOQ3bB; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 48RJHY6nxXz9sRl; Tue, 25 Feb 2020 10:31:53 +1100 (AEDT)
+ id 48RJHb2wbvz9sRN; Tue, 25 Feb 2020 10:31:55 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 48RJHY3J95z9sQx; Tue, 25 Feb 2020 10:31:53 +1100 (AEDT)
+ id 48RJHb119Pz9sRJ; Tue, 25 Feb 2020 10:31:54 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1582587113;
- bh=eU9PRGdwkqGR+XaxfNgvc4i2nXKN+QYEl3ouFzBRDbU=;
+ s=201909; t=1582587115;
+ bh=wp7h+M9HoWPZWX7BCN8CXFDtNUVtpljsdviaDf+1Kxc=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=aDw4UtfhFG6qv243lzcRBOUEyawDqK8JQT0PoAmzWj2xLYda6U2gHJTQJxFZw5+af
- Ob0oWDBa4owzV9XVP4vVbJDMY5uVniDVn8wiVmZXD1aVlx0INVZhEWVsXFeeC5lKoP
- KQE9Mo0HkNJp7E7mGwcahgz0vvsjnrvF6t6YVjYbCfmjAVktC4DqfaT6zpjdONjT4r
- bbLrhNNurvRv8QiU/38xvRwgECTZoq7WDnu7BN3AVVlMO0Tjx/WzWYR1Gnoy6u57z1
- gL+NVpCoTyoM71QhSqBjsavrqbig+hbjJH1pK3vDVfBK3L8ZwxpH0/KGzXhfeXOpQz
- 45SQ7Lzyjd6pw==
+ b=EKKOQ3bBR579xJqEBl/dcm8Lo0JAAfVJCLJiISuRwB6rKkWsE16irKWVwZFJKpW7f
+ dW8loKpixifSmErEyk0BBbBNyfapCU9qUK31/Alx4ZVD9hdXnEdZs5CCAB0rGuhBeU
+ iKAhV4binLoYtdBAbmSfEejadC8YT3Xpw9Dr5HnOXkPv3DaRti0F5Y2oc1pebAw289
+ FR0XU8M+zxb7qVx2fS9Vcn2oPv2FBPAAoq/P17v6hIhJOIvgXz3UsgMUJWjqKeva4t
+ 1yGKMcZgORwTRwXiDR2sm2XaE2epW3jwTifecU0vFFVSS13sABNcBeajc7Lx8exqUS
+ fKg4EFwyck21Q==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 6/8] powerpc: Update MPC5XXX MAINTAINERS entry
-Date: Tue, 25 Feb 2020 10:31:44 +1100
-Message-Id: <20200224233146.23734-6-mpe@ellerman.id.au>
+Subject: [PATCH 7/8] powerpc: Update powermac MAINTAINERS entry
+Date: Tue, 25 Feb 2020 10:31:45 +1100
+Message-Id: <20200224233146.23734-7-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.21.1
 In-Reply-To: <20200224233146.23734-1-mpe@ellerman.id.au>
 References: <20200224233146.23734-1-mpe@ellerman.id.au>
@@ -69,35 +69,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Anatolij Gustschin <agust@denx.de>, linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-It's several years since the last commit from Anatolij, so mark
-MPC5XXX as "Odd Fixes" rather than "Maintained".
+Ben is no longer actively maintaining the powermac code, but we know
+where to find him if something really needs attention.
 
-Also the git link no longer works so remove it.
+The www.penguinppc.org link is dead so remove it.
 
-Cc: Anatolij Gustschin <agust@denx.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
  MAINTAINERS | 3 +--
  1 file changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index d5db5cac5a39..a46e19aadcbc 100644
+index a46e19aadcbc..febffee28d00 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -9639,8 +9639,7 @@ N:	pseries
- LINUX FOR POWERPC EMBEDDED MPC5XXX
- M:	Anatolij Gustschin <agust@denx.de>
+@@ -9594,9 +9594,8 @@ F:	include/uapi/linux/lightnvm.h
+ 
+ LINUX FOR POWER MACINTOSH
+ M:	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+-W:	http://www.penguinppc.org/
  L:	linuxppc-dev@lists.ozlabs.org
--T:	git git://git.denx.de/linux-denx-agust.git
 -S:	Maintained
 +S:	Odd Fixes
- F:	arch/powerpc/platforms/512x/
- F:	arch/powerpc/platforms/52xx/
+ F:	arch/powerpc/platforms/powermac/
+ F:	drivers/macintosh/
  
 -- 
 2.21.1
