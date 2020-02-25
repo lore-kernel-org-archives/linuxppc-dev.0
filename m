@@ -8,21 +8,21 @@ X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D0343C35E04
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Feb 2020 17:56:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C401C35E01
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Feb 2020 17:58:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 831522084E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Feb 2020 17:56:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4139320CC7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Feb 2020 17:58:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="cKeqKIu0"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 831522084E
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JCkg+/zI"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4139320CC7
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48Rmny36lkzDqQH
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 04:56:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48Rmr84Tl8zDqHH
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 04:58:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::444;
  helo=mail-pf1-x444.google.com; envelope-from=npiggin@gmail.com;
@@ -31,51 +31,51 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=cKeqKIu0; dkim-atps=neutral
+ header.s=20161025 header.b=JCkg+/zI; dkim-atps=neutral
 Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
  [IPv6:2607:f8b0:4864:20::444])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48RmRD4fVmzDqNF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2020 04:40:07 +1100 (AEDT)
-Received: by mail-pf1-x444.google.com with SMTP id i19so7576875pfa.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2020 09:40:07 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48RmRG3XqgzDqNF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2020 04:40:10 +1100 (AEDT)
+Received: by mail-pf1-x444.google.com with SMTP id 84so7565306pfy.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2020 09:40:10 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=hfhd1njvv5eaSw3vA7o6sz1tx9Jud4dcMmRRkyfhHnc=;
- b=cKeqKIu0hkWWMRLEkjVSK7ZWAKNtB2o+CsNyIXJ1P6YudqINPtoUt0I8IsNn7a7DI2
- zffF+9gOI78YKh3YFHSv5AsBYW82rTC0E9RhHFuVr9srV3a1ytp0UDETwrMsOTCpUnCX
- XLr83nQn9XO9YXbxpNzOEdYSPi2auSbvWjJaW7Q6g/FHKBGW2rv4iniKx3R0/BGdHzpG
- sJqnoJX2+TiYMWSrO6fmBB9Sr+zJDxHopvSTUHeoM98oMkdsugDbU7PwmSZfFwfW55nE
- OlXPgoOP9jmcGCmwlZqURpz71k2KrJngi1+Aos6wP5I7WFdFyGcWYZohQU4QF1DAyK+u
- oTkA==
+ bh=18ZLO+XLIbG183rUTM3ik6A+CWDKxjVSwLh9AHXkpPA=;
+ b=JCkg+/zIpvFVHe89Je4jGuHq9EYn7c/GxRx2sSZLDfUVB4ghtHXtJpj6Fx7npdYW5a
+ G2BHwJBrzXQtD6PDnjf2PUFPP0H1cpzyRBeZm8otxPCHACd259BAMmLAQT7mBpB42N2J
+ B0MyCiVOEK8ZVi+RAWtGCvcTqQGrhIhcRz4kZ5WbOlcHcsFKKLtLwuOZ5CP1H8GZbq/u
+ milKBzobbNjEq9fBhjx6OIxhyJNoc3WGb7s6l2N+17rjGprKCYwX5wW7pJO0jCDYyizp
+ U4oMjjjudeDY1KHTKw9gK54Ex9kNC1U6JZzTK4gEGRHMGb67ArXYF0ySuy4q1POnjEro
+ IK9w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=hfhd1njvv5eaSw3vA7o6sz1tx9Jud4dcMmRRkyfhHnc=;
- b=GyrUpUdU5AqABk4iZTw2Ds6LUERwf2dVQKrmg4TN0kMpqcIGP5KZY842oO/q7dvy0r
- 4tLncPkTejp2gl9vl5usyhYBhzoxjOdfMcHnS8+lP30D7bkrNcEcjjvVk4Mpi9k87hkd
- ryhdaC3nsZLHujyc44Zr850hhKiPsOOVYLzni6CC7ExP0m7Fe+Yh+RYkzxl+ALn3QqF8
- GSIEvLnI+1tKr/7bgSJx4Mzy1AGEu+l63oQ1vu6a4kNYYnCy5SEV5hS08B/mDdxoRtTX
- BPGkH8hfH0sfg3LldWs4rGXHZYRQjanaO9owN7S83ZzsTnQjoylqj9EQVfWgts6OyKMD
- lVCg==
-X-Gm-Message-State: APjAAAX5TYbbix9ELdHaV32oWPRwxLov6pQm7NPRzN2FMSNwS2PaE9Pd
- qQceuYMW1xNTyaW72eoAK+UyBb4S
-X-Google-Smtp-Source: APXvYqw11bFbdLYa+Zb1qo7/q3/ogeOvRtBNEOIdXv4e7nRVF56fPp728ZJIe3+0XKmy4Byzzo2LIQ==
-X-Received: by 2002:a63:104a:: with SMTP id 10mr2753279pgq.276.1582652401903; 
- Tue, 25 Feb 2020 09:40:01 -0800 (PST)
+ bh=18ZLO+XLIbG183rUTM3ik6A+CWDKxjVSwLh9AHXkpPA=;
+ b=hL7Lj4O0kwIOuu0cYns0DFKuVafqhSYzktfgFPmjy7p6U8saMTxzb/c8ZmSZHFQd5R
+ HMi0ETNrfyaNf+La8KiHli+3P2inxWw3WYVsIT3oyse5baASMSMHSRr4wLOvEPs/JMSz
+ AlAG+fw8c1Y4aO8+OZd0CnOE+noZ/gCGlp5fgUCB3LW0ziw8TfdewMFjyWk6Qrvv6u82
+ CaXFvMoCDKjvlxw05bVDxRdA4ubhtZhuCta1uiIX4N6NOvsd/1yMOiB5vq4zuLHsA7Lf
+ cQt2WXZa6iU9A13LVLC+pRugfpksAUXsOKTj7zT266eLhIU95poRmf8xeJdTCyCuYHpo
+ YMYw==
+X-Gm-Message-State: APjAAAVjSQUHCvG49ThRy4un3P6l6ng5MdES6MO9vd8D3NNMTu/2utVP
+ qwekdq1Z/3fd7hFp1vBnMw4Jk6WJ
+X-Google-Smtp-Source: APXvYqydOjiZKhSVP+rMm/FPKNJyvO1vPNJxjcM2/BjEYvPKlrgtTdRKrrnrtiC9tgeAiX1wJ96QWw==
+X-Received: by 2002:a65:56c4:: with SMTP id w4mr31824268pgs.45.1582652407455; 
+ Tue, 25 Feb 2020 09:40:07 -0800 (PST)
 Received: from bobo.ibm.com ([61.68.187.74])
- by smtp.gmail.com with ESMTPSA id z63sm14791480pgd.12.2020.02.25.09.39.59
+ by smtp.gmail.com with ESMTPSA id z63sm14791480pgd.12.2020.02.25.09.40.05
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 25 Feb 2020 09:40:01 -0800 (PST)
+ Tue, 25 Feb 2020 09:40:07 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 06/32] powerpc/64s/exception: Remove old INT_ENTRY macro
-Date: Wed, 26 Feb 2020 03:35:15 +1000
-Message-Id: <20200225173541.1549955-7-npiggin@gmail.com>
+Subject: [PATCH v3 08/32] powerpc/64s/exception: Remove old INT_KVM_HANDLER
+Date: Wed, 26 Feb 2020 03:35:17 +1000
+Message-Id: <20200225173541.1549955-9-npiggin@gmail.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20200225173541.1549955-1-npiggin@gmail.com>
 References: <20200225173541.1549955-1-npiggin@gmail.com>
@@ -99,153 +99,140 @@ Sender: "Linuxppc-dev"
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/exceptions-64s.S | 68 ++++++++++++----------------
- 1 file changed, 30 insertions(+), 38 deletions(-)
+ arch/powerpc/kernel/exceptions-64s.S | 55 +++++++++++++---------------
+ 1 file changed, 26 insertions(+), 29 deletions(-)
 
 diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 0157ba48efe9..74bf6e0bf61f 100644
+index 90514766dc7d..cba99f9a815b 100644
 --- a/arch/powerpc/kernel/exceptions-64s.S
 +++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -482,13 +482,13 @@ END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948)
-  * - Fall through and continue executing in real, unrelocated mode.
-  *   This is done if early=2.
-  */
--.macro INT_HANDLER name, vec, ool=0, early=0, virt=0, hsrr=0, area=PACA_EXGEN, ri=1, dar=0, dsisr=0, bitmask=0, kvm=0
-+.macro GEN_INT_ENTRY name, virt, ool=0
- 	SET_SCRATCH0(r13)			/* save r13 */
- 	GET_PACA(r13)
--	std	r9,\area\()+EX_R9(r13)		/* save r9 */
-+	std	r9,IAREA+EX_R9(r13)		/* save r9 */
- 	OPT_GET_SPR(r9, SPRN_PPR, CPU_FTR_HAS_PPR)
- 	HMT_MEDIUM
--	std	r10,\area\()+EX_R10(r13)	/* save r10 - r12 */
-+	std	r10,IAREA+EX_R10(r13)		/* save r10 - r12 */
- 	OPT_GET_SPR(r10, SPRN_CFAR, CPU_FTR_CFAR)
- 	.if \ool
- 	.if !\virt
-@@ -502,47 +502,47 @@ END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948)
- 	.endif
- 	.endif
- 
--	OPT_SAVE_REG_TO_PACA(\area\()+EX_PPR, r9, CPU_FTR_HAS_PPR)
--	OPT_SAVE_REG_TO_PACA(\area\()+EX_CFAR, r10, CPU_FTR_CFAR)
-+	OPT_SAVE_REG_TO_PACA(IAREA+EX_PPR, r9, CPU_FTR_HAS_PPR)
-+	OPT_SAVE_REG_TO_PACA(IAREA+EX_CFAR, r10, CPU_FTR_CFAR)
- 	INTERRUPT_TO_KERNEL
--	SAVE_CTR(r10, \area\())
-+	SAVE_CTR(r10, IAREA)
- 	mfcr	r9
--	.if \kvm
--		KVMTEST \name \hsrr \vec
-+	.if (!\virt && IKVM_REAL) || (\virt && IKVM_VIRT)
-+		KVMTEST \name IHSRR IVEC
- 	.endif
--	.if \bitmask
-+	.if IMASK
- 		lbz	r10,PACAIRQSOFTMASK(r13)
--		andi.	r10,r10,\bitmask
-+		andi.	r10,r10,IMASK
- 		/* Associate vector numbers with bits in paca->irq_happened */
--		.if \vec == 0x500 || \vec == 0xea0
-+		.if IVEC == 0x500 || IVEC == 0xea0
- 		li	r10,PACA_IRQ_EE
--		.elseif \vec == 0x900
-+		.elseif IVEC == 0x900
- 		li	r10,PACA_IRQ_DEC
--		.elseif \vec == 0xa00 || \vec == 0xe80
-+		.elseif IVEC == 0xa00 || IVEC == 0xe80
- 		li	r10,PACA_IRQ_DBELL
--		.elseif \vec == 0xe60
-+		.elseif IVEC == 0xe60
- 		li	r10,PACA_IRQ_HMI
--		.elseif \vec == 0xf00
-+		.elseif IVEC == 0xf00
- 		li	r10,PACA_IRQ_PMI
- 		.else
- 		.abort "Bad maskable vector"
- 		.endif
- 
--		.if \hsrr == EXC_HV_OR_STD
-+		.if IHSRR == EXC_HV_OR_STD
- 		BEGIN_FTR_SECTION
- 		bne	masked_Hinterrupt
- 		FTR_SECTION_ELSE
- 		bne	masked_interrupt
- 		ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
--		.elseif \hsrr
-+		.elseif IHSRR
- 		bne	masked_Hinterrupt
- 		.else
- 		bne	masked_interrupt
- 		.endif
- 	.endif
- 
--	std	r11,\area\()+EX_R11(r13)
--	std	r12,\area\()+EX_R12(r13)
-+	std	r11,IAREA+EX_R11(r13)
-+	std	r12,IAREA+EX_R12(r13)
- 
- 	/*
- 	 * DAR/DSISR, SCRATCH0 must be read before setting MSR[RI],
-@@ -550,47 +550,39 @@ END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948)
- 	 * not recoverable if they are live.
- 	 */
- 	GET_SCRATCH0(r10)
--	std	r10,\area\()+EX_R13(r13)
--	.if \dar == 1
--	.if \hsrr
-+	std	r10,IAREA+EX_R13(r13)
-+	.if IDAR == 1
-+	.if IHSRR
- 	mfspr	r10,SPRN_HDAR
- 	.else
- 	mfspr	r10,SPRN_DAR
- 	.endif
--	std	r10,\area\()+EX_DAR(r13)
-+	std	r10,IAREA+EX_DAR(r13)
- 	.endif
--	.if \dsisr == 1
--	.if \hsrr
-+	.if IDSISR == 1
-+	.if IHSRR
- 	mfspr	r10,SPRN_HDSISR
- 	.else
- 	mfspr	r10,SPRN_DSISR
- 	.endif
--	stw	r10,\area\()+EX_DSISR(r13)
-+	stw	r10,IAREA+EX_DSISR(r13)
- 	.endif
- 
--	.if \early == 2
-+	.if IEARLY == 2
- 	/* nothing more */
--	.elseif \early
-+	.elseif IEARLY
- 	mfctr	r10			/* save ctr, even for !RELOCATABLE */
- 	BRANCH_TO_C000(r11, \name\()_common)
- 	.elseif !\virt
--	INT_SAVE_SRR_AND_JUMP \name\()_common, \hsrr, \ri
-+	INT_SAVE_SRR_AND_JUMP \name\()_common, IHSRR, ISET_RI
- 	.else
--	INT_VIRT_SAVE_SRR_AND_JUMP \name\()_common, \hsrr
-+	INT_VIRT_SAVE_SRR_AND_JUMP \name\()_common, IHSRR
- 	.endif
- 	.if \ool
- 	.popsection
+@@ -266,15 +266,6 @@ do_define_int n
  	.endif
  .endm
  
--.macro GEN_INT_ENTRY name, virt, ool=0
--	.if ! \virt
--		INT_HANDLER \name, IVEC, \ool, IEARLY, \virt, IHSRR, IAREA, ISET_RI, IDAR, IDSISR, IMASK, IKVM_REAL
--	.else
--		INT_HANDLER \name, IVEC, \ool, IEARLY, \virt, IHSRR, IAREA, ISET_RI, IDAR, IDSISR, IMASK, IKVM_VIRT
--	.endif
+-.macro INT_KVM_HANDLER name, vec, hsrr, area, skip
+-	TRAMP_KVM_BEGIN(\name\()_kvm)
+-	KVM_HANDLER \vec, \hsrr, \area, \skip
 -.endm
 -
+-.macro GEN_KVM name
+-	KVM_HANDLER IVEC, IHSRR, IAREA, IKVM_SKIP
+-.endm
+-
+ #ifdef CONFIG_KVM_BOOK3S_64_HANDLER
+ #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
  /*
-  * On entry r13 points to the paca, r9-r13 are saved in the paca,
-  * r9 contains the saved CR, r11 and r12 contain the saved SRR0 and
+@@ -293,35 +284,35 @@ do_define_int n
+ 	bne	\name\()_kvm
+ .endm
+ 
+-.macro KVM_HANDLER vec, hsrr, area, skip
+-	.if \skip
++.macro GEN_KVM name
++	.if IKVM_SKIP
+ 	cmpwi	r10,KVM_GUEST_MODE_SKIP
+ 	beq	89f
+ 	.else
+ BEGIN_FTR_SECTION_NESTED(947)
+-	ld	r10,\area+EX_CFAR(r13)
++	ld	r10,IAREA+EX_CFAR(r13)
+ 	std	r10,HSTATE_CFAR(r13)
+ END_FTR_SECTION_NESTED(CPU_FTR_CFAR,CPU_FTR_CFAR,947)
+ 	.endif
+ 
+ BEGIN_FTR_SECTION_NESTED(948)
+-	ld	r10,\area+EX_PPR(r13)
++	ld	r10,IAREA+EX_PPR(r13)
+ 	std	r10,HSTATE_PPR(r13)
+ END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948)
+-	ld	r10,\area+EX_R10(r13)
++	ld	r10,IAREA+EX_R10(r13)
+ 	std	r12,HSTATE_SCRATCH0(r13)
+ 	sldi	r12,r9,32
+ 	/* HSRR variants have the 0x2 bit added to their trap number */
+-	.if \hsrr == EXC_HV_OR_STD
++	.if IHSRR == EXC_HV_OR_STD
+ 	BEGIN_FTR_SECTION
+-	ori	r12,r12,(\vec + 0x2)
++	ori	r12,r12,(IVEC + 0x2)
+ 	FTR_SECTION_ELSE
+-	ori	r12,r12,(\vec)
++	ori	r12,r12,(IVEC)
+ 	ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
+-	.elseif \hsrr
+-	ori	r12,r12,(\vec + 0x2)
++	.elseif IHSRR
++	ori	r12,r12,(IVEC+ 0x2)
+ 	.else
+-	ori	r12,r12,(\vec)
++	ori	r12,r12,(IVEC)
+ 	.endif
+ 
+ #ifdef CONFIG_RELOCATABLE
+@@ -334,25 +325,25 @@ END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948)
+ 	std	r9,HSTATE_SCRATCH1(r13)
+ 	__LOAD_FAR_HANDLER(r9, kvmppc_interrupt)
+ 	mtctr	r9
+-	ld	r9,\area+EX_R9(r13)
++	ld	r9,IAREA+EX_R9(r13)
+ 	bctr
+ #else
+-	ld	r9,\area+EX_R9(r13)
++	ld	r9,IAREA+EX_R9(r13)
+ 	b	kvmppc_interrupt
+ #endif
+ 
+ 
+-	.if \skip
++	.if IKVM_SKIP
+ 89:	mtocrf	0x80,r9
+-	ld	r9,\area+EX_R9(r13)
+-	ld	r10,\area+EX_R10(r13)
+-	.if \hsrr == EXC_HV_OR_STD
++	ld	r9,IAREA+EX_R9(r13)
++	ld	r10,IAREA+EX_R10(r13)
++	.if IHSRR == EXC_HV_OR_STD
+ 	BEGIN_FTR_SECTION
+ 	b	kvmppc_skip_Hinterrupt
+ 	FTR_SECTION_ELSE
+ 	b	kvmppc_skip_interrupt
+ 	ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
+-	.elseif \hsrr
++	.elseif IHSRR
+ 	b	kvmppc_skip_Hinterrupt
+ 	.else
+ 	b	kvmppc_skip_interrupt
+@@ -363,7 +354,7 @@ END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948)
+ #else
+ .macro KVMTEST name, hsrr, n
+ .endm
+-.macro KVM_HANDLER name, vec, hsrr, area, skip
++.macro GEN_KVM name
+ .endm
+ #endif
+ 
+@@ -1627,6 +1618,12 @@ EXC_VIRT_NONE(0x4b00, 0x100)
+  * without saving, though xer is not a good idea to use, as hardware may
+  * interpret some bits so it may be costly to change them.
+  */
++INT_DEFINE_BEGIN(system_call)
++	IVEC=0xc00
++	IKVM_REAL=1
++	IKVM_VIRT=1
++INT_DEFINE_END(system_call)
++
+ .macro SYSTEM_CALL virt
+ #ifdef CONFIG_KVM_BOOK3S_64_HANDLER
+ 	/*
+@@ -1720,7 +1717,7 @@ TRAMP_KVM_BEGIN(system_call_kvm)
+ 	SET_SCRATCH0(r10)
+ 	std	r9,PACA_EXGEN+EX_R9(r13)
+ 	mfcr	r9
+-	KVM_HANDLER 0xc00, EXC_STD, PACA_EXGEN, 0
++	GEN_KVM system_call
+ #endif
+ 
+ 
 -- 
 2.23.0
 
