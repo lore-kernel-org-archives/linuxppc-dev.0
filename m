@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 05C63C4BA04
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 12:14:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FEECC4BA0B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 12:17:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7E4EE24685
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 12:14:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id ACF4124684
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 12:17:47 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="ZX2Qm49B"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7E4EE24685
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="Cwr47Kfg"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ACF4124684
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48SF936pTJzDqNX
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 23:14:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48SFDn28DQzDqdM
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 23:17:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,53 +29,53 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=ZX2Qm49B; dkim-atps=neutral
+ header.s=mail header.b=Cwr47Kfg; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48SDjN0d7DzDqbx
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2020 22:54:00 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48SDjP21p7zDqcL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2020 22:54:01 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 48SDjG6rl1z9txVD;
- Wed, 26 Feb 2020 12:53:54 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 48SDjJ6blLz9txVF;
+ Wed, 26 Feb 2020 12:53:56 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=ZX2Qm49B; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=Cwr47Kfg; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 7I8_fAH5jb5p; Wed, 26 Feb 2020 12:53:54 +0100 (CET)
+ with ESMTP id mFW_VrsgF66z; Wed, 26 Feb 2020 12:53:56 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 48SDjG5j5tz9txV6;
- Wed, 26 Feb 2020 12:53:54 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1582718034; bh=5wrf5K15NKLuOcsJxLWZ4BEl3NP+TA4cDZIMscPwnDM=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=ZX2Qm49Bqx1Kj6Zn0cKTj5BHa/hXTY6IybrO+i5NFuh2093kGa9NoVgT1M1r6b1cR
- RQQzs94iE/BB6jn+LWfTPujJld7QKmu3d7i6yvb1dP+xkNppfhV75IiaMa/OrKMf0O
- 90qxpPbPUjMcOlBNVzk8UhRdrudqZrFnj2JBuSUI=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 11B948B846;
+ by pegase1.c-s.fr (Postfix) with ESMTP id 48SDjJ5bFhz9txV6;
  Wed, 26 Feb 2020 12:53:56 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1582718036; bh=uf9kHFohIIPyVydQkYJqQZCBFiY/xz5h8N0infTzpjI=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=Cwr47KfgLC9TjHqgh0JCBvhURTolFNiq7slgeZyUMuY2B+NxuspYHUzpKvdenfjcq
+ elAxUm7o9Qi4e/2aK4jfOmBs/GfJ2rTfyaYVyVCFt65n8fuXiNqb4PdKQFExaGdUEU
+ kgLZCgs1vijMbC8ig1fMqt33OpWfiJoX++Rt+sO4=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 124CF8B846;
+ Wed, 26 Feb 2020 12:53:58 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id DN958VpjJGRB; Wed, 26 Feb 2020 12:53:55 +0100 (CET)
+ with ESMTP id 7LiuAwP5A4_m; Wed, 26 Feb 2020 12:53:57 +0100 (CET)
 Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id BCC5F8B776;
- Wed, 26 Feb 2020 12:53:55 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C5FC08B776;
+ Wed, 26 Feb 2020 12:53:57 +0100 (CET)
 Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 9196F65400; Wed, 26 Feb 2020 11:53:55 +0000 (UTC)
-Message-Id: <dc8e20c8c95b7e83add0c6dd48f9470628896c5c.1582717645.git.christophe.leroy@c-s.fr>
+ id 9EBAE65400; Wed, 26 Feb 2020 11:53:57 +0000 (UTC)
+Message-Id: <7bb197e10ad59fb840cd5f6e0d654aa19923246a.1582717645.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1582717645.git.christophe.leroy@c-s.fr>
 References: <cover.1582717645.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 05/13] powerpc/ptrace: split out VSX related functions.
+Subject: [PATCH v3 07/13] powerpc/ptrace: split out SPE related functions.
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  mikey@neuling.org
-Date: Wed, 26 Feb 2020 11:53:55 +0000 (UTC)
+Date: Wed, 26 Feb 2020 11:53:57 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,499 +92,196 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Move CONFIG_VSX functions out of ptrace.c, into
-ptrace-vsx.c and ptrace-novsx.c
+Move CONFIG_SPE functions out of ptrace.c, into
+ptrace-spe.c
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/ptrace/Makefile       |   4 +
- arch/powerpc/kernel/ptrace/ptrace-decl.h  |  26 ++++
- arch/powerpc/kernel/ptrace/ptrace-novsx.c |  57 +++++++
- arch/powerpc/kernel/ptrace/ptrace-vsx.c   | 151 +++++++++++++++++++
- arch/powerpc/kernel/ptrace/ptrace.c       | 175 +---------------------
- 5 files changed, 241 insertions(+), 172 deletions(-)
- create mode 100644 arch/powerpc/kernel/ptrace/ptrace-decl.h
- create mode 100644 arch/powerpc/kernel/ptrace/ptrace-novsx.c
- create mode 100644 arch/powerpc/kernel/ptrace/ptrace-vsx.c
+ arch/powerpc/kernel/ptrace/Makefile      |  1 +
+ arch/powerpc/kernel/ptrace/ptrace-decl.h |  9 ++++
+ arch/powerpc/kernel/ptrace/ptrace-spe.c  | 66 ++++++++++++++++++++++++
+ arch/powerpc/kernel/ptrace/ptrace.c      | 66 ------------------------
+ 4 files changed, 76 insertions(+), 66 deletions(-)
+ create mode 100644 arch/powerpc/kernel/ptrace/ptrace-spe.c
 
 diff --git a/arch/powerpc/kernel/ptrace/Makefile b/arch/powerpc/kernel/ptrace/Makefile
-index 02fb28eb3b55..238c27189078 100644
+index 522e6fd0b5b8..f87eadf6e072 100644
 --- a/arch/powerpc/kernel/ptrace/Makefile
 +++ b/arch/powerpc/kernel/ptrace/Makefile
-@@ -7,3 +7,7 @@ CFLAGS_ptrace.o		+= -DUTS_MACHINE='"$(UTS_MACHINE)"'
- 
- obj-y				+= ptrace.o
- obj-$(CONFIG_PPC64)		+= ptrace32.o
-+obj-$(CONFIG_VSX)		+= ptrace-vsx.o
-+ifneq ($(CONFIG_VSX),y)
-+obj-y				+= ptrace-novsx.o
-+endif
+@@ -12,3 +12,4 @@ ifneq ($(CONFIG_VSX),y)
+ obj-y				+= ptrace-novsx.o
+ endif
+ obj-$(CONFIG_ALTIVEC)		+= ptrace-altivec.o
++obj-$(CONFIG_SPE)		+= ptrace-spe.o
 diff --git a/arch/powerpc/kernel/ptrace/ptrace-decl.h b/arch/powerpc/kernel/ptrace/ptrace-decl.h
-new file mode 100644
-index 000000000000..764df4ee9362
---- /dev/null
+index 0f9282cb52fc..8a362f97f1d6 100644
+--- a/arch/powerpc/kernel/ptrace/ptrace-decl.h
 +++ b/arch/powerpc/kernel/ptrace/ptrace-decl.h
-@@ -0,0 +1,26 @@
-+/* SPDX-License-Identifier: GPL-2.0-or-later */
+@@ -26,6 +26,15 @@ int vr_set(struct task_struct *target, const struct user_regset *regset,
+ 	   unsigned int pos, unsigned int count,
+ 	   const void *kbuf, const void __user *ubuf);
+ 
++/* ptrace-spe */
 +
-+/* ptrace-(no)vsx */
-+
-+int fpr_get(struct task_struct *target, const struct user_regset *regset,
++int evr_active(struct task_struct *target, const struct user_regset *regset);
++int evr_get(struct task_struct *target, const struct user_regset *regset,
 +	    unsigned int pos, unsigned int count, void *kbuf, void __user *ubuf);
-+int fpr_set(struct task_struct *target, const struct user_regset *regset,
++int evr_set(struct task_struct *target, const struct user_regset *regset,
 +	    unsigned int pos, unsigned int count,
 +	    const void *kbuf, const void __user *ubuf);
 +
-+/* ptrace-vsx */
-+
-+int vsr_active(struct task_struct *target, const struct user_regset *regset);
-+int vsr_get(struct task_struct *target, const struct user_regset *regset,
-+	    unsigned int pos, unsigned int count, void *kbuf, void __user *ubuf);
-+int vsr_set(struct task_struct *target, const struct user_regset *regset,
-+	    unsigned int pos, unsigned int count,
-+	    const void *kbuf, const void __user *ubuf);
-+
-+/* ptrace */
-+
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+void flush_tmregs_to_thread(struct task_struct *tsk);
-+#else
-+static inline void flush_tmregs_to_thread(struct task_struct *tsk) { }
-+#endif
-diff --git a/arch/powerpc/kernel/ptrace/ptrace-novsx.c b/arch/powerpc/kernel/ptrace/ptrace-novsx.c
+ /* ptrace */
+ 
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+diff --git a/arch/powerpc/kernel/ptrace/ptrace-spe.c b/arch/powerpc/kernel/ptrace/ptrace-spe.c
 new file mode 100644
-index 000000000000..b2dc4e92d11a
+index 000000000000..c2e1a15c4343
 --- /dev/null
-+++ b/arch/powerpc/kernel/ptrace/ptrace-novsx.c
-@@ -0,0 +1,57 @@
++++ b/arch/powerpc/kernel/ptrace/ptrace-spe.c
+@@ -0,0 +1,66 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +
 +#include <linux/regset.h>
 +
 +#include <asm/switch_to.h>
 +
-+#include "ptrace-decl.h"
-+
 +/*
-+ * Regardless of transactions, 'fp_state' holds the current running
-+ * value of all FPR registers and 'ckfp_state' holds the last checkpointed
-+ * value of all FPR registers for the current transaction.
++ * For get_evrregs/set_evrregs functions 'data' has the following layout:
 + *
-+ * Userspace interface buffer layout:
-+ *
-+ * struct data {
-+ *	u64	fpr[32];
-+ *	u64	fpscr;
-+ * };
++ * struct {
++ *   u32 evr[32];
++ *   u64 acc;
++ *   u32 spefscr;
++ * }
 + */
-+int fpr_get(struct task_struct *target, const struct user_regset *regset,
++
++int evr_active(struct task_struct *target, const struct user_regset *regset)
++{
++	flush_spe_to_thread(target);
++	return target->thread.used_spe ? regset->n : 0;
++}
++
++int evr_get(struct task_struct *target, const struct user_regset *regset,
 +	    unsigned int pos, unsigned int count, void *kbuf, void __user *ubuf)
 +{
-+	BUILD_BUG_ON(offsetof(struct thread_fp_state, fpscr) !=
-+		     offsetof(struct thread_fp_state, fpr[32]));
++	int ret;
 +
-+	flush_fp_to_thread(target);
-+
-+	return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-+				   &target->thread.fp_state, 0, -1);
-+}
-+
-+/*
-+ * Regardless of transactions, 'fp_state' holds the current running
-+ * value of all FPR registers and 'ckfp_state' holds the last checkpointed
-+ * value of all FPR registers for the current transaction.
-+ *
-+ * Userspace interface buffer layout:
-+ *
-+ * struct data {
-+ *	u64	fpr[32];
-+ *	u64	fpscr;
-+ * };
-+ *
-+ */
-+int fpr_set(struct task_struct *target, const struct user_regset *regset,
-+	    unsigned int pos, unsigned int count,
-+	    const void *kbuf, const void __user *ubuf)
-+{
-+	BUILD_BUG_ON(offsetof(struct thread_fp_state, fpscr) !=
-+		     offsetof(struct thread_fp_state, fpr[32]));
-+
-+	flush_fp_to_thread(target);
-+
-+	return user_regset_copyin(&pos, &count, &kbuf, &ubuf,
-+				  &target->thread.fp_state, 0, -1);
-+}
-diff --git a/arch/powerpc/kernel/ptrace/ptrace-vsx.c b/arch/powerpc/kernel/ptrace/ptrace-vsx.c
-new file mode 100644
-index 000000000000..d53466d49cc0
---- /dev/null
-+++ b/arch/powerpc/kernel/ptrace/ptrace-vsx.c
-@@ -0,0 +1,151 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+
-+#include <linux/regset.h>
-+
-+#include <asm/switch_to.h>
-+
-+#include "ptrace-decl.h"
-+
-+/*
-+ * Regardless of transactions, 'fp_state' holds the current running
-+ * value of all FPR registers and 'ckfp_state' holds the last checkpointed
-+ * value of all FPR registers for the current transaction.
-+ *
-+ * Userspace interface buffer layout:
-+ *
-+ * struct data {
-+ *	u64	fpr[32];
-+ *	u64	fpscr;
-+ * };
-+ */
-+int fpr_get(struct task_struct *target, const struct user_regset *regset,
-+	    unsigned int pos, unsigned int count, void *kbuf, void __user *ubuf)
-+{
-+	u64 buf[33];
-+	int i;
-+
-+	flush_fp_to_thread(target);
-+
-+	/* copy to local buffer then write that out */
-+	for (i = 0; i < 32 ; i++)
-+		buf[i] = target->thread.TS_FPR(i);
-+	buf[32] = target->thread.fp_state.fpscr;
-+	return user_regset_copyout(&pos, &count, &kbuf, &ubuf, buf, 0, -1);
-+}
-+
-+/*
-+ * Regardless of transactions, 'fp_state' holds the current running
-+ * value of all FPR registers and 'ckfp_state' holds the last checkpointed
-+ * value of all FPR registers for the current transaction.
-+ *
-+ * Userspace interface buffer layout:
-+ *
-+ * struct data {
-+ *	u64	fpr[32];
-+ *	u64	fpscr;
-+ * };
-+ *
-+ */
-+int fpr_set(struct task_struct *target, const struct user_regset *regset,
-+	    unsigned int pos, unsigned int count,
-+	    const void *kbuf, const void __user *ubuf)
-+{
-+	u64 buf[33];
-+	int i;
-+
-+	flush_fp_to_thread(target);
-+
-+	for (i = 0; i < 32 ; i++)
-+		buf[i] = target->thread.TS_FPR(i);
-+	buf[32] = target->thread.fp_state.fpscr;
-+
-+	/* copy to local buffer then write that out */
-+	i = user_regset_copyin(&pos, &count, &kbuf, &ubuf, buf, 0, -1);
-+	if (i)
-+		return i;
-+
-+	for (i = 0; i < 32 ; i++)
-+		target->thread.TS_FPR(i) = buf[i];
-+	target->thread.fp_state.fpscr = buf[32];
-+	return 0;
-+}
-+
-+/*
-+ * Currently to set and and get all the vsx state, you need to call
-+ * the fp and VMX calls as well.  This only get/sets the lower 32
-+ * 128bit VSX registers.
-+ */
-+
-+int vsr_active(struct task_struct *target, const struct user_regset *regset)
-+{
-+	flush_vsx_to_thread(target);
-+	return target->thread.used_vsr ? regset->n : 0;
-+}
-+
-+/*
-+ * Regardless of transactions, 'fp_state' holds the current running
-+ * value of all FPR registers and 'ckfp_state' holds the last
-+ * checkpointed value of all FPR registers for the current
-+ * transaction.
-+ *
-+ * Userspace interface buffer layout:
-+ *
-+ * struct data {
-+ *	u64	vsx[32];
-+ * };
-+ */
-+int vsr_get(struct task_struct *target, const struct user_regset *regset,
-+	    unsigned int pos, unsigned int count, void *kbuf, void __user *ubuf)
-+{
-+	u64 buf[32];
-+	int ret, i;
-+
-+	flush_tmregs_to_thread(target);
-+	flush_fp_to_thread(target);
-+	flush_altivec_to_thread(target);
-+	flush_vsx_to_thread(target);
-+
-+	for (i = 0; i < 32 ; i++)
-+		buf[i] = target->thread.fp_state.fpr[i][TS_VSRLOWOFFSET];
++	flush_spe_to_thread(target);
 +
 +	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-+				  buf, 0, 32 * sizeof(double));
++				  &target->thread.evr,
++				  0, sizeof(target->thread.evr));
++
++	BUILD_BUG_ON(offsetof(struct thread_struct, acc) + sizeof(u64) !=
++		     offsetof(struct thread_struct, spefscr));
++
++	if (!ret)
++		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
++					  &target->thread.acc,
++					  sizeof(target->thread.evr), -1);
 +
 +	return ret;
 +}
 +
-+/*
-+ * Regardless of transactions, 'fp_state' holds the current running
-+ * value of all FPR registers and 'ckfp_state' holds the last
-+ * checkpointed value of all FPR registers for the current
-+ * transaction.
-+ *
-+ * Userspace interface buffer layout:
-+ *
-+ * struct data {
-+ *	u64	vsx[32];
-+ * };
-+ */
-+int vsr_set(struct task_struct *target, const struct user_regset *regset,
++int evr_set(struct task_struct *target, const struct user_regset *regset,
 +	    unsigned int pos, unsigned int count,
 +	    const void *kbuf, const void __user *ubuf)
 +{
-+	u64 buf[32];
-+	int ret, i;
++	int ret;
 +
-+	flush_tmregs_to_thread(target);
-+	flush_fp_to_thread(target);
-+	flush_altivec_to_thread(target);
-+	flush_vsx_to_thread(target);
-+
-+	for (i = 0; i < 32 ; i++)
-+		buf[i] = target->thread.fp_state.fpr[i][TS_VSRLOWOFFSET];
++	flush_spe_to_thread(target);
 +
 +	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
-+				 buf, 0, 32 * sizeof(double));
++				 &target->thread.evr,
++				 0, sizeof(target->thread.evr));
++
++	BUILD_BUG_ON(offsetof(struct thread_struct, acc) + sizeof(u64) !=
++		     offsetof(struct thread_struct, spefscr));
++
 +	if (!ret)
-+		for (i = 0; i < 32 ; i++)
-+			target->thread.fp_state.fpr[i][TS_VSRLOWOFFSET] = buf[i];
++		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
++					 &target->thread.acc,
++					 sizeof(target->thread.evr), -1);
 +
 +	return ret;
 +}
 diff --git a/arch/powerpc/kernel/ptrace/ptrace.c b/arch/powerpc/kernel/ptrace/ptrace.c
-index 22826c942eae..ead33b74e1f3 100644
+index c383325db4a6..ca2b4d804992 100644
 --- a/arch/powerpc/kernel/ptrace/ptrace.c
 +++ b/arch/powerpc/kernel/ptrace/ptrace.c
-@@ -33,6 +33,8 @@
- #define CREATE_TRACE_POINTS
- #include <trace/events/syscalls.h>
- 
-+#include "ptrace-decl.h"
-+
- struct pt_regs_offset {
- 	const char *name;
- 	int offset;
-@@ -100,7 +102,7 @@ static const struct pt_regs_offset regoffset_table[] = {
- };
- 
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
--static void flush_tmregs_to_thread(struct task_struct *tsk)
-+void flush_tmregs_to_thread(struct task_struct *tsk)
- {
- 	/*
- 	 * If task is not current, it will have been flushed already to
-@@ -120,8 +122,6 @@ static void flush_tmregs_to_thread(struct task_struct *tsk)
- 		tm_save_sprs(&(tsk->thread));
- 	}
- }
--#else
--static inline void flush_tmregs_to_thread(struct task_struct *tsk) { }
- #endif
- 
- /**
-@@ -403,91 +403,6 @@ static int gpr_set(struct task_struct *target, const struct user_regset *regset,
+@@ -403,72 +403,6 @@ static int gpr_set(struct task_struct *target, const struct user_regset *regset,
  	return ret;
  }
  
--/*
-- * Regardless of transactions, 'fp_state' holds the current running
-- * value of all FPR registers and 'ckfp_state' holds the last checkpointed
-- * value of all FPR registers for the current transaction.
-- *
-- * Userspace interface buffer layout:
-- *
-- * struct data {
-- *	u64	fpr[32];
-- *	u64	fpscr;
-- * };
-- */
--static int fpr_get(struct task_struct *target, const struct user_regset *regset,
--		   unsigned int pos, unsigned int count,
--		   void *kbuf, void __user *ubuf)
--{
--#ifdef CONFIG_VSX
--	u64 buf[33];
--	int i;
--
--	flush_fp_to_thread(target);
--
--	/* copy to local buffer then write that out */
--	for (i = 0; i < 32 ; i++)
--		buf[i] = target->thread.TS_FPR(i);
--	buf[32] = target->thread.fp_state.fpscr;
--	return user_regset_copyout(&pos, &count, &kbuf, &ubuf, buf, 0, -1);
--#else
--	BUILD_BUG_ON(offsetof(struct thread_fp_state, fpscr) !=
--		     offsetof(struct thread_fp_state, fpr[32]));
--
--	flush_fp_to_thread(target);
--
--	return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
--				   &target->thread.fp_state, 0, -1);
--#endif
--}
+-#ifdef CONFIG_SPE
 -
 -/*
-- * Regardless of transactions, 'fp_state' holds the current running
-- * value of all FPR registers and 'ckfp_state' holds the last checkpointed
-- * value of all FPR registers for the current transaction.
+- * For get_evrregs/set_evrregs functions 'data' has the following layout:
 - *
-- * Userspace interface buffer layout:
-- *
-- * struct data {
-- *	u64	fpr[32];
-- *	u64	fpscr;
-- * };
-- *
-- */
--static int fpr_set(struct task_struct *target, const struct user_regset *regset,
--		   unsigned int pos, unsigned int count,
--		   const void *kbuf, const void __user *ubuf)
--{
--#ifdef CONFIG_VSX
--	u64 buf[33];
--	int i;
--
--	flush_fp_to_thread(target);
--
--	for (i = 0; i < 32 ; i++)
--		buf[i] = target->thread.TS_FPR(i);
--	buf[32] = target->thread.fp_state.fpscr;
--
--	/* copy to local buffer then write that out */
--	i = user_regset_copyin(&pos, &count, &kbuf, &ubuf, buf, 0, -1);
--	if (i)
--		return i;
--
--	for (i = 0; i < 32 ; i++)
--		target->thread.TS_FPR(i) = buf[i];
--	target->thread.fp_state.fpscr = buf[32];
--	return 0;
--#else
--	BUILD_BUG_ON(offsetof(struct thread_fp_state, fpscr) !=
--		     offsetof(struct thread_fp_state, fpr[32]));
--
--	flush_fp_to_thread(target);
--
--	return user_regset_copyin(&pos, &count, &kbuf, &ubuf,
--				  &target->thread.fp_state, 0, -1);
--#endif
--}
--
- #ifdef CONFIG_ALTIVEC
- /*
-  * Get/set all the altivec registers vr0..vr31, vscr, vrsave, in one go.
-@@ -612,90 +527,6 @@ static int vr_set(struct task_struct *target, const struct user_regset *regset,
- }
- #endif /* CONFIG_ALTIVEC */
- 
--#ifdef CONFIG_VSX
--/*
-- * Currently to set and and get all the vsx state, you need to call
-- * the fp and VMX calls as well.  This only get/sets the lower 32
-- * 128bit VSX registers.
+- * struct {
+- *   u32 evr[32];
+- *   u64 acc;
+- *   u32 spefscr;
+- * }
 - */
 -
--static int vsr_active(struct task_struct *target,
+-static int evr_active(struct task_struct *target,
 -		      const struct user_regset *regset)
 -{
--	flush_vsx_to_thread(target);
--	return target->thread.used_vsr ? regset->n : 0;
+-	flush_spe_to_thread(target);
+-	return target->thread.used_spe ? regset->n : 0;
 -}
 -
--/*
-- * Regardless of transactions, 'fp_state' holds the current running
-- * value of all FPR registers and 'ckfp_state' holds the last
-- * checkpointed value of all FPR registers for the current
-- * transaction.
-- *
-- * Userspace interface buffer layout:
-- *
-- * struct data {
-- *	u64	vsx[32];
-- * };
-- */
--static int vsr_get(struct task_struct *target, const struct user_regset *regset,
+-static int evr_get(struct task_struct *target, const struct user_regset *regset,
 -		   unsigned int pos, unsigned int count,
 -		   void *kbuf, void __user *ubuf)
 -{
--	u64 buf[32];
--	int ret, i;
+-	int ret;
 -
--	flush_tmregs_to_thread(target);
--	flush_fp_to_thread(target);
--	flush_altivec_to_thread(target);
--	flush_vsx_to_thread(target);
--
--	for (i = 0; i < 32 ; i++)
--		buf[i] = target->thread.fp_state.fpr[i][TS_VSRLOWOFFSET];
+-	flush_spe_to_thread(target);
 -
 -	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
--				  buf, 0, 32 * sizeof(double));
+-				  &target->thread.evr,
+-				  0, sizeof(target->thread.evr));
+-
+-	BUILD_BUG_ON(offsetof(struct thread_struct, acc) + sizeof(u64) !=
+-		     offsetof(struct thread_struct, spefscr));
+-
+-	if (!ret)
+-		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+-					  &target->thread.acc,
+-					  sizeof(target->thread.evr), -1);
 -
 -	return ret;
 -}
 -
--/*
-- * Regardless of transactions, 'fp_state' holds the current running
-- * value of all FPR registers and 'ckfp_state' holds the last
-- * checkpointed value of all FPR registers for the current
-- * transaction.
-- *
-- * Userspace interface buffer layout:
-- *
-- * struct data {
-- *	u64	vsx[32];
-- * };
-- */
--static int vsr_set(struct task_struct *target, const struct user_regset *regset,
+-static int evr_set(struct task_struct *target, const struct user_regset *regset,
 -		   unsigned int pos, unsigned int count,
 -		   const void *kbuf, const void __user *ubuf)
 -{
--	u64 buf[32];
--	int ret,i;
+-	int ret;
 -
--	flush_tmregs_to_thread(target);
--	flush_fp_to_thread(target);
--	flush_altivec_to_thread(target);
--	flush_vsx_to_thread(target);
--
--	for (i = 0; i < 32 ; i++)
--		buf[i] = target->thread.fp_state.fpr[i][TS_VSRLOWOFFSET];
+-	flush_spe_to_thread(target);
 -
 -	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
--				 buf, 0, 32 * sizeof(double));
+-				 &target->thread.evr,
+-				 0, sizeof(target->thread.evr));
+-
+-	BUILD_BUG_ON(offsetof(struct thread_struct, acc) + sizeof(u64) !=
+-		     offsetof(struct thread_struct, spefscr));
+-
 -	if (!ret)
--		for (i = 0; i < 32 ; i++)
--			target->thread.fp_state.fpr[i][TS_VSRLOWOFFSET] = buf[i];
+-		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+-					 &target->thread.acc,
+-					 sizeof(target->thread.evr), -1);
 -
 -	return ret;
 -}
--#endif /* CONFIG_VSX */
+-#endif /* CONFIG_SPE */
 -
- #ifdef CONFIG_SPE
- 
- /*
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ /**
+  * tm_cgpr_active - get active number of registers in CGPR
 -- 
 2.25.0
 
