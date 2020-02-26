@@ -2,61 +2,88 @@ Return-Path: <SRS0=VSEi=4O=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8293C4BA0E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 09:31:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A635FC4BA0E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 09:33:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0E04D21556
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 09:31:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0E04D21556
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 4F90921556
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 09:33:08 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ktw9VhFP"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4F90921556
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48S9Xk62QBzDqc3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 20:31:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48S9Zn1bwWzDqmq
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 20:33:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=srs0=+jiy=4o=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1043;
+ helo=mail-pj1-x1043.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=bugzilla.kernel.org
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=Ktw9VhFP; dkim-atps=neutral
+Received: from mail-pj1-x1043.google.com (mail-pj1-x1043.google.com
+ [IPv6:2607:f8b0:4864:20::1043])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48S9VV4DffzDqWS
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2020 20:29:22 +1100 (AEDT)
-From: bugzilla-daemon@bugzilla.kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 206669] Little-endian kernel crashing on POWER8 on heavy
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48S9VW4l04zDqWS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2020 20:29:21 +1100 (AEDT)
+Received: by mail-pj1-x1043.google.com with SMTP id j17so1031559pjz.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2020 01:29:21 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:references:in-reply-to:mime-version:user-agent
+ :message-id:content-transfer-encoding;
+ bh=seOVm+TleX9u8aC2LPrLZOn91GysKZ6bAu9w+o0gFKQ=;
+ b=Ktw9VhFPPmIDY0GYZxI05od8s1G/xMUSYTgp9IQqI5Z38c8iV/yIwrFcGlXe2+PUi9
+ sncHRxkSoaER44FmABSyS8rB9mJA7F64hCxI640k/3Mn2FG8syVo/H7aKZ4RgHv2lToR
+ R37CDvQURgK9pkNm+1qZxdPagOnSgAo9dxEnKO40/RIdgc8YnBANqjNBU2gVai+aeUhz
+ tmlUdK2pbl7E4K/m5HcyE1b2ldPkcgnGsrlRmhiaYU995o8sWoo3Q8DLifmEc49zHPqG
+ 5gusFs/crJnkncsbVGwUvHQsIQt/nZ4MW0BNIVfDf7OLLbC728YLO06yfVH7RiwI9lv2
+ zxQw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:references:in-reply-to
+ :mime-version:user-agent:message-id:content-transfer-encoding;
+ bh=seOVm+TleX9u8aC2LPrLZOn91GysKZ6bAu9w+o0gFKQ=;
+ b=EpvS3wpPexdA3/0Ws+V3XMVHd+GdaJlo/iRkvkQ5vuY3Tw9F0KMBBttTrJIRDs9Wis
+ h0nRJCusW/hgcVLceSxK8Qz6BqmQ5YIygEh5Qk++B8ryHVnaZo3skqGTtxon0+jYTQk0
+ wKvWULOTPghAAydMIt4+EM4mBBX6817aybMXkBJLa3oZMGaGlCscQ7RjcI/hOngnAm5A
+ GyobofEh6Pvx2MOF2SQ+4L/W7CgDv4oTHaEHDIX0aaOd3LQRNV8iaycqmRKy14kiP+lZ
+ +BVucNBajJ+d8LhV402hDqrp9oKgc43+80PBrEwNrLly34mCGhkEKZ8KZeRHBGnngA/0
+ Aoaw==
+X-Gm-Message-State: APjAAAVyqUptpIRHEfwjo/+AsrbWtOpi3TJ8ELhf59llQ/NfPxoqIzE+
+ o5/UYe4VIZkXU7ne6Hnljb8=
+X-Google-Smtp-Source: APXvYqzuGjO/KOua/O7DUWf4iDd65zyv96kDOODBDueB0kHbPEOzDqvjUyCRcNPY8Onf0mKMpGl2bA==
+X-Received: by 2002:a17:902:8549:: with SMTP id
+ d9mr3057781plo.153.1582709357769; 
+ Wed, 26 Feb 2020 01:29:17 -0800 (PST)
+Received: from localhost ([61.68.187.74])
+ by smtp.gmail.com with ESMTPSA id h5sm1891212pgi.28.2020.02.26.01.29.16
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 26 Feb 2020 01:29:17 -0800 (PST)
+Date: Wed, 26 Feb 2020 19:25:00 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [Bug 206669] Little-endian kernel crashing on POWER8 on heavy
  big-endian PowerKVM load
-Date: Wed, 26 Feb 2020 09:29:19 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Product: Platform Specific/Hardware
-X-Bugzilla-Component: PPC-64
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: npiggin@gmail.com
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-206669-206035-iPSmnavS0t@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-206669-206035@https.bugzilla.kernel.org/>
+To: bugzilla-daemon@bugzilla.kernel.org, linuxppc-dev@lists.ozlabs.org
 References: <bug-206669-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+ <bug-206669-206035-j2X3hiFswk@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-206669-206035-j2X3hiFswk@https.bugzilla.kernel.org/>
 MIME-Version: 1.0
+User-Agent: astroid/0.15.0 (https://github.com/astroidmail/astroid)
+Message-Id: <1582707304.m3tdrof2g5.astroid@bobo.none>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,15 +99,11 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D206669
-
---- Comment #3 from npiggin@gmail.com ---
 bugzilla-daemon@bugzilla.kernel.org's on February 26, 2020 5:26 pm:
 > https://bugzilla.kernel.org/show_bug.cgi?id=3D206669
 >=20
 > --- Comment #2 from John Paul Adrian Glaubitz (glaubitz@physik.fu-berlin.=
-de)
-> ---
+de) ---
 > (In reply to npiggin from comment #1)
 >> Thanks for the report, we need to get more data about the first BUG if=20
 >> we can. What function in your vmlinux contains address=20
@@ -88,8 +111,8 @@ de)
 >=20
 > Seems to be t select_task_rq_fair:
 >=20
-> root@watson:/boot# nm vmlinux-5.4.0-0.bpo.3-powerpc64le |grep -C5
-> c00000000017a
+> root@watson:/boot# nm vmlinux-5.4.0-0.bpo.3-powerpc64le |grep -C5 c000000=
+00017a
 > c000000000448550 T select_estimate_accuracy
 > c000000000170d20 t select_fallback_rq
 > c000000000e4c940 D select_idle_mask
@@ -107,7 +130,8 @@ de)
 >> get,
 >> No warnings or anything else earlier in the dmesg?
 >=20
-> Correct. You can see the login prompt of the host VM watson directly after
+> Correct. You can see the login prompt of the host VM watson directly afte=
+r
 > booting up.
 >=20
 >> Also 0xc0000000002659a0 would be interesting.
@@ -155,7 +179,6 @@ reason? Turning that off might let the oops message get printed.
 > FWIW, the kernel image comes from this Debian package:
 >=20
 >>
->>
 >> http://snapshot.debian.org/archive/debian/20200211T210433Z/pool/main/l/l=
 inux/linux-image-5.4.0-0.bpo.3-powerpc64le_5.4.13-1%7Ebpo10%2B1_ppc64el.deb
 
@@ -163,8 +186,8 @@ Okay. Any chance you could test an upstream kernel?=20
 >=20
 >> When reproducing, do you ever get a clean trace of the first bug?
 >=20
-> I have logged everything that showed in the console during and after the
-> crash.
+> I have logged everything that showed in the console during and after the =
+crash.
 > After that, the machine no longer responds and has to be hard-resetted.
 >=20
 >> Could you try setting /proc/sys/kernel/panic_on_oops and reproducing?
@@ -178,7 +201,8 @@ Attmepting to get into xmon might though, if you boot with xmon=3Don.
 Try that if tracing wasn't enabled, or disabling it doesn't help.
 
 >=20
-> Anything to be considered for the kernel running inside the big-endian VM?
+> Anything to be considered for the kernel running inside the big-endian VM=
+?
 >=20
 
 Not that I'm aware of really. Certainly it shouldn't be able to crash
@@ -186,7 +210,4 @@ the host even if the guest was doing something stupid.
 
 Thanks,
 Nick
-
---=20
-You are receiving this mail because:
-You are watching the assignee of the bug.=
+=
