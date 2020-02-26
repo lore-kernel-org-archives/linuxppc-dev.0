@@ -5,19 +5,19 @@ X-Spam-Level:
 X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BDB20C4BA12
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 15:57:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A4B9C4BA13
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 16:18:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6B00621556
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 15:57:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6B00621556
+	by mail.kernel.org (Postfix) with ESMTPS id 859A82084E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 16:18:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 859A82084E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48SL5x0J1hzDqlg
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Feb 2020 02:57:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48SLZt1fFfzDqnx
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Feb 2020 03:18:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=srs0=+jiy=4o=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
@@ -27,13 +27,13 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48SL0s4KczzDqdp
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Feb 2020 02:52:45 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48SLXy0LnqzDqQy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Feb 2020 03:17:05 +1100 (AEDT)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 205099] KASAN hit at raid6_pq: BUG: Unable to handle kernel
  data access at 0x00f0fd0d
-Date: Wed, 26 Feb 2020 15:52:42 +0000
+Date: Wed, 26 Feb 2020 16:17:03 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
@@ -49,7 +49,7 @@ X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
 X-Bugzilla-Changed-Fields: attachments.isobsolete attachments.created
-Message-ID: <bug-205099-206035-9GTlsSdGTC@https.bugzilla.kernel.org/>
+Message-ID: <bug-205099-206035-WwjNuU1iWh@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-205099-206035@https.bugzilla.kernel.org/>
 References: <bug-205099-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -78,17 +78,25 @@ Erhard F. (erhard_f@mailbox.org) changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
- Attachment #286249|0                           |1
+ Attachment #286395|0                           |1
         is obsolete|                            |
- Attachment #286925|0                           |1
+ Attachment #286873|0                           |1
+        is obsolete|                            |
+ Attachment #286927|0                           |1
+        is obsolete|                            |
+ Attachment #286931|0                           |1
         is obsolete|                            |
 
---- Comment #26 from Erhard F. (erhard_f@mailbox.org) ---
-Created attachment 287623
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D287623&action=3Dedit
-kernel .config (5.6-rc3, KASAN_VMALLOC + VMAP_STACK + OUTLINE KASAN, PowerM=
-ac
-G4 DP)
+--- Comment #27 from Erhard F. (erhard_f@mailbox.org) ---
+Created attachment 287625
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D287625&action=3Dedit
+dmesg (5.6-rc3+, KASAN_VMALLOC + VMAP_STACK + CONFIG_THREAD_SHIFT=3D14 + IN=
+LINE
+KASAN, PowerMac G4 DP)
+
+And still the same phenomenon that I only get this hit with OUTLINE KASAN b=
+ut
+not with INLINE KASAN (+ CONFIG_THREAD_SHIFT=3D14).
 
 --=20
 You are receiving this mail because:
