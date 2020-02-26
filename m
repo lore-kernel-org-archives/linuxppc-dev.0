@@ -2,88 +2,128 @@ Return-Path: <SRS0=VSEi=4O=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MSGID_FROM_MTA_HEADER,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A635FC4BA0E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 09:33:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C52BFC4BA0E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 09:45:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4F90921556
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 09:33:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 753B32467B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 09:45:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ktw9VhFP"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4F90921556
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="pnPvW5Hc"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 753B32467B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48S9Zn1bwWzDqmq
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 20:33:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1043;
- helo=mail-pj1-x1043.google.com; envelope-from=npiggin@gmail.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48S9s86wj1zDqYJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 20:45:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=Ktw9VhFP; dkim-atps=neutral
-Received: from mail-pj1-x1043.google.com (mail-pj1-x1043.google.com
- [IPv6:2607:f8b0:4864:20::1043])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=permerror (SPF Permanent Error: Void lookup limit
+ of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f400:7d00::61e;
+ helo=eur05-vi1-obe.outbound.protection.outlook.com;
+ envelope-from=laurentiu.tudor@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256
+ header.s=selector2 header.b=pnPvW5Hc; 
+ dkim-atps=neutral
+Received: from EUR05-VI1-obe.outbound.protection.outlook.com
+ (mail-vi1eur05on2061e.outbound.protection.outlook.com
+ [IPv6:2a01:111:f400:7d00::61e])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48S9VW4l04zDqWS
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2020 20:29:21 +1100 (AEDT)
-Received: by mail-pj1-x1043.google.com with SMTP id j17so1031559pjz.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2020 01:29:21 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:references:in-reply-to:mime-version:user-agent
- :message-id:content-transfer-encoding;
- bh=seOVm+TleX9u8aC2LPrLZOn91GysKZ6bAu9w+o0gFKQ=;
- b=Ktw9VhFPPmIDY0GYZxI05od8s1G/xMUSYTgp9IQqI5Z38c8iV/yIwrFcGlXe2+PUi9
- sncHRxkSoaER44FmABSyS8rB9mJA7F64hCxI640k/3Mn2FG8syVo/H7aKZ4RgHv2lToR
- R37CDvQURgK9pkNm+1qZxdPagOnSgAo9dxEnKO40/RIdgc8YnBANqjNBU2gVai+aeUhz
- tmlUdK2pbl7E4K/m5HcyE1b2ldPkcgnGsrlRmhiaYU995o8sWoo3Q8DLifmEc49zHPqG
- 5gusFs/crJnkncsbVGwUvHQsIQt/nZ4MW0BNIVfDf7OLLbC728YLO06yfVH7RiwI9lv2
- zxQw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:references:in-reply-to
- :mime-version:user-agent:message-id:content-transfer-encoding;
- bh=seOVm+TleX9u8aC2LPrLZOn91GysKZ6bAu9w+o0gFKQ=;
- b=EpvS3wpPexdA3/0Ws+V3XMVHd+GdaJlo/iRkvkQ5vuY3Tw9F0KMBBttTrJIRDs9Wis
- h0nRJCusW/hgcVLceSxK8Qz6BqmQ5YIygEh5Qk++B8ryHVnaZo3skqGTtxon0+jYTQk0
- wKvWULOTPghAAydMIt4+EM4mBBX6817aybMXkBJLa3oZMGaGlCscQ7RjcI/hOngnAm5A
- GyobofEh6Pvx2MOF2SQ+4L/W7CgDv4oTHaEHDIX0aaOd3LQRNV8iaycqmRKy14kiP+lZ
- +BVucNBajJ+d8LhV402hDqrp9oKgc43+80PBrEwNrLly34mCGhkEKZ8KZeRHBGnngA/0
- Aoaw==
-X-Gm-Message-State: APjAAAVyqUptpIRHEfwjo/+AsrbWtOpi3TJ8ELhf59llQ/NfPxoqIzE+
- o5/UYe4VIZkXU7ne6Hnljb8=
-X-Google-Smtp-Source: APXvYqzuGjO/KOua/O7DUWf4iDd65zyv96kDOODBDueB0kHbPEOzDqvjUyCRcNPY8Onf0mKMpGl2bA==
-X-Received: by 2002:a17:902:8549:: with SMTP id
- d9mr3057781plo.153.1582709357769; 
- Wed, 26 Feb 2020 01:29:17 -0800 (PST)
-Received: from localhost ([61.68.187.74])
- by smtp.gmail.com with ESMTPSA id h5sm1891212pgi.28.2020.02.26.01.29.16
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 26 Feb 2020 01:29:17 -0800 (PST)
-Date: Wed, 26 Feb 2020 19:25:00 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [Bug 206669] Little-endian kernel crashing on POWER8 on heavy
- big-endian PowerKVM load
-To: bugzilla-daemon@bugzilla.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <bug-206669-206035@https.bugzilla.kernel.org/>
- <bug-206669-206035-j2X3hiFswk@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-206669-206035-j2X3hiFswk@https.bugzilla.kernel.org/>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48S9pd21RmzDqXB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2020 20:43:20 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=TVNOAkHehlU/mnS3AAmRWG2ZCz/wOSwXzvT2pkdjRFOOkrzRuGzPRArxFo1o6hVBjFFo+GmDLgEZq7UlEzhAY0AeU4WzTluFMKRn+kzh78Jwdil2mxgECNHcXBczs5c5MpFdSTPA5MUnXurZXmn14FMt+lvjh3+depEaeJJbAtFHdBMRDuojneUSYpJr+URLSKq6k3q/OOCqNdcNIlW2WlvraH+VXLSTMaGTEYInlCQ3trKoc0haBaOv2Y8PexvpjsCjiqVLzPQCy4mC4nVWiJsZaxx+XuSVzzi12t2npgBL476JELlSrFZghHuiddPGUNfUNYTMptbm4I4WCutDWQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=FxNtk8Y9Gbjp2AqPaBfn3gYQ1+qoBn/MVIBeZiZIrAk=;
+ b=JVb534J97gfLz+a6DqhKJDCnmRvXUrO+1FdG3Lzt6oi/9O/jyzlpf0ko6TwfJxSSuLfURY4Ph4KD2eaVTzNHzH6yDKYRHFakUJ0o8aWxJ+A2i1XhRgB5Tj2epFbtNqXEZXm4Gf9tp38ZGcj/ozFhAH0JxOEN/u2v3gJO3puBjrLbLmPHktQTaIgZC3gK064sQHVww4v99lhY12JRX21bjSiDA8k5xevg6yU6L9ub2WpRNyxWR0UsABuhSENePnLUWCAy/+ccthvkqv4IEUFHtpfB85NgDd0K7+SUqHUS6T/LRrch1ufn+QJfL27ajYXFZ2YnkrYsBxZN+15uoUV6mw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=FxNtk8Y9Gbjp2AqPaBfn3gYQ1+qoBn/MVIBeZiZIrAk=;
+ b=pnPvW5Hc/3q8sKNC6Y6yFmFe5Lj70sv/BIYEEQmLqxBQc4j99+sZqPALy5JLGD+Xi9z0T9oArtruxOVphAsrY/9ssk3QQAVzBpqLbA2h4cGk09vo4zudPyRSoiAQTskzo128zHKHdwOjcGzehSwfmDwEyXdjYrAO9zlNprUQb2U=
+Authentication-Results: spf=none (sender IP is )
+ smtp.mailfrom=laurentiu.tudor@nxp.com; 
+Received: from AM6PR04MB5878.eurprd04.prod.outlook.com (20.179.0.89) by
+ AM6PR04MB6664.eurprd04.prod.outlook.com (20.179.246.82) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.2729.24; Wed, 26 Feb 2020 09:43:14 +0000
+Received: from AM6PR04MB5878.eurprd04.prod.outlook.com
+ ([fe80::bcef:1c59:7d27:d0e]) by AM6PR04MB5878.eurprd04.prod.outlook.com
+ ([fe80::bcef:1c59:7d27:d0e%6]) with mapi id 15.20.2750.021; Wed, 26 Feb 2020
+ 09:43:14 +0000
+Subject: Re: [PATCH] evh_bytechan: fix out of bounds accesses
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+References: <20200109183912.5fcb52aa@canb.auug.org.au>
+ <CAOZdJXXiKgz=hOoiaTrxgbnwzyvp1Zfn3aCz+0__i17vyFngRg@mail.gmail.com>
+ <20200114072522.3cd57195@canb.auug.org.au>
+ <6ec4bc30-0526-672c-4261-3ad2cf69dd94@kernel.org>
+ <20200114173141.29564b25@canb.auug.org.au>
+ <1d8f8ee6-65ac-de6c-0e0b-c9bb499c0e02@kernel.org>
+ <20200116064234.7a139623@canb.auug.org.au>
+ <9f3311d12d418b87832ba5de1372bb76ffccbd45.camel@redhat.com>
+ <20200116113714.06208a73@canb.auug.org.au>
+ <20200221105715.35c1d2e8@canb.auug.org.au>
+ <37b145e2-a953-c0e6-f0fa-7ef420edfd16@nxp.com>
+ <20200226075605.4b9f6613@canb.auug.org.au>
+From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+Message-ID: <82e93a67-be96-8970-7001-e6c996b52df7@nxp.com>
+Date: Wed, 26 Feb 2020 11:43:11 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.4.1
+In-Reply-To: <20200226075605.4b9f6613@canb.auug.org.au>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: LO2P265CA0445.GBRP265.PROD.OUTLOOK.COM
+ (2603:10a6:600:e::25) To AM6PR04MB5878.eurprd04.prod.outlook.com
+ (2603:10a6:20b:a2::25)
 MIME-Version: 1.0
-User-Agent: astroid/0.15.0 (https://github.com/astroidmail/astroid)
-Message-Id: <1582707304.m3tdrof2g5.astroid@bobo.none>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+X-MS-Exchange-MessageSentRepresentingType: 1
+Received: from [10.171.82.13] (89.37.124.34) by
+ LO2P265CA0445.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:e::25) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.2772.14 via Frontend Transport; Wed, 26 Feb 2020 09:43:13 +0000
+X-Originating-IP: [89.37.124.34]
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-HT: Tenant
+X-MS-Office365-Filtering-Correlation-Id: 2024102b-2f96-4d92-873f-08d7baa04c9e
+X-MS-TrafficTypeDiagnostic: AM6PR04MB6664:|AM6PR04MB6664:
+X-MS-Exchange-Transport-Forked: True
+X-Microsoft-Antispam-PRVS: <AM6PR04MB66648A7EA85E074E6C84740CECEA0@AM6PR04MB6664.eurprd04.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:8882;
+X-Forefront-PRVS: 0325F6C77B
+X-Forefront-Antispam-Report: SFV:NSPM;
+ SFS:(10009020)(4636009)(136003)(366004)(376002)(346002)(396003)(39860400002)(199004)(189003)(6486002)(8676002)(5660300002)(66476007)(66946007)(54906003)(316002)(16576012)(36756003)(66556008)(8936002)(31686004)(81166006)(81156014)(44832011)(31696002)(2906002)(966005)(478600001)(186003)(16526019)(26005)(86362001)(956004)(6916009)(4326008)(2616005)(53546011)(52116002);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:AM6PR04MB6664;
+ H:AM6PR04MB5878.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; A:1; MX:1; 
+Received-SPF: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+X-MS-Exchange-SenderADCheck: 1
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: M/xHOxxIj/wPMCBjW86eGilSNx7XgdjDrSg9IMXzSqHEPE7pLs0bBv1It+zsabs3e0DKvW/J55KL08UFQmL1zBDFbx95lD+HF/FEQpTFEITZUwzkN34hIxZR7R0mXWVY+sJxRLE4tZnB1QmhNLmey1f4gB4SeZcDkQhQf0SrhkzBah9T2CHIqo0HttR40G+KJdeIuhJjvu5XNVsLJvz6lU+z9rZrvK5ULhk5az55mdgDob8WgQA/3HtQEN9FueYvF8jYPyPubJvUN9mHytqAr5sVP0h5WmZEBtHtyLn3m2/tsg1y3toOJPg5Dbp1CcOcQRbza4s6RYoVYBNkuXxs4DXJ7TiErH/2MKYagC4sJ6v0CO7j6bFPg1IxbTib3JeAG6FY8sFu6eZm57T6vzkK6I8GVaiAqbQbf8H6pkwBeZ1cxiKIeyvUzjJkBZEiRIkx61jO+Lat7HraqAe1Ahqs4nS5/aZT1fZtVgbEtsy5bxEA3MFNKeFAqSzHFYSV7H3ZptYDlU73Jpu4Rq7Lpzvewg==
+X-MS-Exchange-AntiSpam-MessageData: dF1ENsX81ytZcfbKEmGadVnvh11hqMoohsc7p++amYeqNPt/0lT2n0iShaFf9Z09VeXR+0VclqyvrN0cv4Anlfb4IeZsCtjpq2WaRFY0Y7iAEQhujNuVksdNSXbtaYxtUMG+Ppg4TXYv/Uc4DtOHrw==
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 2024102b-2f96-4d92-873f-08d7baa04c9e
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 26 Feb 2020 09:43:14.0924 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: Zs9oY0iZjW+9bTBhQeLNQSDpDvJcJ0fnuiNF2eXklrtQR0oc3guviHWScrSERVZC0oNDqWBti449OOQ1JC3HnA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM6PR04MB6664
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,119 +135,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Timur Tabi <timur@kernel.org>, b08248@gmail.com,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>,
+ york sun <york.sun@nxp.com>,
+ PowerPC Mailing List <linuxppc-dev@lists.ozlabs.org>,
+ Scott Wood <swood@redhat.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-bugzilla-daemon@bugzilla.kernel.org's on February 26, 2020 5:26 pm:
-> https://bugzilla.kernel.org/show_bug.cgi?id=3D206669
->=20
-> --- Comment #2 from John Paul Adrian Glaubitz (glaubitz@physik.fu-berlin.=
-de) ---
-> (In reply to npiggin from comment #1)
->> Thanks for the report, we need to get more data about the first BUG if=20
->> we can. What function in your vmlinux contains address=20
->> 0xc00000000017a778? (use nm or objdump etc)
->=20
-> Seems to be t select_task_rq_fair:
->=20
-> root@watson:/boot# nm vmlinux-5.4.0-0.bpo.3-powerpc64le |grep -C5 c000000=
-00017a
-> c000000000448550 T select_estimate_accuracy
-> c000000000170d20 t select_fallback_rq
-> c000000000e4c940 D select_idle_mask
-> c000000000179f10 t select_idle_sibling
-> c00000000018fd80 t select_task_rq_dl
-> c00000000017a640 t select_task_rq_fair
-> c000000000177f50 t select_task_rq_idle
-> c00000000018c9e0 t select_task_rq_rt
-> c00000000019c800 t select_task_rq_stop
-> c000000000927710 t selem_alloc.isra.6
-> c000000000926e50 t selem_link_map
-> root@watson:/boot#
->=20
->> Is that the first message you
->> get,
->> No warnings or anything else earlier in the dmesg?
->=20
-> Correct. You can see the login prompt of the host VM watson directly afte=
-r
-> booting up.
->=20
->> Also 0xc0000000002659a0 would be interesting.
->=20
-> Looks like that's ring_buffer_record_off:
->=20
-> root@watson:/boot# nm vmlinux-5.4.0-0.bpo.3-powerpc64le |grep -C5
-> c0000000002659
-> c0000000002667e0 T ring_buffer_read_finish
-> c00000000026b4b0 T ring_buffer_read_page
-> c000000000265e10 T ring_buffer_read_prepare
-> c000000000265ef0 T ring_buffer_read_prepare_sync
-> c000000000269ae0 T ring_buffer_read_start
-> c000000000265950 T ring_buffer_record_disable
-> c000000000266070 T ring_buffer_record_disable_cpu
-> c000000000265970 T ring_buffer_record_enable
-> c0000000002660c0 T ring_buffer_record_enable_cpu
-> c00000000026d470 T ring_buffer_record_is_on
-> c00000000026d480 T ring_buffer_record_is_set_on
-> c000000000265990 T ring_buffer_record_off
-> c000000000265a10 T ring_buffer_record_on
-> c000000000266da0 T ring_buffer_reset
-> c000000000266a90 T ring_buffer_reset_cpu
-> c000000000267cd0 T ring_buffer_resize
-> c00000000026d400 T ring_buffer_set_clock
-> root@watson:/boot#
 
-Thanks.
 
-Okay it looks like what's happening here is something crashes in
-select_task_rq_fair (kernel data access fault). It's then able to
-print out those first two lines but then it calls die(), which
-ends up calling oops_enter() which calls tracing_off(), which calls
-tracer_tracing_off and crashes there, which goes around the same
-cycle only printing out the first two lines.
-
-Nothing obvious as to why those accesses in particular are crashing.
-The first data address is 0xc000000002bfd038, the second is
-0xc0000007f9070c08. Not vmalloc space, not above the 1TB segment.
-
-Do you have tracing / ftrace enabled in the host kernel for any
-reason? Turning that off might let the oops message get printed.
-
->=20
-> FWIW, the kernel image comes from this Debian package:
->=20
+On 25.02.2020 22:56, Stephen Rothwell wrote:
+> Hi Laurentiu,
+> 
+> On Tue, 25 Feb 2020 11:54:17 +0200 Laurentiu Tudor <laurentiu.tudor@nxp.com> wrote:
 >>
->> http://snapshot.debian.org/archive/debian/20200211T210433Z/pool/main/l/l=
-inux/linux-image-5.4.0-0.bpo.3-powerpc64le_5.4.13-1%7Ebpo10%2B1_ppc64el.deb
+>> On 21.02.2020 01:57, Stephen Rothwell wrote:
+>>>
+>>> On Thu, 16 Jan 2020 11:37:14 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>>>>
+>>>> On Wed, 15 Jan 2020 14:01:35 -0600 Scott Wood <swood@redhat.com> wrote:
+>>>>>
+>>>>> On Thu, 2020-01-16 at 06:42 +1100, Stephen Rothwell wrote:
+>>>>>>
+>>>>>> On Wed, 15 Jan 2020 07:25:45 -0600 Timur Tabi <timur@kernel.org> wrote:
+>>>>>>> On 1/14/20 12:31 AM, Stephen Rothwell wrote:
+>>>>>>>> +/**
+>>>>>>>> + * ev_byte_channel_send - send characters to a byte stream
+>>>>>>>> + * @handle: byte stream handle
+>>>>>>>> + * @count: (input) num of chars to send, (output) num chars sent
+>>>>>>>> + * @bp: pointer to chars to send
+>>>>>>>> + *
+>>>>>>>> + * Returns 0 for success, or an error code.
+>>>>>>>> + */
+>>>>>>>> +static unsigned int ev_byte_channel_send(unsigned int handle,
+>>>>>>>> +	unsigned int *count, const char *bp)
+>>>>>>>
+>>>>>>> Well, now you've moved this into the .c file and it is no longer
+>>>>>>> available to other callers.  Anything wrong with keeping it in the .h
+>>>>>>> file?
+>>>>>>
+>>>>>> There are currently no other callers - are there likely to be in the
+>>>>>> future?  Even if there are, is it time critical enough that it needs to
+>>>>>> be inlined everywhere?
+>>>>>
+>>>>> It's not performance critical and there aren't likely to be other users --
+>>>>> just a matter of what's cleaner.  FWIW I'd rather see the original patch,
+>>>>> that keeps the raw asm hcall stuff as simple wrappers in one place.
+>>>>
+>>>> And I don't mind either way :-)
+>>>>
+>>>> I just want to get rid of the warnings.
+>>>
+>>> Any progress with this?
+>>
+>> I think that the consensus was to pick up the original patch that is,
+>> this one: https://patchwork.ozlabs.org/patch/1220186/
+>>
+>> I've tested it too, so please feel free to add a:
+>>
+>> Tested-by: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+> 
+> So, whose tree should his go via?
+> 
 
-Okay. Any chance you could test an upstream kernel?=20
->=20
->> When reproducing, do you ever get a clean trace of the first bug?
->=20
-> I have logged everything that showed in the console during and after the =
-crash.
-> After that, the machine no longer responds and has to be hard-resetted.
->=20
->> Could you try setting /proc/sys/kernel/panic_on_oops and reproducing?
->=20
-> I will try that.
+Maybe Scott or Michael can help us here. And while at it maybe, take a 
+look at this patch [1] too.
 
-Don't bother testing that after the above -- panic_on_oops happens
-after oops_begin(), so it won't help unfortunately.
+[1] https://patchwork.ozlabs.org/patch/1227780/
 
-Attmepting to get into xmon might though, if you boot with xmon=3Don.
-Try that if tracing wasn't enabled, or disabling it doesn't help.
-
->=20
-> Anything to be considered for the kernel running inside the big-endian VM=
-?
->=20
-
-Not that I'm aware of really. Certainly it shouldn't be able to crash
-the host even if the guest was doing something stupid.
-
-Thanks,
-Nick
-=
+---
+Best Regards, Laurentiu
