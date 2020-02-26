@@ -2,85 +2,62 @@ Return-Path: <SRS0=VSEi=4O=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2486FC4BA24
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 20:40:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B8BFC4BA21
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 20:54:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C5E8224653
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 20:40:24 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="B/fXCr6w"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C5E8224653
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
+	by mail.kernel.org (Postfix) with ESMTPS id A528921D7E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 20:54:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A528921D7E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48SSNk3hQvzDqbD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Feb 2020 07:40:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48SShV65D6zDqnx
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Feb 2020 07:54:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::442;
- helo=mail-pf1-x442.google.com; envelope-from=rientjes@google.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=gmail.com (client-ip=209.85.128.67; helo=mail-wm1-f67.google.com;
+ envelope-from=mstsxfx@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20161025 header.b=B/fXCr6w; dkim-atps=neutral
-Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
- [IPv6:2607:f8b0:4864:20::442])
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from mail-wm1-f67.google.com (mail-wm1-f67.google.com
+ [209.85.128.67])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48SSKv4DxGzDqkq
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Feb 2020 07:37:54 +1100 (AEDT)
-Received: by mail-pf1-x442.google.com with SMTP id 84so361131pfy.6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2020 12:37:54 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
- h=date:from:to:cc:subject:in-reply-to:message-id:references
- :user-agent:mime-version;
- bh=DssbOlJH2ojyRkFsMNLMtEa2IE6NcEhC6tj2pM0TkDM=;
- b=B/fXCr6w3ivZpRP0pR+ozKOqWQvhe6K8mFugjyi/3NVPUnSSbw/wVhwJsUli4Q+dF+
- L5/WNNUpOcOx3CI0iIyW9ZlSNS6bJuaqssvO7ZIeD/4+ox8oxkbFLR0XWw9ny0M3zhSK
- Ro75VvE9ZNSS01fcyA+/Qa+AitVSAgDxp3zLCXpQh7i4IpkcDVH/ih64W+sj+VkSssm6
- tDoMyWI/Or4x8R+wyZtq2FT7/I/9OyLQrKgeW9dOonIrcEqBfrMRCg3sjcFw6ipYvsCa
- y+0Wwj5whNgmkCWMJ44BcOhxYlFXH8OfppLc3w0VRP5auV79ev7OTpH2HpLgzPkImL4V
- VMzQ==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48SSfZ1pZgzDqfB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Feb 2020 07:52:21 +1100 (AEDT)
+Received: by mail-wm1-f67.google.com with SMTP id c84so808647wme.4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2020 12:52:21 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:in-reply-to:message-id
- :references:user-agent:mime-version;
- bh=DssbOlJH2ojyRkFsMNLMtEa2IE6NcEhC6tj2pM0TkDM=;
- b=edFU1IXJOC//l18IhVgPO8VvPtxqPuoAWDFW9IlZNO/VdWwWeGYOsexJs+fVrGwcHN
- qilJ+OrTBEbRYta+HZ0KP579eRX+Kq9yJU9V9VggR9k+utl5Z4oDKOJxfuNHNg5Ztv3c
- YTx6QxYi7nie5UnJvcXKogMMp6aPspMYZ/5CzOn6fvHdoYqQoKwCOPZcSBolFdCdxJ7f
- ioB3+CJviicWuAZc2yPi26LBnW/TTN2+xoJSpDX8ULiZdyoGBL+s+NJVIL+zJU2vX901
- DB/Tz/fs+NjKQ7bqgYKw2KZgjeqxI5/mwgVp6KwQ7J4dWKo8jBmLOJMgQcwCnivK0S+o
- R2ng==
-X-Gm-Message-State: APjAAAVEJ3xCwdkEmYQqvpg+dbXZZEWlaL5JeTyuzxB3cVm8pFEtFPVB
- KtjV/53zunQ4QFKMwZMrTXYO0eMRkVM=
-X-Google-Smtp-Source: APXvYqwUhhH/H/dJXiwpB9VALVveANSXhbGFW4yfoypzGwSX+IMDJUTEIJMx841VFbdu+dVCnzJ26w==
-X-Received: by 2002:a63:4d6:: with SMTP id 205mr604982pge.10.1582749118188;
- Wed, 26 Feb 2020 12:31:58 -0800 (PST)
-Received: from [2620:15c:17:3:3a5:23a7:5e32:4598]
- ([2620:15c:17:3:3a5:23a7:5e32:4598])
- by smtp.gmail.com with ESMTPSA id k24sm541444pgm.61.2020.02.26.12.31.57
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to;
+ bh=WJFduaxlSsHHS4gNp/foxgTH7UCDLpFZpZFWJkHONbI=;
+ b=E6oJ2WETqFaNQ6fl9ZFRHIpW6hi4Edth1iIuSjsjvB7hnbrEOQWxj1pgTUdSqZ3TR8
+ oQvXvDEjxJO1viA0IsZgycdWTkNyG7WAKOMdOkJieu8Tm/+WtqtNt6uCdDk9/nZEJs2O
+ oyvC6wsmyp37o0rNL/PpamjlJc92189yNoxjQqAVxTLs64YwaqiwOIRfp426QXtEC9Ix
+ EDmOyqKs9VdXdp96eh6YdO5pdyz/hv5nysbFJkT4mnI9vVK09GiuqK6UWg8+t1bBMbIx
+ Iw8Ic8CP2SLQLD9fVdVPIpcu2OADOxikXyvW0lBDJjStl2M5HhuEMHppcFu3tlyUztWr
+ qptQ==
+X-Gm-Message-State: APjAAAXdwU6hmfUe773qd0yfyNOK9IZ+x+xwlIPZRDmmyFl1py2hQ2i/
+ C6Q06YNYYqh0bEzV4E0jts4=
+X-Google-Smtp-Source: APXvYqynGzzZnLeuN+i15owlhUBU+X4Bq1UMtWfOYs19d9h4lZGatMicrImoFFdMiGhIL206VIuNpg==
+X-Received: by 2002:a1c:e483:: with SMTP id b125mr707978wmh.187.1582750337898; 
+ Wed, 26 Feb 2020 12:52:17 -0800 (PST)
+Received: from localhost (ip-37-188-190-100.eurotel.cz. [37.188.190.100])
+ by smtp.gmail.com with ESMTPSA id l8sm4487632wmj.2.2020.02.26.12.52.16
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 26 Feb 2020 12:31:57 -0800 (PST)
-Date: Wed, 26 Feb 2020 12:31:56 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Michal Hocko <mhocko@kernel.org>
+ Wed, 26 Feb 2020 12:52:17 -0800 (PST)
+Date: Wed, 26 Feb 2020 21:52:15 +0100
+From: Michal Hocko <mhocko@kernel.org>
+To: David Rientjes <rientjes@google.com>
 Subject: Re: [5.6.0-rc2-next-20200218/powerpc] Boot failure on POWER9
-In-Reply-To: <20200226190147.GR3771@dhcp22.suse.cz>
-Message-ID: <alpine.DEB.2.21.2002261228060.208847@chino.kir.corp.google.com>
-References: <20200218115525.GD4151@dhcp22.suse.cz>
- <D6F45EDD-9F2E-4593-B630-55E5BD7DE915@linux.vnet.ibm.com>
- <20200218142620.GF4151@dhcp22.suse.cz>
+Message-ID: <20200226205215.GW3771@dhcp22.suse.cz>
+References: <20200218142620.GF4151@dhcp22.suse.cz>
  <35EE65CF-40E3-4870-AEBC-D326977176DA@linux.vnet.ibm.com>
  <20200218152441.GH4151@dhcp22.suse.cz>
  <alpine.DEB.2.21.2002220337030.2000@www.lameter.com>
@@ -89,9 +66,11 @@ References: <20200218115525.GD4151@dhcp22.suse.cz>
  <20200226184152.GQ3771@dhcp22.suse.cz>
  <alpine.DEB.2.21.2002261843200.8915@www.lameter.com>
  <20200226190147.GR3771@dhcp22.suse.cz>
-User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
+ <alpine.DEB.2.21.2002261228060.208847@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.21.2002261228060.208847@chino.kir.corp.google.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,35 +91,43 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 26 Feb 2020, Michal Hocko wrote:
-
-> On Wed 26-02-20 18:44:13, Cristopher Lameter wrote:
-> > On Wed, 26 Feb 2020, Michal Hocko wrote:
-> > 
-> > > Besides that kmalloc_node shouldn't really have an implicit GFP_THISNODE
-> > > semantic right? At least I do not see anything like that documented
-> > > anywhere.
-> > 
-> > Kmalloc_node does not support memory policies etc. Only kmalloc does.
-> > kmalloc_node is mostly used by subsystems that have determined the active
-> > nodes and want a targeted allocation on those nodes.
->  
-> I am sorry but I have hard time to follow your responses here. They open
-> more questions than they answer for me. The primary point here is that
-> kmalloc_node on a memory less node blows up and panics the kernel. I
-> strongly believe this is a bug. We cannot really make all callers of
-> kmalloc_node and co. to be hotplug aware.
+On Wed 26-02-20 12:31:56, David Rientjes wrote:
+> On Wed, 26 Feb 2020, Michal Hocko wrote:
 > 
-> Another question is the semantic of kmalloc_node when the node cannot
-> satisfy the request. I have always thought that the allocation would
-> simply fall back to any other node unless __GFP_THISNODE is explicitly
-> specified.
+> > On Wed 26-02-20 18:44:13, Cristopher Lameter wrote:
+> > > On Wed, 26 Feb 2020, Michal Hocko wrote:
+> > > 
+> > > > Besides that kmalloc_node shouldn't really have an implicit GFP_THISNODE
+> > > > semantic right? At least I do not see anything like that documented
+> > > > anywhere.
+> > > 
+> > > Kmalloc_node does not support memory policies etc. Only kmalloc does.
+> > > kmalloc_node is mostly used by subsystems that have determined the active
+> > > nodes and want a targeted allocation on those nodes.
+> >  
+> > I am sorry but I have hard time to follow your responses here. They open
+> > more questions than they answer for me. The primary point here is that
+> > kmalloc_node on a memory less node blows up and panics the kernel. I
+> > strongly believe this is a bug. We cannot really make all callers of
+> > kmalloc_node and co. to be hotplug aware.
+> > 
+> > Another question is the semantic of kmalloc_node when the node cannot
+> > satisfy the request. I have always thought that the allocation would
+> > simply fall back to any other node unless __GFP_THISNODE is explicitly
+> > specified.
+> > 
 > 
+> Am I right in classifying this as a trade-off between an 
+> unlikely(!node_state(nid, N_MEMORY)) directly in kmalloc_node() vs fixing 
+> up a caller passing a memoryless nid?
 
-Am I right in classifying this as a trade-off between an 
-unlikely(!node_state(nid, N_MEMORY)) directly in kmalloc_node() vs fixing 
-up a caller passing a memoryless nid?
+The thing is that any check for node online/populated followed by the
+allocation is inherently racy without using memory hotplug locking
+around that and I am pretty sure this is a step into a wrong direction.
 
-Seems like we wouldn't want to penalize kmalloc_node() for making such a 
-check for 99.99% of allocators that don't need it and would rather do a 
-node_to_mem_node(nid) or numa_mem_id() in the caller?
+Is there any problem to initialize slub internal data structures for all
+possible nodes? This wouldn't require any checks into hot paths.
+
+-- 
+Michal Hocko
+SUSE Labs
