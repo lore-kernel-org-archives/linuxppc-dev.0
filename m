@@ -2,87 +2,84 @@ Return-Path: <SRS0=VSEi=4O=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A51CC4BA0B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 07:12:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 02E15C4BA0A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 07:18:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EB1E821556
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 07:12:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5EFA721556
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 07:18:11 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="tepxN7HD"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EB1E821556
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="AdvfF+DV"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5EFA721556
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48S6Sp5N0pzDqKs
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 18:12:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48S6b52BVVzDqQF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 18:18:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::443;
- helo=mail-pf1-x443.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::1043;
+ helo=mail-pj1-x1043.google.com; envelope-from=dja@axtens.net;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=tepxN7HD; dkim-atps=neutral
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
- [IPv6:2607:f8b0:4864:20::443])
+ dmarc=none (p=none dis=none) header.from=axtens.net
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256
+ header.s=google header.b=AdvfF+DV; dkim-atps=neutral
+Received: from mail-pj1-x1043.google.com (mail-pj1-x1043.google.com
+ [IPv6:2607:f8b0:4864:20::1043])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48S6Qq0rJvzDqGJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2020 18:10:57 +1100 (AEDT)
-Received: by mail-pf1-x443.google.com with SMTP id i19so989652pfa.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2020 23:10:57 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :user-agent:message-id:content-transfer-encoding;
- bh=E0aDjSE2BGtXC8YCZ7oyFu3g1pmL14o1MCGs4c8gip4=;
- b=tepxN7HDloy39atap7fBycJwe6uX/1aKu+i47ujuk6tvCpA8Ac9r0UlV8jlsqzx/Bk
- 33IL337E5RZb9avYU+vjEY/+nesR0ZJF49LMnNumZ91sqP2Nx0DC3Cqq+jQhmTGNBFhM
- 96CWnZABnyATKn0NKoy04mCzXCSmjLmngeeX52Uf14IDa4b8L4p7IxtOkufW2SQ9VkYC
- 6e5rTYCkyocoKym9YC1VHTuXA7K8JkG5U9sMDtrZA8iAtrpciPpDs6a6EC6UvdiVN5yo
- 497aRoAoOAwvq+1gR1MQUQjFOuxiPnTARf4tYUN2aau5SfOmSiV9JCZRzvHPvwjaZhCA
- 98rw==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48S6YH562nzDqGW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2020 18:16:33 +1100 (AEDT)
+Received: by mail-pj1-x1043.google.com with SMTP id r67so888056pjb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2020 23:16:33 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
+ h=from:to:cc:subject:in-reply-to:references:date:message-id
+ :mime-version; bh=bUll3MF+KOORxkWKae6CeWZqF5RK093f70VhPi5nTaA=;
+ b=AdvfF+DViD2Iihe2gGoCejFW6L9CR4CRCuvhd702kHXMW9aLKiXKfmFyTpucUBXYvN
+ cEZRvzdUlmSDzOLcdBFaPWO/Gqx8canJLTZTZUnf4NBrmhRAHnjLBh4VPtK3yWqwsia0
+ ED/nVdqp1ZBaUikJEfLHTuQiqHyge9lN9SdrA=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:user-agent:message-id:content-transfer-encoding;
- bh=E0aDjSE2BGtXC8YCZ7oyFu3g1pmL14o1MCGs4c8gip4=;
- b=tcm1c0vFnfFMRh82Cn+/J1iziK/834hpFIMiHv8IlkHULoILEWiK+6Sq5aonrcpVZj
- wXEHagA7GrYXf64O84iR2oomya8VGEeAH/jZKAhwgshQwBgOcPSNKMcz1n4yp5dzI6st
- 33TR/MlQdrXQ6443ygfQ4R0E6KyPyEhCOVXPJ34O5shwVoN9vVOBd30aVZewX+JgPumN
- AKzcMTseoK10MsX44u2JgDyBYyv8s5leBhaDqAV01Ss34kri7xI6gvtcITEEtGbfiTky
- FT9OL922hcg/PD80g54O3ALlh5SASdCccNGh0fDN3E6/vrSeX0Qf8oI9Dv2+ccp9sw+2
- 4chw==
-X-Gm-Message-State: APjAAAV1eDlRaxpbkoJt6UXBP2+K0tkRp+vHpRolhAW2ZAtppV9lipz6
- 9QcRBNNAhe4rKExrUziVLok=
-X-Google-Smtp-Source: APXvYqxU6ehv1X649r3mjEu+J/UUah0De1vd9gNKNmfxEBq7qqwvM8Q5zNEdwOOTaHt/zUQAvbcVZQ==
-X-Received: by 2002:a62:e708:: with SMTP id s8mr2934657pfh.122.1582701055277; 
- Tue, 25 Feb 2020 23:10:55 -0800 (PST)
-Received: from localhost ([61.68.187.74])
- by smtp.gmail.com with ESMTPSA id i2sm1330307pjs.21.2020.02.25.23.10.53
+ h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
+ :message-id:mime-version;
+ bh=bUll3MF+KOORxkWKae6CeWZqF5RK093f70VhPi5nTaA=;
+ b=k2F/Px5/0eMuNr0TfC+vnrjFHA6e5tLWK9uodkV8hNwVx6XwaGQFHVUrz1mapMFicu
+ P2AkhUcgfQVIUQkQGDKvgHm0FSdVx9cKcr4vb3H0iZOPPUyJPw7gxQwuhkWiP2XC0KRT
+ no8mwmzfHoRGuenXZDqJoG34UmvAYBn90oGJOiXGnSp/biarWD7Xmzx+AbZ+ZnNWyso1
+ R5cllZ88BA2V/yl0w8AMxkB3ZecApFcfbEGOiWSmKzD+r0zdLUiiWXkPSbx4rdj4jB4N
+ QW7rPS4hOQBMMEuYxH8UmB7UnI6gxY9pm4hrhPq414eCz7VE5Wog06osB+tXlm59CL6B
+ b9fw==
+X-Gm-Message-State: APjAAAXQLyND/Xn5sk10Ml0NTEiTRWTqtAdPOuhB3JwTUCBKTY0QJG5x
+ ymzPOSLqUKBPMj9UvQDuq/RoJg==
+X-Google-Smtp-Source: APXvYqyTVYEdw3GG568w+1dNFzY9ZMbswpQ8Fc19s42h9JN/v4uscW8ujuBJbXp4NXq4DVrPra5Yow==
+X-Received: by 2002:a17:902:bf49:: with SMTP id
+ u9mr2644385pls.199.1582701390378; 
+ Tue, 25 Feb 2020 23:16:30 -0800 (PST)
+Received: from localhost
+ (2001-44b8-111e-5c00-5952-947b-051c-ea5f.static.ipv6.internode.on.net.
+ [2001:44b8:111e:5c00:5952:947b:51c:ea5f])
+ by smtp.gmail.com with ESMTPSA id p23sm1364024pgn.92.2020.02.25.23.16.28
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 25 Feb 2020 23:10:54 -0800 (PST)
-Date: Wed, 26 Feb 2020 17:06:43 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v3 09/14] powerpc/xmon: Add initial support for prefixed
- instructions
-To: Jordan Niethe <jniethe5@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <20200226040716.32395-1-jniethe5@gmail.com>
- <20200226040716.32395-10-jniethe5@gmail.com>
-In-Reply-To: <20200226040716.32395-10-jniethe5@gmail.com>
+ Tue, 25 Feb 2020 23:16:29 -0800 (PST)
+From: Daniel Axtens <dja@axtens.net>
+To: Jason Yan <yanaijie@huawei.com>, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org, diana.craciun@nxp.com, christophe.leroy@c-s.fr,
+ benh@kernel.crashing.org, paulus@samba.org, npiggin@gmail.com,
+ keescook@chromium.org, kernel-hardening@lists.openwall.com, oss@buserror.net
+Subject: Re: [PATCH v3 0/6] implement KASLR for powerpc/fsl_booke/64
+In-Reply-To: <20200206025825.22934-1-yanaijie@huawei.com>
+References: <20200206025825.22934-1-yanaijie@huawei.com>
+Date: Wed, 26 Feb 2020 18:16:26 +1100
+Message-ID: <87tv3drf79.fsf@dja-thinkpad.axtens.net>
 MIME-Version: 1.0
-User-Agent: astroid/0.15.0 (https://github.com/astroidmail/astroid)
-Message-Id: <1582700457.bqyiezlzr9.astroid@bobo.none>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,66 +91,89 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alistair@popple.id.au, dja@axtens.net, bala24@linux.ibm.com
+Cc: Jason Yan <yanaijie@huawei.com>, linux-kernel@vger.kernel.org,
+ zhaohongjiang@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Jordan Niethe's on February 26, 2020 2:07 pm:
-> A prefixed instruction is composed of a word prefix and a word suffix.
-> It does not make sense to be able to have a breakpoint on the suffix of
-> a prefixed instruction, so make this impossible.
->=20
-> When leaving xmon_core() we check to see if we are currently at a
-> breakpoint. If this is the case, the breakpoint needs to be proceeded
-> from. Initially emulate_step() is tried, but if this fails then we need
-> to execute the saved instruction out of line. The NIP is set to the
-> address of bpt::instr[] for the current breakpoint.  bpt::instr[]
-> contains the instruction replaced by the breakpoint, followed by a trap
-> instruction.  After bpt::instr[0] is executed and we hit the trap we
-> enter back into xmon_bpt(). We know that if we got here and the offset
-> indicates we are at bpt::instr[1] then we have just executed out of line
-> so we can put the NIP back to the instruction after the breakpoint
-> location and continue on.
->=20
-> Adding prefixed instructions complicates this as the bpt::instr[1] needs
-> to be used to hold the suffix. To deal with this make bpt::instr[] big
-> enough for three word instructions.  bpt::instr[2] contains the trap,
-> and in the case of word instructions pad bpt::instr[1] with a noop.
->=20
-> No support for disassembling prefixed instructions.
->=20
-> Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
-> ---
-> v2: Rename sufx to suffix
-> v3: - Just directly use PPC_INST_NOP
->     - Typo: plac -> place
->     - Rename read_inst() to mread_inst(). Do not have it call mread().
-> ---
->  arch/powerpc/xmon/xmon.c | 90 ++++++++++++++++++++++++++++++++++------
->  1 file changed, 78 insertions(+), 12 deletions(-)
->=20
-> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-> index a673cf55641c..a73a35aa4a75 100644
-> --- a/arch/powerpc/xmon/xmon.c
-> +++ b/arch/powerpc/xmon/xmon.c
-> @@ -97,7 +97,8 @@ static long *xmon_fault_jmp[NR_CPUS];
->  /* Breakpoint stuff */
->  struct bpt {
->  	unsigned long	address;
-> -	unsigned int	instr[2];
-> +	/* Prefixed instructions can not cross 64-byte boundaries */
-> +	unsigned int	instr[3] __aligned(64);
+Hi Jason,
 
-This is pretty wild, I didn't realize xmon executes breakpoints out
-of line like this.
+> This is a try to implement KASLR for Freescale BookE64 which is based on
+> my earlier implementation for Freescale BookE32:
+> https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=131718
+>
+> The implementation for Freescale BookE64 is similar as BookE32. One
+> difference is that Freescale BookE64 set up a TLB mapping of 1G during
+> booting. Another difference is that ppc64 needs the kernel to be
+> 64K-aligned. So we can randomize the kernel in this 1G mapping and make
+> it 64K-aligned. This can save some code to creat another TLB map at
+> early boot. The disadvantage is that we only have about 1G/64K = 16384
+> slots to put the kernel in.
+>
+>     KERNELBASE
+>
+>           64K                     |--> kernel <--|
+>            |                      |              |
+>         +--+--+--+    +--+--+--+--+--+--+--+--+--+    +--+--+
+>         |  |  |  |....|  |  |  |  |  |  |  |  |  |....|  |  |
+>         +--+--+--+    +--+--+--+--+--+--+--+--+--+    +--+--+
+>         |                         |                        1G
+>         |----->   offset    <-----|
+>
+>                               kernstart_virt_addr
+>
+> I'm not sure if the slot numbers is enough or the design has any
+> defects. If you have some better ideas, I would be happy to hear that.
+>
+> Thank you all.
+>
 
-IMO the break point entries here should correspond with a range of
-reserved bytes in .text so we patch instructions into normal executable
-pages rather than .data.
+Are you making any attempt to hide kernel address leaks in this series?
+I've just been looking at the stackdump code just now, and it directly
+prints link registers and stack pointers, which is probably enough to
+determine the kernel base address:
 
-Anyway that's for patch.
+                  SPs:               LRs:             %pS pointer
+[    0.424506] [c0000000de403970] [c000000001fc0458] dump_stack+0xfc/0x154 (unreliable)
+[    0.424593] [c0000000de4039c0] [c000000000267eec] panic+0x258/0x5ac
+[    0.424659] [c0000000de403a60] [c0000000024d7a00] mount_block_root+0x634/0x7c0
+[    0.424734] [c0000000de403be0] [c0000000024d8100] prepare_namespace+0x1ec/0x23c
+[    0.424811] [c0000000de403c60] [c0000000024d7010] kernel_init_freeable+0x804/0x880
 
-Thanks,
-Nick
-=
+git grep \\\"REG\\\" arch/powerpc shows a few other uses like this, all
+in process.c or in xmon.
+
+Maybe replacing the REG format string in KASLR mode would be sufficient?
+
+Regards,
+Daniel
+
+
+> v2->v3:
+>   Fix build error when KASLR is disabled.
+> v1->v2:
+>   Add __kaslr_offset for the secondary cpu boot up.
+>
+> Jason Yan (6):
+>   powerpc/fsl_booke/kaslr: refactor kaslr_legal_offset() and
+>     kaslr_early_init()
+>   powerpc/fsl_booke/64: introduce reloc_kernel_entry() helper
+>   powerpc/fsl_booke/64: implement KASLR for fsl_booke64
+>   powerpc/fsl_booke/64: do not clear the BSS for the second pass
+>   powerpc/fsl_booke/64: clear the original kernel if randomized
+>   powerpc/fsl_booke/kaslr: rename kaslr-booke32.rst to kaslr-booke.rst
+>     and add 64bit part
+>
+>  .../{kaslr-booke32.rst => kaslr-booke.rst}    | 35 +++++++--
+>  arch/powerpc/Kconfig                          |  2 +-
+>  arch/powerpc/kernel/exceptions-64e.S          | 23 ++++++
+>  arch/powerpc/kernel/head_64.S                 | 14 ++++
+>  arch/powerpc/kernel/setup_64.c                |  4 +-
+>  arch/powerpc/mm/mmu_decl.h                    | 19 ++---
+>  arch/powerpc/mm/nohash/kaslr_booke.c          | 71 +++++++++++++------
+>  7 files changed, 132 insertions(+), 36 deletions(-)
+>  rename Documentation/powerpc/{kaslr-booke32.rst => kaslr-booke.rst} (59%)
+>
+> -- 
+> 2.17.2
