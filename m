@@ -2,87 +2,85 @@ Return-Path: <SRS0=VSEi=4O=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7AE4CC4BA0A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 07:20:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DEB0C4BA0A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 07:22:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2612F21556
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 07:20:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4EF81222C2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 07:22:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pt06raM3"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2612F21556
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="C//uJEes"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4EF81222C2
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48S6dr5F6gzDqN3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 18:20:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::544;
- helo=mail-pg1-x544.google.com; envelope-from=npiggin@gmail.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48S6h64DSTzDqN3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 18:22:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=pt06raM3; dkim-atps=neutral
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
- [IPv6:2607:f8b0:4864:20::544])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
+ header.s=mail header.b=C//uJEes; dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48S6bV1hS0zDqCD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2020 18:18:30 +1100 (AEDT)
-Received: by mail-pg1-x544.google.com with SMTP id d6so864266pgn.5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2020 23:18:30 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :user-agent:message-id:content-transfer-encoding;
- bh=TS+48kjB6SCqLYkN8qgsVpDkJHauKSZA4JzhjUsO/84=;
- b=pt06raM387AtJIYfJNU2ZxmQE33ZHHDa+e1OCtQu8x6UWPFuxHnfNcv74sDr/1oX7W
- 9CKDYM/Z3ptTYBFOnzzY9wtfzxCxsHuDA+JTkTmccSX02hoNYj6AS3Ddj20lli+yhkkE
- 7RIwN8S95EnagBbFO+VAHt7w6vNwaAHOtjt1GcUCVO0UhQ2NPzKAzh7p9MsLAIn7bfQj
- N/stN/txxERgVGK3743rI8JEL2Biqm+KSaG8h6aEKcC+K24KXqRiXA+H7iyt9GwwKszi
- Ms6ubRv46vwHCeGybYxkYSMUpWjvZCV3DdYOJMgKvR8bBnpOjpKMl7mW7LXEWRSJ5xKm
- i5sQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:user-agent:message-id:content-transfer-encoding;
- bh=TS+48kjB6SCqLYkN8qgsVpDkJHauKSZA4JzhjUsO/84=;
- b=P08tadTEzWKoc1bi2CCv1ooVbYFw9QvUIVyQA1uVmxE5wSGryv3XCs2seU1FcpG6bl
- aB8QC5Wlvd3jh3C7I6RkJ4RC7PVr6gg6/nHA9swjnHrgtauwu8ZcTOHvX5ZvBktKb7Vu
- XTGWFToBSs6I1C9IYx5Oewi+tJcK6FeIWEpDayLe8rEDRgxmeoDb3Oi4bQg1cjgbon3o
- dujjiEDnwrFv5UNy7FfTztXZ4GVzrBLzdCHCwdvxJP2AyzbQLz8cnVjE5KY7zkx+orDk
- mZyuiLy/R8g5GjMdAoDgluZx+Ep6AUpYI14n8mkjCQSHeCOWyvLF+9BEIO9l+K0s9kda
- ZtfQ==
-X-Gm-Message-State: APjAAAUBnNzXmauCCWnSbCQ5NYLubOSbrt8q7YvimiEkJcA+y1tqalNw
- 5h4+Yvw/l/2N+Is9YCZ8t8rnAny3
-X-Google-Smtp-Source: APXvYqxBze6h2JSXfrmOvzK20ahhJRPlfhSDhA/U8o56JVAiO0+aU4cZSv5mhbKhr+PbqlMUvSjKFA==
-X-Received: by 2002:a63:7c4:: with SMTP id 187mr2405770pgh.369.1582701506972; 
- Tue, 25 Feb 2020 23:18:26 -0800 (PST)
-Received: from localhost ([61.68.187.74])
- by smtp.gmail.com with ESMTPSA id b12sm1542900pfr.26.2020.02.25.23.18.25
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 25 Feb 2020 23:18:26 -0800 (PST)
-Date: Wed, 26 Feb 2020 17:14:15 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v3 11/14] powerpc/kprobes: Support kprobes on prefixed
- instructions
-To: Jordan Niethe <jniethe5@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <20200226040716.32395-1-jniethe5@gmail.com>
- <20200226040716.32395-12-jniethe5@gmail.com>
-In-Reply-To: <20200226040716.32395-12-jniethe5@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48S6ch3Y7vzDqNJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2020 18:19:32 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 48S6cY144Jz9txkj;
+ Wed, 26 Feb 2020 08:19:25 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=C//uJEes; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id hE4zh4ppXCnA; Wed, 26 Feb 2020 08:19:25 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 48S6cX6gMMz9txkh;
+ Wed, 26 Feb 2020 08:19:24 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1582701564; bh=TWcuATkJZ00ABnX/nWFwyVvB74ey5GHCEqWBA7CWIfQ=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=C//uJEesIFl3kP4gVOBgARMRL7k7AMSJwKJHqNbJCiXlEWjAvPIoXs42tLwObi23Q
+ 3knXXUyu7RmaoVZ8TSBQuFRPXDgTMOAMqzM+qXu0i6qpAuED4gKx/1Fd4pqtoAyWdh
+ nHxMKLYPUEcc06pmeRLN4Cd82sBJU6rpN08thzRA=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id CCF4D8B835;
+ Wed, 26 Feb 2020 08:19:25 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id jMZVJHRWNoTy; Wed, 26 Feb 2020 08:19:25 +0100 (CET)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E6E668B776;
+ Wed, 26 Feb 2020 08:19:24 +0100 (CET)
+Subject: Re: [PATCH v4 8/8] powerpc/mm: Disable set_memory() routines when
+ strict RWX isn't enabled
+To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
+References: <20200226062403.63790-1-ruscur@russell.cc>
+ <20200226062403.63790-9-ruscur@russell.cc>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <2a9988ec-c115-8fe8-4c68-82eb2fa43d6b@c-s.fr>
+Date: Wed, 26 Feb 2020 08:19:19 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
+ Thunderbird/68.5.0
 MIME-Version: 1.0
-User-Agent: astroid/0.15.0 (https://github.com/astroidmail/astroid)
-Message-Id: <1582700856.cbydlhx2wj.astroid@bobo.none>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20200226062403.63790-9-ruscur@russell.cc>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,42 +92,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alistair@popple.id.au, dja@axtens.net, bala24@linux.ibm.com
+Cc: ajd@linux.ibm.com, kernel-hardening@lists.openwall.com, npiggin@gmail.com,
+ joel@jms.id.au, Jordan Niethe <jniethe5@gmail.com>, dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Jordan Niethe's on February 26, 2020 2:07 pm:
-> @@ -136,11 +148,14 @@ int arch_prepare_kprobe(struct kprobe *p)
->  	}
-> =20
->  	if (!ret) {
-> -		patch_instruction(p->ainsn.insn, *p->addr);
-> +		patch_instruction(&p->ainsn.insn[0], p->addr[0]);
-> +		if (IS_PREFIX(insn))
-> +			patch_instruction(&p->ainsn.insn[1], p->addr[1]);
->  		p->opcode =3D *p->addr;
 
-Not to single out this hunk or this patch even, but what do you reckon
-about adding an instruction data type, and then use that in all these
-call sites rather than adding the extra arg or doing the extra copy
-manually in each place depending on prefix?
 
-instrs_are_equal, get_user_instr, analyse_instr, patch_instruction,
-etc., would all take this new instr. Places that open code a memory
-access like your MCE change need some accessor
+Le 26/02/2020 à 07:24, Russell Currey a écrit :
+> There are a couple of reasons that the set_memory() functions are
+> problematic when STRICT_KERNEL_RWX isn't enabled:
+> 
+>   - The linear mapping is a different size and apply_to_page_range()
+> 	may modify a giant section, breaking everything
 
-               instr =3D *(unsigned int *)(instr_addr);
--               if (!analyse_instr(&op, &tmp, instr, PPC_NO_SUFFIX)) {
-+               if (IS_PREFIX(instr))
-+                       suffix =3D *(unsigned int *)(instr_addr + 4);
+I don't understand.
 
-Becomes
-               read_instr(instr_addr, &instr);
-	       if (!analyse_instr(&op, &tmp, instr)) ...
+>   - patch_instruction() doesn't know to work around a page being marked
+>   	RO, and will subsequently crash
 
-etc.
+Is patch_instruction() involved at all ?
 
-Thanks,
-Nick
-=
+> 
+> The latter can be replicated by building a kernel with the set_memory()
+> patches but with STRICT_KERNEL_RWX off and running ftracetest.
+> 
+> Reported-by: Jordan Niethe <jniethe5@gmail.com>
+> Signed-off-by: Russell Currey <ruscur@russell.cc>
+> ---
+> v4: new
+> 
+>   arch/powerpc/mm/pageattr.c | 11 ++++++++---
+>   1 file changed, 8 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/powerpc/mm/pageattr.c b/arch/powerpc/mm/pageattr.c
+> index ee6b5e3b7604..ff111930cf5e 100644
+> --- a/arch/powerpc/mm/pageattr.c
+> +++ b/arch/powerpc/mm/pageattr.c
+> @@ -96,12 +96,17 @@ static int set_page_attr(pte_t *ptep, unsigned long addr, void *data)
+>   
+>   int set_memory_attr(unsigned long addr, int numpages, pgprot_t prot)
+
+Isn't it change_memory_attr() that is a problem for you ?
+
+>   {
+> -	unsigned long start = ALIGN_DOWN(addr, PAGE_SIZE);
+> -	unsigned long sz = numpages * PAGE_SIZE;
+> +	unsigned long start, size;
+> +
+> +	if (!IS_ENABLED(CONFIG_STRICT_KERNEL_RWX))
+> +		return 0;
+
+
+Doing this you break patch 7:
+mark_initmem_nx() is called regardless of CONFIG_STRICT_KERNEL_RWX
+__kernel_map_pages() depends on CONFIG_DEBUG_PAGEALLOC which doesn't 
+depend on CONFIG_STRICT_KERNEL_RWX
+
+
+>   
+>   	if (!numpages)
+>   		return 0;
+>   
+> -	return apply_to_page_range(&init_mm, start, sz, set_page_attr,
+> +	start = ALIGN_DOWN(addr, PAGE_SIZE);
+> +	size = numpages * PAGE_SIZE;
+> +
+> +	return apply_to_page_range(&init_mm, start, size, set_page_attr,
+
+You don't need to move start and size calculation and change the above.
+
+>   				   (void *)pgprot_val(prot));
+>   }
+> 
+
+Christophe
