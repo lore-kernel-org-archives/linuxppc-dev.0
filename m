@@ -2,101 +2,98 @@ Return-Path: <SRS0=VSEi=4O=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3921C4BA0A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 06:58:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6436C4BA0A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 07:00:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9E29B21D7E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 06:58:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9E29B21D7E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id F0C4E21D7E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 06:59:59 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="KtVIqkj8";
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="lB7vyfEX"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F0C4E21D7E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48S68J2sX4zDqQR
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 17:58:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48S6B60qCpzDqwh
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 17:59:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com;
+ smtp.mailfrom=russell.cc (client-ip=64.147.123.27;
+ helo=wnew2-smtp.messagingengine.com; envelope-from=ruscur@russell.cc;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=none (p=none dis=none) header.from=russell.cc
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256
+ header.s=fm1 header.b=KtVIqkj8; 
+ dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.a=rsa-sha256 header.s=fm2 header.b=lB7vyfEX; 
+ dkim-atps=neutral
+Received: from wnew2-smtp.messagingengine.com (wnew2-smtp.messagingengine.com
+ [64.147.123.27])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48S5jY0zlszDqhR
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2020 17:38:40 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 01Q6YJXH091299
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2020 01:38:38 -0500
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2ydcng2mwy-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2020 01:38:38 -0500
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ajd@linux.ibm.com>;
- Wed, 26 Feb 2020 06:38:36 -0000
-Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 26 Feb 2020 06:38:32 -0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 01Q6cVmq35979592
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 26 Feb 2020 06:38:31 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4BDA24C044;
- Wed, 26 Feb 2020 06:38:31 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 014B64C050;
- Wed, 26 Feb 2020 06:38:31 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 26 Feb 2020 06:38:30 +0000 (GMT)
-Received: from [10.61.2.125] (haven.au.ibm.com [9.192.254.114])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 52577A00F1;
- Wed, 26 Feb 2020 17:38:26 +1100 (AEDT)
-Subject: Re: [PATCH v5 8/8] powerpc/mm: Disable set_memory() routines when
- strict RWX isn't enabled
-To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48S5mq6Z5RzDqnp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2020 17:41:31 +1100 (AEDT)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
+ by mailnew.west.internal (Postfix) with ESMTP id 312D762B;
+ Wed, 26 Feb 2020 01:36:29 -0500 (EST)
+Received: from mailfrontend2 ([10.202.2.163])
+ by compute6.internal (MEProxy); Wed, 26 Feb 2020 01:36:30 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=
+ from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding; s=fm1; bh=fIQUcfHh7QuR4
+ 38tK6lJLzDWB37n7jovUl45LUEKMUk=; b=KtVIqkj8BE8Oq1Gvs3Ggl43PRo0R4
+ aoNpVoFyzoBlvwmSKTDntsNs50VtS0nx7BgTbT8OxNAoOHy7+pJzViU4lLUeTbSK
+ /LBzVne5VH1Z7ticCINY2tONc0Iy0R8BkFAkUdq4MQclvQvqrKOitFc5MI9LAK/N
+ vFAB9SShrgM3i6QMN7mYJcgz99FhWzZXhyKmk62jM2gQ99rgntUV+OGaubYTWNub
+ 6GcKN8JtrTTm5NUWL1VPFIddmcAPnERoAVlCKogYrymffyJeS+dNQ7hROXk2C54G
+ qT5eqcJDemaAstjneLCfCKc/pBiJC+GEViG6ksfU6+AABeVkSiAkcFZ9A==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:content-transfer-encoding:date:from
+ :in-reply-to:message-id:mime-version:references:subject:to
+ :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+ fm2; bh=fIQUcfHh7QuR438tK6lJLzDWB37n7jovUl45LUEKMUk=; b=lB7vyfEX
+ emymQP8r7kmsSRduPIojaa9ggvXPfJVDSmndSP/Nq2CFNaTJchQjFtXrvn7yd9lW
+ wdshVGcdtwI1V6dMKzsZ7XTG+UdPJ/Yi1QyEGclOKvTMEWmBCvqf84j8WCjuDZto
+ P+nvQnd0d5g/oq5loEA5Eda2dDX+ge/fhV7y4R83cqjiYBLhVUkM427vbvu8mbFh
+ /JHdQ/hQtAWUCIC7SKaOsz4/IUtvZnFmvmzS6Gfgon4sWsOuRSGNY7FJQaUzPV+7
+ BbbXwSZPET98IxGe3JskN+mw7ow35NJOapnsQWFF2nOFbpjKReVt2SiV5OASKNoC
+ zgsX3dbkBBhOuw==
+X-ME-Sender: <xms:7BFWXpB6UwXXciAZ_frGUvDNQJDIEIyipFblvhBKb-Pp_lcRhcTBVw>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedugedrleefgdelkecutefuodetggdotefrodftvf
+ curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
+ uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenfg
+ hrlhcuvffnffculdduhedmnecujfgurhephffvufffkffojghfggfgsedtkeertdertddt
+ necuhfhrohhmpeftuhhsshgvlhhlucevuhhrrhgvhicuoehruhhstghurhesrhhushhsvg
+ hllhdrtggtqeenucfkphepuddvvddrleelrdekvddruddtnecuvehluhhsthgvrhfuihii
+ vgepgeenucfrrghrrghmpehmrghilhhfrhhomheprhhushgtuhhrsehruhhsshgvlhhlrd
+ gttg
+X-ME-Proxy: <xmx:7BFWXqyX5lWVOkPWQcPTyaPaUZpWFmY9CVKO52cNp10CFLg2QnMUew>
+ <xmx:7BFWXuCfzaIx7gUcSuQaYFv0f0A3fMdzlu-8sYQxytmJlF8ngIvuSw>
+ <xmx:7BFWXvbNERzdi04bzvbUfXtt5mNPBHYByTUjub3czi2VCUiDTca_XQ>
+ <xmx:7BFWXrLELRoj-OKJU6XO711na3aC1X3by3xkEPS94KEotpYCxKOfu8q_gpY>
+Received: from crackle.ozlabs.ibm.com (unknown [122.99.82.10])
+ by mail.messagingengine.com (Postfix) with ESMTPA id 2093E3060F09;
+ Wed, 26 Feb 2020 01:36:24 -0500 (EST)
+From: Russell Currey <ruscur@russell.cc>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v5 5/8] powerpc/configs: Enable STRICT_MODULE_RWX in
+ skiroot_defconfig
+Date: Wed, 26 Feb 2020 17:35:48 +1100
+Message-Id: <20200226063551.65363-6-ruscur@russell.cc>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20200226063551.65363-1-ruscur@russell.cc>
 References: <20200226063551.65363-1-ruscur@russell.cc>
- <20200226063551.65363-9-ruscur@russell.cc>
-From: Andrew Donnellan <ajd@linux.ibm.com>
-Date: Wed, 26 Feb 2020 17:38:29 +1100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.5.0
 MIME-Version: 1.0
-In-Reply-To: <20200226063551.65363-9-ruscur@russell.cc>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 20022606-0008-0000-0000-000003567CAB
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20022606-0009-0000-0000-00004A779A5A
-Message-Id: <c560b6bb-1a42-bf50-5122-7912771e1481@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
- definitions=2020-02-26_01:2020-02-25,
- 2020-02-26 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- phishscore=0 spamscore=0 suspectscore=0 impostorscore=0 clxscore=1015
- mlxscore=0 bulkscore=0 malwarescore=0 priorityscore=1501 mlxlogscore=923
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2001150001 definitions=main-2002260047
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,30 +105,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel-hardening@lists.openwall.com, jniethe5@gmail.com, npiggin@gmail.com,
- joel@jms.id.au, dja@axtens.net
+Cc: ajd@linux.ibm.com, kernel-hardening@lists.openwall.com, jniethe5@gmail.com,
+ Russell Currey <ruscur@russell.cc>, Joel Stanley <joel@joel.id.au>,
+ npiggin@gmail.com, joel@jms.id.au, dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 26/2/20 5:35 pm, Russell Currey wrote:
-> There are a couple of reasons that the set_memory() functions are
-> problematic when STRICT_KERNEL_RWX isn't enabled:
-> 
->   - The linear mapping is a different size and apply_to_page_range()
-> 	may modify a giant section, breaking everything
->   - patch_instruction() doesn't know to work around a page being marked
->   	RO, and will subsequently crash
-> 
-> The latter can be replicated by building a kernel with the set_memory()
-> patches but with STRICT_KERNEL_RWX off and running ftracetest.
-> 
-> Reported-by: Jordan Niethe <jniethe5@gmail.com>
-> Signed-off-by: Russell Currey <ruscur@russell.cc>
+skiroot_defconfig is the only powerpc defconfig with STRICT_KERNEL_RWX
+enabled, and if you want memory protection for kernel text you'd want it
+for modules too, so enable STRICT_MODULE_RWX there.
 
-Can we squash this in earlier in the series for the sake of bisectability?
+Acked-by: Joel Stanley <joel@joel.id.au>
+Signed-off-by: Russell Currey <ruscur@russell.cc>
+---
+ arch/powerpc/configs/skiroot_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
+diff --git a/arch/powerpc/configs/skiroot_defconfig b/arch/powerpc/configs/skiroot_defconfig
+index 1b6bdad36b13..66d20dbe67b7 100644
+--- a/arch/powerpc/configs/skiroot_defconfig
++++ b/arch/powerpc/configs/skiroot_defconfig
+@@ -51,6 +51,7 @@ CONFIG_CMDLINE="console=tty0 console=hvc0 ipr.fast_reboot=1 quiet"
+ # CONFIG_PPC_MEM_KEYS is not set
+ CONFIG_JUMP_LABEL=y
+ CONFIG_STRICT_KERNEL_RWX=y
++CONFIG_STRICT_MODULE_RWX=y
+ CONFIG_MODULES=y
+ CONFIG_MODULE_UNLOAD=y
+ CONFIG_MODULE_SIG_FORCE=y
 -- 
-Andrew Donnellan              OzLabs, ADL Canberra
-ajd@linux.ibm.com             IBM Australia Limited
+2.25.1
 
