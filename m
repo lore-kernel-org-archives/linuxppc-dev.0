@@ -2,23 +2,23 @@ Return-Path: <SRS0=VSEi=4O=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E501C4BA0A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 04:53:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 40223C4BA0A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 04:54:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1EB4121D7E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 04:53:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1EB4121D7E
+	by mail.kernel.org (Postfix) with ESMTPS id E65F2222C2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 04:54:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E65F2222C2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48S3Mj0yrTzDqZH
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 15:53:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48S3PY4QMczDqRh
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2020 15:54:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
  (client-ip=217.140.110.172; helo=foss.arm.com;
@@ -26,21 +26,23 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=arm.com
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 48S3Kd2pgyzDqKr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2020 15:51:14 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 48S3Kg74FPzDqKr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2020 15:51:19 +1100 (AEDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id DAEB81FB;
- Tue, 25 Feb 2020 20:51:11 -0800 (PST)
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 879DD328;
+ Tue, 25 Feb 2020 20:51:18 -0800 (PST)
 Received: from p8cg001049571a15.blr.arm.com (p8cg001049571a15.blr.arm.com
  [10.162.16.42])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 3426C3FA00;
- Tue, 25 Feb 2020 20:51:07 -0800 (PST)
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id DF2C63FA00;
+ Tue, 25 Feb 2020 20:51:14 -0800 (PST)
 From: Anshuman Khandual <anshuman.khandual@arm.com>
 To: linux-mm@kvack.org
-Subject: [PATCH 0/3] mm/vma: some more minor changes
-Date: Wed, 26 Feb 2020 10:20:55 +0530
-Message-Id: <1582692658-3294-1-git-send-email-anshuman.khandual@arm.com>
+Subject: [PATCH 2/3] mm/vma: Make vma_is_foreign() available for general use
+Date: Wed, 26 Feb 2020 10:20:57 +0530
+Message-Id: <1582692658-3294-3-git-send-email-anshuman.khandual@arm.com>
 X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1582692658-3294-1-git-send-email-anshuman.khandual@arm.com>
+References: <1582692658-3294-1-git-send-email-anshuman.khandual@arm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,13 +62,11 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The motivation here is to consolidate VMA flags and helpers in generic
-memory header and reduce code duplication when ever applicable. If there
-are other possible similar instances which might be missing here, please
-do let me me know. I will be happy to incorporate them.
-
-This series is based on v5.6-rc3. This series has been build tested on
-multiple platforms but boot tested only on arm64 and x86.
+Idea of a foreign VMA with respect to the present context is very generic.
+But currently there are two identical definitions for this in powerpc and
+x86 platforms. Lets consolidate those redundant definitions while making
+vma_is_foreign() available for general use later. This should not cause
+any functional change.
 
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
@@ -77,20 +77,91 @@ Cc: x86@kernel.org
 Cc: linuxppc-dev@lists.ozlabs.org
 Cc: linux-kernel@vger.kernel.org
 Cc: linux-mm@kvack.org
-
-Anshuman Khandual (3):
-  mm/vma: Move VM_NO_KHUGEPAGED into generic header
-  mm/vma: Make vma_is_foreign() available for general use
-  mm/vma: Make is_vma_temporary_stack() available for general use
-
+Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
+---
  arch/powerpc/mm/book3s64/pkeys.c   | 12 ------------
  arch/x86/include/asm/mmu_context.h | 15 ---------------
- include/linux/huge_mm.h            |  2 --
- include/linux/mm.h                 | 28 +++++++++++++++++++++++++++-
- mm/khugepaged.c                    |  2 --
- mm/rmap.c                          | 14 --------------
- 6 files changed, 27 insertions(+), 46 deletions(-)
+ include/linux/mm.h                 | 11 +++++++++++
+ 3 files changed, 11 insertions(+), 27 deletions(-)
 
+diff --git a/arch/powerpc/mm/book3s64/pkeys.c b/arch/powerpc/mm/book3s64/pkeys.c
+index 59e0ebbd8036..07527f1ed108 100644
+--- a/arch/powerpc/mm/book3s64/pkeys.c
++++ b/arch/powerpc/mm/book3s64/pkeys.c
+@@ -381,18 +381,6 @@ bool arch_pte_access_permitted(u64 pte, bool write, bool execute)
+  * So do not enforce things if the VMA is not from the current mm, or if we are
+  * in a kernel thread.
+  */
+-static inline bool vma_is_foreign(struct vm_area_struct *vma)
+-{
+-	if (!current->mm)
+-		return true;
+-
+-	/* if it is not our ->mm, it has to be foreign */
+-	if (current->mm != vma->vm_mm)
+-		return true;
+-
+-	return false;
+-}
+-
+ bool arch_vma_access_permitted(struct vm_area_struct *vma, bool write,
+ 			       bool execute, bool foreign)
+ {
+diff --git a/arch/x86/include/asm/mmu_context.h b/arch/x86/include/asm/mmu_context.h
+index b538d9ddee9c..4e55370e48e8 100644
+--- a/arch/x86/include/asm/mmu_context.h
++++ b/arch/x86/include/asm/mmu_context.h
+@@ -213,21 +213,6 @@ static inline void arch_unmap(struct mm_struct *mm, unsigned long start,
+  * So do not enforce things if the VMA is not from the current
+  * mm, or if we are in a kernel thread.
+  */
+-static inline bool vma_is_foreign(struct vm_area_struct *vma)
+-{
+-	if (!current->mm)
+-		return true;
+-	/*
+-	 * Should PKRU be enforced on the access to this VMA?  If
+-	 * the VMA is from another process, then PKRU has no
+-	 * relevance and should not be enforced.
+-	 */
+-	if (current->mm != vma->vm_mm)
+-		return true;
+-
+-	return false;
+-}
+-
+ static inline bool arch_vma_access_permitted(struct vm_area_struct *vma,
+ 		bool write, bool execute, bool foreign)
+ {
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 6f7e400e6ea3..2fd4b9bec4be 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -27,6 +27,7 @@
+ #include <linux/memremap.h>
+ #include <linux/overflow.h>
+ #include <linux/sizes.h>
++#include <linux/sched.h>
+ 
+ struct mempolicy;
+ struct anon_vma;
+@@ -542,6 +543,16 @@ static inline bool vma_is_anonymous(struct vm_area_struct *vma)
+ 	return !vma->vm_ops;
+ }
+ 
++static inline bool vma_is_foreign(struct vm_area_struct *vma)
++{
++	if (!current->mm)
++		return true;
++
++	if (current->mm != vma->vm_mm)
++		return true;
++
++	return false;
++}
+ #ifdef CONFIG_SHMEM
+ /*
+  * The vma_is_shmem is not inline because it is used only by slow
 -- 
 2.20.1
 
