@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 552A5C4BA06
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Feb 2020 08:54:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D8F73C4BA24
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Feb 2020 08:56:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 06DBF24688
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Feb 2020 08:54:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6858A24680
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Feb 2020 08:56:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="01by59pq"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 06DBF24688
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="yeV9cIO5"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6858A24680
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48Smh94ylmzDqyb
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Feb 2020 19:54:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48SmkB0bVmzDr30
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Feb 2020 19:56:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=rppt@kernel.org; receiver=<UNKNOWN>)
@@ -28,29 +28,29 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=01by59pq; dkim-atps=neutral
+ header.s=default header.b=yeV9cIO5; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48SmY04LZxzDqww
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Feb 2020 19:48:36 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48SmYB2t8fzDqxb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Feb 2020 19:48:46 +1100 (AEDT)
 Received: from aquarius.haifa.ibm.com (nesher1.haifa.il.ibm.com [195.110.40.7])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 43F672468F;
- Thu, 27 Feb 2020 08:46:34 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 253792467B;
+ Thu, 27 Feb 2020 08:48:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1582793314;
- bh=4sQuAppJ9V8uQLBiWjuxN6eOuFTm+NWRpi38gIPMGaA=;
+ s=default; t=1582793324;
+ bh=RG9Zl/BpZrqRN3HuSpCwlDUS57jnnyLncIWtzvxDXVc=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=01by59pqAON8FeO9D/psn6j37NS33qcomrUCI6gyTr0QWIa5kllZkezTs00rESSHU
- UV00GgurPHbJcPkn8QwKLG/5yTPlukucMIpLas29VEgyoZwjkB0BfAMfLOR/85P2yj
- QAtb0atIS1P9oSw1iMB3282A5MdLa+u93wUXZW5A=
+ b=yeV9cIO5+yHqg0pRHuIksXXhCSdwuStrk3RmcmdgzfvxN7ktm2lsx5aUpOD/+xi4k
+ 5kJqDFyM82pDukikSREXjjoXIupCa3+enh5i/8SeenNhYer/SHwai6M+agFAnw7ZMr
+ I+fLSNws91PPGux1ughj/IKPUyozIUfsO72XZna0=
 From: Mike Rapoport <rppt@kernel.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH v3 02/14] h8300: remove usage of __ARCH_USE_5LEVEL_HACK
-Date: Thu, 27 Feb 2020 10:45:56 +0200
-Message-Id: <20200227084608.18223-3-rppt@kernel.org>
+Subject: [PATCH v3 03/14] hexagon: remove __ARCH_USE_5LEVEL_HACK
+Date: Thu, 27 Feb 2020 10:45:57 +0200
+Message-Id: <20200227084608.18223-4-rppt@kernel.org>
 X-Mailer: git-send-email 2.24.0
 In-Reply-To: <20200227084608.18223-1-rppt@kernel.org>
 References: <20200227084608.18223-1-rppt@kernel.org>
@@ -93,30 +93,44 @@ Sender: "Linuxppc-dev"
 
 From: Mike Rapoport <rppt@linux.ibm.com>
 
-h8300 is a nommu architecture and does not require fixup for upper layers
-of the page tables because it is already handled by the generic nommu
-implementation.
+The hexagon architecture has 2 level page tables and as such most of the
+page table folding is already implemented in asm-generic/pgtable-nopmd.h.
 
-Remove definition of __ARCH_USE_5LEVEL_HACK in
-arch/h8300/include/asm/pgtable.h
+Fixup the only place in arch/hexagon to unfold the p4d level and remove
+__ARCH_USE_5LEVEL_HACK.
 
 Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
 ---
- arch/h8300/include/asm/pgtable.h | 1 -
- 1 file changed, 1 deletion(-)
+ arch/hexagon/include/asm/fixmap.h  | 4 ++--
+ arch/hexagon/include/asm/pgtable.h | 1 -
+ 2 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/arch/h8300/include/asm/pgtable.h b/arch/h8300/include/asm/pgtable.h
-index 4d00152fab58..f00828720dc4 100644
---- a/arch/h8300/include/asm/pgtable.h
-+++ b/arch/h8300/include/asm/pgtable.h
-@@ -1,7 +1,6 @@
- /* SPDX-License-Identifier: GPL-2.0 */
- #ifndef _H8300_PGTABLE_H
- #define _H8300_PGTABLE_H
+diff --git a/arch/hexagon/include/asm/fixmap.h b/arch/hexagon/include/asm/fixmap.h
+index 933dac167504..97b1b062e750 100644
+--- a/arch/hexagon/include/asm/fixmap.h
++++ b/arch/hexagon/include/asm/fixmap.h
+@@ -16,7 +16,7 @@
+ #include <asm-generic/fixmap.h>
+ 
+ #define kmap_get_fixmap_pte(vaddr) \
+-	pte_offset_kernel(pmd_offset(pud_offset(pgd_offset_k(vaddr), \
+-				(vaddr)), (vaddr)), (vaddr))
++	pte_offset_kernel(pmd_offset(pud_offset(p4d_offset(pgd_offset_k(vaddr), \
++				(vaddr)), (vaddr)), (vaddr)), (vaddr))
+ 
+ #endif
+diff --git a/arch/hexagon/include/asm/pgtable.h b/arch/hexagon/include/asm/pgtable.h
+index 2fec20ad939e..83b544936eed 100644
+--- a/arch/hexagon/include/asm/pgtable.h
++++ b/arch/hexagon/include/asm/pgtable.h
+@@ -12,7 +12,6 @@
+  * Page table definitions for Qualcomm Hexagon processor.
+  */
+ #include <asm/page.h>
 -#define __ARCH_USE_5LEVEL_HACK
- #include <asm-generic/pgtable-nopud.h>
- #include <asm-generic/pgtable.h>
- extern void paging_init(void);
+ #include <asm-generic/pgtable-nopmd.h>
+ 
+ /* A handy thing to have if one has the RAM. Declared in head.S */
 -- 
 2.24.0
 
