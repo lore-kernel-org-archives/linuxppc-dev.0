@@ -6,47 +6,47 @@ X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 400EEC11D3D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Feb 2020 17:51:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 51C8CC11D3D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Feb 2020 17:57:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F3C1E2469B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Feb 2020 17:51:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F3C1E2469B
+	by mail.kernel.org (Postfix) with ESMTPS id 0F3E22469B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Feb 2020 17:57:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0F3E22469B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=deltatee.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48T0bT4PcXzDr5V
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Feb 2020 04:51:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48T0jq5G4YzDr5N
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Feb 2020 04:57:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=deltatee.com (client-ip=207.54.116.67; helo=ale.deltatee.com;
  envelope-from=logang@deltatee.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=deltatee.com
-X-Greylist: delayed 1556 seconds by postgrey-1.36 at bilbo;
- Fri, 28 Feb 2020 04:48:50 AEDT
 Received: from ale.deltatee.com (ale.deltatee.com [207.54.116.67])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48T0XL68BRzDq9T
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Feb 2020 04:48:49 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48T0gX0t22zDqxQ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Feb 2020 04:55:03 +1100 (AEDT)
 Received: from s0106ac1f6bb1ecac.cg.shawcable.net ([70.73.163.230]
  helo=[192.168.11.155])
  by ale.deltatee.com with esmtpsa (TLS1.3:ECDHE_RSA_AES_128_GCM_SHA256:128)
  (Exim 4.92) (envelope-from <logang@deltatee.com>)
- id 1j7MrE-0003nL-Q0; Thu, 27 Feb 2020 10:21:57 -0700
+ id 1j7NMx-0004I6-PN; Thu, 27 Feb 2020 10:54:45 -0700
 To: Jason Gunthorpe <jgg@ziepe.ca>
 References: <20200221182503.28317-1-logang@deltatee.com>
  <20200227171704.GK31668@ziepe.ca>
+ <e8781f85-3fc7-b9ce-c751-606803cbdc77@deltatee.com>
+ <20200227174311.GL31668@ziepe.ca>
 From: Logan Gunthorpe <logang@deltatee.com>
-Message-ID: <e8781f85-3fc7-b9ce-c751-606803cbdc77@deltatee.com>
-Date: Thu, 27 Feb 2020 10:21:50 -0700
+Message-ID: <7e573498-81c1-7f00-c1ff-ed16e12a5b96@deltatee.com>
+Date: Thu, 27 Feb 2020 10:54:40 -0700
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
  Thunderbird/68.5.0
 MIME-Version: 1.0
-In-Reply-To: <20200227171704.GK31668@ziepe.ca>
+In-Reply-To: <20200227174311.GL31668@ziepe.ca>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
@@ -95,22 +95,24 @@ Sender: "Linuxppc-dev"
 
 
 
-On 2020-02-27 10:17 a.m., Jason Gunthorpe wrote:
->> Instead of this, this series proposes a change to arch_add_memory()
->> to take the pgprot required by the mapping which allows us to
->> explicitly set pagetable entries for P2PDMA memory to WC.
+On 2020-02-27 10:43 a.m., Jason Gunthorpe wrote:
+> Hm, AFAIK WC memory is not compatible with the spinlocks/mutexs/etc in
+> Linux, so while it is true the memory has no side effects, there would
+> be surprising concurrency risks if anything in the kernel tried to
+> write to it.
 > 
-> Is there a particular reason why WC was selected here? I thought for
-> the p2pdma cases there was no kernel user that touched the memory?
+> Not compatible means the locks don't contain stores to WC memory the
+> way you would expect. AFAIK on many CPUs extra barriers are required
+> to keep WC stores ordered, the same way ARM already has extra barriers
+> to keep UC stores ordered with locking..
+> 
+> The spinlocks are defined to contain UC stores though.
+> 
+> If there is no actual need today for WC I would suggest using UC as
+> the default.
 
-Yes, that's correct. I choose WC here because the existing users are
-registering memory blocks without side effects which fit the WC
-semantics well.
+Ok, that sounds sensible. I'll do that in the next revision.
 
-> I definitely forsee devices where we want UC instead.
-
-Yes. My expectation is that once we have a kernel user that needs this,
-we'd wire the option through struct dev_pagemap so the caller can choose
-the mapping that makes sense.
+Thanks,
 
 Logan
