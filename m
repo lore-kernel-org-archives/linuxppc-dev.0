@@ -2,89 +2,90 @@ Return-Path: <SRS0=jCWG=4P=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CEC4EC11D3D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Feb 2020 17:19:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D184C35677
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Feb 2020 17:46:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8181B246A0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Feb 2020 17:19:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D134B24692
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Feb 2020 17:46:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ziepe.ca header.i=@ziepe.ca header.b="dth2WWWZ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8181B246A0
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ziepe.ca header.i=@ziepe.ca header.b="h0ccKzey"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D134B24692
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48Szt75B5gzDr7W
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Feb 2020 04:19:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48T0TR1NQQzDr43
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Feb 2020 04:46:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::f44;
- helo=mail-qv1-xf44.google.com; envelope-from=jgg@ziepe.ca; receiver=<UNKNOWN>)
+ smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::743;
+ helo=mail-qk1-x743.google.com; envelope-from=jgg@ziepe.ca; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ziepe.ca
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256
- header.s=google header.b=dth2WWWZ; dkim-atps=neutral
-Received: from mail-qv1-xf44.google.com (mail-qv1-xf44.google.com
- [IPv6:2607:f8b0:4864:20::f44])
+ header.s=google header.b=h0ccKzey; dkim-atps=neutral
+Received: from mail-qk1-x743.google.com (mail-qk1-x743.google.com
+ [IPv6:2607:f8b0:4864:20::743])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48Szqs2Kh8zDqsW
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Feb 2020 04:17:09 +1100 (AEDT)
-Received: by mail-qv1-xf44.google.com with SMTP id dc14so1892218qvb.9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Feb 2020 09:17:09 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48T0Pv6YzBzDr2N
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Feb 2020 04:43:15 +1100 (AEDT)
+Received: by mail-qk1-x743.google.com with SMTP id e16so160825qkl.6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Feb 2020 09:43:15 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ziepe.ca; s=google;
  h=date:from:to:cc:subject:message-id:references:mime-version
  :content-disposition:in-reply-to:user-agent;
- bh=ARo9Rla66Kxeu/Z2V78mx/ehDWu077QNPWdzDFxfOJY=;
- b=dth2WWWZKp9HGsnWrcnEGnyDwu2blK8iDXb8vLMtoeR2VaMJ3fz37+cGHyNAha/rWV
- dK1sGTg22oiYuz24KPwTF2AS2YzOdqQyu6b+TiUBCYZk9V0zbua+mDMo3YTMUSvN9nIT
- EMJKHUaXkpfsveCsIHveNriBa6Vtjb0vFsMy7lGIqEqrtAiZ99Xs/sQZQxUbkx1mzgHf
- AVJsII2Jxg233IpQwYAVVL3i04SYIDZ8pS2nl8aTFh1Sh2y4snmhOeu+kOn7LsejaKvN
- 5rYQfvFElRSnuNIftRZI411+PoKrYCAMkJ59tu4Fy8L8tWs1KfJP0Uu0uqOwYZUWVb/k
- btJw==
+ bh=oCjJQPxZpDAddCTP2fyq9zy2cQ1xSVL89kL40WfyDFw=;
+ b=h0ccKzeyP3flPLgjKffvX6NEZ8a/uwNV100LizRKN14n3zedm2cahPgJEhxnAi/Eux
+ SoJyZIMb4T7nlpMiSIVzl4rMs2X4TuO582QZ1v3uBlvSIJKL/2eHq1X0Q3RguRMqGiyD
+ jIHlP2hMNaMnlwbC+BJKvF6YRP2s83wQLQnu6HWuvl9gBkHIXEKgRfF2bx2kqxfLtaoi
+ NHPp/iB678wthxbg1SayDlPMTRa2+OyRd0c8slMZFoj0NWbnumSUHITUyCw6JAjfKy0s
+ /ZPnh7hQIi+kffDRK1XYwUv4XEf8RRXfY3Aofqotene7stHVy6OiSQWIReq879CDmrtM
+ 2sgQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:date:from:to:cc:subject:message-id:references
  :mime-version:content-disposition:in-reply-to:user-agent;
- bh=ARo9Rla66Kxeu/Z2V78mx/ehDWu077QNPWdzDFxfOJY=;
- b=eTYCXhHEMEk2mtdH1f1zc1rPKIfECmI/ylOUiMqtinhyi34gYe44mdz++RKdk7+3UV
- rMsknaszk6xbF+EiYDDh6z5+74yNYB1OlO2f0Ne2gMvcS1YMLQ3bBlDcQEXystsbOVSU
- fT7+c1JwXQYv6ohq9JIvF3fQR44h+8lFouS8PQom4Se++QFyK3GCYBbi/rJHJsPaItrI
- MbEOmfA6M82HKAtKMWW6tf+2Nn5WpiuFCxO+LxdNbRKRrSFBxFOMMT+1Hx8DiKmgS3Hl
- RFKyxe6btRDOO5Tq30GdsI7vxgUO1n3QBxEC+v+lt2PBneA+df0Y1ldL7JWXojGBeoXq
- 9xrA==
-X-Gm-Message-State: APjAAAXZC1gYQksEH1VtTGnowwYMbT8/nF4hZmix7AJYjF4HUbaBs4x+
- 77chCvcY8Uf4Jyw01nt45zF56A==
-X-Google-Smtp-Source: APXvYqzIGS93ngPFOoj3vliIAB10vgE4M/ehyQsI06gG80887mNylpBqlEfVijkpuc5v919Oz9PGMQ==
-X-Received: by 2002:ad4:5429:: with SMTP id g9mr757799qvt.134.1582823826213;
- Thu, 27 Feb 2020 09:17:06 -0800 (PST)
+ bh=oCjJQPxZpDAddCTP2fyq9zy2cQ1xSVL89kL40WfyDFw=;
+ b=GTwX3mKNKjwUmfPEHSlz8wUohf4XIvqDsLAFSEELIJ8ySNFL+DJ5zw16joOrARUGue
+ MZvWbhq6yN19J6aj00Eh2WkKiTCK/3EZFtMR/ynZo9J2J+y2RD1CfbT1phcCg15B/ZpC
+ uBseoKPCqcOHsM55KYNjq6fdmxIVqxcUcEvBXt+2IG9etFU2IVDjjHliTpisof52zdiF
+ HhOSGoM+euVT5VTDWywP4CoC4qbMU7VvYzXgzLJgCz98xmvh7qCcvUkaDbpiCKXKFZ5H
+ nFOp/iXsgJeNfKnJ6imhaiVWwIztTzK8NO82/Y8NFA5C3iFZwY30J/OOJw/idCXz+/eE
+ kAFQ==
+X-Gm-Message-State: APjAAAUOkZeQcWrvW9izihVH+5ONcrhjd7ezd6Q/2pT7qC8wjfy24Ubm
+ zDQgpGfbfl+AgP7tj0a7ONzH0g==
+X-Google-Smtp-Source: APXvYqz1bAJmZgA8/8aWp40ku++Grc84lutv6gcjfJ4VE4iLl6cxS/fnpq6F9eLVrs8dckDJaWVR0g==
+X-Received: by 2002:a05:620a:2185:: with SMTP id g5mr445502qka.4.1582825391979; 
+ Thu, 27 Feb 2020 09:43:11 -0800 (PST)
 Received: from ziepe.ca
  (hlfxns017vw-142-68-57-212.dhcp-dynamic.fibreop.ns.bellaliant.net.
  [142.68.57.212])
- by smtp.gmail.com with ESMTPSA id x14sm3375572qkf.99.2020.02.27.09.17.05
+ by smtp.gmail.com with ESMTPSA id k23sm3317124qtq.89.2020.02.27.09.43.11
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 27 Feb 2020 09:17:05 -0800 (PST)
+ Thu, 27 Feb 2020 09:43:11 -0800 (PST)
 Received: from jgg by mlx.ziepe.ca with local (Exim 4.90_1)
  (envelope-from <jgg@ziepe.ca>)
- id 1j7MmW-0003YD-SC; Thu, 27 Feb 2020 13:17:04 -0400
-Date: Thu, 27 Feb 2020 13:17:04 -0400
+ id 1j7NBn-0003iZ-2v; Thu, 27 Feb 2020 13:43:11 -0400
+Date: Thu, 27 Feb 2020 13:43:11 -0400
 From: Jason Gunthorpe <jgg@ziepe.ca>
 To: Logan Gunthorpe <logang@deltatee.com>
 Subject: Re: [PATCH v3 0/7] Allow setting caching mode in arch_add_memory()
  for P2PDMA
-Message-ID: <20200227171704.GK31668@ziepe.ca>
+Message-ID: <20200227174311.GL31668@ziepe.ca>
 References: <20200221182503.28317-1-logang@deltatee.com>
+ <20200227171704.GK31668@ziepe.ca>
+ <e8781f85-3fc7-b9ce-c751-606803cbdc77@deltatee.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200221182503.28317-1-logang@deltatee.com>
+In-Reply-To: <e8781f85-3fc7-b9ce-c751-606803cbdc77@deltatee.com>
 User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -113,61 +114,34 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Feb 21, 2020 at 11:24:56AM -0700, Logan Gunthorpe wrote:
-> Hi,
+On Thu, Feb 27, 2020 at 10:21:50AM -0700, Logan Gunthorpe wrote:
 > 
-> This is v3 of the patchset which cleans up a number of minor issues
-> from the feedback of v2 and rebases onto v5.6-rc2. Additional feedback
-> is welcome.
 > 
-> Thanks,
+> On 2020-02-27 10:17 a.m., Jason Gunthorpe wrote:
+> >> Instead of this, this series proposes a change to arch_add_memory()
+> >> to take the pgprot required by the mapping which allows us to
+> >> explicitly set pagetable entries for P2PDMA memory to WC.
+> > 
+> > Is there a particular reason why WC was selected here? I thought for
+> > the p2pdma cases there was no kernel user that touched the memory?
 > 
-> Logan
-> 
-> --
-> 
-> Changes in v3:
->  * Rebased onto v5.6-rc2
->  * Rename mhp_modifiers to mhp_params per David with an updated kernel
->    doc per Dan
->  * Drop support for s390 per David seeing it does not support
->    ZONE_DEVICE yet and there was a potential problem with huge pages.
->  * Added WARN_ON_ONCE in cases where arches recieve non PAGE_KERNEL
->    parameters
->  * Collected David and Micheal's Reviewed-By and Acked-by Tags
-> 
-> Changes in v2:
->  * Rebased onto v5.5-rc5
->  * Renamed mhp_restrictions to mhp_modifiers and added the pgprot field
->    to that structure instead of using an argument for
->    arch_add_memory().
->  * Add patch to drop the unused flags field in mhp_restrictions
-> 
-> A git branch is available here:
-> 
-> https://github.com/sbates130272/linux-p2pmem remap_pages_cache_v3
-> 
-> --
-> 
-> Currently, the page tables created using memremap_pages() are always
-> created with the PAGE_KERNEL cacheing mode. However, the P2PDMA code
-> is creating pages for PCI BAR memory which should never be accessed
-> through the cache and instead use either WC or UC. This still works in
-> most cases, on x86, because the MTRR registers typically override the
-> caching settings in the page tables for all of the IO memory to be
-> UC-. However, this tends not to work so well on other arches or
-> some rare x86 machines that have firmware which does not setup the
-> MTRR registers in this way.
-> 
-> Instead of this, this series proposes a change to arch_add_memory()
-> to take the pgprot required by the mapping which allows us to
-> explicitly set pagetable entries for P2PDMA memory to WC.
+> Yes, that's correct. I choose WC here because the existing users are
+> registering memory blocks without side effects which fit the WC
+> semantics well.
 
-Is there a particular reason why WC was selected here? I thought for
-the p2pdma cases there was no kernel user that touched the memory?
+Hm, AFAIK WC memory is not compatible with the spinlocks/mutexs/etc in
+Linux, so while it is true the memory has no side effects, there would
+be surprising concurrency risks if anything in the kernel tried to
+write to it.
 
-I definitely forsee devices where we want UC instead.
+Not compatible means the locks don't contain stores to WC memory the
+way you would expect. AFAIK on many CPUs extra barriers are required
+to keep WC stores ordered, the same way ARM already has extra barriers
+to keep UC stores ordered with locking..
 
-Even so, the whole idea looks like the right direction to me.
+The spinlocks are defined to contain UC stores though.
+
+If there is no actual need today for WC I would suggest using UC as
+the default.
 
 Jason
