@@ -2,80 +2,87 @@ Return-Path: <SRS0=/+OH=4Q=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D98A9C3F2C6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Feb 2020 00:46:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 552CDC3F2CD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Feb 2020 00:48:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 88DD32064A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Feb 2020 00:46:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 003FE2064A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Feb 2020 00:48:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="Diy0bFR/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 88DD32064A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="VkYwwc0J"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 003FE2064A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48T9ph2b99zDqHq
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Feb 2020 11:46:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48T9rp4hRQzDqwT
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Feb 2020 11:48:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::343;
+ helo=mail-ot1-x343.google.com; envelope-from=jniethe5@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=Diy0bFR/; dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=VkYwwc0J; dkim-atps=neutral
+Received: from mail-ot1-x343.google.com (mail-ot1-x343.google.com
+ [IPv6:2607:f8b0:4864:20::343])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48T9Dm2fWdzDr7s
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Feb 2020 11:20:56 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 48T9Dh5FtCz9tyJw;
- Fri, 28 Feb 2020 01:20:52 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=Diy0bFR/; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id jK7mK9d4mc75; Fri, 28 Feb 2020 01:20:52 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 48T9Dh3w2pz9tyJt;
- Fri, 28 Feb 2020 01:20:52 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1582849252; bh=6un/Hfrg4/12nUEnkUy8j1MRzkBjpG3z1Kv2lY/j4QQ=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=Diy0bFR/LkQX8T/vucthw0xSiRSYGIE+RvNSCo11/m9ECF7RPLC3l7glbeFgLi2K/
- BoiaScXfoNhE13z9me05pKQtfzHkHlPolyd45EBqMxQ/7Q4w3s5hg1Hpl8b/DDgBir
- FwauZEh1fmk+E/0YfNoYaoTt+hjC5ZZspnTH26xU=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C22998B881;
- Fri, 28 Feb 2020 01:20:52 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id gjAfM4m_rQhH; Fri, 28 Feb 2020 01:20:52 +0100 (CET)
-Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0930A8B799;
- Fri, 28 Feb 2020 01:20:52 +0100 (CET)
-Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id D96DD65417; Fri, 28 Feb 2020 00:14:47 +0000 (UTC)
-Message-Id: <c1482c41a39cc216f4073a51070d8680f52d5054.1582848567.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1582848567.git.christophe.leroy@c-s.fr>
-References: <cover.1582848567.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v5 11/13] powerpc/ptrace: create ptrace_get_debugreg()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
- mikey@neuling.org
-Date: Fri, 28 Feb 2020 00:14:47 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48T9bh1XfRzDr7b
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Feb 2020 11:37:19 +1100 (AEDT)
+Received: by mail-ot1-x343.google.com with SMTP id j5so133975otn.10
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Feb 2020 16:37:19 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc:content-transfer-encoding;
+ bh=tD5m57hsHbv8JQhy5Tbo5+LacfuMVnk7uYvklG+Wh8Q=;
+ b=VkYwwc0J/nVQQtEMIsHSFqHm0i3MkSHAMBIdK9STv3BQBuX7gVf9tmwliEeBwLglHL
+ WBprtbW6/j15cMojmSdokKROBPqDDJbuQ5Q2tV4/c5Kef0cVOpac9jGvCl3N3qap3wiC
+ s/R0PMW+091Y3a6PAuRxI7p3aGLbZdKkt4v4cKK60Ok2pvabhH0ZVOya3nDCdQP37l3p
+ Qon6Cw+GdYlNxXszCZz+5MAh54Mjl2TQldEIio2h9SCRu+zXUIR5IaRfHKzP5ePTEggC
+ 5XuW6JwVHJW4Z3G3v7CCfcfiLnJzQPxebtTROfMn3e5dVSNvZf27Vmn9x4GUvoJwxlQT
+ KkHw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc:content-transfer-encoding;
+ bh=tD5m57hsHbv8JQhy5Tbo5+LacfuMVnk7uYvklG+Wh8Q=;
+ b=GoNn+wrO5x9g+6jytXCIzU7H0623t5U/hUUhHz2bLkFJiSsbVv6WIby79928SJm628
+ aIHJPNVL/MbhbtIGUWdGA1puCzcvImvhSz8HYLg2BHwEGds25EV5CVgJL3NUPrVB38Xv
+ ZtmCYDxp5qj+NTZUO7WL9zfLHxWidroOmWw2IuKigjhIysbNyMaEGFcnC7tBzC0ONBvP
+ nVgd6Rqy19t3tCwUobE3bPoyke81CCK30pB4/YfmlPFLLMcHR1yn0mAtxWiMQ3abvj5D
+ nX4vVveRqNnzCUSNJJ6gTXiSsGs/A8tVCKHQ7WudpBvXI6b7grU0w9v6EcfHYn6Wzl5E
+ gcQw==
+X-Gm-Message-State: APjAAAUacMlK1ApVKA5ZY7mmO6ybpN31zmQJSEaEYa653X0uYZCubSPG
+ 8s1Z1JNCb+rwYgW+8EJlCyO4ML+S7uoWzNbT+gk=
+X-Google-Smtp-Source: APXvYqwWH1Bj3p5G7D7buEdZcVqIFBTymdYwlrKaQr2LZ9XJjvipMbsryurU4rQs4/nc0BWxf3/PnsTtAvJAQhIFMmA=
+X-Received: by 2002:a05:6830:1e24:: with SMTP id
+ t4mr1336277otr.28.1582850236134; 
+ Thu, 27 Feb 2020 16:37:16 -0800 (PST)
+MIME-Version: 1.0
+References: <20200226040716.32395-1-jniethe5@gmail.com>
+ <20200226040716.32395-10-jniethe5@gmail.com>
+ <1582700457.bqyiezlzr9.astroid@bobo.none>
+ <CACzsE9p4siTRgCnC6GPSn+89SnPr5CTTBk5+LOfS8BX+1OmMZg@mail.gmail.com>
+ <f6db0844-bcd0-50af-5699-a89f10538ed0@c-s.fr>
+In-Reply-To: <f6db0844-bcd0-50af-5699-a89f10538ed0@c-s.fr>
+From: Jordan Niethe <jniethe5@gmail.com>
+Date: Fri, 28 Feb 2020 11:37:04 +1100
+Message-ID: <CACzsE9r6JGOuTBwaLxDhWb2W4E=Ag0M-QHrxJUCcjP4XNYZxkQ@mail.gmail.com>
+Subject: Re: [PATCH v3 09/14] powerpc/xmon: Add initial support for prefixed
+ instructions
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,109 +94,112 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Alistair Popple <alistair@popple.id.au>,
+ Balamuruhan S <bala24@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Nicholas Piggin <npiggin@gmail.com>, Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Create ptrace_get_debugreg() to handle PTRACE_GET_DEBUGREG and
-reduce ifdef mess
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+On Thu, Feb 27, 2020 at 6:14 PM Christophe Leroy
+<christophe.leroy@c-s.fr> wrote:
+>
+>
+>
+> Le 27/02/2020 =C3=A0 01:11, Jordan Niethe a =C3=A9crit :
+> > On Wed, Feb 26, 2020 at 6:10 PM Nicholas Piggin <npiggin@gmail.com> wro=
+te:
+> >>
+> >> Jordan Niethe's on February 26, 2020 2:07 pm:
+> >>> A prefixed instruction is composed of a word prefix and a word suffix=
+.
+> >>> It does not make sense to be able to have a breakpoint on the suffix =
+of
+> >>> a prefixed instruction, so make this impossible.
+> >>>
+> >>> When leaving xmon_core() we check to see if we are currently at a
+> >>> breakpoint. If this is the case, the breakpoint needs to be proceeded
+> >>> from. Initially emulate_step() is tried, but if this fails then we ne=
+ed
+> >>> to execute the saved instruction out of line. The NIP is set to the
+> >>> address of bpt::instr[] for the current breakpoint.  bpt::instr[]
+> >>> contains the instruction replaced by the breakpoint, followed by a tr=
+ap
+> >>> instruction.  After bpt::instr[0] is executed and we hit the trap we
+> >>> enter back into xmon_bpt(). We know that if we got here and the offse=
+t
+> >>> indicates we are at bpt::instr[1] then we have just executed out of l=
+ine
+> >>> so we can put the NIP back to the instruction after the breakpoint
+> >>> location and continue on.
+> >>>
+> >>> Adding prefixed instructions complicates this as the bpt::instr[1] ne=
+eds
+> >>> to be used to hold the suffix. To deal with this make bpt::instr[] bi=
+g
+> >>> enough for three word instructions.  bpt::instr[2] contains the trap,
+> >>> and in the case of word instructions pad bpt::instr[1] with a noop.
+> >>>
+> >>> No support for disassembling prefixed instructions.
+> >>>
+> >>> Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
+> >>> ---
+> >>> v2: Rename sufx to suffix
+> >>> v3: - Just directly use PPC_INST_NOP
+> >>>      - Typo: plac -> place
+> >>>      - Rename read_inst() to mread_inst(). Do not have it call mread(=
+).
+> >>> ---
+> >>>   arch/powerpc/xmon/xmon.c | 90 ++++++++++++++++++++++++++++++++++---=
 ---
- arch/powerpc/kernel/ptrace/ptrace-adv.c   |  9 +++++++++
- arch/powerpc/kernel/ptrace/ptrace-decl.h  |  2 ++
- arch/powerpc/kernel/ptrace/ptrace-noadv.c | 13 +++++++++++++
- arch/powerpc/kernel/ptrace/ptrace.c       | 18 ++----------------
- 4 files changed, 26 insertions(+), 16 deletions(-)
-
-diff --git a/arch/powerpc/kernel/ptrace/ptrace-adv.c b/arch/powerpc/kernel/ptrace/ptrace-adv.c
-index eebcd41edc3d..c71bedd54a8b 100644
---- a/arch/powerpc/kernel/ptrace/ptrace-adv.c
-+++ b/arch/powerpc/kernel/ptrace/ptrace-adv.c
-@@ -56,6 +56,15 @@ void user_disable_single_step(struct task_struct *task)
- 	clear_tsk_thread_flag(task, TIF_SINGLESTEP);
- }
- 
-+int ptrace_get_debugreg(struct task_struct *child, unsigned long addr,
-+			unsigned long __user *datalp)
-+{
-+	/* We only support one DABR and no IABRS at the moment */
-+	if (addr > 0)
-+		return -EINVAL;
-+	return put_user(child->thread.debug.dac1, datalp);
-+}
-+
- int ptrace_set_debugreg(struct task_struct *task, unsigned long addr, unsigned long data)
- {
- #ifdef CONFIG_HAVE_HW_BREAKPOINT
-diff --git a/arch/powerpc/kernel/ptrace/ptrace-decl.h b/arch/powerpc/kernel/ptrace/ptrace-decl.h
-index bdba09a87aea..4b4b6a1d508a 100644
---- a/arch/powerpc/kernel/ptrace/ptrace-decl.h
-+++ b/arch/powerpc/kernel/ptrace/ptrace-decl.h
-@@ -176,6 +176,8 @@ int tm_cgpr32_set(struct task_struct *target, const struct user_regset *regset,
- extern const struct user_regset_view user_ppc_native_view;
- 
- /* ptrace-(no)adv */
-+int ptrace_get_debugreg(struct task_struct *child, unsigned long addr,
-+			unsigned long __user *datalp);
- int ptrace_set_debugreg(struct task_struct *task, unsigned long addr, unsigned long data);
- long ppc_set_hwdebug(struct task_struct *child, struct ppc_hw_breakpoint *bp_info);
- long ppc_del_hwdebug(struct task_struct *child, long data);
-diff --git a/arch/powerpc/kernel/ptrace/ptrace-noadv.c b/arch/powerpc/kernel/ptrace/ptrace-noadv.c
-index cf05fadba0d5..9c1ef9c2ffd4 100644
---- a/arch/powerpc/kernel/ptrace/ptrace-noadv.c
-+++ b/arch/powerpc/kernel/ptrace/ptrace-noadv.c
-@@ -39,6 +39,19 @@ void user_disable_single_step(struct task_struct *task)
- 	clear_tsk_thread_flag(task, TIF_SINGLESTEP);
- }
- 
-+int ptrace_get_debugreg(struct task_struct *child, unsigned long addr,
-+			unsigned long __user *datalp)
-+{
-+	unsigned long dabr_fake;
-+
-+	/* We only support one DABR and no IABRS at the moment */
-+	if (addr > 0)
-+		return -EINVAL;
-+	dabr_fake = ((child->thread.hw_brk.address & (~HW_BRK_TYPE_DABR)) |
-+		     (child->thread.hw_brk.type & HW_BRK_TYPE_DABR));
-+	return put_user(dabr_fake, datalp);
-+}
-+
- int ptrace_set_debugreg(struct task_struct *task, unsigned long addr, unsigned long data)
- {
- #ifdef CONFIG_HAVE_HW_BREAKPOINT
-diff --git a/arch/powerpc/kernel/ptrace/ptrace.c b/arch/powerpc/kernel/ptrace/ptrace.c
-index 48e095e88a2f..d6e1a301d20e 100644
---- a/arch/powerpc/kernel/ptrace/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace/ptrace.c
-@@ -191,23 +191,9 @@ long arch_ptrace(struct task_struct *child, long request,
- 		break;
- 	}
- 
--	case PTRACE_GET_DEBUGREG: {
--#ifndef CONFIG_PPC_ADV_DEBUG_REGS
--		unsigned long dabr_fake;
--#endif
--		ret = -EINVAL;
--		/* We only support one DABR and no IABRS at the moment */
--		if (addr > 0)
--			break;
--#ifdef CONFIG_PPC_ADV_DEBUG_REGS
--		ret = put_user(child->thread.debug.dac1, datalp);
--#else
--		dabr_fake = ((child->thread.hw_brk.address & (~HW_BRK_TYPE_DABR)) |
--			     (child->thread.hw_brk.type & HW_BRK_TYPE_DABR));
--		ret = put_user(dabr_fake, datalp);
--#endif
-+	case PTRACE_GET_DEBUGREG:
-+		ret = ptrace_get_debugreg(child, addr, datalp);
- 		break;
--	}
- 
- 	case PTRACE_SET_DEBUGREG:
- 		ret = ptrace_set_debugreg(child, addr, data);
--- 
-2.25.0
-
+> >>>   1 file changed, 78 insertions(+), 12 deletions(-)
+> >>>
+> >>> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+> >>> index a673cf55641c..a73a35aa4a75 100644
+> >>> --- a/arch/powerpc/xmon/xmon.c
+> >>> +++ b/arch/powerpc/xmon/xmon.c
+> >>> @@ -97,7 +97,8 @@ static long *xmon_fault_jmp[NR_CPUS];
+> >>>   /* Breakpoint stuff */
+> >>>   struct bpt {
+> >>>        unsigned long   address;
+> >>> -     unsigned int    instr[2];
+> >>> +     /* Prefixed instructions can not cross 64-byte boundaries */
+> >>> +     unsigned int    instr[3] __aligned(64);
+> >>
+> >> This is pretty wild, I didn't realize xmon executes breakpoints out
+> >> of line like this.
+>
+> Neither did I. That's problematic. Kernel data is mapped NX on some
+> platforms.
+>
+> >>
+> >> IMO the break point entries here should correspond with a range of
+> >> reserved bytes in .text so we patch instructions into normal executabl=
+e
+> >> pages rather than .data.
+> > Would it make sense to use vmalloc_exec() and use that like we are
+> > going to do in kprobes()?
+>
+> As we are (already) doing in kprobes() you mean ?
+Sorry for the confusion, I was mainly thinking of the patch that you
+pointed out before:
+https://patchwork.ozlabs.org/patch/1232619/
+>
+> In fact kprobes uses module_alloc(), and it works because kprobe depends
+> on module. On some platforms (i.e. book3s/32) vmalloc space is marked NX
+> in segment registers when CONFIG_MODULES is not set, see
+> mmu_mark_initmem_nx().  On other ones the Instruction TLB miss exception
+> does not manage misses at kernel addresses when CONFIG_MODULES is not
+> selected.
+>
+> So if we want XMON to work at all time, we need to use some (linear)
+> text address and use patch_instruction() to change it.
+Thank you for the detailed clarification, I will do it like that.
+>
+> Christophe
+>
+> >>
+> >> Anyway that's for patch.
+> >>
+> >> Thanks,
+> >> Nick
