@@ -2,81 +2,65 @@ Return-Path: <SRS0=/+OH=4Q=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E51DC3F2CF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Feb 2020 07:01:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D18FAC3F2D0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Feb 2020 07:16:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BC657246A3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Feb 2020 07:01:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 370CD2469F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Feb 2020 07:16:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="b7Eu1OiV"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BC657246A3
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="XxdwK4hX"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 370CD2469F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48TL6r46y8zDqys
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Feb 2020 18:01:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48TLSk0H3hzDrLj
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Feb 2020 18:16:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::f42;
- helo=mail-qv1-xf42.google.com; envelope-from=shengjiu.wang@gmail.com;
+ smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
+ helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=b7Eu1OiV; dkim-atps=neutral
-Received: from mail-qv1-xf42.google.com (mail-qv1-xf42.google.com
- [IPv6:2607:f8b0:4864:20::f42])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=XxdwK4hX; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48TL4n5pxMzDq77
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Feb 2020 17:59:37 +1100 (AEDT)
-Received: by mail-qv1-xf42.google.com with SMTP id ff2so896376qvb.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Feb 2020 22:59:37 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=c6hyoD8zfmHfdvTYAWzSR1LNa/TqLChPyCgM+JY7rNU=;
- b=b7Eu1OiVC2aJps+SPPzuhzjoMER1rqPqa/VvZX29dIM7lR539TlgLa+v3GMZHBRQAZ
- eKx85GB9ht9NaHJX6T/qVdHk4UDIucXgAZ6/aTIRLJejLwfsNbAR9Vmt7SJ502TZP55S
- vEcKJZJKg3jJMQS7ipLyZjqQ8/4Lu6AuWQH60NG0cRLgtElo+6LZM3G144uugbn3JbGw
- aN1TMFE54ow0CXGU/EKnklzGqnXqBKBifIDgNq9Kwdebmqj94szrMo2DFayQGYxP6Nqi
- QjRJlEYjd9OZA88814HnrlYzMwEvul1UBw6wj8PovvjrQe6Y5v7z18EmT/zb+a0ydbDW
- DuLA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=c6hyoD8zfmHfdvTYAWzSR1LNa/TqLChPyCgM+JY7rNU=;
- b=dnFcEHdo7zbV7KQzPIyNh8IULHjLU81S7Uj1V36HOuL3jMgJZfBLR81r8di1fy1c4O
- dsxU111P/D6RH2osMKpPaRWBoPuMBYNGWe+fbYaydoq7pniypjOcAm1fmq3yAm+tfn+T
- jyJhB2UsnWenj5qAUcQWVBq0IsEG1WO76se28aHAAR5r///ZyvtODeoqgs3CSiuARLmh
- lQrO6T+bEdpwSNUd7xpGkyXnr8O7krMfyGOQnAWxnyIOzQbmujwuBQHxqOZ+3NnKtrNl
- TRlojF29pAl9CEzeOdeXpZ0OaCvshIUwPujHLdhIu1PX+Ht4gVAydLJFufAQuyFJjMyu
- w3Vg==
-X-Gm-Message-State: APjAAAUs1BDh7Zp/fkqNAibTCbmzhhUZbqaqRGZaR7CxvQ/KMm5jR4nG
- ClujfJ1jZhrPSIU1upDTSH91No2YdyHrVRG80fs=
-X-Google-Smtp-Source: APXvYqx4Mglpr2YgBhx2B/bWVdjJWIXLSKGQv1V/Zpmwn53wJsLruUiOcUOlVokZfkaeflXerQVi8nrguOcbktfRu5Y=
-X-Received: by 2002:ad4:52eb:: with SMTP id p11mr2292548qvu.211.1582873174403; 
- Thu, 27 Feb 2020 22:59:34 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48TLR210HjzDrCG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Feb 2020 18:15:25 +1100 (AEDT)
+Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
+ [83.86.89.107])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id B6D562469D;
+ Fri, 28 Feb 2020 07:15:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1582874123;
+ bh=bzqcvY1+w7p+H0tBmGUux2b6d1gIUiq/keZNLNBznKc=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=XxdwK4hX9SZG6cAVJ0xxZYzqkemDxOmWY+1cEmTnG4oE4Is+PBG7kHaRUPLcqZa6I
+ d6IGDzBLr4do0Wg1pJ5rCWIJV/BjZIkr2D3Cl0iJkW8GoyZG6jjyNX/oSPJsGpkcGC
+ 3xXHY8ZcCXVl//QBuWTZ6yQC5BG057R15eUhlo4Q=
+Date: Fri, 28 Feb 2020 08:15:20 +0100
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Andrew Donnellan <ajd@linux.ibm.com>
+Subject: Re: [PATCH v3 25/27] powerpc/powernv/pmem: Expose the serial number
+ in sysfs
+Message-ID: <20200228071520.GA2897773@kroah.com>
+References: <20200221032720.33893-1-alastair@au1.ibm.com>
+ <20200221032720.33893-26-alastair@au1.ibm.com>
+ <96687fbf-38ab-13ff-ca19-ccb67bbc4405@linux.ibm.com>
 MIME-Version: 1.0
-References: <cover.1582770784.git.shengjiu.wang@nxp.com>
- <d9aebf5ef9a92623db10dc537161b3ecdb1d8b18.1582770784.git.shengjiu.wang@nxp.com>
- <20200227183926.GA456@NICOLINC-LT.nvidia.com>
-In-Reply-To: <20200227183926.GA456@NICOLINC-LT.nvidia.com>
-From: Shengjiu Wang <shengjiu.wang@gmail.com>
-Date: Fri, 28 Feb 2020 14:59:23 +0800
-Message-ID: <CAA+D8ANFN9irpX25VnKYDm3cfU16ht7bcB4-zjDOyHMj8NM9Qw@mail.gmail.com>
-Subject: Re: [PATCH v3 2/4] ASoC: fsl_asrc: Move common definition to
- fsl_asrc_common
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <96687fbf-38ab-13ff-ca19-ccb67bbc4405@linux.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,45 +72,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>,
- "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
- <devicetree@vger.kernel.org>, Linux-ALSA <alsa-devel@alsa-project.org>,
- Timur Tabi <timur@kernel.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Fabio Estevam <festevam@gmail.com>, Shengjiu Wang <shengjiu.wang@nxp.com>,
- Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Rob Herring <robh+dt@kernel.org>, Mark Brown <broonie@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Oliver O'Halloran <oohall@gmail.com>,
+ Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
+ Ira Weiny <ira.weiny@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Rob Herring <robh@kernel.org>, Dave Jiang <dave.jiang@intel.com>,
+ linux-nvdimm@lists.01.org, "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ Krzysztof Kozlowski <krzk@kernel.org>,
+ Anju T Sudhakar <anju@linux.vnet.ibm.com>, alastair@d-silva.org,
+ Arnd Bergmann <arnd@arndb.de>, Greg Kurz <groug@kaod.org>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>,
+ Dan Williams <dan.j.williams@intel.com>, Hari Bathini <hbathini@linux.ibm.com>,
+ Alastair D'Silva <alastair@au1.ibm.com>, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, Vishal Verma <vishal.l.verma@intel.com>,
+ Frederic Barrat <fbarrat@linux.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Feb 28, 2020 at 2:41 AM Nicolin Chen <nicoleotsuka@gmail.com> wrote:
->
-> On Thu, Feb 27, 2020 at 10:41:56AM +0800, Shengjiu Wang wrote:
-> > There is a new ASRC included in i.MX serial platform, there
-> > are some common definition can be shared with each other.
-> > So move the common definition to a separate header file.
-> >
-> > And add fsl_asrc_pair_internal and fsl_asrc_internal for
-> > the variable specific for the module, which can be used
-> > internally.
->
-> I think we can just call it "priv", instead of "internal", since
-> it's passed by the "void *private" pointer.
->
-> And it'd be nicer to have an extra preparational patch to rename
-> existing "struct fsl_asrc *asrc_priv" to "struct fsl_asrc *asrc".
->
-> Something like:
-> struct fsl_asrc *asrc = yyyy;
-> struct fsl_asrc_pair *pair = xxxx;
-> struct fsl_asrc_priv *asrc_priv = asrc->private;
-> struct fsl_asrc_pair_priv *pair_priv = pair->private;
->
-> Thanks
-> ------
->
-ok, will change it.
+On Fri, Feb 28, 2020 at 05:25:31PM +1100, Andrew Donnellan wrote:
+> On 21/2/20 2:27 pm, Alastair D'Silva wrote:
+> > +int ocxlpmem_sysfs_add(struct ocxlpmem *ocxlpmem)
+> > +{
+> > +	int i, rc;
+> > +
+> > +	for (i = 0; i < ARRAY_SIZE(attrs); i++) {
+> > +		rc = device_create_file(&ocxlpmem->dev, &attrs[i]);
+> > +		if (rc) {
+> > +			for (; --i >= 0;)
+> > +				device_remove_file(&ocxlpmem->dev, &attrs[i]);
+> 
+> I'd rather avoid weird for loop constructs if possible.
+> 
+> Is it actually dangerous to call device_remove_file() on an attr that hasn't
+> been added? If not then I'd rather define an err: label and loop over the
+> whole array there.
 
-best regards
-wang shengjiu
+None of this should be used at all, just use attribute groups properly
+and the driver core will handle this all for you.
+
+device_create/remove_file should never be called by anyone anymore if at all
+possible.
+
+thanks,
+
+greg k-h
