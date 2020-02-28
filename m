@@ -2,25 +2,26 @@ Return-Path: <SRS0=/+OH=4Q=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BAD0C3F2CD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Feb 2020 00:21:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 09BD4C3F2C6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Feb 2020 00:23:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0DDE2246A0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Feb 2020 00:21:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id AD684246A1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Feb 2020 00:23:50 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="epRcvZl6"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0DDE2246A0
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="wFiXp6o/"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AD684246A1
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48T9FZ32DdzDrB9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Feb 2020 11:21:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48T9J45XdbzDr6K
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Feb 2020 11:23:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,51 +30,53 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=epRcvZl6; dkim-atps=neutral
+ header.s=mail header.b=wFiXp6o/; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48T95l6tYZzDr9B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Feb 2020 11:14:51 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48T95n4nS2zDr9K
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Feb 2020 11:14:53 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 48T95h5Mc6z9tyJc;
- Fri, 28 Feb 2020 01:14:48 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 48T95k0GjGz9tyJf;
+ Fri, 28 Feb 2020 01:14:50 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=epRcvZl6; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=wFiXp6o/; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id hZG8x6lYQurk; Fri, 28 Feb 2020 01:14:48 +0100 (CET)
+ with ESMTP id WyQSw0LToS5S; Fri, 28 Feb 2020 01:14:49 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 48T95h4Jgcz9tyJb;
- Fri, 28 Feb 2020 01:14:48 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 48T95j6Kjqz9tyJb;
+ Fri, 28 Feb 2020 01:14:49 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1582848888; bh=P3K5gHljn4mGjJEFzKdRLkXiIas6l66ctRXMMynywYU=;
- h=From:Subject:To:Cc:Date:From;
- b=epRcvZl6gA3O7F8JuLbTRNFatT6rPXPsGbrdpLKQkej8enrQmkCI4TVPJZ9KJYsM4
- NmvueW1G0PofguDzs3/GKr2eVooxXY2EINDdZ4RDlwrIvpr3aUFnpzW28pV1zxgDOs
- 8/VG/CVQke+dg6oT41ebSuzUMnFSA1odx2LONw10=
+ t=1582848889; bh=ZoTxt/rU2ic1yhcjEwy71g5KNmfHylnPrX34Fztg4go=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=wFiXp6o/5dwT2gSqzPbvkIYK34lZtL5EkVNhFTJTtPRQW4PMxFIkh+NYvz33z4UOf
+ 6x0DhMz6dQWynxQPWdFFfWHZcjD1rsGqEtAHMTk4mRuWjx/FyQvO5NhjiFdL8EdZAO
+ 5R3Bnbri7DhmsUuuVL03JRowcOD4DIRPPRnQEg18=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id DBBB88B885;
- Fri, 28 Feb 2020 01:14:48 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 356A28B799;
+ Fri, 28 Feb 2020 01:14:50 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id HEBz-Xc75ydz; Fri, 28 Feb 2020 01:14:48 +0100 (CET)
+ with ESMTP id YwxxC3OwZ2gC; Fri, 28 Feb 2020 01:14:50 +0100 (CET)
 Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 04F098B799;
- Fri, 28 Feb 2020 01:14:42 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D08CA8B882;
+ Fri, 28 Feb 2020 01:14:41 +0100 (CET)
 Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 78418653EC; Fri, 28 Feb 2020 00:14:36 +0000 (UTC)
-Message-Id: <cover.1582848567.git.christophe.leroy@c-s.fr>
+ id 866AA6540E; Fri, 28 Feb 2020 00:14:38 +0000 (UTC)
+Message-Id: <6276df0be87a4329c2bb46b3b0f02059ae9e70e6.1582848567.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1582848567.git.christophe.leroy@c-s.fr>
+References: <cover.1582848567.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v5 00/13] Reduce ifdef mess in ptrace
+Subject: [PATCH v5 02/13] powerpc/ptrace: remove unused header includes
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  mikey@neuling.org
-Date: Fri, 28 Feb 2020 00:14:36 +0000 (UTC)
+Date: Fri, 28 Feb 2020 00:14:38 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,73 +93,82 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The purpose of this series is to reduce the amount of #ifdefs
-in ptrace.c
+Remove unused header includes in ptrace.c and ptrace32.c
 
-Link: https://github.com/linuxppc/issues/issues/128
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/kernel/ptrace/ptrace.c   | 19 ++-----------------
+ arch/powerpc/kernel/ptrace/ptrace32.c | 11 -----------
+ 2 files changed, 2 insertions(+), 28 deletions(-)
 
-v5:
-- Big mistake fixed in ptrace-altivec.c (included ptrace-decl.h as ptrace_decl.h does not exist)
-- Added ptrace-decl.h in ptrace-spe.c
-- Kisskb is happy at the moment at http://kisskb.ellerman.id.au/kisskb/branch/chleroy/head/8402c516023da1371953a65af7df2008758ea0c4/
-
-v4:
-- Fixed a few header files inclusion, see details in relevant patchs (no marking on unchanged patches).
-
-v3:
-- Droped part of #ifdef removals iaw mpe's comments
-- Removed unneccesary includes
-
-v2:
-- Fixed several build failures. Now builts cleanly on kisskb, see http://kisskb.ellerman.id.au/kisskb/head/840e53cf913d6096dd60181a085f102c85d6e526/
-- Droped last patch which is not related to ptrace and can be applies independently.
-
-Christophe Leroy (13):
-  powerpc: move ptrace into a subdirectory.
-  powerpc/ptrace: remove unused header includes
-  powerpc/ptrace: drop unnecessary #ifdefs CONFIG_PPC64
-  powerpc/ptrace: drop PARAMETER_SAVE_AREA_OFFSET
-  powerpc/ptrace: split out VSX related functions.
-  powerpc/ptrace: split out ALTIVEC related functions.
-  powerpc/ptrace: split out SPE related functions.
-  powerpc/ptrace: split out TRANSACTIONAL_MEM related functions.
-  powerpc/ptrace: move register viewing functions out of ptrace.c
-  powerpc/ptrace: split out ADV_DEBUG_REGS related functions.
-  powerpc/ptrace: create ptrace_get_debugreg()
-  powerpc/ptrace: create ppc_gethwdinfo()
-  powerpc/ptrace: move ptrace_triggered() into hw_breakpoint.c
-
- arch/powerpc/include/asm/ptrace.h           |    2 +
- arch/powerpc/kernel/Makefile                |    7 +-
- arch/powerpc/kernel/hw_breakpoint.c         |   16 +
- arch/powerpc/kernel/ptrace.c                | 3468 -------------------
- arch/powerpc/kernel/ptrace/Makefile         |   20 +
- arch/powerpc/kernel/ptrace/ptrace-adv.c     |  492 +++
- arch/powerpc/kernel/ptrace/ptrace-altivec.c |  128 +
- arch/powerpc/kernel/ptrace/ptrace-decl.h    |  184 +
- arch/powerpc/kernel/ptrace/ptrace-noadv.c   |  269 ++
- arch/powerpc/kernel/ptrace/ptrace-novsx.c   |   57 +
- arch/powerpc/kernel/ptrace/ptrace-spe.c     |   68 +
- arch/powerpc/kernel/ptrace/ptrace-tm.c      |  851 +++++
- arch/powerpc/kernel/ptrace/ptrace-view.c    |  904 +++++
- arch/powerpc/kernel/ptrace/ptrace-vsx.c     |  151 +
- arch/powerpc/kernel/ptrace/ptrace.c         |  481 +++
- arch/powerpc/kernel/{ => ptrace}/ptrace32.c |   11 -
- 16 files changed, 3626 insertions(+), 3483 deletions(-)
- delete mode 100644 arch/powerpc/kernel/ptrace.c
- create mode 100644 arch/powerpc/kernel/ptrace/Makefile
- create mode 100644 arch/powerpc/kernel/ptrace/ptrace-adv.c
- create mode 100644 arch/powerpc/kernel/ptrace/ptrace-altivec.c
- create mode 100644 arch/powerpc/kernel/ptrace/ptrace-decl.h
- create mode 100644 arch/powerpc/kernel/ptrace/ptrace-noadv.c
- create mode 100644 arch/powerpc/kernel/ptrace/ptrace-novsx.c
- create mode 100644 arch/powerpc/kernel/ptrace/ptrace-spe.c
- create mode 100644 arch/powerpc/kernel/ptrace/ptrace-tm.c
- create mode 100644 arch/powerpc/kernel/ptrace/ptrace-view.c
- create mode 100644 arch/powerpc/kernel/ptrace/ptrace-vsx.c
- create mode 100644 arch/powerpc/kernel/ptrace/ptrace.c
- rename arch/powerpc/kernel/{ => ptrace}/ptrace32.c (96%)
-
+diff --git a/arch/powerpc/kernel/ptrace/ptrace.c b/arch/powerpc/kernel/ptrace/ptrace.c
+index 25c0424e8868..7ed54dbb2d7e 100644
+--- a/arch/powerpc/kernel/ptrace/ptrace.c
++++ b/arch/powerpc/kernel/ptrace/ptrace.c
+@@ -15,35 +15,20 @@
+  * this archive for more details.
+  */
+ 
+-#include <linux/kernel.h>
+-#include <linux/sched.h>
+-#include <linux/mm.h>
+-#include <linux/smp.h>
+-#include <linux/errno.h>
+-#include <linux/ptrace.h>
+ #include <linux/regset.h>
+ #include <linux/tracehook.h>
+ #include <linux/elf.h>
+-#include <linux/user.h>
+-#include <linux/security.h>
+-#include <linux/signal.h>
+-#include <linux/seccomp.h>
+ #include <linux/audit.h>
+-#include <trace/syscall.h>
+ #include <linux/hw_breakpoint.h>
+-#include <linux/perf_event.h>
+ #include <linux/context_tracking.h>
+ #include <linux/nospec.h>
+-
+-#include <linux/uaccess.h>
++#include <linux/syscalls.h>
+ #include <linux/pkeys.h>
+-#include <asm/page.h>
+-#include <asm/pgtable.h>
++
+ #include <asm/switch_to.h>
+ #include <asm/tm.h>
+ #include <asm/asm-prototypes.h>
+ #include <asm/debug.h>
+-#include <asm/hw_breakpoint.h>
+ 
+ #define CREATE_TRACE_POINTS
+ #include <trace/events/syscalls.h>
+diff --git a/arch/powerpc/kernel/ptrace/ptrace32.c b/arch/powerpc/kernel/ptrace/ptrace32.c
+index f37eb53de1a1..7976ddf29c0e 100644
+--- a/arch/powerpc/kernel/ptrace/ptrace32.c
++++ b/arch/powerpc/kernel/ptrace/ptrace32.c
+@@ -17,21 +17,10 @@
+  * this archive for more details.
+  */
+ 
+-#include <linux/kernel.h>
+-#include <linux/sched.h>
+-#include <linux/mm.h>
+-#include <linux/smp.h>
+-#include <linux/errno.h>
+ #include <linux/ptrace.h>
+ #include <linux/regset.h>
+-#include <linux/user.h>
+-#include <linux/security.h>
+-#include <linux/signal.h>
+ #include <linux/compat.h>
+ 
+-#include <linux/uaccess.h>
+-#include <asm/page.h>
+-#include <asm/pgtable.h>
+ #include <asm/switch_to.h>
+ 
+ /*
 -- 
 2.25.0
 
