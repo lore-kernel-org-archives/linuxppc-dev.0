@@ -5,19 +5,19 @@ X-Spam-Level:
 X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04130C3F2D1
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Mar 2020 19:48:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B73E1C3F2D1
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Mar 2020 20:04:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 55FAE246BE
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Mar 2020 19:48:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 55FAE246BE
+	by mail.kernel.org (Postfix) with ESMTPS id 2974B24697
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Mar 2020 20:04:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2974B24697
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48Vv2X6SPXzDqvD
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 06:48:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48VvPL1FfWzDqvt
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 07:04:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=srs0=vxuw=4s=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
@@ -27,13 +27,13 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48Vv0R3nc1zDqv1
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Mar 2020 06:46:14 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48VvMW6qdGzDqnK
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Mar 2020 07:02:47 +1100 (AEDT)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 199471] [Bisected][Regression] windfarm_pm* no longer gets
  automatically loaded when CONFIG_I2C_POWERMAC=y is set
-Date: Sun, 01 Mar 2020 19:46:12 +0000
+Date: Sun, 01 Mar 2020 20:02:45 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
@@ -48,8 +48,8 @@ X-Bugzilla-Resolution:
 X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-199471-206035-zBUmo8uSE3@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: attachments.isobsolete attachments.created
+Message-ID: <bug-199471-206035-6iAd4Ls7DB@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-199471-206035@https.bugzilla.kernel.org/>
 References: <bug-199471-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -74,33 +74,17 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D199471
 
---- Comment #11 from Erhard F. (erhard_f@mailbox.org) ---
-(In reply to Wolfram Sang from comment #8)
-> "This has been quite nice since 4.?.x up to 4.16.x as you only need
-> CONFIG_I2C_POWERMAC=3Dy which selects the proper windfarm_pmXX at boot ti=
-me."
->=20
-> I can't find that in the code. Are you sure i2c-powermac requested that
-> module?
-I guess so 'cause if I build i2c_powermac as a module and manually modprobe=
- it,
-all the relevant windfarm modules get pulled in. But not before.
+Erhard F. (erhard_f@mailbox.org) changed:
 
- # modprobe -v i2c_powermac
-insmod
-/lib/modules/4.16.18-PowerMacG5+/kernel/drivers/i2c/busses/i2c-powermac.ko=
-=20
- # dmesg | tail
-[  150.181478]  11
-[  150.182851]  0
-[  150.184220]  0
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+ Attachment #275507|0                           |1
+        is obsolete|                            |
 
-[  150.626685] windfarm: Backside control loop started.
-[  150.690132] windfarm: Slots control loop started.
-[  150.794843] i2c i2c-0: master_xfer[0] W, addr=3D0x50, len=3D1
-[  150.796467] i2c i2c-0: master_xfer[1] R, addr=3D0x50, len=3D8
-[  150.801851] i2c i2c-0: NAK from device addr 0x50 msg #0
-[  150.807758] windfarm: Drive bay control loop started.
+--- Comment #12 from Erhard F. (erhard_f@mailbox.org) ---
+Created attachment 287745
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D287745&action=3Dedit
+dmesg (kernel 4.16.18, PowerMac G5 11,2)
 
 --=20
 You are receiving this mail because:
