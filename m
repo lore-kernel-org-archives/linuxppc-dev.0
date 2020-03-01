@@ -5,19 +5,19 @@ X-Spam-Level:
 X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B73E1C3F2D1
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Mar 2020 20:04:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AA32EC3F2CD
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Mar 2020 20:12:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2974B24697
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Mar 2020 20:04:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2974B24697
+	by mail.kernel.org (Postfix) with ESMTPS id 5104B246BF
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Mar 2020 20:12:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5104B246BF
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48VvPL1FfWzDqvt
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 07:04:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48VvZQ2wZRzDqSv
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 07:12:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=srs0=vxuw=4s=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
@@ -27,13 +27,13 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48VvMW6qdGzDqnK
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Mar 2020 07:02:47 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48VvWx3WyyzDqRX
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Mar 2020 07:10:04 +1100 (AEDT)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 199471] [Bisected][Regression] windfarm_pm* no longer gets
  automatically loaded when CONFIG_I2C_POWERMAC=y is set
-Date: Sun, 01 Mar 2020 20:02:45 +0000
+Date: Sun, 01 Mar 2020 20:10:02 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
@@ -48,8 +48,8 @@ X-Bugzilla-Resolution:
 X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: attachments.isobsolete attachments.created
-Message-ID: <bug-199471-206035-6iAd4Ls7DB@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: attachments.created
+Message-ID: <bug-199471-206035-82PyeSQiAv@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-199471-206035@https.bugzilla.kernel.org/>
 References: <bug-199471-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -74,17 +74,10 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D199471
 
-Erhard F. (erhard_f@mailbox.org) changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
- Attachment #275507|0                           |1
-        is obsolete|                            |
-
---- Comment #12 from Erhard F. (erhard_f@mailbox.org) ---
-Created attachment 287745
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D287745&action=3Dedit
-dmesg (kernel 4.16.18, PowerMac G5 11,2)
+--- Comment #13 from Erhard F. (erhard_f@mailbox.org) ---
+Created attachment 287747
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D287747&action=3Dedit
+kernel .config (kernel 4.17, PowerMac G5 11,2)
 
 --=20
 You are receiving this mail because:
