@@ -1,67 +1,78 @@
 Return-Path: <SRS0=k87x=4T=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Level: **
+X-Spam-Status: No, score=2.2 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EAB73C3F2D1
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 07:15:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC5C6C3F2D1
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 07:29:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6A03424697
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 07:15:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6A03424697
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8AF3C2468E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 07:29:37 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JGxAPlSw"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8AF3C2468E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48WBH55gyZzDqZk
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 18:14:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48WBbz0zSszDqH2
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 18:29:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.190; helo=huawei.com;
- envelope-from=yanaijie@huawei.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::12d;
+ helo=mail-lf1-x12d.google.com; envelope-from=bala071985@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=JGxAPlSw; dkim-atps=neutral
+Received: from mail-lf1-x12d.google.com (mail-lf1-x12d.google.com
+ [IPv6:2a00:1450:4864:20::12d])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48WBDt1TmgzDqWQ
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Mar 2020 18:12:56 +1100 (AEDT)
-Received: from DGGEMS402-HUB.china.huawei.com (unknown [172.30.72.60])
- by Forcepoint Email with ESMTP id C6DC3895D5107159B6EA;
- Mon,  2 Mar 2020 15:12:47 +0800 (CST)
-Received: from [127.0.0.1] (10.173.221.195) by DGGEMS402-HUB.china.huawei.com
- (10.3.19.202) with Microsoft SMTP Server id 14.3.439.0;
- Mon, 2 Mar 2020 15:12:40 +0800
-Subject: Re: [PATCH v3 0/6] implement KASLR for powerpc/fsl_booke/64
-To: Scott Wood <oss@buserror.net>, Daniel Axtens <dja@axtens.net>,
- <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
- <diana.craciun@nxp.com>, <christophe.leroy@c-s.fr>,
- <benh@kernel.crashing.org>, <paulus@samba.org>, <npiggin@gmail.com>,
- <keescook@chromium.org>, <kernel-hardening@lists.openwall.com>, <me@tobin.cc>
-References: <20200206025825.22934-1-yanaijie@huawei.com>
- <87tv3drf79.fsf@dja-thinkpad.axtens.net>
- <8171d326-5138-4f5c-cff6-ad3ee606f0c2@huawei.com>
- <e8cd8f287934954cfa07dcf76ac73492e2d49a5b.camel@buserror.net>
- <dd8db870-b607-3f74-d3bc-a8d9f33f9852@huawei.com>
- <4c0e7fec63dbc7b91fa6c24692c73c256c131f51.camel@buserror.net>
- <188971ed-f1c4-39b3-c07e-89cc593d88d7@huawei.com>
- <530c49dfd97c811dc53ffc78c594d7133f7eb1e9.camel@buserror.net>
- <35e6c660-3896-bdb8-45f3-c1504aa2171f@huawei.com>
- <31b5966ba579ef246176a7d8ad18c2c02788dd27.camel@buserror.net>
-From: Jason Yan <yanaijie@huawei.com>
-Message-ID: <17658c2b-9eb8-cee9-e9a2-93d316a401b1@huawei.com>
-Date: Mon, 2 Mar 2020 15:12:39 +0800
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101
- Thunderbird/68.4.2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48W8Z873BLzDqY6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Mar 2020 16:57:47 +1100 (AEDT)
+Received: by mail-lf1-x12d.google.com with SMTP id z9so6980211lfa.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Mar 2020 21:57:47 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:from:date:message-id:subject:to;
+ bh=FOJ8HQIqQfyB/pnPETWbHQBuU50jMgSZlNH+28n2ig4=;
+ b=JGxAPlSwrEbTzd0cwJtBEKW4WVXiNlsNvz0IhaxeIPrHbyyDJjiyjd1NF9XFaTzy2L
+ 5Lo2fVwCSme+lkf/IIpp/JlRtHKgTYVTtVHVlShzQgrRRoODPDvGBIghPjQ3jt79RTWT
+ yX21H0zIqM+EYoUu707DPAt8MRLYHNfjErhw1+NZU1cOLKVmYjxLcxAOIt27EbYXsKgk
+ YcJUXF4rZpFUykmRrwxPXXUpLXF/eJpR5Ws+qSKZWwHUJaKmCgFn7HqKlgqIRl6fd9DP
+ LrzBlSfFgO0bxMY1KLmQR8/MhPr8FOZ1aTdb3IoTvclwIvnrijN8xLPJoSLex2mQQoOC
+ +cRQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:from:date:message-id:subject:to;
+ bh=FOJ8HQIqQfyB/pnPETWbHQBuU50jMgSZlNH+28n2ig4=;
+ b=bHgi1ylmjC9PgRFww1QKYEttLhOA94zgRz90uKzdtGwnsksufeKKnHmZuuDDd19sZD
+ EHjVYo2EZpPEkf8FGIu5yrP5UI1c9mOdrLERn0qQ5lD/9fauEx+0OLBcPDuLcVypqcIN
+ SOe7opTVONm6gNfgOWy7qt1HYahP7++A1htQS9VFWOYjLCWWnY//03qnOVPV4ay9YlHv
+ XfKBG0Ea2OUUD9d9icmE/XHYhsRj48i1oM86V8OD30LDv5WzL/kdLZG7Cz06CrXVo5/T
+ crB/Fb7vjnHFplEfiFyiWAFDcCQO23Ic990P2aKY2ao/nCTm7xa8odGcQ97c1m10c/e+
+ DYtA==
+X-Gm-Message-State: ANhLgQ0biLmPlyKaKbsn0tZ2VfShUL1B30C9n0yNYDF9oSWv2nkZlIhQ
+ 1BB+WA7tPfrbEjxp7DG6sEsYOejkjflOf2hrjA+LjQ==
+X-Google-Smtp-Source: ADFU+vtlzW/LwLRQ2zMOjiKxpTUNqkqQoR1Yp1GNPkAdGcOfrsCiQvJY6ceDUW8VhPaLcktFTFEXo8xiiBtdC/wm0Ds=
+X-Received: by 2002:a05:6512:15d:: with SMTP id
+ m29mr9568720lfo.158.1583128662151; 
+ Sun, 01 Mar 2020 21:57:42 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <31b5966ba579ef246176a7d8ad18c2c02788dd27.camel@buserror.net>
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.173.221.195]
-X-CFilter-Loop: Reflected
+From: Bala murugan <bala071985@gmail.com>
+Date: Mon, 2 Mar 2020 11:27:30 +0530
+Message-ID: <CAFjzVacDg-NpeJUPB4sQkzGUhaqXSf74-Rxez_haamcfv68qFA@mail.gmail.com>
+Subject: Reg: KASLR backporting to 4.9 kernels for ppc platform.
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary="0000000000008a93a1059fd8ddd6"
+X-Mailman-Approved-At: Mon, 02 Mar 2020 18:27:25 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,76 +84,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, zhaohongjiang@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+--0000000000008a93a1059fd8ddd6
+Content-Type: text/plain; charset="UTF-8"
 
+Hi,
 
-在 2020/3/2 11:24, Scott Wood 写道:
-> On Mon, 2020-03-02 at 10:17 +0800, Jason Yan wrote:
->>
->> 在 2020/3/1 6:54, Scott Wood 写道:
->>> On Sat, 2020-02-29 at 15:27 +0800, Jason Yan wrote:
->>>>
->>>> Turnning to %p may not be a good idea in this situation. So
->>>> for the REG logs printed when dumping stack, we can disable it when
->>>> KASLR is open. For the REG logs in other places like show_regs(), only
->>>> privileged can trigger it, and they are not combind with a symbol, so
->>>> I think it's ok to keep them.
->>>>
->>>> diff --git a/arch/powerpc/kernel/process.c
->>>> b/arch/powerpc/kernel/process.c
->>>> index fad50db9dcf2..659c51f0739a 100644
->>>> --- a/arch/powerpc/kernel/process.c
->>>> +++ b/arch/powerpc/kernel/process.c
->>>> @@ -2068,7 +2068,10 @@ void show_stack(struct task_struct *tsk, unsigned
->>>> long *stack)
->>>>                    newsp = stack[0];
->>>>                    ip = stack[STACK_FRAME_LR_SAVE];
->>>>                    if (!firstframe || ip != lr) {
->>>> -                       printk("["REG"] ["REG"] %pS", sp, ip, (void
->>>> *)ip);
->>>> +                       if (IS_ENABLED(CONFIG_RANDOMIZE_BASE))
->>>> +                               printk("%pS", (void *)ip);
->>>> +                       else
->>>> +                               printk("["REG"] ["REG"] %pS", sp, ip,
->>>> (void *)ip);
->>>
->>> This doesn't deal with "nokaslr" on the kernel command line.  It also
->>> doesn't
->>> seem like something that every callsite should have to opencode, versus
->>> having
->>> an appropriate format specifier behaves as I described above (and I still
->>> don't see why that format specifier should not be "%p").
->>>
->>
->> Actually I still do not understand why we should print the raw value
->> here. When KALLSYMS is enabled we have symbol name  and  offset like
->> put_cred_rcu+0x108/0x110, and when KALLSYMS is disabled we have the raw
->> address.
-> 
-> I'm more concerned about the stack address for wading through a raw stack dump
-> (to find function call arguments, etc).  The return address does help confirm
-> that I'm on the right stack frame though, and also makes looking up a line
-> number slightly easier than having to look up a symbol address and then add
-> the offset (at least for non-module addresses).
-> 
-> As a random aside, the mismatch between Linux printing a hex offset and GDB
-> using decimal in disassembly is annoying...
-> 
+Any plans to back port KASLR for 4.9 kernel. How feasible is to back port
+to 4.9 kernel for PPC platforms.
 
-OK, I will send a RFC patch to add a new format specifier such as "%pk" 
-or change the exsiting "%pK" to print raw value of addresses when KASLR 
-is disabled and print hash value of addresses when KASLR is enabled. 
-Let's see what the printk guys would say :)
+Regards
+S Balamurugan.
 
+--0000000000008a93a1059fd8ddd6
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-> -Scott
-> 
-> 
-> 
-> .
-> 
+<div dir=3D"ltr"><div><br></div>Hi,=C2=A0<div><div><br></div><div>Any plans=
+ to back port KASLR for 4.9 kernel. How feasible is to back port=C2=A0 to 4=
+.9 kernel for PPC platforms.</div><br></div><div>Regards</div><div>S Balamu=
+rugan.</div></div>
 
+--0000000000008a93a1059fd8ddd6--
