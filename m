@@ -1,78 +1,102 @@
 Return-Path: <SRS0=k87x=4T=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-X-Spam-Level: **
-X-Spam-Status: No, score=2.2 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EC5C6C3F2D1
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 07:29:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8546AC3F2D1
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 07:37:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8AF3C2468E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 07:29:37 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JGxAPlSw"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8AF3C2468E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 04545246A1
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 07:37:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 04545246A1
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48WBbz0zSszDqH2
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 18:29:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48WBn90lzWzDqcM
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 18:37:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::12d;
- helo=mail-lf1-x12d.google.com; envelope-from=bala071985@gmail.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=JGxAPlSw; dkim-atps=neutral
-Received: from mail-lf1-x12d.google.com (mail-lf1-x12d.google.com
- [IPv6:2a00:1450:4864:20::12d])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48W8Z873BLzDqY6
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Mar 2020 16:57:47 +1100 (AEDT)
-Received: by mail-lf1-x12d.google.com with SMTP id z9so6980211lfa.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Mar 2020 21:57:47 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:from:date:message-id:subject:to;
- bh=FOJ8HQIqQfyB/pnPETWbHQBuU50jMgSZlNH+28n2ig4=;
- b=JGxAPlSwrEbTzd0cwJtBEKW4WVXiNlsNvz0IhaxeIPrHbyyDJjiyjd1NF9XFaTzy2L
- 5Lo2fVwCSme+lkf/IIpp/JlRtHKgTYVTtVHVlShzQgrRRoODPDvGBIghPjQ3jt79RTWT
- yX21H0zIqM+EYoUu707DPAt8MRLYHNfjErhw1+NZU1cOLKVmYjxLcxAOIt27EbYXsKgk
- YcJUXF4rZpFUykmRrwxPXXUpLXF/eJpR5Ws+qSKZWwHUJaKmCgFn7HqKlgqIRl6fd9DP
- LrzBlSfFgO0bxMY1KLmQR8/MhPr8FOZ1aTdb3IoTvclwIvnrijN8xLPJoSLex2mQQoOC
- +cRQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:from:date:message-id:subject:to;
- bh=FOJ8HQIqQfyB/pnPETWbHQBuU50jMgSZlNH+28n2ig4=;
- b=bHgi1ylmjC9PgRFww1QKYEttLhOA94zgRz90uKzdtGwnsksufeKKnHmZuuDDd19sZD
- EHjVYo2EZpPEkf8FGIu5yrP5UI1c9mOdrLERn0qQ5lD/9fauEx+0OLBcPDuLcVypqcIN
- SOe7opTVONm6gNfgOWy7qt1HYahP7++A1htQS9VFWOYjLCWWnY//03qnOVPV4ay9YlHv
- XfKBG0Ea2OUUD9d9icmE/XHYhsRj48i1oM86V8OD30LDv5WzL/kdLZG7Cz06CrXVo5/T
- crB/Fb7vjnHFplEfiFyiWAFDcCQO23Ic990P2aKY2ao/nCTm7xa8odGcQ97c1m10c/e+
- DYtA==
-X-Gm-Message-State: ANhLgQ0biLmPlyKaKbsn0tZ2VfShUL1B30C9n0yNYDF9oSWv2nkZlIhQ
- 1BB+WA7tPfrbEjxp7DG6sEsYOejkjflOf2hrjA+LjQ==
-X-Google-Smtp-Source: ADFU+vtlzW/LwLRQ2zMOjiKxpTUNqkqQoR1Yp1GNPkAdGcOfrsCiQvJY6ceDUW8VhPaLcktFTFEXo8xiiBtdC/wm0Ds=
-X-Received: by 2002:a05:6512:15d:: with SMTP id
- m29mr9568720lfo.158.1583128662151; 
- Sun, 01 Mar 2020 21:57:42 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48WBl112XBzDqYV
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Mar 2020 18:35:40 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0227Y94a112365
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Mar 2020 02:35:39 -0500
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2yfn0667yq-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Mar 2020 02:35:38 -0500
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ajd@linux.ibm.com>;
+ Mon, 2 Mar 2020 07:35:36 -0000
+Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 2 Mar 2020 07:35:28 -0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 0227ZRU642860844
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 2 Mar 2020 07:35:27 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 64329A404D;
+ Mon,  2 Mar 2020 07:35:27 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0D5A7A4051;
+ Mon,  2 Mar 2020 07:35:27 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon,  2 Mar 2020 07:35:27 +0000 (GMT)
+Received: from [9.102.43.192] (unknown [9.102.43.192])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 760FCA00BE;
+ Mon,  2 Mar 2020 18:35:18 +1100 (AEDT)
+Subject: Re: [PATCH v3 26/27] powerpc/powernv/pmem: Expose the firmware
+ version in sysfs
+To: "Alastair D'Silva" <alastair@au1.ibm.com>, alastair@d-silva.org
+References: <20200221032720.33893-1-alastair@au1.ibm.com>
+ <20200221032720.33893-27-alastair@au1.ibm.com>
+From: Andrew Donnellan <ajd@linux.ibm.com>
+Date: Mon, 2 Mar 2020 18:35:20 +1100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.5.0
 MIME-Version: 1.0
-From: Bala murugan <bala071985@gmail.com>
-Date: Mon, 2 Mar 2020 11:27:30 +0530
-Message-ID: <CAFjzVacDg-NpeJUPB4sQkzGUhaqXSf74-Rxez_haamcfv68qFA@mail.gmail.com>
-Subject: Reg: KASLR backporting to 4.9 kernels for ppc platform.
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary="0000000000008a93a1059fd8ddd6"
-X-Mailman-Approved-At: Mon, 02 Mar 2020 18:27:25 +1100
+In-Reply-To: <20200221032720.33893-27-alastair@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 20030207-0008-0000-0000-0000035840C9
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 20030207-0009-0000-0000-00004A796B51
+Message-Id: <2253010d-c7ad-347b-4668-d5f1a95d3f1e@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
+ definitions=2020-03-02_01:2020-02-28,
+ 2020-03-02 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0
+ lowpriorityscore=0 suspectscore=0 mlxscore=0 mlxlogscore=645
+ impostorscore=0 adultscore=0 spamscore=0 priorityscore=1501 phishscore=0
+ malwarescore=0 clxscore=1015 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2001150001 definitions=main-2003020058
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,28 +108,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Oliver O'Halloran <oohall@gmail.com>,
+ Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
+ Ira Weiny <ira.weiny@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Rob Herring <robh@kernel.org>, Dave Jiang <dave.jiang@intel.com>,
+ linux-nvdimm@lists.01.org, "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ Krzysztof Kozlowski <krzk@kernel.org>,
+ Anju T Sudhakar <anju@linux.vnet.ibm.com>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kurz <groug@kaod.org>, Nicholas Piggin <npiggin@gmail.com>,
+ =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>,
+ Dan Williams <dan.j.williams@intel.com>, Hari Bathini <hbathini@linux.ibm.com>,
+ linux-mm@kvack.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linux-kernel@vger.kernel.org, Vishal Verma <vishal.l.verma@intel.com>,
+ Frederic Barrat <fbarrat@linux.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---0000000000008a93a1059fd8ddd6
-Content-Type: text/plain; charset="UTF-8"
+On 21/2/20 2:27 pm, Alastair D'Silva wrote:
+> From: Alastair D'Silva <alastair@d-silva.org>
+> 
+> This information will be used by ndctl in userspace to help users identify
+> the device.
 
-Hi,
+You should include the information from the subject line in the body of 
+the commit message too.
 
-Any plans to back port KASLR for 4.9 kernel. How feasible is to back port
-to 4.9 kernel for PPC platforms.
+I think this patch could probably be squashed in with the last one.
 
-Regards
-S Balamurugan.
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+ajd@linux.ibm.com             IBM Australia Limited
 
---0000000000008a93a1059fd8ddd6
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr"><div><br></div>Hi,=C2=A0<div><div><br></div><div>Any plans=
- to back port KASLR for 4.9 kernel. How feasible is to back port=C2=A0 to 4=
-.9 kernel for PPC platforms.</div><br></div><div>Regards</div><div>S Balamu=
-rugan.</div></div>
-
---0000000000008a93a1059fd8ddd6--
