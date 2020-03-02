@@ -2,61 +2,51 @@ Return-Path: <SRS0=k87x=4T=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CBEDC3F2CD
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 14:51:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE4A8C3F2CD
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 14:53:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 874CC20848
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 14:51:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 874CC20848
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 8106821775
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 14:53:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8106821775
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48WNPT3RjxzDqVJ
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2020 01:51:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=srs0=dop8=4t=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=bugzilla.kernel.org
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48WNLr50NZzDqW2
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Mar 2020 01:48:52 +1100 (AEDT)
-From: bugzilla-daemon@bugzilla.kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 199471] [Bisected][Regression] windfarm_pm* no longer gets
- automatically loaded when CONFIG_I2C_POWERMAC=y is set
-Date: Mon, 02 Mar 2020 14:48:49 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Product: Platform Specific/Hardware
-X-Bugzilla-Component: PPC-64
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: wsa@the-dreams.de
-X-Bugzilla-Status: ASSIGNED
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: attachments.created
-Message-ID: <bug-199471-206035-8quycMN0Zz@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-199471-206035@https.bugzilla.kernel.org/>
-References: <bug-199471-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+	by lists.ozlabs.org (Postfix) with ESMTP id 48WNRv3J9pzDqVL
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2020 01:53:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
+ (client-ip=217.140.110.172; helo=foss.arm.com;
+ envelope-from=mark.rutland@arm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+ by lists.ozlabs.org (Postfix) with ESMTP id 48WNLw6K01zDqY5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Mar 2020 01:48:50 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0DDBF2F;
+ Mon,  2 Mar 2020 06:48:48 -0800 (PST)
+Received: from lakrids.cambridge.arm.com (usa-sjc-imap-foss1.foss.arm.com
+ [10.121.207.14])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 807FB3F534;
+ Mon,  2 Mar 2020 06:48:45 -0800 (PST)
+Date: Mon, 2 Mar 2020 14:48:43 +0000
+From: Mark Rutland <mark.rutland@arm.com>
+To: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+Subject: Re: [RFC 02/11] perf/core: Data structure to present hazard data
+Message-ID: <20200302144842.GD56497@lakrids.cambridge.arm.com>
+References: <20200302052355.36365-1-ravi.bangoria@linux.ibm.com>
+ <20200302052355.36365-3-ravi.bangoria@linux.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200302052355.36365-3-ravi.bangoria@linux.ibm.com>
+User-Agent: Mutt/1.11.1+11 (2f07cb52) (2018-12-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,25 +58,74 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: ak@linux.intel.com, maddy@linux.ibm.com, peterz@infradead.org,
+ jolsa@redhat.com, Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, eranian@google.com, adrian.hunter@intel.com,
+ alexander.shishkin@linux.intel.com, yao.jin@linux.intel.com, mingo@redhat.com,
+ paulus@samba.org, acme@kernel.org, robert.richter@amd.com, namhyung@kernel.org,
+ kim.phillips@amd.com, linuxppc-dev@lists.ozlabs.org,
+ alexey.budankov@linux.intel.com, kan.liang@linux.intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D199471
+On Mon, Mar 02, 2020 at 10:53:46AM +0530, Ravi Bangoria wrote:
+> From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> 
+> Introduce new perf sample_type PERF_SAMPLE_PIPELINE_HAZ to request kernel
+> to provide cpu pipeline hazard data. Also, introduce arch independent
+> structure 'perf_pipeline_haz_data' to pass hazard data to userspace. This
+> is generic structure and arch specific data needs to be converted to this
+> format.
+> 
+> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+> ---
+>  include/linux/perf_event.h            |  7 ++++++
+>  include/uapi/linux/perf_event.h       | 32 ++++++++++++++++++++++++++-
+>  kernel/events/core.c                  |  6 +++++
+>  tools/include/uapi/linux/perf_event.h | 32 ++++++++++++++++++++++++++-
+>  4 files changed, 75 insertions(+), 2 deletions(-)
+> 
+> diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
+> index 547773f5894e..d5b606e3c57d 100644
+> --- a/include/linux/perf_event.h
+> +++ b/include/linux/perf_event.h
+> @@ -1001,6 +1001,7 @@ struct perf_sample_data {
+>  	u64				stack_user_size;
+>  
+>  	u64				phys_addr;
+> +	struct perf_pipeline_haz_data	pipeline_haz;
+>  } ____cacheline_aligned;
+>  
+>  /* default value for data source */
+> @@ -1021,6 +1022,12 @@ static inline void perf_sample_data_init(struct perf_sample_data *data,
+>  	data->weight = 0;
+>  	data->data_src.val = PERF_MEM_NA;
+>  	data->txn = 0;
+> +	data->pipeline_haz.itype = PERF_HAZ__ITYPE_NA;
+> +	data->pipeline_haz.icache = PERF_HAZ__ICACHE_NA;
+> +	data->pipeline_haz.hazard_stage = PERF_HAZ__PIPE_STAGE_NA;
+> +	data->pipeline_haz.hazard_reason = PERF_HAZ__HREASON_NA;
+> +	data->pipeline_haz.stall_stage = PERF_HAZ__PIPE_STAGE_NA;
+> +	data->pipeline_haz.stall_reason = PERF_HAZ__SREASON_NA;
+>  }
+>  
+>  extern void perf_output_sample(struct perf_output_handle *handle,
+> diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
+> index 377d794d3105..ff252618ca93 100644
+> --- a/include/uapi/linux/perf_event.h
+> +++ b/include/uapi/linux/perf_event.h
+> @@ -142,8 +142,9 @@ enum perf_event_sample_format {
+>  	PERF_SAMPLE_REGS_INTR			= 1U << 18,
+>  	PERF_SAMPLE_PHYS_ADDR			= 1U << 19,
+>  	PERF_SAMPLE_AUX				= 1U << 20,
+> +	PERF_SAMPLE_PIPELINE_HAZ		= 1U << 21,
 
---- Comment #16 from Wolfram Sang (wsa@the-dreams.de) ---
-Created attachment 287755
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D287755&action=3Dedit
-proof-of-concept patch for testing
+Can we please have perf_event_open() reject this sample flag for PMUs
+without the new callback (introduced in the next patch)?
 
-Here is the promised patch. I converted all I2C MODULE tables. pm72 didn't =
-have
-one, so we will see what pulls it in.
+That way it'll be possible to detect whether the PMU exposes this.
 
-A test with a machine needing the lm75 driver would be great. Because some =
-code
-change was needed there.
-
---=20
-You are receiving this mail because:
-You are watching the assignee of the bug.=
+Thanks,
+Mark.
