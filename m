@@ -5,19 +5,19 @@ X-Spam-Level:
 X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CD2CC3F2D1
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 16:52:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 68487C3F2D1
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 17:00:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 46E72217F4
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 16:52:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 46E72217F4
+	by mail.kernel.org (Postfix) with ESMTPS id 16FCF222C4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 17:00:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 16FCF222C4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48WR5K30yhzDqZT
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2020 03:52:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48WRG714FFzDqbp
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2020 03:59:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=srs0=dop8=4t=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
@@ -27,15 +27,15 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48WR3L0KzkzDqBj
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Mar 2020 03:50:37 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48WRDL3hFdzDqZG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Mar 2020 03:58:26 +1100 (AEDT)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 206733] New: i2c i2c-3: i2c-powermac: modalias failure on
+Subject: [Bug 206733] i2c i2c-3: i2c-powermac: modalias failure on
  /uni-n@f8000000/i2c@f8001000/cereal@1c0
-Date: Mon, 02 Mar 2020 16:50:35 +0000
+Date: Mon, 02 Mar 2020 16:58:23 +0000
 X-Bugzilla-Reason: None
-X-Bugzilla-Type: new
+X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
 X-Bugzilla-Product: Platform Specific/Hardware
 X-Bugzilla-Component: PPC-32
@@ -48,10 +48,10 @@ X-Bugzilla-Resolution:
 X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: bug_id short_desc product version
- cf_kernel_version rep_platform op_sys cf_tree bug_status bug_severity
- priority component assigned_to reporter cf_regression attachments.created
-Message-ID: <bug-206733-206035@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: attachments.created
+Message-ID: <bug-206733-206035-R91Cu0omgK@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-206733-206035@https.bugzilla.kernel.org/>
+References: <bug-206733-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 X-Bugzilla-URL: https://bugzilla.kernel.org/
@@ -74,43 +74,10 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D206733
 
-            Bug ID: 206733
-           Summary: i2c i2c-3: i2c-powermac: modalias failure on
-                    /uni-n@f8000000/i2c@f8001000/cereal@1c0
-           Product: Platform Specific/Hardware
-           Version: 2.5
-    Kernel Version: 5.6-rc4
-          Hardware: PPC-32
-                OS: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: normal
-          Priority: P1
-         Component: PPC-32
-          Assignee: platform_ppc-32@kernel-bugs.osdl.org
-          Reporter: erhard_f@mailbox.org
-        Regression: No
-
-Created attachment 287759
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D287759&action=3Dedit
-dmesg (5.6-rc4, PowerMac G4 DP)
-
-The G4 MDD/DP can't quite pick up this device, despite it shows up in the
-bootlog earlier.
-
-[...]
-M=C3=A4r 02 17:23:45 T600 kernel: i2c-dev: adapter [uni-n 1] registered as =
-minor 3
-M=C3=A4r 02 17:23:45 T600 kernel: i2c i2c-3: adapter [uni-n 1] registered
-M=C3=A4r 02 17:23:45 T600 kernel: PowerMac i2c bus uni-n 1 registered
-M=C3=A4r 02 17:23:45 T600 kernel: i2c i2c-3: i2c-powermac: register
-/uni-n@f8000000/i2c@f8001000/cereal@1c0
-M=C3=A4r 02 17:23:45 T600 kernel: i2c i2c-3: i2c-powermac: modalias failure=
- on
-/uni-n@f8000000/i2c@f8001000/cereal@1c0
-M=C3=A4r 02 17:23:45 T600 kernel: i2c-dev: adapter [uni-n 0] registered as =
-minor 4
-[...]
+--- Comment #1 from Erhard F. (erhard_f@mailbox.org) ---
+Created attachment 287761
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D287761&action=3Dedit
+kernel .config (5.6-rc4, PowerMac G4 DP)
 
 --=20
 You are receiving this mail because:
