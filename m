@@ -2,54 +2,61 @@ Return-Path: <SRS0=k87x=4T=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24696C3F2D1
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 12:48:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89731C3F2D2
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 13:18:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8669D21739
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 12:48:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8669D21739
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id 00DF42064A
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 13:18:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 00DF42064A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48WKgN0x34zDqY7
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 23:48:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=permerror (SPF Permanent Error: Unknown mechanism
- found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
- (client-ip=63.228.1.57; helo=gate.crashing.org;
- envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48WLL93l73zDqQJ
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2020 00:18:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=srs0=dop8=4t=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ header.from=bugzilla.kernel.org
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48WKbf2PwVzDqRj
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Mar 2020 23:44:45 +1100 (AEDT)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 022CigGl022511;
- Mon, 2 Mar 2020 06:44:42 -0600
-Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id 022Cigx2022509;
- Mon, 2 Mar 2020 06:44:42 -0600
-X-Authentication-Warning: gate.crashing.org: segher set sender to
- segher@kernel.crashing.org using -f
-Date: Mon, 2 Mar 2020 06:44:42 -0600
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Subject: Re: eh_frame confusion
-Message-ID: <20200302124442.GI22482@gate.crashing.org>
-References: <3b00b45f-74b5-13e3-9a98-c3d6b3bb7286@rasmusvillemoes.dk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3b00b45f-74b5-13e3-9a98-c3d6b3bb7286@rasmusvillemoes.dk>
-User-Agent: Mutt/1.4.2.3i
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48WLDH3PC8zDqY0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Mar 2020 00:13:02 +1100 (AEDT)
+From: bugzilla-daemon@bugzilla.kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 199471] [Bisected][Regression] windfarm_pm* no longer gets
+ automatically loaded when CONFIG_I2C_POWERMAC=y is set
+Date: Mon, 02 Mar 2020 13:13:00 +0000
+X-Bugzilla-Reason: None
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Product: Platform Specific/Hardware
+X-Bugzilla-Component: PPC-64
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: wsa@the-dreams.de
+X-Bugzilla-Status: ASSIGNED
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: bug_status cf_regression
+Message-ID: <bug-199471-206035-aCfUw2icsx@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-199471-206035@https.bugzilla.kernel.org/>
+References: <bug-199471-206035@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
+MIME-Version: 1.0
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,29 +68,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>,
- Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Mar 02, 2020 at 11:56:05AM +0100, Rasmus Villemoes wrote:
-> I'm building a ppc32 kernel, and noticed that after upgrading from gcc-7
-> to gcc-8 all object files now end up having .eh_frame section.
+https://bugzilla.kernel.org/show_bug.cgi?id=3D199471
 
-Since GCC 8, we enable -fasynchronous-unwind-tables by default for
-PowerPC.  See https://gcc.gnu.org/r259298 .
+Wolfram Sang (wsa@the-dreams.de) changed:
 
-> For
-> vmlinux, that's not a problem, because they all get discarded in
-> arch/powerpc/kernel/vmlinux.lds.S . However, they stick around in
-> modules, which doesn't seem to be useful - given that everything worked
-> just fine with gcc-7, and I don't see anything in the module loader that
-> handles .eh_frame.
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEEDINFO                    |ASSIGNED
+         Regression|No                          |Yes
 
-It is useful for debugging.  Not many people debug the kernel like this,
-of course.
+--- Comment #15 from Wolfram Sang (wsa@the-dreams.de) ---
+"I guess so 'cause if I build i2c_powermac as a module and manually modprobe
+it, all the relevant windfarm modules get pulled in. But not before."
 
+Maybe there is a module dependency I overlooked so far, but at least there =
+is
+no code loading the pm72 module from i2c-powermac.
 
-Segher
+However, the bisect is very valuable and very likely the commit is the culp=
+rit.
+I was suspecting something changed the MODINFO, so loading fails, but I mis=
+sed
+this commit, so far. Also, it took me two approaches until I understood all=
+ the
+behaviour involved. Macintosh drivers are still confusing.
+
+I will cook up a patch to test later today to see if I was right.
+
+--=20
+You are receiving this mail because:
+You are watching the assignee of the bug.=
