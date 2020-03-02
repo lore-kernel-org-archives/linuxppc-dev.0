@@ -2,61 +2,60 @@ Return-Path: <SRS0=k87x=4T=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 839E4C3F2D7
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 15:44:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BA635C3F2D7
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 15:46:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E268D21D56
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 15:43:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E268D21D56
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 6DF6321556
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 15:46:23 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="eYd3ELVy"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6DF6321556
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48WPZN2BL5zDqZT
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2020 02:43:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48WPd90CdCzDqbm
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2020 02:46:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=srs0=dop8=4t=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=bugzilla.kernel.org
+ envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=eYd3ELVy; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48WPVC4PjPzDqZk
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Mar 2020 02:40:19 +1100 (AEDT)
-From: bugzilla-daemon@bugzilla.kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 199471] [Bisected][Regression] windfarm_pm* no longer gets
- automatically loaded when CONFIG_I2C_POWERMAC=y is set
-Date: Mon, 02 Mar 2020 15:40:17 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Product: Platform Specific/Hardware
-X-Bugzilla-Component: PPC-64
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: erhard_f@mailbox.org
-X-Bugzilla-Status: ASSIGNED
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: attachments.created
-Message-ID: <bug-199471-206035-fPAhjkXa5Z@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-199471-206035@https.bugzilla.kernel.org/>
-References: <bug-199471-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48WPZn1mFYzDqNf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Mar 2020 02:44:16 +1100 (AEDT)
+Received: from localhost (unknown [137.135.114.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id BFC90222C4;
+ Mon,  2 Mar 2020 15:44:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1583163855;
+ bh=19bgiYDwUKdyb3b9go1fL43n9b0ixNXBNp6DFDeAe/M=;
+ h=Date:From:To:To:To:Cc:Cc:Cc:Subject:In-Reply-To:References:From;
+ b=eYd3ELVyvTSH+78gG3l/dgHZq8QhwMTSp0utsLPoUROKI4ACr6iIncMWceA3qwO/q
+ 1umF5EDZ3ly3Wy7gbKwxzUl3GBgnlh/UggTUUHqHTOkuyvrMFjQ1vfSI1T5FrZqhWQ
+ M+nW++ODIH+uy+BinbRDDPkctAL8cjhcLhNOStkU=
+Date: Mon, 02 Mar 2020 15:44:14 +0000
+From: Sasha Levin <sashal@kernel.org>
+To: Sasha Levin <sashal@kernel.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+To: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>,
+ Shuah Khan <skhan@linuxfoundation.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] selftests: powerpc: Add tlbie_test in .gitignore
+In-Reply-To: <259f9c06ed4563c4fa4fa8ffa652347278d769e7.1582847784.git.christophe.leroy@c-s.fr>
+References: <259f9c06ed4563c4fa4fa8ffa652347278d769e7.1582847784.git.christophe.leroy@c-s.fr>
+Message-Id: <20200302154414.BFC90222C4@mail.kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,17 +67,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linux-mm@kvack.org, stable@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D199471
+Hi
 
---- Comment #18 from Erhard F. (erhard_f@mailbox.org) ---
-Created attachment 287757
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D287757&action=3Dedit
-dmesg (kernel 5.6-rc4 + patch, PowerMac G5 11,2)
+[This is an automated email]
 
---=20
-You are receiving this mail because:
-You are watching the assignee of the bug.=
+This commit has been processed because it contains a "Fixes:" tag
+fixing commit: 93cad5f78995 ("selftests/powerpc: Add test case for tlbie vs mtpidr ordering issue").
+
+The bot has tested the following trees: v5.5.6, v5.4.22, v4.19.106, v4.14.171.
+
+v5.5.6: Failed to apply! Possible dependencies:
+    5eb7cfb3a2b1 ("selftests/powerpc: Add a test of bad (out-of-range) accesses")
+
+v5.4.22: Failed to apply! Possible dependencies:
+    5eb7cfb3a2b1 ("selftests/powerpc: Add a test of bad (out-of-range) accesses")
+
+v4.19.106: Failed to apply! Possible dependencies:
+    16391bfc8623 ("selftests/powerpc: Add test of fork with mapping above 512TB")
+    5eb7cfb3a2b1 ("selftests/powerpc: Add a test of bad (out-of-range) accesses")
+    7b570361f6f6 ("selftests/powerpc: Add missing newline at end of file")
+    b7683fc66eba ("selftests/powerpc: Add a test of wild bctr")
+
+v4.14.171: Failed to apply! Possible dependencies:
+    16391bfc8623 ("selftests/powerpc: Add test of fork with mapping above 512TB")
+    5eb7cfb3a2b1 ("selftests/powerpc: Add a test of bad (out-of-range) accesses")
+    6ed361586b32 ("selftests/powerpc: Add a test of SEGV error behaviour")
+    7b570361f6f6 ("selftests/powerpc: Add missing newline at end of file")
+    b7683fc66eba ("selftests/powerpc: Add a test of wild bctr")
+
+
+NOTE: The patch will not be queued to stable trees until it is upstream.
+
+How should we proceed with this patch?
+
+-- 
+Thanks
+Sasha
