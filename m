@@ -2,60 +2,62 @@ Return-Path: <SRS0=k87x=4T=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BA635C3F2D7
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 15:46:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 73301C3F2CD
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 15:53:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6DF6321556
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 15:46:23 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="eYd3ELVy"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6DF6321556
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 205AF217F4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 15:53:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 205AF217F4
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48WPd90CdCzDqbm
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2020 02:46:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48WPnF6lHPzDqfc
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2020 02:53:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=kaod.org (client-ip=178.33.107.29; helo=15.mo5.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=eYd3ELVy; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ dmarc=none (p=none dis=none) header.from=kaod.org
+X-Greylist: delayed 27601 seconds by postgrey-1.36 at bilbo;
+ Tue, 03 Mar 2020 02:51:48 AEDT
+Received: from 15.mo5.mail-out.ovh.net (15.mo5.mail-out.ovh.net
+ [178.33.107.29])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48WPZn1mFYzDqNf
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Mar 2020 02:44:16 +1100 (AEDT)
-Received: from localhost (unknown [137.135.114.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id BFC90222C4;
- Mon,  2 Mar 2020 15:44:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1583163855;
- bh=19bgiYDwUKdyb3b9go1fL43n9b0ixNXBNp6DFDeAe/M=;
- h=Date:From:To:To:To:Cc:Cc:Cc:Subject:In-Reply-To:References:From;
- b=eYd3ELVyvTSH+78gG3l/dgHZq8QhwMTSp0utsLPoUROKI4ACr6iIncMWceA3qwO/q
- 1umF5EDZ3ly3Wy7gbKwxzUl3GBgnlh/UggTUUHqHTOkuyvrMFjQ1vfSI1T5FrZqhWQ
- M+nW++ODIH+uy+BinbRDDPkctAL8cjhcLhNOStkU=
-Date: Mon, 02 Mar 2020 15:44:14 +0000
-From: Sasha Levin <sashal@kernel.org>
-To: Sasha Levin <sashal@kernel.org>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-To: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>,
- Shuah Khan <skhan@linuxfoundation.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] selftests: powerpc: Add tlbie_test in .gitignore
-In-Reply-To: <259f9c06ed4563c4fa4fa8ffa652347278d769e7.1582847784.git.christophe.leroy@c-s.fr>
-References: <259f9c06ed4563c4fa4fa8ffa652347278d769e7.1582847784.git.christophe.leroy@c-s.fr>
-Message-Id: <20200302154414.BFC90222C4@mail.kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48WPlS5H6YzDqRW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Mar 2020 02:51:44 +1100 (AEDT)
+Received: from player695.ha.ovh.net (unknown [10.108.54.9])
+ by mo5.mail-out.ovh.net (Postfix) with ESMTP id 09E10271161
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Mar 2020 08:35:06 +0100 (CET)
+Received: from kaod.org (82-64-250-170.subs.proxad.net [82.64.250.170])
+ (Authenticated sender: clg@kaod.org)
+ by player695.ha.ovh.net (Postfix) with ESMTPSA id B103DFD08FC4;
+ Mon,  2 Mar 2020 07:34:51 +0000 (UTC)
+Subject: Re: [RFC PATCH v1] powerpc/prom_init: disable XIVE in Secure VM.
+To: Ram Pai <linuxram@us.ibm.com>
+References: <1582962844-26333-1-git-send-email-linuxram@us.ibm.com>
+ <1e28fb80-7bae-8d80-1a72-f616af030aab@kaod.org>
+ <20200229225140.GA5618@oc0525413822.ibm.com>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <d1ff5c06-f0a9-981e-53bc-0030c3312d55@kaod.org>
+Date: Mon, 2 Mar 2020 08:34:51 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.4.1
+MIME-Version: 1.0
+In-Reply-To: <20200229225140.GA5618@oc0525413822.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 13198361662201170918
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: 0
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedugedruddtfedgudduudcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecunecujfgurhepuffvfhfhkffffgggjggtgfesthekredttdefjeenucfhrhhomhepveorughrihgtpgfnvggpifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucfkpheptddrtddrtddrtddpkedvrdeigedrvdehtddrudejtdenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehplhgrhigvrheileehrdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrgh
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,45 +69,138 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, stable@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org
+Cc: aik@ozlabs.ru, andmike@linux.ibm.com, groug@kaod.org,
+ kvm-ppc@vger.kernel.org, clg@fr.ibm.com, sukadev@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, bauerman@linux.ibm.com,
+ david@gibson.dropbear.id.au
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi
+On 2/29/20 11:51 PM, Ram Pai wrote:
+> On Sat, Feb 29, 2020 at 09:27:54AM +0100, Cédric Le Goater wrote:
+>> On 2/29/20 8:54 AM, Ram Pai wrote:
+>>> XIVE is not correctly enabled for Secure VM in the KVM Hypervisor yet.
+>>>
+>>> Hence Secure VM, must always default to XICS interrupt controller.
+>>
+>> have you tried XIVE emulation 'kernel-irqchip=off' ? 
+> 
+> yes and it hangs. I think that option, continues to enable some variant
+> of XIVE in the VM. 
 
-[This is an automated email]
+HW is not involved, KVM is not involved anymore and all is emulated at 
+the QEMU level in user space. What is the issue ? 
 
-This commit has been processed because it contains a "Fixes:" tag
-fixing commit: 93cad5f78995 ("selftests/powerpc: Add test case for tlbie vs mtpidr ordering issue").
+> There are some known deficiencies between KVM
+> and the ultravisor negotiation, resulting in a hang in the SVM.
 
-The bot has tested the following trees: v5.5.6, v5.4.22, v4.19.106, v4.14.171.
+That is something else to investigate. feature/capability negotiation
+is the core of the hypervisor stack : 
 
-v5.5.6: Failed to apply! Possible dependencies:
-    5eb7cfb3a2b1 ("selftests/powerpc: Add a test of bad (out-of-range) accesses")
+    OPAL <-> PowerNV <-> KVM <-> QEMU <-> guest OS
 
-v5.4.22: Failed to apply! Possible dependencies:
-    5eb7cfb3a2b1 ("selftests/powerpc: Add a test of bad (out-of-range) accesses")
+>>> If XIVE is requested through kernel command line option "xive=on",
+>>> override and turn it off.
+>>
+>> This is incorrect. It is negotiated through CAS depending on the FW
+>> capabilities and the KVM capabilities.
+> 
+> Yes I understand, qemu/KVM have predetermined a set of capabilties that
+> it can offer to the VM.  The kernel within the VM has a list of
+> capabilties it needs to operate correctly.  So both negotiate and
+> determine something mutually ammicable.
+> 
+> Here I am talking about the list of capabilities that the kernel is
+> trying to determine, it needs to operate correctly.  "xive=on" is one of
+> those capabilities the kernel is told by the VM-adminstrator, to enable.
 
-v4.19.106: Failed to apply! Possible dependencies:
-    16391bfc8623 ("selftests/powerpc: Add test of fork with mapping above 512TB")
-    5eb7cfb3a2b1 ("selftests/powerpc: Add a test of bad (out-of-range) accesses")
-    7b570361f6f6 ("selftests/powerpc: Add missing newline at end of file")
-    b7683fc66eba ("selftests/powerpc: Add a test of wild bctr")
+XIVE is not a kernel capability. It's platform support and the default
+for P9 is the native exploitation mode which makes full use of the P9
+interrupt controller. For non XIVE aware kernels, the hypervisor emulates
+the legacy interface on top of XIVE. 
 
-v4.14.171: Failed to apply! Possible dependencies:
-    16391bfc8623 ("selftests/powerpc: Add test of fork with mapping above 512TB")
-    5eb7cfb3a2b1 ("selftests/powerpc: Add a test of bad (out-of-range) accesses")
-    6ed361586b32 ("selftests/powerpc: Add a test of SEGV error behaviour")
-    7b570361f6f6 ("selftests/powerpc: Add missing newline at end of file")
-    b7683fc66eba ("selftests/powerpc: Add a test of wild bctr")
+"xive=off" was introduced for distro testing. It skips the negotiation 
+process of the XIVE native exploitation mode on the guest. But it's not
+a negotiation setting. It's a chicken switch.
+
+> Unfortunately if the VM-administrtor blindly requests to enable it, the
+> kernel must override it, if it knows that will be switching the VM into
+> a SVM soon. No point negotiating a capability with Qemu; through CAS,
+> if it knows it cannot handle that capability.
+
+I don't understand. Are you talking about SVM or XIVE ? 
+
+>>> If XIVE is the only supported platform interrupt controller; specified
+>>> through qemu option "ic-mode=xive", simply abort. Otherwise default to
+>>> XICS.
+>>
+>>
+>> I don't think it is a good approach to downgrade the guest kernel 
+>> capabilities this way. 
+>>
+>> PAPR has specified the CAS negotiation process for this purpose. It 
+>> comes in two parts under KVM. First the KVM hypervisor advertises or 
+>> not a capability to QEMU. The second is the CAS negotiation process 
+>> between QEMU and the guest OS.
+> 
+> Unfortunately, this is not viable.  At the time the hypervisor
+> advertises its capabilities to qemu, the hypervisor has no idea whether
+> that VM will switch into a SVM or not. 
+
+OK, but the hypervisor knows if it can handle 'SVM' guests or not and,
+if not, there is no point in advertising a 'SVM' capability to the guest. 
+
+> The decision to switch into a> SVM is taken by the kernel running in the VM. This happens much later,
+> after the hypervisor has already conveyed its capabilties to the qemu, and
+> qemu has than instantiated the VM.
+
+So you don't have negotiation with the hypervisor ? How does the guest
+knows the hypervisor platform can handle SVMs ? try and see if it fails ?
+If so, it seems quite broken to me.
+ 
+> As a result, CAS in prom_init is the only place where this negotiation
+> can take place.
+
+Euh. I don't follow. This is indeed where CAS is performed and so it's 
+*the* place to check that the hypervisor has 'SVM' support ? 
+
+>> The SVM specifications might not be complete yet and if some features 
+>> are incompatible, I think we should modify the capabilities advertised 
+>> by the hypervisor : no XIVE in case of SVM. QEMU will automatically 
+>> use the fallback path and emulate the XIVE device, same as setting 
+>> 'kernel-irqchip=off'. 
+> 
+> As mentioned above, this would be an excellent approach, if the
+> Hypervisor was aware of the VM's intent to switch into a SVM. Neither
+> the hypervisor knows, nor the qemu.  Only the kernel running within the
+> VM knows about it.
 
 
-NOTE: The patch will not be queued to stable trees until it is upstream.
+The hypervisor (KVM/QEMU) never knows what are the guest OS capabilities
+or its intents. That is why there is a negotiation process. 
 
-How should we proceed with this patch?
+I would do :
 
--- 
-Thanks
-Sasha
+ * OPAL FW advertises 'SVM' support to the Linux PowerNV (through DT) 
+ * KVM advertises 'SVM' support to QEMU (extend KVM ioctls)
+ * QEMU advertises 'SVM' support to guest OS (through CAS or DT) 
+ * Guest OS should not try to use SVM it is not supported. 
+
+If the passthrough of HW pages is not supported by Ultravisor, KVM 
+should not advertised XIVE to QEMU which would then use fallback mode.
+
+If emulated XIVE or XICS is not supported by SVM guests, then we have
+a problem and we need to understand why ! :) 
+
+And if XIVE is still a problem, then the guest could change the CAS 
+request and remove XIVE when SVM is being set. I suppose that we have 
+all this information before CAS. Do we ? 
+
+It should be a runtime choice taking into account the full software 
+stack rather than a compile choice at the bottom which would impact
+all other options. This is not acceptable IMHO.
+
+Cheers,
+
+C.
