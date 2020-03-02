@@ -2,46 +2,66 @@ Return-Path: <SRS0=k87x=4T=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D40BBC3F2D2
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 06:54:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EAB73C3F2D1
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 07:15:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 87AAD24697
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 06:54:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 87AAD24697
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 6A03424697
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 07:15:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6A03424697
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48W9qQ5L4bzDqZ1
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 17:54:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48WBH55gyZzDqZk
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 18:14:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.190; helo=huawei.com;
+ envelope-from=yanaijie@huawei.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 48W9hT05xbzDqft
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Mar 2020 17:48:24 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id CA3EC1045;
- Sun,  1 Mar 2020 22:48:22 -0800 (PST)
-Received: from p8cg001049571a15.arm.com (unknown [10.163.1.119])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 439B13F6CF;
- Sun,  1 Mar 2020 22:52:09 -0800 (PST)
-From: Anshuman Khandual <anshuman.khandual@arm.com>
-To: linux-mm@kvack.org
-Subject: [RFC 2/3] mm/vma: Introduce VM_ACCESS_FLAGS
-Date: Mon,  2 Mar 2020 12:17:45 +0530
-Message-Id: <1583131666-15531-3-git-send-email-anshuman.khandual@arm.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1583131666-15531-1-git-send-email-anshuman.khandual@arm.com>
-References: <1583131666-15531-1-git-send-email-anshuman.khandual@arm.com>
+ dmarc=none (p=none dis=none) header.from=huawei.com
+Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48WBDt1TmgzDqWQ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Mar 2020 18:12:56 +1100 (AEDT)
+Received: from DGGEMS402-HUB.china.huawei.com (unknown [172.30.72.60])
+ by Forcepoint Email with ESMTP id C6DC3895D5107159B6EA;
+ Mon,  2 Mar 2020 15:12:47 +0800 (CST)
+Received: from [127.0.0.1] (10.173.221.195) by DGGEMS402-HUB.china.huawei.com
+ (10.3.19.202) with Microsoft SMTP Server id 14.3.439.0;
+ Mon, 2 Mar 2020 15:12:40 +0800
+Subject: Re: [PATCH v3 0/6] implement KASLR for powerpc/fsl_booke/64
+To: Scott Wood <oss@buserror.net>, Daniel Axtens <dja@axtens.net>,
+ <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
+ <diana.craciun@nxp.com>, <christophe.leroy@c-s.fr>,
+ <benh@kernel.crashing.org>, <paulus@samba.org>, <npiggin@gmail.com>,
+ <keescook@chromium.org>, <kernel-hardening@lists.openwall.com>, <me@tobin.cc>
+References: <20200206025825.22934-1-yanaijie@huawei.com>
+ <87tv3drf79.fsf@dja-thinkpad.axtens.net>
+ <8171d326-5138-4f5c-cff6-ad3ee606f0c2@huawei.com>
+ <e8cd8f287934954cfa07dcf76ac73492e2d49a5b.camel@buserror.net>
+ <dd8db870-b607-3f74-d3bc-a8d9f33f9852@huawei.com>
+ <4c0e7fec63dbc7b91fa6c24692c73c256c131f51.camel@buserror.net>
+ <188971ed-f1c4-39b3-c07e-89cc593d88d7@huawei.com>
+ <530c49dfd97c811dc53ffc78c594d7133f7eb1e9.camel@buserror.net>
+ <35e6c660-3896-bdb8-45f3-c1504aa2171f@huawei.com>
+ <31b5966ba579ef246176a7d8ad18c2c02788dd27.camel@buserror.net>
+From: Jason Yan <yanaijie@huawei.com>
+Message-ID: <17658c2b-9eb8-cee9-e9a2-93d316a401b1@huawei.com>
+Date: Mon, 2 Mar 2020 15:12:39 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101
+ Thunderbird/68.4.2
+MIME-Version: 1.0
+In-Reply-To: <31b5966ba579ef246176a7d8ad18c2c02788dd27.camel@buserror.net>
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [10.173.221.195]
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -53,290 +73,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-sh@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, devel@driverdev.osuosl.org,
- linux-s390@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Russell King <linux@armlinux.org.uk>, Ley Foon Tan <ley.foon.tan@intel.com>,
- Mark Salter <msalter@redhat.com>,
- Anshuman Khandual <anshuman.khandual@arm.com>,
- Rob Springer <rspringer@google.com>, Thomas Gleixner <tglx@linutronix.de>,
- Guan Xuetao <gxt@pku.edu.cn>, linux-arm-kernel@lists.infradead.org,
- Nick Hu <nickhu@andestech.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- nios2-dev@lists.rocketboards.org, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, zhaohongjiang@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There are many places where all basic VMA access flags (read, write, exec)
-are initialized or checked against as a group. One such example is during
-page fault. Existing vma_is_accessible() wrapper already creates the notion
-of VMA accessibility as a group access permissions. Hence lets just create
-VM_ACCESS_FLAGS (VM_READ|VM_WRITE|VM_EXEC) which will not only reduce code
-duplication but also extend the VMA accessibility concept in general.
 
-Cc: Russell King <linux@armlinux.org.uk>
-CC: Catalin Marinas <catalin.marinas@arm.com>
-CC: Mark Salter <msalter@redhat.com>
-Cc: Nick Hu <nickhu@andestech.com>
-CC: Ley Foon Tan <ley.foon.tan@intel.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
-Cc: Guan Xuetao <gxt@pku.edu.cn>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Rob Springer <rspringer@google.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-c6x-dev@linux-c6x.org
-Cc: nios2-dev@lists.rocketboards.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-s390@vger.kernel.org
-Cc: linux-sh@vger.kernel.org
-Cc: devel@driverdev.osuosl.org
-Cc: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
----
- arch/arm/mm/fault.c                  | 2 +-
- arch/arm64/mm/fault.c                | 2 +-
- arch/c6x/include/asm/processor.h     | 2 +-
- arch/nds32/mm/fault.c                | 2 +-
- arch/nios2/include/asm/processor.h   | 2 +-
- arch/powerpc/mm/book3s64/pkeys.c     | 2 +-
- arch/s390/mm/fault.c                 | 2 +-
- arch/sh/include/asm/processor_64.h   | 2 +-
- arch/unicore32/mm/fault.c            | 2 +-
- arch/x86/mm/pkeys.c                  | 2 +-
- drivers/staging/gasket/gasket_core.c | 2 +-
- include/linux/mm.h                   | 4 +++-
- mm/mmap.c                            | 4 ++--
- mm/mprotect.c                        | 7 +++----
- 14 files changed, 19 insertions(+), 18 deletions(-)
 
-diff --git a/arch/arm/mm/fault.c b/arch/arm/mm/fault.c
-index bd0f4821f7e1..2c71028d9d6b 100644
---- a/arch/arm/mm/fault.c
-+++ b/arch/arm/mm/fault.c
-@@ -189,7 +189,7 @@ void do_bad_area(unsigned long addr, unsigned int fsr, struct pt_regs *regs)
-  */
- static inline bool access_error(unsigned int fsr, struct vm_area_struct *vma)
- {
--	unsigned int mask = VM_READ | VM_WRITE | VM_EXEC;
-+	unsigned int mask = VM_ACCESS_FLAGS;
- 
- 	if ((fsr & FSR_WRITE) && !(fsr & FSR_CM))
- 		mask = VM_WRITE;
-diff --git a/arch/arm64/mm/fault.c b/arch/arm64/mm/fault.c
-index 85566d32958f..63f31206a12e 100644
---- a/arch/arm64/mm/fault.c
-+++ b/arch/arm64/mm/fault.c
-@@ -445,7 +445,7 @@ static int __kprobes do_page_fault(unsigned long addr, unsigned int esr,
- 	const struct fault_info *inf;
- 	struct mm_struct *mm = current->mm;
- 	vm_fault_t fault, major = 0;
--	unsigned long vm_flags = VM_READ | VM_WRITE | VM_EXEC;
-+	unsigned long vm_flags = VM_ACCESS_FLAGS;
- 	unsigned int mm_flags = FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_KILLABLE;
- 
- 	if (kprobe_page_fault(regs, esr))
-diff --git a/arch/c6x/include/asm/processor.h b/arch/c6x/include/asm/processor.h
-index 1456f5e11de3..77372b8c28d7 100644
---- a/arch/c6x/include/asm/processor.h
-+++ b/arch/c6x/include/asm/processor.h
-@@ -57,7 +57,7 @@ struct thread_struct {
- }
- 
- #define INIT_MMAP { \
--	&init_mm, 0, 0, NULL, PAGE_SHARED, VM_READ | VM_WRITE | VM_EXEC, 1, \
-+	&init_mm, 0, 0, NULL, PAGE_SHARED, VM_ACCESS_FLAGS, 1, \
- 	NULL, NULL }
- 
- #define task_pt_regs(task) \
-diff --git a/arch/nds32/mm/fault.c b/arch/nds32/mm/fault.c
-index 906dfb25353c..55387a31bf42 100644
---- a/arch/nds32/mm/fault.c
-+++ b/arch/nds32/mm/fault.c
-@@ -79,7 +79,7 @@ void do_page_fault(unsigned long entry, unsigned long addr,
- 	struct vm_area_struct *vma;
- 	int si_code;
- 	vm_fault_t fault;
--	unsigned int mask = VM_READ | VM_WRITE | VM_EXEC;
-+	unsigned int mask = VM_ACCESS_FLAGS;
- 	unsigned int flags = FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_KILLABLE;
- 
- 	error_code = error_code & (ITYPE_mskINST | ITYPE_mskETYPE);
-diff --git a/arch/nios2/include/asm/processor.h b/arch/nios2/include/asm/processor.h
-index 94bcb86f679f..fbfb3ab14cfc 100644
---- a/arch/nios2/include/asm/processor.h
-+++ b/arch/nios2/include/asm/processor.h
-@@ -51,7 +51,7 @@ struct thread_struct {
- };
- 
- #define INIT_MMAP \
--	{ &init_mm, (0), (0), __pgprot(0x0), VM_READ | VM_WRITE | VM_EXEC }
-+	{ &init_mm, (0), (0), __pgprot(0x0), VM_ACCESS_FLAGS }
- 
- # define INIT_THREAD {			\
- 	.kregs	= NULL,			\
-diff --git a/arch/powerpc/mm/book3s64/pkeys.c b/arch/powerpc/mm/book3s64/pkeys.c
-index 59e0ebbd8036..11fd52b24f68 100644
---- a/arch/powerpc/mm/book3s64/pkeys.c
-+++ b/arch/powerpc/mm/book3s64/pkeys.c
-@@ -315,7 +315,7 @@ int __execute_only_pkey(struct mm_struct *mm)
- static inline bool vma_is_pkey_exec_only(struct vm_area_struct *vma)
- {
- 	/* Do this check first since the vm_flags should be hot */
--	if ((vma->vm_flags & (VM_READ | VM_WRITE | VM_EXEC)) != VM_EXEC)
-+	if ((vma->vm_flags & VM_ACCESS_FLAGS) != VM_EXEC)
- 		return false;
- 
- 	return (vma_pkey(vma) == vma->vm_mm->context.execute_only_pkey);
-diff --git a/arch/s390/mm/fault.c b/arch/s390/mm/fault.c
-index 7b0bb475c166..b2cb3c0d0e1a 100644
---- a/arch/s390/mm/fault.c
-+++ b/arch/s390/mm/fault.c
-@@ -584,7 +584,7 @@ void do_dat_exception(struct pt_regs *regs)
- 	int access;
- 	vm_fault_t fault;
- 
--	access = VM_READ | VM_EXEC | VM_WRITE;
-+	access = VM_ACCESS_FLAGS;
- 	fault = do_exception(regs, access);
- 	if (unlikely(fault))
- 		do_fault_error(regs, access, fault);
-diff --git a/arch/sh/include/asm/processor_64.h b/arch/sh/include/asm/processor_64.h
-index 53efc9f51ef1..3b8187284e3f 100644
---- a/arch/sh/include/asm/processor_64.h
-+++ b/arch/sh/include/asm/processor_64.h
-@@ -121,7 +121,7 @@ struct thread_struct {
- };
- 
- #define INIT_MMAP \
--{ &init_mm, 0, 0, NULL, PAGE_SHARED, VM_READ | VM_WRITE | VM_EXEC, 1, NULL, NULL }
-+{ &init_mm, 0, 0, NULL, PAGE_SHARED, VM_ACCESS_FLAGS, 1, NULL, NULL }
- 
- #define INIT_THREAD  {				\
- 	.sp		= sizeof(init_stack) +	\
-diff --git a/arch/unicore32/mm/fault.c b/arch/unicore32/mm/fault.c
-index 76342de9cf8c..fc27c274d358 100644
---- a/arch/unicore32/mm/fault.c
-+++ b/arch/unicore32/mm/fault.c
-@@ -149,7 +149,7 @@ void do_bad_area(unsigned long addr, unsigned int fsr, struct pt_regs *regs)
-  */
- static inline bool access_error(unsigned int fsr, struct vm_area_struct *vma)
- {
--	unsigned int mask = VM_READ | VM_WRITE | VM_EXEC;
-+	unsigned int mask = VM_ACCESS_FLAGS;
- 
- 	if (!(fsr ^ 0x12))	/* write? */
- 		mask = VM_WRITE;
-diff --git a/arch/x86/mm/pkeys.c b/arch/x86/mm/pkeys.c
-index c6f84c0b5d7a..8873ed1438a9 100644
---- a/arch/x86/mm/pkeys.c
-+++ b/arch/x86/mm/pkeys.c
-@@ -63,7 +63,7 @@ int __execute_only_pkey(struct mm_struct *mm)
- static inline bool vma_is_pkey_exec_only(struct vm_area_struct *vma)
- {
- 	/* Do this check first since the vm_flags should be hot */
--	if ((vma->vm_flags & (VM_READ | VM_WRITE | VM_EXEC)) != VM_EXEC)
-+	if ((vma->vm_flags & VM_ACCESS_FLAGS) != VM_EXEC)
- 		return false;
- 	if (vma_pkey(vma) != vma->vm_mm->context.execute_only_pkey)
- 		return false;
-diff --git a/drivers/staging/gasket/gasket_core.c b/drivers/staging/gasket/gasket_core.c
-index be6b50f454b4..81bb7d58dc49 100644
---- a/drivers/staging/gasket/gasket_core.c
-+++ b/drivers/staging/gasket/gasket_core.c
-@@ -689,7 +689,7 @@ static bool gasket_mmap_has_permissions(struct gasket_dev *gasket_dev,
- 
- 	/* Make sure that no wrong flags are set. */
- 	requested_permissions =
--		(vma->vm_flags & (VM_WRITE | VM_READ | VM_EXEC));
-+		(vma->vm_flags & VM_ACCESS_FLAGS);
- 	if (requested_permissions & ~(bar_permissions)) {
- 		dev_dbg(gasket_dev->dev,
- 			"Attempting to map a region with requested permissions "
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 7a764ae6ab68..525026df1e58 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -368,6 +368,8 @@ extern unsigned int kobjsize(const void *objp);
- #endif
- 
- #define VM_STACK_FLAGS	(VM_STACK | VM_STACK_DEFAULT_FLAGS | VM_ACCOUNT)
-+#define VM_ACCESS_FLAGS (VM_READ | VM_WRITE | VM_EXEC)
-+
- 
- /*
-  * Special vmas that are non-mergable, non-mlock()able.
-@@ -558,7 +560,7 @@ static inline bool vma_is_anonymous(struct vm_area_struct *vma)
- 
- static inline bool vma_is_accessible(struct vm_area_struct *vma)
- {
--	return vma->vm_flags & (VM_READ | VM_WRITE | VM_EXEC);
-+	return vma->vm_flags & VM_ACCESS_FLAGS;
- }
- 
- #ifdef CONFIG_SHMEM
-diff --git a/mm/mmap.c b/mm/mmap.c
-index 0d295f49b24d..f9a01763857b 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -106,7 +106,7 @@ static inline pgprot_t arch_filter_pgprot(pgprot_t prot)
- pgprot_t vm_get_page_prot(unsigned long vm_flags)
- {
- 	pgprot_t ret = __pgprot(pgprot_val(protection_map[vm_flags &
--				(VM_READ|VM_WRITE|VM_EXEC|VM_SHARED)]) |
-+				(VM_ACCESS_FLAGS | VM_SHARED)]) |
- 			pgprot_val(arch_vm_get_page_prot(vm_flags)));
- 
- 	return arch_filter_pgprot(ret);
-@@ -1221,7 +1221,7 @@ static int anon_vma_compatible(struct vm_area_struct *a, struct vm_area_struct *
- 	return a->vm_end == b->vm_start &&
- 		mpol_equal(vma_policy(a), vma_policy(b)) &&
- 		a->vm_file == b->vm_file &&
--		!((a->vm_flags ^ b->vm_flags) & ~(VM_READ|VM_WRITE|VM_EXEC|VM_SOFTDIRTY)) &&
-+		!((a->vm_flags ^ b->vm_flags) & ~(VM_ACCESS_FLAGS | VM_SOFTDIRTY)) &&
- 		b->vm_pgoff == a->vm_pgoff + ((b->vm_start - a->vm_start) >> PAGE_SHIFT);
- }
- 
-diff --git a/mm/mprotect.c b/mm/mprotect.c
-index 7a8e84f86831..4921a4211c6b 100644
---- a/mm/mprotect.c
-+++ b/mm/mprotect.c
-@@ -359,7 +359,7 @@ mprotect_fixup(struct vm_area_struct *vma, struct vm_area_struct **pprev,
- 	 */
- 	if (arch_has_pfn_modify_check() &&
- 	    (vma->vm_flags & (VM_PFNMAP|VM_MIXEDMAP)) &&
--	    (newflags & (VM_READ|VM_WRITE|VM_EXEC)) == 0) {
-+	    (newflags & VM_ACCESS_FLAGS) == 0) {
- 		pgprot_t new_pgprot = vm_get_page_prot(newflags);
- 
- 		error = walk_page_range(current->mm, start, end,
-@@ -530,15 +530,14 @@ static int do_mprotect_pkey(unsigned long start, size_t len,
- 		 * If a permission is not passed to mprotect(), it must be
- 		 * cleared from the VMA.
- 		 */
--		mask_off_old_flags = VM_READ | VM_WRITE | VM_EXEC |
--					VM_FLAGS_CLEAR;
-+		mask_off_old_flags = VM_ACCESS_FLAGS | VM_FLAGS_CLEAR;
- 
- 		new_vma_pkey = arch_override_mprotect_pkey(vma, prot, pkey);
- 		newflags = calc_vm_prot_bits(prot, new_vma_pkey);
- 		newflags |= (vma->vm_flags & ~mask_off_old_flags);
- 
- 		/* newflags >> 4 shift VM_MAY% in place of VM_% */
--		if ((newflags & ~(newflags >> 4)) & (VM_READ | VM_WRITE | VM_EXEC)) {
-+		if ((newflags & ~(newflags >> 4)) & VM_ACCESS_FLAGS) {
- 			error = -EACCES;
- 			goto out;
- 		}
--- 
-2.20.1
+在 2020/3/2 11:24, Scott Wood 写道:
+> On Mon, 2020-03-02 at 10:17 +0800, Jason Yan wrote:
+>>
+>> 在 2020/3/1 6:54, Scott Wood 写道:
+>>> On Sat, 2020-02-29 at 15:27 +0800, Jason Yan wrote:
+>>>>
+>>>> Turnning to %p may not be a good idea in this situation. So
+>>>> for the REG logs printed when dumping stack, we can disable it when
+>>>> KASLR is open. For the REG logs in other places like show_regs(), only
+>>>> privileged can trigger it, and they are not combind with a symbol, so
+>>>> I think it's ok to keep them.
+>>>>
+>>>> diff --git a/arch/powerpc/kernel/process.c
+>>>> b/arch/powerpc/kernel/process.c
+>>>> index fad50db9dcf2..659c51f0739a 100644
+>>>> --- a/arch/powerpc/kernel/process.c
+>>>> +++ b/arch/powerpc/kernel/process.c
+>>>> @@ -2068,7 +2068,10 @@ void show_stack(struct task_struct *tsk, unsigned
+>>>> long *stack)
+>>>>                    newsp = stack[0];
+>>>>                    ip = stack[STACK_FRAME_LR_SAVE];
+>>>>                    if (!firstframe || ip != lr) {
+>>>> -                       printk("["REG"] ["REG"] %pS", sp, ip, (void
+>>>> *)ip);
+>>>> +                       if (IS_ENABLED(CONFIG_RANDOMIZE_BASE))
+>>>> +                               printk("%pS", (void *)ip);
+>>>> +                       else
+>>>> +                               printk("["REG"] ["REG"] %pS", sp, ip,
+>>>> (void *)ip);
+>>>
+>>> This doesn't deal with "nokaslr" on the kernel command line.  It also
+>>> doesn't
+>>> seem like something that every callsite should have to opencode, versus
+>>> having
+>>> an appropriate format specifier behaves as I described above (and I still
+>>> don't see why that format specifier should not be "%p").
+>>>
+>>
+>> Actually I still do not understand why we should print the raw value
+>> here. When KALLSYMS is enabled we have symbol name  and  offset like
+>> put_cred_rcu+0x108/0x110, and when KALLSYMS is disabled we have the raw
+>> address.
+> 
+> I'm more concerned about the stack address for wading through a raw stack dump
+> (to find function call arguments, etc).  The return address does help confirm
+> that I'm on the right stack frame though, and also makes looking up a line
+> number slightly easier than having to look up a symbol address and then add
+> the offset (at least for non-module addresses).
+> 
+> As a random aside, the mismatch between Linux printing a hex offset and GDB
+> using decimal in disassembly is annoying...
+> 
+
+OK, I will send a RFC patch to add a new format specifier such as "%pk" 
+or change the exsiting "%pK" to print raw value of addresses when KASLR 
+is disabled and print hash value of addresses when KASLR is enabled. 
+Let's see what the printk guys would say :)
+
+
+> -Scott
+> 
+> 
+> 
+> .
+> 
 
