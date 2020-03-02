@@ -3,75 +3,83 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
 	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9FCC5C3F2D1
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 18:23:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C245C3F2D1
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 18:44:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5855D24676
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 18:23:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 169F12072A
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 18:44:22 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="RdTDjpm7"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5855D24676
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=intel-com.20150623.gappssmtp.com header.i=@intel-com.20150623.gappssmtp.com header.b="CPm8ZJw3"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 169F12072A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48WT6t4sblzDqdS
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2020 05:23:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48WTZX1PRpzDqZ3
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2020 05:44:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=205.139.110.61;
- helo=us-smtp-delivery-1.mimecast.com; envelope-from=jolsa@redhat.com;
+ smtp.mailfrom=intel.com (client-ip=2607:f8b0:4864:20::243;
+ helo=mail-oi1-x243.google.com; envelope-from=dan.j.williams@intel.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=RdTDjpm7; 
- dkim-atps=neutral
-Received: from us-smtp-delivery-1.mimecast.com (us-smtp-2.mimecast.com
- [205.139.110.61])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=intel-com.20150623.gappssmtp.com
+ header.i=@intel-com.20150623.gappssmtp.com header.a=rsa-sha256
+ header.s=20150623 header.b=CPm8ZJw3; dkim-atps=neutral
+Received: from mail-oi1-x243.google.com (mail-oi1-x243.google.com
+ [IPv6:2607:f8b0:4864:20::243])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48WSzY6bY8zDqSW
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Mar 2020 05:17:28 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1583173046;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=fPKPYyNpDnqAVBKIrF12LFsdNoQG0+cDCDMMSa5vHXw=;
- b=RdTDjpm7d++gXqkp11+txykl42MUnZpCp9OrpdTH0PUz+KyXm6RtIeaDONR8upn61/O+GC
- MGZpApUWm4vaMEfxPaHYkYOZ4X6V5JnOajpwVqWRJjyxi3bRsP3o3JwPvNk2VPQtR1lRWO
- iImoM4fPQzAwZxigOwFuFHb01uS3Uvk=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-128-CxihSTk0Ow6aP3RruQn1qw-1; Mon, 02 Mar 2020 10:09:01 -0500
-X-MC-Unique: CxihSTk0Ow6aP3RruQn1qw-1
-Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.phx2.redhat.com
- [10.5.11.16])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 54D488017DF;
- Mon,  2 Mar 2020 15:08:57 +0000 (UTC)
-Received: from krava (ovpn-205-46.brq.redhat.com [10.40.205.46])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id 125FC5C1B0;
- Mon,  2 Mar 2020 15:08:49 +0000 (UTC)
-Date: Mon, 2 Mar 2020 16:08:47 +0100
-From: Jiri Olsa <jolsa@redhat.com>
-To: Kajol Jain <kjain@linux.ibm.com>
-Subject: Re: [PATCH v3 6/8] perf/tools: Enhance JSON/metric infrastructure to
- handle "?"
-Message-ID: <20200302150847.GB259142@krava>
-References: <20200229094159.25573-1-kjain@linux.ibm.com>
- <20200229094159.25573-7-kjain@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48WTXK4yb5zDqXS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Mar 2020 05:42:20 +1100 (AEDT)
+Received: by mail-oi1-x243.google.com with SMTP id d62so219471oia.11
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Mar 2020 10:42:20 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=intel-com.20150623.gappssmtp.com; s=20150623;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc:content-transfer-encoding;
+ bh=+8nfoKR15NmxwB0eviFINMK7mfZ/bWjSvXOrhjIWgPw=;
+ b=CPm8ZJw3+TWEjm2lgHBD+rU3/76tOPOt/12fFrgnw2C+/jUxelaXCBy/mledMuM2H4
+ UlAIyFz070RaCXY/KEZln/OokcFWj7YxyxPjwaN35ZO3D/q/BDSWAYwsvNEO+nt31v7D
+ 49Fax9alh1vhw1rCVJrTQYmQBkemdlKDDBgXcDmdS4MqnUEeqaaULI1Dog21/vZ9Quzl
+ U6ZoxWzBEw6oxC63miSYvzacQ3XQyRUEWCwa16y36z1EtbdkjlHFU/DB78WUlcsAgTQj
+ X4vnNZR9pmMEaoIOyifJCVVs0MyiH0ZaOQ7V6UDcVmgE5ZGcbH8uFVpH1Adv5G/V1hVJ
+ M83Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc:content-transfer-encoding;
+ bh=+8nfoKR15NmxwB0eviFINMK7mfZ/bWjSvXOrhjIWgPw=;
+ b=VkORWSeMy8JbSkJ6/3CWQ/SXEl3RWBAaZkjdSkiWXINPnAdXx7iL4gHNk+SBCbeD3u
+ ACdDY0X3jZx2+9gg0U+ccUwruskF0OWB5RybDsbhwbs4NpSE1u9vHN5HLxNotL0JAukt
+ vZbW6TkJSwli8O5Yrfrktmf6IaAf+2vIl1RZF+TXcNhu/iJLlKG+qAnljeIDjv3O2QoD
+ onWoRLTytyAE/zz+i4T157w/oOp22X1MrGYEgIkUI1VnUyEupQepNY3zhXF5W8SGz7ps
+ q8HBqD2tsr/x4tEjzGH8Xa8dnAvhM/oxJWIzLJtagkRgeKHVG0UG1xTj/47k1pXXbUpW
+ E8AQ==
+X-Gm-Message-State: ANhLgQ1Baq9XNd6zbXXib4cIWdlh8AW7Wege9DTGhdy0vsQpzrfmx9sf
+ /iKxy2LRiXQclMrmuApcCjDQz0PrheOmYHCBQBRyCw==
+X-Google-Smtp-Source: ADFU+vvxBj3MBEqz5EKGoBOP9Q8Qnffyo4RLmccwHWhZAvKECUrDC084nmiZgFmtaJWkabRCBnu8WgzsenpBXgnwu2k=
+X-Received: by 2002:a54:4098:: with SMTP id i24mr9465oii.149.1583174537330;
+ Mon, 02 Mar 2020 10:42:17 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200229094159.25573-7-kjain@linux.ibm.com>
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.16
+References: <20200221032720.33893-1-alastair@au1.ibm.com>
+ <20200221032720.33893-16-alastair@au1.ibm.com>
+ <9e40ad40-6fa8-0fd2-a53a-8a3029a3639c@linux.ibm.com>
+In-Reply-To: <9e40ad40-6fa8-0fd2-a53a-8a3029a3639c@linux.ibm.com>
+From: Dan Williams <dan.j.williams@intel.com>
+Date: Mon, 2 Mar 2020 10:42:06 -0800
+Message-ID: <CAPcyv4gCCjQFnLaSpRPEuKoDq3gOHSxjxLT_=X3N_nr=2ZOcSA@mail.gmail.com>
+Subject: Re: [PATCH v3 15/27] powerpc/powernv/pmem: Add support for near
+ storage commands
+To: Frederic Barrat <fbarrat@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,182 +91,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, maddy@linux.vnet.ibm.com, peterz@infradead.org,
- yao.jin@linux.intel.com, mingo@kernel.org, kan.liang@linux.intel.com,
- ak@linux.intel.com, alexander.shishkin@linux.intel.com,
- anju@linux.vnet.ibm.com, mamatha4@linux.vnet.ibm.com,
- sukadev@linux.vnet.ibm.com, ravi.bangoria@linux.ibm.com, acme@kernel.org,
- jmario@redhat.com, namhyung@kernel.org, tglx@linutronix.de, mpetlan@redhat.com,
- gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
- linux-perf-users@vger.kernel.org, jolsa@kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Oliver O'Halloran <oohall@gmail.com>,
+ Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
+ Ira Weiny <ira.weiny@intel.com>, Rob Herring <robh@kernel.org>,
+ Dave Jiang <dave.jiang@intel.com>, linux-nvdimm <linux-nvdimm@lists.01.org>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ Krzysztof Kozlowski <krzk@kernel.org>,
+ Anju T Sudhakar <anju@linux.vnet.ibm.com>, alastair@d-silva.org,
+ Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kurz <groug@kaod.org>, Nicholas Piggin <npiggin@gmail.com>,
+ =?UTF-8?Q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Hari Bathini <hbathini@linux.ibm.com>,
+ Alastair D'Silva <alastair@au1.ibm.com>, Linux MM <linux-mm@kvack.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Vishal Verma <vishal.l.verma@intel.com>, Paul Mackerras <paulus@samba.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Feb 29, 2020 at 03:11:57PM +0530, Kajol Jain wrote:
+On Mon, Mar 2, 2020 at 9:59 AM Frederic Barrat <fbarrat@linux.ibm.com> wrot=
+e:
+>
+>
+>
+> Le 21/02/2020 =C3=A0 04:27, Alastair D'Silva a =C3=A9crit :
+> > From: Alastair D'Silva <alastair@d-silva.org>
+> >
+> > Similar to the previous patch, this adds support for near storage comma=
+nds.
+> >
+> > Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+> > ---
+>
+>
+> Is any of these new functions ever called?
 
-SNIP
-
-> diff --git a/tools/perf/util/metricgroup.c b/tools/perf/util/metricgroup.c
-> index 02aee946b6c1..f629828cc0de 100644
-> --- a/tools/perf/util/metricgroup.c
-> +++ b/tools/perf/util/metricgroup.c
-> @@ -399,6 +399,11 @@ void metricgroup__print(bool metrics, bool metricgroups, char *filter,
->  	strlist__delete(metriclist);
->  }
->  
-> +int __weak arch_get_runtimeparam(void)
-> +{
-> +	return 1;
-> +}
-> +
->  static int metricgroup__add_metric(const char *metric, struct strbuf *events,
->  				   struct list_head *group_list)
->  {
-> @@ -419,52 +424,77 @@ static int metricgroup__add_metric(const char *metric, struct strbuf *events,
->  			continue;
->  		if (match_metric(pe->metric_group, metric) ||
->  		    match_metric(pe->metric_name, metric)) {
-> -			const char **ids;
-> -			int idnum;
-> -			struct egroup *eg;
-> -			bool no_group = false;
-> +			int k, count;
-
-two things in here.. there's already ack-ed patchset from Kan Liang:
-  Support metric group constraint
-    >[PATCH V2 2/5] perf metricgroup: Factor out metricgroup__add_metric_weak_group()
-
-that's changing this place, so you might want to synchronize with that
-
-
-> +
-> +			if (strstr(pe->metric_expr, "?"))
-> +				count = arch_get_runtimeparam();
-> +			else
-> +				count = 1;
-> +
-> +			/* This loop is added to create multiple
-> +			 * events depend on count value and add
-> +			 * those events to group_list.
-> +			 */
-> +			for (k = 0; k < count; k++) {
-> +				const char **ids;
-> +				int idnum;
-> +				struct egroup *eg;
-> +				bool no_group = false;
-> +				char value[PATH_MAX];
-> +
-> +				pr_debug("metric expr %s for %s\n",
-> +					 pe->metric_expr, pe->metric_name);
-> +				expr__runtimeparam = k;
-
-the other thing is that I don't really follow what's going on in here
-
-you're setting expr__runtimeparam to the loop index,
-which you get from some arch related file
-
-we should do this in arch-specific way.. I think that Kan's change is
-already moving some bits into separate function and that should make
-all this more readable, but perhaps we might need more, so all the
-'repeating' code will be in a function
-
-please either separate this to arch code, or make it understandable
-for people from other archs ;-)
-
-jirka
-
-> +				if (expr__find_other(pe->metric_expr, NULL,
-> +						     &ids, &idnum) < 0)
-> +					continue;
-> +				if (events->len > 0)
-> +					strbuf_addf(events, ",");
-> +				for (j = 0; j < idnum; j++) {
-> +					pr_debug("found event %s\n", ids[j]);
-> +					/*
-> +					 * Duration time maps to a software
-> +					 * event and can make groups not count.
-> +					 * Always use it outside a group.
-> +					 */
-> +					if (!strcmp(ids[j], "duration_time")) {
-> +						if (j > 0)
-> +							strbuf_addf(events,
-> +								    "}:W,");
-> +						strbuf_addf(events,
-> +							    "duration_time");
-> +						no_group = true;
-> +						continue;
-> +					}
-> +					strbuf_addf(events, "%s%s",
-> +						    j == 0 || no_group ? "{" :
-> +						    ",", ids[j]);
-> +					no_group = false;
-> +				}
-> +				if (!no_group)
-> +					strbuf_addf(events, "}:W");
->  
-> -			pr_debug("metric expr %s for %s\n", pe->metric_expr, pe->metric_name);
-> +				eg = malloc(sizeof(struct egroup));
-> +				if (!eg) {
-> +					ret = -ENOMEM;
-> +					break;
-> +				}
-> +				eg->ids = ids;
-> +				eg->idnum = idnum;
->  
-> -			if (expr__find_other(pe->metric_expr,
-> -					     NULL, &ids, &idnum) < 0)
-> -				continue;
-> -			if (events->len > 0)
-> -				strbuf_addf(events, ",");
-> -			for (j = 0; j < idnum; j++) {
-> -				pr_debug("found event %s\n", ids[j]);
-> -				/*
-> -				 * Duration time maps to a software event and can make
-> -				 * groups not count. Always use it outside a
-> -				 * group.
-> -				 */
-> -				if (!strcmp(ids[j], "duration_time")) {
-> -					if (j > 0)
-> -						strbuf_addf(events, "}:W,");
-> -					strbuf_addf(events, "duration_time");
-> -					no_group = true;
-> -					continue;
-> +				if (strstr(pe->metric_expr, "?")) {
-> +					sprintf(value, "%s%c%d",
-> +						pe->metric_name, '_', k);
-> +				} else {
-> +					strcpy(value, pe->metric_name);
->  				}
-> -				strbuf_addf(events, "%s%s",
-> -					j == 0 || no_group ? "{" : ",",
-> -					ids[j]);
-> -				no_group = false;
-> -			}
-> -			if (!no_group)
-> -				strbuf_addf(events, "}:W");
->  
-> -			eg = malloc(sizeof(struct egroup));
-> -			if (!eg) {
-> -				ret = -ENOMEM;
-> -				break;
-> +				eg->metric_name = strdup(value);
-> +				eg->metric_expr = pe->metric_expr;
-> +				eg->metric_unit = pe->unit;
-> +				list_add_tail(&eg->nd, group_list);
-> +				ret = 0;
->  			}
-> -			eg->ids = ids;
-> -			eg->idnum = idnum;
-> -			eg->metric_name = pe->metric_name;
-> -			eg->metric_expr = pe->metric_expr;
-> -			eg->metric_unit = pe->unit;
-> -			list_add_tail(&eg->nd, group_list);
-> -			ret = 0;
->  		}
->  	}
->  	return ret;
-
-SNIP
-
+This is my concern as well. The libnvdimm command support is limited
+to the commands that Linux will use. Other passthrough commands are
+supported through a passthrough interface. However, that passthrough
+interface is explicitly limited to publicly documented command sets so
+that the kernel has an opportunity to constrain and consolidate
+command implementations across vendors.
