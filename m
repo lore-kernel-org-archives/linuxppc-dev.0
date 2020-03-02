@@ -5,19 +5,19 @@ X-Spam-Level:
 X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 32255C3F2D1
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 15:41:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 839E4C3F2D7
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 15:44:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D83C2217F4
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 15:41:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D83C2217F4
+	by mail.kernel.org (Postfix) with ESMTPS id E268D21D56
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2020 15:43:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E268D21D56
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48WPWG4rhgzDqZl
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2020 02:41:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48WPZN2BL5zDqZT
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2020 02:43:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=srs0=dop8=4t=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
@@ -27,13 +27,13 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48WPTB4X9tzDqNf
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Mar 2020 02:39:26 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48WPVC4PjPzDqZk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Mar 2020 02:40:19 +1100 (AEDT)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 199471] [Bisected][Regression] windfarm_pm* no longer gets
  automatically loaded when CONFIG_I2C_POWERMAC=y is set
-Date: Mon, 02 Mar 2020 15:39:23 +0000
+Date: Mon, 02 Mar 2020 15:40:17 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
@@ -48,8 +48,8 @@ X-Bugzilla-Resolution:
 X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-199471-206035-CCXJtm2rGj@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: attachments.created
+Message-ID: <bug-199471-206035-fPAhjkXa5Z@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-199471-206035@https.bugzilla.kernel.org/>
 References: <bug-199471-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -74,38 +74,10 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D199471
 
---- Comment #17 from Erhard F. (erhard_f@mailbox.org) ---
-(In reply to Wolfram Sang from comment #16)
-> Created attachment 287755 [details]
-> proof-of-concept patch for testing
->=20
-> Here is the promised patch. I converted all I2C MODULE tables. pm72 didn't
-> have one, so we will see what pulls it in.
->=20
-> A test with a machine needing the lm75 driver would be great. Because some
-> code change was needed there.
-Excellent! Applied your patch on 5.6-rc4 and it just works fine on my G5 11=
-,2!
-I can leave CONFIG_WINDFARM=3Dm and the correct modules get pulled in just =
-as it
-was before kernel 4.17.
-
-I can't test on the G5 7,3 from my original bug report 'cause I sold this o=
-ne.
-But from my understanding this "lm75" sensor is used in pretty any windfarm=
-_pm*
-module?
- # grep -i lm75 drivers/macintosh/windfarm_pm*.c
-drivers/macintosh/windfarm_pm112.c:     request_module("windfarm_lm75_senso=
-r");
-drivers/macintosh/windfarm_pm121.c:=20=20=20=20=20=20=20=20=20=20=20=20
-request_module("windfarm_lm75_sensor");
-drivers/macintosh/windfarm_pm72.c:      request_module("windfarm_lm75_senso=
-r");
-drivers/macintosh/windfarm_pm81.c:=20=20=20=20=20=20=20=20=20=20=20=20=20
-request_module("windfarm_lm75_sensor");
-drivers/macintosh/windfarm_pm91.c:=20=20=20=20=20=20=20=20=20=20=20=20=20
-request_module("windfarm_lm75_sensor");
+--- Comment #18 from Erhard F. (erhard_f@mailbox.org) ---
+Created attachment 287757
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D287757&action=3Dedit
+dmesg (kernel 5.6-rc4 + patch, PowerMac G5 11,2)
 
 --=20
 You are receiving this mail because:
