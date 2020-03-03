@@ -2,65 +2,86 @@ Return-Path: <SRS0=Civx=4U=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DFD75C3F2C6
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2020 08:53:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F769C3F2CD
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2020 09:01:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5AD1C20842
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2020 08:53:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B032420842
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2020 09:01:34 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="eEDuts2C"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5AD1C20842
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
+	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="ZVzy7pg/"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B032420842
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48WrPn0qwDzDqYq
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2020 19:53:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linuxfoundation.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 48Wrbc5ntszDqXd
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2020 20:01:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=eEDuts2C; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
+ header.s=mail header.b=ZVzy7pg/; dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48WrMB5kPnzDqC0
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Mar 2020 19:50:44 +1100 (AEDT)
-Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
- [83.86.89.107])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id E5FA920873;
- Tue,  3 Mar 2020 08:50:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1583225442;
- bh=eR6LH6mxRiiMpd/1mg6HONvlCCBV3PmOyYycLqHqkdw=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=eEDuts2CyWKxUkuRazmkCwT4hZjsAxqrHnv14Uf/LNboVoyo0q8uTK5wcmrqOiCfz
- d64lQUTg3g5FM9OQUp2chBDAGhbLXbHoANW6G9t4HWgZx/OQxWiIuJky8Iqwupvt4Q
- ex517U3FK6IIxONywHvdH+C/N1tSRCy/KDMqPNys=
-Date: Tue, 3 Mar 2020 09:50:39 +0100
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 2/6] powerpc: kvm: no need to check return value of
- debugfs_create functions
-Message-ID: <20200303085039.GA1323622@kroah.com>
-References: <20200209105901.1620958-1-gregkh@linuxfoundation.org>
- <20200209105901.1620958-2-gregkh@linuxfoundation.org>
- <87imjlswxc.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48WrYV0T0bzDqMx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Mar 2020 19:59:41 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 48WrYM44cWz9txZT;
+ Tue,  3 Mar 2020 09:59:35 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=ZVzy7pg/; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id FrUTaAzeZjFb; Tue,  3 Mar 2020 09:59:35 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 48WrYM2KgFz9txZS;
+ Tue,  3 Mar 2020 09:59:35 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1583225975; bh=0L++rQNOyOX2RddDfCYMG2qzx/vV9crQ/cfo3VeGzfg=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=ZVzy7pg/L8fYkbRPrmDrcX/BAYqB6gqtgOrkG28Ea3kgN+dSD8SLT2M6ucSJXnw0l
+ /3Dtm1C02MddqetTTT73+qvZbDhyGRsq7I94k/zB076YvJV+nsIQG477tGp1vsKou7
+ 6bDiG/ItO4tWp5UbSjoiCnbGrZrx92aSuYYVYCtM=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4AE8B8B7E8;
+ Tue,  3 Mar 2020 09:59:36 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id FSGT-1GJCZt8; Tue,  3 Mar 2020 09:59:36 +0100 (CET)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 90FAD8B755;
+ Tue,  3 Mar 2020 09:59:35 +0100 (CET)
+Subject: Re: [PATCH v2 -next] powerpc/pmac/smp: drop unnecessary volatile
+ qualifier
+To: YueHaibing <yuehaibing@huawei.com>, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au
+References: <20191225114943.17216-1-yuehaibing@huawei.com>
+ <20200303085604.24952-1-yuehaibing@huawei.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <0e2ed3d6-7f16-736e-9392-a326e8c89113@c-s.fr>
+Date: Tue, 3 Mar 2020 09:59:32 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
+ Thunderbird/68.5.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87imjlswxc.fsf@mpe.ellerman.id.au>
+In-Reply-To: <20200303085604.24952-1-yuehaibing@huawei.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,108 +93,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kvm-ppc@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Mar 03, 2020 at 06:46:23PM +1100, Michael Ellerman wrote:
-> Greg Kroah-Hartman <gregkh@linuxfoundation.org> writes:
-> > When calling debugfs functions, there is no need to ever check the
-> > return value.  The function can work or not, but the code logic should
-> > never do something different based on this.
-> 
-> Except it does need to do something different, if the file was created
-> it needs to be removed in the remove path.
-> 
-> > diff --git a/arch/powerpc/kvm/timing.c b/arch/powerpc/kvm/timing.c
-> > index bfe4f106cffc..8e4791c6f2af 100644
-> > --- a/arch/powerpc/kvm/timing.c
-> > +++ b/arch/powerpc/kvm/timing.c
-> > @@ -207,19 +207,12 @@ static const struct file_operations kvmppc_exit_timing_fops = {
-> >  void kvmppc_create_vcpu_debugfs(struct kvm_vcpu *vcpu, unsigned int id)
-> >  {
-> >  	static char dbg_fname[50];
-> > -	struct dentry *debugfs_file;
-> >  
-> >  	snprintf(dbg_fname, sizeof(dbg_fname), "vm%u_vcpu%u_timing",
-> >  		 current->pid, id);
-> > -	debugfs_file = debugfs_create_file(dbg_fname, 0666,
-> > -					kvm_debugfs_dir, vcpu,
-> > -					&kvmppc_exit_timing_fops);
-> > -
-> > -	if (!debugfs_file) {
-> > -		printk(KERN_ERR"%s: error creating debugfs file %s\n",
-> > -			__func__, dbg_fname);
-> > -		return;
-> > -	}
-> > +	debugfs_create_file(dbg_fname, 0666, kvm_debugfs_dir, vcpu,
-> > +			    &kvmppc_exit_timing_fops);
-> > +
-> >  
-> >  	vcpu->arch.debugfs_exit_timing = debugfs_file;
 
-Ugh, you are right, how did I miss that?  How is 0-day missing this?
-It's been in my tree for a long time, odd.
 
-> >  }
+Le 03/03/2020 à 09:56, YueHaibing a écrit :
+> core99_l2_cache/core99_l3_cache no need to mark as volatile,
+> just remove it.
 > 
-> This doesn't build:
-> 
->     arch/powerpc/kvm/timing.c:217:35: error: 'debugfs_file' undeclared (first use in this function); did you mean 'debugfs_file_put'?
-> 
-> We can't just drop the assignment, we need the dentry to do the removal:
-> 
-> void kvmppc_remove_vcpu_debugfs(struct kvm_vcpu *vcpu)
-> {
-> 	if (vcpu->arch.debugfs_exit_timing) {
-> 		debugfs_remove(vcpu->arch.debugfs_exit_timing);
-> 		vcpu->arch.debugfs_exit_timing = NULL;
-> 	}
-> }
-> 
-> 
-> I squashed this in, which seems to work:
-> 
-> diff --git a/arch/powerpc/kvm/timing.c b/arch/powerpc/kvm/timing.c
-> index 8e4791c6f2af..5b7a66f86bd5 100644
-> --- a/arch/powerpc/kvm/timing.c
-> +++ b/arch/powerpc/kvm/timing.c
-> @@ -207,19 +207,19 @@ static const struct file_operations kvmppc_exit_timing_fops = {
->  void kvmppc_create_vcpu_debugfs(struct kvm_vcpu *vcpu, unsigned int id)
->  {
->         static char dbg_fname[50];
-> +       struct dentry *debugfs_file;
->  
->         snprintf(dbg_fname, sizeof(dbg_fname), "vm%u_vcpu%u_timing",
->                  current->pid, id);
-> -       debugfs_create_file(dbg_fname, 0666, kvm_debugfs_dir, vcpu,
-> -                           &kvmppc_exit_timing_fops);
-> -
-> +       debugfs_file = debugfs_create_file(dbg_fname, 0666, kvm_debugfs_dir,
-> +                                          vcpu, &kvmppc_exit_timing_fops);
->  
->         vcpu->arch.debugfs_exit_timing = debugfs_file;
+> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 
-That works, yes.
+Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
->  }
->  
->  void kvmppc_remove_vcpu_debugfs(struct kvm_vcpu *vcpu)
->  {
-> -       if (vcpu->arch.debugfs_exit_timing) {
-> +       if (!IS_ERR_OR_NULL(vcpu->arch.debugfs_exit_timing)) {
->                 debugfs_remove(vcpu->arch.debugfs_exit_timing);
->                 vcpu->arch.debugfs_exit_timing = NULL;
->         }
-
-No, this can just be:
-	debugfs_remove(vcpu->arch.debugfs_exit_timing);
-
-No need to check anything, just call it and the debugfs code can handle
-it just fine.
-
-thanks,
-
-greg k-h
+> ---
+> v2: remove 'volatile' qualifier
+> ---
+>   arch/powerpc/platforms/powermac/smp.c | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/powermac/smp.c b/arch/powerpc/platforms/powermac/smp.c
+> index f95fbde..69ad567 100644
+> --- a/arch/powerpc/platforms/powermac/smp.c
+> +++ b/arch/powerpc/platforms/powermac/smp.c
+> @@ -661,8 +661,8 @@ static void smp_core99_gpio_tb_freeze(int freeze)
+>   #endif /* !CONFIG_PPC64 */
+>   
+>   /* L2 and L3 cache settings to pass from CPU0 to CPU1 on G4 cpus */
+> -volatile static long int core99_l2_cache;
+> -volatile static long int core99_l3_cache;
+> +static long core99_l2_cache;
+> +static long core99_l3_cache;
+>   
+>   static void core99_init_caches(int cpu)
+>   {
+> 
