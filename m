@@ -2,85 +2,58 @@ Return-Path: <SRS0=Civx=4U=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3EC7C3F2D1
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2020 01:29:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 794DDC3F2CD
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2020 01:35:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4371324673
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2020 01:29:49 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="buAZSDJA"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4371324673
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3270A24673
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2020 01:35:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3270A24673
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48WfZL6RXjzDqfv
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2020 12:29:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1043;
- helo=mail-pj1-x1043.google.com; envelope-from=npiggin@gmail.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48WfhW67dBzDqTk
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2020 12:35:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=buAZSDJA; dkim-atps=neutral
-Received: from mail-pj1-x1043.google.com (mail-pj1-x1043.google.com
- [IPv6:2607:f8b0:4864:20::1043])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=none (no SPF record) smtp.mailfrom=linux.intel.com
+ (client-ip=134.134.136.126; helo=mga18.intel.com;
+ envelope-from=ak@linux.intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.intel.com
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48WfXK2jMJzDqXZ
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Mar 2020 12:28:01 +1100 (AEDT)
-Received: by mail-pj1-x1043.google.com with SMTP id m7so525268pjs.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Mar 2020 17:28:01 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=ZVj2X/81WCTpFsIK2e8dqnIoQY3Y8oBDa4zdgXAM5a4=;
- b=buAZSDJAbWamKExrpVAVltCzA//Efs87pEt632H0VfIfloJPHjzQ9ac6hSOBCs/ode
- Fo0Yfdes9v6ChA+w7Cbe/XLCcZoTEpvYtVyv7SW1P+fPaKxagRW3UL3jGlBEVoxCZPfF
- tsy9ILpVI+N4jj9Iv6CbDO6ujl2pMktmnnez/c9ageHjR5UKrgl8sdDtMuPPBvdvfdvb
- O7U3d6vcLisH5TTo0kaoMkdK1y1AGVQQgkn6GpNOvLrK6Rl1iFCdIxdkYp1LHRKabqwr
- bzCOLnY5kCXgytgG7grqPhPq7SJVERp3HLsw+Eard/0DVX0wETFg+f5NHEHZklv0Tdrq
- WJJg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=ZVj2X/81WCTpFsIK2e8dqnIoQY3Y8oBDa4zdgXAM5a4=;
- b=EiA3/0my4h6rD2zU5C6LhKmjeJgvxRFtyovnV/xzynZ0FqKUT23twAAme7YlAHsYfE
- 9k4HvzVRM9CT3zy1w7CR+6lup/gBiVGBBByrvTnxktdrZvEQDHLMz5zNiCQn4kUHR6O5
- YNRQhcEA577siVFtAzuA5HYU4b3VYsnGC+Lwk+1xQlrp1/rvgzGvyxcJleKAmVCk1hVI
- FUdXZqhOkWc8ZyfQSakeoqiP1vvIjfC0ILrVyfFQJFngLkJi0I7RqEK0eoq5IcUAdFon
- iffP9Gz01cBlNsiF9fJUOibcCYYI/5NZewltzcODxAeV1MRml5F0OEqvlnZa6rn9bHH1
- gRAQ==
-X-Gm-Message-State: ANhLgQ1b0CCcC3O6ShzhoT1DB4cruQJVaODRudwgIqBvGt2gIJ/FolNd
- K5jttMCsNquGfcCM02yc6QlbHzAb
-X-Google-Smtp-Source: ADFU+vswYhO704DVICorzZ6A+LQuqDJrinCp8y0Gvd7f81xVCOXOmoJyF1s/slaK2WVNmFMCUqIMPg==
-X-Received: by 2002:a17:90a:9416:: with SMTP id
- r22mr1432734pjo.2.1583198877133; 
- Mon, 02 Mar 2020 17:27:57 -0800 (PST)
-Received: from bobo.ozlabs.ibm.com (193-116-117-248.tpgi.com.au.
- [193.116.117.248])
- by smtp.gmail.com with ESMTPSA id md5sm349141pjb.0.2020.03.02.17.27.55
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 02 Mar 2020 17:27:56 -0800 (PST)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/build: vdso linker warning for orphan sections
-Date: Tue,  3 Mar 2020 11:27:48 +1000
-Message-Id: <20200303012748.4190929-1-npiggin@gmail.com>
-X-Mailer: git-send-email 2.23.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48Wffp04vJzDqZG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Mar 2020 12:33:33 +1100 (AEDT)
+X-Amp-Result: UNKNOWN
+X-Amp-Original-Verdict: FILE UNKNOWN
+X-Amp-File-Uploaded: False
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+ by orsmga106.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 02 Mar 2020 17:33:29 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.70,509,1574150400"; d="scan'208";a="233416585"
+Received: from tassilo.jf.intel.com (HELO tassilo.localdomain) ([10.7.201.21])
+ by orsmga008.jf.intel.com with ESMTP; 02 Mar 2020 17:33:29 -0800
+Received: by tassilo.localdomain (Postfix, from userid 1000)
+ id 899533011B1; Mon,  2 Mar 2020 17:33:29 -0800 (PST)
+Date: Mon, 2 Mar 2020 17:33:29 -0800
+From: Andi Kleen <ak@linux.intel.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC 00/11] perf: Enhancing perf to export processor hazard
+ information
+Message-ID: <20200303013329.GB1319864@tassilo.jf.intel.com>
+References: <20200302052355.36365-1-ravi.bangoria@linux.ibm.com>
+ <20200302101332.GS18400@hirez.programming.kicks-ass.net>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200302101332.GS18400@hirez.programming.kicks-ass.net>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,78 +65,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: mark.rutland@arm.com, Ravi Bangoria <ravi.bangoria@linux.ibm.com>,
+ maddy@linux.ibm.com, alexander.shishkin@linux.intel.com, jolsa@redhat.com,
+ linux-kernel@vger.kernel.org, eranian@google.com, adrian.hunter@intel.com,
+ robert.richter@amd.com, yao.jin@linux.intel.com, mingo@redhat.com,
+ paulus@samba.org, acme@kernel.org, namhyung@kernel.org, kim.phillips@amd.com,
+ linuxppc-dev@lists.ozlabs.org, alexey.budankov@linux.intel.com,
+ kan.liang@linux.intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kernel/vdso32/Makefile     | 2 +-
- arch/powerpc/kernel/vdso32/vdso32.lds.S | 1 +
- arch/powerpc/kernel/vdso64/Makefile     | 2 +-
- arch/powerpc/kernel/vdso64/vdso64.lds.S | 3 ++-
- 4 files changed, 5 insertions(+), 3 deletions(-)
+On Mon, Mar 02, 2020 at 11:13:32AM +0100, Peter Zijlstra wrote:
+> On Mon, Mar 02, 2020 at 10:53:44AM +0530, Ravi Bangoria wrote:
+> > Modern processors export such hazard data in Performance
+> > Monitoring Unit (PMU) registers. Ex, 'Sampled Instruction Event
+> > Register' on IBM PowerPC[1][2] and 'Instruction-Based Sampling' on
+> > AMD[3] provides similar information.
+> > 
+> > Implementation detail:
+> > 
+> > A new sample_type called PERF_SAMPLE_PIPELINE_HAZ is introduced.
+> > If it's set, kernel converts arch specific hazard information
+> > into generic format:
+> > 
+> >   struct perf_pipeline_haz_data {
+> >          /* Instruction/Opcode type: Load, Store, Branch .... */
+> >          __u8    itype;
+> >          /* Instruction Cache source */
+> >          __u8    icache;
+> >          /* Instruction suffered hazard in pipeline stage */
+> >          __u8    hazard_stage;
+> >          /* Hazard reason */
+> >          __u8    hazard_reason;
+> >          /* Instruction suffered stall in pipeline stage */
+> >          __u8    stall_stage;
+> >          /* Stall reason */
+> >          __u8    stall_reason;
+> >          __u16   pad;
+> >   };
+> 
+> Kim, does this format indeed work for AMD IBS?
 
-diff --git a/arch/powerpc/kernel/vdso32/Makefile b/arch/powerpc/kernel/vdso32/Makefile
-index e147bbdc12cd..87ab1152d5ce 100644
---- a/arch/powerpc/kernel/vdso32/Makefile
-+++ b/arch/powerpc/kernel/vdso32/Makefile
-@@ -50,7 +50,7 @@ $(obj-vdso32): %.o: %.S FORCE
- 
- # actual build commands
- quiet_cmd_vdso32ld = VDSO32L $@
--      cmd_vdso32ld = $(VDSOCC) $(c_flags) $(CC32FLAGS) -o $@ -Wl,-T$(filter %.lds,$^) $(filter %.o,$^)
-+      cmd_vdso32ld = $(VDSOCC) $(c_flags) $(CC32FLAGS) -o $@ $(call cc-ldoption, -Wl$(comma)--orphan-handling=warn) -Wl,-T$(filter %.lds,$^) $(filter %.o,$^)
- quiet_cmd_vdso32as = VDSO32A $@
-       cmd_vdso32as = $(VDSOCC) $(a_flags) $(CC32FLAGS) -c -o $@ $<
- 
-diff --git a/arch/powerpc/kernel/vdso32/vdso32.lds.S b/arch/powerpc/kernel/vdso32/vdso32.lds.S
-index 5206c2eb2a1d..4c985467a668 100644
---- a/arch/powerpc/kernel/vdso32/vdso32.lds.S
-+++ b/arch/powerpc/kernel/vdso32/vdso32.lds.S
-@@ -111,6 +111,7 @@ SECTIONS
- 		*(.note.GNU-stack)
- 		*(.data .data.* .gnu.linkonce.d.* .sdata*)
- 		*(.bss .sbss .dynbss .dynsbss)
-+		*(.glink .iplt .plt .rela*)
- 	}
- }
- 
-diff --git a/arch/powerpc/kernel/vdso64/Makefile b/arch/powerpc/kernel/vdso64/Makefile
-index 32ebb3522ea1..38c317f25141 100644
---- a/arch/powerpc/kernel/vdso64/Makefile
-+++ b/arch/powerpc/kernel/vdso64/Makefile
-@@ -34,7 +34,7 @@ $(obj)/%.so: $(obj)/%.so.dbg FORCE
- 
- # actual build commands
- quiet_cmd_vdso64ld = VDSO64L $@
--      cmd_vdso64ld = $(CC) $(c_flags) -o $@ -Wl,-T$(filter %.lds,$^) $(filter %.o,$^)
-+      cmd_vdso64ld = $(CC) $(c_flags) -o $@ -Wl,-T$(filter %.lds,$^) $(filter %.o,$^) $(call cc-ldoption, -Wl$(comma)--orphan-handling=warn)
- 
- # install commands for the unstripped file
- quiet_cmd_vdso_install = INSTALL $@
-diff --git a/arch/powerpc/kernel/vdso64/vdso64.lds.S b/arch/powerpc/kernel/vdso64/vdso64.lds.S
-index 256fb9720298..4e3a8d4ee614 100644
---- a/arch/powerpc/kernel/vdso64/vdso64.lds.S
-+++ b/arch/powerpc/kernel/vdso64/vdso64.lds.S
-@@ -30,7 +30,7 @@ SECTIONS
- 	. = ALIGN(16);
- 	.text		: {
- 		*(.text .stub .text.* .gnu.linkonce.t.* __ftr_alt_*)
--		*(.sfpr .glink)
-+		*(.sfpr)
- 	}						:text
- 	PROVIDE(__etext = .);
- 	PROVIDE(_etext = .);
-@@ -111,6 +111,7 @@ SECTIONS
- 		*(.branch_lt)
- 		*(.data .data.* .gnu.linkonce.d.* .sdata*)
- 		*(.bss .sbss .dynbss .dynsbss)
-+		*(.glink .iplt .plt .rela*)
- 	}
- }
- 
--- 
-2.23.0
+Intel PEBS has a similar concept for annotation of memory accesses,
+which is already exported through perf_mem_data_src. This is essentially
+an extension. It would be better to have something unified here. 
+Right now it seems to duplicate at least part of the PEBS facility.
+
+-Andi
 
