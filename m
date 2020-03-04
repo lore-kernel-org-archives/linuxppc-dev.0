@@ -2,63 +2,86 @@ Return-Path: <SRS0=d5Dh=4V=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02AA1C3F2CD
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 11:11:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 381D5C3F2D1
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 11:31:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B3F8E20709
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 11:11:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B3F8E20709
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 8904D20848
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 11:31:37 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=lca.pw header.i=@lca.pw header.b="qUya1I+I"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8904D20848
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lca.pw
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48XWRT5pLHzDqcL
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 22:11:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=46.105.43.93; helo=6.mo173.mail-out.ovh.net;
- envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48XWtH1wgfzDqRm
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 22:31:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 135450 seconds by postgrey-1.36 at bilbo;
- Wed, 04 Mar 2020 22:09:56 AEDT
-Received: from 6.mo173.mail-out.ovh.net (6.mo173.mail-out.ovh.net
- [46.105.43.93])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (sender SPF authorized) smtp.mailfrom=lca.pw
+ (client-ip=2607:f8b0:4864:20::744; helo=mail-qk1-x744.google.com;
+ envelope-from=cai@lca.pw; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=lca.pw
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=lca.pw header.i=@lca.pw header.a=rsa-sha256
+ header.s=google header.b=qUya1I+I; dkim-atps=neutral
+Received: from mail-qk1-x744.google.com (mail-qk1-x744.google.com
+ [IPv6:2607:f8b0:4864:20::744])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48XWPJ4JDdzDq6y
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2020 22:09:53 +1100 (AEDT)
-Received: from player791.ha.ovh.net (unknown [10.108.54.87])
- by mo173.mail-out.ovh.net (Postfix) with ESMTP id 56AE312F2FC
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2020 12:00:11 +0100 (CET)
-Received: from kaod.org (lns-bzn-46-82-253-208-248.adsl.proxad.net
- [82.253.208.248]) (Authenticated sender: groug@kaod.org)
- by player791.ha.ovh.net (Postfix) with ESMTPSA id 61277FFD323D;
- Wed,  4 Mar 2020 10:59:54 +0000 (UTC)
-Date: Wed, 4 Mar 2020 11:59:48 +0100
-From: Greg Kurz <groug@kaod.org>
-To: Ram Pai <linuxram@us.ibm.com>
-Subject: Re: [RFC PATCH v1] powerpc/prom_init: disable XIVE in Secure VM.
-Message-ID: <20200304115948.7b2dfe10@bahia.home>
-In-Reply-To: <20200303185645.GB5416@oc0525413822.ibm.com>
-References: <1582962844-26333-1-git-send-email-linuxram@us.ibm.com>
- <20200302233240.GB35885@umbus.fritz.box>
- <8f0c3d41-d1f9-7e6d-276b-b95238715979@fr.ibm.com>
- <20200303170205.GA5416@oc0525413822.ibm.com>
- <20200303184520.632be270@bahia.home>
- <20200303185645.GB5416@oc0525413822.ibm.com>
-X-Mailer: Claws Mail 3.17.4 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48XWqs12pVzDqJq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2020 22:29:28 +1100 (AEDT)
+Received: by mail-qk1-x744.google.com with SMTP id e11so1167161qkg.9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2020 03:29:28 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lca.pw; s=google;
+ h=content-transfer-encoding:from:mime-version:subject:date:message-id
+ :references:cc:in-reply-to:to;
+ bh=Jx+iSwpjH1MMUgtvqiqrwQ2sYugCQ9UmLyXay35eB1Q=;
+ b=qUya1I+ID7bIC0Bkj4Q0zp0EdHdSdO6ykJWvMXw4HKDFjWyXV8ds3Bs9MArm+vdQdc
+ RpunjqglWR6mGJe2Lv7g9advYS1SvRo9LA3gCW5QqI/AMIgsHiHRUFAsdYeij2rtzyTk
+ sNSh4wHESGW+6lSzw7OKW4psbfNeqxjoimBZufpM/BoHmrYBRoQNs3Xc2GtPgWnsfXPf
+ igl3aC/5VPWbzpP3KfCNQ0wpC8Mh4VlwHq19u+9gw6f3Ulw8FCMZG8YCqNbscon2aj4Z
+ WYfZ5PGzedI3tG7vyVtTX+unDExTi5VMHoWYOeG+xlDzhECpmkCqkM7aufo6LUVMsIwj
+ NApA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:content-transfer-encoding:from:mime-version
+ :subject:date:message-id:references:cc:in-reply-to:to;
+ bh=Jx+iSwpjH1MMUgtvqiqrwQ2sYugCQ9UmLyXay35eB1Q=;
+ b=c0XNH1hQecxTTCs6df4fSvLh1WXKEWntahqjUvtR4/Q6KFG5SYOqrIBCsWn58+FALp
+ cxZYJkjWeoI+wbVBQzzga3M9VB9xt/9B5T9oykGrA/CMVxXzqXwVFuallDNPQOzA+W1c
+ X4Lgabz8MwzAPRiRDjcaARM7yH/uIjOoe6nPsIiXb5sXdYM4SJVIdWJwyONBXK2zdCDT
+ QfSXxPtV36AnaJwRqFT86p7RYz+dQF1dZ+8zbKWqRz6Y29V35rgwcDChxWxkFotRk1/f
+ WjmnokPuskIfRAd+y5IemJcI1Ju93YxVh6WUIFadN6zBnjIu+5o2b4EoXe+VMXNv38/P
+ 4wrg==
+X-Gm-Message-State: ANhLgQ2Yg6EjuIK+DQQ9Kze2uVd5PVaPeRZAC0tZ+s0QpbcalLEX1v1f
+ XtxuuLQj8fxnRhsK0iN1EbMpoQ==
+X-Google-Smtp-Source: ADFU+vsraAELUldtqJkt+JLHLEkp9XWZWryntOEccYsrwg70reKk2W+439zfYVSLClVswo3lxz5LLw==
+X-Received: by 2002:a37:6115:: with SMTP id v21mr2464683qkb.105.1583321365177; 
+ Wed, 04 Mar 2020 03:29:25 -0800 (PST)
+Received: from [192.168.1.183] (pool-71-184-117-43.bstnma.fios.verizon.net.
+ [71.184.117.43])
+ by smtp.gmail.com with ESMTPSA id u48sm85943qtc.79.2020.03.04.03.29.24
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Wed, 04 Mar 2020 03:29:24 -0800 (PST)
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: quoted-printable
-X-Ovh-Tracer-Id: 9960555004736149963
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedugedruddtkedgvddvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepfffhvffukfgjfhfogggtgfesthhqredtredtjeenucfhrhhomhepifhrvghgucfmuhhriicuoehgrhhouhhgsehkrghougdrohhrgheqnecukfhppedtrddtrddtrddtpdekvddrvdehfedrvddtkedrvdegkeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehplhgrhigvrhejledurdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomhepghhrohhugheskhgrohgurdhorhhgpdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrgh
+From: Qian Cai <cai@lca.pw>
+Mime-Version: 1.0 (1.0)
+Subject: Re: [PATCH V14] mm/debug: Add tests validating architecture page
+ table helpers
+Date: Wed, 4 Mar 2020 06:29:23 -0500
+Message-Id: <11F41980-97CF-411F-8120-41287DC1A382@lca.pw>
+References: <c022e863-0807-fab1-cd41-3c320381f448@c-s.fr>
+In-Reply-To: <c022e863-0807-fab1-cd41-3c320381f448@c-s.fr>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+X-Mailer: iPhone Mail (17D50)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,147 +93,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aik@ozlabs.ru, andmike@linux.ibm.com, kvm-ppc@vger.kernel.org,
- =?UTF-8?B?Q8OpZHJpYw==?= Le Goater <clg@fr.ibm.com>,
- sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- bauerman@linux.ibm.com, David Gibson <david@gibson.dropbear.id.au>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Linux Memory Management List <linux-mm@kvack.org>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ the arch/x86 maintainers <x86@kernel.org>, Mike Rapoport <rppt@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, linux-snps-arc@lists.infradead.org,
+ Vasily Gorbik <gor@linux.ibm.com>,
+ Anshuman Khandual <Anshuman.Khandual@arm.com>, Borislav Petkov <bp@alien8.de>,
+ Paul Walmsley <paul.walmsley@sifive.com>,
+ "Kirill A . Shutemov" <kirill@shutemov.name>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Vineet Gupta <vgupta@synopsys.com>, LKML <linux-kernel@vger.kernel.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 3 Mar 2020 10:56:45 -0800
-Ram Pai <linuxram@us.ibm.com> wrote:
 
-> On Tue, Mar 03, 2020 at 06:45:20PM +0100, Greg Kurz wrote:
-> > On Tue, 3 Mar 2020 09:02:05 -0800
-> > Ram Pai <linuxram@us.ibm.com> wrote:
-> >=20
-> > > On Tue, Mar 03, 2020 at 07:50:08AM +0100, C=C3=A9dric Le Goater wrote:
-> > > > On 3/3/20 12:32 AM, David Gibson wrote:
-> > > > > On Fri, Feb 28, 2020 at 11:54:04PM -0800, Ram Pai wrote:
-> > > > >> XIVE is not correctly enabled for Secure VM in the KVM Hyperviso=
-r yet.
-> > > > >>
-> > > > >> Hence Secure VM, must always default to XICS interrupt controlle=
-r.
-> > > > >>
-> > > > >> If XIVE is requested through kernel command line option "xive=3D=
-on",
-> > > > >> override and turn it off.
-> > > > >>
-> > > > >> If XIVE is the only supported platform interrupt controller; spe=
-cified
-> > > > >> through qemu option "ic-mode=3Dxive", simply abort. Otherwise de=
-fault to
-> > > > >> XICS.
-> > > > >=20
-> > > > > Uh... the discussion thread here seems to have gotten oddly off
-> > > > > track. =20
-> > > >=20
-> > > > There seem to be multiple issues. It is difficult to have a clear s=
-tatus.
-> > > >=20
-> > > > > So, to try to clean up some misunderstandings on both sides:
-> > > > >=20
-> > > > >   1) The guest is the main thing that knows that it will be in se=
-cure
-> > > > >      mode, so it's reasonable for it to conditionally use XIVE ba=
-sed
-> > > > >      on that
-> > > >=20
-> > > > FW support is required AFAIUI.
-> > > > >   2) The mechanism by which we do it here isn't quite right.  Her=
-e the
-> > > > >      guest is checking itself that the host only allows XIVE, but=
- we
-> > > > >      can't do XIVE and is panic()ing.  Instead, in the SVM case we
-> > > > >      should force support->xive to false, and send that in the CAS
-> > > > >      request to the host.  We expect the host to just terminate
-> > > > >      us because of the mismatch, but this will interact better wi=
-th
-> > > > >      host side options setting policy for panic states and the li=
-ke.
-> > > > >      Essentially an SVM kernel should behave like an old kernel w=
-ith
-> > > > >      no XIVE support at all, at least w.r.t. the CAS irq mode fla=
-gs.
-> > > >=20
-> > > > Yes. XIVE shouldn't be requested by the guest.
-> > >=20
-> > > 	Ok.
-> > >=20
-> > > > This is the last option=20
-> > > > I proposed but I thought there was some negotiation with the hyperv=
-isor
-> > > > which is not the case.=20
-> > > >=20
-> > > > >   3) Although there are means by which the hypervisor can kind of=
- know
-> > > > >      a guest is in secure mode, there's not really an "svm=3Don" =
-option
-> > > > >      on the host side.  For the most part secure mode is based on
-> > > > >      discussion directly between the guest and the ultravisor with
-> > > > >      almost no hypervisor intervention.
-> > > >=20
-> > > > Is there a negotiation with the ultravisor ?=20
-> > >=20
-> > > 	The VM has no negotiation with the ultravisor w.r.t CAS.
-> > >=20
-> > > >=20
-> > > > >   4) I'm guessing the problem with XIVE in SVM mode is that XIVE =
-needs
-> > > > >      to write to event queues in guest memory, which would have t=
-o be
-> > > > >      explicitly shared for secure mode.  That's true whether it's=
- KVM
-> > > > >      or qemu accessing the guest memory, so kernel_irqchip=3Don/o=
-ff is
-> > > > >      entirely irrelevant.
-> > > >=20
-> > > > This problem should be already fixed.
-> > > > The XIVE event queues are shared=20
-> > >  =09
-> > > Yes i have a patch for the guest kernel that shares the event=20
-> > > queue page with the hypervisor. This is done using the
-> > > UV_SHARE_PAGE ultracall. This patch is not sent out to any any mailing
-> > > lists yet.
-> >=20
-> > Why ?
+
+> On Mar 4, 2020, at 1:49 AM, Christophe Leroy <christophe.leroy@c-s.fr> wro=
+te:
 >=20
-> At this point I am not sure if this is the only change, I need to the
-> guest kernel.
+> AFAIU, you are not taking an interrupt here. You are stuck in the pte_upda=
+te(), most likely due to nested locks. Try with LOCKDEP ?
 
-Maybe but we're already sure that this change is needed. I don't really see
-the point in holding this any longer.
-
->  I also need changes to KVM and to the ultravisor. Its bit
-> premature to send the patch without having figured out everything
-> to get xive working on a Secure VM.
->=20
-
-I'm a bit confused... why did you send this workaround patch in
-the first place then ? I mean, this raises a concern and we're
-just trying to move forward.
-
-> >=20
-> > > However the patch by itself does not solve the xive problem
-> > > for secure VM.
-> > >=20
-> >=20
-> > This patch would allow at least to answer Cedric's question about
-> > kernel_irqchip=3Doff, since this looks like the only thing needed
-> > to make it work.
->=20
-> hmm.. I am not sure. Are you saying
-> (a) patch the guest kernel to share the event queue page
-> (b) run the qemu with "kernel_irqchip=3Doff"
-> (c) and the guest kernel with "svm=3Don"
->=20
-> and it should all work?
->=20
-
-Yes.
-
-> RP
->=20
-
+Not exactly sure what did you mean here, but the kernel has all lockdep enab=
+led and did not flag anything here.=
