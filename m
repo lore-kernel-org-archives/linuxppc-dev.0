@@ -2,86 +2,97 @@ Return-Path: <SRS0=d5Dh=4V=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 381D5C3F2D1
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 11:31:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E3371C3F2CD
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 12:38:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8904D20848
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 11:31:37 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=lca.pw header.i=@lca.pw header.b="qUya1I+I"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8904D20848
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lca.pw
+	by mail.kernel.org (Postfix) with ESMTPS id 63BAC20848
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 12:38:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 63BAC20848
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48XWtH1wgfzDqRm
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 22:31:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48XYMg2bwBzDqch
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 23:38:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=zohar@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=lca.pw
- (client-ip=2607:f8b0:4864:20::744; helo=mail-qk1-x744.google.com;
- envelope-from=cai@lca.pw; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lca.pw
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=lca.pw header.i=@lca.pw header.a=rsa-sha256
- header.s=google header.b=qUya1I+I; dkim-atps=neutral
-Received: from mail-qk1-x744.google.com (mail-qk1-x744.google.com
- [IPv6:2607:f8b0:4864:20::744])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48XWqs12pVzDqJq
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2020 22:29:28 +1100 (AEDT)
-Received: by mail-qk1-x744.google.com with SMTP id e11so1167161qkg.9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2020 03:29:28 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lca.pw; s=google;
- h=content-transfer-encoding:from:mime-version:subject:date:message-id
- :references:cc:in-reply-to:to;
- bh=Jx+iSwpjH1MMUgtvqiqrwQ2sYugCQ9UmLyXay35eB1Q=;
- b=qUya1I+ID7bIC0Bkj4Q0zp0EdHdSdO6ykJWvMXw4HKDFjWyXV8ds3Bs9MArm+vdQdc
- RpunjqglWR6mGJe2Lv7g9advYS1SvRo9LA3gCW5QqI/AMIgsHiHRUFAsdYeij2rtzyTk
- sNSh4wHESGW+6lSzw7OKW4psbfNeqxjoimBZufpM/BoHmrYBRoQNs3Xc2GtPgWnsfXPf
- igl3aC/5VPWbzpP3KfCNQ0wpC8Mh4VlwHq19u+9gw6f3Ulw8FCMZG8YCqNbscon2aj4Z
- WYfZ5PGzedI3tG7vyVtTX+unDExTi5VMHoWYOeG+xlDzhECpmkCqkM7aufo6LUVMsIwj
- NApA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:content-transfer-encoding:from:mime-version
- :subject:date:message-id:references:cc:in-reply-to:to;
- bh=Jx+iSwpjH1MMUgtvqiqrwQ2sYugCQ9UmLyXay35eB1Q=;
- b=c0XNH1hQecxTTCs6df4fSvLh1WXKEWntahqjUvtR4/Q6KFG5SYOqrIBCsWn58+FALp
- cxZYJkjWeoI+wbVBQzzga3M9VB9xt/9B5T9oykGrA/CMVxXzqXwVFuallDNPQOzA+W1c
- X4Lgabz8MwzAPRiRDjcaARM7yH/uIjOoe6nPsIiXb5sXdYM4SJVIdWJwyONBXK2zdCDT
- QfSXxPtV36AnaJwRqFT86p7RYz+dQF1dZ+8zbKWqRz6Y29V35rgwcDChxWxkFotRk1/f
- WjmnokPuskIfRAd+y5IemJcI1Ju93YxVh6WUIFadN6zBnjIu+5o2b4EoXe+VMXNv38/P
- 4wrg==
-X-Gm-Message-State: ANhLgQ2Yg6EjuIK+DQQ9Kze2uVd5PVaPeRZAC0tZ+s0QpbcalLEX1v1f
- XtxuuLQj8fxnRhsK0iN1EbMpoQ==
-X-Google-Smtp-Source: ADFU+vsraAELUldtqJkt+JLHLEkp9XWZWryntOEccYsrwg70reKk2W+439zfYVSLClVswo3lxz5LLw==
-X-Received: by 2002:a37:6115:: with SMTP id v21mr2464683qkb.105.1583321365177; 
- Wed, 04 Mar 2020 03:29:25 -0800 (PST)
-Received: from [192.168.1.183] (pool-71-184-117-43.bstnma.fios.verizon.net.
- [71.184.117.43])
- by smtp.gmail.com with ESMTPSA id u48sm85943qtc.79.2020.03.04.03.29.24
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Wed, 04 Mar 2020 03:29:24 -0800 (PST)
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
-From: Qian Cai <cai@lca.pw>
-Mime-Version: 1.0 (1.0)
-Subject: Re: [PATCH V14] mm/debug: Add tests validating architecture page
- table helpers
-Date: Wed, 4 Mar 2020 06:29:23 -0500
-Message-Id: <11F41980-97CF-411F-8120-41287DC1A382@lca.pw>
-References: <c022e863-0807-fab1-cd41-3c320381f448@c-s.fr>
-In-Reply-To: <c022e863-0807-fab1-cd41-3c320381f448@c-s.fr>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-X-Mailer: iPhone Mail (17D50)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48XYHt3XK7zDqTK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2020 23:35:21 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 024CTB5D139756
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Mar 2020 07:35:19 -0500
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2yj8hbh64b-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2020 07:35:19 -0500
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.ibm.com>;
+ Wed, 4 Mar 2020 12:35:17 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 4 Mar 2020 12:35:13 -0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 024CZBJP38928546
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 4 Mar 2020 12:35:11 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8565711C052;
+ Wed,  4 Mar 2020 12:35:11 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5C57811C054;
+ Wed,  4 Mar 2020 12:35:10 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.80.200.112])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed,  4 Mar 2020 12:35:10 +0000 (GMT)
+Subject: Re: [PATCH v2] ima: add a new CONFIG for loading arch-specific
+ policies
+From: Mimi Zohar <zohar@linux.ibm.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>, Nayna Jain
+ <nayna@linux.ibm.com>, linux-integrity@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-efi@vger.kernel.org,
+ linux-s390@vger.kernel.org
+Date: Wed, 04 Mar 2020 07:35:09 -0500
+In-Reply-To: <1583307813.3907.4.camel@HansenPartnership.com>
+References: <1583289211-5420-1-git-send-email-nayna@linux.ibm.com>
+ <1583307813.3907.4.camel@HansenPartnership.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.20.5 (3.20.5-1.fc24) 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 20030412-0016-0000-0000-000002ED176D
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 20030412-0017-0000-0000-0000335064A5
+Message-Id: <1583325309.6264.23.camel@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
+ definitions=2020-03-04_03:2020-03-04,
+ 2020-03-04 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015
+ priorityscore=1501 suspectscore=0 adultscore=0 phishscore=0 mlxscore=0
+ bulkscore=0 malwarescore=0 mlxlogscore=972 spamscore=0 lowpriorityscore=0
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2001150001 definitions=main-2003040096
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,35 +104,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
- Linux Memory Management List <linux-mm@kvack.org>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- the arch/x86 maintainers <x86@kernel.org>, Mike Rapoport <rppt@linux.ibm.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Catalin Marinas <catalin.marinas@arm.com>, linux-snps-arc@lists.infradead.org,
- Vasily Gorbik <gor@linux.ibm.com>,
- Anshuman Khandual <Anshuman.Khandual@arm.com>, Borislav Petkov <bp@alien8.de>,
- Paul Walmsley <paul.walmsley@sifive.com>,
- "Kirill A . Shutemov" <kirill@shutemov.name>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Vineet Gupta <vgupta@synopsys.com>, LKML <linux-kernel@vger.kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Philipp Rudo <prudo@linux.ibm.com>, Ard Biesheuvel <ardb@kernel.org>,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Tue, 2020-03-03 at 23:43 -0800, James Bottomley wrote:
+> On Tue, 2020-03-03 at 21:33 -0500, Nayna Jain wrote:
 
+> > diff --git a/security/integrity/ima/Kconfig
+> > b/security/integrity/ima/Kconfig
+> > index 3f3ee4e2eb0d..d17972aa413a 100644
+> > --- a/security/integrity/ima/Kconfig
+> > +++ b/security/integrity/ima/Kconfig
+> > @@ -327,3 +327,12 @@ config IMA_QUEUE_EARLY_BOOT_KEYS
+> >  	depends on IMA_MEASURE_ASYMMETRIC_KEYS
+> >  	depends on SYSTEM_TRUSTED_KEYRING
+> >  	default y
+> > +
+> > +config IMA_SECURE_AND_OR_TRUSTED_BOOT
+> > +	bool
+> > +	depends on IMA
+> > +	depends on IMA_ARCH_POLICY
+> > +	default n
+> 
+> You can't do this: a symbol designed to be selected can't depend on
+> other symbols because Kconfig doesn't see the dependencies during
+> select.  We even have a doc for this now:
+> 
+> Documentation/kbuild/Kconfig.select-break
 
-> On Mar 4, 2020, at 1:49 AM, Christophe Leroy <christophe.leroy@c-s.fr> wro=
-te:
->=20
-> AFAIU, you are not taking an interrupt here. You are stuck in the pte_upda=
-te(), most likely due to nested locks. Try with LOCKDEP ?
+The document is discussing a circular dependency, where C selects B.
+ IMA_SECURE_AND_OR_TRUSTED_BOOT is not selecting anything, but is
+being selected.  All of the Kconfig's are now dependent on
+IMA_ARCH_POLICY being enabled before selecting
+IMA_SECURE_AND_OR_TRUSTED_BOOT.
 
-Not exactly sure what did you mean here, but the kernel has all lockdep enab=
-led and did not flag anything here.=
+As Ard pointed out, both IMA and IMA_ARCH_POLICY are not needed, as
+IMA_ARCH_POLICY is already dependent on IMA.
+
+Mimi
+
