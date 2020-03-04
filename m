@@ -7,92 +7,91 @@ X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F03EC3F2D1
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 09:27:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1976DC3F2D1
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 11:03:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 561D120732
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 09:27:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 561D120732
+	by mail.kernel.org (Postfix) with ESMTPS id 5031C21739
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 11:03:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5031C21739
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48XT6f5yNNzDqY4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 20:27:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48XWFW315YzDqXP
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 22:03:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=fbarrat@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48XT4q3t7qzDqSr
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2020 20:25:30 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48XWBt0yKczDqLP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2020 22:00:53 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0249Jlat122587
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Mar 2020 04:25:28 -0500
+ 024Armi0124297
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Mar 2020 06:00:50 -0500
 Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2yj3erv4sc-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2yj6nj1vj1-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2020 04:25:28 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2020 06:00:50 -0500
 Received: from localhost
  by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
- Wed, 4 Mar 2020 09:25:25 -0000
-Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+ Wed, 4 Mar 2020 11:00:48 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
  by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 4 Mar 2020 09:25:18 -0000
+ Wed, 4 Mar 2020 11:00:41 -0000
 Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
  [9.149.105.62])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 0249OINY44302696
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 024B0dSP51511486
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 4 Mar 2020 09:24:18 GMT
+ Wed, 4 Mar 2020 11:00:39 GMT
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 169CBAE055;
- Wed,  4 Mar 2020 09:25:17 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 45A0DAE055;
+ Wed,  4 Mar 2020 11:00:39 +0000 (GMT)
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 07C27AE04D;
- Wed,  4 Mar 2020 09:25:16 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 3E5A3AE057;
+ Wed,  4 Mar 2020 11:00:38 +0000 (GMT)
 Received: from pic2.home (unknown [9.145.145.27])
  by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed,  4 Mar 2020 09:25:15 +0000 (GMT)
-Subject: Re: [PATCH v3 19/27] powerpc/powernv/pmem: Add an IOCTL to report
- controller statistics
+ Wed,  4 Mar 2020 11:00:38 +0000 (GMT)
+Subject: Re: [PATCH v3 20/27] powerpc/powernv/pmem: Forward events to userspace
 To: "Alastair D'Silva" <alastair@au1.ibm.com>, alastair@d-silva.org
 References: <20200221032720.33893-1-alastair@au1.ibm.com>
- <20200221032720.33893-20-alastair@au1.ibm.com>
+ <20200221032720.33893-21-alastair@au1.ibm.com>
 From: Frederic Barrat <fbarrat@linux.ibm.com>
-Date: Wed, 4 Mar 2020 10:25:15 +0100
+Date: Wed, 4 Mar 2020 12:00:38 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
  Thunderbird/68.4.1
 MIME-Version: 1.0
-In-Reply-To: <20200221032720.33893-20-alastair@au1.ibm.com>
+In-Reply-To: <20200221032720.33893-21-alastair@au1.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 20030409-0008-0000-0000-0000035930BC
+x-cbid: 20030411-0008-0000-0000-000003593836
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20030409-0009-0000-0000-00004A7A62EF
-Message-Id: <6ee036c7-f4ea-4e42-faad-66a1921553ce@linux.ibm.com>
+x-cbparentid: 20030411-0009-0000-0000-00004A7A6AC0
+Message-Id: <7ee589c0-2c02-9b8e-95a9-743ce29674ec@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
- definitions=2020-03-04_01:2020-03-03,
+ definitions=2020-03-04_01:2020-03-04,
  2020-03-04 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- malwarescore=0 impostorscore=0 mlxscore=0 phishscore=0 spamscore=0
- clxscore=1015 suspectscore=0 bulkscore=0 adultscore=0 priorityscore=1501
- mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2001150001 definitions=main-2003040073
+ malwarescore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxlogscore=999 suspectscore=2
+ impostorscore=0 priorityscore=1501 bulkscore=0 phishscore=0 mlxscore=0
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2001150001 definitions=main-2003040085
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -132,311 +131,416 @@ Sender: "Linuxppc-dev"
 Le 21/02/2020 à 04:27, Alastair D'Silva a écrit :
 > From: Alastair D'Silva <alastair@d-silva.org>
 > 
-> The controller can report a number of statistics that are useful
-> in evaluating the performance and reliability of the card.
+> Some of the interrupts that the card generates are better handled
+> by the userspace daemon, in particular:
+> Controller Hardware/Firmware Fatal
+> Controller Dump Available
+> Error Log available
 > 
-> This patch exposes this information via an IOCTL.
+> This patch allows a userspace application to register an eventfd with
+> the driver via SCM_IOCTL_EVENTFD to receive notifications of these
+> interrupts.
+> 
+> Userspace can then identify what events have occurred by calling
+> SCM_IOCTL_EVENT_CHECK and checking against the SCM_IOCTL_EVENT_FOO
+> masks.
 > 
 > Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 > ---
->   arch/powerpc/platforms/powernv/pmem/ocxl.c | 185 +++++++++++++++++++++
->   include/uapi/nvdimm/ocxl-pmem.h            |  17 ++
->   2 files changed, 202 insertions(+)
+>   arch/powerpc/platforms/powernv/pmem/ocxl.c    | 216 ++++++++++++++++++
+>   .../platforms/powernv/pmem/ocxl_internal.h    |   5 +
+>   include/uapi/nvdimm/ocxl-pmem.h               |  16 ++
+>   3 files changed, 237 insertions(+)
 > 
 > diff --git a/arch/powerpc/platforms/powernv/pmem/ocxl.c b/arch/powerpc/platforms/powernv/pmem/ocxl.c
-> index 2cabafe1fc58..009d4fd29e7d 100644
+> index 009d4fd29e7d..e46696d3cc36 100644
 > --- a/arch/powerpc/platforms/powernv/pmem/ocxl.c
 > +++ b/arch/powerpc/platforms/powernv/pmem/ocxl.c
-> @@ -758,6 +758,186 @@ static int ioctl_controller_dump_complete(struct ocxlpmem *ocxlpmem)
->   				    GLOBAL_MMIO_HCI_CONTROLLER_DUMP_COLLECTED);
->   }
+> @@ -10,6 +10,7 @@
+>   #include <misc/ocxl.h>
+>   #include <linux/delay.h>
+>   #include <linux/ndctl.h>
+> +#include <linux/eventfd.h>
+>   #include <linux/fs.h>
+>   #include <linux/mm_types.h>
+>   #include <linux/memory_hotplug.h>
+> @@ -335,11 +336,22 @@ static void free_ocxlpmem(struct ocxlpmem *ocxlpmem)
+>   {
+>   	int rc;
 >   
-> +/**
-> + * controller_stats_header_parse() - Parse the first 64 bits of the controller stats admin command response
-> + * @ocxlpmem: the device metadata
-> + * @length: out, returns the number of bytes in the response (excluding the 64 bit header)
-> + */
-> +static int controller_stats_header_parse(struct ocxlpmem *ocxlpmem,
-> +	u32 *length)
-> +{
-> +	int rc;
-> +	u64 val;
+> +	// Disable doorbells
+> +	(void)ocxl_global_mmio_set64(ocxlpmem->ocxl_afu, GLOBAL_MMIO_CHIEC,
+> +				     OCXL_LITTLE_ENDIAN,
+> +				     GLOBAL_MMIO_CHI_ALL);
 > +
-
-
-unexpected empty line
-
-
-> +	u16 data_identifier;
-> +	u32 data_length;
+>   	if (ocxlpmem->nvdimm_bus)
+>   		nvdimm_bus_unregister(ocxlpmem->nvdimm_bus);
+>   
+>   	free_minor(ocxlpmem);
+>   
+> +	if (ocxlpmem->irq_addr[1])
+> +		iounmap(ocxlpmem->irq_addr[1]);
 > +
-> +	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-> +				     ocxlpmem->admin_command.data_offset,
-> +				     OCXL_LITTLE_ENDIAN, &val);
-> +	if (rc)
-> +		return rc;
+> +	if (ocxlpmem->irq_addr[0])
+> +		iounmap(ocxlpmem->irq_addr[0]);
 > +
-> +	data_identifier = val >> 48;
-> +	data_length = val & 0xFFFFFFFF;
-> +
-> +	if (data_identifier != 0x4353) { // 'CS'
-> +		dev_err(&ocxlpmem->dev,
-> +			"Bad data identifier for controller stats, expected 'CS', got '%-.*s'\n",
-> +			2, (char *)&data_identifier);
-
-
-
-Wow, I'm clueless what that string format looks like :-)
-2 arguments? Did you check the kernel string formatter does what you want?
-You may consider unifying the format though, the error log patch uses a 
-simpler (better?) format for a similar message.
-
-
-
-> +		return -EINVAL;
+>   	if (ocxlpmem->cdev.owner)
+>   		cdev_del(&ocxlpmem->cdev);
+>   
+> @@ -443,6 +455,11 @@ static int file_release(struct inode *inode, struct file *file)
+>   {
+>   	struct ocxlpmem *ocxlpmem = file->private_data;
+>   
+> +	if (ocxlpmem->ev_ctx) {
+> +		eventfd_ctx_put(ocxlpmem->ev_ctx);
+> +		ocxlpmem->ev_ctx = NULL;
 > +	}
 > +
-> +	*length = data_length;
+>   	ocxlpmem_put(ocxlpmem);
+>   	return 0;
+>   }
+> @@ -938,6 +955,51 @@ static int ioctl_controller_stats(struct ocxlpmem *ocxlpmem,
+>   	return rc;
+>   }
+>   
+> +static int ioctl_eventfd(struct ocxlpmem *ocxlpmem,
+> +		 struct ioctl_ocxl_pmem_eventfd __user *uarg)
+> +{
+> +	struct ioctl_ocxl_pmem_eventfd args;
+> +
+> +	if (copy_from_user(&args, uarg, sizeof(args)))
+> +		return -EFAULT;
+> +
+> +	if (ocxlpmem->ev_ctx)
+> +		return -EINVAL;
+
+
+EBUSY?
+
+
+> +
+> +	ocxlpmem->ev_ctx = eventfd_ctx_fdget(args.eventfd);
+> +	if (!ocxlpmem->ev_ctx)
+> +		return -EFAULT;
+
+
+Why not use what eventfd_ctx_fdget() returned? (through some IS_ERR() 
+and PTR_ERR() convolution)
+
+
+> +
 > +	return 0;
 > +}
 > +
-> +static int ioctl_controller_stats(struct ocxlpmem *ocxlpmem,
-> +				  struct ioctl_ocxl_pmem_controller_stats __user *uarg)
+> +static int ioctl_event_check(struct ocxlpmem *ocxlpmem, u64 __user *uarg)
 > +{
-> +	struct ioctl_ocxl_pmem_controller_stats args;
-> +	u32 length;
+> +	u64 val = 0;
 > +	int rc;
-> +	u64 val;
+> +	u64 chi = 0;
 > +
-> +	memset(&args, '\0', sizeof(args));
-> +
-> +	mutex_lock(&ocxlpmem->admin_command.lock);
-> +
-> +	rc = admin_command_request(ocxlpmem, ADMIN_COMMAND_CONTROLLER_STATS);
-> +	if (rc)
-> +		goto out;
-> +
-> +	rc = ocxl_global_mmio_write64(ocxlpmem->ocxl_afu,
-> +				      ocxlpmem->admin_command.request_offset + 0x08,
-> +				      OCXL_LITTLE_ENDIAN, 0);
-> +	if (rc)
-> +		goto out;
-> +
-> +	rc = admin_command_execute(ocxlpmem);
-> +	if (rc)
-> +		goto out;
-> +
-> +
-> +	rc = admin_command_complete_timeout(ocxlpmem,
-> +					    ADMIN_COMMAND_CONTROLLER_STATS);
-> +	if (rc < 0) {
-> +		dev_warn(&ocxlpmem->dev, "Controller stats timed out\n");
-> +		goto out;
-> +	}
-> +
-> +	rc = admin_response(ocxlpmem);
+> +	rc = ocxlpmem_chi(ocxlpmem, &chi);
 > +	if (rc < 0)
-> +		goto out;
-> +	if (rc != STATUS_SUCCESS) {
-> +		warn_status(ocxlpmem,
-> +			    "Unexpected status from controller stats", rc);
-> +		goto out;
-> +	}
+> +		return rc;
+> +
+> +	if (chi & GLOBAL_MMIO_CHI_ELA)
+> +		val |= IOCTL_OCXL_PMEM_EVENT_ERROR_LOG_AVAILABLE;
+> +
+> +	if (chi & GLOBAL_MMIO_CHI_CDA)
+> +		val |= IOCTL_OCXL_PMEM_EVENT_CONTROLLER_DUMP_AVAILABLE;
+> +
+> +	if (chi & GLOBAL_MMIO_CHI_CFFS)
+> +		val |= IOCTL_OCXL_PMEM_EVENT_FIRMWARE_FATAL;
+> +
+> +	if (chi & GLOBAL_MMIO_CHI_CHFS)
+> +		val |= IOCTL_OCXL_PMEM_EVENT_HARDWARE_FATAL;
+> +
+> +	rc = copy_to_user((u64 __user *) uarg, &val, sizeof(val));
+> +
 
 
-All those ioctls commands follow the same pattern:
-1. admin_command_request()
-2. optionnaly, set some mmio registers specific to the command
-3. admin_command_execute()
-4. admin_command_complete_timeout()
-5. admin_response()
+copy_to_user doesn't return an errno. Should be:
 
-By swapping 1 and 2, we could then factorize steps 1, 3, 4 and 5 in a 
-function and simplify/shorten the code each time a command is called.
-
-Regarding step 2 (and that's true for all similar patches), a comment 
-about what the mmio tuning does would help and avoid looking up the 
-spec. Looking up the spec during the review is expected, but it will 
-ease reading the code 6 months from now.
+if (copy_to_user((u64 __user *) uarg, &val, sizeof(val)))
+	return -EFAULT;
 
 
-
-> +
-> +	rc = controller_stats_header_parse(ocxlpmem, &length);
-> +	if (rc)
-> +		goto out;
-> +
-> +	if (length != 0x140)
-> +		warn_status(ocxlpmem,
-> +			    "Unexpected length for controller stats data, expected 0x140, got 0x%x",
-> +			    length);
-> +
-> +	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-> +				     ocxlpmem->admin_command.data_offset + 0x08 + 0x08,
-> +				     OCXL_LITTLE_ENDIAN, &val);
-> +	if (rc)
-> +		goto out;
-> +
-> +	args.reset_count = val >> 32;
-> +	args.reset_uptime = val & 0xFFFFFFFF;
-> +
-> +	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-> +				     ocxlpmem->admin_command.data_offset + 0x08 + 0x10,
-> +				     OCXL_LITTLE_ENDIAN, &val);
-> +	if (rc)
-> +		goto out;
-> +
-> +	args.power_on_uptime = val >> 32;
-> +
-> +	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-> +				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x08,
- > +				     OCXL_LITTLE_ENDIAN, &args.host_load_count);
-
-
-Those offsets are hard to understand, even with the spec next to me. And 
-it seems that we could harden things a bit:
-each block as a "statistics parameter ID" and the length of the data for 
-that block. We should check that and make sure we're reading what we expect.
-For example, from the spec I'm looking (110d), I would expect the host 
-load count to be at offset 0x10. It's entirely possible I'm misreading 
-it though.
-
-
-
-> +	if (rc)
-> +		goto out;
-> +
-> +	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-> +				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x10,
-> +				     OCXL_LITTLE_ENDIAN, &args.host_store_count);
-> +	if (rc)
-> +		goto out;
-> +
-> +	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-> +				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x18,
-> +				     OCXL_LITTLE_ENDIAN, &args.media_read_count);
-> +	if (rc)
-> +		goto out;
-> +
-> +	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-> +				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x20,
-> +				     OCXL_LITTLE_ENDIAN, &args.media_write_count);
-> +	if (rc)
-> +		goto out;
-> +
-> +	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-> +				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x28,
-> +				     OCXL_LITTLE_ENDIAN, &args.cache_hit_count);
-> +	if (rc)
-> +		goto out;
-> +
-> +	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-> +				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x30,
-> +				     OCXL_LITTLE_ENDIAN, &args.cache_miss_count);
-> +	if (rc)
-> +		goto out;
-> +
-> +	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-> +				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x38,
-> +				     OCXL_LITTLE_ENDIAN, &args.media_read_latency);
-> +	if (rc)
-> +		goto out;
-> +
-> +	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-> +				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x40,
-> +				     OCXL_LITTLE_ENDIAN, &args.media_write_latency);
-> +	if (rc)
-> +		goto out;
-> +
-> +	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-> +				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x48,
-> +				     OCXL_LITTLE_ENDIAN, &args.cache_read_latency);
-> +	if (rc)
-> +		goto out;
-> +
-> +	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
-> +				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x50,
-> +				     OCXL_LITTLE_ENDIAN, &args.cache_write_latency);
-> +	if (rc)
-> +		goto out;
-> +
-> +	if (copy_to_user(uarg, &args, sizeof(args))) {
-> +		rc = -EFAULT;
-> +		goto out;
-> +	}
-> +
-> +	rc = admin_response_handled(ocxlpmem);
-> +	if (rc)
-> +		goto out;
-> +
-> +	rc = 0;
-> +	goto out;
-
-
-That may be more of a personal habit, but that final goto disrupts the 
-"good case" flow. And I think it's pretty unusual within the kernel.
-
-
-> +
-> +out:
-> +	mutex_unlock(&ocxlpmem->admin_command.lock);
 > +	return rc;
 > +}
 > +
 >   static long file_ioctl(struct file *file, unsigned int cmd, unsigned long args)
 >   {
 >   	struct ocxlpmem *ocxlpmem = file->private_data;
-> @@ -781,6 +961,11 @@ static long file_ioctl(struct file *file, unsigned int cmd, unsigned long args)
->   	case IOCTL_OCXL_PMEM_CONTROLLER_DUMP_COMPLETE:
->   		rc = ioctl_controller_dump_complete(ocxlpmem);
+> @@ -966,6 +1028,15 @@ static long file_ioctl(struct file *file, unsigned int cmd, unsigned long args)
+>   		rc = ioctl_controller_stats(ocxlpmem,
+>   					    (struct ioctl_ocxl_pmem_controller_stats __user *)args);
 >   		break;
 > +
-> +	case IOCTL_OCXL_PMEM_CONTROLLER_STATS:
-> +		rc = ioctl_controller_stats(ocxlpmem,
-> +					    (struct ioctl_ocxl_pmem_controller_stats __user *)args);
+> +	case IOCTL_OCXL_PMEM_EVENTFD:
+> +		rc = ioctl_eventfd(ocxlpmem,
+> +				   (struct ioctl_ocxl_pmem_eventfd __user *)args);
+> +		break;
+> +
+> +	case IOCTL_OCXL_PMEM_EVENT_CHECK:
+> +		rc = ioctl_event_check(ocxlpmem, (u64 __user *)args);
 > +		break;
 >   	}
 >   
 >   	return rc;
+> @@ -1107,6 +1178,146 @@ static void dump_error_log(struct ocxlpmem *ocxlpmem)
+>   	kfree(buf);
+>   }
+>   
+> +static irqreturn_t imn0_handler(void *private)
+> +{
+> +	struct ocxlpmem *ocxlpmem = private;
+> +	u64 chi = 0;
+> +
+> +	(void)ocxlpmem_chi(ocxlpmem, &chi);
+> +
+> +	if (chi & GLOBAL_MMIO_CHI_ELA) {
+> +		dev_warn(&ocxlpmem->dev, "Error log is available\n");
+> +
+> +		if (ocxlpmem->ev_ctx)
+> +			eventfd_signal(ocxlpmem->ev_ctx, 1);
+> +	}
+> +
+> +	if (chi & GLOBAL_MMIO_CHI_CDA) {
+> +		dev_warn(&ocxlpmem->dev, "Controller dump is available\n");
+> +
+> +		if (ocxlpmem->ev_ctx)
+> +			eventfd_signal(ocxlpmem->ev_ctx, 1);
+> +	}
+> +
+> +
+
+
+(at least) one empty line too many.
+
+
+> +	return IRQ_HANDLED;
+> +}
+> +
+> +static irqreturn_t imn1_handler(void *private)
+> +{
+> +	struct ocxlpmem *ocxlpmem = private;
+> +	u64 chi = 0;
+> +
+> +	(void)ocxlpmem_chi(ocxlpmem, &chi);
+> +
+> +	if (chi & (GLOBAL_MMIO_CHI_CFFS | GLOBAL_MMIO_CHI_CHFS)) {
+> +		dev_err(&ocxlpmem->dev,
+> +			"Controller status is fatal, chi=0x%llx, going offline\n", chi);
+> +
+> +		if (ocxlpmem->nvdimm_bus) {
+> +			nvdimm_bus_unregister(ocxlpmem->nvdimm_bus);
+> +			ocxlpmem->nvdimm_bus = NULL;
+> +		}
+> +
+> +		if (ocxlpmem->ev_ctx)
+> +			eventfd_signal(ocxlpmem->ev_ctx, 1);
+> +	}
+> +
+> +	return IRQ_HANDLED;
+> +}
+> +
+> +
+> +/**
+> + * ocxlpmem_setup_irq() - Set up the IRQs for the OpenCAPI Persistent Memory device
+> + * @ocxlpmem: the device metadata
+> + * Return: 0 on success, negative on failure
+> + */
+> +static int ocxlpmem_setup_irq(struct ocxlpmem *ocxlpmem)
+> +{
+> +	int rc;
+> +	u64 irq_addr;
+> +
+> +	rc = ocxl_afu_irq_alloc(ocxlpmem->ocxl_context, &ocxlpmem->irq_id[0]);
+> +	if (rc)
+> +		return rc;
+> +
+> +	rc = ocxl_irq_set_handler(ocxlpmem->ocxl_context, ocxlpmem->irq_id[0],
+> +				  imn0_handler, NULL, ocxlpmem);
+> +
+> +	irq_addr = ocxl_afu_irq_get_addr(ocxlpmem->ocxl_context, ocxlpmem->irq_id[0]);
+> +	if (!irq_addr)
+> +		return -EINVAL;
+> +
+> +	ocxlpmem->irq_addr[0] = ioremap(irq_addr, PAGE_SIZE);
+> +	if (!ocxlpmem->irq_addr[0])
+> +		return -EINVAL;
+> +
+> +	rc = ocxl_global_mmio_write64(ocxlpmem->ocxl_afu, GLOBAL_MMIO_IMA0_OHP,
+> +				      OCXL_LITTLE_ENDIAN,
+> +				      (u64)ocxlpmem->irq_addr[0]);
+> +	if (rc)
+> +		goto out_irq0;
+> +
+> +	rc = ocxl_global_mmio_write64(ocxlpmem->ocxl_afu, GLOBAL_MMIO_IMA0_CFP,
+> +				      OCXL_LITTLE_ENDIAN, 0);
+> +	if (rc)
+> +		goto out_irq0;
+
+
+That's a few lines of duplicate code. On the other hand, there's enough 
+varying parameters between the 2 interrupts that factorizing in a 
+subfunction would be slightly less readable. So duplicating is probably ok.
+
+
+
+> +	rc = ocxl_afu_irq_alloc(ocxlpmem->ocxl_context, &ocxlpmem->irq_id[1]);
+> +	if (rc)
+> +		goto out_irq0;
+> +
+> +
+> +	rc = ocxl_irq_set_handler(ocxlpmem->ocxl_context, ocxlpmem->irq_id[1],
+> +				  imn1_handler, NULL, ocxlpmem);
+> +	if (rc)
+> +		goto out_irq0;
+> +
+> +	irq_addr = ocxl_afu_irq_get_addr(ocxlpmem->ocxl_context, ocxlpmem->irq_id[1]);
+> +	if (!irq_addr) {
+> +		rc = -EFAULT;
+> +		goto out_irq0;
+> +	}
+> +
+> +	ocxlpmem->irq_addr[1] = ioremap(irq_addr, PAGE_SIZE);
+> +	if (!ocxlpmem->irq_addr[1]) {
+> +		rc = -EINVAL;
+> +		goto out_irq0;
+> +	}
+> +
+> +	rc = ocxl_global_mmio_write64(ocxlpmem->ocxl_afu, GLOBAL_MMIO_IMA1_OHP,
+> +				      OCXL_LITTLE_ENDIAN,
+> +				      (u64)ocxlpmem->irq_addr[1]);
+> +	if (rc)
+> +		goto out_irq1;
+> +
+> +	rc = ocxl_global_mmio_write64(ocxlpmem->ocxl_afu, GLOBAL_MMIO_IMA1_CFP,
+> +				      OCXL_LITTLE_ENDIAN, 0);
+> +	if (rc)
+> +		goto out_irq1;
+> +
+> +	// Enable doorbells
+> +	rc = ocxl_global_mmio_set64(ocxlpmem->ocxl_afu, GLOBAL_MMIO_CHIE,
+> +				    OCXL_LITTLE_ENDIAN,
+> +				    GLOBAL_MMIO_CHI_ELA | GLOBAL_MMIO_CHI_CDA |
+> +				    GLOBAL_MMIO_CHI_CFFS | GLOBAL_MMIO_CHI_CHFS |
+> +				    GLOBAL_MMIO_CHI_NSCRA);
+
+
+GLOBAL_MMIO_CHI_NSCRA doesn't seem to be handled in the handlers.
+
+
+
+> +	if (rc)
+> +		goto out_irq1;
+> +
+> +	return 0;
+> +
+> +out_irq1:
+> +	iounmap(ocxlpmem->irq_addr[1]);
+> +	ocxlpmem->irq_addr[1] = NULL;
+> +
+> +out_irq0:
+> +	iounmap(ocxlpmem->irq_addr[0]);
+> +	ocxlpmem->irq_addr[0] = NULL;
+> +
+> +	return rc;
+> +}
+> +
+>   /**
+>    * probe_function0() - Set up function 0 for an OpenCAPI persistent memory device
+>    * This is important as it enables templates higher than 0 across all other functions,
+> @@ -1216,6 +1427,11 @@ static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+>   		goto err;
+>   	}
+>   
+> +	if (ocxlpmem_setup_irq(ocxlpmem)) {
+> +		dev_err(&pdev->dev, "Could not set up OCXL IRQs\n");
+
+
+Like with other patches, rc needs to be set.
+
+
+> +		goto err;
+> +	}
+> +
+>   	if (setup_command_metadata(ocxlpmem)) {
+>   		dev_err(&pdev->dev, "Could not read OCXL command matada\n");
+>   		goto err;
+> diff --git a/arch/powerpc/platforms/powernv/pmem/ocxl_internal.h b/arch/powerpc/platforms/powernv/pmem/ocxl_internal.h
+> index b953ee522ed4..927690f4888f 100644
+> --- a/arch/powerpc/platforms/powernv/pmem/ocxl_internal.h
+> +++ b/arch/powerpc/platforms/powernv/pmem/ocxl_internal.h
+> @@ -103,6 +103,10 @@ struct ocxlpmem {
+>   	struct pci_dev *pdev;
+>   	struct cdev cdev;
+>   	struct ocxl_fn *ocxl_fn;
+> +#define SCM_IRQ_COUNT 2
+> +	int irq_id[SCM_IRQ_COUNT];
+> +	struct dev_pagemap irq_pgmap[SCM_IRQ_COUNT];
+
+
+irq_pgmap is not used.
+
+
+> +	void *irq_addr[SCM_IRQ_COUNT];
+>   	struct nd_interleave_set nd_set;
+>   	struct nvdimm_bus_descriptor bus_desc;
+>   	struct nvdimm_bus *nvdimm_bus;
+> @@ -113,6 +117,7 @@ struct ocxlpmem {
+>   	struct command_metadata ns_command;
+>   	struct resource pmem_res;
+>   	struct nd_region *nd_region;
+> +	struct eventfd_ctx *ev_ctx;
+>   	char fw_version[8+1];
+>   	u32 timeouts[ADMIN_COMMAND_MAX+1];
+>   
 > diff --git a/include/uapi/nvdimm/ocxl-pmem.h b/include/uapi/nvdimm/ocxl-pmem.h
-> index d4d8512d03f7..add223aa2fdb 100644
+> index add223aa2fdb..988eb0bc413d 100644
 > --- a/include/uapi/nvdimm/ocxl-pmem.h
 > +++ b/include/uapi/nvdimm/ocxl-pmem.h
-> @@ -50,6 +50,22 @@ struct ioctl_ocxl_pmem_controller_dump_data {
->   	__u64 reserved[8];
+> @@ -66,6 +66,20 @@ struct ioctl_ocxl_pmem_controller_stats {
+>   	__u64 cache_write_latency; /* nanoseconds */
 >   };
 >   
-> +struct ioctl_ocxl_pmem_controller_stats {
-> +	__u32 reset_count;
-> +	__u32 reset_uptime; /* seconds */
-> +	__u32 power_on_uptime; /* seconds */
+> +struct ioctl_ocxl_pmem_eventfd {
+> +	__s32 eventfd;
+> +	__u32 reserved;
+> +};
+> +
+> +#ifndef BIT_ULL
+> +#define BIT_ULL(nr)	(1ULL << (nr))
+> +#endif
+> +
+> +#define IOCTL_OCXL_PMEM_EVENT_CONTROLLER_DUMP_AVAILABLE	BIT_ULL(0)
+> +#define IOCTL_OCXL_PMEM_EVENT_ERROR_LOG_AVAILABLE	BIT_ULL(1)
+> +#define IOCTL_OCXL_PMEM_EVENT_HARDWARE_FATAL		BIT_ULL(2)
+> +#define IOCTL_OCXL_PMEM_EVENT_FIRMWARE_FATAL		BIT_ULL(3)
+> +
 
 
-Same as before, we're going to have some padding here.
+I'm not fond of adding a macro with such a generic name as BIT_ULL() in 
+a user header file. What's wrong with:
+
+#define IOCTL_OCXL_PMEM_EVENT_CONTROLLER_DUMP_AVAILABLE	0x1
+#define IOCTL_OCXL_PMEM_EVENT_ERROR_LOG_AVAILABLE	0x2
+#define IOCTL_OCXL_PMEM_EVENT_HARDWARE_FATAL		0x4
+#define IOCTL_OCXL_PMEM_EVENT_FIRMWARE_FATAL		0x8
+
 
    Fred
 
 
-> +	__u64 host_load_count;
-> +	__u64 host_store_count;
-> +	__u64 media_read_count;
-> +	__u64 media_write_count;
-> +	__u64 cache_hit_count;
-> +	__u64 cache_miss_count;
-> +	__u64 media_read_latency; /* nanoseconds */
-> +	__u64 media_write_latency; /* nanoseconds */
-> +	__u64 cache_read_latency; /* nanoseconds */
-> +	__u64 cache_write_latency; /* nanoseconds */
-> +};
-> +
 >   /* ioctl numbers */
 >   #define OCXL_PMEM_MAGIC 0x5C
 >   /* SCM devices */
-> @@ -57,5 +73,6 @@ struct ioctl_ocxl_pmem_controller_dump_data {
->   #define IOCTL_OCXL_PMEM_CONTROLLER_DUMP			_IO(OCXL_PMEM_MAGIC, 0x02)
+> @@ -74,5 +88,7 @@ struct ioctl_ocxl_pmem_controller_stats {
 >   #define IOCTL_OCXL_PMEM_CONTROLLER_DUMP_DATA		_IOWR(OCXL_PMEM_MAGIC, 0x03, struct ioctl_ocxl_pmem_controller_dump_data)
 >   #define IOCTL_OCXL_PMEM_CONTROLLER_DUMP_COMPLETE	_IO(OCXL_PMEM_MAGIC, 0x04)
-> +#define IOCTL_OCXL_PMEM_CONTROLLER_STATS		_IO(OCXL_PMEM_MAGIC, 0x05)
+>   #define IOCTL_OCXL_PMEM_CONTROLLER_STATS		_IO(OCXL_PMEM_MAGIC, 0x05)
+> +#define IOCTL_OCXL_PMEM_EVENTFD				_IOW(OCXL_PMEM_MAGIC, 0x06, struct ioctl_ocxl_pmem_eventfd)
+> +#define IOCTL_OCXL_PMEM_EVENT_CHECK			_IOR(OCXL_PMEM_MAGIC, 0x07, __u64)
 >   
 >   #endif /* _UAPI_OCXL_SCM_H */
 > 
