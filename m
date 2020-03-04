@@ -6,77 +6,77 @@ X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_SANE_2 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 009B2C3F2CE
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 21:00:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C1FBFC3F2CE
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 21:02:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AEE0B20842
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 21:00:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AEE0B20842
+	by mail.kernel.org (Postfix) with ESMTPS id 7ECA321739
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 21:02:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7ECA321739
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48XmVq0PK7zDqjW
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Mar 2020 08:00:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48XmYC3SV5zDqVb
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Mar 2020 08:02:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48XmGs0GMpzDqcY
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Mar 2020 07:50:12 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 024KiUsd069758; Wed, 4 Mar 2020 15:50:02 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48XmJ63DTkzDqjZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Mar 2020 07:51:18 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 024KfRtv115743; Wed, 4 Mar 2020 15:51:08 -0500
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2yhsva8w6d-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2yhukmpcy3-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 04 Mar 2020 15:50:02 -0500
-Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 024KjN0b078025;
- Wed, 4 Mar 2020 15:50:02 -0500
-Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
- [169.55.91.170])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2yhsva8w5q-1
+ Wed, 04 Mar 2020 15:51:08 -0500
+Received: from m0098414.ppops.net (m0098414.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 024KgMkO119346;
+ Wed, 4 Mar 2020 15:51:07 -0500
+Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.10])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2yhukmpcxs-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 04 Mar 2020 15:50:02 -0500
-Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
- by ppma02wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 024KmuSr024252;
- Wed, 4 Mar 2020 20:50:00 GMT
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29]) by ppma02wdc.us.ibm.com with ESMTP id 2yffk6wrhg-1
+ Wed, 04 Mar 2020 15:51:07 -0500
+Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
+ by ppma02dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 024Kn2TY003490;
+ Wed, 4 Mar 2020 20:51:07 GMT
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by ppma02dal.us.ibm.com with ESMTP id 2yffk7785e-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 04 Mar 2020 20:50:00 +0000
-Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
- [9.57.199.106])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 024Ko0N453346610
+ Wed, 04 Mar 2020 20:51:07 +0000
+Received: from b03ledav002.gho.boulder.ibm.com
+ (b03ledav002.gho.boulder.ibm.com [9.17.130.233])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 024Kp56T63373670
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 4 Mar 2020 20:50:00 GMT
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 683672805E;
- Wed,  4 Mar 2020 20:50:00 +0000 (GMT)
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id AB01728059;
- Wed,  4 Mar 2020 20:49:59 +0000 (GMT)
+ Wed, 4 Mar 2020 20:51:05 GMT
+Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9ACF913605D;
+ Wed,  4 Mar 2020 20:51:05 +0000 (GMT)
+Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 199B0136051;
+ Wed,  4 Mar 2020 20:51:05 +0000 (GMT)
 Received: from [9.70.82.143] (unknown [9.70.82.143])
- by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
- Wed,  4 Mar 2020 20:49:59 +0000 (GMT)
-Subject: [PATCH V6 08/14] powerpc/vas: Take reference to PID and mm for
- user space windows
+ by b03ledav002.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Wed,  4 Mar 2020 20:51:05 +0000 (GMT)
+Subject: [PATCH V6 10/14] powerpc/vas: Print CRB and FIFO values
 From: Haren Myneni <haren@linux.ibm.com>
 To: mpe@ellerman.id.au
 In-Reply-To: <1583353283.18705.2112.camel@hbabu-laptop>
 References: <1583353283.18705.2112.camel@hbabu-laptop>
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 04 Mar 2020 12:48:56 -0800
-Message-ID: <1583354937.18705.2153.camel@hbabu-laptop>
+Date: Wed, 04 Mar 2020 12:50:02 -0800
+Message-ID: <1583355002.18705.2157.camel@hbabu-laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.3 
 Content-Transfer-Encoding: 7bit
@@ -85,11 +85,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
  definitions=2020-03-04_08:2020-03-04,
  2020-03-04 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- mlxlogscore=924 clxscore=1015 suspectscore=3 impostorscore=0 adultscore=0
- spamscore=0 malwarescore=0 bulkscore=0 lowpriorityscore=0 mlxscore=0
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2001150001 definitions=main-2003040134
+ lowpriorityscore=0
+ adultscore=0 mlxscore=0 mlxlogscore=999 bulkscore=0 suspectscore=1
+ clxscore=1015 malwarescore=0 priorityscore=1501 phishscore=0
+ impostorscore=0 spamscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2001150001 definitions=main-2003040134
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,161 +109,88 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
-Process close windows after its requests are completed. In multi-thread
-applications, child can open a window but release FD will not be called
-upon its exit. Parent thread will be closing it later upon its exit.
+Dump FIFO entries if could not find send window and print CRB
+for debugging.
 
-The parent can also send NX requests with this window and NX can
-generate page faults. After kernel handles the page fault, send
-signal to process by using PID if CSB address is invalid. Parent
-thread will not receive signal since its PID is different from the one
-saved in vas_window. So use tgid in case if the task for the pid saved
-in window is not running and send signal to its parent.
-
-To prevent reusing the pid until the window closed, take reference to
-pid and task mm.
-
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 Signed-off-by: Haren Myneni <haren@linux.ibm.com>
 ---
- arch/powerpc/platforms/powernv/vas-debug.c  |  2 +-
- arch/powerpc/platforms/powernv/vas-window.c | 53 ++++++++++++++++++++++++++---
- arch/powerpc/platforms/powernv/vas.h        |  9 ++++-
- 3 files changed, 57 insertions(+), 7 deletions(-)
+ arch/powerpc/platforms/powernv/vas-fault.c | 41 ++++++++++++++++++++++++++++++
+ 1 file changed, 41 insertions(+)
 
-diff --git a/arch/powerpc/platforms/powernv/vas-debug.c b/arch/powerpc/platforms/powernv/vas-debug.c
-index 09e63df..ef9a717 100644
---- a/arch/powerpc/platforms/powernv/vas-debug.c
-+++ b/arch/powerpc/platforms/powernv/vas-debug.c
-@@ -38,7 +38,7 @@ static int info_show(struct seq_file *s, void *private)
+diff --git a/arch/powerpc/platforms/powernv/vas-fault.c b/arch/powerpc/platforms/powernv/vas-fault.c
+index c79fdbd..3ab0831 100644
+--- a/arch/powerpc/platforms/powernv/vas-fault.c
++++ b/arch/powerpc/platforms/powernv/vas-fault.c
+@@ -26,6 +26,28 @@
+  */
+ #define VAS_FAULT_WIN_FIFO_SIZE	(4 << 20)
  
- 	seq_printf(s, "Type: %s, %s\n", cop_to_str(window->cop),
- 					window->tx_win ? "Send" : "Receive");
--	seq_printf(s, "Pid : %d\n", window->pid);
-+	seq_printf(s, "Pid : %d\n", vas_window_pid(window));
- 
- unlock:
- 	mutex_unlock(&vas_mutex);
-diff --git a/arch/powerpc/platforms/powernv/vas-window.c b/arch/powerpc/platforms/powernv/vas-window.c
-index a45d81d..7587258 100644
---- a/arch/powerpc/platforms/powernv/vas-window.c
-+++ b/arch/powerpc/platforms/powernv/vas-window.c
-@@ -12,6 +12,8 @@
- #include <linux/log2.h>
- #include <linux/rcupdate.h>
- #include <linux/cred.h>
-+#include <linux/sched/mm.h>
-+#include <linux/mmu_context.h>
- #include <asm/switch_to.h>
- #include <asm/ppc-opcode.h>
- #include "vas.h"
-@@ -876,8 +878,6 @@ struct vas_window *vas_rx_win_open(int vasid, enum vas_cop_type cop,
- 	rxwin->user_win = rxattr->user_win;
- 	rxwin->cop = cop;
- 	rxwin->wcreds_max = rxattr->wcreds_max ?: VAS_WCREDS_DEFAULT;
--	if (rxattr->user_win)
--		rxwin->pid = task_pid_vnr(current);
- 
- 	init_winctx_for_rxwin(rxwin, rxattr, &winctx);
- 	init_winctx_regs(rxwin, &winctx);
-@@ -1027,7 +1027,6 @@ struct vas_window *vas_tx_win_open(int vasid, enum vas_cop_type cop,
- 	txwin->tx_win = 1;
- 	txwin->rxwin = rxwin;
- 	txwin->nx_win = txwin->rxwin->nx_win;
--	txwin->pid = attr->pid;
- 	txwin->user_win = attr->user_win;
- 	txwin->wcreds_max = attr->wcreds_max ?: VAS_WCREDS_DEFAULT;
- 
-@@ -1068,8 +1067,43 @@ struct vas_window *vas_tx_win_open(int vasid, enum vas_cop_type cop,
- 			goto free_window;
- 	}
- 
--	set_vinst_win(vinst, txwin);
-+	if (txwin->user_win) {
-+		/*
-+		 * Window opened by child thread may not be closed when
-+		 * it exits. So take reference to its pid and release it
-+		 * when the window is free by parent thread.
-+		 * Acquire a reference to the task's pid to make sure
-+		 * pid will not be re-used - needed only for multithread
-+		 * applications.
-+		 */
-+		txwin->pid = get_task_pid(current, PIDTYPE_PID);
-+		/*
-+		 * Acquire a reference to the task's mm.
-+		 */
-+		txwin->mm = get_task_mm(current);
- 
-+		if (!txwin->mm) {
-+			put_pid(txwin->pid);
-+			pr_err("VAS: pid(%d): mm_struct is not found\n",
-+					current->pid);
-+			rc = -EPERM;
-+			goto free_window;
-+		}
-+
-+		mmgrab(txwin->mm);
-+		mmput(txwin->mm);
-+		mm_context_add_copro(txwin->mm);
-+		/*
-+		 * Process closes window during exit. In the case of
-+		 * multithread application, child can open window and
-+		 * can exit without closing it. Expects parent thread
-+		 * to use and close the window. So do not need to take
-+		 * pid reference for parent thread.
-+		 */
-+		txwin->tgid = find_get_pid(task_tgid_vnr(current));
-+	}
-+
-+	set_vinst_win(vinst, txwin);
- 	return txwin;
- 
- free_window:
-@@ -1266,8 +1300,17 @@ int vas_win_close(struct vas_window *window)
- 	poll_window_castout(window);
- 
- 	/* if send window, drop reference to matching receive window */
--	if (window->tx_win)
-+	if (window->tx_win) {
-+		if (window->user_win) {
-+			/* Drop references to pid and mm */
-+			put_pid(window->pid);
-+			if (window->mm) {
-+				mmdrop(window->mm);
-+				mm_context_remove_copro(window->mm);
-+			}
-+		}
- 		put_rx_win(window->rxwin);
-+	}
- 
- 	vas_window_free(window);
- 
-diff --git a/arch/powerpc/platforms/powernv/vas.h b/arch/powerpc/platforms/powernv/vas.h
-index ab41cd3..7c8e0182 100644
---- a/arch/powerpc/platforms/powernv/vas.h
-+++ b/arch/powerpc/platforms/powernv/vas.h
-@@ -353,7 +353,9 @@ struct vas_window {
- 	bool user_win;		/* True if user space window */
- 	void *hvwc_map;		/* HV window context */
- 	void *uwc_map;		/* OS/User window context */
--	pid_t pid;		/* Linux process id of owner */
-+	struct pid *pid;	/* Linux process id of owner */
-+	struct pid *tgid;	/* Thread group ID of owner */
-+	struct mm_struct *mm;	/* Linux process mm_struct */
- 	int wcreds_max;		/* Window credits */
- 
- 	char *dbgname;
-@@ -431,6 +433,11 @@ struct vas_winctx {
- extern struct vas_window *vas_pswid_to_window(struct vas_instance *vinst,
- 						uint32_t pswid);
- 
-+static inline int vas_window_pid(struct vas_window *window)
++static void dump_crb(struct coprocessor_request_block *crb)
 +{
-+	return pid_vnr(window->pid);
++	struct data_descriptor_entry *dde;
++	struct nx_fault_stamp *nx;
++
++	dde = &crb->source;
++	pr_devel("SrcDDE: addr 0x%llx, len %d, count %d, idx %d, flags %d\n",
++		be64_to_cpu(dde->address), be32_to_cpu(dde->length),
++		dde->count, dde->index, dde->flags);
++
++	dde = &crb->target;
++	pr_devel("TgtDDE: addr 0x%llx, len %d, count %d, idx %d, flags %d\n",
++		be64_to_cpu(dde->address), be32_to_cpu(dde->length),
++		dde->count, dde->index, dde->flags);
++
++	nx = &crb->stamp.nx;
++	pr_devel("NX Stamp: PSWID 0x%x, FSA 0x%llx, flags 0x%x, FS 0x%x\n",
++		be32_to_cpu(nx->pswid),
++		be64_to_cpu(crb->stamp.nx.fault_storage_addr),
++		nx->flags, be32_to_cpu(nx->fault_status));
 +}
 +
- static inline void vas_log_write(struct vas_window *win, char *name,
- 			void *regptr, u64 val)
- {
+ /*
+  * Update the CSB to indicate a translation error.
+  *
+@@ -138,6 +160,23 @@ static void update_csb(struct vas_window *window,
+ 			pid_vnr(pid), rc);
+ }
+ 
++static void dump_fifo(struct vas_instance *vinst, void *entry)
++{
++	int i;
++	unsigned long *fifo = entry;
++	unsigned long *end = vinst->fault_fifo + vinst->fault_fifo_size;
++
++	pr_err("Fault fifo size %d, Max crbs %d\n", vinst->fault_fifo_size,
++			vinst->fault_fifo_size / CRB_SIZE);
++
++	/* Dump 10 CRB entries or until end of FIFO */
++	pr_err("Fault FIFO Dump:\n");
++	for (i = 0; i < 10*(CRB_SIZE/8) && fifo < end; i += 4, fifo += 4) {
++		pr_err("[%.3d, %p]: 0x%.16lx 0x%.16lx 0x%.16lx 0x%.16lx\n",
++			i, fifo, *fifo, *(fifo+1), *(fifo+2), *(fifo+3));
++	}
++}
++
+ /*
+  * Process valid CRBs in fault FIFO.
+  */
+@@ -204,6 +243,7 @@ irqreturn_t vas_fault_thread_fn(int irq, void *data)
+ 				vinst->vas_id, vinst->fault_fifo, fifo,
+ 				vinst->fault_crbs);
+ 
++		dump_crb(crb);
+ 		window = vas_pswid_to_window(vinst,
+ 				be32_to_cpu(crb->stamp.nx.pswid));
+ 
+@@ -214,6 +254,7 @@ irqreturn_t vas_fault_thread_fn(int irq, void *data)
+ 			 * even clean it up (return credit).
+ 			 * But we should not get here.
+ 			 */
++			dump_fifo(vinst, (void *)entry);
+ 			pr_err("VAS[%d] fault_fifo %p, fifo %p, pswid 0x%x, fault_crbs %d bad CRB?\n",
+ 				vinst->vas_id, vinst->fault_fifo, fifo,
+ 				be32_to_cpu(crb->stamp.nx.pswid),
 -- 
 1.8.3.1
 
