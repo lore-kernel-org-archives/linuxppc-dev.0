@@ -2,96 +2,83 @@ Return-Path: <SRS0=d5Dh=4V=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 76E41C3F2CD
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 07:20:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CAD65C3F2D1
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 08:52:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3144F214D8
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 07:20:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3144F214D8
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 2BA022166E
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 08:52:23 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pu1LyzfN"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2BA022166E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48XQJb0yV1zDqXw
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 18:20:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48XSLX0jthzDqW7
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 19:52:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=leonardo@linux.ibm.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62d;
+ helo=mail-pl1-x62d.google.com; envelope-from=kernelfans@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=pu1LyzfN; dkim-atps=neutral
+Received: from mail-pl1-x62d.google.com (mail-pl1-x62d.google.com
+ [IPv6:2607:f8b0:4864:20::62d])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48XQGh72ZfzDqQf
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2020 18:18:52 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 02479nn2143874; Wed, 4 Mar 2020 02:18:46 -0500
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2yj3erqu80-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 04 Mar 2020 02:18:45 -0500
-Received: from m0098404.ppops.net (m0098404.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 0247Ah4i002626;
- Wed, 4 Mar 2020 02:18:45 -0500
-Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
- [169.63.121.186])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2yj3erqu7j-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 04 Mar 2020 02:18:45 -0500
-Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
- by ppma03wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 0247G3wu030502;
- Wed, 4 Mar 2020 07:18:44 GMT
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by ppma03wdc.us.ibm.com with ESMTP id 2yffk711fg-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 04 Mar 2020 07:18:44 +0000
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0247Ih6456230288
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 4 Mar 2020 07:18:43 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id EDF6FBE051;
- Wed,  4 Mar 2020 07:18:42 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 33460BE056;
- Wed,  4 Mar 2020 07:18:39 +0000 (GMT)
-Received: from LeoBras (unknown [9.85.177.129])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
- Wed,  4 Mar 2020 07:18:38 +0000 (GMT)
-Message-ID: <621dd76a8e0b449db66ba2c3ad20fb2c743a1f1b.camel@linux.ibm.com>
-Subject: Re: [PATCH 1/1] powerpc/kernel: Enables memory hot-remove after
- reboot on pseries guests
-From: Leonardo Bras <leonardo@linux.ibm.com>
-To: Bharata B Rao <bharata.rao@gmail.com>
-Date: Wed, 04 Mar 2020 04:18:32 -0300
-In-Reply-To: <CAGZKiBr=8i11YPDn+1y5j6YfGj+tVbbTKakoGje9QQ8TEw9g5g@mail.gmail.com>
-References: <20200228060439.52749-1-leonardo@linux.ibm.com>
- <CAGZKiBr=8i11YPDn+1y5j6YfGj+tVbbTKakoGje9QQ8TEw9g5g@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha256";
- protocol="application/pgp-signature"; boundary="=-sL1rgkZbhhqGAClQPGna"
-User-Agent: Evolution 3.34.4 (3.34.4-1.fc31) 
-MIME-Version: 1.0
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
- definitions=2020-03-03_08:2020-03-03,
- 2020-03-03 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- malwarescore=0 impostorscore=0 mlxscore=0 phishscore=0 spamscore=0
- clxscore=1015 suspectscore=0 bulkscore=0 adultscore=0 priorityscore=1501
- mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2001150001 definitions=main-2003040055
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48XSJC6np0zDqLj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2020 19:50:17 +1100 (AEDT)
+Received: by mail-pl1-x62d.google.com with SMTP id x17so714767plm.10
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2020 00:50:17 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references;
+ bh=woJvO5E8fpJd4Q5CNOWhDsXW01yY8MLHyUaA7/jn7L4=;
+ b=pu1LyzfNlpYzzHymyQuajEB74i2lHX8Mpq9rMdimauTbQ+i1tjPg/y+r3eEDpkIM9G
+ O+3eb3tKIQN6wFbpXqhzxbbsD3A8mz5GBC09X8HWyBWGYQiQXHYX8e6CfRLlSKmvr5/u
+ dOcWD9lFIZZz1kdr/9W95dIbYHhEZJ8XUFpS65GSR7pYSIxsleLOYNOTA4IiDWSHJ99M
+ pSkYyxSylco/8a8uZ3qFLQLdLr/CJc1x/Yg+B8XQ97Ps9rrAmEenRm46n9RBiisIGdEn
+ /IKJWOzvVCG1mtB2yLuBN5uHwaOz9dtlMqpClJmvk+Qf6K0tjf5sTM2PRLrDmsUe5mod
+ thCQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references;
+ bh=woJvO5E8fpJd4Q5CNOWhDsXW01yY8MLHyUaA7/jn7L4=;
+ b=puYQR2W5hgxXUlNJ2SEgsuZB5U0D9+VHgFQ7QuW5BvMfjL94rNzaIjwVDMOT5p+U3k
+ mjMGS68IqTFocpfuyr80dPLWK8Whtbg/xz5kFIVSYY+XWE0zUPBIpln2ZsHHANQ87jzm
+ MGJqtQpdyLibLGZakHeSwP+BLYq6pIBRygb6G4+bLsXli6Ot2sw53nRxyMl8WLx6mXR2
+ sdzMFZqKcDztGGDf10gtnPzC6vMbz3sbyPvBH8n3CLzBcKP6T6JwuuSoHy61CaA7XKAb
+ BT7tIWvBFooeoxASIlU6SbKZevAalTBcc6qHkzJ38aqwS0l1AqFA5WSyYVzFyq7jh7Xd
+ /ssA==
+X-Gm-Message-State: ANhLgQ3My1+68JNyE42ZLkTgF/jIV/AJ3U0TfqfbzY/L0w3PwxfbC7Xg
+ ii0Jbp4g+BvHdRmp/8DnKbUTEBY=
+X-Google-Smtp-Source: ADFU+vt8VxQR7hpj3VOexVfbtnLYfwkksuVYM4nJGhYVwbz4PwS8vVumrMrIQErowUuuVIfmYcMmkw==
+X-Received: by 2002:a17:902:9890:: with SMTP id
+ s16mr2016577plp.77.1583311814491; 
+ Wed, 04 Mar 2020 00:50:14 -0800 (PST)
+Received: from mylaptop.redhat.com ([209.132.188.80])
+ by smtp.gmail.com with ESMTPSA id v123sm463085pfb.85.2020.03.04.00.50.09
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Wed, 04 Mar 2020 00:50:14 -0800 (PST)
+From: Pingfan Liu <kernelfans@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCHv3 0/2] pseries/scm: buffer pmem's bound addr in dt for kexec
+ kernel
+Date: Wed,  4 Mar 2020 16:47:28 +0800
+Message-Id: <1583311651-29310-1-git-send-email-kernelfans@gmail.com>
+X-Mailer: git-send-email 2.7.5
+In-Reply-To: <1582882895-3142-1-git-send-email-kernelfans@gmail.com>
+References: <1582882895-3142-1-git-send-email-kernelfans@gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,72 +90,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ndfont@gmail.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Claudio Carvalho <cclaudio@linux.ibm.com>,
- Michael Roth <mdroth@linux.vnet.ibm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
- arbab@linux.ibm.com, Hari Bathini <hbathini@linux.ibm.com>
+Cc: Andrew Donnellan <ajd@linux.ibm.com>, kexec@lists.infradead.org,
+ Pingfan Liu <kernelfans@gmail.com>, Rob Herring <robh+dt@kernel.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ Oliver O'Halloran <oohall@gmail.com>, Dan Williams <dan.j.williams@intel.com>,
+ Frank Rowand <frowand.list@gmail.com>, Hari Bathini <hbathini@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+V2 -> V3:
+   in [2/2], EXPORT_SYMBOL(new_property) and EXPORT_SYMBOL_GPL(of_add_property)
 
---=-sL1rgkZbhhqGAClQPGna
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Hari Bathini <hbathini@linux.ibm.com>
+Cc: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Cc: Oliver O'Halloran <oohall@gmail.com>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: Andrew Donnellan <ajd@linux.ibm.com>
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Frank Rowand <frowand.list@gmail.com>
+Cc: kexec@lists.infradead.org
 
-Hello Bharata, thanks for this feedback!
+Pingfan Liu (2):
+  powerpc/of: split out new_property() for reusing
+  pseries/scm: buffer pmem's bound addr in dt for kexec kernel
 
-On Wed, 2020-03-04 at 10:13 +0530, Bharata B Rao wrote:
-> Hi,
->=20
-> I tried this a few years back
-> (https://patchwork.ozlabs.org/patch/800142/) and didn't pursue it
-> further because at that time, it was felt that the approach might not
-> work for PowerVM guests, because all the present memory except RMA
-> gets marked as hot-pluggable by PowerVM. This discussion is not
-> present in the above thread, but during my private discussions with
-> Reza and Nathan, it was noted that making all that memory as MOVABLE
-> is not preferable for PowerVM guests as we might run out of memory for
-> kernel allocations.
+ arch/powerpc/platforms/pseries/of_helpers.c | 29 +++++++++++++++++++++++++
+ arch/powerpc/platforms/pseries/of_helpers.h |  3 +++
+ arch/powerpc/platforms/pseries/papr_scm.c   | 33 ++++++++++++++++++++---------
+ arch/powerpc/platforms/pseries/reconfig.c   | 26 -----------------------
+ drivers/of/base.c                           |  1 +
+ 5 files changed, 56 insertions(+), 36 deletions(-)
 
-Humm, this makes sense.
-But with mu change, these pieces of memory only get into ZONE_MOVABLE
-if the boot parameter 'movable_node' gets passed to guest kernel.=20
-
-So, even if we are unable to sort out some flag combination that work
-fine for both use-cases, if PowerVM don't pass 'movable_node' as boot
-parameter to kernel, it will behave just as today.
-
-What are your thoughts on that?
-
-Best regards,
-
-Leonardo Bras
-
---=-sL1rgkZbhhqGAClQPGna
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEMdeUgIzgjf6YmUyOlQYWtz9SttQFAl5fVkgACgkQlQYWtz9S
-ttTcqw/+KygdoD/4CjbE1qeM/UgE8K0p7R0VEctB20M41BvMj0yC4c+sHA+CPbkW
-o273+a2KeG6le9K5sp7Gy7ElrSqczN2AuInkYHJ2AezPBw4pDRGTBTp2a91ivGdf
-DidQrsx856IW6qouXsqo1NOIwDicuuy12/HCGzqvkFGaY6/89FdihM5FbBTtQ8Ps
-DRKJnOwhz5gr0vcYLHtJdfyzuzPM4VzFDIYmTH3+vLgfYvfQFt0S4RqmoEsI0AXR
-+u33lx995GzsafkladGDNKbX/v/xt9MRImGdhuHKmH5+ccnR/GankA5W4mOR+hw/
-1caHR2Sn5bXlHwtJjL9OslJmPfWIho8D/v9SmRfJIgfE0Br9hNMrl9ttB4V9LmUV
-Oe9e3hyyR3F0fVpKLrYvA9KQJ7ocm3I1e2hEwxYphtDiasCVCCFHD/Ue2sHpaNc2
-0TcoIsWifC1TBMq2pMWIRVlkdee0B1V6Sj1pmyoRpuH7ZweP41ge2aG4Yw7CDStd
-TM7jngOQymRfgLrG1jjSnEjtCEG/ZPSXQVw39Ux7NXXUbEyuA07jYhVXON1J/qgl
-kL2RklPet9fjO0UTBE1TKxDepUdGECZHENUZ4q4Bo7uafSDxWY/V6b7AJm7zFZcA
-tTL7fYUiZbh9m7DzZZNLyVZXRt6BfMzPlgLjK8nEZXLbvF/n0zQ=
-=A/1r
------END PGP SIGNATURE-----
-
---=-sL1rgkZbhhqGAClQPGna--
+-- 
+2.7.5
 
