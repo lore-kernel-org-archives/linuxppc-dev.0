@@ -2,97 +2,65 @@ Return-Path: <SRS0=3HB0=4W=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E6B8C3F2D1
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Mar 2020 00:06:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2957CC3F2CE
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Mar 2020 00:31:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F100620838
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Mar 2020 00:06:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F100620838
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 399122084E
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Mar 2020 00:31:26 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="fVDV3f2o"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 399122084E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48Xrct0p33zDqlD
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Mar 2020 11:06:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 48XsB36jK8zDqTm
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Mar 2020 11:31:23 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48XrZy0jWqzDqRv
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Mar 2020 11:04:25 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 024NxDnh053962
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Mar 2020 19:04:21 -0500
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2yhs0urr0c-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2020 19:04:21 -0500
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ajd@linux.ibm.com>;
- Thu, 5 Mar 2020 00:04:20 -0000
-Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 5 Mar 2020 00:04:16 -0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 02503GkH49021186
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 5 Mar 2020 00:03:16 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3EA8A5204E;
- Thu,  5 Mar 2020 00:04:15 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 87ADA52050;
- Thu,  5 Mar 2020 00:04:14 +0000 (GMT)
-Received: from [10.61.2.125] (haven.au.ibm.com [9.192.254.114])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 980AAA0264;
- Thu,  5 Mar 2020 11:04:09 +1100 (AEDT)
-Subject: Re: [PATCH V6 00/14] powerpc/vas: Page fault handling for user space
- NX requests
-To: Haren Myneni <haren@linux.ibm.com>, mpe@ellerman.id.au
-References: <1583353283.18705.2112.camel@hbabu-laptop>
-From: Andrew Donnellan <ajd@linux.ibm.com>
-Date: Thu, 5 Mar 2020 11:04:13 +1100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.5.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48Xs8452rrzDqQ0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Mar 2020 11:29:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=gibson.dropbear.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
+ header.a=rsa-sha256 header.s=201602 header.b=fVDV3f2o; 
+ dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1007)
+ id 48Xs836Hz7z9sRR; Thu,  5 Mar 2020 11:29:39 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=gibson.dropbear.id.au; s=201602; t=1583368179;
+ bh=5xu/dzFuNwVikXTzBhBcxMlmER91thjs/7c43G7N2qU=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=fVDV3f2oU8QzPzeza4hCjA/gjhFcU6eNxr/IRVoMZyAXS0yz7FClzew+zjwmG5VC4
+ gdqdOiyO4viO1+SiCAzLFrhyF1EF0YcJ4X+u5ZIAwCbo8Hw5Y+RG5wJO7ZrYKfYh/z
+ zZAdyemXORp2N+u1MYOKRV7DGImEv8/J6z0kq9WI=
+Date: Thu, 5 Mar 2020 10:55:45 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@fr.ibm.com>
+Subject: Re: [RFC PATCH v1] powerpc/prom_init: disable XIVE in Secure VM.
+Message-ID: <20200304235545.GE593957@umbus.fritz.box>
+References: <1582962844-26333-1-git-send-email-linuxram@us.ibm.com>
+ <20200302233240.GB35885@umbus.fritz.box>
+ <8f0c3d41-d1f9-7e6d-276b-b95238715979@fr.ibm.com>
+ <20200303170205.GA5416@oc0525413822.ibm.com>
+ <20200303184520.632be270@bahia.home>
+ <20200303185645.GB5416@oc0525413822.ibm.com>
+ <20200304115948.7b2dfe10@bahia.home>
+ <20200304153727.GH5416@oc0525413822.ibm.com>
+ <08269906-db11-b80c-0e67-777ab0aaa9bd@fr.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1583353283.18705.2112.camel@hbabu-laptop>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 20030500-0008-0000-0000-000003596951
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20030500-0009-0000-0000-00004A7A9E7F
-Message-Id: <93c032c4-9be2-f48a-ebe7-cecdcb505545@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
- definitions=2020-03-04_10:2020-03-04,
- 2020-03-04 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 suspectscore=0
- lowpriorityscore=0 impostorscore=0 spamscore=0 clxscore=1015 adultscore=0
- phishscore=0 mlxlogscore=999 mlxscore=0 malwarescore=0 priorityscore=1501
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2001150001
- definitions=main-2003040153
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="5xSkJheCpeK0RUEJ"
+Content-Disposition: inline
+In-Reply-To: <08269906-db11-b80c-0e67-777ab0aaa9bd@fr.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,74 +72,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, herbert@gondor.apana.org.au, npiggin@gmail.com,
- hch@infradead.org, oohall@gmail.com, sukadev@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: aik@ozlabs.ru, andmike@linux.ibm.com, Ram Pai <linuxram@us.ibm.com>,
+ Greg Kurz <groug@kaod.org>, kvm-ppc@vger.kernel.org,
+ sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ bauerman@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 5/3/20 7:21 am, Haren Myneni wrote:
-> 
-> On power9, Virtual Accelerator Switchboard (VAS) allows user space or
-> kernel to communicate with Nest Accelerator (NX) directly using COPY/PASTE
-> instructions. NX provides various functionalities such as compression,
-> encryption and etc. But only compression (842 and GZIP formats) is
-> supported in Linux kernel on power9.
-> 
-> 842 compression driver (drivers/crypto/nx/nx-842-powernv.c)
-> is already included in Linux. Only GZIP support will be available from
-> user space.
-> 
-> Applications can issue GZIP compression / decompression requests to NX with
-> COPY/PASTE instructions. When NX is processing these requests, can hit
-> fault on the request buffer (not in memory). It issues an interrupt and
-> pastes fault CRB in fault FIFO. Expects kernel to handle this fault and
-> return credits for both send and fault windows after processing.
-> 
-> This patch series adds IRQ and fault window setup, and NX fault handling:
-> - Alloc IRQ and trigger port address, and configure IRQ per VAS instance.
-> - Set port# for each window to generate an interrupt when noticed fault.
-> - Set fault window and FIFO on which NX paste fault CRB.
-> - Setup IRQ thread fault handler per VAS instance.
-> - When receiving an interrupt, Read CRBs from fault FIFO and update
->    coprocessor_status_block (CSB) in the corresponding CRB with translation
->    failure (CSB_CC_TRANSLATION). After issuing NX requests, process polls
->    on CSB address. When it sees translation error, can touch the request
->    buffer to bring the page in to memory and reissue NX request.
-> - If copy_to_user fails on user space CSB address, OS sends SEGV signal.
-> 
-> Tested these patches with NX-GZIP support and will be posting this series
-> soon.
-> 
-> Patches 1 & 2: Define alloc IRQ and get port address per chip which are needed
->                 to alloc IRQ per VAS instance.
-> Patch 3: Define nx_fault_stamp on which NX writes fault status for the fault
->           CRB
-> Patch 4: Alloc and setup IRQ and trigger port address for each VAS instance
-> Patch 5: Setup fault window per each VAS instance. This window is used for
->           NX to paste fault CRB in FIFO.
-> Patches 6 & 7: Setup threaded IRQ per VAS and register NX with fault window
->           ID and port number for each send window so that NX paste fault CRB
->           in this window.
-> Patch 8: Reference to pid and mm so that pid is not used until window closed.
->           Needed for multi thread application where child can open a window
->           and can be used by parent later.
-> Patches 9 and 10: Process CRBs from fault FIFO and notify tasks by
->           updating CSB or through signals.
-> Patches 11 and 12: Return credits for send and fault windows after handling
->          faults.
-> Patch 14:Fix closing send window after all credits are returned. This issue
->           happens only for user space requests. No page faults on kernel
->           request buffer.
-> 
 
-This series adds a bunch of sparse warnings - it would be great if you 
-could take a look.
+--5xSkJheCpeK0RUEJ
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-https://openpower.xyz/job/snowpatch/job/snowpatch-linux-sparse/16052//artifact/linux/report.txt
+On Wed, Mar 04, 2020 at 04:56:09PM +0100, C=E9dric Le Goater wrote:
+> [ ... ]
+>=20
+> > (1) applied the patch which shares the EQ-page with the hypervisor.
+> > (2) set "kernel_irqchip=3Doff"
+> > (3) set "ic-mode=3Dxive"
+>=20
+> you don't have to set the interrupt mode. xive should be negotiated
+> by default.
+>=20
+> > (4) set "svm=3Don" on the kernel command line.
+> > (5) no changes to the hypervisor and ultravisor.
+> >=20
+> > And Boom it works!.   So you were right.
+>=20
+> Excellent.
+> =20
+> > I am sending out the patch for (1) above ASAP.
+>=20
+> Next step, could you please try to do the same with the TIMA and ESB pfn ?
+> and use KVM.
 
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-ajd@linux.ibm.com             IBM Australia Limited
+I'm a bit confused by this.  Aren't the TIMA and ESB pages essentially
+IO pages, rather than memory pages from the guest's point of view?  I
+assume only memory pages are protected with PEF - I can't even really
+see what protecting an IO page would even mean.
 
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--5xSkJheCpeK0RUEJ
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAl5gP/8ACgkQbDjKyiDZ
+s5JaxxAAnwIyf0WXC5YzeSjk1V+AVuxL+cTigsJ+1YnlFgSAXo34iO5iCZbKag92
+Kz7HmDKLZwtomQ2WFrauUcg32Ui2e5xnfExVEjVQl9rm+8SxF4htjORiCVCkvWXt
+mnYEtW4u2nGtMKp90mKysXxKXC+mPAjq1vwgSl5/Jo6pLhpDvagUsxDH3pYDodlo
+8ie2CkmOGDOTVmAD9S+cRn/n8DBz4mw82TaWoL2Njes6BqLbkxjjpFW4y7pojHW/
+DHzq8f3q+qfoKG3DNwoLACvgTP5XLBlnqBJ0Sds5jmWz1wjHfQxcSP8Qn3g2H+DF
+EcA7w64YHAtLzsOrcAxXSkrG5nowiE6sgSKDskVuBFH59lo+5RgaWEJCVO6Nc5sp
+HriPGmRJAceJHtNTPF8sbcMAwNSwkfRYcpUTs4dmVUHUg1zfIsn0DorALL9/xy8a
+w6yDVfgf6yQGlojatQ7Wz3a43s2JalFf/zCODealfJJlStlCeY5Uw1bX11WdLbJi
+AnPygR6PS1FMbEUTM4BJkbICQ3rg2652IpsZd9rsHolEXk1yEpJlbQXpByUETsNq
+8tqjzb04gm/a9wBgsKrU1p3hAFJ4sGPsoXj+u17iZfOs9Xb5I4i6YOgXv+6J0OYi
+tjSW+Dmu8EImuTpULYbt1j1TjRU9oU/PzN5Jnzi/+uEakQxi3Nc=
+=DN2A
+-----END PGP SIGNATURE-----
+
+--5xSkJheCpeK0RUEJ--
