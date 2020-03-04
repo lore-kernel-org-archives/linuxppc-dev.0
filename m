@@ -2,84 +2,64 @@ Return-Path: <SRS0=d5Dh=4V=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_2
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D7984C3F2D1
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 08:55:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 300B0C3F2D1
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 08:57:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8500221739
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 08:55:43 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Bs+piawu"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8500221739
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id CFCC3214D8
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 08:57:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CFCC3214D8
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48XSQN5C64zDqbs
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 19:55:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48XST01pWszDqWy
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2020 19:57:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::441;
- helo=mail-pf1-x441.google.com; envelope-from=kernelfans@gmail.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kaod.org (client-ip=188.165.52.203; helo=3.mo69.mail-out.ovh.net;
+ envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=Bs+piawu; dkim-atps=neutral
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
- [IPv6:2607:f8b0:4864:20::441])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=kaod.org
+X-Greylist: delayed 944 seconds by postgrey-1.36 at bilbo;
+ Wed, 04 Mar 2020 19:50:56 AEDT
+Received: from 3.mo69.mail-out.ovh.net (3.mo69.mail-out.ovh.net
+ [188.165.52.203])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48XSJQ3DBvzDqW7
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2020 19:50:30 +1100 (AEDT)
-Received: by mail-pf1-x441.google.com with SMTP id n7so633989pfn.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2020 00:50:30 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=TiIql+hW6vhy0nku7tSxH1zd1ke9Ma9eE04Z6saZ0pI=;
- b=Bs+piawutlma6+60B2UgAJv10zwf7Erndy8kh5SNp+Gf7/k9vbgZ/T94ITGhbxCZip
- vytj8bE59j/lzS8CxKPckuGDcJo0VDvDuQrLCkX3IEQclOuPfHByyeqontuS222iowv0
- TK+ewVwE8m1+dn1G+npFk169BQ5+UR2OxvbFVoA4GVUc4kpDeZpCgVRcaP6ISN6BS/5w
- Wty0RppaocpgFv6woqCYIVNo8u0rVVDUm9WkXNWivt/HlLTYq1mGVg3bpJhgTcn69G5C
- Cc8Bd/5vECbIh3vpcRLxttQToYsdKA0q7WxDG3Gz4PI1zwgWdS6gGeJS2DJTX92tPKMN
- OW3A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references;
- bh=TiIql+hW6vhy0nku7tSxH1zd1ke9Ma9eE04Z6saZ0pI=;
- b=SOcaEcz8HKe0y52oYu/bUgo7aTqY6eaMk3xhxQ2nIo3WIWo5Q056NXBaUrj/e+YuKo
- GxTJeGd8Ve78vhF/qJOe/tc8y8QBpxNNoWp8ZUu8RooA5QsegW8AB2f1S+PUoU3b8iUN
- PaD63Sz6yucYQwtc+yNnSRT5d1XViD6F/MYql1ezdC5l2MNFYV9OBxyUMg9htr+o4Kjt
- 9Zo3Bkc9UhNLg5NQSLPZnbq4K0ILLRKXw51y4hdVzCInBHJRA0/Ol2XU/RC2XfHHUYh3
- HfEjuVMTMKqFVW8dEVz4xz34BnhS9QVKe8siwZ9Po0JGw06z/84QvZLvlNt7aQ7dw/xp
- NeYw==
-X-Gm-Message-State: ANhLgQ0QUs8FtxqLlKWFhrvclEZ1dd8n6oQC4S90tjM8eN5U0PUSBA68
- Lwzs07HIcAomHlEsfsQ8JGRUafM=
-X-Google-Smtp-Source: ADFU+vth/c3FMVXP227g9RnMbHBW7Dm4LTTbiytp5WE1VmF47AAiylu4k1WqHrEUK9kBj5dgmHDpWA==
-X-Received: by 2002:a62:6807:: with SMTP id d7mr2043056pfc.230.1583311827109; 
- Wed, 04 Mar 2020 00:50:27 -0800 (PST)
-Received: from mylaptop.redhat.com ([209.132.188.80])
- by smtp.gmail.com with ESMTPSA id v123sm463085pfb.85.2020.03.04.00.50.20
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Wed, 04 Mar 2020 00:50:26 -0800 (PST)
-From: Pingfan Liu <kernelfans@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCHv3 2/2] pseries/scm: buffer pmem's bound addr in dt for kexec
- kernel
-Date: Wed,  4 Mar 2020 16:47:30 +0800
-Message-Id: <1583311651-29310-3-git-send-email-kernelfans@gmail.com>
-X-Mailer: git-send-email 2.7.5
-In-Reply-To: <1583311651-29310-1-git-send-email-kernelfans@gmail.com>
-References: <1582882895-3142-1-git-send-email-kernelfans@gmail.com>
- <1583311651-29310-1-git-send-email-kernelfans@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48XSJw3VNwzDqQh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2020 19:50:54 +1100 (AEDT)
+Received: from player779.ha.ovh.net (unknown [10.108.42.196])
+ by mo69.mail-out.ovh.net (Postfix) with ESMTP id E8E4787417
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2020 09:35:03 +0100 (CET)
+Received: from kaod.org (lns-bzn-46-82-253-208-248.adsl.proxad.net
+ [82.253.208.248]) (Authenticated sender: groug@kaod.org)
+ by player779.ha.ovh.net (Postfix) with ESMTPSA id CA07E100026BE;
+ Wed,  4 Mar 2020 08:34:46 +0000 (UTC)
+Date: Wed, 4 Mar 2020 09:34:44 +0100
+From: Greg Kurz <groug@kaod.org>
+To: =?UTF-8?B?Q8OpZHJpYw==?= Le Goater <clg@kaod.org>
+Subject: Re: [EXTERNAL] Re: [RFC PATCH v1] powerpc/prom_init: disable XIVE
+ in Secure VM.
+Message-ID: <20200304093444.5e524ef6@bahia.home>
+In-Reply-To: <a1570b0d-c443-3140-31f0-bddd9f31f54b@kaod.org>
+References: <1582962844-26333-1-git-send-email-linuxram@us.ibm.com>
+ <20200302233240.GB35885@umbus.fritz.box>
+ <8f0c3d41-d1f9-7e6d-276b-b95238715979@fr.ibm.com>
+ <20200303170205.GA5416@oc0525413822.ibm.com>
+ <20200303184520.632be270@bahia.home>
+ <a1570b0d-c443-3140-31f0-bddd9f31f54b@kaod.org>
+X-Mailer: Claws Mail 3.17.4 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Ovh-Tracer-Id: 7509189430614727051
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedugedruddtjedguddvtdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpeffhffvuffkjghfofggtgfgsehtqhertdertdejnecuhfhrohhmpefirhgvghcumfhurhiiuceoghhrohhugheskhgrohgurdhorhhgqeenucfkpheptddrtddrtddrtddpkedvrddvheefrddvtdekrddvgeeknecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepphhlrgihvghrjeejledrhhgrrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpehgrhhouhhgsehkrghougdrohhrghdprhgtphhtthhopehlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhg
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,135 +71,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Donnellan <ajd@linux.ibm.com>, kexec@lists.infradead.org,
- Pingfan Liu <kernelfans@gmail.com>, Rob Herring <robh+dt@kernel.org>,
- Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
- Oliver O'Halloran <oohall@gmail.com>, Dan Williams <dan.j.williams@intel.com>,
- Frank Rowand <frowand.list@gmail.com>, Hari Bathini <hbathini@linux.ibm.com>
+Cc: aik@ozlabs.ru, andmike@linux.ibm.com, Ram Pai <linuxram@us.ibm.com>,
+ kvm-ppc@vger.kernel.org, sukadev@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, bauerman@linux.ibm.com,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-At present, plpar_hcall(H_SCM_BIND_MEM, ...) takes a very long time, so
-if dumping to fsdax, it will take a very long time.
+On Tue, 3 Mar 2020 20:18:18 +0100
+C=C3=A9dric Le Goater <clg@kaod.org> wrote:
 
-Take a closer look, during the papr_scm initialization, the only
-configuration is through drc_pmem_bind()-> plpar_hcall(H_SCM_BIND_MEM,
-...), which helps to set up the bound address.
+> >> **** BTW: I figured, I dont need this intermin patch to disable xive f=
+or
+> >> secure VM.  Just doing "svm=3Don xive=3Doff" on the kernel command lin=
+e is
+> >> sufficient for now. *****
+> >>
+> >=20
+> > No it is not. If the hypervisor doesn't propose XIVE (ie. ic-mode=3Dxive
+> > on the QEMU command line), the kernel simply ignores "xive=3Doff".
+>=20
 
-On pseries, for kexec -l/-p kernel, there is no reset of hardware, and this
-step can be stepped around to save times.  So the pmem bound address can be
-passed to the 2nd kernel through a dynamic added property "bound-addr" in
-dt node 'ibm,pmemory'.
+Ah... sorry for the typo... "doesn't propose XICS" of course :)
 
-Signed-off-by: Pingfan Liu <kernelfans@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Hari Bathini <hbathini@linux.ibm.com>
-Cc: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-Cc: Oliver O'Halloran <oohall@gmail.com>
-Cc: Dan Williams <dan.j.williams@intel.com>
-Cc: Andrew Donnellan <ajd@linux.ibm.com>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Frank Rowand <frowand.list@gmail.com>
-Cc: kexec@lists.infradead.org
----
-note: This patch has not been tested since I can not get such a pseries with pmem.
-      Please kindly to give some suggestion, thanks.
----
- arch/powerpc/platforms/pseries/of_helpers.c |  1 +
- arch/powerpc/platforms/pseries/papr_scm.c   | 33 ++++++++++++++++++++---------
- drivers/of/base.c                           |  1 +
- 3 files changed, 25 insertions(+), 10 deletions(-)
+> If I am correct, with the option ic-mode=3Dxive, the hypervisor will=20
+> propose only 'xive' in OV5 and not both 'xive' and 'xics'. But the
+> result is the same because xive can not be turned off and "xive=3Doff"=20
+> is ignored.
+>=20
+> Anyway, it's not the most common case of usage of the QEMU command
+> like. I think it's OK to use "xive=3Doff" on the kernel command line=20
+> for now.
+>=20
 
-diff --git a/arch/powerpc/platforms/pseries/of_helpers.c b/arch/powerpc/platforms/pseries/of_helpers.c
-index 1022e0f..2c7bab4 100644
---- a/arch/powerpc/platforms/pseries/of_helpers.c
-+++ b/arch/powerpc/platforms/pseries/of_helpers.c
-@@ -34,6 +34,7 @@ struct property *new_property(const char *name, const int length,
- 	kfree(new);
- 	return NULL;
- }
-+EXPORT_SYMBOL(new_property);
- 
- /**
-  * pseries_of_derive_parent - basically like dirname(1)
-diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
-index 0b4467e..54ae903 100644
---- a/arch/powerpc/platforms/pseries/papr_scm.c
-+++ b/arch/powerpc/platforms/pseries/papr_scm.c
-@@ -14,6 +14,7 @@
- #include <linux/delay.h>
- 
- #include <asm/plpar_wrappers.h>
-+#include "of_helpers.h"
- 
- #define BIND_ANY_ADDR (~0ul)
- 
-@@ -383,7 +384,7 @@ static int papr_scm_probe(struct platform_device *pdev)
- {
- 	struct device_node *dn = pdev->dev.of_node;
- 	u32 drc_index, metadata_size;
--	u64 blocks, block_size;
-+	u64 blocks, block_size, bound_addr = 0;
- 	struct papr_scm_priv *p;
- 	const char *uuid_str;
- 	u64 uuid[2];
-@@ -440,17 +441,29 @@ static int papr_scm_probe(struct platform_device *pdev)
- 	p->metadata_size = metadata_size;
- 	p->pdev = pdev;
- 
--	/* request the hypervisor to bind this region to somewhere in memory */
--	rc = drc_pmem_bind(p);
-+	of_property_read_u64(dn, "bound-addr", &bound_addr);
-+	if (bound_addr) {
-+		p->bound_addr = bound_addr;
-+	} else {
-+		struct property *property;
-+		u64 big;
- 
--	/* If phyp says drc memory still bound then force unbound and retry */
--	if (rc == H_OVERLAP)
--		rc = drc_pmem_query_n_bind(p);
-+		/* request the hypervisor to bind this region to somewhere in memory */
-+		rc = drc_pmem_bind(p);
- 
--	if (rc != H_SUCCESS) {
--		dev_err(&p->pdev->dev, "bind err: %d\n", rc);
--		rc = -ENXIO;
--		goto err;
-+		/* If phyp says drc memory still bound then force unbound and retry */
-+		if (rc == H_OVERLAP)
-+			rc = drc_pmem_query_n_bind(p);
-+
-+		if (rc != H_SUCCESS) {
-+			dev_err(&p->pdev->dev, "bind err: %d\n", rc);
-+			rc = -ENXIO;
-+			goto err;
-+		}
-+		big = cpu_to_be64(p->bound_addr);
-+		property = new_property("bound-addr", sizeof(u64), (const unsigned char *)&big,
-+			NULL);
-+		of_add_property(dn, property);
- 	}
- 
- 	/* setup the resource for the newly bound range */
-diff --git a/drivers/of/base.c b/drivers/of/base.c
-index ae03b12..602d2a9 100644
---- a/drivers/of/base.c
-+++ b/drivers/of/base.c
-@@ -1817,6 +1817,7 @@ int of_add_property(struct device_node *np, struct property *prop)
- 
- 	return rc;
- }
-+EXPORT_SYMBOL_GPL(of_add_property);
- 
- int __of_remove_property(struct device_node *np, struct property *prop)
- {
--- 
-2.7.5
+Sure, I just wanted to make things clear. Like you said it's a chicken
+switch introduced for distro testing. I think it should not be used
+to do anything else. If "svm=3D1" needs to enforce supported.xive =3D=3D fa=
+lse
+as a temporary workaround, it should do it explicitly.
+
+> C.
 
