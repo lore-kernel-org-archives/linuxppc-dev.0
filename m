@@ -2,76 +2,102 @@ Return-Path: <SRS0=3HB0=4W=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA770C3F2CE
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Mar 2020 00:41:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F306C3F2CE
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Mar 2020 00:48:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A213020866
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Mar 2020 00:41:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A213020866
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=canonical.com
+	by mail.kernel.org (Postfix) with ESMTPS id B3A6D2084E
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Mar 2020 00:48:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B3A6D2084E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48XsPd5QXjzDql0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Mar 2020 11:41:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48XsYP4M5VzDqjH
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Mar 2020 11:48:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=canonical.com
- (client-ip=91.189.89.112; helo=youngberry.canonical.com;
- envelope-from=po-hsu.lin@canonical.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=canonical.com
-Received: from youngberry.canonical.com (youngberry.canonical.com
- [91.189.89.112])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48XZC02ptzzDqSZ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Mar 2020 00:16:10 +1100 (AEDT)
-Received: from mail-pl1-f199.google.com ([209.85.214.199])
- by youngberry.canonical.com with esmtps
- (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128) (Exim 4.86_2)
- (envelope-from <po-hsu.lin@canonical.com>) id 1j9Tsb-0007Ma-BF
- for linuxppc-dev@lists.ozlabs.org; Wed, 04 Mar 2020 13:16:05 +0000
-Received: by mail-pl1-f199.google.com with SMTP id 102so950301pld.12
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2020 05:16:05 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=FoiB6hzDhu7zhsE/qqdlngAwyG5TADZ8ljLTza6EBz0=;
- b=mQ9AqfTfZLnMza9Y4czB6Pk4YMnbYnuXVIOjN4azUa9zapg3ooHkyLzMO3CYWtikFf
- HdQrP/gubhQGFVqGRnhRRMSha53Tfh4ki6qIwfLrL14iT//pSIFP5A6F9+GCFhWuBxaR
- 07NI/5w5CRLFT3QnKCiE4w3hvkjPNwV3wlAJEKyHDaad/cciJHiMNwWRWhYKUsw4bQBo
- M0WdcN0znL3MFHr5qsn5T8koqEs16m4aprGouAJ2ef809TkJwohpfW8ikrK61LvvYAtn
- x/O75PBiGWjPOA9lXslc9GSLWBSYBM7feBG/b5YUZPrgb0ysjnqzrzv/Xsxq/zg0Lf3m
- 2lHQ==
-X-Gm-Message-State: ANhLgQ3A2p44JncAsAXEhhVAr19tKdF3N5P8tIYd3H6WdrNSejwCtrE9
- dLA1xGNEHJhILpEuDTwd8xHTfOEraGv7MnbH1jith6JM85fkHgw3oQHSuU/IntE9Y7IibCAha5o
- NQIMT9zY1Zf7lAFr2wBDu0ovSrXUc8Vxk1ZyVgq5BVQ==
-X-Received: by 2002:a17:902:d90f:: with SMTP id
- c15mr3056605plz.190.1583327763907; 
- Wed, 04 Mar 2020 05:16:03 -0800 (PST)
-X-Google-Smtp-Source: ADFU+vvK4uTGiKzjtuDXnV1Gfy92QDaS45ZMs1S30Dw1XFtBScjRpPMHg0ViyThdR/UnPOLJjZ/fzQ==
-X-Received: by 2002:a17:902:d90f:: with SMTP id
- c15mr3056579plz.190.1583327763544; 
- Wed, 04 Mar 2020 05:16:03 -0800 (PST)
-Received: from Leggiero.taipei.internal (61-220-137-37.HINET-IP.hinet.net.
- [61.220.137.37])
- by smtp.gmail.com with ESMTPSA id a143sm3394286pfd.108.2020.03.04.05.16.01
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 04 Mar 2020 05:16:02 -0800 (PST)
-From: Po-Hsu Lin <po-hsu.lin@canonical.com>
-To: linux-kselftest@vger.kernel.org
-Subject: [PATCH] selftests/powerpc: Turn off timeout setting for benchmarks,
- dscr, signal, tm
-Date: Wed,  4 Mar 2020 21:15:53 +0800
-Message-Id: <20200304131553.27582-1-po-hsu.lin@canonical.com>
-X-Mailer: git-send-email 2.17.1
-X-Mailman-Approved-At: Thu, 05 Mar 2020 11:39:51 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48XsWl6WzJzDqcQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Mar 2020 11:46:43 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0250ihNR022125
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Mar 2020 19:46:41 -0500
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2yhr4jman5-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2020 19:46:41 -0500
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ajd@linux.ibm.com>;
+ Thu, 5 Mar 2020 00:46:38 -0000
+Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 5 Mar 2020 00:46:30 -0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 0250jVxY44957954
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 5 Mar 2020 00:45:31 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 90524A404D;
+ Thu,  5 Mar 2020 00:46:29 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DFE3CA4040;
+ Thu,  5 Mar 2020 00:46:28 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu,  5 Mar 2020 00:46:28 +0000 (GMT)
+Received: from [10.61.2.125] (haven.au.ibm.com [9.192.254.114])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id D831CA0264;
+ Thu,  5 Mar 2020 11:46:23 +1100 (AEDT)
+Subject: Re: [PATCH v3 19/27] powerpc/powernv/pmem: Add an IOCTL to report
+ controller statistics
+To: "Alastair D'Silva" <alastair@au1.ibm.com>, alastair@d-silva.org
+References: <20200221032720.33893-1-alastair@au1.ibm.com>
+ <20200221032720.33893-20-alastair@au1.ibm.com>
+From: Andrew Donnellan <ajd@linux.ibm.com>
+Date: Thu, 5 Mar 2020 11:46:27 +1100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.5.0
+MIME-Version: 1.0
+In-Reply-To: <20200221032720.33893-20-alastair@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 20030500-0020-0000-0000-000003B09316
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 20030500-0021-0000-0000-00002208CBFC
+Message-Id: <c0002b11-7f54-38d3-4ae2-9008a5cc0b61@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
+ definitions=2020-03-04_10:2020-03-04,
+ 2020-03-04 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 clxscore=1015
+ mlxscore=0 phishscore=0 mlxlogscore=999 suspectscore=0 lowpriorityscore=0
+ impostorscore=0 bulkscore=0 spamscore=0 adultscore=0 priorityscore=1501
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2001150001
+ definitions=main-2003050001
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,122 +109,329 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- paulus@samba.org, shuah@kernel.org
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Oliver O'Halloran <oohall@gmail.com>,
+ Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
+ Ira Weiny <ira.weiny@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Rob Herring <robh@kernel.org>, Dave Jiang <dave.jiang@intel.com>,
+ linux-nvdimm@lists.01.org, "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ Krzysztof Kozlowski <krzk@kernel.org>,
+ Anju T Sudhakar <anju@linux.vnet.ibm.com>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kurz <groug@kaod.org>, Nicholas Piggin <npiggin@gmail.com>,
+ =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>,
+ Dan Williams <dan.j.williams@intel.com>, Hari Bathini <hbathini@linux.ibm.com>,
+ linux-mm@kvack.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linux-kernel@vger.kernel.org, Vishal Verma <vishal.l.verma@intel.com>,
+ Frederic Barrat <fbarrat@linux.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Some specific tests in powerpc can take longer than the default 45
-seconds that added in commit 852c8cbf (selftests/kselftest/runner.sh:
-Add 45 second timeout per test) to run, the following test result was
-collected across 2 Power8 nodes and 1 Power9 node in our pool:
-  powerpc/benchmarks/futex_bench - 52s
-  powerpc/dscr/dscr_sysfs_test - 116s
-  powerpc/signal/signal_fuzzer - 88s
-  powerpc/tm/tm_unavailable_test - 168s
-  powerpc/tm/tm-poison - 240s
+On 21/2/20 2:27 pm, Alastair D'Silva wrote:
+> From: Alastair D'Silva <alastair@d-silva.org>
+> 
+> The controller can report a number of statistics that are useful
+> in evaluating the performance and reliability of the card.
+> 
+> This patch exposes this information via an IOCTL.
+> 
+> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+> ---
+>   arch/powerpc/platforms/powernv/pmem/ocxl.c | 185 +++++++++++++++++++++
+>   include/uapi/nvdimm/ocxl-pmem.h            |  17 ++
+>   2 files changed, 202 insertions(+)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/pmem/ocxl.c b/arch/powerpc/platforms/powernv/pmem/ocxl.c
+> index 2cabafe1fc58..009d4fd29e7d 100644
+> --- a/arch/powerpc/platforms/powernv/pmem/ocxl.c
+> +++ b/arch/powerpc/platforms/powernv/pmem/ocxl.c
+> @@ -758,6 +758,186 @@ static int ioctl_controller_dump_complete(struct ocxlpmem *ocxlpmem)
+>   				    GLOBAL_MMIO_HCI_CONTROLLER_DUMP_COLLECTED);
+>   }
+>   
+> +/**
+> + * controller_stats_header_parse() - Parse the first 64 bits of the controller stats admin command response
+> + * @ocxlpmem: the device metadata
+> + * @length: out, returns the number of bytes in the response (excluding the 64 bit header)
+> + */
+> +static int controller_stats_header_parse(struct ocxlpmem *ocxlpmem,
+> +	u32 *length)
+> +{
+> +	int rc;
+> +	u64 val;
+> +
+> +	u16 data_identifier;
+> +	u32 data_length;
+> +
+> +	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
+> +				     ocxlpmem->admin_command.data_offset,
+> +				     OCXL_LITTLE_ENDIAN, &val);
+> +	if (rc)
+> +		return rc;
+> +
+> +	data_identifier = val >> 48;
+> +	data_length = val & 0xFFFFFFFF;
+> +
+> +	if (data_identifier != 0x4353) { // 'CS'
+> +		dev_err(&ocxlpmem->dev,
+> +			"Bad data identifier for controller stats, expected 'CS', got '%-.*s'\n",
+> +			2, (char *)&data_identifier);
+> +		return -EINVAL;
 
-Thus they will fail with TIMEOUT error. Disable the timeout setting
-for these sub-tests to allow them finish properly.
+Same comment as earlier patches re EINVAL
 
-https://bugs.launchpad.net/bugs/1864642
-Signed-off-by: Po-Hsu Lin <po-hsu.lin@canonical.com>
----
- tools/testing/selftests/powerpc/benchmarks/Makefile | 2 ++
- tools/testing/selftests/powerpc/benchmarks/settings | 1 +
- tools/testing/selftests/powerpc/dscr/Makefile       | 2 ++
- tools/testing/selftests/powerpc/dscr/settings       | 1 +
- tools/testing/selftests/powerpc/signal/Makefile     | 2 ++
- tools/testing/selftests/powerpc/signal/settings     | 1 +
- tools/testing/selftests/powerpc/tm/Makefile         | 2 ++
- tools/testing/selftests/powerpc/tm/settings         | 1 +
- 8 files changed, 12 insertions(+)
- create mode 100644 tools/testing/selftests/powerpc/benchmarks/settings
- create mode 100644 tools/testing/selftests/powerpc/dscr/settings
- create mode 100644 tools/testing/selftests/powerpc/signal/settings
- create mode 100644 tools/testing/selftests/powerpc/tm/settings
+> +	}
+> +
+> +	*length = data_length;
+> +	return 0;
+> +}
+> +
+> +static int ioctl_controller_stats(struct ocxlpmem *ocxlpmem,
+> +				  struct ioctl_ocxl_pmem_controller_stats __user *uarg)
+> +{
+> +	struct ioctl_ocxl_pmem_controller_stats args;
+> +	u32 length;
+> +	int rc;
+> +	u64 val;
+> +
+> +	memset(&args, '\0', sizeof(args));
+> +
+> +	mutex_lock(&ocxlpmem->admin_command.lock);
+> +
+> +	rc = admin_command_request(ocxlpmem, ADMIN_COMMAND_CONTROLLER_STATS);
+> +	if (rc)
+> +		goto out;
+> +
+> +	rc = ocxl_global_mmio_write64(ocxlpmem->ocxl_afu,
+> +				      ocxlpmem->admin_command.request_offset + 0x08,
+> +				      OCXL_LITTLE_ENDIAN, 0);
+> +	if (rc)
+> +		goto out;
+> +
+> +	rc = admin_command_execute(ocxlpmem);
+> +	if (rc)
+> +		goto out;
+> +
+> +
+> +	rc = admin_command_complete_timeout(ocxlpmem,
+> +					    ADMIN_COMMAND_CONTROLLER_STATS);
+> +	if (rc < 0) {
+> +		dev_warn(&ocxlpmem->dev, "Controller stats timed out\n");
+> +		goto out;
+> +	}
+> +
+> +	rc = admin_response(ocxlpmem);
+> +	if (rc < 0)
+> +		goto out;
+> +	if (rc != STATUS_SUCCESS) {
+> +		warn_status(ocxlpmem,
+> +			    "Unexpected status from controller stats", rc);
+> +		goto out;
+> +	}
+> +
+> +	rc = controller_stats_header_parse(ocxlpmem, &length);
+> +	if (rc)
+> +		goto out;
+> +
+> +	if (length != 0x140)
+> +		warn_status(ocxlpmem,
+> +			    "Unexpected length for controller stats data, expected 0x140, got 0x%x",
+> +			    length);
 
-diff --git a/tools/testing/selftests/powerpc/benchmarks/Makefile b/tools/testing/selftests/powerpc/benchmarks/Makefile
-index d40300a..a32a6ab 100644
---- a/tools/testing/selftests/powerpc/benchmarks/Makefile
-+++ b/tools/testing/selftests/powerpc/benchmarks/Makefile
-@@ -2,6 +2,8 @@
- TEST_GEN_PROGS := gettimeofday context_switch fork mmap_bench futex_bench null_syscall
- TEST_GEN_FILES := exec_target
- 
-+TEST_FILES := settings
-+
- CFLAGS += -O2
- 
- top_srcdir = ../../../../..
-diff --git a/tools/testing/selftests/powerpc/benchmarks/settings b/tools/testing/selftests/powerpc/benchmarks/settings
-new file mode 100644
-index 0000000..e7b9417
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/benchmarks/settings
-@@ -0,0 +1 @@
-+timeout=0
-diff --git a/tools/testing/selftests/powerpc/dscr/Makefile b/tools/testing/selftests/powerpc/dscr/Makefile
-index 5df4763..cfa6eed 100644
---- a/tools/testing/selftests/powerpc/dscr/Makefile
-+++ b/tools/testing/selftests/powerpc/dscr/Makefile
-@@ -3,6 +3,8 @@ TEST_GEN_PROGS := dscr_default_test dscr_explicit_test dscr_user_test	\
- 	      dscr_inherit_test dscr_inherit_exec_test dscr_sysfs_test	\
- 	      dscr_sysfs_thread_test
- 
-+TEST_FILES := settings
-+
- top_srcdir = ../../../../..
- include ../../lib.mk
- 
-diff --git a/tools/testing/selftests/powerpc/dscr/settings b/tools/testing/selftests/powerpc/dscr/settings
-new file mode 100644
-index 0000000..e7b9417
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/dscr/settings
-@@ -0,0 +1 @@
-+timeout=0
-diff --git a/tools/testing/selftests/powerpc/signal/Makefile b/tools/testing/selftests/powerpc/signal/Makefile
-index 113838f..153fafc 100644
---- a/tools/testing/selftests/powerpc/signal/Makefile
-+++ b/tools/testing/selftests/powerpc/signal/Makefile
-@@ -5,6 +5,8 @@ CFLAGS += -maltivec
- $(OUTPUT)/signal_tm: CFLAGS += -mhtm
- $(OUTPUT)/sigfuz: CFLAGS += -pthread -m64
- 
-+TEST_FILES := settings
-+
- top_srcdir = ../../../../..
- include ../../lib.mk
- 
-diff --git a/tools/testing/selftests/powerpc/signal/settings b/tools/testing/selftests/powerpc/signal/settings
-new file mode 100644
-index 0000000..e7b9417
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/signal/settings
-@@ -0,0 +1 @@
-+timeout=0
-diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
-index b15a1a3..7b99d09 100644
---- a/tools/testing/selftests/powerpc/tm/Makefile
-+++ b/tools/testing/selftests/powerpc/tm/Makefile
-@@ -7,6 +7,8 @@ TEST_GEN_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack
- 	$(SIGNAL_CONTEXT_CHK_TESTS) tm-sigreturn tm-signal-sigreturn-nt \
- 	tm-signal-context-force-tm tm-poison
- 
-+TEST_FILES := settings
-+
- top_srcdir = ../../../../..
- include ../../lib.mk
- 
-diff --git a/tools/testing/selftests/powerpc/tm/settings b/tools/testing/selftests/powerpc/tm/settings
-new file mode 100644
-index 0000000..e7b9417
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/tm/settings
-@@ -0,0 +1 @@
-+timeout=0
+Might be worth a comment to explain where 0x140 comes from (it looks 
+correct from my reading of the spec)
+
+> +
+> +	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
+> +				     ocxlpmem->admin_command.data_offset + 0x08 + 0x08,
+> +				     OCXL_LITTLE_ENDIAN, &val);
+> +	if (rc)
+> +		goto out;
+> +
+> +	args.reset_count = val >> 32;
+> +	args.reset_uptime = val & 0xFFFFFFFF;
+> +
+> +	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
+> +				     ocxlpmem->admin_command.data_offset + 0x08 + 0x10,
+> +				     OCXL_LITTLE_ENDIAN, &val);
+> +	if (rc)
+> +		goto out;
+> +
+> +	args.power_on_uptime = val >> 32;
+
+We're not collecting life remaining?
+
+> +
+> +	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
+> +				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x08,
+> +				     OCXL_LITTLE_ENDIAN, &args.host_load_count);
+
+My reading of the spec says HLC is at +0x10
+
+> +	if (rc)
+> +		goto out;
+> +
+> +	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
+> +				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x10,
+> +				     OCXL_LITTLE_ENDIAN, &args.host_store_count);
+
+HSC at +0x18
+
+> +	if (rc)
+> +		goto out;
+> +
+> +	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
+> +				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x18,
+> +				     OCXL_LITTLE_ENDIAN, &args.media_read_count);
+
+MRC is at +0x50
+
+And you're missing CRU, HLD, HSD
+
+> +	if (rc)
+> +		goto out;
+> +
+> +	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
+> +				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x20,
+> +				     OCXL_LITTLE_ENDIAN, &args.media_write_count);
+
+MWC at +0x58
+
+> +	if (rc)
+> +		goto out;
+> +
+> +	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
+> +				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x28,
+> +				     OCXL_LITTLE_ENDIAN, &args.cache_hit_count);
+
+CRHC at +0x90
+
+> +	if (rc)
+> +		goto out;
+> +
+> +	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
+> +				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x30,
+> +				     OCXL_LITTLE_ENDIAN, &args.cache_miss_count);
+
+This field doesn't seem to exist at all in my copy of the spec
+
+> +	if (rc)
+> +		goto out;
+> +
+> +	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
+> +				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x38,
+> +				     OCXL_LITTLE_ENDIAN, &args.media_read_latency);
+
+Nor this one
+
+> +	if (rc)
+> +		goto out;
+> +
+> +	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
+> +				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x40,
+> +				     OCXL_LITTLE_ENDIAN, &args.media_write_latency);
+
+Nor this one
+
+> +	if (rc)
+> +		goto out;
+> +
+> +	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
+> +				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x48,
+> +				     OCXL_LITTLE_ENDIAN, &args.cache_read_latency);
+
+Nor this one
+
+> +	if (rc)
+> +		goto out;
+> +
+> +	rc = ocxl_global_mmio_read64(ocxlpmem->ocxl_afu,
+> +				     ocxlpmem->admin_command.data_offset + 0x08 + 0x40 + 0x50,
+> +				     OCXL_LITTLE_ENDIAN, &args.cache_write_latency);
+
+Nor this one
+
+> +	if (rc)
+> +		goto out;
+> +
+> +	if (copy_to_user(uarg, &args, sizeof(args))) {
+> +		rc = -EFAULT;
+> +		goto out;
+> +	}
+> +
+> +	rc = admin_response_handled(ocxlpmem);
+> +	if (rc)
+> +		goto out;
+> +
+> +	rc = 0;
+> +	goto out;
+
+Per Fred this pattern isn't common in the kernel, but perhaps this is 
+just personal taste
+
+> +
+> +out:
+> +	mutex_unlock(&ocxlpmem->admin_command.lock);
+> +	return rc;
+> +}
+> +
+>   static long file_ioctl(struct file *file, unsigned int cmd, unsigned long args)
+>   {
+>   	struct ocxlpmem *ocxlpmem = file->private_data;
+> @@ -781,6 +961,11 @@ static long file_ioctl(struct file *file, unsigned int cmd, unsigned long args)
+>   	case IOCTL_OCXL_PMEM_CONTROLLER_DUMP_COMPLETE:
+>   		rc = ioctl_controller_dump_complete(ocxlpmem);
+>   		break;
+> +
+> +	case IOCTL_OCXL_PMEM_CONTROLLER_STATS:
+> +		rc = ioctl_controller_stats(ocxlpmem,
+> +					    (struct ioctl_ocxl_pmem_controller_stats __user *)args);
+> +		break;
+>   	}
+>   
+>   	return rc;
+> diff --git a/include/uapi/nvdimm/ocxl-pmem.h b/include/uapi/nvdimm/ocxl-pmem.h
+> index d4d8512d03f7..add223aa2fdb 100644
+> --- a/include/uapi/nvdimm/ocxl-pmem.h
+> +++ b/include/uapi/nvdimm/ocxl-pmem.h
+> @@ -50,6 +50,22 @@ struct ioctl_ocxl_pmem_controller_dump_data {
+>   	__u64 reserved[8];
+>   };
+>   
+> +struct ioctl_ocxl_pmem_controller_stats {
+> +	__u32 reset_count;
+> +	__u32 reset_uptime; /* seconds */
+> +	__u32 power_on_uptime; /* seconds */
+> +	__u64 host_load_count;
+> +	__u64 host_store_count;
+> +	__u64 media_read_count;
+> +	__u64 media_write_count;
+> +	__u64 cache_hit_count;
+> +	__u64 cache_miss_count;
+> +	__u64 media_read_latency; /* nanoseconds */
+> +	__u64 media_write_latency; /* nanoseconds */
+> +	__u64 cache_read_latency; /* nanoseconds */
+> +	__u64 cache_write_latency; /* nanoseconds */
+> +};
+> +
+>   /* ioctl numbers */
+>   #define OCXL_PMEM_MAGIC 0x5C
+>   /* SCM devices */
+> @@ -57,5 +73,6 @@ struct ioctl_ocxl_pmem_controller_dump_data {
+>   #define IOCTL_OCXL_PMEM_CONTROLLER_DUMP			_IO(OCXL_PMEM_MAGIC, 0x02)
+>   #define IOCTL_OCXL_PMEM_CONTROLLER_DUMP_DATA		_IOWR(OCXL_PMEM_MAGIC, 0x03, struct ioctl_ocxl_pmem_controller_dump_data)
+>   #define IOCTL_OCXL_PMEM_CONTROLLER_DUMP_COMPLETE	_IO(OCXL_PMEM_MAGIC, 0x04)
+> +#define IOCTL_OCXL_PMEM_CONTROLLER_STATS		_IO(OCXL_PMEM_MAGIC, 0x05)
+>   
+>   #endif /* _UAPI_OCXL_SCM_H */
+> 
+
 -- 
-2.7.4
+Andrew Donnellan              OzLabs, ADL Canberra
+ajd@linux.ibm.com             IBM Australia Limited
 
