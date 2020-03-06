@@ -6,38 +6,37 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 20516C3F2D1
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 00:56:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7462BC3F2D2
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 00:58:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CE4962073B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 00:56:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CE4962073B
+	by mail.kernel.org (Postfix) with ESMTPS id CA5672073D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 00:58:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CA5672073D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48YThL4hZ1zDr4r
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 11:56:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48YTkF2SPMzDr2l
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 11:57:57 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48YT3W2n8pzDqdp
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48YT3W1p1fzDqYS
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2020 11:27:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 48YT3V4wQxz9sSx; Fri,  6 Mar 2020 11:27:49 +1100 (AEDT)
+ id 48YT3S1cFqz9sSm; Fri,  6 Mar 2020 11:27:47 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 16985f2d25095899685952296f128a71f0aff05c
-In-Reply-To: <20200217024833.30580-1-oohall@gmail.com>
-To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+X-powerpc-patch-commit: fcdb524d440d6326c286006e16f252b40ba4fd6a
+In-Reply-To: <20200214080606.26872-1-kjain@linux.ibm.com>
+To: Kajol Jain <kjain@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH 1/2] powerpc/powernv: Treat an empty reboot string as
- default
-Message-Id: <48YT3V4wQxz9sSx@ozlabs.org>
-Date: Fri,  6 Mar 2020 11:27:49 +1100 (AEDT)
+Subject: Re: [PATCH 1/2] powerpc/kernel/sysfs: Refactor current sysfs.c
+Message-Id: <48YT3S1cFqz9sSm@ozlabs.org>
+Date: Fri,  6 Mar 2020 11:27:47 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,20 +48,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Oliver O'Halloran <oohall@gmail.com>
+Cc: nasastry@in.ibm.com, kjain@linux.ibm.com,
+ Madhavan Srinivasan <maddy@linux.ibm.com>, maddy@linux.vnet.ibm.com,
+ anju@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2020-02-17 at 02:48:32 UTC, Oliver O'Halloran wrote:
-> Treat an empty reboot cmd string the same as a NULL string. This squashes a
-> spurious unsupported reboot message that sometimes gets out when using
-> xmon.
+On Fri, 2020-02-14 at 08:06:05 UTC, Kajol Jain wrote:
+> From: Madhavan Srinivasan <maddy@linux.ibm.com>
 > 
-> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+> An attempt to refactor the current sysfs.c file.
+> To start with a big chuck of macro #defines and dscr
+> functions are moved to start of the file. Secondly,
+> HAS_ #define macros are cleanup based on CONFIG_ options
+> 
+> Finally new HAS_ macro added:
+> 1. HAS_PPC_PA6T (for PA6T) to separate out non-PMU SPRs.
+> 2. HAS_PPC_PMC56 to separate out PMC SPR's from HAS_PPC_PMC_CLASSIC
+>    which come under CONFIG_PPC64.
+> 
+> Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
 
 Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/16985f2d25095899685952296f128a71f0aff05c
+https://git.kernel.org/powerpc/c/fcdb524d440d6326c286006e16f252b40ba4fd6a
 
 cheers
