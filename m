@@ -2,80 +2,78 @@ Return-Path: <SRS0=OxMP=4X=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 69C74C3F2D2
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 02:20:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E589C3F2D1
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 02:45:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D81142073D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 02:20:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 796E620714
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 02:45:08 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=iram.es header.i=@iram.es header.b="mnh5dSkU"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D81142073D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=iram.es
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZrotupIS"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 796E620714
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48YWYd2dHyzDqwC
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 13:20:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48YX5s6LsMzDqxW
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 13:45:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::d43;
+ helo=mail-io1-xd43.google.com; envelope-from=oohall@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=iram.es
- (client-ip=130.206.19.139; helo=mx01.puc.rediris.es;
- envelope-from=paubert@iram.es; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=iram.es
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=iram.es header.i=@iram.es header.a=rsa-sha256
- header.s=DKIM header.b=mnh5dSkU; dkim-atps=neutral
-X-Greylist: delayed 705 seconds by postgrey-1.36 at bilbo;
- Fri, 06 Mar 2020 13:18:18 AEDT
-Received: from mx01.puc.rediris.es (outbound2mad.lav.puc.rediris.es
- [130.206.19.139])
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=ZrotupIS; dkim-atps=neutral
+Received: from mail-io1-xd43.google.com (mail-io1-xd43.google.com
+ [IPv6:2607:f8b0:4864:20::d43])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48YWVy0LD2zDqtN
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2020 13:18:16 +1100 (AEDT)
-Received: from sim.rediris.es (mta-out04.sim.rediris.es [130.206.24.46])
- by mx01.puc.rediris.es  with ESMTP id 02626Jg8011643-02626JgA011643
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
- Fri, 6 Mar 2020 03:06:19 +0100
-Received: from sim.rediris.es (localhost.localdomain [127.0.0.1])
- by sim.rediris.es (Postfix) with ESMTPS id D9490395CF;
- Fri,  6 Mar 2020 03:06:18 +0100 (CET)
-Received: from localhost (localhost.localdomain [127.0.0.1])
- by sim.rediris.es (Postfix) with ESMTP id 88EDC395D0;
- Fri,  6 Mar 2020 03:06:18 +0100 (CET)
-Received: from sim.rediris.es ([127.0.0.1])
- by localhost (mta-out04.sim.rediris.es [127.0.0.1]) (amavisd-new, port 10026)
- with ESMTP id 6nCRum6MqbsU; Fri,  6 Mar 2020 03:06:18 +0100 (CET)
-Received: from lt-gp.iram.es (mrt-fw.iram.es [150.214.224.223])
- by sim.rediris.es (Postfix) with ESMTPA id 3D4D4395CF;
- Fri,  6 Mar 2020 03:06:16 +0100 (CET)
-Date: Fri, 6 Mar 2020 03:06:07 +0100
-From: Gabriel Paubert <paubert@iram.es>
-To: Gustavo Romero <gromero@linux.ibm.com>
-Subject: Re: [PATCH] KVM: PPC: Book3S HV: Fix typos in comments
-Message-ID: <20200306020607.GA29843@lt-gp.iram.es>
-References: <1583454396-1424-1-git-send-email-gromero@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48YX3h5HCKzDq61;
+ Fri,  6 Mar 2020 13:43:12 +1100 (AEDT)
+Received: by mail-io1-xd43.google.com with SMTP id z190so672699iof.1;
+ Thu, 05 Mar 2020 18:43:12 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=XNH69d47AO1anbNQI8/EXhEoTfg5yIk+2GgVaDFHdTM=;
+ b=ZrotupISWHfsAQqcd3L5YmFBrOzIf+/CBGVNJdG6z8dD1JB+pqywjAikPdWeaEnxAK
+ u0Tf+p5DQvt+Nw1aTM68FuzwR+vutYDJ7Cqw4cS592945TEXBzqW+iTe0KosICbLWAUs
+ xjNLQWPFAGv5hHKEpMcXTurxosmIXrcn14muN7ogR8nIunQYrClQfyZS1SJdRAPPzw7C
+ LQ+yct5cshrULkGOTBNdgk1cNtozVQ2s+vruQYwm5K4bEOAFUVdjkTFecNS8SYGvX8L5
+ l9Im06DKh4+A/0lsBofiP15nsp/oijAdXjBsjx4LrDYf72vdgyl5DnM+VZwf+CSIhbl8
+ 4Cew==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=XNH69d47AO1anbNQI8/EXhEoTfg5yIk+2GgVaDFHdTM=;
+ b=sgh9DD7asEjP1KJjF4ALMoN8FZ0b1xKZRzf5ysgVF8HVpUoJqP2M285nKYVUHOiDOm
+ VXwE4eSPnnQW64i67VhO4K+3pL9d7ieDoAaqq7gRDowiGpWROFsRs54hGMYOHuB2d2mf
+ E/2Y9v4ltwmpAI3qq7Zd0/vgja3upGb1PpvdcEdeytAlJUZQqSmIcPOYBFqOfGYkwU3z
+ 1mu6scjZk/PovbqT98nbnkIlr3rxngaAI90uWsFRWSXcPVLdfOKuysoxPWfx8l4OCQaX
+ xAAVRipIhLtOAVL6RXB8XaEjR8QhmUDY8d0qEAhTAbevyF+3lkmibFipq42DUVZ1CEWW
+ SCHg==
+X-Gm-Message-State: ANhLgQ13+kKJ0/QLtROtIkDhBLfCNp46Vz1m7/Za243SBJJsPrr3sFYK
+ aLcP05f2gdY5WuqD5GTuLsrH7eK7RCtJcbqT3hsCJpuc
+X-Google-Smtp-Source: ADFU+vu98ve14FfIHMYS9tS6HBCGgZyu5vfuoWgPooQzbYy97Idbw04OLWj+8FPAIvm2/pRpMJGJKyXaY9+n/6WHZCw=
+X-Received: by 2002:a02:a809:: with SMTP id f9mr932162jaj.72.1583462589161;
+ Thu, 05 Mar 2020 18:43:09 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1583454396-1424-1-git-send-email-gromero@linux.ibm.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; d=iram.es; s=DKIM;
- c=relaxed/relaxed; 
- h=date:from:to:cc:subject:message-id:references:mime-version:content-type;
- bh=LW6iXnJ0rHE87BL3g53rbVaF3tktZwumkRX+fbrX5yw=;
- b=mnh5dSkUN7ryd6gTDHzgjWzFhFurfrLs0Wg6pLRRnzQ/4hJq1dYYzc+JI3Vv5jX1cUPAJ4elBnaK
- oxuhzJ12TMoI4n1nTn4msrQ+V8gDl3gAnpF/lgKl9QDt4j5Ti+4M+h1TQFz3t7WuXOYD5SAnyn0B
- gsNJKwUUWVxcjtUhehZj4wZnkLI/6HIENe2PyjHh71PnlfUj+IcM5la26R3pZ3/ysl3ZPVGkpaVM
- mOd4yJoBJqM/iFf42sowsM/Lir5AnaXYCzwfyyP/zmMtb/Qjl4WXx1oKHFXYl8dWfCmU384fu/LZ
- kjB6b7SipOYvFrqxpatkgPm2RAeBcgWDA+r+Jg==
+References: <20200228030751.271382-1-npiggin@gmail.com>
+In-Reply-To: <20200228030751.271382-1-npiggin@gmail.com>
+From: "Oliver O'Halloran" <oohall@gmail.com>
+Date: Fri, 6 Mar 2020 13:42:58 +1100
+Message-ID: <CAOSf1CFLYhwp42TYc1AGinJOfbSBrnZJLOwRUAy=7Vfj1jBO2A@mail.gmail.com>
+Subject: Re: [PATCH] Add OPAL_GET_SYMBOL / OPAL_LOOKUP_SYMBOL
+To: Nicholas Piggin <npiggin@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,49 +85,284 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
+Cc: skiboot list <skiboot@lists.ozlabs.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Mar 06, 2020 at 11:26:36AM +1100, Gustavo Romero wrote:
-> Fix typos found in comments about the parameter passed
-> through r5 to kvmppc_{save,restore}_tm_hv functions.
-
-Actually "iff" is a common shorthand in some fields and not necessarily
-a spelling error:
-
-https://en.wikipedia.org/wiki/If_and_only_if
-
-	Gabriel
-> 
-> Signed-off-by: Gustavo Romero <gromero@linux.ibm.com>
+On Fri, Feb 28, 2020 at 2:09 PM Nicholas Piggin <npiggin@gmail.com> wrote:
+>
+> These calls can be used by Linux to annotate BUG addresses with symbols,
+> look up symbol addresses in xmon, etc.
+>
+> This is preferable over having Linux parse the OPAL symbol map itself,
+> because OPAL's parsing code already exists for its own symbol printing,
+> and it can support other code regions than the skiboot symbols, e.g.,
+> the wake-up code in the HOMER (where CPUs have been seen to get stuck).
+>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 > ---
->  arch/powerpc/kvm/book3s_hv_rmhandlers.S | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> index dbc2fec..a55dbe8 100644
-> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> @@ -3121,7 +3121,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
->   * Save transactional state and TM-related registers.
->   * Called with r3 pointing to the vcpu struct and r4 containing
->   * the guest MSR value.
-> - * r5 is non-zero iff non-volatile register state needs to be maintained.
-> + * r5 is non-zero if non-volatile register state needs to be maintained.
->   * If r5 == 0, this can modify all checkpointed registers, but
->   * restores r1 and r2 before exit.
->   */
-> @@ -3194,7 +3194,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_XER_SO_BUG)
->   * Restore transactional state and TM-related registers.
->   * Called with r3 pointing to the vcpu struct
->   * and r4 containing the guest MSR value.
-> - * r5 is non-zero iff non-volatile register state needs to be maintained.
-> + * r5 is non-zero if non-volatile register state needs to be maintained.
->   * This potentially modifies all checkpointed registers.
->   * It restores r1 and r2 from the PACA.
->   */
-> -- 
-> 1.8.3.1
-> 
+>  core/opal.c                             |  2 +
+>  core/utils.c                            | 92 +++++++++++++++++++++++--
+>  doc/opal-api/opal-get-symbol-181.rst    | 42 +++++++++++
+>  doc/opal-api/opal-lookup-symbol-182.rst | 35 ++++++++++
+>  include/opal-api.h                      |  4 +-
+>  5 files changed, 168 insertions(+), 7 deletions(-)
+>  create mode 100644 doc/opal-api/opal-get-symbol-181.rst
+>  create mode 100644 doc/opal-api/opal-lookup-symbol-182.rst
+>
+> diff --git a/core/opal.c b/core/opal.c
+> index d6ff6027b..d9fc4fe05 100644
+> --- a/core/opal.c
+> +++ b/core/opal.c
+> @@ -142,6 +142,8 @@ int64_t opal_entry_check(struct stack_frame *eframe)
+>                 case OPAL_CEC_REBOOT:
+>                 case OPAL_CEC_REBOOT2:
+>                 case OPAL_SIGNAL_SYSTEM_RESET:
+> +               case OPAL_GET_SYMBOL:
+> +               case OPAL_LOOKUP_SYMBOL:
+
+These names are still awful :|
+
+>                         break;
+>                 default:
+>                         printf("CPU ATTEMPT TO RE-ENTER FIRMWARE! PIR=%04lx cpu @%p -> pir=%04x token=%llu\n",
+> diff --git a/core/utils.c b/core/utils.c
+> index 8fd63fcb7..5f0d5130b 100644
+> --- a/core/utils.c
+> +++ b/core/utils.c
+> @@ -48,40 +48,120 @@ char __attrconst tohex(uint8_t nibble)
+>         return __tohex[nibble];
+>  }
+>
+> -static unsigned long get_symbol(unsigned long addr, char **sym, char **sym_end)
+> +static unsigned long get_symbol(unsigned long addr, char **sym, char **sym_end, unsigned long *size)
+>  {
+>         unsigned long prev = 0, next;
+>         char *psym = NULL, *p = __sym_map_start;
+>
+>         *sym = *sym_end = NULL;
+> -       while(p < __sym_map_end) {
+> +       while (p < __sym_map_end) {
+>                 next = strtoul(p, &p, 16) | SKIBOOT_BASE;
+>                 if (next > addr && prev <= addr) {
+> -                       p = psym + 3;;
+> +                       p = psym + 3;
+>                         if (p >= __sym_map_end)
+>                                 return 0;
+>                         *sym = p;
+> -                       while(p < __sym_map_end && *p != 10)
+> +                       while (p < __sym_map_end && *p != '\n')
+>                                 p++;
+>                         *sym_end = p;
+> +                       *size = next - prev;
+>                         return prev;
+>                 }
+>                 prev = next;
+>                 psym = p;
+> -               while(p < __sym_map_end && *p != 10)
+> +               while (p < __sym_map_end && *p != '\n')
+>                         p++;
+>                 p++;
+>         }
+>         return 0;
+>  }
+>
+> +static unsigned long lookup_symbol(const char *name, unsigned long *size)
+> +{
+> +       size_t len = strlen(name);
+> +       unsigned long addr = 0;
+> +       char *sym;
+> +       char *p = __sym_map_start;
+> +
+> +       while (p < __sym_map_end) {
+> +               addr = strtoul(p, &p, 16) | SKIBOOT_BASE;
+> +               p += 3;
+> +               if (p >= __sym_map_end)
+> +                       return 0;
+> +
+> +               if (*(p + len) == '\n' && !strncmp(name, p, len)) {
+> +                       char *sym_end;
+> +
+> +                       if (get_symbol(addr, &sym, &sym_end, size) == 0) {
+> +                               assert(!strcmp(name, "_end"));
+> +                               *size = 0;
+> +                       }
+> +
+> +                       /*
+> +                        * May be more than one symbol at this address but
+> +                        * symbol length calculation should still work in
+> +                        * that case.
+> +                        */
+> +
+> +                       return addr;
+> +               }
+> +
+> +               while(p < __sym_map_end && *p != '\n')
+> +                       p++;
+> +               p++;
+> +       }
+> +       return 0;
+> +}
+> +
+> +static int64_t opal_get_symbol(uint64_t addr, __be64 *symaddr, __be64 *symsize, char *namebuf, uint64_t buflen)
+> +{
+> +       unsigned long saddr;
+> +       unsigned long ssize;
+> +       char *sym, *sym_end;
+> +       size_t l;
+> +
+> +       saddr = get_symbol(addr, &sym, &sym_end, &ssize);
+> +       if (!saddr)
+> +               return OPAL_RESOURCE;
+> +
+> +       if (buflen > sym_end - sym)
+> +               l = sym_end - sym;
+> +       else
+> +               l = buflen - 1;
+> +       memcpy(namebuf, sym, l);
+> +       namebuf[l] = '\0';
+> +
+> +       *symaddr = cpu_to_be64(saddr);
+> +       *symsize = cpu_to_be64(ssize);
+> +
+> +       return OPAL_SUCCESS;
+> +}
+> +opal_call(OPAL_GET_SYMBOL, opal_get_symbol, 5);
+> +
+> +static int64_t opal_lookup_symbol(const char *name, __be64 *symaddr, __be64 *symsize)
+> +{
+> +       unsigned long saddr;
+> +       unsigned long ssize;
+> +
+> +       saddr = lookup_symbol(name, &ssize);
+> +       if (!saddr)
+> +               return OPAL_RESOURCE;
+> +
+> +       *symaddr = cpu_to_be64(saddr);
+> +       *symsize = cpu_to_be64(ssize);
+> +
+> +       return OPAL_SUCCESS;
+> +}
+> +opal_call(OPAL_LOOKUP_SYMBOL, opal_lookup_symbol, 3);
+> +
+>  size_t snprintf_symbol(char *buf, size_t len, uint64_t addr)
+>  {
+>         unsigned long saddr;
+> +       unsigned long ssize;
+>         char *sym, *sym_end;
+>         size_t l;
+>
+> -       saddr = get_symbol(addr, &sym, &sym_end);
+> +       saddr = get_symbol(addr, &sym, &sym_end, &ssize);
+>         if (!saddr)
+>                 return 0;
+>
+> diff --git a/doc/opal-api/opal-get-symbol-181.rst b/doc/opal-api/opal-get-symbol-181.rst
+> new file mode 100644
+> index 000000000..a57de6c1c
+> --- /dev/null
+> +++ b/doc/opal-api/opal-get-symbol-181.rst
+> @@ -0,0 +1,42 @@
+> +.. _OPAL_GET_SYMBOL:
+> +
+> +OPAL_GET_SYMBOL
+> +================
+> +
+> +.. code-block:: c
+> +
+> +   #define OPAL_GET_SYMBOL                     181
+> +
+> +   static int64_t opal_get_symbol(uint64_t addr, __be64 *symaddr, __be64 *symsize, char *namebuf, uint64_t buflen);
+> +
+> +This OPAL call looks up a firmware code address for symbol information.
+> +
+> +Arguments
+> +---------
+> +
+> +  ``addr``
+> +    Contains address to be looked up.
+> +
+> +  ``symaddr``
+> +    Returns the start address of the symbol for the object which
+> +    contains addr or immediately precedes addr.
+> +
+> +  ``symsize``
+> +    Returns the size of the object, or the number of bytes until the
+> +    next symbol.
+> +
+> +  ``namebuf``
+> +    Contains a buffer for the symbol name to be copied into, as a NUL
+> +    terminated string.
+> +
+> +  ``buflen``
+> +    Contains the length of the bufer that may be used.
+> +
+> +
+> +Returns
+> +-------
+> +
+> +:ref:`OPAL_SUCCESS`
+> +  Found a symbol.
+> +:ref:`OPAL_RESOURCE`
+> +  Did not find a symbol.
+> diff --git a/doc/opal-api/opal-lookup-symbol-182.rst b/doc/opal-api/opal-lookup-symbol-182.rst
+> new file mode 100644
+> index 000000000..e9f6eba33
+> --- /dev/null
+> +++ b/doc/opal-api/opal-lookup-symbol-182.rst
+> @@ -0,0 +1,35 @@
+> +.. _OPAL_LOOKUP_SYMBOL:
+> +
+> +OPAL_LOOKUP_SYMBOL
+> +================
+> +
+> +.. code-block:: c
+> +
+> +   #define OPAL_LOOKUP_SYMBOL                  182
+> +
+> +   static int64_t opal_lookup_symbol(const char *name, __be64 *symaddr, __be64 *symsize);
+> +
+> +This OPAL call looks up a firmware symbol name for its address.
+> +
+> +Arguments
+> +---------
+> +
+> +  ``name``
+> +    Contains a pointer to NUL terminated symbol name to be looked up.
+> +
+> +  ``symaddr``
+> +    Returns the start address of the symbol for the object which
+> +    contains addr or immediately precedes addr.
+> +
+> +  ``symsize``
+> +    Returns the size of the object, or the number of bytes until the
+> +    next symbol.
+> +
+> +
+> +Returns
+> +-------
+> +
+> +:ref:`OPAL_SUCCESS`
+> +  Found a symbol.
+> +:ref:`OPAL_RESOURCE`
+> +  Did not find a symbol.
+> diff --git a/include/opal-api.h b/include/opal-api.h
+> index 5b07dea13..4474631a6 100644
+> --- a/include/opal-api.h
+> +++ b/include/opal-api.h
+> @@ -227,7 +227,9 @@
+>  #define OPAL_SECVAR_ENQUEUE_UPDATE             178
+>  #define OPAL_PHB_SET_OPTION                    179
+>  #define OPAL_PHB_GET_OPTION                    180
+> -#define OPAL_LAST                              180
+> +#define OPAL_GET_SYMBOL                                181
+> +#define OPAL_LOOKUP_SYMBOL                     182
+> +#define OPAL_LAST                              182
+>
+>  #define QUIESCE_HOLD                   1 /* Spin all calls at entry */
+>  #define QUIESCE_REJECT                 2 /* Fail all calls with OPAL_BUSY */
+> --
+> 2.23.0
+>
