@@ -6,39 +6,39 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 57FD2C3F2D1
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 00:34:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B08BC3F2D2
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 00:36:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 13F2620726
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 00:34:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 13F2620726
+	by mail.kernel.org (Postfix) with ESMTPS id 44D7020684
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 00:36:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 44D7020684
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48YTC12hhqzDqrn
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 11:34:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48YTDy6wm4zDqgS
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 11:36:02 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48YT392Q3gzDqQq
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2020 11:27:33 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48YT3B0n7vzDqQq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2020 11:27:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 48YT390jK2z9sSM; Fri,  6 Mar 2020 11:27:33 +1100 (AEDT)
+ id 48YT396mMRz9sSR; Fri,  6 Mar 2020 11:27:33 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 05642cf7289c5562e5939d2ee8a0529d310010b8
-In-Reply-To: <d2c6dc65d27e83964eb05f16a126161ab6455eea.1578388585.git.christophe.leroy@c-s.fr>
+X-powerpc-patch-commit: 0b1c524caaae2428b20e714297243e5551251eb5
+In-Reply-To: <7b065c5be35726af4066cab238ee35cabceda1fa.1578558199.git.christophe.leroy@c-s.fr>
 To: Christophe Leroy <christophe.leroy@c-s.fr>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
+ Paul Mackerras <paulus@samba.org>, Mike Rapoport <rppt@linux.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/32: don't restore r0,
- r6-r8 on exception entry path after trace_hardirqs_off()
-Message-Id: <48YT390jK2z9sSM@ozlabs.org>
+Subject: Re: [PATCH v3 1/2] powerpc/32: refactor
+ pmd_offset(pud_offset(pgd_offset...
+Message-Id: <48YT396mMRz9sSR@ozlabs.org>
 Date: Fri,  6 Mar 2020 11:27:33 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -56,19 +56,23 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2020-01-07 at 09:16:40 UTC, Christophe Leroy wrote:
-> Since commit b86fb88855ea ("powerpc/32: implement fast entry for
-> syscalls on non BOOKE") and commit 1a4b739bbb4f ("powerpc/32:
-> implement fast entry for syscalls on BOOKE"), syscalls don't
-> use the exception entry path anymore. It is therefore pointless
-> to restore r0 and r6-r8 after calling trace_hardirqs_off().
+On Thu, 2020-01-09 at 08:25:25 UTC, Christophe Leroy wrote:
+> At several places pmd pointer is retrieved through the same action:
 > 
-> In the meantime, drop the '2:' label which is unused and misleading.
+> 	pmd = pmd_offset(pud_offset(pgd_offset(mm, addr), addr), addr);
+> 
+> or
+> 
+> 	pmd = pmd_offset(pud_offset(pgd_offset_k(addr), addr), addr);
+> 
+> Refactor this by implementing two helpers pmd_ptr() and pmd_ptr_k()
+> 
+> This will help when adding the p4d level.
 > 
 > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/05642cf7289c5562e5939d2ee8a0529d310010b8
+https://git.kernel.org/powerpc/c/0b1c524caaae2428b20e714297243e5551251eb5
 
 cheers
