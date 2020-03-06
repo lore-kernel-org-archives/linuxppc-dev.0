@@ -4,39 +4,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7462BC3F2D2
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 00:58:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6422BC3F2D2
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 01:00:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CA5672073D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 00:58:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CA5672073D
+	by mail.kernel.org (Postfix) with ESMTPS id 094B42073B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 01:00:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 094B42073B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48YTkF2SPMzDr2l
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 11:57:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48YTmk1CtCzDqyX
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 12:00:06 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48YT3W1p1fzDqYS
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2020 11:27:51 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48YT3Y1QWfzDqhY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2020 11:27:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 48YT3S1cFqz9sSm; Fri,  6 Mar 2020 11:27:47 +1100 (AEDT)
+ id 48YT3X0KXSz9sPJ; Fri,  6 Mar 2020 11:27:51 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: fcdb524d440d6326c286006e16f252b40ba4fd6a
-In-Reply-To: <20200214080606.26872-1-kjain@linux.ibm.com>
-To: Kajol Jain <kjain@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+X-powerpc-patch-commit: 6453f9ed9d4e4b4cdf201bf34bf460c436bf50ea
+In-Reply-To: <03c97f0f6b3790d164822563be80f2fd4713a955.1581932480.git.christophe.leroy@c-s.fr>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH 1/2] powerpc/kernel/sysfs: Refactor current sysfs.c
-Message-Id: <48YT3S1cFqz9sSm@ozlabs.org>
-Date: Fri,  6 Mar 2020 11:27:47 +1100 (AEDT)
+Subject: Re: [PATCH] powerpc/mm: Don't kmap_atomic() in pte_offset_map() on
+ PPC32
+Message-Id: <48YT3X0KXSz9sPJ@ozlabs.org>
+Date: Fri,  6 Mar 2020 11:27:51 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,30 +51,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nasastry@in.ibm.com, kjain@linux.ibm.com,
- Madhavan Srinivasan <maddy@linux.ibm.com>, maddy@linux.vnet.ibm.com,
- anju@linux.vnet.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2020-02-14 at 08:06:05 UTC, Kajol Jain wrote:
-> From: Madhavan Srinivasan <maddy@linux.ibm.com>
+On Mon, 2020-02-17 at 09:41:35 UTC, Christophe Leroy wrote:
+> On PPC32, pte_offset_map() does a kmap_atomic() in order to support
+> page tables allocated in high memory, just like ARM and x86/32.
 > 
-> An attempt to refactor the current sysfs.c file.
-> To start with a big chuck of macro #defines and dscr
-> functions are moved to start of the file. Secondly,
-> HAS_ #define macros are cleanup based on CONFIG_ options
+> But since at least 2008 and commit 8054a3428fbe ("powerpc: Remove dead
+> CONFIG_HIGHPTE"), page tables are never allocated in high memory.
 > 
-> Finally new HAS_ macro added:
-> 1. HAS_PPC_PA6T (for PA6T) to separate out non-PMU SPRs.
-> 2. HAS_PPC_PMC56 to separate out PMC SPR's from HAS_PPC_PMC_CLASSIC
->    which come under CONFIG_PPC64.
+> When the page is in low mem, kmap_atomic() just returns the page
+> address but still disable preemption and pagefault. And it is
+> not an inlined function, so we suffer function call for no reason.
 > 
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+> Make pte_offset_map() the same as pte_offset_kernel() and make
+> pte_unmap() void, in the same way as PPC64 which doesn't have HIGHMEM.
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/fcdb524d440d6326c286006e16f252b40ba4fd6a
+https://git.kernel.org/powerpc/c/6453f9ed9d4e4b4cdf201bf34bf460c436bf50ea
 
 cheers
