@@ -2,53 +2,101 @@ Return-Path: <SRS0=OxMP=4X=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.3 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 39404C3F2D1
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 01:51:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C191C3F2D1
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 02:11:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ADA082073B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 01:51:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ADA082073B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gondor.apana.org.au
+	by mail.kernel.org (Postfix) with ESMTPS id DF6282073D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 02:11:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF6282073D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48YVvy67zNzDqjd
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 12:51:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gondor.apana.org.au (client-ip=216.24.177.18;
- helo=fornost.hmeau.com; envelope-from=herbert@gondor.apana.org.au;
+	by lists.ozlabs.org (Postfix) with ESMTP id 48YWMF6Y2kzDqv3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 13:11:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=gromero@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gondor.apana.org.au
-Received: from fornost.hmeau.com (helcar.hmeau.com [216.24.177.18])
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48YVsd5nFDzDqjY
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2020 12:49:25 +1100 (AEDT)
-Received: from gwarestrin.me.apana.org.au ([192.168.0.7]
- helo=gwarestrin.arnor.me.apana.org.au)
- by fornost.hmeau.com with smtp (Exim 4.89 #2 (Debian))
- id 1jA26R-0005j2-Mp; Fri, 06 Mar 2020 12:48:40 +1100
-Received: by gwarestrin.arnor.me.apana.org.au (sSMTP sendmail emulation);
- Fri, 06 Mar 2020 12:48:39 +1100
-Date: Fri, 6 Mar 2020 12:48:39 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Subject: Re: [PATCH] crypto: Replace zero-length array with flexible-array
- member
-Message-ID: <20200306014839.GC30653@gondor.apana.org.au>
-References: <20200224162100.GA25697@embeddedor>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48YWK40YGnzDqRn
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2020 13:09:43 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 02628ZoH034487
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Mar 2020 21:09:40 -0500
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2yhsvbtw6w-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Mar 2020 21:09:40 -0500
+Received: from localhost
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gromero@linux.vnet.ibm.com>;
+ Fri, 6 Mar 2020 02:09:38 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 6 Mar 2020 02:09:36 -0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 02629ZOZ59965546
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 6 Mar 2020 02:09:35 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 26E69A404D;
+ Fri,  6 Mar 2020 02:09:35 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C7C7FA4040;
+ Fri,  6 Mar 2020 02:09:34 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri,  6 Mar 2020 02:09:34 +0000 (GMT)
+Received: from bran.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
+ by ozlabs.au.ibm.com (Postfix) with ESMTP id D4825A011F;
+ Fri,  6 Mar 2020 13:09:29 +1100 (AEDT)
+Received: from oc6336877782.ibm.com (gustavo.ozlabs.ibm.com [10.61.2.143])
+ by bran.ozlabs.ibm.com (Postfix) with ESMTP id 8E9ECE00FA;
+ Fri,  6 Mar 2020 13:09:33 +1100 (AEDT)
+Subject: Re: [PATCH] KVM: PPC: Book3S HV: Fix typos in comments
+To: Gabriel Paubert <paubert@iram.es>, Gustavo Romero <gromero@linux.ibm.com>
+References: <1583454396-1424-1-git-send-email-gromero@linux.ibm.com>
+ <20200306020607.GA29843@lt-gp.iram.es>
+From: Gustavo Romero <gromero@linux.vnet.ibm.com>
+Date: Fri, 6 Mar 2020 13:09:33 +1100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200224162100.GA25697@embeddedor>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20200306020607.GA29843@lt-gp.iram.es>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 20030602-0012-0000-0000-0000038D9DD6
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 20030602-0013-0000-0000-000021CA5ED9
+Message-Id: <3cc3c74a-892e-56eb-f99d-f21ec993445e@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
+ definitions=2020-03-05_08:2020-03-05,
+ 2020-03-05 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ mlxlogscore=999 clxscore=1015 suspectscore=0 impostorscore=0 adultscore=0
+ spamscore=0 malwarescore=0 bulkscore=0 lowpriorityscore=0 mlxscore=0
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2001150001 definitions=main-2003060011
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,64 +108,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Aymen Sghaier <aymen.sghaier@nxp.com>,
- Horia =?utf-8?Q?Geant=C4=83?= <horia.geanta@nxp.com>,
- Nayna Jain <nayna@linux.ibm.com>, linux-mediatek@lists.infradead.org,
- linux-kernel@vger.kernel.org, Atul Gupta <atul.gupta@chelsio.com>,
- Breno =?iso-8859-1?Q?Leit=E3o?= <leitao@debian.org>,
- Paulo Flabiano Smorigo <pfsmorigo@gmail.com>, linux-crypto@vger.kernel.org,
- Matthias Brugger <matthias.bgg@gmail.com>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
- linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Feb 24, 2020 at 10:21:00AM -0600, Gustavo A. R. Silva wrote:
-> The current codebase makes use of the zero-length array language
-> extension to the C90 standard, but the preferred mechanism to declare
-> variable-length types such as these ones is a flexible array member[1][2],
-> introduced in C99:
-> 
-> struct foo {
->         int stuff;
->         struct boo array[];
-> };
-> 
-> By making use of the mechanism above, we will get a compiler warning
-> in case the flexible array does not occur last in the structure, which
-> will help us prevent some kind of undefined behavior bugs from being
-> inadvertently introduced[3] to the codebase from now on.
-> 
-> Also, notice that, dynamic memory allocations won't be affected by
-> this change:
-> 
-> "Flexible array members have incomplete type, and so the sizeof operator
-> may not be applied. As a quirk of the original implementation of
-> zero-length arrays, sizeof evaluates to zero."[1]
-> 
-> This issue was found with the help of Coccinelle.
-> 
-> [1] https://gcc.gnu.org/onlinedocs/gcc/Zero-Length.html
-> [2] https://github.com/KSPP/linux/issues/21
-> [3] commit 76497732932f ("cxgb3/l2t: Fix undefined behaviour")
-> 
-> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
-> ---
->  drivers/crypto/caam/caamalg.c              | 2 +-
->  drivers/crypto/caam/caamalg_qi.c           | 4 ++--
->  drivers/crypto/caam/caamalg_qi2.h          | 6 +++---
->  drivers/crypto/caam/caamhash.c             | 2 +-
->  drivers/crypto/cavium/nitrox/nitrox_main.c | 2 +-
->  drivers/crypto/chelsio/chcr_core.h         | 2 +-
->  drivers/crypto/mediatek/mtk-sha.c          | 2 +-
->  drivers/crypto/nx/nx.h                     | 2 +-
->  drivers/crypto/omap-sham.c                 | 4 ++--
->  include/crypto/if_alg.h                    | 2 +-
->  10 files changed, 14 insertions(+), 14 deletions(-)
+Hi Gabriel,
 
-Patch applied.  Thanks.
--- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+On 03/06/2020 01:06 PM, Gabriel Paubert wrote:
+> On Fri, Mar 06, 2020 at 11:26:36AM +1100, Gustavo Romero wrote:
+>> Fix typos found in comments about the parameter passed
+>> through r5 to kvmppc_{save,restore}_tm_hv functions.
+> 
+> Actually "iff" is a common shorthand in some fields and not necessarily
+> a spelling error:
+> 
+> https://en.wikipedia.org/wiki/If_and_only_if
+
+I see. Thank you.
+
+
+Best regards,
+Gustavo
+
