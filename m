@@ -2,63 +2,83 @@ Return-Path: <SRS0=OxMP=4X=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82A8FC3F2C6
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 04:19:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D1D26C3F2D7
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 04:43:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0D74A20728
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 04:19:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 429262072D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 04:43:16 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="WHwpFimr"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0D74A20728
-Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="VmRK0Dp2"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 429262072D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48YZBj6CbtzDr0f
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 15:19:25 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 48YZk96Jb2zDqyB
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 15:43:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::1041;
+ helo=mail-pj1-x1041.google.com; envelope-from=dja@axtens.net;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=axtens.net
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256
+ header.s=google header.b=VmRK0Dp2; dkim-atps=neutral
+Received: from mail-pj1-x1041.google.com (mail-pj1-x1041.google.com
+ [IPv6:2607:f8b0:4864:20::1041])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48YZ8t0SR3zDqtN
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2020 15:17:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=ozlabs.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256
- header.s=201707 header.b=WHwpFimr; dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 48YZ8s3xz3z9sPK;
- Fri,  6 Mar 2020 15:17:49 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1583468269; bh=W55Sru9TkKAtFaLpWAFMN0S9NEayoaEaKhmZXBqRDDA=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=WHwpFimrGBrBl/SgH+b3ZBezTPh1zoTsSI2Yams6fLFVQ0KLwlq3xTLTrZrbs59qJ
- R2ywM8+H+hghzR3GzalFOXBlJXcYPsfYTfFyb1GLsq1GwBLcASFzgAdRiQ2LAV5bPm
- btuSsSoLLDJdIWX4qPbAADcifFr492/vU0+x/n2hicE4yD2JqQQG8PGcAkEBFDRqD2
- eA/z7HDjTTalxhNgRqvaAvEC/Fy+8njaL7mDFctk+I+p2htTSBs56CXyV10XP4ZvGU
- gyHD40LW80OlWIDWtPI6/7az5jL0OnfB+x6bkfwhcM7h8FKWdhZynC3ltdnm9hw0Cn
- /8CgUcYV2alRw==
-Date: Fri, 6 Mar 2020 15:17:48 +1100
-From: Anton Blanchard <anton@ozlabs.org>
-To: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/64s/radix: Fix !SMP build
-Message-ID: <20200306151748.108e555d@kryten.localdomain>
-In-Reply-To: <20200302010410.2957362-1-npiggin@gmail.com>
-References: <20200302010410.2957362-1-npiggin@gmail.com>
-X-Mailer: Mutt/1.8.0 (2017-02-23)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48YZgk054CzDqLH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2020 15:41:05 +1100 (AEDT)
+Received: by mail-pj1-x1041.google.com with SMTP id gc16so1220355pjb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Mar 2020 20:41:05 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
+ h=from:to:cc:subject:in-reply-to:references:date:message-id
+ :mime-version; bh=gDhoLBPbw39blGHjDAPLsZALagPQFSiHgjEK3HrRMQo=;
+ b=VmRK0Dp2RVwIyaAN7aMhtRBKF5cEmvwtl6Nd9ixBrmGaGkBXUu1pnNQBBE+5vHoOh0
+ mwmpCgJKqgrf6r0elW83qT/IzjF/e6kg2YPCRakOzQGSFzTInw86FNzFpYYHAiCFismg
+ +s9fbucjeKhlTO791Dn/N9kizGcnXnAJOJ7yQ=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
+ :message-id:mime-version;
+ bh=gDhoLBPbw39blGHjDAPLsZALagPQFSiHgjEK3HrRMQo=;
+ b=WXcE+TRSl8iLuA0lGTpvrUJwR0b/briNBv4B69gO/Nc8c4D0pyDanzilT/pe/jCd7l
+ hRjC1qjwNGvZb40qJouFqXgOYTdmyFaC1aFTyw6rexRgD5xIX+Rb0/6l5BoW9Im53/64
+ hTT0k42SMW7+MN/sz5QpiPYo34xX00oiWWu8uaibwwRvR/G5tRkImgEjX+ANFpe6XtCc
+ WhEUFu62XdFdHBgshToSBniK3R9/1rA4TgkLAWGkMqVFj+MbcTqSjnEYdaHtd4cEHmxh
+ 81+OCt6D28eXUBcfY/1xFLhwqXgI5lvvkIRuaU6ViBtn3DpiGQ8mECzpMZBoNvZ/I8ne
+ k0mA==
+X-Gm-Message-State: ANhLgQ0dpY1Q6m3OVHDOOn7hpXiOYB7cMiyyYY/D4fq9XeqXDIwVKqwC
+ wxTylHsGSHRY4koBPDadc8osFA==
+X-Google-Smtp-Source: ADFU+vvHZGq0r/Ysul608LdjBAkSwwxQQSKr0vtzxxJhK6+S0WBYwokXjnMvq8eGVDCckPVh8M0EGw==
+X-Received: by 2002:a17:902:ab97:: with SMTP id
+ f23mr1245738plr.182.1583469662406; 
+ Thu, 05 Mar 2020 20:41:02 -0800 (PST)
+Received: from localhost
+ (2001-44b8-111e-5c00-e8e4-7e74-35be-5756.static.ipv6.internode.on.net.
+ [2001:44b8:111e:5c00:e8e4:7e74:35be:5756])
+ by smtp.gmail.com with ESMTPSA id i6sm7572497pjt.3.2020.03.05.20.41.00
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 05 Mar 2020 20:41:01 -0800 (PST)
+From: Daniel Axtens <dja@axtens.net>
+To: Andrew Donnellan <ajd@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2] powerpc: setup_64: set up PACA earlier to avoid kcov
+ problems
+In-Reply-To: <59e8a506-572a-f355-e0ca-9c75758a9b65@linux.ibm.com>
+References: <20200213052327.24207-1-dja@axtens.net>
+ <59e8a506-572a-f355-e0ca-9c75758a9b65@linux.ibm.com>
+Date: Fri, 06 Mar 2020 15:40:57 +1100
+Message-ID: <87zhcup02u.fsf@dja-thinkpad.axtens.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,57 +90,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Thanks Nick,
+> There's some special handling for CPU_FTR_HVMODE in 
+> cpufeatures_setup_cpu() in kernel/dt_cpu_ftrs.c:
+>
+>          /* Initialize the base environment -- clear FSCR/HFSCR.  */
+>          hv_mode = !!(mfmsr() & MSR_HV);
+>          if (hv_mode) {
+>                  /* CPU_FTR_HVMODE is used early in PACA setup */
+>                  cur_cpu_spec->cpu_features |= CPU_FTR_HVMODE;
+>                  mtspr(SPRN_HFSCR, 0);
+>          }
+>
+> With this patch, the comment about PACA setup I assume is no longer 
+> true. It looks like we still rely on hv_mode being set to deal with 
+> discrepancies between the device tree and the MSR.
 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+This code confuses me. IIUC it sets the CPU feature if we're in HV mode,
+which will catch the case where the HV bit is set in the MSR but for
+some reason it's not listed in the DT. With my patch, we'll directly
+test the MSR so we don't need the cpu feature set for that.
 
-Tested-by: Anton Blanchard <anton@ozlabs.org>
+However, the CPU feature is tested elsewhere, so I think the correct
+behaviour is to keep the code but drop the comment. Having said that
+bootstrapping is hard so lmk if I've misunderstood.
 
-> ---
->  arch/powerpc/mm/book3s64/radix_pgtable.c | 1 +
->  arch/powerpc/mm/book3s64/radix_tlb.c     | 7 ++++++-
->  2 files changed, 7 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c
-> b/arch/powerpc/mm/book3s64/radix_pgtable.c index
-> dd1bea45325c..2a9a0cd79490 100644 ---
-> a/arch/powerpc/mm/book3s64/radix_pgtable.c +++
-> b/arch/powerpc/mm/book3s64/radix_pgtable.c @@ -26,6 +26,7 @@
->  #include <asm/firmware.h>
->  #include <asm/powernv.h>
->  #include <asm/sections.h>
-> +#include <asm/smp.h>
->  #include <asm/trace.h>
->  #include <asm/uaccess.h>
->  #include <asm/ultravisor.h>
-> diff --git a/arch/powerpc/mm/book3s64/radix_tlb.c
-> b/arch/powerpc/mm/book3s64/radix_tlb.c index
-> 03f43c924e00..758ade2c2b6e 100644 ---
-> a/arch/powerpc/mm/book3s64/radix_tlb.c +++
-> b/arch/powerpc/mm/book3s64/radix_tlb.c @@ -587,6 +587,11 @@ void
-> radix__local_flush_all_mm(struct mm_struct *mm) preempt_enable();
->  }
->  EXPORT_SYMBOL(radix__local_flush_all_mm);
-> +
-> +static void __flush_all_mm(struct mm_struct *mm, bool fullmm)
-> +{
-> +	radix__local_flush_all_mm(mm);
-> +}
->  #endif /* CONFIG_SMP */
->  
->  void radix__local_flush_tlb_page_psize(struct mm_struct *mm,
-> unsigned long vmaddr, @@ -777,7 +782,7 @@ void
-> radix__flush_tlb_page(struct vm_area_struct *vma, unsigned long
-> vmaddr) EXPORT_SYMBOL(radix__flush_tlb_page); 
->  #else /* CONFIG_SMP */
-> -#define radix__flush_all_mm radix__local_flush_all_mm
-> +static inline void exit_flush_lazy_tlbs(struct mm_struct *mm) { }
->  #endif /* CONFIG_SMP */
->  
->  static void do_tlbiel_kernel(void *info)
-
+Regards,
+Daniel
+>
+> -- 
+> Andrew Donnellan              OzLabs, ADL Canberra
+> ajd@linux.ibm.com             IBM Australia Limited
