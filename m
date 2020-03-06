@@ -2,61 +2,44 @@ Return-Path: <SRS0=OxMP=4X=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2AE60C3F2D1
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 00:04:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B3CFC3F2D2
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 00:13:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CE9632073D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 00:04:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CE9632073D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 33F1E20801
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 00:13:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 33F1E20801
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48YSXl4qXqzDqtN
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 11:04:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=srs0=n59e=4x=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=bugzilla.kernel.org
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 48YSkw3pNqzDqrF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 11:13:28 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48YSSw3H4zzDqkx
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2020 11:01:20 +1100 (AEDT)
-From: bugzilla-daemon@bugzilla.kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 206695] kmemleak reports leaks in drivers/macintosh/windfarm
-Date: Fri, 06 Mar 2020 00:01:17 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Product: Platform Specific/Hardware
-X-Bugzilla-Component: PPC-64
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: mpe@ellerman.id.au
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-206695-206035-sj3epKGbHo@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-206695-206035@https.bugzilla.kernel.org/>
-References: <bug-206695-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48YSj12SHCzDqhY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2020 11:11:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 48YSj11sTcz9sSM; Fri,  6 Mar 2020 11:11:49 +1100 (AEDT)
+X-powerpc-patch-notification: thanks
+X-powerpc-patch-commit: fc37a1632d40c80c067eb1bc235139f5867a2667
+In-Reply-To: <20200227134715.9715-1-desnesn@linux.ibm.com>
+To: "Desnes A. Nunes do Rosario" <desnesn@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Subject: Re: [PATCH,
+ v2] powerpc: fix hardware PMU exception bug on PowerVM compatibility
+ mode systems
+Message-Id: <48YSj11sTcz9sSM@ozlabs.org>
+Date: Fri,  6 Mar 2020 11:11:49 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,84 +51,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: leonardo@linux.ibm.com, desnesn@linux.ibm.com, gromero@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D206695
+On Thu, 2020-02-27 at 13:47:15 UTC, "Desnes A. Nunes do Rosario" wrote:
+> PowerVM systems running compatibility mode on a few Power8 revisions are
+> still vulnerable to the hardware defect that loses PMU exceptions arriving
+> prior to a context switch.
+> 
+> The software fix for this issue is enabled through the CPU_FTR_PMAO_BUG
+> cpu_feature bit, nevertheless this bit also needs to be set for PowerVM
+> compatibility mode systems.
+> 
+> Fixes: 68f2f0d431d9ea4 ("powerpc: Add a cpu feature CPU_FTR_PMAO_BUG")
+> Signed-off-by: Desnes A. Nunes do Rosario <desnesn@linux.ibm.com>
 
---- Comment #5 from mpe@ellerman.id.au ---
-bugzilla-daemon@bugzilla.kernel.org writes:
-> https://bugzilla.kernel.org/show_bug.cgi?id=3D206695
->
-> --- Comment #4 from Erhard F. (erhard_f@mailbox.org) ---
-> (In reply to mpe from comment #3)
->> Can you try this patch?
->
-> Applied your patch on top of 5.6-rc4 +
-> https://patchwork.ozlabs.org/patch/1248350/ and let the G5 do a few hours
-> compiling.
->
-> Only getting those nice memleaks from bug #206203 but no windfarm_pm112
-> memleak
-> any longer. So your patch works well it seems. Thanks!
+Applied to powerpc fixes, thanks.
 
-Thanks.
-
-Can you try this one instead, it changes the order of operations to make
-the code flow a bit nicer.
+https://git.kernel.org/powerpc/c/fc37a1632d40c80c067eb1bc235139f5867a2667
 
 cheers
-
-diff --git a/drivers/macintosh/windfarm_pm112.c
-b/drivers/macintosh/windfarm_pm112.c
-index 4150301a89a5..e8377ce0a95a 100644
---- a/drivers/macintosh/windfarm_pm112.c
-+++ b/drivers/macintosh/windfarm_pm112.c
-@@ -132,14 +132,6 @@ static int create_cpu_loop(int cpu)
-        s32 tmax;
-        int fmin;
-
--       /* Get PID params from the appropriate SAT */
--       hdr =3D smu_sat_get_sdb_partition(chip, 0xC8 + core, NULL);
--       if (hdr =3D=3D NULL) {
--               printk(KERN_WARNING"windfarm: can't get CPU PID fan config\=
-n");
--               return -EINVAL;
--       }
--       piddata =3D (struct smu_sdbp_cpupiddata *)&hdr[1];
--
-        /* Get FVT params to get Tmax; if not found, assume default */
-        hdr =3D smu_sat_get_sdb_partition(chip, 0xC4 + core, NULL);
-        if (hdr) {
-@@ -152,6 +144,16 @@ static int create_cpu_loop(int cpu)
-        if (tmax < cpu_all_tmax)
-                cpu_all_tmax =3D tmax;
-
-+       kfree(hdr);
-+
-+       /* Get PID params from the appropriate SAT */
-+       hdr =3D smu_sat_get_sdb_partition(chip, 0xC8 + core, NULL);
-+       if (hdr =3D=3D NULL) {
-+               printk(KERN_WARNING"windfarm: can't get CPU PID fan config\=
-n");
-+               return -EINVAL;
-+       }
-+       piddata =3D (struct smu_sdbp_cpupiddata *)&hdr[1];
-+
-        /*
-         * Darwin has a minimum fan speed of 1000 rpm for the 4-way and
-         * 515 for the 2-way.  That appears to be overkill, so for now,
-@@ -174,6 +176,9 @@ static int create_cpu_loop(int cpu)
-                pid.min =3D fmin;
-
-        wf_cpu_pid_init(&cpu_pid[cpu], &pid);
-+
-+       kfree(hdr);
-+
-        return 0;
- }
-
---=20
-You are receiving this mail because:
-You are watching the assignee of the bug.=
