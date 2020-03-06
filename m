@@ -4,42 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B08BC3F2D2
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 00:36:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B6B1C3F2D1
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 00:37:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 44D7020684
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 00:36:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 44D7020684
+	by mail.kernel.org (Postfix) with ESMTPS id B75932073D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 00:37:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B75932073D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48YTDy6wm4zDqgS
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 11:36:02 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 48YTGl58WBzDqts
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 11:37:35 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48YT3B0n7vzDqQq
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48YT3B6ZH6zDqZQ
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2020 11:27:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 48YT396mMRz9sSR; Fri,  6 Mar 2020 11:27:33 +1100 (AEDT)
+ id 48YT3B5YRQz9sSV; Fri,  6 Mar 2020 11:27:34 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 0b1c524caaae2428b20e714297243e5551251eb5
-In-Reply-To: <7b065c5be35726af4066cab238ee35cabceda1fa.1578558199.git.christophe.leroy@c-s.fr>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Mike Rapoport <rppt@linux.ibm.com>
+X-powerpc-patch-commit: a05f0e5be4e81e4977d3f92aaf7688ee0cb7d5db
+In-Reply-To: <20200129135121.24617-1-srikar@linux.vnet.ibm.com>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH v3 1/2] powerpc/32: refactor
- pmd_offset(pud_offset(pgd_offset...
-Message-Id: <48YT396mMRz9sSR@ozlabs.org>
-Date: Fri,  6 Mar 2020 11:27:33 +1100 (AEDT)
+Subject: Re: [PATCH v4] powerpc/smp: Use nid as fallback for package_id
+Message-Id: <48YT3B5YRQz9sSV@ozlabs.org>
+Date: Fri,  6 Mar 2020 11:27:34 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,28 +48,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2020-01-09 at 08:25:25 UTC, Christophe Leroy wrote:
-> At several places pmd pointer is retrieved through the same action:
+On Wed, 2020-01-29 at 13:51:21 UTC, Srikar Dronamraju wrote:
+> Package_id is to find out all cores that are part of the same chip. On
+> PowerNV machines, package_id defaults to chip_id. However ibm,chip_id
+> property is not present in device-tree of PowerVM Lpars. Hence lscpu
+> output shows one core per socket and multiple cores.
 > 
-> 	pmd = pmd_offset(pud_offset(pgd_offset(mm, addr), addr), addr);
+> To overcome this, use nid as the package_id on PowerVM Lpars.
 > 
-> or
+> Before the patch.
+> ---------------
+> Architecture:        ppc64le
+> Byte Order:          Little Endian
+> CPU(s):              128
+> On-line CPU(s) list: 0-127
+> Thread(s) per core:  8
+> Core(s) per socket:  1                           <----------------------
+> Socket(s):           16                          <----------------------
+> NUMA node(s):        2
+> Model:               2.2 (pvr 004e 0202)
+> Model name:          POWER9 (architected), altivec supported
+> Hypervisor vendor:   pHyp
+> Virtualization type: para
+> L1d cache:           32K
+> L1i cache:           32K
+> L2 cache:            512K
+> L3 cache:            10240K
+> NUMA node0 CPU(s):   0-63
+> NUMA node1 CPU(s):   64-127
+>  #
+>  # cat /sys/devices/system/cpu/cpu0/topology/physical_package_id
+>  -1
+>  #
 > 
-> 	pmd = pmd_offset(pud_offset(pgd_offset_k(addr), addr), addr);
+> After the patch
+> ---------------
+> Architecture:        ppc64le
+> Byte Order:          Little Endian
+> CPU(s):              128
+> On-line CPU(s) list: 0-127
+> Thread(s) per core:  8			<------------------------------
+> Core(s) per socket:  8			<------------------------------
+> Socket(s):           2
+> NUMA node(s):        2
+> Model:               2.2 (pvr 004e 0202)
+> Model name:          POWER9 (architected), altivec supported
+> Hypervisor vendor:   pHyp
+> Virtualization type: para
+> L1d cache:           32K
+> L1i cache:           32K
+> L2 cache:            512K
+> L3 cache:            10240K
+> NUMA node0 CPU(s):   0-63
+> NUMA node1 CPU(s):   64-127
+>  #
+>  # cat /sys/devices/system/cpu/cpu0/topology/physical_package_id
+>  0
+>  #
+> Now lscpu output is more in line with the system configuration.
 > 
-> Refactor this by implementing two helpers pmd_ptr() and pmd_ptr_k()
-> 
-> This will help when adding the p4d level.
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+> Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/0b1c524caaae2428b20e714297243e5551251eb5
+https://git.kernel.org/powerpc/c/a05f0e5be4e81e4977d3f92aaf7688ee0cb7d5db
 
 cheers
