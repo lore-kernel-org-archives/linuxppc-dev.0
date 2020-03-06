@@ -2,63 +2,61 @@ Return-Path: <SRS0=OxMP=4X=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CF83C3F2D2
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 00:03:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2AE60C3F2D1
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 00:04:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 37788207FD
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 00:03:03 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="GmoDAw9h"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 37788207FD
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id CE9632073D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 00:04:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CE9632073D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48YSVs06gXzDqtd
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 11:03:01 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48YSSp4YxbzDq6B
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2020 11:01:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48YSXl4qXqzDqtN
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2020 11:04:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=srs0=n59e=4x=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=GmoDAw9h; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 48YSSp0jDrz9sRR;
- Fri,  6 Mar 2020 11:01:13 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1583452874;
- bh=WlXBUqQmdkGxqOxjxnV4+kKhMwBKP168l9EUjgM+UzA=;
- h=From:To:Subject:In-Reply-To:References:Date:From;
- b=GmoDAw9hGMSiIOO5etxSMEo6P9QL86hEKFmHyT6FGqgny0c90mKarE86jj+hKH4od
- qsA1gr1B81/r6+HYnsIG0vj1WxgS/87YaZ2fiOLYdtrv0BD6W94gnf0UpK7BEMuD7e
- mLMrl4LzhsYZ8KjcrG6BE7LhvJ3yzaqh8llytKnX0JreCoby0MRD5SoTEp4GuhJiJE
- BxGdKcYQIFD4QL1hDF2qi9hBgre7yyBG3HydKWE5PTGXfOmLHYUBTH0zQDhBHxBkQ6
- dQpBHmIlLfTLgD020F+RQ9N2rcSVsFKkUjc4lMWLMlkWeWjf1XvbAcvKO8++boxk7t
- /aUSxHHuw0F7A==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: bugzilla-daemon@bugzilla.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [Bug 206695] kmemleak reports leaks in drivers/macintosh/windfarm
-In-Reply-To: <bug-206695-206035-HRb322afyL@https.bugzilla.kernel.org/>
+ header.from=bugzilla.kernel.org
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48YSSw3H4zzDqkx
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2020 11:01:20 +1100 (AEDT)
+From: bugzilla-daemon@bugzilla.kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 206695] kmemleak reports leaks in drivers/macintosh/windfarm
+Date: Fri, 06 Mar 2020 00:01:17 +0000
+X-Bugzilla-Reason: None
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Product: Platform Specific/Hardware
+X-Bugzilla-Component: PPC-64
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: mpe@ellerman.id.au
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-206695-206035-sj3epKGbHo@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-206695-206035@https.bugzilla.kernel.org/>
 References: <bug-206695-206035@https.bugzilla.kernel.org/>
- <bug-206695-206035-HRb322afyL@https.bugzilla.kernel.org/>
-Date: Fri, 06 Mar 2020 11:01:08 +1100
-Message-ID: <87o8tapd17.fsf@mpe.ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 MIME-Version: 1.0
-Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,8 +72,11 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+https://bugzilla.kernel.org/show_bug.cgi?id=3D206695
+
+--- Comment #5 from mpe@ellerman.id.au ---
 bugzilla-daemon@bugzilla.kernel.org writes:
-> https://bugzilla.kernel.org/show_bug.cgi?id=206695
+> https://bugzilla.kernel.org/show_bug.cgi?id=3D206695
 >
 > --- Comment #4 from Erhard F. (erhard_f@mailbox.org) ---
 > (In reply to mpe from comment #3)
@@ -85,7 +86,8 @@ bugzilla-daemon@bugzilla.kernel.org writes:
 > https://patchwork.ozlabs.org/patch/1248350/ and let the G5 do a few hours
 > compiling.
 >
-> Only getting those nice memleaks from bug #206203 but no windfarm_pm112 memleak
+> Only getting those nice memleaks from bug #206203 but no windfarm_pm112
+> memleak
 > any longer. So your patch works well it seems. Thanks!
 
 Thanks.
@@ -95,50 +97,55 @@ the code flow a bit nicer.
 
 cheers
 
-diff --git a/drivers/macintosh/windfarm_pm112.c b/drivers/macintosh/windfarm_pm112.c
+diff --git a/drivers/macintosh/windfarm_pm112.c
+b/drivers/macintosh/windfarm_pm112.c
 index 4150301a89a5..e8377ce0a95a 100644
 --- a/drivers/macintosh/windfarm_pm112.c
 +++ b/drivers/macintosh/windfarm_pm112.c
 @@ -132,14 +132,6 @@ static int create_cpu_loop(int cpu)
- 	s32 tmax;
- 	int fmin;
- 
--	/* Get PID params from the appropriate SAT */
--	hdr = smu_sat_get_sdb_partition(chip, 0xC8 + core, NULL);
--	if (hdr == NULL) {
--		printk(KERN_WARNING"windfarm: can't get CPU PID fan config\n");
--		return -EINVAL;
--	}
--	piddata = (struct smu_sdbp_cpupiddata *)&hdr[1];
--
- 	/* Get FVT params to get Tmax; if not found, assume default */
- 	hdr = smu_sat_get_sdb_partition(chip, 0xC4 + core, NULL);
- 	if (hdr) {
-@@ -152,6 +144,16 @@ static int create_cpu_loop(int cpu)
- 	if (tmax < cpu_all_tmax)
- 		cpu_all_tmax = tmax;
- 
-+	kfree(hdr);
-+
-+	/* Get PID params from the appropriate SAT */
-+	hdr = smu_sat_get_sdb_partition(chip, 0xC8 + core, NULL);
-+	if (hdr == NULL) {
-+		printk(KERN_WARNING"windfarm: can't get CPU PID fan config\n");
-+		return -EINVAL;
-+	}
-+	piddata = (struct smu_sdbp_cpupiddata *)&hdr[1];
-+
- 	/*
- 	 * Darwin has a minimum fan speed of 1000 rpm for the 4-way and
- 	 * 515 for the 2-way.  That appears to be overkill, so for now,
-@@ -174,6 +176,9 @@ static int create_cpu_loop(int cpu)
- 		pid.min = fmin;
- 
- 	wf_cpu_pid_init(&cpu_pid[cpu], &pid);
-+
-+	kfree(hdr);
-+
- 	return 0;
- }
- 
+        s32 tmax;
+        int fmin;
 
+-       /* Get PID params from the appropriate SAT */
+-       hdr =3D smu_sat_get_sdb_partition(chip, 0xC8 + core, NULL);
+-       if (hdr =3D=3D NULL) {
+-               printk(KERN_WARNING"windfarm: can't get CPU PID fan config\=
+n");
+-               return -EINVAL;
+-       }
+-       piddata =3D (struct smu_sdbp_cpupiddata *)&hdr[1];
+-
+        /* Get FVT params to get Tmax; if not found, assume default */
+        hdr =3D smu_sat_get_sdb_partition(chip, 0xC4 + core, NULL);
+        if (hdr) {
+@@ -152,6 +144,16 @@ static int create_cpu_loop(int cpu)
+        if (tmax < cpu_all_tmax)
+                cpu_all_tmax =3D tmax;
+
++       kfree(hdr);
++
++       /* Get PID params from the appropriate SAT */
++       hdr =3D smu_sat_get_sdb_partition(chip, 0xC8 + core, NULL);
++       if (hdr =3D=3D NULL) {
++               printk(KERN_WARNING"windfarm: can't get CPU PID fan config\=
+n");
++               return -EINVAL;
++       }
++       piddata =3D (struct smu_sdbp_cpupiddata *)&hdr[1];
++
+        /*
+         * Darwin has a minimum fan speed of 1000 rpm for the 4-way and
+         * 515 for the 2-way.  That appears to be overkill, so for now,
+@@ -174,6 +176,9 @@ static int create_cpu_loop(int cpu)
+                pid.min =3D fmin;
+
+        wf_cpu_pid_init(&cpu_pid[cpu], &pid);
++
++       kfree(hdr);
++
+        return 0;
+ }
+
+--=20
+You are receiving this mail because:
+You are watching the assignee of the bug.=
