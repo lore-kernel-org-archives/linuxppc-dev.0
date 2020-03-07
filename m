@@ -2,83 +2,96 @@ Return-Path: <SRS0=0JSR=4Y=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9076EC10DCE
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Mar 2020 00:41:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 12ED1C10DCE
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Mar 2020 00:42:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3FCE620637
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Mar 2020 00:41:19 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=lca.pw header.i=@lca.pw header.b="puvFN+Oa"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3FCE620637
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lca.pw
+	by mail.kernel.org (Postfix) with ESMTPS id 96E3F20637
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Mar 2020 00:42:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 96E3F20637
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48Z5JY3GYCzF15G
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Mar 2020 11:41:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48Z5Kw2qgQzF1YF
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Mar 2020 11:42:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=lca.pw
- (client-ip=209.85.160.196; helo=mail-qt1-f196.google.com;
- envelope-from=cai@lca.pw; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lca.pw
-Received: from mail-qt1-f196.google.com (mail-qt1-f196.google.com
- [209.85.160.196])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48Z59p6jZpzDrQy
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Mar 2020 11:35:26 +1100 (AEDT)
-Received: by mail-qt1-f196.google.com with SMTP id v22so3095000qtp.10
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Mar 2020 16:35:26 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lca.pw; s=google;
- h=content-transfer-encoding:from:mime-version:subject:date:message-id
- :references:cc:in-reply-to:to;
- bh=Llth3MhUyFBOi7p0WfyKRqezwCMBh50m9NEH4AtRH1U=;
- b=puvFN+Oa4Vsque2ZZFahxBROstqlUCh6OUM3IAJz/PpFxOEwXVBDL1w614Lf5OgLn5
- ZzOKj9HWOalPOfhv3WAYO45FNOPCCJIbnU41PCb5bB2Jpfed/n8m6G0z5zQoTE4+Y2y9
- 3QJpAM3ou6c7EdgrRsfCmCg49mhT4wc3UBudKo0M3IjKzr4rlUXBE2NlETbQYMK6HNXK
- FaW2q4McGhTj2NCjdx0Iunur4hGozNvUDxm9RmqprWgyakpEZ4US8GkH1ltbTWFsHiOw
- CwD/p2KKStXpzjgcBMWXRzzvBYt1qmOtcsAsjRrYeh1r/v9yIBxJhh+Vq48gTXYafbjW
- E5Vw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:content-transfer-encoding:from:mime-version
- :subject:date:message-id:references:cc:in-reply-to:to;
- bh=Llth3MhUyFBOi7p0WfyKRqezwCMBh50m9NEH4AtRH1U=;
- b=QY3rprSTIIHUtJGp9GUbaxKaXRWyYL3ynV7a/mjAWa5ve1yZQFzxugQk4XQBcxwUhQ
- OYmjb5prwSfm68WVbNpt8G6TmYn2K+RY7G+sDNat8THzItr+K5pUYJU4pInmE8tdRatU
- aZgBkhs5ntJ5+2keDxR4MyIl9CTQGxbFEfo6nrMc2uWicuVzm5iRGkeVJgWHpKU1vaxR
- miyF6z/rDYLfOcJxYRtFCogF2YAeU4fEACUYFRVosvhoTSYWt04YopJ1LtnhRQsQZMuE
- Y+AqQflhQSuDTYcK4rL3gXQDrI7myFVhvDAs5qecWV6CxuHbTQu8yMdtsUzA6sM42jqG
- bVnQ==
-X-Gm-Message-State: ANhLgQ2ALeALih6wAN5Q+O7FjLUHEGaxZFi07Si2eUlrrjyIsLMtH7Bt
- l4AAB9k97lgZUnIColM5J2u2vA==
-X-Google-Smtp-Source: ADFU+vtIXuLKAhOxSRwmQknHK6gBQTO4ffulLvuvjqolLxIBY8IQ/C9gOq1OdEnF0L6YkCCsmh/eQw==
-X-Received: by 2002:ac8:7b94:: with SMTP id p20mr5546904qtu.122.1583541260735; 
- Fri, 06 Mar 2020 16:34:20 -0800 (PST)
-Received: from [192.168.1.183] (pool-71-184-117-43.bstnma.fios.verizon.net.
- [71.184.117.43])
- by smtp.gmail.com with ESMTPSA id 202sm18088610qkg.132.2020.03.06.16.34.19
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Fri, 06 Mar 2020 16:34:19 -0800 (PST)
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
-From: Qian Cai <cai@lca.pw>
-Mime-Version: 1.0 (1.0)
-Subject: Re: [PATCH V15] mm/debug: Add tests validating architecture page
- table helpers
-Date: Fri, 6 Mar 2020 19:34:18 -0500
-Message-Id: <CEEAD95E-D468-4C58-A65B-7E8AED91168A@lca.pw>
-References: <61250cdc-f80b-2e50-5168-2ec67ec6f1e6@arm.com>
-In-Reply-To: <61250cdc-f80b-2e50-5168-2ec67ec6f1e6@arm.com>
-To: Anshuman Khandual <Anshuman.Khandual@arm.com>
-X-Mailer: iPhone Mail (17D50)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48Z5CC0Ym2zDrbv
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Mar 2020 11:36:38 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0270KipX051085; Fri, 6 Mar 2020 19:36:30 -0500
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ykgng9p2e-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 06 Mar 2020 19:36:30 -0500
+Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 0270LtP7053459;
+ Fri, 6 Mar 2020 19:36:30 -0500
+Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
+ [169.63.121.186])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ykgng9p1x-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 06 Mar 2020 19:36:30 -0500
+Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
+ by ppma03wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 0270UnEx026312;
+ Sat, 7 Mar 2020 00:36:29 GMT
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by ppma03wdc.us.ibm.com with ESMTP id 2yffk7qakk-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Sat, 07 Mar 2020 00:36:28 +0000
+Received: from b03ledav001.gho.boulder.ibm.com
+ (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0270aSFc56099142
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Sat, 7 Mar 2020 00:36:28 GMT
+Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id EA0CD6E04C;
+ Sat,  7 Mar 2020 00:36:27 +0000 (GMT)
+Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5F6B56E04E;
+ Sat,  7 Mar 2020 00:36:27 +0000 (GMT)
+Received: from [9.70.82.143] (unknown [9.70.82.143])
+ by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Sat,  7 Mar 2020 00:36:27 +0000 (GMT)
+Subject: [PATCH v3 6/9] crypto/NX: Make enable code generic to add new GZIP
+ compression type
+From: Haren Myneni <haren@linux.ibm.com>
+To: herbert@gondor.apana.org.au
+In-Reply-To: <1583540877.9256.24.camel@hbabu-laptop>
+References: <1583540877.9256.24.camel@hbabu-laptop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 06 Mar 2020 16:36:24 -0800
+Message-ID: <1583541384.9256.44.camel@hbabu-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.3 
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
+ definitions=2020-03-06_09:2020-03-06,
+ 2020-03-06 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 impostorscore=0
+ phishscore=0 spamscore=0 suspectscore=1 mlxlogscore=999 lowpriorityscore=0
+ adultscore=0 priorityscore=1501 mlxscore=0 clxscore=1015 malwarescore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2001150001
+ definitions=main-2003070000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,51 +103,369 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, x86@kernel.org,
- Mike Rapoport <rppt@linux.ibm.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Catalin Marinas <catalin.marinas@arm.com>, linux-snps-arc@lists.infradead.org,
- Vasily Gorbik <gor@linux.ibm.com>, Borislav Petkov <bp@alien8.de>,
- Paul Walmsley <paul.walmsley@sifive.com>,
- "Kirill A . Shutemov" <kirill@shutemov.name>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Vineet Gupta <vgupta@synopsys.com>, linux-kernel@vger.kernel.org,
- Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: mikey@neuling.org, npiggin@gmail.com, linux-crypto@vger.kernel.org,
+ sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
+Make setup and enable code generic to support new GZIP compression type.
+Changed nx842 reference to nx and moved some code to new functions.
+Functionality is not changed except sparse warning fix - setting NULL
+instead of 0 for per_cpu send window in nx_delete_coprocs().
 
-> On Mar 6, 2020, at 7:03 PM, Anshuman Khandual <Anshuman.Khandual@arm.com> w=
-rote:
->=20
-> Hmm, set_pte_at() function is not preferred here for these tests. The idea=
+Signed-off-by: Haren Myneni <haren@linux.ibm.com>
+---
+ drivers/crypto/nx/nx-common-powernv.c | 161 +++++++++++++++++++++-------------
+ 1 file changed, 101 insertions(+), 60 deletions(-)
 
-> is to avoid or atleast minimize TLB/cache flushes triggered from these sor=
-t
-> of 'static' tests. set_pte_at() is platform provided and could/might trigg=
-er
-> these flushes or some other platform specific synchronization stuff. Just
+diff --git a/drivers/crypto/nx/nx-common-powernv.c b/drivers/crypto/nx/nx-common-powernv.c
+index f42881f..82dfa60 100644
+--- a/drivers/crypto/nx/nx-common-powernv.c
++++ b/drivers/crypto/nx/nx-common-powernv.c
+@@ -40,9 +40,9 @@ struct nx842_workmem {
+ 	char padding[WORKMEM_ALIGN]; /* unused, to allow alignment */
+ } __packed __aligned(WORKMEM_ALIGN);
+ 
+-struct nx842_coproc {
++struct nx_coproc {
+ 	unsigned int chip_id;
+-	unsigned int ct;
++	unsigned int ct;	/* Can be 842 or GZIP high/normal*/
+ 	unsigned int ci;	/* Coprocessor instance, used with icswx */
+ 	struct {
+ 		struct vas_window *rxwin;
+@@ -58,9 +58,15 @@ struct nx842_coproc {
+ static DEFINE_PER_CPU(struct vas_window *, cpu_txwin);
+ 
+ /* no cpu hotplug on powernv, so this list never changes after init */
+-static LIST_HEAD(nx842_coprocs);
++static LIST_HEAD(nx_coprocs);
+ static unsigned int nx842_ct;	/* used in icswx function */
+ 
++/*
++ * Using same values as in skiboot or coprocessor type representing
++ * in NX workbook.
++ */
++#define NX_CT_842	(3)
++
+ static int (*nx842_powernv_exec)(const unsigned char *in,
+ 				unsigned int inlen, unsigned char *out,
+ 				unsigned int *outlenp, void *workmem, int fc);
+@@ -666,15 +672,15 @@ static int nx842_powernv_decompress(const unsigned char *in, unsigned int inlen,
+ 				      wmem, CCW_FC_842_DECOMP_CRC);
+ }
+ 
+-static inline void nx842_add_coprocs_list(struct nx842_coproc *coproc,
++static inline void nx_add_coprocs_list(struct nx_coproc *coproc,
+ 					int chipid)
+ {
+ 	coproc->chip_id = chipid;
+ 	INIT_LIST_HEAD(&coproc->list);
+-	list_add(&coproc->list, &nx842_coprocs);
++	list_add(&coproc->list, &nx_coprocs);
+ }
+ 
+-static struct vas_window *nx842_alloc_txwin(struct nx842_coproc *coproc)
++static struct vas_window *nx_alloc_txwin(struct nx_coproc *coproc)
+ {
+ 	struct vas_window *txwin = NULL;
+ 	struct vas_tx_win_attr txattr;
+@@ -704,9 +710,9 @@ static struct vas_window *nx842_alloc_txwin(struct nx842_coproc *coproc)
+  * cpu_txwin is used in copy/paste operation for each compression /
+  * decompression request.
+  */
+-static int nx842_open_percpu_txwins(void)
++static int nx_open_percpu_txwins(void)
+ {
+-	struct nx842_coproc *coproc, *n;
++	struct nx_coproc *coproc, *n;
+ 	unsigned int i, chip_id;
+ 
+ 	for_each_possible_cpu(i) {
+@@ -714,17 +720,18 @@ static int nx842_open_percpu_txwins(void)
+ 
+ 		chip_id = cpu_to_chip_id(i);
+ 
+-		list_for_each_entry_safe(coproc, n, &nx842_coprocs, list) {
++		list_for_each_entry_safe(coproc, n, &nx_coprocs, list) {
+ 			/*
+ 			 * Kernel requests use only high priority FIFOs. So
+ 			 * open send windows for these FIFOs.
++			 * GZIP is not supported in kernel right now.
+ 			 */
+ 
+ 			if (coproc->ct != VAS_COP_TYPE_842_HIPRI)
+ 				continue;
+ 
+ 			if (coproc->chip_id == chip_id) {
+-				txwin = nx842_alloc_txwin(coproc);
++				txwin = nx_alloc_txwin(coproc);
+ 				if (IS_ERR(txwin))
+ 					return PTR_ERR(txwin);
+ 
+@@ -743,13 +750,28 @@ static int nx842_open_percpu_txwins(void)
+ 	return 0;
+ }
+ 
++static int __init nx_set_ct(struct nx_coproc *coproc, const char *priority,
++				int high, int normal)
++{
++	if (!strcmp(priority, "High"))
++		coproc->ct = high;
++	else if (!strcmp(priority, "Normal"))
++		coproc->ct = normal;
++	else {
++		pr_err("Invalid RxFIFO priority value\n");
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
+ static int __init vas_cfg_coproc_info(struct device_node *dn, int chip_id,
+-					int vasid, int *ct)
++					int vasid, int type, int *ct)
+ {
+ 	struct vas_window *rxwin = NULL;
+ 	struct vas_rx_win_attr rxattr;
+-	struct nx842_coproc *coproc;
+ 	u32 lpid, pid, tid, fifo_size;
++	struct nx_coproc *coproc;
+ 	u64 rx_fifo;
+ 	const char *priority;
+ 	int ret;
+@@ -794,15 +816,12 @@ static int __init vas_cfg_coproc_info(struct device_node *dn, int chip_id,
+ 	if (!coproc)
+ 		return -ENOMEM;
+ 
+-	if (!strcmp(priority, "High"))
+-		coproc->ct = VAS_COP_TYPE_842_HIPRI;
+-	else if (!strcmp(priority, "Normal"))
+-		coproc->ct = VAS_COP_TYPE_842;
+-	else {
+-		pr_err("Invalid RxFIFO priority value\n");
+-		ret =  -EINVAL;
++	if (type == NX_CT_842)
++		ret = nx_set_ct(coproc, priority, VAS_COP_TYPE_842_HIPRI,
++			VAS_COP_TYPE_842);
++
++	if (ret)
+ 		goto err_out;
+-	}
+ 
+ 	vas_init_rx_win_attr(&rxattr, coproc->ct);
+ 	rxattr.rx_fifo = (void *)rx_fifo;
+@@ -830,7 +849,7 @@ static int __init vas_cfg_coproc_info(struct device_node *dn, int chip_id,
+ 
+ 	coproc->vas.rxwin = rxwin;
+ 	coproc->vas.id = vasid;
+-	nx842_add_coprocs_list(coproc, chip_id);
++	nx_add_coprocs_list(coproc, chip_id);
+ 
+ 	/*
+ 	 * (lpid, pid, tid) combination has to be unique for each
+@@ -848,13 +867,43 @@ static int __init vas_cfg_coproc_info(struct device_node *dn, int chip_id,
+ 	return ret;
+ }
+ 
++static int __init nx_coproc_init(int chip_id, int ct_842)
++{
++	int ret = 0;
+ 
+-static int __init nx842_powernv_probe_vas(struct device_node *pn)
++	if (opal_check_token(OPAL_NX_COPROC_INIT)) {
++		ret = opal_nx_coproc_init(chip_id, ct_842);
++		if (ret) {
++			ret = opal_error_code(ret);
++			pr_err("Failed to initialize NX for chip(%d): %d\n",
++				chip_id, ret);
++		}
++	} else
++		pr_warn("Firmware doesn't support NX initialization\n");
++
++	return ret;
++}
++
++static int __init find_nx_device_tree(struct device_node *dn, int chip_id,
++					int vasid, int type, char *devname,
++					int *ct)
++{
++	int ret = 0;
++
++	if (of_device_is_compatible(dn, devname)) {
++		ret  = vas_cfg_coproc_info(dn, chip_id, vasid, type, ct);
++		if (ret)
++			of_node_put(dn);
++	}
++
++	return ret;
++}
++
++static int __init nx_powernv_probe_vas(struct device_node *pn)
+ {
+-	struct device_node *dn;
+ 	int chip_id, vasid, ret = 0;
+-	int nx_fifo_found = 0;
+-	int uninitialized_var(ct);
++	struct device_node *dn;
++	int ct_842 = 0;
+ 
+ 	chip_id = of_get_ibm_chip_id(pn);
+ 	if (chip_id < 0) {
+@@ -869,17 +918,13 @@ static int __init nx842_powernv_probe_vas(struct device_node *pn)
+ 	}
+ 
+ 	for_each_child_of_node(pn, dn) {
+-		if (of_device_is_compatible(dn, "ibm,p9-nx-842")) {
+-			ret = vas_cfg_coproc_info(dn, chip_id, vasid, &ct);
+-			if (ret) {
+-				of_node_put(dn);
+-				return ret;
+-			}
+-			nx_fifo_found++;
+-		}
++		ret = find_nx_device_tree(dn, chip_id, vasid, NX_CT_842,
++					"ibm,p9-nx-842", &ct_842);
++		if (ret)
++			return ret;
+ 	}
+ 
+-	if (!nx_fifo_found) {
++	if (!ct_842) {
+ 		pr_err("NX842 FIFO nodes are missing\n");
+ 		return -EINVAL;
+ 	}
+@@ -887,22 +932,14 @@ static int __init nx842_powernv_probe_vas(struct device_node *pn)
+ 	/*
+ 	 * Initialize NX instance for both high and normal priority FIFOs.
+ 	 */
+-	if (opal_check_token(OPAL_NX_COPROC_INIT)) {
+-		ret = opal_nx_coproc_init(chip_id, ct);
+-		if (ret) {
+-			pr_err("Failed to initialize NX for chip(%d): %d\n",
+-				chip_id, ret);
+-			ret = opal_error_code(ret);
+-		}
+-	} else
+-		pr_warn("Firmware doesn't support NX initialization\n");
++	ret = nx_coproc_init(chip_id, ct_842);
+ 
+ 	return ret;
+ }
+ 
+ static int __init nx842_powernv_probe(struct device_node *dn)
+ {
+-	struct nx842_coproc *coproc;
++	struct nx_coproc *coproc;
+ 	unsigned int ct, ci;
+ 	int chip_id;
+ 
+@@ -928,7 +965,7 @@ static int __init nx842_powernv_probe(struct device_node *dn)
+ 
+ 	coproc->ct = ct;
+ 	coproc->ci = ci;
+-	nx842_add_coprocs_list(coproc, chip_id);
++	nx_add_coprocs_list(coproc, chip_id);
+ 
+ 	pr_info("coprocessor found on chip %d, CT %d CI %d\n", chip_id, ct, ci);
+ 
+@@ -941,9 +978,9 @@ static int __init nx842_powernv_probe(struct device_node *dn)
+ 	return 0;
+ }
+ 
+-static void nx842_delete_coprocs(void)
++static void nx_delete_coprocs(void)
+ {
+-	struct nx842_coproc *coproc, *n;
++	struct nx_coproc *coproc, *n;
+ 	struct vas_window *txwin;
+ 	int i;
+ 
+@@ -955,10 +992,10 @@ static void nx842_delete_coprocs(void)
+ 		if (txwin)
+ 			vas_win_close(txwin);
+ 
+-		per_cpu(cpu_txwin, i) = 0;
++		per_cpu(cpu_txwin, i) = NULL;
+ 	}
+ 
+-	list_for_each_entry_safe(coproc, n, &nx842_coprocs, list) {
++	list_for_each_entry_safe(coproc, n, &nx_coprocs, list) {
+ 		if (coproc->vas.rxwin)
+ 			vas_win_close(coproc->vas.rxwin);
+ 
+@@ -1002,7 +1039,7 @@ static int nx842_powernv_crypto_init(struct crypto_tfm *tfm)
+ 	.coa_decompress		= nx842_crypto_decompress } }
+ };
+ 
+-static __init int nx842_powernv_init(void)
++static __init int nx_compress_powernv_init(void)
+ {
+ 	struct device_node *dn;
+ 	int ret;
+@@ -1017,15 +1054,15 @@ static __init int nx842_powernv_init(void)
+ 	BUILD_BUG_ON(DDE_BUFFER_SIZE_MULT % DDE_BUFFER_LAST_MULT);
+ 
+ 	for_each_compatible_node(dn, NULL, "ibm,power9-nx") {
+-		ret = nx842_powernv_probe_vas(dn);
++		ret = nx_powernv_probe_vas(dn);
+ 		if (ret) {
+-			nx842_delete_coprocs();
++			nx_delete_coprocs();
+ 			of_node_put(dn);
+ 			return ret;
+ 		}
+ 	}
+ 
+-	if (list_empty(&nx842_coprocs)) {
++	if (list_empty(&nx_coprocs)) {
+ 		for_each_compatible_node(dn, NULL, "ibm,power-nx")
+ 			nx842_powernv_probe(dn);
+ 
+@@ -1034,9 +1071,13 @@ static __init int nx842_powernv_init(void)
+ 
+ 		nx842_powernv_exec = nx842_exec_icswx;
+ 	} else {
+-		ret = nx842_open_percpu_txwins();
++		/*
++		 * GZIP is not supported in kernel right now.
++		 * So open tx windows only for 842.
++		 */
++		ret = nx_open_percpu_txwins();
+ 		if (ret) {
+-			nx842_delete_coprocs();
++			nx_delete_coprocs();
+ 			return ret;
+ 		}
+ 
+@@ -1045,18 +1086,18 @@ static __init int nx842_powernv_init(void)
+ 
+ 	ret = crypto_register_alg(&nx842_powernv_alg);
+ 	if (ret) {
+-		nx842_delete_coprocs();
++		nx_delete_coprocs();
+ 		return ret;
+ 	}
+ 
+ 	return 0;
+ }
+-module_init(nx842_powernv_init);
++module_init(nx_compress_powernv_init);
+ 
+-static void __exit nx842_powernv_exit(void)
++static void __exit nx_compress_powernv_exit(void)
+ {
+ 	crypto_unregister_alg(&nx842_powernv_alg);
+ 
+-	nx842_delete_coprocs();
++	nx_delete_coprocs();
+ }
+-module_exit(nx842_powernv_exit);
++module_exit(nx_compress_powernv_exit);
+-- 
+1.8.3.1
 
-Why is that important for this debugging option?
-
-> wondering is there specific reason with respect to the soft lock up proble=
-m
-> making it necessary to use set_pte_at() rather than a simple WRITE_ONCE() ?=
 
 
-Looks at the s390 version of set_pte_at(), it has this comment,
-vmaddr);
-
-/*
- * Certain architectures need to do special things when PTEs
- * within a page table are directly modified.  Thus, the following
- * hook is made available.
- */
-
-I can only guess that powerpc  could be the same here.=
