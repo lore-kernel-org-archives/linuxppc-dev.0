@@ -7,40 +7,40 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5946C10DCE
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Mar 2020 02:34:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 37BD2C10DCE
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Mar 2020 02:36:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9A185206D7
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Mar 2020 02:34:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9A185206D7
+	by mail.kernel.org (Postfix) with ESMTPS id DDC5C206CC
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Mar 2020 02:36:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DDC5C206CC
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48Z7qc2tsVzDrL6
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Mar 2020 13:34:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48Z7sZ36cWzF0mf
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Mar 2020 13:36:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.21; helo=inva021.nxp.com;
+ (client-ip=92.121.34.13; helo=inva020.nxp.com;
  envelope-from=xiaowei.bao@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48Z7hV60bYzDr5Y
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Mar 2020 13:28:39 +1100 (AEDT)
-Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id D6377200DB2;
- Sat,  7 Mar 2020 03:28:36 +0100 (CET)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48Z7jC2p7pzDrB9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Mar 2020 13:29:18 +1100 (AEDT)
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 2341B1A19A1;
+ Sat,  7 Mar 2020 03:29:15 +0100 (CET)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
  [165.114.16.14])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 885E9200DC9;
- Sat,  7 Mar 2020 03:28:27 +0100 (CET)
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 5BECF1A199B;
+ Sat,  7 Mar 2020 03:28:19 +0100 (CET)
 Received: from titan.ap.freescale.net (titan.ap.freescale.net [10.192.208.233])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 92D634030E;
- Sat,  7 Mar 2020 10:28:16 +0800 (SGT)
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id E35D7402F3;
+ Sat,  7 Mar 2020 10:28:07 +0800 (SGT)
 From: Xiaowei Bao <xiaowei.bao@nxp.com>
 To: Zhiqiang.Hou@nxp.com, Minghuan.Lian@nxp.com, mingkai.hu@nxp.com,
  bhelgaas@google.com, robh+dt@kernel.org, shawnguo@kernel.org,
@@ -49,9 +49,10 @@ To: Zhiqiang.Hou@nxp.com, Minghuan.Lian@nxp.com, mingkai.hu@nxp.com,
  gustavo.pimentel@synopsys.com, linux-pci@vger.kernel.org,
  devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v5 10/11] arm64: dts: layerscape: Add PCIe EP node for ls1088a
-Date: Sat,  7 Mar 2020 10:14:29 +0800
-Message-Id: <20200307021430.36826-11-xiaowei.bao@nxp.com>
+Subject: [PATCH v5 05/11] dt-bindings: pci: layerscape-pci: Add compatible
+ strings for ls1088a and ls2088a
+Date: Sat,  7 Mar 2020 10:14:24 +0800
+Message-Id: <20200307021430.36826-6-xiaowei.bao@nxp.com>
 X-Mailer: git-send-email 2.9.5
 In-Reply-To: <20200307021430.36826-1-xiaowei.bao@nxp.com>
 References: <20200307021430.36826-1-xiaowei.bao@nxp.com>
@@ -72,79 +73,36 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add PCIe EP node for ls1088a to support EP mode.
+Add compatible strings for ls1088a and ls2088a.
 
 Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
-Reviewed-by: Andrew Murray <andrew.murray@arm.com>
+Acked-by: Rob Herring <robh@kernel.org>
 ---
 v2:
- - Remove the pf-offset proparty.
+ - No change.
 v3:
- - No change.
+ - Use one valid combination of compatible strings.
 v4:
- - No change.
+ - Add the comma between the two compatible.
 v5:
  - No change.
- 
- arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi | 31 ++++++++++++++++++++++++++
- 1 file changed, 31 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-index ec6013a..cb0805b 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-@@ -497,6 +497,17 @@
- 			status = "disabled";
- 		};
- 
-+		pcie_ep@3400000 {
-+			compatible = "fsl,ls1088a-pcie-ep","fsl,ls-pcie-ep";
-+			reg = <0x00 0x03400000 0x0 0x00100000
-+			       0x20 0x00000000 0x8 0x00000000>;
-+			reg-names = "regs", "addr_space";
-+			num-ib-windows = <24>;
-+			num-ob-windows = <128>;
-+			max-functions = /bits/ 8 <2>;
-+			status = "disabled";
-+		};
-+
- 		pcie@3500000 {
- 			compatible = "fsl,ls1088a-pcie";
- 			reg = <0x00 0x03500000 0x0 0x00100000   /* controller registers */
-@@ -522,6 +533,16 @@
- 			status = "disabled";
- 		};
- 
-+		pcie_ep@3500000 {
-+			compatible = "fsl,ls1088a-pcie-ep","fsl,ls-pcie-ep";
-+			reg = <0x00 0x03500000 0x0 0x00100000
-+			       0x28 0x00000000 0x8 0x00000000>;
-+			reg-names = "regs", "addr_space";
-+			num-ib-windows = <6>;
-+			num-ob-windows = <8>;
-+			status = "disabled";
-+		};
-+
- 		pcie@3600000 {
- 			compatible = "fsl,ls1088a-pcie";
- 			reg = <0x00 0x03600000 0x0 0x00100000   /* controller registers */
-@@ -547,6 +568,16 @@
- 			status = "disabled";
- 		};
- 
-+		pcie_ep@3600000 {
-+			compatible = "fsl,ls1088a-pcie-ep","fsl,ls-pcie-ep";
-+			reg = <0x00 0x03600000 0x0 0x00100000
-+			       0x30 0x00000000 0x8 0x00000000>;
-+			reg-names = "regs", "addr_space";
-+			num-ib-windows = <6>;
-+			num-ob-windows = <8>;
-+			status = "disabled";
-+		};
-+
- 		smmu: iommu@5000000 {
- 			compatible = "arm,mmu-500";
- 			reg = <0 0x5000000 0 0x800000>;
+ Documentation/devicetree/bindings/pci/layerscape-pci.txt | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/pci/layerscape-pci.txt b/Documentation/devicetree/bindings/pci/layerscape-pci.txt
+index 99a386e..daa99f7 100644
+--- a/Documentation/devicetree/bindings/pci/layerscape-pci.txt
++++ b/Documentation/devicetree/bindings/pci/layerscape-pci.txt
+@@ -24,6 +24,8 @@ Required properties:
+         "fsl,ls1028a-pcie"
+   EP mode:
+ 	"fsl,ls1046a-pcie-ep", "fsl,ls-pcie-ep"
++	"fsl,ls1088a-pcie-ep", "fsl,ls-pcie-ep"
++	"fsl,ls2088a-pcie-ep", "fsl,ls-pcie-ep"
+ - reg: base addresses and lengths of the PCIe controller register blocks.
+ - interrupts: A list of interrupt outputs of the controller. Must contain an
+   entry for each entry in the interrupt-names property.
 -- 
 2.9.5
 
