@@ -2,83 +2,60 @@ Return-Path: <SRS0=0JSR=4Y=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FD3BC10DCE
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Mar 2020 01:35:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E206C10F25
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Mar 2020 02:30:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 94FED2067C
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Mar 2020 01:35:22 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="aRJsmhc3"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 94FED2067C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 02E08206E6
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Mar 2020 02:30:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 02E08206E6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
-Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48Z6Vv4l82zDr5R
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Mar 2020 12:35:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.215.193;
- helo=mail-pg1-f193.google.com; envelope-from=npiggin@gmail.com;
- receiver=<UNKNOWN>)
+Received: from lists.ozlabs.org (unknown [IPv6:2401:3900:2:1::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 48Z7l413sqzDrJC
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Mar 2020 13:30:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Received: from mail-pg1-f193.google.com (mail-pg1-f193.google.com
- [209.85.215.193])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.21; helo=inva021.nxp.com;
+ envelope-from=xiaowei.bao@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48Z6TK2QTCzDqyn
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Mar 2020 12:33:54 +1100 (AEDT)
-Received: by mail-pg1-f193.google.com with SMTP id 7so1891243pgr.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Mar 2020 17:33:54 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :user-agent:message-id:content-transfer-encoding;
- bh=utbLqXD9CMgavbCxnlr6/AcL14xuX+rVDyDAq46auJA=;
- b=aRJsmhc3cewVCEP4AZhnFINE0WvEFandNRFswILE38ZNibP0htc5t+sXuBwP7hgLpl
- AWIX12ow5/Xkz1fof5hGHNDAMf195Q5H13wLvsVPQBqhSQ2IL3aLU2zb00CyZEOUT+1U
- 8BKO/K/3TCZ8smnNEWzsTPff1Si4DW+raOqtQfyXs68tbufOVOw29fYgi/vRN1xWwMfK
- ql7M7H1m37RFnI8KiUicvyj57om6U26bRII4mOcdYByKnCz0RGyXBvUZOAQaCQyQ2C4+
- YJX9dnK5ljlYh6BWti3tjjXPz73yicU+qTugrkAfwmzHe0Mswua1mG+xeuonj6VHfYyw
- clnA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:user-agent:message-id:content-transfer-encoding;
- bh=utbLqXD9CMgavbCxnlr6/AcL14xuX+rVDyDAq46auJA=;
- b=fZyGXzDhMk1WF34GkzCObMQpobuJze7KhWHkSUnqDWJoxlO+Tp2GhNCZeQse30f3Og
- 95xPAR8dgTZjnOpCYpJtRDwOT2RP7YexvcZzNEORFWuMdT0TAa0ykGNf8N4M+OrOe5bk
- 8cTd0ekA6oQf8e6WVo4YpgEvlrnJoduB+ZQu6pnN7C7piHcwzm7pIvrQ7iMeUc+gSXTx
- E81Xm/cGRfhTMIUWLeBkGYIXJ5snisOtux6OVoSmws1zLomubiaw/HXEmCm9zYvQUZMm
- PjOccLjVIZFr8Q8jeWW7ecjRHCOCcpfiwNGbapz0LgsHhYLN5rhX1Q15INypzm5I8sgn
- ZO+Q==
-X-Gm-Message-State: ANhLgQ2kYMWX5xgmhbEjBVxdLk6iWcw7IsLxADq6OaUW6erRVgjCStdI
- 9Nz4rkEeyyd4wXxPbGsLvSo=
-X-Google-Smtp-Source: ADFU+vuoCBd9PeYvVd50a4nWUK05dFEI4n0+PZoZxrM+BDuA4mc4IESxF144/lK1F/uT+EdTEiBPsw==
-X-Received: by 2002:aa7:880e:: with SMTP id c14mr6491095pfo.76.1583544772709; 
- Fri, 06 Mar 2020 17:32:52 -0800 (PST)
-Received: from localhost (193-116-204-226.tpgi.com.au. [193.116.204.226])
- by smtp.gmail.com with ESMTPSA id o128sm3168730pfg.5.2020.03.06.17.32.51
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 06 Mar 2020 17:32:52 -0800 (PST)
-Date: Sat, 07 Mar 2020 11:32:46 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v3] powerpc: setup_64: set up PACA earlier to avoid kcov
- problems
-To: Daniel Axtens <dja@axtens.net>, linuxppc-dev@lists.ozlabs.org
-References: <20200306073000.9491-1-dja@axtens.net>
-In-Reply-To: <20200306073000.9491-1-dja@axtens.net>
-MIME-Version: 1.0
-User-Agent: astroid/0.15.0 (https://github.com/astroidmail/astroid)
-Message-Id: <1583543617.bp71axgtlo.astroid@bobo.none>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48Z7hT680czDr5V
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Mar 2020 13:28:36 +1100 (AEDT)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 1DD9F200DD3;
+ Sat,  7 Mar 2020 03:28:34 +0100 (CET)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
+ [165.114.16.14])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id C5EDF200DB2;
+ Sat,  7 Mar 2020 03:28:24 +0100 (CET)
+Received: from titan.ap.freescale.net (titan.ap.freescale.net [10.192.208.233])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 22FCE402FF;
+ Sat,  7 Mar 2020 10:28:13 +0800 (SGT)
+From: Xiaowei Bao <xiaowei.bao@nxp.com>
+To: Zhiqiang.Hou@nxp.com, Minghuan.Lian@nxp.com, mingkai.hu@nxp.com,
+ bhelgaas@google.com, robh+dt@kernel.org, shawnguo@kernel.org,
+ leoyang.li@nxp.com, kishon@ti.com, lorenzo.pieralisi@arm.com,
+ roy.zang@nxp.com, amurray@thegoodpenguin.co.uk, jingoohan1@gmail.com,
+ gustavo.pimentel@synopsys.com, linux-pci@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v5 08/11] PCI: layerscape: Modify the MSIX to the doorbell mode
+Date: Sat,  7 Mar 2020 10:14:27 +0800
+Message-Id: <20200307021430.36826-9-xiaowei.bao@nxp.com>
+X-Mailer: git-send-email 2.9.5
+In-Reply-To: <20200307021430.36826-1-xiaowei.bao@nxp.com>
+References: <20200307021430.36826-1-xiaowei.bao@nxp.com>
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,96 +67,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ajd@linux.ibm.com
+Cc: Xiaowei Bao <xiaowei.bao@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Daniel Axtens's on March 6, 2020 5:30 pm:
-> kcov instrumentation is collected the __sanitizer_cov_trace_pc hook in
-> kernel/kcov.c. The compiler inserts these hooks into every basic block
-> unless kcov is disabled for that file.
->=20
-> We then have a deep call-chain:
->  - __sanitizer_cov_trace_pc calls to check_kcov_mode()
->  - check_kcov_mode() (kernel/kcov.c) calls in_task()
->  - in_task() (include/linux/preempt.h) calls preempt_count().
->  - preempt_count() (include/asm-generic/preempt.h) calls
->      current_thread_info()
->  - because powerpc has THREAD_INFO_IN_TASK, current_thread_info()
->      (include/linux/thread_info.h) is defined to 'current'
->  - current (arch/powerpc/include/asm/current.h) is defined to
->      get_current().
->  - get_current (same file) loads an offset of r13.
->  - arch/powerpc/include/asm/paca.h makes r13 a register variable
->      called local_paca - it is the PACA for the current CPU, so
->      this has the effect of loading the current task from PACA.
->  - get_current returns the current task from PACA,
->  - current_thread_info returns the task cast to a thread_info
->  - preempt_count dereferences the thread_info to load preempt_count
->  - that value is used by in_task and so on up the chain
->=20
-> The problem is:
->=20
->  - kcov instrumentation is enabled for arch/powerpc/kernel/dt_cpu_ftrs.c
->=20
->  - even if it were not, dt_cpu_ftrs_init calls generic dt parsing code
->    which should definitely have instrumentation enabled.
->=20
->  - setup_64.c calls dt_cpu_ftrs_init before it sets up a PACA.
->=20
->  - If we don't set up a paca, r13 will contain unpredictable data.
->=20
->  - In a zImage compiled with kcov and KASAN, we see r13 containing a valu=
-e
->    that leads to dereferencing invalid memory (something like
->    912a72603d420015).
->=20
->  - Weirdly, the same kernel as a vmlinux loaded directly by qemu does not
->    crash. Investigating with gdb, it seems that in the vmlinux boot case,
->    r13 is near enough to zero that we just happen to be able to read that
->    part of memory (we're operating with translation off at this point) an=
-d
->    the current pointer also happens to land in readable memory and
->    everything just works.
->=20
->  - PACA setup refers to CPU features - setup_paca() looks at
->    early_cpu_has_feature(CPU_FTR_HVMODE)
->=20
-> There's no generic kill switch for kcov (as far as I can tell), and we
-> don't want to have to turn off instrumentation in the generic dt parsing
-> code (which lives outside arch/powerpc/) just because we don't have a rea=
-l
-> paca or task yet.
->=20
-> So:
->  - change the test when setting up a PACA to consider the actual value of
->    the MSR rather than the CPU feature.
->=20
->  - move the PACA setup to before the cpu feature parsing.
+dw_pcie_ep_raise_msix_irq was never called in the exisitng driver
+before, because the ls1046a platform don't support the MSIX feature
+and msix_capable was always set to false.
+Now that add the ls1088a platform with MSIX support, use the doorbell
+method to support the MSIX feature.
 
-Hmm. Problem is that equally we want PACA to be sane before we call too
-far into the rest of the kernel ("generic dt parsing code").
+Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
+Reviewed-by: Andrew Murray <andrew.murray@arm.com>
+---
+v2: 
+ - No change
+v3:
+ - Modify the commit message make it clearly.
+v4: 
+ - No change
+v5: 
+ - Modify the commit message.
 
-Does KCOV really need to instrument code this early? If not, then
-change
+ drivers/pci/controller/dwc/pci-layerscape-ep.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-    if (!in_task())
-        return false;
+diff --git a/drivers/pci/controller/dwc/pci-layerscape-ep.c b/drivers/pci/controller/dwc/pci-layerscape-ep.c
+index 9601f9c..bfab1c6 100644
+--- a/drivers/pci/controller/dwc/pci-layerscape-ep.c
++++ b/drivers/pci/controller/dwc/pci-layerscape-ep.c
+@@ -79,7 +79,8 @@ static int ls_pcie_ep_raise_irq(struct dw_pcie_ep *ep, u8 func_no,
+ 	case PCI_EPC_IRQ_MSI:
+ 		return dw_pcie_ep_raise_msi_irq(ep, func_no, interrupt_num);
+ 	case PCI_EPC_IRQ_MSIX:
+-		return dw_pcie_ep_raise_msix_irq(ep, func_no, interrupt_num);
++		return dw_pcie_ep_raise_msix_irq_doorbell(ep, func_no,
++							  interrupt_num);
+ 	default:
+ 		dev_err(pci->dev, "UNKNOWN IRQ type\n");
+ 		return -EINVAL;
+-- 
+2.9.5
 
-to
-
-    if (system_state !=3D SYSTEM_RUNNING)
-        return false;
-    if (!in_task())
-        return false;
-
-If it does need to instrument early, then something like
-
-    if (system_state >=3D SYSTEM_SCHEDULING && !in_task())
-        return false;
-
-Thanks,
-Nick
-
-=
