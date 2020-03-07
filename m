@@ -2,88 +2,53 @@ Return-Path: <SRS0=0JSR=4Y=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D72B6C10DCE
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Mar 2020 00:56:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D3F7C10DCE
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Mar 2020 00:58:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 84510206D7
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Mar 2020 00:56:46 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="UGqV6+j2"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 84510206D7
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 245E2206D7
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Mar 2020 00:58:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 245E2206D7
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48Z5fM723nzDrRX
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Mar 2020 11:56:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.215.193;
- helo=mail-pg1-f193.google.com; envelope-from=npiggin@gmail.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48Z5hL53FxzF0QW
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Mar 2020 11:58:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=UGqV6+j2; dkim-atps=neutral
-Received: from mail-pg1-f193.google.com (mail-pg1-f193.google.com
- [209.85.215.193])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48Z5cn0p4dzDqw2
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Mar 2020 11:55:20 +1100 (AEDT)
-Received: by mail-pg1-f193.google.com with SMTP id d9so1854896pgu.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Mar 2020 16:55:20 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :user-agent:message-id:content-transfer-encoding;
- bh=thzwk5SGx+uMlt9vi40Zw9madvFB2zG4Qsxcm0q/Mw0=;
- b=UGqV6+j2E7QzldiiDtyJrqSWXFULvB2vFCR8eAnvxQbLNuxU0bfAriGq1s2aPUkJoZ
- o4VRg0CI6H4RYFXoyWPsA5v7yJ2RiZGtNtKQCAlhqS3gqAB4KkoUas2K8BO1yc1fqozq
- Pt0ItH7pXsqprdRFlaQujtplaVndcAlVs8FNMNcuMIkRVnnSLcVj9sPXqzET83iE2NnX
- 1t2D2eytcWrbNrnyyHfTNlW71HMuM50JgCNqHVsMc+0KAWaVvgSxnP2pU8hsFaPSEH3w
- 3pXROLWU8L2LtaZApK7a4jBbKbfo3YSoZ3Q0OkStp65mbJS/oYMSzV0db5IZCThhGc3Q
- 7Y5w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:user-agent:message-id:content-transfer-encoding;
- bh=thzwk5SGx+uMlt9vi40Zw9madvFB2zG4Qsxcm0q/Mw0=;
- b=D7k6YAmsJB70tQUfiDNgLau6dwXkwEcudX8scHH7tLOc4UjWy8rlbghlXlAmIZnFSK
- 3OX+xO5dCriaLCF/GM6QFiOz0DHz7zu+tSTFMfws6/+hWb+zQJLMOW1E8cllpNH/WV+J
- YcKD99hogCflt6f9mfNla2n2PIxdXjF+oMjtJ4ittucDdA7TO/LikasNWl6wgx0FewoJ
- 5GRHiqUXB2tNGrqXHDpw8guRpkeMPvYZUw3EmqwInzMBYk6c4saiRSzlIDMMDTaF6/UF
- 9l7G1Nq0BUS3V7K6P/Q2uDOuSPieI7toI5VxN+1ABLZRHazXfleQoucBh0E4cMY/aatx
- gEqg==
-X-Gm-Message-State: ANhLgQ0JREAl9WtQghtwPP1NmpUL6ebIDJyBMHQ9zjhvFBLPCrm2hx98
- CHTHrFDwEkGv/J4/MIHJXvdO+birdJo=
-X-Google-Smtp-Source: ADFU+vsPU+A89SwVf7M+bzsddmQ9D1nbWXx/++wJ+zxedCkZ1XVEpvfKawVchBewwEMdHY2IlIGPNw==
-X-Received: by 2002:a63:e4d:: with SMTP id 13mr5556637pgo.343.1583542457079;
- Fri, 06 Mar 2020 16:54:17 -0800 (PST)
-Received: from localhost (193-116-204-226.tpgi.com.au. [193.116.204.226])
- by smtp.gmail.com with ESMTPSA id bb4sm10536865pjb.8.2020.03.06.16.54.15
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 06 Mar 2020 16:54:16 -0800 (PST)
-Date: Sat, 07 Mar 2020 10:54:11 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH] Fix powerpc/64: system call zero volatile registers when
- returning
-To: Segher Boessenkool <segher@kernel.crashing.org>
-References: <20200225173541.1549955-1-npiggin@gmail.com>
- <20200225173541.1549955-27-npiggin@gmail.com>
- <20200225212032.GI22482@gate.crashing.org>
-In-Reply-To: <20200225212032.GI22482@gate.crashing.org>
+ spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
+ (client-ip=217.140.110.172; helo=foss.arm.com;
+ envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+ by lists.ozlabs.org (Postfix) with ESMTP id 48Z5fX1tt3zDr7W
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Mar 2020 11:56:50 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 7192C30E;
+ Fri,  6 Mar 2020 16:56:49 -0800 (PST)
+Received: from [10.163.1.59] (unknown [10.163.1.59])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id D25853F237;
+ Fri,  6 Mar 2020 16:56:41 -0800 (PST)
+Subject: Re: [PATCH V15] mm/debug: Add tests validating architecture page
+ table helpers
+To: Qian Cai <cai@lca.pw>
+References: <61250cdc-f80b-2e50-5168-2ec67ec6f1e6@arm.com>
+ <CEEAD95E-D468-4C58-A65B-7E8AED91168A@lca.pw>
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+Message-ID: <a45834bc-e6f2-ac21-de9e-1aff67d12797@arm.com>
+Date: Sat, 7 Mar 2020 06:26:40 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-User-Agent: astroid/0.15.0 (https://github.com/astroidmail/astroid)
-Message-Id: <1583542224.q2gru1acfu.astroid@bobo.none>
+In-Reply-To: <CEEAD95E-D468-4C58-A65B-7E8AED91168A@lca.pw>
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,63 +60,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Suchanek <msuchanek@suse.de>, linuxppc-dev@lists.ozlabs.org
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mm@kvack.org,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, x86@kernel.org,
+ Mike Rapoport <rppt@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, linux-snps-arc@lists.infradead.org,
+ Vasily Gorbik <gor@linux.ibm.com>, Borislav Petkov <bp@alien8.de>,
+ Paul Walmsley <paul.walmsley@sifive.com>,
+ "Kirill A . Shutemov" <kirill@shutemov.name>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Vineet Gupta <vgupta@synopsys.com>, linux-kernel@vger.kernel.org,
+ Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Here's an incremental fix that can be folded into the patch.
 
-Segher Boessenkool's on February 26, 2020 7:20 am:
-> Hi!
->=20
-> On Wed, Feb 26, 2020 at 03:35:35AM +1000, Nicholas Piggin wrote:
->> Kernel addresses and potentially other sensitive data could be leaked
->> in volatile registers after a syscall.
->=20
->>  	cmpdi	r3,0
->>  	bne	.Lsyscall_restore_regs
->> +	li	r0,0
->> +	li	r4,0
->> +	li	r5,0
->> +	li	r6,0
->> +	li	r7,0
->> +	li	r8,0
->> +	li	r9,0
->> +	li	r10,0
->> +	li	r11,0
->> +	li	r12,0
->> +	mtctr	r0
->> +	mtspr	SPRN_XER,r0
->>  .Lsyscall_restore_regs_cont:
->=20
-> What about LR?  Is that taken care of later?
->=20
-> This also deserves a big fat comment imo, it is very important after
-> all, and not so obvious.
->=20
->=20
-> Segher
->=20
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kernel/entry_64.S | 1 +
- 1 file changed, 1 insertion(+)
+On 03/07/2020 06:04 AM, Qian Cai wrote:
+> 
+> 
+>> On Mar 6, 2020, at 7:03 PM, Anshuman Khandual <Anshuman.Khandual@arm.com> wrote:
+>>
+>> Hmm, set_pte_at() function is not preferred here for these tests. The idea
+>> is to avoid or atleast minimize TLB/cache flushes triggered from these sort
+>> of 'static' tests. set_pte_at() is platform provided and could/might trigger
+>> these flushes or some other platform specific synchronization stuff. Just
+> 
+> Why is that important for this debugging option?
 
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.=
-S
-index 0e2c56573a41..ea534375250b 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -135,6 +135,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
-=20
- 	cmpdi	r3,0
- 	bne	.Lsyscall_restore_regs
-+	/* Zero volatile regs that may contain sensitive kernel data */
- 	li	r0,0
- 	li	r4,0
- 	li	r5,0
---=20
-2.23.0
-=
+Primarily reason is to avoid TLB/cache flush instructions on the system
+during these tests that only involve transforming different page table
+level entries through helpers. Unless really necessary, why should it
+emit any TLB/cache flush instructions ?
+
+> 
+>> wondering is there specific reason with respect to the soft lock up problem
+>> making it necessary to use set_pte_at() rather than a simple WRITE_ONCE() ?
+> 
+> Looks at the s390 version of set_pte_at(), it has this comment,
+> vmaddr);
+> 
+> /*
+>  * Certain architectures need to do special things when PTEs
+>  * within a page table are directly modified.  Thus, the following
+>  * hook is made available.
+>  */
+> 
+> I can only guess that powerpc  could be the same here.
+
+This comment is present in multiple platforms while defining set_pte_at().
+Is not 'barrier()' here alone good enough ? Else what exactly set_pte_at()
+does as compared to WRITE_ONCE() that avoids the soft lock up, just trying
+to understand.
