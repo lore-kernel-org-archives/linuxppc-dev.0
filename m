@@ -4,55 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1221C10F27
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Mar 2020 06:52:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D40FC18E5A
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Mar 2020 09:02:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 727B220675
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Mar 2020 06:52:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 727B220675
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=vivo.com
+	by mail.kernel.org (Postfix) with ESMTPS id DF11C21775
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Mar 2020 09:02:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF11C21775
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48bTRj3DY4zDqvN
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Mar 2020 17:52:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48bXKx12HhzDqWg
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Mar 2020 20:02:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=vivo.com (client-ip=59.111.176.17; helo=m17617.mail.qiye.163.com;
- envelope-from=wenhu.wang@vivo.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ravi.bangoria@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=vivo.com
-Received: from m17617.mail.qiye.163.com (m17617.mail.qiye.163.com
- [59.111.176.17])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48bTQC2MQQzDqJY
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Mar 2020 17:50:53 +1100 (AEDT)
-Received: from ubuntu.localdomain (unknown [58.251.74.226])
- by m17617.mail.qiye.163.com (Hmail) with ESMTPA id 8610F261D10;
- Mon,  9 Mar 2020 14:49:37 +0800 (CST)
-From: WANG Wenhu <wenhu.wang@vivo.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Gleixner <tglx@linutronix.de>, WANG Wenhu <wenhu.wang@vivo.com>,
- Kate Stewart <kstewart@linuxfoundation.org>,
- Richard Fontana <rfontana@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/fsl-85xx: fix compile error
-Date: Sun,  8 Mar 2020 23:49:22 -0700
-Message-Id: <20200309064926.27107-1-wenhu.wang@vivo.com>
-X-Mailer: git-send-email 2.17.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48bXFr0R3VzDqTF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Mar 2020 19:58:55 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0298oCmf038474
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Mar 2020 04:58:53 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ym6tmf9a3-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Mar 2020 04:58:53 -0400
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.ibm.com>;
+ Mon, 9 Mar 2020 08:58:51 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 9 Mar 2020 08:58:48 -0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0298wkQs41746472
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 9 Mar 2020 08:58:46 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 85CB5A4040;
+ Mon,  9 Mar 2020 08:58:46 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0D3B7A404D;
+ Mon,  9 Mar 2020 08:58:44 +0000 (GMT)
+Received: from bangoria.in.ibm.com (unknown [9.124.31.44])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon,  9 Mar 2020 08:58:43 +0000 (GMT)
+From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+To: mpe@ellerman.id.au, mikey@neuling.org
+Subject: [PATCH 02/15] powerpc/watchpoint: Add SPRN macros for second DAWR
+Date: Mon,  9 Mar 2020 14:27:53 +0530
+X-Mailer: git-send-email 2.24.1
+In-Reply-To: <20200309085806.155823-1-ravi.bangoria@linux.ibm.com>
+References: <20200309085806.155823-1-ravi.bangoria@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-HM-Spam-Status: e1kfGhgUHx5ZQUlXWQgYFAkeWUFZTVVITkxCQkJDS0pNSE5MT1lXWShZQU
- hPN1dZLVlBSVdZCQ4XHghZQVk1NCk2OjckKS43PlkG
-X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6Njo6Cgw6ATgzEj0YGUIpTDcZ
- HiFPCy1VSlVKTkNITEhNTkNLS0NNVTMWGhIXVQweFRMOVQwaFRw7DRINFFUYFBZFWVdZEgtZQVlO
- Q1VJTkpVTE9VSUlNWVdZCAFZQUlDSEs3Bg++
-X-HM-Tid: 0a70be0e5fb09375kuws8610f261d10
+X-TM-AS-GCONF: 00
+x-cbid: 20030908-4275-0000-0000-000003A9B410
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 20030908-4276-0000-0000-000038BEC9CF
+Message-Id: <20200309085806.155823-3-ravi.bangoria@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
+ definitions=2020-03-09_02:2020-03-06,
+ 2020-03-09 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ spamscore=0 malwarescore=0 lowpriorityscore=0 bulkscore=0 clxscore=1015
+ suspectscore=0 adultscore=0 impostorscore=0 mlxlogscore=719 phishscore=0
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2001150001 definitions=main-2003090066
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,45 +98,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: wenhu.pku@gmail.com, trivial@kernel.org
+Cc: apopple@linux.ibm.com, Ravi Bangoria <ravi.bangoria@linux.ibm.com>,
+ peterz@infradead.org, fweisbec@gmail.com, oleg@redhat.com, npiggin@gmail.com,
+ linux-kernel@vger.kernel.org, paulus@samba.org, jolsa@kernel.org,
+ naveen.n.rao@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ mingo@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Include "linux/of_address.h" to fix the compile error
-while compiling file fsl_85xx_cache_sram.c.
+Future Power architecture is introducing second DAWR. Add SPRN_ macros
+for the same.
 
-  CC      arch/powerpc/sysdev/fsl_85xx_l2ctlr.o
-arch/powerpc/sysdev/fsl_85xx_l2ctlr.c: In function ‘mpc85xx_l2ctlr_of_probe’:
-arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:90:11: error: implicit declaration of function ‘of_iomap’; did you mean ‘pci_iomap’? [-Werror=implicit-function-declaration]
-  l2ctlr = of_iomap(dev->dev.of_node, 0);
-           ^~~~~~~~
-           pci_iomap
-arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:90:9: error: assignment makes pointer from integer without a cast [-Werror=int-conversion]
-  l2ctlr = of_iomap(dev->dev.of_node, 0);
-         ^
-cc1: all warnings being treated as errors
-scripts/Makefile.build:267: recipe for target 'arch/powerpc/sysdev/fsl_85xx_l2ctlr.o' failed
-make[2]: *** [arch/powerpc/sysdev/fsl_85xx_l2ctlr.o] Error 1
-
-Fixed: commit 6db92cc9d07d ("powerpc/85xx: add cache-sram support")
-Signed-off-by: WANG Wenhu <wenhu.wang@vivo.com>
+Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
 ---
- arch/powerpc/sysdev/fsl_85xx_l2ctlr.c | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/include/asm/reg.h | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c b/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
-index 2d0af0c517bb..7533572492f0 100644
---- a/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
-+++ b/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
-@@ -10,6 +10,7 @@
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/of_platform.h>
-+#include <linux/of_address.h>
- #include <asm/io.h>
- 
- #include "fsl_85xx_cache_ctlr.h"
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 156ee89fa9be..062e74cf41fd 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -284,6 +284,7 @@
+ #define   CTRL_TE	0x00c00000	/* thread enable */
+ #define   CTRL_RUNLATCH	0x1
+ #define SPRN_DAWR0	0xB4
++#define SPRN_DAWR1	0xB5
+ #define SPRN_RPR	0xBA	/* Relative Priority Register */
+ #define SPRN_CIABR	0xBB
+ #define   CIABR_PRIV		0x3
+@@ -291,6 +292,7 @@
+ #define   CIABR_PRIV_SUPER	2
+ #define   CIABR_PRIV_HYPER	3
+ #define SPRN_DAWRX0	0xBC
++#define SPRN_DAWRX1	0xBD
+ #define   DAWRX_USER	__MASK(0)
+ #define   DAWRX_KERNEL	__MASK(1)
+ #define   DAWRX_HYP	__MASK(2)
 -- 
-2.17.1
+2.21.1
 
