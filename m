@@ -2,26 +2,27 @@ Return-Path: <SRS0=/Qvz=43=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B52AEC10F25
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Mar 2020 01:06:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E207C10F25
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Mar 2020 01:07:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2931924649
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Mar 2020 01:06:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id EC0FA24649
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Mar 2020 01:07:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="JrKxWdR5";
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="IR4E/nLE"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2931924649
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="nuHFjJ3b";
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="igN1LVoO"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC0FA24649
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (unknown [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48bxjq6KfczDqZS
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Mar 2020 12:06:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48bxlh52HTzDqjW
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Mar 2020 12:07:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=russell.cc (client-ip=66.111.4.29;
  helo=out5-smtp.messagingengine.com; envelope-from=ruscur@russell.cc;
@@ -30,62 +31,67 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256
- header.s=fm1 header.b=JrKxWdR5; 
+ header.s=fm1 header.b=nuHFjJ3b; 
  dkim=pass (2048-bit key;
  unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.a=rsa-sha256 header.s=fm2 header.b=IR4E/nLE; 
+ header.a=rsa-sha256 header.s=fm2 header.b=igN1LVoO; 
  dkim-atps=neutral
 Received: from out5-smtp.messagingengine.com (out5-smtp.messagingengine.com
  [66.111.4.29])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48bxgc0zGRzDqRb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2020 12:04:08 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48bxgg0wYZzDqRd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2020 12:04:14 +1100 (AEDT)
 Received: from compute4.internal (compute4.nyi.internal [10.202.2.44])
- by mailout.nyi.internal (Postfix) with ESMTP id 2A6F3221FC;
- Mon,  9 Mar 2020 21:04:05 -0400 (EDT)
+ by mailout.nyi.internal (Postfix) with ESMTP id B032822308;
+ Mon,  9 Mar 2020 21:04:12 -0400 (EDT)
 Received: from mailfrontend1 ([10.202.2.162])
- by compute4.internal (MEProxy); Mon, 09 Mar 2020 21:04:05 -0400
+ by compute4.internal (MEProxy); Mon, 09 Mar 2020 21:04:12 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=
- from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding; s=fm1; bh=dIh8uC/4N1UI+4ilbuZrGnP794
- RY0IvXvhY5yS9b+GU=; b=JrKxWdR5cimXKdB3kJvADgGfFXrnLGbPTQWUxkON3w
- Q+qF5nQpeOcpdgz18QPcLfhbPVhgtrMTi17lg8ACntX+YLTqQdFH2y62+5seyICp
- tC2PhHQbydxTqLaApejGNU9mn9zChFkK5BGtHmRvUay5qUGFGKm9dAErQYuUTxUg
- KkSIDPLtgf1wLKYCWtzaPK4W1husUoyMEqp9omfXsD1F9cGc4fU9uBpKr9XhMB9c
- dJqeHtU1ik1fu2ZKOtMCHz4eyf4oZRj8KA7dElpohTZ/Sky1FDYVer9dy9y1GIX+
- uqNePIEfSNKkT/iNTYHG2WMxl+yjHMUMXBgrrsjPfKsA==
+ from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding; s=fm1; bh=8lzF+bki5ljY1
+ +3LRVnTxy2EovRyYNho4bqwRNKSXkI=; b=nuHFjJ3bYut+r7z12RZ+iPn9kAOFm
+ BqZ7jkWFLpiJwEJg8b32a/owfy59xHaNRZ925cgDdAsId4j2Lr9PG22Ve0TFzPjF
+ iyMn3mO9jX4uYRM8Y/ZZhM2y5E0k+uAczRX77d0nnOgo776kL8TUkwwyNrObmTKJ
+ lFUssyFdRSYwq1lRx3dEGHaa4VL4forHy+8/zPKi0SdCv9rpKbIVmnGiTQCdMdJH
+ BijBbpWdNhRvKMc6/2RUzSuSbTnwdlD6TdwfbadahinKRm861ygaZp9isWD77zdH
+ D/qQOK6L8xmvC2xcAmV5q4MzLnXaDescHpHWc1b0nfOxqm0Gdg2yAvGgw==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
  messagingengine.com; h=cc:content-transfer-encoding:date:from
- :message-id:mime-version:subject:to:x-me-proxy:x-me-proxy
- :x-me-sender:x-me-sender:x-sasl-enc; s=fm2; bh=dIh8uC/4N1UI+4ilb
- uZrGnP794RY0IvXvhY5yS9b+GU=; b=IR4E/nLEUDG9fI/dFDrthcxr3DXUxQ0Lq
- JiiraKwnNwoujcmxZqMvG6QJ1WM75M9adiEKk7TthXAKqxBfMWaUlSJW4umQG5Bm
- djJhC+28mBw8qOlohw0THbqAAVsd7FNT8adfrESUAezvK7nPD2iNnYF8QhiajEZI
- wkFlEKZvSceCofVDdZZUR+K/bpcB9fk76u65IgnfRpvUVkW2HuZdZnqABSl0wxIz
- h5/BDQN6B4c3tTSDm/fGSYDm4nrWt5H7vu5B2oWyjSkmMDwhGh8hYJyEgvrQrVff
- msBeSZc/UObwu6BCIE5DuJoNdaVXIMuuCw8N8x/xlZJDay9fUuPlQ==
-X-ME-Sender: <xms:g-dmXvFpX7lhQPftJpkmGDNYs9XTmo4nhQW73a5-BSQBEKyWYm4pIQ>
+ :in-reply-to:message-id:mime-version:references:subject:to
+ :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+ fm2; bh=8lzF+bki5ljY1+3LRVnTxy2EovRyYNho4bqwRNKSXkI=; b=igN1LVoO
+ NEY7Rpz1yZkAlgZMCRCjlBSQ59rxJCm6adTX17R6kZWnUBXWHd1NpL6La6HoVIQ7
+ 7oI58mSWfexvcK393VtWdjLzuRRizj1p8/AYeAaEOIUjON7bP+wT4cZJk+xwzLeB
+ 8caEN98n+X62itKsVt+/Uupmt+fzSHDyVRJCkkwAcm/Bo3wyjlvyxJMlKNF/EK/Q
+ Q8SZHlGMtdvlMuH24MXWrwEKnh8sgUdlyUN7I8JyyEnopBhyCqSBsexHZuT0Shf8
+ GHVuzmgsrYYqeq/dy9R1adtydAXMhiVixxqP3jaidCsI9MKNSv+ixjvs3+r20ot5
+ y9KjwTOX2ENSKA==
+X-ME-Sender: <xms:jOdmXk5XCHFewHV0XU11nwhNNyG2f-mXTgWAO1nts2cp09G_u9SEFw>
 X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedugedrudduledgvdelucetufdoteggodetrfdotf
  fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
- uceurghilhhouhhtmecufedttdenucgfrhhlucfvnfffucdludehmdenucfjughrpefhvf
- fufffkofgggfestdekredtredttdenucfhrhhomheptfhushhsvghllhcuvehurhhrvgih
- uceorhhushgtuhhrsehruhhsshgvlhhlrdgttgeqnecuffhomhgrihhnpehoiihlrggssh
- drohhrghenucfkphepuddvvddrleelrdekvddruddtnecuvehluhhsthgvrhfuihiivgep
- tdenucfrrghrrghmpehmrghilhhfrhhomheprhhushgtuhhrsehruhhsshgvlhhlrdgttg
-X-ME-Proxy: <xmx:g-dmXujOt0tDs5lC47uKCUTpi3f7wAcbCfey5PSIrDPnOVpUEUP7_g>
- <xmx:g-dmXj4cQRz90Ri3w62uETh9C0_is1poX7qDJWP1qJIE0hcy4t-0jA>
- <xmx:g-dmXoc6FC2XSSOJTuGdZdwIN3SDfSWv9IwBO8kYAb4gRslML2lNKA>
- <xmx:hedmXuIt-_36sLLBxWsCqd4E35qWRXVeAunLAXvKKfv10y4iTBppnw>
+ uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+ gfrhhlucfvnfffucdludehmdenucfjughrpefhvffufffkofgjfhgggfestdekredtredt
+ tdenucfhrhhomheptfhushhsvghllhcuvehurhhrvgihuceorhhushgtuhhrsehruhhssh
+ gvlhhlrdgttgeqnecukfhppeduvddvrdelledrkedvrddutdenucevlhhushhtvghrufhi
+ iigvpedunecurfgrrhgrmhepmhgrihhlfhhrohhmpehruhhstghurhesrhhushhsvghllh
+ drtggt
+X-ME-Proxy: <xmx:jOdmXvOv0qIhdU9SMDcs91-D0Vgs1_qwiM89Aqh-0I19G0LJ5TX0ZA>
+ <xmx:jOdmXqsLQ_IRTG0CbveAS2CC5KxjJiDquzfRLXYxLoxN264jzHXUBA>
+ <xmx:jOdmXqa42_3-ZfC1hXMsendy_wHbIj4HpcUoVbv3BcF7pu1Qr43-CQ>
+ <xmx:jOdmXv-VdiexqtA8bepYfl8GASXw13Nxm5S-qZP6SNJHmnhUVXQyGA>
 Received: from crackle.ozlabs.ibm.com (unknown [122.99.82.10])
- by mail.messagingengine.com (Postfix) with ESMTPA id 938A6328005A;
- Mon,  9 Mar 2020 21:04:00 -0400 (EDT)
+ by mail.messagingengine.com (Postfix) with ESMTPA id AF7043280064;
+ Mon,  9 Mar 2020 21:04:09 -0400 (EDT)
 From: Russell Currey <ruscur@russell.cc>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v6 0/7] set_memory() routines and STRICT_MODULE_RWX
-Date: Tue, 10 Mar 2020 12:03:31 +1100
-Message-Id: <20200310010338.21205-1-ruscur@russell.cc>
+Subject: [PATCH v6 3/7] powerpc/mm/ptdump: debugfs handler for W+X checks at
+ runtime
+Date: Tue, 10 Mar 2020 12:03:34 +1100
+Message-Id: <20200310010338.21205-4-ruscur@russell.cc>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20200310010338.21205-1-ruscur@russell.cc>
+References: <20200310010338.21205-1-ruscur@russell.cc>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -99,51 +105,93 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ajd@linux.ibm.com, kernel-hardening@lists.openwall.com, npiggin@gmail.com,
- joel@jms.id.au, Russell Currey <ruscur@russell.cc>, dja@axtens.net
+Cc: ajd@linux.ibm.com, Kees Cook <keescook@chromium.org>,
+ kernel-hardening@lists.openwall.com, npiggin@gmail.com, joel@jms.id.au,
+ Russell Currey <ruscur@russell.cc>, dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Back again, just minor changes.
+Very rudimentary, just
 
-v5: https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=160869
+	echo 1 > [debugfs]/check_wx_pages
 
-Changes since v5:
-	[1/8]: Patch 8/8 squashed as suggested by Andrew Donnellan
-	       Added a note to the comment of change_page_attr()
-	       Rename size to sz to meet 90 chars without multiple lines
+and check the kernel log.  Useful for testing strict module RWX.
 
-	[8/8]: Removed, change_memory_attr() section squashed, rest dropped
-	       as suggested by Christophe Leroy (since I just assumed it was
-	       the right thing to do instead of actually checking)
+Updated the Kconfig entry to reflect this.
 
-Thanks for the feedback.
+Also fixed a typo.
 
-Christophe Leroy (2):
-  powerpc/mm: implement set_memory_attr()
-  powerpc/32: use set_memory_attr()
+Reviewed-by: Kees Cook <keescook@chromium.org>
+Signed-off-by: Russell Currey <ruscur@russell.cc>
+---
+ arch/powerpc/Kconfig.debug      |  6 ++++--
+ arch/powerpc/mm/ptdump/ptdump.c | 21 ++++++++++++++++++++-
+ 2 files changed, 24 insertions(+), 3 deletions(-)
 
-Russell Currey (5):
-  powerpc/mm: Implement set_memory() routines
-  powerpc/kprobes: Mark newly allocated probes as RO
-  powerpc/mm/ptdump: debugfs handler for W+X checks at runtime
-  powerpc: Set ARCH_HAS_STRICT_MODULE_RWX
-  powerpc/configs: Enable STRICT_MODULE_RWX in skiroot_defconfig
-
- arch/powerpc/Kconfig                   |   2 +
- arch/powerpc/Kconfig.debug             |   6 +-
- arch/powerpc/configs/skiroot_defconfig |   1 +
- arch/powerpc/include/asm/set_memory.h  |  34 ++++++++
- arch/powerpc/kernel/kprobes.c          |  17 +++-
- arch/powerpc/mm/Makefile               |   2 +-
- arch/powerpc/mm/pageattr.c             | 112 +++++++++++++++++++++++++
- arch/powerpc/mm/pgtable_32.c           |  95 +++------------------
- arch/powerpc/mm/ptdump/ptdump.c        |  21 ++++-
- 9 files changed, 197 insertions(+), 93 deletions(-)
- create mode 100644 arch/powerpc/include/asm/set_memory.h
- create mode 100644 arch/powerpc/mm/pageattr.c
-
+diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+index 0b063830eea8..e37960ef68c6 100644
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -370,7 +370,7 @@ config PPC_PTDUMP
+ 	  If you are unsure, say N.
+ 
+ config PPC_DEBUG_WX
+-	bool "Warn on W+X mappings at boot"
++	bool "Warn on W+X mappings at boot & enable manual checks at runtime"
+ 	depends on PPC_PTDUMP && STRICT_KERNEL_RWX
+ 	help
+ 	  Generate a warning if any W+X mappings are found at boot.
+@@ -384,7 +384,9 @@ config PPC_DEBUG_WX
+ 	  of other unfixed kernel bugs easier.
+ 
+ 	  There is no runtime or memory usage effect of this option
+-	  once the kernel has booted up - it's a one time check.
++	  once the kernel has booted up, it only automatically checks once.
++
++	  Enables the "check_wx_pages" debugfs entry for checking at runtime.
+ 
+ 	  If in doubt, say "Y".
+ 
+diff --git a/arch/powerpc/mm/ptdump/ptdump.c b/arch/powerpc/mm/ptdump/ptdump.c
+index 206156255247..a15e19a3b14e 100644
+--- a/arch/powerpc/mm/ptdump/ptdump.c
++++ b/arch/powerpc/mm/ptdump/ptdump.c
+@@ -4,7 +4,7 @@
+  *
+  * This traverses the kernel pagetables and dumps the
+  * information about the used sections of memory to
+- * /sys/kernel/debug/kernel_pagetables.
++ * /sys/kernel/debug/kernel_page_tables.
+  *
+  * Derived from the arm64 implementation:
+  * Copyright (c) 2014, The Linux Foundation, Laura Abbott.
+@@ -413,6 +413,25 @@ void ptdump_check_wx(void)
+ 	else
+ 		pr_info("Checked W+X mappings: passed, no W+X pages found\n");
+ }
++
++static int check_wx_debugfs_set(void *data, u64 val)
++{
++	if (val != 1ULL)
++		return -EINVAL;
++
++	ptdump_check_wx();
++
++	return 0;
++}
++
++DEFINE_SIMPLE_ATTRIBUTE(check_wx_fops, NULL, check_wx_debugfs_set, "%llu\n");
++
++static int ptdump_check_wx_init(void)
++{
++	return debugfs_create_file("check_wx_pages", 0200, NULL,
++				   NULL, &check_wx_fops) ? 0 : -ENOMEM;
++}
++device_initcall(ptdump_check_wx_init);
+ #endif
+ 
+ static int ptdump_init(void)
 -- 
 2.25.1
 
