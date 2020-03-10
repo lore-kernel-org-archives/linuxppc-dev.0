@@ -2,58 +2,86 @@ Return-Path: <SRS0=/Qvz=43=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_2 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 862EDC10F27
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Mar 2020 16:58:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 64CDCC10F27
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Mar 2020 17:27:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 069F921D7E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Mar 2020 16:58:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 069F921D7E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 209052146E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Mar 2020 17:27:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 209052146E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (unknown [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48cLrH2g4CzDqYb
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2020 03:58:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48cMTr0z6FzDqRS
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2020 04:27:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=46.105.72.36; helo=2.mo4.mail-out.ovh.net;
- envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 4208 seconds by postgrey-1.36 at bilbo;
- Wed, 11 Mar 2020 03:56:28 AEDT
-Received: from 2.mo4.mail-out.ovh.net (2.mo4.mail-out.ovh.net [46.105.72.36])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48cLpN224YzDqQb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2020 03:56:17 +1100 (AEDT)
-Received: from player159.ha.ovh.net (unknown [10.108.42.174])
- by mo4.mail-out.ovh.net (Postfix) with ESMTP id DBEC4229927
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2020 16:38:46 +0100 (CET)
-Received: from kaod.org (lns-bzn-46-82-253-208-248.adsl.proxad.net
- [82.253.208.248]) (Authenticated sender: groug@kaod.org)
- by player159.ha.ovh.net (Postfix) with ESMTPSA id B692E103FFFED;
- Tue, 10 Mar 2020 15:38:42 +0000 (UTC)
-Date: Tue, 10 Mar 2020 16:38:40 +0100
-From: Greg Kurz <groug@kaod.org>
-To: =?UTF-8?B?Q8OpZHJpYw==?= Le Goater <clg@kaod.org>
-Subject: Re: [PATCH 2/4] powerpc/xive: Fix xmon support on the PowerNV platform
-Message-ID: <20200310163840.063cd1b3@bahia.home>
-In-Reply-To: <20200306150143.5551-3-clg@kaod.org>
-References: <20200306150143.5551-1-clg@kaod.org>
- <20200306150143.5551-3-clg@kaod.org>
-X-Mailer: Claws Mail 3.17.4 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48cMSF5pRtzDqQx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2020 04:25:49 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 02AHOQxt079325; Tue, 10 Mar 2020 13:25:36 -0400
+Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
+ [169.63.214.131])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ym8cavphk-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 10 Mar 2020 13:25:36 -0400
+Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
+ by ppma01dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 02AHJx7W007281;
+ Tue, 10 Mar 2020 17:25:35 GMT
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by ppma01dal.us.ibm.com with ESMTP id 2ym386uc09-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 10 Mar 2020 17:25:35 +0000
+Received: from b03ledav006.gho.boulder.ibm.com
+ (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 02AHPY4B56754592
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 10 Mar 2020 17:25:34 GMT
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 76F67C605A;
+ Tue, 10 Mar 2020 17:25:34 +0000 (GMT)
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5360EC6055;
+ Tue, 10 Mar 2020 17:25:34 +0000 (GMT)
+Received: from localhost (unknown [9.41.179.160])
+ by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Tue, 10 Mar 2020 17:25:34 +0000 (GMT)
+From: Nathan Lynch <nathanl@linux.ibm.com>
+To: Tyrel Datwyler <tyreld@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/pseries: fix of_read_drc_info_cell() to point at
+ next record
+In-Reply-To: <20200307024547.5748-1-tyreld@linux.ibm.com>
+References: <20200307024547.5748-1-tyreld@linux.ibm.com>
+Date: Tue, 10 Mar 2020 12:25:33 -0500
+Message-ID: <87tv2w2kc2.fsf@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Ovh-Tracer-Id: 13008084576087677323
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: 0
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedugedruddvtddgjeegucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucenucfjughrpeffhffvuffkjghfofggtgfgsehtqhertdertdejnecuhfhrohhmpefirhgvghcumfhurhiiuceoghhrohhugheskhgrohgurdhorhhgqeenucfkpheptddrtddrtddrtddpkedvrddvheefrddvtdekrddvgeeknecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepphhlrgihvghrudehledrhhgrrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpehgrhhouhhgsehkrghougdrohhrghdprhgtphhtthhopehlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhg
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
+ definitions=2020-03-10_12:2020-03-10,
+ 2020-03-10 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ mlxscore=0 bulkscore=0
+ lowpriorityscore=0 priorityscore=1501 phishscore=0 suspectscore=1
+ impostorscore=0 spamscore=0 adultscore=0 mlxlogscore=999 malwarescore=0
+ clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2001150001 definitions=main-2003100105
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,47 +93,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org
+Cc: mwb@linux.vnet.ibm.com, msuchanek@suse.de, linuxppc-dev@lists.ozlabs.org,
+ Tyrel Datwyler <tyreld@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri,  6 Mar 2020 16:01:41 +0100
-C=C3=A9dric Le Goater <clg@kaod.org> wrote:
+Tyrel Datwyler <tyreld@linux.ibm.com> writes:
+> The expectation is that when calling of_read_drc_info_cell()
+> repeatedly to parse multiple drc-info records that the in/out curval
+> parameter points at the start of the next record on return. However,
+> the current behavior has curval still pointing at the final value of
+> the record just parsed. The result of which is that if the
+> ibm,drc-info property contains multiple properties the parsed value
+> of the drc_type for any record after the first has the power_domain
+> value of the previous record appended to the type string.
+>
+> Ex: observed the following 0xffffffff prepended to PHB
+>
+> [   69.485037] drc-info: type: \xff\xff\xff\xffPHB, prefix: PHB , index_start: 0x20000001
+> [   69.485038] drc-info: suffix_start: 1, sequential_elems: 3072, sequential_inc: 1
+> [   69.485038] drc-info: power-domain: 0xffffffff, last_index: 0x20000c00
+>
+> Fix by incrementing curval past the power_domain value to point at
+> drc_type string of next record.
+>
+> Fixes: a29396653b8bf ("pseries/drc-info: Search DRC properties for CPU indexes")
 
-> The PowerNV platform has multiple IRQ chips and the xmon command
-> dumping the state of the XIVE interrupt should only operate on the
-> XIVE IRQ chip.
->=20
-> Fixes: 5896163f7f91 ("powerpc/xmon: Improve output of XIVE interrupts")
-> Cc: stable@vger.kernel.org # v5.4+
-> Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
-> ---
+I have a different commit hash for that:
+e83636ac3334 pseries/drc-info: Search DRC properties for CPU indexes
 
-Reviewed-by: Greg Kurz <groug@kaod.org>
+> Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
 
->  arch/powerpc/sysdev/xive/common.c | 4 ++++
->  1 file changed, 4 insertions(+)
->=20
-> diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive=
-/common.c
-> index 550baba98ec9..8155adc2225a 100644
-> --- a/arch/powerpc/sysdev/xive/common.c
-> +++ b/arch/powerpc/sysdev/xive/common.c
-> @@ -261,11 +261,15 @@ notrace void xmon_xive_do_dump(int cpu)
-> =20
->  int xmon_xive_get_irq_config(u32 hw_irq, struct irq_data *d)
->  {
-> +	struct irq_chip *chip =3D irq_data_get_irq_chip(d);
->  	int rc;
->  	u32 target;
->  	u8 prio;
->  	u32 lirq;
-> =20
-> +	if (!is_xive_irq(chip))
-> +		return -EINVAL;
-> +
->  	rc =3D xive_ops->get_irq_config(hw_irq, &target, &prio, &lirq);
->  	if (rc) {
->  		xmon_printf("IRQ 0x%08x : no config rc=3D%d\n", hw_irq, rc);
-
+Otherwise:
+Acked-by: Nathan Lynch <nathanl@linux.ibm.com>
