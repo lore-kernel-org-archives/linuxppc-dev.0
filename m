@@ -8,80 +8,80 @@ X-Spam-Status: No, score=-8.0 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2201DC10F27
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2020 14:25:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C62D6C10F27
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2020 14:29:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C774320693
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2020 14:25:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A50AE204EC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2020 14:29:47 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="XPZBKHUz"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C774320693
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="aePPmYDn"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A50AE204EC
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (unknown [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48cvPP4ndPzDqkD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Mar 2020 01:25:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48cvVg3r5zzDr8N
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Mar 2020 01:29:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.128.67; helo=mail-wm1-f67.google.com;
+ smtp.mailfrom=gmail.com (client-ip=209.85.221.68; helo=mail-wr1-f68.google.com;
  envelope-from=richard.weiyang@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=XPZBKHUz; dkim-atps=neutral
-Received: from mail-wm1-f67.google.com (mail-wm1-f67.google.com
- [209.85.128.67])
+ header.s=20161025 header.b=aePPmYDn; dkim-atps=neutral
+Received: from mail-wr1-f68.google.com (mail-wr1-f68.google.com
+ [209.85.221.68])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48cvHX15H4zDqYJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2020 01:20:07 +1100 (AEDT)
-Received: by mail-wm1-f67.google.com with SMTP id g62so2351352wme.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2020 07:20:07 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48cvR06qjyzDqtQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2020 01:26:36 +1100 (AEDT)
+Received: by mail-wr1-f68.google.com with SMTP id s5so2899767wrg.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2020 07:26:36 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=date:from:to:cc:subject:message-id:reply-to:references:mime-version
  :content-disposition:in-reply-to:user-agent;
- bh=U8yHxOLld6I5yONtEEjc1KYpMfk+7prWIw3BzC1un4I=;
- b=XPZBKHUzoxtFiu/PBGZnp0TlZJM7RHTR+pRT3HJmGJGEzlUfiPsSCfxa86Kjh+2qxg
- nfzi+qJIaliw91wL4h/v5MEVCFwDWiv5kYkfNrkcFrAK50mruIgOyvLnuhraVwcyz/T+
- +caYMZLv+5eWwP1Tq7ocIDcc1Tfmoc2/La9I5YBDPVTo4TXDqmmLbOKfv4MI92bmeN3b
- eK3S+N7LCjikrA7tRfFTxtIVdj97FWJ8kLFfqNifcV9hf1GEy1pIbxxcTa9BfTiYKO21
- +TiuPN48K2Vpk821PF7hLxze5YkrYxGkZmEyrwfXKvovX71eikmV3M35gWi+sVMLFclT
- kYPw==
+ bh=CsTbLtbFJBK1CBJJUlE0MFl94CmaUOLGCz5Mkq+OEkw=;
+ b=aePPmYDnoI4RewHsJ7PIf4IJD1UEiDm22ZxJsfHqe0fflICqXL+sNoyCZnK4fIsMEA
+ rSmtVqB++yTeLqfn79SFyplP5gdxjQzJsjtkaLFA8FVWiDCNLa2u1FG+Fls6KW9qG98Y
+ OGXrCwkwT9GAth1nZ2zt5vh2WpoEQf4wEDDC3X3llrNY+26gZ/cVfestr4/EEyv1j9QM
+ +rP6pOS/w3SQgo0PuN+oWHdGZzMGwQbCkKxyPsXwKJxgSP05PChvyUUhbOReiZGRLUBg
+ cDfMqXVLiBZIUfAKEoMDbhqJdzs4V5ZJGvfbv0t+4YD5kAves9NGiRbQdwjs0S4tB9hu
+ HEzQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:date:from:to:cc:subject:message-id:reply-to
  :references:mime-version:content-disposition:in-reply-to:user-agent;
- bh=U8yHxOLld6I5yONtEEjc1KYpMfk+7prWIw3BzC1un4I=;
- b=N2X0QN/xXwn5ActZZ8cjJljckHfermgOs8VtnP1GKDsQLCmq4DJ2L3BTeTtJObKz9H
- 7dxsCqDTtCuFDnwCcd1w/yPkLN8YiSVI/iHUPsF6faX9puDfUumKEAyKuCs10Gl+5JWM
- +7AqoiwLecxhCuACkebt8NN5sywt2718EW1C5uAHfarT19fp7j03/I6PpTZ9rD+bSNXa
- jjRsfT0goG3EOR0kNanS/csQEf0waHJ2cCFqDlfkA/0MLTilFMmuQq/aQF8+qtkn7YsH
- 3poTPlUSUib7PYzYnGJnRh4dQxSek/v6rJhg0zCtAzXrnXXLu/bTQh08pYqxuO/uUqru
- IBoA==
-X-Gm-Message-State: ANhLgQ2we89Njy5kWZUdQ/FM7IG6Zm44w97MIk4Mm0yQOrr91uuuKQgt
- OWwc72baJ0hHeMK2Mg912cM=
-X-Google-Smtp-Source: ADFU+vu6XvNhjX9fUk/vGR9XwGi4Kb+PTmIwG/KCc8VoVTWG4HjFikyiQTu493sCs87Z+jnc8lzQFQ==
-X-Received: by 2002:a7b:c354:: with SMTP id l20mr3892521wmj.40.1583936404859; 
- Wed, 11 Mar 2020 07:20:04 -0700 (PDT)
+ bh=CsTbLtbFJBK1CBJJUlE0MFl94CmaUOLGCz5Mkq+OEkw=;
+ b=MsE9ZoX7K2s0gJG2K9d/MKiZpk1GK5V+UF7i+TwyZco+ec+h62Uc1GMDi8ok68aNKX
+ 57JMPk481tJhQfU/+Qh1qdJuihZ9TMOyGtNzfM5LsbNCijUZiTWKCTp2uMghQcI5CxJG
+ Ugr7k5uR7kMLVeuG4IOr3O8PLx2mvj4Bti0BADFh9u98s/fHvhKmMAmta8edeb3qKmnN
+ kBJb0hr/F2hOHk5448kjcEbxCZrF1jr4WNN78nQ4PJac8F53s+PWP90WlXRB9HMj0Kst
+ uaspDyUAVmViNKyLKGB5J3OC1I7KsEFWPi8ioH1mb+johdQbxGZBWIGh7OaXq02e+dql
+ FZQQ==
+X-Gm-Message-State: ANhLgQ3DbGCMoMGhXcVhw0EqSFVs/cYntPDDLXNWVnX3RTSL0fK7w+j+
+ fZQsFC6zvisS320SPPju//Y=
+X-Google-Smtp-Source: ADFU+vs4N9H4NmCIYVGtkISk1DRai7Z1/9w16SPv6LvlOjT+MD/1Y3ePN+L7ARQFCQwtIeNpFr5Iyw==
+X-Received: by 2002:a5d:6086:: with SMTP id w6mr4715591wrt.224.1583936793924; 
+ Wed, 11 Mar 2020 07:26:33 -0700 (PDT)
 Received: from localhost ([185.92.221.13])
- by smtp.gmail.com with ESMTPSA id i6sm6083016wru.40.2020.03.11.07.20.03
+ by smtp.gmail.com with ESMTPSA id c72sm8381117wme.35.2020.03.11.07.26.33
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Wed, 11 Mar 2020 07:20:03 -0700 (PDT)
-Date: Wed, 11 Mar 2020 14:20:02 +0000
+ Wed, 11 Mar 2020 07:26:33 -0700 (PDT)
+Date: Wed, 11 Mar 2020 14:26:32 +0000
 From: Wei Yang <richard.weiyang@gmail.com>
 To: David Hildenbrand <david@redhat.com>
-Subject: Re: [PATCH v1 3/5] drivers/base/memory: store mapping between MMOP_*
- and string in an array
-Message-ID: <20200311142002.2htiv4llyam2svta@master>
+Subject: Re: [PATCH v1 5/5] mm/memory_hotplug: allow to specify a default
+ online_type
+Message-ID: <20200311142632.xvdwqk2lun4ookez@master>
 References: <20200311123026.16071-1-david@redhat.com>
- <20200311123026.16071-4-david@redhat.com>
+ <20200311123026.16071-6-david@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200311123026.16071-4-david@redhat.com>
+In-Reply-To: <20200311123026.16071-6-david@redhat.com>
 User-Agent: NeoMutt/20170113 (1.7.2)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -106,9 +106,30 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Mar 11, 2020 at 01:30:24PM +0100, David Hildenbrand wrote:
->Let's use a simple array which we can reuse soon. While at it, move the
->string->mmop conversion out of the device hotplug lock.
+On Wed, Mar 11, 2020 at 01:30:26PM +0100, David Hildenbrand wrote:
+>For now, distributions implement advanced udev rules to essentially
+>- Don't online any hotplugged memory (s390x)
+>- Online all memory to ZONE_NORMAL (e.g., most virt environments like
+>  hyperv)
+>- Online all memory to ZONE_MOVABLE in case the zone imbalance is taken
+>  care of (e.g., bare metal, special virt environments)
+>
+>In summary: All memory is usually onlined the same way, however, the
+>kernel always has to ask userspace to come up with the same answer.
+>E.g., HyperV always waits for a memory block to get onlined before
+>continuing, otherwise it might end up adding memory faster than
+>hotplugging it, which can result in strange OOM situations.
+>
+>Let's allow to specify a default online_type, not just "online" and
+>"offline". This allows distributions to configure the default online_type
+>when booting up and be done with it.
+>
+>We can now specify "offline", "online", "online_movable" and
+>"online_kernel" via
+>- "memhp_default_state=" on the kernel cmdline
+>- /sys/devices/systemn/memory/auto_online_blocks
+>just like we are able to specify for a single memory block via
+>/sys/devices/systemn/memory/memoryX/state
 >
 >Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 >Cc: Andrew Morton <akpm@linux-foundation.org>
@@ -118,83 +139,80 @@ On Wed, Mar 11, 2020 at 01:30:24PM +0100, David Hildenbrand wrote:
 >Cc: Baoquan He <bhe@redhat.com>
 >Cc: Wei Yang <richard.weiyang@gmail.com>
 >Signed-off-by: David Hildenbrand <david@redhat.com>
+
+Ok, I got the reason to leave the change on string compare here.
+
+Reviewed-by: Wei Yang <richard.weiyang@gmail.com>
+
 >---
-> drivers/base/memory.c | 38 +++++++++++++++++++++++---------------
-> 1 file changed, 23 insertions(+), 15 deletions(-)
+> drivers/base/memory.c          | 11 +++++------
+> include/linux/memory_hotplug.h |  2 ++
+> mm/memory_hotplug.c            |  8 ++++----
+> 3 files changed, 11 insertions(+), 10 deletions(-)
 >
 >diff --git a/drivers/base/memory.c b/drivers/base/memory.c
->index e7e77cafef80..8a7f29c0bf97 100644
+>index 8d3e16dab69f..2b09b68b9f78 100644
 >--- a/drivers/base/memory.c
 >+++ b/drivers/base/memory.c
->@@ -28,6 +28,24 @@
+>@@ -35,7 +35,7 @@ static const char *const online_type_to_str[] = {
+> 	[MMOP_ONLINE_MOVABLE] = "online_movable",
+> };
 > 
-> #define MEMORY_CLASS_NAME	"memory"
-> 
->+static const char *const online_type_to_str[] = {
->+	[MMOP_OFFLINE] = "offline",
->+	[MMOP_ONLINE] = "online",
->+	[MMOP_ONLINE_KERNEL] = "online_kernel",
->+	[MMOP_ONLINE_MOVABLE] = "online_movable",
->+};
->+
->+static int memhp_online_type_from_str(const char *str)
->+{
->+	int i;
->+
->+	for (i = 0; i < ARRAY_SIZE(online_type_to_str); i++) {
->+		if (sysfs_streq(str, online_type_to_str[i]))
->+			return i;
->+	}
->+	return -EINVAL;
->+}
->+
-> #define to_memory_block(dev) container_of(dev, struct memory_block, dev)
-> 
-> static int sections_per_block;
->@@ -236,26 +254,17 @@ static int memory_subsys_offline(struct device *dev)
-> static ssize_t state_store(struct device *dev, struct device_attribute *attr,
-> 			   const char *buf, size_t count)
+>-static int memhp_online_type_from_str(const char *str)
+>+int memhp_online_type_from_str(const char *str)
 > {
+> 	int i;
+> 
+>@@ -394,13 +394,12 @@ static ssize_t auto_online_blocks_store(struct device *dev,
+> 					struct device_attribute *attr,
+> 					const char *buf, size_t count)
+> {
+>-	if (sysfs_streq(buf, "online"))
+>-		memhp_default_online_type = MMOP_ONLINE;
+>-	else if (sysfs_streq(buf, "offline"))
+>-		memhp_default_online_type = MMOP_OFFLINE;
+>-	else
 >+	const int online_type = memhp_online_type_from_str(buf);
-
-In your following patch, you did the same conversion. Is it possible to merge
-them into this one?
-
-> 	struct memory_block *mem = to_memory_block(dev);
->-	int ret, online_type;
->+	int ret;
 >+
 >+	if (online_type < 0)
->+		return -EINVAL;
+> 		return -EINVAL;
 > 
-> 	ret = lock_device_hotplug_sysfs();
-> 	if (ret)
-> 		return ret;
+>+	memhp_default_online_type = online_type;
+> 	return count;
+> }
 > 
->-	if (sysfs_streq(buf, "online_kernel"))
->-		online_type = MMOP_ONLINE_KERNEL;
->-	else if (sysfs_streq(buf, "online_movable"))
->-		online_type = MMOP_ONLINE_MOVABLE;
->-	else if (sysfs_streq(buf, "online"))
->-		online_type = MMOP_ONLINE;
->-	else if (sysfs_streq(buf, "offline"))
->-		online_type = MMOP_OFFLINE;
->-	else {
->-		ret = -EINVAL;
->-		goto err;
->-	}
->-
-> 	switch (online_type) {
-> 	case MMOP_ONLINE_KERNEL:
-> 	case MMOP_ONLINE_MOVABLE:
->@@ -271,7 +280,6 @@ static ssize_t state_store(struct device *dev, struct device_attribute *attr,
-> 		ret = -EINVAL; /* should never happen */
-> 	}
+>diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
+>index c6e090b34c4b..ef55115320fb 100644
+>--- a/include/linux/memory_hotplug.h
+>+++ b/include/linux/memory_hotplug.h
+>@@ -117,6 +117,8 @@ extern int arch_add_memory(int nid, u64 start, u64 size,
+> 			struct mhp_restrictions *restrictions);
+> extern u64 max_mem_size;
 > 
->-err:
-> 	unlock_device_hotplug();
+>+extern int memhp_online_type_from_str(const char *str);
+>+
+> /* Default online_type (MMOP_*) when new memory blocks are added. */
+> extern int memhp_default_online_type;
+> /* If movable_node boot option specified */
+>diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+>index 01443c70aa27..4a96273eafa7 100644
+>--- a/mm/memory_hotplug.c
+>+++ b/mm/memory_hotplug.c
+>@@ -75,10 +75,10 @@ EXPORT_SYMBOL_GPL(memhp_default_online_type);
 > 
-> 	if (ret < 0)
+> static int __init setup_memhp_default_state(char *str)
+> {
+>-	if (!strcmp(str, "online"))
+>-		memhp_default_online_type = MMOP_ONLINE;
+>-	else if (!strcmp(str, "offline"))
+>-		memhp_default_online_type = MMOP_OFFLINE;
+>+	const int online_type = memhp_online_type_from_str(str);
+>+
+>+	if (online_type >= 0)
+>+		memhp_default_online_type = online_type;
+> 
+> 	return 1;
+> }
 >-- 
 >2.24.1
 
