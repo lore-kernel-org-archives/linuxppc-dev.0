@@ -2,87 +2,75 @@ Return-Path: <SRS0=kzwA=44=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43087C10F27
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2020 12:03:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63720C18E5A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2020 12:36:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F2046208E4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2020 12:03:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F2046208E4
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id B568020873
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2020 12:36:13 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="DnhAj96l"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B568020873
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (unknown [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48crFS1M8VzDqTn
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2020 23:03:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 48crzV5d23zDqNx
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2020 23:36:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=redhat.com (client-ip=205.139.110.120;
+ helo=us-smtp-1.mimecast.com; envelope-from=david@redhat.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=DnhAj96l; 
+ dkim-atps=neutral
+Received: from us-smtp-1.mimecast.com (us-smtp-delivery-1.mimecast.com
+ [205.139.110.120])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48crBS2xmDzDqMG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2020 23:00:32 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 02BB39r4128436
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2020 07:03:35 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2ypxc296uh-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2020 07:03:28 -0400
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
- Wed, 11 Mar 2020 11:03:16 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 11 Mar 2020 11:03:13 -0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 02BB3CYf62914678
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 11 Mar 2020 11:03:12 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2E4BC52054;
- Wed, 11 Mar 2020 11:03:12 +0000 (GMT)
-Received: from srikart450.in.ibm.com (unknown [9.102.25.51])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 38ACF52050;
- Wed, 11 Mar 2020 11:03:08 +0000 (GMT)
-From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 3/3] mm/page_alloc: Keep memoryless cpuless node 0 offline
-Date: Wed, 11 Mar 2020 16:32:37 +0530
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200311110237.5731-1-srikar@linux.vnet.ibm.com>
-References: <20200311110237.5731-1-srikar@linux.vnet.ibm.com>
-X-TM-AS-GCONF: 00
-x-cbid: 20031111-0020-0000-0000-000003B2AD4C
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20031111-0021-0000-0000-0000220AFD04
-Message-Id: <20200311110237.5731-4-srikar@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
- definitions=2020-03-11_04:2020-03-11,
- 2020-03-11 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 phishscore=0
- adultscore=0 mlxscore=0 spamscore=0 lowpriorityscore=0 malwarescore=0
- bulkscore=0 clxscore=1015 suspectscore=2 priorityscore=1501
- mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2001150001 definitions=main-2003110071
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48crsY61kTzDqN3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2020 23:30:47 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1583929844;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=0PFnYncdR71VA2SBTKHYdn9p5aztn1GjhQsJsLTG0A4=;
+ b=DnhAj96lM+4pVv8hbAd1p8RXZwuaK6P7VUXgZenm0lGtPrpYkxlrIgvjCCJXAslsjpaQzn
+ 7DMcbqJoaBhpAV1z/cRQfcDcCTbwaDbroUcG1+QxqgM+zVM2GLZ7yCnULmbPz5Cx9LU6Y0
+ i2uM2KLz5FJI7/rffMTiEVdngPXG4/k=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-486-hSNViO6CNkKeyz3wpahNdQ-1; Wed, 11 Mar 2020 08:30:42 -0400
+X-MC-Unique: hSNViO6CNkKeyz3wpahNdQ-1
+Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.phx2.redhat.com
+ [10.5.11.16])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 6AAA2801E67;
+ Wed, 11 Mar 2020 12:30:40 +0000 (UTC)
+Received: from t480s.redhat.com (unknown [10.36.118.45])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 8AFCC5C1D4;
+ Wed, 11 Mar 2020 12:30:37 +0000 (UTC)
+From: David Hildenbrand <david@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v1 1/5] drivers/base/memory: rename MMOP_ONLINE_KEEP to
+ MMOP_ONLINE
+Date: Wed, 11 Mar 2020 13:30:22 +0100
+Message-Id: <20200311123026.16071-2-david@redhat.com>
+In-Reply-To: <20200311123026.16071-1-david@redhat.com>
+References: <20200311123026.16071-1-david@redhat.com>
+MIME-Version: 1.0
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.16
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,101 +82,99 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Hocko <mhocko@suse.com>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, Mel Gorman <mgorman@suse.de>,
- "Kirill A. Shutemov" <kirill@shutemov.name>,
- Christopher Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
- Vlastimil Babka <vbabka@suse.cz>
+Cc: linux-hyperv@vger.kernel.org, Baoquan He <bhe@redhat.com>,
+ David Hildenbrand <david@redhat.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Michal Hocko <mhocko@kernel.org>,
+ linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+ Wei Yang <richard.weiyang@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ Oscar Salvador <osalvador@suse.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently Linux kernel with CONFIG_NUMA on a system with multiple
-possible nodes, marks node 0 as online at boot.  However in practice,
-there are systems which have node 0 as memoryless and cpuless.
+The name is misleading. Let's just name it like the online_type name we
+expose to user space ("online").
 
-This can cause numa_balancing to be enabled on systems with only one node
-with memory and CPUs. The existence of this dummy node which is cpuless and
-memoryless node can confuse users/scripts looking at output of lscpu /
-numactl.
+Add some documentation to the types.
 
-Lets stop assuming that Node 0 is always online.
-
-v5.6-rc4
- available: 2 nodes (0,2)
- node 0 cpus:
- node 0 size: 0 MB
- node 0 free: 0 MB
- node 2 cpus: 0 1 2 3 4 5 6 7
- node 2 size: 32625 MB
- node 2 free: 31490 MB
- node distances:
- node   0   2
-   0:  10  20
-   2:  20  10
-
-proc and sys files
-------------------
- /sys/devices/system/node/online:            0,2
- /proc/sys/kernel/numa_balancing:            1
- /sys/devices/system/node/has_cpu:           2
- /sys/devices/system/node/has_memory:        2
- /sys/devices/system/node/has_normal_memory: 2
- /sys/devices/system/node/possible:          0-31
-
-v5.6-rc4 + patch
-------------------
- available: 1 nodes (2)
- node 2 cpus: 0 1 2 3 4 5 6 7
- node 2 size: 32625 MB
- node 2 free: 31487 MB
- node distances:
- node   2
-   2:  10
-
-proc and sys files
-------------------
-/sys/devices/system/node/online:            2
-/proc/sys/kernel/numa_balancing:            0
-/sys/devices/system/node/has_cpu:           2
-/sys/devices/system/node/has_memory:        2
-/sys/devices/system/node/has_normal_memory: 2
-/sys/devices/system/node/possible:          0-31
-
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org
-Cc: Michal Hocko <mhocko@suse.com>
-Cc: Mel Gorman <mgorman@suse.de>
-Cc: Vlastimil Babka <vbabka@suse.cz>
-Cc: "Kirill A. Shutemov" <kirill@shutemov.name>
-Cc: Christopher Lameter <cl@linux.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: Michal Hocko <mhocko@kernel.org>
+Cc: Oscar Salvador <osalvador@suse.de>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Baoquan He <bhe@redhat.com>
+Cc: Wei Yang <richard.weiyang@gmail.com>
+Signed-off-by: David Hildenbrand <david@redhat.com>
 ---
- mm/page_alloc.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/base/memory.c          | 9 +++++----
+ include/linux/memory_hotplug.h | 6 +++++-
+ 2 files changed, 10 insertions(+), 5 deletions(-)
 
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 3c4eb75..68e635f4 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -116,8 +116,10 @@ struct pcpu_drain {
-  */
- nodemask_t node_states[NR_NODE_STATES] __read_mostly = {
- 	[N_POSSIBLE] = NODE_MASK_ALL,
-+#ifdef CONFIG_NUMA
-+	[N_ONLINE] = NODE_MASK_NONE,
-+#else
- 	[N_ONLINE] = { { [0] = 1UL } },
--#ifndef CONFIG_NUMA
- 	[N_NORMAL_MEMORY] = { { [0] = 1UL } },
- #ifdef CONFIG_HIGHMEM
- 	[N_HIGH_MEMORY] = { { [0] = 1UL } },
--- 
-1.8.3.1
+diff --git a/drivers/base/memory.c b/drivers/base/memory.c
+index 6448c9ece2cb..8c5ce42c0fc3 100644
+--- a/drivers/base/memory.c
++++ b/drivers/base/memory.c
+@@ -216,7 +216,7 @@ static int memory_subsys_online(struct device *dev)
+ 	 * attribute and need to set the online_type.
+ 	 */
+ 	if (mem->online_type < 0)
+-		mem->online_type =3D MMOP_ONLINE_KEEP;
++		mem->online_type =3D MMOP_ONLINE;
+=20
+ 	ret =3D memory_block_change_state(mem, MEM_ONLINE, MEM_OFFLINE);
+=20
+@@ -251,7 +251,7 @@ static ssize_t state_store(struct device *dev, struct=
+ device_attribute *attr,
+ 	else if (sysfs_streq(buf, "online_movable"))
+ 		online_type =3D MMOP_ONLINE_MOVABLE;
+ 	else if (sysfs_streq(buf, "online"))
+-		online_type =3D MMOP_ONLINE_KEEP;
++		online_type =3D MMOP_ONLINE;
+ 	else if (sysfs_streq(buf, "offline"))
+ 		online_type =3D MMOP_OFFLINE;
+ 	else {
+@@ -262,7 +262,7 @@ static ssize_t state_store(struct device *dev, struct=
+ device_attribute *attr,
+ 	switch (online_type) {
+ 	case MMOP_ONLINE_KERNEL:
+ 	case MMOP_ONLINE_MOVABLE:
+-	case MMOP_ONLINE_KEEP:
++	case MMOP_ONLINE:
+ 		/* mem->online_type is protected by device_hotplug_lock */
+ 		mem->online_type =3D online_type;
+ 		ret =3D device_online(&mem->dev);
+@@ -342,7 +342,8 @@ static ssize_t valid_zones_show(struct device *dev,
+ 	}
+=20
+ 	nid =3D mem->nid;
+-	default_zone =3D zone_for_pfn_range(MMOP_ONLINE_KEEP, nid, start_pfn, n=
+r_pages);
++	default_zone =3D zone_for_pfn_range(MMOP_ONLINE, nid, start_pfn,
++					  nr_pages);
+ 	strcat(buf, default_zone->name);
+=20
+ 	print_allowed_zone(buf, nid, start_pfn, nr_pages, MMOP_ONLINE_KERNEL,
+diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplu=
+g.h
+index f4d59155f3d4..261dbf010d5d 100644
+--- a/include/linux/memory_hotplug.h
++++ b/include/linux/memory_hotplug.h
+@@ -47,9 +47,13 @@ enum {
+=20
+ /* Types for control the zone type of onlined and offlined memory */
+ enum {
++	/* Offline the memory. */
+ 	MMOP_OFFLINE =3D -1,
+-	MMOP_ONLINE_KEEP,
++	/* Online the memory. Zone depends, see default_zone_for_pfn(). */
++	MMOP_ONLINE,
++	/* Online the memory to ZONE_NORMAL. */
+ 	MMOP_ONLINE_KERNEL,
++	/* Online the memory to ZONE_MOVABLE. */
+ 	MMOP_ONLINE_MOVABLE,
+ };
+=20
+--=20
+2.24.1
 
