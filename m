@@ -2,93 +2,54 @@ Return-Path: <SRS0=LwoU=45=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C3AEEC10DCE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Mar 2020 22:03:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 634F5C10DCE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Mar 2020 22:32:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7EA74206CD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Mar 2020 22:03:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7EA74206CD
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id D73CC20637
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Mar 2020 22:32:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D73CC20637
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48djWW4Y7PzDqS5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Mar 2020 09:03:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48dk8n55MrzDqSy
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Mar 2020 09:32:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.13; helo=inva020.nxp.com;
+ envelope-from=leoyang.li@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48djT31yPMzDqKV
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2020 09:01:11 +1100 (AEDT)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 02CLrCil018716; Thu, 12 Mar 2020 18:01:05 -0400
-Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.11])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2yquesjxaw-3
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 12 Mar 2020 18:01:04 -0400
-Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
- by ppma03dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 02CLUYjM005921;
- Thu, 12 Mar 2020 21:34:08 GMT
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by ppma03dal.us.ibm.com with ESMTP id 2yqt6psd7h-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 12 Mar 2020 21:34:08 +0000
-Received: from b03ledav001.gho.boulder.ibm.com
- (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 02CLY75524510742
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 12 Mar 2020 21:34:07 GMT
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 68C7E6E04E;
- Thu, 12 Mar 2020 21:34:07 +0000 (GMT)
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5DE076E04C;
- Thu, 12 Mar 2020 21:34:06 +0000 (GMT)
-Received: from oc6857751186.ibm.com (unknown [9.160.72.189])
- by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 12 Mar 2020 21:34:06 +0000 (GMT)
-Subject: Re: [PATCH] powerpc/pseries: fix of_read_drc_info_cell() to point at
- next record
-To: Michael Ellerman <mpe@ellerman.id.au>, Nathan Lynch <nathanl@linux.ibm.com>
-References: <20200307024547.5748-1-tyreld@linux.ibm.com>
- <87tv2w2kc2.fsf@linux.ibm.com>
- <e99f5e39-4788-a9ef-30d7-8096df7ee36e@linux.ibm.com>
- <87imjai0wp.fsf@mpe.ellerman.id.au>
-From: Tyrel Datwyler <tyreld@linux.ibm.com>
-Message-ID: <3a3950ed-a7fb-3458-dce0-0dd6e45f93eb@linux.ibm.com>
-Date: Thu, 12 Mar 2020 14:34:05 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.4.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48dk4w6D0PzDqG1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2020 09:28:43 +1100 (AEDT)
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 999851A11AB;
+ Thu, 12 Mar 2020 23:28:39 +0100 (CET)
+Received: from smtp.na-rdc02.nxp.com (usphx01srsp001v.us-phx01.nxp.com
+ [134.27.49.11])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 5DB571A11BA;
+ Thu, 12 Mar 2020 23:28:39 +0100 (CET)
+Received: from right.am.freescale.net (right.am.freescale.net [10.81.116.70])
+ by usphx01srsp001v.us-phx01.nxp.com (Postfix) with ESMTP id
+ C7CA840A63; Thu, 12 Mar 2020 15:28:38 -0700 (MST)
+From: Li Yang <leoyang.li@nxp.com>
+To: Rasmus Villemoes <linux@rasmusvillemoes.dk>, Timur Tabi <timur@kernel.org>,
+ Zhao Qiang <qiang.zhao@nxp.com>
+Subject: [PATCH 0/6] Fix sparse warnings for common qe library code
+Date: Thu, 12 Mar 2020 17:28:21 -0500
+Message-Id: <20200312222827.17409-1-leoyang.li@nxp.com>
+X-Mailer: git-send-email 2.25.1.377.g2d2118b
 MIME-Version: 1.0
-In-Reply-To: <87imjai0wp.fsf@mpe.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
- definitions=2020-03-12_15:2020-03-11,
- 2020-03-12 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 suspectscore=0
- lowpriorityscore=0 malwarescore=0 impostorscore=0 phishscore=0
- mlxlogscore=999 spamscore=0 priorityscore=1501 mlxscore=0 adultscore=0
- clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2003020000 definitions=main-2003120107
+Content-Transfer-Encoding: 8bit
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,63 +61,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mwb@linux.vnet.ibm.com, msuchanek@suse.de, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, Li Yang <leoyang.li@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 3/11/20 10:43 PM, Michael Ellerman wrote:
-> Tyrel Datwyler <tyreld@linux.ibm.com> writes:
->> On 3/10/20 10:25 AM, Nathan Lynch wrote:
->>> Tyrel Datwyler <tyreld@linux.ibm.com> writes:
->>>> The expectation is that when calling of_read_drc_info_cell()
->>>> repeatedly to parse multiple drc-info records that the in/out curval
->>>> parameter points at the start of the next record on return. However,
->>>> the current behavior has curval still pointing at the final value of
->>>> the record just parsed. The result of which is that if the
->>>> ibm,drc-info property contains multiple properties the parsed value
->>>> of the drc_type for any record after the first has the power_domain
->>>> value of the previous record appended to the type string.
->>>>
->>>> Ex: observed the following 0xffffffff prepended to PHB
->>>>
->>>> [   69.485037] drc-info: type: \xff\xff\xff\xffPHB, prefix: PHB , index_start: 0x20000001
->>>> [   69.485038] drc-info: suffix_start: 1, sequential_elems: 3072, sequential_inc: 1
->>>> [   69.485038] drc-info: power-domain: 0xffffffff, last_index: 0x20000c00
->>>>
->>>> Fix by incrementing curval past the power_domain value to point at
->>>> drc_type string of next record.
->>>>
->>>> Fixes: a29396653b8bf ("pseries/drc-info: Search DRC properties for CPU indexes")
->>>
->>> I have a different commit hash for that:
->>> e83636ac3334 pseries/drc-info: Search DRC properties for CPU indexes
->>
->> Oof, looks like I grabbed the commit hash from the SLES 15 SP1 branch. You have
->> the correct upstream commit.
->>
->> Fixes: e83636ac3334 ("pseries/drc-info: Search DRC properties for CPU indexes")
->>
->> Michael, let me know if you want me to resubmit, or if you will fixup the Fixes
->> tag on your end?
-> 
-> I can update the Fixes tag.
-> 
-> What's the practical effect of this bug? It seems like it should break
-> all the hotplug stuff, but presumably it doesn't in practice for some
-> reason?
-> 
-> It would also be *really* nice if we had some unit tests for this
-> parsing code, it's demonstrably very bug prone.
-> 
-> cheers
-> 
+The QE code was previously only supported on big-endian PowerPC systems
+that use the same endian as the QE device.  The endian transfer code is
+not really exercised.  Recent updates extended the QE drivers to
+little-endian ARM/ARM64 systems which makes the endian transfer really
+meaningful and hence triggered more sparse warnings for the endian
+mismatch.  Some of these endian issues are real issues that need to be
+fixed.
 
-In practice PHBs are the only type of connector in the ibm,drc-info property
-that has multiple records. So, it breaks PHB hotplug, but by chance not pci,
-cpu, slot, or mem because they happen to only ever be a single record.
+While at it, fixed some direct de-references of IO memory space and
+suppressed other __iomem address space mismatch issues by adding correct
+address space attributes.
 
-I have a follow up patch to at least add some pr_debug at the end of this
-parsing function to dump each record as its read.
+Li Yang (6):
+  soc: fsl: qe: fix sparse warnings for qe.c
+  soc: fsl: qe: fix sparse warning for qe_common.c
+  soc: fsl: qe: fix sparse warnings for ucc.c
+  soc: fsl: qe: fix sparse warnings for qe_ic.c
+  soc: fsl: qe: fix sparse warnings for ucc_fast.c
+  soc: fsl: qe: fix sparse warnings for ucc_slow.c
 
--Tyrel
+ drivers/soc/fsl/qe/qe.c        |  4 ++--
+ drivers/soc/fsl/qe/qe_common.c |  2 +-
+ drivers/soc/fsl/qe/qe_ic.c     |  2 +-
+ drivers/soc/fsl/qe/ucc.c       |  2 +-
+ drivers/soc/fsl/qe/ucc_slow.c  | 33 +++++++++++++--------------------
+ include/soc/fsl/qe/ucc_fast.h  |  6 +++---
+ include/soc/fsl/qe/ucc_slow.h  | 13 ++++++-------
+ 7 files changed, 27 insertions(+), 35 deletions(-)
+
+-- 
+2.17.1
+
