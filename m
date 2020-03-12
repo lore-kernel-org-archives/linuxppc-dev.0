@@ -2,23 +2,23 @@ Return-Path: <SRS0=LwoU=45=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 634F5C10DCE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Mar 2020 22:32:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D1843C1975A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Mar 2020 22:34:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D73CC20637
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Mar 2020 22:32:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D73CC20637
+	by mail.kernel.org (Postfix) with ESMTPS id 8AF7020637
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Mar 2020 22:34:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8AF7020637
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48dk8n55MrzDqSy
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Mar 2020 09:32:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48dkBy46xlzDqRM
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Mar 2020 09:34:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
  (client-ip=92.121.34.13; helo=inva020.nxp.com;
@@ -28,25 +28,27 @@ Authentication-Results: lists.ozlabs.org;
 Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48dk4w6D0PzDqG1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48dk4w6HFrzDqJH
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2020 09:28:43 +1100 (AEDT)
 Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 999851A11AB;
- Thu, 12 Mar 2020 23:28:39 +0100 (CET)
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 422B81A11C4;
+ Thu, 12 Mar 2020 23:28:40 +0100 (CET)
 Received: from smtp.na-rdc02.nxp.com (usphx01srsp001v.us-phx01.nxp.com
  [134.27.49.11])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 5DB571A11BA;
- Thu, 12 Mar 2020 23:28:39 +0100 (CET)
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 072211A11C9;
+ Thu, 12 Mar 2020 23:28:40 +0100 (CET)
 Received: from right.am.freescale.net (right.am.freescale.net [10.81.116.70])
  by usphx01srsp001v.us-phx01.nxp.com (Postfix) with ESMTP id
- C7CA840A63; Thu, 12 Mar 2020 15:28:38 -0700 (MST)
+ 7584D40BCF; Thu, 12 Mar 2020 15:28:39 -0700 (MST)
 From: Li Yang <leoyang.li@nxp.com>
 To: Rasmus Villemoes <linux@rasmusvillemoes.dk>, Timur Tabi <timur@kernel.org>,
  Zhao Qiang <qiang.zhao@nxp.com>
-Subject: [PATCH 0/6] Fix sparse warnings for common qe library code
-Date: Thu, 12 Mar 2020 17:28:21 -0500
-Message-Id: <20200312222827.17409-1-leoyang.li@nxp.com>
+Subject: [PATCH 2/6] soc: fsl: qe: fix sparse warning for qe_common.c
+Date: Thu, 12 Mar 2020 17:28:23 -0500
+Message-Id: <20200312222827.17409-3-leoyang.li@nxp.com>
 X-Mailer: git-send-email 2.25.1.377.g2d2118b
+In-Reply-To: <20200312222827.17409-1-leoyang.li@nxp.com>
+References: <20200312222827.17409-1-leoyang.li@nxp.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Virus-Scanned: ClamAV using ClamSMTP
@@ -67,35 +69,30 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The QE code was previously only supported on big-endian PowerPC systems
-that use the same endian as the QE device.  The endian transfer code is
-not really exercised.  Recent updates extended the QE drivers to
-little-endian ARM/ARM64 systems which makes the endian transfer really
-meaningful and hence triggered more sparse warnings for the endian
-mismatch.  Some of these endian issues are real issues that need to be
-fixed.
+Fixes the following sparse warning:
 
-While at it, fixed some direct de-references of IO memory space and
-suppressed other __iomem address space mismatch issues by adding correct
-address space attributes.
+drivers/soc/fsl/qe/qe_common.c:75:48: warning: incorrect type in argument 2 (different base types)
+drivers/soc/fsl/qe/qe_common.c:75:48:    expected restricted __be32 const [usertype] *addr
+drivers/soc/fsl/qe/qe_common.c:75:48:    got unsigned int *
 
-Li Yang (6):
-  soc: fsl: qe: fix sparse warnings for qe.c
-  soc: fsl: qe: fix sparse warning for qe_common.c
-  soc: fsl: qe: fix sparse warnings for ucc.c
-  soc: fsl: qe: fix sparse warnings for qe_ic.c
-  soc: fsl: qe: fix sparse warnings for ucc_fast.c
-  soc: fsl: qe: fix sparse warnings for ucc_slow.c
+Signed-off-by: Li Yang <leoyang.li@nxp.com>
+---
+ drivers/soc/fsl/qe/qe_common.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- drivers/soc/fsl/qe/qe.c        |  4 ++--
- drivers/soc/fsl/qe/qe_common.c |  2 +-
- drivers/soc/fsl/qe/qe_ic.c     |  2 +-
- drivers/soc/fsl/qe/ucc.c       |  2 +-
- drivers/soc/fsl/qe/ucc_slow.c  | 33 +++++++++++++--------------------
- include/soc/fsl/qe/ucc_fast.h  |  6 +++---
- include/soc/fsl/qe/ucc_slow.h  | 13 ++++++-------
- 7 files changed, 27 insertions(+), 35 deletions(-)
-
+diff --git a/drivers/soc/fsl/qe/qe_common.c b/drivers/soc/fsl/qe/qe_common.c
+index a81a1a79f1ca..75075591f630 100644
+--- a/drivers/soc/fsl/qe/qe_common.c
++++ b/drivers/soc/fsl/qe/qe_common.c
+@@ -46,7 +46,7 @@ int cpm_muram_init(void)
+ {
+ 	struct device_node *np;
+ 	struct resource r;
+-	u32 zero[OF_MAX_ADDR_CELLS] = {};
++	__be32 zero[OF_MAX_ADDR_CELLS] = {};
+ 	resource_size_t max = 0;
+ 	int i = 0;
+ 	int ret = 0;
 -- 
 2.17.1
 
