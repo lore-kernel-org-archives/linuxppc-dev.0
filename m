@@ -2,105 +2,58 @@ Return-Path: <SRS0=UfTk=46=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A9C5C5ACBF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Mar 2020 14:59:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 64155C10DCE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Mar 2020 17:22:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 196F72072C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Mar 2020 14:59:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 196F72072C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id DB445206B1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Mar 2020 17:22:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DB445206B1
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=vivo.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48f83c1DPLzDqTd
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Mar 2020 01:59:08 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48f7y62BYzzDqJ3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Mar 2020 01:54:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 48f7y52q4Kz8tRw
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Mar 2020 01:54:21 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 48f7y42V2Bz9sSR; Sat, 14 Mar 2020 01:54:20 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+	by lists.ozlabs.org (Postfix) with ESMTP id 48fCDt3D6wzDqZ3
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Mar 2020 04:22:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=vivo.com (client-ip=59.111.176.17; helo=m17617.mail.qiye.163.com;
+ envelope-from=wenhu.wang@vivo.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=vivo.com
+Received: from m17617.mail.qiye.163.com (m17617.mail.qiye.163.com
+ [59.111.176.17])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 48f7y23BNDz9sQx
- for <linuxppc-dev@ozlabs.org>; Sat, 14 Mar 2020 01:54:18 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 02DEpWbu115494
- for <linuxppc-dev@ozlabs.org>; Fri, 13 Mar 2020 10:54:16 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2yqyhd38nf-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Fri, 13 Mar 2020 10:54:15 -0400
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <srikar@linux.vnet.ibm.com>;
- Fri, 13 Mar 2020 14:54:14 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 13 Mar 2020 14:54:12 -0000
-Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 02DEsBDZ57081880
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 13 Mar 2020 14:54:11 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BA0E34203F;
- Fri, 13 Mar 2020 14:54:11 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 003EC42045;
- Fri, 13 Mar 2020 14:54:11 +0000 (GMT)
-Received: from linux.vnet.ibm.com (unknown [9.126.150.29])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Fri, 13 Mar 2020 14:54:10 +0000 (GMT)
-Date: Fri, 13 Mar 2020 20:24:10 +0530
-From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 2/2] powerpc/smp: Use IS_ENABLED() to avoid #ifdef
-References: <20200313112020.28235-1-mpe@ellerman.id.au>
- <20200313112020.28235-2-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48fCBb2FqszDqVS
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Mar 2020 04:20:18 +1100 (AEDT)
+Received: from ubuntu.localdomain (unknown [58.251.74.227])
+ by m17617.mail.qiye.163.com (Hmail) with ESMTPA id 22AF0261556;
+ Sat, 14 Mar 2020 01:20:03 +0800 (CST)
+From: WANG Wenhu <wenhu.wang@vivo.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ WANG Wenhu <wenhu.wang@vivo.com>, Richard Fontana <rfontana@redhat.com>,
+ Kate Stewart <kstewart@linuxfoundation.org>,
+ Allison Randal <allison@lohutok.net>, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v2] powerpc/fsl-85xx: fix compile error
+Date: Fri, 13 Mar 2020 10:19:51 -0700
+Message-Id: <20200313171953.63205-1-wenhu.wang@vivo.com>
+X-Mailer: git-send-email 2.17.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20200313112020.28235-2-mpe@ellerman.id.au>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-TM-AS-GCONF: 00
-x-cbid: 20031314-4275-0000-0000-000003ABC007
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20031314-4276-0000-0000-000038C0E1E2
-Message-Id: <20200313145410.GE25144@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.572
- definitions=2020-03-13_05:2020-03-12,
- 2020-03-13 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- mlxlogscore=999 spamscore=0 malwarescore=0 adultscore=0 suspectscore=0
- clxscore=1015 phishscore=0 impostorscore=0 mlxscore=0 priorityscore=1501
- bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2003020000 definitions=main-2003130074
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-HM-Spam-Status: e1kfGhgUHx5ZQUtXWQgYFAkeWUFZTlVDTUJCQkJDQ05OTkJLQ1lXWShZQU
+ hPN1dZLVlBSVdZCQ4XHghZQVk1NCk2OjckKS43PlkG
+X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6Ngg6MBw4LjgyLDA0IzoQGU4x
+ K0gwClZVSlVKTkNPSklLS0tMQkhLVTMWGhIXVQweFRMOVQwaFRw7DRINFFUYFBZFWVdZEgtZQVlO
+ Q1VJTkpVTE9VSUlMWVdZCAFZQUlCSEs3Bg++
+X-HM-Tid: 0a70d4e904379375kuws22af0261556
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,57 +65,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Cc: kernel@vivo.com, trivial@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-* Michael Ellerman <mpe@ellerman.id.au> [2020-03-13 22:20:20]:
+Include "linux/of_address.h" to fix the compile error for
+mpc85xx_l2ctlr_of_probe() when compiling fsl_85xx_cache_sram.c.
 
-> We can avoid the #ifdef by using IS_ENABLED() in the existing
-> condition check.
-> 
+  CC      arch/powerpc/sysdev/fsl_85xx_l2ctlr.o
+arch/powerpc/sysdev/fsl_85xx_l2ctlr.c: In function ‘mpc85xx_l2ctlr_of_probe’:
+arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:90:11: error: implicit declaration of function ‘of_iomap’; did you mean ‘pci_iomap’? [-Werror=implicit-function-declaration]
+  l2ctlr = of_iomap(dev->dev.of_node, 0);
+           ^~~~~~~~
+           pci_iomap
+arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:90:9: error: assignment makes pointer from integer without a cast [-Werror=int-conversion]
+  l2ctlr = of_iomap(dev->dev.of_node, 0);
+         ^
+cc1: all warnings being treated as errors
+scripts/Makefile.build:267: recipe for target 'arch/powerpc/sysdev/fsl_85xx_l2ctlr.o' failed
+make[2]: *** [arch/powerpc/sysdev/fsl_85xx_l2ctlr.o] Error 1
 
-Looks good to me.
+Fixes: commit 6db92cc9d07d ("powerpc/85xx: add cache-sram support")
+Signed-off-by: WANG Wenhu <wenhu.wang@vivo.com>
+---
+ arch/powerpc/sysdev/fsl_85xx_l2ctlr.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Reviewed-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->  arch/powerpc/kernel/smp.c | 5 ++---
->  1 file changed, 2 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> index aae61a3b3201..6d2a3a3666f0 100644
-> --- a/arch/powerpc/kernel/smp.c
-> +++ b/arch/powerpc/kernel/smp.c
-> @@ -1189,18 +1189,17 @@ int get_physical_package_id(int cpu)
->  {
->  	int pkg_id = cpu_to_chip_id(cpu);
-> 
-> -#ifdef CONFIG_PPC_SPLPAR
->  	/*
->  	 * If the platform is PowerNV or Guest on KVM, ibm,chip-id is
->  	 * defined. Hence we would return the chip-id as the result of
->  	 * get_physical_package_id.
->  	 */
-> -	if (pkg_id == -1 && firmware_has_feature(FW_FEATURE_LPAR)) {
-> +	if (pkg_id == -1 && firmware_has_feature(FW_FEATURE_LPAR) &&
-> +	    IS_ENABLED(CONFIG_PPC_SPLPAR)) {
->  		struct device_node *np = of_get_cpu_node(cpu, NULL);
->  		pkg_id = of_node_to_nid(np);
->  		of_node_put(np);
->  	}
-> -#endif /* CONFIG_PPC_SPLPAR */
-> 
->  	return pkg_id;
->  }
-> -- 
-> 2.21.1
-> 
-
+diff --git a/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c b/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
+index 2d0af0c517bb..7533572492f0 100644
+--- a/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
++++ b/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
+@@ -10,6 +10,7 @@
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/of_platform.h>
++#include <linux/of_address.h>
+ #include <asm/io.h>
+ 
+ #include "fsl_85xx_cache_ctlr.h"
 -- 
-Thanks and Regards
-Srikar Dronamraju
+2.17.1
 
