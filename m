@@ -1,84 +1,91 @@
-Return-Path: <SRS0=UfTk=46=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=Vhe2=47=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EA5CC10DCE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Mar 2020 19:26:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 48EBAC10DCE
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Mar 2020 03:39:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AC74F206B1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Mar 2020 19:26:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B053E2074A
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Mar 2020 03:39:48 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="jPJ5U7XU"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AC74F206B1
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="U8GtRzui"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B053E2074A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48fFzt6G1NzDqZk
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Mar 2020 06:26:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48fSxG2FC6zDqZ2
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Mar 2020 14:39:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::644;
+ helo=mail-pl1-x644.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=jPJ5U7XU; dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=U8GtRzui; dkim-atps=neutral
+Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
+ [IPv6:2607:f8b0:4864:20::644])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48fFxs4klrzDqWP
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Mar 2020 06:24:31 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 48fFxm37jMz9vBSq;
- Fri, 13 Mar 2020 20:24:28 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=jPJ5U7XU; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id sCJ1qMKipF5m; Fri, 13 Mar 2020 20:24:28 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 48fFxm0bJGz9vBSn;
- Fri, 13 Mar 2020 20:24:28 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1584127468; bh=oGg/6CLsP2vrCX0e3mcJfJmLT7XtQfwgp1ayZajashg=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=jPJ5U7XUrUkIOsgNWrVah/vvDWsI/iScNnGEWDpajpQzDQRAAje+IkPbeWn9gudEr
- y3IukLpqbN22allFMj8Faqt9/8lT0e45T7nOvaYtRwaQjFMzm9X661bMWCEk81T7H5
- 1eGp3SxT6nNRK7DajxdHffUR4+BL1Ekzp8i14rH4=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C81328B8D1;
- Fri, 13 Mar 2020 20:24:27 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id cH60zKUXPUZZ; Fri, 13 Mar 2020 20:24:27 +0100 (CET)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 51D528B8CE;
- Fri, 13 Mar 2020 20:24:26 +0100 (CET)
-Subject: Re: [PATCH v2] powerpc/fsl-85xx: fix compile error
-To: =?UTF-8?B?546L5paH6JmO?= <wenhu.wang@vivo.com>
-References: <AIkAvQC8CBiKb1HKth-6ZqrH.3.1584123458318.Hmail.wenhu.wang@vivo.com>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <6eba5d46-bb3a-03bb-376d-2a6e684d018e@c-s.fr>
-Date: Fri, 13 Mar 2020 20:24:20 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.5.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48fSvP63SjzDqVB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Mar 2020 14:38:07 +1100 (AEDT)
+Received: by mail-pl1-x644.google.com with SMTP id ay11so5246321plb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2020 20:38:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :user-agent:message-id:content-transfer-encoding;
+ bh=ZNUVQBdecvt5COEcoIrcomryAYodxervF1IhwAWuYNI=;
+ b=U8GtRzuiRrB30Vs6+2N7gcNJLro8jXQ1/qSE4IP8KtesA/le6vpZ7iKTPSSrJn6MAK
+ xNSQA6dIV/bc4Qc3qOev2soDsex0gkfBiBDSs58LngBgtXQIamOTLH9x0kd+rHzK6wKU
+ O//UxXQd/yVQFeHsIxNZHc+RinNuQHW1u3GslQ5HiAHPXSHh0ry8oC2yCbwvstTK2A9x
+ Q096/0cO3fAsPAI5Mi954xBoAiTvLsKYvG42V4fAWxGG+DXxq0Wn5uinhyxbggJBhY5b
+ PvVuVxwx+d+RWzksY7BYSqewm3TQXNMKuQbhPK3r4LWAAMBHsB+ETpoxGPaq99pXeCCO
+ z8fg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:user-agent:message-id:content-transfer-encoding;
+ bh=ZNUVQBdecvt5COEcoIrcomryAYodxervF1IhwAWuYNI=;
+ b=pNo0MNRrx9O6PV/Gc++QpSC6/28wB7qo4txfWT6oBWKN5CSjF2lDQ69Hf7/FvjSz4G
+ gx6tEILs55IGOZKrFogGAyHD6Dnfbd1L7it/Ph/gZSaZUOlIgEmKBcDpjmoBA0hV7l25
+ pCynD54+6lo+Gs+Z2z+ncq2R9pGFbcWMipEAwVO7AXDoLLq5Km9pv7M+10gYFG/VXBwC
+ 1SCJxOLv4c9og3vRokyLveAKlQTZhs32ZHl84PLjJRUDdH110ZYeDSS9gUODTWap8RUF
+ muDiVdINlw1rj1JMElMHW0uHNWZfUSQ0H9FmgZKuKzjmUvoN4dbltzs4fMcSN2VPeGSQ
+ ac/A==
+X-Gm-Message-State: ANhLgQ0ovscnqW1S555AA74OGo4C0W/bCpTdLzE0SArCKrIN2o2sR+3F
+ Ac5jEDgw6yvG4SJh8XbgMHk=
+X-Google-Smtp-Source: ADFU+vt5/H0AnFJwDMLEM03AgTdCqm0Bd8EJoF2XPratD08Zg8UuZuQ7nCX0zDh6qLPa92Alyja/hg==
+X-Received: by 2002:a17:902:a518:: with SMTP id
+ s24mr16532704plq.157.1584157083999; 
+ Fri, 13 Mar 2020 20:38:03 -0700 (PDT)
+Received: from localhost ([193.114.108.19])
+ by smtp.gmail.com with ESMTPSA id 129sm34913634pfw.84.2020.03.13.20.38.02
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 13 Mar 2020 20:38:03 -0700 (PDT)
+Date: Sat, 14 Mar 2020 13:37:15 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v3] powerpc: setup_64: set up PACA earlier to avoid kcov
+ problems
+To: Daniel Axtens <dja@axtens.net>, linuxppc-dev@lists.ozlabs.org,
+ Michael Ellerman <mpe@ellerman.id.au>
+References: <20200306073000.9491-1-dja@axtens.net>
+ <1583543617.bp71axgtlo.astroid@bobo.none>
+ <87tv2wigj7.fsf@mpe.ellerman.id.au> <87lfo7q0cb.fsf@dja-thinkpad.axtens.net>
+In-Reply-To: <87lfo7q0cb.fsf@dja-thinkpad.axtens.net>
 MIME-Version: 1.0
-In-Reply-To: <AIkAvQC8CBiKb1HKth-6ZqrH.3.1584123458318.Hmail.wenhu.wang@vivo.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+User-Agent: astroid/0.15.0 (https://github.com/astroidmail/astroid)
+Message-Id: <1584156888.f924kplz26.astroid@bobo.none>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,61 +97,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kate Stewart <kstewart@linuxfoundation.org>, trivial@kernel.org,
- kernel@vivo.com, linux-kernel@vger.kernel.org,
- Richard Fontana <rfontana@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- Allison Randal <allison@lohutok.net>
+Cc: ajd@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-Le 13/03/2020 à 19:17, 王文虎 a écrit :
-> 发件人：Christophe Leroy <christophe.leroy@c-s.fr>
-> 发送日期：2020-03-14 01:45:11
-> 收件人：WANG Wenhu <wenhu.wang@vivo.com>,Benjamin Herrenschmidt <benh@kernel.crashing.org>,Paul Mackerras <paulus@samba.org>,Michael Ellerman <mpe@ellerman.id.au>,Richard Fontana <rfontana@redhat.com>,Kate Stewart <kstewart@linuxfoundation.org>,Allison Randal <allison@lohutok.net>,Thomas Gleixner <tglx@linutronix.de>,linuxppc-dev@lists.ozlabs.org,linux-kernel@vger.kernel.org
-> 抄送人：kernel@vivo.com,trivial@kernel.org
-> 主题：Re: [PATCH v2] powerpc/fsl-85xx: fix compile error>
->>
->> Le 13/03/2020 à 18:19, WANG Wenhu a écrit :
->>> Include "linux/of_address.h" to fix the compile error for
->>> mpc85xx_l2ctlr_of_probe() when compiling fsl_85xx_cache_sram.c.
+Daniel Axtens's on March 11, 2020 9:03 am:
+>>>> So:
+>>>>  - change the test when setting up a PACA to consider the actual value=
+ of
+>>>>    the MSR rather than the CPU feature.
+>>>>=20
+>>>>  - move the PACA setup to before the cpu feature parsing.
 >>>
->>>     CC      arch/powerpc/sysdev/fsl_85xx_l2ctlr.o
->>> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c: In function ‘mpc85xx_l2ctlr_of_probe’:
->>> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:90:11: error: implicit declaration of function ‘of_iomap’; did you mean ‘pci_iomap’? [-Werror=implicit-function-declaration]
->>>     l2ctlr = of_iomap(dev->dev.of_node, 0);
->>>              ^~~~~~~~
->>>              pci_iomap
->>> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:90:9: error: assignment makes pointer from integer without a cast [-Werror=int-conversion]
->>>     l2ctlr = of_iomap(dev->dev.of_node, 0);
->>>            ^
->>> cc1: all warnings being treated as errors
->>> scripts/Makefile.build:267: recipe for target 'arch/powerpc/sysdev/fsl_85xx_l2ctlr.o' failed
->>> make[2]: *** [arch/powerpc/sysdev/fsl_85xx_l2ctlr.o] Error 1
->>>
->>> Fixes: commit 6db92cc9d07d ("powerpc/85xx: add cache-sram support")
+>>> Hmm. Problem is that equally we want PACA to be sane before we call too
+>>> far into the rest of the kernel ("generic dt parsing code").
 >>
->> Shouldn't you Cc stable as well ?
-> Pretty sure if it makes a difference(that I did not recognize).
-> Does the inconsistency of Cc lead to a failure on classification
-> or something else which may confuse you?
-
-See 
-https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/Documentation/process/submitting-patches.rst?h=v5.1.9#n299
-
+>> But currently we call into that code with no paca at all. Or rather,
+>> with r13 pointing somewhere random that will be interpreted as being a
+>> paca.
 >>
->>> Signed-off-by: WANG Wenhu <wenhu.wang@vivo.com>
->>> ---
+>> This took a while for Daniel to debug because depending on how you boot
+>> r13 contains a different junk value. That junk value may not point to
+>> memory at all, or if it does the memory it points to may or may not send
+>> you down the wrong path, depending on which exact bit you're looking at
+>> in some random location.
 >>
->> What's the difference between v1 and v2 ?
-> The label field modification: "Fixed" -> "Fixes", which now is
-> identified successfully. Really sorry for the fault on v1.
+>> So this is really not about kcov from my POV, that's just how we
+>> discovered it.
+>=20
+> Ah, yes. I agree with mpe, and reading back over my commit message I
+> think I did a pretty poor job of explaining it. How about this for a
+> commit message:
 
-Ok. Usually people tell here (just below the ---) what is the difference 
-between the different versions. It helps people understand what the 
-changes are.
+Sorry yeah I'm not quite sure what I was thinking there, because
+you actually are moving the paca setup earlier. Hmm. Anyway it seems
+okay to me. I would suggest putting a comment in the mfmsr() & MSR_HV
+test so it doesn't get used elsewhere. Maybe include CPU_FTR_HVMODE
+in the comment so grep shows it up.
 
-Christophe
+Thanks,
+Nick
+=
