@@ -2,90 +2,58 @@ Return-Path: <SRS0=Vhe2=47=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 48EBAC10DCE
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Mar 2020 03:39:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9526C0044D
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Mar 2020 03:47:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B053E2074A
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Mar 2020 03:39:48 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="U8GtRzui"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B053E2074A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 739A02074D
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Mar 2020 03:47:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 739A02074D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48fSxG2FC6zDqZ2
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Mar 2020 14:39:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::644;
- helo=mail-pl1-x644.google.com; envelope-from=npiggin@gmail.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48fT6122XmzDqZx
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Mar 2020 14:47:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=U8GtRzui; dkim-atps=neutral
-Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
- [IPv6:2607:f8b0:4864:20::644])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.13; helo=inva020.nxp.com;
+ envelope-from=xiaowei.bao@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48fSvP63SjzDqVB
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Mar 2020 14:38:07 +1100 (AEDT)
-Received: by mail-pl1-x644.google.com with SMTP id ay11so5246321plb.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2020 20:38:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :user-agent:message-id:content-transfer-encoding;
- bh=ZNUVQBdecvt5COEcoIrcomryAYodxervF1IhwAWuYNI=;
- b=U8GtRzuiRrB30Vs6+2N7gcNJLro8jXQ1/qSE4IP8KtesA/le6vpZ7iKTPSSrJn6MAK
- xNSQA6dIV/bc4Qc3qOev2soDsex0gkfBiBDSs58LngBgtXQIamOTLH9x0kd+rHzK6wKU
- O//UxXQd/yVQFeHsIxNZHc+RinNuQHW1u3GslQ5HiAHPXSHh0ry8oC2yCbwvstTK2A9x
- Q096/0cO3fAsPAI5Mi954xBoAiTvLsKYvG42V4fAWxGG+DXxq0Wn5uinhyxbggJBhY5b
- PvVuVxwx+d+RWzksY7BYSqewm3TQXNMKuQbhPK3r4LWAAMBHsB+ETpoxGPaq99pXeCCO
- z8fg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:user-agent:message-id:content-transfer-encoding;
- bh=ZNUVQBdecvt5COEcoIrcomryAYodxervF1IhwAWuYNI=;
- b=pNo0MNRrx9O6PV/Gc++QpSC6/28wB7qo4txfWT6oBWKN5CSjF2lDQ69Hf7/FvjSz4G
- gx6tEILs55IGOZKrFogGAyHD6Dnfbd1L7it/Ph/gZSaZUOlIgEmKBcDpjmoBA0hV7l25
- pCynD54+6lo+Gs+Z2z+ncq2R9pGFbcWMipEAwVO7AXDoLLq5Km9pv7M+10gYFG/VXBwC
- 1SCJxOLv4c9og3vRokyLveAKlQTZhs32ZHl84PLjJRUDdH110ZYeDSS9gUODTWap8RUF
- muDiVdINlw1rj1JMElMHW0uHNWZfUSQ0H9FmgZKuKzjmUvoN4dbltzs4fMcSN2VPeGSQ
- ac/A==
-X-Gm-Message-State: ANhLgQ0ovscnqW1S555AA74OGo4C0W/bCpTdLzE0SArCKrIN2o2sR+3F
- Ac5jEDgw6yvG4SJh8XbgMHk=
-X-Google-Smtp-Source: ADFU+vt5/H0AnFJwDMLEM03AgTdCqm0Bd8EJoF2XPratD08Zg8UuZuQ7nCX0zDh6qLPa92Alyja/hg==
-X-Received: by 2002:a17:902:a518:: with SMTP id
- s24mr16532704plq.157.1584157083999; 
- Fri, 13 Mar 2020 20:38:03 -0700 (PDT)
-Received: from localhost ([193.114.108.19])
- by smtp.gmail.com with ESMTPSA id 129sm34913634pfw.84.2020.03.13.20.38.02
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 13 Mar 2020 20:38:03 -0700 (PDT)
-Date: Sat, 14 Mar 2020 13:37:15 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v3] powerpc: setup_64: set up PACA earlier to avoid kcov
- problems
-To: Daniel Axtens <dja@axtens.net>, linuxppc-dev@lists.ozlabs.org,
- Michael Ellerman <mpe@ellerman.id.au>
-References: <20200306073000.9491-1-dja@axtens.net>
- <1583543617.bp71axgtlo.astroid@bobo.none>
- <87tv2wigj7.fsf@mpe.ellerman.id.au> <87lfo7q0cb.fsf@dja-thinkpad.axtens.net>
-In-Reply-To: <87lfo7q0cb.fsf@dja-thinkpad.axtens.net>
-MIME-Version: 1.0
-User-Agent: astroid/0.15.0 (https://github.com/astroidmail/astroid)
-Message-Id: <1584156888.f924kplz26.astroid@bobo.none>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48fT2z3jZKzDqVB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Mar 2020 14:44:41 +1100 (AEDT)
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id BA0B21A1971;
+ Sat, 14 Mar 2020 04:44:36 +0100 (CET)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
+ [165.114.16.14])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id F239C1A194B;
+ Sat, 14 Mar 2020 04:44:26 +0100 (CET)
+Received: from titan.ap.freescale.net (titan.ap.freescale.net [10.192.208.233])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 0E26B402C1;
+ Sat, 14 Mar 2020 11:44:14 +0800 (SGT)
+From: Xiaowei Bao <xiaowei.bao@nxp.com>
+To: Zhiqiang.Hou@nxp.com, Minghuan.Lian@nxp.com, mingkai.hu@nxp.com,
+ bhelgaas@google.com, robh+dt@kernel.org, shawnguo@kernel.org,
+ leoyang.li@nxp.com, kishon@ti.com, lorenzo.pieralisi@arm.com,
+ roy.zang@nxp.com, amurray@thegoodpenguin.co.uk, jingoohan1@gmail.com,
+ gustavo.pimentel@synopsys.com, andrew.murray@arm.com,
+ linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v6 00/11] Add the multiple PF support for DWC and Layerscape
+Date: Sat, 14 Mar 2020 11:30:27 +0800
+Message-Id: <20200314033038.24844-1-xiaowei.bao@nxp.com>
+X-Mailer: git-send-email 2.9.5
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,45 +65,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ajd@linux.ibm.com
+Cc: Xiaowei Bao <xiaowei.bao@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Daniel Axtens's on March 11, 2020 9:03 am:
->>>> So:
->>>>  - change the test when setting up a PACA to consider the actual value=
- of
->>>>    the MSR rather than the CPU feature.
->>>>=20
->>>>  - move the PACA setup to before the cpu feature parsing.
->>>
->>> Hmm. Problem is that equally we want PACA to be sane before we call too
->>> far into the rest of the kernel ("generic dt parsing code").
->>
->> But currently we call into that code with no paca at all. Or rather,
->> with r13 pointing somewhere random that will be interpreted as being a
->> paca.
->>
->> This took a while for Daniel to debug because depending on how you boot
->> r13 contains a different junk value. That junk value may not point to
->> memory at all, or if it does the memory it points to may or may not send
->> you down the wrong path, depending on which exact bit you're looking at
->> in some random location.
->>
->> So this is really not about kcov from my POV, that's just how we
->> discovered it.
->=20
-> Ah, yes. I agree with mpe, and reading back over my commit message I
-> think I did a pretty poor job of explaining it. How about this for a
-> commit message:
+Add the PCIe EP multiple PF support for DWC and Layerscape, add
+the doorbell MSIX function for DWC, use list to manage the PF of
+one PCIe controller, and refactor the Layerscape EP driver due to
+some platforms difference.
 
-Sorry yeah I'm not quite sure what I was thinking there, because
-you actually are moving the paca setup earlier. Hmm. Anyway it seems
-okay to me. I would suggest putting a comment in the mfmsr() & MSR_HV
-test so it doesn't get used elsewhere. Maybe include CPU_FTR_HVMODE
-in the comment so grep shows it up.
+Xiaowei Bao (11):
+  PCI: designware-ep: Add multiple PFs support for DWC
+  PCI: designware-ep: Add the doorbell mode of MSI-X in EP mode
+  PCI: designware-ep: Move the function of getting MSI capability
+    forward
+  PCI: designware-ep: Modify MSI and MSIX CAP way of finding
+  dt-bindings: pci: layerscape-pci: Add compatible strings for ls1088a
+    and ls2088a
+  PCI: layerscape: Fix some format issue of the code
+  PCI: layerscape: Modify the way of getting capability with different
+    PEX
+  PCI: layerscape: Modify the MSIX to the doorbell mode
+  PCI: layerscape: Add EP mode support for ls1088a and ls2088a
+  arm64: dts: layerscape: Add PCIe EP node for ls1088a
+  misc: pci_endpoint_test: Add LS1088a in pci_device_id table
 
-Thanks,
-Nick
-=
+ .../devicetree/bindings/pci/layerscape-pci.txt     |   2 +
+ arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi     |  31 +++
+ drivers/misc/pci_endpoint_test.c                   |   2 +
+ drivers/pci/controller/dwc/pci-layerscape-ep.c     | 100 ++++++--
+ drivers/pci/controller/dwc/pcie-designware-ep.c    | 255 +++++++++++++++++----
+ drivers/pci/controller/dwc/pcie-designware.c       |  59 +++--
+ drivers/pci/controller/dwc/pcie-designware.h       |  48 +++-
+ 7 files changed, 404 insertions(+), 93 deletions(-)
+
+-- 
+2.9.5
+
