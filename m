@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4EC97C0044D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2020 12:42:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D4289C2BB1D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2020 12:47:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 95AA1205ED
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2020 12:42:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8308B205ED
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2020 12:47:02 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="XyjcltoI"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 95AA1205ED
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="sgguxEb8"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8308B205ED
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48gwtn6zMrzDqM3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2020 23:42:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48gwzl1KXQzDqMw
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2020 23:46:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,54 +29,54 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=XyjcltoI; dkim-atps=neutral
+ header.s=mail header.b=sgguxEb8; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48gwkx3ql8zDqLJ
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48gwkx3p3VzDqJg
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2020 23:35:50 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 48gwkk28YLz9tygN;
- Mon, 16 Mar 2020 13:35:42 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 48gwkj2sN1z9tygK;
+ Mon, 16 Mar 2020 13:35:41 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=XyjcltoI; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=sgguxEb8; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id yeYpyMC2g6FZ; Mon, 16 Mar 2020 13:35:42 +0100 (CET)
+ with ESMTP id zKPANxqGDJp3; Mon, 16 Mar 2020 13:35:41 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 48gwkk13Ngz9tygM;
- Mon, 16 Mar 2020 13:35:42 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 48gwkj1HQfz9tyg5;
+ Mon, 16 Mar 2020 13:35:41 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1584362142; bh=4O+JQAaxWU7vz/WlcBgddWLwVTeB5N/VcA1T6OcpC/o=;
+ t=1584362141; bh=J2H/J2UURxYF5EK/akru/0Vp2a2UNCdtULaMe/E6/aE=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=XyjcltoIlya8jWgzlRPPbHh65HKWmJqKCkmrmOBRsuqaqOaE6Qwe51K7RXwu9Vlyf
- rFC06x/0ezzqEz2aDl5jaWPBPZWPLeKJZ+nniTT8HwjKtv4GS16RhsQFIp58p9gzQb
- IHeVdeeMm6NQ+JTjZDDfRh4k/MPwQNpWwIypywyk=
+ b=sgguxEb8C6blv+OblHAVAmdLRc4sENL/j8N0J7MVrkyx+ca6CgCWDoSFneLZHxIe1
+ XpFv5zhvb1V2IRc9HqeCR1PzbOjPUXQmSFUDMf/TyyXNQkg6QRZZdUl2kJMnPT+zen
+ sc/NomaHTeMgggfjJ4+IRNo/Bd1bMIs605O/RXHg=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 21D528B7D0;
- Mon, 16 Mar 2020 13:35:47 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 2A6DB8B7D0;
+ Mon, 16 Mar 2020 13:35:46 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 44S8FnZQyNMR; Mon, 16 Mar 2020 13:35:47 +0100 (CET)
+ with ESMTP id Z0b1tWoOUyMh; Mon, 16 Mar 2020 13:35:46 +0100 (CET)
 Received: from pc16570vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.230.100])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 04CF38B7CB;
- Mon, 16 Mar 2020 13:35:47 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 058148B7CB;
+ Mon, 16 Mar 2020 13:35:46 +0100 (CET)
 Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id F18AD65595; Mon, 16 Mar 2020 12:35:46 +0000 (UTC)
-Message-Id: <d68150f052e6a955139635a41ca28d75c494714b.1584360343.git.christophe.leroy@c-s.fr>
+ id E8DBE65595; Mon, 16 Mar 2020 12:35:45 +0000 (UTC)
+Message-Id: <36abcc89a20840d7b3e1fda18a619b139824921a.1584360343.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1584360343.git.christophe.leroy@c-s.fr>
 References: <cover.1584360343.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v1 02/46] powerpc/kasan: Fix error detection on memory
- allocation
+Subject: [PATCH v1 01/46] powerpc/kasan: Fix shadow memory protection with
+ CONFIG_KASAN_VMALLOC
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 16 Mar 2020 12:35:46 +0000 (UTC)
+Date: Mon, 16 Mar 2020 12:35:45 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,40 +93,49 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In case (k_start & PAGE_MASK) doesn't equal (kstart), 'va' will never be
-NULL allthough 'block' is NULL
+With CONFIG_KASAN_VMALLOC, new page tables are created at the time
+shadow memory for vmalloc area in unmapped. If some parts of the
+page table still has entries to the zero page shadow memory, the
+entries are wrongly marked RW.
 
-Check the return of memblock_alloc() directly instead of
-the resulting address in the loop.
+With CONFIG_KASAN_VMALLOC, almost the entire kernel address space
+is managed by KASAN. To make it simple, just create KASAN page tables
+for the entire kernel space at kasan_init(). That doesn't use much
+more space, and that's anyway already done for hash platforms.
 
-Fixes: 509cd3f2b473 ("powerpc/32: Simplify KASAN init")
+Fixes: 3d4247fcc938 ("powerpc/32: Add support of KASAN_VMALLOC")
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/mm/kasan/kasan_init_32.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ arch/powerpc/mm/kasan/kasan_init_32.c | 9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
 
 diff --git a/arch/powerpc/mm/kasan/kasan_init_32.c b/arch/powerpc/mm/kasan/kasan_init_32.c
-index 750a927839d7..60c2acdf73a7 100644
+index f19526e7d3dc..750a927839d7 100644
 --- a/arch/powerpc/mm/kasan/kasan_init_32.c
 +++ b/arch/powerpc/mm/kasan/kasan_init_32.c
-@@ -76,15 +76,14 @@ static int __init kasan_init_region(void *start, size_t size)
- 		return ret;
+@@ -120,12 +120,6 @@ static void __init kasan_unmap_early_shadow_vmalloc(void)
+ 	unsigned long k_cur;
+ 	phys_addr_t pa = __pa(kasan_early_shadow_page);
  
- 	block = memblock_alloc(k_end - k_start, PAGE_SIZE);
-+	if (!block)
-+		return -ENOMEM;
- 
- 	for (k_cur = k_start & PAGE_MASK; k_cur < k_end; k_cur += PAGE_SIZE) {
- 		pmd_t *pmd = pmd_ptr_k(k_cur);
- 		void *va = block + k_cur - k_start;
- 		pte_t pte = pfn_pte(PHYS_PFN(__pa(va)), PAGE_KERNEL);
- 
--		if (!va)
--			return -ENOMEM;
+-	if (!early_mmu_has_feature(MMU_FTR_HPTE_TABLE)) {
+-		int ret = kasan_init_shadow_page_tables(k_start, k_end);
 -
- 		__set_pte_at(&init_mm, k_cur, pte_offset_kernel(pmd, k_cur), pte, 0);
- 	}
- 	flush_tlb_kernel_range(k_start, k_end);
+-		if (ret)
+-			panic("kasan: kasan_init_shadow_page_tables() failed");
+-	}
+ 	for (k_cur = k_start & PAGE_MASK; k_cur < k_end; k_cur += PAGE_SIZE) {
+ 		pmd_t *pmd = pmd_offset(pud_offset(pgd_offset_k(k_cur), k_cur), k_cur);
+ 		pte_t *ptep = pte_offset_kernel(pmd, k_cur);
+@@ -143,7 +137,8 @@ void __init kasan_mmu_init(void)
+ 	int ret;
+ 	struct memblock_region *reg;
+ 
+-	if (early_mmu_has_feature(MMU_FTR_HPTE_TABLE)) {
++	if (early_mmu_has_feature(MMU_FTR_HPTE_TABLE) ||
++	    IS_ENABLED(CONFIG_KASAN_VMALLOC)) {
+ 		ret = kasan_init_shadow_page_tables(KASAN_SHADOW_START, KASAN_SHADOW_END);
+ 
+ 		if (ret)
 -- 
 2.25.0
 
