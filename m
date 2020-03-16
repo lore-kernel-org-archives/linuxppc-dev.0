@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78A15C0044D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2020 13:02:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 95FD2C0044D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2020 13:07:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DF0922076A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2020 13:02:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 45654205ED
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2020 13:07:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="FJzh8th/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF0922076A
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="HcqOBxVf"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 45654205ED
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48gxKJ01ywzDqNK
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2020 00:02:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48gxRV6cQfzDqNW
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2020 00:07:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,53 +29,54 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=FJzh8th/; dkim-atps=neutral
+ header.s=mail header.b=HcqOBxVf; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48gwl51YXzzDqLL
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48gwl55WMvzDqLx
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2020 23:36:01 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 48gwkt4J4hz9tygr;
- Mon, 16 Mar 2020 13:35:50 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 48gwkp33Kvz9tygS;
+ Mon, 16 Mar 2020 13:35:46 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=FJzh8th/; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=HcqOBxVf; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id GMjIff4u6kXW; Mon, 16 Mar 2020 13:35:50 +0100 (CET)
+ with ESMTP id jGyaWm4O7Ilk; Mon, 16 Mar 2020 13:35:46 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 48gwkt3GnDz9tyg5;
- Mon, 16 Mar 2020 13:35:50 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 48gwkp1pTqz9tyg5;
+ Mon, 16 Mar 2020 13:35:46 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1584362150; bh=e+HaGRwJA4h1ZHHXQXo2FxuOxEHgrouWi93xpDPcAQ4=;
+ t=1584362146; bh=fb8Dm2InOClKUpndBVgU08V295ttuJmHU5Av7nsj+Pg=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=FJzh8th/kQwomINA2rAb5azdSOxpiN3RYxSnOk92vK4bIZvutaMyY5XVL7XOj+cvD
- kZF0KBAuJ8Ki0Xx6XLP7sl2CC6K2jQvnz3iRS8zVmA6GzMv4+i4DPk5EOf3Iat04/R
- OVD4YlBUu0eq9MABQ8IC7xJrmQPLRCb5I03nCBpU=
+ b=HcqOBxVf6Yz3ro30G9tatBWc4pvJVduX4luZ+LvNFwmA5KK1zDcULDyIoyRTRaGIA
+ iBxhFurqB8VIoNeWHgf4PybGP7mtDYrNAo5dtwhPThl/v3xkAVFpC8d9OPnIEF1X2X
+ eRVWPZIzx+k1FfRXw61KaAGrvyFGqYy8szbUnnqA=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 6BFAA8B7D0;
- Mon, 16 Mar 2020 13:35:55 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3BF6E8B7D0;
+ Mon, 16 Mar 2020 13:35:51 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id fmTFYGXM8RnJ; Mon, 16 Mar 2020 13:35:55 +0100 (CET)
+ with ESMTP id m4VOUuB4DmEF; Mon, 16 Mar 2020 13:35:51 +0100 (CET)
 Received: from pc16570vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.230.100])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 4C7948B7CB;
- Mon, 16 Mar 2020 13:35:55 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1DC8C8B7CB;
+ Mon, 16 Mar 2020 13:35:51 +0100 (CET)
 Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 4162665595; Mon, 16 Mar 2020 12:35:55 +0000 (UTC)
-Message-Id: <4f0be21691f2d8d02efb63766f0a548375efecd2.1584360344.git.christophe.leroy@c-s.fr>
+ id 1650F65595; Mon, 16 Mar 2020 12:35:51 +0000 (UTC)
+Message-Id: <5eb93a773184aa0d36faa93c096b21cbe0a069c9.1584360344.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1584360343.git.christophe.leroy@c-s.fr>
 References: <cover.1584360343.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v1 10/46] powerpc/ptdump: Add _PAGE_COHERENT flag
+Subject: [PATCH v1 06/46] powerpc/kasan: Refactor update of early shadow
+ mappings
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 16 Mar 2020 12:35:55 +0000 (UTC)
+Date: Mon, 16 Mar 2020 12:35:51 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,31 +93,85 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-For platforms using shared.c (4xx, Book3e, Book3s/32),
-also handle the _PAGE_COHERENT flag with corresponds to the
-M bit of the WIMG flags.
+kasan_remap_early_shadow_ro() and kasan_unmap_early_shadow_vmalloc()
+are both updating the early shadow mapping: the first one sets
+the mapping read-only while the other clears the mapping.
+
+Refactor and create kasan_update_early_region()
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/mm/ptdump/shared.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/powerpc/mm/kasan/kasan_init_32.c | 39 +++++++++++++--------------
+ 1 file changed, 18 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/mm/ptdump/shared.c b/arch/powerpc/mm/ptdump/shared.c
-index dab5d8028a9b..634b83aa3487 100644
---- a/arch/powerpc/mm/ptdump/shared.c
-+++ b/arch/powerpc/mm/ptdump/shared.c
-@@ -40,6 +40,11 @@ static const struct flag_info flag_array[] = {
- 		.val	= _PAGE_NO_CACHE,
- 		.set	= "i",
- 		.clear	= " ",
-+	}, {
-+		.mask	= _PAGE_COHERENT,
-+		.val	= _PAGE_COHERENT,
-+		.set	= "m",
-+		.clear	= " ",
- 	}, {
- 		.mask	= _PAGE_GUARDED,
- 		.val	= _PAGE_GUARDED,
+diff --git a/arch/powerpc/mm/kasan/kasan_init_32.c b/arch/powerpc/mm/kasan/kasan_init_32.c
+index c9d053078c37..65fd8b891f8e 100644
+--- a/arch/powerpc/mm/kasan/kasan_init_32.c
++++ b/arch/powerpc/mm/kasan/kasan_init_32.c
+@@ -79,45 +79,42 @@ static int __init kasan_init_region(void *start, size_t size)
+ 	return 0;
+ }
+ 
+-static void __init kasan_remap_early_shadow_ro(void)
++static void __init
++kasan_update_early_region(unsigned long k_start, unsigned long k_end, pte_t pte)
+ {
+-	pgprot_t prot = kasan_prot_ro();
+-	unsigned long k_start = KASAN_SHADOW_START;
+-	unsigned long k_end = KASAN_SHADOW_END;
+ 	unsigned long k_cur;
+ 	phys_addr_t pa = __pa(kasan_early_shadow_page);
+ 
+-	kasan_populate_pte(kasan_early_shadow_pte, prot);
+-
+-	for (k_cur = k_start & PAGE_MASK; k_cur < k_end; k_cur += PAGE_SIZE) {
++	for (k_cur = k_start; k_cur < k_end; k_cur += PAGE_SIZE) {
+ 		pmd_t *pmd = pmd_ptr_k(k_cur);
+ 		pte_t *ptep = pte_offset_kernel(pmd, k_cur);
+ 
+ 		if ((pte_val(*ptep) & PTE_RPN_MASK) != pa)
+ 			continue;
+ 
+-		__set_pte_at(&init_mm, k_cur, ptep, pfn_pte(PHYS_PFN(pa), prot), 0);
++		__set_pte_at(&init_mm, k_cur, ptep, pte, 0);
+ 	}
+-	flush_tlb_kernel_range(KASAN_SHADOW_START, KASAN_SHADOW_END);
++
++	flush_tlb_kernel_range(k_start, k_end);
+ }
+ 
+-static void __init kasan_unmap_early_shadow_vmalloc(void)
++static void __init kasan_remap_early_shadow_ro(void)
+ {
+-	unsigned long k_start = (unsigned long)kasan_mem_to_shadow((void *)VMALLOC_START);
+-	unsigned long k_end = (unsigned long)kasan_mem_to_shadow((void *)VMALLOC_END);
+-	unsigned long k_cur;
++	pgprot_t prot = kasan_prot_ro();
+ 	phys_addr_t pa = __pa(kasan_early_shadow_page);
+ 
+-	for (k_cur = k_start & PAGE_MASK; k_cur < k_end; k_cur += PAGE_SIZE) {
+-		pmd_t *pmd = pmd_offset(pud_offset(pgd_offset_k(k_cur), k_cur), k_cur);
+-		pte_t *ptep = pte_offset_kernel(pmd, k_cur);
++	kasan_populate_pte(kasan_early_shadow_pte, prot);
+ 
+-		if ((pte_val(*ptep) & PTE_RPN_MASK) != pa)
+-			continue;
++	kasan_update_early_region(KASAN_SHADOW_START, KASAN_SHADOW_END,
++				  pfn_pte(PHYS_PFN(pa), prot));
++}
+ 
+-		__set_pte_at(&init_mm, k_cur, ptep, __pte(0), 0);
+-	}
+-	flush_tlb_kernel_range(k_start, k_end);
++static void __init kasan_unmap_early_shadow_vmalloc(void)
++{
++	unsigned long k_start = (unsigned long)kasan_mem_to_shadow((void *)VMALLOC_START);
++	unsigned long k_end = (unsigned long)kasan_mem_to_shadow((void *)VMALLOC_END);
++
++	kasan_update_early_region(k_start, k_end, __pte(0));
+ }
+ 
+ static void __init kasan_mmu_init(void)
 -- 
 2.25.0
 
