@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 79FA3C0044D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2020 13:26:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FC1DC18E5B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2020 13:29:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2AB6220575
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2020 13:26:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 1FC7720658
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2020 13:29:16 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="hLw8Nux6"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2AB6220575
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="a5K8dZM0"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1FC7720658
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48gxsD2NHnzDqJV
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2020 00:26:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48gxwS6vmqzDqBv
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2020 00:29:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,53 +29,53 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=hLw8Nux6; dkim-atps=neutral
+ header.s=mail header.b=a5K8dZM0; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48gwl51mh4zDqLS
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48gwl53tPGzDqLX
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2020 23:36:01 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 48gwkw4bsVz9v02f;
- Mon, 16 Mar 2020 13:35:52 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 48gwkn2WC4z9tygR;
+ Mon, 16 Mar 2020 13:35:45 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=hLw8Nux6; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=a5K8dZM0; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id xVySYLiVKTXs; Mon, 16 Mar 2020 13:35:52 +0100 (CET)
+ with ESMTP id b-sdWkBrRdNk; Mon, 16 Mar 2020 13:35:45 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 48gwkw3c5tz9tyg5;
- Mon, 16 Mar 2020 13:35:52 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 48gwkn1TCfz9tyg5;
+ Mon, 16 Mar 2020 13:35:45 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1584362152; bh=7T2j7aCGb8NtMk1LhfHLJamKiLLolKEjkaTJMMTZcqE=;
+ t=1584362145; bh=zz3LY4LnIULNvU2REeo9vroSmYzMKaaLGdN2qxLIwuw=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=hLw8Nux6C7NgL4F6SDj0cxq17ate88zw0jjhI7/tnkXeE+hwCm3WMbY6/t8kJ+U6D
- lICvcifOwO8mgSKTROYGkPcAUc9SpnXqxAk5gK4nrjwM4sdw/6/x60hujFw/JltvQ+
- MpSNxpBpEMaVwhWiuDdGgwk9H14pdtevxv41mbzE=
+ b=a5K8dZM0rtPQrBXIENhJKCrGi9u581IUm5g2QO1QBHYk8nD3uEBcPHfiZy2ohQ8ho
+ gI48qROSO33VlFay08xja22eTWgUzjFkhsK2mk603o9Wzm2TFwo/GLR+61BuJaqhFo
+ fKc4fEIGdwFJav/ulZig4Rl/2idpNJ3FmdxRfTlw=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 7B38B8B7D2;
- Mon, 16 Mar 2020 13:35:57 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 303AA8B7D0;
+ Mon, 16 Mar 2020 13:35:50 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id ocbX3nmRNadO; Mon, 16 Mar 2020 13:35:57 +0100 (CET)
+ with ESMTP id 8eLsKBpz6-mm; Mon, 16 Mar 2020 13:35:50 +0100 (CET)
 Received: from pc16570vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.230.100])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 5948B8B7D0;
- Mon, 16 Mar 2020 13:35:57 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1796B8B7CB;
+ Mon, 16 Mar 2020 13:35:50 +0100 (CET)
 Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 5138465595; Mon, 16 Mar 2020 12:35:57 +0000 (UTC)
-Message-Id: <435eef455d86828626ac4d064c0d8b8aca0c706b.1584360344.git.christophe.leroy@c-s.fr>
+ id 108EA65595; Mon, 16 Mar 2020 12:35:50 +0000 (UTC)
+Message-Id: <28206484284c1bc83b661de438eba04c6e75a1bc.1584360344.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1584360343.git.christophe.leroy@c-s.fr>
 References: <cover.1584360343.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v1 12/46] powerpc/ptdump: Standardise display of BAT flags
+Subject: [PATCH v1 05/46] powerpc/kasan: Remove unnecessary page table locking
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 16 Mar 2020 12:35:57 +0000 (UTC)
+Date: Mon, 16 Mar 2020 12:35:50 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,79 +92,73 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Display BAT flags the same way as page flags: rwx and wimg
+Commit 45ff3c559585 ("powerpc/kasan: Fix parallel loading of
+modules.") added spinlocks to manage parallele module loading.
+
+Since then commit 47febbeeec44 ("powerpc/32: Force KASAN_VMALLOC for
+modules") converted the module loading to KASAN_VMALLOC.
+
+The spinlocking has then become unneeded and can be removed to
+simplify kasan_init_shadow_page_tables()
+
+Also remove inclusion of linux/moduleloader.h and linux/vmalloc.h
+which are not needed anymore since the removal of modules management.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/mm/ptdump/bats.c | 37 ++++++++++++++---------------------
- 1 file changed, 15 insertions(+), 22 deletions(-)
+ arch/powerpc/mm/kasan/kasan_init_32.c | 19 ++++---------------
+ 1 file changed, 4 insertions(+), 15 deletions(-)
 
-diff --git a/arch/powerpc/mm/ptdump/bats.c b/arch/powerpc/mm/ptdump/bats.c
-index d6c660f63d71..cebb58c7e289 100644
---- a/arch/powerpc/mm/ptdump/bats.c
-+++ b/arch/powerpc/mm/ptdump/bats.c
-@@ -15,12 +15,12 @@
- static char *pp_601(int k, int pp)
+diff --git a/arch/powerpc/mm/kasan/kasan_init_32.c b/arch/powerpc/mm/kasan/kasan_init_32.c
+index c41e700153da..c9d053078c37 100644
+--- a/arch/powerpc/mm/kasan/kasan_init_32.c
++++ b/arch/powerpc/mm/kasan/kasan_init_32.c
+@@ -5,9 +5,7 @@
+ #include <linux/kasan.h>
+ #include <linux/printk.h>
+ #include <linux/memblock.h>
+-#include <linux/moduleloader.h>
+ #include <linux/sched/task.h>
+-#include <linux/vmalloc.h>
+ #include <asm/pgalloc.h>
+ #include <asm/code-patching.h>
+ #include <mm/mmu_decl.h>
+@@ -34,31 +32,22 @@ static int __init kasan_init_shadow_page_tables(unsigned long k_start, unsigned
  {
- 	if (pp == 0)
--		return k ? "NA" : "RWX";
-+		return k ? "   " : "rwx";
- 	if (pp == 1)
--		return k ? "ROX" : "RWX";
-+		return k ? "r x" : "rwx";
- 	if (pp == 2)
--		return k ? "RWX" : "RWX";
--	return k ? "ROX" : "ROX";
-+		return "rwx";
-+	return "r x";
- }
+ 	pmd_t *pmd;
+ 	unsigned long k_cur, k_next;
+-	pte_t *new = NULL;
  
- static void bat_show_601(struct seq_file *m, int idx, u32 lower, u32 upper)
-@@ -48,12 +48,9 @@ static void bat_show_601(struct seq_file *m, int idx, u32 lower, u32 upper)
+ 	pmd = pmd_ptr_k(k_start);
  
- 	seq_printf(m, "Kernel %s User %s", pp_601(k & 2, pp), pp_601(k & 1, pp));
- 
--	if (lower & _PAGE_WRITETHRU)
--		seq_puts(m, "write through ");
--	if (lower & _PAGE_NO_CACHE)
--		seq_puts(m, "no cache ");
--	if (lower & _PAGE_COHERENT)
--		seq_puts(m, "coherent ");
-+	seq_puts(m, lower & _PAGE_WRITETHRU ? "w " : "  ");
-+	seq_puts(m, lower & _PAGE_NO_CACHE ? "i " : "  ");
-+	seq_puts(m, lower & _PAGE_COHERENT ? "m " : "  ");
- 	seq_puts(m, "\n");
- }
- 
-@@ -101,20 +98,16 @@ static void bat_show_603(struct seq_file *m, int idx, u32 lower, u32 upper, bool
- 		seq_puts(m, "Kernel/User ");
- 
- 	if (lower & BPP_RX)
--		seq_puts(m, is_d ? "RO " : "EXEC ");
-+		seq_puts(m, is_d ? "r   " : "  x ");
- 	else if (lower & BPP_RW)
--		seq_puts(m, is_d ? "RW " : "EXEC ");
-+		seq_puts(m, is_d ? "rw  " : "  x ");
- 	else
--		seq_puts(m, is_d ? "NA " : "NX   ");
--
--	if (lower & _PAGE_WRITETHRU)
--		seq_puts(m, "write through ");
--	if (lower & _PAGE_NO_CACHE)
--		seq_puts(m, "no cache ");
--	if (lower & _PAGE_COHERENT)
--		seq_puts(m, "coherent ");
--	if (lower & _PAGE_GUARDED)
--		seq_puts(m, "guarded ");
-+		seq_puts(m, is_d ? "    " : "    ");
+ 	for (k_cur = k_start; k_cur != k_end; k_cur = k_next, pmd++) {
++		pte_t *new;
 +
-+	seq_puts(m, lower & _PAGE_WRITETHRU ? "w " : "  ");
-+	seq_puts(m, lower & _PAGE_NO_CACHE ? "i " : "  ");
-+	seq_puts(m, lower & _PAGE_COHERENT ? "m " : "  ");
-+	seq_puts(m, lower & _PAGE_GUARDED ? "g " : "  ");
- 	seq_puts(m, "\n");
- }
+ 		k_next = pgd_addr_end(k_cur, k_end);
+ 		if ((void *)pmd_page_vaddr(*pmd) != kasan_early_shadow_pte)
+ 			continue;
  
+-		if (!new)
+-			new = memblock_alloc(PTE_FRAG_SIZE, PTE_FRAG_SIZE);
++		new = memblock_alloc(PTE_FRAG_SIZE, PTE_FRAG_SIZE);
+ 
+ 		if (!new)
+ 			return -ENOMEM;
+ 		kasan_populate_pte(new, PAGE_KERNEL);
+-
+-		smp_wmb(); /* See comment in __pte_alloc */
+-
+-		spin_lock(&init_mm.page_table_lock);
+-			/* Has another populated it ? */
+-		if (likely((void *)pmd_page_vaddr(*pmd) == kasan_early_shadow_pte)) {
+-			pmd_populate_kernel(&init_mm, pmd, new);
+-			new = NULL;
+-		}
+-		spin_unlock(&init_mm.page_table_lock);
++		pmd_populate_kernel(&init_mm, pmd, new);
+ 	}
+ 	return 0;
+ }
 -- 
 2.25.0
 
