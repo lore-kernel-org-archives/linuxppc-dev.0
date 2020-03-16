@@ -2,57 +2,81 @@ Return-Path: <SRS0=ASHh=5B=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34306C0044D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2020 12:24:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4EC97C0044D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2020 12:42:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A7B692051A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2020 12:24:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A7B692051A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id 95AA1205ED
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2020 12:42:44 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="XyjcltoI"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 95AA1205ED
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48gwTj6F0mzDqG1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2020 23:24:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.190; helo=huawei.com;
- envelope-from=yanaijie@huawei.com; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48gwtn6zMrzDqM3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2020 23:42:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
+ spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
+ header.s=mail header.b=XyjcltoI; dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48gwNp74szzDqCY
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2020 23:20:10 +1100 (AEDT)
-Received: from DGGEMS409-HUB.china.huawei.com (unknown [172.30.72.59])
- by Forcepoint Email with ESMTP id DF309E461F1EDD361A1F;
- Mon, 16 Mar 2020 20:19:52 +0800 (CST)
-Received: from [127.0.0.1] (10.173.221.195) by DGGEMS409-HUB.china.huawei.com
- (10.3.19.209) with Microsoft SMTP Server id 14.3.487.0;
- Mon, 16 Mar 2020 20:19:46 +0800
-Subject: Re: [PATCH v4 0/6] implement KASLR for powerpc/fsl_booke/64
-To: <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
- <diana.craciun@nxp.com>, <christophe.leroy@c-s.fr>,
- <benh@kernel.crashing.org>, <paulus@samba.org>, <npiggin@gmail.com>,
- <keescook@chromium.org>, <kernel-hardening@lists.openwall.com>,
- <oss@buserror.net>
-References: <20200306064033.3398-1-yanaijie@huawei.com>
-From: Jason Yan <yanaijie@huawei.com>
-Message-ID: <9e70dcc1-647a-f9a8-2262-87e7528523d2@huawei.com>
-Date: Mon, 16 Mar 2020 20:19:44 +0800
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101
- Thunderbird/68.4.2
-MIME-Version: 1.0
-In-Reply-To: <20200306064033.3398-1-yanaijie@huawei.com>
-Content-Type: text/plain; charset="gbk"; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.173.221.195]
-X-CFilter-Loop: Reflected
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48gwkx3ql8zDqLJ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2020 23:35:50 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 48gwkk28YLz9tygN;
+ Mon, 16 Mar 2020 13:35:42 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=XyjcltoI; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id yeYpyMC2g6FZ; Mon, 16 Mar 2020 13:35:42 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 48gwkk13Ngz9tygM;
+ Mon, 16 Mar 2020 13:35:42 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1584362142; bh=4O+JQAaxWU7vz/WlcBgddWLwVTeB5N/VcA1T6OcpC/o=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=XyjcltoIlya8jWgzlRPPbHh65HKWmJqKCkmrmOBRsuqaqOaE6Qwe51K7RXwu9Vlyf
+ rFC06x/0ezzqEz2aDl5jaWPBPZWPLeKJZ+nniTT8HwjKtv4GS16RhsQFIp58p9gzQb
+ IHeVdeeMm6NQ+JTjZDDfRh4k/MPwQNpWwIypywyk=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 21D528B7D0;
+ Mon, 16 Mar 2020 13:35:47 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 44S8FnZQyNMR; Mon, 16 Mar 2020 13:35:47 +0100 (CET)
+Received: from pc16570vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
+ [172.25.230.100])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 04CF38B7CB;
+ Mon, 16 Mar 2020 13:35:47 +0100 (CET)
+Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id F18AD65595; Mon, 16 Mar 2020 12:35:46 +0000 (UTC)
+Message-Id: <d68150f052e6a955139635a41ca28d75c494714b.1584360343.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1584360343.git.christophe.leroy@c-s.fr>
+References: <cover.1584360343.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v1 02/46] powerpc/kasan: Fix error detection on memory
+ allocation
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Mon, 16 Mar 2020 12:35:46 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,73 +88,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dja@axtens.net, linux-kernel@vger.kernel.org, zhaohongjiang@huawei.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-ping...
+In case (k_start & PAGE_MASK) doesn't equal (kstart), 'va' will never be
+NULL allthough 'block' is NULL
 
-ÔÚ 2020/3/6 14:40, Jason Yan Ð´µÀ:
-> This is a try to implement KASLR for Freescale BookE64 which is based on
-> my earlier implementation for Freescale BookE32:
-> https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=131718&state=*
-> 
-> The implementation for Freescale BookE64 is similar as BookE32. One
-> difference is that Freescale BookE64 set up a TLB mapping of 1G during
-> booting. Another difference is that ppc64 needs the kernel to be
-> 64K-aligned. So we can randomize the kernel in this 1G mapping and make
-> it 64K-aligned. This can save some code to creat another TLB map at
-> early boot. The disadvantage is that we only have about 1G/64K = 16384
-> slots to put the kernel in.
-> 
->      KERNELBASE
-> 
->            64K                     |--> kernel <--|
->             |                      |              |
->          +--+--+--+    +--+--+--+--+--+--+--+--+--+    +--+--+
->          |  |  |  |....|  |  |  |  |  |  |  |  |  |....|  |  |
->          +--+--+--+    +--+--+--+--+--+--+--+--+--+    +--+--+
->          |                         |                        1G
->          |----->   offset    <-----|
-> 
->                                kernstart_virt_addr
-> 
-> I'm not sure if the slot numbers is enough or the design has any
-> defects. If you have some better ideas, I would be happy to hear that.
-> 
-> Thank you all.
-> 
-> v3->v4:
->    Do not define __kaslr_offset as a fixed symbol. Reference __run_at_load and
->      __kaslr_offset by symbol instead of magic offsets.
->    Use IS_ENABLED(CONFIG_PPC32) instead of #ifdef CONFIG_PPC32.
->    Change kaslr-booke32 to kaslr-booke in index.rst
->    Switch some instructions to 64-bit.
-> v2->v3:
->    Fix build error when KASLR is disabled.
-> v1->v2:
->    Add __kaslr_offset for the secondary cpu boot up.
-> 
-> Jason Yan (6):
->    powerpc/fsl_booke/kaslr: refactor kaslr_legal_offset() and
->      kaslr_early_init()
->    powerpc/fsl_booke/64: introduce reloc_kernel_entry() helper
->    powerpc/fsl_booke/64: implement KASLR for fsl_booke64
->    powerpc/fsl_booke/64: do not clear the BSS for the second pass
->    powerpc/fsl_booke/64: clear the original kernel if randomized
->    powerpc/fsl_booke/kaslr: rename kaslr-booke32.rst to kaslr-booke.rst
->      and add 64bit part
-> 
->   Documentation/powerpc/index.rst               |  2 +-
->   .../{kaslr-booke32.rst => kaslr-booke.rst}    | 35 +++++++-
->   arch/powerpc/Kconfig                          |  2 +-
->   arch/powerpc/kernel/exceptions-64e.S          | 23 +++++
->   arch/powerpc/kernel/head_64.S                 | 13 +++
->   arch/powerpc/kernel/setup_64.c                |  3 +
->   arch/powerpc/mm/mmu_decl.h                    | 23 ++---
->   arch/powerpc/mm/nohash/kaslr_booke.c          | 88 +++++++++++++------
->   8 files changed, 144 insertions(+), 45 deletions(-)
->   rename Documentation/powerpc/{kaslr-booke32.rst => kaslr-booke.rst} (59%)
-> 
+Check the return of memblock_alloc() directly instead of
+the resulting address in the loop.
+
+Fixes: 509cd3f2b473 ("powerpc/32: Simplify KASAN init")
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/mm/kasan/kasan_init_32.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/mm/kasan/kasan_init_32.c b/arch/powerpc/mm/kasan/kasan_init_32.c
+index 750a927839d7..60c2acdf73a7 100644
+--- a/arch/powerpc/mm/kasan/kasan_init_32.c
++++ b/arch/powerpc/mm/kasan/kasan_init_32.c
+@@ -76,15 +76,14 @@ static int __init kasan_init_region(void *start, size_t size)
+ 		return ret;
+ 
+ 	block = memblock_alloc(k_end - k_start, PAGE_SIZE);
++	if (!block)
++		return -ENOMEM;
+ 
+ 	for (k_cur = k_start & PAGE_MASK; k_cur < k_end; k_cur += PAGE_SIZE) {
+ 		pmd_t *pmd = pmd_ptr_k(k_cur);
+ 		void *va = block + k_cur - k_start;
+ 		pte_t pte = pfn_pte(PHYS_PFN(__pa(va)), PAGE_KERNEL);
+ 
+-		if (!va)
+-			return -ENOMEM;
+-
+ 		__set_pte_at(&init_mm, k_cur, pte_offset_kernel(pmd, k_cur), pte, 0);
+ 	}
+ 	flush_tlb_kernel_range(k_start, k_end);
+-- 
+2.25.0
 
