@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 45C94C0044D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2020 14:00:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AF52C0044D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2020 14:06:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EA27120575
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2020 14:00:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E78E4206E2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2020 14:06:04 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="B/PhvFjR"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EA27120575
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="Z++zxaTQ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E78E4206E2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48gyc43yhVzDqQr
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2020 01:00:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48gykz1QzCzDqRH
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2020 01:06:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,54 +29,54 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=B/PhvFjR; dkim-atps=neutral
+ header.s=mail header.b=Z++zxaTQ; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48gwlG0p3xzDqLJ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2020 23:36:10 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48gwlK0zStzDqM2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2020 23:36:13 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 48gwl615Gbz9v02h;
- Mon, 16 Mar 2020 13:36:02 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 48gwl91Sftz9v02k;
+ Mon, 16 Mar 2020 13:36:05 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=B/PhvFjR; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=Z++zxaTQ; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 48D5OFzLj0p6; Mon, 16 Mar 2020 13:36:02 +0100 (CET)
+ with ESMTP id FJUfgkVjnvYp; Mon, 16 Mar 2020 13:36:05 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 48gwl602rkz9v02f;
- Mon, 16 Mar 2020 13:36:02 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 48gwl90S4Dz9v02f;
+ Mon, 16 Mar 2020 13:36:05 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1584362162; bh=ICMxCBMNGcTfz0cst3VWC9Qy4LnOx0ZwiA0OhAg96c8=;
+ t=1584362165; bh=QJ3AVzv18kp0O9jJ2O0qYyjb0tj49OV+u5oVdQwNeWs=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=B/PhvFjRA2bt7iIWvGy0579aw2F8jGDilok+ZGqJxG2UjMCjs0wC3YZBwEFJl2PM+
- PIVhaheQfSnzfCVKK//Ew970wImOkdN+EMFeC/kZ09gpLvEcSF92KKAS5VaJoTcemj
- g5JWsspmKirAXXoVsGEuCUCPKJ42jHiym/CM6WhI=
+ b=Z++zxaTQZwNr4HVC9eduWq4vQrfjV0SUtIIefJNFBUGgJ5WgT3rpJIj32EP9GDNNW
+ 9VPH0hUZWko5XhYvqOAdpvw2emu3Y9xkuBcjtzqfggNzsiPw9HqHhjBycbrnyP7ih2
+ Z4dhh20zEqfLD90pDGAXkPGydib507W170wc8BYY=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id F210A8B7D2;
- Mon, 16 Mar 2020 13:36:06 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0C1BB8B7D2;
+ Mon, 16 Mar 2020 13:36:10 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id NJWxDvuUzYcX; Mon, 16 Mar 2020 13:36:06 +0100 (CET)
+ with ESMTP id RF3yw7MAuO2U; Mon, 16 Mar 2020 13:36:09 +0100 (CET)
 Received: from pc16570vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.230.100])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A61CF8B7CB;
- Mon, 16 Mar 2020 13:36:06 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id BA4538B7CB;
+ Mon, 16 Mar 2020 13:36:09 +0100 (CET)
 Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 9C2C365595; Mon, 16 Mar 2020 12:36:06 +0000 (UTC)
-Message-Id: <8b0e2f8614261e6565f8345341a563aa3f99c270.1584360344.git.christophe.leroy@c-s.fr>
+ id AFDC465595; Mon, 16 Mar 2020 12:36:09 +0000 (UTC)
+Message-Id: <e0e958ba53efc9ef8a012a0756ba0f39d6077e70.1584360344.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1584360343.git.christophe.leroy@c-s.fr>
 References: <cover.1584360343.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v1 21/46] powerpc/mm: Standardise
- __ptep_test_and_clear_young() params between PPC32 and PPC64
+Subject: [PATCH v1 24/46] powerpc/mm: Reduce hugepd size for 8M hugepages on
+ 8xx
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 16 Mar 2020 12:36:06 +0000 (UTC)
+Date: Mon, 16 Mar 2020 12:36:09 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,68 +93,146 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On PPC32, __ptep_test_and_clear_young() takes the mm->context.id
+Commit 55c8fc3f4930 ("powerpc/8xx: reintroduce 16K pages with HW
+assistance") redefined pte_t as a struct of 4 pte_basic_t, because
+in 16K pages mode there are four identical entries in the page table.
+But hugepd entries for 8M pages require only one entry of size
+pte_basic_t. So there is no point in creating a cache for 4 entries
+page tables.
 
-In preparation of standardising pte_update() params between PPC32 and
-PPC64, __ptep_test_and_clear_young() need mm instead of mm->context.id
+Calculate PTE_T_ORDER using the size of pte_basic_t instead of pte_t.
 
-Replace context param by mm.
+Define specific huge_pte helpers (set_huge_pte_at(), huge_pte_clear(),
+huge_ptep_set_wrprotect()) to write the pte in a single entry instead
+of using set_pte_at() which writes 4 identical entries in 16k pages
+mode. Also make sure that __ptep_set_access_flags() properly handle
+the huge_pte case.
+
+Define set_pte_filter() inline otherwise GCC doesn't inline it anymore
+because it is now used twice, and that gives a pretty suboptimal code
+because of pte_t being a struct of 4 entries.
+
+Those functions are also used for 512k pages which only require one
+entry as well allthough replicating it four times was harmless as 512k
+pages entries are spread every 128 bytes in the table.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/book3s/32/pgtable.h | 7 ++++---
- arch/powerpc/include/asm/nohash/32/pgtable.h | 5 +++--
- 2 files changed, 7 insertions(+), 5 deletions(-)
+ .../include/asm/nohash/32/hugetlb-8xx.h       | 20 ++++++++++++++
+ arch/powerpc/include/asm/nohash/32/pgtable.h  |  3 ++-
+ arch/powerpc/mm/hugetlbpage.c                 |  3 ++-
+ arch/powerpc/mm/pgtable.c                     | 26 ++++++++++++++++---
+ 4 files changed, 46 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
-index d1108d25e2e5..8122f0b55d21 100644
---- a/arch/powerpc/include/asm/book3s/32/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
-@@ -288,18 +288,19 @@ static inline pte_basic_t pte_update(pte_t *p, unsigned long clr, unsigned long
-  * for our hash-based implementation, we fix that up here.
-  */
- #define __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
--static inline int __ptep_test_and_clear_young(unsigned int context, unsigned long addr, pte_t *ptep)
-+static inline int __ptep_test_and_clear_young(struct mm_struct *mm,
-+					      unsigned long addr, pte_t *ptep)
- {
- 	unsigned long old;
- 	old = pte_update(ptep, _PAGE_ACCESSED, 0);
- 	if (old & _PAGE_HASHPTE) {
- 		unsigned long ptephys = __pa(ptep) & PAGE_MASK;
--		flush_hash_pages(context, addr, ptephys, 1);
-+		flush_hash_pages(mm->context.id, addr, ptephys, 1);
- 	}
- 	return (old & _PAGE_ACCESSED) != 0;
+diff --git a/arch/powerpc/include/asm/nohash/32/hugetlb-8xx.h b/arch/powerpc/include/asm/nohash/32/hugetlb-8xx.h
+index a46616937d20..785437323576 100644
+--- a/arch/powerpc/include/asm/nohash/32/hugetlb-8xx.h
++++ b/arch/powerpc/include/asm/nohash/32/hugetlb-8xx.h
+@@ -41,4 +41,24 @@ static inline int check_and_get_huge_psize(int shift)
+ 	return shift_to_mmu_psize(shift);
  }
- #define ptep_test_and_clear_young(__vma, __addr, __ptep) \
--	__ptep_test_and_clear_young((__vma)->vm_mm->context.id, __addr, __ptep)
-+	__ptep_test_and_clear_young((__vma)->vm_mm, __addr, __ptep)
  
- #define __HAVE_ARCH_PTEP_GET_AND_CLEAR
- static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
++#define __HAVE_ARCH_HUGE_SET_HUGE_PTE_AT
++void set_huge_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep, pte_t pte);
++
++#define __HAVE_ARCH_HUGE_PTE_CLEAR
++static inline void huge_pte_clear(struct mm_struct *mm, unsigned long addr,
++				  pte_t *ptep, unsigned long sz)
++{
++	pte_update(mm, addr, ptep, ~0UL, 0, 1);
++}
++
++#define __HAVE_ARCH_HUGE_PTEP_SET_WRPROTECT
++static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
++					   unsigned long addr, pte_t *ptep)
++{
++	unsigned long clr = ~pte_val(pte_wrprotect(__pte(~0)));
++	unsigned long set = pte_val(pte_wrprotect(__pte(0)));
++
++	pte_update(mm, addr, ptep, clr, set, 1);
++}
++
+ #endif /* _ASM_POWERPC_NOHASH_32_HUGETLB_8XX_H */
 diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
-index 9eaf386a747b..ddf681ceb860 100644
+index 272963a05ab2..dd5835354e33 100644
 --- a/arch/powerpc/include/asm/nohash/32/pgtable.h
 +++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
-@@ -256,14 +256,15 @@ static inline pte_basic_t pte_update(pte_t *p, unsigned long clr, unsigned long
- }
+@@ -314,8 +314,9 @@ static inline void __ptep_set_access_flags(struct vm_area_struct *vma,
+ 	pte_t pte_clr = pte_mkyoung(pte_mkdirty(pte_mkwrite(pte_mkexec(__pte(~0)))));
+ 	unsigned long set = pte_val(entry) & pte_val(pte_set);
+ 	unsigned long clr = ~pte_val(entry) & ~pte_val(pte_clr);
++	int huge = psize > mmu_virtual_psize ? 1 : 0;
  
- #define __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
--static inline int __ptep_test_and_clear_young(unsigned int context, unsigned long addr, pte_t *ptep)
-+static inline int __ptep_test_and_clear_young(struct mm_struct *mm,
-+					      unsigned long addr, pte_t *ptep)
+-	pte_update(vma->vm_mm, address, ptep, clr, set, 0);
++	pte_update(vma->vm_mm, address, ptep, clr, set, huge);
+ 
+ 	flush_tlb_page(vma, address);
+ }
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 33b3461d91e8..edf511c2a30a 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -30,7 +30,8 @@ bool hugetlb_disabled = false;
+ 
+ #define hugepd_none(hpd)	(hpd_val(hpd) == 0)
+ 
+-#define PTE_T_ORDER	(__builtin_ffs(sizeof(pte_t)) - __builtin_ffs(sizeof(void *)))
++#define PTE_T_ORDER	(__builtin_ffs(sizeof(pte_basic_t)) - \
++			 __builtin_ffs(sizeof(void *)))
+ 
+ pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr, unsigned long sz)
  {
- 	unsigned long old;
- 	old = pte_update(ptep, _PAGE_ACCESSED, 0);
- 	return (old & _PAGE_ACCESSED) != 0;
- }
- #define ptep_test_and_clear_young(__vma, __addr, __ptep) \
--	__ptep_test_and_clear_young((__vma)->vm_mm->context.id, __addr, __ptep)
-+	__ptep_test_and_clear_young((__vma)->vm_mm, __addr, __ptep)
+diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+index e3759b69f81b..214a5f4beb6c 100644
+--- a/arch/powerpc/mm/pgtable.c
++++ b/arch/powerpc/mm/pgtable.c
+@@ -100,7 +100,7 @@ static pte_t set_pte_filter_hash(pte_t pte) { return pte; }
+  * as we don't have two bits to spare for _PAGE_EXEC and _PAGE_HWEXEC so
+  * instead we "filter out" the exec permission for non clean pages.
+  */
+-static pte_t set_pte_filter(pte_t pte)
++static inline pte_t set_pte_filter(pte_t pte)
+ {
+ 	struct page *pg;
  
- #define __HAVE_ARCH_PTEP_GET_AND_CLEAR
- static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
+@@ -249,16 +249,34 @@ int huge_ptep_set_access_flags(struct vm_area_struct *vma,
+ 
+ #else
+ 		/*
+-		 * Not used on non book3s64 platforms. But 8xx
+-		 * can possibly use tsize derived from hstate.
++		 * Not used on non book3s64 platforms.
++		 * 8xx compares it with mmu_virtual_psize to
++		 * know if it is a huge page or not.
+ 		 */
+-		psize = 0;
++		psize = MMU_PAGE_COUNT;
+ #endif
+ 		__ptep_set_access_flags(vma, ptep, pte, addr, psize);
+ 	}
+ 	return changed;
+ #endif
+ }
++
++#if defined(CONFIG_PPC_8xx)
++void set_huge_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep, pte_t pte)
++{
++	/*
++	 * Make sure hardware valid bit is not set. We don't do
++	 * tlb flush for this update.
++	 */
++	VM_WARN_ON(pte_hw_valid(*ptep) && !pte_protnone(*ptep));
++
++	pte = pte_mkpte(pte);
++
++	pte = set_pte_filter(pte);
++
++	ptep->pte = pte_val(pte);
++}
++#endif
+ #endif /* CONFIG_HUGETLB_PAGE */
+ 
+ #ifdef CONFIG_DEBUG_VM
 -- 
 2.25.0
 
