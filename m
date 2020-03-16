@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A5237C0044D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2020 12:57:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 78A15C0044D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2020 13:02:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 550EF205ED
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2020 12:57:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id DF0922076A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2020 13:02:14 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="BMb3AhoC"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 550EF205ED
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="FJzh8th/"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF0922076A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48gxD56BGnzDqCW
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2020 23:57:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48gxKJ01ywzDqNK
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2020 00:02:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,54 +29,53 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=BMb3AhoC; dkim-atps=neutral
+ header.s=mail header.b=FJzh8th/; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48gwkx3x3szDqLS
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2020 23:35:51 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48gwl51YXzzDqLL
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2020 23:36:01 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 48gwkl2P0vz9tygM;
- Mon, 16 Mar 2020 13:35:43 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 48gwkt4J4hz9tygr;
+ Mon, 16 Mar 2020 13:35:50 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=BMb3AhoC; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=FJzh8th/; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 0PVZ3z9qOGel; Mon, 16 Mar 2020 13:35:43 +0100 (CET)
+ with ESMTP id GMjIff4u6kXW; Mon, 16 Mar 2020 13:35:50 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 48gwkl1GVHz9tyg5;
- Mon, 16 Mar 2020 13:35:43 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 48gwkt3GnDz9tyg5;
+ Mon, 16 Mar 2020 13:35:50 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1584362143; bh=oZtGTa78Y5rPjQ2MGHaSLF8e7B/jMIoLfcLZyfGVsyo=;
+ t=1584362150; bh=e+HaGRwJA4h1ZHHXQXo2FxuOxEHgrouWi93xpDPcAQ4=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=BMb3AhoCOeAldRXTG4vJ6619xho/XuXMFlouhTDI5CN7cojvnC/qz9owVyy/sKZ2/
- J9daoDnXGcksulXnwY88b9WcJDM3aihb13UWeHtPLq2jqslu+NTuME2JElXknoR/Uk
- 1tlfZB34nEmbPlAOUqWQP67h+hPlEjC/4BkFx/oQ=
+ b=FJzh8th/kQwomINA2rAb5azdSOxpiN3RYxSnOk92vK4bIZvutaMyY5XVL7XOj+cvD
+ kZF0KBAuJ8Ki0Xx6XLP7sl2CC6K2jQvnz3iRS8zVmA6GzMv4+i4DPk5EOf3Iat04/R
+ OVD4YlBUu0eq9MABQ8IC7xJrmQPLRCb5I03nCBpU=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 2A2E88B7D0;
- Mon, 16 Mar 2020 13:35:48 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 6BFAA8B7D0;
+ Mon, 16 Mar 2020 13:35:55 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 055xfmERVy42; Mon, 16 Mar 2020 13:35:48 +0100 (CET)
+ with ESMTP id fmTFYGXM8RnJ; Mon, 16 Mar 2020 13:35:55 +0100 (CET)
 Received: from pc16570vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.230.100])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0BDD28B7CB;
- Mon, 16 Mar 2020 13:35:48 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4C7948B7CB;
+ Mon, 16 Mar 2020 13:35:55 +0100 (CET)
 Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 0448F65595; Mon, 16 Mar 2020 12:35:48 +0000 (UTC)
-Message-Id: <535706809d9404621d70bd7ad8456e844c427090.1584360344.git.christophe.leroy@c-s.fr>
+ id 4162665595; Mon, 16 Mar 2020 12:35:55 +0000 (UTC)
+Message-Id: <4f0be21691f2d8d02efb63766f0a548375efecd2.1584360344.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1584360343.git.christophe.leroy@c-s.fr>
 References: <cover.1584360343.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v1 03/46] powerpc/kasan: Fix issues by lowering
- KASAN_SHADOW_END
+Subject: [PATCH v1 10/46] powerpc/ptdump: Add _PAGE_COHERENT flag
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 16 Mar 2020 12:35:48 +0000 (UTC)
+Date: Mon, 16 Mar 2020 12:35:55 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,45 +92,31 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-At the time being, KASAN_SHADOW_END is 0x100000000, which
-is 0 in 32 bits representation.
-
-This leads to a couple of issues:
-- kasan_remap_early_shadow_ro() does nothing because the comparison
-k_cur < k_end is always false.
-- In ptdump, address comparison for markers display fails and the
-marker's name is printed at the start of the KASAN area instead of
-being printed at the end.
-
-However, there is no need to shadow the KASAN shadow area itself,
-so the KASAN shadow area can stop shadowing memory at the start
-of itself.
-
-With a PAGE_OFFSET set to 0xc0000000, KASAN shadow area is then going
-from 0xf8000000 to 0xff000000.
+For platforms using shared.c (4xx, Book3e, Book3s/32),
+also handle the _PAGE_COHERENT flag with corresponds to the
+M bit of the WIMG flags.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-Fixes: cbd18991e24f ("powerpc/mm: Fix an Oops in kasan_mmu_init()")
-Cc: stable@vger.kernel.org
 ---
- arch/powerpc/include/asm/kasan.h | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ arch/powerpc/mm/ptdump/shared.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/kasan.h b/arch/powerpc/include/asm/kasan.h
-index fbff9ff9032e..fc900937f653 100644
---- a/arch/powerpc/include/asm/kasan.h
-+++ b/arch/powerpc/include/asm/kasan.h
-@@ -23,9 +23,7 @@
- 
- #define KASAN_SHADOW_OFFSET	ASM_CONST(CONFIG_KASAN_SHADOW_OFFSET)
- 
--#define KASAN_SHADOW_END	0UL
--
--#define KASAN_SHADOW_SIZE	(KASAN_SHADOW_END - KASAN_SHADOW_START)
-+#define KASAN_SHADOW_END	(-(-KASAN_SHADOW_START >> KASAN_SHADOW_SCALE_SHIFT))
- 
- #ifdef CONFIG_KASAN
- void kasan_early_init(void);
+diff --git a/arch/powerpc/mm/ptdump/shared.c b/arch/powerpc/mm/ptdump/shared.c
+index dab5d8028a9b..634b83aa3487 100644
+--- a/arch/powerpc/mm/ptdump/shared.c
++++ b/arch/powerpc/mm/ptdump/shared.c
+@@ -40,6 +40,11 @@ static const struct flag_info flag_array[] = {
+ 		.val	= _PAGE_NO_CACHE,
+ 		.set	= "i",
+ 		.clear	= " ",
++	}, {
++		.mask	= _PAGE_COHERENT,
++		.val	= _PAGE_COHERENT,
++		.set	= "m",
++		.clear	= " ",
+ 	}, {
+ 		.mask	= _PAGE_GUARDED,
+ 		.val	= _PAGE_GUARDED,
 -- 
 2.25.0
 
