@@ -2,92 +2,63 @@ Return-Path: <SRS0=Ik3v=5D=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E5B6C10DCE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 10:04:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45FE7C10DCE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 10:17:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 81AC620767
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 10:04:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 81AC620767
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id EA2B92076D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 10:16:59 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="jhQXGRpy"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EA2B92076D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48j5H85QC4zDqSQ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 21:04:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48j5Yj4TYJzDqwV
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 21:16:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=fbarrat@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=mchehab@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=jhQXGRpy; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48j5Dq39MhzDqtK
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2020 21:02:18 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 02I9Z5fI112405
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2020 06:02:16 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2yu7abucc8-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2020 06:02:16 -0400
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
- Wed, 18 Mar 2020 10:02:14 -0000
-Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 18 Mar 2020 10:02:12 -0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 02IA2Akt47448512
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 18 Mar 2020 10:02:10 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7ADF311C052;
- Wed, 18 Mar 2020 10:02:10 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 39C3C11C04A;
- Wed, 18 Mar 2020 10:02:10 +0000 (GMT)
-Received: from pic2.home (unknown [9.145.59.146])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 18 Mar 2020 10:02:10 +0000 (GMT)
-From: Frederic Barrat <fbarrat@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, fbarrat@linux.ibm.com,
- clombard@linux.ibm.com, felix@linux.ibm.com, ajd@linux.ibm.com,
- alastair@au1.ibm.com
-Subject: [PATCH v3] ocxl: control via sysfs whether the FPGA is reloaded on a
- link reset
-Date: Wed, 18 Mar 2020 11:02:10 +0100
-X-Mailer: git-send-email 2.25.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48hYT36278zDqfk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2020 00:11:03 +1100 (AEDT)
+Received: from mail.kernel.org (ip5f5ad4e9.dynamic.kabel-deutschland.de
+ [95.90.212.233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 62B84206EC;
+ Tue, 17 Mar 2020 13:10:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1584450659;
+ bh=wj5NkzbISu9o2utN78bxPeqq1ZgvydCMMryyeO/xzBU=;
+ h=From:To:Cc:Subject:Date:From;
+ b=jhQXGRpyEjN1FbAvcv9quZfGePLCoK4kU909OULrkuYhnOKG38jWSBAxykmFtnPEc
+ FmxsmxL6osKlKdWLuFSmfK9Bc26tcpyTHH+GVRCjBz/zbJaE7+EUQig6/jG7Ef2Xw2
+ zXXfz+9+g7PLdkQHLfuE/QRAg89PRDvvy0ezvspc=
+Received: from mchehab by mail.kernel.org with local (Exim 4.92.3)
+ (envelope-from <mchehab@kernel.org>)
+ id 1jEBzh-0006Rm-EN; Tue, 17 Mar 2020 14:10:53 +0100
+From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+To: Linux Doc Mailing List <linux-doc@vger.kernel.org>
+Subject: [PATCH 00/12] Fix broken references for Documentation/*
+Date: Tue, 17 Mar 2020 14:10:39 +0100
+Message-Id: <cover.1584450500.git.mchehab+huawei@kernel.org>
+X-Mailer: git-send-email 2.24.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 20031810-4275-0000-0000-000003AE5685
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20031810-4276-0000-0000-000038C381D3
-Message-Id: <20200318100210.80035-1-fbarrat@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.645
- definitions=2020-03-18_03:2020-03-17,
- 2020-03-18 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0
- priorityscore=1501 mlxscore=0 lowpriorityscore=0 bulkscore=0
- suspectscore=2 clxscore=1015 adultscore=0 spamscore=0 impostorscore=0
- malwarescore=0 mlxlogscore=999 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2003020000 definitions=main-2003180046
+X-Mailman-Approved-At: Wed, 18 Mar 2020 21:15:09 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,222 +70,192 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+ Linus Walleij <linus.walleij@linaro.org>, dri-devel@lists.freedesktop.org,
+ Paul Mackerras <paulus@samba.org>, Miquel Raynal <miquel.raynal@bootlin.com>,
+ linux-arch@vger.kernel.org, Tyler Hicks <code@tyhicks.com>,
+ Christoph Hellwig <hch@infradead.org>, Doug Ledford <dledford@redhat.com>,
+ Alan Stern <stern@rowland.harvard.edu>,
+ =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
+ Julien Thierry <julien.thierry.kdev@gmail.com>,
+ =?UTF-8?q?Michal=20Vok=C3=A1=C4=8D?= <michal.vokac@ysoft.com>,
+ linux-pm@vger.kernel.org, Boqun Feng <boqun.feng@gmail.com>,
+ Jyri Sarha <jsarha@ti.com>, Alexander Viro <viro@zeniv.linux.org.uk>,
+ Thomas Gleixner <tglx@linutronix.de>, Sean Paul <sean@poorly.run>,
+ Anton Altaparmakov <anton@tuxera.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ linux-crypto@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, freedreno@lists.freedesktop.org,
+ Wanpeng Li <wanpengli@tencent.com>,
+ Benjamin Gaignard <benjamin.gaignard@st.com>, David Airlie <airlied@linux.ie>,
+ Harry Wei <harryxiyou@gmail.com>, Corentin Labbe <clabbe.montjoie@gmail.com>,
+ Ben Peled <bpeled@marvell.com>, Daniel Lezcano <daniel.lezcano@linaro.org>,
+ kvmarm@lists.cs.columbia.edu, Bartosz Golaszewski <bgolaszewski@baylibre.com>,
+ Wolfgang Grandegger <wg@grandegger.com>, Andrea Parri <parri.andrea@gmail.com>,
+ Suzuki K Poulose <suzuki.poulose@arm.com>, linux-arm-msm@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, linux-can@vger.kernel.org, linux-gpio@vger.kernel.org,
+ Maxime Ripard <mripard@kernel.org>,
+ OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+ Mathieu Poirier <mathieu.poirier@linaro.org>, Nicolas Pitre <nico@fluxnic.net>,
+ linux-ntfs-dev@lists.sourceforge.net, Miklos Szeredi <miklos@szeredi.hu>,
+ Sean Christopherson <sean.j.christopherson@intel.com>,
+ James Morse <james.morse@arm.com>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Akira Yokosawa <akiyks@gmail.com>, Alex Shi <alex.shi@linux.alibaba.com>,
+ Will Deacon <will@kernel.org>, linux-afs@lists.infradead.org,
+ Dan Murphy <dmurphy@ti.com>, Rob Herring <robh@kernel.org>,
+ Jonathan Corbet <corbet@lwn.net>, linux-rdma@vger.kernel.org,
+ Kishon Vijay Abraham I <kishon@ti.com>, Chen-Yu Tsai <wens@csie.org>,
+ Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-arm-kernel@lists.infradead.org,
+ Federico Vaga <federico.vaga@vaga.pv.it>, Jade Alglave <j.alglave@ucl.ac.uk>,
+ Alexey Dobriyan <adobriyan@gmail.com>, linux-pwm@vger.kernel.org,
+ Gregory CLEMENT <gregory.clement@bootlin.com>, Borislav Petkov <bp@alien8.de>,
+ Maxime Ripard <maxime@cerno.tech>, Luc Maranget <luc.maranget@inria.fr>,
+ Yuti Amonkar <yamonkar@cadence.com>, Joseph Qi <joseph.qi@linux.alibaba.com>,
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ Thierry Reding <thierry.reding@gmail.com>,
+ "David S. Miller" <davem@davemloft.net>, ocfs2-devel@oss.oracle.com,
+ Jan Kara <jack@suse.cz>, kvm@vger.kernel.org,
+ Peter Zijlstra <peterz@infradead.org>, Amir Goldstein <amir73il@gmail.com>,
+ David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
+ Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>,
+ "H. Peter Anvin" <hpa@zytor.com>, Amit Kucheria <amit.kucheria@verdurent.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
+ Marc Zyngier <maz@kernel.org>, Mark Fasheh <mark@fasheh.com>, x86@kernel.org,
+ Jason Gunthorpe <jgg@ziepe.ca>, Ingo Molnar <mingo@redhat.com>,
+ Zhang Rui <rui.zhang@intel.com>, Mike Leach <mike.leach@linaro.org>,
+ devicetree@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>,
+ "Paul E. McKenney" <paulmck@kernel.org>, Daniel Lustig <dlustig@nvidia.com>,
+ ecryptfs@vger.kernel.org,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Rob Herring <robh+dt@kernel.org>, Marc Kleine-Budde <mkl@pengutronix.de>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ "Tigran A. Aivazian" <aivazian.tigran@gmail.com>,
+ David Sterba <dsterba@suse.com>, Jim Mattson <jmattson@google.com>,
+ netdev@vger.kernel.org, linux-unionfs@vger.kernel.org,
+ Rob Clark <robdclark@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
+ Paolo Bonzini <pbonzini@redhat.com>, Vitaly Kuznetsov <vkuznets@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org, Joerg Roedel <joro@8bytes.org>,
+ Joel Becker <jlbec@evilplan.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Philippe Bergheaud <felix@linux.ibm.com>
+This patch series is against next-20200317. It fixes all references to files
+under Documentation/* that were moved, renamed or removed.
 
-Some opencapi FPGA images allow to control if the FPGA should be reloaded
-on the next adapter reset. If it is supported, the image specifies it
-through a Vendor Specific DVSEC in the config space of function 0.
+After this patch series, this script:
+	./scripts/documentation-file-ref-check
 
-Signed-off-by: Philippe Bergheaud <felix@linux.ibm.com>
----
-Changelog:
-v2:
-  - refine ResetReload debug message
-  - do not call get_function_0() if pci_dev is for function 0
-v3:
-  - avoid get_function_0() in ocxl_config_set_reset_reload also
-       
- Documentation/ABI/testing/sysfs-class-ocxl | 10 ++++
- drivers/misc/ocxl/config.c                 | 68 +++++++++++++++++++++-
- drivers/misc/ocxl/ocxl_internal.h          |  6 ++
- drivers/misc/ocxl/sysfs.c                  | 35 +++++++++++
- include/misc/ocxl-config.h                 |  1 +
- 5 files changed, 119 insertions(+), 1 deletion(-)
+Doesn't complain about any broken reference.
 
-diff --git a/Documentation/ABI/testing/sysfs-class-ocxl b/Documentation/ABI/testing/sysfs-class-ocxl
-index b5b1fa197592..b9ea671d5805 100644
---- a/Documentation/ABI/testing/sysfs-class-ocxl
-+++ b/Documentation/ABI/testing/sysfs-class-ocxl
-@@ -33,3 +33,13 @@ Date:		January 2018
- Contact:	linuxppc-dev@lists.ozlabs.org
- Description:	read/write
- 		Give access the global mmio area for the AFU
-+
-+What:		/sys/class/ocxl/<afu name>/reload_on_reset
-+Date:		February 2020
-+Contact:	linuxppc-dev@lists.ozlabs.org
-+Description:	read/write
-+		Control whether the FPGA is reloaded on a link reset
-+			0	Do not reload FPGA image from flash
-+			1	Reload FPGA image from flash
-+			unavailable
-+				The device does not support this capability
-diff --git a/drivers/misc/ocxl/config.c b/drivers/misc/ocxl/config.c
-index c8e19bfb5ef9..b364b6ceb996 100644
---- a/drivers/misc/ocxl/config.c
-+++ b/drivers/misc/ocxl/config.c
-@@ -71,6 +71,20 @@ static int find_dvsec_afu_ctrl(struct pci_dev *dev, u8 afu_idx)
- 	return 0;
- }
- 
-+/**
-+ * get_function_0() - Find a related PCI device (function 0)
-+ * @device: PCI device to match
-+ *
-+ * Returns a pointer to the related device, or null if not found
-+ */
-+static struct pci_dev *get_function_0(struct pci_dev *dev)
-+{
-+	unsigned int devfn = PCI_DEVFN(PCI_SLOT(dev->devfn), 0);
-+
-+	return pci_get_domain_bus_and_slot(pci_domain_nr(dev->bus),
-+					   dev->bus->number, devfn);
-+}
-+
- static void read_pasid(struct pci_dev *dev, struct ocxl_fn_config *fn)
- {
- 	u16 val;
-@@ -159,7 +173,7 @@ static int read_dvsec_afu_info(struct pci_dev *dev, struct ocxl_fn_config *fn)
- static int read_dvsec_vendor(struct pci_dev *dev)
- {
- 	int pos;
--	u32 cfg, tlx, dlx;
-+	u32 cfg, tlx, dlx, reset_reload;
- 
- 	/*
- 	 * vendor specific DVSEC is optional
-@@ -183,6 +197,58 @@ static int read_dvsec_vendor(struct pci_dev *dev)
- 	dev_dbg(&dev->dev, "  CFG version = 0x%x\n", cfg);
- 	dev_dbg(&dev->dev, "  TLX version = 0x%x\n", tlx);
- 	dev_dbg(&dev->dev, "  DLX version = 0x%x\n", dlx);
-+
-+	if (ocxl_config_get_reset_reload(dev, &reset_reload) != 0)
-+		dev_dbg(&dev->dev, "  ResetReload is not available\n");
-+	else
-+		dev_dbg(&dev->dev, "  ResetReload = 0x%x\n", reset_reload);
-+	return 0;
-+}
-+
-+int ocxl_config_get_reset_reload(struct pci_dev *dev, int *val)
-+{
-+	int reset_reload = -1;
-+	int pos = 0;
-+	struct pci_dev *dev0 = dev;
-+
-+	if (PCI_FUNC(dev->devfn) != 0)
-+		dev0 = get_function_0(dev);
-+
-+	if (dev0)
-+		pos = find_dvsec(dev0, OCXL_DVSEC_VENDOR_ID);
-+
-+	if (pos)
-+		pci_read_config_dword(dev0,
-+				      pos + OCXL_DVSEC_VENDOR_RESET_RELOAD,
-+				      &reset_reload);
-+	if (reset_reload == -1)
-+		return reset_reload;
-+
-+	*val = reset_reload & BIT(0);
-+	return 0;
-+}
-+
-+int ocxl_config_set_reset_reload(struct pci_dev *dev, int val)
-+{
-+	int reset_reload = -1;
-+	int pos = 0;
-+	struct pci_dev *dev0 = dev;
-+
-+	if (PCI_FUNC(dev->devfn) != 0)
-+		dev0 = get_function_0(dev);
-+
-+	if (dev0)
-+		pos = find_dvsec(dev0, OCXL_DVSEC_VENDOR_ID);
-+
-+	if (pos)
-+		pci_read_config_dword(dev0,
-+				      pos + OCXL_DVSEC_VENDOR_RESET_RELOAD,
-+				      &reset_reload);
-+	if (reset_reload == -1)
-+		return reset_reload;
-+
-+	val &= BIT(0);
-+	pci_write_config_dword(dev0, pos + OCXL_DVSEC_VENDOR_RESET_RELOAD, val);
- 	return 0;
- }
- 
-diff --git a/drivers/misc/ocxl/ocxl_internal.h b/drivers/misc/ocxl/ocxl_internal.h
-index 345bf843a38e..af9a84aeee6f 100644
---- a/drivers/misc/ocxl/ocxl_internal.h
-+++ b/drivers/misc/ocxl/ocxl_internal.h
-@@ -112,6 +112,12 @@ void ocxl_actag_afu_free(struct ocxl_fn *fn, u32 start, u32 size);
-  */
- int ocxl_config_get_pasid_info(struct pci_dev *dev, int *count);
- 
-+/*
-+ * Control whether the FPGA is reloaded on a link reset
-+ */
-+int ocxl_config_get_reset_reload(struct pci_dev *dev, int *val);
-+int ocxl_config_set_reset_reload(struct pci_dev *dev, int val);
-+
- /*
-  * Check if an AFU index is valid for the given function.
-  *
-diff --git a/drivers/misc/ocxl/sysfs.c b/drivers/misc/ocxl/sysfs.c
-index 58f1ba264206..8f69f7311343 100644
---- a/drivers/misc/ocxl/sysfs.c
-+++ b/drivers/misc/ocxl/sysfs.c
-@@ -51,11 +51,46 @@ static ssize_t contexts_show(struct device *device,
- 			afu->pasid_count, afu->pasid_max);
- }
- 
-+static ssize_t reload_on_reset_show(struct device *device,
-+		struct device_attribute *attr,
-+		char *buf)
-+{
-+	struct ocxl_afu *afu = to_afu(device);
-+	struct ocxl_fn *fn = afu->fn;
-+	struct pci_dev *pci_dev = to_pci_dev(fn->dev.parent);
-+	int val;
-+
-+	if (ocxl_config_get_reset_reload(pci_dev, &val))
-+		return scnprintf(buf, PAGE_SIZE, "unavailable\n");
-+
-+	return scnprintf(buf, PAGE_SIZE, "%d\n", val);
-+}
-+
-+static ssize_t reload_on_reset_store(struct device *device,
-+		struct device_attribute *attr,
-+		const char *buf, size_t count)
-+{
-+	struct ocxl_afu *afu = to_afu(device);
-+	struct ocxl_fn *fn = afu->fn;
-+	struct pci_dev *pci_dev = to_pci_dev(fn->dev.parent);
-+	int rc, val;
-+
-+	rc = sscanf(buf, "%i", &val);
-+	if ((rc != 1) || !(val == 1 || val == 0))
-+		return -EINVAL;
-+
-+	if (ocxl_config_set_reset_reload(pci_dev, val))
-+		return -ENODEV;
-+
-+	return count;
-+}
-+
- static struct device_attribute afu_attrs[] = {
- 	__ATTR_RO(global_mmio_size),
- 	__ATTR_RO(pp_mmio_size),
- 	__ATTR_RO(afu_version),
- 	__ATTR_RO(contexts),
-+	__ATTR_RW(reload_on_reset),
- };
- 
- static ssize_t global_mmio_read(struct file *filp, struct kobject *kobj,
-diff --git a/include/misc/ocxl-config.h b/include/misc/ocxl-config.h
-index 3526fa996a22..ccfd3b463517 100644
---- a/include/misc/ocxl-config.h
-+++ b/include/misc/ocxl-config.h
-@@ -41,5 +41,6 @@
- #define   OCXL_DVSEC_VENDOR_CFG_VERS            0x0C
- #define   OCXL_DVSEC_VENDOR_TLX_VERS            0x10
- #define   OCXL_DVSEC_VENDOR_DLX_VERS            0x20
-+#define   OCXL_DVSEC_VENDOR_RESET_RELOAD        0x38
- 
- #endif /* _OCXL_CONFIG_H_ */
+Mauro Carvalho Chehab (12):
+  MAINTAINERS: dt: update display/allwinner file entry
+  MAINTAINERS: dt: update etnaviv file reference
+  MAINTAINERS: drop an old reference to stm32 pwm timers doc
+  docs: dt: fix references to m_can.txt file
+  docs: dt: fix references to ap806-system-controller.txt
+  docs: dt: fix a broken reference to input.yaml
+  docs: dt: fix broken reference to phy-cadence-torrent.yaml
+  docs: fix broken references to text files
+  docs: fix broken references for ReST files that moved around
+  docs: dt: display/ti: fix typos at the devicetree/ directory name
+  docs: filesystems: fix renamed references
+  docs: kernel-parameters.txt: remove reference for removed Intel MPX
+
+ Documentation/ABI/stable/sysfs-devices-node   |  2 +-
+ Documentation/ABI/testing/procfs-smaps_rollup |  2 +-
+ Documentation/admin-guide/cpu-load.rst        |  2 +-
+ .../admin-guide/kernel-parameters.txt         | 11 ++--
+ Documentation/admin-guide/nfs/nfsroot.rst     |  2 +-
+ .../bindings/arm/freescale/fsl,scu.txt        |  2 +-
+ .../bindings/display/ti/ti,am65x-dss.yaml     |  2 +-
+ .../bindings/display/ti/ti,j721e-dss.yaml     |  2 +-
+ .../bindings/display/ti/ti,k2g-dss.yaml       |  2 +-
+ .../devicetree/bindings/gpio/gpio-mvebu.txt   |  2 +-
+ .../devicetree/bindings/net/can/tcan4x5x.txt  |  2 +-
+ .../bindings/phy/ti,phy-j721e-wiz.yaml        |  2 +-
+ .../bindings/thermal/armada-thermal.txt       |  2 +-
+ .../doc-guide/maintainer-profile.rst          |  2 +-
+ .../driver-api/driver-model/device.rst        |  4 +-
+ .../driver-api/driver-model/overview.rst      |  2 +-
+ Documentation/filesystems/dax.txt             |  2 +-
+ Documentation/filesystems/dnotify.txt         |  2 +-
+ .../filesystems/ramfs-rootfs-initramfs.rst    |  2 +-
+ Documentation/filesystems/sysfs.rst           |  2 +-
+ Documentation/memory-barriers.txt             |  2 +-
+ .../powerpc/firmware-assisted-dump.rst        |  2 +-
+ Documentation/process/adding-syscalls.rst     |  2 +-
+ Documentation/process/submit-checklist.rst    |  2 +-
+ .../it_IT/process/adding-syscalls.rst         |  2 +-
+ .../it_IT/process/submit-checklist.rst        |  2 +-
+ .../translations/ko_KR/memory-barriers.txt    |  2 +-
+ .../translations/zh_CN/filesystems/sysfs.txt  |  8 +--
+ .../zh_CN/process/submit-checklist.rst        |  2 +-
+ Documentation/virt/kvm/arm/pvtime.rst         |  2 +-
+ Documentation/virt/kvm/devices/vcpu.rst       |  2 +-
+ Documentation/virt/kvm/hypercalls.rst         |  4 +-
+ Documentation/virt/kvm/mmu.rst                |  2 +-
+ Documentation/virt/kvm/review-checklist.rst   |  2 +-
+ MAINTAINERS                                   | 61 +++++++++----------
+ Next/merge.log                                | 12 ++--
+ arch/powerpc/include/uapi/asm/kvm_para.h      |  2 +-
+ arch/x86/kvm/mmu/mmu.c                        |  2 +-
+ drivers/base/core.c                           |  2 +-
+ .../allwinner/sun8i-ce/sun8i-ce-cipher.c      |  2 +-
+ .../crypto/allwinner/sun8i-ce/sun8i-ce-core.c |  2 +-
+ .../allwinner/sun8i-ss/sun8i-ss-cipher.c      |  2 +-
+ .../crypto/allwinner/sun8i-ss/sun8i-ss-core.c |  2 +-
+ drivers/gpu/drm/Kconfig                       |  2 +-
+ drivers/gpu/drm/drm_ioctl.c                   |  2 +-
+ drivers/gpu/drm/msm/disp/dpu1/dpu_kms.h       |  2 +-
+ drivers/hwtracing/coresight/Kconfig           |  2 +-
+ drivers/media/v4l2-core/v4l2-fwnode.c         |  2 +-
+ fs/Kconfig                                    |  2 +-
+ fs/Kconfig.binfmt                             |  2 +-
+ fs/adfs/Kconfig                               |  2 +-
+ fs/affs/Kconfig                               |  2 +-
+ fs/afs/Kconfig                                |  6 +-
+ fs/bfs/Kconfig                                |  2 +-
+ fs/cramfs/Kconfig                             |  2 +-
+ fs/ecryptfs/Kconfig                           |  2 +-
+ fs/fat/Kconfig                                |  8 +--
+ fs/fuse/Kconfig                               |  2 +-
+ fs/fuse/dev.c                                 |  2 +-
+ fs/hfs/Kconfig                                |  2 +-
+ fs/hpfs/Kconfig                               |  2 +-
+ fs/isofs/Kconfig                              |  2 +-
+ fs/namespace.c                                |  2 +-
+ fs/notify/inotify/Kconfig                     |  2 +-
+ fs/ntfs/Kconfig                               |  2 +-
+ fs/ocfs2/Kconfig                              |  2 +-
+ fs/overlayfs/Kconfig                          |  6 +-
+ fs/proc/Kconfig                               |  4 +-
+ fs/romfs/Kconfig                              |  2 +-
+ fs/sysfs/dir.c                                |  2 +-
+ fs/sysfs/file.c                               |  2 +-
+ fs/sysfs/mount.c                              |  2 +-
+ fs/sysfs/symlink.c                            |  2 +-
+ fs/sysv/Kconfig                               |  2 +-
+ fs/udf/Kconfig                                |  2 +-
+ include/linux/kobject.h                       |  2 +-
+ include/linux/kobject_ns.h                    |  2 +-
+ include/linux/mm.h                            |  4 +-
+ include/linux/relay.h                         |  2 +-
+ include/linux/sysfs.h                         |  2 +-
+ include/uapi/linux/ethtool_netlink.h          |  2 +-
+ include/uapi/linux/kvm.h                      |  4 +-
+ include/uapi/rdma/rdma_user_ioctl_cmds.h      |  2 +-
+ kernel/relay.c                                |  2 +-
+ lib/kobject.c                                 |  4 +-
+ mm/gup.c                                      | 12 ++--
+ tools/include/uapi/linux/kvm.h                |  4 +-
+ virt/kvm/arm/vgic/vgic-mmio-v3.c              |  2 +-
+ virt/kvm/arm/vgic/vgic.h                      |  4 +-
+ 89 files changed, 151 insertions(+), 151 deletions(-)
+
 -- 
-2.25.1
+2.24.1
+
 
