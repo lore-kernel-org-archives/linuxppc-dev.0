@@ -2,71 +2,69 @@ Return-Path: <SRS0=VLUV=5C=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84AD0C10F29
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2020 11:44:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 33D17C10F29
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2020 11:48:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E5253206EC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2020 11:44:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D96D0206EC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2020 11:48:41 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Bt2Pe57L"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E5253206EC
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="aa8o4UyH"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D96D0206EC
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48hWY61YwdzDqRF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2020 22:44:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48hWdy4gN6zDqN0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2020 22:48:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=216.205.24.74;
+ smtp.mailfrom=redhat.com (client-ip=63.128.21.74;
  helo=us-smtp-delivery-74.mimecast.com; envelope-from=david@redhat.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=Bt2Pe57L; 
+ header.s=mimecast20190719 header.b=aa8o4UyH; 
  dkim-atps=neutral
 Received: from us-smtp-delivery-74.mimecast.com
- (us-smtp-delivery-74.mimecast.com [216.205.24.74])
+ (us-smtp-delivery-74.mimecast.com [63.128.21.74])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48hVhp3cGBzDqNK
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2020 22:06:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48hVlt6QffzDqFK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2020 22:08:41 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1584443159;
+ s=mimecast20190719; t=1584443318;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
- bh=4nMRe0qdJ7XFd1Hd5ZLK3jwEMI8pUyqEZs72AcpBHM8=;
- b=Bt2Pe57Lm3WReJGU80NJd9lDkd4V/BLSWdOLnS46TguIJl9TEFRQvyULSDS6h/ipsdEFtJ
- l50ciQs6sT+t3CpfGPV+XHkpKNJvVDvMpr5ry3UyAzle/6QfNI7MWbFUzkYn/epJ3QWSKM
- V6HxGLXt/Dy8Xn4DCLIwohrZxICp0jA=
+ bh=nN+zzflDgGyuX29zgU2ZjErtQUtvX1GawHmDMWANkg4=;
+ b=aa8o4UyH6bUcpxwHKgmKJtnljBAXxPWb1fKBnOp6dZd6upLkH72ECVukOZsGDi/UhaxDkz
+ j8M17l600e+wWp97vNaz7rB03hmCfqExSX4M97mKTDtgSPB0yyMupJmKIYeN5mqH7kB759
+ 78oid7EKFakj7NMTgexATHZ6ZmJTJGQ=
 Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
  [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-257-CRYosjjBMmud8zcb0sTWVA-1; Tue, 17 Mar 2020 07:05:55 -0400
-X-MC-Unique: CRYosjjBMmud8zcb0sTWVA-1
-Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.phx2.redhat.com
- [10.5.11.11])
+ us-mta-422-JWSot35nNg2uA3hQ5yD47w-1; Tue, 17 Mar 2020 07:08:36 -0400
+X-MC-Unique: JWSot35nNg2uA3hQ5yD47w-1
+Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com
+ [10.5.11.14])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 370C2800D4E;
- Tue, 17 Mar 2020 11:05:53 +0000 (UTC)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 960F8477;
+ Tue, 17 Mar 2020 11:08:34 +0000 (UTC)
 Received: from [10.36.112.136] (ovpn-112-136.ams2.redhat.com [10.36.112.136])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 03EDC8F37B;
- Tue, 17 Mar 2020 11:05:50 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 6A2965DA76;
+ Tue, 17 Mar 2020 11:08:32 +0000 (UTC)
 Subject: Re: [PATCH v2 8/8] mm/memory_hotplug: allow to specify a default
  online_type
-To: Michal Hocko <mhocko@kernel.org>
+To: linux-kernel@vger.kernel.org
 References: <20200317104942.11178-1-david@redhat.com>
  <20200317104942.11178-9-david@redhat.com>
- <20200317110121.GN26018@dhcp22.suse.cz>
 From: David Hildenbrand <david@redhat.com>
 Autocrypt: addr=david@redhat.com; prefer-encrypt=mutual; keydata=
  mQINBFXLn5EBEAC+zYvAFJxCBY9Tr1xZgcESmxVNI/0ffzE/ZQOiHJl6mGkmA1R7/uUpiCjJ
@@ -112,16 +110,16 @@ Autocrypt: addr=david@redhat.com; prefer-encrypt=mutual; keydata=
  njnuI31KBiLUks+paRkHQlFcgS2N3gkRBzH7xSZ+t7Re3jvXdXEzKBbQ+dC3lpJB0wPnyMcX
  FOTT3aZT7IgePkt5iC/BKBk3hqKteTnJFeVIT7EC+a6YUFg=
 Organization: Red Hat GmbH
-Message-ID: <04ad4a95-e455-5fa4-01e0-fa2e0416adbb@redhat.com>
-Date: Tue, 17 Mar 2020 12:05:50 +0100
+Message-ID: <8860f1db-4c75-d4ef-2ded-1cbbfb992d73@redhat.com>
+Date: Tue, 17 Mar 2020 12:08:31 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
  Thunderbird/68.5.0
 MIME-Version: 1.0
-In-Reply-To: <20200317110121.GN26018@dhcp22.suse.cz>
-Content-Type: text/plain; charset=windows-1252
+In-Reply-To: <20200317104942.11178-9-david@redhat.com>
+Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.11
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -135,57 +133,29 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: linux-hyperv@vger.kernel.org, Baoquan He <bhe@redhat.com>,
  "Rafael J. Wysocki" <rafael@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Wei Yang <richard.weiyang@gmail.com>, linux-mm@kvack.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Oscar Salvador <osalvador@suse.de>
+ Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, Oscar Salvador <osalvador@suse.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 17.03.20 12:01, Michal Hocko wrote:
-> On Tue 17-03-20 11:49:42, David Hildenbrand wrote:
->> For now, distributions implement advanced udev rules to essentially
->> - Don't online any hotplugged memory (s390x)
->> - Online all memory to ZONE_NORMAL (e.g., most virt environments like
->>   hyperv)
->> - Online all memory to ZONE_MOVABLE in case the zone imbalance is taken
->>   care of (e.g., bare metal, special virt environments)
->>
->> In summary: All memory is usually onlined the same way, however, the
->> kernel always has to ask user space to come up with the same answer.
->> E.g., Hyper-V always waits for a memory block to get onlined before
->> continuing, otherwise it might end up adding memory faster than
->> hotplugging it, which can result in strange OOM situations. This waiting
->> slows down adding of a bigger amount of memory.
->>
->> Let's allow to specify a default online_type, not just "online" and
->> "offline". This allows distributions to configure the default online_type
->> when booting up and be done with it.
->>
->> We can now specify "offline", "online", "online_movable" and
->> "online_kernel" via
->> - "memhp_default_state=" on the kernel cmdline
->> - /sys/devices/system/memory/auto_online_blocks
->> just like we are able to specify for a single memory block via
->> /sys/devices/system/memory/memoryX/state
->>
->> Reviewed-by: Wei Yang <richard.weiyang@gmail.com>
->> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->> Cc: Andrew Morton <akpm@linux-foundation.org>
->> Cc: Michal Hocko <mhocko@kernel.org>
->> Cc: Oscar Salvador <osalvador@suse.de>
->> Cc: "Rafael J. Wysocki" <rafael@kernel.org>
->> Cc: Baoquan He <bhe@redhat.com>
->> Cc: Wei Yang <richard.weiyang@gmail.com>
->> Signed-off-by: David Hildenbrand <david@redhat.com>
+On 17.03.20 11:49, David Hildenbrand wrote:
+> For now, distributions implement advanced udev rules to essentially
+> - Don't online any hotplugged memory (s390x)
+> - Online all memory to ZONE_NORMAL (e.g., most virt environments like
+>   hyperv)
+> - Online all memory to ZONE_MOVABLE in case the zone imbalance is taken
+>   care of (e.g., bare metal, special virt environments)
 > 
-> As I've said earlier and several times already, I really dislike this
-> interface. But it is fact that this patch doesn't make it any worse.
-> Quite contrary, so feel free to add
-> Acked-by: Michal Hocko <mhocko@suse.com>
+> In summary: All memory is usually onlined the same way, however, the
+> kernel always has to ask user space to come up with the same answer.
+> E.g., Hyper-V always waits for a memory block to get onlined before
+> continuing, otherwise it might end up adding memory faster than
+> hotplugging it, which can result in strange OOM situations. This waiting
 
-Thanks Michal!
+s/hotplugging/onlining/
 
 -- 
 Thanks,
