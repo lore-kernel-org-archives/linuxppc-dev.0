@@ -2,112 +2,107 @@ Return-Path: <SRS0=VLUV=5C=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3990AC10F29
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2020 15:05:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FD0AC10F29
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2020 15:12:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A9AFC20714
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2020 15:05:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A9AFC20714
+	by mail.kernel.org (Postfix) with ESMTPS id D72BC20714
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2020 15:12:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D72BC20714
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48hc186t4zzDqkh
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 02:05:32 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 48hc955TtMzDqWL
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 02:12:25 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48hZm42LxWzDqSY
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2020 01:09:08 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48hZnk4lWxzDqW2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2020 01:10:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 48hZm20J3Qz8tFp
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2020 01:09:06 +1100 (AEDT)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 48hZnh0Ptrz9BVj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2020 01:10:32 +1100 (AEDT)
 Received: by ozlabs.org (Postfix)
- id 48hZm16BHKz9sTG; Wed, 18 Mar 2020 01:09:05 +1100 (AEDT)
+ id 48hZng4tJqz9sSj; Wed, 18 Mar 2020 01:10:31 +1100 (AEDT)
 Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=psampat@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 48hZm10hJ1z9sSd
- for <linuxppc-dev@ozlabs.org>; Wed, 18 Mar 2020 01:09:04 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 48hZnf3RRrz9sRR
+ for <linuxppc-dev@ozlabs.org>; Wed, 18 Mar 2020 01:10:30 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 02HE266g057435
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2020 10:09:01 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2yru54aje7-1
+ 02HE7UwJ136923
+ for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2020 10:10:28 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ytgkvax0n-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2020 10:09:01 -0400
+ for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2020 10:10:27 -0400
 Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <psampat@linux.ibm.com>;
- Tue, 17 Mar 2020 14:08:59 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Tue, 17 Mar 2020 14:10:25 -0000
+Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 17 Mar 2020 14:08:57 -0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 02HE8uVF50593844
+ Tue, 17 Mar 2020 14:10:23 -0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 02HEAMA035783042
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 17 Mar 2020 14:08:56 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1F9014C046;
- Tue, 17 Mar 2020 14:08:56 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A03704C05A;
- Tue, 17 Mar 2020 14:08:54 +0000 (GMT)
-Received: from [9.199.61.203] (unknown [9.199.61.203])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 17 Mar 2020 14:08:54 +0000 (GMT)
-Subject: Re: [PATCH v4 3/3] powerpc/powernv: Parse device tree, population of
- SPR support
-To: Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- linuxppc-dev@ozlabs.org, svaidy@linux.ibm.com, ego@linux.vnet.ibm.com,
- linuxram@us.ibm.com, pratik.sampat@in.ibm.com, pratik.r.sampat@gmail.com
-References: <cover.1581505210.git.psampat@linux.ibm.com>
- <1f5138b5080606804162b0a7cf20c134589b96b1.1581505210.git.psampat@linux.ibm.com>
- <87tv2nptb8.fsf@mpe.ellerman.id.au>
-From: Pratik Sampat <psampat@linux.ibm.com>
-Date: Tue, 17 Mar 2020 19:38:53 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.4.1
+ Tue, 17 Mar 2020 14:10:22 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9A56F11C069;
+ Tue, 17 Mar 2020 14:10:22 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2D2AB11C071;
+ Tue, 17 Mar 2020 14:10:21 +0000 (GMT)
+Received: from pratiks-thinkpad.ibmuc.com (unknown [9.199.61.203])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue, 17 Mar 2020 14:10:20 +0000 (GMT)
+From: Pratik Rajesh Sampat <psampat@linux.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, 
+ ego@linux.vnet.ibm.com, linuxram@us.ibm.com, psampat@in.ibm.com,
+ pratik.r.sampat@gmail.com
+Subject: [PATCH v5 1/3] powerpc/powernv: Interface to define support and
+ preference for a SPR
+Date: Tue, 17 Mar 2020 19:40:16 +0530
+X-Mailer: git-send-email 2.24.1
+In-Reply-To: <20200317141018.42380-1-psampat@linux.ibm.com>
+References: <20200317141018.42380-1-psampat@linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <87tv2nptb8.fsf@mpe.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 20031714-0012-0000-0000-00000392968B
+x-cbid: 20031714-0008-0000-0000-0000035EC019
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20031714-0013-0000-0000-000021CF75AB
-Message-Id: <ec342c73-1e10-4e63-627d-01eaa2bd8593@linux.ibm.com>
+x-cbparentid: 20031714-0009-0000-0000-00004A8016F8
+Message-Id: <20200317141018.42380-2-psampat@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.645
  definitions=2020-03-17_05:2020-03-17,
  2020-03-17 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015
- lowpriorityscore=0 spamscore=0 bulkscore=0 adultscore=0 impostorscore=0
- phishscore=0 mlxscore=0 mlxlogscore=999 priorityscore=1501 malwarescore=0
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2003020000 definitions=main-2003170059
+ lowpriorityscore=0
+ suspectscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=999
+ priorityscore=1501 malwarescore=0 phishscore=0 adultscore=0
+ impostorscore=0 clxscore=1015 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2003020000 definitions=main-2003170059
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -123,140 +118,436 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Thank you Michael for the review.
+Define a bitmask interface to determine support for the Self Restore,
+Self Save or both.
 
+Also define an interface to determine the preference of that SPR to
+be strictly saved or restored or encapsulated with an order of preference.
 
-On 17/03/20 8:43 am, Michael Ellerman wrote:
-> Pratik Rajesh Sampat <psampat@linux.ibm.com> writes:
->> Parse the device tree for nodes self-save, self-restore and populate
->> support for the preferred SPRs based what was advertised by the device
->> tree.
-> These should be documented in:
->    Documentation/devicetree/bindings/powerpc/opal/power-mgt.txt
+The preference bitmask is shown as below:
+----------------------------
+|... | 2nd pref | 1st pref |
+----------------------------
+MSB			  LSB
 
-Sure thing I'll add them.
+The preference from higher to lower is from LSB to MSB with a shift of 8
+bits.
+Example:
+Prefer self save first, if not available then prefer self
+restore
+The preference mask for this scenario will be seen as below.
+((SELF_RESTORE_STRICT << PREFERENCE_SHIFT) | SELF_SAVE_STRICT)
+---------------------------------
+|... | Self restore | Self save |
+---------------------------------
+MSB			        LSB
 
->> diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
->> index 97aeb45e897b..27dfadf609e8 100644
->> --- a/arch/powerpc/platforms/powernv/idle.c
->> +++ b/arch/powerpc/platforms/powernv/idle.c
->> @@ -1436,6 +1436,85 @@ static void __init pnv_probe_idle_states(void)
->>   		supported_cpuidle_states |= pnv_idle_states[i].flags;
->>   }
->>   
->> +/*
->> + * Extracts and populates the self save or restore capabilities
->> + * passed from the device tree node
->> + */
->> +static int extract_save_restore_state_dt(struct device_node *np, int type)
->> +{
->> +	int nr_sprns = 0, i, bitmask_index;
->> +	int rc = 0;
->> +	u64 *temp_u64;
->> +	u64 bit_pos;
->> +
->> +	nr_sprns = of_property_count_u64_elems(np, "sprn-bitmask");
->> +	if (nr_sprns <= 0)
->> +		return rc;
-> Using <= 0 means zero SPRs is treated by success as the caller, is that
-> intended? If so a comment would be appropriate.
+Finally, declare a list of preferred SPRs which encapsulate the bitmaks
+for preferred and supported with defaults of both being set to support
+legacy firmware.
 
-My bad, this is undesirable. This should be treated as a failure.
-I'll fix this.
+This commit also implements using the above interface and retains the
+legacy functionality of self restore.
 
->> +	temp_u64 = kcalloc(nr_sprns, sizeof(u64), GFP_KERNEL);
->> +	if (of_property_read_u64_array(np, "sprn-bitmask",
->> +				       temp_u64, nr_sprns)) {
->> +		pr_warn("cpuidle-powernv: failed to find registers in DT\n");
->> +		kfree(temp_u64);
->> +		return -EINVAL;
->> +	}
->> +	/*
->> +	 * Populate acknowledgment of support for the sprs in the global vector
->> +	 * gotten by the registers supplied by the firmware.
->> +	 * The registers are in a bitmask, bit index within
->> +	 * that specifies the SPR
->> +	 */
->> +	for (i = 0; i < nr_preferred_sprs; i++) {
->> +		bitmask_index = preferred_sprs[i].spr / 64;
->> +		bit_pos = preferred_sprs[i].spr % 64;
-> This is basically a hand coded bitmap, see eg. BIT_WORD(), BIT_MASK() etc.
->
-> I don't think there's an easy way to convert temp_u64 into a proper
-> bitmap, so it's probably not worth doing that. But at least use the macros.
+Signed-off-by: Pratik Rajesh Sampat <psampat@linux.ibm.com>
+Reviewed-by: Ram Pai <linuxram@us.ibm.com>
+---
+ arch/powerpc/platforms/powernv/idle.c | 316 +++++++++++++++++++++-----
+ 1 file changed, 259 insertions(+), 57 deletions(-)
 
-Right. I'll use the macros for a cleaner abstraction.
-
->> +		if ((temp_u64[bitmask_index] & (1UL << bit_pos)) == 0) {
->> +			if (type == SELF_RESTORE_TYPE)
->> +				preferred_sprs[i].supported_mode &=
->> +					~SELF_RESTORE_STRICT;
->> +			else
->> +				preferred_sprs[i].supported_mode &=
->> +					~SELF_SAVE_STRICT;
->> +			continue;
->> +		}
->> +		if (type == SELF_RESTORE_TYPE) {
->> +			preferred_sprs[i].supported_mode |=
->> +				SELF_RESTORE_STRICT;
->> +		} else {
->> +			preferred_sprs[i].supported_mode |=
->> +				SELF_SAVE_STRICT;
->> +		}
->> +	}
->> +
->> +	kfree(temp_u64);
->> +	return rc;
->> +}
->> +
->> +static int pnv_parse_deepstate_dt(void)
->> +{
->> +	struct device_node *sr_np, *ss_np;
-> You never use these concurrently AFAICS, so you could just have a single *np.
-
-Sure, got rid of it.
-
->> +	int rc = 0, i;
->> +
->> +	/* Self restore register population */
->> +	sr_np = of_find_node_by_path("/ibm,opal/power-mgt/self-restore");
-> I know the existing idle code uses of_find_node_by_path(), but that's
-> because it's old and crufty. Please don't add new searches by path. You
-> should be searching by compatible.
->
-Alright, I'll replace of_find_node_by_path() calls with of_find_compatible_node()
-
->> +	if (!sr_np) {
->> +		pr_warn("opal: self restore Node not found");
-> This warning and the others below will fire on all existing firmware
-> versions, which is not OK.
-
-I'll get rid of the warnings. They seem unnecessary to me also now.
-
->> +	} else {
->> +		rc = extract_save_restore_state_dt(sr_np, SELF_RESTORE_TYPE);
->> +		if (rc != 0)
->> +			return rc;
->> +	}
->> +	/* Self save register population */
->> +	ss_np = of_find_node_by_path("/ibm,opal/power-mgt/self-save");
->> +	if (!ss_np) {
->> +		pr_warn("opal: self save Node not found");
->> +		pr_warn("Legacy firmware. Assuming default self-restore support");
->> +		for (i = 0; i < nr_preferred_sprs; i++)
->> +			preferred_sprs[i].supported_mode &= ~SELF_SAVE_STRICT;
->> +	} else {
->> +		rc = extract_save_restore_state_dt(ss_np, SELF_SAVE_TYPE);
->> +	}
->> +	return rc;
-> You're leaking references on all the device_nodes in here, you need
-> of_node_put() before exiting.
-
-Got it. I'll clear the refcount before exitting.
-
->> +}
->
-> cheers
-Thanks!
-Pratik
+diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
+index 78599bca66c2..03fe835aadd1 100644
+--- a/arch/powerpc/platforms/powernv/idle.c
++++ b/arch/powerpc/platforms/powernv/idle.c
+@@ -32,9 +32,112 @@
+ #define P9_STOP_SPR_MSR 2000
+ #define P9_STOP_SPR_PSSCR      855
+ 
++/* Interface for the stop state supported and preference */
++#define SELF_RESTORE_TYPE    0
++#define SELF_SAVE_TYPE       1
++
++#define NR_PREFERENCES    2
++#define PREFERENCE_SHIFT  4
++#define PREFERENCE_MASK   0xf
++
++#define UNSUPPORTED         0x0
++#define SELF_RESTORE_STRICT 0x1
++#define SELF_SAVE_STRICT    0x2
++
++/*
++ * Bitmask defining the kind of preferences available.
++ * Note : The higher to lower preference is from LSB to MSB, with a shift of
++ * 4 bits.
++ * ----------------------------
++ * |    | 2nd pref | 1st pref |
++ * ----------------------------
++ * MSB			      LSB
++ */
++/* Prefer Restore if available, otherwise unsupported */
++#define PREFER_SELF_RESTORE_ONLY	SELF_RESTORE_STRICT
++/* Prefer Save if available, otherwise unsupported */
++#define PREFER_SELF_SAVE_ONLY		SELF_SAVE_STRICT
++/* Prefer Restore when available, otherwise prefer Save */
++#define PREFER_RESTORE_SAVE		((SELF_SAVE_STRICT << \
++					  PREFERENCE_SHIFT)\
++					  | SELF_RESTORE_STRICT)
++/* Prefer Save when available, otherwise prefer Restore*/
++#define PREFER_SAVE_RESTORE		((SELF_RESTORE_STRICT <<\
++					  PREFERENCE_SHIFT)\
++					  | SELF_SAVE_STRICT)
+ static u32 supported_cpuidle_states;
+ struct pnv_idle_states_t *pnv_idle_states;
+ int nr_pnv_idle_states;
++/* Caching the lpcr & ptcr support to use later */
++static bool is_lpcr_self_save;
++static bool is_ptcr_self_save;
++
++struct preferred_sprs {
++	u64 spr;
++	u32 preferred_mode;
++	u32 supported_mode;
++};
++
++/*
++ * Preferred mode: Order of precedence when both self-save and self-restore
++ *		   supported
++ * Supported mode: Default support. Can be overwritten during system
++ *		   initialization
++ */
++struct preferred_sprs preferred_sprs[] = {
++	{
++		.spr = SPRN_HSPRG0,
++		.preferred_mode = PREFER_RESTORE_SAVE,
++		.supported_mode = SELF_RESTORE_STRICT,
++	},
++	{
++		.spr = SPRN_LPCR,
++		.preferred_mode = PREFER_RESTORE_SAVE,
++		.supported_mode = SELF_RESTORE_STRICT,
++	},
++	{
++		.spr = SPRN_PTCR,
++		.preferred_mode = PREFER_SAVE_RESTORE,
++		.supported_mode = SELF_RESTORE_STRICT,
++	},
++	{
++		.spr = SPRN_HMEER,
++		.preferred_mode = PREFER_RESTORE_SAVE,
++		.supported_mode = SELF_RESTORE_STRICT,
++	},
++	{
++		.spr = SPRN_HID0,
++		.preferred_mode = PREFER_RESTORE_SAVE,
++		.supported_mode = SELF_RESTORE_STRICT,
++	},
++	{
++		.spr = P9_STOP_SPR_MSR,
++		.preferred_mode = PREFER_RESTORE_SAVE,
++		.supported_mode = SELF_RESTORE_STRICT,
++	},
++	{
++		.spr = P9_STOP_SPR_PSSCR,
++		.preferred_mode = PREFER_SAVE_RESTORE,
++		.supported_mode = SELF_RESTORE_STRICT,
++	},
++	{
++		.spr = SPRN_HID1,
++		.preferred_mode = PREFER_RESTORE_SAVE,
++		.supported_mode = SELF_RESTORE_STRICT,
++	},
++	{
++		.spr = SPRN_HID4,
++		.preferred_mode = PREFER_RESTORE_SAVE,
++		.supported_mode = SELF_RESTORE_STRICT,
++	},
++	{
++		.spr = SPRN_HID5,
++		.preferred_mode = PREFER_RESTORE_SAVE,
++		.supported_mode = SELF_RESTORE_STRICT,
++	}
++};
++
++const int nr_preferred_sprs = ARRAY_SIZE(preferred_sprs);
+ 
+ /*
+  * The default stop state that will be used by ppc_md.power_save
+@@ -61,78 +164,170 @@ static bool deepest_stop_found;
+ 
+ static unsigned long power7_offline_type;
+ 
+-static int pnv_save_sprs_for_deep_states(void)
++static int pnv_self_restore_sprs(u64 pir, int cpu, u64 spr)
+ {
+-	int cpu;
++	u64 reg_val;
+ 	int rc;
+ 
+-	/*
+-	 * hid0, hid1, hid4, hid5, hmeer and lpcr values are symmetric across
+-	 * all cpus at boot. Get these reg values of current cpu and use the
+-	 * same across all cpus.
+-	 */
+-	uint64_t lpcr_val	= mfspr(SPRN_LPCR);
+-	uint64_t hid0_val	= mfspr(SPRN_HID0);
+-	uint64_t hid1_val	= mfspr(SPRN_HID1);
+-	uint64_t hid4_val	= mfspr(SPRN_HID4);
+-	uint64_t hid5_val	= mfspr(SPRN_HID5);
+-	uint64_t hmeer_val	= mfspr(SPRN_HMEER);
+-	uint64_t msr_val = MSR_IDLE;
+-	uint64_t psscr_val = pnv_deepest_stop_psscr_val;
+-
+-	for_each_present_cpu(cpu) {
+-		uint64_t pir = get_hard_smp_processor_id(cpu);
+-		uint64_t hsprg0_val = (uint64_t)paca_ptrs[cpu];
+-
+-		rc = opal_slw_set_reg(pir, SPRN_HSPRG0, hsprg0_val);
++	switch (spr) {
++	case SPRN_HSPRG0:
++		reg_val = (uint64_t)paca_ptrs[cpu];
++		rc = opal_slw_set_reg(pir, SPRN_HSPRG0, reg_val);
+ 		if (rc != 0)
+ 			return rc;
+-
+-		rc = opal_slw_set_reg(pir, SPRN_LPCR, lpcr_val);
++		break;
++	case SPRN_LPCR:
++		reg_val = mfspr(SPRN_LPCR);
++		rc = opal_slw_set_reg(pir, SPRN_LPCR, reg_val);
+ 		if (rc != 0)
+ 			return rc;
+-
++		break;
++	case P9_STOP_SPR_MSR:
++		reg_val = MSR_IDLE;
+ 		if (cpu_has_feature(CPU_FTR_ARCH_300)) {
+-			rc = opal_slw_set_reg(pir, P9_STOP_SPR_MSR, msr_val);
++			rc = opal_slw_set_reg(pir, P9_STOP_SPR_MSR, reg_val);
+ 			if (rc)
+ 				return rc;
+-
+-			rc = opal_slw_set_reg(pir,
+-					      P9_STOP_SPR_PSSCR, psscr_val);
+-
++		}
++		break;
++	case P9_STOP_SPR_PSSCR:
++		reg_val = pnv_deepest_stop_psscr_val;
++		if (cpu_has_feature(CPU_FTR_ARCH_300)) {
++			rc = opal_slw_set_reg(pir, P9_STOP_SPR_PSSCR, reg_val);
+ 			if (rc)
+ 				return rc;
+ 		}
+-
+-		/* HIDs are per core registers */
++		break;
++	case SPRN_HMEER:
++		reg_val = mfspr(SPRN_HMEER);
+ 		if (cpu_thread_in_core(cpu) == 0) {
+-
+-			rc = opal_slw_set_reg(pir, SPRN_HMEER, hmeer_val);
+-			if (rc != 0)
++			rc = opal_slw_set_reg(pir, SPRN_HMEER, reg_val);
++			if (rc)
+ 				return rc;
+-
+-			rc = opal_slw_set_reg(pir, SPRN_HID0, hid0_val);
+-			if (rc != 0)
++		}
++		break;
++	case SPRN_HID0:
++		reg_val = mfspr(SPRN_HID0);
++		if (cpu_thread_in_core(cpu) == 0) {
++			rc = opal_slw_set_reg(pir, SPRN_HID0, reg_val);
++			if (rc)
+ 				return rc;
++		}
++		break;
++	case SPRN_HID1:
++		reg_val = mfspr(SPRN_HID1);
++		if (cpu_thread_in_core(cpu) == 0 &&
++		    !cpu_has_feature(CPU_FTR_ARCH_300)) {
++			rc = opal_slw_set_reg(pir, SPRN_HID1, reg_val);
++			if (rc)
++				return rc;
++		}
++		break;
++	case SPRN_HID4:
++		reg_val = mfspr(SPRN_HID4);
++		if (cpu_thread_in_core(cpu) == 0 &&
++		    !cpu_has_feature(CPU_FTR_ARCH_300)) {
++			rc = opal_slw_set_reg(pir, SPRN_HID4, reg_val);
++			if (rc)
++				return rc;
++		}
++		break;
++	case SPRN_HID5:
++		reg_val = mfspr(SPRN_HID5);
++		if (cpu_thread_in_core(cpu) == 0 &&
++		    !cpu_has_feature(CPU_FTR_ARCH_300)) {
++			rc = opal_slw_set_reg(pir, SPRN_HID5, reg_val);
++			if (rc)
++				return rc;
++		}
++		break;
++	case SPRN_PTCR:
++		break;
++	default:
++		return -EINVAL;
++	}
++	return 0;
++}
+ 
+-			/* Only p8 needs to set extra HID regiters */
+-			if (!cpu_has_feature(CPU_FTR_ARCH_300)) {
+-
+-				rc = opal_slw_set_reg(pir, SPRN_HID1, hid1_val);
+-				if (rc != 0)
+-					return rc;
+-
+-				rc = opal_slw_set_reg(pir, SPRN_HID4, hid4_val);
+-				if (rc != 0)
+-					return rc;
+-
+-				rc = opal_slw_set_reg(pir, SPRN_HID5, hid5_val);
+-				if (rc != 0)
+-					return rc;
++static int pnv_self_save_restore_sprs(void)
++{
++	int rc, index, cpu, k;
++	u64 pir;
++	struct preferred_sprs curr_spr;
++	bool is_initialized;
++	u32 preferred;
++
++	is_lpcr_self_save = false;
++	is_ptcr_self_save = false;
++	for_each_present_cpu(cpu) {
++		pir = get_hard_smp_processor_id(cpu);
++		for (index = 0; index < nr_preferred_sprs; index++) {
++			curr_spr = preferred_sprs[index];
++			is_initialized = false;
++			/*
++			 * Go through each of the preferences
++			 * Check if it is preferred as well as supported
++			 */
++			for (k = 0; k < NR_PREFERENCES; k++) {
++				preferred = curr_spr.preferred_mode
++						& PREFERENCE_MASK;
++				if (preferred & curr_spr.supported_mode
++				    & SELF_RESTORE_STRICT) {
++					is_initialized = true;
++					rc = pnv_self_restore_sprs(pir, cpu,
++								curr_spr.spr);
++					if (rc != 0)
++						return rc;
++					break;
++				}
++				preferred_sprs[index].preferred_mode =
++					preferred_sprs[index].preferred_mode >>
++					PREFERENCE_SHIFT;
++				curr_spr = preferred_sprs[index];
++			}
++			if (!is_initialized) {
++				if (preferred_sprs[index].spr == SPRN_PTCR ||
++				    (cpu_has_feature(CPU_FTR_ARCH_300) &&
++				    (preferred_sprs[index].spr == SPRN_HID1 ||
++				     preferred_sprs[index].spr == SPRN_HID4 ||
++				     preferred_sprs[index].spr == SPRN_HID5)))
++					continue;
++				return OPAL_UNSUPPORTED;
+ 			}
+ 		}
+ 	}
++	return 0;
++}
+ 
++static int pnv_save_sprs_for_deep_states(void)
++{
++	int rc;
++	int index;
++
++	/*
++	 * Iterate over the preffered SPRs and if even one of them is
++	 * still unsupported We cut support for deep stop states
++	 */
++	for (index = 0; index < nr_preferred_sprs; index++) {
++		if (preferred_sprs[index].supported_mode == UNSUPPORTED) {
++			if (preferred_sprs[index].spr == SPRN_PTCR ||
++			    (cpu_has_feature(CPU_FTR_ARCH_300) &&
++			    (preferred_sprs[index].spr == SPRN_HID1 ||
++			     preferred_sprs[index].spr == SPRN_HID4 ||
++			     preferred_sprs[index].spr == SPRN_HID5)))
++				continue;
++			return OPAL_UNSUPPORTED;
++		}
++	}
++	/*
++	 * Try to self-restore the registers that can be self restored if self
++	 * restore is active, try the same for the registers that
++	 * can be self saved too.
++	 * Note : If both are supported, self restore is given more priority
++	 */
++	rc = pnv_self_save_restore_sprs();
++	if (rc != 0)
++		return rc;
+ 	return 0;
+ }
+ 
+@@ -658,7 +853,8 @@ static unsigned long power9_idle_stop(unsigned long psscr, bool mmu_on)
+ 		mmcr0		= mfspr(SPRN_MMCR0);
+ 	}
+ 	if ((psscr & PSSCR_RL_MASK) >= pnv_first_spr_loss_level) {
+-		sprs.lpcr	= mfspr(SPRN_LPCR);
++		if (!is_lpcr_self_save)
++			sprs.lpcr	= mfspr(SPRN_LPCR);
+ 		sprs.hfscr	= mfspr(SPRN_HFSCR);
+ 		sprs.fscr	= mfspr(SPRN_FSCR);
+ 		sprs.pid	= mfspr(SPRN_PID);
+@@ -672,7 +868,8 @@ static unsigned long power9_idle_stop(unsigned long psscr, bool mmu_on)
+ 		sprs.mmcr1	= mfspr(SPRN_MMCR1);
+ 		sprs.mmcr2	= mfspr(SPRN_MMCR2);
+ 
+-		sprs.ptcr	= mfspr(SPRN_PTCR);
++		if (!is_ptcr_self_save)
++			sprs.ptcr	= mfspr(SPRN_PTCR);
+ 		sprs.rpr	= mfspr(SPRN_RPR);
+ 		sprs.tscr	= mfspr(SPRN_TSCR);
+ 		if (!firmware_has_feature(FW_FEATURE_ULTRAVISOR))
+@@ -756,7 +953,8 @@ static unsigned long power9_idle_stop(unsigned long psscr, bool mmu_on)
+ 		goto core_woken;
+ 
+ 	/* Per-core SPRs */
+-	mtspr(SPRN_PTCR,	sprs.ptcr);
++	if (!is_ptcr_self_save)
++		mtspr(SPRN_PTCR,	sprs.ptcr);
+ 	mtspr(SPRN_RPR,		sprs.rpr);
+ 	mtspr(SPRN_TSCR,	sprs.tscr);
+ 
+@@ -777,7 +975,8 @@ static unsigned long power9_idle_stop(unsigned long psscr, bool mmu_on)
+ 	atomic_unlock_and_stop_thread_idle();
+ 
+ 	/* Per-thread SPRs */
+-	mtspr(SPRN_LPCR,	sprs.lpcr);
++	if (!is_lpcr_self_save)
++		mtspr(SPRN_LPCR,	sprs.lpcr);
+ 	mtspr(SPRN_HFSCR,	sprs.hfscr);
+ 	mtspr(SPRN_FSCR,	sprs.fscr);
+ 	mtspr(SPRN_PID,		sprs.pid);
+@@ -956,8 +1155,11 @@ void pnv_program_cpu_hotplug_lpcr(unsigned int cpu, u64 lpcr_val)
+ 	 * Program the LPCR via stop-api only if the deepest stop state
+ 	 * can lose hypervisor context.
+ 	 */
+-	if (supported_cpuidle_states & OPAL_PM_LOSE_FULL_CONTEXT)
+-		opal_slw_set_reg(pir, SPRN_LPCR, lpcr_val);
++	if (supported_cpuidle_states & OPAL_PM_LOSE_FULL_CONTEXT) {
++		if (!is_lpcr_self_save)
++			opal_slw_set_reg(pir, SPRN_LPCR,
++					 lpcr_val);
++	}
+ }
+ 
+ /*
+-- 
+2.17.1
 
