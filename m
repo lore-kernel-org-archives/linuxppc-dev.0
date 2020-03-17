@@ -2,23 +2,23 @@ Return-Path: <SRS0=VLUV=5C=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D8A5C10F29
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2020 14:11:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A802C10F29
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2020 14:17:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B83B2205ED
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2020 14:11:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B83B2205ED
+	by mail.kernel.org (Postfix) with ESMTPS id 39B832051A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2020 14:17:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 39B832051A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48hZpn6tlmzDqW2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 01:11:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48hZxg73RBzDqPN
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 01:17:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
@@ -29,62 +29,61 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48hYhN2B2qzDqfF
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48hYhP0RBSzDqH4
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2020 00:20:52 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 02HDBjlN141892
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2020 09:20:49 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ytgkv9pef-1
+ 02HD3cnu109759
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2020 09:20:50 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2yrtwux1ej-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2020 09:20:49 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2020 09:20:46 -0400
 Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
- Tue, 17 Mar 2020 13:20:47 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Tue, 17 Mar 2020 13:20:39 -0000
+Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 17 Mar 2020 13:20:43 -0000
+ Tue, 17 Mar 2020 13:20:35 -0000
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com
  (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 02HDKgZ145744366
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 02HDJX1D43516166
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 17 Mar 2020 13:20:42 GMT
+ Tue, 17 Mar 2020 13:19:33 GMT
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8BC45A405F;
- Tue, 17 Mar 2020 13:20:42 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 8E92AA4060;
+ Tue, 17 Mar 2020 13:20:34 +0000 (GMT)
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 59FE0A4054;
- Tue, 17 Mar 2020 13:20:39 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 2F8AEA405B;
+ Tue, 17 Mar 2020 13:20:30 +0000 (GMT)
 Received: from srikart450.in.ibm.com (unknown [9.85.71.34])
  by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 17 Mar 2020 13:20:39 +0000 (GMT)
+ Tue, 17 Mar 2020 13:20:29 +0000 (GMT)
 From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 2/4] mm/slub: Use mem_node to allocate a new slab
-Date: Tue, 17 Mar 2020 18:47:51 +0530
+Subject: [PATCH 0/4] Fix kmalloc_node on offline nodes
+Date: Tue, 17 Mar 2020 18:47:49 +0530
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200317131753.4074-1-srikar@linux.vnet.ibm.com>
+In-Reply-To: <3381CD91-AB3D-4773-BA04-E7A072A63968@linux.vnet.ibm.com>
 References: <3381CD91-AB3D-4773-BA04-E7A072A63968@linux.vnet.ibm.com>
- <20200317131753.4074-1-srikar@linux.vnet.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 20031713-0020-0000-0000-000003B5E0B4
+x-cbid: 20031713-0028-0000-0000-000003E645EE
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20031713-0021-0000-0000-0000220E451E
-Message-Id: <20200317131753.4074-3-srikar@linux.vnet.ibm.com>
+x-cbparentid: 20031713-0029-0000-0000-000024AB9A95
+Message-Id: <20200317131753.4074-1-srikar@linux.vnet.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.645
  definitions=2020-03-17_04:2020-03-17,
  2020-03-17 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- suspectscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=763
- priorityscore=1501 malwarescore=0 phishscore=0 adultscore=0
- impostorscore=0 clxscore=1015 classifier=spam adjust=0 reason=mlx
+ impostorscore=0
+ malwarescore=0 adultscore=0 bulkscore=0 mlxscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 phishscore=0 suspectscore=0
+ priorityscore=1501 mlxlogscore=768 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.12.0-2003020000 definitions=main-2003170058
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -108,30 +107,32 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently while allocating a slab for a offline node, we use its
-associated node_numa_mem to search for a partial slab. If we don't find
-a partial slab, we try allocating a slab from the offline node using
-__alloc_pages_node. However this is bound to fail.
+Sachin recently reported that linux-next was no more bootable on few
+systems.
+https://lore.kernel.org/linux-next/3381CD91-AB3D-4773-BA04-E7A072A63968@linux.vnet.ibm.com/
 
-NIP [c00000000039a300] __alloc_pages_nodemask+0x130/0x3b0
-LR [c00000000039a3c4] __alloc_pages_nodemask+0x1f4/0x3b0
-Call Trace:
-[c0000008b36837f0] [c00000000039a3b4] __alloc_pages_nodemask+0x1e4/0x3b0 (unreliable)
-[c0000008b3683870] [c0000000003d1ff8] new_slab+0x128/0xcf0
-[c0000008b3683950] [c0000000003d6060] ___slab_alloc+0x410/0x820
-[c0000008b3683a40] [c0000000003d64a4] __slab_alloc+0x34/0x60
-[c0000008b3683a70] [c0000000003d78b0] __kmalloc_node+0x110/0x490
-[c0000008b3683af0] [c000000000343a08] kvmalloc_node+0x58/0x110
-[c0000008b3683b30] [c0000000003ffd44] mem_cgroup_css_online+0x104/0x270
-[c0000008b3683b90] [c000000000234e08] online_css+0x48/0xd0
-[c0000008b3683bc0] [c00000000023dedc] cgroup_apply_control_enable+0x2ec/0x4d0
-[c0000008b3683ca0] [c0000000002416f8] cgroup_mkdir+0x228/0x5f0
-[c0000008b3683d10] [c000000000520360] kernfs_iop_mkdir+0x90/0xf0
-[c0000008b3683d50] [c00000000043e400] vfs_mkdir+0x110/0x230
-[c0000008b3683da0] [c000000000441ee0] do_mkdirat+0xb0/0x1a0
-[c0000008b3683e20] [c00000000000b278] system_call+0x5c/0x68
+# numactl -H
+available: 2 nodes (0-1)
+node 0 cpus:
+node 0 size: 0 MB
+node 0 free: 0 MB
+node 1 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
+node 1 size: 35247 MB
+node 1 free: 30907 MB
+node distances:
+node   0   1
+  0:  10  40
+  1:  40  10
+#
 
-Mitigate this by allocating the new slab from the node_numa_mem.
+Sachin bisected the problem to Commit a75056fc1e7c ("mm/memcontrol.c: allocate
+shrinker_map on appropriate NUMA node")
+
+The root cause analysis showed that mm/slub and powerpc/numa had some shortcomings
+with respect to offline nodes.
+
+This patch series is on top of patches posted at
+https://lore.kernel.org/linuxppc-dev/20200311110237.5731-1-srikar@linux.vnet.ibm.com/t/#u
 
 Cc: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-mm@kvack.org
@@ -147,60 +148,19 @@ Cc: Vlastimil Babka <vbabka@suse.cz>
 Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 Cc: Bharata B Rao <bharata@linux.ibm.com>
 
-Reported-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
-Tested-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
-Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
----
- mm/slub.c | 19 ++++++++-----------
- 1 file changed, 8 insertions(+), 11 deletions(-)
+Srikar Dronamraju (4):
+  mm: Check for node_online in node_present_pages
+  mm/slub: Use mem_node to allocate a new slab
+  mm: Implement reset_numa_mem
+  powerpc/numa: Set fallback nodes for offline nodes
 
-diff --git a/mm/slub.c b/mm/slub.c
-index 1c55bf7892bf..fdf7f38f96e6 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -1970,14 +1970,8 @@ static void *get_partial(struct kmem_cache *s, gfp_t flags, int node,
- 		struct kmem_cache_cpu *c)
- {
- 	void *object;
--	int searchnode = node;
- 
--	if (node == NUMA_NO_NODE)
--		searchnode = numa_mem_id();
--	else if (!node_present_pages(node))
--		searchnode = node_to_mem_node(node);
--
--	object = get_partial_node(s, get_node(s, searchnode), c, flags);
-+	object = get_partial_node(s, get_node(s, node), c, flags);
- 	if (object || node != NUMA_NO_NODE)
- 		return object;
- 
-@@ -2470,6 +2464,11 @@ static inline void *new_slab_objects(struct kmem_cache *s, gfp_t flags,
- 
- 	WARN_ON_ONCE(s->ctor && (flags & __GFP_ZERO));
- 
-+	if (node == NUMA_NO_NODE)
-+		node = numa_mem_id();
-+	else if (!node_present_pages(node))
-+		node = node_to_mem_node(node);
-+
- 	freelist = get_partial(s, flags, node, c);
- 
- 	if (freelist)
-@@ -2569,12 +2568,10 @@ static void *___slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node,
- redo:
- 
- 	if (unlikely(!node_match(page, node))) {
--		int searchnode = node;
--
- 		if (node != NUMA_NO_NODE && !node_present_pages(node))
--			searchnode = node_to_mem_node(node);
-+			node = node_to_mem_node(node);
- 
--		if (unlikely(!node_match(page, searchnode))) {
-+		if (unlikely(!node_match(page, node))) {
- 			stat(s, ALLOC_NODE_MISMATCH);
- 			deactivate_slab(s, page, c->freelist, c);
- 			goto new_slab;
--- 
+ arch/powerpc/mm/numa.c         | 11 ++++++++++-
+ include/asm-generic/topology.h |  3 +++
+ include/linux/mmzone.h         |  6 ++++--
+ include/linux/topology.h       |  7 +++++++
+ mm/slub.c                      | 19 ++++++++-----------
+ 5 files changed, 32 insertions(+), 14 deletions(-)
+
+--
 2.18.1
 
