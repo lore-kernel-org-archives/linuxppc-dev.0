@@ -6,57 +6,53 @@ X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0AE9EC1975A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2020 21:38:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A8253C1975A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2020 22:03:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AD68420714
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2020 21:38:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AD68420714
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=perches.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1251420714
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2020 22:03:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1251420714
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48hmkC0khVzDqnT
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 08:38:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48hnHJ5zZCzDqsX
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 09:03:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=perches.com
- (client-ip=216.40.44.75; helo=smtprelay.hostedemail.com;
- envelope-from=joe@perches.com; receiver=<UNKNOWN>)
+ spf=none (no SPF record) smtp.mailfrom=linutronix.de
+ (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
+ envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=perches.com
-Received: from smtprelay.hostedemail.com (smtprelay0075.hostedemail.com
- [216.40.44.75])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=linutronix.de
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a0a:51c0:0:12e:550::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48hmhD1mjfzDqZN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2020 08:36:26 +1100 (AEDT)
-Received: from filter.hostedemail.com (clb03-v110.bra.tucows.net
- [216.40.38.60])
- by smtprelay02.hostedemail.com (Postfix) with ESMTP id 0B53645A8;
- Tue, 17 Mar 2020 21:36:22 +0000 (UTC)
-X-Session-Marker: 6A6F6540706572636865732E636F6D
-X-HE-Tag: tax31_8e64a60b0ff18
-X-Filterd-Recvd-Size: 3175
-Received: from XPS-9350.home (unknown [47.151.143.254])
- (Authenticated sender: joe@perches.com)
- by omf13.hostedemail.com (Postfix) with ESMTPA;
- Tue, 17 Mar 2020 21:36:18 +0000 (UTC)
-Message-ID: <1e52a8441a319e55b913376ad47c6b18843742cd.camel@perches.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48hnFK6Kd8zDqll
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2020 09:01:41 +1100 (AEDT)
+Received: from p5de0bf0b.dip0.t-ipconnect.de ([93.224.191.11]
+ helo=nanos.tec.linutronix.de)
+ by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
+ (Exim 4.80) (envelope-from <tglx@linutronix.de>)
+ id 1jEKGu-0000tj-1m; Tue, 17 Mar 2020 23:01:12 +0100
+Received: by nanos.tec.linutronix.de (Postfix, from userid 1000)
+ id 71BBA101161; Tue, 17 Mar 2020 23:01:11 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@intel.com>
 Subject: Re: [PATCH] treewide: Rename "unencrypted" to "decrypted"
-From: Joe Perches <joe@perches.com>
-To: Dave Hansen <dave.hansen@intel.com>, Borislav Petkov <bp@alien8.de>
-Date: Tue, 17 Mar 2020 14:34:30 -0700
-In-Reply-To: <f3e520c6-f455-9c82-abfc-d014ca63eeb5@intel.com>
+In-Reply-To: <20200317210602.GG15609@zn.tnic>
 References: <20200317111822.GA15609@zn.tnic>
  <2cb4a8ae-3b13-67bd-c021-aee47fdf58c5@intel.com>
  <20200317210602.GG15609@zn.tnic>
- <f3e520c6-f455-9c82-abfc-d014ca63eeb5@intel.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-User-Agent: Evolution 3.34.1-2 
+Date: Tue, 17 Mar 2020 23:01:11 +0100
+Message-ID: <87fte6bpzs.fsf@nanos.tec.linutronix.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
+X-Linutronix-Spam-Score: -1.0
+X-Linutronix-Spam-Level: -
+X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required, ALL_TRUSTED=-1,
+ SHORTCIRCUIT=-0.0001
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,41 +74,50 @@ Cc: "Schofield, Alison" <alison.schofield@intel.com>,
  Borislav Petkov <bp@suse.de>, Tom Lendacky <thomas.lendacky@amd.com>,
  Vasily Gorbik <gor@linux.ibm.com>, "Shutemov,
  Kirill" <kirill.shutemov@intel.com>, Andy Lutomirski <luto@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, Robin Murphy <robin.murphy@arm.com>,
- lkml <linux-kernel@vger.kernel.org>, iommu@lists.linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+ Robin Murphy <robin.murphy@arm.com>, lkml <linux-kernel@vger.kernel.org>,
+ iommu@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2020-03-17 at 14:24 -0700, Dave Hansen wrote:
-> On 3/17/20 2:06 PM, Borislav Petkov wrote:
-> > On Tue, Mar 17, 2020 at 01:35:12PM -0700, Dave Hansen wrote:
-> > > On 3/17/20 4:18 AM, Borislav Petkov wrote:
-> > > > Back then when the whole SME machinery started getting mainlined, it
-> > > > was agreed that for simplicity, clarity and sanity's sake, the terms
-> > > > denoting encrypted and not-encrypted memory should be "encrypted" and
-> > > > "decrypted". And the majority of the code sticks to that convention
-> > > > except those two. So rename them.
-> > > Don't "unencrypted" and "decrypted" mean different things?
-> > > 
-> > > Unencrypted to me means "encryption was never used for this data".
-> > > 
-> > > Decrypted means "this was/is encrypted but here is a plaintext copy".
-> > Maybe but linguistical semantics is not the point here.
-> > 
-> > The idea is to represent a "binary" concept of memory being encrypted
-> > or memory being not encrypted. And at the time we decided to use
-> > "encrypted" and "decrypted" for those two things.
-> 
-> Yeah, agreed.  We're basically trying to name "!encrypted".
-> 
-> > Do you see the need to differentiate a third "state", so to speak, of
-> > memory which was never encrypted?
-> 
-> No, there are just two states.  I just think the "!encrypted" case
-> should not be called "decrypted".
+Borislav Petkov <bp@alien8.de> writes:
 
-Nor do I, it's completely misleading.
+> On Tue, Mar 17, 2020 at 01:35:12PM -0700, Dave Hansen wrote:
+>> On 3/17/20 4:18 AM, Borislav Petkov wrote:
+>> > Back then when the whole SME machinery started getting mainlined, it
+>> > was agreed that for simplicity, clarity and sanity's sake, the terms
+>> > denoting encrypted and not-encrypted memory should be "encrypted" and
+>> > "decrypted". And the majority of the code sticks to that convention
+>> > except those two. So rename them.
+>> 
+>> Don't "unencrypted" and "decrypted" mean different things?
+>> 
+>> Unencrypted to me means "encryption was never used for this data".
+>> 
+>> Decrypted means "this was/is encrypted but here is a plaintext copy".
+>
+> Maybe but linguistical semantics is not the point here.
+>
+> The idea is to represent a "binary" concept of memory being encrypted
+> or memory being not encrypted. And at the time we decided to use
+> "encrypted" and "decrypted" for those two things.
+>
+> Do you see the need to differentiate a third "state", so to speak, of
+> memory which was never encrypted?
 
+I think so.
 
+encrypted data is something you can't use without having the key
+
+decrypted data is the plaintext copy of something encrypted, so
+it might be of sensible nature.
+
+unencrypted data can still be sensible, but nothing ever bothered to
+encrypt it in the first place.
+
+So having this distinction is useful in terms of setting the context
+straight.
+
+Thanks,
+
+        tglx
