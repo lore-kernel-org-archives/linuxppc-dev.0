@@ -2,103 +2,93 @@ Return-Path: <SRS0=VLUV=5C=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E28AEC10F29
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2020 15:28:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E9DB1C18E5B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2020 15:33:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 75E8520714
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2020 15:28:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 75E8520714
+	by mail.kernel.org (Postfix) with ESMTPS id 2E3D6206EC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2020 15:33:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E3D6206EC
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48hcWl3fClzDqV5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 02:28:35 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48hZpv5KL3zDqQ5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2020 01:11:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48hcdk33TtzDqcn
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 02:33:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=bharata@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 48hZpv1VWvz8tHw
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2020 01:11:35 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 48hZpt4GlPz9sTV; Wed, 18 Mar 2020 01:11:34 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=psampat@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 48hZps0dlPz9sTT
- for <linuxppc-dev@ozlabs.org>; Wed, 18 Mar 2020 01:11:32 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 02HE1LgD030352
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2020 10:11:31 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2yrr6u7ywb-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48hb3z6tl8zDqJg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2020 01:22:47 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 02HEKGUw029988
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2020 10:22:44 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2yrubp4vc7-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2020 10:10:26 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2020 10:22:44 -0400
 Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <psampat@linux.ibm.com>;
- Tue, 17 Mar 2020 14:10:24 -0000
+ for <linuxppc-dev@lists.ozlabs.org> from <bharata@linux.ibm.com>;
+ Tue, 17 Mar 2020 14:22:42 -0000
 Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 17 Mar 2020 14:10:21 -0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
+ Tue, 17 Mar 2020 14:22:37 -0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
  by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 02HEAKLb57147470
+ 02HEMbct58589262
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 17 Mar 2020 14:10:21 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C8ED211C052;
- Tue, 17 Mar 2020 14:10:20 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5B82B11C058;
- Tue, 17 Mar 2020 14:10:19 +0000 (GMT)
-Received: from pratiks-thinkpad.ibmuc.com (unknown [9.199.61.203])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 17 Mar 2020 14:10:19 +0000 (GMT)
-From: Pratik Rajesh Sampat <psampat@linux.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, 
- ego@linux.vnet.ibm.com, linuxram@us.ibm.com, psampat@in.ibm.com,
- pratik.r.sampat@gmail.com
-Subject: [PATCH v5 0/3] Introduce Self-Save API for deep stop states
-Date: Tue, 17 Mar 2020 19:40:15 +0530
-X-Mailer: git-send-email 2.24.1
+ Tue, 17 Mar 2020 14:22:37 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E26F34C040;
+ Tue, 17 Mar 2020 14:22:36 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C22224C046;
+ Tue, 17 Mar 2020 14:22:34 +0000 (GMT)
+Received: from in.ibm.com (unknown [9.199.32.136])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Tue, 17 Mar 2020 14:22:34 +0000 (GMT)
+Date: Tue, 17 Mar 2020 19:52:32 +0530
+From: Bharata B Rao <bharata@linux.ibm.com>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Subject: Re: [PATCH 4/4] powerpc/numa: Set fallback nodes for offline nodes
+References: <3381CD91-AB3D-4773-BA04-E7A072A63968@linux.vnet.ibm.com>
+ <20200317131753.4074-1-srikar@linux.vnet.ibm.com>
+ <20200317131753.4074-5-srikar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200317131753.4074-5-srikar@linux.vnet.ibm.com>
+User-Agent: Mutt/1.12.1 (2019-06-15)
 X-TM-AS-GCONF: 00
-x-cbid: 20031714-4275-0000-0000-000003ADD591
+x-cbid: 20031714-0008-0000-0000-0000035EC18B
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20031714-4276-0000-0000-000038C2FEA0
-Message-Id: <20200317141018.42380-1-psampat@linux.ibm.com>
+x-cbparentid: 20031714-0009-0000-0000-00004A80187D
+Message-Id: <20200317142232.GB26049@in.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.645
  definitions=2020-03-17_05:2020-03-17,
  2020-03-17 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 suspectscore=0
- phishscore=0 clxscore=1015 malwarescore=0 lowpriorityscore=0 mlxscore=0
- mlxlogscore=999 adultscore=0 impostorscore=0 priorityscore=1501
- bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ bulkscore=0 suspectscore=0
+ adultscore=0 spamscore=0 lowpriorityscore=0 priorityscore=1501
+ malwarescore=0 clxscore=1011 impostorscore=0 phishscore=0 mlxscore=0
+ mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2003020000 definitions=main-2003170059
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -111,103 +101,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Reply-To: bharata@linux.ibm.com
+Cc: Sachin Sant <sachinp@linux.vnet.ibm.com>, Michal Hocko <mhocko@kernel.org>,
+ linux-mm@kvack.org, Kirill Tkhai <ktkhai@virtuozzo.com>,
+ Mel Gorman <mgorman@suse.de>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Christopher Lameter <cl@linux.com>, Vlastimil Babka <vbabka@suse.cz>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Skiboot patches v4: https://lists.ozlabs.org/pipermail/skiboot/2020-February/016404.html
-Linux patches v4: https://lkml.org/lkml/2020/2/12/446
-Changelog
-v4 --> v5
-Based on Michael Ellerman's comments, in patch3:
-1. Added documentation in power-mgt.txt for self-save and self-restore
-2. Used bitmap abstractions while parsing device tree
-3. Fixed scenario where zero or less SPRs were treated as a success
-4. Removed redundant device_node pointer
-5. Removed unnecessary pr_warn messages
-6. Changed the old of_find_node_by_path calls to of_find_compatible_node
-7. Fixed leaking reference of the parsed device_node pointer 
+This patchset can also fix a related problem that I reported earlier at
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2020-March/206076.html
+with an additional change, suggested by Srikar as shown below:
 
-Currently the stop-API supports a mechanism called as self-restore
-which allows us to restore the values of certain SPRs on wakeup from a
-deep-stop state to a desired value. To use this, the Kernel makes an
-OPAL call passing the PIR of the CPU, the SPR number and the value to
-which the SPR should be restored when that CPU wakes up from a deep
-stop state.
+On Tue, Mar 17, 2020 at 06:47:53PM +0530, Srikar Dronamraju wrote:
+> Currently fallback nodes for offline nodes aren't set. Hence by default
+> node 0 ends up being the default node. However node 0 might be offline.
+> 
+> Fix this by explicitly setting fallback node. Ensure first_memory_node
+> is set before kernel does explicit setting of fallback node.
+> 
+>  arch/powerpc/mm/numa.c | 11 ++++++++++-
+>  1 file changed, 10 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+> index 281531340230..6e97ab6575cb 100644
+> --- a/arch/powerpc/mm/numa.c
+> +++ b/arch/powerpc/mm/numa.c
+> @@ -827,7 +827,16 @@ void __init dump_numa_cpu_topology(void)
+>  	if (!numa_enabled)
+>  		return;
+>  
+> -	for_each_online_node(node) {
+> +	for_each_node(node) {
+> +		/*
+> +		 * For all possible but not yet online nodes, ensure their
+> +		 * node_numa_mem is set correctly so that kmalloc_node works
+> +		 * for such nodes.
+> +		 */
+> +		if (!node_online(node)) {
 
-Recently, a new feature, named self-save has been enabled in the
-stop-api, which is an alternative mechanism to do the same, except
-that self-save will save the current content of the SPR before
-entering a deep stop state and also restore the content back on
-waking up from a deep stop state.
+Change the above line to like below:
 
-This patch series aims at introducing and leveraging the self-save feature in
-the kernel.
++               if (!node_state(node, N_MEMORY)) {
 
-Now, as the kernel has a choice to prefer one mode over the other and
-there can be registers in both the save/restore SPR list which are sent
-from the device tree, a new interface has been defined for the seamless
-handing of the modes for each SPR.
-
-A list of preferred SPRs are maintained in the kernel which contains two
-properties:
-1. supported_mode: Helps in identifying if it strictly supports self
-                   save or restore or both.
-                   Initialized using the information from device tree.
-2. preferred_mode: Calls out what mode is preferred for each SPR. It
-                   could be strictly self save or restore, or it can also
-                   determine the preference of  mode over the other if both
-                   are present by encapsulating the other in bitmask from
-                   LSB to MSB.
-                   Initialized statically.
-
-Below is a table to show the Scenario::Consequence when the self save and
-self restore modes are available or disabled in different combinations as
-perceived from the device tree thus giving complete backwards compatibly
-regardless of an older firmware running a newer kernel or vise-versa.
-Support for self save or self-restore is embedded in the device tree,
-along with the set of registers it supports.
-
-SR = Self restore; SS = Self save
-
-.-----------------------------------.----------------------------------------.
-|             Scenario              |                Consequence             |
-:-----------------------------------+----------------------------------------:
-| Legacy Firmware. No SS or SR node | Self restore is called for all         |
-|                                   | supported SPRs                         |
-:-----------------------------------+----------------------------------------:
-| SR: !active SS: !active           | Deep stop states disabled              |
-:-----------------------------------+----------------------------------------:
-| SR: active SS: !active            | Self restore is called for all         |
-|                                   | supported SPRs                         |
-:-----------------------------------+----------------------------------------:
-| SR: active SS: active             | Goes through the preferences for each  |
-|                                   | SPR and executes of the modes          |
-|                                   | accordingly. Currently, Self restore is|
-|                                   | called for all the SPRs except PSSCR   |
-|                                   | which is self saved                    |
-:-----------------------------------+----------------------------------------:
-| SR: active(only HID0) SS: active  | Self save called for all supported     |
-|                                   | registers expect HID0 (as HID0 cannot  |
-|                                   | be self saved currently)               |
-:-----------------------------------+----------------------------------------:
-| SR: !active SS: active            | currently will disable deep states as  |
-|                                   | HID0 is needed to be self restored and |
-|                                   | cannot be self saved                   |
-'-----------------------------------'----------------------------------------'
-
-Pratik Rajesh Sampat (3):
-  powerpc/powernv: Interface to define support and preference for a SPR
-  powerpc/powernv: Introduce Self save support
-  powerpc/powernv: Parse device tree, population of SPR support
-
- .../bindings/powerpc/opal/power-mgt.txt       |  10 +
- arch/powerpc/include/asm/opal-api.h           |   3 +-
- arch/powerpc/include/asm/opal.h               |   1 +
- arch/powerpc/platforms/powernv/idle.c         | 416 +++++++++++++++---
- arch/powerpc/platforms/powernv/opal-call.c    |   1 +
- 5 files changed, 373 insertions(+), 58 deletions(-)
-
--- 
-2.17.1
+Regards,
+Bharata.
 
