@@ -2,96 +2,93 @@ Return-Path: <SRS0=Ik3v=5D=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5DE44C10DCE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 07:40:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED43DC10DCE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 07:51:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 16BE320768
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 07:40:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 16BE320768
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 61A5C20753
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 07:51:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 61A5C20753
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48j25g04TRzDqj4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 18:40:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ravi.bangoria@linux.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 48j2LN1bkhzDqn1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 18:51:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48j1wT2gM1zDqxF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2020 18:32:57 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 02I7W2cU026436
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2020 03:32:55 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2yu719euwr-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48j2JY5yfYzDqjM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2020 18:50:21 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 02I7YI53086498
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2020 03:50:18 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2yu98sueb8-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2020 03:32:55 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2020 03:50:18 -0400
 Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.ibm.com>;
- Wed, 18 Mar 2020 07:32:52 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
+ Wed, 18 Mar 2020 07:50:16 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 18 Mar 2020 07:32:47 -0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 02I7Wkcn44499008
+ Wed, 18 Mar 2020 07:50:12 -0000
+Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 02I7oBqa16973968
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 18 Mar 2020 07:32:46 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3289CA4062;
- Wed, 18 Mar 2020 07:32:46 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 92E91A405C;
- Wed, 18 Mar 2020 07:32:37 +0000 (GMT)
-Received: from [9.199.43.180] (unknown [9.199.43.180])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 18 Mar 2020 07:32:36 +0000 (GMT)
-Subject: Re: [PATCH 08/15] powerpc/watchpoint: Disable all available
- watchpoints when !dawr_force_enable
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-References: <20200309085806.155823-1-ravi.bangoria@linux.ibm.com>
- <20200309085806.155823-9-ravi.bangoria@linux.ibm.com>
- <1381b9f9-4999-0e03-8344-af84a88fa074@c-s.fr>
-From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
-Date: Wed, 18 Mar 2020 13:02:35 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.5.0
+ Wed, 18 Mar 2020 07:50:11 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E13B342064;
+ Wed, 18 Mar 2020 07:50:10 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DD8D042047;
+ Wed, 18 Mar 2020 07:50:08 +0000 (GMT)
+Received: from linux.vnet.ibm.com (unknown [9.126.150.29])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Wed, 18 Mar 2020 07:50:08 +0000 (GMT)
+Date: Wed, 18 Mar 2020 13:20:08 +0530
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: Michal Hocko <mhocko@kernel.org>
+Subject: Re: [PATCH 3/3] mm/page_alloc: Keep memoryless cpuless node 0 offline
+References: <20200311110237.5731-1-srikar@linux.vnet.ibm.com>
+ <20200311110237.5731-4-srikar@linux.vnet.ibm.com>
+ <alpine.DEB.2.21.2003151416230.14449@www.lameter.com>
+ <20200316085425.GB11482@dhcp22.suse.cz>
 MIME-Version: 1.0
-In-Reply-To: <1381b9f9-4999-0e03-8344-af84a88fa074@c-s.fr>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20200316085425.GB11482@dhcp22.suse.cz>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-TM-AS-GCONF: 00
-x-cbid: 20031807-0012-0000-0000-00000393063F
+x-cbid: 20031807-0008-0000-0000-0000035F30D3
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20031807-0013-0000-0000-000021CFE7B7
-Message-Id: <8c97ae26-e0df-1e71-e70f-5d1b1b4e1097@linux.ibm.com>
+x-cbparentid: 20031807-0009-0000-0000-00004A808A63
+Message-Id: <20200318075008.GE4879@linux.vnet.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.645
  definitions=2020-03-18_02:2020-03-17,
  2020-03-18 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0
- lowpriorityscore=0 malwarescore=0 impostorscore=0 mlxscore=0 phishscore=0
- priorityscore=1501 adultscore=0 clxscore=1015 bulkscore=0 mlxlogscore=884
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ phishscore=0 clxscore=1015
+ adultscore=0 mlxlogscore=999 suspectscore=0 impostorscore=0 mlxscore=0
+ lowpriorityscore=0 malwarescore=0 bulkscore=0 priorityscore=1501
+ spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2003020000 definitions=main-2003180034
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -104,78 +101,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: apopple@linux.ibm.com, mikey@neuling.org,
- Ravi Bangoria <ravi.bangoria@linux.ibm.com>, peterz@infradead.org,
- oleg@redhat.com, npiggin@gmail.com, linux-kernel@vger.kernel.org,
- paulus@samba.org, jolsa@kernel.org, fweisbec@gmail.com,
- naveen.n.rao@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- mingo@kernel.org
+Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, Mel Gorman <mgorman@suse.de>,
+ "Kirill A. Shutemov" <kirill@shutemov.name>,
+ Christopher Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
+ Andrew Morton <akpm@linux-foundation.org>, Vlastimil Babka <vbabka@suse.cz>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+* Michal Hocko <mhocko@kernel.org> [2020-03-16 09:54:25]:
 
-
-On 3/17/20 4:05 PM, Christophe Leroy wrote:
+> On Sun 15-03-20 14:20:05, Cristopher Lameter wrote:
+> > On Wed, 11 Mar 2020, Srikar Dronamraju wrote:
+> > 
+> > > Currently Linux kernel with CONFIG_NUMA on a system with multiple
+> > > possible nodes, marks node 0 as online at boot.  However in practice,
+> > > there are systems which have node 0 as memoryless and cpuless.
+> > 
+> > Would it not be better and simpler to require that node 0 always has
+> > memory (and processors)? A  mininum operational set?
 > 
+> I do not think you can simply ignore the reality. I cannot say that I am
+> a fan of memoryless/cpuless numa configurations but they are a sad
+> reality of different LPAR configurations. We have to deal with them.
+> Besides that I do not really see any strong technical arguments to lack
+> a support for those crippled configurations. We do have zonelists that
+> allow to do reasonable decisions on memoryless nodes. So no, I do not
+> think that this is a viable approach.
 > 
-> Le 09/03/2020 à 09:57, Ravi Bangoria a écrit :
->> Instead of disabling only first watchpoint, disable all available
->> watchpoints while clearing dawr_force_enable.
->>
->> Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
->> ---
->>   arch/powerpc/kernel/dawr.c | 10 +++++++---
->>   1 file changed, 7 insertions(+), 3 deletions(-)
->>
->> diff --git a/arch/powerpc/kernel/dawr.c b/arch/powerpc/kernel/dawr.c
->> index 311e51ee09f4..5c882f07ac7d 100644
->> --- a/arch/powerpc/kernel/dawr.c
->> +++ b/arch/powerpc/kernel/dawr.c
->> @@ -50,9 +50,13 @@ int set_dawr(struct arch_hw_breakpoint *brk, int nr)
->>       return 0;
->>   }
->> -static void set_dawr_cb(void *info)
->> +static void disable_dawrs(void *info)
+
+I agree with Michal, kernel should accept the reality and work with
+different Lpar configurations.
+
+> > We can dynamically number the nodes right? So just make sure that the
+> > firmware properly creates memory on node 0?
 > 
-> Can you explain a bit more what you do exactly ? Why do you change the name of the function and why the parameter becomes NULL ? And why it doens't take into account the parameter anymore ?
+> Are you suggesting that the OS would renumber NUMA nodes coming
+> from FW just to satisfy node 0 existence? If yes then I believe this is
+> really a bad idea because it would make HW/LPAR configuration matching
+> to the resulting memory layout really hard to follow.
+> 
+> -- 
+> Michal Hocko
+> SUSE Labs
 
-Before:
-   static void set_dawr_cb(void *info)
-   {
-           set_dawr(info);
-   }
-   
-   static ssize_t dawr_write_file_bool(...)
-   {
-   	...
-           /* If we are clearing, make sure all CPUs have the DAWR cleared */
-           if (!dawr_force_enable)
-                   smp_call_function(set_dawr_cb, &null_brk, 0);
-   }
+Michal, Vlastimil, Christoph and others, do you have any more comments,
+suggestions or any other feedback. If not, can you please add your
+reviewed-by, acked etc.
 
-After:
-   static void disable_dawrs(void *info)
-   {
-           struct arch_hw_breakpoint null_brk = {0};
-           int i;
-   
-           for (i = 0; i < nr_wp_slots(); i++)
-                   set_dawr(&null_brk, i);
-   }
-   
-   static ssize_t dawr_write_file_bool(...)
-   {
-   	...
-           /* If we are clearing, make sure all CPUs have the DAWR cleared */
-           if (!dawr_force_enable)
-                   smp_call_function(disable_dawrs, NULL, 0);
-   }
-
-We use callback function only for disabling watchpoint. Thus I renamed
-it to disable_dawrs(). And we are passing null_brk as parameter which
-is not really required while disabling watchpoint. So removed it.
-
-Thanks,
-Ravi
+-- 
+Thanks and Regards
+Srikar Dronamraju
 
