@@ -2,26 +2,26 @@ Return-Path: <SRS0=Ik3v=5D=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 041B5C10DCE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 09:46:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E5B6C10DCE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 10:04:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 44D1520674
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 09:46:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 44D1520674
+	by mail.kernel.org (Postfix) with ESMTPS id 81AC620767
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 10:04:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 81AC620767
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48j4t966YHzDqtG
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 20:46:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48j5H85QC4zDqSQ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 21:04:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ravi.bangoria@linux.ibm.com;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=fbarrat@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
@@ -29,67 +29,65 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48j4qx0TqXzDqL5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2020 20:44:12 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 02I9Ze5x131371
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2020 05:44:09 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2yua2ap1y8-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48j5Dq39MhzDqtK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2020 21:02:18 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 02I9Z5fI112405
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2020 06:02:16 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2yu7abucc8-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2020 05:44:09 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2020 06:02:16 -0400
 Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.ibm.com>;
- Wed, 18 Mar 2020 09:44:07 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
+ Wed, 18 Mar 2020 10:02:14 -0000
+Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 18 Mar 2020 09:44:02 -0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 02I9i1mA59441288
+ Wed, 18 Mar 2020 10:02:12 -0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 02IA2Akt47448512
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 18 Mar 2020 09:44:01 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5779152052;
- Wed, 18 Mar 2020 09:44:01 +0000 (GMT)
-Received: from [9.203.170.80] (unknown [9.203.170.80])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id B804952065;
- Wed, 18 Mar 2020 09:43:10 +0000 (GMT)
-Subject: Re: [PATCH 10/15] powerpc/watchpoint: Use loop for
- thread_struct->ptrace_bps
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-References: <20200309085806.155823-1-ravi.bangoria@linux.ibm.com>
- <20200309085806.155823-11-ravi.bangoria@linux.ibm.com>
- <0eeeac90-b5e3-722b-2d2c-bb95c81d851a@c-s.fr>
-From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
-Date: Wed, 18 Mar 2020 15:13:01 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.5.0
+ Wed, 18 Mar 2020 10:02:10 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7ADF311C052;
+ Wed, 18 Mar 2020 10:02:10 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 39C3C11C04A;
+ Wed, 18 Mar 2020 10:02:10 +0000 (GMT)
+Received: from pic2.home (unknown [9.145.59.146])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 18 Mar 2020 10:02:10 +0000 (GMT)
+From: Frederic Barrat <fbarrat@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, fbarrat@linux.ibm.com,
+ clombard@linux.ibm.com, felix@linux.ibm.com, ajd@linux.ibm.com,
+ alastair@au1.ibm.com
+Subject: [PATCH v3] ocxl: control via sysfs whether the FPGA is reloaded on a
+ link reset
+Date: Wed, 18 Mar 2020 11:02:10 +0100
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-In-Reply-To: <0eeeac90-b5e3-722b-2d2c-bb95c81d851a@c-s.fr>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 20031809-0016-0000-0000-000002F31937
+x-cbid: 20031810-4275-0000-0000-000003AE5685
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20031809-0017-0000-0000-000033569D96
-Message-Id: <a52ef8d3-b27b-d48d-b0ab-c9b41209a6ca@linux.ibm.com>
+x-cbparentid: 20031810-4276-0000-0000-000038C381D3
+Message-Id: <20200318100210.80035-1-fbarrat@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.645
  definitions=2020-03-18_03:2020-03-17,
  2020-03-18 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- mlxlogscore=999 malwarescore=0 suspectscore=0 clxscore=1015 phishscore=0
- priorityscore=1501 adultscore=0 bulkscore=0 spamscore=0 mlxscore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2003020000 definitions=main-2003180046
+ phishscore=0
+ priorityscore=1501 mlxscore=0 lowpriorityscore=0 bulkscore=0
+ suspectscore=2 clxscore=1015 adultscore=0 spamscore=0 impostorscore=0
+ malwarescore=0 mlxlogscore=999 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2003020000 definitions=main-2003180046
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,95 +99,222 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: apopple@linux.ibm.com, mikey@neuling.org,
- Ravi Bangoria <ravi.bangoria@linux.ibm.com>, peterz@infradead.org,
- oleg@redhat.com, npiggin@gmail.com, linux-kernel@vger.kernel.org,
- paulus@samba.org, jolsa@kernel.org, fweisbec@gmail.com,
- naveen.n.rao@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- mingo@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
->> @@ -1628,6 +1628,9 @@ int copy_thread_tls(unsigned long clone_flags, unsigned long usp,
->>       void (*f)(void);
->>       unsigned long sp = (unsigned long)task_stack_page(p) + THREAD_SIZE;
->>       struct thread_info *ti = task_thread_info(p);
->> +#ifdef CONFIG_HAVE_HW_BREAKPOINT
->> +    int i;
->> +#endif
-> 
-> Could we avoid all those #ifdefs ?
-> 
-> I think if we make p->thread.ptrace_bps[] exist all the time, with a size of 0 when CONFIG_HAVE_HW_BREAKPOINT is not set, then we can drop a lot of #ifdefs.
+From: Philippe Bergheaud <felix@linux.ibm.com>
 
-Hmm.. what you are saying seems possible. But IMO it should be done as
-independent series. Will work on it.
+Some opencapi FPGA images allow to control if the FPGA should be reloaded
+on the next adapter reset. If it is supported, the image specifies it
+through a Vendor Specific DVSEC in the config space of function 0.
 
-> 
->>       klp_init_thread_info(p);
->> @@ -1687,7 +1690,8 @@ int copy_thread_tls(unsigned long clone_flags, unsigned long usp,
->>       p->thread.ksp_limit = (unsigned long)end_of_stack(p);
->>   #endif
->>   #ifdef CONFIG_HAVE_HW_BREAKPOINT
->> -    p->thread.ptrace_bps[0] = NULL;
->> +    for (i = 0; i < nr_wp_slots(); i++)
->> +        p->thread.ptrace_bps[i] = NULL;
->>   #endif
->>       p->thread.fp_save_area = NULL;
->> diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
->> index f6d7955fc61e..e2651f86d56f 100644
->> --- a/arch/powerpc/kernel/ptrace.c
->> +++ b/arch/powerpc/kernel/ptrace.c
-> 
-> You'll have to rebase all this on the series https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=161356 which is about to go into powerpc-next
+Signed-off-by: Philippe Bergheaud <felix@linux.ibm.com>
+---
+Changelog:
+v2:
+  - refine ResetReload debug message
+  - do not call get_function_0() if pci_dev is for function 0
+v3:
+  - avoid get_function_0() in ocxl_config_set_reset_reload also
+       
+ Documentation/ABI/testing/sysfs-class-ocxl | 10 ++++
+ drivers/misc/ocxl/config.c                 | 68 +++++++++++++++++++++-
+ drivers/misc/ocxl/ocxl_internal.h          |  6 ++
+ drivers/misc/ocxl/sysfs.c                  | 35 +++++++++++
+ include/misc/ocxl-config.h                 |  1 +
+ 5 files changed, 119 insertions(+), 1 deletion(-)
 
-Sure. Thanks for heads up.
-
-> 
->> @@ -2829,6 +2829,19 @@ static int set_dac_range(struct task_struct *child,
->>   }
->>   #endif /* CONFIG_PPC_ADV_DEBUG_DAC_RANGE */
->> +#ifdef CONFIG_HAVE_HW_BREAKPOINT
->> +static int empty_ptrace_bp(struct thread_struct *thread)
->> +{
->> +    int i;
->> +
->> +    for (i = 0; i < nr_wp_slots(); i++) {
->> +        if (!thread->ptrace_bps[i])
->> +            return i;
->> +    }
->> +    return -1;
->> +}
->> +#endif
-> 
-> What does this function do exactly ? I seems to do more than what its name suggests.
-
-It finds an empty breakpoint in ptrace_bps[]. But yeah, function name is
-misleading. I'll rename it to find_empty_ptrace_bp().
-
-...
-
->> @@ -2979,10 +2993,10 @@ static long ppc_del_hwdebug(struct task_struct *child, long data)
->>           return -EINVAL;
->>   #ifdef CONFIG_HAVE_HW_BREAKPOINT
->> -    bp = thread->ptrace_bps[0];
->> +    bp = thread->ptrace_bps[data - 1];
-> 
-> Is data checked somewhere to ensure it is not out of boundaries ? Or are we sure it is always within ?
-
-Yes. it's checked. See patch #9:
-
-   @@ -2955,7 +2975,7 @@ static long ppc_del_hwdebug(struct task_struct *child, long data)
-    	}
-    	return rc;
-    #else
-   -	if (data != 1)
-   +	if (data < 1 || data > nr_wp_slots())
-    		return -EINVAL;
-    
-    #ifdef CONFIG_HAVE_HW_BREAKPOINT
-
-Thanks,
-Ravi
+diff --git a/Documentation/ABI/testing/sysfs-class-ocxl b/Documentation/ABI/testing/sysfs-class-ocxl
+index b5b1fa197592..b9ea671d5805 100644
+--- a/Documentation/ABI/testing/sysfs-class-ocxl
++++ b/Documentation/ABI/testing/sysfs-class-ocxl
+@@ -33,3 +33,13 @@ Date:		January 2018
+ Contact:	linuxppc-dev@lists.ozlabs.org
+ Description:	read/write
+ 		Give access the global mmio area for the AFU
++
++What:		/sys/class/ocxl/<afu name>/reload_on_reset
++Date:		February 2020
++Contact:	linuxppc-dev@lists.ozlabs.org
++Description:	read/write
++		Control whether the FPGA is reloaded on a link reset
++			0	Do not reload FPGA image from flash
++			1	Reload FPGA image from flash
++			unavailable
++				The device does not support this capability
+diff --git a/drivers/misc/ocxl/config.c b/drivers/misc/ocxl/config.c
+index c8e19bfb5ef9..b364b6ceb996 100644
+--- a/drivers/misc/ocxl/config.c
++++ b/drivers/misc/ocxl/config.c
+@@ -71,6 +71,20 @@ static int find_dvsec_afu_ctrl(struct pci_dev *dev, u8 afu_idx)
+ 	return 0;
+ }
+ 
++/**
++ * get_function_0() - Find a related PCI device (function 0)
++ * @device: PCI device to match
++ *
++ * Returns a pointer to the related device, or null if not found
++ */
++static struct pci_dev *get_function_0(struct pci_dev *dev)
++{
++	unsigned int devfn = PCI_DEVFN(PCI_SLOT(dev->devfn), 0);
++
++	return pci_get_domain_bus_and_slot(pci_domain_nr(dev->bus),
++					   dev->bus->number, devfn);
++}
++
+ static void read_pasid(struct pci_dev *dev, struct ocxl_fn_config *fn)
+ {
+ 	u16 val;
+@@ -159,7 +173,7 @@ static int read_dvsec_afu_info(struct pci_dev *dev, struct ocxl_fn_config *fn)
+ static int read_dvsec_vendor(struct pci_dev *dev)
+ {
+ 	int pos;
+-	u32 cfg, tlx, dlx;
++	u32 cfg, tlx, dlx, reset_reload;
+ 
+ 	/*
+ 	 * vendor specific DVSEC is optional
+@@ -183,6 +197,58 @@ static int read_dvsec_vendor(struct pci_dev *dev)
+ 	dev_dbg(&dev->dev, "  CFG version = 0x%x\n", cfg);
+ 	dev_dbg(&dev->dev, "  TLX version = 0x%x\n", tlx);
+ 	dev_dbg(&dev->dev, "  DLX version = 0x%x\n", dlx);
++
++	if (ocxl_config_get_reset_reload(dev, &reset_reload) != 0)
++		dev_dbg(&dev->dev, "  ResetReload is not available\n");
++	else
++		dev_dbg(&dev->dev, "  ResetReload = 0x%x\n", reset_reload);
++	return 0;
++}
++
++int ocxl_config_get_reset_reload(struct pci_dev *dev, int *val)
++{
++	int reset_reload = -1;
++	int pos = 0;
++	struct pci_dev *dev0 = dev;
++
++	if (PCI_FUNC(dev->devfn) != 0)
++		dev0 = get_function_0(dev);
++
++	if (dev0)
++		pos = find_dvsec(dev0, OCXL_DVSEC_VENDOR_ID);
++
++	if (pos)
++		pci_read_config_dword(dev0,
++				      pos + OCXL_DVSEC_VENDOR_RESET_RELOAD,
++				      &reset_reload);
++	if (reset_reload == -1)
++		return reset_reload;
++
++	*val = reset_reload & BIT(0);
++	return 0;
++}
++
++int ocxl_config_set_reset_reload(struct pci_dev *dev, int val)
++{
++	int reset_reload = -1;
++	int pos = 0;
++	struct pci_dev *dev0 = dev;
++
++	if (PCI_FUNC(dev->devfn) != 0)
++		dev0 = get_function_0(dev);
++
++	if (dev0)
++		pos = find_dvsec(dev0, OCXL_DVSEC_VENDOR_ID);
++
++	if (pos)
++		pci_read_config_dword(dev0,
++				      pos + OCXL_DVSEC_VENDOR_RESET_RELOAD,
++				      &reset_reload);
++	if (reset_reload == -1)
++		return reset_reload;
++
++	val &= BIT(0);
++	pci_write_config_dword(dev0, pos + OCXL_DVSEC_VENDOR_RESET_RELOAD, val);
+ 	return 0;
+ }
+ 
+diff --git a/drivers/misc/ocxl/ocxl_internal.h b/drivers/misc/ocxl/ocxl_internal.h
+index 345bf843a38e..af9a84aeee6f 100644
+--- a/drivers/misc/ocxl/ocxl_internal.h
++++ b/drivers/misc/ocxl/ocxl_internal.h
+@@ -112,6 +112,12 @@ void ocxl_actag_afu_free(struct ocxl_fn *fn, u32 start, u32 size);
+  */
+ int ocxl_config_get_pasid_info(struct pci_dev *dev, int *count);
+ 
++/*
++ * Control whether the FPGA is reloaded on a link reset
++ */
++int ocxl_config_get_reset_reload(struct pci_dev *dev, int *val);
++int ocxl_config_set_reset_reload(struct pci_dev *dev, int val);
++
+ /*
+  * Check if an AFU index is valid for the given function.
+  *
+diff --git a/drivers/misc/ocxl/sysfs.c b/drivers/misc/ocxl/sysfs.c
+index 58f1ba264206..8f69f7311343 100644
+--- a/drivers/misc/ocxl/sysfs.c
++++ b/drivers/misc/ocxl/sysfs.c
+@@ -51,11 +51,46 @@ static ssize_t contexts_show(struct device *device,
+ 			afu->pasid_count, afu->pasid_max);
+ }
+ 
++static ssize_t reload_on_reset_show(struct device *device,
++		struct device_attribute *attr,
++		char *buf)
++{
++	struct ocxl_afu *afu = to_afu(device);
++	struct ocxl_fn *fn = afu->fn;
++	struct pci_dev *pci_dev = to_pci_dev(fn->dev.parent);
++	int val;
++
++	if (ocxl_config_get_reset_reload(pci_dev, &val))
++		return scnprintf(buf, PAGE_SIZE, "unavailable\n");
++
++	return scnprintf(buf, PAGE_SIZE, "%d\n", val);
++}
++
++static ssize_t reload_on_reset_store(struct device *device,
++		struct device_attribute *attr,
++		const char *buf, size_t count)
++{
++	struct ocxl_afu *afu = to_afu(device);
++	struct ocxl_fn *fn = afu->fn;
++	struct pci_dev *pci_dev = to_pci_dev(fn->dev.parent);
++	int rc, val;
++
++	rc = sscanf(buf, "%i", &val);
++	if ((rc != 1) || !(val == 1 || val == 0))
++		return -EINVAL;
++
++	if (ocxl_config_set_reset_reload(pci_dev, val))
++		return -ENODEV;
++
++	return count;
++}
++
+ static struct device_attribute afu_attrs[] = {
+ 	__ATTR_RO(global_mmio_size),
+ 	__ATTR_RO(pp_mmio_size),
+ 	__ATTR_RO(afu_version),
+ 	__ATTR_RO(contexts),
++	__ATTR_RW(reload_on_reset),
+ };
+ 
+ static ssize_t global_mmio_read(struct file *filp, struct kobject *kobj,
+diff --git a/include/misc/ocxl-config.h b/include/misc/ocxl-config.h
+index 3526fa996a22..ccfd3b463517 100644
+--- a/include/misc/ocxl-config.h
++++ b/include/misc/ocxl-config.h
+@@ -41,5 +41,6 @@
+ #define   OCXL_DVSEC_VENDOR_CFG_VERS            0x0C
+ #define   OCXL_DVSEC_VENDOR_TLX_VERS            0x10
+ #define   OCXL_DVSEC_VENDOR_DLX_VERS            0x20
++#define   OCXL_DVSEC_VENDOR_RESET_RELOAD        0x38
+ 
+ #endif /* _OCXL_CONFIG_H_ */
+-- 
+2.25.1
 
