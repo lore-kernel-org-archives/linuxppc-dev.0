@@ -2,26 +2,25 @@ Return-Path: <SRS0=Ik3v=5D=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	FAKE_REPLY_C,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	FAKE_REPLY_C,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BB8A9C43332
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 21:31:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A28BDC4332D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 21:32:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6932820752
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 21:31:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5255A20752
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 21:32:50 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="J4R5BuBT"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6932820752
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Q/k/7g6F"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5255A20752
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48jNWy6q54zDqBm
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 08:31:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48jNYX3Lb5zDr75
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 08:32:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=helgaas@kernel.org; receiver=<UNKNOWN>)
@@ -29,35 +28,35 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=J4R5BuBT; dkim-atps=neutral
+ header.s=default header.b=Q/k/7g6F; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48jNNv1chFzDqxj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2020 08:25:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48jNQW0nFDzDqfB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2020 08:26:43 +1100 (AEDT)
 Received: from localhost (mobile-166-175-186-165.mycingular.net
  [166.175.186.165])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id A267920772;
- Wed, 18 Mar 2020 21:25:15 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id A258F20772;
+ Wed, 18 Mar 2020 21:26:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1584566716;
- bh=PPihHaGg1zzpn1nHu5VlZHYT+H8Lm/yb44OJhzptGDI=;
+ s=default; t=1584566801;
+ bh=1vEeYFZKs+pqphscw5LB3ggCm30tEd47/HI2FhiZYUE=;
  h=Date:From:To:Cc:Subject:In-Reply-To:From;
- b=J4R5BuBT7s0ufQ6OkQFm2DJaGU3GVO9cGs2MX4LtzTi7i9JWE5dM20xu5JQTXlZ83
- PEvcq3DTg4VilmyOANCyGwCHYadT4otbhpLYSpa8TZJkQXYvR3a8J+LlUM3ulELzZx
- jLKhC0M9bULug4AxIw26CRfmCEZy/H4Ad8J0WRnI=
-Date: Wed, 18 Mar 2020 16:25:13 -0500
+ b=Q/k/7g6Fs8MEcVqp9/2TZdaWhoFsMx+/onLyytrPDHvgE7rsxzjDskMuxtp1gXUyp
+ Wi8odsF7QYIzY8B/+b/sb2a70+RZ3Hw1++0HvDbEESz4VY9HIVMcyf/qe7Y3lXxsgr
+ qFhaS+Q26CaVOqmqGEp0gY8SFNEjRw7VXlRty4cQ=
+Date: Wed, 18 Mar 2020 16:26:39 -0500
 From: Bjorn Helgaas <helgaas@kernel.org>
 To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch V2 01/15] PCI/switchtec: Fix init_completion race
- condition with poll_wait()
-Message-ID: <20200318212513.GA240916@google.com>
+Subject: Re: [patch V2 02/15] pci/switchtec: Replace completion wait queue
+ usage for poll
+Message-ID: <20200318212639.GA242647@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200318204407.497942274@linutronix.de>
+In-Reply-To: <20200318204407.607241357@linutronix.de>
 User-Agent: Mutt/1.12.2 (2019-09-21)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -88,52 +87,127 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Mar 18, 2020 at 09:43:03PM +0100, Thomas Gleixner wrote:
-> From: Logan Gunthorpe <logang@deltatee.com>
+On Wed, Mar 18, 2020 at 09:43:04PM +0100, Thomas Gleixner wrote:
+> From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 > 
-> The call to init_completion() in mrpc_queue_cmd() can theoretically
-> race with the call to poll_wait() in switchtec_dev_poll().
+> The poll callback is using the completion wait queue and sticks it into
+> poll_wait() to wake up pollers after a command has completed.
 > 
->   poll()			write()
->     switchtec_dev_poll()   	  switchtec_dev_write()
->       poll_wait(&s->comp.wait);      mrpc_queue_cmd()
-> 			               init_completion(&s->comp)
-> 				         init_waitqueue_head(&s->comp.wait)
+> This works to some extent, but cannot provide EPOLLEXCLUSIVE support
+> because the waker side uses complete_all() which unconditionally wakes up
+> all waiters. complete_all() is required because completions internally use
+> exclusive wait and complete() only wakes up one waiter by default.
 > 
-> To my knowledge, no one has hit this bug.
+> This mixes conceptually different mechanisms and relies on internal
+> implementation details of completions, which in turn puts contraints on
+> changing the internal implementation of completions.
 > 
-> Fix this by using reinit_completion() instead of init_completion() in
-> mrpc_queue_cmd().
+> Replace it with a regular wait queue and store the state in struct
+> switchtec_user.
 > 
-> Fixes: 080b47def5e5 ("MicroSemi Switchtec management interface driver")
-> Reported-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-> Signed-off-by: Logan Gunthorpe <logang@deltatee.com>
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> Link: https://lkml.kernel.org/r/20200313183608.2646-1-logang@deltatee.com
+> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+> Cc: Kurt Schwemmer <kurt.schwemmer@microsemi.com>
+> Cc: Logan Gunthorpe <logang@deltatee.com>
+> Cc: Bjorn Helgaas <bhelgaas@google.com>
+> Cc: linux-pci@vger.kernel.org
 
 Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 
-Not because I understand and have reviewed this, but because I trust
-you to do the right thing and it belongs with the rest of the series.
+But please tweak the subject so it matches the other:
+
+  - pci/switchtec: Replace completion wait queue usage for poll
+  + PCI/switchtec: Replace completion wait queue usage for poll
 
 > ---
->  drivers/pci/switch/switchtec.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> V2: Reworded changelog.
+> ---
+>  drivers/pci/switch/switchtec.c |   22 +++++++++++++---------
+>  1 file changed, 13 insertions(+), 9 deletions(-)
 > 
-> diff --git a/drivers/pci/switch/switchtec.c b/drivers/pci/switch/switchtec.c
-> index a823b4b8ef8a..81dc7ac01381 100644
 > --- a/drivers/pci/switch/switchtec.c
 > +++ b/drivers/pci/switch/switchtec.c
-> @@ -175,7 +175,7 @@ static int mrpc_queue_cmd(struct switchtec_user *stuser)
+> @@ -52,10 +52,11 @@ struct switchtec_user {
+>  
+>  	enum mrpc_state state;
+>  
+> -	struct completion comp;
+> +	wait_queue_head_t cmd_comp;
+>  	struct kref kref;
+>  	struct list_head list;
+>  
+> +	bool cmd_done;
+>  	u32 cmd;
+>  	u32 status;
+>  	u32 return_code;
+> @@ -77,7 +78,7 @@ static struct switchtec_user *stuser_cre
+>  	stuser->stdev = stdev;
+>  	kref_init(&stuser->kref);
+>  	INIT_LIST_HEAD(&stuser->list);
+> -	init_completion(&stuser->comp);
+> +	init_waitqueue_head(&stuser->cmd_comp);
+>  	stuser->event_cnt = atomic_read(&stdev->event_cnt);
+>  
+>  	dev_dbg(&stdev->dev, "%s: %p\n", __func__, stuser);
+> @@ -175,7 +176,7 @@ static int mrpc_queue_cmd(struct switcht
 >  	kref_get(&stuser->kref);
 >  	stuser->read_len = sizeof(stuser->data);
 >  	stuser_set_state(stuser, MRPC_QUEUED);
-> -	init_completion(&stuser->comp);
-> +	reinit_completion(&stuser->comp);
+> -	reinit_completion(&stuser->comp);
+> +	stuser->cmd_done = false;
 >  	list_add_tail(&stuser->list, &stdev->mrpc_queue);
 >  
 >  	mrpc_cmd_submit(stdev);
-> -- 
-> 2.20.1
-> 
+> @@ -222,7 +223,8 @@ static void mrpc_complete_cmd(struct swi
+>  		memcpy_fromio(stuser->data, &stdev->mmio_mrpc->output_data,
+>  			      stuser->read_len);
+>  out:
+> -	complete_all(&stuser->comp);
+> +	stuser->cmd_done = true;
+> +	wake_up_interruptible(&stuser->cmd_comp);
+>  	list_del_init(&stuser->list);
+>  	stuser_put(stuser);
+>  	stdev->mrpc_busy = 0;
+> @@ -529,10 +531,11 @@ static ssize_t switchtec_dev_read(struct
+>  	mutex_unlock(&stdev->mrpc_mutex);
+>  
+>  	if (filp->f_flags & O_NONBLOCK) {
+> -		if (!try_wait_for_completion(&stuser->comp))
+> +		if (!stuser->cmd_done)
+>  			return -EAGAIN;
+>  	} else {
+> -		rc = wait_for_completion_interruptible(&stuser->comp);
+> +		rc = wait_event_interruptible(stuser->cmd_comp,
+> +					      stuser->cmd_done);
+>  		if (rc < 0)
+>  			return rc;
+>  	}
+> @@ -580,7 +583,7 @@ static __poll_t switchtec_dev_poll(struc
+>  	struct switchtec_dev *stdev = stuser->stdev;
+>  	__poll_t ret = 0;
+>  
+> -	poll_wait(filp, &stuser->comp.wait, wait);
+> +	poll_wait(filp, &stuser->cmd_comp, wait);
+>  	poll_wait(filp, &stdev->event_wq, wait);
+>  
+>  	if (lock_mutex_and_test_alive(stdev))
+> @@ -588,7 +591,7 @@ static __poll_t switchtec_dev_poll(struc
+>  
+>  	mutex_unlock(&stdev->mrpc_mutex);
+>  
+> -	if (try_wait_for_completion(&stuser->comp))
+> +	if (stuser->cmd_done)
+>  		ret |= EPOLLIN | EPOLLRDNORM;
+>  
+>  	if (stuser->event_cnt != atomic_read(&stdev->event_cnt))
+> @@ -1272,7 +1275,8 @@ static void stdev_kill(struct switchtec_
+>  
+>  	/* Wake up and kill any users waiting on an MRPC request */
+>  	list_for_each_entry_safe(stuser, tmpuser, &stdev->mrpc_queue, list) {
+> -		complete_all(&stuser->comp);
+> +		stuser->cmd_done = true;
+> +		wake_up_interruptible(&stuser->cmd_comp);
+>  		list_del_init(&stuser->list);
+>  		stuser_put(stuser);
+>  	}
 > 
