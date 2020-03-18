@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97F1EC43332
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 20:59:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC27BC4332B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 21:02:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 51F76208E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 20:59:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 51F76208E0
+	by mail.kernel.org (Postfix) with ESMTPS id A1CC120777
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 21:02:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A1CC120777
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48jMpV43xRzDqpg
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 07:58:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48jMtp1z1rzDr2K
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 08:02:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=linutronix.de
  (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
@@ -29,22 +29,22 @@ Received: from Galois.linutronix.de (Galois.linutronix.de
  [IPv6:2a0a:51c0:0:12e:550::1])
  (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48jMXn3HH6zDqyq
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48jMXn5qQrzDqys
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2020 07:47:05 +1100 (AEDT)
 Received: from p5de0bf0b.dip0.t-ipconnect.de ([93.224.191.11]
  helo=nanos.tec.linutronix.de)
  by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
  (Exim 4.80) (envelope-from <tglx@linutronix.de>)
- id 1jEfaO-0006BC-A3; Wed, 18 Mar 2020 21:46:44 +0100
+ id 1jEfaJ-000666-4B; Wed, 18 Mar 2020 21:46:39 +0100
 Received: from nanos.tec.linutronix.de (localhost [IPv6:::1])
- by nanos.tec.linutronix.de (Postfix) with ESMTP id 13D7C1040D1;
- Wed, 18 Mar 2020 21:46:37 +0100 (CET)
-Message-Id: <20200318204408.319891308@linutronix.de>
+ by nanos.tec.linutronix.de (Postfix) with ESMTP id E74691040C9;
+ Wed, 18 Mar 2020 21:46:35 +0100 (CET)
+Message-Id: <20200318204407.793899611@linutronix.de>
 User-Agent: quilt/0.65
-Date: Wed, 18 Mar 2020 21:43:11 +0100
+Date: Wed, 18 Mar 2020 21:43:06 +0100
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [patch V2 09/15] timekeeping: Split jiffies seqlock
+Subject: [patch V2 04/15] orinoco_usb: Use the regular completion interfaces
 References: <20200318204302.693307984@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -82,167 +82,90 @@ Sender: "Linuxppc-dev"
 
 From: Thomas Gleixner <tglx@linutronix.de>
 
-seqlock consists of a sequence counter and a spinlock_t which is used to
-serialize the writers. spinlock_t is substituted by a "sleeping" spinlock
-on PREEMPT_RT enabled kernels which breaks the usage in the timekeeping
-code as the writers are executed in hard interrupt and therefore
-non-preemptible context even on PREEMPT_RT.
+The completion usage in this driver is interesting:
 
-The spinlock in seqlock cannot be unconditionally replaced by a
-raw_spinlock_t as many seqlock users have nesting spinlock sections or
-other code which is not suitable to run in truly atomic context on RT.
+  - it uses a magic complete function which according to the comment was
+    implemented by invoking complete() four times in a row because
+    complete_all() was not exported at that time.
 
-Instead of providing a raw_seqlock API for a single use case, open code the
-seqlock for the jiffies use case and implement it with a raw_spinlock_t and
-a sequence counter.
+  - it uses an open coded wait/poll which checks completion:done. Only one wait
+    side (device removal) uses the regular wait_for_completion() interface.
 
+The rationale behind this is to prevent that wait_for_completion() consumes
+completion::done which would prevent that all waiters are woken. This is not
+necessary with complete_all() as that sets completion::done to UINT_MAX which
+is left unmodified by the woken waiters.
+
+Replace the magic complete function with complete_all() and convert the
+open coded wait/poll to regular completion interfaces.
+
+This changes the wait to exclusive wait mode. But that does not make any
+difference because the wakers use complete_all() which ignores the
+exclusive mode.
+
+Reported-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Kalle Valo <kvalo@codeaurora.org>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: linux-wireless@vger.kernel.org
+Cc: netdev@vger.kernel.org
 ---
- kernel/time/jiffies.c     |    7 ++++---
- kernel/time/tick-common.c |   10 ++++++----
- kernel/time/tick-sched.c  |   19 ++++++++++++-------
- kernel/time/timekeeping.c |    6 ++++--
- kernel/time/timekeeping.h |    3 ++-
- 5 files changed, 28 insertions(+), 17 deletions(-)
+V2: New patch to avoid conversion to swait functions later.
+---
+ drivers/net/wireless/intersil/orinoco/orinoco_usb.c |   21 ++++----------------
+ 1 file changed, 5 insertions(+), 16 deletions(-)
 
---- a/kernel/time/jiffies.c
-+++ b/kernel/time/jiffies.c
-@@ -58,7 +58,8 @@ static struct clocksource clocksource_ji
- 	.max_cycles	= 10,
- };
- 
--__cacheline_aligned_in_smp DEFINE_SEQLOCK(jiffies_lock);
-+__cacheline_aligned_in_smp DEFINE_RAW_SPINLOCK(jiffies_lock);
-+__cacheline_aligned_in_smp seqcount_t jiffies_seq;
- 
- #if (BITS_PER_LONG < 64)
- u64 get_jiffies_64(void)
-@@ -67,9 +68,9 @@ u64 get_jiffies_64(void)
- 	u64 ret;
- 
- 	do {
--		seq = read_seqbegin(&jiffies_lock);
-+		seq = read_seqcount_begin(&jiffies_seq);
- 		ret = jiffies_64;
--	} while (read_seqretry(&jiffies_lock, seq));
-+	} while (read_seqcount_retry(&jiffies_seq, seq));
- 	return ret;
+--- a/drivers/net/wireless/intersil/orinoco/orinoco_usb.c
++++ b/drivers/net/wireless/intersil/orinoco/orinoco_usb.c
+@@ -365,17 +365,6 @@ static struct request_context *ezusb_all
+ 	return ctx;
  }
- EXPORT_SYMBOL(get_jiffies_64);
---- a/kernel/time/tick-common.c
-+++ b/kernel/time/tick-common.c
-@@ -84,13 +84,15 @@ int tick_is_oneshot_available(void)
- static void tick_periodic(int cpu)
+ 
+-
+-/* Hopefully the real complete_all will soon be exported, in the mean
+- * while this should work. */
+-static inline void ezusb_complete_all(struct completion *comp)
+-{
+-	complete(comp);
+-	complete(comp);
+-	complete(comp);
+-	complete(comp);
+-}
+-
+ static void ezusb_ctx_complete(struct request_context *ctx)
  {
- 	if (tick_do_timer_cpu == cpu) {
--		write_seqlock(&jiffies_lock);
-+		raw_spin_lock(&jiffies_lock);
-+		write_seqcount_begin(&jiffies_seq);
+ 	struct ezusb_priv *upriv = ctx->upriv;
+@@ -409,7 +398,7 @@ static void ezusb_ctx_complete(struct re
  
- 		/* Keep track of the next tick event */
- 		tick_next_period = ktime_add(tick_next_period, tick_period);
+ 			netif_wake_queue(dev);
+ 		}
+-		ezusb_complete_all(&ctx->done);
++		complete_all(&ctx->done);
+ 		ezusb_request_context_put(ctx);
+ 		break;
  
- 		do_timer(1);
--		write_sequnlock(&jiffies_lock);
-+		write_seqcount_end(&jiffies_seq);
-+		raw_spin_unlock(&jiffies_lock);
- 		update_wall_time();
- 	}
- 
-@@ -162,9 +164,9 @@ void tick_setup_periodic(struct clock_ev
- 		ktime_t next;
- 
- 		do {
--			seq = read_seqbegin(&jiffies_lock);
-+			seq = read_seqcount_begin(&jiffies_seq);
- 			next = tick_next_period;
--		} while (read_seqretry(&jiffies_lock, seq));
-+		} while (read_seqcount_retry(&jiffies_seq, seq));
- 
- 		clockevents_switch_state(dev, CLOCK_EVT_STATE_ONESHOT);
- 
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -65,7 +65,8 @@ static void tick_do_update_jiffies64(kti
- 		return;
- 
- 	/* Reevaluate with jiffies_lock held */
--	write_seqlock(&jiffies_lock);
-+	raw_spin_lock(&jiffies_lock);
-+	write_seqcount_begin(&jiffies_seq);
- 
- 	delta = ktime_sub(now, last_jiffies_update);
- 	if (delta >= tick_period) {
-@@ -91,10 +92,12 @@ static void tick_do_update_jiffies64(kti
- 		/* Keep the tick_next_period variable up to date */
- 		tick_next_period = ktime_add(last_jiffies_update, tick_period);
- 	} else {
--		write_sequnlock(&jiffies_lock);
-+		write_seqcount_end(&jiffies_seq);
-+		raw_spin_unlock(&jiffies_lock);
- 		return;
- 	}
--	write_sequnlock(&jiffies_lock);
-+	write_seqcount_end(&jiffies_seq);
-+	raw_spin_unlock(&jiffies_lock);
- 	update_wall_time();
- }
- 
-@@ -105,12 +108,14 @@ static ktime_t tick_init_jiffy_update(vo
- {
- 	ktime_t period;
- 
--	write_seqlock(&jiffies_lock);
-+	raw_spin_lock(&jiffies_lock);
-+	write_seqcount_begin(&jiffies_seq);
- 	/* Did we start the jiffies update yet ? */
- 	if (last_jiffies_update == 0)
- 		last_jiffies_update = tick_next_period;
- 	period = last_jiffies_update;
--	write_sequnlock(&jiffies_lock);
-+	write_seqcount_end(&jiffies_seq);
-+	raw_spin_unlock(&jiffies_lock);
- 	return period;
- }
- 
-@@ -676,10 +681,10 @@ static ktime_t tick_nohz_next_event(stru
- 
- 	/* Read jiffies and the time when jiffies were updated last */
- 	do {
--		seq = read_seqbegin(&jiffies_lock);
-+		seq = read_seqcount_begin(&jiffies_seq);
- 		basemono = last_jiffies_update;
- 		basejiff = jiffies;
--	} while (read_seqretry(&jiffies_lock, seq));
-+	} while (read_seqcount_retry(&jiffies_seq, seq));
- 	ts->last_jiffies = basejiff;
- 	ts->timer_expires_base = basemono;
- 
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -2397,8 +2397,10 @@ EXPORT_SYMBOL(hardpps);
-  */
- void xtime_update(unsigned long ticks)
- {
--	write_seqlock(&jiffies_lock);
-+	raw_spin_lock(&jiffies_lock);
-+	write_seqcount_begin(&jiffies_seq);
- 	do_timer(ticks);
--	write_sequnlock(&jiffies_lock);
-+	write_seqcount_end(&jiffies_seq);
-+	raw_spin_unlock(&jiffies_lock);
- 	update_wall_time();
- }
---- a/kernel/time/timekeeping.h
-+++ b/kernel/time/timekeeping.h
-@@ -25,7 +25,8 @@ static inline void sched_clock_resume(vo
- extern void do_timer(unsigned long ticks);
- extern void update_wall_time(void);
- 
--extern seqlock_t jiffies_lock;
-+extern raw_spinlock_t jiffies_lock;
-+extern seqcount_t jiffies_seq;
- 
- #define CS_NAME_LEN	32
- 
+@@ -419,7 +408,7 @@ static void ezusb_ctx_complete(struct re
+ 			/* This is normal, as all request contexts get flushed
+ 			 * when the device is disconnected */
+ 			err("Called, CTX not terminating, but device gone");
+-			ezusb_complete_all(&ctx->done);
++			complete_all(&ctx->done);
+ 			ezusb_request_context_put(ctx);
+ 			break;
+ 		}
+@@ -690,11 +679,11 @@ static void ezusb_req_ctx_wait(struct ez
+ 			 * get the chance to run themselves. So we make sure
+ 			 * that we don't sleep for ever */
+ 			int msecs = DEF_TIMEOUT * (1000 / HZ);
+-			while (!ctx->done.done && msecs--)
++
++			while (!try_wait_for_completion(&ctx->done) && msecs--)
+ 				udelay(1000);
+ 		} else {
+-			wait_event_interruptible(ctx->done.wait,
+-						 ctx->done.done);
++			wait_for_completion(&ctx->done);
+ 		}
+ 		break;
+ 	default:
 
