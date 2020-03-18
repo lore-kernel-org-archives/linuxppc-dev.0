@@ -2,99 +2,49 @@ Return-Path: <SRS0=Ik3v=5D=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	HTML_MESSAGE,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F04A7C5ACD6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 10:18:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1678FC10DCE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 10:20:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AF1F02076F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 10:18:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AF1F02076F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 85E322076F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 10:20:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 85E322076F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48j5bw3r2PzDqwW
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 21:18:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48j5dx2z8lzDqdq
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 21:20:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ganeshgr@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=suse.com (client-ip=195.135.220.15; helo=mx2.suse.de;
+ envelope-from=mhocko@suse.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=none (p=none dis=none) header.from=suse.com
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48hbLs2sRPzDqjh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2020 01:35:49 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 02HEWD3v085421
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2020 10:35:46 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2yru54bp99-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2020 10:35:46 -0400
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ganeshgr@linux.ibm.com>;
- Tue, 17 Mar 2020 14:35:44 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 17 Mar 2020 14:35:42 -0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 02HEZfxq55771146
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 17 Mar 2020 14:35:41 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9C044A4051;
- Tue, 17 Mar 2020 14:35:41 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5F4B5A4040;
- Tue, 17 Mar 2020 14:35:40 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.199.59.221])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 17 Mar 2020 14:35:40 +0000 (GMT)
-Subject: Re: [PATCH] powerpc/pseries: Fix MCE handling on pseries
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- mpe@ellerman.id.au
-References: <20200313140418.7940-1-ganeshgr@linux.ibm.com>
- <1584157063.g5s75uhbdu.astroid@bobo.none>
- <d22f9ef9-07db-9615-6420-001b85dd2742@linux.ibm.com>
- <1584437866.2pbq6ca4ia.astroid@bobo.none>
-From: Ganesh <ganeshgr@linux.ibm.com>
-Date: Tue, 17 Mar 2020 20:05:39 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.3.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48j5Ft18wfzDqv8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2020 21:03:06 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx2.suse.de (Postfix) with ESMTP id 7734EAC6B;
+ Wed, 18 Mar 2020 10:02:58 +0000 (UTC)
+Date: Wed, 18 Mar 2020 11:02:56 +0100
+From: Michal Hocko <mhocko@suse.com>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 1/4] mm: Check for node_online in node_present_pages
+Message-ID: <20200318100256.GH21362@dhcp22.suse.cz>
+References: <20200318072810.9735-1-srikar@linux.vnet.ibm.com>
+ <20200318072810.9735-2-srikar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1584437866.2pbq6ca4ia.astroid@bobo.none>
-Content-Type: multipart/alternative;
- boundary="------------A03758E1FEFCED53C9652184"
-Content-Language: en-US
-X-TM-AS-GCONF: 00
-x-cbid: 20031714-0020-0000-0000-000003B5EB0B
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20031714-0021-0000-0000-0000220E4FED
-Message-Id: <3d8acf3d-4996-3b4d-bc06-0ef7525035bb@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.645
- definitions=2020-03-17_05:2020-03-17,
- 2020-03-17 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015
- lowpriorityscore=0 spamscore=0 bulkscore=0 adultscore=0 impostorscore=0
- phishscore=0 mlxscore=0 mlxlogscore=999 priorityscore=1501 malwarescore=0
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2003020000 definitions=main-2003170061
-X-Mailman-Approved-At: Wed, 18 Mar 2020 21:15:10 +1100
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200318072810.9735-2-srikar@linux.vnet.ibm.com>
+X-Mailman-Approved-At: Wed, 18 Mar 2020 21:15:09 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,214 +56,92 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mahesh@linux.vnet.ibm.com
+Cc: Sachin Sant <sachinp@linux.vnet.ibm.com>,
+ Nathan Lynch <nathanl@linux.ibm.com>, Bharata B Rao <bharata@linux.ibm.com>,
+ linux-mm@kvack.org, Kirill Tkhai <ktkhai@virtuozzo.com>,
+ Mel Gorman <mgorman@suse.de>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Christopher Lameter <cl@linux.com>, Vlastimil Babka <vbabka@suse.cz>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is a multi-part message in MIME format.
---------------A03758E1FEFCED53C9652184
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+On Wed 18-03-20 12:58:07, Srikar Dronamraju wrote:
+> Calling a kmalloc_node on a possible node which is not yet onlined can
+> lead to panic. Currently node_present_pages() doesn't verify the node is
+> online before accessing the pgdat for the node. However pgdat struct may
+> not be available resulting in a crash.
+> 
+> NIP [c0000000003d55f4] ___slab_alloc+0x1f4/0x760
+> LR [c0000000003d5b94] __slab_alloc+0x34/0x60
+> Call Trace:
+> [c0000008b3783960] [c0000000003d5734] ___slab_alloc+0x334/0x760 (unreliable)
+> [c0000008b3783a40] [c0000000003d5b94] __slab_alloc+0x34/0x60
+> [c0000008b3783a70] [c0000000003d6fa0] __kmalloc_node+0x110/0x490
+> [c0000008b3783af0] [c0000000003443d8] kvmalloc_node+0x58/0x110
+> [c0000008b3783b30] [c0000000003fee38] mem_cgroup_css_online+0x108/0x270
+> [c0000008b3783b90] [c000000000235aa8] online_css+0x48/0xd0
+> [c0000008b3783bc0] [c00000000023eaec] cgroup_apply_control_enable+0x2ec/0x4d0
+> [c0000008b3783ca0] [c000000000242318] cgroup_mkdir+0x228/0x5f0
+> [c0000008b3783d10] [c00000000051e170] kernfs_iop_mkdir+0x90/0xf0
+> [c0000008b3783d50] [c00000000043dc00] vfs_mkdir+0x110/0x230
+> [c0000008b3783da0] [c000000000441c90] do_mkdirat+0xb0/0x1a0
+> [c0000008b3783e20] [c00000000000b278] system_call+0x5c/0x68
+> 
+> Fix this by verifying the node is online before accessing the pgdat
+> structure. Fix the same for node_spanned_pages() too.
+> 
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: linux-mm@kvack.org
+> Cc: Mel Gorman <mgorman@suse.de>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Sachin Sant <sachinp@linux.vnet.ibm.com>
+> Cc: Michal Hocko <mhocko@kernel.org>
+> Cc: Christopher Lameter <cl@linux.com>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+> Cc: Kirill Tkhai <ktkhai@virtuozzo.com>
+> Cc: Vlastimil Babka <vbabka@suse.cz>
+> Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+> Cc: Bharata B Rao <bharata@linux.ibm.com>
+> Cc: Nathan Lynch <nathanl@linux.ibm.com>
+> 
+> Reported-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
+> Tested-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
+> Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+> ---
+>  include/linux/mmzone.h | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+> index f3f264826423..88078a3b95e5 100644
+> --- a/include/linux/mmzone.h
+> +++ b/include/linux/mmzone.h
+> @@ -756,8 +756,10 @@ typedef struct pglist_data {
+>  	atomic_long_t		vm_stat[NR_VM_NODE_STAT_ITEMS];
+>  } pg_data_t;
+>  
+> -#define node_present_pages(nid)	(NODE_DATA(nid)->node_present_pages)
+> -#define node_spanned_pages(nid)	(NODE_DATA(nid)->node_spanned_pages)
+> +#define node_present_pages(nid)		\
+> +	(node_online(nid) ? NODE_DATA(nid)->node_present_pages : 0)
+> +#define node_spanned_pages(nid)		\
+> +	(node_online(nid) ? NODE_DATA(nid)->node_spanned_pages : 0)
 
+I believe this is a wrong approach. We really do not want to special
+case all the places which require NODE_DATA. Can we please go and
+allocate pgdat for all possible nodes?
 
+The current state of memory less hacks subtle bugs poping up here and
+there just prove that we should have done that from the very begining
+IMHO.
 
-On 3/17/20 3:31 PM, Nicholas Piggin wrote:
-> Ganesh's on March 16, 2020 9:47 pm:
->>
->> On 3/14/20 9:18 AM, Nicholas Piggin wrote:
->>> Ganesh Goudar's on March 14, 2020 12:04 am:
->>>> MCE handling on pSeries platform fails as recent rework to use common
->>>> code for pSeries and PowerNV in machine check error handling tries to
->>>> access per-cpu variables in realmode. The per-cpu variables may be
->>>> outside the RMO region on pSeries platform and needs translation to be
->>>> enabled for access. Just moving these per-cpu variable into RMO region
->>>> did'nt help because we queue some work to workqueues in real mode, which
->>>> again tries to touch per-cpu variables.
->>> Which queues are these? We should not be using Linux workqueues, but the
->>> powerpc mce code which uses irq_work.
->> Yes, irq work queues accesses memory outside RMO.
->> irq_work_queue()->__irq_work_queue_local()->[this_cpu_ptr(&lazy_list) | this_cpu_ptr(&raised_list)]
-> Hmm, okay.
->
->>>> Also fwnmi_release_errinfo()
->>>> cannot be called when translation is not enabled.
->>> Why not?
->> It crashes when we try to get RTAS token for "ibm, nmi-interlock" device
->> tree node. But yes we can avoid it by storing it rtas_token somewhere but haven't
->> tried it, here is the backtrace I got when fwnmi_release_errinfo() called from
->> realmode handler.
-> Okay, I actually had problems with that messing up soft-irq state too
-> and so I sent a patch to get rid of it, but that's the least of your
-> problems really.
->
->>>> This patch fixes this by enabling translation in the exception handler
->>>> when all required real mode handling is done. This change only affects
->>>> the pSeries platform.
->>> Not supposed to do this, because we might not be in a state
->>> where the MMU is ready to be turned on at this point.
->>>
->>> I'd like to understand better which accesses are a problem, and whether
->>> we can fix them all to be in the RMO.
->> I faced three such access problems,
->>    * accessing per-cpu data (like mce_event,mce_event_queue and mce_event_queue),
->>      we can move this inside RMO.
->>    * calling fwnmi_release_errinfo().
->>    * And queuing work to irq_work_queue, not sure how to fix this.
-> Yeah. The irq_work_queue one is the biggest problem.
->
-> This code "worked" prior to the series unifying pseries and powernv
-> machine check handlers, 9ca766f9891d ("powerpc/64s/pseries: machine
-> check convert to use common event code") and friends. But it does in
-> basically the same way as your fix (i.e., it runs this early handler
-> in virtual mode), but that's not really the right fix.
->
-> Consider: you get a SLB multi hit on a kernel address due to hardware or
-> software error. That access causes a MCE, but before the error can be
-> decode to save and flush the SLB, you turn on relocation and that
-> causes another SLB multi hit...
+>  #ifdef CONFIG_FLAT_NODE_MEM_MAP
+>  #define pgdat_page_nr(pgdat, pagenr)	((pgdat)->node_mem_map + (pagenr))
+>  #else
+> -- 
+> 2.18.1
 
-We turn on relocation only after all the realmode handling/recovery is done
-like SLB flush and reload, All we do after we turn relocation on is saving
-mce event to array and queuing the work to irq_workqueue.
-So we are good to turn it on here.
-
-> I think the irq_work subsystem will have to be changed to use an array
-> unfortunately.
->
-> Thanks,
-> Nick
->
-
-
---------------A03758E1FEFCED53C9652184
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: 7bit
-
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  </head>
-  <body text="#000000" bgcolor="#FFFFFF">
-    <br>
-    <br>
-    <div class="moz-cite-prefix">On 3/17/20 3:31 PM, Nicholas Piggin
-      wrote:<br>
-    </div>
-    <blockquote type="cite"
-      cite="mid:1584437866.2pbq6ca4ia.astroid@bobo.none">
-      <pre class="moz-quote-pre" wrap="">Ganesh's on March 16, 2020 9:47 pm:
-</pre>
-      <blockquote type="cite">
-        <pre class="moz-quote-pre" wrap="">
-
-On 3/14/20 9:18 AM, Nicholas Piggin wrote:
-</pre>
-        <blockquote type="cite">
-          <pre class="moz-quote-pre" wrap="">Ganesh Goudar's on March 14, 2020 12:04 am:
-</pre>
-          <blockquote type="cite">
-            <pre class="moz-quote-pre" wrap="">MCE handling on pSeries platform fails as recent rework to use common
-code for pSeries and PowerNV in machine check error handling tries to
-access per-cpu variables in realmode. The per-cpu variables may be
-outside the RMO region on pSeries platform and needs translation to be
-enabled for access. Just moving these per-cpu variable into RMO region
-did'nt help because we queue some work to workqueues in real mode, which
-again tries to touch per-cpu variables.
-</pre>
-          </blockquote>
-          <pre class="moz-quote-pre" wrap="">Which queues are these? We should not be using Linux workqueues, but the
-powerpc mce code which uses irq_work.
-</pre>
-        </blockquote>
-        <pre class="moz-quote-pre" wrap="">
-Yes, irq work queues accesses memory outside RMO.
-irq_work_queue()-&gt;__irq_work_queue_local()-&gt;[this_cpu_ptr(&amp;lazy_list) | this_cpu_ptr(&amp;raised_list)]
-</pre>
-      </blockquote>
-      <pre class="moz-quote-pre" wrap="">
-Hmm, okay.
-
-</pre>
-      <blockquote type="cite">
-        <blockquote type="cite">
-          <blockquote type="cite">
-            <pre class="moz-quote-pre" wrap="">Also fwnmi_release_errinfo()
-cannot be called when translation is not enabled.
-</pre>
-          </blockquote>
-          <pre class="moz-quote-pre" wrap="">Why not?
-</pre>
-        </blockquote>
-        <pre class="moz-quote-pre" wrap="">
-It crashes when we try to get RTAS token for "ibm, nmi-interlock" device
-tree node. But yes we can avoid it by storing it rtas_token somewhere but haven't
-tried it, here is the backtrace I got when fwnmi_release_errinfo() called from
-realmode handler.
-</pre>
-      </blockquote>
-      <pre class="moz-quote-pre" wrap="">
-Okay, I actually had problems with that messing up soft-irq state too
-and so I sent a patch to get rid of it, but that's the least of your
-problems really.
-
-</pre>
-      <blockquote type="cite">
-        <blockquote type="cite">
-          <blockquote type="cite">
-            <pre class="moz-quote-pre" wrap="">This patch fixes this by enabling translation in the exception handler
-when all required real mode handling is done. This change only affects
-the pSeries platform.
-</pre>
-          </blockquote>
-          <pre class="moz-quote-pre" wrap="">Not supposed to do this, because we might not be in a state
-where the MMU is ready to be turned on at this point.
-
-I'd like to understand better which accesses are a problem, and whether
-we can fix them all to be in the RMO.
-</pre>
-        </blockquote>
-        <pre class="moz-quote-pre" wrap="">
-I faced three such access problems,
-  * accessing per-cpu data (like mce_event,mce_event_queue and mce_event_queue),
-    we can move this inside RMO.
-  * calling fwnmi_release_errinfo().
-  * And queuing work to irq_work_queue, not sure how to fix this.
-</pre>
-      </blockquote>
-      <pre class="moz-quote-pre" wrap="">
-Yeah. The irq_work_queue one is the biggest problem.
-
-This code "worked" prior to the series unifying pseries and powernv
-machine check handlers, 9ca766f9891d ("powerpc/64s/pseries: machine 
-check convert to use common event code") and friends. But it does in
-basically the same way as your fix (i.e., it runs this early handler
-in virtual mode), but that's not really the right fix.
-
-Consider: you get a SLB multi hit on a kernel address due to hardware or 
-software error. That access causes a MCE, but before the error can be 
-decode to save and flush the SLB, you turn on relocation and that
-causes another SLB multi hit...</pre>
-    </blockquote>
-    <pre>We turn on relocation only after all the realmode handling/recovery is done
-like SLB flush and reload, All we do after we turn relocation on is saving
-mce event to array and queuing the work to irq_workqueue.
-So we are good to turn it on here.
-</pre>
-    <blockquote type="cite"
-      cite="mid:1584437866.2pbq6ca4ia.astroid@bobo.none">
-      <pre class="moz-quote-pre" wrap="">
-I think the irq_work subsystem will have to be changed to use an array
-unfortunately.
-
-Thanks,
-Nick
-
-</pre>
-    </blockquote>
-    <br>
-  </body>
-</html>
-
---------------A03758E1FEFCED53C9652184--
-
+-- 
+Michal Hocko
+SUSE Labs
