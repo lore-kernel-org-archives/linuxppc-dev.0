@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9FB4EC4332B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 21:27:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 04CFBC4332B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 21:29:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 46E0320772
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 21:27:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A755020753
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 21:29:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="U8q8IVLd"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 46E0320772
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="C/fnKMGP"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A755020753
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48jNRH2xBvzDr3b
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 08:27:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48jNTr3kFjzDqhs
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 08:29:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
@@ -28,34 +28,34 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=U8q8IVLd; dkim-atps=neutral
+ header.s=default header.b=C/fnKMGP; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48jMlw5vmczDr0x
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2020 07:56:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48jMmC3pz4zDr0x
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2020 07:56:59 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id D27592166E;
- Wed, 18 Mar 2020 20:56:39 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id A10CA2166E;
+ Wed, 18 Mar 2020 20:56:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1584565000;
- bh=4Ki+qkxU39QDsDVJd+9zZO5BdWzNnwZi+XZF9+iCI3o=;
+ s=default; t=1584565017;
+ bh=X7SO+AFWtttTHvmpiHOIjqHujUY1avAOlL7VXiJYJl0=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=U8q8IVLdpW62OFFSEYFQagnSS6872zzbVhF7/yz0TmC6Ok8+Htqapa8fPwDoGAj8a
- x5JOu7EbuVz3c9IDSr4QwC9+UJ5639fSffnWzpIy4TBpDFO2PjHebUlePmEzUAqm10
- id9QuYfBWHv/Yuz9Ti+apXdf2XPpAzbw0t1KQmWs=
+ b=C/fnKMGPRcdR2tZN3S/29Bd3UX3pbPwmqoHYuYuMVBbQjtSLv10qi3Tcd0z2pSLM1
+ mZxFjOQvu6v0cH20/69pKBzYbCrITY80PlfyoKbhJKEimcmaoz9Jds+WBpVsCkw+pI
+ HIJUaDgFW+T4z7YA7AKewVHQEDSLqBlEzSTlnuok=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 09/15] dt-bindings: net: FMan erratum A050385
-Date: Wed, 18 Mar 2020 16:56:23 -0400
-Message-Id: <20200318205629.17750-9-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.4 07/12] dt-bindings: net: FMan erratum A050385
+Date: Wed, 18 Mar 2020 16:56:43 -0400
+Message-Id: <20200318205648.17937-7-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20200318205629.17750-1-sashal@kernel.org>
-References: <20200318205629.17750-1-sashal@kernel.org>
+In-Reply-To: <20200318205648.17937-1-sashal@kernel.org>
+References: <20200318205648.17937-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -142,7 +142,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 7 insertions(+)
 
 diff --git a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-index df873d1f3b7c5..2aaae210317bb 100644
+index 1fc5328c0651b..23708f3f4e58a 100644
 --- a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
 +++ b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
 @@ -110,6 +110,13 @@ PROPERTIES
