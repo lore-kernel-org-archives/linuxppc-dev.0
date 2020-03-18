@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B735DC4332B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 21:06:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D861DC4332D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 21:09:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3B38720409
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 21:06:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3B38720409
+	by mail.kernel.org (Postfix) with ESMTPS id 91F9720409
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2020 21:09:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 91F9720409
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48jMyj2pQHzDqZj
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 08:06:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48jN2w3LF7zDqlR
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 08:09:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=linutronix.de
  (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
@@ -29,23 +29,22 @@ Received: from Galois.linutronix.de (Galois.linutronix.de
  [IPv6:2a0a:51c0:0:12e:550::1])
  (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48jMXn75b3zDqx9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2020 07:47:05 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48jMXp5cSZzDqyq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2020 07:47:06 +1100 (AEDT)
 Received: from p5de0bf0b.dip0.t-ipconnect.de ([93.224.191.11]
  helo=nanos.tec.linutronix.de)
  by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
  (Exim 4.80) (envelope-from <tglx@linutronix.de>)
- id 1jEfaH-00065h-5J; Wed, 18 Mar 2020 21:46:37 +0100
+ id 1jEfaO-0006CC-Ol; Wed, 18 Mar 2020 21:46:45 +0100
 Received: from nanos.tec.linutronix.de (localhost [IPv6:::1])
- by nanos.tec.linutronix.de (Postfix) with ESMTP id 79FA31040C6;
- Wed, 18 Mar 2020 21:46:35 +0100 (CET)
-Message-Id: <20200318204407.607241357@linutronix.de>
+ by nanos.tec.linutronix.de (Postfix) with ESMTP id 2A8F31040CB;
+ Wed, 18 Mar 2020 21:46:36 +0100 (CET)
+Message-Id: <20200318204407.901266791@linutronix.de>
 User-Agent: quilt/0.65
-Date: Wed, 18 Mar 2020 21:43:04 +0100
+Date: Wed, 18 Mar 2020 21:43:07 +0100
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [patch V2 02/15] pci/switchtec: Replace completion wait queue usage
- for poll
+Subject: [patch V2 05/15] acpi: Remove header dependency
 References: <20200318204302.693307984@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -81,118 +80,58 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+In order to avoid future header hell, remove the inclusion of
+proc_fs.h from acpi_bus.h. All it needs is a forward declaration of a
+struct.
 
-The poll callback is using the completion wait queue and sticks it into
-poll_wait() to wake up pollers after a command has completed.
-
-This works to some extent, but cannot provide EPOLLEXCLUSIVE support
-because the waker side uses complete_all() which unconditionally wakes up
-all waiters. complete_all() is required because completions internally use
-exclusive wait and complete() only wakes up one waiter by default.
-
-This mixes conceptually different mechanisms and relies on internal
-implementation details of completions, which in turn puts contraints on
-changing the internal implementation of completions.
-
-Replace it with a regular wait queue and store the state in struct
-switchtec_user.
-
-Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-Cc: Kurt Schwemmer <kurt.schwemmer@microsemi.com>
-Cc: Logan Gunthorpe <logang@deltatee.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>
-Cc: linux-pci@vger.kernel.org
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
-V2: Reworded changelog.
----
- drivers/pci/switch/switchtec.c |   22 +++++++++++++---------
- 1 file changed, 13 insertions(+), 9 deletions(-)
+ drivers/platform/x86/dell-smo8800.c                      |    1 +
+ drivers/platform/x86/wmi.c                               |    1 +
+ drivers/thermal/intel/int340x_thermal/acpi_thermal_rel.c |    1 +
+ include/acpi/acpi_bus.h                                  |    2 +-
+ 4 files changed, 4 insertions(+), 1 deletion(-)
 
---- a/drivers/pci/switch/switchtec.c
-+++ b/drivers/pci/switch/switchtec.c
-@@ -52,10 +52,11 @@ struct switchtec_user {
+--- a/drivers/platform/x86/dell-smo8800.c
++++ b/drivers/platform/x86/dell-smo8800.c
+@@ -16,6 +16,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/miscdevice.h>
+ #include <linux/uaccess.h>
++#include <linux/fs.h>
  
- 	enum mrpc_state state;
+ struct smo8800_device {
+ 	u32 irq;                     /* acpi device irq */
+--- a/drivers/platform/x86/wmi.c
++++ b/drivers/platform/x86/wmi.c
+@@ -29,6 +29,7 @@
+ #include <linux/uaccess.h>
+ #include <linux/uuid.h>
+ #include <linux/wmi.h>
++#include <linux/fs.h>
+ #include <uapi/linux/wmi.h>
  
--	struct completion comp;
-+	wait_queue_head_t cmd_comp;
- 	struct kref kref;
- 	struct list_head list;
+ ACPI_MODULE_NAME("wmi");
+--- a/drivers/thermal/intel/int340x_thermal/acpi_thermal_rel.c
++++ b/drivers/thermal/intel/int340x_thermal/acpi_thermal_rel.c
+@@ -19,6 +19,7 @@
+ #include <linux/acpi.h>
+ #include <linux/uaccess.h>
+ #include <linux/miscdevice.h>
++#include <linux/fs.h>
+ #include "acpi_thermal_rel.h"
  
-+	bool cmd_done;
- 	u32 cmd;
- 	u32 status;
- 	u32 return_code;
-@@ -77,7 +78,7 @@ static struct switchtec_user *stuser_cre
- 	stuser->stdev = stdev;
- 	kref_init(&stuser->kref);
- 	INIT_LIST_HEAD(&stuser->list);
--	init_completion(&stuser->comp);
-+	init_waitqueue_head(&stuser->cmd_comp);
- 	stuser->event_cnt = atomic_read(&stdev->event_cnt);
+ static acpi_handle acpi_thermal_rel_handle;
+--- a/include/acpi/acpi_bus.h
++++ b/include/acpi/acpi_bus.h
+@@ -80,7 +80,7 @@ bool acpi_dev_present(const char *hid, c
  
- 	dev_dbg(&stdev->dev, "%s: %p\n", __func__, stuser);
-@@ -175,7 +176,7 @@ static int mrpc_queue_cmd(struct switcht
- 	kref_get(&stuser->kref);
- 	stuser->read_len = sizeof(stuser->data);
- 	stuser_set_state(stuser, MRPC_QUEUED);
--	reinit_completion(&stuser->comp);
-+	stuser->cmd_done = false;
- 	list_add_tail(&stuser->list, &stdev->mrpc_queue);
+ #ifdef CONFIG_ACPI
  
- 	mrpc_cmd_submit(stdev);
-@@ -222,7 +223,8 @@ static void mrpc_complete_cmd(struct swi
- 		memcpy_fromio(stuser->data, &stdev->mmio_mrpc->output_data,
- 			      stuser->read_len);
- out:
--	complete_all(&stuser->comp);
-+	stuser->cmd_done = true;
-+	wake_up_interruptible(&stuser->cmd_comp);
- 	list_del_init(&stuser->list);
- 	stuser_put(stuser);
- 	stdev->mrpc_busy = 0;
-@@ -529,10 +531,11 @@ static ssize_t switchtec_dev_read(struct
- 	mutex_unlock(&stdev->mrpc_mutex);
+-#include <linux/proc_fs.h>
++struct proc_dir_entry;
  
- 	if (filp->f_flags & O_NONBLOCK) {
--		if (!try_wait_for_completion(&stuser->comp))
-+		if (!stuser->cmd_done)
- 			return -EAGAIN;
- 	} else {
--		rc = wait_for_completion_interruptible(&stuser->comp);
-+		rc = wait_event_interruptible(stuser->cmd_comp,
-+					      stuser->cmd_done);
- 		if (rc < 0)
- 			return rc;
- 	}
-@@ -580,7 +583,7 @@ static __poll_t switchtec_dev_poll(struc
- 	struct switchtec_dev *stdev = stuser->stdev;
- 	__poll_t ret = 0;
- 
--	poll_wait(filp, &stuser->comp.wait, wait);
-+	poll_wait(filp, &stuser->cmd_comp, wait);
- 	poll_wait(filp, &stdev->event_wq, wait);
- 
- 	if (lock_mutex_and_test_alive(stdev))
-@@ -588,7 +591,7 @@ static __poll_t switchtec_dev_poll(struc
- 
- 	mutex_unlock(&stdev->mrpc_mutex);
- 
--	if (try_wait_for_completion(&stuser->comp))
-+	if (stuser->cmd_done)
- 		ret |= EPOLLIN | EPOLLRDNORM;
- 
- 	if (stuser->event_cnt != atomic_read(&stdev->event_cnt))
-@@ -1272,7 +1275,8 @@ static void stdev_kill(struct switchtec_
- 
- 	/* Wake up and kill any users waiting on an MRPC request */
- 	list_for_each_entry_safe(stuser, tmpuser, &stdev->mrpc_queue, list) {
--		complete_all(&stuser->comp);
-+		stuser->cmd_done = true;
-+		wake_up_interruptible(&stuser->cmd_comp);
- 		list_del_init(&stuser->list);
- 		stuser_put(stuser);
- 	}
+ #define ACPI_BUS_FILE_ROOT	"acpi"
+ extern struct proc_dir_entry *acpi_root_dir;
 
