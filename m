@@ -4,60 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-5.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E5C5C4332D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 23:41:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BDB68C4332B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 23:43:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BFBCA2076C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 23:41:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 312B02076C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 23:43:12 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="w+xaqjFY"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BFBCA2076C
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="OR2YdyN3"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 312B02076C
 Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48k3Mx1VKbzDrR6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2020 10:41:48 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 48k3PT46sCzDrS6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2020 10:43:09 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48k3Cm44DYzDr4Y
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48k3Cm67QkzDr69
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2020 10:34:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256
- header.s=201707 header.b=w+xaqjFY; dkim-atps=neutral
+ header.s=201707 header.b=OR2YdyN3; dkim-atps=neutral
+Received: by ozlabs.org (Postfix)
+ id 48k3Cm5glTz9sSN; Fri, 20 Mar 2020 10:34:44 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1003)
- id 48k3Cm2kFYz9sRf; Fri, 20 Mar 2020 10:34:43 +1100 (AEDT)
+ id 48k3Cm4pkTz9sSK; Fri, 20 Mar 2020 10:34:44 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1584660884; bh=3e2k76pHCNkJOTrpeeP78LipvWD3QnennPV0985nbeY=;
+ t=1584660884; bh=8/nwuYSUP1Qm/RPYgjFE8kvBJjM7phd9M7wZLcqKx/4=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=w+xaqjFY5Fv29r1Q0f9Q0Bo8C4lkPR9EmD5Ich/4mWGxpHrXeA7cX9BRHCaCbTXCz
- LUtuJ4h9wDgyvIx3cLqP6DXvLkowerdeH1F7vr3N6oHvo21rBjMqf5IAVQqEZXYTc2
- OoZQsJjlRliODnmWWffoyVgOqHsmAZEGprxfLrtTbMjBUjNXHgvh/qJ/ZH0yFgbima
- 2sR+0gJNIjornWzZBsn34TSW3pyh1CRKS5Sd7xO7qLcqD0iyetshmgT+bYdNn9CJk7
- 0pukYH3HWFi2K873b/NZjs40Xz3XCI+vFqd596KQdGf2agfYZWKZjC5vPJ0rJ8/NHn
- sLFtKqmgI5pVQ==
-Date: Fri, 20 Mar 2020 10:33:30 +1100
+ b=OR2YdyN3kPXkjJCutfQ6yInoGe/69l6616eQ3CoTSqkVjJRsvEV0gDG5HUIbQSSJ9
+ JdiuSDjOcuhC8SWDJZ+5CelrVpH4A8guUabTUw5wHAozZyq+ZuHH6m1EJ8p+sfrB3h
+ IkI2x1Z4iVQHbR3Xerv5lbHbSv/u4eh/yfIFh9iXJLHC5esji+ULI1ITdERwy2jAGJ
+ CcL4Wy52sg9ED5/C8Ka/VxNo2h9eyMRKhekcLuY9qQBaucLALPwc94mp72TWYWbni4
+ i6dpoCVUPVhJg3SbnDIAURTfJiijrXWL41Tr535gb/hJTQHyxK8yKFTnBYy2Xok6Uc
+ LFtu0VsLIPHQw==
+Date: Fri, 20 Mar 2020 10:31:19 +1100
 From: Paul Mackerras <paulus@ozlabs.org>
-To: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH -next 016/491] KERNEL VIRTUAL MACHINE FOR POWERPC
- (KVM/powerpc): Use fallthrough;
-Message-ID: <20200319233330.GE3260@blackberry>
-References: <cover.1583896344.git.joe@perches.com>
- <37a5342c67e1b68b9ad06aca8da245b0ff409692.1583896348.git.joe@perches.com>
- <20200319011840.GA5033@blackberry>
- <7584d7937f4bb929beb0b9f5e80523653297676d.camel@perches.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] KVM: PPC: Book3S HV: Use RADIX_PTE_INDEX_SIZE in Radix
+ MMU code
+Message-ID: <20200319233118.GB3260@blackberry>
+References: <20200218043650.24410-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <7584d7937f4bb929beb0b9f5e80523653297676d.camel@perches.com>
+In-Reply-To: <20200218043650.24410-1-mpe@ellerman.id.au>
 User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -70,41 +68,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kvm-ppc@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Mar 18, 2020 at 06:22:29PM -0700, Joe Perches wrote:
-> On Thu, 2020-03-19 at 12:18 +1100, Paul Mackerras wrote:
-> > On Tue, Mar 10, 2020 at 09:51:30PM -0700, Joe Perches wrote:
-> > > Convert the various uses of fallthrough comments to fallthrough;
-> > > 
-> > > Done via script
-> > > Link: https://lore.kernel.org/lkml/b56602fcf79f849e733e7b521bb0e17895d390fa.1582230379.git.joe.com/
-> > > 
-> > > Signed-off-by: Joe Perches <joe@perches.com>
-> > 
-> > The subject line should look like "KVM: PPC: Use fallthrough".
+On Tue, Feb 18, 2020 at 03:36:50PM +1100, Michael Ellerman wrote:
+> In kvmppc_unmap_free_pte() in book3s_64_mmu_radix.c, we use the
+> non-constant value PTE_INDEX_SIZE to clear a PTE page.
 > 
-> There's no way to generate a subject line like that via a script
-> so far as I can tell.
+> We can instead use the constant RADIX_PTE_INDEX_SIZE, because we know
+> this code will only be running when the Radix MMU is active.
 > 
-> > Apart from that,
-> > 
-> > Acked-by: Paul Mackerras <paulus@ozlabs.org>
-> > 
-> > How are these patches going upstream?  Do you want me to take this via
-> > my tree?
+> Note that we already use RADIX_PTE_INDEX_SIZE for the allocation of
+> kvm_pte_cache.
 > 
-> If you want.
-> 
-> Ideally, these changes would go in treewide via a script run
-> by Linus at an -rc1, but if the change is OK with you, it'd
-> be fine to have you apply it now.
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-I have taken this patch in my kvm-ppc-next branch.
+Thanks, applied to my kvm-ppc-next branch.
 
-Thanks,
 Paul.
