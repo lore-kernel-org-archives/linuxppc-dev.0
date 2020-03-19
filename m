@@ -2,60 +2,61 @@ Return-Path: <SRS0=RfJf=5E=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E34EFC4332B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 19:59:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 92D66C4332B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 20:23:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5754F20409
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 19:59:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5754F20409
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 05F5A206D7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 20:23:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 05F5A206D7
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48jyR245j6zDr69
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2020 06:59:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=linux.intel.com
- (client-ip=192.55.52.93; helo=mga11.intel.com;
- envelope-from=jarkko.sakkinen@linux.intel.com; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48jyzR69HmzDrPQ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2020 07:23:47 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=srs0=snv8=5e=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.intel.com
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ header.from=bugzilla.kernel.org
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48jyNr1Cy1zDrPh
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2020 06:57:15 +1100 (AEDT)
-IronPort-SDR: YSAyA/iIJDwbfdNiy2VQgFCsnJGeoNBoUcRy8PWdE4JO5EIULXfBKzdrUO+N3I3olltyRHnxPN
- b5m9F/zVrGlg==
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from orsmga005.jf.intel.com ([10.7.209.41])
- by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 19 Mar 2020 12:57:11 -0700
-IronPort-SDR: /RO8zDtskTWdCQ5+WrYrGCM8WonO4Os2xkF5eC492U4btv5+VJWy+wvL96H2ug3FNEtQtK6EB5
- I9mFDlgdfCoA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.70,572,1574150400"; d="scan'208";a="418468178"
-Received: from oamor-mobl1.ger.corp.intel.com (HELO localhost)
- ([10.251.182.181])
- by orsmga005.jf.intel.com with ESMTP; 19 Mar 2020 12:57:07 -0700
-Date: Thu, 19 Mar 2020 21:57:06 +0200
-From: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
-To: Stefan Berger <stefanb@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] qtpm2: Export tpm2_get_cc_attrs_tbl for ibmvtpm
- driver as module
-Message-ID: <20200319195706.GD24804@linux.intel.com>
-References: <20200319010017.738677-1-stefanb@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48jyxX12wzzDrMs
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2020 07:22:07 +1100 (AEDT)
+From: bugzilla-daemon@bugzilla.kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 206669] Little-endian kernel crashing on POWER8 on heavy
+ big-endian PowerKVM load
+Date: Thu, 19 Mar 2020 20:22:05 +0000
+X-Bugzilla-Reason: None
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Product: Platform Specific/Hardware
+X-Bugzilla-Component: PPC-64
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: glaubitz@physik.fu-berlin.de
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-206669-206035-3cC7SDyIhU@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-206669-206035@https.bugzilla.kernel.org/>
+References: <bug-206669-206035@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200319010017.738677-1-stefanb@linux.vnet.ibm.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,28 +68,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: sachinp@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- linux-next@vger.kernel.org, linux-integrity@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Stefan Berger <stefanb@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Mar 18, 2020 at 09:00:17PM -0400, Stefan Berger wrote:
-> From: Stefan Berger <stefanb@linux.ibm.com>
-> 
-> This patch fixes the following problem when the ibmvtpm driver
-> is built as a module:
-> 
-> ERROR: modpost: "tpm2_get_cc_attrs_tbl" [drivers/char/tpm/tpm_ibmvtpm.ko] undefined!
-> make[1]: *** [scripts/Makefile.modpost:94: __modpost] Error 1
-> make: *** [Makefile:1298: modules] Error 2
-> 
-> Fixes: 18b3670d79ae ("tpm: ibmvtpm: Add support for TPM2")
-> Signed-off-by: Stefan Berger <stefanb@linux.ibm.com>
-> Reported-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
-> Tested-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
+https://bugzilla.kernel.org/show_bug.cgi?id=3D206669
 
-Should have "tpm:" tag in the short summary.
+--- Comment #13 from John Paul Adrian Glaubitz (glaubitz@physik.fu-berlin.d=
+e) ---
+watson login: [30887.552539] KVM: CPU 4 seems to be stuck
+[30900.094713] watchdog: CPU 8 detected hard LOCKUP on other CPUs 0
+[30900.094730] watchdog: CPU 8 TB:15863742878763, last SMP heartbeat
+TB:15855546563837 (16008ms ago)
+[30908.222926] watchdog: BUG: soft lockup - CPU#80 stuck for 22s! [CPU
+4/KVM:2698]
+[30908.374929] watchdog: BUG: soft lockup - CPU#112 stuck for 22s! [CPU
+23/KVM:2717]
+[30908.426934] watchdog: BUG: soft lockup - CPU#120 stuck for 22s! [CPU
+16/KVM:2710]
+[30909.570962] rcu: INFO: rcu_sched self-detected stall on CPU
+[30909.570970] rcu:     120-....: (5059 ticks this GP)
+idle=3D7d2/1/0x4000000000000002 softirq=3D421758/421758 fqs=3D2378=20
+[30912.095025] watchdog: BUG: soft lockup - CPU#8 stuck for 23s! [CPU
+18/KVM:2712]
+[30912.127027] watchdog: BUG: soft lockup - CPU#40 stuck for 23s! [CPU
+22/KVM:2716]
+[30912.155026] watchdog: BUG: soft lockup - CPU#56 stuck for 23s! [CPU
+27/KVM:2721]
+[30912.175028] watchdog: BUG: soft lockup - CPU#64 stuck for 23s! [CPU
+26/KVM:2720]
+[30912.195028] watchdog: BUG: soft lockup - CPU#72 stuck for 23s! [CPU
+19/KVM:2713]
+[30912.547038] watchdog: BUG: soft lockup - CPU#136 stuck for 22s! [CPU
+8/KVM:2702]
+[30912.619040] watchdog: BUG: soft lockup - CPU#144 stuck for 22s! [CPU
+5/KVM:2699]
 
-/Jarkko
+--=20
+You are receiving this mail because:
+You are watching the assignee of the bug.=
