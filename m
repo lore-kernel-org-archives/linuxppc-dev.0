@@ -2,52 +2,66 @@ Return-Path: <SRS0=RfJf=5E=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 60539C4332B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 11:08:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BD8D0C4332D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 11:24:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CAF33206D7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 11:08:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CAF33206D7
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 525022070A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 11:24:35 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=alien8.de header.i=@alien8.de header.b="XE6cHInW"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 525022070A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=alien8.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48jkg00nN4zDr43
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 22:08:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48jl1F0cYQzDqtr
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 22:24:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=alien8.de (client-ip=2a01:4f8:190:11c2::b:1457;
+ helo=mail.skyhub.de; envelope-from=bp@alien8.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=robin.murphy@arm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 48jkcb4zlRzDr8q
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2020 22:06:34 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A4BB731B;
- Thu, 19 Mar 2020 04:06:31 -0700 (PDT)
-Received: from [192.168.1.123] (unknown [172.31.20.19])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id F2A993F305;
- Thu, 19 Mar 2020 04:06:25 -0700 (PDT)
+ dmarc=pass (p=none dis=none) header.from=alien8.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256
+ header.s=dkim header.b=XE6cHInW; dkim-atps=neutral
+Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:190:11c2::b:1457])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48jkx25HDczDqSr
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2020 22:20:52 +1100 (AEDT)
+Received: from zn.tnic (p200300EC2F0A850065FC6DE3D46B17C3.dip0.t-ipconnect.de
+ [IPv6:2003:ec:2f0a:8500:65fc:6de3:d46b:17c3])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id DCF9F1EC085F;
+ Thu, 19 Mar 2020 12:20:48 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
+ t=1584616849;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
+ bh=IlMyw2jWgHGOB/uFSKCAtl/3A39ugp/rgom8OdfSKmc=;
+ b=XE6cHInWOykMJewXB+HpQ43S3ZQrlzEAhf//Ouf5Qimx2SKQA9/gvUhLWvplfK6878RP+v
+ ZqLYTWIZthoqXO6tVrkIxYVE1pcVuGHGY61Fde74hzfcGiK9dOuneS2M+Jk5sfOhuyCzWq
+ w4QHxgKVH2Zv2Ff20bGX9PTvSDxGf0s=
+Date: Thu, 19 Mar 2020 12:20:54 +0100
+From: Borislav Petkov <bp@alien8.de>
+To: Robin Murphy <robin.murphy@arm.com>
 Subject: Re: [PATCH -v2] treewide: Rename "unencrypted" to "decrypted"
-To: Borislav Petkov <bp@alien8.de>, Christoph Hellwig <hch@lst.de>
+Message-ID: <20200319112054.GD13073@zn.tnic>
 References: <20200317111822.GA15609@zn.tnic> <20200319101657.GB13073@zn.tnic>
  <20200319102011.GA3617@lst.de> <20200319102834.GC13073@zn.tnic>
-From: Robin Murphy <robin.murphy@arm.com>
-Message-ID: <8d6d3b6c-7e4e-7d9e-3e19-38f7d4477c72@arm.com>
-Date: Thu, 19 Mar 2020 11:06:15 +0000
-User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101
- Thunderbird/68.5.0
+ <8d6d3b6c-7e4e-7d9e-3e19-38f7d4477c72@arm.com>
 MIME-Version: 1.0
-In-Reply-To: <20200319102834.GC13073@zn.tnic>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-GB
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <8d6d3b6c-7e4e-7d9e-3e19-38f7d4477c72@arm.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,37 +82,40 @@ Cc: linux-s390@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>,
  iommu@lists.linux-foundation.org, Ingo Molnar <mingo@redhat.com>,
  Paul Mackerras <paulus@samba.org>, Andy Lutomirski <luto@kernel.org>,
  Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- Marek Szyprowski <m.szyprowski@samsung.com>
+ Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-[since this is in my inbox...]
-
-On 2020-03-19 10:28 am, Borislav Petkov wrote:
-> On Thu, Mar 19, 2020 at 11:20:11AM +0100, Christoph Hellwig wrote:
->> I thought we agreed that decrypted is absolutely the wrong term.
+On Thu, Mar 19, 2020 at 11:06:15AM +0000, Robin Murphy wrote:
+> Let me add another vote from a native English speaker that "unencrypted" is
+> the appropriate term to imply the *absence* of encryption, whereas
+> "decrypted" implies the *reversal* of applied encryption.
 > 
-> I don't think we did. At least I don't know where we did that.
-> 
->> So NAK - if you want to change things it needs to go the other way.
-> 
-> We are already using "decrypted" everywhere in arch/x86/. Changing that
-> would be a *lot* more churn.
-> 
-> And it is just a term, for chrissakes, to denote memory which is not
-> encrypted. And it would make our lifes easier if we had only *two* terms
-> instead of three or more. Especially if the concept we denote with this
-> is a binary one: encrypted memory and *not* encrypted memory.
+> Naming things is famously hard, for good reason - names are *important* for
+> understanding. Just because a decision was already made one way doesn't mean
+> that that decision was necessarily right. Churning one area to be
+> consistently inaccurate just because it's less work than churning another
+> area to be consistently accurate isn't really the best excuse.
 
-Let me add another vote from a native English speaker that "unencrypted" 
-is the appropriate term to imply the *absence* of encryption, whereas 
-"decrypted" implies the *reversal* of applied encryption.
+Well, the reason we chose "decrypted" vs something else is so to be as
+different from "encrypted" as possible. If we called it "unencrypted"
+you'd have stuff like:
 
-Naming things is famously hard, for good reason - names are *important* 
-for understanding. Just because a decision was already made one way 
-doesn't mean that that decision was necessarily right. Churning one area 
-to be consistently inaccurate just because it's less work than churning 
-another area to be consistently accurate isn't really the best excuse.
+       if (force_dma_unencrypted(dev))
+                set_memory_encrypted((unsigned long)cpu_addr, 1 << page_order);
 
-Robin.
+and I *betcha* people will misread this and maybe even introduce bugs.
+
+So I don't think renaming it to "unencrypted" is better. And yes, I'm
+deliberately putting the language semantics here on a second place
+because of readability examples like the one above.
+
+But ok, since people don't want this, we can leave it as is. It's not
+like I don't have anything better to do.
+
+-- 
+Regards/Gruss,
+    Boris.
+
+https://people.kernel.org/tglx/notes-about-netiquette
