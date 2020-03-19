@@ -2,85 +2,56 @@ Return-Path: <SRS0=RfJf=5E=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 56E9CC4332B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 00:35:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A17B5C4332B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 00:46:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0201B20752
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 00:35:37 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="vKjz15ir"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0201B20752
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=joelfernandes.org
+	by mail.kernel.org (Postfix) with ESMTPS id 1F3F820767
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 00:46:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1F3F820767
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48jScR70gdzDr7Q
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 11:35:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=joelfernandes.org (client-ip=2607:f8b0:4864:20::843;
- helo=mail-qt1-x843.google.com; envelope-from=joel@joelfernandes.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=joelfernandes.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=joelfernandes.org header.i=@joelfernandes.org
- header.a=rsa-sha256 header.s=google header.b=vKjz15ir; 
- dkim-atps=neutral
-Received: from mail-qt1-x843.google.com (mail-qt1-x843.google.com
- [IPv6:2607:f8b0:4864:20::843])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48jSsH5kN3zDr3T
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 11:46:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=linutronix.de
+ (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
+ envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linutronix.de
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a0a:51c0:0:12e:550::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48jSZb4XFMzDq6J
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2020 11:33:56 +1100 (AEDT)
-Received: by mail-qt1-x843.google.com with SMTP id g16so365863qtp.9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2020 17:33:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=joelfernandes.org; s=google;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=cHl5FEDU/in/tKhyh8KADSkZ8t44HVVU6qSIiQF7HDk=;
- b=vKjz15irrUHQOxGKx3YJZSYaREZiLBQ5dkdKASVNi/DUnapYI1oeMp9PSbchikzKPl
- RL8eE9BxcoQ9gT2Z+96oGA/M+zvf4M7Ww0jlnMdeOCV7wPsoaRRDYZ+t1YRHJBhYvxmw
- JQHaOq18/lt39V3Rogoc35Lu1FpkxEJUwdFM4=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=cHl5FEDU/in/tKhyh8KADSkZ8t44HVVU6qSIiQF7HDk=;
- b=RV1n657EOWH7vqsz75iA9XOkWtAvCvoVIL0Wmn2obGVpiMEQU1IY1/5DP0eOFUqFWI
- oCeNjs5f3TWg8Omspi3MD8076xzYjdV+imUyZwW3Xw47vsmIDNiBEKcJSj5kB0PKvx+A
- 5599B6NwqoTvgg3jM6cgWf1xN2bfGm3/zEtC6U0NS6i4pnKqJps19ed6kQBiYAuEp36S
- ubycG2Xgqcu28SceLq//a70HRpAOkpH+66WgfJLLfzT4z0bwtksQBzGZwDJ6TIT5u6o0
- WtST4yhy6jMNI67mrfaUvNXWQSplg7iEjsEXIoiyzSiIvtPoGDzUlRX8NTMptl3tYX2U
- JnfQ==
-X-Gm-Message-State: ANhLgQ0e6tKPEtH0194sSTfqkRkTOoMCUldPylfD8Gezlo0uyXIVbJ/p
- wGcHEWie56lnc4g4a/uMsZymhQ==
-X-Google-Smtp-Source: ADFU+vte9vg5yrKnsJYwQUFLJMp35Yp0oNpQIim2wyXmoa5rkeGpiqYzRFosPkhMiCPa11iAMkqA+g==
-X-Received: by 2002:ac8:1762:: with SMTP id u31mr389327qtk.359.1584578032733; 
- Wed, 18 Mar 2020 17:33:52 -0700 (PDT)
-Received: from localhost ([2620:15c:6:12:9c46:e0da:efbf:69cc])
- by smtp.gmail.com with ESMTPSA id f13sm456312qkm.19.2020.03.18.17.33.52
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 18 Mar 2020 17:33:52 -0700 (PDT)
-Date: Wed, 18 Mar 2020 20:33:51 -0400
-From: Joel Fernandes <joel@joelfernandes.org>
-To: Thomas Gleixner <tglx@linutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48jSqJ2mg9zDqmJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2020 11:45:00 +1100 (AEDT)
+Received: from p5de0bf0b.dip0.t-ipconnect.de ([93.224.191.11]
+ helo=nanos.tec.linutronix.de)
+ by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
+ (Exim 4.80) (envelope-from <tglx@linutronix.de>)
+ id 1jEjIR-0005E3-Fd; Thu, 19 Mar 2020 01:44:27 +0100
+Received: by nanos.tec.linutronix.de (Postfix, from userid 1000)
+ id CFC0A103088; Thu, 19 Mar 2020 01:44:26 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Joel Fernandes <joel@joelfernandes.org>
 Subject: Re: [patch V2 11/15] completion: Use simple wait queues
-Message-ID: <20200319003351.GA211584@google.com>
+In-Reply-To: <20200319003351.GA211584@google.com>
 References: <20200318204302.693307984@linutronix.de>
- <20200318204408.521507446@linutronix.de>
+ <20200318204408.521507446@linutronix.de> <20200319003351.GA211584@google.com>
+Date: Thu, 19 Mar 2020 01:44:26 +0100
+Message-ID: <87a74ddvh1.fsf@nanos.tec.linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200318204408.521507446@linutronix.de>
-User-Agent: Mutt/1.12.2 (2019-09-21)
+Content-Type: text/plain
+X-Linutronix-Spam-Score: -1.0
+X-Linutronix-Spam-Level: -
+X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required, ALL_TRUSTED=-1,
+ SHORTCIRCUIT=-0.0001
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,232 +81,36 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Thomas,
+Joel,
 
-On Wed, Mar 18, 2020 at 09:43:13PM +0100, Thomas Gleixner wrote:
-> From: Thomas Gleixner <tglx@linutronix.de>
-> 
-> completion uses a wait_queue_head_t to enqueue waiters.
-> 
-> wait_queue_head_t contains a spinlock_t to protect the list of waiters
-> which excludes it from being used in truly atomic context on a PREEMPT_RT
-> enabled kernel.
-> 
-> The spinlock in the wait queue head cannot be replaced by a raw_spinlock
-> because:
-> 
->   - wait queues can have custom wakeup callbacks, which acquire other
->     spinlock_t locks and have potentially long execution times
+Joel Fernandes <joel@joelfernandes.org> writes:
+> On Wed, Mar 18, 2020 at 09:43:13PM +0100, Thomas Gleixner wrote:
+>> The spinlock in the wait queue head cannot be replaced by a raw_spinlock
+>> because:
+>> 
+>>   - wait queues can have custom wakeup callbacks, which acquire other
+>>     spinlock_t locks and have potentially long execution times
+>
+> Cool, makes sense.
+>
+>>   - wake_up() walks an unbounded number of list entries during the wake up
+>>     and may wake an unbounded number of waiters.
+>
+> Just to clarify here, wake_up() will really wake up just 1 waiter if all the
+> waiters on the queue are exclusive right? So in such scenario at least, the
+> "unbounded number of waiters" would not be an issue if everything waiting was
+> exclusive and waitqueue with wake_up() was used. Please correct me if I'm
+> wrong about that though.
 
-Cool, makes sense.
+Correct.
 
->   - wake_up() walks an unbounded number of list entries during the wake up
->     and may wake an unbounded number of waiters.
+> So the main reasons to avoid waitqueue in favor of swait (as you mentioned)
+> would be the sleep-while-atomic issue in truly atomic context on RT, and the
+> fact that callbacks can take a long time.
 
-Just to clarify here, wake_up() will really wake up just 1 waiter if all the
-waiters on the queue are exclusive right? So in such scenario at least, the
-"unbounded number of waiters" would not be an issue if everything waiting was
-exclusive and waitqueue with wake_up() was used. Please correct me if I'm
-wrong about that though.
+Yes.
 
-So the main reasons to avoid waitqueue in favor of swait (as you mentioned)
-would be the sleep-while-atomic issue in truly atomic context on RT, and the
-fact that callbacks can take a long time.
+Thanks,
 
-> 
-> For simplicity and performance reasons complete() should be usable on
-> PREEMPT_RT enabled kernels.
-> 
-> completions do not use custom wakeup callbacks and are usually single
-> waiter, except for a few corner cases.
-> 
-> Replace the wait queue in the completion with a simple wait queue (swait),
-> which uses a raw_spinlock_t for protecting the waiter list and therefore is
-> safe to use inside truly atomic regions on PREEMPT_RT.
-> 
-> There is no semantical or functional change:
-> 
->   - completions use the exclusive wait mode which is what swait provides
-> 
->   - complete() wakes one exclusive waiter
-> 
->   - complete_all() wakes all waiters while holding the lock which protects
->     the wait queue against newly incoming waiters. The conversion to swait
->     preserves this behaviour.
-> 
-> complete_all() might cause unbound latencies with a large number of waiters
-> being woken at once, but most complete_all() usage sites are either in
-> testing or initialization code or have only a really small number of
-> concurrent waiters which for now does not cause a latency problem. Keep it
-> simple for now.
-> 
-> The fixup of the warning check in the USB gadget driver is just a straight
-> forward conversion of the lockless waiter check from one waitqueue type to
-> the other.
-> 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Arnd Bergmann <arnd@arndb.de>
+        tglx
 
-Reviewed-by: Joel Fernandes (Google) <joel@joelfernandes.org>
-
-thanks,
-
- - Joel
-
-
-> ---
-> V2: Split out the orinoco and usb gadget parts and amended change log
-> ---
->  drivers/usb/gadget/function/f_fs.c |    2 +-
->  include/linux/completion.h         |    8 ++++----
->  kernel/sched/completion.c          |   36 +++++++++++++++++++-----------------
->  3 files changed, 24 insertions(+), 22 deletions(-)
-> 
-> --- a/drivers/usb/gadget/function/f_fs.c
-> +++ b/drivers/usb/gadget/function/f_fs.c
-> @@ -1703,7 +1703,7 @@ static void ffs_data_put(struct ffs_data
->  		pr_info("%s(): freeing\n", __func__);
->  		ffs_data_clear(ffs);
->  		BUG_ON(waitqueue_active(&ffs->ev.waitq) ||
-> -		       waitqueue_active(&ffs->ep0req_completion.wait) ||
-> +		       swait_active(&ffs->ep0req_completion.wait) ||
->  		       waitqueue_active(&ffs->wait));
->  		destroy_workqueue(ffs->io_completion_wq);
->  		kfree(ffs->dev_name);
-> --- a/include/linux/completion.h
-> +++ b/include/linux/completion.h
-> @@ -9,7 +9,7 @@
->   * See kernel/sched/completion.c for details.
->   */
->  
-> -#include <linux/wait.h>
-> +#include <linux/swait.h>
->  
->  /*
->   * struct completion - structure used to maintain state for a "completion"
-> @@ -25,7 +25,7 @@
->   */
->  struct completion {
->  	unsigned int done;
-> -	wait_queue_head_t wait;
-> +	struct swait_queue_head wait;
->  };
->  
->  #define init_completion_map(x, m) __init_completion(x)
-> @@ -34,7 +34,7 @@ static inline void complete_acquire(stru
->  static inline void complete_release(struct completion *x) {}
->  
->  #define COMPLETION_INITIALIZER(work) \
-> -	{ 0, __WAIT_QUEUE_HEAD_INITIALIZER((work).wait) }
-> +	{ 0, __SWAIT_QUEUE_HEAD_INITIALIZER((work).wait) }
->  
->  #define COMPLETION_INITIALIZER_ONSTACK_MAP(work, map) \
->  	(*({ init_completion_map(&(work), &(map)); &(work); }))
-> @@ -85,7 +85,7 @@ static inline void complete_release(stru
->  static inline void __init_completion(struct completion *x)
->  {
->  	x->done = 0;
-> -	init_waitqueue_head(&x->wait);
-> +	init_swait_queue_head(&x->wait);
->  }
->  
->  /**
-> --- a/kernel/sched/completion.c
-> +++ b/kernel/sched/completion.c
-> @@ -29,12 +29,12 @@ void complete(struct completion *x)
->  {
->  	unsigned long flags;
->  
-> -	spin_lock_irqsave(&x->wait.lock, flags);
-> +	raw_spin_lock_irqsave(&x->wait.lock, flags);
->  
->  	if (x->done != UINT_MAX)
->  		x->done++;
-> -	__wake_up_locked(&x->wait, TASK_NORMAL, 1);
-> -	spin_unlock_irqrestore(&x->wait.lock, flags);
-> +	swake_up_locked(&x->wait);
-> +	raw_spin_unlock_irqrestore(&x->wait.lock, flags);
->  }
->  EXPORT_SYMBOL(complete);
->  
-> @@ -58,10 +58,12 @@ void complete_all(struct completion *x)
->  {
->  	unsigned long flags;
->  
-> -	spin_lock_irqsave(&x->wait.lock, flags);
-> +	WARN_ON(irqs_disabled());
-> +
-> +	raw_spin_lock_irqsave(&x->wait.lock, flags);
->  	x->done = UINT_MAX;
-> -	__wake_up_locked(&x->wait, TASK_NORMAL, 0);
-> -	spin_unlock_irqrestore(&x->wait.lock, flags);
-> +	swake_up_all_locked(&x->wait);
-> +	raw_spin_unlock_irqrestore(&x->wait.lock, flags);
->  }
->  EXPORT_SYMBOL(complete_all);
->  
-> @@ -70,20 +72,20 @@ do_wait_for_common(struct completion *x,
->  		   long (*action)(long), long timeout, int state)
->  {
->  	if (!x->done) {
-> -		DECLARE_WAITQUEUE(wait, current);
-> +		DECLARE_SWAITQUEUE(wait);
->  
-> -		__add_wait_queue_entry_tail_exclusive(&x->wait, &wait);
->  		do {
->  			if (signal_pending_state(state, current)) {
->  				timeout = -ERESTARTSYS;
->  				break;
->  			}
-> +			__prepare_to_swait(&x->wait, &wait);
->  			__set_current_state(state);
-> -			spin_unlock_irq(&x->wait.lock);
-> +			raw_spin_unlock_irq(&x->wait.lock);
->  			timeout = action(timeout);
-> -			spin_lock_irq(&x->wait.lock);
-> +			raw_spin_lock_irq(&x->wait.lock);
->  		} while (!x->done && timeout);
-> -		__remove_wait_queue(&x->wait, &wait);
-> +		__finish_swait(&x->wait, &wait);
->  		if (!x->done)
->  			return timeout;
->  	}
-> @@ -100,9 +102,9 @@ static inline long __sched
->  
->  	complete_acquire(x);
->  
-> -	spin_lock_irq(&x->wait.lock);
-> +	raw_spin_lock_irq(&x->wait.lock);
->  	timeout = do_wait_for_common(x, action, timeout, state);
-> -	spin_unlock_irq(&x->wait.lock);
-> +	raw_spin_unlock_irq(&x->wait.lock);
->  
->  	complete_release(x);
->  
-> @@ -291,12 +293,12 @@ bool try_wait_for_completion(struct comp
->  	if (!READ_ONCE(x->done))
->  		return false;
->  
-> -	spin_lock_irqsave(&x->wait.lock, flags);
-> +	raw_spin_lock_irqsave(&x->wait.lock, flags);
->  	if (!x->done)
->  		ret = false;
->  	else if (x->done != UINT_MAX)
->  		x->done--;
-> -	spin_unlock_irqrestore(&x->wait.lock, flags);
-> +	raw_spin_unlock_irqrestore(&x->wait.lock, flags);
->  	return ret;
->  }
->  EXPORT_SYMBOL(try_wait_for_completion);
-> @@ -322,8 +324,8 @@ bool completion_done(struct completion *
->  	 * otherwise we can end up freeing the completion before complete()
->  	 * is done referencing it.
->  	 */
-> -	spin_lock_irqsave(&x->wait.lock, flags);
-> -	spin_unlock_irqrestore(&x->wait.lock, flags);
-> +	raw_spin_lock_irqsave(&x->wait.lock, flags);
-> +	raw_spin_unlock_irqrestore(&x->wait.lock, flags);
->  	return true;
->  }
->  EXPORT_SYMBOL(completion_done);
-> 
