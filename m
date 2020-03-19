@@ -2,83 +2,76 @@ Return-Path: <SRS0=RfJf=5E=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A5CDC4332B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 12:48:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B49B5C4332B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 13:18:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0ACEE20722
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 12:48:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 69F48217D8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 13:18:17 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="qPKgnd8p"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0ACEE20722
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="XyOcn8LT"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 69F48217D8
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48jmsv6fmHzDqnF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 23:48:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48jnXQ5ThPzDrMS
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2020 00:18:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=redhat.com (client-ip=216.205.24.74;
+ helo=us-smtp-delivery-74.mimecast.com; envelope-from=david@redhat.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
+ dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=qPKgnd8p; dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=XyOcn8LT; 
+ dkim-atps=neutral
+Received: from us-smtp-delivery-74.mimecast.com
+ (us-smtp-delivery-74.mimecast.com [216.205.24.74])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48jmd572jyzDqxD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2020 23:37:12 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 48jmcx72fhz9txpt;
- Thu, 19 Mar 2020 13:37:05 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=qPKgnd8p; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 73Jdkf_Zz9r3; Thu, 19 Mar 2020 13:37:05 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 48jmcx5r95z9txn7;
- Thu, 19 Mar 2020 13:37:05 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1584621425; bh=1l8seTHHmExwEDOIcnw6yPPOnKc59tjApU1N0ParQfA=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=qPKgnd8pWHAz0ALEh0DXg6kUaXlRtuCDj39r0To7+ErwNFGf2pV6MacAucHN+F7u2
- A5AWzbgfYDKjjoOIk6Ym4cu/bJsjEvuJYH+NkkLsOi/fQuhkPlf7nH+YnPljevNc8P
- ZQfJ8SdwY7WktUk9WiQ8Nn8BN/SHGVmZxEU+hkXE=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 255868B84E;
- Thu, 19 Mar 2020 13:37:07 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id BHYaNWr09YCd; Thu, 19 Mar 2020 13:37:07 +0100 (CET)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 028D78B769;
- Thu, 19 Mar 2020 13:37:04 +0100 (CET)
-Subject: Re: [PATCH v11 0/8] Disable compat cruft on ppc64le v11
-To: Michal Suchanek <msuchanek@suse.de>, linuxppc-dev@lists.ozlabs.org
-References: <20200225173541.1549955-1-npiggin@gmail.com>
- <cover.1584620202.git.msuchanek@suse.de>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <c5f30914-4d0c-5437-e8c4-9d62d08061e1@c-s.fr>
-Date: Thu, 19 Mar 2020 13:36:56 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.6.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48jnQ40nr0zDrL3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2020 00:12:42 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1584623559;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=rx1LvEZgAQgfY3xwuj9jjkM3L7Bytnt/zhNrUnrYFaE=;
+ b=XyOcn8LTy5JO/M4XH1AFBWfIcFJZyj9hQeXmmpryScyPYfHUFMnDkMEpOqYCYF0Ot3JmRp
+ wbn9VpPsaMpKr/GAmRKNTjd8eq5rMPgItB3hStEepQmsG8WvBscSzs+paepBhx/+qvubG5
+ 6zGOWJsijAe2dfJ0hws4QmgtMveM3W8=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-369-SKMNXm6IOPioc_5ZFsWhFQ-1; Thu, 19 Mar 2020 09:12:35 -0400
+X-MC-Unique: SKMNXm6IOPioc_5ZFsWhFQ-1
+Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com
+ [10.5.11.12])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 36C50800D53;
+ Thu, 19 Mar 2020 13:12:33 +0000 (UTC)
+Received: from t480s.redhat.com (ovpn-114-197.ams2.redhat.com [10.36.114.197])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 9D50E60BF7;
+ Thu, 19 Mar 2020 13:12:30 +0000 (UTC)
+From: David Hildenbrand <david@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v3 1/8] drivers/base/memory: rename MMOP_ONLINE_KEEP to
+ MMOP_ONLINE
+Date: Thu, 19 Mar 2020 14:12:14 +0100
+Message-Id: <20200319131221.14044-2-david@redhat.com>
+In-Reply-To: <20200319131221.14044-1-david@redhat.com>
+References: <20200319131221.14044-1-david@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <cover.1584620202.git.msuchanek@suse.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,103 +83,101 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>,
- Gustavo Luiz Duarte <gustavold@linux.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Jiri Olsa <jolsa@redhat.com>, Rob Herring <robh@kernel.org>,
- Michael Neuling <mikey@neuling.org>,
- Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
- Masahiro Yamada <masahiroy@kernel.org>, Nayna Jain <nayna@linux.ibm.com>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Ingo Molnar <mingo@redhat.com>, Allison Randal <allison@lohutok.net>,
- Jordan Niethe <jniethe5@gmail.com>,
- Valentin Schneider <valentin.schneider@arm.com>, Arnd Bergmann <arnd@arndb.de>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Jonathan Cameron <Jonathan.Cameron@huawei.com>,
- Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Hari Bathini <hbathini@linux.ibm.com>,
+Cc: linux-hyperv@vger.kernel.org, Baoquan He <bhe@redhat.com>,
+ David Hildenbrand <david@redhat.com>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Nicholas Piggin <npiggin@gmail.com>, Claudio Carvalho <cclaudio@linux.ibm.com>,
- Eric Richter <erichte@linux.ibm.com>,
- "Eric W. Biederman" <ebiederm@xmission.com>, linux-fsdevel@vger.kernel.org,
- "David S. Miller" <davem@davemloft.net>,
- Thiago Jung Bauermann <bauerman@linux.ibm.com>
+ "Rafael J. Wysocki" <rafael@kernel.org>, Wei Yang <richard.weiyang@gmail.com>,
+ linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+ Michal Hocko <mhocko@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ Oscar Salvador <osalvador@suse.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-You sent it twice ? Any difference between the two dispatch ?
+The name is misleading and it's not really clear what is "kept". Let's ju=
+st
+name it like the online_type name we expose to user space ("online").
 
-Christophe
+Add some documentation to the types.
 
-Le 19/03/2020 à 13:19, Michal Suchanek a écrit :
-> Less code means less bugs so add a knob to skip the compat stuff.
-> 
-> Changes in v2: saner CONFIG_COMPAT ifdefs
-> Changes in v3:
->   - change llseek to 32bit instead of builing it unconditionally in fs
->   - clanup the makefile conditionals
->   - remove some ifdefs or convert to IS_DEFINED where possible
-> Changes in v4:
->   - cleanup is_32bit_task and current_is_64bit
->   - more makefile cleanup
-> Changes in v5:
->   - more current_is_64bit cleanup
->   - split off callchain.c 32bit and 64bit parts
-> Changes in v6:
->   - cleanup makefile after split
->   - consolidate read_user_stack_32
->   - fix some checkpatch warnings
-> Changes in v7:
->   - add back __ARCH_WANT_SYS_LLSEEK to fix build with llseek
->   - remove leftover hunk
->   - add review tags
-> Changes in v8:
->   - consolidate valid_user_sp to fix it in the split callchain.c
->   - fix build errors/warnings with PPC64 !COMPAT and PPC32
-> Changes in v9:
->   - remove current_is_64bit()
-> Chanegs in v10:
->   - rebase, sent together with the syscall cleanup
-> Changes in v11:
->   - rebase
->   - add MAINTAINERS pattern for ppc perf
-> 
-> Michal Suchanek (8):
->    powerpc: Add back __ARCH_WANT_SYS_LLSEEK macro
->    powerpc: move common register copy functions from signal_32.c to
->      signal.c
->    powerpc/perf: consolidate read_user_stack_32
->    powerpc/perf: consolidate valid_user_sp
->    powerpc/64: make buildable without CONFIG_COMPAT
->    powerpc/64: Make COMPAT user-selectable disabled on littleendian by
->      default.
->    powerpc/perf: split callchain.c by bitness
->    MAINTAINERS: perf: Add pattern that matches ppc perf to the perf
->      entry.
-> 
->   MAINTAINERS                            |   2 +
->   arch/powerpc/Kconfig                   |   5 +-
->   arch/powerpc/include/asm/thread_info.h |   4 +-
->   arch/powerpc/include/asm/unistd.h      |   1 +
->   arch/powerpc/kernel/Makefile           |   6 +-
->   arch/powerpc/kernel/entry_64.S         |   2 +
->   arch/powerpc/kernel/signal.c           | 144 +++++++++-
->   arch/powerpc/kernel/signal_32.c        | 140 ----------
->   arch/powerpc/kernel/syscall_64.c       |   6 +-
->   arch/powerpc/kernel/vdso.c             |   3 +-
->   arch/powerpc/perf/Makefile             |   5 +-
->   arch/powerpc/perf/callchain.c          | 356 +------------------------
->   arch/powerpc/perf/callchain.h          |  20 ++
->   arch/powerpc/perf/callchain_32.c       | 196 ++++++++++++++
->   arch/powerpc/perf/callchain_64.c       | 174 ++++++++++++
->   fs/read_write.c                        |   3 +-
->   16 files changed, 556 insertions(+), 511 deletions(-)
->   create mode 100644 arch/powerpc/perf/callchain.h
->   create mode 100644 arch/powerpc/perf/callchain_32.c
->   create mode 100644 arch/powerpc/perf/callchain_64.c
-> 
+Reviewed-by: Wei Yang <richard.weiyang@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Michal Hocko <mhocko@kernel.org>
+Cc: Oscar Salvador <osalvador@suse.de>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Baoquan He <bhe@redhat.com>
+Cc: Wei Yang <richard.weiyang@gmail.com>
+Signed-off-by: David Hildenbrand <david@redhat.com>
+---
+ drivers/base/memory.c          | 9 +++++----
+ include/linux/memory_hotplug.h | 6 +++++-
+ 2 files changed, 10 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/base/memory.c b/drivers/base/memory.c
+index 6448c9ece2cb..8c5ce42c0fc3 100644
+--- a/drivers/base/memory.c
++++ b/drivers/base/memory.c
+@@ -216,7 +216,7 @@ static int memory_subsys_online(struct device *dev)
+ 	 * attribute and need to set the online_type.
+ 	 */
+ 	if (mem->online_type < 0)
+-		mem->online_type =3D MMOP_ONLINE_KEEP;
++		mem->online_type =3D MMOP_ONLINE;
+=20
+ 	ret =3D memory_block_change_state(mem, MEM_ONLINE, MEM_OFFLINE);
+=20
+@@ -251,7 +251,7 @@ static ssize_t state_store(struct device *dev, struct=
+ device_attribute *attr,
+ 	else if (sysfs_streq(buf, "online_movable"))
+ 		online_type =3D MMOP_ONLINE_MOVABLE;
+ 	else if (sysfs_streq(buf, "online"))
+-		online_type =3D MMOP_ONLINE_KEEP;
++		online_type =3D MMOP_ONLINE;
+ 	else if (sysfs_streq(buf, "offline"))
+ 		online_type =3D MMOP_OFFLINE;
+ 	else {
+@@ -262,7 +262,7 @@ static ssize_t state_store(struct device *dev, struct=
+ device_attribute *attr,
+ 	switch (online_type) {
+ 	case MMOP_ONLINE_KERNEL:
+ 	case MMOP_ONLINE_MOVABLE:
+-	case MMOP_ONLINE_KEEP:
++	case MMOP_ONLINE:
+ 		/* mem->online_type is protected by device_hotplug_lock */
+ 		mem->online_type =3D online_type;
+ 		ret =3D device_online(&mem->dev);
+@@ -342,7 +342,8 @@ static ssize_t valid_zones_show(struct device *dev,
+ 	}
+=20
+ 	nid =3D mem->nid;
+-	default_zone =3D zone_for_pfn_range(MMOP_ONLINE_KEEP, nid, start_pfn, n=
+r_pages);
++	default_zone =3D zone_for_pfn_range(MMOP_ONLINE, nid, start_pfn,
++					  nr_pages);
+ 	strcat(buf, default_zone->name);
+=20
+ 	print_allowed_zone(buf, nid, start_pfn, nr_pages, MMOP_ONLINE_KERNEL,
+diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplu=
+g.h
+index 3195d11876ea..3aaf00db224c 100644
+--- a/include/linux/memory_hotplug.h
++++ b/include/linux/memory_hotplug.h
+@@ -47,9 +47,13 @@ enum {
+=20
+ /* Types for control the zone type of onlined and offlined memory */
+ enum {
++	/* Offline the memory. */
+ 	MMOP_OFFLINE =3D -1,
+-	MMOP_ONLINE_KEEP,
++	/* Online the memory. Zone depends, see default_zone_for_pfn(). */
++	MMOP_ONLINE,
++	/* Online the memory to ZONE_NORMAL. */
+ 	MMOP_ONLINE_KERNEL,
++	/* Online the memory to ZONE_MOVABLE. */
+ 	MMOP_ONLINE_MOVABLE,
+ };
+=20
+--=20
+2.24.1
+
