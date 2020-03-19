@@ -2,23 +2,23 @@ Return-Path: <SRS0=RfJf=5E=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A92FBC4332B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 12:23:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A13DAC4332B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 12:26:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 288EB20663
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 12:23:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 288EB20663
+	by mail.kernel.org (Postfix) with ESMTPS id 5BA542070A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 12:26:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5BA542070A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48jmKM1pNczDq9H
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 23:23:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48jmNN1bZNzDrHt
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 23:26:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
  (client-ip=195.135.220.15; helo=mx2.suse.de; envelope-from=msuchanek@suse.de;
@@ -28,20 +28,21 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48jmDw15r4zDqLX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2020 23:19:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48jmDy0kgfzDqLX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2020 23:19:46 +1100 (AEDT)
 X-Virus-Scanned: by amavisd-new at test-mx.suse.de
 Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx2.suse.de (Postfix) with ESMTP id 639ABAFDC;
- Thu, 19 Mar 2020 12:19:40 +0000 (UTC)
+ by mx2.suse.de (Postfix) with ESMTP id C016FB071;
+ Thu, 19 Mar 2020 12:19:41 +0000 (UTC)
 From: Michal Suchanek <msuchanek@suse.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v11 0/8] Disable compat cruft on ppc64le v11
-Date: Thu, 19 Mar 2020 13:19:28 +0100
-Message-Id: <cover.1584620202.git.msuchanek@suse.de>
+Subject: [PATCH v11 1/8] powerpc: Add back __ARCH_WANT_SYS_LLSEEK macro
+Date: Thu, 19 Mar 2020 13:19:29 +0100
+Message-Id: <9c35e5b04213a0fcd55458271d58e203e5bc3486.1584620202.git.msuchanek@suse.de>
 X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20200225173541.1549955-1-npiggin@gmail.com>
+In-Reply-To: <cover.1584620202.git.msuchanek@suse.de>
 References: <20200225173541.1549955-1-npiggin@gmail.com>
+ <cover.1584620202.git.msuchanek@suse.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -84,72 +85,52 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Less code means less bugs so add a knob to skip the compat stuff.
+This partially reverts commit caf6f9c8a326 ("asm-generic: Remove
+unneeded __ARCH_WANT_SYS_LLSEEK macro")
 
-Changes in v2: saner CONFIG_COMPAT ifdefs
-Changes in v3:
- - change llseek to 32bit instead of builing it unconditionally in fs
- - clanup the makefile conditionals
- - remove some ifdefs or convert to IS_DEFINED where possible
-Changes in v4:
- - cleanup is_32bit_task and current_is_64bit
- - more makefile cleanup
-Changes in v5:
- - more current_is_64bit cleanup
- - split off callchain.c 32bit and 64bit parts
-Changes in v6:
- - cleanup makefile after split
- - consolidate read_user_stack_32
- - fix some checkpatch warnings
-Changes in v7:
- - add back __ARCH_WANT_SYS_LLSEEK to fix build with llseek
- - remove leftover hunk
- - add review tags
-Changes in v8:
- - consolidate valid_user_sp to fix it in the split callchain.c
- - fix build errors/warnings with PPC64 !COMPAT and PPC32
-Changes in v9:
- - remove current_is_64bit()
-Chanegs in v10:
- - rebase, sent together with the syscall cleanup
-Changes in v11:
- - rebase
- - add MAINTAINERS pattern for ppc perf
+When CONFIG_COMPAT is disabled on ppc64 the kernel does not build.
 
-Michal Suchanek (8):
-  powerpc: Add back __ARCH_WANT_SYS_LLSEEK macro
-  powerpc: move common register copy functions from signal_32.c to
-    signal.c
-  powerpc/perf: consolidate read_user_stack_32
-  powerpc/perf: consolidate valid_user_sp
-  powerpc/64: make buildable without CONFIG_COMPAT
-  powerpc/64: Make COMPAT user-selectable disabled on littleendian by
-    default.
-  powerpc/perf: split callchain.c by bitness
-  MAINTAINERS: perf: Add pattern that matches ppc perf to the perf
-    entry.
+There is resistance to both removing the llseek syscall from the 64bit
+syscall tables and building the llseek interface unconditionally.
 
- MAINTAINERS                            |   2 +
- arch/powerpc/Kconfig                   |   5 +-
- arch/powerpc/include/asm/thread_info.h |   4 +-
- arch/powerpc/include/asm/unistd.h      |   1 +
- arch/powerpc/kernel/Makefile           |   6 +-
- arch/powerpc/kernel/entry_64.S         |   2 +
- arch/powerpc/kernel/signal.c           | 144 +++++++++-
- arch/powerpc/kernel/signal_32.c        | 140 ----------
- arch/powerpc/kernel/syscall_64.c       |   6 +-
- arch/powerpc/kernel/vdso.c             |   3 +-
- arch/powerpc/perf/Makefile             |   5 +-
- arch/powerpc/perf/callchain.c          | 356 +------------------------
- arch/powerpc/perf/callchain.h          |  20 ++
- arch/powerpc/perf/callchain_32.c       | 196 ++++++++++++++
- arch/powerpc/perf/callchain_64.c       | 174 ++++++++++++
- fs/read_write.c                        |   3 +-
- 16 files changed, 556 insertions(+), 511 deletions(-)
- create mode 100644 arch/powerpc/perf/callchain.h
- create mode 100644 arch/powerpc/perf/callchain_32.c
- create mode 100644 arch/powerpc/perf/callchain_64.c
+Link: https://lore.kernel.org/lkml/20190828151552.GA16855@infradead.org/
+Link: https://lore.kernel.org/lkml/20190829214319.498c7de2@naga/
 
+Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+Reviewed-by: Arnd Bergmann <arnd@arndb.de>
+---
+v7: new patch
+---
+ arch/powerpc/include/asm/unistd.h | 1 +
+ fs/read_write.c                   | 3 ++-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
+index b0720c7c3fcf..700fcdac2e3c 100644
+--- a/arch/powerpc/include/asm/unistd.h
++++ b/arch/powerpc/include/asm/unistd.h
+@@ -31,6 +31,7 @@
+ #define __ARCH_WANT_SYS_SOCKETCALL
+ #define __ARCH_WANT_SYS_FADVISE64
+ #define __ARCH_WANT_SYS_GETPGRP
++#define __ARCH_WANT_SYS_LLSEEK
+ #define __ARCH_WANT_SYS_NICE
+ #define __ARCH_WANT_SYS_OLD_GETRLIMIT
+ #define __ARCH_WANT_SYS_OLD_UNAME
+diff --git a/fs/read_write.c b/fs/read_write.c
+index 59d819c5b92e..bbfa9b12b15e 100644
+--- a/fs/read_write.c
++++ b/fs/read_write.c
+@@ -331,7 +331,8 @@ COMPAT_SYSCALL_DEFINE3(lseek, unsigned int, fd, compat_off_t, offset, unsigned i
+ }
+ #endif
+ 
+-#if !defined(CONFIG_64BIT) || defined(CONFIG_COMPAT)
++#if !defined(CONFIG_64BIT) || defined(CONFIG_COMPAT) || \
++	defined(__ARCH_WANT_SYS_LLSEEK)
+ SYSCALL_DEFINE5(llseek, unsigned int, fd, unsigned long, offset_high,
+ 		unsigned long, offset_low, loff_t __user *, result,
+ 		unsigned int, whence)
 -- 
 2.23.0
 
