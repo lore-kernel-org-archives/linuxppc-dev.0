@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1DB16C4332D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 12:12:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 26C13C4332B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 12:15:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CC68920663
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 12:12:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CC68920663
+	by mail.kernel.org (Postfix) with ESMTPS id D3C5D20663
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 12:15:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D3C5D20663
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48jm4t6FgKzDrH6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 23:12:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48jm802fvkzDrHs
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 23:15:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
  (client-ip=195.135.220.15; helo=mx2.suse.de; envelope-from=msuchanek@suse.de;
@@ -28,18 +28,18 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48jlf64rx3zDr7M
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2020 22:53:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48jlf85f9qzDr7M
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2020 22:53:04 +1100 (AEDT)
 X-Virus-Scanned: by amavisd-new at test-mx.suse.de
 Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx2.suse.de (Postfix) with ESMTP id 0A4A6AF7E;
- Thu, 19 Mar 2020 11:52:59 +0000 (UTC)
+ by mx2.suse.de (Postfix) with ESMTP id C440EAFBA;
+ Thu, 19 Mar 2020 11:53:01 +0000 (UTC)
 From: Michal Suchanek <msuchanek@suse.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v11 6/8] powerpc/64: Make COMPAT user-selectable disabled on
- littleendian by default.
-Date: Thu, 19 Mar 2020 12:52:26 +0100
-Message-Id: <4ebc213bc09013531c852c0e083f286f55cb69ad.1584613649.git.msuchanek@suse.de>
+Subject: [PATCH v11 8/8] MAINTAINERS: perf: Add pattern that matches ppc perf
+ to the perf entry.
+Date: Thu, 19 Mar 2020 12:52:28 +0100
+Message-Id: <5cd926191175c4a4a85dc2246adc84bcfac21b1a.1584613649.git.msuchanek@suse.de>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <cover.1584613649.git.msuchanek@suse.de>
 References: <cover.1584613649.git.msuchanek@suse.de>
@@ -87,33 +87,26 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On bigendian ppc64 it is common to have 32bit legacy binaries but much
-less so on littleendian.
-
 Signed-off-by: Michal Suchanek <msuchanek@suse.de>
-Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
-v3: make configurable
+v10: new patch
 ---
- arch/powerpc/Kconfig | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ MAINTAINERS | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 497b7d0b2d7e..29d00b3959b9 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -264,8 +264,9 @@ config PANIC_TIMEOUT
- 	default 180
- 
- config COMPAT
--	bool
--	default y if PPC64
-+	bool "Enable support for 32bit binaries"
-+	depends on PPC64
-+	default y if !CPU_LITTLE_ENDIAN
- 	select COMPAT_BINFMT_ELF
- 	select ARCH_WANT_OLD_COMPAT_IPC
- 	select COMPAT_OLD_SIGACTION
+diff --git a/MAINTAINERS b/MAINTAINERS
+index bc8dbe4fe4c9..329bf4a31412 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -13088,6 +13088,8 @@ F:	arch/*/kernel/*/perf_event*.c
+ F:	arch/*/kernel/*/*/perf_event*.c
+ F:	arch/*/include/asm/perf_event.h
+ F:	arch/*/kernel/perf_callchain.c
++F:	arch/*/perf/*
++F:	arch/*/perf/*/*
+ F:	arch/*/events/*
+ F:	arch/*/events/*/*
+ F:	tools/perf/
 -- 
 2.23.0
 
