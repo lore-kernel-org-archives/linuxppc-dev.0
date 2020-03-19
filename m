@@ -2,73 +2,48 @@ Return-Path: <SRS0=RfJf=5E=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6743C4332B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 11:28:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80D3BC4332D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 11:56:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9152C2070A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 11:28:19 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="jPns8Zj4"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9152C2070A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 3CB0D2071C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 11:56:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3CB0D2071C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48jl5X31zSzDqSr
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 22:28:16 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 48jlkc2zZQzDrFl
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 22:56:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
+ (client-ip=195.135.220.15; helo=mx2.suse.de; envelope-from=msuchanek@suse.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48jkyN3JpmzDr5n
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2020 22:22:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=jPns8Zj4; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 48jkyJ4c93z9sQt;
- Thu, 19 Mar 2020 22:22:00 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1584616922;
- bh=EEchnxXtnjsxaM2QrIQOc4QB6WvA6Z7scPBjPCIHTLw=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=jPns8Zj45gHQLCIXDaac06BYlBNrlEfdIA/AyVRhSvWuFR+bSj6L3xUOlxAeLAT7Y
- IimhyEhBlVePcdOLNWU++TkB4dTNn6/fWpVDVzmvLjSRL3n+C/bhTKCIBp4ybK2VI4
- a818JY9LzjnY7BK8obSeDZhTko1z2dzxiS8xhKrpPOT8TKQkcLFCeG5P9tUM5guDbT
- 7RbLWW+cSm/44zSyDEzwJxehyxpWzR3KojDp6N0uEB/+QwcwpUf5bdTr1YJv9TMO2b
- VcZK/Ck0u0ikk8DV+5ArdmgIiZ9GPL+iW4lOqXAPiOit4L52Yeq+QY6sN9tQYGf407
- D2r+081Ra/Mhw==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Kim Phillips <kim.phillips@amd.com>, maddy <maddy@linux.ibm.com>,
- Ravi Bangoria <ravi.bangoria@linux.ibm.com>
-Subject: Re: [RFC 00/11] perf: Enhancing perf to export processor hazard
- information
-In-Reply-To: <8803550e-5d6d-2eda-39f5-e4594052188c@amd.com>
-References: <20200302052355.36365-1-ravi.bangoria@linux.ibm.com>
- <20200302101332.GS18400@hirez.programming.kicks-ass.net>
- <CABPqkBSzwpR6p7UZs7g1vWGCJRLsh565mRMGc6m0Enn1SnkC4w@mail.gmail.com>
- <df966d6e-8898-029f-e697-8496500a1663@amd.com>
- <2550ec4d-a015-4625-ca24-ff10632dbe2e@linux.ibm.com>
- <d3c82708-dd09-80e0-4e9f-1cbab118a169@amd.com>
- <8a4d966c-acc9-b2b7-8ab7-027aefab201c@linux.ibm.com>
- <f226f4c5-6310-fd6b-ee76-aebd938ec212@amd.com>
- <0c5e94a3-e86e-f7cb-d668-d542b3a8ae29@linux.ibm.com>
- <8803550e-5d6d-2eda-39f5-e4594052188c@amd.com>
-Date: Thu, 19 Mar 2020 22:22:03 +1100
-Message-ID: <87o8ssd1yc.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48jlf05frlzDr8q
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2020 22:52:56 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx2.suse.de (Postfix) with ESMTP id 41949ACEF;
+ Thu, 19 Mar 2020 11:52:52 +0000 (UTC)
+From: Michal Suchanek <msuchanek@suse.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v11 1/8] powerpc: Add back __ARCH_WANT_SYS_LLSEEK macro
+Date: Thu, 19 Mar 2020 12:52:21 +0100
+Message-Id: <9c35e5b04213a0fcd55458271d58e203e5bc3486.1584613649.git.msuchanek@suse.de>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <cover.1584613649.git.msuchanek@suse.de>
+References: <cover.1584613649.git.msuchanek@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,51 +55,83 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Andi Kleen <ak@linux.intel.com>,
- Peter Zijlstra <peterz@infradead.org>, Jiri Olsa <jolsa@redhat.com>,
- Alexey Budankov <alexey.budankov@linux.intel.com>,
- LKML <linux-kernel@vger.kernel.org>, Stephane Eranian <eranian@google.com>,
- Adrian Hunter <adrian.hunter@intel.com>,
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ Gustavo Luiz Duarte <gustavold@linux.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Jiri Olsa <jolsa@redhat.com>, Rob Herring <robh@kernel.org>,
+ Michael Neuling <mikey@neuling.org>,
+ Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
+ Masahiro Yamada <masahiroy@kernel.org>, Nayna Jain <nayna@linux.ibm.com>,
+ "linux-fsdevel @ vger . kernel . org --in-reply-to="
+ <20200225173541.1549955-1-npiggin@gmail.com>,
  Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- yao.jin@linux.intel.com, Ingo Molnar <mingo@redhat.com>,
- Paul Mackerras <paulus@samba.org>, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Robert Richter <robert.richter@amd.com>, Namhyung Kim <namhyung@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, "Liang, Kan" <kan.liang@linux.intel.com>
+ Ingo Molnar <mingo@redhat.com>, Allison Randal <allison@lohutok.net>,
+ Jordan Niethe <jniethe5@gmail.com>, Michal Suchanek <msuchanek@suse.de>,
+ Valentin Schneider <valentin.schneider@arm.com>, Arnd Bergmann <arnd@arndb.de>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Alexander Viro <viro@zeniv.linux.org.uk>,
+ Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+ Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Hari Bathini <hbathini@linux.ibm.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Nicholas Piggin <npiggin@gmail.com>, Claudio Carvalho <cclaudio@linux.ibm.com>,
+ Eric Richter <erichte@linux.ibm.com>,
+ "Eric W. Biederman" <ebiederm@xmission.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ Thiago Jung Bauermann <bauerman@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Kim Phillips <kim.phillips@amd.com> writes:
-> On 3/17/20 1:50 AM, maddy wrote:
->> On 3/13/20 4:08 AM, Kim Phillips wrote:
->>> On 3/11/20 11:00 AM, Ravi Bangoria wrote:
->>>
->>>> information on each sample using PMI at periodic intervals. Hence proposing
->>>> PERF_SAMPLE_PIPELINE_HAZ.
->>>
->>> And that's fine for any extra bits that POWER9 has to convey
->>> to its users beyond things already represented by other sample
->>> types like PERF_SAMPLE_DATA_SRC, but the capturing of both POWER9
->>> and other vendor e.g., AMD IBS data can be made vendor-independent
->>> at record time by using SAMPLE_AUX, or SAMPLE_RAW even, which is
->>> what IBS currently uses.
->> 
->> My bad. Not sure what you mean by this. We are trying to abstract
->> as much vendor specific data as possible with this (like perf-mem).
->
-> Perhaps if I say it this way: instead of doing all the 
-> isa207_get_phazard_data() work past the mfspr(SPRN_SIER)
-> in patch 4/11, rather/instead just put the raw sier value in a 
-> PERF_SAMPLE_RAW or _AUX event, and call perf_event_update_userpage.
-> Specific SIER capabilities can be written as part of the perf.data
-> header.  Then synthesize the true pipe events from the raw SIER
-> values later, and in userspace.
+This partially reverts commit caf6f9c8a326 ("asm-generic: Remove
+unneeded __ARCH_WANT_SYS_LLSEEK macro")
 
-In the past the perf maintainers have wanted the perf API to abstract
-over the specific CPU details, rather than just pushing raw register
-values out to userspace.
+When CONFIG_COMPAT is disabled on ppc64 the kernel does not build.
 
-But maybe that's no longer the case and we should just use
-PERF_SAMPLE_AUX?
+There is resistance to both removing the llseek syscall from the 64bit
+syscall tables and building the llseek interface unconditionally.
 
-cheers
+Link: https://lore.kernel.org/lkml/20190828151552.GA16855@infradead.org/
+Link: https://lore.kernel.org/lkml/20190829214319.498c7de2@naga/
+
+Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+Reviewed-by: Arnd Bergmann <arnd@arndb.de>
+---
+v7: new patch
+---
+ arch/powerpc/include/asm/unistd.h | 1 +
+ fs/read_write.c                   | 3 ++-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
+index b0720c7c3fcf..700fcdac2e3c 100644
+--- a/arch/powerpc/include/asm/unistd.h
++++ b/arch/powerpc/include/asm/unistd.h
+@@ -31,6 +31,7 @@
+ #define __ARCH_WANT_SYS_SOCKETCALL
+ #define __ARCH_WANT_SYS_FADVISE64
+ #define __ARCH_WANT_SYS_GETPGRP
++#define __ARCH_WANT_SYS_LLSEEK
+ #define __ARCH_WANT_SYS_NICE
+ #define __ARCH_WANT_SYS_OLD_GETRLIMIT
+ #define __ARCH_WANT_SYS_OLD_UNAME
+diff --git a/fs/read_write.c b/fs/read_write.c
+index 59d819c5b92e..bbfa9b12b15e 100644
+--- a/fs/read_write.c
++++ b/fs/read_write.c
+@@ -331,7 +331,8 @@ COMPAT_SYSCALL_DEFINE3(lseek, unsigned int, fd, compat_off_t, offset, unsigned i
+ }
+ #endif
+ 
+-#if !defined(CONFIG_64BIT) || defined(CONFIG_COMPAT)
++#if !defined(CONFIG_64BIT) || defined(CONFIG_COMPAT) || \
++	defined(__ARCH_WANT_SYS_LLSEEK)
+ SYSCALL_DEFINE5(llseek, unsigned int, fd, unsigned long, offset_high,
+ 		unsigned long, offset_low, loff_t __user *, result,
+ 		unsigned int, whence)
+-- 
+2.23.0
+
