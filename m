@@ -2,52 +2,93 @@ Return-Path: <SRS0=RfJf=5E=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03FC7C4332D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 15:24:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B2CFC4332B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 16:00:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 63E6520658
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 15:24:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 63E6520658
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lwn.net
+	by mail.kernel.org (Postfix) with ESMTPS id C4AA320658
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2020 16:00:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C4AA320658
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48jrLG0nbNzDr02
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2020 02:24:38 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=lwn.net
- (client-ip=45.79.88.28; helo=ms.lwn.net; envelope-from=corbet@lwn.net;
+	by lists.ozlabs.org (Postfix) with ESMTP id 48js7p3Z0wzDr5N
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2020 03:00:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=stefanb@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lwn.net
-Received: from ms.lwn.net (ms.lwn.net [45.79.88.28])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48jqv52s08zDqG6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2020 02:04:32 +1100 (AEDT)
-Received: from lwn.net (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ms.lwn.net (Postfix) with ESMTPSA id DB45F384;
- Thu, 19 Mar 2020 15:04:27 +0000 (UTC)
-Date: Thu, 19 Mar 2020 09:04:26 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch V2 08/15] Documentation: Add lock ordering and nesting
- documentation
-Message-ID: <20200319090426.512510cb@lwn.net>
-In-Reply-To: <20200318204408.211530902@linutronix.de>
-References: <20200318204302.693307984@linutronix.de>
- <20200318204408.211530902@linutronix.de>
-Organization: LWN.net
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48js2t4VM2zDrNj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2020 02:56:22 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 02JFWNTp153786; Thu, 19 Mar 2020 11:56:14 -0400
+Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.26])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2yu7adh6b5-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 19 Mar 2020 11:56:14 -0400
+Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
+ by ppma04wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 02JFivNo016822;
+ Thu, 19 Mar 2020 15:56:13 GMT
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by ppma04wdc.us.ibm.com with ESMTP id 2yrpw71hyw-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 19 Mar 2020 15:56:13 +0000
+Received: from b03ledav005.gho.boulder.ibm.com
+ (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 02JFuCei53543402
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 19 Mar 2020 15:56:12 GMT
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DA3E1BE051;
+ Thu, 19 Mar 2020 15:56:12 +0000 (GMT)
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 40272BE04F;
+ Thu, 19 Mar 2020 15:56:12 +0000 (GMT)
+Received: from sbct-3.pok.ibm.com (unknown [9.47.158.153])
+ by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Thu, 19 Mar 2020 15:56:12 +0000 (GMT)
+Subject: Re: [PATCH] tpm2: Export tpm2_get_cc_attrs_tbl for ibmvtpm driver as
+ module
+To: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
+References: <20200317130819.720318-1-stefanb@linux.vnet.ibm.com>
+ <20200318194247.GC48177@linux.intel.com>
+ <4b2949a9-b251-906d-d513-1b2ccef758a0@linux.ibm.com>
+ <20200319142714.GB3703@linux.intel.com>
+From: Stefan Berger <stefanb@linux.ibm.com>
+Message-ID: <17b5d98c-76b2-63c0-798a-920d91fec618@linux.ibm.com>
+Date: Thu, 19 Mar 2020 11:56:11 -0400
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.4.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20200319142714.GB3703@linux.intel.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 8bit
+Content-Language: en-US
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.645
+ definitions=2020-03-19_05:2020-03-19,
+ 2020-03-19 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0
+ priorityscore=1501 mlxscore=0 lowpriorityscore=0 bulkscore=0
+ suspectscore=0 clxscore=1015 adultscore=0 spamscore=0 impostorscore=0
+ malwarescore=0 mlxlogscore=999 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2003020000 definitions=main-2003190067
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,100 +100,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Randy Dunlap <rdunlap@infradead.org>, Peter Zijlstra <peterz@infradead.org>,
- linux-pci@vger.kernel.org, Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- Oleg Nesterov <oleg@redhat.com>, Joel Fernandes <joel@joelfernandes.org>,
- Will Deacon <will@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Davidlohr Bueso <dave@stgolabs.net>, Arnd Bergmann <arnd@arndb.de>,
- Logan Gunthorpe <logang@deltatee.com>, "Paul E .
- McKenney" <paulmck@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Steven Rostedt <rostedt@goodmis.org>, Bjorn Helgaas <bhelgaas@google.com>,
- Kurt Schwemmer <kurt.schwemmer@microsemi.com>,
- Kalle Valo <kvalo@codeaurora.org>, Felipe Balbi <balbi@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
- linux-wireless@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
- netdev@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
- "David S. Miller" <davem@davemloft.net>
+Cc: sachinp@linux.vnet.ibm.com, Stefan Berger <stefanb@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+ linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 18 Mar 2020 21:43:10 +0100
-Thomas Gleixner <tglx@linutronix.de> wrote:
+On 3/19/20 10:27 AM, Jarkko Sakkinen wrote:
+> On Wed, Mar 18, 2020 at 03:53:54PM -0400, Stefan Berger wrote:
+>> On 3/18/20 3:42 PM, Jarkko Sakkinen wrote:
+>>> On Tue, Mar 17, 2020 at 09:08:19AM -0400, Stefan Berger wrote:
+>>>> From: Stefan Berger <stefanb@linux.ibm.com>
+>>>>
+>>>> This patch fixes the following problem when the ibmvtpm driver
+>>>> is built as a module:
+>>>>
+>>>> ERROR: modpost: "tpm2_get_cc_attrs_tbl" [drivers/char/tpm/tpm_ibmvtpm.ko] undefined!
+>>>> make[1]: *** [scripts/Makefile.modpost:94: __modpost] Error 1
+>>>> make: *** [Makefile:1298: modules] Error 2
+>>>>
+>>>> Signed-off-by: Stefan Berger <stefanb@linux.ibm.com>
+>>> Hi, wrong tag (we use "tpm:"), missing fixes tag and please cc stable.
+>>> Thanks.
+>> I did not add the fixes tag because I do not know the final commit hash, or
+>> is it the final commit hash once it is in linux-next? I doubt it with all
+>> the merging that can occur.
+> Can you send me a new version after rc1 is out?
 
-> From: Thomas Gleixner <tglx@linutronix.de>
-> 
-> The kernel provides a variety of locking primitives. The nesting of these
-> lock types and the implications of them on RT enabled kernels is nowhere
-> documented.
-> 
-> Add initial documentation.
+Michael Ellerman (cc'ed) told me that the fixes tag should 'work' once 
+the bad patch is in linux-next. So I reposted yesterday (with a stray 
+'q' in the title :-( ):
 
-...time to add a a couple of nits...:)
+https://lkml.org/lkml/2020/3/18/1283
 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> ---
-> V2: Addressed review comments from Randy
-> ---
->  Documentation/locking/index.rst     |    1 
->  Documentation/locking/locktypes.rst |  298 ++++++++++++++++++++++++++++++++++++
->  2 files changed, 299 insertions(+)
->  create mode 100644 Documentation/locking/locktypes.rst
-> 
-> --- a/Documentation/locking/index.rst
-> +++ b/Documentation/locking/index.rst
-> @@ -7,6 +7,7 @@ locking
->  .. toctree::
->      :maxdepth: 1
->  
-> +    locktypes
->      lockdep-design
->      lockstat
->      locktorture
-> --- /dev/null
-> +++ b/Documentation/locking/locktypes.rst
-> @@ -0,0 +1,298 @@
-> +.. _kernel_hacking_locktypes:
-> +
 
-So ... I vaguely remember that some Thomas guy added a document saying we
-should be putting SPDX tags on our files? :)
+    Stefan
 
-> +==========================
-> +Lock types and their rules
-> +==========================
+>
+> /Jarkko
 
-[...]
 
-> +PREEMPT_RT caveats
-> +==================
-> +
-> +spinlock_t and rwlock_t
-> +-----------------------
-> +
-> +The substitution of spinlock_t and rwlock_t on PREEMPT_RT enabled kernels
-> +with RT-mutex based implementations has a few implications.
-> +
-> +On a non PREEMPT_RT enabled kernel the following code construct is
-> +perfectly fine::
-> +
-> +   local_irq_disable();
-> +   spin_lock(&lock);
-> +
-> +and fully equivalent to::
-> +
-> +   spin_lock_irq(&lock);
-> +
-> +Same applies to rwlock_t and the _irqsave() suffix variant.
-> +
-> +On a PREEMPT_RT enabled kernel this breaks because the RT-mutex
-> +substitution expects a fully preemptible context.
-> +
-> +The preferred solution is to use :c:func:`spin_lock_irq()` or
-> +:c:func:`spin_lock_irqsave()` and their unlock counterparts.
-
-We don't need (and shouldn't use) :c:func: anymore; just saying
-spin_lock_irq() will cause the Right Things to happen.
-
-Thanks,
-jon
