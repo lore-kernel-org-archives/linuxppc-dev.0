@@ -2,92 +2,50 @@ Return-Path: <SRS0=DNDs=5F=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C832C4332D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2020 09:28:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B87B3C4332B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2020 09:51:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0027720739
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2020 09:27:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0027720739
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3181A20722
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2020 09:51:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3181A20722
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48kJNF2DNMzDrRs
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2020 20:27:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48kJvm3p6CzDrg7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2020 20:51:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=none (no SPF record) smtp.mailfrom=linutronix.de
+ (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
+ envelope-from=bigeasy@linutronix.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linutronix.de
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a0a:51c0:0:12e:550::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48kJKC4FY3zDrRh
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2020 20:25:18 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 02K942Qg113774; Fri, 20 Mar 2020 05:25:12 -0400
-Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.27])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2yu7aebenr-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 20 Mar 2020 05:25:12 -0400
-Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
- by ppma05wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 02K9NS4C017132;
- Fri, 20 Mar 2020 09:25:12 GMT
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by ppma05wdc.us.ibm.com with ESMTP id 2yrpw6y6jr-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 20 Mar 2020 09:25:11 +0000
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 02K9PA1A29884688
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 20 Mar 2020 09:25:11 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D4CF5BE059;
- Fri, 20 Mar 2020 09:25:10 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 813CBBE05D;
- Fri, 20 Mar 2020 09:25:09 +0000 (GMT)
-Received: from skywalker.linux.ibm.com (unknown [9.85.72.106])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
- Fri, 20 Mar 2020 09:25:09 +0000 (GMT)
-X-Mailer: emacs 27.0.90 (via feedmail 11-beta-1 I)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: Dan Williams <dan.j.williams@intel.com>
-Subject: Re: [PATCH v2] libnvdimm: Update persistence domain value for
- of_pmem and papr_scm device
-In-Reply-To: <CAPcyv4iFP6_jkocoyv-6zd0Y8FEYFA3Pk6brH5+_XQ9+U896wQ@mail.gmail.com>
-References: <20200205052056.74604-1-aneesh.kumar@linux.ibm.com>
- <CAPcyv4hBAk-dwO4=AT7cQm5YUwCBg0AECsZsiCjRJ_ZGWvWUAw@mail.gmail.com>
- <87y2ta8qy7.fsf@linux.ibm.com>
- <CAPcyv4hNV88FJybgoRyM=JuKgrwYaf+CLWfFWt5X3yFMrecU=Q@mail.gmail.com>
- <25eabdd9-410f-e4c3-6b0e-41a5e6daba10@linux.ibm.com>
- <CAPcyv4iFP6_jkocoyv-6zd0Y8FEYFA3Pk6brH5+_XQ9+U896wQ@mail.gmail.com>
-Date: Fri, 20 Mar 2020 14:55:07 +0530
-Message-ID: <87k13fnzt8.fsf@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48kJrw12WDzDrcF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2020 20:49:19 +1100 (AEDT)
+Received: from localhost ([127.0.0.1] helo=flow.W.breakpoint.cc)
+ by Galois.linutronix.de with esmtp (Exim 4.80)
+ (envelope-from <bigeasy@linutronix.de>)
+ id 1jFEH3-0000vL-DT; Fri, 20 Mar 2020 10:49:05 +0100
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+To: tglx@linutronix.de
+Subject: [PATCH 5/5] microblaze: Remove mm.h from asm/uaccess.h
+Date: Fri, 20 Mar 2020 10:48:56 +0100
+Message-Id: <20200320094856.3453859-6-bigeasy@linutronix.de>
+X-Mailer: git-send-email 2.26.0.rc2
+In-Reply-To: <20200320094856.3453859-1-bigeasy@linutronix.de>
+References: <20200318204408.010461877@linutronix.de>
+ <20200320094856.3453859-1-bigeasy@linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.645
- definitions=2020-03-20_01:2020-03-19,
- 2020-03-20 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0
- priorityscore=1501 mlxscore=0 lowpriorityscore=0 bulkscore=0
- suspectscore=0 clxscore=1015 adultscore=0 spamscore=0 impostorscore=0
- malwarescore=0 mlxlogscore=999 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2003020000 definitions=main-2003200037
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,89 +57,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-nvdimm <linux-nvdimm@lists.01.org>
+Cc: rdunlap@infradead.org, peterz@infradead.org, linux-pci@vger.kernel.org,
+ bigeasy@linutronix.de, linux-kernel@vger.kernel.org, joel@joelfernandes.org,
+ will@kernel.org, mingo@kernel.org, dave@stgolabs.net, arnd@arndb.de,
+ torvalds@linux-foundation.org, paulmck@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, rostedt@goodmis.org, bhelgaas@google.com,
+ kurt.schwemmer@microsemi.com, kvalo@codeaurora.org,
+ kbuild test robot <lkp@intel.com>, balbi@kernel.org,
+ Michal Simek <monstr@monstr.eu>, gregkh@linuxfoundation.org,
+ linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, oleg@redhat.com,
+ netdev@vger.kernel.org, logang@deltatee.com, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+The defconfig compiles without linux/mm.h. With mm.h included the
+include chain leands to:
+|   CC      kernel/locking/percpu-rwsem.o
+| In file included from include/linux/huge_mm.h:8,
+|                  from include/linux/mm.h:567,
+|                  from arch/microblaze/include/asm/uaccess.h:,
+|                  from include/linux/uaccess.h:11,
+|                  from include/linux/sched/task.h:11,
+|                  from include/linux/sched/signal.h:9,
+|                  from include/linux/rcuwait.h:6,
+|                  from include/linux/percpu-rwsem.h:8,
+|                  from kernel/locking/percpu-rwsem.c:6:
+| include/linux/fs.h:1422:29: error: array type has incomplete element type=
+ 'struct percpu_rw_semaphore'
+|  1422 |  struct percpu_rw_semaphore rw_sem[SB_FREEZE_LEVELS];
 
-Hi Dan,
+once rcuwait.h includes linux/sched/signal.h.
 
+Remove the linux/mm.h include.
 
-Dan Williams <dan.j.williams@intel.com> writes:
+Cc: Michal Simek <monstr@monstr.eu>
+Reported-by: kbuild test robot <lkp@intel.com>
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+---
+ arch/microblaze/include/asm/uaccess.h | 1 -
+ 1 file changed, 1 deletion(-)
 
-...
-
-
->
->>
->> Or are you suggesting that application should not infer any of those
->> details looking at persistence_domain value? If so what is the purpose
->> of exporting that attribute?
->
-> The way the patch was worded I thought it was referring to an explicit
-> mechanism outside cpu cache flushes, i.e. a mechanism that required a
-> driver call.
->
-
-This patch is blocked because I am not expressing the details correctly.
-I updates this as below. Can you suggest if this is ok? If not what
-alternate wording do you suggest to document "memory controller"
-
-
-commit 329b46e88f8cd30eee4776b0de7913ab4d496bd8
-Author: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-Date:   Wed Dec 18 13:53:16 2019 +0530
-
-    libnvdimm: Update persistence domain value for of_pmem and papr_scm device
-    
-    Currently, kernel shows the below values
-            "persistence_domain":"cpu_cache"
-            "persistence_domain":"memory_controller"
-            "persistence_domain":"unknown"
-    
-    "cpu_cache" indicates no extra instructions is needed to ensure the persistence
-    of data in the pmem media on power failure.
-    
-    "memory_controller" indicates cpu cache flush instructions is required to flush
-    the data. Platform provides mechanisms to automatically flush outstanding
-    write data from memory controler to pmem on system power loss.
-    
-    Based on the above use memory_controller for non volatile regions on ppc64.
-    
-    Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-
-diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
-index 0b4467e378e5..922a4fc3b61b 100644
---- a/arch/powerpc/platforms/pseries/papr_scm.c
-+++ b/arch/powerpc/platforms/pseries/papr_scm.c
-@@ -361,8 +361,10 @@ static int papr_scm_nvdimm_init(struct papr_scm_priv *p)
- 
- 	if (p->is_volatile)
- 		p->region = nvdimm_volatile_region_create(p->bus, &ndr_desc);
--	else
-+	else {
-+		set_bit(ND_REGION_PERSIST_MEMCTRL, &ndr_desc.flags);
- 		p->region = nvdimm_pmem_region_create(p->bus, &ndr_desc);
-+	}
- 	if (!p->region) {
- 		dev_err(dev, "Error registering region %pR from %pOF\n",
- 				ndr_desc.res, p->dn);
-diff --git a/drivers/nvdimm/of_pmem.c b/drivers/nvdimm/of_pmem.c
-index 8224d1431ea9..6826a274a1f1 100644
---- a/drivers/nvdimm/of_pmem.c
-+++ b/drivers/nvdimm/of_pmem.c
-@@ -62,8 +62,10 @@ static int of_pmem_region_probe(struct platform_device *pdev)
- 
- 		if (is_volatile)
- 			region = nvdimm_volatile_region_create(bus, &ndr_desc);
--		else
-+		else {
-+			set_bit(ND_REGION_PERSIST_MEMCTRL, &ndr_desc.flags);
- 			region = nvdimm_pmem_region_create(bus, &ndr_desc);
-+		}
- 
- 		if (!region)
- 			dev_warn(&pdev->dev, "Unable to register region %pR from %pOF\n",
+diff --git a/arch/microblaze/include/asm/uaccess.h b/arch/microblaze/includ=
+e/asm/uaccess.h
+index a1f206b90753a..4916d5fbea5e3 100644
+--- a/arch/microblaze/include/asm/uaccess.h
++++ b/arch/microblaze/include/asm/uaccess.h
+@@ -12,7 +12,6 @@
+ #define _ASM_MICROBLAZE_UACCESS_H
+=20
+ #include <linux/kernel.h>
+-#include <linux/mm.h>
+=20
+ #include <asm/mmu.h>
+ #include <asm/page.h>
+--=20
+2.26.0.rc2
 
