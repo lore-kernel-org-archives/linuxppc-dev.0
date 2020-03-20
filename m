@@ -2,23 +2,23 @@ Return-Path: <SRS0=DNDs=5F=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89A7CC4332D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2020 08:53:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 796E7C4332B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2020 08:58:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 44CD420752
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2020 08:53:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 44CD420752
+	by mail.kernel.org (Postfix) with ESMTPS id 6542520752
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2020 08:58:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6542520752
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=stgolabs.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48kHcP6yTczDrcY
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2020 19:53:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48kHk65xZVzDrYj
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2020 19:58:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
  host) smtp.mailfrom=stgolabs.net (client-ip=195.135.220.15; helo=mx2.suse.de;
@@ -28,24 +28,20 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48kHZj5wqGzDqxQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2020 19:51:55 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48kHh54JL9zDrMc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2020 19:56:37 +1100 (AEDT)
 X-Virus-Scanned: by amavisd-new at test-mx.suse.de
 Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx2.suse.de (Postfix) with ESMTP id 9C2B4AEBD;
- Fri, 20 Mar 2020 08:51:51 +0000 (UTC)
-Date: Fri, 20 Mar 2020 01:50:46 -0700
+ by mx2.suse.de (Postfix) with ESMTP id E9FE4AE5C;
+ Fri, 20 Mar 2020 08:56:33 +0000 (UTC)
 From: Davidlohr Bueso <dave@stgolabs.net>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch V2 00/15] Lock ordering documentation and annotation for
- lockdep
-Message-ID: <20200320085046.agp5qq6tzxj5utoa@linux-p48b>
-References: <20200318204302.693307984@linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Disposition: inline
+To: tglx@linutronix.de
+Subject: [PATCH 16/15] rcuwait: Get rid of stale name comment
+Date: Fri, 20 Mar 2020 01:55:24 -0700
+Message-Id: <20200320085527.23861-1-dave@stgolabs.net>
+X-Mailer: git-send-email 2.16.4
 In-Reply-To: <20200318204302.693307984@linutronix.de>
-User-Agent: NeoMutt/20180716
+References: <20200318204302.693307984@linutronix.de>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,29 +53,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Randy Dunlap <rdunlap@infradead.org>, Peter Zijlstra <peterz@infradead.org>,
- linux-pci@vger.kernel.org, Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- Oleg Nesterov <oleg@redhat.com>, Joel Fernandes <joel@joelfernandes.org>,
- Will Deacon <will@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Arnd Bergmann <arnd@arndb.de>, Logan Gunthorpe <logang@deltatee.com>,
- "Paul E . McKenney" <paulmck@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Steven Rostedt <rostedt@goodmis.org>, Bjorn Helgaas <bhelgaas@google.com>,
- Kurt Schwemmer <kurt.schwemmer@microsemi.com>,
- Kalle Valo <kvalo@codeaurora.org>, Felipe Balbi <balbi@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
- linux-wireless@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
- netdev@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
- "David S. Miller" <davem@davemloft.net>
+Cc: rdunlap@infradead.org, peterz@infradead.org, linux-pci@vger.kernel.org,
+ bigeasy@linutronix.de, linux-kernel@vger.kernel.org, joel@joelfernandes.org,
+ will@kernel.org, mingo@kernel.org, dave@stgolabs.net, arnd@arndb.de,
+ Davidlohr Bueso <dbueso@suse.de>, torvalds@linux-foundation.org,
+ paulmck@kernel.org, linuxppc-dev@lists.ozlabs.org, rostedt@goodmis.org,
+ bhelgaas@google.com, kurt.schwemmer@microsemi.com, kvalo@codeaurora.org,
+ balbi@kernel.org, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
+ linux-wireless@vger.kernel.org, oleg@redhat.com, netdev@vger.kernel.org,
+ logang@deltatee.com, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 18 Mar 2020, Thomas Gleixner wrote:
->    The PS3 one got converted by Peter Zijlstra to rcu_wait().
+The 'trywake' name was renamed to simply 'wake',
+update the comment.
 
-While at it, I think it makes sense to finally convert the kvm vcpu swait
-to rcuwait (patch 6/15 starts the necessary api changes). I'm sending
-some patches on top of this patchset.
+Signed-off-by: Davidlohr Bueso <dbueso@suse.de>
+---
+ kernel/exit.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks,
-Davidlohr
+diff --git a/kernel/exit.c b/kernel/exit.c
+index 0b81b26a872a..6cc6cc485d07 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -243,7 +243,7 @@ void rcuwait_wake_up(struct rcuwait *w)
+ 	/*
+ 	 * Order condition vs @task, such that everything prior to the load
+ 	 * of @task is visible. This is the condition as to why the user called
+-	 * rcuwait_trywake() in the first place. Pairs with set_current_state()
++	 * rcuwait_wake() in the first place. Pairs with set_current_state()
+ 	 * barrier (A) in rcuwait_wait_event().
+ 	 *
+ 	 *    WAIT                WAKE
+-- 
+2.16.4
+
