@@ -2,56 +2,44 @@ Return-Path: <SRS0=DNDs=5F=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 12D4EC4332D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2020 16:33:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0028C4332B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2020 16:43:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C14A020753
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2020 16:33:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C14A020753
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 68B1420709
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2020 16:43:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 68B1420709
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48kTqd6TgdzDrh4
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 03:33:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48kV3K0Jj9zF0PS
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 03:43:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=linux.intel.com
- (client-ip=134.134.136.24; helo=mga09.intel.com;
- envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.intel.com
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
+ (client-ip=195.135.220.15; helo=mx2.suse.de; envelope-from=msuchanek@suse.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48kTnj5Dn2zDrWW
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2020 03:32:09 +1100 (AEDT)
-IronPort-SDR: d+ICg7jegua2knoYIRcvqZeo845p5O88F1NSYzMY+X0ziz/D0kUr/0nOKvfwiK8XJr3FVighxc
- 7nhAza/QWbww==
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
- by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 20 Mar 2020 09:32:05 -0700
-IronPort-SDR: yBLMtCkVLlEr3TobR1/WAt2VUDE8yBqk59RSdKlA2nC7FEDMwkqPI+t68fhoyeWMK40VjvMLz2
- /8m4IG6yxcZQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.72,285,1580803200"; d="scan'208";a="291961387"
-Received: from smile.fi.intel.com (HELO smile) ([10.237.68.40])
- by FMSMGA003.fm.intel.com with ESMTP; 20 Mar 2020 09:31:57 -0700
-Received: from andy by smile with local (Exim 4.93)
- (envelope-from <andriy.shevchenko@linux.intel.com>)
- id 1jFKYv-00BVSW-TI; Fri, 20 Mar 2020 18:31:57 +0200
-Date: Fri, 20 Mar 2020 18:31:57 +0200
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Joe Perches <joe@perches.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48kV1K176GzDsFP
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2020 03:42:13 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx2.suse.de (Postfix) with ESMTP id 3396AAFB1;
+ Fri, 20 Mar 2020 16:42:07 +0000 (UTC)
+Date: Fri, 20 Mar 2020 17:42:04 +0100
+From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 Subject: Re: [PATCH v12 8/8] MAINTAINERS: perf: Add pattern that matches ppc
  perf to the perf entry.
-Message-ID: <20200320163157.GF1922688@smile.fi.intel.com>
+Message-ID: <20200320164204.GV25468@kitsune.suse.cz>
 References: <20200225173541.1549955-1-npiggin@gmail.com>
  <cover.1584699455.git.msuchanek@suse.de>
  <4b150d01c60bd37705789200d9adee9f1c9b50ce.1584699455.git.msuchanek@suse.de>
@@ -59,12 +47,13 @@ References: <20200225173541.1549955-1-npiggin@gmail.com>
  <20200320112338.GP25468@kitsune.suse.cz>
  <20200320124251.GW1922688@smile.fi.intel.com>
  <b96c9dd4dba4afca5288a551158659bf545d29fb.camel@perches.com>
+ <20200320163157.GF1922688@smile.fi.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <b96c9dd4dba4afca5288a551158659bf545d29fb.camel@perches.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+In-Reply-To: <20200320163157.GF1922688@smile.fi.intel.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,9 +77,8 @@ Cc: Mark Rutland <mark.rutland@arm.com>,
  Alexander Shishkin <alexander.shishkin@linux.intel.com>,
  Ingo Molnar <mingo@redhat.com>, Allison Randal <allison@lohutok.net>,
  Jordan Niethe <jniethe5@gmail.com>,
- Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>,
  Valentin Schneider <valentin.schneider@arm.com>, Arnd Bergmann <arnd@arndb.de>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>, linux-fsdevel@vger.kernel.org,
  Alexander Viro <viro@zeniv.linux.org.uk>,
  Jonathan Cameron <Jonathan.Cameron@huawei.com>,
  Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
@@ -98,38 +86,43 @@ Cc: Mark Rutland <mark.rutland@arm.com>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Nicholas Piggin <npiggin@gmail.com>, Claudio Carvalho <cclaudio@linux.ibm.com>,
  Eric Richter <erichte@linux.ibm.com>,
- "Eric W. Biederman" <ebiederm@xmission.com>, linux-fsdevel@vger.kernel.org,
+ "Eric W. Biederman" <ebiederm@xmission.com>, Joe Perches <joe@perches.com>,
  linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
  Thiago Jung Bauermann <bauerman@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Mar 20, 2020 at 07:42:03AM -0700, Joe Perches wrote:
-> On Fri, 2020-03-20 at 14:42 +0200, Andy Shevchenko wrote:
-> > On Fri, Mar 20, 2020 at 12:23:38PM +0100, Michal Suchánek wrote:
-> > > On Fri, Mar 20, 2020 at 12:33:50PM +0200, Andy Shevchenko wrote:
-> > > > On Fri, Mar 20, 2020 at 11:20:19AM +0100, Michal Suchanek wrote:
-> > > > > While at it also simplify the existing perf patterns.
-> > > > And still missed fixes from parse-maintainers.pl.
+On Fri, Mar 20, 2020 at 06:31:57PM +0200, Andy Shevchenko wrote:
+> On Fri, Mar 20, 2020 at 07:42:03AM -0700, Joe Perches wrote:
+> > On Fri, 2020-03-20 at 14:42 +0200, Andy Shevchenko wrote:
+> > > On Fri, Mar 20, 2020 at 12:23:38PM +0100, Michal Suchánek wrote:
+> > > > On Fri, Mar 20, 2020 at 12:33:50PM +0200, Andy Shevchenko wrote:
+> > > > > On Fri, Mar 20, 2020 at 11:20:19AM +0100, Michal Suchanek wrote:
+> > > > > > While at it also simplify the existing perf patterns.
+> > > > > And still missed fixes from parse-maintainers.pl.
+> > > > 
+> > > > Oh, that script UX is truly ingenious.
 > > > 
-> > > Oh, that script UX is truly ingenious.
+> > > You have at least two options, their combinations, etc:
+> > >  - complain to the author :-)
+> > >  - send a patch :-)
 > > 
-> > You have at least two options, their combinations, etc:
-> >  - complain to the author :-)
-> >  - send a patch :-)
+> > Recently:
+> > 
+> > https://lore.kernel.org/lkml/4d5291fa3fb4962b1fa55e8fd9ef421ef0c1b1e5.camel@perches.com/
 > 
-> Recently:
+> But why?
 > 
-> https://lore.kernel.org/lkml/4d5291fa3fb4962b1fa55e8fd9ef421ef0c1b1e5.camel@perches.com/
+> Shouldn't we rather run MAINTAINERS clean up once and require people to use
+> parse-maintainers.pl for good?
 
-But why?
+That cleanup did not happen yet, and I am not volunteering for one.
+The difference between MAINTAINERS and MAINTAINERS.new is:
 
-Shouldn't we rather run MAINTAINERS clean up once and require people to use
-parse-maintainers.pl for good?
+ MAINTAINERS | 5510 +++++++++++++++++++++++++++++------------------------------
+ 1 file changed, 2755 insertions(+), 2755 deletions(-)
 
--- 
-With Best Regards,
-Andy Shevchenko
+Thanks
 
-
+Michal
