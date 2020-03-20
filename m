@@ -2,76 +2,93 @@ Return-Path: <SRS0=DNDs=5F=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2B6DC4332D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2020 13:36:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CFF67C4332B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2020 13:41:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6DBCA20739
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2020 13:36:44 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="S+msKOf2"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6DBCA20739
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id 3D33D20739
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2020 13:41:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3D33D20739
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48kPvF44RzzDr4D
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 00:36:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48kQ0l2MQ0zDsYg
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 00:41:27 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
- envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=merlin.20170209 header.b=S+msKOf2; 
- dkim-atps=neutral
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:8b0:10b:1231::1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48kNzq5yFSzDrNc
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2020 23:55:35 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
- References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=9sJuQlZdjTLh4p9vc8U/OzHYsApB7N+ztV93SXfUXTY=; b=S+msKOf2a1fh8blY+Rww+BWM12
- nVEZN4NzwFV6andPM4+8lKK11q/OicWX2iQkylcgiiXoJXlNoBsNsuH3Hsp2RR8RDPZL2TdcCODPS
- uXqwQjWFKzeQTHtaizkhr7Eo97mIjvh21zbrPXi93EqkofUUhGO+C6IK+RNwVwfqauDddv3GldqOZ
- jfFfEHZEnFgz//yhDOiVCZfQldh+E+9GX+YRXaUAVYRX5jQUgr/PHWQVGE7cyWwVF36aIaotjD5Zk
- 0y7RVQesMd3sxQR2DC76m8acC4k0uK2OUV9rbi/RfYT8M2tZQ3jZP6DJGye+lpHGnC+0OB1EyRrvO
- hrIvLsLg==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100]
- helo=noisy.programming.kicks-ass.net)
- by merlin.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jFHAv-0000xV-Ux; Fri, 20 Mar 2020 12:54:58 +0000
-Received: from hirez.programming.kicks-ass.net
- (hirez.programming.kicks-ass.net [192.168.1.225])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 40E9C305C92;
- Fri, 20 Mar 2020 13:54:55 +0100 (CET)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
- id 0E42E2858D5B2; Fri, 20 Mar 2020 13:54:55 +0100 (CET)
-Date: Fri, 20 Mar 2020 13:54:55 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Davidlohr Bueso <dave@stgolabs.net>
-Subject: Re: [PATCH 18/15] kvm: Replace vcpu->swait with rcuwait
-Message-ID: <20200320125455.GE20696@hirez.programming.kicks-ass.net>
-References: <20200318204302.693307984@linutronix.de>
- <20200320085527.23861-1-dave@stgolabs.net>
- <20200320085527.23861-3-dave@stgolabs.net>
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48kP0073p9zDrNc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2020 23:55:44 +1100 (AEDT)
+Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 02KCXOZF149504
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2020 08:55:42 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2yu9345eng-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2020 08:55:41 -0400
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <kjain@linux.ibm.com>;
+ Fri, 20 Mar 2020 12:55:39 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 20 Mar 2020 12:55:32 -0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 02KCtUW746858254
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 20 Mar 2020 12:55:31 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D7FAE4C044;
+ Fri, 20 Mar 2020 12:55:30 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0B5BA4C050;
+ Fri, 20 Mar 2020 12:55:25 +0000 (GMT)
+Received: from localhost.localdomain.com (unknown [9.199.35.76])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri, 20 Mar 2020 12:55:24 +0000 (GMT)
+From: Kajol Jain <kjain@linux.ibm.com>
+To: acme@kernel.org, linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
+ sukadev@linux.vnet.ibm.com
+Subject: [PATCH v6 10/11] tools/perf: Enable Hz/hz prinitg for --metric-only
+ option
+Date: Fri, 20 Mar 2020 18:24:05 +0530
+X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20200320125406.30995-1-kjain@linux.ibm.com>
+References: <20200320125406.30995-1-kjain@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200320085527.23861-3-dave@stgolabs.net>
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 20032012-4275-0000-0000-000003AFB9EB
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 20032012-4276-0000-0000-000038C4EB1D
+Message-Id: <20200320125406.30995-11-kjain@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.645
+ definitions=2020-03-20_03:2020-03-20,
+ 2020-03-20 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_spam_definite policy=outbound
+ score=100 adultscore=0
+ lowpriorityscore=0 suspectscore=0 priorityscore=1501 impostorscore=0
+ clxscore=1015 spamscore=0 bulkscore=0 phishscore=0 mlxlogscore=425
+ mlxscore=0 malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2003020000 definitions=main-2003200055
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,41 +100,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: rdunlap@infradead.org, linux-pci@vger.kernel.org, bigeasy@linutronix.de,
- linux-kernel@vger.kernel.org, joel@joelfernandes.org, will@kernel.org,
- mingo@kernel.org, arnd@arndb.de, Davidlohr Bueso <dbueso@suse.de>,
- torvalds@linux-foundation.org, paulmck@kernel.org,
- linuxppc-dev@lists.ozlabs.org, rostedt@goodmis.org, bhelgaas@google.com,
- kurt.schwemmer@microsemi.com, kvalo@codeaurora.org, balbi@kernel.org,
- gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
- linux-wireless@vger.kernel.org, oleg@redhat.com, tglx@linutronix.de,
- netdev@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>,
- logang@deltatee.com, davem@davemloft.net
+Cc: mark.rutland@arm.com, maddy@linux.vnet.ibm.com, peterz@infradead.org,
+ yao.jin@linux.intel.com, mingo@kernel.org, kan.liang@linux.intel.com,
+ ak@linux.intel.com, alexander.shishkin@linux.intel.com,
+ anju@linux.vnet.ibm.com, mamatha4@linux.vnet.ibm.com,
+ ravi.bangoria@linux.ibm.com, kjain@linux.ibm.com, jmario@redhat.com,
+ namhyung@kernel.org, tglx@linutronix.de, mpetlan@redhat.com,
+ gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
+ linux-perf-users@vger.kernel.org, jolsa@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Mar 20, 2020 at 01:55:26AM -0700, Davidlohr Bueso wrote:
-> -	swait_event_interruptible_exclusive(*wq, ((!vcpu->arch.power_off) &&
-> -				       (!vcpu->arch.pause)));
-> +	rcuwait_wait_event(*wait,
-> +			   (!vcpu->arch.power_off) && (!vcpu->arch.pause),
-> +			   TASK_INTERRUPTIBLE);
+Commit 54b5091606c18 ("perf stat: Implement --metric-only mode")
+added function 'valid_only_metric()' which drops "Hz" or "hz",
+if it is part of "ScaleUnit". This patch enable it since hv_24x7
+supports couple of frequency events.
 
-> -	for (;;) {
-> -		prepare_to_swait_exclusive(&vcpu->wq, &wait, TASK_INTERRUPTIBLE);
-> -
-> -		if (kvm_vcpu_check_block(vcpu) < 0)
-> -			break;
-> -
-> -		waited = true;
-> -		schedule();
-> -	}
-> -
-> -	finish_swait(&vcpu->wq, &wait);
-> +	rcuwait_wait_event(&vcpu->wait,
-> +			   (block_check = kvm_vcpu_check_block(vcpu)) < 0,
-> +			   TASK_INTERRUPTIBLE);
+Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
+---
+ tools/perf/util/stat-display.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-Are these yet more instances that really want to be TASK_IDLE ?
+diff --git a/tools/perf/util/stat-display.c b/tools/perf/util/stat-display.c
+index 16efdba1973a..ecdebfcdd379 100644
+--- a/tools/perf/util/stat-display.c
++++ b/tools/perf/util/stat-display.c
+@@ -237,8 +237,6 @@ static bool valid_only_metric(const char *unit)
+ 	if (!unit)
+ 		return false;
+ 	if (strstr(unit, "/sec") ||
+-	    strstr(unit, "hz") ||
+-	    strstr(unit, "Hz") ||
+ 	    strstr(unit, "CPUs utilized"))
+ 		return false;
+ 	return true;
+-- 
+2.18.1
 
