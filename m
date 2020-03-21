@@ -2,23 +2,23 @@ Return-Path: <SRS0=LfBu=5G=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28274C4332D
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 12:08:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FD1AC4332B
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 12:10:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D52BB20724
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 12:08:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D52BB20724
+	by mail.kernel.org (Postfix) with ESMTPS id D4F2A20724
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 12:10:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D4F2A20724
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48kztv4z9KzDqf6
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 23:08:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48kzxp6z64zF0gL
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 23:10:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=linutronix.de
  (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
@@ -29,22 +29,22 @@ Received: from Galois.linutronix.de (Galois.linutronix.de
  [IPv6:2a0a:51c0:0:12e:550::1])
  (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48kz8B4NBBzDrF8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48kz8B3s0szDr9j
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2020 22:34:50 +1100 (AEDT)
 Received: from p5de0bf0b.dip0.t-ipconnect.de ([93.224.191.11]
  helo=nanos.tec.linutronix.de)
  by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
  (Exim 4.80) (envelope-from <tglx@linutronix.de>)
- id 1jFcOd-0002LQ-Fh; Sat, 21 Mar 2020 12:34:31 +0100
+ id 1jFcOX-0001zf-CX; Sat, 21 Mar 2020 12:34:25 +0100
 Received: from nanos.tec.linutronix.de (localhost [IPv6:::1])
- by nanos.tec.linutronix.de (Postfix) with ESMTP id 2B9001040CB;
- Sat, 21 Mar 2020 12:34:22 +0100 (CET)
-Message-Id: <20200321113242.643576700@linutronix.de>
+ by nanos.tec.linutronix.de (Postfix) with ESMTP id C92BE1040A1;
+ Sat, 21 Mar 2020 12:34:19 +0100 (CET)
+Message-Id: <20200321113241.719022171@linutronix.de>
 User-Agent: quilt/0.65
-Date: Sat, 21 Mar 2020 12:26:03 +0100
+Date: Sat, 21 Mar 2020 12:25:54 +0100
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [patch V3 19/20] lockdep: Annotate irq_work
+Subject: [patch V3 10/20] microblaze: Remove mm.h from asm/uaccess.h
 References: <20200321112544.878032781@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -95,94 +95,48 @@ Sender: "Linuxppc-dev"
 
 From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-Mark irq_work items with IRQ_WORK_HARD_IRQ which should be invoked in
-hardirq context even on PREEMPT_RT. IRQ_WORK without this flag will be
-invoked in softirq context on PREEMPT_RT.
+The defconfig compiles without linux/mm.h. With mm.h included the
+include chain leands to:
+|   CC      kernel/locking/percpu-rwsem.o
+| In file included from include/linux/huge_mm.h:8,
+|                  from include/linux/mm.h:567,
+|                  from arch/microblaze/include/asm/uaccess.h:,
+|                  from include/linux/uaccess.h:11,
+|                  from include/linux/sched/task.h:11,
+|                  from include/linux/sched/signal.h:9,
+|                  from include/linux/rcuwait.h:6,
+|                  from include/linux/percpu-rwsem.h:8,
+|                  from kernel/locking/percpu-rwsem.c:6:
+| include/linux/fs.h:1422:29: error: array type has incomplete element type 'struct percpu_rw_semaphore'
+|  1422 |  struct percpu_rw_semaphore rw_sem[SB_FREEZE_LEVELS];
 
-Set ->irq_config to 1 for the IRQ_WORK items which are invoked in softirq
-context so lockdep knows that these can safely acquire a spinlock_t.
+once rcuwait.h includes linux/sched/signal.h.
 
+Remove the linux/mm.h include.
+
+Reported-by: kbuild test robot <lkp@intel.com>
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Michal Simek <monstr@monstr.eu>
 ---
- include/linux/irq_work.h |    2 ++
- include/linux/irqflags.h |   13 +++++++++++++
- kernel/irq_work.c        |    2 ++
- kernel/rcu/tree.c        |    1 +
- kernel/time/tick-sched.c |    1 +
- 5 files changed, 19 insertions(+)
+V3; New patch
+---
+ arch/microblaze/include/asm/uaccess.h | 1 -
+ 1 file changed, 1 deletion(-)
 
---- a/include/linux/irq_work.h
-+++ b/include/linux/irq_work.h
-@@ -18,6 +18,8 @@
+diff --git a/arch/microblaze/include/asm/uaccess.h b/arch/microblaze/include/asm/uaccess.h
+index a1f206b90753a..4916d5fbea5e3 100644
+--- a/arch/microblaze/include/asm/uaccess.h
++++ b/arch/microblaze/include/asm/uaccess.h
+@@ -12,7 +12,6 @@
+ #define _ASM_MICROBLAZE_UACCESS_H
  
- /* Doesn't want IPI, wait for tick: */
- #define IRQ_WORK_LAZY		BIT(2)
-+/* Run hard IRQ context, even on RT */
-+#define IRQ_WORK_HARD_IRQ	BIT(3)
+ #include <linux/kernel.h>
+-#include <linux/mm.h>
  
- #define IRQ_WORK_CLAIMED	(IRQ_WORK_PENDING | IRQ_WORK_BUSY)
- 
---- a/include/linux/irqflags.h
-+++ b/include/linux/irqflags.h
-@@ -69,6 +69,17 @@ do {						\
- 			current->irq_config = 0;	\
- 	  } while (0)
- 
-+# define lockdep_irq_work_enter(__work)					\
-+	  do {								\
-+		  if (!(atomic_read(&__work->flags) & IRQ_WORK_HARD_IRQ))\
-+			current->irq_config = 1;			\
-+	  } while (0)
-+# define lockdep_irq_work_exit(__work)					\
-+	  do {								\
-+		  if (!(atomic_read(&__work->flags) & IRQ_WORK_HARD_IRQ))\
-+			current->irq_config = 0;			\
-+	  } while (0)
-+
- #else
- # define trace_hardirqs_on()		do { } while (0)
- # define trace_hardirqs_off()		do { } while (0)
-@@ -83,6 +94,8 @@ do {						\
- # define lockdep_softirq_exit()		do { } while (0)
- # define lockdep_hrtimer_enter(__hrtimer)		do { } while (0)
- # define lockdep_hrtimer_exit(__hrtimer)		do { } while (0)
-+# define lockdep_irq_work_enter(__work)		do { } while (0)
-+# define lockdep_irq_work_exit(__work)		do { } while (0)
- #endif
- 
- #if defined(CONFIG_IRQSOFF_TRACER) || \
---- a/kernel/irq_work.c
-+++ b/kernel/irq_work.c
-@@ -153,7 +153,9 @@ static void irq_work_run_list(struct lli
- 		 */
- 		flags = atomic_fetch_andnot(IRQ_WORK_PENDING, &work->flags);
- 
-+		lockdep_irq_work_enter(work);
- 		work->func(work);
-+		lockdep_irq_work_exit(work);
- 		/*
- 		 * Clear the BUSY bit and return to the free state if
- 		 * no-one else claimed it meanwhile.
---- a/kernel/rcu/tree.c
-+++ b/kernel/rcu/tree.c
-@@ -1113,6 +1113,7 @@ static int rcu_implicit_dynticks_qs(stru
- 		    !rdp->rcu_iw_pending && rdp->rcu_iw_gp_seq != rnp->gp_seq &&
- 		    (rnp->ffmask & rdp->grpmask)) {
- 			init_irq_work(&rdp->rcu_iw, rcu_iw_handler);
-+			atomic_set(&rdp->rcu_iw.flags, IRQ_WORK_HARD_IRQ);
- 			rdp->rcu_iw_pending = true;
- 			rdp->rcu_iw_gp_seq = rnp->gp_seq;
- 			irq_work_queue_on(&rdp->rcu_iw, rdp->cpu);
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -245,6 +245,7 @@ static void nohz_full_kick_func(struct i
- 
- static DEFINE_PER_CPU(struct irq_work, nohz_full_kick_work) = {
- 	.func = nohz_full_kick_func,
-+	.flags = ATOMIC_INIT(IRQ_WORK_HARD_IRQ),
- };
- 
- /*
+ #include <asm/mmu.h>
+ #include <asm/page.h>
+-- 
+2.26.0.rc2
 
 
