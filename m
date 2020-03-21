@@ -2,23 +2,23 @@ Return-Path: <SRS0=LfBu=5G=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62F3CC4332D
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 12:15:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 614E3C4332B
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 12:18:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BE51420722
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 12:15:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BE51420722
+	by mail.kernel.org (Postfix) with ESMTPS id 1C31320722
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 12:18:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1C31320722
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48l03B4pprzF0gt
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 23:15:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48l06Z5q3FzDqXJ
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 23:18:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=linutronix.de
  (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
@@ -29,22 +29,23 @@ Received: from Galois.linutronix.de (Galois.linutronix.de
  [IPv6:2a0a:51c0:0:12e:550::1])
  (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48kz8C1w0BzDr80
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48kz8C5b9kzDr9j
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2020 22:34:51 +1100 (AEDT)
 Received: from p5de0bf0b.dip0.t-ipconnect.de ([93.224.191.11]
  helo=nanos.tec.linutronix.de)
  by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
  (Exim 4.80) (envelope-from <tglx@linutronix.de>)
- id 1jFcOT-0001zi-1B; Sat, 21 Mar 2020 12:34:21 +0100
+ id 1jFcOQ-0001zG-FR; Sat, 21 Mar 2020 12:34:18 +0100
 Received: from nanos.tec.linutronix.de (localhost [IPv6:::1])
- by nanos.tec.linutronix.de (Postfix) with ESMTP id 16805FFBBF;
- Sat, 21 Mar 2020 12:34:20 +0100 (CET)
-Message-Id: <20200321113241.824030968@linutronix.de>
+ by nanos.tec.linutronix.de (Postfix) with ESMTP id 6AF95FFC8D;
+ Sat, 21 Mar 2020 12:34:17 +0100 (CET)
+Message-Id: <20200321113240.841963112@linutronix.de>
 User-Agent: quilt/0.65
-Date: Sat, 21 Mar 2020 12:25:55 +0100
+Date: Sat, 21 Mar 2020 12:25:45 +0100
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [patch V3 11/20] rcuwait: Add @state argument to rcuwait_wait_event()
+Subject: [patch V3 01/20] PCI/switchtec: Fix init_completion race condition
+ with poll_wait()
 References: <20200321112544.878032781@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -93,74 +94,50 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Peter Zijlstra (Intel) <peterz@infradead.org>
+From: Logan Gunthorpe <logang@deltatee.com>
 
-Extend rcuwait_wait_event() with a state variable so that it is not
-restricted to UNINTERRUPTIBLE waits.
+The call to init_completion() in mrpc_queue_cmd() can theoretically
+race with the call to poll_wait() in switchtec_dev_poll().
 
-Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+  poll()			write()
+    switchtec_dev_poll()   	  switchtec_dev_write()
+      poll_wait(&s->comp.wait);      mrpc_queue_cmd()
+			               init_completion(&s->comp)
+				         init_waitqueue_head(&s->comp.wait)
+
+To my knowledge, no one has hit this bug.
+
+Fix this by using reinit_completion() instead of init_completion() in
+mrpc_queue_cmd().
+
+Fixes: 080b47def5e5 ("MicroSemi Switchtec management interface driver")
+Reported-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Signed-off-by: Logan Gunthorpe <logang@deltatee.com>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Davidlohr Bueso <dave@stgolabs.net>
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Kurt Schwemmer <kurt.schwemmer@microsemi.com>
+Cc: linux-pci@vger.kernel.org
+Link: https://lkml.kernel.org/r/20200313183608.2646-1-logang@deltatee.com
 
 ---
- include/linux/rcuwait.h       |   12 ++++++++++--
- kernel/locking/percpu-rwsem.c |    2 +-
- 2 files changed, 11 insertions(+), 3 deletions(-)
+ drivers/pci/switch/switchtec.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/include/linux/rcuwait.h
-+++ b/include/linux/rcuwait.h
-@@ -3,6 +3,7 @@
- #define _LINUX_RCUWAIT_H_
+diff --git a/drivers/pci/switch/switchtec.c b/drivers/pci/switch/switchtec.c
+index a823b4b8ef8a..81dc7ac01381 100644
+--- a/drivers/pci/switch/switchtec.c
++++ b/drivers/pci/switch/switchtec.c
+@@ -175,7 +175,7 @@ static int mrpc_queue_cmd(struct switchtec_user *stuser)
+ 	kref_get(&stuser->kref);
+ 	stuser->read_len = sizeof(stuser->data);
+ 	stuser_set_state(stuser, MRPC_QUEUED);
+-	init_completion(&stuser->comp);
++	reinit_completion(&stuser->comp);
+ 	list_add_tail(&stuser->list, &stdev->mrpc_queue);
  
- #include <linux/rcupdate.h>
-+#include <linux/sched/signal.h>
- 
- /*
-  * rcuwait provides a way of blocking and waking up a single
-@@ -30,23 +31,30 @@ extern void rcuwait_wake_up(struct rcuwa
-  * The caller is responsible for locking around rcuwait_wait_event(),
-  * such that writes to @task are properly serialized.
-  */
--#define rcuwait_wait_event(w, condition)				\
-+#define rcuwait_wait_event(w, condition, state)				\
- ({									\
-+	int __ret = 0;							\
- 	rcu_assign_pointer((w)->task, current);				\
- 	for (;;) {							\
- 		/*							\
- 		 * Implicit barrier (A) pairs with (B) in		\
- 		 * rcuwait_wake_up().					\
- 		 */							\
--		set_current_state(TASK_UNINTERRUPTIBLE);		\
-+		set_current_state(state);				\
- 		if (condition)						\
- 			break;						\
- 									\
-+		if (signal_pending_state(state, current)) {		\
-+			__ret = -EINTR;					\
-+			break;						\
-+		}							\
-+									\
- 		schedule();						\
- 	}								\
- 									\
- 	WRITE_ONCE((w)->task, NULL);					\
- 	__set_current_state(TASK_RUNNING);				\
-+	__ret;								\
- })
- 
- #endif /* _LINUX_RCUWAIT_H_ */
---- a/kernel/locking/percpu-rwsem.c
-+++ b/kernel/locking/percpu-rwsem.c
-@@ -162,7 +162,7 @@ void percpu_down_write(struct percpu_rw_
- 	 */
- 
- 	/* Wait for all now active readers to complete. */
--	rcuwait_wait_event(&sem->writer, readers_active_check(sem));
-+	rcuwait_wait_event(&sem->writer, readers_active_check(sem), TASK_UNINTERRUPTIBLE);
- }
- EXPORT_SYMBOL_GPL(percpu_down_write);
- 
+ 	mrpc_cmd_submit(stdev);
+-- 
+2.20.1
+
 
 
