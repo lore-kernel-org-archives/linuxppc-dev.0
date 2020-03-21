@@ -2,70 +2,57 @@ Return-Path: <SRS0=LfBu=5G=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D9334C4332D
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 11:28:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 436D2C4332D
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 11:39:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7CA2620776
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 11:28:35 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="lDApgz56"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7CA2620776
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id EFC6E20722
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 11:39:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EFC6E20722
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48kz0w4P5vzDrB8
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 22:28:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=guoren@kernel.org; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48kzG05XYCzF0RF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 22:39:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=lDApgz56; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=none (no SPF record) smtp.mailfrom=linutronix.de
+ (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
+ envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linutronix.de
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a0a:51c0:0:12e:550::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48kywf6xKJzDqfW
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2020 22:24:50 +1100 (AEDT)
-Received: from mail-lj1-f180.google.com (mail-lj1-f180.google.com
- [209.85.208.180])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 6D970208D5
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2020 11:24:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1584789887;
- bh=CC3xOqOiOw/KfVSwNgtZdj47dfsfwOj+jNh3hAafy6c=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=lDApgz56lPs8ToQFcVEV8+EAX/cT7ThAz8oOMnFXG8qYrmNZ5gW9RuxrD3cdYMP+d
- EpFlQOtu+zsTlEW62aFEcbsjVO524POgi7mDnhK9rdBsngAYtCCQspKslzDLNakkr5
- d/tt/FiudZbBtX1px0ShZU4kWAH25eldMhL1gJJY=
-Received: by mail-lj1-f180.google.com with SMTP id u12so9318704ljo.2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2020 04:24:47 -0700 (PDT)
-X-Gm-Message-State: ANhLgQ2AB7c873aBXGzDSLP6Ms/ZDd7e9vhHcgWgyIGaSfUnyjmFXvQP
- eivP8MCsvqXJtlFY2J7BYeXfuOXgFu5jzUN2J+k=
-X-Google-Smtp-Source: ADFU+vs0LzUeDMqhkyCRijtr/5jU1zll2VnT5GvJNspUkA5NWoImJ8IywkeIYEIKk4vGhOkK87FxiOUyuzZGlcUMAFM=
-X-Received: by 2002:a2e:3818:: with SMTP id f24mr8239133lja.53.1584789885358; 
- Sat, 21 Mar 2020 04:24:45 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48kz852nFjzDr7x
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2020 22:34:45 +1100 (AEDT)
+Received: from p5de0bf0b.dip0.t-ipconnect.de ([93.224.191.11]
+ helo=nanos.tec.linutronix.de)
+ by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
+ (Exim 4.80) (envelope-from <tglx@linutronix.de>)
+ id 1jFcOZ-0002Re-66; Sat, 21 Mar 2020 12:34:27 +0100
+Received: from nanos.tec.linutronix.de (localhost [IPv6:::1])
+ by nanos.tec.linutronix.de (Postfix) with ESMTP id 692651040CC;
+ Sat, 21 Mar 2020 12:34:22 +0100 (CET)
+Message-Id: <20200321113242.751182723@linutronix.de>
+User-Agent: quilt/0.65
+Date: Sat, 21 Mar 2020 12:26:04 +0100
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [patch V3 20/20] lockdep: Add posixtimer context tracing bits
+References: <20200321112544.878032781@linutronix.de>
 MIME-Version: 1.0
-References: <20200318204408.010461877@linutronix.de>
- <20200320094856.3453859-1-bigeasy@linutronix.de>
- <20200320094856.3453859-3-bigeasy@linutronix.de>
-In-Reply-To: <20200320094856.3453859-3-bigeasy@linutronix.de>
-From: Guo Ren <guoren@kernel.org>
-Date: Sat, 21 Mar 2020 19:24:34 +0800
-X-Gmail-Original-Message-ID: <CAJF2gTQDvmSdJB3R0By0Q6d9ganVBV1FBm3urL8Jf1fyiEi+1A@mail.gmail.com>
-Message-ID: <CAJF2gTQDvmSdJB3R0By0Q6d9ganVBV1FBm3urL8Jf1fyiEi+1A@mail.gmail.com>
-Subject: Re: [PATCH 2/5] csky: Remove mm.h from asm/uaccess.h
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
+Content-transfer-encoding: 8-bit
+X-Linutronix-Spam-Score: -1.0
+X-Linutronix-Spam-Level: -
+X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required, ALL_TRUSTED=-1,
+ SHORTCIRCUIT=-0.0001
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,76 +64,106 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Randy Dunlap <rdunlap@infradead.org>, Peter Zijlstra <peterz@infradead.org>,
- linux-pci@vger.kernel.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- joel@joelfernandes.org, Will Deacon <will@kernel.org>, mingo@kernel.org,
- dave@stgolabs.net, Arnd Bergmann <arnd@arndb.de>, linux-csky@vger.kernel.org,
- torvalds@linux-foundation.org, paulmck@kernel.org,
- linuxppc-dev@lists.ozlabs.org, Steven Rostedt <rostedt@goodmis.org>,
- bhelgaas@google.com, kurt.schwemmer@microsemi.com, kvalo@codeaurora.org,
- kbuild test robot <lkp@intel.com>, balbi@kernel.org,
- gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
- linux-wireless@vger.kernel.org, oleg@redhat.com,
- Thomas Gleixner <tglx@linutronix.de>, netdev@vger.kernel.org,
- logang@deltatee.com, David Miller <davem@davemloft.net>
+Cc: Randy Dunlap <rdunlap@infradead.org>, linux-ia64@vger.kernel.org,
+ Peter Zijlstra <peterz@infradead.org>, linux-pci@vger.kernel.org,
+ Sebastian Siewior <bigeasy@linutronix.de>, platform-driver-x86@vger.kernel.org,
+ Guo Ren <guoren@kernel.org>, Joel Fernandes <joel@joelfernandes.org>,
+ Vincent Chen <deanbo422@gmail.com>, Ingo Molnar <mingo@kernel.org>,
+ Jonathan Corbet <corbet@lwn.net>, Davidlohr Bueso <dave@stgolabs.net>,
+ kbuild test robot <lkp@intel.com>, Brian Cain <bcain@codeaurora.org>,
+ linux-acpi@vger.kernel.org, "Paul E . McKenney" <paulmck@kernel.org>,
+ linux-hexagon@vger.kernel.org,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-csky@vger.kernel.org,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Darren Hart <dvhart@infradead.org>, Zhang Rui <rui.zhang@intel.com>,
+ Len Brown <lenb@kernel.org>, Fenghua Yu <fenghua.yu@intel.com>,
+ Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Greentime Hu <green.hu@gmail.com>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ Kurt Schwemmer <kurt.schwemmer@microsemi.com>,
+ Kalle Valo <kvalo@codeaurora.org>, Felipe Balbi <balbi@kernel.org>,
+ Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
+ Nick Hu <nickhu@andestech.com>, Geoff Levand <geoff@infradead.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
+ linux-wireless@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
+ Davidlohr Bueso <dbueso@suse.de>, netdev@vger.kernel.org,
+ Logan Gunthorpe <logang@deltatee.com>, "David S. Miller" <davem@davemloft.net>,
+ Andy Shevchenko <andy@infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Tested and Acked by me.
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-Queued for next pull request, thx
+Splitting run_posix_cpu_timers() into two parts is work in progress which
+is stuck on other entry code related problems. The heavy lifting which
+involves locking of sighand lock will be moved into task context so the
+necessary execution time is burdened on the task and not on interrupt
+context.
 
-On Fri, Mar 20, 2020 at 5:49 PM Sebastian Andrzej Siewior
-<bigeasy@linutronix.de> wrote:
->
-> The defconfig compiles without linux/mm.h. With mm.h included the
-> include chain leands to:
-> |   CC      kernel/locking/percpu-rwsem.o
-> | In file included from include/linux/huge_mm.h:8,
-> |                  from include/linux/mm.h:567,
-> |                  from arch/csky/include/asm/uaccess.h:,
-> |                  from include/linux/uaccess.h:11,
-> |                  from include/linux/sched/task.h:11,
-> |                  from include/linux/sched/signal.h:9,
-> |                  from include/linux/rcuwait.h:6,
-> |                  from include/linux/percpu-rwsem.h:8,
-> |                  from kernel/locking/percpu-rwsem.c:6:
-> | include/linux/fs.h:1422:29: error: array type has incomplete element type 'struct percpu_rw_semaphore'
-> |  1422 |  struct percpu_rw_semaphore rw_sem[SB_FREEZE_LEVELS];
->
-> once rcuwait.h includes linux/sched/signal.h.
->
-> Remove the linux/mm.h include.
->
-> Cc: Guo Ren <guoren@kernel.org>
-> Cc: linux-csky@vger.kernel.org
-> Reported-by: kbuild test robot <lkp@intel.com>
-> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-> ---
->  arch/csky/include/asm/uaccess.h | 1 -
->  1 file changed, 1 deletion(-)
->
-> diff --git a/arch/csky/include/asm/uaccess.h b/arch/csky/include/asm/uaccess.h
-> index eaa1c3403a424..abefa125b93cf 100644
-> --- a/arch/csky/include/asm/uaccess.h
-> +++ b/arch/csky/include/asm/uaccess.h
-> @@ -11,7 +11,6 @@
->  #include <linux/errno.h>
->  #include <linux/types.h>
->  #include <linux/sched.h>
-> -#include <linux/mm.h>
->  #include <linux/string.h>
->  #include <linux/version.h>
->  #include <asm/segment.h>
-> --
-> 2.26.0.rc2
->
+Until this work completes lockdep with the spinlock nesting rules enabled
+would emit warnings for this known context.
 
+Prevent it by setting "->irq_config = 1" for the invocation of
+run_posix_cpu_timers() so lockdep does not complain when sighand lock is
+acquried. This will be removed once the split is completed.
 
--- 
-Best Regards
- Guo Ren
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ include/linux/irqflags.h       |   12 ++++++++++++
+ kernel/time/posix-cpu-timers.c |    6 +++++-
+ 2 files changed, 17 insertions(+), 1 deletion(-)
 
-ML: https://lore.kernel.org/linux-csky/
+--- a/include/linux/irqflags.h
++++ b/include/linux/irqflags.h
+@@ -69,6 +69,16 @@ do {						\
+ 			current->irq_config = 0;	\
+ 	  } while (0)
+ 
++# define lockdep_posixtimer_enter()				\
++	  do {							\
++		  current->irq_config = 1;			\
++	  } while (0)
++
++# define lockdep_posixtimer_exit()				\
++	  do {							\
++		  current->irq_config = 0;			\
++	  } while (0)
++
+ # define lockdep_irq_work_enter(__work)					\
+ 	  do {								\
+ 		  if (!(atomic_read(&__work->flags) & IRQ_WORK_HARD_IRQ))\
+@@ -94,6 +104,8 @@ do {						\
+ # define lockdep_softirq_exit()		do { } while (0)
+ # define lockdep_hrtimer_enter(__hrtimer)		do { } while (0)
+ # define lockdep_hrtimer_exit(__hrtimer)		do { } while (0)
++# define lockdep_posixtimer_enter()		do { } while (0)
++# define lockdep_posixtimer_exit()		do { } while (0)
+ # define lockdep_irq_work_enter(__work)		do { } while (0)
+ # define lockdep_irq_work_exit(__work)		do { } while (0)
+ #endif
+--- a/kernel/time/posix-cpu-timers.c
++++ b/kernel/time/posix-cpu-timers.c
+@@ -1126,8 +1126,11 @@ void run_posix_cpu_timers(void)
+ 	if (!fastpath_timer_check(tsk))
+ 		return;
+ 
+-	if (!lock_task_sighand(tsk, &flags))
++	lockdep_posixtimer_enter();
++	if (!lock_task_sighand(tsk, &flags)) {
++		lockdep_posixtimer_exit();
+ 		return;
++	}
+ 	/*
+ 	 * Here we take off tsk->signal->cpu_timers[N] and
+ 	 * tsk->cpu_timers[N] all the timers that are firing, and
+@@ -1169,6 +1172,7 @@ void run_posix_cpu_timers(void)
+ 			cpu_timer_fire(timer);
+ 		spin_unlock(&timer->it_lock);
+ 	}
++	lockdep_posixtimer_exit();
+ }
+ 
+ /*
+
