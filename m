@@ -2,23 +2,23 @@ Return-Path: <SRS0=LfBu=5G=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0696AC4332B
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 11:42:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C155BC4332B
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 11:44:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7784820722
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 11:42:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7784820722
+	by mail.kernel.org (Postfix) with ESMTPS id 7946120722
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 11:44:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7946120722
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48kzJf2SGrzF0Qb
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 22:42:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48kzM232ZWzDqfk
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 22:44:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=linutronix.de
  (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
@@ -29,23 +29,25 @@ Received: from Galois.linutronix.de (Galois.linutronix.de
  [IPv6:2a0a:51c0:0:12e:550::1])
  (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48kz856r3xzDr80
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2020 22:34:45 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48kz8757gPzDr7x
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2020 22:34:47 +1100 (AEDT)
 Received: from p5de0bf0b.dip0.t-ipconnect.de ([93.224.191.11]
  helo=nanos.tec.linutronix.de)
  by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
  (Exim 4.80) (envelope-from <tglx@linutronix.de>)
- id 1jFcOQ-0001zF-3g; Sat, 21 Mar 2020 12:34:18 +0100
+ id 1jFcOU-0001zl-4v; Sat, 21 Mar 2020 12:34:22 +0100
 Received: from nanos.tec.linutronix.de (localhost [IPv6:::1])
- by nanos.tec.linutronix.de (Postfix) with ESMTP id 2A835FFBBF;
- Sat, 21 Mar 2020 12:34:17 +0100 (CET)
-Message-Id: <20200321112544.878032781@linutronix.de>
+ by nanos.tec.linutronix.de (Postfix) with ESMTP id 53DF71039FD;
+ Sat, 21 Mar 2020 12:34:20 +0100 (CET)
+Message-Id: <20200321113241.930037873@linutronix.de>
 User-Agent: quilt/0.65
-Date: Sat, 21 Mar 2020 12:25:44 +0100
+Date: Sat, 21 Mar 2020 12:25:56 +0100
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [patch V3 00/20] Lock ordering documentation and annotation for
- lockdep
+Subject: [patch V3 12/20] powerpc/ps3: Convert half completion to rcuwait
+References: <20200321112544.878032781@linutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-transfer-encoding: 8-bit
 X-Linutronix-Spam-Score: -1.0
 X-Linutronix-Spam-Level: -
@@ -66,47 +68,121 @@ Cc: Randy Dunlap <rdunlap@infradead.org>, linux-ia64@vger.kernel.org,
  Peter Zijlstra <peterz@infradead.org>, linux-pci@vger.kernel.org,
  Sebastian Siewior <bigeasy@linutronix.de>, platform-driver-x86@vger.kernel.org,
  Guo Ren <guoren@kernel.org>, Joel Fernandes <joel@joelfernandes.org>,
- Vincent Chen <deanbo422@gmail.com>, Ingo Molnar <mingo@kernel.org>,
- Jonathan Corbet <corbet@lwn.net>, Davidlohr Bueso <dave@stgolabs.net>,
- kbuild test robot <lkp@intel.com>, Brian Cain <bcain@codeaurora.org>,
- linux-acpi@vger.kernel.org, "Paul E . McKenney" <paulmck@kernel.org>,
- linux-hexagon@vger.kernel.org,
+ linux-hexagon@vger.kernel.org, Vincent Chen <deanbo422@gmail.com>,
+ Ingo Molnar <mingo@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
+ Davidlohr Bueso <dave@stgolabs.net>, kbuild test robot <lkp@intel.com>,
+ Brian Cain <bcain@codeaurora.org>, linux-acpi@vger.kernel.org,
+ "Paul E . McKenney" <paulmck@kernel.org>,
  "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-csky@vger.kernel.org,
  Linus Torvalds <torvalds@linux-foundation.org>,
  Darren Hart <dvhart@infradead.org>, Zhang Rui <rui.zhang@intel.com>,
  Len Brown <lenb@kernel.org>, Fenghua Yu <fenghua.yu@intel.com>,
  Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Greentime Hu <green.hu@gmail.com>,
- Bjorn Helgaas <bhelgaas@google.com>,
+ Greentime Hu <green.hu@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>,
  Kurt Schwemmer <kurt.schwemmer@microsemi.com>,
  Kalle Valo <kvalo@codeaurora.org>, Felipe Balbi <balbi@kernel.org>,
  Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
  Nick Hu <nickhu@andestech.com>, Geoff Levand <geoff@infradead.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
  linux-wireless@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
- Davidlohr Bueso <dbueso@suse.de>, netdev@vger.kernel.org,
- Logan Gunthorpe <logang@deltatee.com>, "David S. Miller" <davem@davemloft.net>,
- Andy Shevchenko <andy@infradead.org>
+ Davidlohr Bueso <dbueso@suse.de>, Logan Gunthorpe <logang@deltatee.com>,
+ netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>, Andy Shevchenko <andy@infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is the third and hopefully final version of this work. The second one
-can be found here:
+From: Thomas Gleixner <tglx@linutronix.de>
 
-   https://lore.kernel.org/r/20200318204302.693307984@linutronix.de
+The PS3 notification interrupt and kthread use a hacked up completion to
+communicate. Since we're wanting to change the completion implementation and
+this is abuse anyway, replace it with a simple rcuwait since there is only ever
+the one waiter.
 
-Changes since V2:
+AFAICT the kthread uses TASK_INTERRUPTIBLE to not increase loadavg, kthreads
+cannot receive signals by default and this one doesn't look different. Use
+TASK_IDLE instead.
 
-  - Included the arch/XXX fixups for the rcuwait changes (Sebastian)
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Geoff Levand <geoff@infradead.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+V3: Folded the init fix from bigeasy
+V2: New patch to avoid the magic completion wait variant
+---
+ arch/powerpc/platforms/ps3/device-init.c |   18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
-  - Folded the init fix for the PS3 change (Sebastian)
-
-  - Addressed feedback on documentation (Paul, Davidlohr, Jonathan)
-
-  - Picked up acks and reviewed tags
-
-Thanks,
-
-	tglx
+--- a/arch/powerpc/platforms/ps3/device-init.c
++++ b/arch/powerpc/platforms/ps3/device-init.c
+@@ -13,6 +13,7 @@
+ #include <linux/init.h>
+ #include <linux/slab.h>
+ #include <linux/reboot.h>
++#include <linux/rcuwait.h>
+ 
+ #include <asm/firmware.h>
+ #include <asm/lv1call.h>
+@@ -670,7 +671,8 @@ struct ps3_notification_device {
+ 	spinlock_t lock;
+ 	u64 tag;
+ 	u64 lv1_status;
+-	struct completion done;
++	struct rcuwait wait;
++	bool done;
+ };
+ 
+ enum ps3_notify_type {
+@@ -712,7 +714,8 @@ static irqreturn_t ps3_notification_inte
+ 		pr_debug("%s:%u: completed, status 0x%llx\n", __func__,
+ 			 __LINE__, status);
+ 		dev->lv1_status = status;
+-		complete(&dev->done);
++		dev->done = true;
++		rcuwait_wake_up(&dev->wait);
+ 	}
+ 	spin_unlock(&dev->lock);
+ 	return IRQ_HANDLED;
+@@ -725,12 +728,12 @@ static int ps3_notification_read_write(s
+ 	unsigned long flags;
+ 	int res;
+ 
+-	init_completion(&dev->done);
+ 	spin_lock_irqsave(&dev->lock, flags);
+ 	res = write ? lv1_storage_write(dev->sbd.dev_id, 0, 0, 1, 0, lpar,
+ 					&dev->tag)
+ 		    : lv1_storage_read(dev->sbd.dev_id, 0, 0, 1, 0, lpar,
+ 				       &dev->tag);
++	dev->done = false;
+ 	spin_unlock_irqrestore(&dev->lock, flags);
+ 	if (res) {
+ 		pr_err("%s:%u: %s failed %d\n", __func__, __LINE__, op, res);
+@@ -738,14 +741,10 @@ static int ps3_notification_read_write(s
+ 	}
+ 	pr_debug("%s:%u: notification %s issued\n", __func__, __LINE__, op);
+ 
+-	res = wait_event_interruptible(dev->done.wait,
+-				       dev->done.done || kthread_should_stop());
++	rcuwait_wait_event(&dev->wait, dev->done || kthread_should_stop(), TASK_IDLE);
++
+ 	if (kthread_should_stop())
+ 		res = -EINTR;
+-	if (res) {
+-		pr_debug("%s:%u: interrupted %s\n", __func__, __LINE__, op);
+-		return res;
+-	}
+ 
+ 	if (dev->lv1_status) {
+ 		pr_err("%s:%u: %s not completed, status 0x%llx\n", __func__,
+@@ -810,6 +809,7 @@ static int ps3_probe_thread(void *data)
+ 	}
+ 
+ 	spin_lock_init(&dev.lock);
++	rcuwait_init(&dev.wait);
+ 
+ 	res = request_irq(irq, ps3_notification_interrupt, 0,
+ 			  "ps3_notification", &dev);
 
