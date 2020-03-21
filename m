@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 52F89C4332B
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 12:13:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 62F3CC4332D
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 12:15:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EF3F920724
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 12:13:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EF3F920724
+	by mail.kernel.org (Postfix) with ESMTPS id BE51420722
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 12:15:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BE51420722
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48l00L0GbWzF0g4
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 23:13:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48l03B4pprzF0gt
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 23:15:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=linutronix.de
  (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
@@ -29,23 +29,22 @@ Received: from Galois.linutronix.de (Galois.linutronix.de
  [IPv6:2a0a:51c0:0:12e:550::1])
  (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48kz8C0BtzzDrH6
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2020 22:34:50 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48kz8C1w0BzDr80
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2020 22:34:51 +1100 (AEDT)
 Received: from p5de0bf0b.dip0.t-ipconnect.de ([93.224.191.11]
  helo=nanos.tec.linutronix.de)
  by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
  (Exim 4.80) (envelope-from <tglx@linutronix.de>)
- id 1jFcOQ-0001zI-Kw; Sat, 21 Mar 2020 12:34:18 +0100
+ id 1jFcOT-0001zi-1B; Sat, 21 Mar 2020 12:34:21 +0100
 Received: from nanos.tec.linutronix.de (localhost [IPv6:::1])
- by nanos.tec.linutronix.de (Postfix) with ESMTP id EAFF31039FF;
- Sat, 21 Mar 2020 12:34:17 +0100 (CET)
-Message-Id: <20200321113241.043380271@linutronix.de>
+ by nanos.tec.linutronix.de (Postfix) with ESMTP id 16805FFBBF;
+ Sat, 21 Mar 2020 12:34:20 +0100 (CET)
+Message-Id: <20200321113241.824030968@linutronix.de>
 User-Agent: quilt/0.65
-Date: Sat, 21 Mar 2020 12:25:47 +0100
+Date: Sat, 21 Mar 2020 12:25:55 +0100
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [patch V3 03/20] usb: gadget: Use completion interface instead of
- open coding it
+Subject: [patch V3 11/20] rcuwait: Add @state argument to rcuwait_wait_event()
 References: <20200321112544.878032781@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -94,53 +93,74 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Thomas Gleixner <tglx@linutronix.de>
+From: Peter Zijlstra (Intel) <peterz@infradead.org>
 
-ep_io() uses a completion on stack and open codes the waiting with:
+Extend rcuwait_wait_event() with a state variable so that it is not
+restricted to UNINTERRUPTIBLE waits.
 
-  wait_event_interruptible (done.wait, done.done);
-and
-  wait_event (done.wait, done.done);
-
-This waits in non-exclusive mode for complete(), but there is no reason to
-do so because the completion can only be waited for by the task itself and
-complete() wakes exactly one exlusive waiter.
-
-Replace the open coded implementation with the corresponding
-wait_for_completion*() functions.
-
-No functional change.
-
-Reported-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Felipe Balbi <balbi@kernel.org>
-Cc: linux-usb@vger.kernel.org
----
-V2: New patch to avoid the conversion to swait interfaces later
----
- drivers/usb/gadget/legacy/inode.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Davidlohr Bueso <dave@stgolabs.net>
 
---- a/drivers/usb/gadget/legacy/inode.c
-+++ b/drivers/usb/gadget/legacy/inode.c
-@@ -344,7 +344,7 @@ ep_io (struct ep_data *epdata, void *buf
- 	spin_unlock_irq (&epdata->dev->lock);
+---
+ include/linux/rcuwait.h       |   12 ++++++++++--
+ kernel/locking/percpu-rwsem.c |    2 +-
+ 2 files changed, 11 insertions(+), 3 deletions(-)
+
+--- a/include/linux/rcuwait.h
++++ b/include/linux/rcuwait.h
+@@ -3,6 +3,7 @@
+ #define _LINUX_RCUWAIT_H_
  
- 	if (likely (value == 0)) {
--		value = wait_event_interruptible (done.wait, done.done);
-+		value = wait_for_completion_interruptible(&done);
- 		if (value != 0) {
- 			spin_lock_irq (&epdata->dev->lock);
- 			if (likely (epdata->ep != NULL)) {
-@@ -353,7 +353,7 @@ ep_io (struct ep_data *epdata, void *buf
- 				usb_ep_dequeue (epdata->ep, epdata->req);
- 				spin_unlock_irq (&epdata->dev->lock);
+ #include <linux/rcupdate.h>
++#include <linux/sched/signal.h>
  
--				wait_event (done.wait, done.done);
-+				wait_for_completion(&done);
- 				if (epdata->status == -ECONNRESET)
- 					epdata->status = -EINTR;
- 			} else {
+ /*
+  * rcuwait provides a way of blocking and waking up a single
+@@ -30,23 +31,30 @@ extern void rcuwait_wake_up(struct rcuwa
+  * The caller is responsible for locking around rcuwait_wait_event(),
+  * such that writes to @task are properly serialized.
+  */
+-#define rcuwait_wait_event(w, condition)				\
++#define rcuwait_wait_event(w, condition, state)				\
+ ({									\
++	int __ret = 0;							\
+ 	rcu_assign_pointer((w)->task, current);				\
+ 	for (;;) {							\
+ 		/*							\
+ 		 * Implicit barrier (A) pairs with (B) in		\
+ 		 * rcuwait_wake_up().					\
+ 		 */							\
+-		set_current_state(TASK_UNINTERRUPTIBLE);		\
++		set_current_state(state);				\
+ 		if (condition)						\
+ 			break;						\
+ 									\
++		if (signal_pending_state(state, current)) {		\
++			__ret = -EINTR;					\
++			break;						\
++		}							\
++									\
+ 		schedule();						\
+ 	}								\
+ 									\
+ 	WRITE_ONCE((w)->task, NULL);					\
+ 	__set_current_state(TASK_RUNNING);				\
++	__ret;								\
+ })
+ 
+ #endif /* _LINUX_RCUWAIT_H_ */
+--- a/kernel/locking/percpu-rwsem.c
++++ b/kernel/locking/percpu-rwsem.c
+@@ -162,7 +162,7 @@ void percpu_down_write(struct percpu_rw_
+ 	 */
+ 
+ 	/* Wait for all now active readers to complete. */
+-	rcuwait_wait_event(&sem->writer, readers_active_check(sem));
++	rcuwait_wait_event(&sem->writer, readers_active_check(sem), TASK_UNINTERRUPTIBLE);
+ }
+ EXPORT_SYMBOL_GPL(percpu_down_write);
+ 
 
 
