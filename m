@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A1BA4C4332D
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 11:46:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B176EC4332D
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 11:49:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5299520637
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 11:46:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5299520637
+	by mail.kernel.org (Postfix) with ESMTPS id 676B120637
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 11:49:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 676B120637
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48kzPm1Cd4zDqBG
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 22:46:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48kzSb69p6zF0c5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2020 22:49:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=linutronix.de
  (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
@@ -29,22 +29,22 @@ Received: from Galois.linutronix.de (Galois.linutronix.de
  [IPv6:2a0a:51c0:0:12e:550::1])
  (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48kz876th9zDr80
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2020 22:34:47 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48kz883FYWzDr7x
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2020 22:34:48 +1100 (AEDT)
 Received: from p5de0bf0b.dip0.t-ipconnect.de ([93.224.191.11]
  helo=nanos.tec.linutronix.de)
  by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
  (Exim 4.80) (envelope-from <tglx@linutronix.de>)
- id 1jFcOW-0001zV-KV; Sat, 21 Mar 2020 12:34:24 +0100
+ id 1jFcOR-0001zU-F0; Sat, 21 Mar 2020 12:34:19 +0100
 Received: from nanos.tec.linutronix.de (localhost [IPv6:::1])
- by nanos.tec.linutronix.de (Postfix) with ESMTP id 0A1D2FFC8D;
- Sat, 21 Mar 2020 12:34:19 +0100 (CET)
-Message-Id: <20200321113241.434999165@linutronix.de>
+ by nanos.tec.linutronix.de (Postfix) with ESMTP id B80C01039FD;
+ Sat, 21 Mar 2020 12:34:18 +0100 (CET)
+Message-Id: <20200321113241.339289758@linutronix.de>
 User-Agent: quilt/0.65
-Date: Sat, 21 Mar 2020 12:25:51 +0100
+Date: Sat, 21 Mar 2020 12:25:50 +0100
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [patch V3 07/20] csky: Remove mm.h from asm/uaccess.h
+Subject: [patch V3 06/20] nds32: Remove mm.h from asm/uaccess.h
 References: <20200321112544.878032781@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -100,7 +100,7 @@ include chain leands to:
 |   CC      kernel/locking/percpu-rwsem.o
 | In file included from include/linux/huge_mm.h:8,
 |                  from include/linux/mm.h:567,
-|                  from arch/csky/include/asm/uaccess.h:,
+|                  from arch/nds32/include/asm/uaccess.h:,
 |                  from include/linux/uaccess.h:11,
 |                  from include/linux/sched/task.h:11,
 |                  from include/linux/sched/signal.h:9,
@@ -117,26 +117,27 @@ Remove the linux/mm.h include.
 Reported-by: kbuild test robot <lkp@intel.com>
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Guo Ren <guoren@kernel.org>
-Cc: linux-csky@vger.kernel.org
+Cc: Nick Hu <nickhu@andestech.com>
+Cc: Greentime Hu <green.hu@gmail.com>
+Cc: Vincent Chen <deanbo422@gmail.com>
 ---
 V3: New patch
 ---
- arch/csky/include/asm/uaccess.h | 1 -
+ arch/nds32/include/asm/uaccess.h | 1 -
  1 file changed, 1 deletion(-)
 
-diff --git a/arch/csky/include/asm/uaccess.h b/arch/csky/include/asm/uaccess.h
-index eaa1c3403a424..abefa125b93cf 100644
---- a/arch/csky/include/asm/uaccess.h
-+++ b/arch/csky/include/asm/uaccess.h
+diff --git a/arch/nds32/include/asm/uaccess.h b/arch/nds32/include/asm/uaccess.h
+index 8916ad9f9f139..3a9219f53ee0d 100644
+--- a/arch/nds32/include/asm/uaccess.h
++++ b/arch/nds32/include/asm/uaccess.h
 @@ -11,7 +11,6 @@
- #include <linux/errno.h>
- #include <linux/types.h>
- #include <linux/sched.h>
+ #include <asm/errno.h>
+ #include <asm/memory.h>
+ #include <asm/types.h>
 -#include <linux/mm.h>
- #include <linux/string.h>
- #include <linux/version.h>
- #include <asm/segment.h>
+ 
+ #define __asmeq(x, y)  ".ifnc " x "," y " ; .err ; .endif\n\t"
+ 
 -- 
 2.26.0.rc2
 
