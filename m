@@ -2,83 +2,87 @@ Return-Path: <SRS0=TpGY=5H=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A471C4332B
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Mar 2020 14:45:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3D33C4332B
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Mar 2020 16:07:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A753C20663
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Mar 2020 14:45:17 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="vTbnNMEn"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A753C20663
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
+	by mail.kernel.org (Postfix) with ESMTPS id 085C520724
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Mar 2020 16:07:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 085C520724
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48lgKP4kGTzDqYC
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 01:45:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48lj8W629yzDr2K
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 03:07:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=mg.codeaurora.org (client-ip=104.130.122.27;
- helo=mail27.static.mailgun.info;
- envelope-from=bounce+ee6c0f.be9e4a-linuxppc-dev=lists.ozlabs.org@mg.codeaurora.org;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=ganeshgr@linux.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=codeaurora.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org
- header.a=rsa-sha256 header.s=smtp header.b=vTbnNMEn; 
- dkim-atps=neutral
-Received: from mail27.static.mailgun.info (mail27.static.mailgun.info
- [104.130.122.27])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with UTF8SMTPS id 48lgH85VKhzDqdj
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2020 01:43:16 +1100 (AEDT)
-DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org;
- q=dns/txt; 
- s=smtp; t=1584888198; h=Content-Type: MIME-Version: Message-ID:
- In-Reply-To: Date: References: Subject: Cc: To: From: Sender;
- bh=8ZrWvNR4lZD7mLPZKWh5kIh2oW3QrCXRdxOVL7dTNX0=;
- b=vTbnNMEnuWIeG+3Ne5I1AmhndbfvwHKeAUK7K2takb4KnlUwpB8y99rGYxOdUwjEy1P7HRgp
- 4O8KyjXmMr/0BsN5kqX5L5EXpvqbY/6hf1arzBwUUu/xpR3QlVBXw/ut75C2LhZMbcGIE75v
- H7RQA4n2+8UCznH3WEuq2KynK5U=
-X-Mailgun-Sending-Ip: 104.130.122.27
-X-Mailgun-Sid: WyI5ZmEyMiIsICJsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZyIsICJiZTllNGEiXQ==
-Received: from smtp.codeaurora.org
- (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171])
- by mxa.mailgun.org with ESMTP id 5e777977.7facd49ff1f0-smtp-out-n02;
- Sun, 22 Mar 2020 14:43:03 -0000 (UTC)
-Received: by smtp.codeaurora.org (Postfix, from userid 1001)
- id 3A67DC432C2; Sun, 22 Mar 2020 14:43:02 +0000 (UTC)
-Received: from potku.adurom.net (88-114-240-156.elisa-laajakaista.fi
- [88.114.240.156])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested) (Authenticated sender: kvalo)
- by smtp.codeaurora.org (Postfix) with ESMTPSA id 4495EC433D2;
- Sun, 22 Mar 2020 14:42:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 4495EC433D2
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org;
- dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org;
- spf=none smtp.mailfrom=kvalo@codeaurora.org
-From: Kalle Valo <kvalo@codeaurora.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch V3 04/20] orinoco_usb: Use the regular completion
- interfaces
-References: <20200321112544.878032781@linutronix.de>
- <20200321113241.150783464@linutronix.de>
-Date: Sun, 22 Mar 2020 16:42:46 +0200
-In-Reply-To: <20200321113241.150783464@linutronix.de> (Thomas Gleixner's
- message of "Sat, 21 Mar 2020 12:25:48 +0100")
-Message-ID: <87pnd4bgd5.fsf@kamboji.qca.qualcomm.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/24.5 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48lj6L3d22zDqyB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2020 03:05:45 +1100 (AEDT)
+Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 02MG3QoF067618
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Mar 2020 12:05:42 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ywdr33kxr-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Mar 2020 12:05:42 -0400
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ganeshgr@linux.ibm.com>;
+ Sun, 22 Mar 2020 16:05:40 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Sun, 22 Mar 2020 16:05:39 -0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 02MG5cm655377990
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Sun, 22 Mar 2020 16:05:38 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 301F14C044;
+ Sun, 22 Mar 2020 16:05:38 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6CB794C040;
+ Sun, 22 Mar 2020 16:05:36 +0000 (GMT)
+Received: from localhost.localdomain.com (unknown [9.199.60.27])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Sun, 22 Mar 2020 16:05:36 +0000 (GMT)
+From: Ganesh Goudar <ganeshgr@linux.ibm.com>
+To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3] powerpc/pseries: Handle UE event for memcpy_mcsafe
+Date: Sun, 22 Mar 2020 21:35:25 +0530
+X-Mailer: git-send-email 2.17.2
+X-TM-AS-GCONF: 00
+x-cbid: 20032216-0016-0000-0000-000002F5B645
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 20032216-0017-0000-0000-000033594A79
+Message-Id: <20200322160525.7624-1-ganeshgr@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.645
+ definitions=2020-03-22_05:2020-03-21,
+ 2020-03-22 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_spam_definite policy=outbound
+ score=100 malwarescore=0
+ bulkscore=0 adultscore=0 impostorscore=0 lowpriorityscore=0 phishscore=0
+ priorityscore=1501 clxscore=1015 suspectscore=0 mlxlogscore=436 mlxscore=0
+ spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2003020000 definitions=main-2003220097
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,83 +94,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: , Randy Dunlap <rdunlap@infradead.org>,
-	linux-ia64@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
-	linux-pci@vger.kernel.org, Sebastian Siewior <bigeasy@linutronix.de>,
-	tel.com@lists.ozlabs.org, Oleg Nesterov <oleg@redhat.com>,
-	Guo Ren <guoren@kernel.org>, Joel Fernandes <joel@joelfernandes.org>,
-	Vincent Chen <deanbo422@gmail.com>, Ingo Molnar <mingo@kernel.org>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Davidlohr Bueso <dave@stgolabs.net>,
-	"Paul E . McKenney" <paulmck@kernel.org>,
-	Brian Cain <bcain@codeaurora.org>, linux-acpi@vger.kernel.org,
-	linux-hexagon@vger.kernel.org,
-	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-	linux-csky@vger.kernel.org,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Darren Hart <dvhart@infradead.org>, Zhang Rui <rui.zhang@intel.com>,
-	Len Brown <lenb@kernel.org>, Fenghua Yu <fenghua.yu@intel.com>,
-	Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org,
-	kbuild test robot <lkp@in>, linuxppc-dev@lists.ozlabs.org,
-	Greentime Hu <green.hu@gmail.com>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Kurt Schwemmer <kurt.schwemmer@microsemi.com>,
-	platform-driver-x86@vger.kernel.org, Felipe Balbi <balbi@kernel.org>,
-	Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
-	Nick Hu <nickhu@andestech.com>, Geoff Levand <geoff@infradead.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org,
-	LKML <linux-kernel@vger.kernel.org>,
-	Davidlohr Bueso <dbueso@suse.de>, netdev@vger.kernel.org,
-	Logan Gunthorpe <logang@deltatee.com>,
-	"David S. Miller" <davem@davemloft.net>,
-	Andy Shevchenko <andy@infradead.org>
+Cc: mahesh@linux.vnet.ibm.com, santosh@fossix.org,
+ Ganesh Goudar <ganeshgr@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Thomas Gleixner <tglx@linutronix.de> writes:
+If we hit UE at an instruction with a fixup entry, flag to
+ignore the event and set nip to continue execution at the
+fixup entry.
+For powernv these changes are already made by
+commit 895e3dceeb97 ("powerpc/mce: Handle UE event for memcpy_mcsafe")
 
-> From: Thomas Gleixner <tglx@linutronix.de>
->
-> The completion usage in this driver is interesting:
->
->   - it uses a magic complete function which according to the comment was
->     implemented by invoking complete() four times in a row because
->     complete_all() was not exported at that time.
->
->   - it uses an open coded wait/poll which checks completion:done. Only one wait
->     side (device removal) uses the regular wait_for_completion() interface.
->
-> The rationale behind this is to prevent that wait_for_completion() consumes
-> completion::done which would prevent that all waiters are woken. This is not
-> necessary with complete_all() as that sets completion::done to UINT_MAX which
-> is left unmodified by the woken waiters.
->
-> Replace the magic complete function with complete_all() and convert the
-> open coded wait/poll to regular completion interfaces.
->
-> This changes the wait to exclusive wait mode. But that does not make any
-> difference because the wakers use complete_all() which ignores the
-> exclusive mode.
->
-> Reported-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Kalle Valo <kvalo@codeaurora.org>
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Cc: linux-wireless@vger.kernel.org
-> Cc: netdev@vger.kernel.org
-> Cc: linux-usb@vger.kernel.org
-> ---
-> V2: New patch to avoid conversion to swait functions later.
-> ---
->  drivers/net/wireless/intersil/orinoco/orinoco_usb.c |   21 ++++----------------
->  1 file changed, 5 insertions(+), 16 deletions(-)
+Reviewed-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Reviewed-by: Santosh S <santosh@fossix.org>
+Signed-off-by: Ganesh Goudar <ganeshgr@linux.ibm.com>
+---
+V2: Fixes a trivial checkpatch error in commit msg.
+V3: Use proper subject prefix.
+---
+ arch/powerpc/platforms/pseries/ras.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-I assume this is going via some other than wireless-drivers so:
-
-Acked-by: Kalle Valo <kvalo@codeaurora.org>
-
+diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
+index 43710b69e09e..58e2483fbb1a 100644
+--- a/arch/powerpc/platforms/pseries/ras.c
++++ b/arch/powerpc/platforms/pseries/ras.c
+@@ -10,6 +10,7 @@
+ #include <linux/fs.h>
+ #include <linux/reboot.h>
+ #include <linux/irq_work.h>
++#include <linux/extable.h>
+ 
+ #include <asm/machdep.h>
+ #include <asm/rtas.h>
+@@ -505,6 +506,7 @@ static int mce_handle_error(struct pt_regs *regs, struct rtas_error_log *errp)
+ 	int initiator = rtas_error_initiator(errp);
+ 	int severity = rtas_error_severity(errp);
+ 	u8 error_type, err_sub_type;
++	const struct exception_table_entry *entry;
+ 
+ 	if (initiator == RTAS_INITIATOR_UNKNOWN)
+ 		mce_err.initiator = MCE_INITIATOR_UNKNOWN;
+@@ -558,6 +560,12 @@ static int mce_handle_error(struct pt_regs *regs, struct rtas_error_log *errp)
+ 	switch (mce_log->error_type) {
+ 	case MC_ERROR_TYPE_UE:
+ 		mce_err.error_type = MCE_ERROR_TYPE_UE;
++		entry = search_kernel_exception_table(regs->nip);
++		if (entry) {
++			mce_err.ignore_event = true;
++			regs->nip = extable_fixup(entry);
++			disposition = RTAS_DISP_FULLY_RECOVERED;
++		}
+ 		switch (err_sub_type) {
+ 		case MC_ERROR_UE_IFETCH:
+ 			mce_err.u.ue_error_type = MCE_UE_ERROR_IFETCH;
 -- 
-https://wireless.wiki.kernel.org/en/developers/documentation/submittingpatches
+2.17.2
+
