@@ -2,95 +2,52 @@ Return-Path: <SRS0=TpGY=5H=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2D79C4332B
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Mar 2020 16:21:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A8680C4332B
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Mar 2020 16:36:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7EF002072E
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Mar 2020 16:21:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7EF002072E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 624AD20724
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Mar 2020 16:36:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 624AD20724
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=stgolabs.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48ljSl06llzDq5b
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 03:21:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=naveen.n.rao@linux.vnet.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 48ljnf277LzDqYk
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 03:36:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=softfail (domain owner discourages use of this
+ host) smtp.mailfrom=stgolabs.net (client-ip=195.135.220.15; helo=mx2.suse.de;
+ envelope-from=dave@stgolabs.net; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=stgolabs.net
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48ljNH2L8TzDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2020 03:17:50 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 02MG3qVx170919
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Mar 2020 12:17:48 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ywe7q3ajp-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Mar 2020 12:17:48 -0400
-Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Sun, 22 Mar 2020 16:17:46 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Sun, 22 Mar 2020 16:17:43 -0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 02MGHgve62849250
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Sun, 22 Mar 2020 16:17:42 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 781E5AE053;
- Sun, 22 Mar 2020 16:17:42 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0FD96AE051;
- Sun, 22 Mar 2020 16:17:42 +0000 (GMT)
-Received: from localhost (unknown [9.85.74.144])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Sun, 22 Mar 2020 16:17:41 +0000 (GMT)
-Date: Sun, 22 Mar 2020 21:24:45 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3] powerpc/kprobes: Ignore traps that happened in real
- mode
-To: Christophe Leroy <christophe.leroy@c-s.fr>, Michael Ellerman
- <mpe@ellerman.id.au>
-References: <424331e2006e7291a1bfe40e7f3fa58825f565e1.1582054578.git.christophe.leroy@c-s.fr>
- <f28a0219-abf1-07d4-b98b-b19db4af0f12@c-s.fr>
-In-Reply-To: <f28a0219-abf1-07d4-b98b-b19db4af0f12@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48ljlW6r2HzDqMp
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2020 03:34:30 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx2.suse.de (Postfix) with ESMTP id 93574AC24;
+ Sun, 22 Mar 2020 16:34:24 +0000 (UTC)
+Date: Sun, 22 Mar 2020 09:33:17 -0700
+From: Davidlohr Bueso <dave@stgolabs.net>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 18/15] kvm: Replace vcpu->swait with rcuwait
+Message-ID: <20200322163317.mh4sygr7xcjptmjp@linux-p48b>
+References: <20200318204302.693307984@linutronix.de>
+ <20200320085527.23861-1-dave@stgolabs.net>
+ <20200320085527.23861-3-dave@stgolabs.net>
+ <20200320125455.GE20696@hirez.programming.kicks-ass.net>
 MIME-Version: 1.0
-User-Agent: astroid/v0.15-13-gb675b421 (https://github.com/astroidmail/astroid)
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-TM-AS-GCONF: 00
-x-cbid: 20032216-0016-0000-0000-000002F5B752
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20032216-0017-0000-0000-000033594B8F
-Message-Id: <1584892419.luppysh99r.naveen@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.645
- definitions=2020-03-22_05:2020-03-21,
- 2020-03-22 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=999
- impostorscore=0 bulkscore=0 phishscore=0 spamscore=0 adultscore=0
- mlxscore=0 lowpriorityscore=0 suspectscore=0 malwarescore=0
- priorityscore=1501 clxscore=1015 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2003020000 definitions=main-2003220094
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <20200320125455.GE20696@hirez.programming.kicks-ass.net>
+User-Agent: NeoMutt/20180716
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,28 +59,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: rdunlap@infradead.org, linux-pci@vger.kernel.org, bigeasy@linutronix.de,
+ linux-kernel@vger.kernel.org, joel@joelfernandes.org, will@kernel.org,
+ mingo@kernel.org, arnd@arndb.de, Davidlohr Bueso <dbueso@suse.de>,
+ torvalds@linux-foundation.org, paulmck@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, rostedt@goodmis.org, bhelgaas@google.com,
+ kurt.schwemmer@microsemi.com, kvalo@codeaurora.org, balbi@kernel.org,
+ gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
+ linux-wireless@vger.kernel.org, oleg@redhat.com, tglx@linutronix.de,
+ netdev@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>,
+ logang@deltatee.com, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy wrote:
-> ping
->=20
->=20
-> Le 18/02/2020 =C3=A0 20:38, Christophe Leroy a =C3=A9crit=C2=A0:
->> When a program check exception happens while MMU translation is
->> disabled, following Oops happens in kprobe_handler() in the following
->> code:
->=20
-> Michael, we have several traps in assembly while MMU is still disabled=20
-> (TRACE_IRQFLAGS, KUAP DEBUG, syscall from kernel, machine check in RTAS,=20
-> ...).
-> Without this fix, all of them trigger an Oops when CONFIG_KPROBE is set.
+On Fri, 20 Mar 2020, Peter Zijlstra wrote:
 
-For this patch:
-Reviewed-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+>On Fri, Mar 20, 2020 at 01:55:26AM -0700, Davidlohr Bueso wrote:
+>> -	swait_event_interruptible_exclusive(*wq, ((!vcpu->arch.power_off) &&
+>> -				       (!vcpu->arch.pause)));
+>> +	rcuwait_wait_event(*wait,
+>> +			   (!vcpu->arch.power_off) && (!vcpu->arch.pause),
+>> +			   TASK_INTERRUPTIBLE);
+>
+>> -	for (;;) {
+>> -		prepare_to_swait_exclusive(&vcpu->wq, &wait, TASK_INTERRUPTIBLE);
+>> -
+>> -		if (kvm_vcpu_check_block(vcpu) < 0)
+>> -			break;
+>> -
+>> -		waited = true;
+>> -		schedule();
+>> -	}
+>> -
+>> -	finish_swait(&vcpu->wq, &wait);
+>> +	rcuwait_wait_event(&vcpu->wait,
+>> +			   (block_check = kvm_vcpu_check_block(vcpu)) < 0,
+>> +			   TASK_INTERRUPTIBLE);
+>
+>Are these yet more instances that really want to be TASK_IDLE ?
 
+Hmm probably as it makes sense for a blocked vcpu not to be contributing to
+the loadavg. So if this is the only reason to use interruptible, then yes we
+ought to change it.
 
-- Naveen
+However, I'll make this a separate patch, given this (ab)use isn't as obvious
+as the PS3 case, which is a kthread and therefore signals are masked.
 
+Thanks,
+Davidlohr
