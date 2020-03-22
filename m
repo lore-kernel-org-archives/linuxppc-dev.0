@@ -2,82 +2,64 @@ Return-Path: <SRS0=TpGY=5H=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-4.0 required=3.0 tests=MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D5D11C4332D
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Mar 2020 02:21:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 28932C4332D
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Mar 2020 07:04:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4CC6A20754
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Mar 2020 02:21:32 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="wuN8YhHs"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4CC6A20754
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=joelfernandes.org
+	by mail.kernel.org (Postfix) with ESMTPS id A9D8B20719
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Mar 2020 07:04:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A9D8B20719
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48lLqF6YK3zDsGh
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Mar 2020 13:21:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48lT684Y7hzDrSJ
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Mar 2020 18:04:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=joelfernandes.org (client-ip=2607:f8b0:4864:20::843;
- helo=mail-qt1-x843.google.com; envelope-from=joel@joelfernandes.org;
+ smtp.mailfrom=gmail.com (client-ip=209.85.167.193;
+ helo=mail-oi1-f193.google.com; envelope-from=rjwysocki@gmail.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=joelfernandes.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=joelfernandes.org header.i=@joelfernandes.org
- header.a=rsa-sha256 header.s=google header.b=wuN8YhHs; 
- dkim-atps=neutral
-Received: from mail-qt1-x843.google.com (mail-qt1-x843.google.com
- [IPv6:2607:f8b0:4864:20::843])
+Authentication-Results: lists.ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from mail-oi1-f193.google.com (mail-oi1-f193.google.com
+ [209.85.167.193])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48lLnN5Q25zDrWR
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Mar 2020 13:19:51 +1100 (AEDT)
-Received: by mail-qt1-x843.google.com with SMTP id y24so8669512qtv.11
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2020 19:19:51 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=joelfernandes.org; s=google;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=g7SHC7AQfO9TwwpN/x0z3E15F8GnLYestCEz0TtL0YM=;
- b=wuN8YhHsGNS+KBnGqTssJtfUY56E0cibB4sykRbRaY8Uzc+i5+w1tUbC+QacGhjerF
- 2FKP+0tqFKpl5j6mvSpNhHrzHI2RBcE9nKKbqsXo8WPFNcaSf55ZHe0L5o66KwwNiwSk
- 6vmBzdMEzCYwgRzBV91lIxRvfLKdELWAHnRdc=
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48lT4H5FW4zDqT4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Mar 2020 18:03:08 +1100 (AEDT)
+Received: by mail-oi1-f193.google.com with SMTP id y71so11355576oia.7
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Mar 2020 00:03:08 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=g7SHC7AQfO9TwwpN/x0z3E15F8GnLYestCEz0TtL0YM=;
- b=msmX0ddkGU5pfiag96pTxpefiZymjWY38bvmqMR/AYwpiBnS22nR2OiGsFhIVD7PxJ
- Q9oGBGjfp3olQdatTOkJd3CqBvozJ4k/ck6y7JEq1Rxvu25Js0tqoclQ2/6bh1yHL8vG
- z1Ga08Nfn5ce87Bt8TTZXsTjB8WhMDBXdZk75P5yuWpxP5UjSmvcPVD4XySHeu1hoVkR
- rKh0Q7oDkfagM+LdKHQjD8WA0I73QUt45wlvLk0REjQnacKPKS/mfSfu2u/UDZYp2SZw
- aZAF93Tysn6EqGfS3GqibjwJGGScBcwCUySgcL3iMsDO+ZQFyJJbKZQRl4E3YGtI5ZHa
- M90g==
-X-Gm-Message-State: ANhLgQ2Gbb/RHvUaygsUsWrqBxPYo30EcD3xEu5KJK2K9MUJsf2GpocA
- dT8AoOkhni29Akbpfu6loeB/ow==
-X-Google-Smtp-Source: ADFU+vuZl6DL/jFqnNj4u0sNih/73JNqy/GIOCoxZp/XGx+R2DvQ+abdhYVPGYbeEZYzc7Sq2kUaBg==
-X-Received: by 2002:ac8:748e:: with SMTP id v14mr15603731qtq.82.1584843588059; 
- Sat, 21 Mar 2020 19:19:48 -0700 (PDT)
-Received: from joelaf.cam.corp.google.com ([2620:15c:6:12:9c46:e0da:efbf:69cc])
- by smtp.gmail.com with ESMTPSA id h138sm8150819qke.86.2020.03.21.19.19.46
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sat, 21 Mar 2020 19:19:47 -0700 (PDT)
-From: "Joel Fernandes (Google)" <joel@joelfernandes.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Documentation: Clarify better about the rwsem non-owner
- release issue
-Date: Sat, 21 Mar 2020 22:19:38 -0400
-Message-Id: <20200322021938.175736-1-joel@joelfernandes.org>
-X-Mailer: git-send-email 2.25.1.696.g5e7596f4ac-goog
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=jQw0Ao+0F3OML4xqBcdXiKQyDO5icQmYlSZlUWUMKLw=;
+ b=giSopHNBRVqs5t9qcnbzcVSWvjqQ8wcRYfiFIYSIn010USSXxoxpg7ofU12N0FeNnA
+ P4Ee1eG8I0HttlzyrfQE48kkM5FJ74w8tdAjPd77Dw3cmvlDg6iahqcryy4otHlKI3fF
+ JqkFGigL4KBFBGjmghtcQU4fB5Kj1XK7lUqnALrKXrykoabG01gtyOr6lhIz7/Q2Wjri
+ z8Yxxjncf7wc0g2bKjxSBaAXIpl9+XQVsOcepE2hytlTZQJRyqFx+nVsK+tteGTDtWZK
+ EZhyyhrmXWQEdz+GGc+U8eRE12zsTNWcQEw+7i3HLsK/TtKmp0wcg8ITkWavDyxRqJ3j
+ cu+w==
+X-Gm-Message-State: ANhLgQ2YzX+j39lT5PRFiNmB7hW27hZ+HV39t6ugTKVmsXM8d0/5le7M
+ voUwkWUzg2LzCcZb9no1Nluk6UbOawOVqEE75FA=
+X-Google-Smtp-Source: ADFU+vsARItYcXJ5VcYXYVtk3ULfsYXI5mBXm7XJN8Fh/cbR3R0TaFoBwSVgaJcdx5OhfFh8ldzXhaOstgHnOBA0QRI=
+X-Received: by 2002:aca:3857:: with SMTP id f84mr12703942oia.110.1584860585800; 
+ Sun, 22 Mar 2020 00:03:05 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20200321112544.878032781@linutronix.de>
+ <20200321113241.246190285@linutronix.de>
+In-Reply-To: <20200321113241.246190285@linutronix.de>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Sun, 22 Mar 2020 08:02:54 +0100
+Message-ID: <CAJZ5v0iV_8Q7cZARXY033Ff1Z8LvQ58kGy1XARm9CTZMWoaCTQ@mail.gmail.com>
+Subject: Re: [patch V3 05/20] acpi: Remove header dependency
+To: Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,52 +71,107 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>, netdev@vger.kernel.org,
- "Joel Fernandes \(Google\)" <joel@joelfernandes.org>,
- Will Deacon <will@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- Davidlohr Bueso <dave@stgolabs.net>, Arnd Bergmann <arnd@arndb.de>,
- Jonathan Corbet <corbet@lwn.net>, Ingo Molnar <mingo@kernel.org>,
- Ingo Molnar <mingo@redhat.com>, "Paul E . McKenney" <paulmck@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, Steven Rostedt <rostedt@goodmis.org>,
- Bjorn Helgaas <bhelgaas@google.com>,
+Cc: "open list:ULTRA-WIDEBAND \(UWB\) SUBSYSTEM:" <linux-usb@vger.kernel.org>,
+ linux-ia64@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ Linux PCI <linux-pci@vger.kernel.org>,
+ Sebastian Siewior <bigeasy@linutronix.de>, Oleg Nesterov <oleg@redhat.com>,
+ Guo Ren <guoren@kernel.org>, Joel Fernandes <joel@joelfernandes.org>,
+ Vincent Chen <deanbo422@gmail.com>, Ingo Molnar <mingo@kernel.org>,
+ Davidlohr Bueso <dave@stgolabs.net>, kbuild test robot <lkp@intel.com>,
+ Brian Cain <bcain@codeaurora.org>, Jonathan Corbet <corbet@lwn.net>,
+ "Paul E . McKenney" <paulmck@kernel.org>, linux-hexagon@vger.kernel.org,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-csky@vger.kernel.org,
+ ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+ Darren Hart <dvhart@infradead.org>, Zhang Rui <rui.zhang@intel.com>,
+ Len Brown <lenb@kernel.org>, Fenghua Yu <fenghua.yu@intel.com>,
+ Randy Dunlap <rdunlap@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
+ Linux PM <linux-pm@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Greentime Hu <green.hu@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>,
  Kurt Schwemmer <kurt.schwemmer@microsemi.com>,
- "linux-usb@vger.kernel.org Kalle Valo" <kvalo@codeaurora.org>,
- "linux-pci@vger.kernel.org Felipe Balbi" <balbi@kernel.org>,
- Logan Gunthorpe <logang@deltatee.com>, Randy Dunlap <rdunlap@infradead.org>,
- linux-wireless@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
+ Platform Driver <platform-driver-x86@vger.kernel.org>,
+ Kalle Valo <kvalo@codeaurora.org>, Felipe Balbi <balbi@kernel.org>,
+ Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
+ Nick Hu <nickhu@andestech.com>, Geoff Levand <geoff@infradead.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Linus Torvalds <torvalds@linux-foundation.org>,
- "David S. Miller" <davem@davemloft.net>
+ "open list:NETWORKING DRIVERS \(WIRELESS\)" <linux-wireless@vger.kernel.org>,
+ LKML <linux-kernel@vger.kernel.org>, Davidlohr Bueso <dbueso@suse.de>,
+ netdev <netdev@vger.kernel.org>, Logan Gunthorpe <logang@deltatee.com>,
+ "David S. Miller" <davem@davemloft.net>, Andy Shevchenko <andy@infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Reword and clarify better about the rwsem non-owner release issue.
+On Sat, Mar 21, 2020 at 12:35 PM Thomas Gleixner <tglx@linutronix.de> wrote:
+>
+> From: Peter Zijlstra <peterz@infradead.org>
+>
+> In order to avoid future header hell, remove the inclusion of
+> proc_fs.h from acpi_bus.h. All it needs is a forward declaration of a
+> struct.
+>
+> Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Darren Hart <dvhart@infradead.org>
+> Cc: Andy Shevchenko <andy@infradead.org>
+> Cc: platform-driver-x86@vger.kernel.org
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+> Cc: linux-pm@vger.kernel.org
+> Cc: Len Brown <lenb@kernel.org>
+> Cc: linux-acpi@vger.kernel.org
 
-Link: https://lore.kernel.org/linux-pci/20200321212144.GA6475@google.com/
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Signed-off-by: Joel Fernandes (Google) <joel@joelfernandes.org>
----
- Documentation/locking/locktypes.rst | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/Documentation/locking/locktypes.rst b/Documentation/locking/locktypes.rst
-index 6f2c0f5b041e..656dce72f11f 100644
---- a/Documentation/locking/locktypes.rst
-+++ b/Documentation/locking/locktypes.rst
-@@ -292,7 +292,7 @@ implementations to provide priority inheritance for all lock types except
- the truly spinning ones. Priority inheritance on ownerless locks is
- obviously impossible.
- 
--For now the rwsem non-owner release excludes code which utilizes it from
--being used on PREEMPT_RT enabled kernels. In same cases this can be
--mitigated by disabling portions of the code, in other cases the complete
--functionality has to be disabled until a workable solution has been found.
-+For now, a PREEMPT_RT kernel just disables code sections that perform a
-+non-owner release of an rwsem. In some cases, parts of the code are disabled.
-+In other cases, the complete functionality has to be disabled until a workable
-+solution has been found.
--- 
-2.25.1.696.g5e7596f4ac-goog
-
+> ---
+>  drivers/platform/x86/dell-smo8800.c                      |    1 +
+>  drivers/platform/x86/wmi.c                               |    1 +
+>  drivers/thermal/intel/int340x_thermal/acpi_thermal_rel.c |    1 +
+>  include/acpi/acpi_bus.h                                  |    2 +-
+>  4 files changed, 4 insertions(+), 1 deletion(-)
+>
+> --- a/drivers/platform/x86/dell-smo8800.c
+> +++ b/drivers/platform/x86/dell-smo8800.c
+> @@ -16,6 +16,7 @@
+>  #include <linux/interrupt.h>
+>  #include <linux/miscdevice.h>
+>  #include <linux/uaccess.h>
+> +#include <linux/fs.h>
+>
+>  struct smo8800_device {
+>         u32 irq;                     /* acpi device irq */
+> --- a/drivers/platform/x86/wmi.c
+> +++ b/drivers/platform/x86/wmi.c
+> @@ -29,6 +29,7 @@
+>  #include <linux/uaccess.h>
+>  #include <linux/uuid.h>
+>  #include <linux/wmi.h>
+> +#include <linux/fs.h>
+>  #include <uapi/linux/wmi.h>
+>
+>  ACPI_MODULE_NAME("wmi");
+> --- a/drivers/thermal/intel/int340x_thermal/acpi_thermal_rel.c
+> +++ b/drivers/thermal/intel/int340x_thermal/acpi_thermal_rel.c
+> @@ -19,6 +19,7 @@
+>  #include <linux/acpi.h>
+>  #include <linux/uaccess.h>
+>  #include <linux/miscdevice.h>
+> +#include <linux/fs.h>
+>  #include "acpi_thermal_rel.h"
+>
+>  static acpi_handle acpi_thermal_rel_handle;
+> --- a/include/acpi/acpi_bus.h
+> +++ b/include/acpi/acpi_bus.h
+> @@ -80,7 +80,7 @@ bool acpi_dev_present(const char *hid, c
+>
+>  #ifdef CONFIG_ACPI
+>
+> -#include <linux/proc_fs.h>
+> +struct proc_dir_entry;
+>
+>  #define ACPI_BUS_FILE_ROOT     "acpi"
+>  extern struct proc_dir_entry *acpi_root_dir;
+>
+>
