@@ -2,84 +2,85 @@ Return-Path: <SRS0=3fZu=5I=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 99364C10F26
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 06:30:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C8AD4C10F26
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 06:32:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 488A3206F8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 06:30:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7515B206F8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 06:32:50 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DScEpP3G"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 488A3206F8
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DFsFJ7Ay"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7515B206F8
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48m4HY2SvRzDqnK
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 17:30:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48m4Ll5dQCzDqpL
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 17:32:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::444;
- helo=mail-pf1-x444.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::443;
+ helo=mail-pf1-x443.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=DScEpP3G; dkim-atps=neutral
-Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
- [IPv6:2607:f8b0:4864:20::444])
+ header.s=20161025 header.b=DFsFJ7Ay; dkim-atps=neutral
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
+ [IPv6:2607:f8b0:4864:20::443])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48m4Dw2Y4HzDqg6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2020 17:27:43 +1100 (AEDT)
-Received: by mail-pf1-x444.google.com with SMTP id 23so7046768pfj.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Mar 2020 23:27:43 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48m4Hk0bhkzDqdp
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2020 17:30:09 +1100 (AEDT)
+Received: by mail-pf1-x443.google.com with SMTP id z25so2685807pfa.5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Mar 2020 23:30:09 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=date:from:subject:to:cc:references:in-reply-to:mime-version
  :user-agent:message-id:content-transfer-encoding;
- bh=+Fl9fJ1M/BX+yC4WksQ4C/AuPe+VLsYJgRRv9jQTuJI=;
- b=DScEpP3GXwZPNq/0B9jxSKR220Wa6RkeOPpPUDYWDqcM4P08FRfdIV6pVUBLlLtmz/
- A8pJorZhEW5dkBrYqUfdG1G/wlZ7tAyoupKO/cJe/PUNGpY3gMgz25HL6gLm9HE01Me1
- 6dLaabxwmJN7AAEGpGbdO/+HsBG/3YjrGCalgPqSlTT7kS5T098b3etOH5EzDm/9DTcl
- 4dbm9lY8rN215haHrQ5j+KBnhiqnHNTBNV2+P0jIYdFqIXkE+VD0SE2fWdbxkeL6wrq+
- FU0299G8LyLB9okA/R7FvSANkuJO2Dn1hXQ6x+BCzchuErQGsO97rzGP5Xl7PN2e/iGU
- Ageg==
+ bh=zgfcQ4zq56fUVnNobgw8fH89kr7q2PgqL6rtwXoTh/4=;
+ b=DFsFJ7AyYB4fQmfKIl7wkYWS2bvU8ZzRldT+YF+vYdLD77y01D+DeGlJCwt1wkeIl9
+ zK70Gy9FLhGD7HAFW6YwbQmH6WpIceMKZeRIxFbYZCdCwegeMvat1loX6IrlLzi3s9aA
+ Y6f5me5BFtjw1jCwvNbohcKQJgwYutQExAISTgTgCe2X2tCQJ5U+Z4VmsoWxJuLI2/bj
+ FZDlPu1As+tOoRsglttEI/YN5iDV45ZNDvdhDF9am0myIZpGUMRoxzcFmhpbFmN0vF5P
+ gSO6PdwxKUqh/OhX0VL1imwyR8rMMuefCikX0Ory1ymy+PghbqhtbgbiSEuf+pJVOWAz
+ /oeQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
  :mime-version:user-agent:message-id:content-transfer-encoding;
- bh=+Fl9fJ1M/BX+yC4WksQ4C/AuPe+VLsYJgRRv9jQTuJI=;
- b=irYvBRybeNjg9uWnsVFxCu5Nn+j7js7MQEuUbtFpCLv/s9d4PLXgU6hz1YmVeLUtxP
- S86Yv6nKvpJvqRny3VoOMwnnn/SrAOh2Bd0eTgWuC3mW3SOonhVqdSEcBJWV+R1e4BL3
- 2y9MViD1kKkGuXD8ZMhexq/NxAc9InsLDWcV5SfX/zP6SWP1PJcgibygXoKMKXT6L44z
- EVY40E+Kr8MY2mysEJfOc0A6TzBP+5pmv1+2zHU9FxAcSjdKyhj/hjKsU5DgnJJnCioT
- bJyOmaRkoUOOLwTfKAZAGGlPyHNXvlo7HOxXJd1UaM1+4/oJNMsQGMz+mZDwr5Cop44h
- C2CA==
-X-Gm-Message-State: ANhLgQ1M2ggl2AFQD4KejpS7glVHTY3fjrJ25ldwSHG+Gah6KRSkp0uS
- sHdURlGPjVhyABPYkOTosYI=
-X-Google-Smtp-Source: ADFU+vs/Ia0XbEzV50NPY0iF3RZWHlMOKw4qIZToY6KHQ7i+ZD5F2eZ/PWZuPbwK2PNpP7b8wgwI8g==
-X-Received: by 2002:a63:5c1c:: with SMTP id q28mr3865910pgb.125.1584944861262; 
- Sun, 22 Mar 2020 23:27:41 -0700 (PDT)
+ bh=zgfcQ4zq56fUVnNobgw8fH89kr7q2PgqL6rtwXoTh/4=;
+ b=fnbS4Iu6sN5nvylwmBYCGN77W0gATrG95cPmP2rr1ck3HPIYBJqdn+EUeCkrJthEr/
+ 5GtUnnNLln6RnlVOyO9at1P5cwl4rqpBWM4nGZVYdMdnzpAkma4ZBcOKCrCzshqu5v5G
+ Ne4z9g1zoVP2r/kyIPb8baavxvmokmRs3qClq2Akekio1RA4A/YSX2PHJ9LmZLQBYkYh
+ jOpB6M00rfyqQULVOnGsrkui6Xdx1euCqg4+uQxeA2sPkbXtCitPbUNrye6z4kn6D+x0
+ JheIji+CbSvvD0owyulCRlC/3hdE5kYTyuOOPjBSyby9icompOvL9PUhDV3r/AvgNch4
+ mMEQ==
+X-Gm-Message-State: ANhLgQ2MjA0/QHSz1BzQTyDkvm7o9//DpXOyP5vCvixRuOhfzGnE/S6m
+ 28+KiFVzBDrKZ2QodSRT8FpI8Vyz
+X-Google-Smtp-Source: ADFU+vvhqt3OuiRbVx2NmmI4oP3POkvlqPrYZ76Y6yJbZLk/r71NYJftf37CKKEoEZ8iD4tsyuZp+w==
+X-Received: by 2002:a63:ed10:: with SMTP id d16mr20360048pgi.107.1584945007857; 
+ Sun, 22 Mar 2020 23:30:07 -0700 (PDT)
 Received: from localhost (14-202-190-183.tpgi.com.au. [14.202.190.183])
- by smtp.gmail.com with ESMTPSA id e126sm12188845pfa.122.2020.03.22.23.27.40
+ by smtp.gmail.com with ESMTPSA id 15sm12001148pfp.125.2020.03.22.23.30.06
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 22 Mar 2020 23:27:40 -0700 (PDT)
-Date: Mon, 23 Mar 2020 16:23:58 +1000
+ Sun, 22 Mar 2020 23:30:07 -0700 (PDT)
+Date: Mon, 23 Mar 2020 16:26:25 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v4 03/16] powerpc: Use a datatype for instructions
+Subject: Re: [PATCH v4 04/16] powerpc: Use a macro for creating instructions
+ from u32s
 To: Jordan Niethe <jniethe5@gmail.com>, linuxppc-dev@lists.ozlabs.org
 References: <20200320051809.24332-1-jniethe5@gmail.com>
- <20200320051809.24332-4-jniethe5@gmail.com>
-In-Reply-To: <20200320051809.24332-4-jniethe5@gmail.com>
+ <20200320051809.24332-5-jniethe5@gmail.com>
+In-Reply-To: <20200320051809.24332-5-jniethe5@gmail.com>
 MIME-Version: 1.0
 User-Agent: astroid/0.15.0 (https://github.com/astroidmail/astroid)
-Message-Id: <1584944554.pe2tzckmyl.astroid@bobo.none>
+Message-Id: <1584944668.qhbtv64kb2.astroid@bobo.none>
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -99,28 +100,15 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 Jordan Niethe's on March 20, 2020 3:17 pm:
-> Currently unsigned ints are used to represent instructions on powerpc.
-> This has worked well as instructions have always been 4 byte words.
-> However, a future ISA version will introduce some changes to
-> instructions that mean this scheme will no longer work as well. This
-> change is Prefixed Instructions. A prefixed instruction is made up of a
-> word prefix followed by a word suffix to make an 8 byte double word
-> instruction. No matter the endianess of the system the prefix always
-> comes first. Prefixed instructions are only planned for powerpc64.
->=20
-> Introduce a ppc_inst type to represent both prefixed and word
-> instructions on powerpc64 while keeping it possible to exclusively have
-> word instructions on powerpc32, A latter patch will expand the type to
-> include prefixed instructions but for now just typedef it to a u32.
->=20
-> Later patches will introduce helper functions and macros for
-> manipulating the instructions so that powerpc64 and powerpc32 might
-> maintain separate type definitions.
+> In preparation for instructions having a more complex data type start
+> using a macro, PPC_INST(), for making an instruction out of a u32.
+> Currently this does nothing, but it will allow for creating a data type
+> that can represent prefixed instructions.
 
-ppc_inst_t I would slightly prefer for a typedef like this.
+Where is the macro? And, can it be a static inline (and lowercase)=20
+instead? No big deal if not.
 
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+Thanks,
+Nick
 
->=20
-> Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
 =
