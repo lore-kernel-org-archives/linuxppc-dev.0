@@ -6,32 +6,32 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 362D6C10F26
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 05:05:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17993C10F26
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 05:08:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E15232070A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 05:05:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E15232070A
+	by mail.kernel.org (Postfix) with ESMTPS id C52DC2070A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 05:08:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C52DC2070A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=informatik.wtf
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48m2QL3GmHzDqXZ
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 16:05:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48m2TH11xdzDqwy
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 16:08:19 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48m2LC65j6zDqhk
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48m2LC64B1zDqhN
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2020 16:02:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=informatik.wtf
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 48m2LB3Pkzz8tR6
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 48m2LB3WVPz9BNK
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2020 16:02:10 +1100 (AEDT)
 Received: by ozlabs.org (Postfix)
- id 48m2L92JF9z9sSG; Mon, 23 Mar 2020 16:02:09 +1100 (AEDT)
+ id 48m2L92MlRz9sSK; Mon, 23 Mar 2020 16:02:09 +1100 (AEDT)
 Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=informatik.wtf (client-ip=131.153.2.42;
  helo=h1.fbrelay.privateemail.com; envelope-from=cmr@informatik.wtf;
@@ -42,25 +42,25 @@ Received: from h1.fbrelay.privateemail.com (h1.fbrelay.privateemail.com
  [131.153.2.42])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 48m2L82vCwz9sRR
+ by ozlabs.org (Postfix) with ESMTPS id 48m2L85358z9sRY
  for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2020 16:02:08 +1100 (AEDT)
 Received: from MTA-05-3.privateemail.com (mta-05.privateemail.com
  [198.54.127.60])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by h1.fbrelay.privateemail.com (Postfix) with ESMTPS id 54ACC808C8
+ by h1.fbrelay.privateemail.com (Postfix) with ESMTPS id BD566808C9
  for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2020 00:51:26 -0400 (EDT)
 Received: from MTA-05.privateemail.com (localhost [127.0.0.1])
- by MTA-05.privateemail.com (Postfix) with ESMTP id 210D26004B
- for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2020 00:51:22 -0400 (EDT)
+ by MTA-05.privateemail.com (Postfix) with ESMTP id EBDB260051
+ for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2020 00:51:21 -0400 (EDT)
 Received: from geist.attlocal.net (unknown [10.20.151.230])
- by MTA-05.privateemail.com (Postfix) with ESMTPA id E166F60049
+ by MTA-05.privateemail.com (Postfix) with ESMTPA id 52DFC6004B
  for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2020 04:51:21 +0000 (UTC)
 From: "Christopher M. Riedl" <cmr@informatik.wtf>
 To: linuxppc-dev@ozlabs.org
-Subject: [RFC PATCH 3/3] powerpc/lib: Use a temporary mm for code patching
-Date: Sun, 22 Mar 2020 23:52:05 -0500
-Message-Id: <20200323045205.20314-4-cmr@informatik.wtf>
+Subject: [RFC PATCH 1/3] powerpc/mm: Introduce temporary mm
+Date: Sun, 22 Mar 2020 23:52:03 -0500
+Message-Id: <20200323045205.20314-2-cmr@informatik.wtf>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200323045205.20314-1-cmr@informatik.wtf>
 References: <20200323045205.20314-1-cmr@informatik.wtf>
@@ -82,224 +82,138 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently, code patching a STRICT_KERNEL_RWX exposes the temporary
-mappings to other CPUs. These mappings should be kept local to the CPU
-doing the patching. Use the pre-initialized temporary mm and patching
-address for this purpose. Also add a check after patching to ensure the
-patch succeeded.
+x86 supports the notion of a temporary mm which restricts access to
+temporary PTEs to a single CPU. A temporary mm is useful for situations
+where a CPU needs to perform sensitive operations (such as patching a
+STRICT_KERNEL_RWX kernel) requiring temporary mappings without exposing
+said mappings to other CPUs. A side benefit is that other CPU TLBs do
+not need to be flushed when the temporary mm is torn down.
+
+Mappings in the temporary mm can be set in the userspace portion of the
+address-space.
+
+Interrupts must be disabled while the temporary mm is in use. HW
+breakpoints, which may have been set by userspace as watchpoints on
+addresses now within the temporary mm, are saved and disabled when
+loading the temporary mm. The HW breakpoints are restored when unloading
+the temporary mm. All HW breakpoints are indiscriminately disabled while
+the temporary mm is in use.
 
 Based on x86 implementation:
 
-commit b3fd8e83ada0
-("x86/alternatives: Use temporary mm for text poking")
+commit cefa929c034e
+("x86/mm: Introduce temporary mm structs")
 
 Signed-off-by: Christopher M. Riedl <cmr@informatik.wtf>
 ---
- arch/powerpc/lib/code-patching.c | 128 ++++++++++++++-----------------
- 1 file changed, 57 insertions(+), 71 deletions(-)
+ arch/powerpc/include/asm/debug.h       |  1 +
+ arch/powerpc/include/asm/mmu_context.h | 56 +++++++++++++++++++++++++-
+ arch/powerpc/kernel/process.c          |  5 +++
+ 3 files changed, 61 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-index 18b88ecfc5a8..f156132e8975 100644
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -19,6 +19,7 @@
- #include <asm/page.h>
- #include <asm/code-patching.h>
- #include <asm/setup.h>
-+#include <asm/mmu_context.h>
+diff --git a/arch/powerpc/include/asm/debug.h b/arch/powerpc/include/asm/debug.h
+index 7756026b95ca..b945bc16c932 100644
+--- a/arch/powerpc/include/asm/debug.h
++++ b/arch/powerpc/include/asm/debug.h
+@@ -45,6 +45,7 @@ static inline int debugger_break_match(struct pt_regs *regs) { return 0; }
+ static inline int debugger_fault_handler(struct pt_regs *regs) { return 0; }
+ #endif
  
- static int __patch_instruction(unsigned int *exec_addr, unsigned int instr,
- 			       unsigned int *patch_addr)
-@@ -65,99 +66,79 @@ void __init poking_init(void)
- 	pte_unmap_unlock(ptep, ptl);
- }
- 
--static DEFINE_PER_CPU(struct vm_struct *, text_poke_area);
--
--static int text_area_cpu_up(unsigned int cpu)
--{
--	struct vm_struct *area;
--
--	area = get_vm_area(PAGE_SIZE, VM_ALLOC);
--	if (!area) {
--		WARN_ONCE(1, "Failed to create text area for cpu %d\n",
--			cpu);
--		return -1;
--	}
--	this_cpu_write(text_poke_area, area);
--
--	return 0;
--}
--
--static int text_area_cpu_down(unsigned int cpu)
--{
--	free_vm_area(this_cpu_read(text_poke_area));
--	return 0;
--}
--
--/*
-- * Run as a late init call. This allows all the boot time patching to be done
-- * simply by patching the code, and then we're called here prior to
-- * mark_rodata_ro(), which happens after all init calls are run. Although
-- * BUG_ON() is rude, in this case it should only happen if ENOMEM, and we judge
-- * it as being preferable to a kernel that will crash later when someone tries
-- * to use patch_instruction().
-- */
--static int __init setup_text_poke_area(void)
--{
--	BUG_ON(!cpuhp_setup_state(CPUHP_AP_ONLINE_DYN,
--		"powerpc/text_poke:online", text_area_cpu_up,
--		text_area_cpu_down));
--
--	return 0;
--}
--late_initcall(setup_text_poke_area);
-+struct patch_mapping {
-+	spinlock_t *ptl; /* for protecting pte table */
-+	struct temp_mm temp_mm;
-+};
++void __get_breakpoint(struct arch_hw_breakpoint *brk);
+ void __set_breakpoint(struct arch_hw_breakpoint *brk);
+ bool ppc_breakpoint_available(void);
+ #ifdef CONFIG_PPC_ADV_DEBUG_REGS
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index 360367c579de..3e6381d04c28 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -7,9 +7,10 @@
+ #include <linux/mm.h>
+ #include <linux/sched.h>
+ #include <linux/spinlock.h>
+-#include <asm/mmu.h>	
++#include <asm/mmu.h>
+ #include <asm/cputable.h>
+ #include <asm/cputhreads.h>
++#include <asm/hw_breakpoint.h>
  
  /*
-  * This can be called for kernel text or a module.
-  */
--static int map_patch_area(void *addr, unsigned long text_poke_addr)
-+static int map_patch(const void *addr, struct patch_mapping *patch_mapping)
- {
--	unsigned long pfn;
--	int err;
-+	struct page *page;
-+	pte_t pte, *ptep;
-+	pgprot_t pgprot;
+  * Most if the context management is out of line
+@@ -270,5 +271,58 @@ static inline int arch_dup_mmap(struct mm_struct *oldmm,
+ 	return 0;
+ }
  
- 	if (is_vmalloc_addr(addr))
--		pfn = vmalloc_to_pfn(addr);
-+		page = vmalloc_to_page(addr);
- 	else
--		pfn = __pa_symbol(addr) >> PAGE_SHIFT;
-+		page = virt_to_page(addr);
- 
--	err = map_kernel_page(text_poke_addr, (pfn << PAGE_SHIFT), PAGE_KERNEL);
-+	if (radix_enabled())
-+		pgprot = __pgprot(pgprot_val(PAGE_KERNEL));
++struct temp_mm {
++	struct mm_struct *temp;
++	struct mm_struct *prev;
++	bool is_kernel_thread;
++	struct arch_hw_breakpoint brk;
++};
++
++static inline void init_temp_mm(struct temp_mm *temp_mm, struct mm_struct *mm)
++{
++	temp_mm->temp = mm;
++	temp_mm->prev = NULL;
++	temp_mm->is_kernel_thread = false;
++	memset(&temp_mm->brk, 0, sizeof(temp_mm->brk));
++}
++
++static inline void use_temporary_mm(struct temp_mm *temp_mm)
++{
++	lockdep_assert_irqs_disabled();
++
++	temp_mm->is_kernel_thread = current->mm == NULL;
++	if (temp_mm->is_kernel_thread)
++		temp_mm->prev = current->active_mm;
 +	else
-+		pgprot = PAGE_SHARED;
- 
--	pr_devel("Mapped addr %lx with pfn %lx:%d\n", text_poke_addr, pfn, err);
--	if (err)
-+	ptep = get_locked_pte(patching_mm, patching_addr, &patch_mapping->ptl);
-+	if (unlikely(!ptep)) {
-+		pr_warn("map patch: failed to allocate pte for patching\n");
- 		return -1;
++		temp_mm->prev = current->mm;
++
++	/*
++	 * Hash requires a non-NULL current->mm to allocate a userspace address
++	 * when handling a page fault. Does not appear to hurt in Radix either.
++	 */
++	current->mm = temp_mm->temp;
++	switch_mm_irqs_off(NULL, temp_mm->temp, current);
++
++	if (ppc_breakpoint_available()) {
++		__get_breakpoint(&temp_mm->brk);
++		if (temp_mm->brk.type != 0)
++			hw_breakpoint_disable();
 +	}
++}
 +
-+	pte = mk_pte(page, pgprot);
-+	set_pte_at(patching_mm, patching_addr, ptep, pte);
++static inline void unuse_temporary_mm(struct temp_mm *temp_mm)
++{
++	lockdep_assert_irqs_disabled();
 +
-+	init_temp_mm(&patch_mapping->temp_mm, patching_mm);
-+	use_temporary_mm(&patch_mapping->temp_mm);
- 
++	if (temp_mm->is_kernel_thread)
++		current->mm = NULL;
++	else
++		current->mm = temp_mm->prev;
++	switch_mm_irqs_off(NULL, temp_mm->prev, current);
++
++	if (ppc_breakpoint_available() && temp_mm->brk.type != 0)
++		__set_breakpoint(&temp_mm->brk);
++}
++
+ #endif /* __KERNEL__ */
+ #endif /* __ASM_POWERPC_MMU_CONTEXT_H */
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index fad50db9dcf2..5e5cf33fc358 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -793,6 +793,11 @@ static inline int set_breakpoint_8xx(struct arch_hw_breakpoint *brk)
  	return 0;
  }
  
--static inline int unmap_patch_area(unsigned long addr)
-+static int unmap_patch(struct patch_mapping *patch_mapping)
++void __get_breakpoint(struct arch_hw_breakpoint *brk)
++{
++	memcpy(brk, this_cpu_ptr(&current_brk), sizeof(*brk));
++}
++
+ void __set_breakpoint(struct arch_hw_breakpoint *brk)
  {
- 	pte_t *ptep;
- 	pmd_t *pmdp;
- 	pud_t *pudp;
- 	pgd_t *pgdp;
- 
--	pgdp = pgd_offset_k(addr);
-+	pgdp = pgd_offset(patching_mm, patching_addr);
- 	if (unlikely(!pgdp))
- 		return -EINVAL;
- 
--	pudp = pud_offset(pgdp, addr);
-+	pudp = pud_offset(pgdp, patching_addr);
- 	if (unlikely(!pudp))
- 		return -EINVAL;
- 
--	pmdp = pmd_offset(pudp, addr);
-+	pmdp = pmd_offset(pudp, patching_addr);
- 	if (unlikely(!pmdp))
- 		return -EINVAL;
- 
--	ptep = pte_offset_kernel(pmdp, addr);
-+	ptep = pte_offset_kernel(pmdp, patching_addr);
- 	if (unlikely(!ptep))
- 		return -EINVAL;
- 
--	pr_devel("clearing mm %p, pte %p, addr %lx\n", &init_mm, ptep, addr);
-+	/*
-+	 * In hash, pte_clear flushes the tlb
-+	 */
-+	pte_clear(patching_mm, patching_addr, ptep);
-+	unuse_temporary_mm(&patch_mapping->temp_mm);
- 
- 	/*
--	 * In hash, pte_clear flushes the tlb, in radix, we have to
-+	 * In radix, we have to explicitly flush the tlb (no-op in hash)
- 	 */
--	pte_clear(&init_mm, addr, ptep);
--	flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
-+	local_flush_tlb_mm(patching_mm);
-+	pte_unmap_unlock(ptep, patch_mapping->ptl);
- 
- 	return 0;
- }
-@@ -167,33 +148,38 @@ static int do_patch_instruction(unsigned int *addr, unsigned int instr)
- 	int err;
- 	unsigned int *patch_addr = NULL;
- 	unsigned long flags;
--	unsigned long text_poke_addr;
--	unsigned long kaddr = (unsigned long)addr;
-+	struct patch_mapping patch_mapping;
- 
- 	/*
--	 * During early early boot patch_instruction is called
--	 * when text_poke_area is not ready, but we still need
--	 * to allow patching. We just do the plain old patching
-+	 * The patching_mm is initialized before calling mark_rodata_ro. Prior
-+	 * to this, patch_instruction is called when we don't have (and don't
-+	 * need) the patching_mm so just do plain old patching.
- 	 */
--	if (!this_cpu_read(text_poke_area))
-+	if (!patching_mm)
- 		return raw_patch_instruction(addr, instr);
- 
- 	local_irq_save(flags);
- 
--	text_poke_addr = (unsigned long)__this_cpu_read(text_poke_area)->addr;
--	if (map_patch_area(addr, text_poke_addr)) {
--		err = -1;
-+	err = map_patch(addr, &patch_mapping);
-+	if (err)
- 		goto out;
--	}
- 
--	patch_addr = (unsigned int *)(text_poke_addr) +
--			((kaddr & ~PAGE_MASK) / sizeof(unsigned int));
-+	patch_addr = (unsigned int *)(patching_addr) +
-+			(offset_in_page((unsigned long)addr) /
-+				sizeof(unsigned int));
- 
- 	__patch_instruction(addr, instr, patch_addr);
- 
--	err = unmap_patch_area(text_poke_addr);
-+	err = unmap_patch(&patch_mapping);
- 	if (err)
--		pr_warn("failed to unmap %lx\n", text_poke_addr);
-+		pr_warn("unmap patch: failed to unmap patch\n");
-+
-+	/*
-+	 * Something is wrong if what we just wrote doesn't match what we
-+	 * think we just wrote.
-+	 * XXX: BUG_ON() instead?
-+	 */
-+	WARN_ON(memcmp(addr, &instr, sizeof(instr)));
- 
- out:
- 	local_irq_restore(flags);
+ 	memcpy(this_cpu_ptr(&current_brk), brk, sizeof(*brk));
 -- 
 2.25.1
 
