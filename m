@@ -2,79 +2,60 @@ Return-Path: <SRS0=VpCV=5J=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 033A5C43331
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 00:45:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2215DC43331
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 00:57:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 796CB20722
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 00:45:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8046E20722
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 00:57:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="i0k4De3b"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 796CB20722
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="WkLFZ009"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8046E20722
+Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48mXb16WWmzDqMG
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 11:45:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::241;
- helo=mail-oi1-x241.google.com; envelope-from=almasrymina@google.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20161025 header.b=i0k4De3b; dkim-atps=neutral
-Received: from mail-oi1-x241.google.com (mail-oi1-x241.google.com
- [IPv6:2607:f8b0:4864:20::241])
+	by lists.ozlabs.org (Postfix) with ESMTP id 48mXsT1RkSzDqmq
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 11:57:33 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48mXY064YWzDqnT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2020 11:43:16 +1100 (AEDT)
-Received: by mail-oi1-x241.google.com with SMTP id e9so8482576oii.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2020 17:43:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=5XccjSmzQSYluJiyPzbiNHYe0YLLyvddDurt0q9/XDU=;
- b=i0k4De3b34CqM8gnM5JGiwY0ry7/ZrLpmzktSW0KiYPpha1vXvZ6wse2JF4KOZxVnD
- EvQKDMJyxbQBAohPuAtor1+p5fdwNmCCleq9CZv5MH/K0Typsq6VX/h+HiBxyMSITLFI
- 1zE9FFUnbH8lRcKH3LGjUdaDuM7j39TaZnPdg+9Irg+53LlaHdNuQO8FXCXwTEJNtQWf
- Hx25W6E5EVV7YjtXB8bV9UsFQXdrV3gzCscw1XOQnO5vKf2wtgnduAlQ6d/npzVosWTQ
- wsFC0bSpKMWWzljnO8WmBULkYUJ3j2VxltB1tjkDBKGyMg3Di8aGhK8E+knTKXDDf4ds
- 2eRA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=5XccjSmzQSYluJiyPzbiNHYe0YLLyvddDurt0q9/XDU=;
- b=j2njpN5Lf6QquEKFCk7vhhChxnzDHrW4DiUmU/kCLUsaItSDqYdpyhwxUbdf/NBC57
- fXVQUQ+D6upaIhp96KonTuHwUyc9M0ThH14kyk6RaeASQqDwhqD1mQht0IOd6rKQV0Hn
- 7ZHa+GCorz2LNdQGVSnZct1mdK15YT+CXJEkF/tUHEYVONPvZNOIeT6izmJ7j8nEgIin
- LkPBdAA4cFoNexZWcu2i8WmCerJnvH8VPszkkvnX0vPv0kchKxs5x92RV21lzSiNRSvB
- gmPqQ4ZtFjvL7RrnyVGkt6VT+JmoBE62U97CQQZa9FMvg/71YYulk8ND3eDVMxVAFbKg
- XNHQ==
-X-Gm-Message-State: ANhLgQ15oH8fRvo6C1XTfzbelTUFYfPDIsgWDozO0riS5qlYrHAeB/65
- irhPIqQbjOTkDt9QjGSA+WLEk1ZoLj2mxvtJknHHSw==
-X-Google-Smtp-Source: ADFU+vtYBVk3tWWGsOMAMHUFEJFhvxQroU9ZV5f98ByE8nUcZKV6aGcbbi70XDgVtV9LxWY6a+Fz0IqYMsBbQbFZO5E=
-X-Received: by 2002:aca:a857:: with SMTP id r84mr1597815oie.65.1585010593973; 
- Mon, 23 Mar 2020 17:43:13 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48mXqP6SxPzDqFw
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2020 11:55:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=ozlabs.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256
+ header.s=201707 header.b=WkLFZ009; dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1003)
+ id 48mXqP2FhXz9sSJ; Tue, 24 Mar 2020 11:55:45 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
+ t=1585011345; bh=LoDPTy8hotXOVNxAbYYkoDWHTyQTtTLTM+W7YwaCFqQ=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=WkLFZ009uhYM/bD3ncmLk6wAuvUncEP6zj7yGZc+Ly5tPhpxlI/q8n0HkjPxIiLRl
+ r8tvEKgm0zkkntTWtzip2lvRCduiVnXS/EInxK0Ab20OJPU+NMFOREJkOGHBmqnpZA
+ 710DKCqOZcYqE/o+zbYvF8sNhXd8wOXjqr7by/CX2r4SLQk4fwL07Uktw8QIe6tRKd
+ aYitSdz9++x2M7fEArmKUIu8X+bLqzCdRp4q9m3f0O40bDQpaIMsEGis9oOo4hZ/y1
+ QJo4PWmvAQFEqor4dl9ubPzD8FbYW/hJMEDVF4iu74c9NEt7dESqCGUiZyyv9wxYaL
+ zyOaiUWTJhncg==
+Date: Tue, 24 Mar 2020 10:43:23 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Greg Kurz <groug@kaod.org>
+Subject: Re: [PATCH 1/2] KVM: PPC: Book3S HV: check caller of H_SVM_* Hcalls
+Message-ID: <20200323234323.GA5604@blackberry>
+References: <20200320102643.15516-1-ldufour@linux.ibm.com>
+ <20200320102643.15516-2-ldufour@linux.ibm.com>
+ <20200320132248.44b81b3b@bahia.lan>
 MIME-Version: 1.0
-References: <20200318220634.32100-1-mike.kravetz@oracle.com>
- <20200318220634.32100-5-mike.kravetz@oracle.com>
-In-Reply-To: <20200318220634.32100-5-mike.kravetz@oracle.com>
-From: Mina Almasry <almasrymina@google.com>
-Date: Mon, 23 Mar 2020 17:43:03 -0700
-Message-ID: <CAHS8izOhjvNVDXsx_SqP_oUQhCw-i_xcG9hxbvV86fFDeY_SAw@mail.gmail.com>
-Subject: Re: [PATCH 4/4] hugetlbfs: clean up command line processing
-To: Mike Kravetz <mike.kravetz@oracle.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200320132248.44b81b3b@bahia.lan>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,266 +67,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Linux-MM <linux-mm@kvack.org>,
- Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
- linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>,
- linux-s390@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Longpeng <longpeng2@huawei.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Vasily Gorbik <gor@linux.ibm.com>, Paul Walmsley <paul.walmsley@sifive.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- open list <linux-kernel@vger.kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S . Miller" <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Bharata B Rao <bharata@linux.ibm.com>, Laurent Dufour <ldufour@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Mar 18, 2020 at 3:07 PM Mike Kravetz <mike.kravetz@oracle.com> wrote:
->
-> With all hugetlb page processing done in a single file clean up code.
+On Fri, Mar 20, 2020 at 01:22:48PM +0100, Greg Kurz wrote:
+> On Fri, 20 Mar 2020 11:26:42 +0100
+> Laurent Dufour <ldufour@linux.ibm.com> wrote:
+> 
+> > The Hcall named H_SVM_* are reserved to the Ultravisor. However, nothing
+> > prevent a malicious VM or SVM to call them. This could lead to weird result
+> > and should be filtered out.
+> > 
+> > Checking the Secure bit of the calling MSR ensure that the call is coming
+> > from either the Ultravisor or a SVM. But any system call made from a SVM
+> > are going through the Ultravisor, and the Ultravisor should filter out
+> > these malicious call. This way, only the Ultravisor is able to make such a
+> > Hcall.
+> 
+> "Ultravisor should filter" ? And what if it doesn't (eg. because of a bug) ?
+> 
+> Shouldn't we also check the HV bit of the calling MSR as well to
+> disambiguate SVM and UV ?
 
-Now that all hugepage page processing is done in a single file, clean
-up the code.
+The trouble with doing that (checking the HV bit) is that KVM does not
+expect to see the HV bit set on an interrupt that occurred while we
+were in the guest, and if it is set, it indicates a serious problem,
+i.e. that an interrupt occurred while we were in the code that
+transitions from host context to guest context, or from guest context
+to host context.  In those cases we don't know how much of the
+transition has been completed and therefore whether we have guest
+values or host values in the CPU registers (GPRs, FPRs/VSRs, SPRs).
+If we do see HV set then KVM reports a severe error to userspace which
+should cause userspace to terminate the guest.
 
-> - Make code match desired semantics
->   - Update documentation with semantics
-> - Make all warnings and errors messages start with 'HugeTLB:'.
-> - Consistently name command line parsing routines.
-> - Add comments to code
->   - Describe some of the subtle interactions
->   - Describe semantics of command line arguments
->
-> Signed-off-by: Mike Kravetz <mike.kravetz@oracle.com>
-> ---
->  Documentation/admin-guide/mm/hugetlbpage.rst | 26 +++++++
->  mm/hugetlb.c                                 | 78 +++++++++++++++-----
->  2 files changed, 87 insertions(+), 17 deletions(-)
->
-> diff --git a/Documentation/admin-guide/mm/hugetlbpage.rst b/Documentation/admin-guide/mm/hugetlbpage.rst
-> index 1cc0bc78d10e..afc8888f33c3 100644
-> --- a/Documentation/admin-guide/mm/hugetlbpage.rst
-> +++ b/Documentation/admin-guide/mm/hugetlbpage.rst
-> @@ -100,6 +100,32 @@ with a huge page size selection parameter "hugepagesz=<size>".  <size> must
->  be specified in bytes with optional scale suffix [kKmMgG].  The default huge
->  page size may be selected with the "default_hugepagesz=<size>" boot parameter.
->
-> +Hugetlb boot command line parameter semantics
-> +hugepagesz - Specify a huge page size.  Used in conjunction with hugepages
-> +       parameter to preallocate a number of huge pages of the specified
-> +       size.  Hence, hugepagesz and hugepages are typically specified in
-> +       pairs such as:
-> +               hugepagesz=2M hugepages=512
-> +       hugepagesz can only be specified once on the command line for a
-> +       specific huge page size.  Valid huge page sizes are architecture
-> +       dependent.
-> +hugepages - Specify the number of huge pages to preallocate.  This typically
-> +       follows a valid hugepagesz parameter.  However, if hugepages is the
-> +       first or only hugetlb command line parameter it specifies the number
-> +       of huge pages of default size to allocate.  The number of huge pages
-> +       of default size specified in this manner can be overwritten by a
-> +       hugepagesz,hugepages parameter pair for the default size.
-> +       For example, on an architecture with 2M default huge page size:
-> +               hugepages=256 hugepagesz=2M hugepages=512
-> +       will result in 512 2M huge pages being allocated.  If a hugepages
-> +       parameter is preceded by an invalid hugepagesz parameter, it will
-> +       be ignored.
-> +default_hugepagesz - Specify the default huge page size.  This parameter can
-> +       only be specified on the command line.  No other hugetlb command line
-> +       parameter is associated with default_hugepagesz.  Therefore, it can
-> +       appear anywhere on the command line.  Valid default huge page size is
-> +       architecture dependent.
+Therefore the UV should *always* have the HV bit clear in HSRR1/SRR1
+when transitioning to KVM.
 
-Maybe specify what happens/should happen in a case like:
-
-hugepages=100 default_hugepagesz=1G
-
-Does that allocate 100 2MB pages or 100 1G pages? Assuming the default
-size is 2MB.
-
-Also, regarding Randy's comment. It may be nice to keep these docs in
-one place only, so we don't have to maintain 2 docs in sync.
-
-
-> +
->  When multiple huge page sizes are supported, ``/proc/sys/vm/nr_hugepages``
->  indicates the current number of pre-allocated huge pages of the default size.
->  Thus, one can use the following command to dynamically allocate/deallocate
-> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-> index cc85b4f156ca..2b9bf01db2b6 100644
-> --- a/mm/hugetlb.c
-> +++ b/mm/hugetlb.c
-> @@ -2954,7 +2954,7 @@ static void __init hugetlb_sysfs_init(void)
->                 err = hugetlb_sysfs_add_hstate(h, hugepages_kobj,
->                                          hstate_kobjs, &hstate_attr_group);
->                 if (err)
-> -                       pr_err("Hugetlb: Unable to add hstate %s", h->name);
-> +                       pr_err("HugeTLB: Unable to add hstate %s", h->name);
->         }
->  }
->
-> @@ -3058,7 +3058,7 @@ static void hugetlb_register_node(struct node *node)
->                                                 nhs->hstate_kobjs,
->                                                 &per_node_hstate_attr_group);
->                 if (err) {
-> -                       pr_err("Hugetlb: Unable to add hstate %s for node %d\n",
-> +                       pr_err("HugeTLB: Unable to add hstate %s for node %d\n",
->                                 h->name, node->dev.id);
->                         hugetlb_unregister_node(node);
->                         break;
-> @@ -3109,19 +3109,35 @@ static int __init hugetlb_init(void)
->         if (!hugepages_supported())
->                 return 0;
->
-> -       if (!size_to_hstate(default_hstate_size)) {
-> -               if (default_hstate_size != 0) {
-> -                       pr_err("HugeTLB: unsupported default_hugepagesz %lu. Reverting to %lu\n",
-> -                              default_hstate_size, HPAGE_SIZE);
-> -               }
-> -
-> +       /*
-> +        * Make sure HPAGE_SIZE (HUGETLB_PAGE_ORDER) hstate exists.  Some
-> +        * architectures depend on setup being done here.
-> +        *
-> +        * If a valid default huge page size was specified on the command line,
-> +        * add associated hstate if necessary.  If not, set default_hstate_size
-> +        * to default size.  default_hstate_idx is used at runtime to identify
-> +        * the default huge page size/hstate.
-> +        */
-> +       hugetlb_add_hstate(HUGETLB_PAGE_ORDER);
-> +       if (default_hstate_size)
-> +               hugetlb_add_hstate(ilog2(default_hstate_size) - PAGE_SHIFT);
-> +       else
->                 default_hstate_size = HPAGE_SIZE;
-> -               hugetlb_add_hstate(HUGETLB_PAGE_ORDER);
-> -       }
->         default_hstate_idx = hstate_index(size_to_hstate(default_hstate_size));
-> +
-> +       /*
-> +        * default_hstate_max_huge_pages != 0 indicates a count (hugepages=)
-> +        * specified before a size (hugepagesz=).  Use this count for the
-> +        * default huge page size, unless a specific value was specified for
-> +        * this size in a hugepagesz/hugepages pair.
-> +        */
->         if (default_hstate_max_huge_pages) {
->                 if (!default_hstate.max_huge_pages)
-> -                       default_hstate.max_huge_pages = default_hstate_max_huge_pages;
-> +                       default_hstate.max_huge_pages =
-> +                               default_hstate_max_huge_pages;
-> +               else
-> +                       pr_warn("HugeTLB: First hugepages=%lu kB ignored\n",
-> +                               default_hstate_max_huge_pages);
->         }
->
->         hugetlb_init_hstates();
-> @@ -3174,20 +3190,27 @@ void __init hugetlb_add_hstate(unsigned int order)
->         parsed_hstate = h;
->  }
->
-> -static int __init hugetlb_nrpages_setup(char *s)
-> +/*
-> + * hugepages command line processing
-> + * hugepages must normally follows a valid hugepagsz specification.  If not,
-
-'hugepages must' or 'hugepages normally follows'
-> + * ignore the hugepages value.  hugepages can also be the first huge page
-> + * command line option in which case it specifies the number of huge pages
-> + * for the default size.
-> + */
-> +static int __init hugepages_setup(char *s)
->  {
->         unsigned long *mhp;
->         static unsigned long *last_mhp;
->
->         if (!parsed_valid_hugepagesz) {
-> -               pr_warn("hugepages = %s preceded by "
-> +               pr_warn("HugeTLB: hugepages = %s preceded by "
->                         "an unsupported hugepagesz, ignoring\n", s);
->                 parsed_valid_hugepagesz = true;
->                 return 1;
->         }
->         /*
-> -        * !hugetlb_max_hstate means we haven't parsed a hugepagesz= parameter yet,
-> -        * so this hugepages= parameter goes to the "default hstate".
-> +        * !hugetlb_max_hstate means we haven't parsed a hugepagesz= parameter
-> +        * yet, so this hugepages= parameter goes to the "default hstate".
->          */
->         else if (!hugetlb_max_hstate)
->                 mhp = &default_hstate_max_huge_pages;
-
-We don't set parsed_valid_hugepagesz to false at the end of this
-function, shouldn't we? Parsing a hugepages= value should 'consume' a
-previously defined hugepagesz= value, so that this is invalid IIUC:
-
-hugepagesz=x hugepages=z hugepages=y
-
-> @@ -3195,7 +3218,8 @@ static int __init hugetlb_nrpages_setup(char *s)
->                 mhp = &parsed_hstate->max_huge_pages;
->
->         if (mhp == last_mhp) {
-> -               pr_warn("hugepages= specified twice without interleaving hugepagesz=, ignoring\n");
-> +               pr_warn("HugeTLB: hugepages= specified twice without interleaving hugepagesz=, ignoring hugepages=%s\n",
-> +                       s);
->                 return 1;
->         }
->
-> @@ -3214,8 +3238,15 @@ static int __init hugetlb_nrpages_setup(char *s)
->
->         return 1;
->  }
-> -__setup("hugepages=", hugetlb_nrpages_setup);
-> +__setup("hugepages=", hugepages_setup);
->
-> +/*
-> + * hugepagesz command line processing
-> + * A specific huge page size can only be specified once with hugepagesz.
-> + * hugepagesz is followed by hugepages on the commnad line.  The global
-> + * variable 'parsed_valid_hugepagesz' is used to determine if prior
-> + * hugepagesz argument was valid.
-> + */
->  static int __init hugepagesz_setup(char *s)
->  {
->         unsigned long long size;
-> @@ -3230,16 +3261,23 @@ static int __init hugepagesz_setup(char *s)
->         }
->
->         if (size_to_hstate(size)) {
-> +               parsed_valid_hugepagesz = false;
->                 pr_warn("HugeTLB: hugepagesz %s specified twice, ignoring\n",
->                         saved_s);
->                 return 0;
->         }
->
-> +       parsed_valid_hugepagesz = true;
->         hugetlb_add_hstate(ilog2(size) - PAGE_SHIFT);
->         return 1;
->  }
->  __setup("hugepagesz=", hugepagesz_setup);
->
-> +/*
-> + * default_hugepagesz command line input
-> + * Only one instance of default_hugepagesz allowed on command line.  Do not
-> + * add hstate here as that will confuse hugepagesz/hugepages processing.
-> + */
->  static int __init default_hugepagesz_setup(char *s)
->  {
->         unsigned long long size;
-> @@ -3252,6 +3290,12 @@ static int __init default_hugepagesz_setup(char *s)
->                 return 0;
->         }
->
-> +       if (default_hstate_size) {
-> +               pr_err("HugeTLB: default_hugepagesz previously specified, ignoring %s\n",
-> +                       saved_s);
-> +               return 0;
-> +       }
-> +
->         default_hstate_size = size;
->         return 1;
->  }
-> --
-> 2.24.1
->
->
+Paul.
