@@ -2,71 +2,86 @@ Return-Path: <SRS0=3fZu=5I=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 17993C10F26
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 05:08:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CDF8DC10F26
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 05:49:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C52DC2070A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 05:08:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C52DC2070A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=informatik.wtf
+	by mail.kernel.org (Postfix) with ESMTPS id 3477720658
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 05:49:42 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="RyQyy/pI"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3477720658
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48m2TH11xdzDqwy
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 16:08:19 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48m2LC64B1zDqhN
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2020 16:02:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=informatik.wtf
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 48m2LB3WVPz9BNK
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2020 16:02:10 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 48m2L92MlRz9sSK; Mon, 23 Mar 2020 16:02:09 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=informatik.wtf (client-ip=131.153.2.42;
- helo=h1.fbrelay.privateemail.com; envelope-from=cmr@informatik.wtf;
+	by lists.ozlabs.org (Postfix) with ESMTP id 48m3Nz5LYTzDqxW
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 16:49:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::644;
+ helo=mail-pl1-x644.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=informatik.wtf
-Received: from h1.fbrelay.privateemail.com (h1.fbrelay.privateemail.com
- [131.153.2.42])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=RyQyy/pI; dkim-atps=neutral
+Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
+ [IPv6:2607:f8b0:4864:20::644])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 48m2L85358z9sRY
- for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2020 16:02:08 +1100 (AEDT)
-Received: from MTA-05-3.privateemail.com (mta-05.privateemail.com
- [198.54.127.60])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by h1.fbrelay.privateemail.com (Postfix) with ESMTPS id BD566808C9
- for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2020 00:51:26 -0400 (EDT)
-Received: from MTA-05.privateemail.com (localhost [127.0.0.1])
- by MTA-05.privateemail.com (Postfix) with ESMTP id EBDB260051
- for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2020 00:51:21 -0400 (EDT)
-Received: from geist.attlocal.net (unknown [10.20.151.230])
- by MTA-05.privateemail.com (Postfix) with ESMTPA id 52DFC6004B
- for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2020 04:51:21 +0000 (UTC)
-From: "Christopher M. Riedl" <cmr@informatik.wtf>
-To: linuxppc-dev@ozlabs.org
-Subject: [RFC PATCH 1/3] powerpc/mm: Introduce temporary mm
-Date: Sun, 22 Mar 2020 23:52:03 -0500
-Message-Id: <20200323045205.20314-2-cmr@informatik.wtf>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200323045205.20314-1-cmr@informatik.wtf>
-References: <20200323045205.20314-1-cmr@informatik.wtf>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48m3M43BZNzDqsp
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2020 16:47:58 +1100 (AEDT)
+Received: by mail-pl1-x644.google.com with SMTP id h11so5449230plr.11
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Mar 2020 22:47:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=ZFe32N3b/dMuGrx3ddHKXFhT/4qt8+NVIOlPxbEA/v8=;
+ b=RyQyy/pI687m/a8Yt4gt79iaCck7lPzWd+EnujUQ0ce1Be8uTIbIJpW1jEH5cKHE3V
+ UknVspF5kEZtnylJ17ebBEdyYjssYEF+y/ECoJBChOCTWb/JgxKEc/9zgDcTfrgwPyy0
+ ZTSAxnPQFrAKVVOgTo2biT17pMz8fWhJlYAI38EwAGP0tDPxxYiJZUNsAXLpASbjWfm6
+ +RoDOHl3bocbdn/fmiAZqSz38uGIK+Jaf4GqZzfVf896ZAeRoGX5vIiU/aYtF7igNy8S
+ V0NX/z3POxxXnsMVHv+JuHU5Sl/cyLCQJZw5ciWQ8RicyO7EQGmwlSeT0M04wI+9ELc2
+ TEyA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=ZFe32N3b/dMuGrx3ddHKXFhT/4qt8+NVIOlPxbEA/v8=;
+ b=B6/A8xHU6hUXwMlccQ82PMNV7avp8AfocIZMpSFeaDMP+eFIQqYq6+RcWC7TbdITfK
+ Z1q7DM2SbWyAGG+qzeiZjFw379bJBmJmQl/6dAoKMQfMeUXUZpzrTyuGymHQkMXZqBxH
+ TMhL/dMeQhPSnxAOwMTFeRxx1cEkiGsvdwQr2WSLf/igVIxn1vAXWTQZWFlywC9vEnJX
+ tWAmX324FqBirwIiSYJOsnamzAjAcrnCRHlgHqsHj577JccEfHQatbKRm6JKxpJcuaru
+ +WtKLRyRKOSCJAUXOfH/NOChCtdHwTrmuVt9DWwWUUxutPLt86Gihe6Y/Oqlkog0pI2b
+ miLQ==
+X-Gm-Message-State: ANhLgQ2ZrAKMf8e77O3SqLVjBjEje2DWr9Y/NWd81X6HOkYcMsUbdeWH
+ 6pbWRfZaCI7yXcsfDW1GJ8nNTn1H
+X-Google-Smtp-Source: ADFU+vuD6C7G+34ONvOcw7Cj59u1cMrXhXeuwpopmfjDq32eM4jo7cD3esVRgFh8g3lH3dvLhvR5bQ==
+X-Received: by 2002:a17:902:8f91:: with SMTP id
+ z17mr20605091plo.234.1584942475119; 
+ Sun, 22 Mar 2020 22:47:55 -0700 (PDT)
+Received: from bobo.ozlabs.ibm.com (14-202-190-183.tpgi.com.au.
+ [14.202.190.183])
+ by smtp.gmail.com with ESMTPSA id e9sm12279524pfl.179.2020.03.22.22.47.52
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Sun, 22 Mar 2020 22:47:54 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/2] Fix "[v3,
+ 25/32] powerpc/64: system call implement entry/exit logic in C"
+Date: Mon, 23 Mar 2020 15:44:08 +1000
+Message-Id: <20200323054409.1932037-1-npiggin@gmail.com>
+X-Mailer: git-send-email 2.23.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,142 +93,107 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-x86 supports the notion of a temporary mm which restricts access to
-temporary PTEs to a single CPU. A temporary mm is useful for situations
-where a CPU needs to perform sensitive operations (such as patching a
-STRICT_KERNEL_RWX kernel) requiring temporary mappings without exposing
-said mappings to other CPUs. A side benefit is that other CPU TLBs do
-not need to be flushed when the temporary mm is torn down.
+Changes Christophe asked for to help ppc32 implementation, and move a
+stray hunk into a later patch.
 
-Mappings in the temporary mm can be set in the userspace portion of the
-address-space.
-
-Interrupts must be disabled while the temporary mm is in use. HW
-breakpoints, which may have been set by userspace as watchpoints on
-addresses now within the temporary mm, are saved and disabled when
-loading the temporary mm. The HW breakpoints are restored when unloading
-the temporary mm. All HW breakpoints are indiscriminately disabled while
-the temporary mm is in use.
-
-Based on x86 implementation:
-
-commit cefa929c034e
-("x86/mm: Introduce temporary mm structs")
-
-Signed-off-by: Christopher M. Riedl <cmr@informatik.wtf>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/debug.h       |  1 +
- arch/powerpc/include/asm/mmu_context.h | 56 +++++++++++++++++++++++++-
- arch/powerpc/kernel/process.c          |  5 +++
- 3 files changed, 61 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/asm-prototypes.h |  4 ---
+ arch/powerpc/include/asm/cputime.h        | 38 +++++++++++++----------
+ 2 files changed, 21 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/debug.h b/arch/powerpc/include/asm/debug.h
-index 7756026b95ca..b945bc16c932 100644
---- a/arch/powerpc/include/asm/debug.h
-+++ b/arch/powerpc/include/asm/debug.h
-@@ -45,6 +45,7 @@ static inline int debugger_break_match(struct pt_regs *regs) { return 0; }
- static inline int debugger_fault_handler(struct pt_regs *regs) { return 0; }
+diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
+index 4b3609554e76..ab59a4904254 100644
+--- a/arch/powerpc/include/asm/asm-prototypes.h
++++ b/arch/powerpc/include/asm/asm-prototypes.h
+@@ -97,12 +97,8 @@ ppc_select(int n, fd_set __user *inp, fd_set __user *outp, fd_set __user *exp,
+ unsigned long __init early_init(unsigned long dt_ptr);
+ void __init machine_init(u64 dt_ptr);
  #endif
+-#ifdef CONFIG_PPC64
+ long system_call_exception(long r3, long r4, long r5, long r6, long r7, long r8, unsigned long r0, struct pt_regs *regs);
+ notrace unsigned long syscall_exit_prepare(unsigned long r3, struct pt_regs *regs);
+-notrace unsigned long interrupt_exit_user_prepare(struct pt_regs *regs, unsigned long msr);
+-notrace unsigned long interrupt_exit_kernel_prepare(struct pt_regs *regs, unsigned long msr);
+-#endif
  
-+void __get_breakpoint(struct arch_hw_breakpoint *brk);
- void __set_breakpoint(struct arch_hw_breakpoint *brk);
- bool ppc_breakpoint_available(void);
- #ifdef CONFIG_PPC_ADV_DEBUG_REGS
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index 360367c579de..3e6381d04c28 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -7,9 +7,10 @@
- #include <linux/mm.h>
- #include <linux/sched.h>
- #include <linux/spinlock.h>
--#include <asm/mmu.h>	
-+#include <asm/mmu.h>
- #include <asm/cputable.h>
- #include <asm/cputhreads.h>
-+#include <asm/hw_breakpoint.h>
+ long ppc_fadvise64_64(int fd, int advice, u32 offset_high, u32 offset_low,
+ 		      u32 len_high, u32 len_low);
+diff --git a/arch/powerpc/include/asm/cputime.h b/arch/powerpc/include/asm/cputime.h
+index 6639a6847cc0..0fccd5ea1e9a 100644
+--- a/arch/powerpc/include/asm/cputime.h
++++ b/arch/powerpc/include/asm/cputime.h
+@@ -43,8 +43,26 @@ static inline unsigned long cputime_to_usecs(const cputime_t ct)
+  */
+ #ifdef CONFIG_PPC64
+ #define get_accounting(tsk)	(&get_paca()->accounting)
++#define raw_get_accounting(tsk)	(&local_paca->accounting)
+ static inline void arch_vtime_task_switch(struct task_struct *tsk) { }
  
++#else
++#define get_accounting(tsk)	(&task_thread_info(tsk)->accounting)
++#define raw_get_accounting(tsk)	get_accounting(tsk)
++/*
++ * Called from the context switch with interrupts disabled, to charge all
++ * accumulated times to the current process, and to prepare accounting on
++ * the next process.
++ */
++static inline void arch_vtime_task_switch(struct task_struct *prev)
++{
++	struct cpu_accounting_data *acct = get_accounting(current);
++	struct cpu_accounting_data *acct0 = get_accounting(prev);
++
++	acct->starttime = acct0->starttime;
++}
++#endif
++
  /*
-  * Most if the context management is out of line
-@@ -270,5 +271,58 @@ static inline int arch_dup_mmap(struct mm_struct *oldmm,
- 	return 0;
- }
- 
-+struct temp_mm {
-+	struct mm_struct *temp;
-+	struct mm_struct *prev;
-+	bool is_kernel_thread;
-+	struct arch_hw_breakpoint brk;
-+};
-+
-+static inline void init_temp_mm(struct temp_mm *temp_mm, struct mm_struct *mm)
-+{
-+	temp_mm->temp = mm;
-+	temp_mm->prev = NULL;
-+	temp_mm->is_kernel_thread = false;
-+	memset(&temp_mm->brk, 0, sizeof(temp_mm->brk));
-+}
-+
-+static inline void use_temporary_mm(struct temp_mm *temp_mm)
-+{
-+	lockdep_assert_irqs_disabled();
-+
-+	temp_mm->is_kernel_thread = current->mm == NULL;
-+	if (temp_mm->is_kernel_thread)
-+		temp_mm->prev = current->active_mm;
-+	else
-+		temp_mm->prev = current->mm;
-+
-+	/*
-+	 * Hash requires a non-NULL current->mm to allocate a userspace address
-+	 * when handling a page fault. Does not appear to hurt in Radix either.
-+	 */
-+	current->mm = temp_mm->temp;
-+	switch_mm_irqs_off(NULL, temp_mm->temp, current);
-+
-+	if (ppc_breakpoint_available()) {
-+		__get_breakpoint(&temp_mm->brk);
-+		if (temp_mm->brk.type != 0)
-+			hw_breakpoint_disable();
-+	}
-+}
-+
-+static inline void unuse_temporary_mm(struct temp_mm *temp_mm)
-+{
-+	lockdep_assert_irqs_disabled();
-+
-+	if (temp_mm->is_kernel_thread)
-+		current->mm = NULL;
-+	else
-+		current->mm = temp_mm->prev;
-+	switch_mm_irqs_off(NULL, temp_mm->prev, current);
-+
-+	if (ppc_breakpoint_available() && temp_mm->brk.type != 0)
-+		__set_breakpoint(&temp_mm->brk);
-+}
-+
- #endif /* __KERNEL__ */
- #endif /* __ASM_POWERPC_MMU_CONTEXT_H */
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index fad50db9dcf2..5e5cf33fc358 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -793,6 +793,11 @@ static inline int set_breakpoint_8xx(struct arch_hw_breakpoint *brk)
- 	return 0;
- }
- 
-+void __get_breakpoint(struct arch_hw_breakpoint *brk)
-+{
-+	memcpy(brk, this_cpu_ptr(&current_brk), sizeof(*brk));
-+}
-+
- void __set_breakpoint(struct arch_hw_breakpoint *brk)
+  * account_cpu_user_entry/exit runs "unreconciled", so can't trace,
+  * can't use use get_paca()
+@@ -52,35 +70,21 @@ static inline void arch_vtime_task_switch(struct task_struct *tsk) { }
+ static notrace inline void account_cpu_user_entry(void)
  {
- 	memcpy(this_cpu_ptr(&current_brk), brk, sizeof(*brk));
+ 	unsigned long tb = mftb();
+-	struct cpu_accounting_data *acct = &local_paca->accounting;
++	struct cpu_accounting_data *acct = raw_get_accounting(current);
+ 
+ 	acct->utime += (tb - acct->starttime_user);
+ 	acct->starttime = tb;
+ }
++
+ static notrace inline void account_cpu_user_exit(void)
+ {
+ 	unsigned long tb = mftb();
+-	struct cpu_accounting_data *acct = &local_paca->accounting;
++	struct cpu_accounting_data *acct = raw_get_accounting(current);
+ 
+ 	acct->stime += (tb - acct->starttime);
+ 	acct->starttime_user = tb;
+ }
+ 
+-#else
+-#define get_accounting(tsk)	(&task_thread_info(tsk)->accounting)
+-/*
+- * Called from the context switch with interrupts disabled, to charge all
+- * accumulated times to the current process, and to prepare accounting on
+- * the next process.
+- */
+-static inline void arch_vtime_task_switch(struct task_struct *prev)
+-{
+-	struct cpu_accounting_data *acct = get_accounting(current);
+-	struct cpu_accounting_data *acct0 = get_accounting(prev);
+-
+-	acct->starttime = acct0->starttime;
+-}
+-#endif
+ 
+ #endif /* __KERNEL__ */
+ #else /* CONFIG_VIRT_CPU_ACCOUNTING_NATIVE */
 -- 
-2.25.1
+2.23.0
 
