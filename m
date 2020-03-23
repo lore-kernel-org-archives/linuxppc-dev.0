@@ -2,44 +2,41 @@ Return-Path: <SRS0=3fZu=5I=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.1 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLACK,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F826C54EEB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 08:01:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 688CDC10F26
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 08:03:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EF41D20732
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 08:01:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EF41D20732
+	by mail.kernel.org (Postfix) with ESMTPS id 2161820732
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 08:03:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2161820732
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48m6Jn0S09zDr1c
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 19:01:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48m6Lt3xQrzDr1N
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 19:03:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=ozlabs.ru (client-ip=107.174.27.60; helo=ozlabs.ru;
  envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (unknown [107.174.27.60])
- by lists.ozlabs.org (Postfix) with ESMTP id 48m68x409kzDqWb
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2020 18:54:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 48m69700cSzDqZS
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2020 18:54:34 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 7E139AE807F2;
- Mon, 23 Mar 2020 03:52:36 -0400 (EDT)
+ by ozlabs.ru (Postfix) with ESMTP id A1E87AE80013;
+ Mon, 23 Mar 2020 03:52:14 -0400 (EDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v2 7/7] vfio/spapr_tce: Advertise and allow a huge DMA
- windows at 4GB
-Date: Mon, 23 Mar 2020 18:53:54 +1100
-Message-Id: <20200323075354.93825-8-aik@ozlabs.ru>
+Subject: [PATCH kernel v2 0/7] powerpc/powenv/ioda: Allow huge DMA window at
+ 4GB
+Date: Mon, 23 Mar 2020 18:53:47 +1100
+Message-Id: <20200323075354.93825-1-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200323075354.93825-1-aik@ozlabs.ru>
-References: <20200323075354.93825-1-aik@ozlabs.ru>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,76 +55,57 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-So far the only option for a big 64big DMA window was a window located
-at 0x800.0000.0000.0000 (1<<59) which creates problems for devices
-supporting smaller DMA masks.
+Here is an attempt to support bigger DMA space for devices
+supporting DMA masks less than 59 bits (GPUs come into mind
+first). POWER9 PHBs have an option to map 2 windows at 0
+and select a windows based on DMA address being below or above
+4GB.
 
-This exploits a POWER9 PHB option to allow the second DMA window to map
-at 0 and advertises it with a 4GB offset to avoid overlap with
-the default 32bit window.
+This adds the "iommu=iommu_bypass" kernel parameter and
+supports VFIO+pseries machine - current this requires telling
+upstream+unmodified QEMU about this via
+-global spapr-pci-host-bridge.dma64_win_addr=0x100000000
+or per-phb property. 4/4 advertises the new option but
+there is no automation around it in QEMU (should it be?).
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
- include/uapi/linux/vfio.h           |  2 ++
- drivers/vfio/vfio_iommu_spapr_tce.c | 13 +++++++------
- 2 files changed, 9 insertions(+), 6 deletions(-)
+For now it is either 1<<59 or 4GB mode; dynamic switching is
+not supported (could be via sysfs).
 
-diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
-index 9e843a147ead..c7f89d47335a 100644
---- a/include/uapi/linux/vfio.h
-+++ b/include/uapi/linux/vfio.h
-@@ -831,9 +831,11 @@ struct vfio_iommu_spapr_tce_info {
- 	__u32 argsz;
- 	__u32 flags;
- #define VFIO_IOMMU_SPAPR_INFO_DDW	(1 << 0)	/* DDW supported */
-+#define VFIO_IOMMU_SPAPR_INFO_DDW_START	(1 << 1)	/* DDW offset */
- 	__u32 dma32_window_start;	/* 32 bit window start (bytes) */
- 	__u32 dma32_window_size;	/* 32 bit window size (bytes) */
- 	struct vfio_iommu_spapr_tce_ddw_info ddw;
-+	__u64 dma64_window_start;
- };
- 
- #define VFIO_IOMMU_SPAPR_TCE_GET_INFO	_IO(VFIO_TYPE, VFIO_BASE + 12)
-diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index 750a0676e9b7..315fd56e51a7 100644
---- a/drivers/vfio/vfio_iommu_spapr_tce.c
-+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -691,7 +691,7 @@ static long tce_iommu_create_window(struct tce_container *container,
- 	container->tables[num] = tbl;
- 
- 	/* Return start address assigned by platform in create_table() */
--	*start_addr = tbl->it_offset << tbl->it_page_shift;
-+	*start_addr = (tbl->it_offset + tbl->it_tceoff) << tbl->it_page_shift;
- 
- 	return 0;
- 
-@@ -777,7 +777,7 @@ static long tce_iommu_ioctl(void *iommu_data,
- 				 unsigned int cmd, unsigned long arg)
- {
- 	struct tce_container *container = iommu_data;
--	unsigned long minsz, ddwsz;
-+	unsigned long minsz;
- 	long ret;
- 
- 	switch (cmd) {
-@@ -842,12 +842,13 @@ static long tce_iommu_ioctl(void *iommu_data,
- 			info.ddw.levels = table_group->max_levels;
- 		}
- 
--		ddwsz = offsetofend(struct vfio_iommu_spapr_tce_info, ddw);
-+		info.flags |= VFIO_IOMMU_SPAPR_INFO_DDW_START;
-+		info.dma64_window_start = table_group->tce64_start;
- 
--		if (info.argsz >= ddwsz)
--			minsz = ddwsz;
-+		if (info.argsz > sizeof(info))
-+			info.argsz = sizeof(info);
- 
--		if (copy_to_user((void __user *)arg, &info, minsz))
-+		if (copy_to_user((void __user *)arg, &info, info.argsz))
- 			return -EFAULT;
- 
- 		return 0;
+This is a rebased version of
+https://lore.kernel.org/kvm/20191202015953.127902-1-aik@ozlabs.ru/
+
+The main change since v1 is that now it is 7 patches with
+clearer separation of steps.
+
+
+This is based on 6c90b86a745a "Merge tag 'mmc-v5.6-rc6' of git://git.kernel.org/pub/scm/linux/kernel/git/ulfh/mmc"
+
+Please comment. Thanks.
+
+
+
+Alexey Kardashevskiy (7):
+  powerpc/powernv/ioda: Move TCE bypass base to PE
+  powerpc/powernv/ioda: Rework for huge DMA window at 4GB
+  powerpc/powernv/ioda: Allow smaller TCE table levels
+  powerpc/powernv/phb4: Use IOMMU instead of bypassing
+  powerpc/iommu: Add a window number to
+    iommu_table_group_ops::get_table_size
+  powerpc/powernv/phb4: Add 4GB IOMMU bypass mode
+  vfio/spapr_tce: Advertise and allow a huge DMA windows at 4GB
+
+ arch/powerpc/include/asm/iommu.h              |   3 +
+ arch/powerpc/include/asm/opal-api.h           |   9 +-
+ arch/powerpc/include/asm/opal.h               |   2 +
+ arch/powerpc/platforms/powernv/pci.h          |   4 +-
+ include/uapi/linux/vfio.h                     |   2 +
+ arch/powerpc/platforms/powernv/npu-dma.c      |   1 +
+ arch/powerpc/platforms/powernv/opal-call.c    |   2 +
+ arch/powerpc/platforms/powernv/pci-ioda-tce.c |   4 +-
+ arch/powerpc/platforms/powernv/pci-ioda.c     | 234 ++++++++++++++----
+ drivers/vfio/vfio_iommu_spapr_tce.c           |  17 +-
+ 10 files changed, 213 insertions(+), 65 deletions(-)
+
 -- 
 2.17.1
 
