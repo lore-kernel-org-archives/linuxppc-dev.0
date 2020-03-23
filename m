@@ -2,71 +2,66 @@ Return-Path: <SRS0=3fZu=5I=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B03EBC10F26
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 05:01:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8ED84C54FCE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 05:03:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2F10C206F8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 05:01:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2F10C206F8
+	by mail.kernel.org (Postfix) with ESMTPS id 4A7F5206F8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 05:03:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4A7F5206F8
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=informatik.wtf
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48m2K74ZbBzDqkR
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 16:01:15 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 48m2Mn0ZWmzDqx2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 16:03:33 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48m2GW21fZzDqXZ
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48m2GW3rGFzDqcV
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2020 15:58:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=informatik.wtf
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 48m2GV6zxmz8t5m
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 48m2GV71Rfz9BRD
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2020 15:58:58 +1100 (AEDT)
 Received: by ozlabs.org (Postfix)
- id 48m2GV5xnWz9sRR; Mon, 23 Mar 2020 15:58:58 +1100 (AEDT)
+ id 48m2GV60BVz9sRY; Mon, 23 Mar 2020 15:58:58 +1100 (AEDT)
 Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=informatik.wtf (client-ip=131.153.2.45;
  helo=h4.fbrelay.privateemail.com; envelope-from=cmr@informatik.wtf;
  receiver=<UNKNOWN>)
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=informatik.wtf
-X-Greylist: delayed 448 seconds by postgrey-1.36 at bilbo;
- Mon, 23 Mar 2020 15:58:57 AEDT
 Received: from h4.fbrelay.privateemail.com (h4.fbrelay.privateemail.com
  [131.153.2.45])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 48m2GT4cZdz9sPk
+ by ozlabs.org (Postfix) with ESMTPS id 48m2GT5Bgxz9sRN
  for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2020 15:58:57 +1100 (AEDT)
 Received: from MTA-05-3.privateemail.com (mta-05.privateemail.com
  [198.54.127.60])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by h3.fbrelay.privateemail.com (Postfix) with ESMTPS id CFB27807F2
+ by h3.fbrelay.privateemail.com (Postfix) with ESMTPS id C2FE7807B8
  for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2020 00:51:26 -0400 (EDT)
 Received: from MTA-05.privateemail.com (localhost [127.0.0.1])
- by MTA-05.privateemail.com (Postfix) with ESMTP id EBD506004E
+ by MTA-05.privateemail.com (Postfix) with ESMTP id 3E8406004A
  for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2020 00:51:21 -0400 (EDT)
 Received: from geist.attlocal.net (unknown [10.20.151.230])
- by MTA-05.privateemail.com (Postfix) with ESMTPA id 987666004C
- for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2020 04:51:21 +0000 (UTC)
+ by MTA-05.privateemail.com (Postfix) with ESMTPA id 0966760049
+ for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2020 04:51:20 +0000 (UTC)
 From: "Christopher M. Riedl" <cmr@informatik.wtf>
 To: linuxppc-dev@ozlabs.org
-Subject: [RFC PATCH 2/3] powerpc/lib: Initialize a temporary mm for code
- patching
-Date: Sun, 22 Mar 2020 23:52:04 -0500
-Message-Id: <20200323045205.20314-3-cmr@informatik.wtf>
+Subject: [RFC PATCH 0/3] Use per-CPU temporary mappings for patching
+Date: Sun, 22 Mar 2020 23:52:02 -0500
+Message-Id: <20200323045205.20314-1-cmr@informatik.wtf>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200323045205.20314-1-cmr@informatik.wtf>
-References: <20200323045205.20314-1-cmr@informatik.wtf>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Virus-Scanned: ClamAV using ClamSMTP
@@ -85,74 +80,78 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When code patching a STRICT_KERNEL_RWX kernel the page containing the
-address to be patched is temporarily mapped with permissive memory
-protections. Currently, a per-cpu vmalloc patch area is used for this
-purpose. While the patch area is per-cpu, the temporary page mapping is
-inserted into the kernel page tables for the duration of the patching.
-The mapping is exposed to CPUs other than the patching CPU - this is
-undesirable from a hardening perspective.
+When compiled with CONFIG_STRICT_KERNEL_RWX, the kernel must create
+temporary mappings when patching itself. These mappings temporarily
+override the strict RWX text protections to permit a write. Currently,
+powerpc allocates a per-CPU VM area for patching. Patching occurs as
+follows:
 
-Use the `poking_init` init hook to prepare a temporary mm and patching
-address. Initialize the temporary mm by copying the init mm. Choose a
-randomized patching address inside the temporary mm userspace address
-portion. The next patch uses the temporary mm and patching address for
-code patching.
+	1. Map page of text to be patched to per-CPU VM area w/
+	   PAGE_KERNEL protection
+	2. Patch text
+	3. Remove the temporary mapping
 
-Based on x86 implementation:
+While the VM area is per-CPU, the mapping is actually inserted into the
+kernel page tables. Presumably, this could allow another CPU to access
+the normally write-protected text - either malicously or accidentally -
+via this same mapping if the address of the VM area is known. Ideally,
+the mapping should be kept local to the CPU doing the patching (or any
+other sensitive operations requiring temporarily overriding memory
+protections) [0].
 
-commit 4fc19708b165
-("x86/alternatives: Initialize temporary mm for patching")
+x86 introduced "temporary mm" structs which allow the creation of
+mappings local to a particular CPU [1]. This series intends to bring the
+notion of a temporary mm to powerpc and harden powerpc by using such a
+mapping for patching a kernel with strict RWX permissions.
 
-Signed-off-by: Christopher M. Riedl <cmr@informatik.wtf>
----
- arch/powerpc/lib/code-patching.c | 26 ++++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
+The first patch introduces the temporary mm struct and API for powerpc
+along with a new function to retrieve a current hw breakpoint.
 
-diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-index 3345f039a876..18b88ecfc5a8 100644
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -11,6 +11,8 @@
- #include <linux/cpuhotplug.h>
- #include <linux/slab.h>
- #include <linux/uaccess.h>
-+#include <linux/sched/task.h>
-+#include <linux/random.h>
- 
- #include <asm/pgtable.h>
- #include <asm/tlbflush.h>
-@@ -39,6 +41,30 @@ int raw_patch_instruction(unsigned int *addr, unsigned int instr)
- }
- 
- #ifdef CONFIG_STRICT_KERNEL_RWX
-+
-+__ro_after_init struct mm_struct *patching_mm;
-+__ro_after_init unsigned long patching_addr;
-+
-+void __init poking_init(void)
-+{
-+	spinlock_t *ptl; /* for protecting pte table */
-+	pte_t *ptep;
-+
-+	patching_mm = copy_init_mm();
-+	BUG_ON(!patching_mm);
-+
-+	/*
-+	 * In hash we cannot go above DEFAULT_MAP_WINDOW easily.
-+	 * XXX: Do we want additional bits of entropy for radix?
-+	 */
-+	patching_addr = (get_random_long() & PAGE_MASK) %
-+		(DEFAULT_MAP_WINDOW - PAGE_SIZE);
-+
-+	ptep = get_locked_pte(patching_mm, patching_addr, &ptl);
-+	BUG_ON(!ptep);
-+	pte_unmap_unlock(ptep, ptl);
-+}
-+
- static DEFINE_PER_CPU(struct vm_struct *, text_poke_area);
- 
- static int text_area_cpu_up(unsigned int cpu)
+The second patch uses the `poking_init` init hook added by the x86
+patches to initialize a temporary mm and patching address. The patching
+address is randomized between 0 and DEFAULT_MAP_WINDOW-PAGE_SIZE. The
+upper limit is necessary due to how the hash MMU operates - by default
+the space above DEFAULT_MAP_WINDOW is not available. For now, both hash
+and radix randomize inside this range. The number of possible random
+addresses is dependent on PAGE_SIZE and limited by DEFAULT_MAP_WINDOW.
+
+Bits of entropy with 64K page size on BOOK3S_64:
+
+	bits-o-entropy = log2(DEFAULT_MAP_WINDOW_USER64 / PAGE_SIZE)
+
+	PAGE_SIZE=64K, DEFAULT_MAP_WINDOW_USER64=128TB
+	bits-o-entropy = log2(128TB / 64K)
+	bits-o-entropy = 31
+
+Currently, randomization occurs only once during initialization at boot.
+
+The third patch replaces the VM area with the temporary mm in the
+patching code. The page for patching has to be mapped PAGE_SHARED with
+the hash MMU since hash prevents the kernel from accessing userspace
+pages with PAGE_PRIVILEGED bit set. There is on-going work on my side to
+explore if this is actually necessary in the hash codepath.
+
+Testing so far is limited to booting on QEMU (power8 and power9 targets)
+and a POWER8 VM along with setting some simple xmon breakpoints (which
+makes use of code-patching). A POC lkdtm test is in-progress to actually
+exploit the existing vulnerability (ie. the mapping during patching is
+exposed in kernel page tables and accessible by other CPUS) - this will
+accompany a future v1 of this series.
+
+[0]: https://github.com/linuxppc/issues/issues/224
+[1]: https://lore.kernel.org/kernel-hardening/20190426232303.28381-1-nadav.amit@gmail.com/
+
+Christopher M. Riedl (3):
+  powerpc/mm: Introduce temporary mm
+  powerpc/lib: Initialize a temporary mm for code patching
+  powerpc/lib: Use a temporary mm for code patching
+
+ arch/powerpc/include/asm/debug.h       |   1 +
+ arch/powerpc/include/asm/mmu_context.h |  56 +++++++++-
+ arch/powerpc/kernel/process.c          |   5 +
+ arch/powerpc/lib/code-patching.c       | 140 ++++++++++++++-----------
+ 4 files changed, 137 insertions(+), 65 deletions(-)
+
 -- 
 2.25.1
 
