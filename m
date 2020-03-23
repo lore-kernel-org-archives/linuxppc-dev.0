@@ -2,73 +2,133 @@ Return-Path: <SRS0=3fZu=5I=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 09F7FC3F2CD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 15:27:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EF410C3F2CD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 15:33:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B0A9B206F9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 15:27:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9D50120409
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 15:33:08 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="cTeyP0YZ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B0A9B206F9
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
+	dkim=pass (1024-bit key) header.d=infinera.com header.i=@infinera.com header.b="R9lHmPFV"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9D50120409
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=infinera.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48mJD45F7qzDrCQ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 02:27:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linuxfoundation.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 48mJLB2NcDzDrFb
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 02:33:06 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48mHpQ1W6rzDqWv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2020 02:09:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=infinera.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=cTeyP0YZ; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ unprotected) header.d=infinera.com header.i=@infinera.com header.a=rsa-sha256
+ header.s=selector2 header.b=R9lHmPFV; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 48mHpP0sCpz8tF1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2020 02:09:01 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 48mHpN6WvFz9sSG; Tue, 24 Mar 2020 02:09:00 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=infinera.com (client-ip=40.107.237.72;
+ helo=nam12-bn8-obe.outbound.protection.outlook.com;
+ envelope-from=joakim.tjernlund@infinera.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=infinera.com
+Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=infinera.com header.i=@infinera.com header.a=rsa-sha256
+ header.s=selector2 header.b=R9lHmPFV; 
+ dkim-atps=neutral
+Received: from NAM12-BN8-obe.outbound.protection.outlook.com
+ (mail-bn8nam12on2072.outbound.protection.outlook.com [40.107.237.72])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48mHfn3Ls1zDql0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2020 02:02:25 +1100 (AEDT)
-Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
- [83.86.89.107])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id DDE3420753;
- Mon, 23 Mar 2020 15:02:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1584975742;
- bh=z7lkZgeRnA+q40bnX2dprSQsLOdUqGsbiVw2vLRKotA=;
- h=Subject:To:Cc:From:Date:From;
- b=cTeyP0YZjIPdvm+kO00cFzxi52WunTbPyOa522gJkoXFL+RCsETn04rOAW2kJhtvi
- 67X+K/XfWTG33pBphXaJrciFRGr52j3bP/6bBhKQZY2a8mqw/FKwZ0U8cDGGsoltnp
- 3/JZWtZiZHBZDpO69RvVlyxOglYNhXK9UKlHas6I=
-Subject: Patch "mm,
- slub: prevent kmalloc_node crashes and memory leaks" has been added
- to the 5.4-stable tree
-To: 088b5996-faae-8a56-ef9c-5b567125ae54@suse.cz,
- 20200317092624.GB22538@in.ibm.com, 20200320115533.9604-1-vbabka@suse.cz,
- 3381CD91-AB3D-4773-BA04-E7A072A63968@linux.vnet.ibm.com,
- akpm@linux-foundation.org, bharata@linux.ibm.com, cl@linux.com,
- fff0e636-4c36-ed10-281c-8cdb0687c839@virtuozzo.com, gregkh@linuxfoundation.org,
- iamjoonsoo.kim@lge.com, ktkhai@virtuozzo.com, linuxppc-dev@lists.ozlabs.org,
- mgorman@techsingularity.net, mhocko@kernel.org, mpe@ellerman.id.au,
- nathanl@linux.ibm.com, penberg@kernel.org, puvichakravarthy@in.ibm.com,
- rientjes@google.com, sachinp@linux.vnet.ibm.com, srikar@linux.vnet.ibm.com,
- torvalds@linux-foundation.org, vbabka@suse.cz
-From: <gregkh@linuxfoundation.org>
-Date: Mon, 23 Mar 2020 15:59:17 +0100
-Message-ID: <158497555770101@kroah.com>
+ by ozlabs.org (Postfix) with ESMTPS id 48mHpN3KQSz9sR4
+ for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2020 02:08:59 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=YYCXwIhk7zzqrDt7xYPfOLfqCR/CdEfp8XfM6IVKJIM5kVyFqk/wyQ/2JfFZPiU19TMCXULAbB23TVmdbQzOKXq8NaoTsXzW5hYOxzyq2L37qfYkyGWWeOgwfznd45QMeIajvUWcdKJlOTDaE9o1syL6tZONO+7puT297pISB8BuuXydaQw4QyKNmohhItxv63wSDuNQj8EQHKwY3wuA4vgS1qiCwCvkaZNxU/DaSpAjrnOury6AtWPFj6wJ7wrCUxYqlu/K9fVFCqUohThRugNI3CW2/WSD8RrM6Z2815ZKj51yyRbP91KLjUNHAgTmpBIw772+2MnuDkUxGtI6Zw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=7bKMUEzc+C7WrjuJp2PZIsnW502Blxi9neCbUm8liSY=;
+ b=SiuOF7f7X9xhQI+RXIbN75gLEO26zGLnBaOEG9u6fOl7gBIYqHr+EFoBd6Qw55IYqtoSADZqj+FMUA9M6FwXS54wv07ApGdbl3P0/X6EDVszQp9KiqcAMLlXF6pSCW+NIRmPSSensBjp67NCmEEn6az8ubT9hAI9c6FsLl/fm54GtuMgIXojXwKvideFLneQywtcb36qeO50IE8w+e4o9jpW/LnUryCO5c5If1kLXKukK7FzFT/eJZfm6cKpWYKto8FJUgqppPXtsWsL3bkG/XJlseO4McVnDatKh1NyNxvgevgLJYLILsKPHEouanUdrlmz6YRXKpszfIDxeY3xNw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=infinera.com; dmarc=pass action=none header.from=infinera.com;
+ dkim=pass header.d=infinera.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=infinera.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=7bKMUEzc+C7WrjuJp2PZIsnW502Blxi9neCbUm8liSY=;
+ b=R9lHmPFVI8XnBE2cIi5+BSov6F2XNv7Hp9N5e9fAg+9HE2hQnpzj6riUzaqdAGSuNFNLZzffh8pE7gogM3FX2MRYjq+s8s9dgvOvMTXIhnsUJQDo3+BNV5PKoJdd8S0LnddWLf6dtm5rbFT8PibtpkKfJKZZqWwxifDS1PQJwP8=
+Received: from BN8PR10MB3540.namprd10.prod.outlook.com (2603:10b6:408:ae::24)
+ by BN8PR10MB3265.namprd10.prod.outlook.com (2603:10b6:408:cb::14)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.2835.20; Mon, 23 Mar
+ 2020 15:08:56 +0000
+Received: from BN8PR10MB3540.namprd10.prod.outlook.com
+ ([fe80::1940:6f91:a80e:b47]) by BN8PR10MB3540.namprd10.prod.outlook.com
+ ([fe80::1940:6f91:a80e:b47%5]) with mapi id 15.20.2835.021; Mon, 23 Mar 2020
+ 15:08:56 +0000
+From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
+To: "christophe.leroy@c-s.fr" <christophe.leroy@c-s.fr>,
+ "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: Re: hardcoded SIGSEGV in __die() ?
+Thread-Topic: hardcoded SIGSEGV in __die() ?
+Thread-Index: AQHWAR3N4DoCknJ4G0WRUpvoA7Tp+6hWQKiAgAAAbwCAAAadgA==
+Date: Mon, 23 Mar 2020 15:08:55 +0000
+Message-ID: <4f4f2c97f7393f21f507c58def88514c9f670e0a.camel@infinera.com>
+References: <73da05c0f54692a36471a2539dbd9b30594b687a.camel@infinera.com>
+ <b20d978b-268b-773a-a43e-7ff4c741f2df@c-s.fr>
+ <c14de482-6784-f1ac-f675-d771e55ac688@c-s.fr>
+In-Reply-To: <c14de482-6784-f1ac-f675-d771e55ac688@c-s.fr>
+Accept-Language: en-GB, en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+user-agent: Evolution 3.35.92 
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=Joakim.Tjernlund@infinera.com; 
+x-originating-ip: [88.131.87.201]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 6cf82f09-49ae-400a-5aa5-08d7cf3c1b7e
+x-ms-traffictypediagnostic: BN8PR10MB3265:
+x-microsoft-antispam-prvs: <BN8PR10MB3265C288CDAA36D16DF607C1F4F00@BN8PR10MB3265.namprd10.prod.outlook.com>
+x-ms-oob-tlc-oobclassifiers: OLM:10000;
+x-forefront-prvs: 0351D213B3
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10009020)(4636009)(376002)(346002)(39860400002)(136003)(396003)(366004)(199004)(26005)(91956017)(966005)(186003)(8936002)(81166006)(81156014)(6486002)(8676002)(86362001)(6506007)(76116006)(64756008)(66556008)(316002)(5660300002)(110136005)(66476007)(71200400001)(36756003)(6512007)(66946007)(66446008)(478600001)(45080400002)(2906002)(2616005);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:BN8PR10MB3265;
+ H:BN8PR10MB3540.namprd10.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; A:1; 
+received-spf: None (protection.outlook.com: infinera.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: h4r/mYDi3l5cVYQ+YioHxIv+TNDhs7joKdk18nt3EG3dypnM9cATz2G0hcRkcaM4kYzE9sSR7T3B/L/lWuMCHoJlJue5HkhtSZVjfe9S0x0o2bUckeCTM/jJ2plVS1K7LRGs6Gh4tZeORc2ST1PpmE4Uvm1PRLMNk/+gTDo0t5mOP7MtAxlijWNOK4qWxA8UfGuao4+15rxiPPagI4aZ72jkP6V0YoCrKHcdunvroYuteSkR8cGNcIhIrakgUtPjUDdxl4pkxUCyWQnwFVVL6Es2U7tXQ0ma7ArII5TSPVppVXFafuHivMIO6/16IV69u+DCf0sYZDBeDJVivPY6WatKesbDxTZkE7liqsTWxY7/lbB0wkOXaJbxwT4Ycx6VTZC2w988twLiuGXY73lWN1sxupPt7bSLGKXe5E7itM8C+r0FlMSo4k4Qy8fzPzc9LCX0NQIThJExGGEVI84hjNpsz5EZpWMJ+ek0smuZmJFYzHKMdAxpE+mh6vKP5OqjJfI8apHl1nF5F/fhYPhadQ==
+x-ms-exchange-antispam-messagedata: 2q6S3Yizr0WdAT3CPtfZDT8HZh7+fddkFYMd6ur//KzOiNI03O5ET0OnBKAhEB/HC5fwFhUxieUkfsFHjzMfIsnLHSf5gjKmvqkJahMRyekoYC0C3+q0JbepNqBbW712wBEWY8V3X83m7l8BMSg6xw==
+x-ms-exchange-transport-forked: True
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <6186365B128B5A45993D1C736717F439@namprd10.prod.outlook.com>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ANSI_X3.4-1968
-Content-Transfer-Encoding: 8bit
-X-stable: commit
-X-Patchwork-Hint: ignore 
+X-OriginatorOrg: infinera.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 6cf82f09-49ae-400a-5aa5-08d7cf3c1b7e
+X-MS-Exchange-CrossTenant-originalarrivaltime: 23 Mar 2020 15:08:56.1528 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 285643de-5f5b-4b03-a153-0ae2dc8aaf77
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: rhkGYcVSGdhmWpOP79gYGoqHRpVCYNCc4rVUUMbrr8dfflAl3vQ3P/stVs8v6Y8jZul28Rh0y1kzDtJt1Rvitw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN8PR10MB3265
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,199 +140,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: stable-commits@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-This is a note to let you know that I've just added the patch titled
-
-    mm, slub: prevent kmalloc_node crashes and memory leaks
-
-to the 5.4-stable tree which can be found at:
-    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
-
-The filename of the patch is:
-     mm-slub-prevent-kmalloc_node-crashes-and-memory-leaks.patch
-and it can be found in the queue-5.4 subdirectory.
-
-If you, or anyone else, feels it should not be added to the stable tree,
-please let <stable@vger.kernel.org> know about it.
-
-
-From 0715e6c516f106ed553828a671d30ad9a3431536 Mon Sep 17 00:00:00 2001
-From: Vlastimil Babka <vbabka@suse.cz>
-Date: Sat, 21 Mar 2020 18:22:37 -0700
-Subject: mm, slub: prevent kmalloc_node crashes and memory leaks
-
-From: Vlastimil Babka <vbabka@suse.cz>
-
-commit 0715e6c516f106ed553828a671d30ad9a3431536 upstream.
-
-Sachin reports [1] a crash in SLUB __slab_alloc():
-
-  BUG: Kernel NULL pointer dereference on read at 0x000073b0
-  Faulting instruction address: 0xc0000000003d55f4
-  Oops: Kernel access of bad area, sig: 11 [#1]
-  LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=2048 NUMA pSeries
-  Modules linked in:
-  CPU: 19 PID: 1 Comm: systemd Not tainted 5.6.0-rc2-next-20200218-autotest #1
-  NIP:  c0000000003d55f4 LR: c0000000003d5b94 CTR: 0000000000000000
-  REGS: c0000008b37836d0 TRAP: 0300   Not tainted  (5.6.0-rc2-next-20200218-autotest)
-  MSR:  8000000000009033 <SF,EE,ME,IR,DR,RI,LE>  CR: 24004844  XER: 00000000
-  CFAR: c00000000000dec4 DAR: 00000000000073b0 DSISR: 40000000 IRQMASK: 1
-  GPR00: c0000000003d5b94 c0000008b3783960 c00000000155d400 c0000008b301f500
-  GPR04: 0000000000000dc0 0000000000000002 c0000000003443d8 c0000008bb398620
-  GPR08: 00000008ba2f0000 0000000000000001 0000000000000000 0000000000000000
-  GPR12: 0000000024004844 c00000001ec52a00 0000000000000000 0000000000000000
-  GPR16: c0000008a1b20048 c000000001595898 c000000001750c18 0000000000000002
-  GPR20: c000000001750c28 c000000001624470 0000000fffffffe0 5deadbeef0000122
-  GPR24: 0000000000000001 0000000000000dc0 0000000000000002 c0000000003443d8
-  GPR28: c0000008b301f500 c0000008bb398620 0000000000000000 c00c000002287180
-  NIP ___slab_alloc+0x1f4/0x760
-  LR __slab_alloc+0x34/0x60
-  Call Trace:
-    ___slab_alloc+0x334/0x760 (unreliable)
-    __slab_alloc+0x34/0x60
-    __kmalloc_node+0x110/0x490
-    kvmalloc_node+0x58/0x110
-    mem_cgroup_css_online+0x108/0x270
-    online_css+0x48/0xd0
-    cgroup_apply_control_enable+0x2ec/0x4d0
-    cgroup_mkdir+0x228/0x5f0
-    kernfs_iop_mkdir+0x90/0xf0
-    vfs_mkdir+0x110/0x230
-    do_mkdirat+0xb0/0x1a0
-    system_call+0x5c/0x68
-
-This is a PowerPC platform with following NUMA topology:
-
-  available: 2 nodes (0-1)
-  node 0 cpus:
-  node 0 size: 0 MB
-  node 0 free: 0 MB
-  node 1 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
-  node 1 size: 35247 MB
-  node 1 free: 30907 MB
-  node distances:
-  node   0   1
-    0:  10  40
-    1:  40  10
-
-  possible numa nodes: 0-31
-
-This only happens with a mmotm patch "mm/memcontrol.c: allocate
-shrinker_map on appropriate NUMA node" [2] which effectively calls
-kmalloc_node for each possible node.  SLUB however only allocates
-kmem_cache_node on online N_NORMAL_MEMORY nodes, and relies on
-node_to_mem_node to return such valid node for other nodes since commit
-a561ce00b09e ("slub: fall back to node_to_mem_node() node if allocating
-on memoryless node").  This is however not true in this configuration
-where the _node_numa_mem_ array is not initialized for nodes 0 and 2-31,
-thus it contains zeroes and get_partial() ends up accessing
-non-allocated kmem_cache_node.
-
-A related issue was reported by Bharata (originally by Ramachandran) [3]
-where a similar PowerPC configuration, but with mainline kernel without
-patch [2] ends up allocating large amounts of pages by kmalloc-1k
-kmalloc-512.  This seems to have the same underlying issue with
-node_to_mem_node() not behaving as expected, and might probably also
-lead to an infinite loop with CONFIG_SLUB_CPU_PARTIAL [4].
-
-This patch should fix both issues by not relying on node_to_mem_node()
-anymore and instead simply falling back to NUMA_NO_NODE, when
-kmalloc_node(node) is attempted for a node that's not online, or has no
-usable memory.  The "usable memory" condition is also changed from
-node_present_pages() to N_NORMAL_MEMORY node state, as that is exactly
-the condition that SLUB uses to allocate kmem_cache_node structures.
-The check in get_partial() is removed completely, as the checks in
-___slab_alloc() are now sufficient to prevent get_partial() being
-reached with an invalid node.
-
-[1] https://lore.kernel.org/linux-next/3381CD91-AB3D-4773-BA04-E7A072A63968@linux.vnet.ibm.com/
-[2] https://lore.kernel.org/linux-mm/fff0e636-4c36-ed10-281c-8cdb0687c839@virtuozzo.com/
-[3] https://lore.kernel.org/linux-mm/20200317092624.GB22538@in.ibm.com/
-[4] https://lore.kernel.org/linux-mm/088b5996-faae-8a56-ef9c-5b567125ae54@suse.cz/
-
-Fixes: a561ce00b09e ("slub: fall back to node_to_mem_node() node if allocating on memoryless node")
-Reported-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
-Reported-by: PUVICHAKRAVARTHY RAMACHANDRAN <puvichakravarthy@in.ibm.com>
-Signed-off-by: Vlastimil Babka <vbabka@suse.cz>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Tested-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
-Tested-by: Bharata B Rao <bharata@linux.ibm.com>
-Reviewed-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: Mel Gorman <mgorman@techsingularity.net>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Michal Hocko <mhocko@kernel.org>
-Cc: Christopher Lameter <cl@linux.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-Cc: Pekka Enberg <penberg@kernel.org>
-Cc: David Rientjes <rientjes@google.com>
-Cc: Kirill Tkhai <ktkhai@virtuozzo.com>
-Cc: Vlastimil Babka <vbabka@suse.cz>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>
-Cc: <stable@vger.kernel.org>
-Link: http://lkml.kernel.org/r/20200320115533.9604-1-vbabka@suse.cz
-Debugged-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-
----
- mm/slub.c |   26 +++++++++++++++++---------
- 1 file changed, 17 insertions(+), 9 deletions(-)
-
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -1953,8 +1953,6 @@ static void *get_partial(struct kmem_cac
- 
- 	if (node == NUMA_NO_NODE)
- 		searchnode = numa_mem_id();
--	else if (!node_present_pages(node))
--		searchnode = node_to_mem_node(node);
- 
- 	object = get_partial_node(s, get_node(s, searchnode), c, flags);
- 	if (object || node != NUMA_NO_NODE)
-@@ -2543,17 +2541,27 @@ static void *___slab_alloc(struct kmem_c
- 	struct page *page;
- 
- 	page = c->page;
--	if (!page)
-+	if (!page) {
-+		/*
-+		 * if the node is not online or has no normal memory, just
-+		 * ignore the node constraint
-+		 */
-+		if (unlikely(node != NUMA_NO_NODE &&
-+			     !node_state(node, N_NORMAL_MEMORY)))
-+			node = NUMA_NO_NODE;
- 		goto new_slab;
-+	}
- redo:
- 
- 	if (unlikely(!node_match(page, node))) {
--		int searchnode = node;
--
--		if (node != NUMA_NO_NODE && !node_present_pages(node))
--			searchnode = node_to_mem_node(node);
--
--		if (unlikely(!node_match(page, searchnode))) {
-+		/*
-+		 * same as above but node_match() being false already
-+		 * implies node != NUMA_NO_NODE
-+		 */
-+		if (!node_state(node, N_NORMAL_MEMORY)) {
-+			node = NUMA_NO_NODE;
-+			goto redo;
-+		} else {
- 			stat(s, ALLOC_NODE_MISMATCH);
- 			deactivate_slab(s, page, c->freelist, c);
- 			goto new_slab;
-
-
-Patches currently in stable-queue which might be from vbabka@suse.cz are
-
-queue-5.4/mm-slub-prevent-kmalloc_node-crashes-and-memory-leaks.patch
-queue-5.4/mm-do-not-allow-madv_pageout-for-cow-pages.patch
+T24gTW9uLCAyMDIwLTAzLTIzIGF0IDE1OjQ1ICswMTAwLCBDaHJpc3RvcGhlIExlcm95IHdyb3Rl
+Og0KPiBDQVVUSU9OOiBUaGlzIGVtYWlsIG9yaWdpbmF0ZWQgZnJvbSBvdXRzaWRlIG9mIHRoZSBv
+cmdhbml6YXRpb24uIERvIG5vdCBjbGljayBsaW5rcyBvciBvcGVuIGF0dGFjaG1lbnRzIHVubGVz
+cyB5b3UgcmVjb2duaXplIHRoZSBzZW5kZXIgYW5kIGtub3cgdGhlIGNvbnRlbnQgaXMgc2FmZS4N
+Cj4gDQo+IA0KPiBMZSAyMy8wMy8yMDIwIMOgIDE1OjQzLCBDaHJpc3RvcGhlIExlcm95IGEgw6lj
+cml0IDoNCj4gPiANCj4gPiBMZSAyMy8wMy8yMDIwIMOgIDE1OjE3LCBKb2FraW0gVGplcm5sdW5k
+IGEgw6ljcml0IDoNCj4gPiA+IEluIF9fZGllKCksIHNlZSBiZWxvdywgdGhlcmUgaXMgdGhpcyBj
+YWxsIHRvIG5vdGlmeV9zZW5kKCkgd2l0aA0KPiA+ID4gU0lHU0VHViBoYXJkY29kZWQsIHRoaXMg
+c2VlbXMgb2RkDQo+ID4gPiB0byBtZSBhcyB0aGUgdmFyaWFibGUgImVyciIgaG9sZHMgdGhlIHRy
+dWUgc2lnbmFsKGluIG15IGNhc2UgU0lHQlVTKQ0KPiA+ID4gU2hvdWxkIG5vdCBTSUdTRUdWIGJl
+IHJlcGxhY2VkIHdpdGggdGhlIHRydWUgc2lnbmFsIG5vLj8NCj4gPiANCj4gPiBBcyBmYXIgYXMg
+SSBjYW4gc2VlLCBjb21lcyBmcm9tDQo+ID4gaHR0cHM6Ly9uYW0wMy5zYWZlbGlua3MucHJvdGVj
+dGlvbi5vdXRsb29rLmNvbS8/dXJsPWh0dHBzJTNBJTJGJTJGZ2l0Lmtlcm5lbC5vcmclMkZwdWIl
+MkZzY20lMkZsaW51eCUyRmtlcm5lbCUyRmdpdCUyRnRvcnZhbGRzJTJGbGludXguZ2l0JTJGY29t
+bWl0JTJGJTNGaWQlM0Q2NmZjYjEwNTkmYW1wO2RhdGE9MDIlN0MwMSU3Q0pvYWtpbS5UamVybmx1
+bmQlNDBpbmZpbmVyYS5jb20lN0M0MjkxYWMxYjUwMWU0Mjk2ODY5YTA4ZDdjZjM4Y2RiNCU3QzI4
+NTY0M2RlNWY1YjRiMDNhMTUzMGFlMmRjOGFhZjc3JTdDMSU3QzAlN0M2MzcyMDU3MTUxODkzNjY5
+OTUmYW1wO3NkYXRhPVoyYkZzbURsRDJNS2hMQUNRdmF5azllanowZHFnTUVPbEJUbG9jQW10VGcl
+M0QmYW1wO3Jlc2VydmVkPTANCj4gPiANCj4gDQo+IEFuZA0KPiBodHRwczovL25hbTAzLnNhZmVs
+aW5rcy5wcm90ZWN0aW9uLm91dGxvb2suY29tLz91cmw9aHR0cHMlM0ElMkYlMkZnaXQua2VybmVs
+Lm9yZyUyRnB1YiUyRnNjbSUyRmxpbnV4JTJGa2VybmVsJTJGZ2l0JTJGdG9ydmFsZHMlMkZsaW51
+eC5naXQlMkZjb21taXQlMkYlM0ZpZCUzRGFlODcyMjFkM2NlNDlkOWRlMWU0Mzc1NmRhODM0ZmQw
+YmYwNWEyYWQmYW1wO2RhdGE9MDIlN0MwMSU3Q0pvYWtpbS5UamVybmx1bmQlNDBpbmZpbmVyYS5j
+b20lN0M0MjkxYWMxYjUwMWU0Mjk2ODY5YTA4ZDdjZjM4Y2RiNCU3QzI4NTY0M2RlNWY1YjRiMDNh
+MTUzMGFlMmRjOGFhZjc3JTdDMSU3QzAlN0M2MzcyMDU3MTUxODkzNjY5OTUmYW1wO3NkYXRhPTk3
+a3l6M1VyODhCaERVVVl6eWE1dCUyRkZRVmhYWXU2cWlIb1c4aHNFZzgxcyUzRCZhbXA7cmVzZXJ2
+ZWQ9MA0KPiBzaG93cyBpdCBpcyAod2FzPykgc2ltaWxhciBvbiB4ODYuDQo+IA0KDQpJIHRyaWVk
+IHRvIGZvbGxvdyB0aGF0IGNoYWluIHRoaW5raW5nIGl0IHdvdWxkIGVuZCB1cCBzZW5kaW5nIGEg
+c2lnbmFsIHRvIHVzZXIgc3BhY2UgYnV0IEkgY2Fubm90IHNlZQ0KdGhhdCBoYXBwZW5zLiBTZWVt
+cyB0byBiZSByZWxhdGVkIHRvIGRlYnVnZ2luZy4NCg0KSW4gc2hvcnQsIEkgY2Fubm90IHNlZSBh
+bnkgc2lnbmFsIGJlaW5nIGRlbGl2ZXJlZCB0byB1c2VyIHNwYWNlLiBJZiBzbyB0aGF0IHdvdWxk
+IGV4cGxhaW4gd2h5DQpvdXIgdXNlciBzcGFjZSBwcm9jZXNzIG5ldmVyIGRpZXMuDQpJcyB0aGVy
+ZSBhIHNpZ25hbCBoaWRkZW4gaW4gbWFjaGluZV9jaGVjayBoYW5kbGVyIGZvciBTSUdCVVMgSSBj
+YW5ub3Qgc2VlPw0KDQogICAgIEpvY2tlDQo=
