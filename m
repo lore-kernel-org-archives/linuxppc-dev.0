@@ -2,81 +2,88 @@ Return-Path: <SRS0=3fZu=5I=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 348E7C4332B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 09:42:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C41E8C4332B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 09:57:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 89ECF206F8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 09:42:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 381DD2074D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 09:57:32 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OqEv/rk7"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 89ECF206F8
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hUZIWMHk"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 381DD2074D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48m8Y23V55zDqZp
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 20:41:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48m8tx5tPVzDqX3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 20:57:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::241;
- helo=mail-oi1-x241.google.com; envelope-from=jniethe5@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::441;
+ helo=mail-pf1-x441.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=OqEv/rk7; dkim-atps=neutral
-Received: from mail-oi1-x241.google.com (mail-oi1-x241.google.com
- [IPv6:2607:f8b0:4864:20::241])
+ header.s=20161025 header.b=hUZIWMHk; dkim-atps=neutral
+Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
+ [IPv6:2607:f8b0:4864:20::441])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48m8QD70pfzDqdx
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2020 20:36:04 +1100 (AEDT)
-Received: by mail-oi1-x241.google.com with SMTP id k9so1464477oia.8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2020 02:36:04 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48m8rY4CxLzDqQ1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2020 20:55:25 +1100 (AEDT)
+Received: by mail-pf1-x441.google.com with SMTP id f206so7259889pfa.10
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2020 02:55:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=piRwzaPD3pougSV9RdmSkoAsx0v1P64pV+qgLrRR3X0=;
- b=OqEv/rk71H9NF3gUCT4pfPDrc7tH0YKDqu+38/oJl8Ch2QjO4ML7QjDsi1JaZLTiKi
- dNfxvVmwqpJe3F7abvdynaRkk/wQgD3PHr5YeFh1M6Hz1SZ8CU0P/RW777GfHYwcInv+
- pyKsYYNR8v0rcD0esRVnrg8Bm470mZEaSXhOu2IYn9vH+wkwTB/1EI31/2D3o7dys0bR
- 6Dt/fCJTh2B/JbE18imUiW3i0OJzegubIiEoS8VB06C1vXeSV/y3eagJTuUCabX9ii+w
- fQJG1QMDgeZGOU/uVKy2HBPUWvR0AlagrJi+F1uivaaBqIXf02KtkGRtEQJcsoA51IPB
- gWmg==
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :user-agent:message-id:content-transfer-encoding;
+ bh=4D1Yk7aV5KUay3khao7Iagf4Ouqb7NPNl0EqVsFX830=;
+ b=hUZIWMHkb86D9FPHvxYCvT8dGjbropw7rIwdgU/NuurOpCSIXsRUwvVcBleJ8gO9oF
+ hjRu2TXYWeXHWYngMnh0DSd3Fj/T9Q1XkIDlrC0CtNJu1mupG2bupK9Mfg6WjIgX8v4c
+ QJyunGxYLkPLPIJcTC5AIxi8gJDyJwobTLuhHLTtQEGvi14/npDdqk6t3MPGgchll81a
+ MsAqCNDu0+T2L8y59BDMLa/542FwySoeXUjbaaG3gVg4vQh7Foc5Cp7GMmov3CaPXSes
+ 9AOStCrkDJ6URVthXUnAVy3GMIq7Xp/RCCuxH9Hym57729L7row1qM1O1OEbBbZle7jS
+ VXRQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=piRwzaPD3pougSV9RdmSkoAsx0v1P64pV+qgLrRR3X0=;
- b=rZryW0pqOBtqZxTKfluTSJm+CQGr1cLtytryBsSLo/1om6Hj4y0OZ3dPVfAxMovxje
- OvOY6DuDD6539Fh9MXWtwyPU8g9AbN1BXnPCxcq9G1z8A9gHvAKx6MarNGmE1IUJ59Pp
- U/Wy/olwXdNxTTD52/NrkM5okzl6ch+ujyI6wxA497I6ejmL1m0wWs0EiQeaPB/oh8YD
- b/EpQPD60CtywCjqXmO/8y7vKo/zPSaltrnc6JG/QNGSHD8vKrzGDa+7kJhZqk9Mu7u8
- 9bB+zPgVp1kqlVkvfiAZSIb1j7mrnzRwkPK6ePSdpa+UBgzbki8WBjE4bC72RM+Ao3Qm
- P52g==
-X-Gm-Message-State: ANhLgQ0CJcC/pF0obd2TDJg/1v12htNcEYIwjlCkJDqoWVkQ3BcGnc2r
- rp9mdUsbN/GQcDgVpbqkZWLGLySdGF+HxS87UGs=
-X-Google-Smtp-Source: ADFU+vt1fnW6kuqdL1ZrCcGcyh0EQOPlb2XbSk0Z9k/TkHXBg9inWGTvXnb6rGkD7gG8suyD8xgBXKHH9rnRk0bejmA=
-X-Received: by 2002:aca:1913:: with SMTP id l19mr5981707oii.12.1584956162469; 
- Mon, 23 Mar 2020 02:36:02 -0700 (PDT)
-MIME-Version: 1.0
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:user-agent:message-id:content-transfer-encoding;
+ bh=4D1Yk7aV5KUay3khao7Iagf4Ouqb7NPNl0EqVsFX830=;
+ b=gDLngvbMo8cdUC9DixfX3IgT4mrVcb/KS0YweFcJrasCxS5WzpJTdnunlKIDLaiXtW
+ 7Wo8wWg6+AGwg2TmRnLO0b8pEmgusx2hRXSwHeJTTS25GJUjyLD8M5vzViqC7AeZ9PxI
+ G1QN21pDF14KDgtebsan2YVQrF9jnskQNGn5HypMIyglYKlscIPq2DoTz1h6YEuOlJ9+
+ PpACi94mAdcD4sRjwsXJuFwFpHLhxu5ceixVRv5DjPvLv59YN7TbtwN/tcK9tCiqQ6QA
+ M+vDHDo+6dLcT5xLaUUXUUMWV62uLvh4qfeUlRg4yXinOSeB0FRuFHr7wFuku09S93ms
+ zteQ==
+X-Gm-Message-State: ANhLgQ2kkh8o2ZvwKd86coVXXFAifU9AgUPP7uHhkuuUKF5ioZu2cj0j
+ WGOCg+z/Vh7XbtIwsBZGLTk=
+X-Google-Smtp-Source: ADFU+vvU8kXY8q7lTmjF+JNMvYcV+oWkIjIp55C7+z2LH9/bYl/qyoGMz7ZTAtKOvSrAUl/Wrms9HA==
+X-Received: by 2002:a63:778e:: with SMTP id s136mr3772316pgc.155.1584957322461; 
+ Mon, 23 Mar 2020 02:55:22 -0700 (PDT)
+Received: from localhost (14-202-190-183.tpgi.com.au. [14.202.190.183])
+ by smtp.gmail.com with ESMTPSA id a127sm12835289pfa.111.2020.03.23.02.55.21
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 23 Mar 2020 02:55:21 -0700 (PDT)
+Date: Mon, 23 Mar 2020 19:51:32 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v4 03/16] powerpc: Use a datatype for instructions
+To: Jordan Niethe <jniethe5@gmail.com>
 References: <20200320051809.24332-1-jniethe5@gmail.com>
- <20200320051809.24332-14-jniethe5@gmail.com>
- <1584947091.jsvdec8of0.astroid@bobo.none>
-In-Reply-To: <1584947091.jsvdec8of0.astroid@bobo.none>
-From: Jordan Niethe <jniethe5@gmail.com>
-Date: Mon, 23 Mar 2020 20:35:50 +1100
-Message-ID: <CACzsE9poG75tQoT05oBVJP4zs0ZwB2cB+-PNdx-3xrDuEJjyLQ@mail.gmail.com>
-Subject: Re: [PATCH v4 13/16] powerpc: Support prefixed instructions in
- alignment handler
-To: Nicholas Piggin <npiggin@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+ <20200320051809.24332-4-jniethe5@gmail.com>
+ <1584944554.pe2tzckmyl.astroid@bobo.none>
+ <CACzsE9qy7dUv+sbcCN-i0EeYiH=DacutULunpBdgV0h8D0m2yQ@mail.gmail.com>
+In-Reply-To: <CACzsE9qy7dUv+sbcCN-i0EeYiH=DacutULunpBdgV0h8D0m2yQ@mail.gmail.com>
+MIME-Version: 1.0
+User-Agent: astroid/0.15.0 (https://github.com/astroidmail/astroid)
+Message-Id: <1584956855.oidzv2r2fr.astroid@bobo.none>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,57 +102,40 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Mar 23, 2020 at 6:09 PM Nicholas Piggin <npiggin@gmail.com> wrote:
->
-> Jordan Niethe's on March 20, 2020 3:18 pm:
-> > Alignment interrupts can be caused by prefixed instructions accessing
-> > memory. Prefixed instructions are not permitted to cross 64-byte
-> > boundaries. If they do the alignment interrupt is invoked with SRR1
-> > BOUNDARY bit set.  If this occurs send a SIGBUS to the offending process
-> > if in user mode.  If in kernel mode call bad_page_fault().
-> >
-> > Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
-> > ---
-> > v2: - Move __get_user_instr() and __get_user_instr_inatomic() to this
-> > commit (previously in "powerpc sstep: Prepare to support prefixed
-> > instructions").
-> >     - Rename sufx to suffix
-> >     - Use a macro for calculating instruction length
-> > v3: Move __get_user_{instr(), instr_inatomic()} up with the other
-> > get_user definitions and remove nested if.
-> > v4: Just do the things for alignment_exception(). Other changes handled
-> > elsewhere.
-> > ---
-> >  arch/powerpc/kernel/traps.c | 21 ++++++++++++++++++++-
-> >  1 file changed, 20 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> > index a4764b039749..cd8b3043c268 100644
-> > --- a/arch/powerpc/kernel/traps.c
-> > +++ b/arch/powerpc/kernel/traps.c
-> > @@ -583,6 +583,10 @@ static inline int check_io_access(struct pt_regs *regs)
-> >  #define REASON_ILLEGAL               (ESR_PIL | ESR_PUO)
-> >  #define REASON_PRIVILEGED    ESR_PPR
-> >  #define REASON_TRAP          ESR_PTR
-> > +#define REASON_PREFIXED              0
-> > +#define REASON_BOUNDARY              0
-> > +
-> > +#define inst_length(reason)  4
-> >
-> >  /* single-step stuff */
-> >  #define single_stepping(regs)        (current->thread.debug.dbcr0 & DBCR0_IC)
-> > @@ -597,6 +601,10 @@ static inline int check_io_access(struct pt_regs *regs)
-> >  #define REASON_ILLEGAL               SRR1_PROGILL
-> >  #define REASON_PRIVILEGED    SRR1_PROGPRIV
-> >  #define REASON_TRAP          SRR1_PROGTRAP
-> > +#define REASON_PREFIXED              SRR1_PREFIXED
-> > +#define REASON_BOUNDARY              SRR1_BOUNDARY
-> > +
-> > +#define inst_length(reason)  (((reason) & REASON_PREFIXED) ? 8 : 4)
->
-> Looks good. If you define REASON_BOUNDARY 0, then this will constant
-> fold away so no need to define it twice.
-Good point.
->
-> Thanks,
-> Nick
+Jordan Niethe's on March 23, 2020 7:28 pm:
+> On Mon, Mar 23, 2020 at 5:27 PM Nicholas Piggin <npiggin@gmail.com> wrote=
+:
+>>
+>> Jordan Niethe's on March 20, 2020 3:17 pm:
+>> > Currently unsigned ints are used to represent instructions on powerpc.
+>> > This has worked well as instructions have always been 4 byte words.
+>> > However, a future ISA version will introduce some changes to
+>> > instructions that mean this scheme will no longer work as well. This
+>> > change is Prefixed Instructions. A prefixed instruction is made up of =
+a
+>> > word prefix followed by a word suffix to make an 8 byte double word
+>> > instruction. No matter the endianess of the system the prefix always
+>> > comes first. Prefixed instructions are only planned for powerpc64.
+>> >
+>> > Introduce a ppc_inst type to represent both prefixed and word
+>> > instructions on powerpc64 while keeping it possible to exclusively hav=
+e
+>> > word instructions on powerpc32, A latter patch will expand the type to
+>> > include prefixed instructions but for now just typedef it to a u32.
+>> >
+>> > Later patches will introduce helper functions and macros for
+>> > manipulating the instructions so that powerpc64 and powerpc32 might
+>> > maintain separate type definitions.
+>>
+>> ppc_inst_t I would slightly prefer for a typedef like this.
+> Are _t types meant to be reserved?
+
+No, just convention that structs are not normally typedefed unless
+they are a pervasive interface that gets passed around a lot but
+does not get accessed without accessor functions much. When you do
+typedef them, add a _t (or less frequently _s/_u/etc). pte_t,
+cpumask_t, atomic_t.
+
+Thanks,
+Nick
+=
