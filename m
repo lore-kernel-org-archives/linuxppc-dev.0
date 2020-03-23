@@ -2,25 +2,25 @@ Return-Path: <SRS0=3fZu=5I=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F36DEC3F2CD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 15:07:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C55C5C3F2CD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 15:13:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 58D1920663
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 15:07:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 79CD0206F8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 15:13:05 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="lCVcIbUf"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 58D1920663
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZeGpFWEt"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 79CD0206F8
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48mHn500TKzDqmq
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 02:07:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48mHv25RZGzDr55
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 02:13:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
  helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
@@ -29,28 +29,28 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=lCVcIbUf; dkim-atps=neutral
+ header.s=default header.b=ZeGpFWEt; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48mHYd3pLhzDqkK
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2020 01:57:57 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48mHZ16FtBzDrBR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2020 01:58:17 +1100 (AEDT)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id A5CBC20753;
- Mon, 23 Mar 2020 14:57:54 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 71B7D2072E;
+ Mon, 23 Mar 2020 14:58:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1584975475;
- bh=WgsmP5jbX86ZVYtbYwLYcfh/QRet/sBgAQt8U32x8yA=;
+ s=default; t=1584975495;
+ bh=o33DdNmQWPBPhUYRdT+7SPG8OyCJMrEX1uTgw9FBEGI=;
  h=Subject:To:Cc:From:Date:From;
- b=lCVcIbUfPXf8jb5jJX0AAYLz/BxzHZDcgVPw3fhOvnDDGRKj6WfTbmJ32mW1uAb3A
- m5DQ58tE2uaC6ElA4OLRVX7djjg1+8BVr7C/uG7O/NP1/MAoHu9GU79SHnTj1a+zmu
- i3d2r1NT/Nx7H0C1vHfDpDhcjsjf65YQRzswTjFo=
+ b=ZeGpFWEtS0DMPhNsPkNg8eFUhJFiB4R3id1jHXxdPnXyvTtNELf+khw2XnM+WdX4/
+ cE1QlgZh3u1zptUlAE1KiT2duBUoIBxVdYXTzjUYZezcAwnM3v0BqfFj3quIuxuLrr
+ ama7fC+K2F4P2RZUhBDI8nMx/xW6hopFW5FsBLVE=
 Subject: Patch "mm,
  slub: prevent kmalloc_node crashes and memory leaks" has been added
- to the 4.4-stable tree
+ to the 4.9-stable tree
 To: 088b5996-faae-8a56-ef9c-5b567125ae54@suse.cz,
  20200317092624.GB22538@in.ibm.com, 20200320115533.9604-1-vbabka@suse.cz,
  3381CD91-AB3D-4773-BA04-E7A072A63968@linux.vnet.ibm.com,
@@ -62,8 +62,8 @@ To: 088b5996-faae-8a56-ef9c-5b567125ae54@suse.cz,
  rientjes@google.com, sachinp@linux.vnet.ibm.com, srikar@linux.vnet.ibm.com,
  torvalds@linux-foundation.org, vbabka@suse.cz
 From: <gregkh@linuxfoundation.org>
-Date: Mon, 23 Mar 2020 15:57:33 +0100
-Message-ID: <158497545312220@kroah.com>
+Date: Mon, 23 Mar 2020 15:57:55 +0100
+Message-ID: <15849754755221@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 Content-Transfer-Encoding: 8bit
@@ -90,12 +90,12 @@ This is a note to let you know that I've just added the patch titled
 
     mm, slub: prevent kmalloc_node crashes and memory leaks
 
-to the 4.4-stable tree which can be found at:
+to the 4.9-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
      mm-slub-prevent-kmalloc_node-crashes-and-memory-leaks.patch
-and it can be found in the queue-4.4 subdirectory.
+and it can be found in the queue-4.9 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
 please let <stable@vger.kernel.org> know about it.
@@ -226,7 +226,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
 --- a/mm/slub.c
 +++ b/mm/slub.c
-@@ -1777,8 +1777,6 @@ static void *get_partial(struct kmem_cac
+@@ -1909,8 +1909,6 @@ static void *get_partial(struct kmem_cac
  
  	if (node == NUMA_NO_NODE)
  		searchnode = numa_mem_id();
@@ -235,7 +235,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
  
  	object = get_partial_node(s, get_node(s, searchnode), c, flags);
  	if (object || node != NUMA_NO_NODE)
-@@ -2355,17 +2353,27 @@ static void *___slab_alloc(struct kmem_c
+@@ -2506,17 +2504,27 @@ static void *___slab_alloc(struct kmem_c
  	struct page *page;
  
  	page = c->page;
@@ -274,4 +274,4 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
 Patches currently in stable-queue which might be from vbabka@suse.cz are
 
-queue-4.4/mm-slub-prevent-kmalloc_node-crashes-and-memory-leaks.patch
+queue-4.9/mm-slub-prevent-kmalloc_node-crashes-and-memory-leaks.patch
