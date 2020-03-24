@@ -2,58 +2,57 @@ Return-Path: <SRS0=VpCV=5J=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 40F10C43331
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 02:58:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E192C54EEB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 03:00:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D667620409
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 02:58:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3365820663
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 03:00:07 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="DNxftHWN"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D667620409
+	dkim=pass (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="b1S6P/UZ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3365820663
 Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48mbXx60W1zDr0t
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 13:58:25 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 48mbZr2LBqzDqym
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 14:00:04 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48mbVh2THLzDqwD
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48mbVh2wwpzDqSQ
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2020 13:56:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256
- header.s=201707 header.b=DNxftHWN; dkim-atps=neutral
+ header.s=201707 header.b=b1S6P/UZ; dkim-atps=neutral
 Received: by ozlabs.org (Postfix, from userid 1003)
- id 48mbVf1JVmz9sSJ; Tue, 24 Mar 2020 13:56:26 +1100 (AEDT)
+ id 48mbVg1D2nz9sSH; Tue, 24 Mar 2020 13:56:26 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1585018586; bh=KM0wn3HncBXutXd42xeQNpPkis4AM+gDD2DG4oOYGWk=;
+ t=1585018587; bh=qcqkAGfatCcdaSF4JecPaLJRR36leDyxRC3RwY8oO3U=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=DNxftHWNgOLQyQH/VLV1qoxnIrYyLlpqUNX+buuwbCnuNRLHUA+hozgLLpstodGfW
- unHa3a6Io23AXpkrtnMAAW5PvBsE9BqMvsrwYw7x9B6GhWLuKNRndIq2YiqXAGST2g
- E8/1WmwpxAyTs/JY2l/486DPKwxIxTwlyqr8WHphvB9ZIpsql2j6VetKKMOjR7KIcy
- wfdle+Jv1AZmuN9hRt/Bn051iX+6puM8CJMEjuBj2IMy9XnFurQyhY+5kAxTXWSaTd
- wx0Yr070YJpmu9+wrOSksgUcRumTqefB78TZDGQA/idU7E5UfhGQyffME2dkiT5mLU
- w8BqZt69DCKhg==
-Date: Tue, 24 Mar 2020 13:56:20 +1100
+ b=b1S6P/UZ1s9Q7htiPyHTtAlm1CEfR6MJvQadZpArIv5YrDEMKNc+Zkd73fIwGD3IX
+ HS+zH7c5SS13rccwa7v0NYBzLVY/7uELpZMD5FFPUcmUbeTsU+AnsKET43qGKnS2S/
+ CKm3NjDvUrwZEG3zvZpY2VIEGBri+iCC2PPkeVctiVSUBdpdbI6EiOkwquLkXzLd7u
+ 4V9/iAr9M6Z+E5X8kPkYCQrOBNg9Ri6Eszroac4IZGcxoTZ+VKnCj+Ooc3YZtt/MmY
+ 4COXK9PBfN7EgldeacQ4ySFbgWaarKd2CSEL6OS5ZTSPJ1lISoAv4LO/qbkmEr46ty
+ bPHlD35Z1l10g==
+Date: Tue, 24 Mar 2020 13:54:29 +1100
 From: Paul Mackerras <paulus@ozlabs.org>
-To: Fabiano Rosas <farosas@linux.ibm.com>
-Subject: Re: [PATCH] KVM: PPC: Book3S HV: Skip kvmppc_uvmem_free if
- Ultravisor is not supported
-Message-ID: <20200324025620.GE5604@blackberry>
-References: <20200319225510.945603-1-farosas@linux.ibm.com>
+To: Laurent Dufour <ldufour@linux.ibm.com>
+Subject: Re: [PATCH 0/2] Fix SVM hang at startup
+Message-ID: <20200324025429.GD5604@blackberry>
+References: <20200320102643.15516-1-ldufour@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200319225510.945603-1-farosas@linux.ibm.com>
+In-Reply-To: <20200320102643.15516-1-ldufour@linux.ibm.com>
 User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -66,57 +65,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, groug@kaod.org, kvm-ppc@vger.kernel.org,
- bharata@linux.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Mar 19, 2020 at 07:55:10PM -0300, Fabiano Rosas wrote:
-> kvmppc_uvmem_init checks for Ultravisor support and returns early if
-> it is not present. Calling kvmppc_uvmem_free at module exit will cause
-> an Oops:
+On Fri, Mar 20, 2020 at 11:26:41AM +0100, Laurent Dufour wrote:
+> This series is fixing a SVM hang occurring when starting a SVM requiring
+> more secure memory than available. The hang happens in the SVM when calling
+> UV_ESM.
 > 
-> $ modprobe -r kvm-hv
+> The following is happening:
 > 
->   Oops: Kernel access of bad area, sig: 11 [#1]
->   <snip>
->   NIP:  c000000000789e90 LR: c000000000789e8c CTR: c000000000401030
->   REGS: c000003fa7bab9a0 TRAP: 0300   Not tainted  (5.6.0-rc6-00033-g6c90b86a745a-dirty)
->   MSR:  9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>  CR: 24002282  XER: 00000000
->   CFAR: c000000000dae880 DAR: 0000000000000008 DSISR: 40000000 IRQMASK: 1
->   GPR00: c000000000789e8c c000003fa7babc30 c0000000016fe500 0000000000000000
->   GPR04: 0000000000000000 0000000000000006 0000000000000000 c000003faf205c00
->   GPR08: 0000000000000000 0000000000000001 000000008000002d c00800000ddde140
->   GPR12: c000000000401030 c000003ffffd9080 0000000000000001 0000000000000000
->   GPR16: 0000000000000000 0000000000000000 000000013aad0074 000000013aaac978
->   GPR20: 000000013aad0070 0000000000000000 00007fffd1b37158 0000000000000000
->   GPR24: 000000014fef0d58 0000000000000000 000000014fef0cf0 0000000000000001
->   GPR28: 0000000000000000 0000000000000000 c0000000018b2a60 0000000000000000
->   NIP [c000000000789e90] percpu_ref_kill_and_confirm+0x40/0x170
->   LR [c000000000789e8c] percpu_ref_kill_and_confirm+0x3c/0x170
->   Call Trace:
->   [c000003fa7babc30] [c000003faf2064d4] 0xc000003faf2064d4 (unreliable)
->   [c000003fa7babcb0] [c000000000400e8c] dev_pagemap_kill+0x6c/0x80
->   [c000003fa7babcd0] [c000000000401064] memunmap_pages+0x34/0x2f0
->   [c000003fa7babd50] [c00800000dddd548] kvmppc_uvmem_free+0x30/0x80 [kvm_hv]
->   [c000003fa7babd80] [c00800000ddcef18] kvmppc_book3s_exit_hv+0x20/0x78 [kvm_hv]
->   [c000003fa7babda0] [c0000000002084d0] sys_delete_module+0x1d0/0x2c0
->   [c000003fa7babe20] [c00000000000b9d0] system_call+0x5c/0x68
->   Instruction dump:
->   3fc2001b fb81ffe0 fba1ffe8 fbe1fff8 7c7f1b78 7c9c2378 3bde4560 7fc3f378
->   f8010010 f821ff81 486249a1 60000000 <e93f0008> 7c7d1b78 712a0002 40820084
->   ---[ end trace 5774ef4dc2c98279 ]---
+> 1. SVM calls UV_ESM
+> 2. Ultravisor (UV) calls H_SVM_INIT_START
+> 3. Hypervisor (HV) calls UV_REGISTER_MEM_SLOT
+> 4. UV returns error because there is not enough free secure memory
+> 5. HV enter the error path in kvmppc_h_svm_init_start()
+> 6. In the return path, since kvm->arch.secure_guest is not yet set hrfid is
+>    called
+> 7. As the HV doesn't know the SVM calling context hrfid is jumping to
+>    unknown address in the SVM leading to various expections.
 > 
-> So this patch checks if kvmppc_uvmem_init actually allocated anything
-> before running kvmppc_uvmem_free.
+> This series fixes the setting of kvm->arch.secure_guest in
+> kvmppc_h_svm_init_start() to ensure that UV_RETURN is called on the return
+> path to get back to the UV.
 > 
-> Fixes: ca9f4942670c ("KVM: PPC: Book3S HV: Support for running secure guests")
-> Reported-by: Greg Kurz <groug@kaod.org>
-> Signed-off-by: Fabiano Rosas <farosas@linux.ibm.com>
+> In addition to ensure that a malicious VM will not call UV reserved Hcall,
+> a check of the Secure bit in the calling MSR is addded to reject such a
+> call.
+> 
+> It is assumed that the UV will filtered out such Hcalls made by a malicious
+> SVM.
+> 
+> Laurent Dufour (2):
+>   KVM: PPC: Book3S HV: check caller of H_SVM_* Hcalls
+>   KVM: PPC: Book3S HV: H_SVM_INIT_START must call UV_RETURN
+> 
+>  arch/powerpc/kvm/book3s_hv.c       | 32 ++++++++++++++++++++----------
+>  arch/powerpc/kvm/book3s_hv_uvmem.c |  3 ++-
+>  2 files changed, 23 insertions(+), 12 deletions(-)
 
-Thanks, applied to my kvm-ppc-next branch (Michael Ellerman decided
-that he didn't need to take it as the crash only occurs with
-CONFIG_PPC_UV=n, which is not the default).
+Thanks, series applied to my kvm-ppc-next branch.
 
 Paul.
