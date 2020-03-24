@@ -2,63 +2,62 @@ Return-Path: <SRS0=VpCV=5J=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A26A5C43331
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 13:55:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FDD5C43331
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 14:08:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1F5CF20714
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 13:55:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1F5CF20714
+	by mail.kernel.org (Postfix) with ESMTPS id 38BE220775
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 14:08:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 38BE220775
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48mt703n2qzDqTG
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 00:55:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48mtQC6GN6zDqt3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 01:08:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=46.105.74.227; helo=8.mo178.mail-out.ovh.net;
+ smtp.mailfrom=kaod.org (client-ip=46.105.51.53; helo=5.mo178.mail-out.ovh.net;
  envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from 8.mo178.mail-out.ovh.net (8.mo178.mail-out.ovh.net
- [46.105.74.227])
+X-Greylist: delayed 285 seconds by postgrey-1.36 at bilbo;
+ Wed, 25 Mar 2020 01:01:06 AEDT
+Received: from 5.mo178.mail-out.ovh.net (5.mo178.mail-out.ovh.net
+ [46.105.51.53])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48msh81l2YzDqQq
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2020 00:35:35 +1100 (AEDT)
-Received: from player792.ha.ovh.net (unknown [10.108.54.119])
- by mo178.mail-out.ovh.net (Postfix) with ESMTP id C4A3395F52
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2020 14:27:32 +0100 (CET)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48mtFZ6FvwzDqc4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2020 01:01:05 +1100 (AEDT)
+Received: from player691.ha.ovh.net (unknown [10.110.103.2])
+ by mo178.mail-out.ovh.net (Postfix) with ESMTP id E322F95D8A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2020 14:51:50 +0100 (CET)
 Received: from kaod.org (82-64-250-170.subs.proxad.net [82.64.250.170])
  (Authenticated sender: clg@kaod.org)
- by player792.ha.ovh.net (Postfix) with ESMTPSA id E7D8710C75CB2;
- Tue, 24 Mar 2020 13:27:12 +0000 (UTC)
-Subject: Re: [PATCH v8 04/14] powerpc/vas: Alloc and setup IRQ and trigger
- port address
-To: Oliver O'Halloran <oohall@gmail.com>
+ by player691.ha.ovh.net (Postfix) with ESMTPSA id 2685810D2C406;
+ Tue, 24 Mar 2020 13:51:31 +0000 (UTC)
+Subject: Re: [PATCH v8 02/14] powerpc/xive: Define
+ xive_native_alloc_get_irq_info()
+To: Haren Myneni <haren@linux.ibm.com>, mpe@ellerman.id.au
 References: <1584598120.9256.15237.camel@hbabu-laptop>
- <1584598473.9256.15248.camel@hbabu-laptop>
- <396db62b-5342-a1b3-eade-a219afd98fc7@kaod.org>
- <bd846a9c-0e21-1d97-0b03-e01c35ff01ae@kaod.org>
- <CAOSf1CFyERZE_am5uXVY2Y65=Vkm=afd39a_2RysKR6nkqvV0A@mail.gmail.com>
+ <1584598402.9256.15244.camel@hbabu-laptop>
 From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <dfb2a4c4-bfe3-08eb-3f9e-b959170ee325@kaod.org>
-Date: Tue, 24 Mar 2020 14:27:12 +0100
+Message-ID: <8a8f9ba9-106a-826f-20ae-d4e4925887f3@kaod.org>
+Date: Tue, 24 Mar 2020 14:51:18 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
  Thunderbird/68.5.0
 MIME-Version: 1.0
-In-Reply-To: <CAOSf1CFyERZE_am5uXVY2Y65=Vkm=afd39a_2RysKR6nkqvV0A@mail.gmail.com>
+In-Reply-To: <1584598402.9256.15244.camel@hbabu-laptop>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 775745037484854265
+X-Ovh-Tracer-Id: 1186135552082021202
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedugedrudehuddgvddvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepuffvfhfhkffffgggjggtgfesthekredttdefjeenucfhrhhomhepveorughrihgtpgfnvggpifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucfkpheptddrtddrtddrtddpkedvrdeigedrvdehtddrudejtdenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehplhgrhigvrhejledvrdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrgh
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedugedrudehuddgvdeiucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepuffvfhfhkffffgggjggtgfesthekredttdefjeenucfhrhhomhepveorughrihgtpgfnvggpifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucfkpheptddrtddrtddrtddpkedvrdeigedrvdehtddrudejtdenucevlhhushhtvghrufhiiigvpedunecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehplhgrhigvrheiledurdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrgh
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,95 +69,116 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michael Neuling <mikey@neuling.org>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- Frederic Barrat <frederic.barrat@fr.ibm.com>,
- Haren Myneni <haren@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>,
- Christoph Hellwig <hch@infradead.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Andrew Donnellan <ajd@linux.ibm.com>
+Cc: mikey@neuling.org, herbert@gondor.apana.org.au, npiggin@gmail.com,
+ hch@infradead.org, oohall@gmail.com, sukadev@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, ajd@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 3/24/20 3:26 AM, Oliver O'Halloran wrote:
-> On Mon, Mar 23, 2020 at 8:28 PM Cédric Le Goater <clg@kaod.org> wrote:
->>
->> On 3/23/20 10:06 AM, Cédric Le Goater wrote:
->>> On 3/19/20 7:14 AM, Haren Myneni wrote:
->>>>
->>>> Alloc IRQ and get trigger port address for each VAS instance. Kernel
->>>> register this IRQ per VAS instance and sets this port for each send
->>>> window. NX interrupts the kernel when it sees page fault.
->>>
->>> I don't understand why this is not done by the OPAL driver for each VAS
->>> of the system. Is the VAS unit very different from OpenCAPI regarding
->>> the fault ?
->>
->> I checked the previous patchsets and I see that v3 was more like I expected
->> it: one interrupt for faults allocated by the skiboot driver and exposed
->> in the DT.
->>
->> What made you change your mind ?
+On 3/19/20 7:13 AM, Haren Myneni wrote:
 > 
-> From init_vas_inst() in arch/powerpc/platforms/powernv/vas.c:
+> pnv_ocxl_alloc_xive_irq() in ocxl.c allocates IRQ and gets trigger port
+> address. VAS also needs this function, but based on chip ID. So moved
+> this common function to xive/native.c.
 > 
->         if (pdev->num_resources != 4) {
->                 pr_err("Unexpected DT configuration for [%s, %d]\n",
->                                 pdev->name, vasid);
->                 return -ENODEV;
->         }
-> 
-> This code should never have been written, but here we are. Due to the
-> above adding an interrupt in the DT makes the driver unable to bind on
-> older kernels. In an older version of the patches (don't think it was
-> posted) Haren was using a non-standard interrupt property and we could
-> work around the problem by going back to that.
+> Signed-off-by: Haren Myneni <haren@linux.ibm.com>
 
-ok ... :/ I didn't know. Don't we have a rule on LinuxPPC for such 
-things ? Such as, the culprit should send a croissant to everyone 
-involved. 
+I think we should work on a new interface for generic IPI use. 
+This is a beginning.  
 
-> However, we already have the OPAL calls for allocating / freeing
-> hardware interrupt numbers so why not do that? 
+Reviewed-by: Cédric Le Goater <clg@kaod.org>
 
-It's a good way to work around the problem but we are bypassing the
-irqchip which does other things for the driver.
-
-> If we ever want to take
-> advantage of the job completion interrupts we'd want to have the
-> ability to allocate them since the completion interrupts are
-> per-window rather than per-VAS.
-
-Yes. That's what I thought it was about to begin with. OCXL has a  
-first implementation of such interrupts. 
-
->> This version is hijacking the lowlevel routines of the XIVE irqchip which
->> is not the best approach. OCXL is doing that because it needs to allocate
->> interrupts for the user space processes using the AFU and we should rework
->> that part.
-> 
-> What'd you have in mind for the reworking the oxcl interrupt allocation? 
-> I didn't find it that objectionable since it's more or less the same as 
-> what happens when allocating IPIs.
-
-I think we need to work a bit more on the concepts, on the interfaces,
-internal at the platform kernel level and at the user space level, and 
-on the configuration, with chip affinity in mind. There are bunch of 
-information on the sources that are retrieved from the firmware or 
-hypervisor that we care about. An irqchip might be the best option 
-for the moment. 
-
-At the same time, it would be good to keep in mind user interrupts. 
+Thanks,
 
 C.
 
+> ---
+>  arch/powerpc/include/asm/xive.h       |  2 ++
+>  arch/powerpc/platforms/powernv/ocxl.c | 20 ++------------------
+>  arch/powerpc/sysdev/xive/native.c     | 23 +++++++++++++++++++++++
+>  3 files changed, 27 insertions(+), 18 deletions(-)
 > 
->> However, the translation fault interrupt is allocated by skiboot.
->>
->> Sorry for the noise, I would like to understand more how this works. I also
->> have passthrough in mind.
->>
->> C.
+> diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/xive.h
+> index d08ea11..fd337da 100644
+> --- a/arch/powerpc/include/asm/xive.h
+> +++ b/arch/powerpc/include/asm/xive.h
+> @@ -139,6 +139,8 @@ int xive_native_set_queue_state(u32 vp_id, uint32_t prio, u32 qtoggle,
+>  int xive_native_get_vp_state(u32 vp_id, u64 *out_state);
+>  bool xive_native_has_queue_state_support(void);
+>  extern u32 xive_native_alloc_irq_on_chip(u32 chip_id);
+> +extern int xive_native_alloc_get_irq_info(u32 chip_id, u32 *irq,
+> +					u64 *trigger_addr);
+>  
+>  static inline u32 xive_native_alloc_irq(void)
+>  {
+> diff --git a/arch/powerpc/platforms/powernv/ocxl.c b/arch/powerpc/platforms/powernv/ocxl.c
+> index 8c65aac..fb8f99a 100644
+> --- a/arch/powerpc/platforms/powernv/ocxl.c
+> +++ b/arch/powerpc/platforms/powernv/ocxl.c
+> @@ -487,24 +487,8 @@ int pnv_ocxl_spa_remove_pe_from_cache(void *platform_data, int pe_handle)
+>  
+>  int pnv_ocxl_alloc_xive_irq(u32 *irq, u64 *trigger_addr)
+>  {
+> -	__be64 flags, trigger_page;
+> -	s64 rc;
+> -	u32 hwirq;
+> -
+> -	hwirq = xive_native_alloc_irq();
+> -	if (!hwirq)
+> -		return -ENOENT;
+> -
+> -	rc = opal_xive_get_irq_info(hwirq, &flags, NULL, &trigger_page, NULL,
+> -				NULL);
+> -	if (rc || !trigger_page) {
+> -		xive_native_free_irq(hwirq);
+> -		return -ENOENT;
+> -	}
+> -	*irq = hwirq;
+> -	*trigger_addr = be64_to_cpu(trigger_page);
+> -	return 0;
+> -
+> +	return xive_native_alloc_get_irq_info(OPAL_XIVE_ANY_CHIP, irq,
+> +						trigger_addr);
+
+alignment ^
+
+>  }
+>  EXPORT_SYMBOL_GPL(pnv_ocxl_alloc_xive_irq);
+>  
+> diff --git a/arch/powerpc/sysdev/xive/native.c b/arch/powerpc/sysdev/xive/native.c
+> index 14d4406..abdd892 100644
+> --- a/arch/powerpc/sysdev/xive/native.c
+> +++ b/arch/powerpc/sysdev/xive/native.c
+> @@ -295,6 +295,29 @@ u32 xive_native_alloc_irq_on_chip(u32 chip_id)
+>  }
+>  EXPORT_SYMBOL_GPL(xive_native_alloc_irq_on_chip);
+>  
+> +int xive_native_alloc_get_irq_info(u32 chip_id, u32 *irq, u64 *trigger_addr)
+> +{
+> +	__be64 flags, trigger_page;
+> +	u32 hwirq;
+> +	s64 rc;
+> +
+> +	hwirq = xive_native_alloc_irq_on_chip(chip_id);
+> +	if (!hwirq)
+> +		return -ENOENT;
+> +
+> +	rc = opal_xive_get_irq_info(hwirq, &flags, NULL, &trigger_page, NULL,
+> +				NULL);
+> +	if (rc || !trigger_page) {
+> +		xive_native_free_irq(hwirq);
+> +		return -ENOENT;
+> +	}
+> +	*irq = hwirq;
+> +	*trigger_addr = be64_to_cpu(trigger_page);
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL(xive_native_alloc_get_irq_info);
+> +
+>  void xive_native_free_irq(u32 irq)
+>  {
+>  	for (;;) {
+> 
 
