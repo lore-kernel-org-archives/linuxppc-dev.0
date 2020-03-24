@@ -1,83 +1,102 @@
-Return-Path: <SRS0=3fZu=5I=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=VpCV=5J=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F285C4332B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 23:47:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FC0DC10DCE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 00:19:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B10C620409
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2020 23:47:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8CAA620786
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 00:19:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lrL/kIS4"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B10C620409
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="aqvpMirK"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8CAA620786
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48mWK524npzDqnM
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 10:47:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48mX1f2k1vzDr2K
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 11:19:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::343;
- helo=mail-ot1-x343.google.com; envelope-from=jniethe5@gmail.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=oracle.com (client-ip=156.151.31.86; helo=userp2130.oracle.com;
+ envelope-from=mike.kravetz@oracle.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+ dmarc=pass (p=none dis=none) header.from=oracle.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=lrL/kIS4; dkim-atps=neutral
-Received: from mail-ot1-x343.google.com (mail-ot1-x343.google.com
- [IPv6:2607:f8b0:4864:20::343])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256
+ header.s=corp-2020-01-29 header.b=aqvpMirK; 
+ dkim-atps=neutral
+Received: from userp2130.oracle.com (userp2130.oracle.com [156.151.31.86])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48mWH13xb5zDqn5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2020 10:46:05 +1100 (AEDT)
-Received: by mail-ot1-x343.google.com with SMTP id 22so9893938otf.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2020 16:46:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=g4b2UUm/4l4ue6e40pUCaxB8QhJBKSUqn+Okuedd8JM=;
- b=lrL/kIS4JMgEKyyfmS6iUAJ1noCH6WOGhDWzeNOKu53LDAS3PA8oyalJ67X9rgdczX
- mownHR2AzUV0eplouzugQx2xad3zqjLwr98jAdgmQIECcpWmygLaAikkD4xKQJ/Ude+D
- PRH8QGm9WWve8u8nu2cO3YH6RQeGSeckao05V9O0t6yvFcaVT38xax+Fu+3Qf16UIOVj
- h731gGKXe5h4jLfe3/DwsaYNqNSPNX6HzS1CxDATVCoSOI5C9E9gkbPkllsefQ/t0Zmn
- HRQr8AIKTAqCxvfR/+UvEmt7bs7vzGOFfKDnzd1AWaf/DCntVCyDuhqlDXEyTBtcw1lz
- D1+g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=g4b2UUm/4l4ue6e40pUCaxB8QhJBKSUqn+Okuedd8JM=;
- b=C3oX7kEKrAw7kYF22R4VusFxGGxkfaA1/+UOMIV0yP3Bn13ya9nP47cizk1UJSSyhG
- oq1QN/3wDQ5ctDR1ahxXAS/0/udFTSIcmJU3Z9JEl8WEjBR3MHco/8Zo4DxLw2c+yV9r
- FKSIm15bDByCQU3XpI3oxiX5kBf/ayOoIyHf2AeCXEQyRoiiu3NZ0dhromjyR/KTaMNL
- NnLciLR6050KI4uwUvlmgWGAqPVlY+Ky/17Tvr8RVBh3KO9Pewm8MX9Y1RB3MUW1FGxb
- r+VrvR+NrL7vOW9CFEbTLppPtDVuhM8J5nUJFPnur7H/I62OQoN+R9lJIRXHHz3PRDew
- MQRQ==
-X-Gm-Message-State: ANhLgQ2tEKnKT9CHkxCF4mG3DYAdMCvrZa5XDGhIuP6d8kv5LRCP9w75
- Yr4qfNqAu213AOpKF5IHSxM5RM4qpd7e4TRr5j8=
-X-Google-Smtp-Source: ADFU+vubc9LXXdQzL1CQ4DyR7BCZWhDjnS1F3BBAOHJgtYzs2fP+lXqyEL1ZiH8APoqy8MVz7HxHE7am3XAb+kE0Sjk=
-X-Received: by 2002:a05:6830:1683:: with SMTP id
- k3mr9909482otr.28.1585007161958; 
- Mon, 23 Mar 2020 16:46:01 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48mWzq46KWzDqq7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2020 11:17:59 +1100 (AEDT)
+Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
+ by userp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 02O09YG8101123;
+ Tue, 24 Mar 2020 00:16:57 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
+ h=subject : to : cc :
+ references : from : message-id : date : mime-version : in-reply-to :
+ content-type : content-transfer-encoding; s=corp-2020-01-29;
+ bh=qucvghpoTdILPTGy1ayS/oGNuZVW39YLrBCxVQGMlkI=;
+ b=aqvpMirKBt1NJdtlsrSKhG0fCcNDi73oMY445HOPQD+iQDukide0Gq6NBKjUZ2dn9zUA
+ moSyOm1QxcZjgH/GkKKncTrzTpECJnoALJ7Zu1eGMPYX9OqD1CJJOX55NEDWgMGpm5rh
+ gv9qoNBF1/gVOpiIhxNFWUdF8eHT+5vcXg/Of8GzT1/ehfvJAsncLuNWSlubn/OxjzwC
+ iU7SxxMYR2MJLx8/26Ws0FrylblAoVfzLWJ88IGseK6X67t2WS6Bei/Lhk6oPBjFhEky
+ I30desApPc5awCny1pkMcA5X1oy9E/f+MhCdLYASjcAUKrO2ga1OrqnSfu4Cgk0uW5ka Wg== 
+Received: from userp3020.oracle.com (userp3020.oracle.com [156.151.31.79])
+ by userp2130.oracle.com with ESMTP id 2ywabr1hu4-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 24 Mar 2020 00:16:57 +0000
+Received: from pps.filterd (userp3020.oracle.com [127.0.0.1])
+ by userp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 02O07oaW152173;
+ Tue, 24 Mar 2020 00:16:56 GMT
+Received: from aserv0122.oracle.com (aserv0122.oracle.com [141.146.126.236])
+ by userp3020.oracle.com with ESMTP id 2yxw6kj6yb-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 24 Mar 2020 00:16:56 +0000
+Received: from abhmp0001.oracle.com (abhmp0001.oracle.com [141.146.116.7])
+ by aserv0122.oracle.com (8.14.4/8.14.4) with ESMTP id 02O0Gh8a030687;
+ Tue, 24 Mar 2020 00:16:43 GMT
+Received: from [192.168.1.206] (/71.63.128.209)
+ by default (Oracle Beehive Gateway v4.0)
+ with ESMTP ; Mon, 23 Mar 2020 17:16:43 -0700
+Subject: Re: [PATCH 3/4] hugetlbfs: remove hugetlb_add_hstate() warning for
+ existing hstate
+To: Mina Almasry <almasrymina@google.com>
+References: <20200318220634.32100-1-mike.kravetz@oracle.com>
+ <20200318220634.32100-4-mike.kravetz@oracle.com>
+ <CAHS8izN1Q+yiZq8zcU8hoojafcQ19W7XQx-HyFm3Ud8hSvN1Nw@mail.gmail.com>
+From: Mike Kravetz <mike.kravetz@oracle.com>
+Message-ID: <54fd7234-bdd9-de78-9351-16706bae2c08@oracle.com>
+Date: Mon, 23 Mar 2020 17:16:38 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.6.0
 MIME-Version: 1.0
-References: <20200320051809.24332-1-jniethe5@gmail.com>
- <20200320051809.24332-15-jniethe5@gmail.com>
- <1584947189.oay6araq0n.astroid@bobo.none>
-In-Reply-To: <1584947189.oay6araq0n.astroid@bobo.none>
-From: Jordan Niethe <jniethe5@gmail.com>
-Date: Tue, 24 Mar 2020 10:45:50 +1100
-Message-ID: <CACzsE9rbxV6HErxhwseMEJu7APezvRu4pKOx5YkepEnUWtpzqw@mail.gmail.com>
-Subject: Re: [PATCH v4 14/16] powerpc64: Add prefixed instructions to
- instruction data type
-To: Nicholas Piggin <npiggin@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <CAHS8izN1Q+yiZq8zcU8hoojafcQ19W7XQx-HyFm3Ud8hSvN1Nw@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9569
+ signatures=668685
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0
+ adultscore=0
+ malwarescore=0 mlxscore=0 spamscore=0 mlxlogscore=999 bulkscore=0
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2003020000 definitions=main-2003230120
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9569
+ signatures=668685
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0
+ suspectscore=0
+ lowpriorityscore=0 malwarescore=0 phishscore=0 priorityscore=1501
+ clxscore=1015 adultscore=0 mlxscore=0 mlxlogscore=999 bulkscore=0
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2003020000 definitions=main-2003230120
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,312 +108,218 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alistair Popple <alistair@popple.id.au>,
- Balamuruhan S <bala24@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Daniel Axtens <dja@axtens.net>
+Cc: linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Linux-MM <linux-mm@kvack.org>,
+ Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
+ linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>,
+ linux-s390@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Longpeng <longpeng2@huawei.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Vasily Gorbik <gor@linux.ibm.com>, Paul Walmsley <paul.walmsley@sifive.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ open list <linux-kernel@vger.kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S.Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Mar 23, 2020 at 6:37 PM Nicholas Piggin <npiggin@gmail.com> wrote:
->
-> Jordan Niethe's on March 20, 2020 3:18 pm:
-> > For powerpc64, redefine the ppc_inst type so both word and prefixed
-> > instructions can be represented. On powerpc32 the type will remain the
-> > same.  Update places which had assumed instructions to be 4 bytes long.
-> >
-> > Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
-> > ---
-> > v4: New to series
-> > ---
-> >  arch/powerpc/include/asm/code-patching.h | 10 +--
-> >  arch/powerpc/include/asm/inst.h          | 90 ++++++++++++++++++++++++
-> >  arch/powerpc/include/asm/kprobes.h       |  2 +-
-> >  arch/powerpc/include/asm/sstep.h         |  4 ++
-> >  arch/powerpc/include/asm/uaccess.h       | 22 ++++++
-> >  arch/powerpc/include/asm/uprobes.h       |  2 +-
-> >  arch/powerpc/kernel/align.c              |  5 +-
-> >  arch/powerpc/kernel/hw_breakpoint.c      |  2 +-
-> >  arch/powerpc/kernel/kprobes.c            |  7 +-
-> >  arch/powerpc/kernel/optprobes.c          | 42 ++++++-----
-> >  arch/powerpc/kernel/optprobes_head.S     |  3 +
-> >  arch/powerpc/kernel/trace/ftrace.c       | 19 ++++-
-> >  arch/powerpc/kernel/uprobes.c            |  2 +-
-> >  arch/powerpc/lib/code-patching.c         | 22 ++++--
-> >  arch/powerpc/lib/sstep.c                 |  4 +-
-> >  arch/powerpc/xmon/xmon.c                 | 38 +++++++---
-> >  16 files changed, 221 insertions(+), 53 deletions(-)
-> >
-> > diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
-> > index 68bd9db334bd..bd41e1558707 100644
-> > --- a/arch/powerpc/include/asm/code-patching.h
-> > +++ b/arch/powerpc/include/asm/code-patching.h
-> > @@ -25,11 +25,11 @@
-> >  bool is_offset_in_branch_range(long offset);
-> >  ppc_inst create_branch(const ppc_inst *addr,
-> >                          unsigned long target, int flags);
-> > -unsigned int create_cond_branch(const ppc_inst *addr,
-> > +ppc_inst create_cond_branch(const void *addr,
-> >                               unsigned long target, int flags);
-> > -int patch_branch(ppc_inst *addr, unsigned long target, int flags);
-> > -int patch_instruction(ppc_inst *addr, ppc_inst instr);
-> > -int raw_patch_instruction(ppc_inst *addr, ppc_inst instr);
-> > +int patch_branch(void *addr, unsigned long target, int flags);
-> > +int patch_instruction(void *addr, ppc_inst instr);
-> > +int raw_patch_instruction(void *addr, ppc_inst instr);
-> >
-> >  static inline unsigned long patch_site_addr(s32 *site)
-> >  {
-> > @@ -60,7 +60,7 @@ static inline int modify_instruction_site(s32 *site, unsigned int clr, unsigned
-> >  int instr_is_relative_branch(ppc_inst instr);
-> >  int instr_is_relative_link_branch(ppc_inst instr);
-> >  int instr_is_branch_to_addr(const ppc_inst *instr, unsigned long addr);
-> > -unsigned long branch_target(const ppc_inst *instr);
-> > +unsigned long branch_target(const void *instr);
-> >  ppc_inst translate_branch(const ppc_inst *dest,
-> >                             const ppc_inst *src);
-> >  extern bool is_conditional_branch(ppc_inst instr);
-> > diff --git a/arch/powerpc/include/asm/inst.h b/arch/powerpc/include/asm/inst.h
-> > index 7c8596ee411e..1a40b0a71128 100644
-> > --- a/arch/powerpc/include/asm/inst.h
-> > +++ b/arch/powerpc/include/asm/inst.h
-> > @@ -6,6 +6,95 @@
-> >   * Instruction data type for POWER
-> >   */
-> >
-> > +#ifdef __powerpc64__
-> > +
-> > +typedef struct ppc_inst {
-> > +     union {
-> > +             struct {
-> > +                     u32 word;
-> > +                     u32 pad;
-> > +             } __packed;
-> > +             struct {
-> > +                     u32 prefix;
-> > +                     u32 suffix;
-> > +             } __packed;
-> > +     };
-> > +} ppc_inst;
-> > +
-> > +#define PPC_INST(x) ((ppc_inst) { .word = (x), .pad = 0 })
-> > +#define PPC_INST_PREFIXED(x, y) ((ppc_inst) { .prefix = (x), .suffix = (y) })
-> > +
-> > +static inline int ppc_inst_opcode(ppc_inst x)
-> > +{
-> > +     return x.word >> 26;
-> > +}
-> > +
-> > +static inline bool ppc_inst_prefixed(ppc_inst x) {
-> > +     return ppc_inst_opcode(x) == 1;
-> > +}
-> > +
-> > +static inline int ppc_inst_len(ppc_inst x)
-> > +{
-> > +     if (ppc_inst_prefixed(x))
-> > +             return 8;
-> > +     else
-> > +             return 4;
-> > +}
-> > +
-> > +static inline u32 ppc_inst_word(ppc_inst x)
-> > +{
-> > +     return x.word;
-> > +}
->
-> I guess a concern could be that code using ppc_inst_word could now get a
-> prefix unexpectedly and not handle it properly. The reason it should
-> generally be okay is that prefix won't match any existing valid
-> instruction words, so callers won't match or think it's an unknown
-> instruction. Am I right? Possibly a small comment?
-Yes all prefixes are illegal as word instructions so I thought that
-should be okay.
->
-> > +
-> > +static inline u32 ppc_inst_prefix(ppc_inst x)
-> > +{
-> > +     return x.prefix;
-> > +}
-> > +
-> > +static inline u32 ppc_inst_suffix(ppc_inst x)
-> > +{
-> > +     return x.suffix;
-> > +}
-> > +
-> > +
-> > +static inline ppc_inst ppc_inst_read(const void *ptr)
-> > +{
-> > +     ppc_inst inst;
-> > +     inst.word = *(u32 *)ptr;
-> > +     if (ppc_inst_prefixed(inst))
-> > +             inst.suffix = *((u32 *)ptr + 1);
-> > +     else
-> > +             inst.pad = 0;
->
-> I'm a bit against using partially constructed opaque type for things
-> like this, even if it is in the code that knows about the type. We
-> could modify ppc_inst_prefixed() to assert that pad is equal to zero
-> (or some poisoned value) if it's not prefixed. Or do some validation
-> on the suffix if it is.
-Okay what about something like:
-+static inline ppc_inst ppc_inst_read(const void *ptr)
-+{
-+     u32 prefix, suffix;
-+     prefix = *(u32 *)ptr;
-+     if (prefix >> 26 == 1)
-+             suffix = *((u32 *)ptr + 1);
-+     else
-+             suffix = 0;
-+     return PPC_INST_PREFIX(prefix, suffix);
-+}
+On 3/23/20 5:01 PM, Mina Almasry wrote:
+> On Wed, Mar 18, 2020 at 3:07 PM Mike Kravetz <mike.kravetz@oracle.com> wrote:
+>>
+>> The routine hugetlb_add_hstate prints a warning if the hstate already
+>> exists.  This was originally done as part of kernel command line
+>> parsing.  If 'hugepagesz=' was specified more than once, the warning
+>>         pr_warn("hugepagesz= specified twice, ignoring\n");
+>> would be printed.
+>>
+>> Some architectures want to enable all huge page sizes.  They would
+>> call hugetlb_add_hstate for all supported sizes.  However, this was
+>> done after command line processing and as a result hstates could have
+>> already been created for some sizes.  To make sure no warning were
+>> printed, there would often be code like:
+>>         if (!size_to_hstate(size)
+>>                 hugetlb_add_hstate(ilog2(size) - PAGE_SHIFT)
+>>
+>> The only time we want to print the warning is as the result of command
+>> line processing.  So, remove the warning from hugetlb_add_hstate and
+>> add it to the single arch independent routine processing "hugepagesz=".
+>> After this, calls to size_to_hstate() in arch specific code can be
+>> removed and hugetlb_add_hstate can be called without worrying about
+>> warning messages.
+>>
+>> Signed-off-by: Mike Kravetz <mike.kravetz@oracle.com>
+>> ---
+>>  arch/arm64/mm/hugetlbpage.c   | 16 ++++------------
+>>  arch/powerpc/mm/hugetlbpage.c |  3 +--
+>>  arch/riscv/mm/hugetlbpage.c   |  2 +-
+>>  arch/sparc/mm/init_64.c       | 19 ++++---------------
+>>  arch/x86/mm/hugetlbpage.c     |  2 +-
+>>  mm/hugetlb.c                  | 10 +++++++---
+>>  6 files changed, 18 insertions(+), 34 deletions(-)
+>>
+>> diff --git a/arch/arm64/mm/hugetlbpage.c b/arch/arm64/mm/hugetlbpage.c
+>> index 4aa9534a45d7..050809e6f0a9 100644
+>> --- a/arch/arm64/mm/hugetlbpage.c
+>> +++ b/arch/arm64/mm/hugetlbpage.c
+>> @@ -441,22 +441,14 @@ void huge_ptep_clear_flush(struct vm_area_struct *vma,
+>>         clear_flush(vma->vm_mm, addr, ptep, pgsize, ncontig);
+>>  }
+>>
+>> -static void __init add_huge_page_size(unsigned long size)
+>> -{
+>> -       if (size_to_hstate(size))
+>> -               return;
+>> -
+>> -       hugetlb_add_hstate(ilog2(size) - PAGE_SHIFT);
+>> -}
+>> -
+>>  static int __init hugetlbpage_init(void)
+>>  {
+>>  #ifdef CONFIG_ARM64_4K_PAGES
+>> -       add_huge_page_size(PUD_SIZE);
+>> +       hugetlb_add_hstate(ilog2(PUD_SIZE) - PAGE_SHIFT);
+>>  #endif
+>> -       add_huge_page_size(CONT_PMD_SIZE);
+>> -       add_huge_page_size(PMD_SIZE);
+>> -       add_huge_page_size(CONT_PTE_SIZE);
+>> +       hugetlb_add_hstate(ilog2(CONT_PMD_SIZE) - PAGE_SHIFT);
+>> +       hugetlb_add_hstate(ilog2(PMD_SIZE) - PAGE_SHIFT);
+>> +       hugetlb_add_hstate(ilog2(CONT_PTE_SIZE) - PAGE_SHIFT);
+>>
+>>         return 0;
+>>  }
+>> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+>> index 166960ba1236..f46464ba6fb4 100644
+>> --- a/arch/powerpc/mm/hugetlbpage.c
+>> +++ b/arch/powerpc/mm/hugetlbpage.c
+>> @@ -584,8 +584,7 @@ static int __init add_huge_page_size(unsigned long long size)
+>>         if (!arch_hugetlb_valid_size(size))
+>>                 return -EINVAL;
+>>
+>> -       if (!size_to_hstate(size))
+>> -               hugetlb_add_hstate(shift - PAGE_SHIFT);
+>> +       hugetlb_add_hstate(shift - PAGE_SHIFT);
+>>         return 0;
+>>  }
+>>
+>> diff --git a/arch/riscv/mm/hugetlbpage.c b/arch/riscv/mm/hugetlbpage.c
+>> index bdf89d7eb714..beaa91941db8 100644
+>> --- a/arch/riscv/mm/hugetlbpage.c
+>> +++ b/arch/riscv/mm/hugetlbpage.c
+>> @@ -26,7 +26,7 @@ bool __init arch_hugetlb_valid_size(unsigned long long size)
+>>  static __init int gigantic_pages_init(void)
+>>  {
+>>         /* With CONTIG_ALLOC, we can allocate gigantic pages at runtime */
+>> -       if (IS_ENABLED(CONFIG_64BIT) && !size_to_hstate(1UL << PUD_SHIFT))
+>> +       if (IS_ENABLED(CONFIG_64BIT))
+>>                 hugetlb_add_hstate(PUD_SHIFT - PAGE_SHIFT);
+>>         return 0;
+>>  }
+>> diff --git a/arch/sparc/mm/init_64.c b/arch/sparc/mm/init_64.c
+>> index 5c29203fd460..8f619edc8f8c 100644
+>> --- a/arch/sparc/mm/init_64.c
+>> +++ b/arch/sparc/mm/init_64.c
+>> @@ -325,23 +325,12 @@ static void __update_mmu_tsb_insert(struct mm_struct *mm, unsigned long tsb_inde
+>>  }
+>>
+>>  #ifdef CONFIG_HUGETLB_PAGE
+>> -static void __init add_huge_page_size(unsigned long size)
+>> -{
+>> -       unsigned int order;
+>> -
+>> -       if (size_to_hstate(size))
+>> -               return;
+>> -
+>> -       order = ilog2(size) - PAGE_SHIFT;
+>> -       hugetlb_add_hstate(order);
+>> -}
+>> -
+>>  static int __init hugetlbpage_init(void)
+>>  {
+>> -       add_huge_page_size(1UL << HPAGE_64K_SHIFT);
+>> -       add_huge_page_size(1UL << HPAGE_SHIFT);
+>> -       add_huge_page_size(1UL << HPAGE_256MB_SHIFT);
+>> -       add_huge_page_size(1UL << HPAGE_2GB_SHIFT);
+>> +       hugetlb_add_hstate(HPAGE_64K_SHIFT - PAGE_SHIFT);
+>> +       hugetlb_add_hstate(HPAGE_SHIFT - PAGE_SHIFT);
+>> +       hugetlb_add_hstate(HPAGE_256MB_SHIFT - PAGE_SHIFT);
+>> +       hugetlb_add_hstate(HPAGE_2GB_SHIFT - PAGE_SHIFT);
+>>
+>>         return 0;
+>>  }
+>> diff --git a/arch/x86/mm/hugetlbpage.c b/arch/x86/mm/hugetlbpage.c
+>> index dd3ed09f6c23..8a3f586e1217 100644
+>> --- a/arch/x86/mm/hugetlbpage.c
+>> +++ b/arch/x86/mm/hugetlbpage.c
+>> @@ -195,7 +195,7 @@ bool __init arch_hugetlb_valid_size(unsigned long long size)
+>>  static __init int gigantic_pages_init(void)
+>>  {
+>>         /* With compaction or CMA we can allocate gigantic pages at runtime */
+>> -       if (boot_cpu_has(X86_FEATURE_GBPAGES) && !size_to_hstate(1UL << PUD_SHIFT))
+>> +       if (boot_cpu_has(X86_FEATURE_GBPAGES))
+>>                 hugetlb_add_hstate(PUD_SHIFT - PAGE_SHIFT);
+>>         return 0;
+>>  }
+>> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+>> index cd4ec07080fb..cc85b4f156ca 100644
+>> --- a/mm/hugetlb.c
+>> +++ b/mm/hugetlb.c
+>> @@ -3116,8 +3116,7 @@ static int __init hugetlb_init(void)
+>>                 }
+>>
+>>                 default_hstate_size = HPAGE_SIZE;
+>> -               if (!size_to_hstate(default_hstate_size))
+>> -                       hugetlb_add_hstate(HUGETLB_PAGE_ORDER);
+>> +               hugetlb_add_hstate(HUGETLB_PAGE_ORDER);
+>>         }
+>>         default_hstate_idx = hstate_index(size_to_hstate(default_hstate_size));
+>>         if (default_hstate_max_huge_pages) {
+>> @@ -3155,7 +3154,6 @@ void __init hugetlb_add_hstate(unsigned int order)
+>>         unsigned long i;
+>>
+>>         if (size_to_hstate(PAGE_SIZE << order)) {
+>> -               pr_warn("hugepagesz= specified twice, ignoring\n");
+>>                 return;
+>>         }
+>>         BUG_ON(hugetlb_max_hstate >= HUGE_MAX_HSTATE);
+>> @@ -3231,6 +3229,12 @@ static int __init hugepagesz_setup(char *s)
+>>                 return 0;
+>>         }
+>>
+>> +       if (size_to_hstate(size)) {
+>> +               pr_warn("HugeTLB: hugepagesz %s specified twice, ignoring\n",
+>> +                       saved_s);
+>> +               return 0;
+>> +       }
+>> +
+> 
+> Not too familiar with the code but I'm a bit confused by this print.
+> AFAICT this prints the warning when hugepagesz= refers to a hugepage
+> that is already added via hugetlb_add_hstate, but there is a default
+> hstate added here without the user specifying hugepagesz, no?
 
->
->
->
-> > +static inline bool ppc_inst_equal(ppc_inst x, ppc_inst y)
-> > +{
-> > +     return !memcmp(&x, &y, sizeof(struct ppc_inst));
-> > +}
->
-> I guess a variable length memcmp will make terrible code, so you're
-> requiring pad to equal 0 to match non-prefixed. Fine.
-Yes this assumes pad always gets set to 0.
->
-> > +
-> > +static inline bool ppc_inst_null(ppc_inst x)
-> > +{
-> > +     return x.word == 0 && x.pad == 0;
-> > +}
->
-> In this case you shouldn't need x.pad == 0. If x.word == 0, then
-> WARN_ON_ONCE(x.pad != 0) ?
-True.
->
-> >       if ((regs->msr & MSR_LE) != (MSR_KERNEL & MSR_LE)) {
-> >               /* We don't handle PPC little-endian any more... */
-> >               if (cpu_has_feature(CPU_FTR_PPC_LE))
-> >                       return -EIO;
-> > -             instr = PPC_INST(swab32(ppc_inst_word(instr)));
-> > +             instr = PPC_INST_PREFIXED(swab32(ppc_inst_word(instr)),
-> > +                                       swab32(ppc_inst_suffix(instr)));
->
-> Ugly, don't suppose you'd bother to do a ppc_inst_bswap function for
-> this one case?
-I can do that.
->
-> [snip probes stuff]
->
-> > diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-> > index fa7f32adf029..3b8277a64b8f 100644
-> > --- a/arch/powerpc/lib/code-patching.c
-> > +++ b/arch/powerpc/lib/code-patching.c
-> > @@ -24,17 +24,27 @@ static int __patch_instruction(ppc_inst *exec_addr, ppc_inst instr,
-> >  {
-> >       int err = 0;
-> >
-> > -     __put_user_asm(instr, patch_addr, err, "stw");
-> > +     __put_user_asm(ppc_inst_word(instr), patch_addr, err, "stw");
-> >       if (err)
-> >               return err;
-> >
-> >       asm ("dcbst 0, %0; sync; icbi 0,%1; sync; isync" :: "r" (patch_addr),
-> >                                                           "r" (exec_addr));
-> >
-> > +     if (!ppc_inst_prefixed(instr))
-> > +             return 0;
-> > +
-> > +     __put_user_asm(ppc_inst_suffix(instr), patch_addr + 4, err, "stw");
-> > +     if (err)
-> > +             return err;
-> > +
-> > +     asm ("dcbst 0, %0; sync; icbi 0,%1; sync; isync" :: "r" (patch_addr + 4),
-> > +                                                         "r" (exec_addr + 4));
->
-> Although there's proably no real performance or atomicity issues here,
-> I'd be pleased if we could do a case for prefixed and a case for non
-> prefixed, and store the non-prefixed with "std". Just for the principle
-> of not having half-written instructions in the image.
-Do you mean store the prefixed with std?
->
-> You could skip the dcbst and icbi for the second address if you happen
-> to know this future CPU does not store prefix insns across a CL
-> boundary. But probably not necessary to make that assumption in non
-> perf critical code here, so I'd leave it as you have.
->
-> > diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-> > index ee084411f2f5..c5536e1a3356 100644
-> > --- a/arch/powerpc/xmon/xmon.c
-> > +++ b/arch/powerpc/xmon/xmon.c
-> > @@ -110,7 +110,7 @@ struct bpt {
-> >  #define BP_DABR              4
-> >
-> >  #define NBPTS        256
-> > -#define BPT_WORDS    2
-> > +#define BPT_WORDS    4
->
-> (2 * sizeof(ppc_inst) / sizeof(u32)) ?
+Correct.
 
->
-> >  static struct bpt bpts[NBPTS];
-> >  static struct bpt dabr;
-> >  static struct bpt *iabr;
-> > @@ -118,12 +118,13 @@ static unsigned bpinstr = 0x7fe00008;   /* trap */
-> >
-> >  #define BP_NUM(bp)   ((bp) - bpts + 1)
-> >
-> > -static unsigned int __section(.text.xmon_bpts) bpt_table[NBPTS * BPT_WORDS];
-> > +static unsigned int __section(.text.xmon_bpts) bpt_table[NBPTS * BPT_WORDS] __aligned(64);
->
-> Should have a define somewhere for this magical 64.
-Sure.
->
-> >  /* Prototypes */
-> >  static int cmds(struct pt_regs *);
-> >  static int mread(unsigned long, void *, int);
-> >  static int mwrite(unsigned long, void *, int);
-> > +static int mread_instr(unsigned long, ppc_inst *);
->
-> In some cases you've addd helpers like this as separate patches,
-> others you've bundled them together. NBD but I liked the prep patches
-> which then made the more important changes easier to see.
-I will make some more prep patches.
->
-> > @@ -759,8 +760,8 @@ static int xmon_bpt(struct pt_regs *regs)
-> >
-> >       /* Are we at the trap at bp->instr[1] for some bp? */
-> >       bp = in_breakpoint_table(regs->nip, &offset);
-> > -     if (bp != NULL && offset == 4) {
-> > -             regs->nip = bp->address + 4;
-> > +     if (bp != NULL && (offset == 4 || offset == 8)) {
-> > +             regs->nip = bp->address + offset;
-> >               atomic_dec(&bp->ref_count);
-> >               return 1;
-> >       }
-> > @@ -862,7 +863,7 @@ static struct bpt *in_breakpoint_table(unsigned long nip, unsigned long *offp)
-> >       if (off >= sizeof(bpt_table))
-> >               return NULL;
-> >       bp_off = off % (sizeof(unsigned int) * BPT_WORDS);
-> > -     if (bp_off != 0 && bp_off != 4)
-> > +     if (bp_off != 0 && bp_off != 4 && bp_off != 8)
-> >               return NULL;
-> >       *offp = bp_off;
-> >       return bpts + ((off - bp_off) / (sizeof(unsigned int) * BPT_WORDS));
-> > @@ -881,7 +882,6 @@ static struct bpt *new_breakpoint(unsigned long a)
-> >               if (!bp->enabled && atomic_read(&bp->ref_count) == 0) {
-> >                       bp->address = a;
-> >                       bp->instr = bpt_table + ((bp - bpts) * BPT_WORDS);
-> > -                     patch_instruction(bp->instr + 1, PPC_INST(bpinstr));
-> >                       return bp;
-> >               }
-> >       }
->
-> Why is this okay to remove?
-When we only had word instructions the bpt was just patched in here
-once and that was that.
-With prefixed instructions bp->instr + 1 might be the suffix. So I
-moved putting the breakpoint to insert_bpts():
-patch_instruction(bp->instr + ppc_inst_len(instr), PPC_INST(bpinstr));
->
-> Thanks,
-> Nick
->
+>                                                               Does
+> that mean the warning prints if you specify this size?
+
+The code which adds the default hstate (in hugetlb_init) runs after this
+code which is reading/processing command line options.  So, the case you
+are concerned with will not happen.
+
+Thanks for taking a look,
+-- 
+Mike Kravetz
+
+> 'HugeTLB: hugepage size already supported: xxxxx' or
+> 'HugeTLB: hugepage size xxxx specified twice or is default size, ignoring.'
+> 
+> Or don't print anything if it's the default size.
+> 
+>>         hugetlb_add_hstate(ilog2(size) - PAGE_SHIFT);
+>>         return 1;
+>>  }
+>> --
+>> 2.24.1
