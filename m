@@ -2,82 +2,59 @@ Return-Path: <SRS0=VpCV=5J=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CBF7AC43331
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 02:56:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 40F10C43331
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 02:58:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3E07C20409
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 02:56:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D667620409
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 02:58:27 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WKTO6TqW"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3E07C20409
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="DNxftHWN"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D667620409
+Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48mbVd3Wj9zDr08
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 13:56:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::341;
- helo=mail-ot1-x341.google.com; envelope-from=jniethe5@gmail.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=WKTO6TqW; dkim-atps=neutral
-Received: from mail-ot1-x341.google.com (mail-ot1-x341.google.com
- [IPv6:2607:f8b0:4864:20::341])
+	by lists.ozlabs.org (Postfix) with ESMTP id 48mbXx60W1zDr0t
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 13:58:25 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48mbSh0437zDqSP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2020 13:54:41 +1100 (AEDT)
-Received: by mail-ot1-x341.google.com with SMTP id a49so15680675otc.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2020 19:54:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=/bu3Qy6roHJnjU6fPV0Tm4m7rvRoThB4EXQuI3xrPlI=;
- b=WKTO6TqWisKLWubGDk9HoFWfBt8l/9JJFR87YDvS+b6sEpsPKVpqqItOIqNUc6OFRU
- ou/6RqCN9/tiDa/4Ue5bBLIWSSUW5yKT6qAWq5NS9KXjWNCplo6rSanNwF2ECopg3Z/a
- UaIOT5H3P5ATN10HTCcSoAzXUWWCnOVEkgXAtgR09oNYinh7yxoJss4pJOiUNM++rcQG
- qzWCgLtYnr9o+F7HCp9XphcnfYOgSZEM+TRX0NdsD/IyQJiTUzz2pr69xPVgyIKYJeUa
- Zm0TWjqMFGQg86v/BmrdDr9raqt6CC/6UR8LhU8CH/AqNpflEC3cvqeNVCZYwHNc8Kla
- aspg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=/bu3Qy6roHJnjU6fPV0Tm4m7rvRoThB4EXQuI3xrPlI=;
- b=fkr7CwUHZXA+C2UO3QKoxyTxNmoNU/Em9qMdL6aI6ymfBSXjRSP6mL6n+PMHXEhqtG
- bmPXratz9oSIAfMIig7DdEwLyofeAZRSQaLLL0YHMtfo0ME88Wm45TZAsG1LW2ims/0i
- 03fo5wiMe8cCpUV2I9+ARdWQ2KUe3845/wsB4Ez/yw/3qTVCMKQisYITohxNM+/5Eu5+
- yKuFuJQHpOB17+3lwOnti+mqUQiB6YRgbzT/U2y3OyynzAahCodNQmYmZLyzXAW2iMUP
- mNfsqba45SzC/MvtYBK0n6kxTI97ef/XmzjKEE+s4fVIW+jowexIdlawKffSqAS86i9p
- 8ceA==
-X-Gm-Message-State: ANhLgQ3eUiGSRunK7f6KyzaokFWXToMEsrKq+HhBKvnPtRgrRnkWWs4R
- NEC0Uf4ExyV+rqE9Fk3GIoYANV6MLcXCid3Rcr8=
-X-Google-Smtp-Source: ADFU+vu1huIWOHsmklnoAIaXNQiri16smakceQeftT/BMETqVeouSNe9BJPoJlGzVPsKIX8A7wdE/6TsrwdGDTCfYIk=
-X-Received: by 2002:a05:6830:1683:: with SMTP id
- k3mr10357439otr.28.1585018478387; 
- Mon, 23 Mar 2020 19:54:38 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48mbVh2THLzDqwD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2020 13:56:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=ozlabs.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256
+ header.s=201707 header.b=DNxftHWN; dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1003)
+ id 48mbVf1JVmz9sSJ; Tue, 24 Mar 2020 13:56:26 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
+ t=1585018586; bh=KM0wn3HncBXutXd42xeQNpPkis4AM+gDD2DG4oOYGWk=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=DNxftHWNgOLQyQH/VLV1qoxnIrYyLlpqUNX+buuwbCnuNRLHUA+hozgLLpstodGfW
+ unHa3a6Io23AXpkrtnMAAW5PvBsE9BqMvsrwYw7x9B6GhWLuKNRndIq2YiqXAGST2g
+ E8/1WmwpxAyTs/JY2l/486DPKwxIxTwlyqr8WHphvB9ZIpsql2j6VetKKMOjR7KIcy
+ wfdle+Jv1AZmuN9hRt/Bn051iX+6puM8CJMEjuBj2IMy9XnFurQyhY+5kAxTXWSaTd
+ wx0Yr070YJpmu9+wrOSksgUcRumTqefB78TZDGQA/idU7E5UfhGQyffME2dkiT5mLU
+ w8BqZt69DCKhg==
+Date: Tue, 24 Mar 2020 13:56:20 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Fabiano Rosas <farosas@linux.ibm.com>
+Subject: Re: [PATCH] KVM: PPC: Book3S HV: Skip kvmppc_uvmem_free if
+ Ultravisor is not supported
+Message-ID: <20200324025620.GE5604@blackberry>
+References: <20200319225510.945603-1-farosas@linux.ibm.com>
 MIME-Version: 1.0
-References: <20200320051809.24332-1-jniethe5@gmail.com>
- <1584944279.gvl0lg5dde.astroid@bobo.none>
- <CACzsE9r5uvL-zp34VrCqO_RTEsXPbLrt2iu+MHL-apapydOugA@mail.gmail.com>
- <1584957138.lj5a68bk6x.astroid@bobo.none>
-In-Reply-To: <1584957138.lj5a68bk6x.astroid@bobo.none>
-From: Jordan Niethe <jniethe5@gmail.com>
-Date: Tue, 24 Mar 2020 13:54:27 +1100
-Message-ID: <CACzsE9qrNpfvoLKfdeXths4rKJ8jQcUic3=dFZ57ntogdeaMug@mail.gmail.com>
-Subject: Re: [PATCH v4 00/16] Initial Prefixed Instruction support
-To: Nicholas Piggin <npiggin@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200319225510.945603-1-farosas@linux.ibm.com>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,79 +66,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alistair Popple <alistair@popple.id.au>,
- Balamuruhan S <bala24@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Daniel Axtens <dja@axtens.net>
+Cc: linuxppc-dev@lists.ozlabs.org, groug@kaod.org, kvm-ppc@vger.kernel.org,
+ bharata@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Mar 23, 2020 at 9:21 PM Nicholas Piggin <npiggin@gmail.com> wrote:
->
-> Jordan Niethe's on March 23, 2020 7:25 pm:
-> > On Mon, Mar 23, 2020 at 5:22 PM Nicholas Piggin <npiggin@gmail.com> wrote:
-> >>
-> >> Jordan Niethe's on March 20, 2020 3:17 pm:
-> >> > A future revision of the ISA will introduce prefixed instructions. A
-> >> > prefixed instruction is composed of a 4-byte prefix followed by a
-> >> > 4-byte suffix.
-> >> >
-> >> > All prefixes have the major opcode 1. A prefix will never be a valid
-> >> > word instruction. A suffix may be an existing word instruction or a
-> >> > new instruction.
-> >> >
-> >> > This series enables prefixed instructions and extends the instruction
-> >> > emulation to support them. Then the places where prefixed instructions
-> >> > might need to be emulated are updated.
-> >> >
-> >> > The series is based on top of:
-> >> > https://patchwork.ozlabs.org/patch/1232619/ as this will effect
-> >> > kprobes.
-> >> >
-> >> > v4 is based on feedback from Nick Piggins, Christophe Leroy and Daniel Axtens.
-> >> > The major changes:
-> >> >     - Move xmon breakpoints from data section to text section
-> >> >     - Introduce a data type for instructions on powerpc
-> >>
-> >> Thanks for doing this, looks like a lot of work, I hope it works out :)
-> >>
-> > Yes it did end up touching a lot of places. I started thinking that
-> > that maybe it would be simpler to just use a u64 instead of the struct
-> > for  instructions.
-> > If we always keep the word instruction / prefix in the lower bytes,
-> > all of the current masking should still work and we can use operators
-> > again instead of ppc_inst_equal(), etc.
->
-> Yeah.. I think now that you've done it, I prefer it this way.
-Sorry, just to be clear which way do you mean?
->
-> > It also makes printing easier. We could just #define INST_FMT %llx or
-> > #define INST_FMT %x on powerpc32 and use that for printing out
-> > instructions.
->
-> Well, not sure about that. Would it make endian concerns more
-> complicated? Print format for prefix might be '%016llx', but we
-> don't want that for all instructions only prefixed ones, and I
-> don't know if that is the way to go either.
-Hm yeah that is true.
->
-> We'll want to adopt some convention for displaying prefixed
-> instruction bytes, but I don't know what what works best. I wonder
-> if binutils or any userspace tools have a convention.
-binutils-gdb upstream has supports disassembling prefixed instructions.
-Here is what objdump looks like:
-  44:    00 00 00 60     nop
-  48:    00 00 00 07     pnop
-  4c:    00 00 00 00
-  50:    01 00 20 39     li      r9,1
-  54:    00 00 00 06     paddi   r4,r9,3
-  58:    03 00 89 38
-  5c:    00 00 62 3c     addis   r3,r2,0
->
-> Which reminds me, you might have missed show_instructions()?
-> Although maybe you don't need that until we start using them in
-> the kernel.
-You are right I missed that here.
->
-> Thanks,
-> Nick
+On Thu, Mar 19, 2020 at 07:55:10PM -0300, Fabiano Rosas wrote:
+> kvmppc_uvmem_init checks for Ultravisor support and returns early if
+> it is not present. Calling kvmppc_uvmem_free at module exit will cause
+> an Oops:
+> 
+> $ modprobe -r kvm-hv
+> 
+>   Oops: Kernel access of bad area, sig: 11 [#1]
+>   <snip>
+>   NIP:  c000000000789e90 LR: c000000000789e8c CTR: c000000000401030
+>   REGS: c000003fa7bab9a0 TRAP: 0300   Not tainted  (5.6.0-rc6-00033-g6c90b86a745a-dirty)
+>   MSR:  9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>  CR: 24002282  XER: 00000000
+>   CFAR: c000000000dae880 DAR: 0000000000000008 DSISR: 40000000 IRQMASK: 1
+>   GPR00: c000000000789e8c c000003fa7babc30 c0000000016fe500 0000000000000000
+>   GPR04: 0000000000000000 0000000000000006 0000000000000000 c000003faf205c00
+>   GPR08: 0000000000000000 0000000000000001 000000008000002d c00800000ddde140
+>   GPR12: c000000000401030 c000003ffffd9080 0000000000000001 0000000000000000
+>   GPR16: 0000000000000000 0000000000000000 000000013aad0074 000000013aaac978
+>   GPR20: 000000013aad0070 0000000000000000 00007fffd1b37158 0000000000000000
+>   GPR24: 000000014fef0d58 0000000000000000 000000014fef0cf0 0000000000000001
+>   GPR28: 0000000000000000 0000000000000000 c0000000018b2a60 0000000000000000
+>   NIP [c000000000789e90] percpu_ref_kill_and_confirm+0x40/0x170
+>   LR [c000000000789e8c] percpu_ref_kill_and_confirm+0x3c/0x170
+>   Call Trace:
+>   [c000003fa7babc30] [c000003faf2064d4] 0xc000003faf2064d4 (unreliable)
+>   [c000003fa7babcb0] [c000000000400e8c] dev_pagemap_kill+0x6c/0x80
+>   [c000003fa7babcd0] [c000000000401064] memunmap_pages+0x34/0x2f0
+>   [c000003fa7babd50] [c00800000dddd548] kvmppc_uvmem_free+0x30/0x80 [kvm_hv]
+>   [c000003fa7babd80] [c00800000ddcef18] kvmppc_book3s_exit_hv+0x20/0x78 [kvm_hv]
+>   [c000003fa7babda0] [c0000000002084d0] sys_delete_module+0x1d0/0x2c0
+>   [c000003fa7babe20] [c00000000000b9d0] system_call+0x5c/0x68
+>   Instruction dump:
+>   3fc2001b fb81ffe0 fba1ffe8 fbe1fff8 7c7f1b78 7c9c2378 3bde4560 7fc3f378
+>   f8010010 f821ff81 486249a1 60000000 <e93f0008> 7c7d1b78 712a0002 40820084
+>   ---[ end trace 5774ef4dc2c98279 ]---
+> 
+> So this patch checks if kvmppc_uvmem_init actually allocated anything
+> before running kvmppc_uvmem_free.
+> 
+> Fixes: ca9f4942670c ("KVM: PPC: Book3S HV: Support for running secure guests")
+> Reported-by: Greg Kurz <groug@kaod.org>
+> Signed-off-by: Fabiano Rosas <farosas@linux.ibm.com>
+
+Thanks, applied to my kvm-ppc-next branch (Michael Ellerman decided
+that he didn't need to take it as the crash only occurs with
+CONFIG_PPC_UV=n, which is not the default).
+
+Paul.
