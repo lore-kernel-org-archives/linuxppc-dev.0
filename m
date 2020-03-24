@@ -2,65 +2,63 @@ Return-Path: <SRS0=VpCV=5J=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 434C5C43331
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 13:49:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A26A5C43331
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 13:55:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E9EA5206F6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 13:49:42 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="OLle3PQv"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E9EA5206F6
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id 1F5CF20714
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 13:55:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1F5CF20714
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48mt0M3rqPzDqfN
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 00:49:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48mt703n2qzDqTG
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 00:55:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=OLle3PQv; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ smtp.mailfrom=kaod.org (client-ip=46.105.74.227; helo=8.mo178.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=kaod.org
+Received: from 8.mo178.mail-out.ovh.net (8.mo178.mail-out.ovh.net
+ [46.105.74.227])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48msXs2PzfzDqTn
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2020 00:29:17 +1100 (AEDT)
-Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
- [83.86.89.107])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 7B079208D5;
- Tue, 24 Mar 2020 13:19:48 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1585055988;
- bh=No4x+/sF8HH0OSbHMeU9yYgyMCMiaiSJMmI6WFonRjY=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=OLle3PQvZECCkY9P4PTvmwtIAnKqRqhOkvC0nI9cf/odR7EEcU61xPE0yLPWQQCKV
- im89IrSZxFDo/RPp3VZMfICnDUMwNcsgVpGkYAsQOkKSBq2GGMTcEMHgj6TUz4hRNQ
- x37z4qt4i69qWoaCxRCgVkZCdUlhJVkM15jptS7k=
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 5.4 091/102] mm,
- slub: prevent kmalloc_node crashes and memory leaks
-Date: Tue, 24 Mar 2020 14:11:23 +0100
-Message-Id: <20200324130816.097967203@linuxfoundation.org>
-X-Mailer: git-send-email 2.25.2
-In-Reply-To: <20200324130806.544601211@linuxfoundation.org>
-References: <20200324130806.544601211@linuxfoundation.org>
-User-Agent: quilt/0.66
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48msh81l2YzDqQq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2020 00:35:35 +1100 (AEDT)
+Received: from player792.ha.ovh.net (unknown [10.108.54.119])
+ by mo178.mail-out.ovh.net (Postfix) with ESMTP id C4A3395F52
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2020 14:27:32 +0100 (CET)
+Received: from kaod.org (82-64-250-170.subs.proxad.net [82.64.250.170])
+ (Authenticated sender: clg@kaod.org)
+ by player792.ha.ovh.net (Postfix) with ESMTPSA id E7D8710C75CB2;
+ Tue, 24 Mar 2020 13:27:12 +0000 (UTC)
+Subject: Re: [PATCH v8 04/14] powerpc/vas: Alloc and setup IRQ and trigger
+ port address
+To: Oliver O'Halloran <oohall@gmail.com>
+References: <1584598120.9256.15237.camel@hbabu-laptop>
+ <1584598473.9256.15248.camel@hbabu-laptop>
+ <396db62b-5342-a1b3-eade-a219afd98fc7@kaod.org>
+ <bd846a9c-0e21-1d97-0b03-e01c35ff01ae@kaod.org>
+ <CAOSf1CFyERZE_am5uXVY2Y65=Vkm=afd39a_2RysKR6nkqvV0A@mail.gmail.com>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <dfb2a4c4-bfe3-08eb-3f9e-b959170ee325@kaod.org>
+Date: Tue, 24 Mar 2020 14:27:12 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.5.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <CAOSf1CFyERZE_am5uXVY2Y65=Vkm=afd39a_2RysKR6nkqvV0A@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 775745037484854265
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedugedrudehuddgvddvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepuffvfhfhkffffgggjggtgfesthekredttdefjeenucfhrhhomhepveorughrihgtpgfnvggpifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucfkpheptddrtddrtddrtddpkedvrdeigedrvdehtddrudejtdenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehplhgrhigvrhejledvrdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrgh
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,186 +70,95 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sachin Sant <sachinp@linux.vnet.ibm.com>,
- Nathan Lynch <nathanl@linux.ibm.com>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- PUVICHAKRAVARTHY RAMACHANDRAN <puvichakravarthy@in.ibm.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- David Rientjes <rientjes@google.com>, linuxppc-dev@lists.ozlabs.org,
- stable@vger.kernel.org, Bharata B Rao <bharata@linux.ibm.com>,
- Pekka Enberg <penberg@kernel.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Kirill Tkhai <ktkhai@virtuozzo.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@kernel.org>,
- Mel Gorman <mgorman@techsingularity.net>, Christopher Lameter <cl@linux.com>,
- Vlastimil Babka <vbabka@suse.cz>
+Cc: Michael Neuling <mikey@neuling.org>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ Frederic Barrat <frederic.barrat@fr.ibm.com>,
+ Haren Myneni <haren@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>,
+ Christoph Hellwig <hch@infradead.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Andrew Donnellan <ajd@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Vlastimil Babka <vbabka@suse.cz>
+On 3/24/20 3:26 AM, Oliver O'Halloran wrote:
+> On Mon, Mar 23, 2020 at 8:28 PM Cédric Le Goater <clg@kaod.org> wrote:
+>>
+>> On 3/23/20 10:06 AM, Cédric Le Goater wrote:
+>>> On 3/19/20 7:14 AM, Haren Myneni wrote:
+>>>>
+>>>> Alloc IRQ and get trigger port address for each VAS instance. Kernel
+>>>> register this IRQ per VAS instance and sets this port for each send
+>>>> window. NX interrupts the kernel when it sees page fault.
+>>>
+>>> I don't understand why this is not done by the OPAL driver for each VAS
+>>> of the system. Is the VAS unit very different from OpenCAPI regarding
+>>> the fault ?
+>>
+>> I checked the previous patchsets and I see that v3 was more like I expected
+>> it: one interrupt for faults allocated by the skiboot driver and exposed
+>> in the DT.
+>>
+>> What made you change your mind ?
+> 
+> From init_vas_inst() in arch/powerpc/platforms/powernv/vas.c:
+> 
+>         if (pdev->num_resources != 4) {
+>                 pr_err("Unexpected DT configuration for [%s, %d]\n",
+>                                 pdev->name, vasid);
+>                 return -ENODEV;
+>         }
+> 
+> This code should never have been written, but here we are. Due to the
+> above adding an interrupt in the DT makes the driver unable to bind on
+> older kernels. In an older version of the patches (don't think it was
+> posted) Haren was using a non-standard interrupt property and we could
+> work around the problem by going back to that.
 
-commit 0715e6c516f106ed553828a671d30ad9a3431536 upstream.
+ok ... :/ I didn't know. Don't we have a rule on LinuxPPC for such 
+things ? Such as, the culprit should send a croissant to everyone 
+involved. 
 
-Sachin reports [1] a crash in SLUB __slab_alloc():
+> However, we already have the OPAL calls for allocating / freeing
+> hardware interrupt numbers so why not do that? 
 
-  BUG: Kernel NULL pointer dereference on read at 0x000073b0
-  Faulting instruction address: 0xc0000000003d55f4
-  Oops: Kernel access of bad area, sig: 11 [#1]
-  LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=2048 NUMA pSeries
-  Modules linked in:
-  CPU: 19 PID: 1 Comm: systemd Not tainted 5.6.0-rc2-next-20200218-autotest #1
-  NIP:  c0000000003d55f4 LR: c0000000003d5b94 CTR: 0000000000000000
-  REGS: c0000008b37836d0 TRAP: 0300   Not tainted  (5.6.0-rc2-next-20200218-autotest)
-  MSR:  8000000000009033 <SF,EE,ME,IR,DR,RI,LE>  CR: 24004844  XER: 00000000
-  CFAR: c00000000000dec4 DAR: 00000000000073b0 DSISR: 40000000 IRQMASK: 1
-  GPR00: c0000000003d5b94 c0000008b3783960 c00000000155d400 c0000008b301f500
-  GPR04: 0000000000000dc0 0000000000000002 c0000000003443d8 c0000008bb398620
-  GPR08: 00000008ba2f0000 0000000000000001 0000000000000000 0000000000000000
-  GPR12: 0000000024004844 c00000001ec52a00 0000000000000000 0000000000000000
-  GPR16: c0000008a1b20048 c000000001595898 c000000001750c18 0000000000000002
-  GPR20: c000000001750c28 c000000001624470 0000000fffffffe0 5deadbeef0000122
-  GPR24: 0000000000000001 0000000000000dc0 0000000000000002 c0000000003443d8
-  GPR28: c0000008b301f500 c0000008bb398620 0000000000000000 c00c000002287180
-  NIP ___slab_alloc+0x1f4/0x760
-  LR __slab_alloc+0x34/0x60
-  Call Trace:
-    ___slab_alloc+0x334/0x760 (unreliable)
-    __slab_alloc+0x34/0x60
-    __kmalloc_node+0x110/0x490
-    kvmalloc_node+0x58/0x110
-    mem_cgroup_css_online+0x108/0x270
-    online_css+0x48/0xd0
-    cgroup_apply_control_enable+0x2ec/0x4d0
-    cgroup_mkdir+0x228/0x5f0
-    kernfs_iop_mkdir+0x90/0xf0
-    vfs_mkdir+0x110/0x230
-    do_mkdirat+0xb0/0x1a0
-    system_call+0x5c/0x68
+It's a good way to work around the problem but we are bypassing the
+irqchip which does other things for the driver.
 
-This is a PowerPC platform with following NUMA topology:
+> If we ever want to take
+> advantage of the job completion interrupts we'd want to have the
+> ability to allocate them since the completion interrupts are
+> per-window rather than per-VAS.
 
-  available: 2 nodes (0-1)
-  node 0 cpus:
-  node 0 size: 0 MB
-  node 0 free: 0 MB
-  node 1 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
-  node 1 size: 35247 MB
-  node 1 free: 30907 MB
-  node distances:
-  node   0   1
-    0:  10  40
-    1:  40  10
+Yes. That's what I thought it was about to begin with. OCXL has a  
+first implementation of such interrupts. 
 
-  possible numa nodes: 0-31
+>> This version is hijacking the lowlevel routines of the XIVE irqchip which
+>> is not the best approach. OCXL is doing that because it needs to allocate
+>> interrupts for the user space processes using the AFU and we should rework
+>> that part.
+> 
+> What'd you have in mind for the reworking the oxcl interrupt allocation? 
+> I didn't find it that objectionable since it's more or less the same as 
+> what happens when allocating IPIs.
 
-This only happens with a mmotm patch "mm/memcontrol.c: allocate
-shrinker_map on appropriate NUMA node" [2] which effectively calls
-kmalloc_node for each possible node.  SLUB however only allocates
-kmem_cache_node on online N_NORMAL_MEMORY nodes, and relies on
-node_to_mem_node to return such valid node for other nodes since commit
-a561ce00b09e ("slub: fall back to node_to_mem_node() node if allocating
-on memoryless node").  This is however not true in this configuration
-where the _node_numa_mem_ array is not initialized for nodes 0 and 2-31,
-thus it contains zeroes and get_partial() ends up accessing
-non-allocated kmem_cache_node.
+I think we need to work a bit more on the concepts, on the interfaces,
+internal at the platform kernel level and at the user space level, and 
+on the configuration, with chip affinity in mind. There are bunch of 
+information on the sources that are retrieved from the firmware or 
+hypervisor that we care about. An irqchip might be the best option 
+for the moment. 
 
-A related issue was reported by Bharata (originally by Ramachandran) [3]
-where a similar PowerPC configuration, but with mainline kernel without
-patch [2] ends up allocating large amounts of pages by kmalloc-1k
-kmalloc-512.  This seems to have the same underlying issue with
-node_to_mem_node() not behaving as expected, and might probably also
-lead to an infinite loop with CONFIG_SLUB_CPU_PARTIAL [4].
+At the same time, it would be good to keep in mind user interrupts. 
 
-This patch should fix both issues by not relying on node_to_mem_node()
-anymore and instead simply falling back to NUMA_NO_NODE, when
-kmalloc_node(node) is attempted for a node that's not online, or has no
-usable memory.  The "usable memory" condition is also changed from
-node_present_pages() to N_NORMAL_MEMORY node state, as that is exactly
-the condition that SLUB uses to allocate kmem_cache_node structures.
-The check in get_partial() is removed completely, as the checks in
-___slab_alloc() are now sufficient to prevent get_partial() being
-reached with an invalid node.
+C.
 
-[1] https://lore.kernel.org/linux-next/3381CD91-AB3D-4773-BA04-E7A072A63968@linux.vnet.ibm.com/
-[2] https://lore.kernel.org/linux-mm/fff0e636-4c36-ed10-281c-8cdb0687c839@virtuozzo.com/
-[3] https://lore.kernel.org/linux-mm/20200317092624.GB22538@in.ibm.com/
-[4] https://lore.kernel.org/linux-mm/088b5996-faae-8a56-ef9c-5b567125ae54@suse.cz/
-
-Fixes: a561ce00b09e ("slub: fall back to node_to_mem_node() node if allocating on memoryless node")
-Reported-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
-Reported-by: PUVICHAKRAVARTHY RAMACHANDRAN <puvichakravarthy@in.ibm.com>
-Signed-off-by: Vlastimil Babka <vbabka@suse.cz>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Tested-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
-Tested-by: Bharata B Rao <bharata@linux.ibm.com>
-Reviewed-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: Mel Gorman <mgorman@techsingularity.net>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Michal Hocko <mhocko@kernel.org>
-Cc: Christopher Lameter <cl@linux.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-Cc: Pekka Enberg <penberg@kernel.org>
-Cc: David Rientjes <rientjes@google.com>
-Cc: Kirill Tkhai <ktkhai@virtuozzo.com>
-Cc: Vlastimil Babka <vbabka@suse.cz>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>
-Cc: <stable@vger.kernel.org>
-Link: http://lkml.kernel.org/r/20200320115533.9604-1-vbabka@suse.cz
-Debugged-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-
----
- mm/slub.c |   26 +++++++++++++++++---------
- 1 file changed, 17 insertions(+), 9 deletions(-)
-
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -1953,8 +1953,6 @@ static void *get_partial(struct kmem_cac
- 
- 	if (node == NUMA_NO_NODE)
- 		searchnode = numa_mem_id();
--	else if (!node_present_pages(node))
--		searchnode = node_to_mem_node(node);
- 
- 	object = get_partial_node(s, get_node(s, searchnode), c, flags);
- 	if (object || node != NUMA_NO_NODE)
-@@ -2543,17 +2541,27 @@ static void *___slab_alloc(struct kmem_c
- 	struct page *page;
- 
- 	page = c->page;
--	if (!page)
-+	if (!page) {
-+		/*
-+		 * if the node is not online or has no normal memory, just
-+		 * ignore the node constraint
-+		 */
-+		if (unlikely(node != NUMA_NO_NODE &&
-+			     !node_state(node, N_NORMAL_MEMORY)))
-+			node = NUMA_NO_NODE;
- 		goto new_slab;
-+	}
- redo:
- 
- 	if (unlikely(!node_match(page, node))) {
--		int searchnode = node;
--
--		if (node != NUMA_NO_NODE && !node_present_pages(node))
--			searchnode = node_to_mem_node(node);
--
--		if (unlikely(!node_match(page, searchnode))) {
-+		/*
-+		 * same as above but node_match() being false already
-+		 * implies node != NUMA_NO_NODE
-+		 */
-+		if (!node_state(node, N_NORMAL_MEMORY)) {
-+			node = NUMA_NO_NODE;
-+			goto redo;
-+		} else {
- 			stat(s, ALLOC_NODE_MISMATCH);
- 			deactivate_slab(s, page, c->freelist, c);
- 			goto new_slab;
-
+> 
+>> However, the translation fault interrupt is allocated by skiboot.
+>>
+>> Sorry for the noise, I would like to understand more how this works. I also
+>> have passthrough in mind.
+>>
+>> C.
 
