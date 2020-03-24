@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 81349C4332B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 07:54:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56E98C4332B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 07:56:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3D46C20724
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 07:54:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3D46C20724
+	by mail.kernel.org (Postfix) with ESMTPS id 0E55E20724
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 07:56:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0E55E20724
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48mk6P4b58zDqTC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 18:54:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48mk8m0wg3zDqyq
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 18:56:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=lst.de
  (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
@@ -28,27 +28,26 @@ Authentication-Results: lists.ozlabs.org;
 Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48mk4J6pm4zDqts
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2020 18:52:31 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48mk662KTMzDqZl
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2020 18:54:06 +1100 (AEDT)
 Received: by verein.lst.de (Postfix, from userid 2407)
- id DE3EB68BFE; Tue, 24 Mar 2020 08:52:25 +0100 (CET)
-Date: Tue, 24 Mar 2020 08:52:25 +0100
+ id E210B68BFE; Tue, 24 Mar 2020 08:54:02 +0100 (CET)
+Date: Tue, 24 Mar 2020 08:54:02 +0100
 From: Christoph Hellwig <hch@lst.de>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
 Subject: Re: [PATCH 1/2] dma-mapping: add a dma_ops_bypass flag to struct
  device
-Message-ID: <20200324075225.GI23447@lst.de>
+Message-ID: <20200324075402.GJ23447@lst.de>
 References: <20200320141640.366360-1-hch@lst.de>
  <20200320141640.366360-2-hch@lst.de>
  <2f31d0dd-aa7e-8b76-c8a1-5759fda5afc9@ozlabs.ru>
- <20200323083705.GA31245@lst.de>
- <37ce1b7e-264d-292d-32b1-093b24b3525c@ozlabs.ru>
- <20200323172014.GA31269@lst.de>
- <d4bf6058-aa77-d0bc-8196-f4c27fb21b74@ozlabs.ru>
+ <20200323083705.GA31245@lst.de> <20200323085059.GA32528@lst.de>
+ <87sghz2ibh.fsf@linux.ibm.com> <20200323172256.GB31269@lst.de>
+ <ffce1af6-a215-dee8-7b5c-2111f43accfd@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <d4bf6058-aa77-d0bc-8196-f4c27fb21b74@ozlabs.ru>
+In-Reply-To: <ffce1af6-a215-dee8-7b5c-2111f43accfd@ozlabs.ru>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -70,9 +69,13 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Mar 24, 2020 at 02:37:59PM +1100, Alexey Kardashevskiy wrote:
-> dma_alloc_direct() and dma_map_direct() do the same thing now which is
-> good, did I miss anything else?
+On Tue, Mar 24, 2020 at 02:05:54PM +1100, Alexey Kardashevskiy wrote:
+> This is for persistent memory which you can DMA to/from but yet it does
+> not appear in the system as a normal memory and therefore requires
+> special handling anyway (O_DIRECT or DAX, I do not know the exact
+> mechanics). All other devices in the system should just run as usual,
+> i.e. use 1:1 mapping if possible.
 
-dma_alloc_direct looks at coherent_dma_mask, dma_map_direct looks
-at dma_mask.
+On other systems (x86 and arm) pmem as long as it is page backed does
+not require any special handling.  This must be some weird way powerpc
+fucked up again, and I suspect you'll have to suffer from it.
