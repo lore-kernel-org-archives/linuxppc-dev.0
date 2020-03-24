@@ -2,58 +2,66 @@ Return-Path: <SRS0=VpCV=5J=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E192C54EEB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 03:00:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7837EC43331
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 03:02:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3365820663
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 03:00:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 03C9420663
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 03:02:20 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="b1S6P/UZ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3365820663
-Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="RkSyeq37"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 03C9420663
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48mbZr2LBqzDqym
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 14:00:04 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 48mbdQ2T3MzDr2N
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2020 14:02:18 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48mbVh2wwpzDqSQ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2020 13:56:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48mbYL5Jv6zDqSj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2020 13:58:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256
- header.s=201707 header.b=b1S6P/UZ; dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1003)
- id 48mbVg1D2nz9sSH; Tue, 24 Mar 2020 13:56:26 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1585018587; bh=qcqkAGfatCcdaSF4JecPaLJRR36leDyxRC3RwY8oO3U=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=b1S6P/UZ1s9Q7htiPyHTtAlm1CEfR6MJvQadZpArIv5YrDEMKNc+Zkd73fIwGD3IX
- HS+zH7c5SS13rccwa7v0NYBzLVY/7uELpZMD5FFPUcmUbeTsU+AnsKET43qGKnS2S/
- CKm3NjDvUrwZEG3zvZpY2VIEGBri+iCC2PPkeVctiVSUBdpdbI6EiOkwquLkXzLd7u
- 4V9/iAr9M6Z+E5X8kPkYCQrOBNg9Ri6Eszroac4IZGcxoTZ+VKnCj+Ooc3YZtt/MmY
- 4COXK9PBfN7EgldeacQ4ySFbgWaarKd2CSEL6OS5ZTSPJ1lISoAv4LO/qbkmEr46ty
- bPHlD35Z1l10g==
-Date: Tue, 24 Mar 2020 13:54:29 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Laurent Dufour <ldufour@linux.ibm.com>
-Subject: Re: [PATCH 0/2] Fix SVM hang at startup
-Message-ID: <20200324025429.GD5604@blackberry>
-References: <20200320102643.15516-1-ldufour@linux.ibm.com>
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=RkSyeq37; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 48mbYL0THpz9sSH;
+ Tue, 24 Mar 2020 13:58:46 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1585018726;
+ bh=pnaqBz7SMoS7pSvgsxbi1WyrO4gR9k0CpdIGUOxniwo=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=RkSyeq37dNPZcWz0cypFRYwcF2tGvvW0waQY72B/meCEufwTOLM1Qu88/i/CYD7i/
+ +gzGhXID3yNfxlEySaJADWHv9zklwkQ0dc7bcuUHbPBu5uhChta5cept5NlGSAKHb7
+ hz9cgBUX4lMtdnNNXYTI/nd3c8r9PPQbc2Lmz5/XxmNU0pSQkygvlAPZx9zObwouSZ
+ VIaDsGBPAKDYFzbH4ogMtXsnzR50yg2bNhbW1dI5VLin8/Xql22c4fygTCOHQLzGey
+ Bi14dmz22uX7fzXrMaHb77FfbFghk52uTTap1JJtfk/Je2gMoBoGe5xZ7q8RMrLz+L
+ 438AD5gqyPzkw==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, Jordan Niethe <jniethe5@gmail.com>
+Subject: Re: [PATCH v4 03/16] powerpc: Use a datatype for instructions
+In-Reply-To: <1584956855.oidzv2r2fr.astroid@bobo.none>
+References: <20200320051809.24332-1-jniethe5@gmail.com>
+ <20200320051809.24332-4-jniethe5@gmail.com>
+ <1584944554.pe2tzckmyl.astroid@bobo.none>
+ <CACzsE9qy7dUv+sbcCN-i0EeYiH=DacutULunpBdgV0h8D0m2yQ@mail.gmail.com>
+ <1584956855.oidzv2r2fr.astroid@bobo.none>
+Date: Tue, 24 Mar 2020 13:58:51 +1100
+Message-ID: <87369yzces.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200320102643.15516-1-ldufour@linux.ibm.com>
-User-Agent: Mutt/1.5.24 (2015-08-30)
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,48 +73,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kvm-ppc@vger.kernel.org
+Cc: Alistair Popple <alistair@popple.id.au>, Daniel Axtens <dja@axtens.net>,
+ linuxppc-dev@lists.ozlabs.org, Balamuruhan S <bala24@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Mar 20, 2020 at 11:26:41AM +0100, Laurent Dufour wrote:
-> This series is fixing a SVM hang occurring when starting a SVM requiring
-> more secure memory than available. The hang happens in the SVM when calling
-> UV_ESM.
-> 
-> The following is happening:
-> 
-> 1. SVM calls UV_ESM
-> 2. Ultravisor (UV) calls H_SVM_INIT_START
-> 3. Hypervisor (HV) calls UV_REGISTER_MEM_SLOT
-> 4. UV returns error because there is not enough free secure memory
-> 5. HV enter the error path in kvmppc_h_svm_init_start()
-> 6. In the return path, since kvm->arch.secure_guest is not yet set hrfid is
->    called
-> 7. As the HV doesn't know the SVM calling context hrfid is jumping to
->    unknown address in the SVM leading to various expections.
-> 
-> This series fixes the setting of kvm->arch.secure_guest in
-> kvmppc_h_svm_init_start() to ensure that UV_RETURN is called on the return
-> path to get back to the UV.
-> 
-> In addition to ensure that a malicious VM will not call UV reserved Hcall,
-> a check of the Secure bit in the calling MSR is addded to reject such a
-> call.
-> 
-> It is assumed that the UV will filtered out such Hcalls made by a malicious
-> SVM.
-> 
-> Laurent Dufour (2):
->   KVM: PPC: Book3S HV: check caller of H_SVM_* Hcalls
->   KVM: PPC: Book3S HV: H_SVM_INIT_START must call UV_RETURN
-> 
->  arch/powerpc/kvm/book3s_hv.c       | 32 ++++++++++++++++++++----------
->  arch/powerpc/kvm/book3s_hv_uvmem.c |  3 ++-
->  2 files changed, 23 insertions(+), 12 deletions(-)
+Nicholas Piggin <npiggin@gmail.com> writes:
+> Jordan Niethe's on March 23, 2020 7:28 pm:
+>> On Mon, Mar 23, 2020 at 5:27 PM Nicholas Piggin <npiggin@gmail.com> wrote:
+>>> Jordan Niethe's on March 20, 2020 3:17 pm:
+>>> > Currently unsigned ints are used to represent instructions on powerpc.
+>>> > This has worked well as instructions have always been 4 byte words.
+>>> > However, a future ISA version will introduce some changes to
+>>> > instructions that mean this scheme will no longer work as well. This
+>>> > change is Prefixed Instructions. A prefixed instruction is made up of a
+>>> > word prefix followed by a word suffix to make an 8 byte double word
+>>> > instruction. No matter the endianess of the system the prefix always
+>>> > comes first. Prefixed instructions are only planned for powerpc64.
+>>> >
+>>> > Introduce a ppc_inst type to represent both prefixed and word
+>>> > instructions on powerpc64 while keeping it possible to exclusively have
+>>> > word instructions on powerpc32, A latter patch will expand the type to
+>>> > include prefixed instructions but for now just typedef it to a u32.
+>>> >
+>>> > Later patches will introduce helper functions and macros for
+>>> > manipulating the instructions so that powerpc64 and powerpc32 might
+>>> > maintain separate type definitions.
+>>>
+>>> ppc_inst_t I would slightly prefer for a typedef like this.
+>> Are _t types meant to be reserved?
+>
+> No, just convention that structs are not normally typedefed unless
+> they are a pervasive interface that gets passed around a lot but
+> does not get accessed without accessor functions much. When you do
+> typedef them, add a _t (or less frequently _s/_u/etc). pte_t,
+> cpumask_t, atomic_t.
 
-Thanks, series applied to my kvm-ppc-next branch.
+Ideally we wouldn't use a typedef, we'd just have:
 
-Paul.
+struct ppc_inst {
+	u32 val;
+#ifdef CONFIG_PPC64
+        u32 suffix;
+#endif
+};
+
+That may make the conversion harder though, because you more or less
+have to update all usages at once.
+
+cheers
