@@ -8,75 +8,76 @@ X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63BAEC43331
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 10:49:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 562D7C43331
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 10:51:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 190D320722
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 10:49:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0695F206F6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 10:51:49 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="oegKBQsw"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 190D320722
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="CyIKswNj"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0695F206F6
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48nPy46mVszDqBc
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 21:49:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48nQ0g0c2JzDqLB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 21:51:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::441;
- helo=mail-pf1-x441.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::643;
+ helo=mail-pl1-x643.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=oegKBQsw; dkim-atps=neutral
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
- [IPv6:2607:f8b0:4864:20::441])
+ header.s=20161025 header.b=CyIKswNj; dkim-atps=neutral
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48nPdT1PtszDqnB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2020 21:35:09 +1100 (AEDT)
-Received: by mail-pf1-x441.google.com with SMTP id i13so857953pfe.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2020 03:35:08 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48nPdX562CzDqpM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2020 21:35:12 +1100 (AEDT)
+Received: by mail-pl1-x643.google.com with SMTP id m1so650927pll.6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2020 03:35:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=pIQfjMq+C2jUbP9ScwG0NM6KSCSOR34SFi5O3FOeAcI=;
- b=oegKBQswDcGCZ5OiKMU1d24OmLSSS/ie8KjlR6oDKHJHHruoJ/Pu6Ra64ZhBiDH9Gw
- RpddJIYIOrWSBi+sDVOlD5ohQpaS0kxv0J+enuSWPMLCWq+MFDb9DEytEXx/eIZr5lxq
- UzPRCOFznsR0f1/TIeiFa4acqTfwGN+m7Q3jYGKYjfvhCCbt9Ay3KUHtVqdJWokoFoLe
- YpvJngAtgBQIzLJhthzAUymR41xWwUSvIeviONa/olptD4JQrE2M7Lc9562QHzzkLkEA
- Ks4ADmS8xd3obKmXHzXjvgtVQ/YzOmp3qI67Ykr4jHMQ/Z6Ol8DqplnD53+j8b/A3WRF
- YCHg==
+ bh=4TUXuizyMsoZnBOI8em+MBd+XmwQZFbfRlwmLQpUkRg=;
+ b=CyIKswNj8FxuXvwyc9OaulVJzjVPmUkg73gz0oduQPRLYSpoW5G2xCdhSdGwvmENd4
+ xZ077ELYOpq26YZxeuVjBUrFVyseN5lVhsTR62en2ZfW69VRp1euFZbmf2Z7ibu/1WhY
+ 7HOPo60bjTwsz1I9l1wVUk6CnRNic3iiJn13zuLFsW2RLErxvR97fPA+j95nxj+9AJA9
+ dl1HXQPgXdpbRFsQcfn9d5RMOyZ3P0qjNgoSnSK0BNMupEcsUqSPZG6VLBvC1+1VZ4JR
+ ET2+/NSfcqTyJgPvUCsVarkVl3KzWsrweumIYtIM+IN8qC0BG3egST950sp4dejR40EL
+ bPEw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=pIQfjMq+C2jUbP9ScwG0NM6KSCSOR34SFi5O3FOeAcI=;
- b=jpdR9+W4lHPBt+aelyozL2OP5OSpw9yubZNqEgk7IQZNP+Gx38SWpNJp4F716w6f1d
- QbBZuGnz7WapDLQblX9ukKMMGxMXN40b4PcSr/pv2bVaRdnHKzPUVf2N5D+IB7JbZQhv
- jSjXGcxATLf1fSRGisHgjf88pe0hCNUa4doqffoorE/aFgtOsMZSacBw5lrvyEJqqflp
- kCe9wXLfCp7kogAmVD+D3805E61MzU6cxBVnZOQjNFJ9cIc3G8KVqep0iv/WIfsJbYh0
- 71hMU4TqEj/sD4FDXyEGDwgdB7VxNbV7r9UMuZ5EjtWMdQ2ULs03TPH5bFDKeE3CkvPO
- 9AMQ==
-X-Gm-Message-State: ANhLgQ0yfjPLCAGgwRUB1GThfTn1jZCnP6FR4shp52YoBx2u/b/fghir
- r1cqC6CSDAa5OJmGq5qqAS48axEB
-X-Google-Smtp-Source: ADFU+vvCK+XKVJIJ9eosBmTLC2fPiWV7XL+H+vTN4CHCxcPsFdGxDlhz9h/wOWpBMx6YJg7qU9MkLg==
-X-Received: by 2002:a63:a51e:: with SMTP id n30mr2498357pgf.414.1585132506524; 
- Wed, 25 Mar 2020 03:35:06 -0700 (PDT)
+ bh=4TUXuizyMsoZnBOI8em+MBd+XmwQZFbfRlwmLQpUkRg=;
+ b=DcXCo9DPIqhbAroS4p+4LfclXw5i/9zM0PRp0OfAFXMvozmEYtvxf6xscXRyi7Ir7v
+ GDXq3gg06xx6KK+rrvrYTw1Pfadw+LFYPckor/p2rJnBLDXhnuwc4/+RXBvPcF0q2wph
+ suE5IKU/Bw4nFZ//kke9LXf8T5pbxHXAZMMoRn+lEtuP8kuvXs/79aaUUq3brIi45DZt
+ wKp0JFHIvwTYQyyR1WI+uTurwtKDbPWyBq11374MzkyBTwNR42b9oBJlNuMkvlwFnhpf
+ gLMzWEgBTuTNuKoG1OEu98AjsYGCWHT1g2FP72v9Jg+GNbK29wRhyyLdtD0Td3kWFZYo
+ zsNA==
+X-Gm-Message-State: ANhLgQ3wfDE3dAkQfsJ/GpXo0nQklE8ukkFM0n2+lrqYEjuxWcO+Outi
+ 03s2NmHf11C1yJedvBGKuMWV53Pm
+X-Google-Smtp-Source: ADFU+vt43rxaJUPU7cRwfRkERf+nMiTQujq5mn3Y1lmku9yDzMEGh8QSC23bzeMzBKIih9TNzNacrg==
+X-Received: by 2002:a17:902:8647:: with SMTP id
+ y7mr2635390plt.224.1585132509697; 
+ Wed, 25 Mar 2020 03:35:09 -0700 (PDT)
 Received: from bobo.ibm.com (14-202-190-183.tpgi.com.au. [14.202.190.183])
- by smtp.gmail.com with ESMTPSA id b9sm16549701pgi.75.2020.03.25.03.35.03
+ by smtp.gmail.com with ESMTPSA id b9sm16549701pgi.75.2020.03.25.03.35.07
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 25 Mar 2020 03:35:06 -0700 (PDT)
+ Wed, 25 Mar 2020 03:35:09 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 06/12] powerpc/pseries/ras: fwnmi avoid modifying r3 in
- error case
-Date: Wed, 25 Mar 2020 20:34:04 +1000
-Message-Id: <20200325103410.157573-7-npiggin@gmail.com>
+Subject: [PATCH v2 07/12] powerpc/pseries/ras: fwnmi sreset should not
+ interlock
+Date: Wed, 25 Mar 2020 20:34:05 +1000
+Message-Id: <20200325103410.157573-8-npiggin@gmail.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20200325103410.157573-1-npiggin@gmail.com>
 References: <20200325103410.157573-1-npiggin@gmail.com>
@@ -99,43 +100,102 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-If there is some error with the fwnmi save area, r3 has already been
-modified which doesn't help with debugging.
+PAPR does not specify that fwnmi sreset should be interlocked, and
+PowerVM (and therefore now QEMU) do not require it.
 
-Only update r3 when to restore the saved value.
+These "ibm,nmi-interlock" calls are ignored by firmware, but there
+is a possibility that the sreset could have interrupted a machine
+check and release the machine check's interlock too early, corrupting
+it if another machine check came in.
+
+This is an extremely rare case, but it should be fixed for clarity
+and reducing the code executed in the sreset path. Firmware also
+does not provide error information for the sreset case to look at, so
+remove that comment.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/platforms/pseries/ras.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/pseries/ras.c | 48 ++++++++++++++++++++--------
+ 1 file changed, 34 insertions(+), 14 deletions(-)
 
 diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-index 9a37bda47468..a40598e6e525 100644
+index a40598e6e525..833ae34b7fec 100644
 --- a/arch/powerpc/platforms/pseries/ras.c
 +++ b/arch/powerpc/platforms/pseries/ras.c
-@@ -423,18 +423,19 @@ static inline struct rtas_error_log *fwnmi_get_errlog(void)
+@@ -406,6 +406,20 @@ static inline struct rtas_error_log *fwnmi_get_errlog(void)
+ 	return (struct rtas_error_log *)local_paca->mce_data_buf;
+ }
+ 
++static unsigned long *fwnmi_get_savep(struct pt_regs *regs)
++{
++	unsigned long savep_ra;
++
++	/* Mask top two bits */
++	savep_ra = regs->gpr[3] & ~(0x3UL << 62);
++	if (!VALID_FWNMI_BUFFER(savep_ra)) {
++		printk(KERN_ERR "FWNMI: corrupt r3 0x%016lx\n", regs->gpr[3]);
++		return NULL;
++	}
++
++	return __va(savep_ra);
++}
++
+ /*
+  * Get the error information for errors coming through the
+  * FWNMI vectors.  The pt_regs' r3 will be updated to reflect
+@@ -423,20 +437,15 @@ static inline struct rtas_error_log *fwnmi_get_errlog(void)
   */
  static struct rtas_error_log *fwnmi_get_errinfo(struct pt_regs *regs)
  {
-+	unsigned long savep_ra;
+-	unsigned long savep_ra;
  	unsigned long *savep;
  	struct rtas_error_log *h;
  
- 	/* Mask top two bits */
--	regs->gpr[3] &= ~(0x3UL << 62);
-+	savep_ra = regs->gpr[3] & ~(0x3UL << 62);
- 
--	if (!VALID_FWNMI_BUFFER(regs->gpr[3])) {
-+	if (!VALID_FWNMI_BUFFER(savep_ra)) {
- 		printk(KERN_ERR "FWNMI: corrupt r3 0x%016lx\n", regs->gpr[3]);
+-	/* Mask top two bits */
+-	savep_ra = regs->gpr[3] & ~(0x3UL << 62);
+-
+-	if (!VALID_FWNMI_BUFFER(savep_ra)) {
+-		printk(KERN_ERR "FWNMI: corrupt r3 0x%016lx\n", regs->gpr[3]);
++	savep = fwnmi_get_savep(regs);
++	if (!savep)
  		return NULL;
- 	}
+-	}
  
--	savep = __va(regs->gpr[3]);
-+	savep = __va(savep_ra);
- 	regs->gpr[3] = be64_to_cpu(savep[0]);	/* restore original r3 */
+-	savep = __va(savep_ra);
+-	regs->gpr[3] = be64_to_cpu(savep[0]);	/* restore original r3 */
++	/* restore original r3 */
++	regs->gpr[3] = be64_to_cpu(savep[0]);
  
  	h = (struct rtas_error_log *)&savep[1];
+ 	/* Use the per cpu buffer from paca to store rtas error log */
+@@ -483,11 +492,22 @@ int pSeries_system_reset_exception(struct pt_regs *regs)
+ #endif
+ 
+ 	if (fwnmi_active) {
+-		struct rtas_error_log *errhdr = fwnmi_get_errinfo(regs);
+-		if (errhdr) {
+-			/* XXX Should look at FWNMI information */
+-		}
+-		fwnmi_release_errinfo();
++		unsigned long *savep;
++
++		/*
++		 * Firmware (PowerVM and KVM) saves r3 to a save area like
++		 * machine check, which is not exactly what PAPR (2.9)
++		 * suggests but there is no way to detect otherwise, so this
++		 * is the interface now.
++		 *
++		 * System resets do not save any error log or require an
++		 * "ibm,nmi-interlock" rtas call to release.
++		 */
++
++		savep = fwnmi_get_savep(regs);
++		/* restore original r3 */
++		if (savep)
++			regs->gpr[3] = be64_to_cpu(savep[0]);
+ 	}
+ 
+ 	if (smp_handle_nmi_ipi(regs))
 -- 
 2.23.0
 
