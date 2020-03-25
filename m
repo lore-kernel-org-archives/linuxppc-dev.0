@@ -2,66 +2,61 @@ Return-Path: <SRS0=ePRe=5K=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.2 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_2 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AC9BBC43331
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 11:15:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4160CC43331
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 11:17:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1F8FC20775
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 11:15:24 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="gvGIOEVp"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1F8FC20775
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id E500620771
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 11:17:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E500620771
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48nQWs67RzzDqcv
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 22:15:21 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 48nQZc34JnzDqfy
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 22:17:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kaod.org (client-ip=188.165.48.29; helo=11.mo1.mail-out.ovh.net;
+ envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=kaod.org
+X-Greylist: delayed 1798 seconds by postgrey-1.36 at bilbo;
+ Wed, 25 Mar 2020 22:13:49 AEDT
+Received: from 11.mo1.mail-out.ovh.net (11.mo1.mail-out.ovh.net
+ [188.165.48.29])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48nPr362v5zDqgj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2020 21:44:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=gvGIOEVp; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 48nPr331LXz9sP7;
- Wed, 25 Mar 2020 21:44:19 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1585133059;
- bh=JCfgUxv8Z7QEd5lJDkr0s4EBV+1Z8zFeOkxFdnVIZYM=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=gvGIOEVpllM//KpSXEQHhRjPaRpXF8g90IG9bbOOw16TbnJ2H40BU/CvKn9LMNBK1
- lelnNQjfTB/daFRvh+rRZiLh9xf40kEoCW6eNTIjZ7Ecpzk9Vok+JpHc0uffirI3kF
- NzEElaO3qeBwKg/WHgePasmc51bsOuCTWlhIGLw6MIzDUSPAYaFoIyG2clJ2WSw+M0
- xdpOo8gaLH4TwfbIcKjmzVbg2S7DweeZBdRteNUIDDFxjuK+y7pWtYR9b5cAW9AgUd
- WlC9A1txpDKo4kxYL+pLlrI72bqDixdrfYluTNU7xY7xblLWsoC+JSovS7A68jRWvs
- YCjSunKAPaEew==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Haren Myneni <haren@linux.ibm.com>
-Subject: Re: [PATCH v8 03/14] powerpc/vas: Define nx_fault_stamp in
- coprocessor_request_block
-In-Reply-To: <1584987237.9256.15333.camel@hbabu-laptop>
-References: <1584598120.9256.15237.camel@hbabu-laptop>
- <1584598437.9256.15247.camel@hbabu-laptop>
- <1584923120.arc9bj6gmg.astroid@bobo.none> <87bloncnnx.fsf@mpe.ellerman.id.au>
- <1584987237.9256.15333.camel@hbabu-laptop>
-Date: Wed, 25 Mar 2020 21:44:26 +1100
-Message-ID: <87pnd0ww6t.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48nQV52jhTzDqNW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2020 22:13:46 +1100 (AEDT)
+Received: from player159.ha.ovh.net (unknown [10.108.35.122])
+ by mo1.mail-out.ovh.net (Postfix) with ESMTP id 398121B5E53
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2020 11:34:19 +0100 (CET)
+Received: from kaod.org (lns-bzn-46-82-253-208-248.adsl.proxad.net
+ [82.253.208.248]) (Authenticated sender: groug@kaod.org)
+ by player159.ha.ovh.net (Postfix) with ESMTPSA id 2E76410C032CE;
+ Wed, 25 Mar 2020 10:34:13 +0000 (UTC)
+Date: Wed, 25 Mar 2020 11:34:12 +0100
+From: Greg Kurz <groug@kaod.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/prom_init: Include the termination message in
+ ibm,os-term RTAS call
+Message-ID: <20200325113412.1fed2d82@bahia.lan>
+In-Reply-To: <87zhc4wxy9.fsf@mpe.ellerman.id.au>
+References: <20200324201211.1055236-1-farosas@linux.ibm.com>
+ <87zhc4wxy9.fsf@mpe.ellerman.id.au>
+X-Mailer: Claws Mail 3.17.4 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Ovh-Tracer-Id: 3723069520371227057
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedugedrudehfedgudeiucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepfffhvffukfgjfhfogggtgfesthejredtredtvdenucfhrhhomhepifhrvghgucfmuhhriicuoehgrhhouhhgsehkrghougdrohhrgheqnecuffhomhgrihhnpehqvghmuhdrohhrghdpohiilhgrsghsrdhorhhgnecukfhppedtrddtrddtrddtpdekvddrvdehfedrvddtkedrvdegkeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehplhgrhigvrhduheelrdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomhepghhrohhugheskhgrohgurdhorhhgpdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrgh
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,58 +68,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, ajd@linux.ibm.com, Nicholas Piggin <npiggin@gmail.com>,
- hch@infradead.org, oohall@gmail.com, sukadev@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, herbert@gondor.apana.org.au
+Cc: linuxram@us.ibm.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org, Fabiano Rosas <farosas@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Haren Myneni <haren@linux.ibm.com> writes:
-> On Mon, 2020-03-23 at 22:32 +1100, Michael Ellerman wrote:
->> Nicholas Piggin <npiggin@gmail.com> writes:
->> > Haren Myneni's on March 19, 2020 4:13 pm:
->> >> 
->> >> Kernel sets fault address and status in CRB for NX page fault on user
->> >> space address after processing page fault. User space gets the signal
->> >> and handles the fault mentioned in CRB by bringing the page in to
->> >> memory and send NX request again.
->> >> 
->> >> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
->> >> Signed-off-by: Haren Myneni <haren@linux.ibm.com>
->> >> ---
->> >>  arch/powerpc/include/asm/icswx.h | 18 +++++++++++++++++-
->> >>  1 file changed, 17 insertions(+), 1 deletion(-)
->> >> 
->> >> diff --git a/arch/powerpc/include/asm/icswx.h b/arch/powerpc/include/asm/icswx.h
->> >> index 9872f85..b233d1e 100644
->> >> --- a/arch/powerpc/include/asm/icswx.h
->> >> +++ b/arch/powerpc/include/asm/icswx.h
->> >
->> > "icswx" is not a thing anymore, after 6ff4d3e96652 ("powerpc: Remove old 
->> > unused icswx based coprocessor support").
->> 
->> Yeah that commit ripped out some parts of the previous attempt at a user
->> visible API for this sort of "coprocessor" stuff. VAS is yet another
->> attempt to do something useful with most of the same pieces but some
->> slightly different details.
->> 
->> > I guess NX is reusing some 
->> > things from it, but it would be good to get rid of the cruft and re-name
->> > this file and and relevant names.
->> 
->> > NX already uses this file, so I guesss that can happen after this series.
->> 
->> A lot of the CRB/CSB stuff is still the same, and P8 still uses icswx.
->> But I'd be happy if the header was renamed eventually, as icswx is now a
->> legacy name.
->
-> We can move all macros and struct definitions to vas.h and remove
-> icswx.h. Can I do this after this series? 
+On Wed, 25 Mar 2020 21:06:22 +1100
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-Well they're still needed by the non-vas Power8 code, so that wouldn't
-be quite right either :)
+> Fabiano Rosas <farosas@linux.ibm.com> writes:
+> 
+> > QEMU can now print the ibm,os-term message[1], so let's include it in
+> > the RTAS call. E.g.:
+> >
+> >   qemu-system-ppc64: OS terminated: Switch to secure mode failed.
+> >
+> > 1- https://git.qemu.org/?p=qemu.git;a=commitdiff;h=a4c3791ae0
+> >
+> > Signed-off-by: Fabiano Rosas <farosas@linux.ibm.com>
+> > ---
+> >  arch/powerpc/kernel/prom_init.c | 3 +++
+> >  1 file changed, 3 insertions(+)
+> 
+> I have this queued:
+>   https://patchwork.ozlabs.org/patch/1253390/
+> 
+> Which I think does the same thing?
+> 
 
-But yeah we can do whatever movement later as a cleanup.
+Alexey's patch also sets os_term_args.nret as indicated in PAPR.
+Even if QEMU's handler for "ibm,os-term" doesn't seem to have
+a use for nret, I think it's better to stick to the spec.
 
-cheers
+Cheers,
+
+--
+Greg
+
+> cheers
+> 
+> > diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+> > index 577345382b23..d543fb6d29c5 100644
+> > --- a/arch/powerpc/kernel/prom_init.c
+> > +++ b/arch/powerpc/kernel/prom_init.c
+> > @@ -1773,6 +1773,9 @@ static void __init prom_rtas_os_term(char *str)
+> >  	if (token == 0)
+> >  		prom_panic("Could not get token for ibm,os-term\n");
+> >  	os_term_args.token = cpu_to_be32(token);
+> > +	os_term_args.nargs = cpu_to_be32(1);
+> > +	os_term_args.args[0] = cpu_to_be32(__pa(str));
+> > +
+> >  	prom_rtas_hcall((uint64_t)&os_term_args);
+> >  }
+> >  #endif /* CONFIG_PPC_SVM */
+> > -- 
+> > 2.23.0
+
