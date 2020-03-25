@@ -2,87 +2,78 @@ Return-Path: <SRS0=ePRe=5K=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 072B5C54FCF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 03:13:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BE3CC54FD2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 03:21:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A70E820719
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 03:13:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 78DE72074D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 03:21:28 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="H4706YZq"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A70E820719
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=alliedtelesis.co.nz header.i=@alliedtelesis.co.nz header.b="BLEduHMy"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 78DE72074D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=alliedtelesis.co.nz
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48nCr002rTzDqws
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 14:13:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48nD104FSTzDqFY
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 14:21:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::1042;
- helo=mail-pj1-x1042.google.com; envelope-from=swboyd@chromium.org;
+ smtp.mailfrom=alliedtelesis.co.nz (client-ip=202.36.163.20;
+ helo=gate2.alliedtelesis.co.nz; envelope-from=chrisp@alliedtelesis.co.nz;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
- header.s=google header.b=H4706YZq; dkim-atps=neutral
-Received: from mail-pj1-x1042.google.com (mail-pj1-x1042.google.com
- [IPv6:2607:f8b0:4864:20::1042])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
+ header.from=alliedtelesis.co.nz
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=alliedtelesis.co.nz header.i=@alliedtelesis.co.nz
+ header.a=rsa-sha256 header.s=mail181024 header.b=BLEduHMy; 
+ dkim-atps=neutral
+Received: from gate2.alliedtelesis.co.nz (gate2.alliedtelesis.co.nz
+ [202.36.163.20])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48nC884ttnzDqcx
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2020 13:42:29 +1100 (AEDT)
-Received: by mail-pj1-x1042.google.com with SMTP id w9so404839pjh.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2020 19:42:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
- h=mime-version:content-transfer-encoding:in-reply-to:references
- :subject:from:cc:to:date:message-id:user-agent;
- bh=tJVGZmmA1bFjoevn7/qDYyyvIJ/eyc0u4ubgnC7ziTY=;
- b=H4706YZqf8/zScGoFg12vybnR9M2VsIQVJgSz3rS1dHY9dQHDGFEdxDFbUd7d1zTgX
- a1SAGpNqJGQq66/k++qcyoET2sxmyH3emD3uXnYHai1yW2TdH35PONdQL7aDm0PfPzyp
- tYlxhgWpkpR2jgcSCMS6Pg5GkhF65IhQxffKc=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:content-transfer-encoding
- :in-reply-to:references:subject:from:cc:to:date:message-id
- :user-agent;
- bh=tJVGZmmA1bFjoevn7/qDYyyvIJ/eyc0u4ubgnC7ziTY=;
- b=EcJzQTFrCNTfQSKJnm1IBfMHj0ZB7rskGcIiwTYveCmE14d0iAM5iqEx2vSNff2r60
- 6IlPdRt8w30na6/pxcANwacGY4nYpAyJ3jdFNUqbxjpuyWguXcuJPBviydntJHB/Blja
- JTrf6RXmFNpTzMa5A68pMGVfh2eigv2FH4WMgaLPRaoSIoQ3wzq+/A5WYoS5SMmVVuWj
- 2eRkt+Kvdbt5onoQCZ0o0stKAEZBw8ZUg8kdxeRIn0eB6zN+PjKPxIdzaEb6WFV22x4q
- km3JPhMVnSYbdzKPPfe5l8janvyTCugyj1kxmaofCE9wO31txZ0OBPOP/lophJVfa1RK
- DiOg==
-X-Gm-Message-State: ANhLgQ2pVNLkAcmSe8XnoLhrNreW6oaNcYF/fcxN2aqxcrkih+OdQ7iL
- TNFubH7rV+0r+RZa4bHznkHlCQ==
-X-Google-Smtp-Source: ADFU+vtS5LbLrzS1jhzDwYVrTj6A9lZWX06g/Mga4Nlp7aFIrRyOCBB7aq2FIo/kyw4uUBQ1+JG/MQ==
-X-Received: by 2002:a17:90a:33d1:: with SMTP id
- n75mr1033588pjb.167.1585104145832; 
- Tue, 24 Mar 2020 19:42:25 -0700 (PDT)
-Received: from chromium.org ([2620:15c:202:1:fa53:7765:582b:82b9])
- by smtp.gmail.com with ESMTPSA id x4sm858194pgr.9.2020.03.24.19.42.25
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 24 Mar 2020 19:42:25 -0700 (PDT)
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48nCyK3187zDq6K
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2020 14:19:04 +1100 (AEDT)
+Received: from mmarshal3.atlnz.lc (mmarshal3.atlnz.lc [10.32.18.43])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by gate2.alliedtelesis.co.nz (Postfix) with ESMTPS id 16A3780237;
+ Wed, 25 Mar 2020 16:19:04 +1300 (NZDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alliedtelesis.co.nz;
+ s=mail181024; t=1585106344;
+ bh=44FbT0mY8dOR0hwrYqg7wYOelRc5U4Tpq4XNZFjkj7A=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References;
+ b=BLEduHMykXfOplW6ragwvQQqpcdRpobJPpQFFburhQek0Z80PQCnS496Yk4YEpXPs
+ dkS/F4EOvcT80UScHmghxLCzBrsNtCkMPo620PIaLTc/+Xru/e/QFQNPY9y9dNGEPP
+ RpvhySnIFFD2VTLo68s0nc7GP5RGbTilU9KDZN4Ig6QogFIMeV8u+roM+iLsOA+Xhs
+ bF1gE0VauUcbHIDk5S6SXv9AbhRNUBcl6QBh73HxeenFBLRyHBB+s4Z+LicGgWsej2
+ 0Rs5YfVsFSz6i4tZIbiW/uv40nPXbZgFwkP9qqr+K8/BKiglc3UpNABDfW4wwDXnzG
+ fjbV1Ml2naPaQ==
+Received: from smtp (Not Verified[10.32.16.33]) by mmarshal3.atlnz.lc with
+ Trustwave SEG (v7, 5, 8, 10121)
+ id <B5e7acda20000>; Wed, 25 Mar 2020 16:19:03 +1300
+Received: from chrisp-dl.ws.atlnz.lc (chrisp-dl.ws.atlnz.lc [10.33.22.20])
+ by smtp (Postfix) with ESMTP id 3866C13EEB7;
+ Wed, 25 Mar 2020 16:18:58 +1300 (NZDT)
+Received: by chrisp-dl.ws.atlnz.lc (Postfix, from userid 1030)
+ id CF44A28006C; Wed, 25 Mar 2020 16:18:58 +1300 (NZDT)
+From: Chris Packham <chris.packham@alliedtelesis.co.nz>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ christophe.leroy@c-s.fr, tglx@linutronix.de, oss@buserror.net
+Subject: [PATCH v2] powerpc/setup_64: Set cache-line-size based on
+ cache-block-size
+Date: Wed, 25 Mar 2020 16:18:54 +1300
+Message-Id: <20200325031854.7625-1-chris.packham@alliedtelesis.co.nz>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <dd342c71e03e654a8786302d82f9662004418c6e.camel@alliedtelesis.co.nz>
+References: <dd342c71e03e654a8786302d82f9662004418c6e.camel@alliedtelesis.co.nz>
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <5cfeed6df208b74913312a1c97235ee615180f91.1582361737.git.mchehab+huawei@kernel.org>
-References: <cover.1582361737.git.mchehab+huawei@kernel.org>
- <5cfeed6df208b74913312a1c97235ee615180f91.1582361737.git.mchehab+huawei@kernel.org>
-Subject: Re: [PATCH 3/7] docs: fix broken references to text files
-From: Stephen Boyd <swboyd@chromium.org>
-To: Linux Doc Mailing List <linux-doc@vger.kernel.org>,
- Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-Date: Tue, 24 Mar 2020 19:42:24 -0700
-Message-ID: <158510414428.125146.17397141028775937874@swboyd.mtv.corp.google.com>
-User-Agent: alot/0.9
-X-Mailman-Approved-At: Wed, 25 Mar 2020 14:12:08 +1100
+x-atlnz-ls: pat
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,46 +85,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-nfs@vger.kernel.org, kvm@vger.kernel.org,
- Jonathan Corbet <corbet@lwn.net>,
- Mauro Carvalho Chehab <mchehab+huawei@kernel.org>, netdev@vger.kernel.org,
- linux-unionfs@vger.kernel.org, kvm-ppc@vger.kernel.org, linux-mm@kvack.org,
- dri-devel@lists.freedesktop.org, linux-fsdevel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, kvmarm@lists.cs.columbia.edu,
- linux-arm-kernel@lists.infradead.org, linux-rdma@vger.kernel.org
+Cc: Hamish Martin <hamish.martin@alliedtelesis.co.nz>,
+ Chris Packham <chris.packham@alliedtelesis.co.nz>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Quoting Mauro Carvalho Chehab (2020-02-22 01:00:03)
-> Several references got broken due to txt to ReST conversion.
->=20
-> Several of them can be automatically fixed with:
->=20
->         scripts/documentation-file-ref-check --fix
->=20
-> Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-> ---
->  drivers/hwtracing/coresight/Kconfig                  |  2 +-
->=20
-> diff --git a/drivers/hwtracing/coresight/Kconfig b/drivers/hwtracing/core=
-sight/Kconfig
-> index 6ff30e25af55..6d42a6d3766f 100644
-> --- a/drivers/hwtracing/coresight/Kconfig
-> +++ b/drivers/hwtracing/coresight/Kconfig
-> @@ -107,7 +107,7 @@ config CORESIGHT_CPU_DEBUG
->           can quickly get to know program counter (PC), secure state,
->           exception level, etc. Before use debugging functionality, platf=
-orm
->           needs to ensure the clock domain and power domain are enabled
-> -         properly, please refer Documentation/trace/coresight-cpu-debug.=
-rst
-> +         properly, please refer Documentation/trace/coresight/coresight-=
-cpu-debug.rst
->           for detailed description and the example for usage.
-> =20
->  endif
+If {i,d}-cache-block-size is set and {i,d}-cache-line-size is not, use
+the block-size value for both. Per the devicetree spec cache-line-size
+is only needed if it differs from the block size.
 
-I ran into this today and almost sent a patch. Can you split this patch
-up into more pieces and send it off to the respective subsystem
-maintainers?
+Signed-off-by: Chris Packham <chris.packham@alliedtelesis.co.nz>
+---
+It looks as though the bsizep =3D lsizep is not required per the spec but=
+ it's
+probably safer to retain it.
+
+Changes in v2:
+- Scott pointed out that u-boot should be filling in the cache properties
+  (which it does). But it does not specify a cache-line-size because it
+  provides a cache-block-size and the spec says you don't have to if they=
+ are
+  the same. So the error is in the parsing not in the devicetree itself.
+
+ arch/powerpc/kernel/setup_64.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_6=
+4.c
+index e05e6dd67ae6..dd8a238b54b8 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -516,6 +516,8 @@ static bool __init parse_cache_info(struct device_nod=
+e *np,
+ 	lsizep =3D of_get_property(np, propnames[3], NULL);
+ 	if (bsizep =3D=3D NULL)
+ 		bsizep =3D lsizep;
++	if (lsizep =3D=3D NULL)
++		lsizep =3D bsizep;
+ 	if (lsizep !=3D NULL)
+ 		lsize =3D be32_to_cpu(*lsizep);
+ 	if (bsizep !=3D NULL)
+--=20
+2.25.1
+
