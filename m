@@ -2,79 +2,55 @@ Return-Path: <SRS0=ePRe=5K=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FF14C18E5B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 08:38:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A40FC18E5B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 08:40:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 03440206F6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 08:38:42 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="f0mzE+mU"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 03440206F6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 25496206F6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 08:40:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 25496206F6
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48nM351CXfzDqlQ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 19:38:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=63.128.21.74;
- helo=us-smtp-delivery-74.mimecast.com; envelope-from=bhe@redhat.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 48nM5P5KmRzDqc4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 19:40:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lst.de
+ (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=f0mzE+mU; 
- dkim-atps=neutral
-Received: from us-smtp-delivery-74.mimecast.com
- (us-smtp-delivery-74.mimecast.com [63.128.21.74])
+ dmarc=none (p=none dis=none) header.from=lst.de
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48nM135dtczDqc4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2020 19:36:55 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1585125413;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=sdYIddxfgLwXOGvGXxs8sWbwIPBrEhwforhRRHvBbFw=;
- b=f0mzE+mUUfRagKKSUMw/HYwqSth5aFZWnf50uXS3MdIbkg+epveUABEDy0eIVYnCt76W2k
- rk3AjsgszfRljB9ruKlxdz8nkq5RCCvSrA61nAXON9s5zwUz/95qm2jdbQD6LOS7BEp6p5
- 9ADJEFEumO4R4/oW1TsLX4ZhF9C8mhg=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-332-XhB42Jt9P6iZjwf7I6OJXQ-1; Wed, 25 Mar 2020 04:36:49 -0400
-X-MC-Unique: XhB42Jt9P6iZjwf7I6OJXQ-1
-Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
- [10.5.11.23])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 10349190B2A1;
- Wed, 25 Mar 2020 08:36:47 +0000 (UTC)
-Received: from localhost (ovpn-12-88.pek2.redhat.com [10.72.12.88])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id D6544A7F1;
- Wed, 25 Mar 2020 08:36:40 +0000 (UTC)
-Date: Wed, 25 Mar 2020 16:36:37 +0800
-From: Baoquan He <bhe@redhat.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH] mm/sparse: Fix kernel crash with pfn_section_valid check
-Message-ID: <20200325083637.GJ3039@MiWiFi-R3L-srv>
-References: <20200325031914.107660-1-aneesh.kumar@linux.ibm.com>
- <20200325070643.GH3039@MiWiFi-R3L-srv>
- <20200325073707.GI3039@MiWiFi-R3L-srv>
- <5cdf5334-7fbb-8427-1918-ed67d5f23834@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48nM251S5czDqq5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2020 19:37:47 +1100 (AEDT)
+Received: by verein.lst.de (Postfix, from userid 2407)
+ id 8C21B68BFE; Wed, 25 Mar 2020 09:37:40 +0100 (CET)
+Date: Wed, 25 Mar 2020 09:37:40 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH 1/2] dma-mapping: add a dma_ops_bypass flag to struct
+ device
+Message-ID: <20200325083740.GC21605@lst.de>
+References: <20200320141640.366360-1-hch@lst.de>
+ <20200320141640.366360-2-hch@lst.de>
+ <2f31d0dd-aa7e-8b76-c8a1-5759fda5afc9@ozlabs.ru>
+ <20200323083705.GA31245@lst.de> <20200323085059.GA32528@lst.de>
+ <87sghz2ibh.fsf@linux.ibm.com> <20200323172256.GB31269@lst.de>
+ <ffce1af6-a215-dee8-7b5c-2111f43accfd@ozlabs.ru>
+ <20200324075402.GJ23447@lst.de>
+ <41975da3-3a4a-fc3c-2b90-8d607cf220e6@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <5cdf5334-7fbb-8427-1918-ed67d5f23834@linux.ibm.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
+In-Reply-To: <41975da3-3a4a-fc3c-2b90-8d607cf220e6@ozlabs.ru>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,83 +62,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sachin Sant <sachinp@linux.vnet.ibm.com>, david@redhat.com,
- linux-kernel@vger.kernel.org, mhocko@kernel.org, linux-mm@kvack.org,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- dan.j.williams@intel.com
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Joerg Roedel <joro@8bytes.org>, Robin Murphy <robin.murphy@arm.com>,
+ linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Christoph Hellwig <hch@lst.de>, Lu Baolu <baolu.lu@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 03/25/20 at 01:42pm, Aneesh Kumar K.V wrote:
-> On 3/25/20 1:07 PM, Baoquan He wrote:
-> > On 03/25/20 at 03:06pm, Baoquan He wrote:
-> > > On 03/25/20 at 08:49am, Aneesh Kumar K.V wrote:
+On Wed, Mar 25, 2020 at 03:51:36PM +1100, Alexey Kardashevskiy wrote:
+> >> This is for persistent memory which you can DMA to/from but yet it does
+> >> not appear in the system as a normal memory and therefore requires
+> >> special handling anyway (O_DIRECT or DAX, I do not know the exact
+> >> mechanics). All other devices in the system should just run as usual,
+> >> i.e. use 1:1 mapping if possible.
 > > 
-> > > >   mm/sparse.c | 2 ++
-> > > >   1 file changed, 2 insertions(+)
-> > > > 
-> > > > diff --git a/mm/sparse.c b/mm/sparse.c
-> > > > index aadb7298dcef..3012d1f3771a 100644
-> > > > --- a/mm/sparse.c
-> > > > +++ b/mm/sparse.c
-> > > > @@ -781,6 +781,8 @@ static void section_deactivate(unsigned long pfn, unsigned long nr_pages,
-> > > >   			ms->usage = NULL;
-> > > >   		}
-> > > >   		memmap = sparse_decode_mem_map(ms->section_mem_map, section_nr);
-> > > > +		/* Mark the section invalid */
-> > > > +		ms->section_mem_map &= ~SECTION_HAS_MEM_MAP;
-> > > 
-> > > Not sure if we should add checking in valid_section() or pfn_valid(),
-> > > e.g check ms->usage validation too. Otherwise, this fix looks good to
-> > > me.
-> > 
-> > With SPASEMEM_VMEMAP enabled, we should do validation check on ms->usage
-> > before checking any subsection is valid. Since now we do have case
-> > in which ms->usage is released, people still try to check it.
-> > 
-> > diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-> > index f0a2c184eb9a..d79bd938852e 100644
-> > --- a/include/linux/mmzone.h
-> > +++ b/include/linux/mmzone.h
-> > @@ -1306,6 +1306,8 @@ static inline int pfn_section_valid(struct mem_section *ms, unsigned long pfn)
-> >   {
-> >   	int idx = subsection_map_index(pfn);
-> > +	if (!ms->usage)
-> > +		return 0;
-> >   	return test_bit(idx, ms->usage->subsection_map);
-> >   }
-> >   #else
-> > 
-> 
-> We always check for section valid, before we check if pfn_section_valid().
-> 
-> static inline int pfn_valid(unsigned long pfn)
-> 
-> 	struct mem_section *ms;
-> 
-> 	if (pfn_to_section_nr(pfn) >= NR_MEM_SECTIONS)
-> 		return 0;
-> 	ms = __nr_to_section(pfn_to_section_nr(pfn));
-> 	if (!valid_section(ms))
-> 		return 0;
-> 	/*
-> 	 * Traditionally early sections always returned pfn_valid() for
-> 	 * the entire section-sized span.
-> 	 */
-> 	return early_section(ms) || pfn_section_valid(ms, pfn);
-> }
+> > On other systems (x86 and arm) pmem as long as it is page backed does
+> > not require any special handling.  This must be some weird way powerpc
+> > fucked up again, and I suspect you'll have to suffer from it.
 > 
 > 
-> IMHO adding that if (!ms->usage) is redundant.
+> It does not matter if it is backed by pages or not, the problem may also
+> appear if we wanted for example p2p PCI via IOMMU (between PHBs) and
+> MMIO might be mapped way too high in the system address space and make
+> 1:1 impossible.
 
-Yeah, I tend to agree. Consider this happens in the only small window
-between ms->usage releasing and ms->section_mem_map releasing when
-removing a section. Just thought adding this check to enhance it even
-though we have had your fix, because we only check ms->section_mem_map
-in valid_section(). Anyway, your fix looks good to me, see if other
-people have any comment.
-
-Thanks
-Baoquan
-
+How can it be mapped too high for a direct mapping with a 64-bit DMA
+mask?
