@@ -2,97 +2,87 @@ Return-Path: <SRS0=ePRe=5K=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2 autolearn=no
+X-Spam-Status: No, score=-6.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5954CC54FCF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 03:07:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 072B5C54FCF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 03:13:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0556A206F8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 03:07:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0556A206F8
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id A70E820719
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 03:13:38 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="H4706YZq"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A70E820719
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48nChl6wypzDqw4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 14:07:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48nCr002rTzDqws
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 14:13:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com;
+ smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::1042;
+ helo=mail-pj1-x1042.google.com; envelope-from=swboyd@chromium.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
+ header.s=google header.b=H4706YZq; dkim-atps=neutral
+Received: from mail-pj1-x1042.google.com (mail-pj1-x1042.google.com
+ [IPv6:2607:f8b0:4864:20::1042])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48nCfq4DG3zDqCT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2020 14:05:39 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 02P342LG039028; Tue, 24 Mar 2020 23:05:23 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ywewuu277-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 24 Mar 2020 23:05:22 -0400
-Received: from m0098421.ppops.net (m0098421.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 02P35MRc055284;
- Tue, 24 Mar 2020 23:05:22 -0400
-Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.26])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ywewuu26y-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 24 Mar 2020 23:05:22 -0400
-Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
- by ppma04wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 02P2ufVF007622;
- Wed, 25 Mar 2020 03:05:22 GMT
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by ppma04wdc.us.ibm.com with ESMTP id 2ywaw8x1r4-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 25 Mar 2020 03:05:22 +0000
-Received: from b03ledav006.gho.boulder.ibm.com
- (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 02P35LtO24773040
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 25 Mar 2020 03:05:21 GMT
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 12AA4C605B;
- Wed, 25 Mar 2020 03:05:21 +0000 (GMT)
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 91832C605A;
- Wed, 25 Mar 2020 03:05:20 +0000 (GMT)
-Received: from [9.70.82.143] (unknown [9.70.82.143])
- by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Wed, 25 Mar 2020 03:05:20 +0000 (GMT)
-Subject: Re: [PATCH v8 11/14] powerpc/vas: Do not use default credits for
- receive window
-From: Haren Myneni <haren@linux.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-In-Reply-To: <1584931140.88q80wx2at.astroid@bobo.none>
-References: <1584598120.9256.15237.camel@hbabu-laptop>
- <1584598722.9256.15262.camel@hbabu-laptop>
- <1584931140.88q80wx2at.astroid@bobo.none>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 24 Mar 2020 20:04:47 -0700
-Message-ID: <1585105487.10664.353.camel@hbabu-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.3 
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.645
- definitions=2020-03-24_10:2020-03-23,
- 2020-03-24 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- suspectscore=0 spamscore=0 clxscore=1015 malwarescore=0 impostorscore=0
- bulkscore=0 phishscore=0 mlxscore=0 adultscore=0 mlxlogscore=744
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2003020000 definitions=main-2003250021
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48nC884ttnzDqcx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2020 13:42:29 +1100 (AEDT)
+Received: by mail-pj1-x1042.google.com with SMTP id w9so404839pjh.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2020 19:42:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
+ h=mime-version:content-transfer-encoding:in-reply-to:references
+ :subject:from:cc:to:date:message-id:user-agent;
+ bh=tJVGZmmA1bFjoevn7/qDYyyvIJ/eyc0u4ubgnC7ziTY=;
+ b=H4706YZqf8/zScGoFg12vybnR9M2VsIQVJgSz3rS1dHY9dQHDGFEdxDFbUd7d1zTgX
+ a1SAGpNqJGQq66/k++qcyoET2sxmyH3emD3uXnYHai1yW2TdH35PONdQL7aDm0PfPzyp
+ tYlxhgWpkpR2jgcSCMS6Pg5GkhF65IhQxffKc=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:content-transfer-encoding
+ :in-reply-to:references:subject:from:cc:to:date:message-id
+ :user-agent;
+ bh=tJVGZmmA1bFjoevn7/qDYyyvIJ/eyc0u4ubgnC7ziTY=;
+ b=EcJzQTFrCNTfQSKJnm1IBfMHj0ZB7rskGcIiwTYveCmE14d0iAM5iqEx2vSNff2r60
+ 6IlPdRt8w30na6/pxcANwacGY4nYpAyJ3jdFNUqbxjpuyWguXcuJPBviydntJHB/Blja
+ JTrf6RXmFNpTzMa5A68pMGVfh2eigv2FH4WMgaLPRaoSIoQ3wzq+/A5WYoS5SMmVVuWj
+ 2eRkt+Kvdbt5onoQCZ0o0stKAEZBw8ZUg8kdxeRIn0eB6zN+PjKPxIdzaEb6WFV22x4q
+ km3JPhMVnSYbdzKPPfe5l8janvyTCugyj1kxmaofCE9wO31txZ0OBPOP/lophJVfa1RK
+ DiOg==
+X-Gm-Message-State: ANhLgQ2pVNLkAcmSe8XnoLhrNreW6oaNcYF/fcxN2aqxcrkih+OdQ7iL
+ TNFubH7rV+0r+RZa4bHznkHlCQ==
+X-Google-Smtp-Source: ADFU+vtS5LbLrzS1jhzDwYVrTj6A9lZWX06g/Mga4Nlp7aFIrRyOCBB7aq2FIo/kyw4uUBQ1+JG/MQ==
+X-Received: by 2002:a17:90a:33d1:: with SMTP id
+ n75mr1033588pjb.167.1585104145832; 
+ Tue, 24 Mar 2020 19:42:25 -0700 (PDT)
+Received: from chromium.org ([2620:15c:202:1:fa53:7765:582b:82b9])
+ by smtp.gmail.com with ESMTPSA id x4sm858194pgr.9.2020.03.24.19.42.25
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 24 Mar 2020 19:42:25 -0700 (PDT)
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <5cfeed6df208b74913312a1c97235ee615180f91.1582361737.git.mchehab+huawei@kernel.org>
+References: <cover.1582361737.git.mchehab+huawei@kernel.org>
+ <5cfeed6df208b74913312a1c97235ee615180f91.1582361737.git.mchehab+huawei@kernel.org>
+Subject: Re: [PATCH 3/7] docs: fix broken references to text files
+From: Stephen Boyd <swboyd@chromium.org>
+To: Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+ Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Date: Tue, 24 Mar 2020 19:42:24 -0700
+Message-ID: <158510414428.125146.17397141028775937874@swboyd.mtv.corp.google.com>
+User-Agent: alot/0.9
+X-Mailman-Approved-At: Wed, 25 Mar 2020 14:12:08 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,30 +94,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, ajd@linux.ibm.com, hch@infradead.org, oohall@gmail.com,
- sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- herbert@gondor.apana.org.au
+Cc: linux-arch@vger.kernel.org, linux-nfs@vger.kernel.org, kvm@vger.kernel.org,
+ Jonathan Corbet <corbet@lwn.net>,
+ Mauro Carvalho Chehab <mchehab+huawei@kernel.org>, netdev@vger.kernel.org,
+ linux-unionfs@vger.kernel.org, kvm-ppc@vger.kernel.org, linux-mm@kvack.org,
+ dri-devel@lists.freedesktop.org, linux-fsdevel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, kvmarm@lists.cs.columbia.edu,
+ linux-arm-kernel@lists.infradead.org, linux-rdma@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2020-03-23 at 12:40 +1000, Nicholas Piggin wrote:
-> Haren Myneni's on March 19, 2020 4:18 pm:
-> > 
-> > System checkstops if RxFIFO overruns with more requests than the
-> > maximum possible number of CRBs allowed in FIFO at any time. So
-> > max credits value (rxattr.wcreds_max) is set and is passed to
-> > vas_rx_win_open() by the the driver.
-> 
-> This seems like it should be a bug fix or merged in the NX fault
-> window register patch or something.
+Quoting Mauro Carvalho Chehab (2020-02-22 01:00:03)
+> Several references got broken due to txt to ReST conversion.
+>=20
+> Several of them can be automatically fixed with:
+>=20
+>         scripts/documentation-file-ref-check --fix
+>=20
+> Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+> ---
+>  drivers/hwtracing/coresight/Kconfig                  |  2 +-
+>=20
+> diff --git a/drivers/hwtracing/coresight/Kconfig b/drivers/hwtracing/core=
+sight/Kconfig
+> index 6ff30e25af55..6d42a6d3766f 100644
+> --- a/drivers/hwtracing/coresight/Kconfig
+> +++ b/drivers/hwtracing/coresight/Kconfig
+> @@ -107,7 +107,7 @@ config CORESIGHT_CPU_DEBUG
+>           can quickly get to know program counter (PC), secure state,
+>           exception level, etc. Before use debugging functionality, platf=
+orm
+>           needs to ensure the clock domain and power domain are enabled
+> -         properly, please refer Documentation/trace/coresight-cpu-debug.=
+rst
+> +         properly, please refer Documentation/trace/coresight/coresight-=
+cpu-debug.rst
+>           for detailed description and the example for usage.
+> =20
+>  endif
 
-Yes, it is a bug fix and can affect with any VAS windows, Not related to
-NX fault window. Hence added as separate patch. 
- 
-> 
-> Thanks,
-> Nick
-> 
-
-
+I ran into this today and almost sent a patch. Can you split this patch
+up into more pieces and send it off to the respective subsystem
+maintainers?
