@@ -2,84 +2,147 @@ Return-Path: <SRS0=ePRe=5K=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8997C43331
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 09:34:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20BE0C43331
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 09:40:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6B89220714
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 09:34:59 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="RhKlCZmY"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6B89220714
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id CE9CF20714
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 09:40:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CE9CF20714
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=de.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48nNJ12fWHzDqyg
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 20:34:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48nNQV2WxxzDqLf
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 20:40:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::542;
- helo=mail-pg1-x542.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=de.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=borntraeger@de.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=RhKlCZmY; dkim-atps=neutral
-Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
- [IPv6:2607:f8b0:4864:20::542])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=de.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48nNCK2RNRzDqRh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2020 20:30:50 +1100 (AEDT)
-Received: by mail-pg1-x542.google.com with SMTP id d37so378255pgl.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2020 02:30:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=LKekQCsu3DJG++ydeijKnSaG/w4KaX7b6s1q7GFe/hw=;
- b=RhKlCZmYpHGxZTE29eK+OOOvhFgvTBRyvUAmgf71d/YEWz6ZFerOEfpu/H7aXpSXJE
- n+t8YJSHo5Jg2G5kw6sIWGJykqn4CS2i9sraNk1vtnP69r82ILXRVlX1QOJEFa74C20R
- Pc2GcwVWqQxJjki8XSkZYojM4MRLfxRTfDzL5OKZkgZD1vhG9K6Bl1tqliN3cssbBaxq
- HjVa73KAWZbU4l3DfIIz5MgvG9bZMzW8RyRgkWqgKO1oSlCCKftjsentXZ+/SroFK2ON
- HO+t4FEKMeVOTt7MyNrc3oYlW7Bxt9Vd6x7iu/3xhYK8dQPqFe4yKvR494pDmyfjrw47
- sIdA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=LKekQCsu3DJG++ydeijKnSaG/w4KaX7b6s1q7GFe/hw=;
- b=sorU6TsBLNlrij6n+yZm+G2x8gU7IQ/Uw86dPf1Ad6ME8tub/iH507lc2degSh4hH4
- wJj28ilt2CWBm6Rc4uL8HJInnP632sOq81S/EArEI3s4B5miIQZtRjNSpjD7yAVnxyQB
- Ekg07WNBl1Rj02LZ0BZc9PeZ60FwM3SVrAR+fF4L8iWsF012+WHOEBIc2vxlAaI1kAHQ
- Zonc+48gM53JuNFYFcRN7+RVgTgSDnKhwDCYSce/V7rn/sHyX/8ah6rL5W3ZhRnwf+MW
- kkcdmY12gSUGaLV0B6VOV1BE/JDSJi9SWpqh3LDQA6gUiAxyeJN6B4p+6HsAIVq8O0tk
- OPtw==
-X-Gm-Message-State: ANhLgQ1EyGnc+7eWA5q0CR51cM2dsBOPqtxiZLSxCX1BBLXNd6L6b2gx
- jp9id6G+utRKziJAWAzGba5KdFuF
-X-Google-Smtp-Source: ADFU+vu/GLlvpFUEQV5H/Icti8tAA/syhUxWo+ERw1qrEz//X5SOKP1t2eCt+wCOjc050rAB1yIuGg==
-X-Received: by 2002:a63:4282:: with SMTP id p124mr2343160pga.59.1585128647934; 
- Wed, 25 Mar 2020 02:30:47 -0700 (PDT)
-Received: from bobo.ibm.com (14-202-190-183.tpgi.com.au. [14.202.190.183])
- by smtp.gmail.com with ESMTPSA id b124sm831904pfa.34.2020.03.25.02.30.44
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 25 Mar 2020 02:30:47 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/2] Fix 2 "[v3,
- 25/32] powerpc/64: system call implement entry/exit logic in C"
-Date: Wed, 25 Mar 2020 19:30:13 +1000
-Message-Id: <20200325093014.149962-1-npiggin@gmail.com>
-X-Mailer: git-send-email 2.23.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48nNNh6PXCzDq8M
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2020 20:38:57 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 02P9Z88v134396
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2020 05:38:55 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ywe7ud8t9-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2020 05:38:54 -0400
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <borntraeger@de.ibm.com>;
+ Wed, 25 Mar 2020 09:38:49 -0000
+Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 25 Mar 2020 09:38:43 -0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 02P9bglF50790860
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 25 Mar 2020 09:37:42 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C0E794C04E;
+ Wed, 25 Mar 2020 09:38:44 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 846CB4C046;
+ Wed, 25 Mar 2020 09:38:41 +0000 (GMT)
+Received: from oc7455500831.ibm.com (unknown [9.145.106.7])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 25 Mar 2020 09:38:41 +0000 (GMT)
+Subject: Re: [PATCH 1/4] hugetlbfs: add arch_hugetlb_valid_size
+To: "Longpeng (Mike, Cloud Infrastructure Service Product Dept.)"
+ <longpeng2@huawei.com>, Mike Kravetz <mike.kravetz@oracle.com>,
+ Dave Hansen <dave.hansen@intel.com>, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-doc@vger.kernel.org
+References: <20200318220634.32100-1-mike.kravetz@oracle.com>
+ <20200318220634.32100-2-mike.kravetz@oracle.com>
+ <831a0773-1ba6-4d72-44b9-7472123b8528@intel.com>
+ <5aceea6a-8dc0-a44b-80c6-94511b5c75ca@oracle.com>
+ <5ea6313e-ec4f-a043-632b-ef2901ce2cc9@huawei.com>
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+Autocrypt: addr=borntraeger@de.ibm.com; prefer-encrypt=mutual; keydata=
+ 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
+ nS4h0HDFPrrp1C2EMVYIQrMokWvlFZbCpsdYbBI=
+Date: Wed, 25 Mar 2020 10:38:40 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.5.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <5ea6313e-ec4f-a043-632b-ef2901ce2cc9@huawei.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 20032509-0008-0000-0000-000003638BC7
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 20032509-0009-0000-0000-00004A84FAF9
+Message-Id: <505b3d0a-b754-ba56-0b98-b7551ef414be@de.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.645
+ definitions=2020-03-25_01:2020-03-23,
+ 2020-03-25 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ mlxlogscore=845
+ impostorscore=0 bulkscore=0 phishscore=0 spamscore=0 adultscore=0
+ mlxscore=0 lowpriorityscore=0 suspectscore=0 malwarescore=0
+ priorityscore=1501 clxscore=1011 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2003020000 definitions=main-2003250077
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,134 +154,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Albert Ou <aou@eecs.berkeley.edu>,
+ Andrew Morton <akpm@linux-foundation.org>, Vasily Gorbik <gor@linux.ibm.com>,
+ Jonathan Corbet <corbet@lwn.net>, Catalin Marinas <catalin.marinas@arm.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Paul Walmsley <paul.walmsley@sifive.com>,
+ Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Will Deacon <will@kernel.org>, "David S.Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This fixes 4 issues caught by TM selftests. First was a tm-syscall bug
-that hit due to tabort_syscall being called after interrupts were reconciled
-(in a subsequent patch), which led to interrupts being enabled before
-tabort_syscall was called. Rather than going through an un-reconciling
-interrupts for the return, I just go back to putting the test early in
-asm, the C-ification of that wasn't a big win anyway.
 
-Second is the syscall return _TIF_USER_WORK_MASK check would go into an
-infinite loop if _TIF_RESTORE_TM became set. The asm code uses
-_TIF_USER_WORK_MASK to brach to slowpath which includes restore_tm_state.
 
-Third is system call return was not calling restore_tm_state, I missed
-this completely (alhtough it's in the return from interrupt C conversion
-because when the asm syscall code encountered problems it would branch
-to the interrupt return code.
+On 25.03.20 03:58, Longpeng (Mike, Cloud Infrastructure Service Product Dept.) wrote:
+[...]
+> Hi Mike,
+> 
+> Inspired by Dave's opinion, it seems the x86-specific hugepages_supported should
+> also need to use cpu_feature_enabled instead.
+> 
+> Also, I wonder if the hugepages_supported is correct ? There're two arch
+> specific hugepages_supported:
+> x86:
+> #define hugepages_supported() boot_cpu_has(X86_FEATURE_PSE)
+> and
+> s390:
+> #define hugepages_supported() (MACHINE_HAS_EDAT1)
+> 
+> Is it possible that x86 has X86_FEATURE_GBPAGES but hasn't X86_FEATURE_GBPAGES
+> or s390 has MACHINE_HAS_EDAT2 but hasn't MACHINE_HAS_EDAT1 ?
 
-Fourth is MSR_VEC missing from restore_math, which was caught by
-tm-unavailable selftest taking an unexpected facility unavailable
-interrupt when testing VSX unavailble exception with MSR.FP=1 MSR.VEC=1.
-Fourth case also has a fixup in a subsequent patch.
+The s390 architecture says that 
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kernel/entry_64.S   | 12 +++++++++---
- arch/powerpc/kernel/syscall_64.c | 25 +++++++++++++------------
- 2 files changed, 22 insertions(+), 15 deletions(-)
+When EDAT-2 applies, the following function is available in the DAT process:
+ - EDAT-1 applies.
+[..]
 
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index dc7fd3196d20..403224acdaa8 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -64,6 +64,12 @@ exception_marker:
- 
- 	.globl system_call_common
- system_call_common:
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+BEGIN_FTR_SECTION
-+	extrdi.	r10, r12, 1, (63-MSR_TS_T_LG) /* transaction active? */
-+	bne	.Ltabort_syscall
-+END_FTR_SECTION_IFSET(CPU_FTR_TM)
-+#endif
- _ASM_NOKPROBE_SYMBOL(system_call_common)
- 	mr	r10,r1
- 	ld	r1,PACAKSAVE(r13)
-@@ -179,7 +185,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 	b	.Lsyscall_restore_regs_cont
- 
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
--_GLOBAL(tabort_syscall) /* (unsigned long nip, unsigned long msr) */
-+.Ltabort_syscall:
- 	/* Firstly we need to enable TM in the kernel */
- 	mfmsr	r10
- 	li	r9, 1
-@@ -199,8 +205,8 @@ _GLOBAL(tabort_syscall) /* (unsigned long nip, unsigned long msr) */
- 	li	r9, MSR_RI
- 	andc	r10, r10, r9
- 	mtmsrd	r10, 1
--	mtspr	SPRN_SRR0, r3
--	mtspr	SPRN_SRR1, r4
-+	mtspr	SPRN_SRR0, r11
-+	mtspr	SPRN_SRR1, r12
- 	RFI_TO_USER
- 	b	.	/* prevent speculative execution */
- #endif
-diff --git a/arch/powerpc/kernel/syscall_64.c b/arch/powerpc/kernel/syscall_64.c
-index ffd601d87065..56533a26f3b7 100644
---- a/arch/powerpc/kernel/syscall_64.c
-+++ b/arch/powerpc/kernel/syscall_64.c
-@@ -15,8 +15,6 @@
- #include <asm/time.h>
- #include <asm/unistd.h>
- 
--extern void __noreturn tabort_syscall(unsigned long nip, unsigned long msr);
--
- typedef long (*syscall_fn)(long, long, long, long, long, long);
- 
- /* Has to run notrace because it is entered "unreconciled" */
-@@ -32,10 +30,6 @@ notrace long system_call_exception(long r3, long r4, long r5, long r6, long r7,
- 	BUG_ON(!FULL_REGS(regs));
- 	BUG_ON(regs->softe != IRQS_ENABLED);
- 
--	if (IS_ENABLED(CONFIG_PPC_TRANSACTIONAL_MEM) &&
--	    unlikely(regs->msr & MSR_TS_T))
--		tabort_syscall(regs->nip, regs->msr);
--
- 	account_cpu_user_entry();
- 
- #ifdef CONFIG_PPC_SPLPAR
-@@ -161,7 +155,7 @@ notrace unsigned long syscall_exit_prepare(unsigned long r3,
- again:
- 	local_irq_disable();
- 	ti_flags = READ_ONCE(*ti_flagsp);
--	while (unlikely(ti_flags & _TIF_USER_WORK_MASK)) {
-+	while (unlikely(ti_flags & (_TIF_USER_WORK_MASK & ~_TIF_RESTORE_TM))) {
- 		local_irq_enable();
- 		if (ti_flags & _TIF_NEED_RESCHED) {
- 			schedule();
-@@ -180,13 +174,20 @@ notrace unsigned long syscall_exit_prepare(unsigned long r3,
- 	}
- 
- 	if (IS_ENABLED(CONFIG_PPC_BOOK3S) && IS_ENABLED(CONFIG_PPC_FPU)) {
--		unsigned long mathflags = MSR_FP;
-+		if (IS_ENABLED(CONFIG_PPC_TRANSACTIONAL_MEM) &&
-+				unlikely((ti_flags & _TIF_RESTORE_TM))) {
-+			restore_tm_state(regs);
-+		} else {
-+			unsigned long mathflags = MSR_FP;
- 
--		if (IS_ENABLED(CONFIG_ALTIVEC))
--			mathflags |= MSR_VEC;
-+			if (cpu_has_feature(CPU_FTR_VSX))
-+				mathflags |= MSR_VEC | MSR_VSX;
-+			else if (cpu_has_feature(CPU_FTR_ALTIVEC))
-+				mathflags |= MSR_VEC;
- 
--		if ((regs->msr & mathflags) != mathflags)
--			restore_math(regs);
-+			if ((regs->msr & mathflags) != mathflags)
-+				restore_math(regs);
-+		}
- 	}
- 
- 	/* This must be done with RI=1 because tracing may touch vmaps */
--- 
-2.23.0
+So if the machine has EDAT-2 it also has EDAT-1.
 
