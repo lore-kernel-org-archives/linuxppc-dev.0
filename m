@@ -2,85 +2,50 @@ Return-Path: <SRS0=ePRe=5K=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 41B87C54FD0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 11:01:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 324D6C54FD0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 11:05:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E28D320714
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 11:01:58 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="O/zAOFAx"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E28D320714
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id E6CC620714
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 11:05:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E6CC620714
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48nQDM6QvvzDqRX
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 22:01:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48nQJ03XXTzDqBc
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2020 22:05:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::543;
- helo=mail-pg1-x543.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=rjwysocki.net (client-ip=79.96.170.134;
+ helo=cloudserver094114.home.pl; envelope-from=rjw@rjwysocki.net;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=O/zAOFAx; dkim-atps=neutral
-Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
- [IPv6:2607:f8b0:4864:20::543])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=rjwysocki.net
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl
+ [79.96.170.134])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48nPdq1f5kzDqjd
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2020 21:35:27 +1100 (AEDT)
-Received: by mail-pg1-x543.google.com with SMTP id 142so946589pgf.11
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2020 03:35:27 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=8yX6dw6oXoJ+J/ovOsRA2OGQTH1cSyzq/EYb3+8vFOM=;
- b=O/zAOFAxnuGZB8bTj9DGPwfjS+Pu7UoVym+SoxV3OXF6MDCYnw0Ty7ZCDMgUyZZuo2
- 2cTzyWbi3F++8UU4wDY20o0+3FId+SNKvN9A/8hy0p31ypTGW8FlqAUR/A8T0nFALFLj
- +sQcarOWDtik6g6XFnGjafKw8ocIcPTRoC3bF4Jgl6/l2OQXmNjNGsULSUEWbKvuzw+J
- i7Gn5SE74fSoSf1+/98rnJiBRsadTGbYKpTRQUcK09tLuh9DL4MhvBQ5UiWI01IYiavt
- zg7eSN2Tsq5f50A3JR4pLAU9HctAicFp1uvk+vHlsIpGrLYJaUSbvqMLsN75lJYENZiw
- dWgQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=8yX6dw6oXoJ+J/ovOsRA2OGQTH1cSyzq/EYb3+8vFOM=;
- b=q7xj9FCnXs4UZX353t/4CCd/VO5nLlfA5etsFNxkHHQRx2UGSQDqRwAb63UXiMBLIG
- 8lc3TGgyd2AX5MGCQrlo/kalqDg3l6M/eNW4dwz6Lxdjd1jEeg0gUceL/bXJNhqxru6j
- SgVotlOV6I0MzKLbPj7B4mBmpBjbdA1z9mjHmforXryEfEh/+F+j08GTcT2iwWgK1G38
- 3+37Iw1taJwi0cJvjgxNcf3/EknE9d9Iwill3J1B8hICh/6Pd+DIhA4T6oSXcZOc5RV3
- R6VfkTjJk7eoyJtTQ8ba4o6YeuaykHVmRb2LXUp3tNWrINjuYNuE5bKvN5I3BhVt04HO
- J6Tw==
-X-Gm-Message-State: ANhLgQ3sy2hGJKWKXTaX51wcf1RUjMPSOlRxPd6SeqzLjL77Vpp0L2JP
- PzbUHUocacD/Ll4W2gMIMd0HpjLZ
-X-Google-Smtp-Source: ADFU+vu7thGd8sl/Gg12IObwLvsghDGuAQW1Qng9Nmlb8KhofAh98D/RbigEBmOEBBd7HTyQ0mfa5w==
-X-Received: by 2002:a63:7f09:: with SMTP id a9mr2411510pgd.375.1585132525294; 
- Wed, 25 Mar 2020 03:35:25 -0700 (PDT)
-Received: from bobo.ibm.com (14-202-190-183.tpgi.com.au. [14.202.190.183])
- by smtp.gmail.com with ESMTPSA id b9sm16549701pgi.75.2020.03.25.03.35.22
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 25 Mar 2020 03:35:24 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 12/12] powerpc/64s: system reset do not trace
-Date: Wed, 25 Mar 2020 20:34:10 +1000
-Message-Id: <20200325103410.157573-13-npiggin@gmail.com>
-X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20200325103410.157573-1-npiggin@gmail.com>
-References: <20200325103410.157573-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48nPfw4ySwzDqXq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2020 21:36:23 +1100 (AEDT)
+Received: from 185.80.35.16 (185.80.35.16) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.341)
+ id a27912dfd0cb6c9e; Wed, 25 Mar 2020 11:36:18 +0100
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] cpufreq: powernv: Fix frame-size-overflow in
+ powernv_cpufreq_work_fn
+Date: Wed, 25 Mar 2020 11:36:18 +0100
+Message-ID: <7394005.IE404Cl4Vv@kreacher>
+In-Reply-To: <87h7yexnu7.fsf@mpe.ellerman.id.au>
+References: <20200316135743.57735-1-psampat@linux.ibm.com>
+ <1921198.IfoiWgUDIW@kreacher> <87h7yexnu7.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,44 +57,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Ganesh Goudar <ganeshgr@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
+Cc: ego@linux.vnet.ibm.com, pratik.r.sampat@gmail.com, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Pratik Rajesh Sampat <psampat@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Similarly to the previous patch, do not trace system reset. This code
-is used when there is a crash or hang, and tracing disturbs the system
-more and has been known to crash in the crash handling path.
+On Tuesday, March 24, 2020 7:34:56 AM CET Michael Ellerman wrote:
+> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
+> > On Monday, March 16, 2020 2:57:43 PM CET Pratik Rajesh Sampat wrote:
+> >> The patch avoids allocating cpufreq_policy on stack hence fixing frame
+> >> size overflow in 'powernv_cpufreq_work_fn'
+> >> 
+> >> Fixes: 227942809b52 ("cpufreq: powernv: Restore cpu frequency to policy->cur on unthrottling")
+> >> Signed-off-by: Pratik Rajesh Sampat <psampat@linux.ibm.com>
+> >
+> > Any objections or concerns here?
+> >
+> > If not, I'll queue it up.
+> 
+> I have it in my testing branch,
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kernel/traps.c | 5 +++++
- 1 file changed, 5 insertions(+)
+Great!
 
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 1845fd7e161a..ed7b7a6e2dc0 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -443,6 +443,9 @@ void system_reset_exception(struct pt_regs *regs)
- 	unsigned long hsrr0, hsrr1;
- 	bool nested = in_nmi();
- 	bool saved_hsrrs = false;
-+	u8 ftrace_enabled = local_paca->ftrace_enabled;
-+
-+	local_paca->ftrace_enabled = 0;
- 
- 	/*
- 	 * Avoid crashes in case of nested NMI exceptions. Recoverability
-@@ -524,6 +527,8 @@ void system_reset_exception(struct pt_regs *regs)
- 	if (!nested)
- 		nmi_exit();
- 
-+	local_paca->ftrace_enabled = ftrace_enabled;
-+
- 	/* What should we do here? We could issue a shutdown or hard reset. */
- }
- 
--- 
-2.23.0
+> but if you pick it up I can drop it.
+
+Let it go in through your tree.
+
+Cheers!
+
+
 
