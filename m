@@ -6,38 +6,39 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4204EC43331
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2020 12:11:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E2D5EC43331
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2020 12:13:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E85682073E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2020 12:11:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E85682073E
+	by mail.kernel.org (Postfix) with ESMTPS id 9CB2D2073E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2020 12:13:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9CB2D2073E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48p3kM00hyzDqpL
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2020 23:11:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48p3mx6BKmzDqrs
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2020 23:13:53 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48p3cJ5vGpzDqsR
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2020 23:06:24 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48p3cK6d3YzDqch
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2020 23:06:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 48p3cH4SZ2z9sRY; Thu, 26 Mar 2020 23:06:23 +1100 (AEDT)
+ id 48p3cK08fPz9sRN; Thu, 26 Mar 2020 23:06:24 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 915b7f6f9a5e232c138bb36743a1fdb0fcf2c432
-In-Reply-To: <20200211033831.11165-2-gustavold@linux.ibm.com>
+X-powerpc-patch-commit: 0f8f554e5244f56f496b4ce30ada1126fe290345
+In-Reply-To: <20200211033831.11165-3-gustavold@linux.ibm.com>
 To: Gustavo Luiz Duarte <gustavold@linux.ibm.com>,
  linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH v3 2/3] selftests/powerpc: Add tm-signal-pagefault test
-Message-Id: <48p3cH4SZ2z9sRY@ozlabs.org>
-Date: Thu, 26 Mar 2020 23:06:23 +1100 (AEDT)
+Subject: Re: [PATCH v3 3/3] selftests/powerpc: Don't rely on segfault to rerun
+ the test
+Message-Id: <48p3cK08fPz9sRN@ozlabs.org>
+Date: Thu, 26 Mar 2020 23:06:24 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,27 +56,26 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2020-02-11 at 03:38:30 UTC, Gustavo Luiz Duarte wrote:
-> This test triggers a TM Bad Thing by raising a signal in transactional state
-> and forcing a pagefault to happen in kernelspace when the kernel signal
-> handling code first touches the user signal stack.
+On Tue, 2020-02-11 at 03:38:31 UTC, Gustavo Luiz Duarte wrote:
+> The test case tm-signal-context-force-tm expects a segfault to happen on
+> returning from signal handler, and then does a setcontext() to run the test
+> again. However, the test doesn't always segfault, causing the test to run a
+> single time.
 > 
-> This is inspired by the test tm-signal-context-force-tm but uses userfaultfd to
-> make the test deterministic. While this test always triggers the bug in one
-> run, I had to execute tm-signal-context-force-tm several times (the test runs
-> 5000 times each execution) to trigger the same bug.
+> This patch fixes the test by putting it within a loop and jumping, via
+> setcontext, just prior to the loop in case it segfaults. This way we get the
+> desired behavior (run the test COUNT_MAX times) regardless if it segfaults or
+> not. This also reduces the use of setcontext for control flow logic, keeping it
+> only in the segfault handler.
 > 
-> tm-signal-context-force-tm is kept instead of replaced because, while this test
-> is more reliable and triggers the same bug, tm-signal-context-force-tm has a
-> better coverage, in the sense that by running the test several times it might
-> trigger the pagefault and/or be preempted at different places.
-> 
-> v3: skip test if userfaultfd is unavailable.
+> Also, since 'count' is changed within the signal handler, it is declared as
+> volatile to prevent any compiler optimization getting confused with
+> asynchronous changes.
 > 
 > Signed-off-by: Gustavo Luiz Duarte <gustavold@linux.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/915b7f6f9a5e232c138bb36743a1fdb0fcf2c432
+https://git.kernel.org/powerpc/c/0f8f554e5244f56f496b4ce30ada1126fe290345
 
 cheers
