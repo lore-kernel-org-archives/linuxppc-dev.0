@@ -2,80 +2,58 @@ Return-Path: <SRS0=iuvT=5L=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MISSING_HEADERS,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB5A0C43331
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2020 20:53:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 55049C43331
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2020 22:00:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 482E12070A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2020 20:53:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 69DAF20714
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2020 22:00:42 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="cz8v/be9"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 482E12070A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="JMnlHokU"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 69DAF20714
+Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48pHJM1vhLzDqyk
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2020 07:53:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=flex--courbet.bounces.google.com
- (client-ip=2a00:1450:4864:20::34a; helo=mail-wm1-x34a.google.com;
- envelope-from=3wqj8xgckdisr396qt8v33v0t.r310x29c44r-sta0x787.3e0pq7.36v@flex--courbet.bounces.google.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20161025 header.b=cz8v/be9; dkim-atps=neutral
-Received: from mail-wm1-x34a.google.com (mail-wm1-x34a.google.com
- [IPv6:2a00:1450:4864:20::34a])
+	by lists.ozlabs.org (Postfix) with ESMTP id 48pJnx24VWzDqS2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2020 09:00:37 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48p4Ky0gM5zDqKb
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2020 23:38:54 +1100 (AEDT)
-Received: by mail-wm1-x34a.google.com with SMTP id w12so2112266wmc.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2020 05:38:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
- h=date:in-reply-to:message-id:mime-version:references:subject:from:cc;
- bh=8yqBrfdJM+UOOeS4se8770yNMpiUTGHQoT5T8DP4qB8=;
- b=cz8v/be9ZLdMPE+hQeq2vnACmD7uqiN8Lq6TKluF0QZdRurVUMGO/Nkjigif91QwY5
- 3olUJsW79QJtQwo5MICQlAayampaZfYhnd5DOxSPhJlu6zUUdJM4An/CEtBX5syjwFrG
- bFnI62fgBXnQKzFiADNm0p+P0J0/oahYLaUiZInfTgRUpLv+HtnQmtyNYbeQ+PWoZQQK
- IYDBtpV7vZAFYxyrL9CbgSFM7vWPsht7QzsRMnfxoDLktjlvax679zqjDQ4VWW+T+eBz
- 0A3H7eBt/5Jv9KIkWdE4h5ZCPUq39MtsDrxg0UgLD53g4NY0vJV698NDiz7G7dKZr725
- 4Qgw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:in-reply-to:message-id:mime-version
- :references:subject:from:cc;
- bh=8yqBrfdJM+UOOeS4se8770yNMpiUTGHQoT5T8DP4qB8=;
- b=FoaxnSgXM5LdmXG+b7GxaTAHG3Dvgdv5kVUyE4MqIANsQTZjo+iNCllgKbN7qfdehW
- fdn2ZQqORVFdmx2d0DCHKYg98hBYHPqACcyxvhL/BqqI0Zvol6SLIpb4l4PSIkHO4CeC
- 8mVmtMym2nKVGPtyHhYZWTxWECk3iHjWFn6rbfxZBfxO1JcDIR2Femz8ayYykZCfRBta
- Yr6CM46KPRKGAm92xH2xYILhfeTcVPoauUqAa3bMr0DyXN1NBoBWJOjjlBKSN2LFcC6L
- mDxvDfEoAcoc0jTjjKYtpouPCApWg4FSfx+zDInnvZQxlyazAzcwWAG7HJtHE7PWwrm2
- GSaA==
-X-Gm-Message-State: ANhLgQ2Ke+JuND6RokJnUk4QaeY16GyoNIt6PWUNh8QVdGEDQUuc/K9V
- zZ6v89lcDFwg3bJR6MU/lupf8QJGR4bj
-X-Google-Smtp-Source: ADFU+vtfeWdsMSn3bw0z8r9AjHsg1/TKeAFFpdNBrMjpIkIssmcXGEq6QCd9HvQD+cKah5CpMN25OCh4DKvH
-X-Received: by 2002:adf:a2d8:: with SMTP id t24mr9044184wra.366.1585226330006; 
- Thu, 26 Mar 2020 05:38:50 -0700 (PDT)
-Date: Thu, 26 Mar 2020 13:38:39 +0100
-In-Reply-To: <20200323114207.222412-1-courbet@google.com>
-Message-Id: <20200326123841.134068-1-courbet@google.com>
-Mime-Version: 1.0
-References: <20200323114207.222412-1-courbet@google.com>
-X-Mailer: git-send-email 2.25.1.696.g5e7596f4ac-goog
-Subject: [PATCH]     x86: Alias memset to __builtin_memset.
-From: Clement Courbet <courbet@google.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailman-Approved-At: Fri, 27 Mar 2020 07:51:41 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48pJlt44hJzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2020 08:58:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=ozlabs.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256
+ header.s=201707 header.b=JMnlHokU; dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1003)
+ id 48pJls712Wz9sRR; Fri, 27 Mar 2020 08:58:49 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
+ t=1585259929; bh=Sf69iWUNrMQgDwyFTyrEPmKhiAksHzMcJ+e9NXva9XM=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=JMnlHokUFLvdNAUyd3LZd3Bu/BGitZr+URsSji24FWeLJKpN20AGvD98ZM/pZh2wn
+ pM23ZJ+sEfSZwPjY1jGmYzm/KRK+Ejotg3ffuSZlU1XICemP4Mb5DjWePlirfNXZkj
+ SUcrwRH5JsENXTwMmZ+CDyLdRwUufCNMjIwkpxdbKzhnva9bSS4TtC4y4NTIvpaD1n
+ z2+Zzp7g2WQk5Zxxpj9Mq2NCGM7e6ExKfZimRvVOnQ/1L1OsALeqfbNrh7r+KYdyMI
+ yIZjZila19w9omhqFebV2SFHjF+LiLMHNWj6fA/7y8t5T4yGWIE6qhjw+9ZN/Ji5cG
+ HMteGzZrU/vjQ==
+Date: Fri, 27 Mar 2020 08:40:05 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Leonardo Bras <leonardo@linux.ibm.com>
+Subject: Re: [RFC PATCH 1/1] ppc/smp: Replace unnecessary 'while' by 'if'
+Message-ID: <20200326214005.GB9894@blackberry>
+References: <20200326203752.497029-1-leonardo@linux.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200326203752.497029-1-leonardo@linux.ibm.com>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,59 +65,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, Kees Cook <keescook@chromium.org>,
- Borislav Petkov <bp@alien8.de>,
+Cc: linux-kernel@vger.kernel.org,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Nick Desaulniers <ndesaulniers@google.com>,
- linux-kernel@vger.kernel.org, clang-built-linux@googlegroups.com,
- Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Clement Courbet <courbet@google.com>, Joe Perches <joe@perches.com>,
- Bernd Petrovitsch <bernd@petrovitsch.priv.at>,
- Nathan Chancellor <natechancellor@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Thomas Gleixner <tglx@linutronix.de>, Allison Randal <allison@lohutok.net>
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ Allison Randal <allison@lohutok.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-I discussed with the original authors who added freestanding to our
-build. It turns out that it was added globally but this was just to
-to workaround powerpc not compiling under clang, but they felt the
-fix was appropriate globally.
+On Thu, Mar 26, 2020 at 05:37:52PM -0300, Leonardo Bras wrote:
+> spin_until_cond() will wait until nmi_ipi_busy == false, and
+> nmi_ipi_lock_start() does not seem to change nmi_ipi_busy, so there is
+> no way this while will ever repeat.
+> 
+> Replace this 'while' by an 'if', so it does not look like it can repeat.
 
-Now Nick has dug up https://lkml.org/lkml/2019/8/29/1300, which
-advises against freestanding. Also, I've did some research and
-discovered that the original reason for using freestanding for
-powerpc has been fixed here:
-https://lore.kernel.org/linuxppc-dev/20191119045712.39633-3-natechancellor@gmail.com/
+Nack, it can repeat.  The scenario is that cpu A is in this code,
+inside spin_until_cond(); cpu B has previously set nmi_ipi_busy, and
+cpu C is also waiting for nmi_ipi_busy to be cleared, like cpu A.
+When cpu B clears nmi_ipi_busy, both cpu A and cpu C will see that and
+will race inside nmi_ipi_lock_start().  One of them, say cpu C, will
+take the lock and proceed to set nmi_ipi_busy and then call
+nmi_ipi_unlock().  Then the other cpu (cpu A) will then take the lock
+and return from nmi_ipi_lock_start() and find nmi_ipi_busy == true.
+At that point it needs to go through the while loop body once more.
 
-I'm going to remove -ffreestanding from downstream, so we don't really need
-this anymore, sorry for waisting people's time.
-
-I wonder if the freestanding fix from the aforementioned patch is really needed
-though. I think that clang is actually right to point out the issue.
-I don't see any reason why setjmp()/longjmp() are declared as taking longs
-rather than ints. The implementation looks like it only ever propagates the
-value (in longjmp) or sets it to 1 (in setjmp), and we only ever call longjmp
-with integer parameters. But I'm not a PowerPC expert, so I might
-be misreading the code.
-
-
-So it seems that we could just remove freestanding altogether and rewrite the
-code to:
-
-diff --git a/arch/powerpc/include/asm/setjmp.h b/arch/powerpc/include/asm/setjmp.h
-index 279d03a1eec6..7941ae68fe21 100644
---- a/arch/powerpc/include/asm/setjmp.h
-+++ b/arch/powerpc/include/asm/setjmp.h
-@@ -12,7 +12,9 @@
-
- #define JMP_BUF_LEN    23
--extern long setjmp(long *);
--extern void longjmp(long *, long);
-+typedef long * jmp_buf;
-+
-+extern int setjmp(jmp_buf);
-+extern void longjmp(jmp_buf, int);
-
-I'm happy to send a patch for this, and get rid of more -ffreestanding.
-Opinions ?
+Paul.
