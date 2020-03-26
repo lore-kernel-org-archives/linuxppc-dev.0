@@ -6,39 +6,39 @@ X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7ED2EC43331
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2020 12:23:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A2270C43331
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2020 12:25:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F28C02070A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2020 12:23:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F28C02070A
+	by mail.kernel.org (Postfix) with ESMTPS id 5CEF72070A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2020 12:25:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5CEF72070A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48p4005v6KzDqwg
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2020 23:23:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48p42n1xBMzDqfs
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2020 23:25:53 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48p3cW3mNPzDqqJ
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48p3cW5t6RzDqq5
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2020 23:06:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 48p3cT6hQvz9sSK; Thu, 26 Mar 2020 23:06:33 +1100 (AEDT)
+ id 48p3cW3jc8z9sSV; Thu, 26 Mar 2020 23:06:35 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 48p3cT3BXLz9sSb; Thu, 26 Mar 2020 23:06:33 +1100 (AEDT)
+ id 48p3cW0LMgz9sSl; Thu, 26 Mar 2020 23:06:34 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 6eeb9b3b9ce588f14a697737a30d0702b5a20293
-In-Reply-To: <20200225031328.14676-1-mpe@ellerman.id.au>
+X-powerpc-patch-commit: 61da50b76b62fd815aa82d853bf82bf4f69568f5
+In-Reply-To: <20200301111738.22497-1-mpe@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/64s: Fix section mismatch warnings from boot code
-Message-Id: <48p3cT3BXLz9sSb@ozlabs.org>
-Date: Thu, 26 Mar 2020 23:06:33 +1100 (AEDT)
+Subject: Re: [PATCH] powerpc/kuap: PPC_KUAP_DEBUG should depend on PPC_KUAP
+Message-Id: <48p3cW0LMgz9sSl@ozlabs.org>
+Date: Thu, 26 Mar 2020 23:06:34 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -54,77 +54,18 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2020-02-25 at 03:13:28 UTC, Michael Ellerman wrote:
-> We currently have two section mismatch warnings:
+On Sun, 2020-03-01 at 11:17:38 UTC, Michael Ellerman wrote:
+> Currently you can enable PPC_KUAP_DEBUG when PPC_KUAP is disabled,
+> even though the former has not effect without the latter.
 > 
->   The function __boot_from_prom() references
->   the function __init prom_init().
+> Fix it so that PPC_KUAP_DEBUG can only be enabled when PPC_KUAP is
+> enabled, not when the platform could support KUAP (PPC_HAVE_KUAP).
 > 
->   The function start_here_common() references
->   the function __init start_kernel().
-> 
-> The warnings are correct, we do have branches from non-init code into
-> init code, which is freed after boot. But we don't expect to ever
-> execute any of that early boot code after boot, if we did that would
-> be a bug. In particular calling into OF after boot would be fatal
-> because OF is no longer resident.
-> 
-> So for now fix the warnings by marking the relevant functions as
-> __REF, which puts them in the ".ref.text" section.
-> 
-> This causes some reordering of the functions in the final link:
-> 
->   @@ -217,10 +217,9 @@
->    c00000000000b088 t generic_secondary_common_init
->    c00000000000b124 t __mmu_off
->    c00000000000b14c t __start_initialization_multiplatform
->   -c00000000000b1ac t __boot_from_prom
->   -c00000000000b1ec t __after_prom_start
->   -c00000000000b260 t p_end
->   -c00000000000b27c T copy_and_flush
->   +c00000000000b1ac t __after_prom_start
->   +c00000000000b220 t p_end
->   +c00000000000b23c T copy_and_flush
->    c00000000000b300 T __secondary_start
->    c00000000000b300 t copy_to_here
->    c00000000000b344 t start_secondary_prolog
->   @@ -228,8 +227,9 @@
->    c00000000000b36c t enable_64b_mode
->    c00000000000b388 T relative_toc
->    c00000000000b3a8 t p_toc
->   -c00000000000b3b0 t start_here_common
->   -c00000000000b3d0 t start_here_multiplatform
->   +c00000000000b3b0 t __boot_from_prom
->   +c00000000000b3f0 t start_here_multiplatform
->   +c00000000000b480 t start_here_common
->    c00000000000b880 T system_call_common
->    c00000000000b974 t system_call
->    c00000000000b9dc t system_call_exit
-> 
-> In particular __boot_from_prom moves after copy_to_here, which means
-> it's not copied to zero in the first stage of copy of the kernel to
-> zero.
-> 
-> But that's OK, because we only call __boot_from_prom before we do the
-> copy, so it makes no difference when it's copied. The call sequence
-> is:
->   __start
->   -> __start_initialization_multiplatform
->      -> __boot_from_prom
->         -> __start
->            -> __start_initialization_multiplatform
->               -> __after_prom_start
->                  -> copy_and_flush
->                  -> copy_and_flush (relocated to 0)
->                     -> start_here_multiplatform
->                        -> early_setup
-> 
-> Reported-by: Mauricio Faria de Oliveira <mauricfo@linux.ibm.com>
-> Reported-by: Roman Bolshakov <r.bolshakov@yadro.com>
+> Fixes: 890274c2dc4c ("powerpc/64s: Implement KUAP for Radix MMU")
 > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
 Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/6eeb9b3b9ce588f14a697737a30d0702b5a20293
+https://git.kernel.org/powerpc/c/61da50b76b62fd815aa82d853bf82bf4f69568f5
 
 cheers
