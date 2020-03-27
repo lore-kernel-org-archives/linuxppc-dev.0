@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F738C43331
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2020 18:20:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 75EE4C43331
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2020 18:22:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A4DB4208E4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2020 18:20:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2C9802083E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2020 18:22:31 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="xT8bN9F/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A4DB4208E4
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="oQa4pNxc"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2C9802083E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48pqs7365tzDqKq
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Mar 2020 05:20:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48pqvm6cRjzDrF2
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Mar 2020 05:22:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
  (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
@@ -33,26 +33,26 @@ Received: from merlin.infradead.org (merlin.infradead.org
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48pqhC3v7tzDrBp
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2020 05:12:26 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48pqhC48lRzDrBq
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2020 05:12:27 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=merlin.20170209; h=Date:Cc:To:Subject:From:References:
  In-Reply-To:Message-Id:Sender:Reply-To:MIME-Version:Content-Type:
  Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=hrdjt8PAYlRcK9St65pLelHqmaCoNpXHENLe8hK4Z60=; b=xT8bN9F/eZJ4RLy/RtU7AxcqSK
- oiC6+E5oPyjgP+iXJQHQmGEhPSq3VZt6ekoOT3X5T5EXjLntG8R9xOLCRcL8A7+EsmbNeILD8Lg/p
- 9c/wtqi+GC3qZOtGX/PtdUuXdQKhEaHfYpl8SIiMjSvDMLkvQ8CkTcWZZFZADzFKuz3WT4he1af69
- hM4Vzv5moHWnS8YdU9LrwffLVPEvNNhCAPDPedwayflbZhHJywXKK4DzxVwLSFw/Ig1AWyTGH5TK0
- L5MXrPoSRT7efDS045qeHFkyuPN/s67G7MUNw7HiDjQcqZ9JGAsYwt0DniYmswIwiTdFsiNHQFBh9
- mTCEsEew==;
+ bh=XOsPFhZvDalAS3vFr6joJg0AJSe60kFvmzO1zvera5c=; b=oQa4pNxckze/2up20vNdPKqevS
+ +IvFV+qk1RNnUJNzLLUo43r/SOf/+1UHi3uDef0vMK51bvS4xKaoN0ElN/ceb3OpHRgnk7Ir0BpOg
+ llwqvs1QGjhkLibIQMwYZQNLfiSHUy9DtzZu+Kh1FOhSmU/QTDKVo4zMIcGZicBEIvhJH3Y+Jd7p+
+ KN8tlQr/36KI0tx7uUywmRK70z6B+8crNj/D1Q1FsWkE3OzIh1d1l6ez9smbANagG0Hq5Myl9osIs
+ 9k87ivniSeO6hGswnaxaHQ3PTiSRB74KT+1BtUza/WZ3FYJbTJ+CLoe7RQ7rCvIQBFUF+ehA0vvJq
+ O993fEpw==;
 Received: from geoff by merlin.infradead.org with local (Exim 4.92.3 #3 (Red
- Hat Linux)) id 1jHtSu-0000z8-BB; Fri, 27 Mar 2020 18:12:20 +0000
-Message-Id: <b0e8f05d12b2d253a78a33f0c07084aa74eec4d8.1585332596.git.geoff@infradead.org>
+ Hat Linux)) id 1jHtSu-0000zC-Dv; Fri, 27 Mar 2020 18:12:20 +0000
+Message-Id: <e6fb89a0946dd620f1d8120578744942ca934e11.1585332596.git.geoff@infradead.org>
 In-Reply-To: <cover.1585332596.git.geoff@infradead.org>
 References: <cover.1585332596.git.geoff@infradead.org>
 From: Geoff Levand <geoff@infradead.org>
 Patch-Date: Fri, 27 Mar 2020 09:41:41 -0700
-Subject: [PATCH 2/3] powerpc/wrapper: Output linker map file
+Subject: [PATCH 3/3] powerpc/head_check: Avoid broken pipe
 To: Michael Ellerman <mpe@ellerman.id.au>
 Date: Fri, 27 Mar 2020 18:12:20 +0000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -71,36 +71,29 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-To aid debugging wrapper troubles, output a linker map file
-'wrapper.map' when the build is verbose.
+Remove the '-m4' option to grep to allow grep to process all of nm's
+output.  This avoids the nm warning:
+
+  nm terminated with signal 13 [Broken pipe]
 
 Signed-off-by: Geoff Levand <geoff@infradead.org>
 ---
- arch/powerpc/boot/wrapper | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/tools/head_check.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index ed6266367bc0..35ace40d9fc2 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -29,6 +29,7 @@ set -e
- # Allow for verbose output
- if [ "$V" = 1 ]; then
-     set -x
-+    map="-Map wrapper.map"
- fi
+diff --git a/arch/powerpc/tools/head_check.sh b/arch/powerpc/tools/head_check.sh
+index 37061fb9b58e..e32d3162e5ed 100644
+--- a/arch/powerpc/tools/head_check.sh
++++ b/arch/powerpc/tools/head_check.sh
+@@ -46,7 +46,7 @@ nm="$1"
+ vmlinux="$2"
  
- # defaults
-@@ -500,7 +501,7 @@ if [ "$platform" != "miboot" ]; then
-         text_start="-Ttext $link_address"
-     fi
- #link everything
--    ${CROSS}ld -m $format -T $lds $text_start $pie $nodl -o "$ofile" \
-+    ${CROSS}ld -m $format -T $lds $text_start $pie $nodl -o "$ofile" $map \
- 	$platformo $tmp $object/wrapper.a
-     rm $tmp
- fi
+ # gcc-4.6-era toolchain make _stext an A (absolute) symbol rather than T
+-$nm "$vmlinux" | grep -e " [TA] _stext$" -e " t start_first_256B$" -e " a text_start$" -e " t start_text$" -m4 > .tmp_symbols.txt
++$nm "$vmlinux" | grep -e " [TA] _stext$" -e " t start_first_256B$" -e " a text_start$" -e " t start_text$" > .tmp_symbols.txt
+ 
+ 
+ vma=$(cat .tmp_symbols.txt | grep -e " [TA] _stext$" | cut -d' ' -f1)
 -- 
 2.20.1
-
 
