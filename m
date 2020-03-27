@@ -2,87 +2,83 @@ Return-Path: <SRS0=yRDn=5M=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A78FC2D0ED
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2020 17:28:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC8A9C43331
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2020 17:38:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 90A5420716
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2020 17:28:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 910412073B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2020 17:38:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="p1kxgtdl"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 90A5420716
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="o2lMZSVr"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 910412073B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48ppjv4rffzDqQ1
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Mar 2020 04:28:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48ppxT54YKzDqfL
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Mar 2020 04:38:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::341;
- helo=mail-ot1-x341.google.com; envelope-from=natechancellor@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::144;
+ helo=mail-il1-x144.google.com; envelope-from=hjl.tools@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=p1kxgtdl; dkim-atps=neutral
-Received: from mail-ot1-x341.google.com (mail-ot1-x341.google.com
- [IPv6:2607:f8b0:4864:20::341])
+ header.s=20161025 header.b=o2lMZSVr; dkim-atps=neutral
+Received: from mail-il1-x144.google.com (mail-il1-x144.google.com
+ [IPv6:2607:f8b0:4864:20::144])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48ppgy2RPBzDr0k
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2020 04:27:09 +1100 (AEDT)
-Received: by mail-ot1-x341.google.com with SMTP id x11so10548467otp.6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2020 10:27:09 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48ppvg0q9KzDrCX
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2020 04:37:14 +1100 (AEDT)
+Received: by mail-il1-x144.google.com with SMTP id a6so9526877ilr.4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2020 10:37:14 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=ClBYvSVmf83rxBcoJPioNptteHGrQ49oK3IN7T/4Mgc=;
- b=p1kxgtdlAlcm9ZYp0voSXEtcsJCiehEdu2swGy2F/tJZXZEDEM0LiBh5bLYFtdgFZc
- vsH8oBKUYVuWCQSRJUlNW+M4qg4yLXiWgD2eK+pQCBZ69YoTQhmD3rwBCLNgQqIhOlvk
- ABETgIyKgHprRV5zGNhl+GGjY2bpPLCWeBOFSQCn0HbGJbZQ/g60ZuYwe2cfmOOAGajh
- Kf0cjQ/kS6FJKgws+xZ3OVq2EwfuFkKLdUaqmqF6Ul8xX/bBN2ZEnNowVyy1ujh15FJs
- xnswehxIsxVIpsUdnGDvqjPgUAqQSKKMrB0vNuBQo1ni7AIwNHppUSReQB9iSUvLNxD4
- T8Zw==
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=2OgNwLq6KbW4jebD9K/lSkSXgzLNFD+IZy1kWWcXkPI=;
+ b=o2lMZSVrfmsw5NoBPM/IBHukmjtU1LSjJcQ/8XRpfomzjgri0Q45CrX95gdlZlXP40
+ waq/+KviIBb2g866NOCnuKr1PloSeMJXIhzCcjrF8kO3AUILiYM+SPQ0ZK+NX+1vM92J
+ r9bkVg+fS42NgMfzX6oNVwwKI37QY2171/D0glk/cjduznOnfw84IvCZODq3s2uxetLI
+ wNbpLjaM1QhHn6sWRFSaCPmRuT3alBKCUBN1YQjCoS53I7xIFRlUsEPBNtQFs2ZudS8e
+ Hzy4AIIl+AQcwK0Yq9kiymicoHfcdzInpYOjm/uat1QKtKk9ITZ91ZCPMAYWXT0a+wnJ
+ SdkA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=ClBYvSVmf83rxBcoJPioNptteHGrQ49oK3IN7T/4Mgc=;
- b=ttm+11+muvdWCxUyaA2l0d1QKDNiGuzXaBkonVxqWX91RTBBg657EmRZAVyR49RUEh
- rsH3wUEJpcJCjlL7gdgGC3WBXPjpdGMKpz1JH335PlL9GW6ZiHuIqbhky8RMoJk75f3o
- ROP/wOXHYLs/LT99RTRr8eBuC9eDKVTcyY+sIIaOBD5feVrSMkEuAectelehyHVx8qri
- lvt9cUTadhUj43x8PBFFSpEWvb9bbIY0PHQ/SrltljXh5XW2zDoKa31CaBFFJ+iOq8EC
- HYTQMXV8vtYSDfZ+aq9wz8wY5f/HCYUMLNzrPTfk14GNlTKhp/2D2VXBej4wQK1t/Kjh
- 2oaA==
-X-Gm-Message-State: ANhLgQ2N8kmRxyTsHvtWxmgEIXLTmhVwUxNjabBDy+Q+do0h/otS2Fsp
- DMDrHmWl0JmlbQk+tp0HvsU=
-X-Google-Smtp-Source: ADFU+vvCryVp1EzUDSsGpKlMWDJ2IGkuG+A5nBaN01hdZ8Oaa4LyrQLUUb4FlTMO9zHE2KaPs5q0Og==
-X-Received: by 2002:a4a:d88b:: with SMTP id b11mr421504oov.42.1585330026427;
- Fri, 27 Mar 2020 10:27:06 -0700 (PDT)
-Received: from ubuntu-m2-xlarge-x86 ([2604:1380:4111:8b00::1])
- by smtp.gmail.com with ESMTPSA id t4sm1105871otm.45.2020.03.27.10.27.04
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Fri, 27 Mar 2020 10:27:05 -0700 (PDT)
-Date: Fri, 27 Mar 2020 10:27:03 -0700
-From: Nathan Chancellor <natechancellor@gmail.com>
-To: Nick Desaulniers <ndesaulniers@google.com>
-Subject: Re: [PATCH v1] powerpc: Make setjmp/longjump signature standard
-Message-ID: <20200327172703.GA28580@ubuntu-m2-xlarge-x86>
-References: <20200327100801.161671-1-courbet@google.com>
- <CAKwvOdmLmfJY4Uk-Atd9dT5+zQTPeoagjMZMcDqdVfKCU7_BuA@mail.gmail.com>
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=2OgNwLq6KbW4jebD9K/lSkSXgzLNFD+IZy1kWWcXkPI=;
+ b=WVN+7CTkwYbxJmFhemWbmvlOCoHkLJgkC3Bk0uxbgHpTMYZxkIvTtMuOtYVTCe3RJb
+ GU8i/WBRrgc++XQm8WYdUuPnP83wbEoKTuJiJJkFu3NPhtULc/S+vI8xZ7/l6hJ3SqBU
+ ha1WyRy4mWdSxGUbUJZ+FYdP58HqUc6U/FZ9ZBUVIuTGmHLCDORwI0ta/kUa9S/ySg2b
+ 4HwEtr9xXzVUIJgwGikdfjo0NT0p0auz4uNLuXhs1pRpTxkLj+b2SEyd5/IKi+RamlKf
+ Qp60ZoWLD+HHQKAPnXeHrXIlNVjtcMuQtbVgTXYlvffVHduFSu+6QFUqkehI+NfPPQy4
+ i/EA==
+X-Gm-Message-State: ANhLgQ3FvMWHwlJNpiGMPpsi5WgGQYj2MkqFtA1dWbMa8Yh/DgMlqXIM
+ R8ot46rJQ7ipJx11f9r+/fW+y7Xq8gNQ1Ml+M3A=
+X-Google-Smtp-Source: ADFU+vuDSlvcsYRqAt0U7J4RsS53P+lcw4vee19feIkniHFeWsbGnAjQCqf6tjxLfsGgG4a46kIXg80lHkS0hvHLPtg=
+X-Received: by 2002:a92:c00a:: with SMTP id q10mr202050ild.151.1585330631911; 
+ Fri, 27 Mar 2020 10:37:11 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAKwvOdmLmfJY4Uk-Atd9dT5+zQTPeoagjMZMcDqdVfKCU7_BuA@mail.gmail.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+References: <202002050743.dc2PtIsm%lkp@intel.com>
+ <CAMe9rOrJEVL8Qw3fgm9FeDjwGZNxGoZ-OO6bfmV=gtK=g68cvQ@mail.gmail.com>
+ <87wo901jm0.fsf@mpe.ellerman.id.au>
+ <CAMe9rOrFV0E9N8f-NZeOP+=SSERK-ptUoZrJiS3wgxqjpLhP3Q@mail.gmail.com>
+ <d10b81d0c4f97140bf3e2a96967ebc2711042d3b.camel@intel.com>
+In-Reply-To: <d10b81d0c4f97140bf3e2a96967ebc2711042d3b.camel@intel.com>
+From: "H.J. Lu" <hjl.tools@gmail.com>
+Date: Fri, 27 Mar 2020 10:36:36 -0700
+Message-ID: <CAMe9rOpKPYe55=9c1smGwBZBhRbk8PjpdJZ-xQ7RDXjN81gKug@mail.gmail.com>
+Subject: RFA [PPC kernel] Avoid upcoming PPC kernel build failure
+To: Yu-cheng Yu <yu-cheng.yu@intel.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,70 +90,148 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- clang-built-linux <clang-built-linux@googlegroups.com>,
- Paul Mackerras <paulus@samba.org>, Clement Courbet <courbet@google.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Kees Cook <keescook@chromium.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Mar 27, 2020 at 10:10:44AM -0700, Nick Desaulniers wrote:
-> On Fri, Mar 27, 2020 at 3:08 AM Clement Courbet <courbet@google.com> wrote:
+On Fri, Mar 27, 2020 at 7:54 AM Yu-cheng Yu <yu-cheng.yu@intel.com> wrote:
+>
+> On Thu, 2020-02-06 at 04:55 -0800, H.J. Lu wrote:
+> > On Wed, Feb 5, 2020 at 7:26 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
+> > > "H.J. Lu" <hjl.tools@gmail.com> writes:
+> > > > On Tue, Feb 4, 2020 at 3:37 PM kbuild test robot <lkp@intel.com> wrote:
+> > > > > tree:   https://github.com/yyu168/linux_cet.git cet
+> > > > > head:   bba707cc4715c1036b6561ab38b16747f9c49cfa
+> > > > > commit: 71bb971dd76eeacd351690f28864ad5c5bec3691 [55/58] Discard .note.gnu.property sections in generic NOTES
+> > > > > config: powerpc-rhel-kconfig (attached as .config)
+> > > > > compiler: powerpc64le-linux-gcc (GCC) 7.5.0
+> > > > > reproduce:
+> > > > >         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+> > > > >         chmod +x ~/bin/make.cross
+> > > > >         git checkout 71bb971dd76eeacd351690f28864ad5c5bec3691
+> > > > >         # save the attached .config to linux build tree
+> > > > >         GCC_VERSION=7.5.0 make.cross ARCH=powerpc
+> > > > >
+> > > > > If you fix the issue, kindly add following tag
+> > > > > Reported-by: kbuild test robot <lkp@intel.com>
+> > > > >
+> > > > > All warnings (new ones prefixed by >>):
+> > > > >
+> > > > >    powerpc64le-linux-ld: warning: discarding dynamic section .rela___ksymtab_gpl+__wait_rcu_gp
+> > > >
+> > > > arch/powerpc/kernel/vmlinux.lds.S has
+> > > >
+> > > >  .rela.dyn : AT(ADDR(.rela.dyn) - (0xc000000000000000 -0x00000000))
+> > > >  {
+> > > >   __rela_dyn_start = .;
+> > > >   *(.rela*) <<<<<<<< Keep .rela* sections
+> > > >  }
+> > >
+> > > The above is inside #ifdef CONFIG_RELOCATABLE
+> > >
+> > > > ...
+> > > >  /DISCARD/ : {
+> > > >   *(*.EMB.apuinfo)
+> > > >   *(.glink .iplt .plt .rela* .comment)
+> > > >                            ^^^^ Discard  .rela* sections.  But it is ignored.
+> > > >   *(.gnu.version*)
+> > > >   *(.gnu.attributes)
+> > > >   *(.eh_frame)
+> > > >  }
+> > >
+> > > But that is not #ifdef'ed at all.
+> > >
+> > > > With my
+> > > >
+> > > > ommit 71bb971dd76eeacd351690f28864ad5c5bec3691
+> > > > Author: H.J. Lu <hjl.tools@gmail.com>
+> > > > Date:   Thu Jan 30 12:39:09 2020 -0800
+> > > >
+> > > >     Discard .note.gnu.property sections in generic NOTES
+> > > >
+> > > >     With the command-line option, -mx86-used-note=yes, the x86 assembler
+> > > >     in binutils 2.32 and above generates a program property note in a note
+> > > >     section, .note.gnu.property, to encode used x86 ISAs and features.  But
+> > > >     kernel linker script only contains a single NOTE segment:
+> > > >
+> > > > /DISCARD/ : { *(.note.gnu.property) }
+> > > >
+> > > > is placed before
+> > > >
+> > > > .rela.dyn : AT(ADDR(.rela.dyn) - (0xc000000000000000 -0x00000000))
+> > > >  {
+> > > >   __rela_dyn_start = .;
+> > > >   *(.rela*) <<<<<<<< Keep .rela* sections
+> > > >  }
+> > > >
+> > > > Then .rela* in
+> > > >
+> > > >  /DISCARD/ : {
+> > > >   *(*.EMB.apuinfo)
+> > > >   *(.glink .iplt .plt .rela* .comment)
+> > > >   *(.gnu.version*)
+> > > >   *(.gnu.attributes)
+> > > >   *(.eh_frame)
+> > > >  }
+> > > >
+> > > > is honored.  Can someone from POWERPC comment on it?
+> > >
+> > > Hmm OK. I'm not really a toolchain person.
+> > >
+> > > The comment on DISCARDS says:
+> > >
+> > >    * Some archs want to discard exit text/data at runtime rather than
+> > >    * link time due to cross-section references such as alt instructions,
+> > >    * bug table, eh_frame, etc.  DISCARDS must be the last of output
+> > >    * section definitions so that such archs put those in earlier section
+> > >    * definitions.
+> > >    */
+> > >
+> > > But I guess you're changing those semantics in your series.
+> > >
+> > > This seems to fix the warning for me?
+> > >
+> > > diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+> > > index b4c89a1acebb..076b3e8a849d 100644
+> > > --- a/arch/powerpc/kernel/vmlinux.lds.S
+> > > +++ b/arch/powerpc/kernel/vmlinux.lds.S
+> > > @@ -365,9 +365,12 @@ SECTIONS
+> > >         DISCARDS
+> > >         /DISCARD/ : {
+> > >                 *(*.EMB.apuinfo)
+> > > -               *(.glink .iplt .plt .rela* .comment)
+> > > +               *(.glink .iplt .plt .comment)
+> > >                 *(.gnu.version*)
+> > >                 *(.gnu.attributes)
+> > >                 *(.eh_frame)
+> > > +#ifndef CONFIG_RELOCATABLE
+> > > +               *(.rela*)
+> > > +#endif
+> > >         }
+> > >  }
+> > >
+> > >
+> > > cheers
 > >
-> > Declaring setjmp()/longjmp() as taking longs makes the signature
-> > non-standard, and makes clang complain. In the past, this has been
-> > worked around by adding -ffreestanding to the compile flags.
+> > This looks correct me.
 > >
-> > The implementation looks like it only ever propagates the value
-> > (in longjmp) or sets it to 1 (in setjmp), and we only call longjmp
-> > with integer parameters.
+> > Reviewed-by: H.J. Lu <hjl.tools@gmail.com>
 > >
-> > This allows removing -ffreestanding from the compilation flags.
+> > Thanks.
 > >
-> > Context:
-> > https://lore.kernel.org/patchwork/patch/1214060
-> > https://lore.kernel.org/patchwork/patch/1216174
-> >
-> > Signed-off-by: Clement Courbet <courbet@google.com>
+>
+> Has this been merged into any branch yet?  I just checked the tip tree and did
+> not see it.
+>
 
-Thanks for fixing this properly, not really sure why I did not think of
-this in the first place. I guess my thought was the warning makes it
-seem like clang is going to ignore the kernel's implementation of
-setjmp/longjmp but I can't truly remember.
+FYI, my patches have been queued on x86/build branch.   Could someone
+from PPC community add this patch to PPC kernel to avoid upcoming PPC
+kernel build failure?
 
-> Hi Clement, thanks for the patch! Would you mind sending a V2 that
-> included a similar fix to arch/powerpc/xmon/Makefile?
+Thanks.
 
-Agreed.
-
-> For context, this was the original patch:
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=aea447141c7e7824b81b49acd1bc78
-> which was then modified to:
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=c9029ef9c95765e7b63c4d9aa780674447db1ec0
-> 
-> So on your V2, if you include in the commit message, the line:
-> 
-> Fixes c9029ef9c957 ("powerpc: Avoid clang warnings around setjmp and longjmp")
-> 
-> then that will help our LTS branch maintainers back port it to the
-> appropriate branches.
-
-The tags should be:
-
-Cc: stable@vger.kernel.org # v4.14+
-Fixes: c9029ef9c957 ("powerpc: Avoid clang warnings around setjmp and longjmp")
-
-that way it explicitly gets picked up for stable, rather than Sasha's
-AUTOSEL process, which could miss it.
-
-With the xmon/Makefile -ffreestanding removed and the tags updated,
-consider this:
-
-Reviewed-by: Nathan Chancellor <natechancellor@gmail.com>
-Tested-by: Nathan Chancellor <natechancellor@gmail.com>
-
-Cheers,
-Nathan
+-- 
+H.J.
