@@ -1,55 +1,55 @@
-Return-Path: <SRS0=iuvT=5L=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=yRDn=5M=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E80D9C43331
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2020 23:39:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 37CF8C43331
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2020 02:35:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9F73520663
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2020 23:39:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F73520663
+	by mail.kernel.org (Postfix) with ESMTPS id 75CC920714
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2020 02:35:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 75CC920714
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48pM0L4g41zDqSh
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2020 10:39:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48pQtv3YdjzDr73
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2020 13:35:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.100; helo=mga07.intel.com;
+ smtp.mailfrom=intel.com (client-ip=134.134.136.20; helo=mga02.intel.com;
  envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48pLx101khzDr48
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2020 10:36:50 +1100 (AEDT)
-IronPort-SDR: xZx7Nu9+Nh9MPi/BHzStOB+DAjfk/KSZJZGwYUroqb0FTJiBTqMDfLqT5W/wZLQMYB4H9Kqlsj
- HsrZEMk7hMeg==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48pQs21FmHzDr2s
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2020 13:33:35 +1100 (AEDT)
+IronPort-SDR: bj1AfGZN90dmWaO7UB86bS2udsVp9qyvUXHLwDDmiVAPyih7QMkesJpH/u88sg6l9uGCyjRR35
+ 0JUgvBiSZPrA==
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
-Received: from fmsmga004.fm.intel.com ([10.253.24.48])
- by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 26 Mar 2020 16:36:47 -0700
-IronPort-SDR: 2J31ewjfq6AIBn9nGGnIZMR/xEGcFoVj/EgamKcWls4tqRWMP2ytO1rB4Oq1Y5Zl9YPWM9+rx5
- jFdGH2OjXlcw==
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+ by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 26 Mar 2020 19:33:31 -0700
+IronPort-SDR: 1gXF/jp0ytQWt85JRGtr6zRHaxVhUqo3X0s6KHuTrcmlJo1dibUqjEeZlltW54+euQk0nIhJNa
+ cslMfwJo58CA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.72,310,1580803200"; d="scan'208";a="271362543"
+X-IronPort-AV: E=Sophos;i="5.72,310,1580803200"; d="scan'208";a="358354642"
 Received: from lkp-server01.sh.intel.com (HELO lkp-server01) ([10.239.97.150])
- by fmsmga004.fm.intel.com with ESMTP; 26 Mar 2020 16:36:46 -0700
+ by fmsmga001.fm.intel.com with ESMTP; 26 Mar 2020 19:33:30 -0700
 Received: from kbuild by lkp-server01 with local (Exim 4.89)
  (envelope-from <lkp@intel.com>)
- id 1jHc3J-0005Yl-HD; Fri, 27 Mar 2020 07:36:45 +0800
-Date: Fri, 27 Mar 2020 07:36:42 +0800
+ id 1jHeoL-00081k-Oq; Fri, 27 Mar 2020 10:33:29 +0800
+Date: Fri, 27 Mar 2020 10:33:21 +0800
 From: kbuild test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:next] BUILD SUCCESS 7074695ac6fb965d478f373b95bc5c636e9f21b0
-Message-ID: <5e7d3c8a.OjfMtOK798QsIkE9%lkp@intel.com>
+Subject: [powerpc:merge] BUILD SUCCESS c6624071c338732402e8c726df6a4074473eaa0e
+Message-ID: <5e7d65f1./mNVd/GuDe3Pd8XX%lkp@intel.com>
 User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -70,10 +70,10 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  next
-branch HEAD: 7074695ac6fb965d478f373b95bc5c636e9f21b0  powerpc/prom_init: Remove leftover comment
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  merge
+branch HEAD: c6624071c338732402e8c726df6a4074473eaa0e  Automatic merge of branches 'master', 'next' and 'fixes' into merge
 
-elapsed time: 483m
+elapsed time: 660m
 
 configs tested: 152
 configs skipped: 0
@@ -96,15 +96,14 @@ arm                        shmobile_defconfig
 arm                           sunxi_defconfig
 arm64                               defconfig
 sparc                            allyesconfig
-powerpc                       ppc64_defconfig
 um                           x86_64_defconfig
 xtensa                          iss_defconfig
-i386                             alldefconfig
 i386                              allnoconfig
 i386                             allyesconfig
+i386                             alldefconfig
 i386                                defconfig
-ia64                                defconfig
 ia64                             allmodconfig
+ia64                                defconfig
 ia64                              allnoconfig
 ia64                             allyesconfig
 ia64                             alldefconfig
@@ -115,21 +114,22 @@ nios2                         3c120_defconfig
 openrisc                    or1ksim_defconfig
 openrisc                 simple_smp_defconfig
 xtensa                       common_defconfig
-nds32                             allnoconfig
-csky                                defconfig
 alpha                               defconfig
+csky                                defconfig
+nds32                             allnoconfig
 nds32                               defconfig
-h8300                       h8s-sim_defconfig
 h8300                     edosk2674_defconfig
-m68k                       m5475evb_defconfig
-m68k                             allmodconfig
 h8300                    h8300h-sim_defconfig
-m68k                           sun3_defconfig
+h8300                       h8s-sim_defconfig
+m68k                             allmodconfig
+m68k                       m5475evb_defconfig
 m68k                          multi_defconfig
-powerpc                          rhel-kconfig
+m68k                           sun3_defconfig
 arc                                 defconfig
 arc                              allyesconfig
 powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                          rhel-kconfig
 microblaze                      mmu_defconfig
 microblaze                    nommu_defconfig
 powerpc                           allnoconfig
@@ -141,20 +141,20 @@ mips                             allyesconfig
 mips                      fuloong2e_defconfig
 mips                      malta_kvm_defconfig
 parisc                            allnoconfig
-parisc                           allyesconfig
-parisc                generic-32bit_defconfig
 parisc                generic-64bit_defconfig
-x86_64               randconfig-a001-20200326
-x86_64               randconfig-a002-20200326
-x86_64               randconfig-a003-20200326
-i386                 randconfig-a001-20200326
+parisc                generic-32bit_defconfig
+parisc                           allyesconfig
 i386                 randconfig-a002-20200326
+i386                 randconfig-a001-20200326
+x86_64               randconfig-a002-20200326
+x86_64               randconfig-a001-20200326
 i386                 randconfig-a003-20200326
-alpha                randconfig-a001-20200326
-m68k                 randconfig-a001-20200326
+x86_64               randconfig-a003-20200326
 mips                 randconfig-a001-20200326
 nds32                randconfig-a001-20200326
+m68k                 randconfig-a001-20200326
 parisc               randconfig-a001-20200326
+alpha                randconfig-a001-20200326
 riscv                randconfig-a001-20200326
 c6x                  randconfig-a001-20200326
 h8300                randconfig-a001-20200326
@@ -215,18 +215,18 @@ s390                             allyesconfig
 s390                          debug_defconfig
 s390                                defconfig
 s390                       zfcpdump_defconfig
-sh                          rsk7269_defconfig
 sh                               allmodconfig
-sh                            titan_defconfig
-sh                  sh7785lcr_32bit_defconfig
 sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
 sparc                               defconfig
 sparc64                          allmodconfig
 sparc64                           allnoconfig
 sparc64                          allyesconfig
 sparc64                             defconfig
-um                                  defconfig
 um                             i386_defconfig
+um                                  defconfig
 x86_64                              fedora-25
 x86_64                                  kexec
 x86_64                                    lkp
