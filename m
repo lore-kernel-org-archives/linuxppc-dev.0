@@ -2,71 +2,73 @@ Return-Path: <SRS0=kug9=5Q=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D529AC43331
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 08:57:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C2674C43331
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 09:03:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4FE8F207FF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 08:57:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4FE8F207FF
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id CEB48208E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 09:03:32 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (4096-bit key) header.d=d-silva.org header.i=@d-silva.org header.b="WFsUJw7F"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CEB48208E0
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=d-silva.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48s3B502NmzDqpR
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 19:57:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48s3Jx5SkZzDqvD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 20:03:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.128.65; helo=mail-wm1-f65.google.com;
- envelope-from=mstsxfx@gmail.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=d-silva.org (client-ip=66.55.73.32;
+ helo=ushosting.nmnhosting.com; envelope-from=alastair@d-silva.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-wm1-f65.google.com (mail-wm1-f65.google.com
- [209.85.128.65])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48s37W0tfNzDqmd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2020 19:55:18 +1100 (AEDT)
-Received: by mail-wm1-f65.google.com with SMTP id i19so1661672wmb.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2020 01:55:18 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=rTdu7oh4JjjFUdNyXovYxN1QmbRl7JqIGXsfhw5Wa0c=;
- b=rvDFWI6XOt8p3/hsA0SFh2SBBHQaMvbtCYD0kEsyeV1EHvM95aujtXIEtQrl4oKHdv
- OfFQDbeKXffv/0gYRo7IqGH8qBWFRJAPN8kNoTUf7EUlJqsaIbyIfU5LJ2n/mqZhDKUX
- zoE5fQcMOWSbXqGWCGQ8P81ZO7O2EMvc60l3DxIR/pe7j5qt/5/VmuqlwnsxWx6obej+
- Z192WcFYx+mln7NMgBN0MMs/6fmoP+5+uvVHKnFhO3IdFQwinXwU332RPXOAmMtB/ztu
- Mq1BHwGnGqp6R663rG5yee4weo7orVNfR7EFrVua3zllvkHEoKr5ADaTqpgm0Ni9gQP8
- uSDQ==
-X-Gm-Message-State: ANhLgQ0zQ3xKEyFB27rsbos0XGZNWIvou3U8rfgnRtcA+Xccuh6cdV3/
- odGcgCJUjApKdKD2qMTCF/4=
-X-Google-Smtp-Source: ADFU+vuscSRwsLwXmVoQv1xnwhJFZnnlCFmntVIImf+p0Rb3SHZnEYoHiIxLd4qO4YJEIRanvIyR4Q==
-X-Received: by 2002:a1c:b60b:: with SMTP id g11mr2406590wmf.175.1585644915034; 
- Tue, 31 Mar 2020 01:55:15 -0700 (PDT)
-Received: from localhost (ip-37-188-180-223.eurotel.cz. [37.188.180.223])
- by smtp.gmail.com with ESMTPSA id v11sm26003208wrm.43.2020.03.31.01.55.14
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 31 Mar 2020 01:55:14 -0700 (PDT)
-Date: Tue, 31 Mar 2020 10:55:13 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: Mike Rapoport <rppt@linux.ibm.com>
-Subject: Re: [PATCH v3 0/5] mm: Enable CONFIG_NODES_SPAN_OTHER_NODES by
- default for NUMA
-Message-ID: <20200331085513.GE30449@dhcp22.suse.cz>
-References: <1585420282-25630-1-git-send-email-Hoan@os.amperecomputing.com>
- <20200330074246.GA14243@dhcp22.suse.cz>
- <20200330175100.GD30942@linux.ibm.com>
- <20200330182301.GM14243@dhcp22.suse.cz>
- <20200331081423.GE30942@linux.ibm.com>
+ dmarc=none (p=none dis=none) header.from=d-silva.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (4096-bit key;
+ unprotected) header.d=d-silva.org header.i=@d-silva.org header.a=rsa-sha256
+ header.s=201810a header.b=WFsUJw7F; dkim-atps=neutral
+Received: from ushosting.nmnhosting.com (ushosting.nmnhosting.com
+ [66.55.73.32])
+ by lists.ozlabs.org (Postfix) with ESMTP id 48s3D53lFWzDqmj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2020 19:59:17 +1100 (AEDT)
+Received: from mail2.nmnhosting.com (unknown [202.169.106.97])
+ by ushosting.nmnhosting.com (Postfix) with ESMTPS id 167402DC6865;
+ Mon, 30 Mar 2020 16:53:00 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=d-silva.org;
+ s=201810a; t=1585547581;
+ bh=vRLE2b0DEucnyqflmU5elmtDiv/1IFmmCdakHAT0FxQ=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=WFsUJw7F0hIvPb6ZSnt7GAZpXr/E2Z9FYSbulLN05P/O+C0TaVzvwKh5K8dIeXpiB
+ 1y8bnd3fGf1XVk3oXKsSI3fdeQmG2Me70bYNsdEBHoW8J42QpayBFlESBkFy7hhRgO
+ 1IqLDbk9/270vDZqLI04gDZnK4Zk7KL6KQgSKfRaDWPSQEL53mUKtqvNVX19talTTY
+ 5GQaF52LoakCZPynBwsvCdUq1XJovsBZLYme3hHOkaqo4pdalXmKJe8+4lLbuHvUMZ
+ Y7X6oVZUKnMsZB4sbxShJLs6L/G/IAZ1MCptBoex4XCq0mx4W+x8nrgnfKDuSTbMDn
+ fghqXsNGY5v14b0EDv0f+f9cfcMrCP/enxq03xCTHsDWAGRtNCbzS6nG4UR0xKQYyA
+ /hNaj4Uy20cpBY5Y57b+0zCilg4+GOdZucdF3SA+TMPC9K0gq8ClMn8f1w/lp/Mn+h
+ Jn7wjsWP505+/8Mn94Lb1USkIdTadhAnDQW+OrDzezfqlVWBThppZJKxi2C397wF2Q
+ QzR6dAX2U3BPMQKNyjQoHMqnwmWm2ieepCeTAkAmErwjiwtz69TRaanTh+Xf61MbSy
+ T8KOniORK8+jCPalfJasMUw6I1GNvWxqrhhlYo69FnhBtCnNWJTfrVf6ZW1N4+lYUi
+ BpfFwmmdfaCKrHJ2RWcBpCE8=
+Received: from localhost.lan ([10.0.1.179])
+ by mail2.nmnhosting.com (8.15.2/8.15.2) with ESMTP id 02R7C4As045934;
+ Fri, 27 Mar 2020 18:12:19 +1100 (AEDT)
+ (envelope-from alastair@d-silva.org)
+From: "Alastair D'Silva" <alastair@d-silva.org>
+To: alastair@d-silva.org
+Subject: [PATCH v4 19/25] nvdimm/ocxl: Forward events to userspace
+Date: Fri, 27 Mar 2020 18:11:56 +1100
+Message-Id: <20200327071202.2159885-20-alastair@d-silva.org>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20200327071202.2159885-1-alastair@d-silva.org>
+References: <20200327071202.2159885-1-alastair@d-silva.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200331081423.GE30942@linux.ibm.com>
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.6.2
+ (mail2.nmnhosting.com [10.0.1.20]); Fri, 27 Mar 2020 18:12:19 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,101 +80,377 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mmorana@amperecomputing.com, Catalin Marinas <catalin.marinas@arm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- "open list:MEMORY MANAGEMENT" <linux-mm@kvack.org>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux@vger.kernel.org,
- Alexander Duyck <alexander.h.duyck@linux.intel.com>,
- linux-s390@vger.kernel.org, x86@kernel.org,
- Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Hoan Tran <Hoan@os.amperecomputing.com>,
- Pavel Tatashin <pavel.tatashin@microsoft.com>, lho@amperecomputing.com,
- Vasily Gorbik <gor@linux.ibm.com>, Vlastimil Babka <vbabka@suse.cz>,
- Will Deacon <will.deacon@arm.com>, Borislav Petkov <bp@alien8.de>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Oscar Salvador <osalvador@suse.de>, linux-kernel@vger.kernel.org,
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Oliver O'Halloran <oohall@gmail.com>,
+ Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
+ Ira Weiny <ira.weiny@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Rob Herring <robh@kernel.org>, Dave Jiang <dave.jiang@intel.com>,
+ linux-nvdimm@lists.01.org, "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ Krzysztof Kozlowski <krzk@kernel.org>,
+ Anju T Sudhakar <anju@linux.vnet.ibm.com>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kurz <groug@kaod.org>, Nicholas Piggin <npiggin@gmail.com>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
+ Dan Williams <dan.j.williams@intel.com>, Hari Bathini <hbathini@linux.ibm.com>,
+ linux-mm@kvack.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linux-kernel@vger.kernel.org, Vishal Verma <vishal.l.verma@intel.com>,
+ Frederic Barrat <fbarrat@linux.ibm.com>, Paul Mackerras <paulus@samba.org>,
  Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
  "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue 31-03-20 11:14:23, Mike Rapoport wrote:
-> On Mon, Mar 30, 2020 at 08:23:01PM +0200, Michal Hocko wrote:
-> > On Mon 30-03-20 20:51:00, Mike Rapoport wrote:
-> > > On Mon, Mar 30, 2020 at 09:42:46AM +0200, Michal Hocko wrote:
-> > > > On Sat 28-03-20 11:31:17, Hoan Tran wrote:
-> > > > > In NUMA layout which nodes have memory ranges that span across other nodes,
-> > > > > the mm driver can detect the memory node id incorrectly.
-> > > > > 
-> > > > > For example, with layout below
-> > > > > Node 0 address: 0000 xxxx 0000 xxxx
-> > > > > Node 1 address: xxxx 1111 xxxx 1111
-> > > > > 
-> > > > > Note:
-> > > > >  - Memory from low to high
-> > > > >  - 0/1: Node id
-> > > > >  - x: Invalid memory of a node
-> > > > > 
-> > > > > When mm probes the memory map, without CONFIG_NODES_SPAN_OTHER_NODES
-> > > > > config, mm only checks the memory validity but not the node id.
-> > > > > Because of that, Node 1 also detects the memory from node 0 as below
-> > > > > when it scans from the start address to the end address of node 1.
-> > > > > 
-> > > > > Node 0 address: 0000 xxxx xxxx xxxx
-> > > > > Node 1 address: xxxx 1111 1111 1111
-> > > > > 
-> > > > > This layout could occur on any architecture. Most of them enables
-> > > > > this config by default with CONFIG_NUMA. This patch, by default, enables
-> > > > > CONFIG_NODES_SPAN_OTHER_NODES or uses early_pfn_in_nid() for NUMA.
-> > > > 
-> > > > I am not opposed to this at all. It reduces the config space and that is
-> > > > a good thing on its own. The history has shown that meory layout might
-> > > > be really wild wrt NUMA. The config is only used for early_pfn_in_nid
-> > > > which is clearly an overkill.
-> > > > 
-> > > > Your description doesn't really explain why this is safe though. The
-> > > > history of this config is somehow messy, though. Mike has tried
-> > > > to remove it a94b3ab7eab4 ("[PATCH] mm: remove arch independent
-> > > > NODES_SPAN_OTHER_NODES") just to be reintroduced by 7516795739bd
-> > > > ("[PATCH] Reintroduce NODES_SPAN_OTHER_NODES for powerpc") without any
-> > > > reasoning what so ever. This doesn't make it really easy see whether
-> > > > reasons for reintroduction are still there. Maybe there are some subtle
-> > > > dependencies. I do not see any TBH but that might be burried deep in an
-> > > > arch specific code.
-> > > 
-> > > I've looked at this a bit more and it seems that the check for
-> > > early_pfn_in_nid() in memmap_init_zone() can be simply removed.
-> > > 
-> > > The commits you've mentioned were way before the addition of
-> > > HAVE_MEMBLOCK_NODE_MAP and the whole infrastructure that calculates zone
-> > > sizes and boundaries based on the memblock node map.
-> > > So, the memmap_init_zone() is called when zone boundaries are already
-> > > within a node.
-> > 
-> > But zones from different nodes might overlap in the pfn range. And this
-> > check is there to skip over those overlapping areas.
-> 
-> Maybe I mis-read the code, but I don't see how this could happen. In the
-> HAVE_MEMBLOCK_NODE_MAP=y case, free_area_init_node() calls
-> calculate_node_totalpages() that ensures that node->node_zones are entirely
-> within the node because this is checked in zone_spanned_pages_in_node().
+Some of the interrupts that the card generates are better handled
+by the userspace daemon, in particular:
+Controller Hardware/Firmware Fatal
+Controller Dump Available
+Error Log available
 
-zone_spanned_pages_in_node does chech the zone boundaries are within the
-node boundaries. But that doesn't really tell anything about other
-potential zones interleaving with the physical memory range.
-zone->spanned_pages simply gives the physical range for the zone
-including holes. Interleaving nodes are essentially a hole
-(__absent_pages_in_range is going to skip those).
+This patch allows a userspace application to register an eventfd with
+the driver via SCM_IOCTL_EVENTFD to receive notifications of these
+interrupts.
 
-That means that when free_area_init_core simply goes over the whole
-physical zone range including holes and that is why we need to check
-both for physical and logical holes (aka other nodes).
+Userspace can then identify what events have occurred by calling
+SCM_IOCTL_EVENT_CHECK and checking against the SCM_IOCTL_EVENT_FOO
+masks.
 
-The life would be so much easier if the whole thing would simply iterate
-over memblocks...
+Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+---
+ drivers/nvdimm/ocxl/main.c     | 220 +++++++++++++++++++++++++++++++++
+ drivers/nvdimm/ocxl/ocxlpmem.h |   4 +
+ include/uapi/nvdimm/ocxlpmem.h |  12 ++
+ 3 files changed, 236 insertions(+)
 
+diff --git a/drivers/nvdimm/ocxl/main.c b/drivers/nvdimm/ocxl/main.c
+index 0040fc09cceb..cb6cdc9eb899 100644
+--- a/drivers/nvdimm/ocxl/main.c
++++ b/drivers/nvdimm/ocxl/main.c
+@@ -10,6 +10,7 @@
+ #include <misc/ocxl.h>
+ #include <linux/delay.h>
+ #include <linux/ndctl.h>
++#include <linux/eventfd.h>
+ #include <linux/fs.h>
+ #include <linux/mm_types.h>
+ #include <linux/memory_hotplug.h>
+@@ -301,8 +302,19 @@ static void free_ocxlpmem(struct ocxlpmem *ocxlpmem)
+ {
+ 	int rc;
+ 
++	// Disable doorbells
++	(void)ocxl_global_mmio_set64(ocxlpmem->ocxl_afu, GLOBAL_MMIO_CHIEC,
++				     OCXL_LITTLE_ENDIAN,
++				     GLOBAL_MMIO_CHI_ALL);
++
+ 	free_minor(ocxlpmem);
+ 
++	if (ocxlpmem->irq_addr[1])
++		iounmap(ocxlpmem->irq_addr[1]);
++
++	if (ocxlpmem->irq_addr[0])
++		iounmap(ocxlpmem->irq_addr[0]);
++
+ 	if (ocxlpmem->ocxl_context) {
+ 		rc = ocxl_context_detach(ocxlpmem->ocxl_context);
+ 		if (rc == -EBUSY)
+@@ -398,6 +410,11 @@ static int file_release(struct inode *inode, struct file *file)
+ {
+ 	struct ocxlpmem *ocxlpmem = file->private_data;
+ 
++	if (ocxlpmem->ev_ctx) {
++		eventfd_ctx_put(ocxlpmem->ev_ctx);
++		ocxlpmem->ev_ctx = NULL;
++	}
++
+ 	ocxlpmem_put(ocxlpmem);
+ 	return 0;
+ }
+@@ -928,6 +945,52 @@ static int ioctl_controller_stats(struct ocxlpmem *ocxlpmem,
+ 	return rc;
+ }
+ 
++static int ioctl_eventfd(struct ocxlpmem *ocxlpmem,
++			 struct ioctl_ocxlpmem_eventfd __user *uarg)
++{
++	struct ioctl_ocxlpmem_eventfd args;
++
++	if (copy_from_user(&args, uarg, sizeof(args)))
++		return -EFAULT;
++
++	if (ocxlpmem->ev_ctx)
++		return -EBUSY;
++
++	ocxlpmem->ev_ctx = eventfd_ctx_fdget(args.eventfd);
++	if (IS_ERR(ocxlpmem->ev_ctx))
++		return PTR_ERR(ocxlpmem->ev_ctx);
++
++	return 0;
++}
++
++static int ioctl_event_check(struct ocxlpmem *ocxlpmem, u64 __user *uarg)
++{
++	u64 val = 0;
++	int rc;
++	u64 chi = 0;
++
++	rc = ocxlpmem_chi(ocxlpmem, &chi);
++	if (rc < 0)
++		return rc;
++
++	if (chi & GLOBAL_MMIO_CHI_ELA)
++		val |= IOCTL_OCXLPMEM_EVENT_ERROR_LOG_AVAILABLE;
++
++	if (chi & GLOBAL_MMIO_CHI_CDA)
++		val |= IOCTL_OCXLPMEM_EVENT_CONTROLLER_DUMP_AVAILABLE;
++
++	if (chi & GLOBAL_MMIO_CHI_CFFS)
++		val |= IOCTL_OCXLPMEM_EVENT_FIRMWARE_FATAL;
++
++	if (chi & GLOBAL_MMIO_CHI_CHFS)
++		val |= IOCTL_OCXLPMEM_EVENT_HARDWARE_FATAL;
++
++	if (copy_to_user((u64 __user *)uarg, &val, sizeof(val)))
++		return -EFAULT;
++
++	return rc;
++}
++
+ static long file_ioctl(struct file *file, unsigned int cmd, unsigned long args)
+ {
+ 	struct ocxlpmem *ocxlpmem = file->private_data;
+@@ -956,6 +1019,15 @@ static long file_ioctl(struct file *file, unsigned int cmd, unsigned long args)
+ 		rc = ioctl_controller_stats(ocxlpmem,
+ 					    (struct ioctl_ocxlpmem_controller_stats __user *)args);
+ 		break;
++
++	case IOCTL_OCXLPMEM_EVENTFD:
++		rc = ioctl_eventfd(ocxlpmem,
++				   (struct ioctl_ocxlpmem_eventfd __user *)args);
++		break;
++
++	case IOCTL_OCXLPMEM_EVENT_CHECK:
++		rc = ioctl_event_check(ocxlpmem, (u64 __user *)args);
++		break;
+ 	}
+ 
+ 	return rc;
+@@ -1109,6 +1181,148 @@ static void dump_error_log(struct ocxlpmem *ocxlpmem)
+ 	kfree(buf);
+ }
+ 
++static irqreturn_t imn0_handler(void *private)
++{
++	struct ocxlpmem *ocxlpmem = private;
++	u64 chi = 0;
++
++	(void)ocxlpmem_chi(ocxlpmem, &chi);
++
++	if (chi & GLOBAL_MMIO_CHI_ELA) {
++		dev_warn(&ocxlpmem->dev, "Error log is available\n");
++
++		if (ocxlpmem->ev_ctx)
++			eventfd_signal(ocxlpmem->ev_ctx, 1);
++	}
++
++	if (chi & GLOBAL_MMIO_CHI_CDA) {
++		dev_warn(&ocxlpmem->dev, "Controller dump is available\n");
++
++		if (ocxlpmem->ev_ctx)
++			eventfd_signal(ocxlpmem->ev_ctx, 1);
++	}
++
++	return IRQ_HANDLED;
++}
++
++static irqreturn_t imn1_handler(void *private)
++{
++	struct ocxlpmem *ocxlpmem = private;
++	u64 chi = 0;
++
++	(void)ocxlpmem_chi(ocxlpmem, &chi);
++
++	if (chi & (GLOBAL_MMIO_CHI_CFFS | GLOBAL_MMIO_CHI_CHFS)) {
++		dev_err(&ocxlpmem->dev,
++			"Controller status is fatal, chi=0x%llx, going offline\n",
++			chi);
++
++		if (ocxlpmem->nvdimm_bus) {
++			nvdimm_bus_unregister(ocxlpmem->nvdimm_bus);
++			ocxlpmem->nvdimm_bus = NULL;
++		}
++
++		if (ocxlpmem->ev_ctx)
++			eventfd_signal(ocxlpmem->ev_ctx, 1);
++	}
++
++	return IRQ_HANDLED;
++}
++
++/**
++ * ocxlpmem_setup_irq() - Set up the IRQs for the OpenCAPI Persistent Memory device
++ * @ocxlpmem: the device metadata
++ * Return: 0 on success, negative on failure
++ */
++static int setup_irqs(struct ocxlpmem *ocxlpmem)
++{
++	int rc;
++	u64 irq_addr;
++
++	rc = ocxl_afu_irq_alloc(ocxlpmem->ocxl_context,
++				&ocxlpmem->irq_id[0]);
++	if (rc)
++		return rc;
++
++	rc = ocxl_irq_set_handler(ocxlpmem->ocxl_context, ocxlpmem->irq_id[0],
++				  imn0_handler, NULL, ocxlpmem);
++
++	irq_addr = ocxl_afu_irq_get_addr(ocxlpmem->ocxl_context,
++					 ocxlpmem->irq_id[0]);
++	if (!irq_addr)
++		return -EFAULT;
++
++	ocxlpmem->irq_addr[0] = ioremap(irq_addr, PAGE_SIZE);
++	if (!ocxlpmem->irq_addr[0])
++		return -ENODEV;
++
++	rc = ocxl_global_mmio_write64(ocxlpmem->ocxl_afu, GLOBAL_MMIO_IMA0_OHP,
++				      OCXL_LITTLE_ENDIAN,
++				      (u64)ocxlpmem->irq_addr[0]);
++	if (rc)
++		goto out_irq0;
++
++	rc = ocxl_global_mmio_write64(ocxlpmem->ocxl_afu, GLOBAL_MMIO_IMA0_CFP,
++				      OCXL_LITTLE_ENDIAN, 0);
++	if (rc)
++		goto out_irq0;
++
++	rc = ocxl_afu_irq_alloc(ocxlpmem->ocxl_context, &ocxlpmem->irq_id[1]);
++	if (rc)
++		goto out_irq0;
++
++	rc = ocxl_irq_set_handler(ocxlpmem->ocxl_context, ocxlpmem->irq_id[1],
++				  imn1_handler, NULL, ocxlpmem);
++	if (rc)
++		goto out_irq0;
++
++	irq_addr = ocxl_afu_irq_get_addr(ocxlpmem->ocxl_context,
++					 ocxlpmem->irq_id[1]);
++	if (!irq_addr) {
++		rc = -EFAULT;
++		goto out_irq0;
++	}
++
++	ocxlpmem->irq_addr[1] = ioremap(irq_addr, PAGE_SIZE);
++	if (!ocxlpmem->irq_addr[1]) {
++		rc = -ENODEV;
++		goto out_irq0;
++	}
++
++	rc = ocxl_global_mmio_write64(ocxlpmem->ocxl_afu, GLOBAL_MMIO_IMA1_OHP,
++				      OCXL_LITTLE_ENDIAN,
++				      (u64)ocxlpmem->irq_addr[1]);
++	if (rc)
++		goto out_irq1;
++
++	rc = ocxl_global_mmio_write64(ocxlpmem->ocxl_afu, GLOBAL_MMIO_IMA1_CFP,
++				      OCXL_LITTLE_ENDIAN, 0);
++	if (rc)
++		goto out_irq1;
++
++	// Enable doorbells
++	rc = ocxl_global_mmio_set64(ocxlpmem->ocxl_afu, GLOBAL_MMIO_CHIE,
++				    OCXL_LITTLE_ENDIAN,
++				    GLOBAL_MMIO_CHI_ELA |
++				    GLOBAL_MMIO_CHI_CDA |
++				    GLOBAL_MMIO_CHI_CFFS |
++				    GLOBAL_MMIO_CHI_CHFS);
++	if (rc)
++		goto out_irq1;
++
++	return 0;
++
++out_irq1:
++	iounmap(ocxlpmem->irq_addr[1]);
++	ocxlpmem->irq_addr[1] = NULL;
++
++out_irq0:
++	iounmap(ocxlpmem->irq_addr[0]);
++	ocxlpmem->irq_addr[0] = NULL;
++
++	return rc;
++}
++
+ /**
+  * probe_function0() - Set up function 0 for an OpenCAPI persistent memory device
+  * This is important as it enables templates higher than 0 across all other
+@@ -1212,6 +1426,12 @@ static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		goto err;
+ 	}
+ 
++	rc = setup_irqs(ocxlpmem);
++	if (rc) {
++		dev_err(&pdev->dev, "Could not set up OCXL IRQs\n");
++		goto err;
++	}
++
+ 	rc = setup_command_metadata(ocxlpmem);
+ 	if (rc) {
+ 		dev_err(&pdev->dev, "Could not read command metadata\n");
+diff --git a/drivers/nvdimm/ocxl/ocxlpmem.h b/drivers/nvdimm/ocxl/ocxlpmem.h
+index ee3bd651f254..01721596f982 100644
+--- a/drivers/nvdimm/ocxl/ocxlpmem.h
++++ b/drivers/nvdimm/ocxl/ocxlpmem.h
+@@ -106,6 +106,9 @@ struct ocxlpmem {
+ 	struct pci_dev *pdev;
+ 	struct cdev cdev;
+ 	struct ocxl_fn *ocxl_fn;
++#define SCM_IRQ_COUNT 2
++	int irq_id[SCM_IRQ_COUNT];
++	void __iomem *irq_addr[SCM_IRQ_COUNT];
+ 	struct nd_interleave_set nd_set;
+ 	struct nvdimm_bus_descriptor bus_desc;
+ 	struct nvdimm_bus *nvdimm_bus;
+@@ -117,6 +120,7 @@ struct ocxlpmem {
+ 	struct nd_region *nd_region;
+ 	char fw_version[8 + 1];
+ 	u32 timeouts[ADMIN_COMMAND_MAX + 1];
++	struct eventfd_ctx *ev_ctx;
+ 	u32 max_controller_dump_size;
+ 	u16 scm_revision; // major/minor
+ 	u8 readiness_timeout;  /* The worst case time (in seconds) that the host
+diff --git a/include/uapi/nvdimm/ocxlpmem.h b/include/uapi/nvdimm/ocxlpmem.h
+index ca3a7098fa9d..d573bd307e35 100644
+--- a/include/uapi/nvdimm/ocxlpmem.h
++++ b/include/uapi/nvdimm/ocxlpmem.h
+@@ -71,6 +71,16 @@ struct ioctl_ocxlpmem_controller_stats {
+ 	__u64 fast_write_count;
+ };
+ 
++struct ioctl_ocxlpmem_eventfd {
++	__s32 eventfd;
++	__u32 reserved;
++};
++
++#define IOCTL_OCXLPMEM_EVENT_CONTROLLER_DUMP_AVAILABLE	(1ULL << (0))
++#define IOCTL_OCXLPMEM_EVENT_ERROR_LOG_AVAILABLE	(1ULL << (1))
++#define IOCTL_OCXLPMEM_EVENT_HARDWARE_FATAL		(1ULL << (2))
++#define IOCTL_OCXLPMEM_EVENT_FIRMWARE_FATAL		(1ULL << (3))
++
+ /* ioctl numbers */
+ #define OCXLPMEM_MAGIC 0xCA
+ /* OpenCAPI Persistent memory devices */
+@@ -79,5 +89,7 @@ struct ioctl_ocxlpmem_controller_stats {
+ #define IOCTL_OCXLPMEM_CONTROLLER_DUMP_DATA		_IOWR(OCXLPMEM_MAGIC, 0x32, struct ioctl_ocxlpmem_controller_dump_data)
+ #define IOCTL_OCXLPMEM_CONTROLLER_DUMP_COMPLETE		_IO(OCXLPMEM_MAGIC, 0x33)
+ #define IOCTL_OCXLPMEM_CONTROLLER_STATS			_IO(OCXLPMEM_MAGIC, 0x34)
++#define IOCTL_OCXLPMEM_EVENTFD				_IOW(OCXLPMEM_MAGIC, 0x35, struct ioctl_ocxlpmem_eventfd)
++#define IOCTL_OCXLPMEM_EVENT_CHECK			_IOR(OCXLPMEM_MAGIC, 0x36, __u64)
+ 
+ #endif /* _UAPI_OCXL_SCM_H */
 -- 
-Michal Hocko
-SUSE Labs
+2.24.1
+
