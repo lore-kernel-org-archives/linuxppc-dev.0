@@ -2,25 +2,26 @@ Return-Path: <SRS0=yRDn=5M=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD83BC43331
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2020 06:54:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C424C43331
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2020 06:57:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 79C1520578
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2020 06:54:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B3C1020578
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2020 06:57:12 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="gAJAvFvv"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 79C1520578
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="pDvSIsk8"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B3C1020578
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48pXfB68TGzDr5J
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2020 17:54:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48pXj25NCxzDqbY
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2020 17:57:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,53 +30,58 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=gAJAvFvv; dkim-atps=neutral
+ header.s=mail header.b=pDvSIsk8; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48pXVn2DRjzDqCt
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2020 17:48:16 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48pXYL3ySGzDqZw
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2020 17:50:30 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 48pXVg1XcFz9txpw;
- Fri, 27 Mar 2020 07:48:11 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 48pXYF0HKqz9txpx;
+ Fri, 27 Mar 2020 07:50:25 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=gAJAvFvv; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=pDvSIsk8; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id ZttA5gZgh6-O; Fri, 27 Mar 2020 07:48:11 +0100 (CET)
+ with ESMTP id 9c3JvdN5GUEC; Fri, 27 Mar 2020 07:50:24 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 48pXVg01Xwz9txpv;
- Fri, 27 Mar 2020 07:48:11 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 48pXYD6KQRz9txpw;
+ Fri, 27 Mar 2020 07:50:24 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1585291691; bh=XtREjkZioCDKt0oyfaYInS0P1aj7ONXkqyS8vxM50hQ=;
+ t=1585291824; bh=hAABVY6NqVGKI9aIL19sjFZK5w87U11qF1N1xyDIMOU=;
  h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=gAJAvFvvUn6JgC9oVc84SwWCACdpxEYjXH+aRI0YMmKHrC4zsHB6/8XyESoNxdtoZ
- zeb3S1JW3aFKoeast7L7a4B/2bcar+TqT/IkiyXfW5agYv4/6Iam3/t5ISUtBMwimp
- BbplrKct9UFSICgoS1xwjQeXDM5mv+GZJTs1t/iU=
+ b=pDvSIsk8b/wsU/W/xdQHaHU3X4yZMJUw38gYA4+Vv5rXQaJIFGpiAVlSoCpFhxtcW
+ 3wqHC/fNrVURiU1MrDudrICkh4dbRM085tn5JZ51PA3UPb06TMzFCJt84BAPL8nM8t
+ C+u5t5Rwl8Z+4I7bPftzFeS/HLzjjTjKn6xvG/m4=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 887518B7BC;
- Fri, 27 Mar 2020 07:48:11 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B503C8B7BC;
+ Fri, 27 Mar 2020 07:50:25 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id WcDGs2iv5XSU; Fri, 27 Mar 2020 07:48:11 +0100 (CET)
+ with ESMTP id KttQcZwNJpxx; Fri, 27 Mar 2020 07:50:25 +0100 (CET)
 Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id DA0DC8B756;
- Fri, 27 Mar 2020 07:48:10 +0100 (CET)
-Subject: Re: [PATCH v2] powerpc xmon: use `dcbf` inplace of `dcbi` instruction
- for 64bit Book3S
-To: Balamuruhan S <bala24@linux.ibm.com>, mpe@ellerman.id.au
-References: <20200326061522.33123-1-bala24@linux.ibm.com>
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id EA0608B756;
+ Fri, 27 Mar 2020 07:50:24 +0100 (CET)
+Subject: Re: [PATCH 1/1] ppc/crash: Skip spinlocks during crash
+To: Leonardo Bras <leonardo@linux.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ Will Deacon <will@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Enrico Weigelt <info@metux.net>, Allison Randal <allison@lohutok.net>,
+ Thomas Gleixner <tglx@linutronix.de>
+References: <20200326222836.501404-1-leonardo@linux.ibm.com>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <caf285b1-172e-7116-b2ed-3645f36264ed@c-s.fr>
-Date: Fri, 27 Mar 2020 07:48:07 +0100
+Message-ID: <af505ef0-e0df-e0aa-bb83-3ed99841f151@c-s.fr>
+Date: Fri, 27 Mar 2020 07:50:20 +0100
 User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
  Thunderbird/68.6.0
 MIME-Version: 1.0
-In-Reply-To: <20200326061522.33123-1-bala24@linux.ibm.com>
+In-Reply-To: <20200326222836.501404-1-leonardo@linux.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: fr
 Content-Transfer-Encoding: 8bit
@@ -90,104 +96,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ravi.bangoria@linux.ibm.com, jniethe5@gmail.com, paulus@samba.org,
- sandipan@linux.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
 
-Le 26/03/2020 à 07:15, Balamuruhan S a écrit :
-> Data Cache Block Invalidate (dcbi) instruction was implemented back in PowerPC
-> architecture version 2.03. It is obsolete and attempt to use of this illegal
-> instruction results in a hypervisor emulation assistance interrupt. So, ifdef
-> it out the option `i` in xmon for 64bit Book3S.
-
-I don't understand. You say two contradictory things:
-1/ You say it _was_ added back.
-2/ You say it _is_ obsolete.
-
-How can it be obsolete if it was added back ?
-
-[...]
-
-> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-> index 0ec9640335bb..bfd5a97689cd 100644
-> --- a/arch/powerpc/xmon/xmon.c
-> +++ b/arch/powerpc/xmon/xmon.c
-> @@ -335,10 +335,12 @@ static inline void cflush(void *p)
->   	asm volatile ("dcbf 0,%0; icbi 0,%0" : : "r" (p));
->   }
->   
-> +#ifndef CONFIG_PPC_BOOK3S_64
-
-You don't need that #ifndef. Keeping it should be harmless.
-
->   static inline void cinval(void *p)
->   {
->   	asm volatile ("dcbi 0,%0; icbi 0,%0" : : "r" (p));
->   }
-> +#endif
->   
->   /**
->    * write_ciabr() - write the CIABR SPR
-> @@ -1791,8 +1793,9 @@ static void prregs(struct pt_regs *fp)
->   
->   static void cacheflush(void)
->   {
-> -	int cmd;
->   	unsigned long nflush;
-> +#ifndef CONFIG_PPC_BOOK3S_64
-
-Don't make it so complex, see below
-
-> +	int cmd;
->   
->   	cmd = inchar();
->   	if (cmd != 'i')
-> @@ -1800,13 +1803,14 @@ static void cacheflush(void)
->   	scanhex((void *)&adrs);
->   	if (termch != '\n')
->   		termch = 0;
-> +#endif
->   	nflush = 1;
->   	scanhex(&nflush);
->   	nflush = (nflush + L1_CACHE_BYTES - 1) / L1_CACHE_BYTES;
->   	if (setjmp(bus_error_jmp) == 0) {
->   		catch_memory_errors = 1;
->   		sync();
-> -
-> +#ifndef CONFIG_PPC_BOOK3S_64
-
-You don't need that ifndef, just ensure below that regardless of cmd, 
-book3s/64 calls cflush and not cinval.
-
->   		if (cmd != 'i') {
-
-The only thing you have to do is to replace the above test by:
-
-		if (cmd != 'i' || IS_ENABLED(CONFIG_PPC_BOOK3S_64)) {
-
->   			for (; nflush > 0; --nflush, adrs += L1_CACHE_BYTES)
->   				cflush((void *) adrs);
-> @@ -1814,6 +1818,10 @@ static void cacheflush(void)
->   			for (; nflush > 0; --nflush, adrs += L1_CACHE_BYTES)
->   				cinval((void *) adrs);
->   		}
-> +#else
-
-Don't need that at all, it's a duplication of the above.
-
-> +		for (; nflush > 0; --nflush, adrs += L1_CACHE_BYTES)
-> +			cflush((void *)adrs);
-> +#endif
->   		sync();
->   		/* wait a little while to see if we get a machine check */
->   		__delay(200);
+Le 26/03/2020 à 23:28, Leonardo Bras a écrit :
+> During a crash, there is chance that the cpus that handle the NMI IPI
+> are holding a spin_lock. If this spin_lock is needed by crashing_cpu it
+> will cause a deadlock. (rtas_lock and printk logbuf_log as of today)
 > 
-> base-commit: a87b93bdf800a4d7a42d95683624a4516e516b4f
+> This is a problem if the system has kdump set up, given if it crashes
+> for any reason kdump may not be saved for crash analysis.
 > 
+> Skip spinlocks after NMI IPI is sent to all other cpus.
+> 
+> Signed-off-by: Leonardo Bras <leonardo@linux.ibm.com>
+> ---
+>   arch/powerpc/include/asm/spinlock.h | 6 ++++++
+>   arch/powerpc/kexec/crash.c          | 3 +++
+>   2 files changed, 9 insertions(+)
+> 
+> diff --git a/arch/powerpc/include/asm/spinlock.h b/arch/powerpc/include/asm/spinlock.h
+> index 860228e917dc..a6381d110795 100644
+> --- a/arch/powerpc/include/asm/spinlock.h
+> +++ b/arch/powerpc/include/asm/spinlock.h
+> @@ -111,6 +111,8 @@ static inline void splpar_spin_yield(arch_spinlock_t *lock) {};
+>   static inline void splpar_rw_yield(arch_rwlock_t *lock) {};
+>   #endif
+>   
+> +extern bool crash_skip_spinlock __read_mostly;
+> +
+>   static inline bool is_shared_processor(void)
+>   {
+>   #ifdef CONFIG_PPC_SPLPAR
+> @@ -142,6 +144,8 @@ static inline void arch_spin_lock(arch_spinlock_t *lock)
+>   		if (likely(__arch_spin_trylock(lock) == 0))
+>   			break;
+>   		do {
+> +			if (unlikely(crash_skip_spinlock))
+> +				return;
+
+You are adding a test that reads a global var in the middle of a so hot 
+path ? That must kill performance. Can we do different ?
 
 Christophe
