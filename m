@@ -2,89 +2,89 @@ Return-Path: <SRS0=oQ70=5N=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AF729C43331
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Mar 2020 11:21:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D2274C43331
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Mar 2020 12:13:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 14D97206E6
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Mar 2020 11:21:36 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="kJCrULvp"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 14D97206E6
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 15B30206E6
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Mar 2020 12:13:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 15B30206E6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48qGWd74frzDqFY
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Mar 2020 22:21:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48qHgB4DhFzDqwj
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Mar 2020 23:13:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=kJCrULvp; dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48qGRp31j1zDqq0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2020 22:18:14 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 48qGRj63y9zB09ZW;
- Sat, 28 Mar 2020 12:18:09 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=kJCrULvp; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id Aqeer9tOyAxc; Sat, 28 Mar 2020 12:18:09 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 48qGRj4XtLzB09ZR;
- Sat, 28 Mar 2020 12:18:09 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1585394289; bh=VyBwgOCzEkUZrjyWnViNMulwr9dgKuVbNjydDE7N0r0=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=kJCrULvpRXmm5Q3uP6c+IQAHQXHFkw9+Us6HF2mcW2XMH5WBcPUPhSF1avLjMqZTy
- EHlYoMQgjvfXBgtOc9qWFZnCf+4BPtaQRIP6sMw1o97qkggpKN2pDkxdIwj3MdqzMT
- 2kv5P4RiMiZFEH9Z8pAGeoajZtpFJdyJEFPBiANM=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C74EE8B76C;
- Sat, 28 Mar 2020 12:18:10 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id UaW4AG2lp2bR; Sat, 28 Mar 2020 12:18:10 +0100 (CET)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0D1928B75B;
- Sat, 28 Mar 2020 12:18:06 +0100 (CET)
-Subject: Re: [PATCH 0/2] powerpc: Remove support for ppc405/440 Xilinx
- platforms
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Arnd Bergmann <arnd@arndb.de>, Michael Ellerman <mpe@ellerman.id.au>
-References: <cover.1585311091.git.michal.simek@xilinx.com>
- <CAK8P3a2mKPRFbRE3MWScr9GSiL4cpLg0wqv1Q28XDCZVPWgHfg@mail.gmail.com>
- <20200327131026.GT1922688@smile.fi.intel.com>
- <20200327131531.GU1922688@smile.fi.intel.com>
- <CAK8P3a1Z+ZPTDzgAjdz0a7d85R62BhUqkdEWgrwXh-OnYe6rog@mail.gmail.com>
- <20200327141434.GA1922688@smile.fi.intel.com>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <b5adcc7a-9d10-d75f-50e3-9c150a7b4989@c-s.fr>
-Date: Sat, 28 Mar 2020 12:17:58 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.6.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48qHcc4h9XzDqmd
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2020 23:10:56 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 02SC2waR027889
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2020 08:10:54 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3022njurkd-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2020 08:10:54 -0400
+Received: from localhost
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.ibm.com>;
+ Sat, 28 Mar 2020 12:10:47 -0000
+Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Sat, 28 Mar 2020 12:10:45 -0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 02SCAkeJ46137798
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Sat, 28 Mar 2020 12:10:46 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8A9D952051;
+ Sat, 28 Mar 2020 12:10:46 +0000 (GMT)
+Received: from vajain21.in.ibm.com.com (unknown [9.199.51.209])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 41C5452050;
+ Sat, 28 Mar 2020 12:10:44 +0000 (GMT)
+From: Vaibhav Jain <vaibhav@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 3/4] powerpc/papr_scm,
+ uapi: Add support for handling PAPR DSM commands
+Date: Sat, 28 Mar 2020 17:40:22 +0530
+X-Mailer: git-send-email 2.24.1
+In-Reply-To: <20200328121023.160363-1-vaibhav@linux.ibm.com>
+References: <20200328121023.160363-1-vaibhav@linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20200327141434.GA1922688@smile.fi.intel.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 20032812-0012-0000-0000-00000399AE43
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 20032812-0013-0000-0000-000021D6B222
+Message-Id: <20200328121023.160363-4-vaibhav@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.645
+ definitions=2020-03-28_04:2020-03-27,
+ 2020-03-28 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015
+ lowpriorityscore=0 malwarescore=0 mlxscore=0 spamscore=0 mlxlogscore=999
+ bulkscore=0 impostorscore=0 phishscore=0 priorityscore=1501 suspectscore=1
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2003020000 definitions=main-2003280114
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,88 +96,341 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kate Stewart <kstewart@linuxfoundation.org>,
- Mark Rutland <mark.rutland@arm.com>,
- "Desnes A. Nunes do Rosario" <desnesn@linux.ibm.com>,
- Geert Uytterhoeven <geert+renesas@glider.be>,
- "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
- ALSA Development Mailing List <alsa-devel@alsa-project.org>,
- dri-devel <dri-devel@lists.freedesktop.org>, Jaroslav Kysela <perex@perex.cz>,
- Richard Fontana <rfontana@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Miquel Raynal <miquel.raynal@bootlin.com>,
- Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
- Fabio Estevam <festevam@gmail.com>, Sasha Levin <sashal@kernel.org>,
- Stephen Rothwell <sfr@canb.auug.org.au>, Jonathan Corbet <corbet@lwn.net>,
- Masahiro Yamada <masahiroy@kernel.org>, Takashi Iwai <tiwai@suse.com>,
- YueHaibing <yuehaibing@huawei.com>, Michal Simek <michal.simek@xilinx.com>,
- Krzysztof Kozlowski <krzk@kernel.org>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- Leonardo Bras <leonardo@linux.ibm.com>, DTML <devicetree@vger.kernel.org>,
- Andrew Donnellan <ajd@linux.ibm.com>,
- Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
- Marc Zyngier <marc.zyngier@arm.com>, Alistair Popple <alistair@popple.id.au>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Nicholas Piggin <npiggin@gmail.com>, Alexios Zavras <alexios.zavras@intel.com>,
- Mark Brown <broonie@kernel.org>, git@xilinx.com,
- Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
- Jonathan Cameron <Jonathan.Cameron@huawei.com>,
- Thomas Gleixner <tglx@linutronix.de>, Allison Randal <allison@lohutok.net>,
- Michal Simek <monstr@monstr.eu>, Wei Hu <weh@microsoft.com>,
- Christian Lamparter <chunkeey@gmail.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Nick Desaulniers <ndesaulniers@google.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Armijn Hemel <armijn@tjaldur.nl>, Rob Herring <robh+dt@kernel.org>,
- Enrico Weigelt <info@metux.net>, "David S. Miller" <davem@davemloft.net>,
- Thiago Jung Bauermann <bauerman@linux.ibm.com>
+Cc: Alastair D'Silva <alastair@au1.ibm.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ Jeff Moyer <jmoyer@redhat.com>, Oliver O'Halloran <oohall@gmail.com>,
+ Vishal Verma <vishal.l.verma@intel.com>, Vaibhav Jain <vaibhav@linux.ibm.com>,
+ Michael Ellerman <ellerman@au1.ibm.com>,
+ Dan Williams <dan.j.williams@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Implement support for handling PAPR DSM commands in papr_scm
+module. We advertise support for ND_CMD_CALL for the dimm command mask
+and implement necessary scaffolding in the module to handle ND_CMD_CALL
+ioctl and DSM commands that we receive.
 
+The layout of the DSM commands as we expect from libnvdimm/libndctl is
+described in newly introduced uapi header 'papr_scm_dsm.h' which
+defines a new 'struct nd_papr_scm_cmd_pkg' header. This header is used
+to communicate the DSM command via 'nd_pkg_papr_scm->nd_command' and
+size of payload that need to be sent/received for servicing the DSM.
 
-Le 27/03/2020 à 15:14, Andy Shevchenko a écrit :
-> On Fri, Mar 27, 2020 at 02:22:55PM +0100, Arnd Bergmann wrote:
->> On Fri, Mar 27, 2020 at 2:15 PM Andy Shevchenko
->> <andriy.shevchenko@linux.intel.com> wrote:
->>> On Fri, Mar 27, 2020 at 03:10:26PM +0200, Andy Shevchenko wrote:
->>>> On Fri, Mar 27, 2020 at 01:54:33PM +0100, Arnd Bergmann wrote:
->>>>> On Fri, Mar 27, 2020 at 1:12 PM Michal Simek <michal.simek@xilinx.com> wrote:
-> 
-> ...
-> 
->>>>> It does raise a follow-up question about ppc40x though: is it time to
->>>>> retire all of it?
->>>>
->>>> Who knows?
->>>>
->>>> I have in possession nice WD My Book Live, based on this architecture, and I
->>>> won't it gone from modern kernel support. OTOH I understand that amount of real
->>>> users not too big.
->>>
->>> +Cc: Christian Lamparter, whom I owe for that WD box.
->>
->> According to https://openwrt.org/toh/wd/mybooklive, that one is based on
->> APM82181/ppc464, so it is about several generations newer than what I
->> asked about (ppc40x).
->>
->>>> Ah, and I have Amiga board, but that one is being used only for testing, so,
->>>> I don't care much.
->>
->> I think there are a couple of ppc440 based Amiga boards, but again, not 405
->> to my knowledge.
-> 
-> Ah, you are right. No objections from ppc40x removal!
-> 
+The PAPR DSM commands are assigned indexes started from 0x10000 to
+prevent them from overlapping ND_CMD_* values and also makes handling
+dimm commands in papr_scm_ndctl() easier via a simplified switch-case
+block. For this a new function cmd_to_func() is implemented that reads
+the args to papr_scm_ndctl() , performs sanity tests on them and
+converts them to PAPR DSM commands which can then be handled via the
+switch-case block.
 
-Removing 40x would help cleaning things a bit. For instance 40x is the 
-last platform still having PTE_ATOMIC_UPDATES. So if we can remove 40x 
-we can get rid of PTE_ATOMIC_UPDATES completely.
+Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+---
+ arch/powerpc/include/uapi/asm/papr_scm_dsm.h | 161 +++++++++++++++++++
+ arch/powerpc/platforms/pseries/papr_scm.c    |  87 +++++++++-
+ 2 files changed, 241 insertions(+), 7 deletions(-)
+ create mode 100644 arch/powerpc/include/uapi/asm/papr_scm_dsm.h
 
+diff --git a/arch/powerpc/include/uapi/asm/papr_scm_dsm.h b/arch/powerpc/include/uapi/asm/papr_scm_dsm.h
+new file mode 100644
+index 000000000000..1f3127a27bde
+--- /dev/null
++++ b/arch/powerpc/include/uapi/asm/papr_scm_dsm.h
+@@ -0,0 +1,161 @@
++/* SPDX-License-Identifier: GPL-2.0+ WITH Linux-syscall-note */
++/*
++ * PAPR SCM Device specific methods and struct for libndctl and ndctl
++ *
++ * (C) Copyright IBM 2020
++ *
++ * Author: Vaibhav Jain <vaibhav at linux.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2, or (at your option)
++ * any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#ifndef _UAPI_ASM_POWERPC_PAPR_SCM_DSM_H_
++#define _UAPI_ASM_POWERPC_PAPR_SCM_DSM_H_
++
++#include <linux/types.h>
++
++#ifdef __KERNEL__
++#include <linux/ndctl.h>
++#else
++#include <ndctl.h>
++#endif
++
++/*
++ * DSM Envelope:
++ *
++ * The ioctl ND_CMD_CALL transfers data between user-space and kernel via
++ * 'envelopes' which consists of a header and user-defined payload sections.
++ * The header is described by 'struct nd_papr_scm_cmd_pkg' which expects a
++ * payload following it and offset of which relative to the struct is provided
++ * by 'nd_papr_scm_cmd_pkg.payload_offset'. *
++ *
++ *  +-------------+---------------------+---------------------------+
++ *  |   64-Bytes  |       8-Bytes       |       Max 184-Bytes       |
++ *  +-------------+---------------------+---------------------------+
++ *  |               nd_papr_scm_cmd_pkg |                           |
++ *  |-------------+                     |                           |
++ *  |  nd_cmd_pkg |                     |                           |
++ *  +-------------+---------------------+---------------------------+
++ *  | nd_family   |			|			    |
++ *  | nd_size_out | cmd_status          |			    |
++ *  | nd_size_in  | payload_version     |      PAYLOAD		    |
++ *  | nd_command  | payload_offset ----->			    |
++ *  | nd_fw_size  |                     |			    |
++ *  +-------------+---------------------+---------------------------+
++ *
++ * DSM Header:
++ *
++ * The header is defined as 'struct nd_papr_scm_cmd_pkg' which embeds a
++ * 'struct nd_cmd_pkg' instance. The DSM command is assigned to member
++ * 'nd_cmd_pkg.nd_command'. Apart from size information of the envelop which is
++ * contained in 'struct nd_cmd_pkg', the header also has members following
++ * members:
++ *
++ * 'cmd_status'		: (Out) Errors if any encountered while servicing DSM.
++ * 'payload_version'	: (In/Out) Version number associated with the payload.
++ * 'payload_offset'	: (In)Relative offset of payload from start of envelope.
++ *
++ * DSM Payload:
++ *
++ * The layout of the DSM Payload is defined by various structs shared between
++ * papr_scm and libndctl so that contents of payload can be interpreted. During
++ * servicing of a DSM the papr_scm module will read input args from the payload
++ * field by casting its contents to an appropriate struct pointer based on the
++ * DSM command. Similarly the output of servicing the DSM command will be copied
++ * to the payload field using the same struct.
++ *
++ * 'libnvdimm' enforces a hard limit of 256 bytes on the envelope size, which
++ * leaves around 184 bytes for the envelope payload (ignoring any padding that
++ * the compiler may silently introduce).
++ *
++ * Payload Version:
++ *
++ * A 'payload_version' field is present in DSM header that indicates a specific
++ * version of the structure present in DSM Payload for a given DSM command. This
++ * provides backward compatibility in case the DSM Payload structure evolves
++ * and different structures are supported by 'papr_scm' and 'libndctl'.
++ *
++ * When sending a DSM Payload to 'papr_scm', 'libndctl' should send the version
++ * of the payload struct it supports via 'payload_version' field. The 'papr_scm'
++ * module when servicing the DSM envelop checks the 'payload_version' and then
++ * uses 'payload struct version' == MIN('payload_version field',
++ * 'max payload-struct-version supported by papr_scm') to service the DSM. After
++ * servicing the DSM, 'papr_scm' put the negotiated version of payload struct in
++ * returned 'payload_version' field.
++ *
++ * Libndctl on receiving the envelop back from papr_scm again checks the
++ * 'payload_version' field and based on it use the appropriate version dsm
++ * struct to parse the results.
++ *
++ * Backward Compatibility:
++ *
++ * Above scheme of exchanging different versioned DSM struct between libndctl
++ * and papr_scm should provide backward compatibility until following two
++ * assumptions/conditions when defining new DSM structs hold:
++ *
++ * Let T(X) = { set of attributes in DSM struct 'T' versioned X }
++ *
++ * 1. T(X) is a proper subset of T(Y) if X > Y.
++ *    i.e Each new version of DSM struct should retain existing struct
++ *    attributes from previous version
++ *
++ * 2. If an entity (libndctl or papr_scm) supports a DSM struct T(X) then
++ *    it should also support T(1), T(2)...T(X - 1).
++ *    i.e When adding support for new version of a DSM struct, libndctl
++ *    and papr_scm should retain support of the existing DSM struct
++ *    version they support.
++ */
++
++/* Papr-scm-header + payload expected with ND_CMD_CALL ioctl from libnvdimm */
++struct nd_papr_scm_cmd_pkg {
++	struct nd_cmd_pkg hdr;		/* Package header containing sub-cmd */
++	int32_t cmd_status;		/* Out: Sub-cmd status returned back */
++	uint16_t payload_offset;	/* In: offset from start of struct */
++	uint16_t payload_version;	/* In/Out: version of the payload */
++	uint8_t payload[];		/* In/Out: Sub-cmd data buffer */
++};
++
++/*
++ * Sub commands for ND_CMD_CALL. To prevent overlap from ND_CMD_*, values for
++ * these enums start at 0x10000. These values are then returned from
++ * cmd_to_func() making it easy to implement the switch-case block in
++ * papr_scm_ndctl(). These commands are sent to the kernel via
++ * 'nd_papr_scm_cmd_pkg.hdr.nd_command'
++ */
++enum dsm_papr_scm {
++	DSM_PAPR_SCM_MIN =  0x10000,
++	DSM_PAPR_SCM_MAX,
++};
++
++/* Helpers to evaluate the size of PAPR_SCM envelope */
++/* Calculate the papr_scm-header size */
++#define ND_PAPR_SCM_ENVELOPE_CONTENT_HDR_SIZE \
++	(sizeof(struct nd_papr_scm_cmd_pkg) - sizeof(struct nd_cmd_pkg))
++
++/* Given a type calculate envelope-content size (papr_scm-header + payload) */
++#define ND_PAPR_SCM_ENVELOPE_CONTENT_SIZE(_type_)	\
++	(sizeof(_type_) + ND_PAPR_SCM_ENVELOPE_CONTENT_HDR_SIZE)
++
++/* Convert a libnvdimm nd_cmd_pkg to papr_scm specific pkg */
++static struct nd_papr_scm_cmd_pkg *nd_to_papr_cmd_pkg(struct nd_cmd_pkg *cmd)
++{
++	return (struct nd_papr_scm_cmd_pkg *) cmd;
++}
++
++/* Return the payload pointer for a given pcmd */
++static void *papr_scm_pcmd_to_payload(struct nd_papr_scm_cmd_pkg *pcmd)
++{
++	if (pcmd->hdr.nd_size_in == 0 && pcmd->hdr.nd_size_out == 0)
++		return NULL;
++	else
++		return (void *)((u8 *) pcmd + pcmd->payload_offset);
++}
++#endif /* _UAPI_ASM_POWERPC_PAPR_SCM_DSM_H_ */
+diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
+index aaf2e4ab1f75..9a2614aaae88 100644
+--- a/arch/powerpc/platforms/pseries/papr_scm.c
++++ b/arch/powerpc/platforms/pseries/papr_scm.c
+@@ -15,13 +15,15 @@
+ 
+ #include <asm/plpar_wrappers.h>
+ #include <asm/papr_scm.h>
++#include <asm/papr_scm_dsm.h>
+ 
+ #define BIND_ANY_ADDR (~0ul)
+ 
+ #define PAPR_SCM_DIMM_CMD_MASK \
+ 	((1ul << ND_CMD_GET_CONFIG_SIZE) | \
+ 	 (1ul << ND_CMD_GET_CONFIG_DATA) | \
+-	 (1ul << ND_CMD_SET_CONFIG_DATA))
++	 (1ul << ND_CMD_SET_CONFIG_DATA) | \
++	 (1ul << ND_CMD_CALL))
+ 
+ struct papr_scm_priv {
+ 	struct platform_device *pdev;
+@@ -283,19 +285,82 @@ static int papr_scm_meta_set(struct papr_scm_priv *p,
+ 	return 0;
+ }
+ 
++/*
++ * Validate the input to dimm-control function and return papr_scm specific
++ * commands. This does sanity validation to ND_CMD_CALL sub-command packages.
++ */
++static int cmd_to_func(struct nvdimm *nvdimm, unsigned int cmd, void *buf,
++		       unsigned int buf_len)
++{
++	unsigned long cmd_mask = PAPR_SCM_DIMM_CMD_MASK;
++	struct nd_papr_scm_cmd_pkg *pkg = nd_to_papr_cmd_pkg(buf);
++
++	/* Only dimm-specific calls are supported atm */
++	if (!nvdimm)
++		return -EINVAL;
++
++	if (!test_bit(cmd, &cmd_mask)) {
++		pr_debug("%s: Unsupported cmd=%u\n", __func__, cmd);
++		return -EINVAL;
++	} else if (cmd != ND_CMD_CALL) {
++		return cmd;
++	}
++
++	/* cmd == ND_CMD_CALL so verify the envelop package */
++
++	if (!buf || buf_len < sizeof(struct nd_papr_scm_cmd_pkg)) {
++		pr_debug("%s: Invalid pkg size=%u\n", __func__, buf_len);
++		return -EINVAL;
++	}
++
++	if (pkg->hdr.nd_family != NVDIMM_FAMILY_PAPR_SCM) {
++		pr_debug("%s: Invalid pkg family=0x%llx\n", __func__,
++			 pkg->hdr.nd_family);
++		return -EINVAL;
++
++	}
++
++	if (pkg->hdr.nd_command <= DSM_PAPR_SCM_MIN ||
++	    pkg->hdr.nd_command >= DSM_PAPR_SCM_MAX) {
++
++		/* for unknown subcommands return ND_CMD_CALL */
++		pr_debug("%s: Unknown sub-command=0x%llx\n", __func__,
++			 pkg->hdr.nd_command);
++		return ND_CMD_CALL;
++	}
++
++	/* We except a payload with all DSM commands */
++	if (papr_scm_pcmd_to_payload(pkg) == NULL) {
++		pr_debug("%s: Empty patload for sub-command=0x%llx\n", __func__,
++			 pkg->hdr.nd_command);
++		return -EINVAL;
++	}
++
++	/* Return the DSM_PAPR_SCM_* command */
++	return pkg->hdr.nd_command;
++}
++
+ int papr_scm_ndctl(struct nvdimm_bus_descriptor *nd_desc, struct nvdimm *nvdimm,
+ 		unsigned int cmd, void *buf, unsigned int buf_len, int *cmd_rc)
+ {
+ 	struct nd_cmd_get_config_size *get_size_hdr;
+ 	struct papr_scm_priv *p;
++	struct nd_papr_scm_cmd_pkg *call_pkg = NULL;
++	int cmd_in, rc;
+ 
+-	/* Only dimm-specific calls are supported atm */
+-	if (!nvdimm)
+-		return -EINVAL;
++	/* Use a local variable in case cmd_rc pointer is NULL */
++	if (cmd_rc == NULL)
++		cmd_rc = &rc;
++
++	cmd_in = cmd_to_func(nvdimm, cmd, buf, buf_len);
++	if (cmd_in < 0) {
++		pr_debug("%s: Invalid cmd=%u. Err=%d\n", __func__, cmd, cmd_in);
++		return cmd_in;
++	}
+ 
+ 	p = nvdimm_provider_data(nvdimm);
+ 
+-	switch (cmd) {
++	switch (cmd_in) {
+ 	case ND_CMD_GET_CONFIG_SIZE:
+ 		get_size_hdr = buf;
+ 
+@@ -313,13 +378,21 @@ int papr_scm_ndctl(struct nvdimm_bus_descriptor *nd_desc, struct nvdimm *nvdimm,
+ 		*cmd_rc = papr_scm_meta_set(p, buf);
+ 		break;
+ 
++	case ND_CMD_CALL:
++		/* This happens if subcommand package sanity fails */
++		call_pkg = nd_to_papr_cmd_pkg(buf);
++		call_pkg->cmd_status = -ENOENT;
++		*cmd_rc = 0;
++		break;
++
+ 	default:
+-		return -EINVAL;
++		dev_dbg(&p->pdev->dev, "Unknown command = %d\n", cmd_in);
++		*cmd_rc = -EINVAL;
+ 	}
+ 
+ 	dev_dbg(&p->pdev->dev, "returned with cmd_rc = %d\n", *cmd_rc);
+ 
+-	return 0;
++	return *cmd_rc;
+ }
+ 
+ static inline int papr_scm_node(int node)
+-- 
+2.24.1
 
-If no one objects, I can prepare a series to drop support for 40x 
-completely.
-
-Michael, any thought ?
-
-Christophe
