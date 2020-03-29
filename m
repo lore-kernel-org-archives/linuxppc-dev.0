@@ -2,66 +2,79 @@ Return-Path: <SRS0=8EsE=5O=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8111EC43331
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2020 03:02:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3C87C43331
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2020 09:43:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2E161206DB
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2020 03:02:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 26C872073B
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2020 09:43:41 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="nEBs34CU"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E161206DB
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="JD9x2z+x"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 26C872073B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48qgNm6RWSzDqhR
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2020 14:02:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48qrJC5DHQzDqb9
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2020 20:43:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
- envelope-from=willy@infradead.org; receiver=<UNKNOWN>)
+ spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=bombadil.20170209 header.b=nEBs34CU; 
- dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
+ header.s=mail header.b=JD9x2z+x; dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48qgLh11h5zDqWJ
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Mar 2020 14:00:12 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=tzQQI4sPYIQBmBbwCro/n16BP95THEmRO7t6mifRML4=; b=nEBs34CUPbdlvIX+D+1uQ1RH24
- Ej5dOZ3lLrQuut9PtYNGkXA3koeQSQDdqMsYWaMEp38KgpDHYt8XQzVxIL0+LIbI71dtFlnqUNYUI
- +b8YfoGgqyK7V3Q2hkO5qRe9i9vorjXPJjM783KKCNLoKzNKArwYEbKteh5/DeRV/STBoJRPsqniL
- vyEcyBq095i2wwMZa3rKCvmt4CciHoEdoxVj9OjEF170WeNqffsvP+GXUqd9RDH5LkA9FKVqR4F1I
- VHwBcBcQA7Rtrf8fWswpp038xYh+MxshHzYqQ2kP4XDg9Gu+3InwGR63sWP94CEsMbluooRi8qUR0
- HrUD8Z/g==;
-Received: from willy by bombadil.infradead.org with local (Exim 4.92.3 #3 (Red
- Hat Linux)) id 1jIOAs-0002Hp-Jl; Sun, 29 Mar 2020 02:59:46 +0000
-Date: Sat, 28 Mar 2020 19:59:46 -0700
-From: Matthew Wilcox <willy@infradead.org>
-To: Alastair D'Silva <alastair@d-silva.org>
-Subject: Re: [PATCH v4 10/25] nvdimm: Add driver for OpenCAPI Persistent Memory
-Message-ID: <20200329025946.GU22483@bombadil.infradead.org>
-References: <20200327071202.2159885-1-alastair@d-silva.org>
- <20200327071202.2159885-11-alastair@d-silva.org>
- <20200329025617.GT22483@bombadil.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200329025617.GT22483@bombadil.infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48qrFK3cmPzDqb9
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Mar 2020 20:41:07 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 48qrF70qgKz9tyY0;
+ Sun, 29 Mar 2020 11:40:59 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=JD9x2z+x; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id W2DKOqpYvs0k; Sun, 29 Mar 2020 11:40:59 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 48qrF66qzKz9tyXy;
+ Sun, 29 Mar 2020 11:40:58 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1585474859; bh=9Ex3O+iluoexmpGb+PEB5x2/IMSdkbD5UGZNuiYc8UI=;
+ h=From:Subject:To:Cc:Date:From;
+ b=JD9x2z+x1Fdqj6pXC/MT1KrW50s81K/1H4B1yO35cf1HCqE/W8y37LwrmymhK/FBj
+ d6fIe0YvTLR9yqVq6YzTVbhqrF64ud8ChFXgtcezg/iNRAucb5lnhZH72cCdFmedYj
+ 1iO0c+HhCMYbjNBMFkbrhbbFciPfgQZ8Be2iXr4k=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id DC5188B770;
+ Sun, 29 Mar 2020 11:41:01 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id STH3M_JcQ2vg; Sun, 29 Mar 2020 11:41:01 +0200 (CEST)
+Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 954998B752;
+ Sun, 29 Mar 2020 11:41:01 +0200 (CEST)
+Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 4CDA965653; Sun, 29 Mar 2020 09:41:01 +0000 (UTC)
+Message-Id: <dff05b59a161434a546010507000816750073f28.1585474724.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH 01/12] powerpc/52xx: Blacklist functions running with MMU
+ disabled for kprobe
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ naveen.n.rao@linux.vnet.ibm.com
+Date: Sun, 29 Mar 2020 09:41:01 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,57 +86,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Oliver O'Halloran <oohall@gmail.com>,
- Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
- Ira Weiny <ira.weiny@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
- Rob Herring <robh@kernel.org>, Dave Jiang <dave.jiang@intel.com>,
- linux-nvdimm@lists.01.org, "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
- Krzysztof Kozlowski <krzk@kernel.org>,
- Anju T Sudhakar <anju@linux.vnet.ibm.com>,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
- Greg Kurz <groug@kaod.org>, Nicholas Piggin <npiggin@gmail.com>,
- =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>,
- Dan Williams <dan.j.williams@intel.com>, Hari Bathini <hbathini@linux.ibm.com>,
- linux-mm@kvack.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linux-kernel@vger.kernel.org, Vishal Verma <vishal.l.verma@intel.com>,
- Frederic Barrat <fbarrat@linux.ibm.com>, Paul Mackerras <paulus@samba.org>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Mar 28, 2020 at 07:56:17PM -0700, Matthew Wilcox wrote:
-> On Fri, Mar 27, 2020 at 06:11:47PM +1100, Alastair D'Silva wrote:
-> > +static struct mutex minors_idr_lock;
-> > +static struct idr minors_idr;
-> ...
-> > +	mutex_lock(&minors_idr_lock);
-> > +	minor = idr_alloc(&minors_idr, ocxlpmem, 0, NUM_MINORS, GFP_KERNEL);
-> > +	mutex_unlock(&minors_idr_lock);
-> ...
-> > +	mutex_lock(&minors_idr_lock);
-> > +	idr_remove(&minors_idr, MINOR(ocxlpmem->dev.devt));
-> > +	mutex_unlock(&minors_idr_lock);
-> ...
-> > +	mutex_init(&minors_idr_lock);
-> > +	idr_init(&minors_idr);
-> 
-> Unless you look up ocxlpmem by minor number later in the patch series (and
-> most of the series didn't make it to my mailbox), this can just be an ida.
-> 
-> static DEFINE_IDA(minors);
-> ...
-> minor = ida_alloc_max(&minors, NUM_MINORS, GFP_KERNEL);
+kprobe does not handle events happening in real mode, all
+functions running with MMU disabled have to be blacklisted.
 
-Oops.  NUM_MINORS - 1.  Or #define MAX_MINOR 255 since you only seem to use
-NUM_MINORS in this one place.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/platforms/52xx/lite5200_sleep.S | 2 ++
+ 1 file changed, 2 insertions(+)
 
-> ...
-> ida_free(&minors, MINOR(ocxlpmem->dev.devt));
-> ...
-> and you can drop the dynamic initialisation.  And the mutex.
+diff --git a/arch/powerpc/platforms/52xx/lite5200_sleep.S b/arch/powerpc/platforms/52xx/lite5200_sleep.S
+index 3a9969c429b3..70083649c9ea 100644
+--- a/arch/powerpc/platforms/52xx/lite5200_sleep.S
++++ b/arch/powerpc/platforms/52xx/lite5200_sleep.S
+@@ -248,6 +248,7 @@ mmu_on:
+ 
+ 
+ 	blr
++_ASM_NOKPROBE_SYMBOL(lite5200_wakeup)
+ 
+ 
+ /* ---------------------------------------------------------------------- */
+@@ -391,6 +392,7 @@ restore_regs:
+ 	LOAD_SPRN(TBWU,  0x5b);
+ 
+ 	blr
++_ASM_NOKPROBE_SYMBOL(restore_regs)
+ 
+ 
+ 
+-- 
+2.25.0
+
