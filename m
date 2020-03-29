@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 58B69C43331
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2020 09:57:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 97797C43331
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2020 09:58:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 07B2020675
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2020 09:57:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id CFB0420675
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2020 09:58:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="DXL7cxTh"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 07B2020675
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="Sf8zrvd4"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CFB0420675
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48qrbj5NYtzDqch
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2020 20:57:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48qrdn5fwvzDqMp
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2020 20:58:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,53 +29,54 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=DXL7cxTh; dkim-atps=neutral
+ header.s=mail header.b=Sf8zrvd4; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48qrFQ4mv5zDqb5
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48qrFQ5YyMzDqb9
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Mar 2020 20:41:14 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 48qrFD1Wrlz9tyXy;
- Sun, 29 Mar 2020 11:41:04 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 48qrFJ1NPwz9v0Cf;
+ Sun, 29 Mar 2020 11:41:08 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=DXL7cxTh; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=Sf8zrvd4; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id jGP1yVVHi_SZ; Sun, 29 Mar 2020 11:41:04 +0200 (CEST)
+ with ESMTP id bwRwM-iJzW9J; Sun, 29 Mar 2020 11:41:08 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 48qrFD0MLlz9tyhS;
- Sun, 29 Mar 2020 11:41:04 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 48qrFJ0NT4z9v0Bs;
+ Sun, 29 Mar 2020 11:41:08 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1585474864; bh=zaioHvhLitaTLR0sUqswPJ22CPTg2ceN9/NiLqrxZOs=;
+ t=1585474868; bh=EAN9wu96hIOOs9Jxj5AMmN+BQRhi9IaXixrZRhz2y4s=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=DXL7cxThWGZDhIunkltnKMH6e172oWnGcDhMl1r8/3mjmfAPGBykdgMu4tio0WZfP
- sm3nUaEtsgRommggswoA4EJ3pCm+VTpPr0sC7Gwqxz/VESr4qcm6eW1AsWdpgTksx7
- 6h85No1H++aZOZd4g/dw+1DBaeIxdJ70ktjMx/c8=
+ b=Sf8zrvd4GZj8YvZu6ZqZIJU7UDFOSrHwkP5vxG+IMQoNlAFG1++PYHXlgndT5WFZw
+ JVCfTtpNjEq1nPOz5DwEBALdwLo0U8MbQkDVqXGMAF+H+HPueE8TUIwB0f+vvx0ycQ
+ nehAbJs5KPdN0qUO8YxtAXCNuoOSVAEvq0bPFM/w=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0561E8B770;
- Sun, 29 Mar 2020 11:41:07 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 05D818B770;
+ Sun, 29 Mar 2020 11:41:11 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id y7qWyUCV09T3; Sun, 29 Mar 2020 11:41:06 +0200 (CEST)
+ with ESMTP id lqb_UcoigZK2; Sun, 29 Mar 2020 11:41:10 +0200 (CEST)
 Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A286D8B752;
- Sun, 29 Mar 2020 11:41:06 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C70828B752;
+ Sun, 29 Mar 2020 11:41:10 +0200 (CEST)
 Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 74B9E65653; Sun, 29 Mar 2020 09:41:06 +0000 (UTC)
-Message-Id: <a19105b21c08020c2af9bf4a37daff8642066ef1.1585474724.git.christophe.leroy@c-s.fr>
+ id 97ED565653; Sun, 29 Mar 2020 09:41:10 +0000 (UTC)
+Message-Id: <aea027844b12fcbc29ea78d26c5848a6794d1688.1585474724.git.christophe.leroy@c-s.fr>
 In-Reply-To: <dff05b59a161434a546010507000816750073f28.1585474724.git.christophe.leroy@c-s.fr>
 References: <dff05b59a161434a546010507000816750073f28.1585474724.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 06/12] powerpc/32s: Make local symbols non visible in hash_low.
+Subject: [PATCH 10/12] powerpc/entry32: Blacklist exception entry points for
+ kprobe.
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  naveen.n.rao@linux.vnet.ibm.com
-Date: Sun, 29 Mar 2020 09:41:06 +0000 (UTC)
+Date: Sun, 29 Mar 2020 09:41:10 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,123 +93,69 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In hash_low.S, a lot of named local symbols are used instead of
-numbers to ease code lisibility. However, they don't need to be
-visible.
+kprobe does not handle events happening in real mode.
 
-In order to ease blacklisting of functions running with MMU
-disabled for kprobe, rename the symbols to .Lsymbols in order
-to hide them as if they were numbered labels.
+As exception entry points are running with MMU disabled,
+blacklist them.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/mm/book3s32/hash_low.S | 26 +++++++++++++-------------
- 1 file changed, 13 insertions(+), 13 deletions(-)
+ arch/powerpc/kernel/entry_32.S | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/arch/powerpc/mm/book3s32/hash_low.S b/arch/powerpc/mm/book3s32/hash_low.S
-index 6d236080cb1a..2afa3fa2012d 100644
---- a/arch/powerpc/mm/book3s32/hash_low.S
-+++ b/arch/powerpc/mm/book3s32/hash_low.S
-@@ -81,7 +81,7 @@ _GLOBAL(hash_page)
- 	rlwinm.	r8,r8,0,0,20		/* extract pt base address */
- #endif
- #ifdef CONFIG_SMP
--	beq-	hash_page_out		/* return if no mapping */
-+	beq-	.Lhash_page_out		/* return if no mapping */
- #else
- 	/* XXX it seems like the 601 will give a machine fault on the
- 	   rfi if its alignment is wrong (bottom 4 bits of address are
-@@ -109,11 +109,11 @@ _GLOBAL(hash_page)
- #if (PTE_FLAGS_OFFSET != 0)
- 	addi	r8,r8,PTE_FLAGS_OFFSET
- #endif
--retry:
-+.Lretry:
- 	lwarx	r6,0,r8			/* get linux-style pte, flag word */
- 	andc.	r5,r3,r6		/* check access & ~permission */
- #ifdef CONFIG_SMP
--	bne-	hash_page_out		/* return if access not permitted */
-+	bne-	.Lhash_page_out		/* return if access not permitted */
- #else
- 	bnelr-
- #endif
-@@ -128,7 +128,7 @@ retry:
- #endif /* CONFIG_SMP */
- #endif /* CONFIG_PTE_64BIT */
- 	stwcx.	r5,0,r8			/* attempt to update PTE */
--	bne-	retry			/* retry if someone got there first */
-+	bne-	.Lretry			/* retry if someone got there first */
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 94f78c03cb79..9a1a45d6038a 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -51,6 +51,7 @@ mcheck_transfer_to_handler:
+ 	mfspr	r0,SPRN_DSRR1
+ 	stw	r0,_DSRR1(r11)
+ 	/* fall through */
++_ASM_NOKPROBE_SYMBOL(mcheck_transfer_to_handler)
  
- 	mfsrin	r3,r4			/* get segment reg for segment */
+ 	.globl	debug_transfer_to_handler
+ debug_transfer_to_handler:
+@@ -59,6 +60,7 @@ debug_transfer_to_handler:
+ 	mfspr	r0,SPRN_CSRR1
+ 	stw	r0,_CSRR1(r11)
+ 	/* fall through */
++_ASM_NOKPROBE_SYMBOL(debug_transfer_to_handler)
+ 
+ 	.globl	crit_transfer_to_handler
+ crit_transfer_to_handler:
+@@ -94,6 +96,7 @@ crit_transfer_to_handler:
+ 	rlwinm	r0,r1,0,0,(31 - THREAD_SHIFT)
+ 	stw	r0,KSP_LIMIT(r8)
+ 	/* fall through */
++_ASM_NOKPROBE_SYMBOL(crit_transfer_to_handler)
+ #endif
+ 
+ #ifdef CONFIG_40x
+@@ -115,6 +118,7 @@ crit_transfer_to_handler:
+ 	rlwinm	r0,r1,0,0,(31 - THREAD_SHIFT)
+ 	stw	r0,KSP_LIMIT(r8)
+ 	/* fall through */
++_ASM_NOKPROBE_SYMBOL(crit_transfer_to_handler)
+ #endif
+ 
+ /*
+@@ -127,6 +131,7 @@ crit_transfer_to_handler:
+ 	.globl	transfer_to_handler_full
+ transfer_to_handler_full:
+ 	SAVE_NVGPRS(r11)
++_ASM_NOKPROBE_SYMBOL(transfer_to_handler_full)
+ 	/* fall through */
+ 
+ 	.globl	transfer_to_handler
+@@ -286,6 +291,8 @@ reenable_mmu:
+ 	lwz	r2, GPR2(r11)
+ 	b	fast_exception_return
+ #endif
++_ASM_NOKPROBE_SYMBOL(transfer_to_handler)
++_ASM_NOKPROBE_SYMBOL(transfer_to_handler_cont)
+ 
  #ifndef CONFIG_VMAP_STACK
-@@ -156,7 +156,7 @@ retry:
- #endif
- 
- #ifdef CONFIG_SMP
--hash_page_out:
-+.Lhash_page_out:
- 	eieio
- 	lis	r8, (mmu_hash_lock - PAGE_OFFSET)@ha
- 	li	r0,0
-@@ -358,7 +358,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_NEED_COHERENT)
- 1:	LDPTEu	r6,HPTE_SIZE(r4)	/* get next PTE */
- 	CMPPTE	0,r6,r5
- 	bdnzf	2,1b			/* loop while ctr != 0 && !cr0.eq */
--	beq+	found_slot
-+	beq+	.Lfound_slot
- 
- 	patch_site	0f, patch__hash_page_B
- 	/* Search the secondary PTEG for a matching PTE */
-@@ -370,7 +370,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_NEED_COHERENT)
- 2:	LDPTEu	r6,HPTE_SIZE(r4)
- 	CMPPTE	0,r6,r5
- 	bdnzf	2,2b
--	beq+	found_slot
-+	beq+	.Lfound_slot
- 	xori	r5,r5,PTE_H		/* clear H bit again */
- 
- 	/* Search the primary PTEG for an empty slot */
-@@ -379,7 +379,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_NEED_COHERENT)
- 1:	LDPTEu	r6,HPTE_SIZE(r4)	/* get next PTE */
- 	TST_V(r6)			/* test valid bit */
- 	bdnzf	2,1b			/* loop while ctr != 0 && !cr0.eq */
--	beq+	found_empty
-+	beq+	.Lfound_empty
- 
- 	/* update counter of times that the primary PTEG is full */
- 	lis	r4, (primary_pteg_full - PAGE_OFFSET)@ha
-@@ -397,7 +397,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_NEED_COHERENT)
- 2:	LDPTEu	r6,HPTE_SIZE(r4)
- 	TST_V(r6)
- 	bdnzf	2,2b
--	beq+	found_empty
-+	beq+	.Lfound_empty
- 	xori	r5,r5,PTE_H		/* clear H bit again */
- 
- 	/*
-@@ -435,9 +435,9 @@ END_FTR_SECTION_IFCLR(CPU_FTR_NEED_COHERENT)
- 
- #ifndef CONFIG_SMP
- 	/* Store PTE in PTEG */
--found_empty:
-+.Lfound_empty:
- 	STPTE	r5,0(r4)
--found_slot:
-+.Lfound_slot:
- 	STPTE	r8,HPTE_SIZE/2(r4)
- 
- #else /* CONFIG_SMP */
-@@ -458,8 +458,8 @@ found_slot:
-  * We do however have to make sure that the PTE is never in an invalid
-  * state with the V bit set.
-  */
--found_empty:
--found_slot:
-+.Lfound_empty:
-+.Lfound_slot:
- 	CLR_V(r5,r0)		/* clear V (valid) bit in PTE */
- 	STPTE	r5,0(r4)
- 	sync
+ /*
 -- 
 2.25.0
 
