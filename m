@@ -2,51 +2,64 @@ Return-Path: <SRS0=8EsE=5O=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F03EC43331
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2020 13:44:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EF312C43331
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2020 14:02:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6AD912073B
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2020 13:44:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6AD912073B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4E1D8206F6
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2020 14:02:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4E1D8206F6
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48qxfB6RKJzDqdk
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2020 00:44:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 48qxcJ2cv9zDqX6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2020 00:42:53 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B302231B;
- Sun, 29 Mar 2020 06:42:50 -0700 (PDT)
-Received: from [10.163.1.70] (unknown [10.163.1.70])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 5731E3F71F;
- Sun, 29 Mar 2020 06:42:43 -0700 (PDT)
-Subject: Re: [PATCH 0/2] mm/thp: Rename pmd_mknotpresent() as pmd_mknotvalid()
-To: linux-mm@kvack.org
-References: <1584680057-13753-1-git-send-email-anshuman.khandual@arm.com>
-From: Anshuman Khandual <anshuman.khandual@arm.com>
-Message-ID: <2e67f1b8-d196-89e4-aee1-f552db1433a0@arm.com>
-Date: Sun, 29 Mar 2020 19:12:35 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+	by lists.ozlabs.org (Postfix) with ESMTP id 48qy360yzQzDqWG
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2020 01:02:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=209.85.210.66; helo=mail-ot1-f66.google.com;
+ envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-m68k.org
+Received: from mail-ot1-f66.google.com (mail-ot1-f66.google.com
+ [209.85.210.66])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48qy0j3SHtzDqGq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2020 01:00:33 +1100 (AEDT)
+Received: by mail-ot1-f66.google.com with SMTP id 111so15113340oth.13
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Mar 2020 07:00:33 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=QNLlN1zb7CRtDuVy5Iix3XnwCOUZPqrirtS+X+CgoVE=;
+ b=r+E9lfDfLmQYMpvBaQInVGEbvkxziPAajz0wS3WWZimWcyAh5mxTaslN3rQ3sNz1mi
+ 1Ra4aPQlRDOerp830IvjSgUwnET+bnhGg8xsoRw0YFHyjmP3NVQOWwo5iwYxYr5zZu+Q
+ rEEukK6KrI4pGyepLaIAz5bwmGB1eiJfuXoUKE7gABwwNf6KLacYkKfcBVpHi2GwP3QM
+ 8qLRTjV4kdqamuajMB715lzjnIBwcZO3sQjECSmPWr79O+2+DyMYsyiAPhc/MPn/TpEo
+ in5mpVTTVXzOTh3Q1A9gRWd82VJix9A/Tw4UrbpWBpYjChz/eleN0IANcKTXYwN+QEWa
+ BhiQ==
+X-Gm-Message-State: ANhLgQ09g/aBFsk+isSd/JpUheLL1QuWQ0qvOWvTRlozqZK13Dzzs8v+
+ gZchcHcaua+hiHtyn2bfqP0zJg1cMaa6H54oBuM=
+X-Google-Smtp-Source: ADFU+vtZcnjvciREbPV3aE1DKklNynoYrVXM5GmbgxK/5cng9VzfaBdVb0Gmw3D+X2C3eyx9p2xCYsevdeeVYPGXK20=
+X-Received: by 2002:a05:6830:15c2:: with SMTP id
+ j2mr5548328otr.107.1585490431002; 
+ Sun, 29 Mar 2020 07:00:31 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1584680057-13753-1-git-send-email-anshuman.khandual@arm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+References: <cover.1585340156.git.geoff@infradead.org>
+ <e0dc92ba82a993c845f8d2bf3ace7465ef5ea996.1585340156.git.geoff@infradead.org>
+In-Reply-To: <e0dc92ba82a993c845f8d2bf3ace7465ef5ea996.1585340156.git.geoff@infradead.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Sun, 29 Mar 2020 16:00:20 +0200
+Message-ID: <CAMuHMdU1qLs1u3JuJM+r4jV0gGQuq4B11gbSDsX6JHUBFQAX3w@mail.gmail.com>
+Subject: Re: [PATCH 7/9] powerpc/ps3: Add check for otheros image size
+To: Geoff Levand <geoff@infradead.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,39 +71,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Dave Hansen <dave.hansen@linux.intel.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Will Deacon <will@kernel.org>, x86@kernel.org,
- Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>,
- linux-snps-arc@lists.infradead.org, Steven Rostedt <rostedt@goodmis.org>,
- Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
- nouveau@lists.freedesktop.org, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Vineet Gupta <vgupta@synopsys.com>, linux-mips@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Markus Elfring <elfring@users.sourceforge.net>,
+ Dan Carpenter <dan.carpenter@oracle.com>,
+ Emmanuel Nicolet <emmanuel.nicolet@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Hi Geoff,
 
+On Fri, Mar 27, 2020 at 9:26 PM Geoff Levand <geoff@infradead.org> wrote:
+> The ps3's otheros flash loader has a size limit of 16 MiB for the
+> uncompressed image.  If that limit will be reached output the
+> flash image file as 'otheros-too-big.bld'.
+>
+> Signed-off-by: Geoff Levand <geoff@infradead.org>
 
-On 03/20/2020 10:24 AM, Anshuman Khandual wrote:
-> This series renames pmd_mknotpresent() as pmd_mknotvalid(). Before that it
-> drops an existing pmd_mknotpresent() definition from powerpc platform which
-> was never required as it defines it's pmdp_invalidate() through subscribing
-> __HAVE_ARCH_PMDP_INVALIDATE. This does not create any functional change.
-> 
-> This rename was suggested by Catalin during a previous discussion while we
-> were trying to change the THP helpers on arm64 platform for migration.
-> 
-> https://patchwork.kernel.org/patch/11019637/
-> 
-> This series is based on v5.6-rc6.
-> 
-> Boot tested on arm64 and x86 platforms.
-> Built tested on many other platforms including the ones changed here.
+Thanks for your patch!
 
-Gentle ping, any updates regarding this ?
+> --- a/arch/powerpc/boot/wrapper
+> +++ b/arch/powerpc/boot/wrapper
+> @@ -570,7 +570,16 @@ ps3)
+>          count=$overlay_size bs=1
+>
+>      odir="$(dirname "$ofile.bin")"
+> -    rm -f "$odir/otheros.bld"
+> -    gzip -n --force -9 --stdout "$ofile.bin" > "$odir/otheros.bld"
+> +
+> +    # The ps3's flash loader has a size limit of 16 MiB for the uncompressed
+> +    # image.  If a compressed image that exceeded this limit is written to
+> +    # flash the loader will decompress that image until the 16 MiB limit is
+> +    # reached, then enter the system reset vector of the partially decompressed
+> +    # image.  No warning is issued.
+> +    rm -f "$odir"/{otheros,otheros-too-big}.bld
+> +    size=$(${CROSS}nm --no-sort --radix=d "$ofile" | egrep ' _end$' | cut -d' ' -f1)
+> +    bld="otheros.bld"
+> +    [ $size -le 16777216 ] || bld="otheros-too-big.bld"
+> +    gzip -n --force -9 --stdout "$ofile.bin" > "$odir/$bld"
+>      ;;
+>  esac
+
+Why not print an error message and exit 1 instead, like is done for
+other fatal errors?
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
