@@ -2,73 +2,61 @@ Return-Path: <SRS0=8EsE=5O=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8054FC43331
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2020 02:36:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01FE1C43331
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2020 02:58:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2E885206F2
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2020 02:36:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 65297206E6
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2020 02:58:51 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (4096-bit key) header.d=d-silva.org header.i=@d-silva.org header.b="e6a1tDVW"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E885206F2
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=d-silva.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="JQUR5R0l"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 65297206E6
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48qfpw35YZzDqsQ
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2020 13:36:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=d-silva.org (client-ip=66.55.73.32;
- helo=ushosting.nmnhosting.com; envelope-from=alastair@d-silva.org;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48qgK50KHJzDqdW
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2020 13:58:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=d-silva.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (4096-bit key;
- unprotected) header.d=d-silva.org header.i=@d-silva.org header.a=rsa-sha256
- header.s=201810a header.b=e6a1tDVW; dkim-atps=neutral
-Received: from ushosting.nmnhosting.com (ushosting.nmnhosting.com
- [66.55.73.32])
- by lists.ozlabs.org (Postfix) with ESMTP id 48qfdY2MnqzDqf0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Mar 2020 13:27:59 +1100 (AEDT)
-Received: from mail2.nmnhosting.com (unknown [202.169.106.97])
- by ushosting.nmnhosting.com (Postfix) with ESMTPS id BA61C2DC682C;
- Fri, 27 Mar 2020 18:12:20 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=d-silva.org;
- s=201810a; t=1585293141;
- bh=HzmhbcogFky5JzzjdOPameps3zKSn5YAqkFn77Y+Dc4=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=e6a1tDVWViG1+jiUIoTsiKrTGAyowuWFrA0PCTXk1vQKOWbpPReJad1CLZS9xKu8k
- EFRmZjIT9KBKqhJkrXzSnapItH1lRVZy7d4h5SogWLOpKIlosNd+cPQnK9TV3acuos
- zvH+Z0Jlut8IdWJOA4nF0J+YX9ygI9d5FS8ft8Ug6UxQqC8bWv6iiR3IjAo4/tCohC
- q6050U+9dAQa8V/fLtJsr4zD3J9cetIFwB2t9713wyqkcLVixRwfD1DhTZ6rrH9Gyv
- 3fE9mD/sde6wZE8pV1MUt+saA/POMeHIwdVv6C+e47d/WERR3wVblA+1tpoOAZ2brc
- QUZbjNYVZRNoVsybJoN8DiEnEeoxsuQStYY6tLmid9RvXWGFSoH3cdanT8y1/OqKLe
- 46GQ4nBoOr41PkguF0htNeCUAgxiuWpgTfoTavWhM1SgpEVR/EyN7kN9W7/S1Dcbo0
- Qe7o34WtZWKvlH5TdnhdnIt9/lMP7k8XveBbJuZMAJZ2Cv1YDeBTlAVY+huyKrNSMD
- SiWAECLmjomCHrfZsez028Ik+Ie2blO70vTcKyUoMtX8jHzd2vInEfjMo8B5jgYIbN
- MvO4F6oDy8dvsMAqHvNygUygzyX0lLS6O/099IdPj6gQvdo5SHyLURRfpB+Orwi2kV
- n8/DM6ski3PsH/O+rPuOm8L8=
-Received: from localhost.lan ([10.0.1.179])
- by mail2.nmnhosting.com (8.15.2/8.15.2) with ESMTP id 02R7C4Ai045934;
- Fri, 27 Mar 2020 18:12:16 +1100 (AEDT)
- (envelope-from alastair@d-silva.org)
-From: "Alastair D'Silva" <alastair@d-silva.org>
-To: alastair@d-silva.org
-Subject: [PATCH v4 09/25] ocxl: Save the device serial number in ocxl_fn
-Date: Fri, 27 Mar 2020 18:11:46 +1100
-Message-Id: <20200327071202.2159885-10-alastair@d-silva.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200327071202.2159885-1-alastair@d-silva.org>
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
+ envelope-from=willy@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48qgH30PL6zDqdP
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Mar 2020 13:57:03 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
+ :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description;
+ bh=4yXTPf18akGL4F1+3ogioOkX9iKPvYO8hyOrfJXVtE8=; b=JQUR5R0lE7xi/bwp2+wCOJ6n+2
+ jr/hNpXfA6Sap1y57jeS+TIIvZ50P9Y0zhfobUFlky6zEHnrl36iUVGituZcetweLxImlDgR+0iir
+ d3QCGnZfRnPVOSoC/nsRLR2bhPsiB+W2w8sFoZ77juMrW4OGkTFvQUvqhPA08FEK7I5Eg97c5tGib
+ Zw7dB5t65kxfGeoY0SAo/6dRwhdi9zSLhZhYeBRJ2LSRPBWI8gvyMpqmHcCHQ0sWsQbZXQvsWH/mT
+ 6hETfSx0PyDhWRS+X/9G+thvPoa8q1ZMjK5EVIvLqln8TC7mmm8ZUKLOFxK9rhl7dENKu5keZOLVK
+ thM8OiZQ==;
+Received: from willy by bombadil.infradead.org with local (Exim 4.92.3 #3 (Red
+ Hat Linux)) id 1jIO7V-00020F-KY; Sun, 29 Mar 2020 02:56:17 +0000
+Date: Sat, 28 Mar 2020 19:56:17 -0700
+From: Matthew Wilcox <willy@infradead.org>
+To: Alastair D'Silva <alastair@d-silva.org>
+Subject: Re: [PATCH v4 10/25] nvdimm: Add driver for OpenCAPI Persistent Memory
+Message-ID: <20200329025617.GT22483@bombadil.infradead.org>
 References: <20200327071202.2159885-1-alastair@d-silva.org>
+ <20200327071202.2159885-11-alastair@d-silva.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.6.2
- (mail2.nmnhosting.com [10.0.1.20]); Fri, 27 Mar 2020 18:12:16 +1100 (AEDT)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200327071202.2159885-11-alastair@d-silva.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,7 +81,7 @@ Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
  Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
  Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
  Greg Kurz <groug@kaod.org>, Nicholas Piggin <npiggin@gmail.com>,
- =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
+ =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>,
  Dan Williams <dan.j.williams@intel.com>, Hari Bathini <hbathini@linux.ibm.com>,
  linux-mm@kvack.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  linux-kernel@vger.kernel.org, Vishal Verma <vishal.l.verma@intel.com>,
@@ -104,93 +92,28 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch retrieves the serial number of the card and makes it available
-to consumers of the ocxl driver via the ocxl_fn struct.
+On Fri, Mar 27, 2020 at 06:11:47PM +1100, Alastair D'Silva wrote:
+> +static struct mutex minors_idr_lock;
+> +static struct idr minors_idr;
+...
+> +	mutex_lock(&minors_idr_lock);
+> +	minor = idr_alloc(&minors_idr, ocxlpmem, 0, NUM_MINORS, GFP_KERNEL);
+> +	mutex_unlock(&minors_idr_lock);
+...
+> +	mutex_lock(&minors_idr_lock);
+> +	idr_remove(&minors_idr, MINOR(ocxlpmem->dev.devt));
+> +	mutex_unlock(&minors_idr_lock);
+...
+> +	mutex_init(&minors_idr_lock);
+> +	idr_init(&minors_idr);
 
-Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
-Acked-by: Frederic Barrat <fbarrat@linux.ibm.com>
-Acked-by: Andrew Donnellan <ajd@linux.ibm.com>
----
- drivers/misc/ocxl/config.c | 46 ++++++++++++++++++++++++++++++++++++++
- include/misc/ocxl.h        |  1 +
- 2 files changed, 47 insertions(+)
+Unless you look up ocxlpmem by minor number later in the patch series (and
+most of the series didn't make it to my mailbox), this can just be an ida.
 
-diff --git a/drivers/misc/ocxl/config.c b/drivers/misc/ocxl/config.c
-index 69cca341d446..2b835e57daca 100644
---- a/drivers/misc/ocxl/config.c
-+++ b/drivers/misc/ocxl/config.c
-@@ -71,6 +71,51 @@ static int find_dvsec_afu_ctrl(struct pci_dev *dev, u8 afu_idx)
- 	return 0;
- }
- 
-+/**
-+ * get_function_0() - Find a related PCI device (function 0)
-+ * @device: PCI device to match
-+ *
-+ * Returns a pointer to the related device, or null if not found
-+ */
-+static struct pci_dev *get_function_0(struct pci_dev *dev)
-+{
-+	unsigned int devfn = PCI_DEVFN(PCI_SLOT(dev->devfn), 0);
-+
-+	return pci_get_domain_bus_and_slot(pci_domain_nr(dev->bus),
-+					   dev->bus->number, devfn);
-+}
-+
-+static void read_serial(struct pci_dev *dev, struct ocxl_fn_config *fn)
-+{
-+	u32 low, high;
-+	int pos;
-+
-+	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_DSN);
-+	if (pos) {
-+		pci_read_config_dword(dev, pos + 0x04, &low);
-+		pci_read_config_dword(dev, pos + 0x08, &high);
-+
-+		fn->serial = low | ((u64)high) << 32;
-+
-+		return;
-+	}
-+
-+	if (PCI_FUNC(dev->devfn) != 0) {
-+		struct pci_dev *related = get_function_0(dev);
-+
-+		if (!related) {
-+			fn->serial = 0;
-+			return;
-+		}
-+
-+		read_serial(related, fn);
-+		pci_dev_put(related);
-+		return;
-+	}
-+
-+	fn->serial = 0;
-+}
-+
- static void read_pasid(struct pci_dev *dev, struct ocxl_fn_config *fn)
- {
- 	u16 val;
-@@ -208,6 +253,7 @@ int ocxl_config_read_function(struct pci_dev *dev, struct ocxl_fn_config *fn)
- 	int rc;
- 
- 	read_pasid(dev, fn);
-+	read_serial(dev, fn);
- 
- 	rc = read_dvsec_tl(dev, fn);
- 	if (rc) {
-diff --git a/include/misc/ocxl.h b/include/misc/ocxl.h
-index d8b0b4d46bfb..b8514dc64bd0 100644
---- a/include/misc/ocxl.h
-+++ b/include/misc/ocxl.h
-@@ -46,6 +46,7 @@ struct ocxl_fn_config {
- 	int dvsec_afu_info_pos; /* offset of the AFU information DVSEC */
- 	s8 max_pasid_log;
- 	s8 max_afu_index;
-+	u64 serial;
- };
- 
- enum ocxl_endian {
--- 
-2.24.1
-
+static DEFINE_IDA(minors);
+...
+minor = ida_alloc_max(&minors, NUM_MINORS, GFP_KERNEL);
+...
+ida_free(&minors, MINOR(ocxlpmem->dev.devt));
+...
+and you can drop the dynamic initialisation.  And the mutex.
