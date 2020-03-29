@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E90BC43331
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2020 09:55:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 58B69C43331
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2020 09:57:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D2D7D20675
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2020 09:55:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 07B2020675
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2020 09:57:07 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="jxacIkuy"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D2D7D20675
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="DXL7cxTh"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 07B2020675
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48qrYd5pfWzDqdf
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2020 20:55:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48qrbj5NYtzDqch
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2020 20:57:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,54 +29,53 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=jxacIkuy; dkim-atps=neutral
+ header.s=mail header.b=DXL7cxTh; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48qrFQ4G36zDqRg
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48qrFQ4mv5zDqb5
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Mar 2020 20:41:14 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 48qrFH3Dc8z9v0C7;
- Sun, 29 Mar 2020 11:41:07 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 48qrFD1Wrlz9tyXy;
+ Sun, 29 Mar 2020 11:41:04 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=jxacIkuy; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=DXL7cxTh; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id t__N2wGlMKWx; Sun, 29 Mar 2020 11:41:07 +0200 (CEST)
+ with ESMTP id jGP1yVVHi_SZ; Sun, 29 Mar 2020 11:41:04 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 48qrFH2Bxfz9v0Bs;
- Sun, 29 Mar 2020 11:41:07 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 48qrFD0MLlz9tyhS;
+ Sun, 29 Mar 2020 11:41:04 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1585474867; bh=e+KzW4oOf+FK+cIVEE9+mxV954O1EsAAZMtwTb2/AiA=;
+ t=1585474864; bh=zaioHvhLitaTLR0sUqswPJ22CPTg2ceN9/NiLqrxZOs=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=jxacIkuyms1Ak8FQPSkb7ccErhQGPuliL8+3WJUJlZ6JCTdzMuSOsM+Scusz6cwqr
- /CIF+wWSSFr1FqD8y3ChipdieUyY7ER+PNRqwh5w1yIcP2UrKYGvUfnvYUElsmbsoK
- o3QcWNv/waivv+Wz6ztrrCiNcfXi+4c6KjXoEGWM=
+ b=DXL7cxThWGZDhIunkltnKMH6e172oWnGcDhMl1r8/3mjmfAPGBykdgMu4tio0WZfP
+ sm3nUaEtsgRommggswoA4EJ3pCm+VTpPr0sC7Gwqxz/VESr4qcm6eW1AsWdpgTksx7
+ 6h85No1H++aZOZd4g/dw+1DBaeIxdJ70ktjMx/c8=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 460738B770;
- Sun, 29 Mar 2020 11:41:10 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0561E8B770;
+ Sun, 29 Mar 2020 11:41:07 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id fvyO_Ustp_Me; Sun, 29 Mar 2020 11:41:10 +0200 (CEST)
+ with ESMTP id y7qWyUCV09T3; Sun, 29 Mar 2020 11:41:06 +0200 (CEST)
 Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id BFC458B752;
- Sun, 29 Mar 2020 11:41:09 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A286D8B752;
+ Sun, 29 Mar 2020 11:41:06 +0200 (CEST)
 Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 9201F65653; Sun, 29 Mar 2020 09:41:09 +0000 (UTC)
-Message-Id: <d9fe533be0839d775f0989b0a4825c677adeb8ca.1585474724.git.christophe.leroy@c-s.fr>
+ id 74B9E65653; Sun, 29 Mar 2020 09:41:06 +0000 (UTC)
+Message-Id: <a19105b21c08020c2af9bf4a37daff8642066ef1.1585474724.git.christophe.leroy@c-s.fr>
 In-Reply-To: <dff05b59a161434a546010507000816750073f28.1585474724.git.christophe.leroy@c-s.fr>
 References: <dff05b59a161434a546010507000816750073f28.1585474724.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 09/12] powerpc/32: Blacklist functions running with MMU
- disabled for kprobe
+Subject: [PATCH 06/12] powerpc/32s: Make local symbols non visible in hash_low.
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  naveen.n.rao@linux.vnet.ibm.com
-Date: Sun, 29 Mar 2020 09:41:09 +0000 (UTC)
+Date: Sun, 29 Mar 2020 09:41:06 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,174 +92,123 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-kprobe does not handle events happening in real mode, all
-functions running with MMU disabled have to be blacklisted.
+In hash_low.S, a lot of named local symbols are used instead of
+numbers to ease code lisibility. However, they don't need to be
+visible.
+
+In order to ease blacklisting of functions running with MMU
+disabled for kprobe, rename the symbols to .Lsymbols in order
+to hide them as if they were numbered labels.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/cpu_setup_6xx.S | 2 ++
- arch/powerpc/kernel/entry_32.S      | 3 +++
- arch/powerpc/kernel/fpu.S           | 1 +
- arch/powerpc/kernel/idle_6xx.S      | 1 +
- arch/powerpc/kernel/idle_e500.S     | 1 +
- arch/powerpc/kernel/l2cr_6xx.S      | 1 +
- arch/powerpc/kernel/misc.S          | 2 ++
- arch/powerpc/kernel/misc_32.S       | 2 ++
- arch/powerpc/kernel/swsusp_32.S     | 2 ++
- arch/powerpc/kernel/vector.S        | 1 +
- 10 files changed, 16 insertions(+)
+ arch/powerpc/mm/book3s32/hash_low.S | 26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/kernel/cpu_setup_6xx.S b/arch/powerpc/kernel/cpu_setup_6xx.S
-index f6517f67265a..f8b5ff64b604 100644
---- a/arch/powerpc/kernel/cpu_setup_6xx.S
-+++ b/arch/powerpc/kernel/cpu_setup_6xx.S
-@@ -288,6 +288,7 @@ _GLOBAL(__init_fpu_registers)
- 	mtmsr	r10
- 	isync
- 	blr
-+_ASM_NOKPROBE_SYMBOL(__init_fpu_registers)
+diff --git a/arch/powerpc/mm/book3s32/hash_low.S b/arch/powerpc/mm/book3s32/hash_low.S
+index 6d236080cb1a..2afa3fa2012d 100644
+--- a/arch/powerpc/mm/book3s32/hash_low.S
++++ b/arch/powerpc/mm/book3s32/hash_low.S
+@@ -81,7 +81,7 @@ _GLOBAL(hash_page)
+ 	rlwinm.	r8,r8,0,0,20		/* extract pt base address */
+ #endif
+ #ifdef CONFIG_SMP
+-	beq-	hash_page_out		/* return if no mapping */
++	beq-	.Lhash_page_out		/* return if no mapping */
+ #else
+ 	/* XXX it seems like the 601 will give a machine fault on the
+ 	   rfi if its alignment is wrong (bottom 4 bits of address are
+@@ -109,11 +109,11 @@ _GLOBAL(hash_page)
+ #if (PTE_FLAGS_OFFSET != 0)
+ 	addi	r8,r8,PTE_FLAGS_OFFSET
+ #endif
+-retry:
++.Lretry:
+ 	lwarx	r6,0,r8			/* get linux-style pte, flag word */
+ 	andc.	r5,r3,r6		/* check access & ~permission */
+ #ifdef CONFIG_SMP
+-	bne-	hash_page_out		/* return if access not permitted */
++	bne-	.Lhash_page_out		/* return if access not permitted */
+ #else
+ 	bnelr-
+ #endif
+@@ -128,7 +128,7 @@ retry:
+ #endif /* CONFIG_SMP */
+ #endif /* CONFIG_PTE_64BIT */
+ 	stwcx.	r5,0,r8			/* attempt to update PTE */
+-	bne-	retry			/* retry if someone got there first */
++	bne-	.Lretry			/* retry if someone got there first */
  
- 
- /* Definitions for the table use to save CPU states */
-@@ -483,4 +484,5 @@ _GLOBAL(__restore_cpu_setup)
- 1:
- 	mtcr	r7
- 	blr
-+_ASM_NOKPROBE_SYMBOL(__restore_cpu_setup)
- 
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index e652f6506888..94f78c03cb79 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -313,6 +313,7 @@ stack_ovf:
- 	mtspr	SPRN_SRR1,r10
- 	SYNC
- 	RFI
-+_ASM_NOKPROBE_SYMBOL(stack_ovf)
+ 	mfsrin	r3,r4			/* get segment reg for segment */
+ #ifndef CONFIG_VMAP_STACK
+@@ -156,7 +156,7 @@ retry:
  #endif
  
- #ifdef CONFIG_TRACE_IRQFLAGS
-@@ -1337,6 +1338,7 @@ nonrecoverable:
- 	bl	unrecoverable_exception
- 	/* shouldn't return */
- 	b	4b
-+_ASM_NOKPROBE_SYMBOL(nonrecoverable)
+ #ifdef CONFIG_SMP
+-hash_page_out:
++.Lhash_page_out:
+ 	eieio
+ 	lis	r8, (mmu_hash_lock - PAGE_OFFSET)@ha
+ 	li	r0,0
+@@ -358,7 +358,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_NEED_COHERENT)
+ 1:	LDPTEu	r6,HPTE_SIZE(r4)	/* get next PTE */
+ 	CMPPTE	0,r6,r5
+ 	bdnzf	2,1b			/* loop while ctr != 0 && !cr0.eq */
+-	beq+	found_slot
++	beq+	.Lfound_slot
  
- 	.section .bss
- 	.align	2
-@@ -1391,4 +1393,5 @@ _GLOBAL(enter_rtas)
- 	mtspr	SPRN_SRR0,r8
- 	mtspr	SPRN_SRR1,r9
- 	RFI			/* return to caller */
-+_ASM_NOKPROBE_SYMBOL(enter_rtas)
- #endif /* CONFIG_PPC_RTAS */
-diff --git a/arch/powerpc/kernel/fpu.S b/arch/powerpc/kernel/fpu.S
-index 3235a8da6af7..1dfccf58fbb1 100644
---- a/arch/powerpc/kernel/fpu.S
-+++ b/arch/powerpc/kernel/fpu.S
-@@ -119,6 +119,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
- 	/* restore registers and return */
- 	/* we haven't used ctr or xer or lr */
- 	blr
-+_ASM_NOKPROBE_SYMBOL(load_up_fpu)
+ 	patch_site	0f, patch__hash_page_B
+ 	/* Search the secondary PTEG for a matching PTE */
+@@ -370,7 +370,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_NEED_COHERENT)
+ 2:	LDPTEu	r6,HPTE_SIZE(r4)
+ 	CMPPTE	0,r6,r5
+ 	bdnzf	2,2b
+-	beq+	found_slot
++	beq+	.Lfound_slot
+ 	xori	r5,r5,PTE_H		/* clear H bit again */
  
- /*
-  * save_fpu(tsk)
-diff --git a/arch/powerpc/kernel/idle_6xx.S b/arch/powerpc/kernel/idle_6xx.S
-index 433d97bea1f3..69df840f7253 100644
---- a/arch/powerpc/kernel/idle_6xx.S
-+++ b/arch/powerpc/kernel/idle_6xx.S
-@@ -187,6 +187,7 @@ BEGIN_FTR_SECTION
- 	mtspr	SPRN_HID1, r9
- END_FTR_SECTION_IFSET(CPU_FTR_DUAL_PLL_750FX)
- 	b	transfer_to_handler_cont
-+_ASM_NOKPROBE_SYMBOL(power_save_ppc32_restore)
+ 	/* Search the primary PTEG for an empty slot */
+@@ -379,7 +379,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_NEED_COHERENT)
+ 1:	LDPTEu	r6,HPTE_SIZE(r4)	/* get next PTE */
+ 	TST_V(r6)			/* test valid bit */
+ 	bdnzf	2,1b			/* loop while ctr != 0 && !cr0.eq */
+-	beq+	found_empty
++	beq+	.Lfound_empty
  
- 	.data
- 
-diff --git a/arch/powerpc/kernel/idle_e500.S b/arch/powerpc/kernel/idle_e500.S
-index 308f499e146c..72c85b6f3898 100644
---- a/arch/powerpc/kernel/idle_e500.S
-+++ b/arch/powerpc/kernel/idle_e500.S
-@@ -90,3 +90,4 @@ _GLOBAL(power_save_ppc32_restore)
- #endif
- 
- 	b	transfer_to_handler_cont
-+_ASM_NOKPROBE_SYMBOL(power_save_ppc32_restore)
-diff --git a/arch/powerpc/kernel/l2cr_6xx.S b/arch/powerpc/kernel/l2cr_6xx.S
-index 2020d255585f..5f07aa5e9851 100644
---- a/arch/powerpc/kernel/l2cr_6xx.S
-+++ b/arch/powerpc/kernel/l2cr_6xx.S
-@@ -455,5 +455,6 @@ _GLOBAL(__inval_enable_L1)
- 	sync
- 
-  	blr
-+_ASM_NOKPROBE_SYMBOL(__inval_enable_L1)
- 
- 
-diff --git a/arch/powerpc/kernel/misc.S b/arch/powerpc/kernel/misc.S
-index 65f9f731c229..5be96feccb55 100644
---- a/arch/powerpc/kernel/misc.S
-+++ b/arch/powerpc/kernel/misc.S
-@@ -36,6 +36,8 @@ _GLOBAL(add_reloc_offset)
- 	add	r3,r3,r5
- 	mtlr	r0
- 	blr
-+_ASM_NOKPROBE_SYMBOL(reloc_offset)
-+_ASM_NOKPROBE_SYMBOL(add_reloc_offset)
- 
- 	.align	3
- 2:	PPC_LONG 1b
-diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index d80212be8698..1edcc41e15fc 100644
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@ -246,6 +246,7 @@ _GLOBAL(real_readb)
- 	sync
- 	isync
- 	blr
-+_ASM_NOKPROBE_SYMBOL(real_readb)
+ 	/* update counter of times that the primary PTEG is full */
+ 	lis	r4, (primary_pteg_full - PAGE_OFFSET)@ha
+@@ -397,7 +397,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_NEED_COHERENT)
+ 2:	LDPTEu	r6,HPTE_SIZE(r4)
+ 	TST_V(r6)
+ 	bdnzf	2,2b
+-	beq+	found_empty
++	beq+	.Lfound_empty
+ 	xori	r5,r5,PTE_H		/* clear H bit again */
  
  	/*
-  * Do an IO access in real mode
-@@ -263,6 +264,7 @@ _GLOBAL(real_writeb)
+@@ -435,9 +435,9 @@ END_FTR_SECTION_IFCLR(CPU_FTR_NEED_COHERENT)
+ 
+ #ifndef CONFIG_SMP
+ 	/* Store PTE in PTEG */
+-found_empty:
++.Lfound_empty:
+ 	STPTE	r5,0(r4)
+-found_slot:
++.Lfound_slot:
+ 	STPTE	r8,HPTE_SIZE/2(r4)
+ 
+ #else /* CONFIG_SMP */
+@@ -458,8 +458,8 @@ found_slot:
+  * We do however have to make sure that the PTE is never in an invalid
+  * state with the V bit set.
+  */
+-found_empty:
+-found_slot:
++.Lfound_empty:
++.Lfound_slot:
+ 	CLR_V(r5,r0)		/* clear V (valid) bit in PTE */
+ 	STPTE	r5,0(r4)
  	sync
- 	isync
- 	blr
-+_ASM_NOKPROBE_SYMBOL(real_writeb)
- 
- #endif /* CONFIG_40x */
- 
-diff --git a/arch/powerpc/kernel/swsusp_32.S b/arch/powerpc/kernel/swsusp_32.S
-index cbdf86228eaa..f73f4d72fea4 100644
---- a/arch/powerpc/kernel/swsusp_32.S
-+++ b/arch/powerpc/kernel/swsusp_32.S
-@@ -395,6 +395,7 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_USE_HIGH_BATS)
- 
- 	li	r3,0
- 	blr
-+_ASM_NOKPROBE_SYMBOL(swsusp_arch_resume)
- 
- /* FIXME:This construct is actually not useful since we don't shut
-  * down the instruction MMU, we could just flip back MSR-DR on.
-@@ -406,4 +407,5 @@ turn_on_mmu:
- 	sync
- 	isync
- 	rfi
-+_ASM_NOKPROBE_SYMBOL(turn_on_mmu)
- 
-diff --git a/arch/powerpc/kernel/vector.S b/arch/powerpc/kernel/vector.S
-index 25c14a0981bf..403ab2c32dc8 100644
---- a/arch/powerpc/kernel/vector.S
-+++ b/arch/powerpc/kernel/vector.S
-@@ -89,6 +89,7 @@ _GLOBAL(load_up_altivec)
- 	REST_32VRS(0,r4,r6)
- 	/* restore registers and return */
- 	blr
-+_ASM_NOKPROBE_SYMBOL(load_up_altivec)
- 
- /*
-  * save_altivec(tsk)
 -- 
 2.25.0
 
