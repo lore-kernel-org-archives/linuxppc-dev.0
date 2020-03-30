@@ -2,79 +2,78 @@ Return-Path: <SRS0=0bRz=5P=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MISSING_HEADERS,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D5F83C43331
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2020 08:08:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DA9FAC43331
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2020 08:10:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 80540206E6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2020 08:08:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7C89D2073B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2020 08:10:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="R5aQu0gP"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 80540206E6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="fWGfZrMV"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7C89D2073B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48rQ7m4tkgzDqgZ
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2020 19:08:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48rQB26mjqzDq6N
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2020 19:10:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=flex--courbet.bounces.google.com
- (client-ip=2607:f8b0:4864:20::84a; helo=mail-qt1-x84a.google.com;
- envelope-from=39qebxgckdeclx30kn2pxxpun.lxvurw36yyl-mn4ur121.x8ujk1.x0p@flex--courbet.bounces.google.com;
+ smtp.mailfrom=redhat.com (client-ip=63.128.21.74;
+ helo=us-smtp-delivery-74.mimecast.com; envelope-from=bhe@redhat.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20161025 header.b=R5aQu0gP; dkim-atps=neutral
-Received: from mail-qt1-x84a.google.com (mail-qt1-x84a.google.com
- [IPv6:2607:f8b0:4864:20::84a])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=fWGfZrMV; 
+ dkim-atps=neutral
+Received: from us-smtp-delivery-74.mimecast.com
+ (us-smtp-delivery-74.mimecast.com [63.128.21.74])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48rQ356jPZzDqXP
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2020 19:04:10 +1100 (AEDT)
-Received: by mail-qt1-x84a.google.com with SMTP id v49so14228440qtc.20
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2020 01:04:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
- h=date:in-reply-to:message-id:mime-version:references:subject:from:cc;
- bh=6uUpEI08oXikXCp5+9gsd81DMfh5aZ7xYc26aZNsMcE=;
- b=R5aQu0gPcdYxwympNDA6UKdwMEnC2lGvXrGlXdylt5YSMQ4nAlR4gXuAS+7DzVEFW9
- bncYZz2qzYyv60L9tsSIMS6mi7tymeJ2mjj2uFTPgT8gTz02xBhf4Ut/2l8JRwepapq6
- v7MV4eHIuJsBec5DldbEcDJ/X2g+0uDLUfpyPOsLAWJG+7u5noEunaLudIgD88epxYKv
- Jdolza7eiLG5kgnu5wfR62bw23CdRRHVOQAFXqOhIs2UJBqImVKGEcmPswTxOAVJmNqi
- QkhU2j1WsrWkCb5+2hNw1Xx4esmiKqnMFvbnwL0CIsgEPe//N0hq9yOnyhTr3R1xVQrZ
- tHGg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:in-reply-to:message-id:mime-version
- :references:subject:from:cc;
- bh=6uUpEI08oXikXCp5+9gsd81DMfh5aZ7xYc26aZNsMcE=;
- b=tXtextfg/lLq9ltX4RPNq6XvZw9UMxEPa7xiCFB6vlHC/miSW/p6SABYEP6L9r3dzd
- yeOh404J629cxC5WKXEIghkOiB7zbT/f9OKgmtrl63cCesdGfzetvmnp9Q0rtH+Hwp6g
- /vQF451bzNfFzbNYuS+eM82OKXYGfumCIn72jBZIsDk1ucth0VcdUu9BFcf/u7Z6hsX3
- xb9x3F9dSjoUpfh43QMWYjY/OUcxdPBCHsBiMuMfYjt0CKKKAbuEeNhjnibn/kyTpc+s
- U7EoJe9SmIKR/OiHskYpG8PqN41021FSBjQHpfro4km8GIYdbEO8y3S3VsclJLaWESId
- Kvcg==
-X-Gm-Message-State: ANhLgQ1WPXwja8brTDB9J73/AsAtOnhSaL3oSVXnJpKpOUA4BFXhCN2O
- Ct0nnnSkXHl0YEtF6gt00NHPxyNp5hC4
-X-Google-Smtp-Source: ADFU+vtYJzmxymIGka0/I/Su3giY+YfBRdfUHQGLXnJq4xIk/Xdj15dHeXATi7wBUj2ccVnQni5sms+J4AtS
-X-Received: by 2002:ac8:6890:: with SMTP id m16mr10623891qtq.5.1585555446842; 
- Mon, 30 Mar 2020 01:04:06 -0700 (PDT)
-Date: Mon, 30 Mar 2020 10:03:56 +0200
-In-Reply-To: <20200327100801.161671-1-courbet@google.com>
-Message-Id: <20200330080400.124803-1-courbet@google.com>
-Mime-Version: 1.0
-References: <20200327100801.161671-1-courbet@google.com>
-X-Mailer: git-send-email 2.26.0.rc2.310.g2932bb562d-goog
-Subject: [PATCH v3] powerpc: Make setjmp/longjmp signature standard
-From: Clement Courbet <courbet@google.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48rQ4621DYzDqfC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2020 19:05:10 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1585555507;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=nVwRo6XO9WRKmSULb4OWrX5slFKDiMD/LCNJjQ0boIs=;
+ b=fWGfZrMVl5Vtjaikn/Yzd/4K66KqwO+iYxzu4aNDliIO58+R2ZfY6wXRATvHhkEcKStKZC
+ L4cnKJdKMe5ElViuRqXT+iPEAcwPlTzrcYfqKhoGDTj0WzfZnwcGCT5BjQhwmL3LU5Ofk0
+ +aPsV7sN7uTB9jIrArXbKH76qd9QHmY=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-468-l4TLxabQO2KtEB9hP7eswA-1; Mon, 30 Mar 2020 04:05:04 -0400
+X-MC-Unique: l4TLxabQO2KtEB9hP7eswA-1
+Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com
+ [10.5.11.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id F135A801E5C;
+ Mon, 30 Mar 2020 08:05:00 +0000 (UTC)
+Received: from localhost (ovpn-12-53.pek2.redhat.com [10.72.12.53])
+ by smtp.corp.redhat.com (Postfix) with ESMTPS id 27E25953DB;
+ Mon, 30 Mar 2020 08:04:59 +0000 (UTC)
+Date: Mon, 30 Mar 2020 16:04:56 +0800
+From: Baoquan He <bhe@redhat.com>
+To: Michal Hocko <mhocko@kernel.org>
+Subject: Re: [PATCH v3 0/5] mm: Enable CONFIG_NODES_SPAN_OTHER_NODES by
+ default for NUMA
+Message-ID: <20200330080456.GJ9942@MiWiFi-R3L-srv>
+References: <1585420282-25630-1-git-send-email-Hoan@os.amperecomputing.com>
+ <20200329001924.GS3039@MiWiFi-R3L-srv>
+ <20200330074426.GB14243@dhcp22.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200330074426.GB14243@dhcp22.suse.cz>
+User-Agent: Mutt/1.10.1 (2018-07-13)
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.15
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,94 +85,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org,
- stable@vger.kernel.org, clang-built-linux@googlegroups.com,
- Paul Mackerras <paulus@samba.org>, Clement Courbet <courbet@google.com>,
- Nathan Chancellor <natechancellor@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Thomas Gleixner <tglx@linutronix.de>
+Cc: mmorana@amperecomputing.com, Catalin Marinas <catalin.marinas@arm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ "open list:MEMORY MANAGEMENT" <linux-mm@kvack.org>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ sparclinux@vger.kernel.org,
+ Alexander Duyck <alexander.h.duyck@linux.intel.com>,
+ linux-s390@vger.kernel.org, x86@kernel.org, Mike Rapoport <rppt@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Hoan Tran <Hoan@os.amperecomputing.com>,
+ Pavel Tatashin <pavel.tatashin@microsoft.com>, lho@amperecomputing.com,
+ Vasily Gorbik <gor@linux.ibm.com>, Vlastimil Babka <vbabka@suse.cz>,
+ Will Deacon <will.deacon@arm.com>, Borislav Petkov <bp@alien8.de>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Oscar Salvador <osalvador@suse.de>, linux-kernel@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Declaring setjmp()/longjmp() as taking longs makes the signature
-non-standard, and makes clang complain. In the past, this has been
-worked around by adding -ffreestanding to the compile flags.
+On 03/30/20 at 09:44am, Michal Hocko wrote:
+> On Sun 29-03-20 08:19:24, Baoquan He wrote:
+> > On 03/28/20 at 11:31am, Hoan Tran wrote:
+> > > In NUMA layout which nodes have memory ranges that span across other nodes,
+> > > the mm driver can detect the memory node id incorrectly.
+> > > 
+> > > For example, with layout below
+> > > Node 0 address: 0000 xxxx 0000 xxxx
+> > > Node 1 address: xxxx 1111 xxxx 1111
+> > 
+> > Sorry, I read this example several times, but still don't get what it
+> > means. Can it be given with real hex number address as an exmaple? I
+> > mean just using the memory layout you have seen from some systems. The
+> > change looks interesting though.
+> 
+> Does this make it more clear?
+>            physical address range and its node associaion
+>          [0 0 0 0 1 1 1 1 0 0 0 0 1 1 1 1 0 0 0 0 1 1 1 1]
 
-The implementation looks like it only ever propagates the value
-(in longjmp) or sets it to 1 (in setjmp), and we only call longjmp
-with integer parameters.
+I later read it again, have got what Hoan is trying to say, thanks.
 
-This allows removing -ffreestanding from the compilation flags.
-
-Context:
-https://lore.kernel.org/patchwork/patch/1214060
-https://lore.kernel.org/patchwork/patch/1216174
-
-Signed-off-by: Clement Courbet <courbet@google.com>
-Reviewed-by: Nathan Chancellor <natechancellor@gmail.com>
-Tested-by: Nathan Chancellor <natechancellor@gmail.com>
-Cc: stable@vger.kernel.org # v4.14+
-Fixes: c9029ef9c957 ("powerpc: Avoid clang warnings around setjmp and longjmp")
-
----
-
-v2:
-Use and array type as suggested by Segher Boessenkool
-Add fix tags.
-
-v3:
-Properly place tags.
----
- arch/powerpc/include/asm/setjmp.h | 6 ++++--
- arch/powerpc/kexec/Makefile       | 3 ---
- arch/powerpc/xmon/Makefile        | 3 ---
- 3 files changed, 4 insertions(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/setjmp.h b/arch/powerpc/include/asm/setjmp.h
-index e9f81bb3f83b..f798e80e4106 100644
---- a/arch/powerpc/include/asm/setjmp.h
-+++ b/arch/powerpc/include/asm/setjmp.h
-@@ -7,7 +7,9 @@
- 
- #define JMP_BUF_LEN    23
- 
--extern long setjmp(long *) __attribute__((returns_twice));
--extern void longjmp(long *, long) __attribute__((noreturn));
-+typedef long jmp_buf[JMP_BUF_LEN];
-+
-+extern int setjmp(jmp_buf env) __attribute__((returns_twice));
-+extern void longjmp(jmp_buf env, int val) __attribute__((noreturn));
- 
- #endif /* _ASM_POWERPC_SETJMP_H */
-diff --git a/arch/powerpc/kexec/Makefile b/arch/powerpc/kexec/Makefile
-index 378f6108a414..86380c69f5ce 100644
---- a/arch/powerpc/kexec/Makefile
-+++ b/arch/powerpc/kexec/Makefile
-@@ -3,9 +3,6 @@
- # Makefile for the linux kernel.
- #
- 
--# Avoid clang warnings around longjmp/setjmp declarations
--CFLAGS_crash.o += -ffreestanding
--
- obj-y				+= core.o crash.o core_$(BITS).o
- 
- obj-$(CONFIG_PPC32)		+= relocate_32.o
-diff --git a/arch/powerpc/xmon/Makefile b/arch/powerpc/xmon/Makefile
-index c3842dbeb1b7..6f9cccea54f3 100644
---- a/arch/powerpc/xmon/Makefile
-+++ b/arch/powerpc/xmon/Makefile
-@@ -1,9 +1,6 @@
- # SPDX-License-Identifier: GPL-2.0
- # Makefile for xmon
- 
--# Avoid clang warnings around longjmp/setjmp declarations
--subdir-ccflags-y := -ffreestanding
--
- GCOV_PROFILE := n
- KCOV_INSTRUMENT := n
- UBSAN_SANITIZE := n
--- 
-2.26.0.rc2.310.g2932bb562d-goog
+I think the change in this patchset makes sense, still have some concern
+though, let me add comment in other thread.
 
