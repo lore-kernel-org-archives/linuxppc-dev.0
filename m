@@ -2,93 +2,77 @@ Return-Path: <SRS0=0bRz=5P=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 20A23C43331
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2020 09:24:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CCFC2C43331
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2020 09:28:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CCDB4206E6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2020 09:24:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CCDB4206E6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 77152206E6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2020 09:28:50 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="FS2HStEn"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 77152206E6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48rRqJ0rvYzDq8F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2020 20:24:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48rRwc1LfMzDqdX
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2020 20:28:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=rppt@linux.ibm.com;
+ smtp.mailfrom=redhat.com (client-ip=63.128.21.74;
+ helo=us-smtp-delivery-74.mimecast.com; envelope-from=bhe@redhat.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=FS2HStEn; 
+ dkim-atps=neutral
+Received: from us-smtp-delivery-74.mimecast.com
+ (us-smtp-delivery-74.mimecast.com [63.128.21.74])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48rRmX6tD6zDqdV
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2020 20:21:48 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 02U94XTt078337
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2020 05:21:46 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3020wcdwq4-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2020 05:21:46 -0400
-Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.ibm.com>;
- Mon, 30 Mar 2020 10:21:36 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 30 Mar 2020 10:21:28 +0100
-Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
- [9.149.105.60])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 02U9LWUN30998770
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 30 Mar 2020 09:21:32 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9F31E42041;
- Mon, 30 Mar 2020 09:21:32 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C9B7942042;
- Mon, 30 Mar 2020 09:21:29 +0000 (GMT)
-Received: from linux.ibm.com (unknown [9.148.206.230])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Mon, 30 Mar 2020 09:21:29 +0000 (GMT)
-Date: Mon, 30 Mar 2020 12:21:27 +0300
-From: Mike Rapoport <rppt@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48rRsn5dxyzDq8F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2020 20:26:21 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1585560379;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=P7KONnLRBt7Zi6IX/bJ2rtifHakTT+zqNud06VP531U=;
+ b=FS2HStEnePO2itkmuXpA2ZhsI0KDDw0tGRTylV/wFf8dGspZRJ+5UMnvjbbJyreKdVz3f6
+ JnVFdDgKYANcBuElgQMIXPctP9xDJ+lO0VWq6tYCZBw68Bkha4MIPGwUamud9hzxyb/Q2g
+ Jv02R8vmB7dkfaAr8Yn7b2d+Suvhi7Q=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-348-v6Tx4dfaPXm-1wc0_ZqlsA-1; Mon, 30 Mar 2020 05:26:14 -0400
+X-MC-Unique: v6Tx4dfaPXm-1wc0_ZqlsA-1
+Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.phx2.redhat.com
+ [10.5.11.22])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id E4A2518A552A;
+ Mon, 30 Mar 2020 09:26:10 +0000 (UTC)
+Received: from localhost (ovpn-12-53.pek2.redhat.com [10.72.12.53])
+ by smtp.corp.redhat.com (Postfix) with ESMTPS id A853510027AA;
+ Mon, 30 Mar 2020 09:26:09 +0000 (UTC)
+Date: Mon, 30 Mar 2020 17:26:06 +0800
+From: Baoquan He <bhe@redhat.com>
 To: Michal Hocko <mhocko@kernel.org>
 Subject: Re: [PATCH v3 0/5] mm: Enable CONFIG_NODES_SPAN_OTHER_NODES by
  default for NUMA
+Message-ID: <20200330092606.GC6352@MiWiFi-R3L-srv>
 References: <1585420282-25630-1-git-send-email-Hoan@os.amperecomputing.com>
  <20200330074246.GA14243@dhcp22.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <20200330074246.GA14243@dhcp22.suse.cz>
-X-TM-AS-GCONF: 00
-x-cbid: 20033009-0012-0000-0000-0000039AD42F
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20033009-0013-0000-0000-000021D7DB3F
-Message-Id: <20200330092127.GB30942@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.645
- definitions=2020-03-30_01:2020-03-27,
- 2020-03-30 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 impostorscore=0
- priorityscore=1501 malwarescore=0 phishscore=0 mlxlogscore=617
- adultscore=0 suspectscore=1 bulkscore=0 mlxscore=0 lowpriorityscore=0
- clxscore=1011 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2003020000 definitions=main-2003300081
+User-Agent: Mutt/1.10.1 (2018-07-13)
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.22
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,7 +90,7 @@ Cc: mmorana@amperecomputing.com, Catalin Marinas <catalin.marinas@arm.com>,
  Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
  sparclinux@vger.kernel.org,
  Alexander Duyck <alexander.h.duyck@linux.intel.com>,
- linux-s390@vger.kernel.org, x86@kernel.org,
+ linux-s390@vger.kernel.org, x86@kernel.org, Mike Rapoport <rppt@linux.ibm.com>,
  Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
  Hoan Tran <Hoan@os.amperecomputing.com>,
  Pavel Tatashin <pavel.tatashin@microsoft.com>, lho@amperecomputing.com,
@@ -120,7 +104,7 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Mar 30, 2020 at 09:42:46AM +0200, Michal Hocko wrote:
+On 03/30/20 at 09:42am, Michal Hocko wrote:
 > On Sat 28-03-20 11:31:17, Hoan Tran wrote:
 > > In NUMA layout which nodes have memory ranges that span across other nodes,
 > > the mm driver can detect the memory node id incorrectly.
@@ -161,15 +145,19 @@ On Mon, Mar 30, 2020 at 09:42:46AM +0200, Michal Hocko wrote:
 > dependencies. I do not see any TBH but that might be burried deep in an
 > arch specific code.
 
-Well, back then early_pfn_in_nid() was arch-dependant, today everyone
-except ia64 rely on HAVE_MEMBLOCK_NODE_MAP. So, if the memblock node map
-is correct, that using CONFIG_NUMA instead of CONFIG_NODES_SPAN_OTHER_NODES
-would only mean that early_pfn_in_nid() will cost several cycles more on
-architectures that didn't select CONFIG_NODES_SPAN_OTHER_NODES (i.e. arm64
-and sh).
-Agian, ia64 is an exception here.
+Since on all ARCHes NODES_SPAN_OTHER_NODES has dependency on NUMA,
+replacing it with CONFIG_NUMA seems no risk. Just for those ARCHes which
+don't have CONFIG_NODES_SPAN_OTHER_NODES before, it involves a tiny
+performance degradation. Besides, s390 has removed support of
+NODES_SPAN_OTHER_NODES already.
 
+commit 701dc81e7412daaf3c5bf4bc55d35c8b1525112a
+Author: Heiko Carstens <heiko.carstens@de.ibm.com>
+Date:   Wed Feb 19 13:29:15 2020 +0100
 
+    s390/mm: remove fake numa support
+
+> 
 > > v3:
 > >  * Revise the patch description
 > > 
@@ -197,8 +185,5 @@ Agian, ia64 is an exception here.
 > -- 
 > Michal Hocko
 > SUSE Labs
-
--- 
-Sincerely yours,
-Mike.
+> 
 
