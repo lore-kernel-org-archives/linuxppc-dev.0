@@ -6,72 +6,60 @@ X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B81A8C43331
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2020 19:43:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0410C43331
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2020 22:53:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6E5DE20714
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2020 19:43:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 1DC9F20733
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2020 22:53:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="PP5mXLwU"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6E5DE20714
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="z2ihfI3s"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1DC9F20733
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48rjYc0BLLzDql5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 06:43:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48rnnL1FdnzDqnr
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 09:53:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=63.128.21.74;
- helo=us-smtp-delivery-74.mimecast.com; envelope-from=jolsa@redhat.com;
+ smtp.mailfrom=linux-foundation.org (client-ip=198.145.29.99;
+ helo=mail.kernel.org; envelope-from=akpm@linux-foundation.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=PP5mXLwU; 
- dkim-atps=neutral
-Received: from us-smtp-delivery-74.mimecast.com
- (us-smtp-delivery-74.mimecast.com [63.128.21.74])
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=z2ihfI3s; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48rjQR1HJMzDqhS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2020 06:37:02 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1585597020;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=VMrAn+2AU3YZEvi8AOg4wFePm1q87LPUIBfyZojfJ/Y=;
- b=PP5mXLwUa9mkVlRbQ/ffRSM6Q2404cEQ0aVbzd1jvqlOnVZwcPOuBBA80ppMS1SGKCRC+0
- saMESzu3VrcFWVPi0O1bz7To/uiRIbrfVszdG0kKEWS7XyRJ50kfeMxbO1BFwvZO9iGiUA
- PcTv8iOx+ztZq+iYcKjPNIbYw/NNMZY=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-140-vVzSU9jBPeC0dNoiHIxE8w-1; Mon, 30 Mar 2020 15:36:56 -0400
-X-MC-Unique: vVzSU9jBPeC0dNoiHIxE8w-1
-Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com
- [10.5.11.14])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48rnlH45pSzDqkZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2020 09:51:54 +1100 (AEDT)
+Received: from localhost.localdomain (c-73-231-172-41.hsd1.ca.comcast.net
+ [73.231.172.41])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id A786C107ACC4;
- Mon, 30 Mar 2020 19:36:53 +0000 (UTC)
-Received: from krava (unknown [10.40.192.75])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id 336525D9E2;
- Mon, 30 Mar 2020 19:36:47 +0000 (UTC)
-Date: Mon, 30 Mar 2020 21:36:44 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: Kajol Jain <kjain@linux.ibm.com>
-Subject: Re: [PATCH v7 3/6] perf/tools: Refactoring metricgroup__add_metric
- function
-Message-ID: <20200330193644.GF2490231@krava>
-References: <20200327102528.4267-1-kjain@linux.ibm.com>
- <20200327102528.4267-4-kjain@linux.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200327102528.4267-4-kjain@linux.ibm.com>
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
+ by mail.kernel.org (Postfix) with ESMTPSA id 0C8F620733;
+ Mon, 30 Mar 2020 22:51:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1585608711;
+ bh=EXmX9dErmlEkFgnbipzAfMRYR83Acb60UF9bDXiz0DI=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=z2ihfI3sBMfsr5Wfl0ingXQoY+GET5tztqWSEKsLwaPrr7s+ZlNiSAKTokhw8O+xN
+ ZHVynMZSxwgLZ5vqpo7pk6F7cOLNDYCHpT8EuVMpy6pEAuagf741mQ/aHK8qub7GET
+ 5sfIGbrfC8VOGI745W0EmSJ89zj6DGCdOS5BwtB0=
+Date: Mon, 30 Mar 2020 15:51:50 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Anshuman Khandual <anshuman.khandual@arm.com>
+Subject: Re: [PATCH 0/2] mm/thp: Rename pmd_mknotpresent() as pmd_mknotvalid()
+Message-Id: <20200330155150.750ef923d297c455c7b418e0@linux-foundation.org>
+In-Reply-To: <2e67f1b8-d196-89e4-aee1-f552db1433a0@arm.com>
+References: <1584680057-13753-1-git-send-email-anshuman.khandual@arm.com>
+ <2e67f1b8-d196-89e4-aee1-f552db1433a0@arm.com>
+X-Mailer: Sylpheed 3.5.1 (GTK+ 2.24.31; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,53 +71,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, maddy@linux.vnet.ibm.com, peterz@infradead.org,
- yao.jin@linux.intel.com, mingo@kernel.org, kan.liang@linux.intel.com,
- ak@linux.intel.com, alexander.shishkin@linux.intel.com,
- anju@linux.vnet.ibm.com, mamatha4@linux.vnet.ibm.com,
- sukadev@linux.vnet.ibm.com, ravi.bangoria@linux.ibm.com, acme@kernel.org,
- jmario@redhat.com, namhyung@kernel.org, tglx@linutronix.de, mpetlan@redhat.com,
- gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
- linux-perf-users@vger.kernel.org, jolsa@kernel.org,
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Will Deacon <will@kernel.org>,
+ x86@kernel.org, Russell King <linux@armlinux.org.uk>,
+ Ingo Molnar <mingo@redhat.com>, nouveau@lists.freedesktop.org,
+ linux-snps-arc@lists.infradead.org, Steven Rostedt <rostedt@goodmis.org>,
+ Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Vineet Gupta <vgupta@synopsys.com>, linux-mips@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Mar 27, 2020 at 03:55:25PM +0530, Kajol Jain wrote:
+On Sun, 29 Mar 2020 19:12:35 +0530 Anshuman Khandual <anshuman.khandual@arm.com> wrote:
 
-SNIP
+> 
+> 
+> On 03/20/2020 10:24 AM, Anshuman Khandual wrote:
+> > This series renames pmd_mknotpresent() as pmd_mknotvalid(). Before that it
+> > drops an existing pmd_mknotpresent() definition from powerpc platform which
+> > was never required as it defines it's pmdp_invalidate() through subscribing
+> > __HAVE_ARCH_PMDP_INVALIDATE. This does not create any functional change.
+> > 
+> > This rename was suggested by Catalin during a previous discussion while we
+> > were trying to change the THP helpers on arm64 platform for migration.
+> > 
+> > https://patchwork.kernel.org/patch/11019637/
+> > 
+> > This series is based on v5.6-rc6.
+> > 
+> > Boot tested on arm64 and x86 platforms.
+> > Built tested on many other platforms including the ones changed here.
+> 
+> Gentle ping, any updates regarding this ?
 
-> +	eg->ids = ids;
-> +	eg->idnum = idnum;
-> +	eg->metric_name = pe->metric_name;
-> +	eg->metric_expr = pe->metric_expr;
-> +	eg->metric_unit = pe->unit;
-> +	list_add_tail(&eg->nd, group_list);
-> +
-> +	return 0;
-> +}
-> +
->  static int metricgroup__add_metric(const char *metric, struct strbuf *events,
->  				   struct list_head *group_list)
->  {
-> @@ -504,35 +538,12 @@ static int metricgroup__add_metric(const char *metric, struct strbuf *events,
->  			continue;
->  		if (match_metric(pe->metric_group, metric) ||
->  		    match_metric(pe->metric_name, metric)) {
-> -			const char **ids;
-> -			int idnum;
-> -			struct egroup *eg;
->  
->  			pr_debug("metric expr %s for %s\n", pe->metric_expr, pe->metric_name);
->  
-> -			if (expr__find_other(pe->metric_expr,
-> -					     NULL, &ids, &idnum) < 0)
-> +			ret = __metricgroup__add_metric(events,	group_list, pe);
-> +			if (ret == -EINVAL || !ret)
->  				continue;
-
-what's the point of continue in here? it's end of the loop..
-
-jirka
+We're in the merge window so I have parked this for consideration after
+-rc1.
 
