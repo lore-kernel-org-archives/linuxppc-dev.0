@@ -2,90 +2,64 @@ Return-Path: <SRS0=0bRz=5P=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DE606C43331
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2020 08:02:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 14AEFC43331
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2020 08:06:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9447C206E6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2020 08:02:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9447C206E6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id B7D8A206E6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2020 08:06:12 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="EnDlkKcL"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B7D8A206E6
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48rQ0w2lZBzDqXB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2020 19:02:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=bala24@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 48rQ5G2FpfzDqfD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2020 19:06:10 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48rPyh0CBvzDq9s
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2020 19:00:27 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 02U7YKmN081780
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2020 04:00:25 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0b-001b2d01.pphosted.com with ESMTP id 301ygumtm7-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2020 04:00:24 -0400
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bala24@linux.ibm.com>;
- Mon, 30 Mar 2020 09:00:10 +0100
-Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 30 Mar 2020 09:00:07 +0100
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 02U7xFGd19792184
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 30 Mar 2020 07:59:15 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4CF04AE057;
- Mon, 30 Mar 2020 08:00:18 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7A09CAE05A;
- Mon, 30 Mar 2020 08:00:15 +0000 (GMT)
-Received: from localhost.localdomain.com (unknown [9.199.49.209])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 30 Mar 2020 08:00:15 +0000 (GMT)
-From: Balamuruhan S <bala24@linux.ibm.com>
-To: mpe@ellerman.id.au
-Subject: [PATCH v3] powerpc xmon: use `dcbf` inplace of `dcbi` instruction for
- 64bit Book3S
-Date: Mon, 30 Mar 2020 13:29:54 +0530
-X-Mailer: git-send-email 2.24.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48rQ2w6D9NzDqMW
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2020 19:04:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=EnDlkKcL; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 48rQ2v5hYmz9sPk;
+ Mon, 30 Mar 2020 19:04:07 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1585555448;
+ bh=UEqraPxWZNMFx5fHfH7tIq3y+zDn+e9FvroX/7SOtOY=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=EnDlkKcLlbAbJLDWOjVc5qVM7tXpkLgrsGq89J8CccIFT2Nap0ukO8RWbj+Jp1YTq
+ EWHcNOMOJ2dpbS1RyRL5Y1/y9xc+giTT/849l4uOpSZbYHGDSkAcR8+xYnIC8u04xI
+ rYt8FQSHJkBhIJ7Z2Ml+i1EogXySuzoaEddN6WWk2nxzQCb1U/e0miceaKWsuOSqc+
+ Mx6Lk4/zhhWSEckEdFgsXLKq+Z/fETWToLrsbjS8MtOSIRJ7H6RWFgFzVH7GNBmw3+
+ lPqb6vvS4hLRrnCCQnmDsLLmB6H2btMDiZMaZMriLmP/+KPzZsAxEkQsXbxPOh2OR5
+ jBZVYwGyz5UtQ==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Borislav Petkov <bp@suse.de>, Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: build failure after merge of the tip tree
+In-Reply-To: <20200330074823.GA14624@zn.tnic>
+References: <20200330143529.4dafeb34@canb.auug.org.au>
+ <CAMe9rOqnRCEdHhSHOT=Ut11D3O2WhjiFYhvPnaU5dANZNPE-=A@mail.gmail.com>
+ <20200330150819.7f0199a2@canb.auug.org.au> <20200330074823.GA14624@zn.tnic>
+Date: Mon, 30 Mar 2020 19:04:16 +1100
+Message-ID: <87wo72uv3z.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 20033008-0020-0000-0000-000003BE1B11
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20033008-0021-0000-0000-00002216B537
-Message-Id: <20200330075954.538773-1-bala24@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.645
- definitions=2020-03-30_01:2020-03-27,
- 2020-03-30 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_spam_definite policy=outbound
- score=100 mlxscore=0
- phishscore=0 spamscore=0 lowpriorityscore=0 suspectscore=0 clxscore=1015
- priorityscore=1501 impostorscore=0 adultscore=0 bulkscore=0
- mlxlogscore=354 malwarescore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2003020000 definitions=main-2003300067
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,76 +71,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ravi.bangoria@linux.ibm.com, jniethe5@gmail.com,
- Balamuruhan S <bala24@linux.ibm.com>, paulus@samba.org, sandipan@linux.ibm.com,
- naveen.n.rao@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: "H.J. Lu" <hjl.tools@gmail.com>, Kees Cook <keescook@chromium.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Linux Next Mailing List <linux-next@vger.kernel.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@elte.hu>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Data Cache Block Invalidate (dcbi) instruction implemented back in
-PowerPC architecture version 2.03. But as per Power Processor Users Manual
-it is obsolete and not supported by POWER8/POWER9 core. Attempt to use of
-this illegal instruction results in a hypervisor emulation assistance
-interrupt. So, ifdef it out the option `i` in xmon for 64bit Book3S.
+Borislav Petkov <bp@suse.de> writes:
+> On Mon, Mar 30, 2020 at 03:08:19PM +1100, Stephen Rothwell wrote:
+>> What you really need is an Ack from the PowerPC people for the fix you
+>> suggested and then tha fix should go in the same series that is now
+>> causing the failure (preferably before the problematic (for PowerPC)
+>> patch.
+>
+> I'll zap this commit from the tip lineup. There's always another merge
+> window.
 
-0:mon> fi
-cpu 0x0: Vector: 700 (Program Check) at [c000000003be74a0]
-    pc: c000000000102030: cacheflush+0x180/0x1a0
-    lr: c000000000101f3c: cacheflush+0x8c/0x1a0
-    sp: c000000003be7730
-   msr: 8000000000081033
-  current = 0xc0000000035e5c00
-  paca    = 0xc000000001910000   irqmask: 0x03   irq_happened: 0x01
-    pid   = 1025, comm = bash
-Linux version 5.6.0-rc5-g5aa19adac (root@ltc-wspoon6) (gcc version 7.4.0
-(Ubuntu 7.4.0-1ubuntu1~18.04.1)) #1 SMP Tue Mar 10 04:38:41 CDT 2020
-cpu 0x0: Exception 700 (Program Check) in xmon, returning to main loop
-[c000000003be7c50] c00000000084abb0 __handle_sysrq+0xf0/0x2a0
-[c000000003be7d00] c00000000084b3c0 write_sysrq_trigger+0xb0/0xe0
-[c000000003be7d30] c0000000004d1edc proc_reg_write+0x8c/0x130
-[c000000003be7d60] c00000000040dc7c __vfs_write+0x3c/0x70
-[c000000003be7d80] c000000000410e70 vfs_write+0xd0/0x210
-[c000000003be7dd0] c00000000041126c ksys_write+0xdc/0x130
-[c000000003be7e20] c00000000000b9d0 system_call+0x5c/0x68
---- Exception: c01 (System Call) at 00007fffa345e420
-SP (7ffff0b08ab0) is in userspace
+Or just squash the hunk Stephen posted into the commit, which is what I
+thought would happen to begin with.
 
-Signed-off-by: Balamuruhan S <bala24@linux.ibm.com>
----
- arch/powerpc/xmon/xmon.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
----
-changes in v3:
--------------
-Fix Christophe's review comments and rebase it on latest mpe's merge
-tree,
-	* mention the dcbi obsolete statement based on Power processor
-	  users manual in commit message.
-	* make #ifdef in a more simple way.
-changes in v2:
--------------
-Fix review comments from Segher and Michael,
-        * change incorrect architecture version 2.01 to 2.03 in commit
-          message.
-        * ifdef it out the option `i` for PPC_BOOK3S_64 instead to drop
-	  it and change the commit message accordingly.
+You can have my ack for it:
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index ea303b7e4e29..7b62d5dcc4a1 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -1808,7 +1808,7 @@ static void cacheflush(void)
- 		catch_memory_errors = 1;
- 		sync();
- 
--		if (cmd != 'i') {
-+		if (cmd != 'i' || IS_ENABLED(CONFIG_PPC_BOOK3S_64)) {
- 			for (; nflush > 0; --nflush, adrs += L1_CACHE_BYTES)
- 				cflush((void *) adrs);
- 		} else {
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
 
-base-commit: 1ad3b5ebe084246ad593a22707cd91ef6418c31e
--- 
-2.24.1
-
+cheers
