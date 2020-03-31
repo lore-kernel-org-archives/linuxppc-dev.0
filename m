@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C76DC2D0E8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 07:56:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88DEBC43331
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 07:58:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6C9F0206F6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 07:56:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D15C820748
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 07:58:14 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="msxHchOH"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C9F0206F6
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="UgbrlRmG"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D15C820748
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48s1qj3dc8zDqwL
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 18:56:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48s1sc5n1pzDr2d
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 18:58:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -30,53 +30,53 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=msxHchOH; dkim-atps=neutral
+ header.s=mail header.b=UgbrlRmG; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48s1h02dW9zDqjn
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2020 18:49:52 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48s1h228qMzDqjn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2020 18:49:54 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 48s1gw19Jxz9v2CW;
- Tue, 31 Mar 2020 09:49:48 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 48s1gy2kVYz9v2XZ;
+ Tue, 31 Mar 2020 09:49:50 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=msxHchOH; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=UgbrlRmG; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id zZF8O6L8SxrO; Tue, 31 Mar 2020 09:49:48 +0200 (CEST)
+ with ESMTP id L6_lHgNtAR4G; Tue, 31 Mar 2020 09:49:50 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 48s1gv6nLpz9v2CV;
- Tue, 31 Mar 2020 09:49:47 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 48s1gy1HpRz9v2XY;
+ Tue, 31 Mar 2020 09:49:50 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1585640987; bh=3hfQwxPswfS2WiKLwvCLKUYki0/DVW4uj0ofBi+FIbc=;
+ t=1585640990; bh=AuwoZIwYZg7PE65Zcm5c/r4BuKPCdb+ZKXlyPMObT3g=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=msxHchOH+LG4PsoxIGkxWp/GbW9MoTEvw+BVh4Faa+hCdFc09MOYsSapFDzLb3CPd
- Esc7jAL3KL6yTl/IlhKrS+2sXXoNOjDBCgESZFnmcBjfTLhu2PSWqM76L3/nxNFaoZ
- B+1GHiQfCJ4vXZ/Qh6LkRFow6PdkD6OKr8qrSBMo=
+ b=UgbrlRmGrYVeNM81bJIH7sDlEPh+JVYUKlMadJJwTTNGrJWq7sbIG9UEg+kGR8MlL
+ g388qaBigyNuqyj2Blp2revuTkHPMhZqLJfe3lqWV6wj0IoqK1SJuh6rzWHuaprdpl
+ QGiZKkFbHPt/nLUk2LmBkpIowzJXNs9ZQpOIyrNY=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E43618B788;
- Tue, 31 Mar 2020 09:49:48 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1EA538B787;
+ Tue, 31 Mar 2020 09:49:51 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id H0F-gIk5Lz8q; Tue, 31 Mar 2020 09:49:48 +0200 (CEST)
+ with ESMTP id l4E9kuqiWCJl; Tue, 31 Mar 2020 09:49:50 +0200 (CEST)
 Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D5FDF8B752;
- Tue, 31 Mar 2020 09:49:47 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E17D78B752;
+ Tue, 31 Mar 2020 09:49:49 +0200 (CEST)
 Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id A765765676; Tue, 31 Mar 2020 07:49:47 +0000 (UTC)
-Message-Id: <aaf974470a7e1af5d678a44028779c0131ecbe0b.1585640941.git.christophe.leroy@c-s.fr>
+ id B5B1665676; Tue, 31 Mar 2020 07:49:49 +0000 (UTC)
+Message-Id: <44f6b183ec00adbb1c4bcc47a86e4ab936a26b82.1585640941.git.christophe.leroy@c-s.fr>
 In-Reply-To: <698e9a42a06eb856eef4501c3c0a182c034a5d8c.1585640941.git.christophe.leroy@c-s.fr>
 References: <698e9a42a06eb856eef4501c3c0a182c034a5d8c.1585640941.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 02/11] powerpc: Remove Xilinx PPC405/PPC440 support
+Subject: [PATCH v2 04/11] powerpc/boot: Remove all 40x platforms
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  michal.simek@xilinx.com, arnd@arndb.de
-Date: Tue, 31 Mar 2020 07:49:47 +0000 (UTC)
+Date: Tue, 31 Mar 2020 07:49:49 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,2433 +93,2874 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Michal Simek <michal.simek@xilinx.com>
+Remove 40x platforms from the boot directory.
 
-The latest Xilinx design tools called ISE and EDK has been released in
-October 2013. New tool doesn't support any PPC405/PPC440 new designs.
-These platforms are no longer supported and tested.
-
-PowerPC 405/440 port is orphan from 2013 by
-commit cdeb89943bfc ("MAINTAINERS: Fix incorrect status tag") and
-commit 19624236cce1 ("MAINTAINERS: Update Grant's email address and maintainership")
-that's why it is time to remove the support fot these platforms.
-
-Signed-off-by: Michal Simek <michal.simek@xilinx.com>
-Acked-by: Arnd Bergmann <arnd@arndb.de>
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- Documentation/devicetree/bindings/xilinx.txt | 143 ------
- Documentation/powerpc/bootwrapper.rst        |  28 +-
- MAINTAINERS                                  |   6 -
- arch/powerpc/Kconfig.debug                   |   2 +-
- arch/powerpc/boot/Makefile                   |   7 +-
- arch/powerpc/boot/dts/Makefile               |   1 -
- arch/powerpc/boot/dts/virtex440-ml507.dts    | 406 ----------------
- arch/powerpc/boot/dts/virtex440-ml510.dts    | 466 -------------------
- arch/powerpc/boot/ops.h                      |   1 -
- arch/powerpc/boot/serial.c                   |   5 -
- arch/powerpc/boot/uartlite.c                 |  79 ----
- arch/powerpc/boot/virtex.c                   |  97 ----
- arch/powerpc/boot/virtex405-head.S           |  31 --
- arch/powerpc/boot/wrapper                    |   8 -
- arch/powerpc/configs/40x/virtex_defconfig    |  75 ---
- arch/powerpc/configs/44x/virtex5_defconfig   |  74 ---
- arch/powerpc/configs/ppc40x_defconfig        |   8 -
- arch/powerpc/configs/ppc44x_defconfig        |   8 -
- arch/powerpc/include/asm/xilinx_intc.h       |  16 -
- arch/powerpc/include/asm/xilinx_pci.h        |  21 -
- arch/powerpc/kernel/cputable.c               |  39 --
- arch/powerpc/platforms/40x/Kconfig           |  31 --
- arch/powerpc/platforms/40x/Makefile          |   1 -
- arch/powerpc/platforms/40x/virtex.c          |  54 ---
- arch/powerpc/platforms/44x/Kconfig           |  37 --
- arch/powerpc/platforms/44x/Makefile          |   2 -
- arch/powerpc/platforms/44x/virtex.c          |  60 ---
- arch/powerpc/platforms/44x/virtex_ml510.c    |  30 --
- arch/powerpc/platforms/Kconfig               |   4 -
- arch/powerpc/sysdev/Makefile                 |   2 -
- arch/powerpc/sysdev/xilinx_intc.c            |  88 ----
- arch/powerpc/sysdev/xilinx_pci.c             | 132 ------
- drivers/char/Kconfig                         |   2 +-
- drivers/video/fbdev/Kconfig                  |   2 +-
- 34 files changed, 7 insertions(+), 1959 deletions(-)
- delete mode 100644 arch/powerpc/boot/dts/virtex440-ml507.dts
- delete mode 100644 arch/powerpc/boot/dts/virtex440-ml510.dts
- delete mode 100644 arch/powerpc/boot/uartlite.c
- delete mode 100644 arch/powerpc/boot/virtex.c
- delete mode 100644 arch/powerpc/boot/virtex405-head.S
- delete mode 100644 arch/powerpc/configs/40x/virtex_defconfig
- delete mode 100644 arch/powerpc/configs/44x/virtex5_defconfig
- delete mode 100644 arch/powerpc/include/asm/xilinx_intc.h
- delete mode 100644 arch/powerpc/include/asm/xilinx_pci.h
- delete mode 100644 arch/powerpc/platforms/40x/virtex.c
- delete mode 100644 arch/powerpc/platforms/44x/virtex.c
- delete mode 100644 arch/powerpc/platforms/44x/virtex_ml510.c
- delete mode 100644 arch/powerpc/sysdev/xilinx_intc.c
- delete mode 100644 arch/powerpc/sysdev/xilinx_pci.c
+ arch/powerpc/boot/4xx.c             | 266 -----------------
+ arch/powerpc/boot/4xx.h             |   4 -
+ arch/powerpc/boot/Makefile          |  14 -
+ arch/powerpc/boot/cuboot-acadia.c   | 171 -----------
+ arch/powerpc/boot/cuboot-hotfoot.c  | 139 ---------
+ arch/powerpc/boot/cuboot-kilauea.c  |  46 ---
+ arch/powerpc/boot/dcr.h             |  11 -
+ arch/powerpc/boot/dts/acadia.dts    | 224 --------------
+ arch/powerpc/boot/dts/ep405.dts     | 230 ---------------
+ arch/powerpc/boot/dts/hotfoot.dts   | 296 -------------------
+ arch/powerpc/boot/dts/kilauea.dts   | 435 ----------------------------
+ arch/powerpc/boot/dts/obs600.dts    | 314 --------------------
+ arch/powerpc/boot/dts/walnut.dts    | 246 ----------------
+ arch/powerpc/boot/ep405.c           |  71 -----
+ arch/powerpc/boot/ppcboot-hotfoot.h | 119 --------
+ arch/powerpc/boot/ppcboot.h         |   2 +-
+ arch/powerpc/boot/treeboot-walnut.c |  81 ------
+ 17 files changed, 1 insertion(+), 2668 deletions(-)
+ delete mode 100644 arch/powerpc/boot/cuboot-acadia.c
+ delete mode 100644 arch/powerpc/boot/cuboot-hotfoot.c
+ delete mode 100644 arch/powerpc/boot/cuboot-kilauea.c
+ delete mode 100644 arch/powerpc/boot/dts/acadia.dts
+ delete mode 100644 arch/powerpc/boot/dts/ep405.dts
+ delete mode 100644 arch/powerpc/boot/dts/hotfoot.dts
+ delete mode 100644 arch/powerpc/boot/dts/kilauea.dts
+ delete mode 100644 arch/powerpc/boot/dts/obs600.dts
+ delete mode 100644 arch/powerpc/boot/dts/walnut.dts
+ delete mode 100644 arch/powerpc/boot/ep405.c
+ delete mode 100644 arch/powerpc/boot/ppcboot-hotfoot.h
+ delete mode 100644 arch/powerpc/boot/treeboot-walnut.c
 
-diff --git a/Documentation/devicetree/bindings/xilinx.txt b/Documentation/devicetree/bindings/xilinx.txt
-index d058ace29345..28199b31fe5e 100644
---- a/Documentation/devicetree/bindings/xilinx.txt
-+++ b/Documentation/devicetree/bindings/xilinx.txt
-@@ -86,149 +86,6 @@
- 		xlnx,use-parity = <0>;
- 	};
+diff --git a/arch/powerpc/boot/4xx.c b/arch/powerpc/boot/4xx.c
+index 00c4d843a023..682ca3827892 100644
+--- a/arch/powerpc/boot/4xx.c
++++ b/arch/powerpc/boot/4xx.c
+@@ -253,7 +253,6 @@ void ibm4xx_denali_fixup_memsize(void)
+ 	dt_fixup_memory(0, memsize);
+ }
  
--   Some IP cores actually implement 2 or more logical devices.  In
--   this case, the device should still describe the whole IP core with
--   a single node and add a child node for each logical device.  The
--   ranges property can be used to translate from parent IP-core to the
--   registers of each device.  In addition, the parent node should be
--   compatible with the bus type 'xlnx,compound', and should contain
--   #address-cells and #size-cells, as with any other bus.  (Note: this
--   makes the assumption that both logical devices have the same bus
--   binding.  If this is not true, then separate nodes should be used
--   for each logical device).  The 'cell-index' property can be used to
--   enumerate logical devices within an IP core.  For example, the
--   following is the system.mhs entry for the dual ps2 controller found
--   on the ml403 reference design.
+-#define SPRN_DBCR0_40X 0x3F2
+ #define SPRN_DBCR0_44X 0x134
+ #define DBCR0_RST_SYSTEM 0x30000000
+ 
+@@ -270,18 +269,6 @@ void ibm44x_dbcr_reset(void)
+ 
+ }
+ 
+-void ibm40x_dbcr_reset(void)
+-{
+-	unsigned long tmp;
 -
--	BEGIN opb_ps2_dual_ref
--		PARAMETER INSTANCE = opb_ps2_dual_ref_0
--		PARAMETER HW_VER = 1.00.a
--		PARAMETER C_BASEADDR = 0xA9000000
--		PARAMETER C_HIGHADDR = 0xA9001FFF
--		BUS_INTERFACE SOPB = opb_v20_0
--		PORT Sys_Intr1 = ps2_1_intr
--		PORT Sys_Intr2 = ps2_2_intr
--		PORT Clkin1 = ps2_clk_rx_1
--		PORT Clkin2 = ps2_clk_rx_2
--		PORT Clkpd1 = ps2_clk_tx_1
--		PORT Clkpd2 = ps2_clk_tx_2
--		PORT Rx1 = ps2_d_rx_1
--		PORT Rx2 = ps2_d_rx_2
--		PORT Txpd1 = ps2_d_tx_1
--		PORT Txpd2 = ps2_d_tx_2
--	END
+-	asm volatile (
+-		"mfspr	%0,%1\n"
+-		"oris	%0,%0,%2@h\n"
+-		"mtspr	%1,%0"
+-		: "=&r"(tmp) : "i"(SPRN_DBCR0_40X), "i"(DBCR0_RST_SYSTEM)
+-		);
+-}
 -
--   It would result in the following device tree nodes:
+ #define EMAC_RESET 0x20000000
+ void ibm4xx_quiesce_eth(u32 *emac0, u32 *emac1)
+ {
+@@ -544,256 +531,3 @@ void ibm440spe_fixup_clocks(unsigned int sys_clk,
+ 	eplike_fixup_uart_clk(1, "/plb/opb/serial@f0000300", ser_clk, plb_clk);
+ 	eplike_fixup_uart_clk(2, "/plb/opb/serial@f0000600", ser_clk, plb_clk);
+ }
 -
--	opb_ps2_dual_ref_0: opb-ps2-dual-ref@a9000000 {
--		#address-cells = <1>;
--		#size-cells = <1>;
--		compatible = "xlnx,compound";
--		ranges = <0 a9000000 2000>;
--		// If this device had extra parameters, then they would
--		// go here.
--		ps2@0 {
--			compatible = "xlnx,opb-ps2-dual-ref-1.00.a";
--			reg = <0 40>;
--			interrupt-parent = <&opb_intc_0>;
--			interrupts = <3 0>;
--			cell-index = <0>;
--		};
--		ps2@1000 {
--			compatible = "xlnx,opb-ps2-dual-ref-1.00.a";
--			reg = <1000 40>;
--			interrupt-parent = <&opb_intc_0>;
--			interrupts = <3 0>;
--			cell-index = <0>;
--		};
--	};
+-void ibm405gp_fixup_clocks(unsigned int sys_clk, unsigned int ser_clk)
+-{
+-	u32 pllmr = mfdcr(DCRN_CPC0_PLLMR);
+-	u32 cpc0_cr0 = mfdcr(DCRN_405_CPC0_CR0);
+-	u32 cpc0_cr1 = mfdcr(DCRN_405_CPC0_CR1);
+-	u32 psr = mfdcr(DCRN_405_CPC0_PSR);
+-	u32 cpu, plb, opb, ebc, tb, uart0, uart1, m;
+-	u32 fwdv, fwdvb, fbdv, cbdv, opdv, epdv, ppdv, udiv;
 -
--   Also, the system.mhs file defines bus attachments from the processor
--   to the devices.  The device tree structure should reflect the bus
--   attachments.  Again an example; this system.mhs fragment:
+-	fwdv = (8 - ((pllmr & 0xe0000000) >> 29));
+-	fbdv = (pllmr & 0x1e000000) >> 25;
+-	if (fbdv == 0)
+-		fbdv = 16;
+-	cbdv = ((pllmr & 0x00060000) >> 17) + 1; /* CPU:PLB */
+-	opdv = ((pllmr & 0x00018000) >> 15) + 1; /* PLB:OPB */
+-	ppdv = ((pllmr & 0x00006000) >> 13) + 1; /* PLB:PCI */
+-	epdv = ((pllmr & 0x00001800) >> 11) + 2; /* PLB:EBC */
+-	udiv = ((cpc0_cr0 & 0x3e) >> 1) + 1;
 -
--	BEGIN ppc405_virtex4
--		PARAMETER INSTANCE = ppc405_0
--		PARAMETER HW_VER = 1.01.a
--		BUS_INTERFACE DPLB = plb_v34_0
--		BUS_INTERFACE IPLB = plb_v34_0
--	END
+-	/* check for 405GPr */
+-	if ((mfpvr() & 0xfffffff0) == (0x50910951 & 0xfffffff0)) {
+-		fwdvb = 8 - (pllmr & 0x00000007);
+-		if (!(psr & 0x00001000)) /* PCI async mode enable == 0 */
+-			if (psr & 0x00000020) /* New mode enable */
+-				m = fwdvb * 2 * ppdv;
+-			else
+-				m = fwdvb * cbdv * ppdv;
+-		else if (psr & 0x00000020) /* New mode enable */
+-			if (psr & 0x00000800) /* PerClk synch mode */
+-				m = fwdvb * 2 * epdv;
+-			else
+-				m = fbdv * fwdv;
+-		else if (epdv == fbdv)
+-			m = fbdv * cbdv * epdv;
+-		else
+-			m = fbdv * fwdvb * cbdv;
 -
--	BEGIN opb_intc
--		PARAMETER INSTANCE = opb_intc_0
--		PARAMETER HW_VER = 1.00.c
--		PARAMETER C_BASEADDR = 0xD1000FC0
--		PARAMETER C_HIGHADDR = 0xD1000FDF
--		BUS_INTERFACE SOPB = opb_v20_0
--	END
+-		cpu = sys_clk * m / fwdv;
+-		plb = sys_clk * m / (fwdvb * cbdv);
+-	} else {
+-		m = fwdv * fbdv * cbdv;
+-		cpu = sys_clk * m / fwdv;
+-		plb = cpu / cbdv;
+-	}
+-	opb = plb / opdv;
+-	ebc = plb / epdv;
 -
--	BEGIN opb_uart16550
--		PARAMETER INSTANCE = opb_uart16550_0
--		PARAMETER HW_VER = 1.00.d
--		PARAMETER C_BASEADDR = 0xa0000000
--		PARAMETER C_HIGHADDR = 0xa0001FFF
--		BUS_INTERFACE SOPB = opb_v20_0
--	END
+-	if (cpc0_cr0 & 0x80)
+-		/* uart0 uses the external clock */
+-		uart0 = ser_clk;
+-	else
+-		uart0 = cpu / udiv;
 -
--	BEGIN plb_v34
--		PARAMETER INSTANCE = plb_v34_0
--		PARAMETER HW_VER = 1.02.a
--	END
+-	if (cpc0_cr0 & 0x40)
+-		/* uart1 uses the external clock */
+-		uart1 = ser_clk;
+-	else
+-		uart1 = cpu / udiv;
 -
--	BEGIN plb_bram_if_cntlr
--		PARAMETER INSTANCE = plb_bram_if_cntlr_0
--		PARAMETER HW_VER = 1.00.b
--		PARAMETER C_BASEADDR = 0xFFFF0000
--		PARAMETER C_HIGHADDR = 0xFFFFFFFF
--		BUS_INTERFACE SPLB = plb_v34_0
--	END
+-	/* setup the timebase clock to tick at the cpu frequency */
+-	cpc0_cr1 = cpc0_cr1 & ~0x00800000;
+-	mtdcr(DCRN_405_CPC0_CR1, cpc0_cr1);
+-	tb = cpu;
 -
--	BEGIN plb2opb_bridge
--		PARAMETER INSTANCE = plb2opb_bridge_0
--		PARAMETER HW_VER = 1.01.a
--		PARAMETER C_RNG0_BASEADDR = 0x20000000
--		PARAMETER C_RNG0_HIGHADDR = 0x3FFFFFFF
--		PARAMETER C_RNG1_BASEADDR = 0x60000000
--		PARAMETER C_RNG1_HIGHADDR = 0x7FFFFFFF
--		PARAMETER C_RNG2_BASEADDR = 0x80000000
--		PARAMETER C_RNG2_HIGHADDR = 0xBFFFFFFF
--		PARAMETER C_RNG3_BASEADDR = 0xC0000000
--		PARAMETER C_RNG3_HIGHADDR = 0xDFFFFFFF
--		BUS_INTERFACE SPLB = plb_v34_0
--		BUS_INTERFACE MOPB = opb_v20_0
--	END
+-	dt_fixup_cpu_clocks(cpu, tb, 0);
+-	dt_fixup_clock("/plb", plb);
+-	dt_fixup_clock("/plb/opb", opb);
+-	dt_fixup_clock("/plb/ebc", ebc);
+-	dt_fixup_clock("/plb/opb/serial@ef600300", uart0);
+-	dt_fixup_clock("/plb/opb/serial@ef600400", uart1);
+-}
 -
--   Gives this device tree (some properties removed for clarity):
 -
--	plb@0 {
--		#address-cells = <1>;
--		#size-cells = <1>;
--		compatible = "xlnx,plb-v34-1.02.a";
--		device_type = "ibm,plb";
--		ranges; // 1:1 translation
+-void ibm405ep_fixup_clocks(unsigned int sys_clk)
+-{
+-	u32 pllmr0 = mfdcr(DCRN_CPC0_PLLMR0);
+-	u32 pllmr1 = mfdcr(DCRN_CPC0_PLLMR1);
+-	u32 cpc0_ucr = mfdcr(DCRN_CPC0_UCR);
+-	u32 cpu, plb, opb, ebc, uart0, uart1;
+-	u32 fwdva, fwdvb, fbdv, cbdv, opdv, epdv;
+-	u32 pllmr0_ccdv, tb, m;
 -
--		plb_bram_if_cntrl_0: bram@ffff0000 {
--			reg = <ffff0000 10000>;
+-	fwdva = 8 - ((pllmr1 & 0x00070000) >> 16);
+-	fwdvb = 8 - ((pllmr1 & 0x00007000) >> 12);
+-	fbdv = (pllmr1 & 0x00f00000) >> 20;
+-	if (fbdv == 0)
+-		fbdv = 16;
+-
+-	cbdv = ((pllmr0 & 0x00030000) >> 16) + 1; /* CPU:PLB */
+-	epdv = ((pllmr0 & 0x00000300) >> 8) + 2;  /* PLB:EBC */
+-	opdv = ((pllmr0 & 0x00003000) >> 12) + 1; /* PLB:OPB */
+-
+-	m = fbdv * fwdvb;
+-
+-	pllmr0_ccdv = ((pllmr0 & 0x00300000) >> 20) + 1;
+-	if (pllmr1 & 0x80000000)
+-		cpu = sys_clk * m / (fwdva * pllmr0_ccdv);
+-	else
+-		cpu = sys_clk / pllmr0_ccdv;
+-
+-	plb = cpu / cbdv;
+-	opb = plb / opdv;
+-	ebc = plb / epdv;
+-	tb = cpu;
+-	uart0 = cpu / (cpc0_ucr & 0x0000007f);
+-	uart1 = cpu / ((cpc0_ucr & 0x00007f00) >> 8);
+-
+-	dt_fixup_cpu_clocks(cpu, tb, 0);
+-	dt_fixup_clock("/plb", plb);
+-	dt_fixup_clock("/plb/opb", opb);
+-	dt_fixup_clock("/plb/ebc", ebc);
+-	dt_fixup_clock("/plb/opb/serial@ef600300", uart0);
+-	dt_fixup_clock("/plb/opb/serial@ef600400", uart1);
+-}
+-
+-static u8 ibm405ex_fwdv_multi_bits[] = {
+-	/* values for:  1 - 16 */
+-	0x01, 0x02, 0x0e, 0x09, 0x04, 0x0b, 0x10, 0x0d, 0x0c, 0x05,
+-	0x06, 0x0f, 0x0a, 0x07, 0x08, 0x03
+-};
+-
+-u32 ibm405ex_get_fwdva(unsigned long cpr_fwdv)
+-{
+-	u32 index;
+-
+-	for (index = 0; index < ARRAY_SIZE(ibm405ex_fwdv_multi_bits); index++)
+-		if (cpr_fwdv == (u32)ibm405ex_fwdv_multi_bits[index])
+-			return index + 1;
+-
+-	return 0;
+-}
+-
+-static u8 ibm405ex_fbdv_multi_bits[] = {
+-	/* values for:  1 - 100 */
+-	0x00, 0xff, 0x7e, 0xfd, 0x7a, 0xf5, 0x6a, 0xd5, 0x2a, 0xd4,
+-	0x29, 0xd3, 0x26, 0xcc, 0x19, 0xb3, 0x67, 0xce, 0x1d, 0xbb,
+-	0x77, 0xee, 0x5d, 0xba, 0x74, 0xe9, 0x52, 0xa5, 0x4b, 0x96,
+-	0x2c, 0xd8, 0x31, 0xe3, 0x46, 0x8d, 0x1b, 0xb7, 0x6f, 0xde,
+-	0x3d, 0xfb, 0x76, 0xed, 0x5a, 0xb5, 0x6b, 0xd6, 0x2d, 0xdb,
+-	0x36, 0xec, 0x59, 0xb2, 0x64, 0xc9, 0x12, 0xa4, 0x48, 0x91,
+-	0x23, 0xc7, 0x0e, 0x9c, 0x38, 0xf0, 0x61, 0xc2, 0x05, 0x8b,
+-	0x17, 0xaf, 0x5f, 0xbe, 0x7c, 0xf9, 0x72, 0xe5, 0x4a, 0x95,
+-	0x2b, 0xd7, 0x2e, 0xdc, 0x39, 0xf3, 0x66, 0xcd, 0x1a, 0xb4,
+-	0x68, 0xd1, 0x22, 0xc4, 0x09, 0x93, 0x27, 0xcf, 0x1e, 0xbc,
+-	/* values for:  101 - 200 */
+-	0x78, 0xf1, 0x62, 0xc5, 0x0a, 0x94, 0x28, 0xd0, 0x21, 0xc3,
+-	0x06, 0x8c, 0x18, 0xb0, 0x60, 0xc1, 0x02, 0x84, 0x08, 0x90,
+-	0x20, 0xc0, 0x01, 0x83, 0x07, 0x8f, 0x1f, 0xbf, 0x7f, 0xfe,
+-	0x7d, 0xfa, 0x75, 0xea, 0x55, 0xaa, 0x54, 0xa9, 0x53, 0xa6,
+-	0x4c, 0x99, 0x33, 0xe7, 0x4e, 0x9d, 0x3b, 0xf7, 0x6e, 0xdd,
+-	0x3a, 0xf4, 0x69, 0xd2, 0x25, 0xcb, 0x16, 0xac, 0x58, 0xb1,
+-	0x63, 0xc6, 0x0d, 0x9b, 0x37, 0xef, 0x5e, 0xbd, 0x7b, 0xf6,
+-	0x6d, 0xda, 0x35, 0xeb, 0x56, 0xad, 0x5b, 0xb6, 0x6c, 0xd9,
+-	0x32, 0xe4, 0x49, 0x92, 0x24, 0xc8, 0x11, 0xa3, 0x47, 0x8e,
+-	0x1c, 0xb8, 0x70, 0xe1, 0x42, 0x85, 0x0b, 0x97, 0x2f, 0xdf,
+-	/* values for:  201 - 255 */
+-	0x3e, 0xfc, 0x79, 0xf2, 0x65, 0xca, 0x15, 0xab, 0x57, 0xae,
+-	0x5c, 0xb9, 0x73, 0xe6, 0x4d, 0x9a, 0x34, 0xe8, 0x51, 0xa2,
+-	0x44, 0x89, 0x13, 0xa7, 0x4f, 0x9e, 0x3c, 0xf8, 0x71, 0xe2,
+-	0x45, 0x8a, 0x14, 0xa8, 0x50, 0xa1, 0x43, 0x86, 0x0c, 0x98,
+-	0x30, 0xe0, 0x41, 0x82, 0x04, 0x88, 0x10, 0xa0, 0x40, 0x81,
+-	0x03, 0x87, 0x0f, 0x9f, 0x3f  /* END */
+-};
+-
+-u32 ibm405ex_get_fbdv(unsigned long cpr_fbdv)
+-{
+-	u32 index;
+-
+-	for (index = 0; index < ARRAY_SIZE(ibm405ex_fbdv_multi_bits); index++)
+-		if (cpr_fbdv == (u32)ibm405ex_fbdv_multi_bits[index])
+-			return index + 1;
+-
+-	return 0;
+-}
+-
+-void ibm405ex_fixup_clocks(unsigned int sys_clk, unsigned int uart_clk)
+-{
+-	/* PLL config */
+-	u32 pllc  = CPR0_READ(DCRN_CPR0_PLLC);
+-	u32 plld  = CPR0_READ(DCRN_CPR0_PLLD);
+-	u32 cpud  = CPR0_READ(DCRN_CPR0_PRIMAD);
+-	u32 plbd  = CPR0_READ(DCRN_CPR0_PRIMBD);
+-	u32 opbd  = CPR0_READ(DCRN_CPR0_OPBD);
+-	u32 perd  = CPR0_READ(DCRN_CPR0_PERD);
+-
+-	/* Dividers */
+-	u32 fbdv   = ibm405ex_get_fbdv(__fix_zero((plld >> 24) & 0xff, 1));
+-
+-	u32 fwdva  = ibm405ex_get_fwdva(__fix_zero((plld >> 16) & 0x0f, 1));
+-
+-	u32 cpudv0 = __fix_zero((cpud >> 24) & 7, 8);
+-
+-	/* PLBDV0 is hardwared to 010. */
+-	u32 plbdv0 = 2;
+-	u32 plb2xdv0 = __fix_zero((plbd >> 16) & 7, 8);
+-
+-	u32 opbdv0 = __fix_zero((opbd >> 24) & 3, 4);
+-
+-	u32 perdv0 = __fix_zero((perd >> 24) & 3, 4);
+-
+-	/* Resulting clocks */
+-	u32 cpu, plb, opb, ebc, vco, tb, uart0, uart1;
+-
+-	/* PLL's VCO is the source for primary forward ? */
+-	if (pllc & 0x40000000) {
+-		u32 m;
+-
+-		/* Feedback path */
+-		switch ((pllc >> 24) & 7) {
+-		case 0:
+-			/* PLLOUTx */
+-			m = fbdv;
+-			break;
+-		case 1:
+-			/* CPU */
+-			m = fbdv * fwdva * cpudv0;
+-			break;
+-		case 5:
+-			/* PERClk */
+-			m = fbdv * fwdva * plb2xdv0 * plbdv0 * opbdv0 * perdv0;
+-			break;
+-		default:
+-			printf("WARNING ! Invalid PLL feedback source !\n");
+-			goto bypass;
 -		}
 -
--		opb@20000000 {
--			#address-cells = <1>;
--			#size-cells = <1>;
--			ranges = <20000000 20000000 20000000
--				  60000000 60000000 20000000
--				  80000000 80000000 40000000
--				  c0000000 c0000000 20000000>;
+-		vco = (unsigned int)(sys_clk * m);
+-	} else {
+-bypass:
+-		/* Bypass system PLL */
+-		vco = 0;
+-	}
 -
--			opb_uart16550_0: serial@a0000000 {
--				reg = <a00000000 2000>;
--			};
+-	/* CPU = VCO / ( FWDVA x CPUDV0) */
+-	cpu = vco / (fwdva * cpudv0);
+-	/* PLB = VCO / ( FWDVA x PLB2XDV0 x PLBDV0) */
+-	plb = vco / (fwdva * plb2xdv0 * plbdv0);
+-	/* OPB = PLB / OPBDV0 */
+-	opb = plb / opbdv0;
+-	/* EBC = OPB / PERDV0 */
+-	ebc = opb / perdv0;
 -
--			opb_intc_0: interrupt-controller@d1000fc0 {
--				reg = <d1000fc0 20>;
--			};
--		};
--	};
+-	tb = cpu;
+-	uart0 = uart1 = uart_clk;
 -
-    That covers the general approach to binding xilinx IP cores into the
-    device tree.  The following are bindings for specific devices:
+-	dt_fixup_cpu_clocks(cpu, tb, 0);
+-	dt_fixup_clock("/plb", plb);
+-	dt_fixup_clock("/plb/opb", opb);
+-	dt_fixup_clock("/plb/opb/ebc", ebc);
+-	dt_fixup_clock("/plb/opb/serial@ef600200", uart0);
+-	dt_fixup_clock("/plb/opb/serial@ef600300", uart1);
+-}
+diff --git a/arch/powerpc/boot/4xx.h b/arch/powerpc/boot/4xx.h
+index 7dc5d45361bc..6c7177bbe9ec 100644
+--- a/arch/powerpc/boot/4xx.h
++++ b/arch/powerpc/boot/4xx.h
+@@ -15,13 +15,9 @@ void ibm4xx_sdram_fixup_memsize(void);
+ void ibm440spe_fixup_memsize(void);
+ void ibm4xx_denali_fixup_memsize(void);
+ void ibm44x_dbcr_reset(void);
+-void ibm40x_dbcr_reset(void);
+ void ibm4xx_quiesce_eth(u32 *emac0, u32 *emac1);
+ void ibm4xx_fixup_ebc_ranges(const char *ebc);
  
-diff --git a/Documentation/powerpc/bootwrapper.rst b/Documentation/powerpc/bootwrapper.rst
-index a6292afba573..cdfa2bc8425f 100644
---- a/Documentation/powerpc/bootwrapper.rst
-+++ b/Documentation/powerpc/bootwrapper.rst
-@@ -70,28 +70,6 @@ Currently, the following image format targets exist:
- 			kernel with this image type and it depends entirely on
- 			the embedded device tree for all information.
- 
--			The simpleImage is useful for booting systems with
--			an unknown firmware interface or for booting from
--			a debugger when no firmware is present (such as on
--			the Xilinx Virtex platform).  The only assumption that
--			simpleImage makes is that RAM is correctly initialized
--			and that the MMU is either off or has RAM mapped to
--			base address 0.
--
--			simpleImage also supports inserting special platform
--			specific initialization code to the start of the bootup
--			sequence.  The virtex405 platform uses this feature to
--			ensure that the cache is invalidated before caching
--			is enabled.  Platform specific initialization code is
--			added as part of the wrapper script and is keyed on
--			the image target name.  For example, all
--			simpleImage.virtex405-* targets will add the
--			virtex405-head.S initialization code (This also means
--			that the dts file for virtex405 targets should be
--			named (virtex405-<board>.dts).  Search the wrapper
--			script for 'virtex405' and see the file
--			arch/powerpc/boot/virtex405-head.S for details.
--
-    treeImage.%;		Image format for used with OpenBIOS firmware found
- 			on some ppc4xx hardware.  This image embeds a device
- 			tree blob inside the image.
-@@ -116,10 +94,8 @@ Image types which embed a device tree blob (simpleImage, dtbImage, treeImage,
- and cuImage) all generate the device tree blob from a file in the
- arch/powerpc/boot/dts/ directory.  The Makefile selects the correct device
- tree source based on the name of the target.  Therefore, if the kernel is
--built with 'make treeImage.walnut simpleImage.virtex405-ml403', then the
--build system will use arch/powerpc/boot/dts/walnut.dts to build
--treeImage.walnut and arch/powerpc/boot/dts/virtex405-ml403.dts to build
--the simpleImage.virtex405-ml403.
-+built with 'make treeImage.walnut', then the build system will use
-+arch/powerpc/boot/dts/walnut.dts to build treeImage.walnut.
- 
- Two special targets called 'zImage' and 'zImage.initrd' also exist.  These
- targets build all the default images as selected by the kernel configuration.
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 054c5af124a5..75e8aded73ce 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -9670,12 +9670,6 @@ L:	linuxppc-dev@lists.ozlabs.org
- S:	Maintained
- F:	arch/powerpc/platforms/8xx/
- 
--LINUX FOR POWERPC EMBEDDED XILINX VIRTEX
--L:	linuxppc-dev@lists.ozlabs.org
--S:	Orphan
--F:	arch/powerpc/*/*virtex*
--F:	arch/powerpc/*/*/*virtex*
--
- LINUX FOR POWERPC PA SEMI PWRFICIENT
- L:	linuxppc-dev@lists.ozlabs.org
- S:	Orphan
-diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-index 0b063830eea8..b88900f4832f 100644
---- a/arch/powerpc/Kconfig.debug
-+++ b/arch/powerpc/Kconfig.debug
-@@ -230,7 +230,7 @@ config PPC_EARLY_DEBUG_40x
- 	help
- 	  Select this to enable early debugging for IBM 40x chips via the
- 	  inbuilt serial port. This works on chips with a 16550 compatible
--	  UART. Xilinx chips with uartlite cannot use this option.
-+	  UART.
- 
- config PPC_EARLY_DEBUG_CPM
- 	bool "Early serial debugging for Freescale CPM-based serial ports"
+-void ibm405gp_fixup_clocks(unsigned int sys_clk, unsigned int ser_clk);
+-void ibm405ep_fixup_clocks(unsigned int sys_clk);
+-void ibm405ex_fixup_clocks(unsigned int sys_clk, unsigned int uart_clk);
+ void ibm440gp_fixup_clocks(unsigned int sys_clk, unsigned int ser_clk);
+ void ibm440ep_fixup_clocks(unsigned int sys_clk, unsigned int ser_clk,
+ 			   unsigned int tmr_clk);
 diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index c53a1b8bba8b..d8077b7071dd 100644
+index d8077b7071dd..b26382c604b3 100644
 --- a/arch/powerpc/boot/Makefile
 +++ b/arch/powerpc/boot/Makefile
-@@ -79,7 +79,6 @@ $(obj)/treeboot-walnut.o: BOOTCFLAGS += -mcpu=405
+@@ -71,11 +71,8 @@ DTC_FLAGS	?= -p 1024
+ 
+ $(obj)/4xx.o: BOOTCFLAGS += -mcpu=405
+ $(obj)/ebony.o: BOOTCFLAGS += -mcpu=405
+-$(obj)/cuboot-hotfoot.o: BOOTCFLAGS += -mcpu=405
+ $(obj)/cuboot-taishan.o: BOOTCFLAGS += -mcpu=405
+ $(obj)/cuboot-katmai.o: BOOTCFLAGS += -mcpu=405
+-$(obj)/cuboot-acadia.o: BOOTCFLAGS += -mcpu=405
+-$(obj)/treeboot-walnut.o: BOOTCFLAGS += -mcpu=405
  $(obj)/treeboot-iss4xx.o: BOOTCFLAGS += -mcpu=405
  $(obj)/treeboot-currituck.o: BOOTCFLAGS += -mcpu=405
  $(obj)/treeboot-akebono.o: BOOTCFLAGS += -mcpu=405
--$(obj)/virtex405-head.o: BOOTAFLAGS += -mcpu=405
- 
- # The pre-boot decompressors pull in a lot of kernel headers and other source
- # files. This creates a bit of a dependency headache since we need to copy
-@@ -129,14 +128,12 @@ src-wlib-$(CONFIG_44x) += 4xx.c ebony.c bamboo.c
+@@ -123,7 +120,6 @@ src-wlib-$(CONFIG_PPC64_BOOT_WRAPPER) += opal-calls.S opal.c
+ ifndef CONFIG_PPC64_BOOT_WRAPPER
+ src-wlib-y += crtsavres.S
+ endif
+-src-wlib-$(CONFIG_40x) += 4xx.c planetcore.c
+ src-wlib-$(CONFIG_44x) += 4xx.c ebony.c bamboo.c
  src-wlib-$(CONFIG_PPC_8xx) += mpc8xx.c planetcore.c fsl-soc.c
  src-wlib-$(CONFIG_PPC_82xx) += pq2.c fsl-soc.c planetcore.c
- src-wlib-$(CONFIG_EMBEDDED6xx) += ugecon.c fsl-soc.c
--src-wlib-$(CONFIG_XILINX_VIRTEX) += uartlite.c
+@@ -131,9 +127,6 @@ src-wlib-$(CONFIG_EMBEDDED6xx) += ugecon.c fsl-soc.c
  src-wlib-$(CONFIG_CPM) += cpm-serial.c
  
  src-plat-y := of.c epapr.c
- src-plat-$(CONFIG_40x) += fixed-head.S ep405.c cuboot-hotfoot.c \
- 				treeboot-walnut.c cuboot-acadia.c \
--				cuboot-kilauea.c simpleboot.c \
--				virtex405-head.S virtex.c
-+				cuboot-kilauea.c simpleboot.c
+-src-plat-$(CONFIG_40x) += fixed-head.S ep405.c cuboot-hotfoot.c \
+-				treeboot-walnut.c cuboot-acadia.c \
+-				cuboot-kilauea.c simpleboot.c
  src-plat-$(CONFIG_44x) += treeboot-ebony.c cuboot-ebony.c treeboot-bamboo.c \
  				cuboot-bamboo.c cuboot-sam440ep.c \
  				cuboot-sequoia.c cuboot-rainier.c \
-@@ -144,7 +141,7 @@ src-plat-$(CONFIG_44x) += treeboot-ebony.c cuboot-ebony.c treeboot-bamboo.c \
- 				cuboot-warp.c cuboot-yosemite.c \
- 				treeboot-iss4xx.c treeboot-currituck.c \
- 				treeboot-akebono.c \
--				simpleboot.c fixed-head.S virtex.c
-+				simpleboot.c fixed-head.S
- src-plat-$(CONFIG_PPC_8xx) += cuboot-8xx.c fixed-head.S ep88xc.c redboot-8xx.c
- src-plat-$(CONFIG_PPC_MPC52xx) += cuboot-52xx.c
- src-plat-$(CONFIG_PPC_82xx) += cuboot-pq2.c fixed-head.S ep8248e.c cuboot-824x.c
-diff --git a/arch/powerpc/boot/dts/Makefile b/arch/powerpc/boot/dts/Makefile
-index 1cbc0e4ce857..fb335d05aae8 100644
---- a/arch/powerpc/boot/dts/Makefile
-+++ b/arch/powerpc/boot/dts/Makefile
-@@ -4,4 +4,3 @@ subdir-y += fsl
+@@ -275,13 +268,6 @@ image-$(CONFIG_EPAPR_BOOT)		+= zImage.epapr
+ # Boards with newish u-boot firmware can use the uImage target above
+ #
  
- dtstree		:= $(srctree)/$(src)
- dtb-$(CONFIG_OF_ALL_DTBS) := $(patsubst $(dtstree)/%.dts,%.dtb, $(wildcard $(dtstree)/*.dts))
--dtb-$(CONFIG_XILINX_VIRTEX440_GENERIC_BOARD) += virtex440-ml507.dtb virtex440-ml510.dtb
-diff --git a/arch/powerpc/boot/dts/virtex440-ml507.dts b/arch/powerpc/boot/dts/virtex440-ml507.dts
+-# Board ports in arch/powerpc/platform/40x/Kconfig
+-image-$(CONFIG_EP405)			+= dtbImage.ep405
+-image-$(CONFIG_HOTFOOT)			+= cuImage.hotfoot
+-image-$(CONFIG_WALNUT)			+= treeImage.walnut
+-image-$(CONFIG_ACADIA)			+= cuImage.acadia
+-image-$(CONFIG_OBS600)			+= uImage.obs600
+-
+ # Board ports in arch/powerpc/platform/44x/Kconfig
+ image-$(CONFIG_EBONY)			+= treeImage.ebony cuImage.ebony
+ image-$(CONFIG_BAMBOO)			+= treeImage.bamboo cuImage.bamboo
+diff --git a/arch/powerpc/boot/cuboot-acadia.c b/arch/powerpc/boot/cuboot-acadia.c
 deleted file mode 100644
-index 66f1c6312de6..000000000000
---- a/arch/powerpc/boot/dts/virtex440-ml507.dts
+index 46e96756cfe1..000000000000
+--- a/arch/powerpc/boot/cuboot-acadia.c
 +++ /dev/null
-@@ -1,406 +0,0 @@
--/*
-- * This file supports the Xilinx ML507 board with the 440 processor.
-- * A reference design for the FPGA is provided at http://git.xilinx.com.
-- *
-- * (C) Copyright 2008 Xilinx, Inc.
-- *
-- * This file is licensed under the terms of the GNU General Public License
-- * version 2. This program is licensed "as is" without any warranty of any
-- * kind, whether express or implied.
-- *
-- * ---
-- *
-- * Device Tree Generator version: 1.1
-- *
-- * CAUTION: This file is automatically generated by libgen.
-- * Version: Xilinx EDK 10.1.03 EDK_K_SP3.6
-- *
-- * XPS project directory: ml507_ppc440_emb_ref
-- */
--
--/dts-v1/;
--
--/ {
--	#address-cells = <1>;
--	#size-cells = <1>;
--	compatible = "xlnx,virtex440";
--	dcr-parent = <&ppc440_0>;
--	model = "testing";
--	DDR2_SDRAM: memory@0 {
--		device_type = "memory";
--		reg = < 0 0x10000000 >;
--	} ;
--	chosen {
--		bootargs = "console=ttyS0 root=/dev/ram";
--		stdout-path = &RS232_Uart_1;
--	} ;
--	cpus {
--		#address-cells = <1>;
--		#cpus = <1>;
--		#size-cells = <0>;
--		ppc440_0: cpu@0 {
--			clock-frequency = <400000000>;
--			compatible = "PowerPC,440", "ibm,ppc440";
--			d-cache-line-size = <0x20>;
--			d-cache-size = <0x8000>;
--			dcr-access-method = "native";
--			dcr-controller ;
--			device_type = "cpu";
--			i-cache-line-size = <0x20>;
--			i-cache-size = <0x8000>;
--			model = "PowerPC,440";
--			reg = <0>;
--			timebase-frequency = <400000000>;
--			xlnx,apu-control = <1>;
--			xlnx,apu-udi-0 = <0>;
--			xlnx,apu-udi-1 = <0>;
--			xlnx,apu-udi-10 = <0>;
--			xlnx,apu-udi-11 = <0>;
--			xlnx,apu-udi-12 = <0>;
--			xlnx,apu-udi-13 = <0>;
--			xlnx,apu-udi-14 = <0>;
--			xlnx,apu-udi-15 = <0>;
--			xlnx,apu-udi-2 = <0>;
--			xlnx,apu-udi-3 = <0>;
--			xlnx,apu-udi-4 = <0>;
--			xlnx,apu-udi-5 = <0>;
--			xlnx,apu-udi-6 = <0>;
--			xlnx,apu-udi-7 = <0>;
--			xlnx,apu-udi-8 = <0>;
--			xlnx,apu-udi-9 = <0>;
--			xlnx,dcr-autolock-enable = <1>;
--			xlnx,dcu-rd-ld-cache-plb-prio = <0>;
--			xlnx,dcu-rd-noncache-plb-prio = <0>;
--			xlnx,dcu-rd-touch-plb-prio = <0>;
--			xlnx,dcu-rd-urgent-plb-prio = <0>;
--			xlnx,dcu-wr-flush-plb-prio = <0>;
--			xlnx,dcu-wr-store-plb-prio = <0>;
--			xlnx,dcu-wr-urgent-plb-prio = <0>;
--			xlnx,dma0-control = <0>;
--			xlnx,dma0-plb-prio = <0>;
--			xlnx,dma0-rxchannelctrl = <0x1010000>;
--			xlnx,dma0-rxirqtimer = <0x3ff>;
--			xlnx,dma0-txchannelctrl = <0x1010000>;
--			xlnx,dma0-txirqtimer = <0x3ff>;
--			xlnx,dma1-control = <0>;
--			xlnx,dma1-plb-prio = <0>;
--			xlnx,dma1-rxchannelctrl = <0x1010000>;
--			xlnx,dma1-rxirqtimer = <0x3ff>;
--			xlnx,dma1-txchannelctrl = <0x1010000>;
--			xlnx,dma1-txirqtimer = <0x3ff>;
--			xlnx,dma2-control = <0>;
--			xlnx,dma2-plb-prio = <0>;
--			xlnx,dma2-rxchannelctrl = <0x1010000>;
--			xlnx,dma2-rxirqtimer = <0x3ff>;
--			xlnx,dma2-txchannelctrl = <0x1010000>;
--			xlnx,dma2-txirqtimer = <0x3ff>;
--			xlnx,dma3-control = <0>;
--			xlnx,dma3-plb-prio = <0>;
--			xlnx,dma3-rxchannelctrl = <0x1010000>;
--			xlnx,dma3-rxirqtimer = <0x3ff>;
--			xlnx,dma3-txchannelctrl = <0x1010000>;
--			xlnx,dma3-txirqtimer = <0x3ff>;
--			xlnx,endian-reset = <0>;
--			xlnx,generate-plb-timespecs = <1>;
--			xlnx,icu-rd-fetch-plb-prio = <0>;
--			xlnx,icu-rd-spec-plb-prio = <0>;
--			xlnx,icu-rd-touch-plb-prio = <0>;
--			xlnx,interconnect-imask = <0xffffffff>;
--			xlnx,mplb-allow-lock-xfer = <1>;
--			xlnx,mplb-arb-mode = <0>;
--			xlnx,mplb-awidth = <0x20>;
--			xlnx,mplb-counter = <0x500>;
--			xlnx,mplb-dwidth = <0x80>;
--			xlnx,mplb-max-burst = <8>;
--			xlnx,mplb-native-dwidth = <0x80>;
--			xlnx,mplb-p2p = <0>;
--			xlnx,mplb-prio-dcur = <2>;
--			xlnx,mplb-prio-dcuw = <3>;
--			xlnx,mplb-prio-icu = <4>;
--			xlnx,mplb-prio-splb0 = <1>;
--			xlnx,mplb-prio-splb1 = <0>;
--			xlnx,mplb-read-pipe-enable = <1>;
--			xlnx,mplb-sync-tattribute = <0>;
--			xlnx,mplb-wdog-enable = <1>;
--			xlnx,mplb-write-pipe-enable = <1>;
--			xlnx,mplb-write-post-enable = <1>;
--			xlnx,num-dma = <1>;
--			xlnx,pir = <0xf>;
--			xlnx,ppc440mc-addr-base = <0>;
--			xlnx,ppc440mc-addr-high = <0xfffffff>;
--			xlnx,ppc440mc-arb-mode = <0>;
--			xlnx,ppc440mc-bank-conflict-mask = <0xc00000>;
--			xlnx,ppc440mc-control = <0xf810008f>;
--			xlnx,ppc440mc-max-burst = <8>;
--			xlnx,ppc440mc-prio-dcur = <2>;
--			xlnx,ppc440mc-prio-dcuw = <3>;
--			xlnx,ppc440mc-prio-icu = <4>;
--			xlnx,ppc440mc-prio-splb0 = <1>;
--			xlnx,ppc440mc-prio-splb1 = <0>;
--			xlnx,ppc440mc-row-conflict-mask = <0x3ffe00>;
--			xlnx,ppcdm-asyncmode = <0>;
--			xlnx,ppcds-asyncmode = <0>;
--			xlnx,user-reset = <0>;
--			DMA0: sdma@80 {
--				compatible = "xlnx,ll-dma-1.00.a";
--				dcr-reg = < 0x80 0x11 >;
--				interrupt-parent = <&xps_intc_0>;
--				interrupts = < 10 2 11 2 >;
--			} ;
--		} ;
--	} ;
--	plb_v46_0: plb@0 {
--		#address-cells = <1>;
--		#size-cells = <1>;
--		compatible = "xlnx,plb-v46-1.03.a", "simple-bus";
--		ranges ;
--		DIP_Switches_8Bit: gpio@81460000 {
--			compatible = "xlnx,xps-gpio-1.00.a";
--			interrupt-parent = <&xps_intc_0>;
--			interrupts = < 7 2 >;
--			reg = < 0x81460000 0x10000 >;
--			xlnx,all-inputs = <1>;
--			xlnx,all-inputs-2 = <0>;
--			xlnx,dout-default = <0>;
--			xlnx,dout-default-2 = <0>;
--			xlnx,family = "virtex5";
--			xlnx,gpio-width = <8>;
--			xlnx,interrupt-present = <1>;
--			xlnx,is-bidir = <1>;
--			xlnx,is-bidir-2 = <1>;
--			xlnx,is-dual = <0>;
--			xlnx,tri-default = <0xffffffff>;
--			xlnx,tri-default-2 = <0xffffffff>;
--		} ;
--		FLASH: flash@fc000000 {
--			bank-width = <2>;
--			compatible = "xlnx,xps-mch-emc-2.00.a", "cfi-flash";
--			reg = < 0xfc000000 0x2000000 >;
--			xlnx,family = "virtex5";
--			xlnx,include-datawidth-matching-0 = <0x1>;
--			xlnx,include-datawidth-matching-1 = <0x0>;
--			xlnx,include-datawidth-matching-2 = <0x0>;
--			xlnx,include-datawidth-matching-3 = <0x0>;
--			xlnx,include-negedge-ioregs = <0x0>;
--			xlnx,include-plb-ipif = <0x1>;
--			xlnx,include-wrbuf = <0x1>;
--			xlnx,max-mem-width = <0x10>;
--			xlnx,mch-native-dwidth = <0x20>;
--			xlnx,mch-plb-clk-period-ps = <0x2710>;
--			xlnx,mch-splb-awidth = <0x20>;
--			xlnx,mch0-accessbuf-depth = <0x10>;
--			xlnx,mch0-protocol = <0x0>;
--			xlnx,mch0-rddatabuf-depth = <0x10>;
--			xlnx,mch1-accessbuf-depth = <0x10>;
--			xlnx,mch1-protocol = <0x0>;
--			xlnx,mch1-rddatabuf-depth = <0x10>;
--			xlnx,mch2-accessbuf-depth = <0x10>;
--			xlnx,mch2-protocol = <0x0>;
--			xlnx,mch2-rddatabuf-depth = <0x10>;
--			xlnx,mch3-accessbuf-depth = <0x10>;
--			xlnx,mch3-protocol = <0x0>;
--			xlnx,mch3-rddatabuf-depth = <0x10>;
--			xlnx,mem0-width = <0x10>;
--			xlnx,mem1-width = <0x20>;
--			xlnx,mem2-width = <0x20>;
--			xlnx,mem3-width = <0x20>;
--			xlnx,num-banks-mem = <0x1>;
--			xlnx,num-channels = <0x2>;
--			xlnx,priority-mode = <0x0>;
--			xlnx,synch-mem-0 = <0x0>;
--			xlnx,synch-mem-1 = <0x0>;
--			xlnx,synch-mem-2 = <0x0>;
--			xlnx,synch-mem-3 = <0x0>;
--			xlnx,synch-pipedelay-0 = <0x2>;
--			xlnx,synch-pipedelay-1 = <0x2>;
--			xlnx,synch-pipedelay-2 = <0x2>;
--			xlnx,synch-pipedelay-3 = <0x2>;
--			xlnx,tavdv-ps-mem-0 = <0x1adb0>;
--			xlnx,tavdv-ps-mem-1 = <0x3a98>;
--			xlnx,tavdv-ps-mem-2 = <0x3a98>;
--			xlnx,tavdv-ps-mem-3 = <0x3a98>;
--			xlnx,tcedv-ps-mem-0 = <0x1adb0>;
--			xlnx,tcedv-ps-mem-1 = <0x3a98>;
--			xlnx,tcedv-ps-mem-2 = <0x3a98>;
--			xlnx,tcedv-ps-mem-3 = <0x3a98>;
--			xlnx,thzce-ps-mem-0 = <0x88b8>;
--			xlnx,thzce-ps-mem-1 = <0x1b58>;
--			xlnx,thzce-ps-mem-2 = <0x1b58>;
--			xlnx,thzce-ps-mem-3 = <0x1b58>;
--			xlnx,thzoe-ps-mem-0 = <0x1b58>;
--			xlnx,thzoe-ps-mem-1 = <0x1b58>;
--			xlnx,thzoe-ps-mem-2 = <0x1b58>;
--			xlnx,thzoe-ps-mem-3 = <0x1b58>;
--			xlnx,tlzwe-ps-mem-0 = <0x88b8>;
--			xlnx,tlzwe-ps-mem-1 = <0x0>;
--			xlnx,tlzwe-ps-mem-2 = <0x0>;
--			xlnx,tlzwe-ps-mem-3 = <0x0>;
--			xlnx,twc-ps-mem-0 = <0x2af8>;
--			xlnx,twc-ps-mem-1 = <0x3a98>;
--			xlnx,twc-ps-mem-2 = <0x3a98>;
--			xlnx,twc-ps-mem-3 = <0x3a98>;
--			xlnx,twp-ps-mem-0 = <0x11170>;
--			xlnx,twp-ps-mem-1 = <0x2ee0>;
--			xlnx,twp-ps-mem-2 = <0x2ee0>;
--			xlnx,twp-ps-mem-3 = <0x2ee0>;
--			xlnx,xcl0-linesize = <0x4>;
--			xlnx,xcl0-writexfer = <0x1>;
--			xlnx,xcl1-linesize = <0x4>;
--			xlnx,xcl1-writexfer = <0x1>;
--			xlnx,xcl2-linesize = <0x4>;
--			xlnx,xcl2-writexfer = <0x1>;
--			xlnx,xcl3-linesize = <0x4>;
--			xlnx,xcl3-writexfer = <0x1>;
--		} ;
--		Hard_Ethernet_MAC: xps-ll-temac@81c00000 {
--			#address-cells = <1>;
--			#size-cells = <1>;
--			compatible = "xlnx,compound";
--			ethernet@81c00000 {
--				#address-cells = <1>;
--				#size-cells = <0>;
--				compatible = "xlnx,xps-ll-temac-1.01.b";
--				device_type = "network";
--				interrupt-parent = <&xps_intc_0>;
--				interrupts = < 5 2 >;
--				llink-connected = <&DMA0>;
--				local-mac-address = [ 02 00 00 00 00 00 ];
--				reg = < 0x81c00000 0x40 >;
--				xlnx,bus2core-clk-ratio = <1>;
--				xlnx,phy-type = <1>;
--				xlnx,phyaddr = <1>;
--				xlnx,rxcsum = <1>;
--				xlnx,rxfifo = <0x1000>;
--				xlnx,temac-type = <0>;
--				xlnx,txcsum = <1>;
--				xlnx,txfifo = <0x1000>;
--                                phy-handle = <&phy7>;
--                                clock-frequency = <100000000>;
--                                phy7: phy@7 {
--                                          compatible = "marvell,88e1111";
--                                          reg = <7>;
--                                } ;
--			} ;
--		} ;
--		IIC_EEPROM: i2c@81600000 {
--			compatible = "xlnx,xps-iic-2.00.a";
--			interrupt-parent = <&xps_intc_0>;
--			interrupts = < 6 2 >;
--			reg = < 0x81600000 0x10000 >;
--			xlnx,clk-freq = <0x5f5e100>;
--			xlnx,family = "virtex5";
--			xlnx,gpo-width = <0x1>;
--			xlnx,iic-freq = <0x186a0>;
--			xlnx,scl-inertial-delay = <0x0>;
--			xlnx,sda-inertial-delay = <0x0>;
--			xlnx,ten-bit-adr = <0x0>;
--		} ;
--		LEDs_8Bit: gpio@81400000 {
--			compatible = "xlnx,xps-gpio-1.00.a";
--			reg = < 0x81400000 0x10000 >;
--			xlnx,all-inputs = <0>;
--			xlnx,all-inputs-2 = <0>;
--			xlnx,dout-default = <0>;
--			xlnx,dout-default-2 = <0>;
--			xlnx,family = "virtex5";
--			xlnx,gpio-width = <8>;
--			xlnx,interrupt-present = <0>;
--			xlnx,is-bidir = <1>;
--			xlnx,is-bidir-2 = <1>;
--			xlnx,is-dual = <0>;
--			xlnx,tri-default = <0xffffffff>;
--			xlnx,tri-default-2 = <0xffffffff>;
--		} ;
--		LEDs_Positions: gpio@81420000 {
--			compatible = "xlnx,xps-gpio-1.00.a";
--			reg = < 0x81420000 0x10000 >;
--			xlnx,all-inputs = <0>;
--			xlnx,all-inputs-2 = <0>;
--			xlnx,dout-default = <0>;
--			xlnx,dout-default-2 = <0>;
--			xlnx,family = "virtex5";
--			xlnx,gpio-width = <5>;
--			xlnx,interrupt-present = <0>;
--			xlnx,is-bidir = <1>;
--			xlnx,is-bidir-2 = <1>;
--			xlnx,is-dual = <0>;
--			xlnx,tri-default = <0xffffffff>;
--			xlnx,tri-default-2 = <0xffffffff>;
--		} ;
--		Push_Buttons_5Bit: gpio@81440000 {
--			compatible = "xlnx,xps-gpio-1.00.a";
--			interrupt-parent = <&xps_intc_0>;
--			interrupts = < 8 2 >;
--			reg = < 0x81440000 0x10000 >;
--			xlnx,all-inputs = <1>;
--			xlnx,all-inputs-2 = <0>;
--			xlnx,dout-default = <0>;
--			xlnx,dout-default-2 = <0>;
--			xlnx,family = "virtex5";
--			xlnx,gpio-width = <5>;
--			xlnx,interrupt-present = <1>;
--			xlnx,is-bidir = <1>;
--			xlnx,is-bidir-2 = <1>;
--			xlnx,is-dual = <0>;
--			xlnx,tri-default = <0xffffffff>;
--			xlnx,tri-default-2 = <0xffffffff>;
--		} ;
--		RS232_Uart_1: serial@83e00000 {
--			clock-frequency = <100000000>;
--			compatible = "xlnx,xps-uart16550-2.00.b", "ns16550";
--			current-speed = <9600>;
--			device_type = "serial";
--			interrupt-parent = <&xps_intc_0>;
--			interrupts = < 9 2 >;
--			reg = < 0x83e00000 0x10000 >;
--			reg-offset = <0x1003>;
--			reg-shift = <2>;
--			xlnx,family = "virtex5";
--			xlnx,has-external-rclk = <0>;
--			xlnx,has-external-xin = <0>;
--			xlnx,is-a-16550 = <1>;
--		} ;
--		SysACE_CompactFlash: sysace@83600000 {
--			compatible = "xlnx,xps-sysace-1.00.a";
--			interrupt-parent = <&xps_intc_0>;
--			interrupts = < 4 2 >;
--			reg = < 0x83600000 0x10000 >;
--			xlnx,family = "virtex5";
--			xlnx,mem-width = <0x10>;
--		} ;
--		xps_bram_if_cntlr_1: xps-bram-if-cntlr@ffff0000 {
--			compatible = "xlnx,xps-bram-if-cntlr-1.00.a";
--			reg = < 0xffff0000 0x10000 >;
--			xlnx,family = "virtex5";
--		} ;
--		xps_intc_0: interrupt-controller@81800000 {
--			#interrupt-cells = <2>;
--			compatible = "xlnx,xps-intc-1.00.a";
--			interrupt-controller ;
--			reg = < 0x81800000 0x10000 >;
--			xlnx,num-intr-inputs = <0xc>;
--		} ;
--		xps_timebase_wdt_1: xps-timebase-wdt@83a00000 {
--			compatible = "xlnx,xps-timebase-wdt-1.00.b";
--			interrupt-parent = <&xps_intc_0>;
--			interrupts = < 2 0 1 2 >;
--			reg = < 0x83a00000 0x10000 >;
--			xlnx,family = "virtex5";
--			xlnx,wdt-enable-once = <0>;
--			xlnx,wdt-interval = <0x1e>;
--		} ;
--		xps_timer_1: timer@83c00000 {
--			compatible = "xlnx,xps-timer-1.00.a";
--			interrupt-parent = <&xps_intc_0>;
--			interrupts = < 3 2 >;
--			reg = < 0x83c00000 0x10000 >;
--			xlnx,count-width = <0x20>;
--			xlnx,family = "virtex5";
--			xlnx,gen0-assert = <1>;
--			xlnx,gen1-assert = <1>;
--			xlnx,one-timer-only = <1>;
--			xlnx,trig0-assert = <1>;
--			xlnx,trig1-assert = <1>;
--		} ;
--	} ;
--}  ;
-diff --git a/arch/powerpc/boot/dts/virtex440-ml510.dts b/arch/powerpc/boot/dts/virtex440-ml510.dts
-deleted file mode 100644
-index 3b736ca26ddc..000000000000
---- a/arch/powerpc/boot/dts/virtex440-ml510.dts
-+++ /dev/null
-@@ -1,466 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0
--/*
-- * Xilinx ML510 Reference Design support
-- *
-- * This DTS file was created for the ml510_bsb1_pcores_ppc440 reference design.
-- * The reference design contains a bug which prevent PCI DMA from working
-- * properly.  A description of the bug is given in the plbv46_pci section. It
-- * needs to be fixed by the user until Xilinx updates their reference design.
-- *
-- * Copyright 2009, Roderick Colenbrander
-- */
--
--/dts-v1/;
--/ {
--	#address-cells = <1>;
--	#size-cells = <1>;
--	compatible = "xlnx,ml510-ref-design", "xlnx,virtex440";
--	dcr-parent = <&ppc440_0>;
--	DDR2_SDRAM_DIMM0: memory@0 {
--		device_type = "memory";
--		reg = < 0x0 0x20000000 >;
--	} ;
--	alias {
--		ethernet0 = &Hard_Ethernet_MAC;
--		serial0 = &RS232_Uart_1;
--	} ;
--	chosen {
--		bootargs = "console=ttyS0 root=/dev/ram";
--		stdout-path = "/plb@0/serial@83e00000";
--	} ;
--	cpus {
--		#address-cells = <1>;
--		#cpus = <0x1>;
--		#size-cells = <0>;
--		ppc440_0: cpu@0 {
--			#address-cells = <1>;
--			#size-cells = <1>;
--			clock-frequency = <300000000>;
--			compatible = "PowerPC,440", "ibm,ppc440";
--			d-cache-line-size = <0x20>;
--			d-cache-size = <0x8000>;
--			dcr-access-method = "native";
--			dcr-controller ;
--			device_type = "cpu";
--			i-cache-line-size = <0x20>;
--			i-cache-size = <0x8000>;
--			model = "PowerPC,440";
--			reg = <0>;
--			timebase-frequency = <300000000>;
--			xlnx,apu-control = <0x2000>;
--			xlnx,apu-udi-0 = <0x0>;
--			xlnx,apu-udi-1 = <0x0>;
--			xlnx,apu-udi-10 = <0x0>;
--			xlnx,apu-udi-11 = <0x0>;
--			xlnx,apu-udi-12 = <0x0>;
--			xlnx,apu-udi-13 = <0x0>;
--			xlnx,apu-udi-14 = <0x0>;
--			xlnx,apu-udi-15 = <0x0>;
--			xlnx,apu-udi-2 = <0x0>;
--			xlnx,apu-udi-3 = <0x0>;
--			xlnx,apu-udi-4 = <0x0>;
--			xlnx,apu-udi-5 = <0x0>;
--			xlnx,apu-udi-6 = <0x0>;
--			xlnx,apu-udi-7 = <0x0>;
--			xlnx,apu-udi-8 = <0x0>;
--			xlnx,apu-udi-9 = <0x0>;
--			xlnx,dcr-autolock-enable = <0x1>;
--			xlnx,dcu-rd-ld-cache-plb-prio = <0x0>;
--			xlnx,dcu-rd-noncache-plb-prio = <0x0>;
--			xlnx,dcu-rd-touch-plb-prio = <0x0>;
--			xlnx,dcu-rd-urgent-plb-prio = <0x0>;
--			xlnx,dcu-wr-flush-plb-prio = <0x0>;
--			xlnx,dcu-wr-store-plb-prio = <0x0>;
--			xlnx,dcu-wr-urgent-plb-prio = <0x0>;
--			xlnx,dma0-control = <0x0>;
--			xlnx,dma0-plb-prio = <0x0>;
--			xlnx,dma0-rxchannelctrl = <0x1010000>;
--			xlnx,dma0-rxirqtimer = <0x3ff>;
--			xlnx,dma0-txchannelctrl = <0x1010000>;
--			xlnx,dma0-txirqtimer = <0x3ff>;
--			xlnx,dma1-control = <0x0>;
--			xlnx,dma1-plb-prio = <0x0>;
--			xlnx,dma1-rxchannelctrl = <0x1010000>;
--			xlnx,dma1-rxirqtimer = <0x3ff>;
--			xlnx,dma1-txchannelctrl = <0x1010000>;
--			xlnx,dma1-txirqtimer = <0x3ff>;
--			xlnx,dma2-control = <0x0>;
--			xlnx,dma2-plb-prio = <0x0>;
--			xlnx,dma2-rxchannelctrl = <0x1010000>;
--			xlnx,dma2-rxirqtimer = <0x3ff>;
--			xlnx,dma2-txchannelctrl = <0x1010000>;
--			xlnx,dma2-txirqtimer = <0x3ff>;
--			xlnx,dma3-control = <0x0>;
--			xlnx,dma3-plb-prio = <0x0>;
--			xlnx,dma3-rxchannelctrl = <0x1010000>;
--			xlnx,dma3-rxirqtimer = <0x3ff>;
--			xlnx,dma3-txchannelctrl = <0x1010000>;
--			xlnx,dma3-txirqtimer = <0x3ff>;
--			xlnx,endian-reset = <0x0>;
--			xlnx,generate-plb-timespecs = <0x1>;
--			xlnx,icu-rd-fetch-plb-prio = <0x0>;
--			xlnx,icu-rd-spec-plb-prio = <0x0>;
--			xlnx,icu-rd-touch-plb-prio = <0x0>;
--			xlnx,interconnect-imask = <0xffffffff>;
--			xlnx,mplb-allow-lock-xfer = <0x1>;
--			xlnx,mplb-arb-mode = <0x0>;
--			xlnx,mplb-awidth = <0x20>;
--			xlnx,mplb-counter = <0x500>;
--			xlnx,mplb-dwidth = <0x80>;
--			xlnx,mplb-max-burst = <0x8>;
--			xlnx,mplb-native-dwidth = <0x80>;
--			xlnx,mplb-p2p = <0x0>;
--			xlnx,mplb-prio-dcur = <0x2>;
--			xlnx,mplb-prio-dcuw = <0x3>;
--			xlnx,mplb-prio-icu = <0x4>;
--			xlnx,mplb-prio-splb0 = <0x1>;
--			xlnx,mplb-prio-splb1 = <0x0>;
--			xlnx,mplb-read-pipe-enable = <0x1>;
--			xlnx,mplb-sync-tattribute = <0x0>;
--			xlnx,mplb-wdog-enable = <0x1>;
--			xlnx,mplb-write-pipe-enable = <0x1>;
--			xlnx,mplb-write-post-enable = <0x1>;
--			xlnx,num-dma = <0x0>;
--			xlnx,pir = <0xf>;
--			xlnx,ppc440mc-addr-base = <0x0>;
--			xlnx,ppc440mc-addr-high = <0x1fffffff>;
--			xlnx,ppc440mc-arb-mode = <0x0>;
--			xlnx,ppc440mc-bank-conflict-mask = <0x1800000>;
--			xlnx,ppc440mc-control = <0xf810008f>;
--			xlnx,ppc440mc-max-burst = <0x8>;
--			xlnx,ppc440mc-prio-dcur = <0x2>;
--			xlnx,ppc440mc-prio-dcuw = <0x3>;
--			xlnx,ppc440mc-prio-icu = <0x4>;
--			xlnx,ppc440mc-prio-splb0 = <0x1>;
--			xlnx,ppc440mc-prio-splb1 = <0x0>;
--			xlnx,ppc440mc-row-conflict-mask = <0x7ffe00>;
--			xlnx,ppcdm-asyncmode = <0x0>;
--			xlnx,ppcds-asyncmode = <0x0>;
--			xlnx,user-reset = <0x0>;
--		} ;
--	} ;
--	plb_v46_0: plb@0 {
--		#address-cells = <1>;
--		#size-cells = <1>;
--		compatible = "xlnx,plb-v46-1.03.a", "simple-bus";
--		ranges ;
--		FLASH: flash@fc000000 {
--			bank-width = <2>;
--			compatible = "xlnx,xps-mch-emc-2.00.a", "cfi-flash";
--			reg = < 0xfc000000 0x2000000 >;
--			xlnx,family = "virtex5";
--			xlnx,include-datawidth-matching-0 = <0x1>;
--			xlnx,include-datawidth-matching-1 = <0x0>;
--			xlnx,include-datawidth-matching-2 = <0x0>;
--			xlnx,include-datawidth-matching-3 = <0x0>;
--			xlnx,include-negedge-ioregs = <0x0>;
--			xlnx,include-plb-ipif = <0x1>;
--			xlnx,include-wrbuf = <0x1>;
--			xlnx,max-mem-width = <0x10>;
--			xlnx,mch-native-dwidth = <0x20>;
--			xlnx,mch-plb-clk-period-ps = <0x2710>;
--			xlnx,mch-splb-awidth = <0x20>;
--			xlnx,mch0-accessbuf-depth = <0x10>;
--			xlnx,mch0-protocol = <0x0>;
--			xlnx,mch0-rddatabuf-depth = <0x10>;
--			xlnx,mch1-accessbuf-depth = <0x10>;
--			xlnx,mch1-protocol = <0x0>;
--			xlnx,mch1-rddatabuf-depth = <0x10>;
--			xlnx,mch2-accessbuf-depth = <0x10>;
--			xlnx,mch2-protocol = <0x0>;
--			xlnx,mch2-rddatabuf-depth = <0x10>;
--			xlnx,mch3-accessbuf-depth = <0x10>;
--			xlnx,mch3-protocol = <0x0>;
--			xlnx,mch3-rddatabuf-depth = <0x10>;
--			xlnx,mem0-width = <0x10>;
--			xlnx,mem1-width = <0x20>;
--			xlnx,mem2-width = <0x20>;
--			xlnx,mem3-width = <0x20>;
--			xlnx,num-banks-mem = <0x1>;
--			xlnx,num-channels = <0x2>;
--			xlnx,priority-mode = <0x0>;
--			xlnx,synch-mem-0 = <0x0>;
--			xlnx,synch-mem-1 = <0x0>;
--			xlnx,synch-mem-2 = <0x0>;
--			xlnx,synch-mem-3 = <0x0>;
--			xlnx,synch-pipedelay-0 = <0x2>;
--			xlnx,synch-pipedelay-1 = <0x2>;
--			xlnx,synch-pipedelay-2 = <0x2>;
--			xlnx,synch-pipedelay-3 = <0x2>;
--			xlnx,tavdv-ps-mem-0 = <0x1adb0>;
--			xlnx,tavdv-ps-mem-1 = <0x3a98>;
--			xlnx,tavdv-ps-mem-2 = <0x3a98>;
--			xlnx,tavdv-ps-mem-3 = <0x3a98>;
--			xlnx,tcedv-ps-mem-0 = <0x1adb0>;
--			xlnx,tcedv-ps-mem-1 = <0x3a98>;
--			xlnx,tcedv-ps-mem-2 = <0x3a98>;
--			xlnx,tcedv-ps-mem-3 = <0x3a98>;
--			xlnx,thzce-ps-mem-0 = <0x88b8>;
--			xlnx,thzce-ps-mem-1 = <0x1b58>;
--			xlnx,thzce-ps-mem-2 = <0x1b58>;
--			xlnx,thzce-ps-mem-3 = <0x1b58>;
--			xlnx,thzoe-ps-mem-0 = <0x1b58>;
--			xlnx,thzoe-ps-mem-1 = <0x1b58>;
--			xlnx,thzoe-ps-mem-2 = <0x1b58>;
--			xlnx,thzoe-ps-mem-3 = <0x1b58>;
--			xlnx,tlzwe-ps-mem-0 = <0x88b8>;
--			xlnx,tlzwe-ps-mem-1 = <0x0>;
--			xlnx,tlzwe-ps-mem-2 = <0x0>;
--			xlnx,tlzwe-ps-mem-3 = <0x0>;
--			xlnx,twc-ps-mem-0 = <0x1adb0>;
--			xlnx,twc-ps-mem-1 = <0x3a98>;
--			xlnx,twc-ps-mem-2 = <0x3a98>;
--			xlnx,twc-ps-mem-3 = <0x3a98>;
--			xlnx,twp-ps-mem-0 = <0x11170>;
--			xlnx,twp-ps-mem-1 = <0x2ee0>;
--			xlnx,twp-ps-mem-2 = <0x2ee0>;
--			xlnx,twp-ps-mem-3 = <0x2ee0>;
--			xlnx,xcl0-linesize = <0x4>;
--			xlnx,xcl0-writexfer = <0x1>;
--			xlnx,xcl1-linesize = <0x4>;
--			xlnx,xcl1-writexfer = <0x1>;
--			xlnx,xcl2-linesize = <0x4>;
--			xlnx,xcl2-writexfer = <0x1>;
--			xlnx,xcl3-linesize = <0x4>;
--			xlnx,xcl3-writexfer = <0x1>;
--		} ;
--		Hard_Ethernet_MAC: xps-ll-temac@81c00000 {
--			#address-cells = <1>;
--			#size-cells = <1>;
--			compatible = "xlnx,compound";
--			ethernet@81c00000 {
--				compatible = "xlnx,xps-ll-temac-1.01.b";
--				device_type = "network";
--				interrupt-parent = <&xps_intc_0>;
--				interrupts = < 8 2 >;
--				llink-connected = <&Hard_Ethernet_MAC_fifo>;
--				local-mac-address = [ 02 00 00 00 00 00 ];
--				reg = < 0x81c00000 0x40 >;
--				xlnx,bus2core-clk-ratio = <0x1>;
--				xlnx,phy-type = <0x3>;
--				xlnx,phyaddr = <0x1>;
--				xlnx,rxcsum = <0x0>;
--				xlnx,rxfifo = <0x8000>;
--				xlnx,temac-type = <0x0>;
--				xlnx,txcsum = <0x0>;
--				xlnx,txfifo = <0x8000>;
--			} ;
--		} ;
--		Hard_Ethernet_MAC_fifo: xps-ll-fifo@81a00000 {
--			compatible = "xlnx,xps-ll-fifo-1.01.a";
--			interrupt-parent = <&xps_intc_0>;
--			interrupts = < 6 2 >;
--			reg = < 0x81a00000 0x10000 >;
--			xlnx,family = "virtex5";
--		} ;
--		IIC_EEPROM: i2c@81600000 {
--			compatible = "xlnx,xps-iic-2.00.a";
--			interrupt-parent = <&xps_intc_0>;
--			interrupts = < 9 2 >;
--			reg = < 0x81600000 0x10000 >;
--			xlnx,clk-freq = <0x5f5e100>;
--			xlnx,family = "virtex5";
--			xlnx,gpo-width = <0x1>;
--			xlnx,iic-freq = <0x186a0>;
--			xlnx,scl-inertial-delay = <0x5>;
--			xlnx,sda-inertial-delay = <0x5>;
--			xlnx,ten-bit-adr = <0x0>;
--		} ;
--		LCD_OPTIONAL: gpio@81420000 {
--			compatible = "xlnx,xps-gpio-1.00.a";
--			reg = < 0x81420000 0x10000 >;
--			xlnx,all-inputs = <0x0>;
--			xlnx,all-inputs-2 = <0x0>;
--			xlnx,dout-default = <0x0>;
--			xlnx,dout-default-2 = <0x0>;
--			xlnx,family = "virtex5";
--			xlnx,gpio-width = <0xb>;
--			xlnx,interrupt-present = <0x0>;
--			xlnx,is-bidir = <0x1>;
--			xlnx,is-bidir-2 = <0x1>;
--			xlnx,is-dual = <0x0>;
--			xlnx,tri-default = <0xffffffff>;
--			xlnx,tri-default-2 = <0xffffffff>;
--		} ;
--		LEDs_4Bit: gpio@81400000 {
--			compatible = "xlnx,xps-gpio-1.00.a";
--			reg = < 0x81400000 0x10000 >;
--			xlnx,all-inputs = <0x0>;
--			xlnx,all-inputs-2 = <0x0>;
--			xlnx,dout-default = <0x0>;
--			xlnx,dout-default-2 = <0x0>;
--			xlnx,family = "virtex5";
--			xlnx,gpio-width = <0x4>;
--			xlnx,interrupt-present = <0x0>;
--			xlnx,is-bidir = <0x1>;
--			xlnx,is-bidir-2 = <0x1>;
--			xlnx,is-dual = <0x0>;
--			xlnx,tri-default = <0xffffffff>;
--			xlnx,tri-default-2 = <0xffffffff>;
--		} ;
--		RS232_Uart_1: serial@83e00000 {
--			clock-frequency = <100000000>;
--			compatible = "xlnx,xps-uart16550-2.00.b", "ns16550";
--			current-speed = <9600>;
--			device_type = "serial";
--			interrupt-parent = <&xps_intc_0>;
--			interrupts = < 11 2 >;
--			reg = < 0x83e00000 0x10000 >;
--			reg-offset = <0x1003>;
--			reg-shift = <2>;
--			xlnx,family = "virtex5";
--			xlnx,has-external-rclk = <0x0>;
--			xlnx,has-external-xin = <0x0>;
--			xlnx,is-a-16550 = <0x1>;
--		} ;
--		SPI_EEPROM: xps-spi@feff8000 {
--			compatible = "xlnx,xps-spi-2.00.b";
--			interrupt-parent = <&xps_intc_0>;
--			interrupts = < 10 2 >;
--			reg = < 0xfeff8000 0x80 >;
--			xlnx,family = "virtex5";
--			xlnx,fifo-exist = <0x1>;
--			xlnx,num-ss-bits = <0x1>;
--			xlnx,num-transfer-bits = <0x8>;
--			xlnx,sck-ratio = <0x80>;
--		} ;
--		SysACE_CompactFlash: sysace@83600000 {
--			compatible = "xlnx,xps-sysace-1.00.a";
--			interrupt-parent = <&xps_intc_0>;
--			interrupts = < 7 2 >;
--			reg = < 0x83600000 0x10000 >;
--			xlnx,family = "virtex5";
--			xlnx,mem-width = <0x10>;
--		} ;
--		plbv46_pci_0: plbv46-pci@85e00000 {
--			#size-cells = <2>;
--			#address-cells = <3>;
--			compatible = "xlnx,plbv46-pci-1.03.a";
--			device_type = "pci";
--			reg = < 0x85e00000 0x10000 >;
--
--			/*
--			 * The default ML510 BSB has C_IPIFBAR2PCIBAR_0 set to
--			 * 0 which means that a read/write to the memory mapped
--			 * i/o region (which starts at 0xa0000000) for pci
--			 * bar 0 on the plb side translates to 0.
--			 * It is important to set this value to 0xa0000000, so
--			 * that inbound and outbound pci transactions work
--			 * properly including DMA.
--			 */
--			ranges = <0x02000000 0 0xa0000000 0xa0000000 0 0x20000000
--				  0x01000000 0 0x00000000 0xf0000000 0 0x00010000>;
--
--			#interrupt-cells = <1>;
--			interrupt-parent = <&xps_intc_0>;
--			interrupt-map-mask = <0xff00 0x0 0x0 0x7>;
--			interrupt-map = <
--				/* IRQ mapping for pci slots and ALI M1533
--				 * periperhals. In total there are 5 interrupt
--				 * lines connected to a xps_intc controller.
--				 * Four of them are PCI IRQ A, B, C, D and
--				 * which correspond to respectively xpx_intc
--				 * 5, 4, 3 and 2.  The fifth interrupt line is
--				 * connected to the south bridge and this one
--				 * uses irq 1 and is active high instead of
--				 * active low.
--				 *
--				 * The M1533 contains various peripherals
--				 * including AC97 audio, a modem, USB, IDE and
--				 * some power management stuff. The modem
--				 * isn't connected on the ML510 and the power
--				 * management core also isn't used.
--				 */
--
--				/* IDSEL 0x16 / dev=6, bus=0 / PCI slot 3 */
--				0x3000 0 0 1 &xps_intc_0 3 2
--				0x3000 0 0 2 &xps_intc_0 2 2
--				0x3000 0 0 3 &xps_intc_0 5 2
--				0x3000 0 0 4 &xps_intc_0 4 2
--
--				/* IDSEL 0x13 / dev=3, bus=1 / PCI slot 4 */
--				/*
--				0x11800 0 0 1 &xps_intc_0 5 0 2
--				0x11800 0 0 2 &xps_intc_0 4 0 2
--				0x11800 0 0 3 &xps_intc_0 3 0 2
--				0x11800 0 0 4 &xps_intc_0 2 0 2
--				*/
--
--				/* According to the datasheet + schematic
--				 * ABCD [FPGA] of slot 5 is mapped to DABC.
--				 * Testing showed that at least A maps to B,
--				 * the mapping of the other pins is a guess
--				 * and for that reason the lines have been
--				 * commented out.
--				 */
--				/* IDSEL 0x15 / dev=5, bus=0 / PCI slot 5 */
--				0x2800 0 0 1 &xps_intc_0 4 2
--				/*
--				0x2800 0 0 2 &xps_intc_0 3 2
--				0x2800 0 0 3 &xps_intc_0 2 2
--				0x2800 0 0 4 &xps_intc_0 5 2
--				*/
--
--				/* IDSEL 0x12 / dev=2, bus=1 / PCI slot 6 */
--				/*
--				0x11000 0 0 1 &xps_intc_0 4 0 2
--				0x11000 0 0 2 &xps_intc_0 3 0 2
--				0x11000 0 0 3 &xps_intc_0 2 0 2
--				0x11000 0 0 4 &xps_intc_0 5 0 2
--				*/
--
--				/* IDSEL 0x11 / dev=1, bus=0 / AC97 audio */
--				0x0800 0 0 1 &i8259 7 2
--
--				/* IDSEL 0x1b / dev=11, bus=0 / IDE */
--				0x5800 0 0 1 &i8259 14 2
--
--				/* IDSEL 0x1f / dev 15, bus=0 / 2x USB 1.1 */
--				0x7800 0 0 1 &i8259 7 2
--			>;
--			ali_m1533 {
--				#size-cells = <1>;
--				#address-cells = <2>;
--				i8259: interrupt-controller@20 {
--					reg = <1 0x20 2
--							1 0xa0 2
--							1 0x4d0 2>;
--					interrupt-controller;
--					device_type = "interrupt-controller";
--					#address-cells = <0>;
--					#interrupt-cells = <2>;
--					compatible = "chrp,iic";
--
--					/* south bridge irq is active high */
--					interrupts = <1 3>;
--					interrupt-parent = <&xps_intc_0>;
--				};
--			};
--		} ;
--		xps_bram_if_cntlr_1: xps-bram-if-cntlr@ffff0000 {
--			compatible = "xlnx,xps-bram-if-cntlr-1.00.a";
--			reg = < 0xffff0000 0x10000 >;
--			xlnx,family = "virtex5";
--		} ;
--		xps_intc_0: interrupt-controller@81800000 {
--			#interrupt-cells = <0x2>;
--			compatible = "xlnx,xps-intc-1.00.a";
--			interrupt-controller ;
--			reg = < 0x81800000 0x10000 >;
--			xlnx,num-intr-inputs = <0xc>;
--		} ;
--		xps_tft_0: tft@86e00000 {
--			compatible = "xlnx,xps-tft-1.00.a";
--			reg = < 0x86e00000 0x10000 >;
--			xlnx,dcr-splb-slave-if = <0x1>;
--			xlnx,default-tft-base-addr = <0x0>;
--			xlnx,family = "virtex5";
--			xlnx,i2c-slave-addr = <0x76>;
--			xlnx,mplb-awidth = <0x20>;
--			xlnx,mplb-dwidth = <0x80>;
--			xlnx,mplb-native-dwidth = <0x40>;
--			xlnx,mplb-smallest-slave = <0x20>;
--			xlnx,tft-interface = <0x1>;
--		} ;
--	} ;
--}  ;
-diff --git a/arch/powerpc/boot/ops.h b/arch/powerpc/boot/ops.h
-index e0606766480f..6455fc9a244f 100644
---- a/arch/powerpc/boot/ops.h
-+++ b/arch/powerpc/boot/ops.h
-@@ -88,7 +88,6 @@ int serial_console_init(void);
- int ns16550_console_init(void *devp, struct serial_console_data *scdp);
- int cpm_console_init(void *devp, struct serial_console_data *scdp);
- int mpc5200_psc_console_init(void *devp, struct serial_console_data *scdp);
--int uartlite_console_init(void *devp, struct serial_console_data *scdp);
- int opal_console_init(void *devp, struct serial_console_data *scdp);
- void *simple_alloc_init(char *base, unsigned long heap_size,
- 			unsigned long granularity, unsigned long max_allocs);
-diff --git a/arch/powerpc/boot/serial.c b/arch/powerpc/boot/serial.c
-index 9457863147f9..0bfa7e87e546 100644
---- a/arch/powerpc/boot/serial.c
-+++ b/arch/powerpc/boot/serial.c
-@@ -132,11 +132,6 @@ int serial_console_init(void)
- 	else if (dt_is_compatible(devp, "fsl,mpc5200-psc-uart"))
- 		rc = mpc5200_psc_console_init(devp, &serial_cd);
- #endif
--#ifdef CONFIG_XILINX_VIRTEX
--	else if (dt_is_compatible(devp, "xlnx,opb-uartlite-1.00.b") ||
--		 dt_is_compatible(devp, "xlnx,xps-uartlite-1.00.a"))
--		rc = uartlite_console_init(devp, &serial_cd);
--#endif
- #ifdef CONFIG_PPC64_BOOT_WRAPPER
- 	else if (dt_is_compatible(devp, "ibm,opal-console-raw"))
- 		rc = opal_console_init(devp, &serial_cd);
-diff --git a/arch/powerpc/boot/uartlite.c b/arch/powerpc/boot/uartlite.c
-deleted file mode 100644
-index 46bed69b4169..000000000000
---- a/arch/powerpc/boot/uartlite.c
-+++ /dev/null
-@@ -1,79 +0,0 @@
--/*
-- * Xilinx UARTLITE bootloader driver
-- *
-- * Copyright (C) 2007 Secret Lab Technologies Ltd.
-- *
-- * This file is licensed under the terms of the GNU General Public License
-- * version 2. This program is licensed "as is" without any warranty of any
-- * kind, whether express or implied.
-- */
--
--#include <stdarg.h>
--#include <stddef.h>
--#include "types.h"
--#include "string.h"
--#include "stdio.h"
--#include "io.h"
--#include "ops.h"
--
--#define ULITE_RX		0x00
--#define ULITE_TX		0x04
--#define ULITE_STATUS		0x08
--#define ULITE_CONTROL		0x0c
--
--#define ULITE_STATUS_RXVALID	0x01
--#define ULITE_STATUS_TXFULL	0x08
--
--#define ULITE_CONTROL_RST_RX	0x02
--
--static void * reg_base;
--
--static int uartlite_open(void)
--{
--	/* Clear the RX FIFO */
--	out_be32(reg_base + ULITE_CONTROL, ULITE_CONTROL_RST_RX);
--	return 0;
--}
--
--static void uartlite_putc(unsigned char c)
--{
--	u32 reg = ULITE_STATUS_TXFULL;
--	while (reg & ULITE_STATUS_TXFULL) /* spin on TXFULL bit */
--		reg = in_be32(reg_base + ULITE_STATUS);
--	out_be32(reg_base + ULITE_TX, c);
--}
--
--static unsigned char uartlite_getc(void)
--{
--	u32 reg = 0;
--	while (!(reg & ULITE_STATUS_RXVALID)) /* spin waiting for RXVALID bit */
--		reg = in_be32(reg_base + ULITE_STATUS);
--	return in_be32(reg_base + ULITE_RX);
--}
--
--static u8 uartlite_tstc(void)
--{
--	u32 reg = in_be32(reg_base + ULITE_STATUS);
--	return reg & ULITE_STATUS_RXVALID;
--}
--
--int uartlite_console_init(void *devp, struct serial_console_data *scdp)
--{
--	int n;
--	unsigned long reg_phys;
--
--	n = getprop(devp, "virtual-reg", &reg_base, sizeof(reg_base));
--	if (n != sizeof(reg_base)) {
--		if (!dt_xlate_reg(devp, 0, &reg_phys, NULL))
--			return -1;
--
--		reg_base = (void *)reg_phys;
--	}
--
--	scdp->open = uartlite_open;
--	scdp->putc = uartlite_putc;
--	scdp->getc = uartlite_getc;
--	scdp->tstc = uartlite_tstc;
--	scdp->close = NULL;
--	return 0;
--}
-diff --git a/arch/powerpc/boot/virtex.c b/arch/powerpc/boot/virtex.c
-deleted file mode 100644
-index f731cbb4bff0..000000000000
---- a/arch/powerpc/boot/virtex.c
-+++ /dev/null
-@@ -1,97 +0,0 @@
+@@ -1,171 +0,0 @@
 -// SPDX-License-Identifier: GPL-2.0-only
 -/*
-- * The platform specific code for virtex devices since a boot loader is not
-- * always used.
+- * Old U-boot compatibility for Acadia
 - *
-- * (C) Copyright 2008 Xilinx, Inc.
+- * Author: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+- *
+- * Copyright 2008 IBM Corporation
 - */
 -
 -#include "ops.h"
 -#include "io.h"
+-#include "dcr.h"
 -#include "stdio.h"
+-#include "4xx.h"
+-#include "44x.h"
+-#include "cuboot.h"
 -
--#define UART_DLL		0	/* Out: Divisor Latch Low */
--#define UART_DLM		1	/* Out: Divisor Latch High */
--#define UART_FCR		2	/* Out: FIFO Control Register */
--#define UART_FCR_CLEAR_RCVR 	0x02 	/* Clear the RCVR FIFO */
--#define UART_FCR_CLEAR_XMIT	0x04 	/* Clear the XMIT FIFO */
--#define UART_LCR		3	/* Out: Line Control Register */
--#define UART_MCR		4	/* Out: Modem Control Register */
--#define UART_MCR_RTS		0x02 	/* RTS complement */
--#define UART_MCR_DTR		0x01 	/* DTR complement */
--#define UART_LCR_DLAB		0x80 	/* Divisor latch access bit */
--#define UART_LCR_WLEN8		0x03 	/* Wordlength: 8 bits */
+-#define TARGET_4xx
+-#include "ppcboot.h"
 -
--static int virtex_ns16550_console_init(void *devp)
+-static bd_t bd;
+-
+-#define CPR_PERD0_SPIDV_MASK   0x000F0000     /* SPI Clock Divider */
+-
+-#define PLLC_SRC_MASK	       0x20000000     /* PLL feedback source */
+-
+-#define PLLD_FBDV_MASK	       0x1F000000     /* PLL feedback divider value */
+-#define PLLD_FWDVA_MASK        0x000F0000     /* PLL forward divider A value */
+-#define PLLD_FWDVB_MASK        0x00000700     /* PLL forward divider B value */
+-
+-#define PRIMAD_CPUDV_MASK      0x0F000000     /* CPU Clock Divisor Mask */
+-#define PRIMAD_PLBDV_MASK      0x000F0000     /* PLB Clock Divisor Mask */
+-#define PRIMAD_OPBDV_MASK      0x00000F00     /* OPB Clock Divisor Mask */
+-#define PRIMAD_EBCDV_MASK      0x0000000F     /* EBC Clock Divisor Mask */
+-
+-#define PERD0_PWMDV_MASK       0xFF000000     /* PWM Divider Mask */
+-#define PERD0_SPIDV_MASK       0x000F0000     /* SPI Divider Mask */
+-#define PERD0_U0DV_MASK        0x0000FF00     /* UART 0 Divider Mask */
+-#define PERD0_U1DV_MASK        0x000000FF     /* UART 1 Divider Mask */
+-
+-static void get_clocks(void)
 -{
--	unsigned char *reg_base;
--	u32 reg_shift, reg_offset, clk, spd;
--	u16 divisor;
--	int n;
+-	unsigned long sysclk, cpr_plld, cpr_pllc, cpr_primad, plloutb, i;
+-	unsigned long pllFwdDiv, pllFwdDivB, pllFbkDiv, pllPlbDiv, pllExtBusDiv;
+-	unsigned long pllOpbDiv, freqEBC, freqUART, freqOPB;
+-	unsigned long div;		/* total divisor udiv * bdiv */
+-	unsigned long umin;		/* minimum udiv	*/
+-	unsigned short diff;		/* smallest diff */
+-	unsigned long udiv;		/* best udiv */
+-	unsigned short idiff;		/* current diff */
+-	unsigned short ibdiv;		/* current bdiv */
+-	unsigned long est;		/* current estimate */
+-	unsigned long baud;
+-	void *np;
 -
--	if (dt_get_virtual_reg(devp, (void **)&reg_base, 1) < 1)
--		return -1;
--
--	n = getprop(devp, "reg-offset", &reg_offset, sizeof(reg_offset));
--	if (n == sizeof(reg_offset))
--		reg_base += reg_offset;
--
--	n = getprop(devp, "reg-shift", &reg_shift, sizeof(reg_shift));
--	if (n != sizeof(reg_shift))
--		reg_shift = 0;
--
--	n = getprop(devp, "current-speed", (void *)&spd, sizeof(spd));
--	if (n != sizeof(spd))
--		spd = 9600;
--
--	/* should there be a default clock rate?*/
--	n = getprop(devp, "clock-frequency", (void *)&clk, sizeof(clk));
--	if (n != sizeof(clk))
--		return -1;
--
--	divisor = clk / (16 * spd);
--
--	/* Access baud rate */
--	out_8(reg_base + (UART_LCR << reg_shift), UART_LCR_DLAB);
--
--	/* Baud rate based on input clock */
--	out_8(reg_base + (UART_DLL << reg_shift), divisor & 0xFF);
--	out_8(reg_base + (UART_DLM << reg_shift), divisor >> 8);
--
--	/* 8 data, 1 stop, no parity */
--	out_8(reg_base + (UART_LCR << reg_shift), UART_LCR_WLEN8);
--
--	/* RTS/DTR */
--	out_8(reg_base + (UART_MCR << reg_shift), UART_MCR_RTS | UART_MCR_DTR);
--
--	/* Clear transmitter and receiver */
--	out_8(reg_base + (UART_FCR << reg_shift),
--				UART_FCR_CLEAR_XMIT | UART_FCR_CLEAR_RCVR);
--	return 0;
--}
--
--/* For virtex, the kernel may be loaded without using a bootloader and if so
--   some UARTs need more setup than is provided in the normal console init
--*/
--int platform_specific_init(void)
--{
--	void *devp;
--	char devtype[MAX_PROP_LEN];
--	char path[MAX_PATH_LEN];
--
--	devp = finddevice("/chosen");
--	if (devp == NULL)
--		return -1;
--
--	if (getprop(devp, "linux,stdout-path", path, MAX_PATH_LEN) > 0) {
--		devp = finddevice(path);
--		if (devp == NULL)
--			return -1;
--
--		if ((getprop(devp, "device_type", devtype, sizeof(devtype)) > 0)
--				&& !strcmp(devtype, "serial")
--				&& (dt_is_compatible(devp, "ns16550")))
--				virtex_ns16550_console_init(devp);
--	}
--	return 0;
--}
-diff --git a/arch/powerpc/boot/virtex405-head.S b/arch/powerpc/boot/virtex405-head.S
-deleted file mode 100644
-index 00bab7d7c48c..000000000000
---- a/arch/powerpc/boot/virtex405-head.S
-+++ /dev/null
-@@ -1,31 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0 */
--#include "ppc_asm.h"
--
--	.text
--	.global _zimage_start
--_zimage_start:
--
--	/* PPC errata 213: needed by Virtex-4 FX */
--	mfccr0  0
--	oris    0,0,0x50000000@h
--	mtccr0  0
+-	/* read the sysclk value from the CPLD */
+-	sysclk = (in_8((unsigned char *)0x80000000) == 0xc) ? 66666666 : 33333000;
 -
 -	/*
--	 * Invalidate the data cache if the data cache is turned off.
--	 * - The 405 core does not invalidate the data cache on power-up
--	 *   or reset but does turn off the data cache. We cannot assume
--	 *   that the cache contents are valid.
--	 * - If the data cache is turned on this must have been done by
--	 *   a bootloader and we assume that the cache contents are
--	 *   valid.
+-	 * Read PLL Mode registers
 -	 */
--	mfdccr	r9
--	cmplwi	r9,0
--	bne	2f
--	lis	r9,0
--	li	r8,256
--	mtctr	r8
--1:	dccci	r0,r9
--	addi	r9,r9,0x20
--	bdnz	1b
--2:	b	_zimage_start_lib
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index ed6266367bc0..de5fd5a047e8 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -323,14 +323,6 @@ adder875-redboot)
-     platformo="$object/fixed-head.o $object/redboot-8xx.o"
-     binary=y
-     ;;
--simpleboot-virtex405-*)
--    platformo="$object/virtex405-head.o $object/simpleboot.o $object/virtex.o"
--    binary=y
--    ;;
--simpleboot-virtex440-*)
--    platformo="$object/fixed-head.o $object/simpleboot.o $object/virtex.o"
--    binary=y
--    ;;
- simpleboot-*)
-     platformo="$object/fixed-head.o $object/simpleboot.o"
-     binary=y
-diff --git a/arch/powerpc/configs/40x/virtex_defconfig b/arch/powerpc/configs/40x/virtex_defconfig
+-	cpr_plld = CPR0_READ(DCRN_CPR0_PLLD);
+-	cpr_pllc = CPR0_READ(DCRN_CPR0_PLLC);
+-
+-	/*
+-	 * Determine forward divider A
+-	 */
+-	pllFwdDiv = ((cpr_plld & PLLD_FWDVA_MASK) >> 16);
+-
+-	/*
+-	 * Determine forward divider B
+-	 */
+-	pllFwdDivB = ((cpr_plld & PLLD_FWDVB_MASK) >> 8);
+-	if (pllFwdDivB == 0)
+-		pllFwdDivB = 8;
+-
+-	/*
+-	 * Determine FBK_DIV.
+-	 */
+-	pllFbkDiv = ((cpr_plld & PLLD_FBDV_MASK) >> 24);
+-	if (pllFbkDiv == 0)
+-		pllFbkDiv = 256;
+-
+-	/*
+-	 * Read CPR_PRIMAD register
+-	 */
+-	cpr_primad = CPR0_READ(DCRN_CPR0_PRIMAD);
+-
+-	/*
+-	 * Determine PLB_DIV.
+-	 */
+-	pllPlbDiv = ((cpr_primad & PRIMAD_PLBDV_MASK) >> 16);
+-	if (pllPlbDiv == 0)
+-		pllPlbDiv = 16;
+-
+-	/*
+-	 * Determine EXTBUS_DIV.
+-	 */
+-	pllExtBusDiv = (cpr_primad & PRIMAD_EBCDV_MASK);
+-	if (pllExtBusDiv == 0)
+-		pllExtBusDiv = 16;
+-
+-	/*
+-	 * Determine OPB_DIV.
+-	 */
+-	pllOpbDiv = ((cpr_primad & PRIMAD_OPBDV_MASK) >> 8);
+-	if (pllOpbDiv == 0)
+-		pllOpbDiv = 16;
+-
+-	/* There is a bug in U-Boot that prevents us from using
+-	 * bd.bi_opbfreq because U-Boot doesn't populate it for
+-	 * 405EZ.  We get to calculate it, yay!
+-	 */
+-	freqOPB = (sysclk *pllFbkDiv) /pllOpbDiv;
+-
+-	freqEBC = (sysclk * pllFbkDiv) / pllExtBusDiv;
+-
+-	plloutb = ((sysclk * ((cpr_pllc & PLLC_SRC_MASK) ?
+-					   pllFwdDivB : pllFwdDiv) *
+-		    pllFbkDiv) / pllFwdDivB);
+-
+-	np = find_node_by_alias("serial0");
+-	if (getprop(np, "current-speed", &baud, sizeof(baud)) != sizeof(baud))
+-		fatal("no current-speed property\n\r");
+-
+-	udiv = 256;			/* Assume lowest possible serial clk */
+-	div = plloutb / (16 * baud); /* total divisor */
+-	umin = (plloutb / freqOPB) << 1;	/* 2 x OPB divisor */
+-	diff = 256;			/* highest possible */
+-
+-	/* i is the test udiv value -- start with the largest
+-	 * possible (256) to minimize serial clock and constrain
+-	 * search to umin.
+-	 */
+-	for (i = 256; i > umin; i--) {
+-		ibdiv = div / i;
+-		est = i * ibdiv;
+-		idiff = (est > div) ? (est-div) : (div-est);
+-		if (idiff == 0) {
+-			udiv = i;
+-			break;      /* can't do better */
+-		} else if (idiff < diff) {
+-			udiv = i;       /* best so far */
+-			diff = idiff;   /* update lowest diff*/
+-		}
+-	}
+-	freqUART = plloutb / udiv;
+-
+-	dt_fixup_cpu_clocks(bd.bi_procfreq, bd.bi_intfreq, bd.bi_plb_busfreq);
+-	dt_fixup_clock("/plb/ebc", freqEBC);
+-	dt_fixup_clock("/plb/opb", freqOPB);
+-	dt_fixup_clock("/plb/opb/serial@ef600300", freqUART);
+-	dt_fixup_clock("/plb/opb/serial@ef600400", freqUART);
+-}
+-
+-static void acadia_fixups(void)
+-{
+-	dt_fixup_memory(bd.bi_memstart, bd.bi_memsize);
+-	get_clocks();
+-	dt_fixup_mac_address_by_alias("ethernet0", bd.bi_enetaddr);
+-}
+-	
+-void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
+-		unsigned long r6, unsigned long r7)
+-{
+-	CUBOOT_INIT();
+-	platform_ops.fixups = acadia_fixups;
+-	platform_ops.exit = ibm40x_dbcr_reset;
+-	fdt_init(_dtb_start);
+-	serial_console_init();
+-}
+diff --git a/arch/powerpc/boot/cuboot-hotfoot.c b/arch/powerpc/boot/cuboot-hotfoot.c
 deleted file mode 100644
-index 5e7c61d1d7d0..000000000000
---- a/arch/powerpc/configs/40x/virtex_defconfig
+index 888a6b9bfead..000000000000
+--- a/arch/powerpc/boot/cuboot-hotfoot.c
 +++ /dev/null
-@@ -1,75 +0,0 @@
--CONFIG_40x=y
--# CONFIG_LOCALVERSION_AUTO is not set
--CONFIG_SYSVIPC=y
--CONFIG_POSIX_MQUEUE=y
--CONFIG_IKCONFIG=y
--CONFIG_IKCONFIG_PROC=y
--CONFIG_LOG_BUF_SHIFT=14
--CONFIG_BLK_DEV_INITRD=y
--CONFIG_SLAB=y
--CONFIG_MODULES=y
--CONFIG_MODULE_UNLOAD=y
--CONFIG_MODULE_FORCE_UNLOAD=y
--CONFIG_MODVERSIONS=y
--# CONFIG_BLK_DEV_BSG is not set
--# CONFIG_WALNUT is not set
--CONFIG_XILINX_VIRTEX_GENERIC_BOARD=y
--CONFIG_PREEMPT=y
--CONFIG_MATH_EMULATION=y
--CONFIG_CMDLINE_BOOL=y
--CONFIG_CMDLINE=""
--CONFIG_PCI=y
--CONFIG_NET=y
--CONFIG_PACKET=y
--CONFIG_UNIX=y
--CONFIG_INET=y
--CONFIG_IP_MULTICAST=y
--CONFIG_IP_PNP=y
--CONFIG_IP_PNP_DHCP=y
--CONFIG_IP_PNP_BOOTP=y
--CONFIG_NETFILTER=y
--CONFIG_IP_NF_IPTABLES=m
--CONFIG_IP_NF_FILTER=m
--CONFIG_IP_NF_MANGLE=m
--CONFIG_BLK_DEV_LOOP=y
--CONFIG_BLK_DEV_RAM=y
--CONFIG_BLK_DEV_RAM_SIZE=8192
--CONFIG_XILINX_SYSACE=y
--CONFIG_NETDEVICES=y
--# CONFIG_SERIO_SERPORT is not set
--CONFIG_SERIO_XILINX_XPS_PS2=y
--CONFIG_SERIAL_8250=y
--CONFIG_SERIAL_8250_CONSOLE=y
--CONFIG_SERIAL_OF_PLATFORM=y
--CONFIG_SERIAL_UARTLITE=y
--CONFIG_SERIAL_UARTLITE_CONSOLE=y
--CONFIG_XILINX_HWICAP=y
--CONFIG_GPIOLIB=y
--CONFIG_GPIO_SYSFS=y
--CONFIG_GPIO_XILINX=y
--# CONFIG_HWMON is not set
--CONFIG_FB=y
--CONFIG_FB_XILINX=y
--CONFIG_FRAMEBUFFER_CONSOLE=y
--CONFIG_LOGO=y
--# CONFIG_USB_SUPPORT is not set
--CONFIG_EXT2_FS=y
--CONFIG_AUTOFS4_FS=y
--CONFIG_MSDOS_FS=y
--CONFIG_VFAT_FS=y
--CONFIG_TMPFS=y
--CONFIG_CRAMFS=y
--CONFIG_ROMFS_FS=y
--CONFIG_NFS_FS=y
--CONFIG_ROOT_NFS=y
--CONFIG_NLS_CODEPAGE_437=y
--CONFIG_NLS_ASCII=m
--CONFIG_NLS_ISO8859_1=m
--CONFIG_NLS_UTF8=m
--CONFIG_CRC_CCITT=y
--CONFIG_FONTS=y
--CONFIG_FONT_8x8=y
--CONFIG_FONT_8x16=y
--CONFIG_PRINTK_TIME=y
--CONFIG_DEBUG_INFO=y
--CONFIG_DEBUG_KERNEL=y
-diff --git a/arch/powerpc/configs/44x/virtex5_defconfig b/arch/powerpc/configs/44x/virtex5_defconfig
+@@ -1,139 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
+-/*
+- * Old U-boot compatibility for Esteem 195E Hotfoot CPU Board
+- *
+- * Author: Solomon Peachy <solomon@linux-wlan.com>
+- */
+-
+-#include "ops.h"
+-#include "stdio.h"
+-#include "reg.h"
+-#include "dcr.h"
+-#include "4xx.h"
+-#include "cuboot.h"
+-
+-#define TARGET_4xx
+-#define TARGET_HOTFOOT
+-
+-#include "ppcboot-hotfoot.h"
+-
+-static bd_t bd;
+-
+-#define NUM_REGS 3
+-
+-static void hotfoot_fixups(void)
+-{
+-	u32 uart = mfdcr(DCRN_CPC0_UCR) & 0x7f;
+-
+-	dt_fixup_memory(bd.bi_memstart, bd.bi_memsize); 
+-
+-	dt_fixup_cpu_clocks(bd.bi_procfreq, bd.bi_procfreq, 0);
+-	dt_fixup_clock("/plb", bd.bi_plb_busfreq);
+-	dt_fixup_clock("/plb/opb", bd.bi_opbfreq);
+-	dt_fixup_clock("/plb/ebc", bd.bi_pci_busfreq);
+-	dt_fixup_clock("/plb/opb/serial@ef600300", bd.bi_procfreq / uart); 
+-	dt_fixup_clock("/plb/opb/serial@ef600400", bd.bi_procfreq / uart); 
+-	
+-	dt_fixup_mac_address_by_alias("ethernet0", bd.bi_enetaddr);
+-	dt_fixup_mac_address_by_alias("ethernet1", bd.bi_enet1addr);
+-
+-	/* Is this a single eth/serial board? */
+-	if ((bd.bi_enet1addr[0] == 0) && 
+-	    (bd.bi_enet1addr[1] == 0) &&
+-	    (bd.bi_enet1addr[2] == 0) &&
+-	    (bd.bi_enet1addr[3] == 0) &&
+-	    (bd.bi_enet1addr[4] == 0) &&
+-	    (bd.bi_enet1addr[5] == 0)) {
+-		void *devp;
+-
+-		printf("Trimming devtree for single serial/eth board\n");
+-
+-		devp = finddevice("/plb/opb/serial@ef600300");
+-		if (!devp)
+-			fatal("Can't find node for /plb/opb/serial@ef600300");
+-		del_node(devp);
+-
+-		devp = finddevice("/plb/opb/ethernet@ef600900");
+-		if (!devp)
+-			fatal("Can't find node for /plb/opb/ethernet@ef600900");
+-		del_node(devp);
+-	}
+-
+-	ibm4xx_quiesce_eth((u32 *)0xef600800, (u32 *)0xef600900);
+-
+-	/* Fix up flash size in fdt for 4M boards. */
+-	if (bd.bi_flashsize < 0x800000) {
+-		u32 regs[NUM_REGS];
+-		void *devp = finddevice("/plb/ebc/nor_flash@0");
+-		if (!devp)
+-			fatal("Can't find FDT node for nor_flash!??");
+-
+-		printf("Fixing devtree for 4M Flash\n");
+-		
+-		/* First fix up the base addresse */
+-		getprop(devp, "reg", regs, sizeof(regs));
+-		regs[0] = 0;
+-		regs[1] = 0xffc00000;
+-		regs[2] = 0x00400000;
+-		setprop(devp, "reg", regs, sizeof(regs));
+-		
+-		/* Then the offsets */
+-		devp = finddevice("/plb/ebc/nor_flash@0/partition@0");
+-		if (!devp)
+-			fatal("Can't find FDT node for partition@0");
+-		getprop(devp, "reg", regs, 2*sizeof(u32));
+-		regs[0] -= 0x400000;
+-		setprop(devp, "reg", regs,  2*sizeof(u32));
+-
+-		devp = finddevice("/plb/ebc/nor_flash@0/partition@1");
+-		if (!devp)
+-			fatal("Can't find FDT node for partition@1");
+-		getprop(devp, "reg", regs, 2*sizeof(u32));
+-		regs[0] -= 0x400000;
+-		setprop(devp, "reg", regs,  2*sizeof(u32));
+-
+-		devp = finddevice("/plb/ebc/nor_flash@0/partition@2");
+-		if (!devp)
+-			fatal("Can't find FDT node for partition@2");
+-		getprop(devp, "reg", regs, 2*sizeof(u32));
+-		regs[0] -= 0x400000;
+-		setprop(devp, "reg", regs,  2*sizeof(u32));
+-
+-		devp = finddevice("/plb/ebc/nor_flash@0/partition@3");
+-		if (!devp)
+-			fatal("Can't find FDT node for partition@3");
+-		getprop(devp, "reg", regs, 2*sizeof(u32));
+-		regs[0] -= 0x400000;
+-		setprop(devp, "reg", regs,  2*sizeof(u32));
+-
+-		devp = finddevice("/plb/ebc/nor_flash@0/partition@4");
+-		if (!devp)
+-			fatal("Can't find FDT node for partition@4");
+-		getprop(devp, "reg", regs, 2*sizeof(u32));
+-		regs[0] -= 0x400000;
+-		setprop(devp, "reg", regs,  2*sizeof(u32));
+-
+-		devp = finddevice("/plb/ebc/nor_flash@0/partition@6");
+-		if (!devp)
+-			fatal("Can't find FDT node for partition@6");
+-		getprop(devp, "reg", regs, 2*sizeof(u32));
+-		regs[0] -= 0x400000;
+-		setprop(devp, "reg", regs,  2*sizeof(u32));
+-
+-		/* Delete the FeatFS node */
+-		devp = finddevice("/plb/ebc/nor_flash@0/partition@5");
+-		if (!devp)
+-			fatal("Can't find FDT node for partition@5");
+-		del_node(devp);
+-	}
+-}
+-
+-void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
+-		   unsigned long r6, unsigned long r7)
+-{
+-	CUBOOT_INIT();
+-	platform_ops.fixups = hotfoot_fixups;
+-        platform_ops.exit = ibm40x_dbcr_reset;
+-	fdt_init(_dtb_start);
+-	serial_console_init();
+-}
+diff --git a/arch/powerpc/boot/cuboot-kilauea.c b/arch/powerpc/boot/cuboot-kilauea.c
 deleted file mode 100644
-index 1f74079e1703..000000000000
---- a/arch/powerpc/configs/44x/virtex5_defconfig
+index fda182f518a2..000000000000
+--- a/arch/powerpc/boot/cuboot-kilauea.c
 +++ /dev/null
-@@ -1,74 +0,0 @@
--CONFIG_44x=y
--# CONFIG_LOCALVERSION_AUTO is not set
--CONFIG_SYSVIPC=y
--CONFIG_POSIX_MQUEUE=y
--CONFIG_IKCONFIG=y
--CONFIG_IKCONFIG_PROC=y
--CONFIG_LOG_BUF_SHIFT=14
--CONFIG_BLK_DEV_INITRD=y
--CONFIG_SLAB=y
--CONFIG_MODULES=y
--CONFIG_MODULE_UNLOAD=y
--CONFIG_MODULE_FORCE_UNLOAD=y
--CONFIG_MODVERSIONS=y
--# CONFIG_BLK_DEV_BSG is not set
--# CONFIG_EBONY is not set
--CONFIG_XILINX_VIRTEX440_GENERIC_BOARD=y
--CONFIG_PREEMPT=y
--CONFIG_MATH_EMULATION=y
--CONFIG_CMDLINE_BOOL=y
--CONFIG_CMDLINE=""
--CONFIG_NET=y
--CONFIG_PACKET=y
--CONFIG_UNIX=y
--CONFIG_INET=y
--CONFIG_IP_MULTICAST=y
--CONFIG_IP_PNP=y
--CONFIG_IP_PNP_DHCP=y
--CONFIG_IP_PNP_BOOTP=y
--CONFIG_NETFILTER=y
--CONFIG_IP_NF_IPTABLES=m
--CONFIG_IP_NF_FILTER=m
--CONFIG_IP_NF_MANGLE=m
--CONFIG_BLK_DEV_LOOP=y
--CONFIG_BLK_DEV_RAM=y
--CONFIG_BLK_DEV_RAM_SIZE=8192
--CONFIG_XILINX_SYSACE=y
--CONFIG_NETDEVICES=y
--# CONFIG_SERIO_SERPORT is not set
--CONFIG_SERIO_XILINX_XPS_PS2=y
--CONFIG_SERIAL_8250=y
--CONFIG_SERIAL_8250_CONSOLE=y
--CONFIG_SERIAL_OF_PLATFORM=y
--CONFIG_SERIAL_UARTLITE=y
--CONFIG_SERIAL_UARTLITE_CONSOLE=y
--CONFIG_XILINX_HWICAP=y
--CONFIG_GPIOLIB=y
--CONFIG_GPIO_SYSFS=y
--CONFIG_GPIO_XILINX=y
--# CONFIG_HWMON is not set
--CONFIG_FB=y
--CONFIG_FB_XILINX=y
--CONFIG_FRAMEBUFFER_CONSOLE=y
--CONFIG_LOGO=y
--# CONFIG_USB_SUPPORT is not set
--CONFIG_EXT2_FS=y
--CONFIG_AUTOFS4_FS=y
--CONFIG_MSDOS_FS=y
--CONFIG_VFAT_FS=y
--CONFIG_TMPFS=y
--CONFIG_CRAMFS=y
--CONFIG_ROMFS_FS=y
--CONFIG_NFS_FS=y
--CONFIG_ROOT_NFS=y
--CONFIG_NLS_CODEPAGE_437=y
--CONFIG_NLS_ASCII=m
--CONFIG_NLS_ISO8859_1=m
--CONFIG_NLS_UTF8=m
--CONFIG_CRC_CCITT=y
--CONFIG_FONTS=y
--CONFIG_FONT_8x8=y
--CONFIG_FONT_8x16=y
--CONFIG_PRINTK_TIME=y
--CONFIG_DEBUG_INFO=y
--CONFIG_DEBUG_KERNEL=y
-diff --git a/arch/powerpc/configs/ppc40x_defconfig b/arch/powerpc/configs/ppc40x_defconfig
-index a5f683aed328..88960a72b525 100644
---- a/arch/powerpc/configs/ppc40x_defconfig
-+++ b/arch/powerpc/configs/ppc40x_defconfig
-@@ -14,7 +14,6 @@ CONFIG_EP405=y
- CONFIG_HOTFOOT=y
- CONFIG_KILAUEA=y
- CONFIG_MAKALU=y
--CONFIG_XILINX_VIRTEX_GENERIC_BOARD=y
- CONFIG_NET=y
- CONFIG_PACKET=y
- CONFIG_UNIX=y
-@@ -37,33 +36,26 @@ CONFIG_MTD_UBI=m
- CONFIG_MTD_UBI_GLUEBI=m
- CONFIG_BLK_DEV_RAM=y
- CONFIG_BLK_DEV_RAM_SIZE=35000
--CONFIG_XILINX_SYSACE=m
- CONFIG_NETDEVICES=y
- CONFIG_IBM_EMAC=y
- # CONFIG_INPUT is not set
- CONFIG_SERIO=m
- # CONFIG_SERIO_I8042 is not set
- # CONFIG_SERIO_SERPORT is not set
--CONFIG_SERIO_XILINX_XPS_PS2=m
- # CONFIG_VT is not set
- CONFIG_SERIAL_8250=y
- CONFIG_SERIAL_8250_CONSOLE=y
- CONFIG_SERIAL_8250_EXTENDED=y
- CONFIG_SERIAL_8250_SHARE_IRQ=y
- CONFIG_SERIAL_OF_PLATFORM=y
--CONFIG_SERIAL_UARTLITE=y
--CONFIG_SERIAL_UARTLITE_CONSOLE=y
- # CONFIG_HW_RANDOM is not set
--CONFIG_XILINX_HWICAP=m
- CONFIG_I2C=m
- CONFIG_I2C_CHARDEV=m
- CONFIG_I2C_GPIO=m
- CONFIG_I2C_IBM_IIC=m
--CONFIG_GPIO_XILINX=y
- # CONFIG_HWMON is not set
- CONFIG_THERMAL=y
- CONFIG_FB=m
--CONFIG_FB_XILINX=m
- CONFIG_EXT2_FS=y
- CONFIG_EXT4_FS=m
- CONFIG_VFAT_FS=m
-diff --git a/arch/powerpc/configs/ppc44x_defconfig b/arch/powerpc/configs/ppc44x_defconfig
-index a41eedfe0a5f..8b595f67068c 100644
---- a/arch/powerpc/configs/ppc44x_defconfig
-+++ b/arch/powerpc/configs/ppc44x_defconfig
-@@ -22,7 +22,6 @@ CONFIG_GLACIER=y
- CONFIG_REDWOOD=y
- CONFIG_EIGER=y
- CONFIG_YOSEMITE=y
--CONFIG_XILINX_VIRTEX440_GENERIC_BOARD=y
- CONFIG_PPC4xx_GPIO=y
- CONFIG_MATH_EMULATION=y
- CONFIG_NET=y
-@@ -46,7 +45,6 @@ CONFIG_MTD_UBI=m
- CONFIG_MTD_UBI_GLUEBI=m
- CONFIG_BLK_DEV_RAM=y
- CONFIG_BLK_DEV_RAM_SIZE=35000
--CONFIG_XILINX_SYSACE=m
- CONFIG_SCSI=m
- CONFIG_BLK_DEV_SD=m
- # CONFIG_SCSI_LOWLEVEL is not set
-@@ -57,7 +55,6 @@ CONFIG_IBM_EMAC=y
- CONFIG_SERIO=m
- # CONFIG_SERIO_I8042 is not set
- # CONFIG_SERIO_SERPORT is not set
--CONFIG_SERIO_XILINX_XPS_PS2=m
- # CONFIG_VT is not set
- CONFIG_SERIAL_8250=y
- CONFIG_SERIAL_8250_CONSOLE=y
-@@ -65,18 +62,13 @@ CONFIG_SERIAL_8250_CONSOLE=y
- CONFIG_SERIAL_8250_EXTENDED=y
- CONFIG_SERIAL_8250_SHARE_IRQ=y
- CONFIG_SERIAL_OF_PLATFORM=y
--CONFIG_SERIAL_UARTLITE=y
--CONFIG_SERIAL_UARTLITE_CONSOLE=y
- # CONFIG_HW_RANDOM is not set
--CONFIG_XILINX_HWICAP=m
- CONFIG_I2C=m
- CONFIG_I2C_CHARDEV=m
- CONFIG_I2C_GPIO=m
- CONFIG_I2C_IBM_IIC=m
--CONFIG_GPIO_XILINX=y
- # CONFIG_HWMON is not set
- CONFIG_FB=m
--CONFIG_FB_XILINX=m
- CONFIG_USB=m
- CONFIG_USB_EHCI_HCD=m
- CONFIG_USB_OHCI_HCD=m
-diff --git a/arch/powerpc/include/asm/xilinx_intc.h b/arch/powerpc/include/asm/xilinx_intc.h
+@@ -1,46 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
+-/*
+- * Old U-boot compatibility for PPC405EX. This image is already included
+- * a dtb.
+- *
+- * Author: Tiejun Chen <tiejun.chen@windriver.com>
+- *
+- * Copyright (C) 2009 Wind River Systems, Inc.
+- */
+-
+-#include "ops.h"
+-#include "io.h"
+-#include "dcr.h"
+-#include "stdio.h"
+-#include "4xx.h"
+-#include "44x.h"
+-#include "cuboot.h"
+-
+-#define TARGET_4xx
+-#define TARGET_44x
+-#include "ppcboot.h"
+-
+-#define KILAUEA_SYS_EXT_SERIAL_CLOCK     11059200        /* ext. 11.059MHz clk */
+-
+-static bd_t bd;
+-
+-static void kilauea_fixups(void)
+-{
+-	unsigned long sysclk = 33333333;
+-
+-	ibm405ex_fixup_clocks(sysclk, KILAUEA_SYS_EXT_SERIAL_CLOCK);
+-	dt_fixup_memory(bd.bi_memstart, bd.bi_memsize);
+-	ibm4xx_fixup_ebc_ranges("/plb/opb/ebc");
+-	dt_fixup_mac_address_by_alias("ethernet0", bd.bi_enetaddr);
+-	dt_fixup_mac_address_by_alias("ethernet1", bd.bi_enet1addr);
+-}
+-
+-void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
+-		unsigned long r6, unsigned long r7)
+-{
+-	CUBOOT_INIT();
+-	platform_ops.fixups = kilauea_fixups;
+-	platform_ops.exit = ibm40x_dbcr_reset;
+-	fdt_init(_dtb_start);
+-	serial_console_init();
+-}
+diff --git a/arch/powerpc/boot/dcr.h b/arch/powerpc/boot/dcr.h
+index 334ab8b5a668..91dc3a302cc8 100644
+--- a/arch/powerpc/boot/dcr.h
++++ b/arch/powerpc/boot/dcr.h
+@@ -153,17 +153,6 @@ static const unsigned long sdram_bxcr[] = { SDRAM0_B0CR, SDRAM0_B1CR,
+ #define CPR0_SCPID	0x120
+ #define CPR0_PLLC0	0x40
+ 
+-/* 405GP Clocking/Power Management/Chip Control regs */
+-#define DCRN_CPC0_PLLMR 0xb0
+-#define DCRN_405_CPC0_CR0 0xb1
+-#define DCRN_405_CPC0_CR1 0xb2
+-#define DCRN_405_CPC0_PSR 0xb4
+-
+-/* 405EP Clocking/Power Management/Chip Control regs */
+-#define DCRN_CPC0_PLLMR0  0xf0
+-#define DCRN_CPC0_PLLMR1  0xf4
+-#define DCRN_CPC0_UCR     0xf5
+-
+ /* 440GX/405EX Clock Control reg */
+ #define DCRN_CPR0_CLKUPD				0x020
+ #define DCRN_CPR0_PLLC					0x040
+diff --git a/arch/powerpc/boot/dts/acadia.dts b/arch/powerpc/boot/dts/acadia.dts
 deleted file mode 100644
-index ca9aa162fb09..000000000000
---- a/arch/powerpc/include/asm/xilinx_intc.h
+index deb52e41ab84..000000000000
+--- a/arch/powerpc/boot/dts/acadia.dts
 +++ /dev/null
-@@ -1,16 +0,0 @@
+@@ -1,224 +0,0 @@
+-/*
+- * Device Tree Source for AMCC Acadia (405EZ)
+- *
+- * Copyright IBM Corp. 2008
+- *
+- * This file is licensed under the terms of the GNU General Public License
+- * version 2.  This program is licensed "as is" without any warranty of any
+- * kind, whether express or implied.
+- */
+-
+-/dts-v1/;
+-
+-/ {
+-	#address-cells = <1>;
+-	#size-cells = <1>;
+-	model = "amcc,acadia";
+-	compatible = "amcc,acadia";
+-	dcr-parent = <&{/cpus/cpu@0}>;
+-
+-	aliases {
+-		ethernet0 = &EMAC0;
+-		serial0 = &UART0;
+-		serial1 = &UART1;
+-	};
+-
+-	cpus {
+-		#address-cells = <1>;
+-		#size-cells = <0>;
+-
+-		cpu@0 {
+-			device_type = "cpu";
+-			model = "PowerPC,405EZ";
+-			reg = <0x0>;
+-			clock-frequency = <0>; /* Filled in by wrapper */
+-			timebase-frequency = <0>; /* Filled in by wrapper */
+-			i-cache-line-size = <32>;
+-			d-cache-line-size = <32>;
+-			i-cache-size = <16384>;
+-			d-cache-size = <16384>;
+-			dcr-controller;
+-			dcr-access-method = "native";
+-		};
+-	};
+-
+-	memory {
+-		device_type = "memory";
+-		reg = <0x0 0x0>; /* Filled in by wrapper */
+-	};
+-
+-	UIC0: interrupt-controller {
+-		compatible = "ibm,uic-405ez", "ibm,uic";
+-		interrupt-controller;
+-		dcr-reg = <0x0c0 0x009>;
+-		cell-index = <0>;
+-		#address-cells = <0>;
+-		#size-cells = <0>;
+-		#interrupt-cells = <2>;
+-	};
+-
+-	plb {
+-		compatible = "ibm,plb-405ez", "ibm,plb3";
+-		#address-cells = <1>;
+-		#size-cells = <1>;
+-		ranges;
+-		clock-frequency = <0>; /* Filled in by wrapper */
+-
+-		MAL0: mcmal {
+-			compatible = "ibm,mcmal-405ez", "ibm,mcmal";
+-			dcr-reg = <0x380 0x62>;
+-			num-tx-chans = <1>;
+-			num-rx-chans = <1>;
+-			interrupt-parent = <&UIC0>;
+-			/* 405EZ has only 3 interrupts to the UIC, as
+-			 * SERR, TXDE, and RXDE are or'd together into
+-			 * one UIC bit
+-			 */
+-			interrupts = <
+-				0x13 0x4 /* TXEOB */
+-				0x15 0x4 /* RXEOB */
+-				0x12 0x4 /* SERR, TXDE, RXDE */>;
+-		};
+-
+-		POB0: opb {
+-			compatible = "ibm,opb-405ez", "ibm,opb";
+-			#address-cells = <1>;
+-			#size-cells = <1>;
+-			ranges;
+-			dcr-reg = <0x0a 0x05>;
+-			clock-frequency = <0>; /* Filled in by wrapper */
+-
+-			UART0: serial@ef600300 {
+-				device_type = "serial";
+-				compatible = "ns16550";
+-				reg = <0xef600300 0x8>;
+-				virtual-reg = <0xef600300>;
+-				clock-frequency = <0>; /* Filled in by wrapper */
+-				current-speed = <115200>;
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <0x5 0x4>;
+-			};
+-
+-			UART1: serial@ef600400 {
+-				device_type = "serial";
+-				compatible = "ns16550";
+-				reg = <0xef600400 0x8>;
+-				clock-frequency = <0>; /* Filled in by wrapper */
+-				current-speed = <115200>;
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <0x6 0x4>;
+-			};
+-
+-			IIC: i2c@ef600500 {
+-				compatible = "ibm,iic-405ez", "ibm,iic";
+-				reg = <0xef600500 0x11>;
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <0xa 0x4>;
+-			};
+-
+-			GPIO0: gpio@ef600700 {
+-				compatible = "ibm,gpio-405ez";
+-				reg = <0xef600700 0x20>;
+-			};
+-
+-			GPIO1: gpio@ef600800 {
+-				compatible = "ibm,gpio-405ez";
+-				reg = <0xef600800 0x20>;
+-			};
+-
+-			EMAC0: ethernet@ef600900 {
+-				device_type = "network";
+-				compatible = "ibm,emac-405ez", "ibm,emac";
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <
+-					0x10 0x4 /* Ethernet */
+-					0x11 0x4 /* Ethernet Wake up */>;
+-				local-mac-address = [000000000000]; /* Filled in by wrapper */
+-				reg = <0xef600900 0x70>;
+-				mal-device = <&MAL0>;
+-				mal-tx-channel = <0>;
+-				mal-rx-channel = <0>;
+-				cell-index = <0>;
+-				max-frame-size = <1500>;
+-				rx-fifo-size = <4096>;
+-				tx-fifo-size = <2048>;
+-				phy-mode = "mii";
+-				phy-map = <0x0>;
+-			};
+-
+-			CAN0: can@ef601000 {
+-				compatible = "amcc,can-405ez";
+-				reg = <0xef601000 0x620>;
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <0x7 0x4>;
+-			};
+-
+-			CAN1: can@ef601800 {
+-				compatible = "amcc,can-405ez";
+-				reg = <0xef601800 0x620>;
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <0x8 0x4>;
+-			};
+-
+-			cameleon@ef602000 {
+-				compatible = "amcc,cameleon-405ez";
+-				reg = <0xef602000 0x800>;
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <0xb 0x4 0xc 0x4>;
+-			};
+-
+-			ieee1588@ef602800 {
+-				compatible = "amcc,ieee1588-405ez";
+-				reg = <0xef602800 0x60>;
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <0x4 0x4>;
+-				/* This thing is a bit weird.  It has it's own UIC
+-				 * that it uses to generate snapshot triggers.  We
+-				 * don't really support this device yet, and it needs
+-				 * work to figure this out.
+-				 */
+-				dcr-reg = <0xe0 0x9>;
+-			};
+-
+-			usb@ef603000 {
+-				compatible = "ohci-be";
+-				reg = <0xef603000 0x80>;
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <0xd 0x4 0xe 0x4>;
+-			};
+-
+-			dac@ef603300 {
+-				compatible = "amcc,dac-405ez";
+-				reg = <0xef603300 0x40>;
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <0x18 0x4>;
+-			};
+-
+-			adc@ef603400 {
+-				compatible = "amcc,adc-405ez";
+-				reg = <0xef603400 0x40>;
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <0x17 0x4>;
+-			};
+-
+-			spi@ef603500 {
+-				compatible = "amcc,spi-405ez";
+-				reg = <0xef603500 0x100>;
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <0x9 0x4>;
+-			};
+-		};
+-
+-		EBC0: ebc {
+-			compatible = "ibm,ebc-405ez", "ibm,ebc";
+-			dcr-reg = <0x12 0x2>;
+-			#address-cells = <2>;
+-			#size-cells = <1>;
+-			clock-frequency = <0>; /* Filled in by wrapper */
+-		};
+-	};
+-
+-	chosen {
+-		stdout-path = "/plb/opb/serial@ef600300";
+-	};
+-};
+diff --git a/arch/powerpc/boot/dts/ep405.dts b/arch/powerpc/boot/dts/ep405.dts
+deleted file mode 100644
+index 4ac9c5ab6e6b..000000000000
+--- a/arch/powerpc/boot/dts/ep405.dts
++++ /dev/null
+@@ -1,230 +0,0 @@
+-/*
+- * Device Tree Source for EP405
+- *
+- * Copyright 2007 IBM Corp.
+- * Benjamin Herrenschmidt <benh@kernel.crashing.org>
+- *
+- * This file is licensed under the terms of the GNU General Public
+- * License version 2.  This program is licensed "as is" without
+- * any warranty of any kind, whether express or implied.
+- */
+-
+-/dts-v1/;
+-
+-/ {
+-	#address-cells = <1>;
+-	#size-cells = <1>;
+-	model = "ep405";
+-	compatible = "ep405";
+-	dcr-parent = <&{/cpus/cpu@0}>;
+-
+-	aliases {
+-		ethernet0 = &EMAC;
+-		serial0 = &UART0;
+-		serial1 = &UART1;
+-	};
+-
+-	cpus {
+-		#address-cells = <1>;
+-		#size-cells = <0>;
+-
+-		cpu@0 {
+-			device_type = "cpu";
+-			model = "PowerPC,405GP";
+-			reg = <0x00000000>;
+-			clock-frequency = <200000000>; /* Filled in by zImage */
+-			timebase-frequency = <0>; /* Filled in by zImage */
+-			i-cache-line-size = <32>;
+-			d-cache-line-size = <32>;
+-			i-cache-size = <16384>;
+-			d-cache-size = <16384>;
+-			dcr-controller;
+-			dcr-access-method = "native";
+-		};
+-	};
+-
+-	memory {
+-		device_type = "memory";
+-		reg = <0x00000000 0x00000000>; /* Filled in by zImage */
+-	};
+-
+-	UIC0: interrupt-controller {
+-		compatible = "ibm,uic";
+-		interrupt-controller;
+-		cell-index = <0>;
+-		dcr-reg = <0x0c0 0x009>;
+-		#address-cells = <0>;
+-		#size-cells = <0>;
+-		#interrupt-cells = <2>;
+-	};
+-
+-	plb {
+-		compatible = "ibm,plb3";
+-		#address-cells = <1>;
+-		#size-cells = <1>;
+-		ranges;
+-		clock-frequency = <0>; /* Filled in by zImage */
+-
+-		SDRAM0: memory-controller {
+-			compatible = "ibm,sdram-405gp";
+-			dcr-reg = <0x010 0x002>;
+-		};
+-
+-		MAL: mcmal {
+-			compatible = "ibm,mcmal-405gp", "ibm,mcmal";
+-			dcr-reg = <0x180 0x062>;
+-			num-tx-chans = <1>;
+-			num-rx-chans = <1>;
+-			interrupt-parent = <&UIC0>;
+-			interrupts = <
+-				0xb 0x4 /* TXEOB */
+-				0xc 0x4 /* RXEOB */
+-				0xa 0x4 /* SERR */
+-				0xd 0x4 /* TXDE */
+-				0xe 0x4 /* RXDE */>;
+-		};
+-
+-		POB0: opb {
+-			compatible = "ibm,opb-405gp", "ibm,opb";
+-			#address-cells = <1>;
+-			#size-cells = <1>;
+-			ranges = <0xef600000 0xef600000 0x00a00000>;
+-			dcr-reg = <0x0a0 0x005>;
+-			clock-frequency = <0>; /* Filled in by zImage */
+-
+-			UART0: serial@ef600300 {
+-				device_type = "serial";
+-				compatible = "ns16550";
+-				reg = <0xef600300 0x00000008>;
+-				virtual-reg = <0xef600300>;
+-				clock-frequency = <0>; /* Filled in by zImage */
+-				current-speed = <9600>;
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <0x0 0x4>;
+-			};
+-
+-			UART1: serial@ef600400 {
+-				device_type = "serial";
+-				compatible = "ns16550";
+-				reg = <0xef600400 0x00000008>;
+-				virtual-reg = <0xef600400>;
+-				clock-frequency = <0>; /* Filled in by zImage */
+-				current-speed = <9600>;
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <0x1 0x4>;
+-			};
+-
+-			IIC: i2c@ef600500 {
+-				compatible = "ibm,iic-405gp", "ibm,iic";
+-				reg = <0xef600500 0x00000011>;
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <0x2 0x4>;
+-			};
+-
+-			GPIO: gpio@ef600700 {
+-				compatible = "ibm,gpio-405gp";
+-				reg = <0xef600700 0x00000020>;
+-			};
+-
+-			EMAC: ethernet@ef600800 {
+-				linux,network-index = <0x0>;
+-				device_type = "network";
+-				compatible = "ibm,emac-405gp", "ibm,emac";
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <
+-					0xf 0x4 /* Ethernet */
+-					0x9 0x4 /* Ethernet Wake Up */>;
+-				local-mac-address = [000000000000]; /* Filled in by zImage */
+-				reg = <0xef600800 0x00000070>;
+-				mal-device = <&MAL>;
+-				mal-tx-channel = <0>;
+-				mal-rx-channel = <0>;
+-				cell-index = <0>;
+-				max-frame-size = <1500>;
+-				rx-fifo-size = <4096>;
+-				tx-fifo-size = <2048>;
+-				phy-mode = "rmii";
+-				phy-map = <0x00000000>;
+-			};
+-
+-		};
+-
+-		EBC0: ebc {
+-			compatible = "ibm,ebc-405gp", "ibm,ebc";
+-			dcr-reg = <0x012 0x002>;
+-			#address-cells = <2>;
+-			#size-cells = <1>;
+-
+-
+-			/* The ranges property is supplied by the bootwrapper
+-			 * and is based on the firmware's configuration of the
+-			 * EBC bridge
+-			 */
+-			clock-frequency = <0>; /* Filled in by zImage */
+-
+-			/* NVRAM and RTC */
+-			nvrtc@4,200000 {
+-				compatible = "ds1742";
+-				reg = <0x00000004 0x00200000 0x00000000>; /* size fixed up by zImage */
+-			};
+-
+-			/* "BCSR" CPLD contains a PCI irq controller */
+-			bcsr@4,0 {
+-				compatible = "ep405-bcsr";
+-				reg = <0x00000004 0x00000000 0x00000010>;
+-				interrupt-controller;
+-				/* Routing table */
+-				irq-routing = [	00	/* SYSERR */
+-						01	/* STTM */
+-						01	/* RTC */
+-						01	/* FENET */
+-						02	/* NB PCIIRQ mux ? */
+-						03	/* SB Winbond 8259 ? */
+-						04	/* Serial Ring */
+-						05	/* USB (ep405pc) */
+-						06	/* XIRQ 0 */
+-						06	/* XIRQ 1 */
+-						06	/* XIRQ 2 */
+-						06	/* XIRQ 3 */
+-						06	/* XIRQ 4 */
+-						06	/* XIRQ 5 */
+-						06	/* XIRQ 6 */
+-						07];	/* Reserved */
+-			};
+-		};
+-
+-		PCI0: pci@ec000000 {
+-			device_type = "pci";
+-			#interrupt-cells = <1>;
+-			#size-cells = <2>;
+-			#address-cells = <3>;
+-			compatible = "ibm,plb405gp-pci", "ibm,plb-pci";
+-			primary;
+-			reg = <0xeec00000 0x00000008	/* Config space access */
+-			       0xeed80000 0x00000004	/* IACK */
+-			       0xeed80000 0x00000004	/* Special cycle */
+-			       0xef480000 0x00000040>;	/* Internal registers */
+-
+-			/* Outbound ranges, one memory and one IO,
+-			 * later cannot be changed. Chip supports a second
+-			 * IO range but we don't use it for now
+-			 */
+-			ranges = <0x02000000 0x00000000 0x80000000 0x80000000 0x00000000 0x20000000
+-				  0x01000000 0x00000000 0x00000000 0xe8000000 0x00000000 0x00010000>;
+-
+-			/* Inbound 2GB range starting at 0 */
+-			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x80000000>;
+-
+-			/* That's all I know about IRQs on that thing ... */
+-			interrupt-map-mask = <0xf800 0x0 0x0 0x0>;
+-			interrupt-map = <
+-				/* USB */
+-				0x7000 0x0 0x0 0x0 &UIC0 0x1e 0x8 /* IRQ5 */
+-			>;
+-		};
+-	};
+-
+-	chosen {
+-		stdout-path = "/plb/opb/serial@ef600300";
+-	};
+-};
+diff --git a/arch/powerpc/boot/dts/hotfoot.dts b/arch/powerpc/boot/dts/hotfoot.dts
+deleted file mode 100644
+index b93bf2d9dd5b..000000000000
+--- a/arch/powerpc/boot/dts/hotfoot.dts
++++ /dev/null
+@@ -1,296 +0,0 @@
+-/*
+- * Device Tree Source for ESTeem 195E Hotfoot
+- *
+- * Copyright 2009 AbsoluteValue Systems <solomon@linux-wlan.com>
+- *
+- * This file is licensed under the terms of the GNU General Public
+- * License version 2.  This program is licensed "as is" without
+- * any warranty of any kind, whether express or implied.
+- */
+-
+-/dts-v1/;
+-
+-/ {
+-	#address-cells = <1>;
+-	#size-cells = <1>;
+-	model = "est,hotfoot";
+-	compatible = "est,hotfoot";
+-	dcr-parent = <&{/cpus/cpu@0}>;
+-
+-	aliases {
+-		ethernet0 = &EMAC0;
+-		ethernet1 = &EMAC1;
+-		serial0 = &UART0;
+-		serial1 = &UART1;
+-	};
+-
+-	cpus {
+-		#address-cells = <1>;
+-		#size-cells = <0>;
+-
+-		cpu@0 {
+-			device_type = "cpu";
+-			model = "PowerPC,405EP";
+-			reg = <0x00000000>;
+-			clock-frequency = <0>; /* Filled in by zImage */
+-			timebase-frequency = <0>; /* Filled in by zImage */
+-			i-cache-line-size = <0x20>;
+-			d-cache-line-size = <0x20>;
+-			i-cache-size = <0x4000>;
+-			d-cache-size = <0x4000>;
+-			dcr-controller;
+-			dcr-access-method = "native";
+-		};
+-	};
+-
+-	memory {
+-		device_type = "memory";
+-		reg = <0x00000000 0x00000000>; /* Filled in by zImage */
+-	};
+-
+-	UIC0: interrupt-controller {
+-		compatible = "ibm,uic";
+-		interrupt-controller;
+-		cell-index = <0>;
+-		dcr-reg = <0x0c0 0x009>;
+-		#address-cells = <0>;
+-		#size-cells = <0>;
+-		#interrupt-cells = <2>;
+-	};
+-
+-	plb {
+-		compatible = "ibm,plb3";
+-		#address-cells = <1>;
+-		#size-cells = <1>;
+-		ranges;
+-		clock-frequency = <0>; /* Filled in by zImage */
+-
+-		SDRAM0: memory-controller {
+-			compatible = "ibm,sdram-405ep";
+-			dcr-reg = <0x010 0x002>;
+-		};
+-
+-		MAL: mcmal {
+-			compatible = "ibm,mcmal-405ep", "ibm,mcmal";
+-			dcr-reg = <0x180 0x062>;
+-			num-tx-chans = <4>;
+-			num-rx-chans = <2>;
+-			interrupt-parent = <&UIC0>;
+-			interrupts = <
+-				0xb 0x4 /* TXEOB */
+-				0xc 0x4 /* RXEOB */
+-				0xa 0x4 /* SERR */
+-				0xd 0x4 /* TXDE */
+-				0xe 0x4 /* RXDE */>;
+-		};
+-
+-		POB0: opb {
+-			compatible = "ibm,opb-405ep", "ibm,opb";
+-			#address-cells = <1>;
+-			#size-cells = <1>;
+-			ranges = <0xef600000 0xef600000 0x00a00000>;
+-			dcr-reg = <0x0a0 0x005>;
+-			clock-frequency = <0>; /* Filled in by zImage */
+-
+-			/* Hotfoot has UART0/UART1 swapped */
+-
+-			UART0: serial@ef600400 {
+-				device_type = "serial";
+-				compatible = "ns16550";
+-				reg = <0xef600400 0x00000008>;
+-				virtual-reg = <0xef600400>;
+-				clock-frequency = <0>; /* Filled in by zImage */
+-				current-speed = <0x9600>;
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <0x1 0x4>;
+-			};
+-
+-			UART1: serial@ef600300 {
+-				device_type = "serial";
+-				compatible = "ns16550";
+-				reg = <0xef600300 0x00000008>;
+-				virtual-reg = <0xef600300>;
+-				clock-frequency = <0>; /* Filled in by zImage */
+-				current-speed = <0x9600>;
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <0x0 0x4>;
+-			};
+-
+-			IIC: i2c@ef600500 {
+-				#address-cells = <1>;
+-				#size-cells = <0>;
+-				compatible = "ibm,iic-405ep", "ibm,iic";
+-				reg = <0xef600500 0x00000011>;
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <0x2 0x4>;
+-
+-				rtc@68 {
+-					/* Actually a DS1339 */
+-					compatible = "dallas,ds1307";
+-					reg = <0x68>;
+-				};
+-
+-				temp@4a {
+-					/* Not present on all boards */
+-					compatible = "national,lm75";
+-					reg = <0x4a>;
+-				};
+-			};
+-
+-			GPIO: gpio@ef600700 {
+-				#gpio-cells = <2>;
+-				compatible = "ibm,ppc4xx-gpio";
+-				reg = <0xef600700 0x00000020>;
+-				gpio-controller;
+-			};
+-
+-			gpio-leds {
+-				compatible = "gpio-leds";
+-				status {
+-					label = "Status";
+-					gpios = <&GPIO 1 0>;
+-				};
+-				radiorx {
+-					label = "Rx";
+-					gpios = <&GPIO 0xe 0>;
+-				};
+-			};
+-
+-			EMAC0: ethernet@ef600800 {
+-				linux,network-index = <0x0>;
+-				device_type = "network";
+-				compatible = "ibm,emac-405ep", "ibm,emac";
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <
+-					0xf 0x4 /* Ethernet */
+-					0x9 0x4 /* Ethernet Wake Up */>;
+-				local-mac-address = [000000000000]; /* Filled in by zImage */
+-				reg = <0xef600800 0x00000070>;
+-				mal-device = <&MAL>;
+-				mal-tx-channel = <0>;
+-				mal-rx-channel = <0>;
+-				cell-index = <0>;
+-				max-frame-size = <0x5dc>;
+-				rx-fifo-size = <0x1000>;
+-				tx-fifo-size = <0x800>;
+-				phy-mode = "mii";
+-				phy-map = <0x00000000>;
+-			};
+-
+-			EMAC1: ethernet@ef600900 {
+-				linux,network-index = <0x1>;
+-				device_type = "network";
+-				compatible = "ibm,emac-405ep", "ibm,emac";
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <
+-					0x11 0x4 /* Ethernet */
+-					0x9 0x4 /* Ethernet Wake Up */>;
+-				local-mac-address = [000000000000]; /* Filled in by zImage */
+-				reg = <0xef600900 0x00000070>;
+-				mal-device = <&MAL>;
+-				mal-tx-channel = <2>;
+-				mal-rx-channel = <1>;
+-				cell-index = <1>;
+-				max-frame-size = <0x5dc>;
+-				rx-fifo-size = <0x1000>;
+-				tx-fifo-size = <0x800>;
+-				mdio-device = <&EMAC0>;
+-				phy-mode = "mii";
+-				phy-map = <0x0000001>;
+-			};
+-		};
+-
+-		EBC0: ebc {
+-			compatible = "ibm,ebc-405ep", "ibm,ebc";
+-			dcr-reg = <0x012 0x002>;
+-			#address-cells = <2>;
+-			#size-cells = <1>;
+-
+-			/* The ranges property is supplied by the bootwrapper
+-			 * and is based on the firmware's configuration of the
+-			 * EBC bridge
+-			 */
+-			clock-frequency = <0>; /* Filled in by zImage */
+-
+-			nor_flash@0 {
+-				compatible = "cfi-flash";
+-				bank-width = <2>;
+-				reg = <0x0 0xff800000 0x00800000>;
+-				#address-cells = <1>;
+-				#size-cells = <1>;
+-
+-				/* This mapping is for the 8M flash
+-				   4M flash has all ofssets -= 4M,
+-				   and FeatFS partition is not present */
+-				partition@0 {
+-					label = "Bootloader";
+-					reg = <0x7c0000 0x40000>;
+-					/* read-only; */
+-				};
+-				partition@1 {
+-					label = "Env_and_Config_Primary";
+-					reg = <0x400000 0x10000>;
+-				};
+-				partition@2 {
+-					label = "Kernel";
+-					reg = <0x420000 0x100000>;
+-				};
+-				partition@3 {
+-					label = "Filesystem";
+-					reg = <0x520000 0x2a0000>;
+-				};
+-				partition@4 {
+-					label = "Env_and_Config_Secondary";
+-					reg = <0x410000 0x10000>;
+-				};
+-				partition@5 {
+-					label = "FeatFS";
+-					reg = <0x000000 0x400000>;
+-				};
+-				partition@6 {
+-					label = "Bootloader_Env";
+-					reg = <0x7d0000 0x10000>;
+-				};
+-			};
+-		};
+-
+-		PCI0: pci@ec000000 {
+-			device_type = "pci";
+-			#interrupt-cells = <1>;
+-			#size-cells = <2>;
+-			#address-cells = <3>;
+-			compatible = "ibm,plb405ep-pci", "ibm,plb-pci";
+-			primary;
+-			reg = <0xeec00000 0x00000008    /* Config space access */
+-				0xeed80000 0x00000004    /* IACK */
+-				0xeed80000 0x00000004    /* Special cycle */
+-				0xef480000 0x00000040>;  /* Internal registers */
+-
+-			/* Outbound ranges, one memory and one IO,
+-			 * later cannot be changed. Chip supports a second
+-			 * IO range but we don't use it for now
+-			 */
+-			ranges = <0x02000000 0x00000000 0x80000000 0x80000000 0x00000000 0x20000000
+-				0x01000000 0x00000000 0x00000000 0xe8000000 0x00000000 0x00010000>;
+-
+-			/* Inbound 2GB range starting at 0 */
+-			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x80000000>;
+-
+-			interrupt-parent = <&UIC0>;
+-			interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
+-			interrupt-map = <
+-				/* IDSEL 3 -- slot1 (optional) 27/29 A/B IRQ2/4 */
+-				0x1800 0x0 0x0 0x1 &UIC0 0x1b 0x8
+-				0x1800 0x0 0x0 0x2 &UIC0 0x1d 0x8
+-
+-				/* IDSEL 4 -- slot0, 26/28 A/B IRQ1/3 */
+-				0x2000 0x0 0x0 0x1 &UIC0 0x1a 0x8
+-				0x2000 0x0 0x0 0x2 &UIC0 0x1c 0x8
+-				>;
+-		};
+-	};
+-
+-	chosen {
+-		stdout-path = &UART0;
+-	};
+-};
+diff --git a/arch/powerpc/boot/dts/kilauea.dts b/arch/powerpc/boot/dts/kilauea.dts
+deleted file mode 100644
+index 2a3413221cc1..000000000000
+--- a/arch/powerpc/boot/dts/kilauea.dts
++++ /dev/null
+@@ -1,435 +0,0 @@
+-/*
+- * Device Tree Source for AMCC Kilauea (405EX)
+- *
+- * Copyright 2007-2009 DENX Software Engineering, Stefan Roese <sr@denx.de>
+- *
+- * This file is licensed under the terms of the GNU General Public
+- * License version 2.  This program is licensed "as is" without
+- * any warranty of any kind, whether express or implied.
+- */
+-
+-/dts-v1/;
+-
+-/ {
+-	#address-cells = <1>;
+-	#size-cells = <1>;
+-	model = "amcc,kilauea";
+-	compatible = "amcc,kilauea";
+-	dcr-parent = <&{/cpus/cpu@0}>;
+-
+-	aliases {
+-		ethernet0 = &EMAC0;
+-		ethernet1 = &EMAC1;
+-		serial0 = &UART0;
+-		serial1 = &UART1;
+-	};
+-
+-	cpus {
+-		#address-cells = <1>;
+-		#size-cells = <0>;
+-
+-		cpu@0 {
+-			device_type = "cpu";
+-			model = "PowerPC,405EX";
+-			reg = <0x00000000>;
+-			clock-frequency = <0>; /* Filled in by U-Boot */
+-			timebase-frequency = <0>; /* Filled in by U-Boot */
+-			i-cache-line-size = <32>;
+-			d-cache-line-size = <32>;
+-			i-cache-size = <16384>; /* 16 kB */
+-			d-cache-size = <16384>; /* 16 kB */
+-			dcr-controller;
+-			dcr-access-method = "native";
+-		};
+-	};
+-
+-	memory {
+-		device_type = "memory";
+-		reg = <0x00000000 0x00000000>; /* Filled in by U-Boot */
+-	};
+-
+-	UIC0: interrupt-controller {
+-		compatible = "ibm,uic-405ex", "ibm,uic";
+-		interrupt-controller;
+-		cell-index = <0>;
+-		dcr-reg = <0x0c0 0x009>;
+-		#address-cells = <0>;
+-		#size-cells = <0>;
+-		#interrupt-cells = <2>;
+-	};
+-
+-	UIC1: interrupt-controller1 {
+-		compatible = "ibm,uic-405ex","ibm,uic";
+-		interrupt-controller;
+-		cell-index = <1>;
+-		dcr-reg = <0x0d0 0x009>;
+-		#address-cells = <0>;
+-		#size-cells = <0>;
+-		#interrupt-cells = <2>;
+-		interrupts = <0x1e 0x4 0x1f 0x4>; /* cascade */
+-		interrupt-parent = <&UIC0>;
+-	};
+-
+-	UIC2: interrupt-controller2 {
+-		compatible = "ibm,uic-405ex","ibm,uic";
+-		interrupt-controller;
+-		cell-index = <2>;
+-		dcr-reg = <0x0e0 0x009>;
+-		#address-cells = <0>;
+-		#size-cells = <0>;
+-		#interrupt-cells = <2>;
+-		interrupts = <0x1c 0x4 0x1d 0x4>; /* cascade */
+-		interrupt-parent = <&UIC0>;
+-	};
+-
+-	CPM0: cpm {
+-		compatible = "ibm,cpm";
+-		dcr-access-method = "native";
+-		dcr-reg = <0x0b0 0x003>;
+-		unused-units = <0x00000000>;
+-		idle-doze = <0x02000000>;
+-		standby = <0xe3e74800>;
+-	};
+-
+-	plb {
+-		compatible = "ibm,plb-405ex", "ibm,plb4";
+-		#address-cells = <1>;
+-		#size-cells = <1>;
+-		ranges;
+-		clock-frequency = <0>; /* Filled in by U-Boot */
+-
+-		SDRAM0: memory-controller {
+-			compatible = "ibm,sdram-405ex", "ibm,sdram-4xx-ddr2";
+-			dcr-reg = <0x010 0x002>;
+-			interrupt-parent = <&UIC2>;
+-			interrupts = <0x5 0x4	/* ECC DED Error */ 
+-				      0x6 0x4>;	/* ECC SEC Error */ 
+-		};
+-
+-		CRYPTO: crypto@ef700000 {
+-			compatible = "amcc,ppc405ex-crypto", "amcc,ppc4xx-crypto";
+-			reg = <0xef700000 0x80400>;
+-			interrupt-parent = <&UIC0>;
+-			interrupts = <0x17 0x2>;
+-		};
+-
+-		MAL0: mcmal {
+-			compatible = "ibm,mcmal-405ex", "ibm,mcmal2";
+-			dcr-reg = <0x180 0x062>;
+-			num-tx-chans = <2>;
+-			num-rx-chans = <2>;
+-			interrupt-parent = <&MAL0>;
+-			interrupts = <0x0 0x1 0x2 0x3 0x4>;
+-			#interrupt-cells = <1>;
+-			#address-cells = <0>;
+-			#size-cells = <0>;
+-			interrupt-map = </*TXEOB*/ 0x0 &UIC0 0xa 0x4
+-					/*RXEOB*/ 0x1 &UIC0 0xb 0x4
+-					/*SERR*/  0x2 &UIC1 0x0 0x4
+-					/*TXDE*/  0x3 &UIC1 0x1 0x4
+-					/*RXDE*/  0x4 &UIC1 0x2 0x4>;
+-			interrupt-map-mask = <0xffffffff>;
+-		};
+-
+-		POB0: opb {
+-			compatible = "ibm,opb-405ex", "ibm,opb";
+-			#address-cells = <1>;
+-			#size-cells = <1>;
+-			ranges = <0x80000000 0x80000000 0x10000000
+-				  0xef600000 0xef600000 0x00a00000
+-				  0xf0000000 0xf0000000 0x10000000>;
+-			dcr-reg = <0x0a0 0x005>;
+-			clock-frequency = <0>; /* Filled in by U-Boot */
+-
+-			EBC0: ebc {
+-				compatible = "ibm,ebc-405ex", "ibm,ebc";
+-				dcr-reg = <0x012 0x002>;
+-				#address-cells = <2>;
+-				#size-cells = <1>;
+-				clock-frequency = <0>; /* Filled in by U-Boot */
+-				/* ranges property is supplied by U-Boot */
+-				interrupts = <0x5 0x1>;
+-				interrupt-parent = <&UIC1>;
+-
+-				nor_flash@0,0 {
+-					compatible = "amd,s29gl512n", "cfi-flash";
+-					bank-width = <2>;
+-					reg = <0x00000000 0x00000000 0x04000000>;
+-					#address-cells = <1>;
+-					#size-cells = <1>;
+-					partition@0 {
+-						label = "kernel";
+-						reg = <0x00000000 0x001e0000>;
+-					};
+-					partition@1e0000 {
+-						label = "dtb";
+-						reg = <0x001e0000 0x00020000>;
+-					};
+-					partition@200000 {
+-						label = "root";
+-						reg = <0x00200000 0x00200000>;
+-					};
+-					partition@400000 {
+-						label = "user";
+-						reg = <0x00400000 0x03b60000>;
+-					};
+-					partition@3f60000 {
+-						label = "env";
+-						reg = <0x03f60000 0x00040000>;
+-					};
+-					partition@3fa0000 {
+-						label = "u-boot";
+-						reg = <0x03fa0000 0x00060000>;
+-					};
+-				};
+-
+-				ndfc@1,0 {
+-					compatible = "ibm,ndfc";
+-					reg = <0x00000001 0x00000000 0x00002000>;
+-					ccr = <0x00001000>;
+-					bank-settings = <0x80002222>;
+-					#address-cells = <1>;
+-					#size-cells = <1>;
+-
+-					nand {
+-						#address-cells = <1>;
+-						#size-cells = <1>;
+-
+-						partition@0 {
+-							label = "u-boot";
+-							reg = <0x00000000 0x00100000>;
+-						};
+-						partition@100000 {
+-							label = "user";
+-							reg = <0x00000000 0x03f00000>;
+-						};
+-					};
+-				};
+-			};
+-
+-			UART0: serial@ef600200 {
+-				device_type = "serial";
+-				compatible = "ns16550";
+-				reg = <0xef600200 0x00000008>;
+-				virtual-reg = <0xef600200>;
+-				clock-frequency = <0>; /* Filled in by U-Boot */
+-				current-speed = <0>;
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <0x1a 0x4>;
+-			};
+-
+-			UART1: serial@ef600300 {
+-				device_type = "serial";
+-				compatible = "ns16550";
+-				reg = <0xef600300 0x00000008>;
+-				virtual-reg = <0xef600300>;
+-				clock-frequency = <0>; /* Filled in by U-Boot */
+-				current-speed = <0>;
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <0x1 0x4>;
+-			};
+-
+-			IIC0: i2c@ef600400 {
+-				compatible = "ibm,iic-405ex", "ibm,iic";
+-				reg = <0xef600400 0x00000014>;
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <0x2 0x4>;
+-				#address-cells = <1>;
+-				#size-cells = <0>;
+-
+-				rtc@68 {
+-					compatible = "dallas,ds1338";
+-					reg = <0x68>;
+-				};
+-
+-				dtt@48 {
+-					compatible = "dallas,ds1775";
+-					reg = <0x48>;
+-				};
+-			};
+-
+-			IIC1: i2c@ef600500 {
+-				compatible = "ibm,iic-405ex", "ibm,iic";
+-				reg = <0xef600500 0x00000014>;
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <0x7 0x4>;
+-			};
+-
+-			RGMII0: emac-rgmii@ef600b00 {
+-				compatible = "ibm,rgmii-405ex", "ibm,rgmii";
+-				reg = <0xef600b00 0x00000104>;
+-				has-mdio;
+-			};
+-
+-			EMAC0: ethernet@ef600900 {
+-				linux,network-index = <0x0>;
+-				device_type = "network";
+-				compatible = "ibm,emac-405ex", "ibm,emac4sync";
+-				interrupt-parent = <&EMAC0>;
+-				interrupts = <0x0 0x1>;
+-				#interrupt-cells = <1>;
+-				#address-cells = <0>;
+-				#size-cells = <0>;
+-				interrupt-map = </*Status*/ 0x0 &UIC0 0x18 0x4
+-						/*Wake*/  0x1 &UIC1 0x1d 0x4>;
+-				reg = <0xef600900 0x000000c4>;
+-				local-mac-address = [000000000000]; /* Filled in by U-Boot */
+-				mal-device = <&MAL0>;
+-				mal-tx-channel = <0>;
+-				mal-rx-channel = <0>;
+-				cell-index = <0>;
+-				max-frame-size = <9000>;
+-				rx-fifo-size = <4096>;
+-				tx-fifo-size = <2048>;
+-				rx-fifo-size-gige = <16384>;
+-				tx-fifo-size-gige = <16384>;
+-				phy-mode = "rgmii";
+-				phy-map = <0x00000000>;
+-				rgmii-device = <&RGMII0>;
+-				rgmii-channel = <0>;
+-				has-inverted-stacr-oc;
+-				has-new-stacr-staopc;
+-			};
+-
+-			EMAC1: ethernet@ef600a00 {
+-				linux,network-index = <0x1>;
+-				device_type = "network";
+-				compatible = "ibm,emac-405ex", "ibm,emac4sync";
+-				interrupt-parent = <&EMAC1>;
+-				interrupts = <0x0 0x1>;
+-				#interrupt-cells = <1>;
+-				#address-cells = <0>;
+-				#size-cells = <0>;
+-				interrupt-map = </*Status*/ 0x0 &UIC0 0x19 0x4
+-						/*Wake*/  0x1 &UIC1 0x1f 0x4>;
+-				reg = <0xef600a00 0x000000c4>;
+-				local-mac-address = [000000000000]; /* Filled in by U-Boot */
+-				mal-device = <&MAL0>;
+-				mal-tx-channel = <1>;
+-				mal-rx-channel = <1>;
+-				cell-index = <1>;
+-				max-frame-size = <9000>;
+-				rx-fifo-size = <4096>;
+-				tx-fifo-size = <2048>;
+-				rx-fifo-size-gige = <16384>;
+-				tx-fifo-size-gige = <16384>;
+-				phy-mode = "rgmii";
+-				phy-map = <0x00000000>;
+-				rgmii-device = <&RGMII0>;
+-				rgmii-channel = <1>;
+-				has-inverted-stacr-oc;
+-				has-new-stacr-staopc;
+-			};
+-		};
+-
+-		PCIE0: pciex@a0000000 {
+-			device_type = "pci";
+-			#interrupt-cells = <1>;
+-			#size-cells = <2>;
+-			#address-cells = <3>;
+-			compatible = "ibm,plb-pciex-405ex", "ibm,plb-pciex";
+-			primary;
+-			port = <0x0>; /* port number */
+-			reg = <0xa0000000 0x20000000	/* Config space access */
+-			       0xef000000 0x00001000>;	/* Registers */
+-			dcr-reg = <0x040 0x020>;
+-			sdr-base = <0x400>;
+-
+-			/* Outbound ranges, one memory and one IO,
+-			 * later cannot be changed
+-			 */
+-			ranges = <0x02000000 0x00000000 0x80000000 0x90000000 0x00000000 0x08000000
+-				  0x01000000 0x00000000 0x00000000 0xe0000000 0x00000000 0x00010000>;
+-
+-			/* Inbound 2GB range starting at 0 */
+-			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x80000000>;
+-
+-			/* This drives busses 0x00 to 0x3f */
+-			bus-range = <0x0 0x3f>;
+-
+-			/* Legacy interrupts (note the weird polarity, the bridge seems
+-			 * to invert PCIe legacy interrupts).
+-			 * We are de-swizzling here because the numbers are actually for
+-			 * port of the root complex virtual P2P bridge. But I want
+-			 * to avoid putting a node for it in the tree, so the numbers
+-			 * below are basically de-swizzled numbers.
+-			 * The real slot is on idsel 0, so the swizzling is 1:1
+-			 */
+-			interrupt-map-mask = <0x0 0x0 0x0 0x7>;
+-			interrupt-map = <
+-				0x0 0x0 0x0 0x1 &UIC2 0x0 0x4 /* swizzled int A */
+-				0x0 0x0 0x0 0x2 &UIC2 0x1 0x4 /* swizzled int B */
+-				0x0 0x0 0x0 0x3 &UIC2 0x2 0x4 /* swizzled int C */
+-				0x0 0x0 0x0 0x4 &UIC2 0x3 0x4 /* swizzled int D */>;
+-		};
+-
+-		PCIE1: pciex@c0000000 {
+-			device_type = "pci";
+-			#interrupt-cells = <1>;
+-			#size-cells = <2>;
+-			#address-cells = <3>;
+-			compatible = "ibm,plb-pciex-405ex", "ibm,plb-pciex";
+-			primary;
+-			port = <0x1>; /* port number */
+-			reg = <0xc0000000 0x20000000	/* Config space access */
+-			       0xef001000 0x00001000>;	/* Registers */
+-			dcr-reg = <0x060 0x020>;
+-			sdr-base = <0x440>;
+-
+-			/* Outbound ranges, one memory and one IO,
+-			 * later cannot be changed
+-			 */
+-			ranges = <0x02000000 0x00000000 0x80000000 0x98000000 0x00000000 0x08000000
+-				  0x01000000 0x00000000 0x00000000 0xe0010000 0x00000000 0x00010000>;
+-
+-			/* Inbound 2GB range starting at 0 */
+-			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x80000000>;
+-
+-			/* This drives busses 0x40 to 0x7f */
+-			bus-range = <0x40 0x7f>;
+-
+-			/* Legacy interrupts (note the weird polarity, the bridge seems
+-			 * to invert PCIe legacy interrupts).
+-			 * We are de-swizzling here because the numbers are actually for
+-			 * port of the root complex virtual P2P bridge. But I want
+-			 * to avoid putting a node for it in the tree, so the numbers
+-			 * below are basically de-swizzled numbers.
+-			 * The real slot is on idsel 0, so the swizzling is 1:1
+-			 */
+-			interrupt-map-mask = <0x0 0x0 0x0 0x7>;
+-			interrupt-map = <
+-				0x0 0x0 0x0 0x1 &UIC2 0xb 0x4 /* swizzled int A */
+-				0x0 0x0 0x0 0x2 &UIC2 0xc 0x4 /* swizzled int B */
+-				0x0 0x0 0x0 0x3 &UIC2 0xd 0x4 /* swizzled int C */
+-				0x0 0x0 0x0 0x4 &UIC2 0xe 0x4 /* swizzled int D */>;
+-		};
+-
+-		MSI: ppc4xx-msi@C10000000 {
+-			compatible = "amcc,ppc4xx-msi", "ppc4xx-msi";
+-			reg = <0xEF620000 0x100>;
+-			sdr-base = <0x4B0>;
+-			msi-data = <0x00000000>;
+-			msi-mask = <0x44440000>;
+-			interrupt-count = <12>;
+-			interrupts = <0 1 2 3 4 5 6 7 8 9 0xA 0xB 0xC 0xD>;
+-			interrupt-parent = <&UIC2>;
+-			#interrupt-cells = <1>;
+-			#address-cells = <0>;
+-			#size-cells = <0>;
+-			interrupt-map = <0 &UIC2 0x10 1
+-					1 &UIC2 0x11 1
+-					2 &UIC2 0x12 1
+-					2 &UIC2 0x13 1
+-					2 &UIC2 0x14 1
+-					2 &UIC2 0x15 1
+-					2 &UIC2 0x16 1
+-					2 &UIC2 0x17 1
+-					2 &UIC2 0x18 1
+-					2 &UIC2 0x19 1
+-					2 &UIC2 0x1A 1
+-					2 &UIC2 0x1B 1
+-					2 &UIC2 0x1C 1
+-					3 &UIC2 0x1D 1>;
+-		};
+-	};
+-};
+diff --git a/arch/powerpc/boot/dts/obs600.dts b/arch/powerpc/boot/dts/obs600.dts
+deleted file mode 100644
+index d10b0411809b..000000000000
+--- a/arch/powerpc/boot/dts/obs600.dts
++++ /dev/null
+@@ -1,314 +0,0 @@
+-/*
+- * Device Tree Source for PlatHome OpenBlockS 600 (405EX)
+- *
+- * Copyright 2011 Ben Herrenschmidt, IBM Corp.
+- *
+- * Based on Kilauea by:
+- *
+- * Copyright 2007-2009 DENX Software Engineering, Stefan Roese <sr@denx.de>
+- *
+- * This file is licensed under the terms of the GNU General Public
+- * License version 2.  This program is licensed "as is" without
+- * any warranty of any kind, whether express or implied.
+- */
+-
+-/dts-v1/;
+-
+-/ {
+-	#address-cells = <1>;
+-	#size-cells = <1>;
+-	model = "PlatHome,OpenBlockS 600";
+-	compatible = "plathome,obs600";
+-	dcr-parent = <&{/cpus/cpu@0}>;
+-
+-	aliases {
+-		ethernet0 = &EMAC0;
+-		ethernet1 = &EMAC1;
+-		serial0 = &UART0;
+-		serial1 = &UART1;
+-	};
+-
+-	cpus {
+-		#address-cells = <1>;
+-		#size-cells = <0>;
+-
+-		cpu@0 {
+-			device_type = "cpu";
+-			model = "PowerPC,405EX";
+-			reg = <0x00000000>;
+-			clock-frequency = <0>; /* Filled in by U-Boot */
+-			timebase-frequency = <0>; /* Filled in by U-Boot */
+-			i-cache-line-size = <32>;
+-			d-cache-line-size = <32>;
+-			i-cache-size = <16384>; /* 16 kB */
+-			d-cache-size = <16384>; /* 16 kB */
+-			dcr-controller;
+-			dcr-access-method = "native";
+-		};
+-	};
+-
+-	memory {
+-		device_type = "memory";
+-		reg = <0x00000000 0x00000000>; /* Filled in by U-Boot */
+-	};
+-
+-	UIC0: interrupt-controller {
+-		compatible = "ibm,uic-405ex", "ibm,uic";
+-		interrupt-controller;
+-		cell-index = <0>;
+-		dcr-reg = <0x0c0 0x009>;
+-		#address-cells = <0>;
+-		#size-cells = <0>;
+-		#interrupt-cells = <2>;
+-	};
+-
+-	UIC1: interrupt-controller1 {
+-		compatible = "ibm,uic-405ex","ibm,uic";
+-		interrupt-controller;
+-		cell-index = <1>;
+-		dcr-reg = <0x0d0 0x009>;
+-		#address-cells = <0>;
+-		#size-cells = <0>;
+-		#interrupt-cells = <2>;
+-		interrupts = <0x1e 0x4 0x1f 0x4>; /* cascade */
+-		interrupt-parent = <&UIC0>;
+-	};
+-
+-	UIC2: interrupt-controller2 {
+-		compatible = "ibm,uic-405ex","ibm,uic";
+-		interrupt-controller;
+-		cell-index = <2>;
+-		dcr-reg = <0x0e0 0x009>;
+-		#address-cells = <0>;
+-		#size-cells = <0>;
+-		#interrupt-cells = <2>;
+-		interrupts = <0x1c 0x4 0x1d 0x4>; /* cascade */
+-		interrupt-parent = <&UIC0>;
+-	};
+-
+-	CPM0: cpm {
+-		compatible = "ibm,cpm";
+-		dcr-access-method = "native";
+-		dcr-reg = <0x0b0 0x003>;
+-		unused-units = <0x00000000>;
+-		idle-doze = <0x02000000>;
+-		standby = <0xe3e74800>;
+-	};
+-
+-	plb {
+-		compatible = "ibm,plb-405ex", "ibm,plb4";
+-		#address-cells = <1>;
+-		#size-cells = <1>;
+-		ranges;
+-		clock-frequency = <0>; /* Filled in by U-Boot */
+-
+-		SDRAM0: memory-controller {
+-			compatible = "ibm,sdram-405ex", "ibm,sdram-4xx-ddr2";
+-			dcr-reg = <0x010 0x002>;
+-			interrupt-parent = <&UIC2>;
+-			interrupts = <0x5 0x4	/* ECC DED Error */
+-				      0x6 0x4>;	/* ECC SEC Error */
+-		};
+-
+-		CRYPTO: crypto@ef700000 {
+-			compatible = "amcc,ppc405ex-crypto", "amcc,ppc4xx-crypto";
+-			reg = <0xef700000 0x80400>;
+-			interrupt-parent = <&UIC0>;
+-			interrupts = <0x17 0x2>;
+-		};
+-
+-		MAL0: mcmal {
+-			compatible = "ibm,mcmal-405ex", "ibm,mcmal2";
+-			dcr-reg = <0x180 0x062>;
+-			num-tx-chans = <2>;
+-			num-rx-chans = <2>;
+-			interrupt-parent = <&MAL0>;
+-			interrupts = <0x0 0x1 0x2 0x3 0x4>;
+-			#interrupt-cells = <1>;
+-			#address-cells = <0>;
+-			#size-cells = <0>;
+-			interrupt-map = </*TXEOB*/ 0x0 &UIC0 0xa 0x4
+-					/*RXEOB*/ 0x1 &UIC0 0xb 0x4
+-					/*SERR*/  0x2 &UIC1 0x0 0x4
+-					/*TXDE*/  0x3 &UIC1 0x1 0x4
+-					/*RXDE*/  0x4 &UIC1 0x2 0x4>;
+-			interrupt-map-mask = <0xffffffff>;
+-		};
+-
+-		POB0: opb {
+-			compatible = "ibm,opb-405ex", "ibm,opb";
+-			#address-cells = <1>;
+-			#size-cells = <1>;
+-			ranges = <0x80000000 0x80000000 0x10000000
+-				  0xef600000 0xef600000 0x00a00000
+-				  0xf0000000 0xf0000000 0x10000000>;
+-			dcr-reg = <0x0a0 0x005>;
+-			clock-frequency = <0>; /* Filled in by U-Boot */
+-
+-			EBC0: ebc {
+-				compatible = "ibm,ebc-405ex", "ibm,ebc";
+-				dcr-reg = <0x012 0x002>;
+-				#address-cells = <2>;
+-				#size-cells = <1>;
+-				clock-frequency = <0>; /* Filled in by U-Boot */
+-				/* ranges property is supplied by U-Boot */
+-				interrupts = <0x5 0x1>;
+-				interrupt-parent = <&UIC1>;
+-
+-				nor_flash@0,0 {
+-					compatible = "amd,s29gl512n", "cfi-flash";
+-					bank-width = <2>;
+-					reg = <0x00000000 0x00000000 0x08000000>;
+-					#address-cells = <1>;
+-					#size-cells = <1>;
+-					partition@0 {
+-						label = "kernel + initrd";
+-						reg = <0x00000000 0x03de0000>;
+-					};
+-					partition@3de0000 {
+-						label = "user config area";
+-						reg = <0x03de0000 0x00080000>;
+-					};
+-					partition@3e60000 {
+-						label = "user program area";
+-						reg = <0x03e60000 0x04000000>;
+-					};
+-					partition@7e60000 {
+-						label = "flat device tree";
+-						reg = <0x07e60000 0x00080000>;
+-					};
+-					partition@7ee0000 {
+-						label = "test program";
+-						reg = <0x07ee0000 0x00080000>;
+-					};
+-					partition@7f60000 {
+-						label = "u-boot env";
+-						reg = <0x07f60000 0x00040000>;
+-					};
+-					partition@7fa0000 {
+-						label = "u-boot";
+-						reg = <0x07fa0000 0x00060000>;
+-					};
+-				};
+-			};
+-
+-			UART0: serial@ef600200 {
+-				device_type = "serial";
+-				compatible = "ns16550";
+-				reg = <0xef600200 0x00000008>;
+-				virtual-reg = <0xef600200>;
+-				clock-frequency = <0>; /* Filled in by U-Boot */
+-				current-speed = <0>;
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <0x1a 0x4>;
+-			};
+-
+-			UART1: serial@ef600300 {
+-				device_type = "serial";
+-				compatible = "ns16550";
+-				reg = <0xef600300 0x00000008>;
+-				virtual-reg = <0xef600300>;
+-				clock-frequency = <0>; /* Filled in by U-Boot */
+-				current-speed = <0>;
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <0x1 0x4>;
+-			};
+-
+-			IIC0: i2c@ef600400 {
+-				compatible = "ibm,iic-405ex", "ibm,iic";
+-				reg = <0xef600400 0x00000014>;
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <0x2 0x4>;
+-				#address-cells = <1>;
+-				#size-cells = <0>;
+-
+-				rtc@68 {
+-					compatible = "dallas,ds1340";
+-					reg = <0x68>;
+-				};
+-			};
+-
+-			IIC1: i2c@ef600500 {
+-				compatible = "ibm,iic-405ex", "ibm,iic";
+-				reg = <0xef600500 0x00000014>;
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <0x7 0x4>;
+-			};
+-
+-			RGMII0: emac-rgmii@ef600b00 {
+-				compatible = "ibm,rgmii-405ex", "ibm,rgmii";
+-				reg = <0xef600b00 0x00000104>;
+-				has-mdio;
+-			};
+-
+-			EMAC0: ethernet@ef600900 {
+-				linux,network-index = <0x0>;
+-				device_type = "network";
+-				compatible = "ibm,emac-405ex", "ibm,emac4sync";
+-				interrupt-parent = <&EMAC0>;
+-				interrupts = <0x0 0x1>;
+-				#interrupt-cells = <1>;
+-				#address-cells = <0>;
+-				#size-cells = <0>;
+-				interrupt-map = </*Status*/ 0x0 &UIC0 0x18 0x4
+-						/*Wake*/  0x1 &UIC1 0x1d 0x4>;
+-				reg = <0xef600900 0x000000c4>;
+-				local-mac-address = [000000000000]; /* Filled in by U-Boot */
+-				mal-device = <&MAL0>;
+-				mal-tx-channel = <0>;
+-				mal-rx-channel = <0>;
+-				cell-index = <0>;
+-				max-frame-size = <9000>;
+-				rx-fifo-size = <4096>;
+-				tx-fifo-size = <2048>;
+-				rx-fifo-size-gige = <16384>;
+-				tx-fifo-size-gige = <16384>;
+-				phy-mode = "rgmii";
+-				phy-map = <0x00000000>;
+-				rgmii-device = <&RGMII0>;
+-				rgmii-channel = <0>;
+-				has-inverted-stacr-oc;
+-				has-new-stacr-staopc;
+-			};
+-
+-			EMAC1: ethernet@ef600a00 {
+-				linux,network-index = <0x1>;
+-				device_type = "network";
+-				compatible = "ibm,emac-405ex", "ibm,emac4sync";
+-				interrupt-parent = <&EMAC1>;
+-				interrupts = <0x0 0x1>;
+-				#interrupt-cells = <1>;
+-				#address-cells = <0>;
+-				#size-cells = <0>;
+-				interrupt-map = </*Status*/ 0x0 &UIC0 0x19 0x4
+-						/*Wake*/  0x1 &UIC1 0x1f 0x4>;
+-				reg = <0xef600a00 0x000000c4>;
+-				local-mac-address = [000000000000]; /* Filled in by U-Boot */
+-				mal-device = <&MAL0>;
+-				mal-tx-channel = <1>;
+-				mal-rx-channel = <1>;
+-				cell-index = <1>;
+-				max-frame-size = <9000>;
+-				rx-fifo-size = <4096>;
+-				tx-fifo-size = <2048>;
+-				rx-fifo-size-gige = <16384>;
+-				tx-fifo-size-gige = <16384>;
+-				phy-mode = "rgmii";
+-				phy-map = <0x00000000>;
+-				rgmii-device = <&RGMII0>;
+-				rgmii-channel = <1>;
+-				has-inverted-stacr-oc;
+-				has-new-stacr-staopc;
+-			};
+-
+-			GPIO: gpio@ef600800 {
+-				device_type = "gpio";
+-				compatible = "ibm,gpio-405ex", "ibm,ppc4xx-gpio";
+-				reg = <0xef600800 0x50>;
+-			};
+-		};
+-	};
+-        chosen {
+-                stdout-path = "/plb/opb/serial@ef600200";
+-        };
+-};
+diff --git a/arch/powerpc/boot/dts/walnut.dts b/arch/powerpc/boot/dts/walnut.dts
+deleted file mode 100644
+index 0872862c9363..000000000000
+--- a/arch/powerpc/boot/dts/walnut.dts
++++ /dev/null
+@@ -1,246 +0,0 @@
+-/*
+- * Device Tree Source for IBM Walnut
+- *
+- * Copyright 2007 IBM Corp.
+- * Josh Boyer <jwboyer@linux.vnet.ibm.com>
+- *
+- * This file is licensed under the terms of the GNU General Public
+- * License version 2.  This program is licensed "as is" without
+- * any warranty of any kind, whether express or implied.
+- */
+-
+-/dts-v1/;
+-
+-/ {
+-	#address-cells = <1>;
+-	#size-cells = <1>;
+-	model = "ibm,walnut";
+-	compatible = "ibm,walnut";
+-	dcr-parent = <&{/cpus/cpu@0}>;
+-
+-	aliases {
+-		ethernet0 = &EMAC;
+-		serial0 = &UART0;
+-		serial1 = &UART1;
+-	};
+-
+-	cpus {
+-		#address-cells = <1>;
+-		#size-cells = <0>;
+-
+-		cpu@0 {
+-			device_type = "cpu";
+-			model = "PowerPC,405GP";
+-			reg = <0x00000000>;
+-			clock-frequency = <200000000>; /* Filled in by zImage */
+-			timebase-frequency = <0>; /* Filled in by zImage */
+-			i-cache-line-size = <32>;
+-			d-cache-line-size = <32>;
+-			i-cache-size = <16384>;
+-			d-cache-size = <16384>;
+-			dcr-controller;
+-			dcr-access-method = "native";
+-		};
+-	};
+-
+-	memory {
+-		device_type = "memory";
+-		reg = <0x00000000 0x00000000>; /* Filled in by zImage */
+-	};
+-
+-	UIC0: interrupt-controller {
+-		compatible = "ibm,uic";
+-		interrupt-controller;
+-		cell-index = <0>;
+-		dcr-reg = <0x0c0 0x009>;
+-		#address-cells = <0>;
+-		#size-cells = <0>;
+-		#interrupt-cells = <2>;
+-	};
+-
+-	plb {
+-		compatible = "ibm,plb3";
+-		#address-cells = <1>;
+-		#size-cells = <1>;
+-		ranges;
+-		clock-frequency = <0>; /* Filled in by zImage */
+-
+-		SDRAM0: memory-controller {
+-			compatible = "ibm,sdram-405gp";
+-			dcr-reg = <0x010 0x002>;
+-		};
+-
+-		MAL: mcmal {
+-			compatible = "ibm,mcmal-405gp", "ibm,mcmal";
+-			dcr-reg = <0x180 0x062>;
+-			num-tx-chans = <1>;
+-			num-rx-chans = <1>;
+-			interrupt-parent = <&UIC0>;
+-			interrupts = <
+-				0xb 0x4 /* TXEOB */
+-				0xc 0x4 /* RXEOB */
+-				0xa 0x4 /* SERR */
+-				0xd 0x4 /* TXDE */
+-				0xe 0x4 /* RXDE */>;
+-		};
+-
+-		POB0: opb {
+-			compatible = "ibm,opb-405gp", "ibm,opb";
+-			#address-cells = <1>;
+-			#size-cells = <1>;
+-			ranges = <0xef600000 0xef600000 0x00a00000>;
+-			dcr-reg = <0x0a0 0x005>;
+-			clock-frequency = <0>; /* Filled in by zImage */
+-
+-			UART0: serial@ef600300 {
+-				device_type = "serial";
+-				compatible = "ns16550";
+-				reg = <0xef600300 0x00000008>;
+-				virtual-reg = <0xef600300>;
+-				clock-frequency = <0>; /* Filled in by zImage */
+-				current-speed = <9600>;
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <0x0 0x4>;
+-			};
+-
+-			UART1: serial@ef600400 {
+-				device_type = "serial";
+-				compatible = "ns16550";
+-				reg = <0xef600400 0x00000008>;
+-				virtual-reg = <0xef600400>;
+-				clock-frequency = <0>; /* Filled in by zImage */
+-				current-speed = <9600>;
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <0x1 0x4>;
+-			};
+-
+-			IIC: i2c@ef600500 {
+-				compatible = "ibm,iic-405gp", "ibm,iic";
+-				reg = <0xef600500 0x00000011>;
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <0x2 0x4>;
+-			};
+-
+-			GPIO: gpio@ef600700 {
+-				compatible = "ibm,gpio-405gp";
+-				reg = <0xef600700 0x00000020>;
+-			};
+-
+-			EMAC: ethernet@ef600800 {
+-				device_type = "network";
+-				compatible = "ibm,emac-405gp", "ibm,emac";
+-				interrupt-parent = <&UIC0>;
+-				interrupts = <
+-					0xf 0x4 /* Ethernet */
+-					0x9 0x4 /* Ethernet Wake Up */>;
+-				local-mac-address = [000000000000]; /* Filled in by zImage */
+-				reg = <0xef600800 0x00000070>;
+-				mal-device = <&MAL>;
+-				mal-tx-channel = <0>;
+-				mal-rx-channel = <0>;
+-				cell-index = <0>;
+-				max-frame-size = <1500>;
+-				rx-fifo-size = <4096>;
+-				tx-fifo-size = <2048>;
+-				phy-mode = "rmii";
+-				phy-map = <0x00000001>;
+-			};
+-
+-		};
+-
+-		EBC0: ebc {
+-			compatible = "ibm,ebc-405gp", "ibm,ebc";
+-			dcr-reg = <0x012 0x002>;
+-			#address-cells = <2>;
+-			#size-cells = <1>;
+-			/* The ranges property is supplied by the bootwrapper
+-			 * and is based on the firmware's configuration of the
+-			 * EBC bridge
+-			 */
+-			clock-frequency = <0>; /* Filled in by zImage */
+-
+-			sram@0,0 {
+-				reg = <0x00000000 0x00000000 0x00080000>;
+-			};
+-
+-			flash@0,80000 {
+-				compatible = "jedec-flash";
+-				bank-width = <1>;
+-				reg = <0x00000000 0x00080000 0x00080000>;
+-				#address-cells = <1>;
+-				#size-cells = <1>;
+-				partition@0 {
+-					label = "OpenBIOS";
+-					reg = <0x00000000 0x00080000>;
+-					read-only;
+-				};
+-			};
+-
+-			nvram@1,0 {
+-				/* NVRAM and RTC */
+-				compatible = "ds1743-nvram";
+-				#bytes = <0x2000>;
+-				reg = <0x00000001 0x00000000 0x00002000>;
+-			};
+-
+-			keyboard@2,0 {
+-				compatible = "intel,82C42PC";
+-				reg = <0x00000002 0x00000000 0x00000002>;
+-			};
+-
+-			ir@3,0 {
+-				compatible = "ti,TIR2000PAG";
+-				reg = <0x00000003 0x00000000 0x00000010>;
+-			};
+-
+-			fpga@7,0 {
+-				compatible = "Walnut-FPGA";
+-				reg = <0x00000007 0x00000000 0x00000010>;
+-				virtual-reg = <0xf0300005>;
+-			};
+-		};
+-
+-		PCI0: pci@ec000000 {
+-			device_type = "pci";
+-			#interrupt-cells = <1>;
+-			#size-cells = <2>;
+-			#address-cells = <3>;
+-			compatible = "ibm,plb405gp-pci", "ibm,plb-pci";
+-			primary;
+-			reg = <0xeec00000 0x00000008	/* Config space access */
+-			       0xeed80000 0x00000004	/* IACK */
+-			       0xeed80000 0x00000004	/* Special cycle */
+-			       0xef480000 0x00000040>;	/* Internal registers */
+-
+-			/* Outbound ranges, one memory and one IO,
+-			 * later cannot be changed. Chip supports a second
+-			 * IO range but we don't use it for now
+-			 */
+-			ranges = <0x02000000 0x00000000 0x80000000 0x80000000 0x00000000 0x20000000
+-				  0x01000000 0x00000000 0x00000000 0xe8000000 0x00000000 0x00010000>;
+-
+-			/* Inbound 2GB range starting at 0 */
+-			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x80000000>;
+-
+-			/* Walnut has all 4 IRQ pins tied together per slot */
+-			interrupt-map-mask = <0xf800 0x0 0x0 0x0>;
+-			interrupt-map = <
+-				/* IDSEL 1 */
+-				0x800 0x0 0x0 0x0 &UIC0 0x1c 0x8
+-
+-				/* IDSEL 2 */
+-				0x1000 0x0 0x0 0x0 &UIC0 0x1d 0x8
+-
+-				/* IDSEL 3 */
+-				0x1800 0x0 0x0 0x0 &UIC0 0x1e 0x8
+-
+-				/* IDSEL 4 */
+-				0x2000 0x0 0x0 0x0 &UIC0 0x1f 0x8
+-			>;
+-		};
+-	};
+-
+-	chosen {
+-		stdout-path = "/plb/opb/serial@ef600300";
+-	};
+-};
+diff --git a/arch/powerpc/boot/ep405.c b/arch/powerpc/boot/ep405.c
+deleted file mode 100644
+index f9ad1e6a844e..000000000000
+--- a/arch/powerpc/boot/ep405.c
++++ /dev/null
+@@ -1,71 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
+-/*
+- * Embedded Planet EP405 with PlanetCore firmware
+- *
+- * (c) Benjamin Herrenschmidt <benh@kernel.crashing.org>, IBM Corp,\
+- *
+- * Based on ep88xc.c by
+- *
+- * Scott Wood <scottwood@freescale.com>
+- *
+- * Copyright (c) 2007 Freescale Semiconductor, Inc.
+- */
+-
+-#include "ops.h"
+-#include "stdio.h"
+-#include "planetcore.h"
+-#include "dcr.h"
+-#include "4xx.h"
+-#include "io.h"
+-
+-static char *table;
+-static u64 mem_size;
+-
+-static void platform_fixups(void)
+-{
+-	u64 val;
+-	void *nvrtc;
+-
+-	dt_fixup_memory(0, mem_size);
+-	planetcore_set_mac_addrs(table);
+-
+-	if (!planetcore_get_decimal(table, PLANETCORE_KEY_CRYSTAL_HZ, &val)) {
+-		printf("No PlanetCore crystal frequency key.\r\n");
+-		return;
+-	}
+-	ibm405gp_fixup_clocks(val, 0xa8c000);
+-	ibm4xx_quiesce_eth((u32 *)0xef600800, NULL);
+-	ibm4xx_fixup_ebc_ranges("/plb/ebc");
+-
+-	if (!planetcore_get_decimal(table, PLANETCORE_KEY_KB_NVRAM, &val)) {
+-		printf("No PlanetCore NVRAM size key.\r\n");
+-		return;
+-	}
+-	nvrtc = finddevice("/plb/ebc/nvrtc@4,200000");
+-	if (nvrtc != NULL) {
+-		u32 reg[3] = { 4, 0x200000, 0};
+-		getprop(nvrtc, "reg", reg, 3);
+-		reg[2] = (val << 10) & 0xffffffff;
+-		setprop(nvrtc, "reg", reg, 3);
+-	}
+-}
+-
+-void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
+-		   unsigned long r6, unsigned long r7)
+-{
+-	table = (char *)r3;
+-	planetcore_prepare_table(table);
+-
+-	if (!planetcore_get_decimal(table, PLANETCORE_KEY_MB_RAM, &mem_size))
+-		return;
+-
+-	mem_size *= 1024 * 1024;
+-	simple_alloc_init(_end, mem_size - (unsigned long)_end, 32, 64);
+-
+-	fdt_init(_dtb_start);
+-
+-	planetcore_set_stdout_path(table);
+-
+-	serial_console_init();
+-	platform_ops.fixups = platform_fixups;
+-}
+diff --git a/arch/powerpc/boot/ppcboot-hotfoot.h b/arch/powerpc/boot/ppcboot-hotfoot.h
+deleted file mode 100644
+index 4728db95f58a..000000000000
+--- a/arch/powerpc/boot/ppcboot-hotfoot.h
++++ /dev/null
+@@ -1,119 +0,0 @@
 -/* SPDX-License-Identifier: GPL-2.0-or-later */
 -/*
-- * Xilinx intc external definitions
-- *
-- * Copyright 2007 Secret Lab Technologies Ltd.
+- * This interface is used for compatibility with old U-boots *ONLY*.
+- * Please do not imitate or extend this.
 - */
--#ifndef _ASM_POWERPC_XILINX_INTC_H
--#define _ASM_POWERPC_XILINX_INTC_H
 -
--#ifdef __KERNEL__
+-/* 
+- * Unfortunately, the ESTeem Hotfoot board uses a mangled version of 
+- * ppcboot.h for historical reasons, and in the interest of having a 
+- * mainline kernel boot on the production board+bootloader, this was the 
+- * least-offensive solution.  Please direct all flames to:
+- *
+- *  Solomon Peachy <solomon@linux-wlan.com>
+- *
+- * (This header is identical to ppcboot.h except for the 
+- *  TARGET_HOTFOOT bits)
+- */
 -
--extern void __init xilinx_intc_init_tree(void);
--extern unsigned int xintc_get_irq(void);
--
--#endif /* __KERNEL__ */
--#endif /* _ASM_POWERPC_XILINX_INTC_H */
-diff --git a/arch/powerpc/include/asm/xilinx_pci.h b/arch/powerpc/include/asm/xilinx_pci.h
-deleted file mode 100644
-index 7a8275caf6af..000000000000
---- a/arch/powerpc/include/asm/xilinx_pci.h
-+++ /dev/null
-@@ -1,21 +0,0 @@
 -/*
-- * Xilinx pci external definitions
-- *
-- * Copyright 2009 Roderick Colenbrander
-- * Copyright 2009 Secret Lab Technologies Ltd.
-- *
-- * This file is licensed under the terms of the GNU General Public License
-- * version 2. This program is licensed "as is" without any warranty of any
-- * kind, whether express or implied.
+- * (C) Copyright 2000, 2001
+- * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
 - */
 -
--#ifndef INCLUDE_XILINX_PCI
--#define INCLUDE_XILINX_PCI
+-#ifndef __PPCBOOT_H__
+-#define __PPCBOOT_H__
 -
--#ifdef CONFIG_XILINX_PCI
--extern void __init xilinx_pci_init(void);
--#else
--static inline void __init xilinx_pci_init(void) { return; }
+-/*
+- * Board information passed to kernel from PPCBoot
+- *
+- * include/asm-ppc/ppcboot.h
+- */
+-
+-#include "types.h"
+-
+-typedef struct bd_info {
+-	unsigned long	bi_memstart;	/* start of DRAM memory */
+-	unsigned long	bi_memsize;	/* size	 of DRAM memory in bytes */
+-	unsigned long	bi_flashstart;	/* start of FLASH memory */
+-	unsigned long	bi_flashsize;	/* size	 of FLASH memory */
+-	unsigned long	bi_flashoffset; /* reserved area for startup monitor */
+-	unsigned long	bi_sramstart;	/* start of SRAM memory */
+-	unsigned long	bi_sramsize;	/* size	 of SRAM memory */
+-#if defined(TARGET_8xx) || defined(TARGET_CPM2) || defined(TARGET_85xx) ||\
+-	defined(TARGET_83xx)
+-	unsigned long	bi_immr_base;	/* base of IMMR register */
 -#endif
+-#if defined(TARGET_PPC_MPC52xx)
+-	unsigned long   bi_mbar_base;   /* base of internal registers */
+-#endif
+-	unsigned long	bi_bootflags;	/* boot / reboot flag (for LynxOS) */
+-	unsigned long	bi_ip_addr;	/* IP Address */
+-	unsigned char	bi_enetaddr[6];	/* Ethernet address */
+-#if defined(TARGET_HOTFOOT)
+-	/* second onboard ethernet port */
+-	unsigned char	bi_enet1addr[6];
+-#define HAVE_ENET1ADDR
+-#endif /* TARGET_HOOTFOOT */
+-	unsigned short	bi_ethspeed;	/* Ethernet speed in Mbps */
+-	unsigned long	bi_intfreq;	/* Internal Freq, in MHz */
+-	unsigned long	bi_busfreq;	/* Bus Freq, in MHz */
+-#if defined(TARGET_CPM2)
+-	unsigned long	bi_cpmfreq;	/* CPM_CLK Freq, in MHz */
+-	unsigned long	bi_brgfreq;	/* BRG_CLK Freq, in MHz */
+-	unsigned long	bi_sccfreq;	/* SCC_CLK Freq, in MHz */
+-	unsigned long	bi_vco;		/* VCO Out from PLL, in MHz */
+-#endif
+-#if defined(TARGET_PPC_MPC52xx)
+-	unsigned long   bi_ipbfreq;     /* IPB Bus Freq, in MHz */
+-	unsigned long   bi_pcifreq;     /* PCI Bus Freq, in MHz */
+-#endif
+-	unsigned long	bi_baudrate;	/* Console Baudrate */
+-#if defined(TARGET_4xx)
+-	unsigned char	bi_s_version[4];	/* Version of this structure */
+-	unsigned char	bi_r_version[32];	/* Version of the ROM (IBM) */
+-	unsigned int	bi_procfreq;	/* CPU (Internal) Freq, in Hz */
+-	unsigned int	bi_plb_busfreq;	/* PLB Bus speed, in Hz */
+-	unsigned int	bi_pci_busfreq;	/* PCI Bus speed, in Hz */
+-	unsigned char	bi_pci_enetaddr[6];	/* PCI Ethernet MAC address */
+-#endif
+-#if defined(TARGET_HOTFOOT)
+-	unsigned int     bi_pllouta_freq;       /* PLL OUTA speed, in Hz */
+-#endif
+-#if defined(TARGET_HYMOD)
+-	hymod_conf_t	bi_hymod_conf;	/* hymod configuration information */
+-#endif
+-#if defined(TARGET_EVB64260) || defined(TARGET_405EP) || defined(TARGET_44x) || \
+-	defined(TARGET_85xx) ||	defined(TARGET_83xx) || defined(TARGET_HAS_ETH1)
+-	/* second onboard ethernet port */
+-	unsigned char	bi_enet1addr[6];
+-#define HAVE_ENET1ADDR
+-#endif
+-#if defined(TARGET_EVB64260) || defined(TARGET_440GX) || \
+-    defined(TARGET_85xx) || defined(TARGET_HAS_ETH2)
+-	/* third onboard ethernet ports */
+-	unsigned char	bi_enet2addr[6];
+-#define HAVE_ENET2ADDR
+-#endif
+-#if defined(TARGET_440GX) || defined(TARGET_HAS_ETH3)
+-	/* fourth onboard ethernet ports */
+-	unsigned char	bi_enet3addr[6];
+-#define HAVE_ENET3ADDR
+-#endif
+-#if defined(TARGET_HOTFOOT)
+-        int             bi_phynum[2];           /* Determines phy mapping */
+-        int             bi_phymode[2];          /* Determines phy mode */
+-#endif
+-#if defined(TARGET_4xx)
+-	unsigned int	bi_opbfreq;		/* OB clock in Hz */
+-	int		bi_iic_fast[2];		/* Use fast i2c mode */
+-#endif
+-#if defined(TARGET_440GX)
+-	int		bi_phynum[4];		/* phy mapping */
+-	int		bi_phymode[4];		/* phy mode */
+-#endif
+-} bd_t;
 -
--#endif /* INCLUDE_XILINX_PCI */
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 245be4fafe13..2dff9041bcdc 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -1385,32 +1385,6 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.machine_check		= machine_check_4xx,
- 		.platform		= "ppc405",
- 	},
--	{	/* Xilinx Virtex-II Pro  */
--		.pvr_mask		= 0xfffff000,
--		.pvr_value		= 0x20010000,
--		.cpu_name		= "Virtex-II Pro",
--		.cpu_features		= CPU_FTRS_40X,
--		.cpu_user_features	= PPC_FEATURE_32 |
--			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
--		.mmu_features		= MMU_FTR_TYPE_40x,
--		.icache_bsize		= 32,
--		.dcache_bsize		= 32,
--		.machine_check		= machine_check_4xx,
--		.platform		= "ppc405",
--	},
--	{	/* Xilinx Virtex-4 FX */
--		.pvr_mask		= 0xfffff000,
--		.pvr_value		= 0x20011000,
--		.cpu_name		= "Virtex-4 FX",
--		.cpu_features		= CPU_FTRS_40X,
--		.cpu_user_features	= PPC_FEATURE_32 |
--			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
--		.mmu_features		= MMU_FTR_TYPE_40x,
--		.icache_bsize		= 32,
--		.dcache_bsize		= 32,
--		.machine_check		= machine_check_4xx,
--		.platform		= "ppc405",
--	},
- 	{	/* 405EP */
- 		.pvr_mask		= 0xffff0000,
- 		.pvr_value		= 0x51210000,
-@@ -1800,19 +1774,6 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.machine_check		= machine_check_440A,
- 		.platform		= "ppc440",
- 	},
--	{ /* 440 in Xilinx Virtex-5 FXT */
--		.pvr_mask		= 0xfffffff0,
--		.pvr_value		= 0x7ff21910,
--		.cpu_name		= "440 in Virtex-5 FXT",
--		.cpu_features		= CPU_FTRS_44X,
--		.cpu_user_features	= COMMON_USER_BOOKE,
--		.mmu_features		= MMU_FTR_TYPE_44x,
--		.icache_bsize		= 32,
--		.dcache_bsize		= 32,
--		.cpu_setup		= __setup_cpu_440x5,
--		.machine_check		= machine_check_440A,
--		.platform		= "ppc440",
--	},
- 	{ /* 460EX */
- 		.pvr_mask		= 0xffff0006,
- 		.pvr_value		= 0x13020002,
-diff --git a/arch/powerpc/platforms/40x/Kconfig b/arch/powerpc/platforms/40x/Kconfig
-index 6da813b65b42..d06ca51e8443 100644
---- a/arch/powerpc/platforms/40x/Kconfig
-+++ b/arch/powerpc/platforms/40x/Kconfig
-@@ -55,23 +55,6 @@ config WALNUT
- 	help
- 	  This option enables support for the IBM PPC405GP evaluation board.
- 
--config XILINX_VIRTEX_GENERIC_BOARD
--	bool "Generic Xilinx Virtex board"
--	depends on 40x
--	select XILINX_VIRTEX_II_PRO
--	select XILINX_VIRTEX_4_FX
--	select XILINX_INTC
--	help
--	  This option enables generic support for Xilinx Virtex based boards.
+-#define bi_tbfreq	bi_intfreq
 -
--	  The generic virtex board support matches any device tree which
--	  specifies 'xilinx,virtex' in its compatible field.  This includes
--	  the Xilinx ML3xx and ML4xx reference designs using the powerpc
--	  core.
--
--	  Most Virtex designs should use this unless it needs to do some
--	  special configuration at board probe time.
--
- config OBS600
- 	bool "OpenBlockS 600"
- 	depends on 40x
-@@ -109,20 +92,6 @@ config 405EZ
- 	select IBM_EMAC_MAL_CLR_ICINTSTAT if IBM_EMAC
- 	select IBM_EMAC_MAL_COMMON_ERR if IBM_EMAC
- 
--config XILINX_VIRTEX
--	bool
--	select DEFAULT_UIMAGE
--
--config XILINX_VIRTEX_II_PRO
--	bool
--	select XILINX_VIRTEX
--	select IBM405_ERR77
--	select IBM405_ERR51
--
--config XILINX_VIRTEX_4_FX
--	bool
--	select XILINX_VIRTEX
--
- config STB03xxx
- 	bool
- 	select IBM405_ERR77
-diff --git a/arch/powerpc/platforms/40x/Makefile b/arch/powerpc/platforms/40x/Makefile
-index 828d78340dd9..e9386deed505 100644
---- a/arch/powerpc/platforms/40x/Makefile
-+++ b/arch/powerpc/platforms/40x/Makefile
-@@ -1,5 +1,4 @@
- # SPDX-License-Identifier: GPL-2.0-only
- obj-$(CONFIG_WALNUT)				+= walnut.o
--obj-$(CONFIG_XILINX_VIRTEX_GENERIC_BOARD)	+= virtex.o
- obj-$(CONFIG_EP405)				+= ep405.o
- obj-$(CONFIG_PPC40x_SIMPLE)		+= ppc40x_simple.o
-diff --git a/arch/powerpc/platforms/40x/virtex.c b/arch/powerpc/platforms/40x/virtex.c
+-#endif	/* __PPCBOOT_H__ */
+diff --git a/arch/powerpc/boot/ppcboot.h b/arch/powerpc/boot/ppcboot.h
+index a78b0b257698..90c8f452fe6e 100644
+--- a/arch/powerpc/boot/ppcboot.h
++++ b/arch/powerpc/boot/ppcboot.h
+@@ -63,7 +63,7 @@ typedef struct bd_info {
+ #if defined(TARGET_HYMOD)
+ 	hymod_conf_t	bi_hymod_conf;	/* hymod configuration information */
+ #endif
+-#if defined(TARGET_EVB64260) || defined(TARGET_405EP) || defined(TARGET_44x) || \
++#if defined(TARGET_EVB64260) || defined(TARGET_44x) || \
+ 	defined(TARGET_85xx) ||	defined(TARGET_83xx) || defined(TARGET_HAS_ETH1)
+ 	/* second onboard ethernet port */
+ 	unsigned char	bi_enet1addr[6];
+diff --git a/arch/powerpc/boot/treeboot-walnut.c b/arch/powerpc/boot/treeboot-walnut.c
 deleted file mode 100644
-index e3d5e095846b..000000000000
---- a/arch/powerpc/platforms/40x/virtex.c
+index 623f58e7f7c9..000000000000
+--- a/arch/powerpc/boot/treeboot-walnut.c
 +++ /dev/null
-@@ -1,54 +0,0 @@
+@@ -1,81 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
 -/*
-- * Xilinx Virtex (IIpro & 4FX) based board support
+- * Old U-boot compatibility for Walnut
 - *
-- * Copyright 2007 Secret Lab Technologies Ltd.
+- * Author: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 - *
-- * This file is licensed under the terms of the GNU General Public License
-- * version 2. This program is licensed "as is" without any warranty of any
-- * kind, whether express or implied.
+- * Copyright 2007 IBM Corporation
+- *   Based on cuboot-83xx.c, which is:
+- * Copyright (c) 2007 Freescale Semiconductor, Inc.
 - */
 -
--#include <linux/init.h>
--#include <linux/of_platform.h>
--#include <asm/machdep.h>
--#include <asm/prom.h>
--#include <asm/time.h>
--#include <asm/xilinx_intc.h>
--#include <asm/xilinx_pci.h>
--#include <asm/ppc4xx.h>
+-#include "ops.h"
+-#include "stdio.h"
+-#include "dcr.h"
+-#include "4xx.h"
+-#include "io.h"
 -
--static const struct of_device_id xilinx_of_bus_ids[] __initconst = {
--	{ .compatible = "xlnx,plb-v46-1.00.a", },
--	{ .compatible = "xlnx,plb-v34-1.01.a", },
--	{ .compatible = "xlnx,plb-v34-1.02.a", },
--	{ .compatible = "xlnx,opb-v20-1.10.c", },
--	{ .compatible = "xlnx,dcr-v29-1.00.a", },
--	{ .compatible = "xlnx,compound", },
--	{}
--};
+-BSS_STACK(4096);
 -
--static int __init virtex_device_probe(void)
+-static void walnut_flashsel_fixup(void)
 -{
--	of_platform_bus_probe(NULL, xilinx_of_bus_ids, NULL);
+-	void *devp, *sram;
+-	u32 reg_flash[3] = {0x0, 0x0, 0x80000};
+-	u32 reg_sram[3] = {0x0, 0x0, 0x80000};
+-	u8 *fpga;
+-	u8 fpga_brds1 = 0x0;
 -
--	return 0;
--}
--machine_device_initcall(virtex, virtex_device_probe);
+-	devp = finddevice("/plb/ebc/fpga");
+-	if (!devp)
+-		fatal("Couldn't locate FPGA node\n\r");
 -
--static int __init virtex_probe(void)
--{
--	if (!of_machine_is_compatible("xlnx,virtex"))
--		return 0;
+-	if (getprop(devp, "virtual-reg", &fpga, sizeof(fpga)) != sizeof(fpga))
+-		fatal("no virtual-reg property\n\r");
 -
--	return 1;
--}
+-	fpga_brds1 = in_8(fpga);
 -
--define_machine(virtex) {
--	.name			= "Xilinx Virtex",
--	.probe			= virtex_probe,
--	.setup_arch		= xilinx_pci_init,
--	.init_IRQ		= xilinx_intc_init_tree,
--	.get_irq		= xintc_get_irq,
--	.restart		= ppc4xx_reset_system,
--	.calibrate_decr		= generic_calibrate_decr,
--};
-diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
-index 25ebe634a661..39e93d23fb38 100644
---- a/arch/powerpc/platforms/44x/Kconfig
-+++ b/arch/powerpc/platforms/44x/Kconfig
-@@ -232,33 +232,6 @@ config ICON
- 	help
- 	  This option enables support for the AMCC PPC440SPe evaluation board.
- 
--config XILINX_VIRTEX440_GENERIC_BOARD
--	bool "Generic Xilinx Virtex 5 FXT board support"
--	depends on 44x
--	select XILINX_VIRTEX_5_FXT
--	select XILINX_INTC
--	help
--	  This option enables generic support for Xilinx Virtex based boards
--	  that use a 440 based processor in the Virtex 5 FXT FPGA architecture.
+-	devp = finddevice("/plb/ebc/flash");
+-	if (!devp)
+-		fatal("Couldn't locate flash node\n\r");
 -
--	  The generic virtex board support matches any device tree which
--	  specifies 'xlnx,virtex440' in its compatible field.  This includes
--	  the Xilinx ML5xx reference designs using the powerpc core.
+-	if (getprop(devp, "reg", reg_flash, sizeof(reg_flash)) != sizeof(reg_flash))
+-		fatal("flash reg property has unexpected size\n\r");
 -
--	  Most Virtex 5 designs should use this unless it needs to do some
--	  special configuration at board probe time.
+-	sram = finddevice("/plb/ebc/sram");
+-	if (!sram)
+-		fatal("Couldn't locate sram node\n\r");
 -
--config XILINX_ML510
--	bool "Xilinx ML510 extra support"
--	depends on XILINX_VIRTEX440_GENERIC_BOARD
--	select HAVE_PCI
--	select XILINX_PCI if PCI
--	select PPC_INDIRECT_PCI if PCI
--	select PPC_I8259 if PCI
--	help
--	  This option enables extra support for features on the Xilinx ML510
--	  board.  The ML510 has a PCI bus with ALI south bridge.
+-	if (getprop(sram, "reg", reg_sram, sizeof(reg_sram)) != sizeof(reg_sram))
+-		fatal("sram reg property has unexpected size\n\r");
 -
- config PPC44x_SIMPLE
- 	bool "Simple PowerPC 44x board support"
- 	depends on 44x
-@@ -354,13 +327,3 @@ config 476FPE_ERR46
- config IBM440EP_ERR42
- 	bool
- 
--# Xilinx specific config options.
--config XILINX_VIRTEX
--	bool
--	select DEFAULT_UIMAGE
--
--# Xilinx Virtex 5 FXT FPGA architecture, selected by a Xilinx board above
--config XILINX_VIRTEX_5_FXT
--	bool
--	select XILINX_VIRTEX
--
-diff --git a/arch/powerpc/platforms/44x/Makefile b/arch/powerpc/platforms/44x/Makefile
-index 1b78c6af821a..5ba031f57652 100644
---- a/arch/powerpc/platforms/44x/Makefile
-+++ b/arch/powerpc/platforms/44x/Makefile
-@@ -7,8 +7,6 @@ obj-$(CONFIG_PPC44x_SIMPLE) += ppc44x_simple.o
- obj-$(CONFIG_EBONY)	+= ebony.o
- obj-$(CONFIG_SAM440EP) 	+= sam440ep.o
- obj-$(CONFIG_WARP)	+= warp.o
--obj-$(CONFIG_XILINX_VIRTEX_5_FXT) += virtex.o
--obj-$(CONFIG_XILINX_ML510) += virtex_ml510.o
- obj-$(CONFIG_ISS4xx)	+= iss4xx.o
- obj-$(CONFIG_CANYONLANDS)+= canyonlands.o
- obj-$(CONFIG_CURRITUCK)	+= ppc476.o
-diff --git a/arch/powerpc/platforms/44x/virtex.c b/arch/powerpc/platforms/44x/virtex.c
-deleted file mode 100644
-index 3eb13ed926ee..000000000000
---- a/arch/powerpc/platforms/44x/virtex.c
-+++ /dev/null
-@@ -1,60 +0,0 @@
--/*
-- * Xilinx Virtex 5FXT based board support, derived from
-- * the Xilinx Virtex (IIpro & 4FX) based board support
-- *
-- * Copyright 2007 Secret Lab Technologies Ltd.
-- * Copyright 2008 Xilinx, Inc.
-- *
-- * This file is licensed under the terms of the GNU General Public License
-- * version 2. This program is licensed "as is" without any warranty of any
-- * kind, whether express or implied.
-- */
--
--#include <linux/init.h>
--#include <linux/of_platform.h>
--#include <asm/machdep.h>
--#include <asm/prom.h>
--#include <asm/time.h>
--#include <asm/xilinx_intc.h>
--#include <asm/xilinx_pci.h>
--#include <asm/reg.h>
--#include <asm/ppc4xx.h>
--#include "44x.h"
--
--static const struct of_device_id xilinx_of_bus_ids[] __initconst = {
--	{ .compatible = "simple-bus", },
--	{ .compatible = "xlnx,plb-v46-1.00.a", },
--	{ .compatible = "xlnx,plb-v46-1.02.a", },
--	{ .compatible = "xlnx,plb-v34-1.01.a", },
--	{ .compatible = "xlnx,plb-v34-1.02.a", },
--	{ .compatible = "xlnx,opb-v20-1.10.c", },
--	{ .compatible = "xlnx,dcr-v29-1.00.a", },
--	{ .compatible = "xlnx,compound", },
--	{}
--};
--
--static int __init virtex_device_probe(void)
--{
--	of_platform_bus_probe(NULL, xilinx_of_bus_ids, NULL);
--
--	return 0;
--}
--machine_device_initcall(virtex, virtex_device_probe);
--
--static int __init virtex_probe(void)
--{
--	if (!of_machine_is_compatible("xlnx,virtex440"))
--		return 0;
--
--	return 1;
--}
--
--define_machine(virtex) {
--	.name			= "Xilinx Virtex440",
--	.probe			= virtex_probe,
--	.setup_arch		= xilinx_pci_init,
--	.init_IRQ		= xilinx_intc_init_tree,
--	.get_irq		= xintc_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.restart		= ppc4xx_reset_system,
--};
-diff --git a/arch/powerpc/platforms/44x/virtex_ml510.c b/arch/powerpc/platforms/44x/virtex_ml510.c
-deleted file mode 100644
-index 349f218b335c..000000000000
---- a/arch/powerpc/platforms/44x/virtex_ml510.c
-+++ /dev/null
-@@ -1,30 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0
--#include <asm/i8259.h>
--#include <linux/pci.h>
--#include "44x.h"
--
--/**
-- * ml510_ail_quirk
-- */
--static void ml510_ali_quirk(struct pci_dev *dev)
--{
--	/* Enable the IDE controller */
--	pci_write_config_byte(dev, 0x58, 0x4c);
--	/* Assign irq 14 to the primary ide channel */
--	pci_write_config_byte(dev, 0x44, 0x0d);
--	/* Assign irq 15 to the secondary ide channel */
--	pci_write_config_byte(dev, 0x75, 0x0f);
--	/* Set the ide controller in native mode */
--	pci_write_config_byte(dev, 0x09, 0xff);
--
--	/* INTB = disabled, INTA = disabled */
--	pci_write_config_byte(dev, 0x48, 0x00);
--	/* INTD = disabled, INTC = disabled */
--	pci_write_config_byte(dev, 0x4a, 0x00);
--	/* Audio = INT7, Modem = disabled. */
--	pci_write_config_byte(dev, 0x4b, 0x60);
--	/* USB = INT7 */
--	pci_write_config_byte(dev, 0x74, 0x06);
--}
--DECLARE_PCI_FIXUP_EARLY(0x10b9, 0x1533, ml510_ali_quirk);
--
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index 1f8025383caa..5e6479d409a0 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -317,8 +317,4 @@ config MCU_MPC8349EMITX
- 	  also register MCU GPIOs with the generic GPIO API, so you'll able
- 	  to use MCU pins as GPIOs.
- 
--config XILINX_PCI
--	bool "Xilinx PCI host bridge support"
--	depends on PCI && XILINX_VIRTEX
--
- endmenu
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index cb5a5bd2cef5..026b3f01a991 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -31,8 +31,6 @@ obj-$(CONFIG_RTC_DRV_CMOS)	+= rtc_cmos_setup.o
- obj-$(CONFIG_PPC_INDIRECT_PCI)	+= indirect_pci.o
- obj-$(CONFIG_PPC_I8259)		+= i8259.o
- obj-$(CONFIG_IPIC)		+= ipic.o
--obj-$(CONFIG_XILINX_VIRTEX)	+= xilinx_intc.o
--obj-$(CONFIG_XILINX_PCI)	+= xilinx_pci.o
- obj-$(CONFIG_OF_RTC)		+= of_rtc.o
- 
- obj-$(CONFIG_CPM)		+= cpm_common.o
-diff --git a/arch/powerpc/sysdev/xilinx_intc.c b/arch/powerpc/sysdev/xilinx_intc.c
-deleted file mode 100644
-index 4a86dcff3fcd..000000000000
---- a/arch/powerpc/sysdev/xilinx_intc.c
-+++ /dev/null
-@@ -1,88 +0,0 @@
--/*
-- * Interrupt controller driver for Xilinx Virtex FPGAs
-- *
-- * Copyright (C) 2007 Secret Lab Technologies Ltd.
-- *
-- * This file is licensed under the terms of the GNU General Public License
-- * version 2. This program is licensed "as is" without any warranty of any
-- * kind, whether express or implied.
-- *
-- */
--
--/*
-- * This is a driver for the interrupt controller typically found in
-- * Xilinx Virtex FPGA designs.
-- *
-- * The interrupt sense levels are hard coded into the FPGA design with
-- * typically a 1:1 relationship between irq lines and devices (no shared
-- * irq lines).  Therefore, this driver does not attempt to handle edge
-- * and level interrupts differently.
-- */
--#undef DEBUG
--
--#include <linux/kernel.h>
--#include <linux/irq.h>
--#include <linux/of.h>
--#include <linux/of_address.h>
--#include <linux/of_irq.h>
--#include <asm/io.h>
--#include <asm/processor.h>
--#include <asm/i8259.h>
--#include <asm/irq.h>
--#include <linux/irqchip.h>
--
--#if defined(CONFIG_PPC_I8259)
--/*
-- * Support code for cascading to 8259 interrupt controllers
-- */
--static void xilinx_i8259_cascade(struct irq_desc *desc)
--{
--	struct irq_chip *chip = irq_desc_get_chip(desc);
--	unsigned int cascade_irq = i8259_irq();
--
--	if (cascade_irq)
--		generic_handle_irq(cascade_irq);
--
--	/* Let xilinx_intc end the interrupt */
--	chip->irq_unmask(&desc->irq_data);
--}
--
--static void __init xilinx_i8259_setup_cascade(void)
--{
--	struct device_node *cascade_node;
--	int cascade_irq;
--
--	/* Initialize i8259 controller */
--	cascade_node = of_find_compatible_node(NULL, NULL, "chrp,iic");
--	if (!cascade_node)
--		return;
--
--	cascade_irq = irq_of_parse_and_map(cascade_node, 0);
--	if (!cascade_irq) {
--		pr_err("virtex_ml510: Failed to map cascade interrupt\n");
--		goto out;
+-	if (fpga_brds1 & 0x1) {
+-		reg_flash[1] ^= 0x80000;
+-		reg_sram[1] ^= 0x80000;
 -	}
 -
--	i8259_init(cascade_node, 0);
--	irq_set_chained_handler(cascade_irq, xilinx_i8259_cascade);
--
--	/* Program irq 7 (usb/audio), 14/15 (ide) to level sensitive */
--	/* This looks like a dirty hack to me --gcl */
--	outb(0xc0, 0x4d0);
--	outb(0xc0, 0x4d1);
--
-- out:
--	of_node_put(cascade_node);
+-	setprop(devp, "reg", reg_flash, sizeof(reg_flash));
+-	setprop(sram, "reg", reg_sram, sizeof(reg_sram));
 -}
--#else
--static inline void xilinx_i8259_setup_cascade(void) { return; }
--#endif /* defined(CONFIG_PPC_I8259) */
 -
--/*
-- * Initialize master Xilinx interrupt controller
-- */
--void __init xilinx_intc_init_tree(void)
+-#define WALNUT_OPENBIOS_MAC_OFF 0xfffffe0b
+-static void walnut_fixups(void)
 -{
--	irqchip_init();
--	xilinx_i8259_setup_cascade();
+-	ibm4xx_sdram_fixup_memsize();
+-	ibm405gp_fixup_clocks(33330000, 0xa8c000);
+-	ibm4xx_quiesce_eth((u32 *)0xef600800, NULL);
+-	ibm4xx_fixup_ebc_ranges("/plb/ebc");
+-	walnut_flashsel_fixup();
+-	dt_fixup_mac_address_by_alias("ethernet0", (u8 *) WALNUT_OPENBIOS_MAC_OFF);
 -}
-diff --git a/arch/powerpc/sysdev/xilinx_pci.c b/arch/powerpc/sysdev/xilinx_pci.c
-deleted file mode 100644
-index fea5667699ed..000000000000
---- a/arch/powerpc/sysdev/xilinx_pci.c
-+++ /dev/null
-@@ -1,132 +0,0 @@
--/*
-- * PCI support for Xilinx plbv46_pci soft-core which can be used on
-- * Xilinx Virtex ML410 / ML510 boards.
-- *
-- * Copyright 2009 Roderick Colenbrander
-- * Copyright 2009 Secret Lab Technologies Ltd.
-- *
-- * The pci bridge fixup code was copied from ppc4xx_pci.c and was written
-- * by Benjamin Herrenschmidt.
-- * Copyright 2007 Ben. Herrenschmidt <benh@kernel.crashing.org>, IBM Corp.
-- *
-- * This file is licensed under the terms of the GNU General Public License
-- * version 2. This program is licensed "as is" without any warranty of any
-- * kind, whether express or implied.
-- */
 -
--#include <linux/ioport.h>
--#include <linux/of.h>
--#include <linux/pci.h>
--#include <mm/mmu_decl.h>
--#include <asm/io.h>
--#include <asm/xilinx_pci.h>
--
--#define XPLB_PCI_ADDR 0x10c
--#define XPLB_PCI_DATA 0x110
--#define XPLB_PCI_BUS  0x114
--
--#define PCI_HOST_ENABLE_CMD PCI_COMMAND_SERR | PCI_COMMAND_PARITY | PCI_COMMAND_MASTER | PCI_COMMAND_MEMORY
--
--static const struct of_device_id xilinx_pci_match[] = {
--	{ .compatible = "xlnx,plbv46-pci-1.03.a", },
--	{}
--};
--
--/**
-- * xilinx_pci_fixup_bridge - Block Xilinx PHB configuration.
-- */
--static void xilinx_pci_fixup_bridge(struct pci_dev *dev)
+-void platform_init(void)
 -{
--	struct pci_controller *hose;
--	int i;
+-	unsigned long end_of_ram = 0x2000000;
+-	unsigned long avail_ram = end_of_ram - (unsigned long) _end;
 -
--	if (dev->devfn || dev->bus->self)
--		return;
--
--	hose = pci_bus_to_host(dev->bus);
--	if (!hose)
--		return;
--
--	if (!of_match_node(xilinx_pci_match, hose->dn))
--		return;
--
--	/* Hide the PCI host BARs from the kernel as their content doesn't
--	 * fit well in the resource management
--	 */
--	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
--		dev->resource[i].start = 0;
--		dev->resource[i].end = 0;
--		dev->resource[i].flags = 0;
--	}
--
--	dev_info(&dev->dev, "Hiding Xilinx plb-pci host bridge resources %s\n",
--		 pci_name(dev));
+-	simple_alloc_init(_end, avail_ram, 32, 32);
+-	platform_ops.fixups = walnut_fixups;
+-	platform_ops.exit = ibm40x_dbcr_reset;
+-	fdt_init(_dtb_start);
+-	serial_console_init();
 -}
--DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID, PCI_ANY_ID, xilinx_pci_fixup_bridge);
--
--/**
-- * xilinx_pci_exclude_device - Don't do config access for non-root bus
-- *
-- * This is a hack.  Config access to any bus other than bus 0 does not
-- * currently work on the ML510 so we prevent it here.
-- */
--static int
--xilinx_pci_exclude_device(struct pci_controller *hose, u_char bus, u8 devfn)
--{
--	return (bus != 0);
--}
--
--/**
-- * xilinx_pci_init - Find and register a Xilinx PCI host bridge
-- */
--void __init xilinx_pci_init(void)
--{
--	struct pci_controller *hose;
--	struct resource r;
--	void __iomem *pci_reg;
--	struct device_node *pci_node;
--
--	pci_node = of_find_matching_node(NULL, xilinx_pci_match);
--	if(!pci_node)
--		return;
--
--	if (of_address_to_resource(pci_node, 0, &r)) {
--		pr_err("xilinx-pci: cannot resolve base address\n");
--		return;
--	}
--
--	hose = pcibios_alloc_controller(pci_node);
--	if (!hose) {
--		pr_err("xilinx-pci: pcibios_alloc_controller() failed\n");
--		return;
--	}
--
--	/* Setup config space */
--	setup_indirect_pci(hose, r.start + XPLB_PCI_ADDR,
--			   r.start + XPLB_PCI_DATA,
--			   PPC_INDIRECT_TYPE_SET_CFG_TYPE);
--
--	/* According to the xilinx plbv46_pci documentation the soft-core starts
--	 * a self-init when the bus master enable bit is set. Without this bit
--	 * set the pci bus can't be scanned.
--	 */
--	early_write_config_word(hose, 0, 0, PCI_COMMAND, PCI_HOST_ENABLE_CMD);
--
--	/* Set the max latency timer to 255 */
--	early_write_config_byte(hose, 0, 0, PCI_LATENCY_TIMER, 0xff);
--
--	/* Set the max bus number to 255 */
--	pci_reg = of_iomap(pci_node, 0);
--	out_8(pci_reg + XPLB_PCI_BUS, 0xff);
--	iounmap(pci_reg);
--
--	/* Nothing past the root bridge is working right now.  By default
--	 * exclude config access to anything except bus 0 */
--	if (!ppc_md.pci_exclude_device)
--		ppc_md.pci_exclude_device = xilinx_pci_exclude_device;
--
--	/* Register the host bridge with the linux kernel! */
--	pci_process_bridge_OF_ranges(hose, pci_node, 1);
--
--	pr_info("xilinx-pci: Registered PCI host bridge\n");
--}
-diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
-index 26956c006987..0ccbd6fd6de1 100644
---- a/drivers/char/Kconfig
-+++ b/drivers/char/Kconfig
-@@ -316,7 +316,7 @@ config DTLK
- 
- config XILINX_HWICAP
- 	tristate "Xilinx HWICAP Support"
--	depends on XILINX_VIRTEX || MICROBLAZE
-+	depends on MICROBLAZE
- 	help
- 	  This option enables support for Xilinx Internal Configuration
- 	  Access Port (ICAP) driver.  The ICAP is used on Xilinx Virtex
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index f65991a67af2..b174650e0f09 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -2007,7 +2007,7 @@ config FB_PS3_DEFAULT_SIZE_M
- 
- config FB_XILINX
- 	tristate "Xilinx frame buffer support"
--	depends on FB && (XILINX_VIRTEX || MICROBLAZE || ARCH_ZYNQ || ARCH_ZYNQMP)
-+	depends on FB && (MICROBLAZE || ARCH_ZYNQ || ARCH_ZYNQMP)
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
 -- 
 2.25.0
 
