@@ -2,96 +2,44 @@ Return-Path: <SRS0=kug9=5Q=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 86272C43331
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 05:03:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E01B4C43331
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 05:12:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3578E20748
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 05:03:37 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="WTVQJnlW";
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="rf5sU28a"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3578E20748
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
+	by mail.kernel.org (Postfix) with ESMTPS id 5B08A20757
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 05:12:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5B08A20757
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48rxzz3ztWzDqfK
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 16:03:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=russell.cc (client-ip=66.111.4.229;
- helo=new3-smtp.messagingengine.com; envelope-from=ruscur@russell.cc;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48ryBS2ZwbzDqmd
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 16:12:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=russell.cc
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256
- header.s=fm1 header.b=WTVQJnlW; 
- dkim=pass (2048-bit key;
- unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.a=rsa-sha256 header.s=fm2 header.b=rf5sU28a; 
- dkim-atps=neutral
-X-Greylist: delayed 433 seconds by postgrey-1.36 at bilbo;
- Tue, 31 Mar 2020 15:56:03 AEDT
-Received: from new3-smtp.messagingengine.com (new3-smtp.messagingengine.com
- [66.111.4.229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48rxqR6vPvzDqsx
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2020 15:56:03 +1100 (AEDT)
-Received: from compute4.internal (compute4.nyi.internal [10.202.2.44])
- by mailnew.nyi.internal (Postfix) with ESMTP id 4089D58024C;
- Tue, 31 Mar 2020 00:48:45 -0400 (EDT)
-Received: from mailfrontend2 ([10.202.2.163])
- by compute4.internal (MEProxy); Tue, 31 Mar 2020 00:48:45 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=
- from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding; s=fm1; bh=yY8X33qvg/yRwHhINvujWxa4XK
- uItnDDjdDahuZGPeg=; b=WTVQJnlWEiOA/heukWV5Hwoz7jZwL7h7p0pYQcCp4u
- 2kvFvq08tkHLEQpc55+H1I+1MR8XbcuRw4/Ntpu5FHvzlhQLnu0J0yCYi/HyjQDX
- 1km1XHQ2CfXzt42O5AR+EYPNiddupYpublxsN3CgyD98CFM7UT38yt2DqVSposHJ
- zd+EFm/zBnb1Xa7EwtyjDBbKauWLzVRErcyAIlapUXIvHewsBgXNjS9xMABz3kAC
- 823ZS/b/34WeSSySGI29pE00KgC4R6Zr/UWga4MWzbBjnSk8seCqhPsYvjOBMRBY
- lqImRO3eoc18pldJ2njEkRbmMeP6kSeYb0P3Y/5/U2uw==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
- messagingengine.com; h=cc:content-transfer-encoding:date:from
- :message-id:mime-version:subject:to:x-me-proxy:x-me-proxy
- :x-me-sender:x-me-sender:x-sasl-enc; s=fm2; bh=yY8X33qvg/yRwHhIN
- vujWxa4XKuItnDDjdDahuZGPeg=; b=rf5sU28amT7+teD62/QPQPQcdO+aAZURi
- 4jrvcCHgCQacTOWvrAF+i8Oqnt/fjwtCw2eHhzBnyKHt1MAuFmk+nuIxLC3LLIy5
- gfb+lTs2AXq/IBSYY4bButzBAIAiHyz1Z75mNZV9HlR6yzQrPUIMV4XuFZrSFmBL
- bP3RlAA+hEL97vJP8+j5rcxwlgvkP0gLz3X2nBJcKYkcc2sW5bRT2smLsq6dkU8B
- nvgCPwgGX1EJSvf/SoYBPWNbcqxvLLcIxz/p2K7J6EI6EPJixonku1u+j+jikO/y
- ylKp6IlOFRcuvflDNmPp3V86g/zRa5WLyIdwsq0cXjZ5W5oN0RrIg==
-X-ME-Sender: <xms:q8uCXhZ89m7wgrEPr1azLl5QZR58fjOjmz5kTXgFjNJew5ucRiRWkg>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedugedrudeiiedgkeeiucetufdoteggodetrfdotf
- fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
- uceurghilhhouhhtmecufedttdenucgfrhhlucfvnfffucdludehmdenogevohgrshhtrg
- hlqdfhgeduvddqtddvucdludehtddmnecujfgurhephffvufffkffoggfgsedtkeertder
- tddtnecuhfhrohhmpeftuhhsshgvlhhlucevuhhrrhgvhicuoehruhhstghurhesrhhush
- hsvghllhdrtggtqeenucffohhmrghinhepohiilhgrsghsrdhorhhgnecukfhppeduvddu
- rdeghedrvdduvddrvdefleenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmh
- grihhlfhhrohhmpehruhhstghurhesrhhushhsvghllhdrtggt
-X-ME-Proxy: <xmx:q8uCXogqcm2Iv85hPvg9qfoyXQSuO4ca17wK4VvwCdZEuUi5vhOBZg>
- <xmx:q8uCXrZgZ9hIm-f06xH2JJul-hbkV1bEe4G4I8LudNzXm1FwC8Awqw>
- <xmx:q8uCXmNRdq16GQBtZxe_eFJvvu5eWLrNKo6ntuIpxmlCe5IV4DR4WA>
- <xmx:rcuCXreEe-rdDx-XBwx9KHd2PqAo0db0iIP-UPGVtAwqP-cKRz5ZWA>
-Received: from crackle.ozlabs.ibm.com.com
- (ppp121-45-212-239.bras1.cbr2.internode.on.net [121.45.212.239])
- by mail.messagingengine.com (Postfix) with ESMTPA id 3AC95306CAD2;
- Tue, 31 Mar 2020 00:48:41 -0400 (EDT)
-From: Russell Currey <ruscur@russell.cc>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v7 0/7] set_memory() routines and STRICT_MODULE_RWX
-Date: Tue, 31 Mar 2020 15:48:18 +1100
-Message-Id: <20200331044825.591653-1-ruscur@russell.cc>
-X-Mailer: git-send-email 2.26.0
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
+ (client-ip=217.140.110.172; helo=foss.arm.com;
+ envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+ by lists.ozlabs.org (Postfix) with ESMTP id 48ry7z6XPzzDqDP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2020 16:10:20 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 221741FB;
+ Mon, 30 Mar 2020 22:10:18 -0700 (PDT)
+Received: from p8cg001049571a15.arm.com (unknown [10.163.1.70])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id C8F2F3F71E;
+ Mon, 30 Mar 2020 22:09:57 -0700 (PDT)
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+To: linux-mm@kvack.org
+Subject: [PATCH V3 0/3] arm64: Enable vmemmap mapping from device memory
+Date: Tue, 31 Mar 2020 10:39:44 +0530
+Message-Id: <1585631387-18819-1-git-send-email-anshuman.khandual@arm.com>
+X-Mailer: git-send-email 2.7.4
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,47 +51,111 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ajd@linux.ibm.com, kernel-hardening@lists.openwall.com, npiggin@gmail.com,
- Russell Currey <ruscur@russell.cc>, dja@axtens.net
+Cc: Mark Rutland <mark.rutland@arm.com>, Michal Hocko <mhocko@suse.com>,
+ Thomas Gleixner <tglx@linutronix.de>, David Hildenbrand <david@redhat.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>, Paul Mackerras <paulus@samba.org>,
+ linux-ia64@vger.kernel.org, linux-riscv@lists.infradead.org,
+ Will Deacon <will@kernel.org>, jgg@mellanox.com, aneesh.kumar@linux.ibm.com,
+ x86@kernel.org, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>,
+ Mike Rapoport <rppt@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, rcampbell@nvidia.com,
+ Pavel Tatashin <pasha.tatashin@soleen.com>,
+ Anshuman Khandual <anshuman.khandual@arm.com>, jglisse@redhat.com,
+ Andy Lutomirski <luto@kernel.org>, Paul Walmsley <paul.walmsley@sifive.com>,
+ dan.j.williams@intel.com, linux-arm-kernel@lists.infradead.org,
+ Tony Luck <tony.luck@intel.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>,
+ Andrew Morton <akpm@linux-foundation.org>, robin.murphy@arm.com,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Addressing review comments from Daniel Axtens.
+This series enables vmemmap backing memory allocation from device memory
+ranges on arm64. But before that, it enables vmemmap_populate_basepages()
+and vmemmap_alloc_block_buf() to accommodate struct vmem_altmap based
+alocation requests.
 
-v6: https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=163335
-v5: https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=160869
+This series applies after latest (v14) arm64 memory hot remove series
+(https://lkml.org/lkml/2020/3/3/1746) on Linux 5.6.
 
-Changes since v6:
-	[1/7] and [6/7]: Check for negative values of numpages and use
-	      	  	 apply_to_existing_page_range() thanks to dja
+Pending Question:
 
-Thanks for the feedback.
+altmap_alloc_block_buf() does not have any other remaining users in the
+tree after this change. Should it be converted into a static function and
+it's declaration be dropped from the header (include/linux/mm.h). Avoided
+doing so because I was not sure if there are any off-tree users or not.
 
-Christophe Leroy (2):
-  powerpc/mm: implement set_memory_attr()
-  powerpc/32: use set_memory_attr()
+Changes in V3:
 
-Russell Currey (5):
-  powerpc/mm: Implement set_memory() routines
-  powerpc/kprobes: Mark newly allocated probes as RO
-  powerpc/mm/ptdump: debugfs handler for W+X checks at runtime
-  powerpc: Set ARCH_HAS_STRICT_MODULE_RWX
-  powerpc/configs: Enable STRICT_MODULE_RWX in skiroot_defconfig
+- Dropped comment from free_hotplug_page_range() per Robin
+- Modified comment in unmap_hotplug_range() per Robin
+- Enabled altmap support in vmemmap_alloc_block_buf() per Robin
 
- arch/powerpc/Kconfig                   |   2 +
- arch/powerpc/Kconfig.debug             |   6 +-
- arch/powerpc/configs/skiroot_defconfig |   1 +
- arch/powerpc/include/asm/set_memory.h  |  34 ++++++++
- arch/powerpc/kernel/kprobes.c          |  17 +++-
- arch/powerpc/mm/Makefile               |   2 +-
- arch/powerpc/mm/pageattr.c             | 114 +++++++++++++++++++++++++
- arch/powerpc/mm/pgtable_32.c           |  95 +++------------------
- arch/powerpc/mm/ptdump/ptdump.c        |  21 ++++-
- 9 files changed, 199 insertions(+), 93 deletions(-)
- create mode 100644 arch/powerpc/include/asm/set_memory.h
- create mode 100644 arch/powerpc/mm/pageattr.c
+Changes in V2: (https://lkml.org/lkml/2020/3/4/475)
+
+- Rebased on latest hot-remove series (v14) adding P4D page table support
+
+Changes in V1: (https://lkml.org/lkml/2020/1/23/12)
+
+- Added an WARN_ON() in unmap_hotplug_range() when altmap is
+  provided without the page table backing memory being freed
+
+Changes in RFC V2: (https://lkml.org/lkml/2019/10/21/11)
+
+- Changed the commit message on 1/2 patch per Will
+- Changed the commit message on 2/2 patch as well
+- Rebased on arm64 memory hot remove series (v10)
+
+RFC V1: (https://lkml.org/lkml/2019/6/28/32)
+
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Paul Walmsley <paul.walmsley@sifive.com>
+Cc: Palmer Dabbelt <palmer@dabbelt.com>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Fenghua Yu <fenghua.yu@intel.com>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: Andy Lutomirski <luto@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: David Hildenbrand <david@redhat.com>
+Cc: Mike Rapoport <rppt@linux.ibm.com>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: "Matthew Wilcox (Oracle)" <willy@infradead.org>
+Cc: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: Pavel Tatashin <pasha.tatashin@soleen.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-ia64@vger.kernel.org
+Cc: linux-riscv@lists.infradead.org
+Cc: x86@kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org
+
+Anshuman Khandual (3):
+  mm/sparsemem: Enable vmem_altmap support in vmemmap_populate_basepages()
+  mm/sparsemem: Enable vmem_altmap support in vmemmap_alloc_block_buf()
+  arm64/mm: Enable vmem_altmap support for vmemmap mappings
+
+ arch/arm64/mm/mmu.c       | 59 ++++++++++++++++++++++++++-------------
+ arch/ia64/mm/discontig.c  |  2 +-
+ arch/powerpc/mm/init_64.c | 10 +++----
+ arch/riscv/mm/init.c      |  2 +-
+ arch/x86/mm/init_64.c     | 12 ++++----
+ include/linux/mm.h        |  8 ++++--
+ mm/sparse-vmemmap.c       | 38 ++++++++++++++++++++-----
+ 7 files changed, 87 insertions(+), 44 deletions(-)
 
 -- 
-2.26.0
+2.20.1
 
