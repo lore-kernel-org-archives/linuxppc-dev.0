@@ -2,83 +2,92 @@ Return-Path: <SRS0=kug9=5Q=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DDEAC43331
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 14:39:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D462C43331
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 14:43:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 19B352071A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 14:39:50 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="KlITRhrm"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 19B352071A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id EE8862071A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 14:43:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EE8862071A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48sBmx6dglzDr7D
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2020 01:39:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48sBsQ3PCRzDqsD
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2020 01:43:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=207.211.31.120;
- helo=us-smtp-1.mimecast.com; envelope-from=bhe@redhat.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=KlITRhrm; 
- dkim-atps=neutral
-Received: from us-smtp-1.mimecast.com (us-smtp-delivery-1.mimecast.com
- [207.211.31.120])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48sBbv5V2FzDqVT
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Apr 2020 01:31:55 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1585665112;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=n/LKamt1qJgTlZJvR2+ShYsZiF+S+pFT12QrU9mBZ2E=;
- b=KlITRhrmvQ/ORzllRCKrcxJizWiEUBaRXMIlarVRSsQmP1aTIU50WL01HfaF8U2a0nKJLQ
- GOqHD+PfPGnDGkNLVNJ/vJ6OpudpqBIL4T0PKzuS071bbQ+1W0V8OAaFjnkME/4CxXsU9t
- ZHmaXgukY9QPnUEcKzbBoy2WT6Mhcd4=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-467-RJe3syyjNmOJMo0W4nt5Qw-1; Tue, 31 Mar 2020 10:31:48 -0400
-X-MC-Unique: RJe3syyjNmOJMo0W4nt5Qw-1
-Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com
- [10.5.11.13])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 3C628107ACCC;
- Tue, 31 Mar 2020 14:31:44 +0000 (UTC)
-Received: from localhost (ovpn-13-64.pek2.redhat.com [10.72.13.64])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id 3D08196F85;
- Tue, 31 Mar 2020 14:31:43 +0000 (UTC)
-Date: Tue, 31 Mar 2020 22:31:40 +0800
-From: Baoquan He <bhe@redhat.com>
-To: Michal Hocko <mhocko@kernel.org>
-Subject: Re: [PATCH v3 0/5] mm: Enable CONFIG_NODES_SPAN_OTHER_NODES by
- default for NUMA
-Message-ID: <20200331143140.GA2402@MiWiFi-R3L-srv>
-References: <1585420282-25630-1-git-send-email-Hoan@os.amperecomputing.com>
- <20200330074246.GA14243@dhcp22.suse.cz>
- <20200330175100.GD30942@linux.ibm.com>
- <20200330182301.GM14243@dhcp22.suse.cz>
- <20200331081423.GE30942@linux.ibm.com>
- <20200331085513.GE30449@dhcp22.suse.cz>
- <20200331140332.GA2129@MiWiFi-R3L-srv>
- <20200331142138.GL30449@dhcp22.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48sBd42GNrzDqWZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Apr 2020 01:32:56 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 02VE3eRh034698
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2020 10:32:53 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3043g78b6r-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2020 10:32:53 -0400
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.ibm.com>;
+ Tue, 31 Mar 2020 15:32:49 +0100
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 31 Mar 2020 15:32:46 +0100
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 02VEWkSq51445936
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 31 Mar 2020 14:32:46 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 121F6A405F;
+ Tue, 31 Mar 2020 14:32:46 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 81513A4040;
+ Tue, 31 Mar 2020 14:32:43 +0000 (GMT)
+Received: from vajain21.in.ibm.com.com (unknown [9.85.86.229])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue, 31 Mar 2020 14:32:43 +0000 (GMT)
+From: Vaibhav Jain <vaibhav@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-nvdimm@lists.01.org
+Subject: [PATCH v5 1/4] powerpc/papr_scm: Fetch nvdimm health information from
+ PHYP
+Date: Tue, 31 Mar 2020 20:02:26 +0530
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20200331143229.306718-1-vaibhav@linux.ibm.com>
+References: <20200331143229.306718-1-vaibhav@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200331142138.GL30449@dhcp22.suse.cz>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.13
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 20033114-0028-0000-0000-000003EF6963
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 20033114-0029-0000-0000-000024B4EC45
+Message-Id: <20200331143229.306718-2-vaibhav@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
+ definitions=2020-03-31_04:2020-03-31,
+ 2020-03-31 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ spamscore=0 malwarescore=0 mlxlogscore=999 impostorscore=0 clxscore=1015
+ phishscore=0 adultscore=0 lowpriorityscore=0 bulkscore=0 mlxscore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2003020000 definitions=main-2003310129
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,112 +99,267 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mmorana@amperecomputing.com, Catalin Marinas <catalin.marinas@arm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- "open list:MEMORY MANAGEMENT" <linux-mm@kvack.org>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux@vger.kernel.org,
- Alexander Duyck <alexander.h.duyck@linux.intel.com>,
- linux-s390@vger.kernel.org, x86@kernel.org, Mike Rapoport <rppt@linux.ibm.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Hoan Tran <Hoan@os.amperecomputing.com>,
- Pavel Tatashin <pavel.tatashin@microsoft.com>, lho@amperecomputing.com,
- Vasily Gorbik <gor@linux.ibm.com>, Vlastimil Babka <vbabka@suse.cz>,
- Will Deacon <will.deacon@arm.com>, Borislav Petkov <bp@alien8.de>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Oscar Salvador <osalvador@suse.de>, linux-kernel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Cc: Alastair D'Silva <alastair@au1.ibm.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ Jeff Moyer <jmoyer@redhat.com>, Oliver O'Halloran <oohall@gmail.com>,
+ Vishal Verma <vishal.l.verma@intel.com>, Vaibhav Jain <vaibhav@linux.ibm.com>,
+ Michael Ellerman <ellerman@au1.ibm.com>,
+ Dan Williams <dan.j.williams@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 03/31/20 at 04:21pm, Michal Hocko wrote:
-> On Tue 31-03-20 22:03:32, Baoquan He wrote:
-> > Hi Michal,
-> > 
-> > On 03/31/20 at 10:55am, Michal Hocko wrote:
-> > > On Tue 31-03-20 11:14:23, Mike Rapoport wrote:
-> > > > Maybe I mis-read the code, but I don't see how this could happen. In the
-> > > > HAVE_MEMBLOCK_NODE_MAP=y case, free_area_init_node() calls
-> > > > calculate_node_totalpages() that ensures that node->node_zones are entirely
-> > > > within the node because this is checked in zone_spanned_pages_in_node().
-> > > 
-> > > zone_spanned_pages_in_node does chech the zone boundaries are within the
-> > > node boundaries. But that doesn't really tell anything about other
-> > > potential zones interleaving with the physical memory range.
-> > > zone->spanned_pages simply gives the physical range for the zone
-> > > including holes. Interleaving nodes are essentially a hole
-> > > (__absent_pages_in_range is going to skip those).
-> > > 
-> > > That means that when free_area_init_core simply goes over the whole
-> > > physical zone range including holes and that is why we need to check
-> > > both for physical and logical holes (aka other nodes).
-> > > 
-> > > The life would be so much easier if the whole thing would simply iterate
-> > > over memblocks...
-> > 
-> > The memblock iterating sounds a great idea. I tried with putting the
-> > memblock iterating in the upper layer, memmap_init(), which is used for
-> > boot mem only anyway. Do you think it's doable and OK? It yes, I can
-> > work out a formal patch to make this simpler as you said. The draft code
-> > is as below. Like this it uses the existing code and involves little change.
-> 
-> Doing this would be a step in the right direction! I haven't checked the
-> code very closely though. The below sounds way too simple to be truth I
-> am afraid. First for_each_mem_pfn_range is available only for
-> CONFIG_HAVE_MEMBLOCK_NODE_MAP (which is one of the reasons why I keep
-> saying that I really hate that being conditional). Also I haven't really
-> checked the deferred initialization path - I have a very vague
-> recollection that it has been converted to the memblock api but I have
-> happilly dropped all that memory.
+Implement support for fetching nvdimm health information via
+H_SCM_HEALTH hcall as documented in Ref[1]. The hcall returns a pair
+of 64-bit big-endian integers which are then stored in 'struct
+papr_scm_priv' and subsequently partially exposed to user-space via
+newly introduced dimm specific attribute 'papr_flags'. Also a new asm
+header named 'papr-scm.h' is added that describes the interface
+between PHYP and guest kernel.
 
-Thanks for your quick response and pointing out the rest suspect aspects,
-I will investigate what you mentioned, see if they impact.
+Following flags are reported via 'papr_flags' sysfs attribute contents
+of which are space separated string flags indicating various nvdimm
+states:
 
->  
-> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > index 138a56c0f48f..558d421f294b 100644
-> > --- a/mm/page_alloc.c
-> > +++ b/mm/page_alloc.c
-> > @@ -6007,14 +6007,6 @@ void __meminit memmap_init_zone(unsigned long size, int nid, unsigned long zone,
-> >  		 * function.  They do not exist on hotplugged memory.
-> >  		 */
-> >  		if (context == MEMMAP_EARLY) {
-> > -			if (!early_pfn_valid(pfn)) {
-> > -				pfn = next_pfn(pfn);
-> > -				continue;
-> > -			}
-> > -			if (!early_pfn_in_nid(pfn, nid)) {
-> > -				pfn++;
-> > -				continue;
-> > -			}
-> >  			if (overlap_memmap_init(zone, &pfn))
-> >  				continue;
-> >  			if (defer_init(nid, pfn, end_pfn))
-> > @@ -6130,9 +6122,17 @@ static void __meminit zone_init_free_lists(struct zone *zone)
-> >  }
-> >  
-> >  void __meminit __weak memmap_init(unsigned long size, int nid,
-> > -				  unsigned long zone, unsigned long start_pfn)
-> > +				  unsigned long zone, unsigned long range_start_pfn)
-> >  {
-> > -	memmap_init_zone(size, nid, zone, start_pfn, MEMMAP_EARLY, NULL);
-> > +	unsigned long start_pfn, end_pfn;
-> > +	unsigned long range_end_pfn = range_start_pfn + size;
-> > +	int i;
-> > +	for_each_mem_pfn_range(i, nid, &start_pfn, &end_pfn, NULL) {
-> > +		start_pfn = clamp(start_pfn, range_start_pfn, range_end_pfn);
-> > +		end_pfn = clamp(end_pfn, range_start_pfn, range_end_pfn);
-> > +		if (end_pfn > start_pfn)
-> > +			memmap_init_zone(size, nid, zone, start_pfn, MEMMAP_EARLY, NULL);
-> > +	}
-> >  }
-> >  
-> >  static int zone_batchsize(struct zone *zone)
-> 
-> -- 
-> Michal Hocko
-> SUSE Labs
-> 
+ * "not_armed" 	: Indicating that nvdimm contents wont survive a power
+		   cycle.
+ * "save_fail" 	: Indicating that nvdimm contents couldn't be flushed
+		   during last shutdown event.
+ * "restore_fail": Indicating that nvdimm contents couldn't be restored
+		   during dimm initialization.
+ * "encrypted" 	: Dimm contents are encrypted.
+ * "smart_notify": There is health event for the nvdimm.
+ * "scrubbed" 	: Indicating that contents of the nvdimm have been
+		   scrubbed.
+ * "locked"	: Indicating that nvdimm contents cant be modified
+		   until next power cycle.
+
+[1]: commit 58b278f568f0 ("powerpc: Provide initial documentation for
+PAPR hcalls")
+
+Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+---
+Changelog:
+
+v4..v5 : None
+
+v3..v4 : None
+
+v2..v3 : Removed PAPR_SCM_DIMM_HEALTH_NON_CRITICAL as a condition for
+       	 NVDIMM unarmed [Aneesh]
+
+v1..v2 : New patch in the series.
+---
+ arch/powerpc/include/asm/papr_scm.h       |  48 ++++++++++
+ arch/powerpc/platforms/pseries/papr_scm.c | 105 +++++++++++++++++++++-
+ 2 files changed, 151 insertions(+), 2 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/papr_scm.h
+
+diff --git a/arch/powerpc/include/asm/papr_scm.h b/arch/powerpc/include/asm/papr_scm.h
+new file mode 100644
+index 000000000000..868d3360f56a
+--- /dev/null
++++ b/arch/powerpc/include/asm/papr_scm.h
+@@ -0,0 +1,48 @@
++/* SPDX-License-Identifier: GPL-2.0-or-later */
++/*
++ * Structures and defines needed to manage nvdimms for spapr guests.
++ */
++#ifndef _ASM_POWERPC_PAPR_SCM_H_
++#define _ASM_POWERPC_PAPR_SCM_H_
++
++#include <linux/types.h>
++#include <asm/bitsperlong.h>
++
++/* DIMM health bitmap bitmap indicators */
++/* SCM device is unable to persist memory contents */
++#define PAPR_SCM_DIMM_UNARMED			PPC_BIT(0)
++/* SCM device failed to persist memory contents */
++#define PAPR_SCM_DIMM_SHUTDOWN_DIRTY		PPC_BIT(1)
++/* SCM device contents are persisted from previous IPL */
++#define PAPR_SCM_DIMM_SHUTDOWN_CLEAN		PPC_BIT(2)
++/* SCM device contents are not persisted from previous IPL */
++#define PAPR_SCM_DIMM_EMPTY			PPC_BIT(3)
++/* SCM device memory life remaining is critically low */
++#define PAPR_SCM_DIMM_HEALTH_CRITICAL		PPC_BIT(4)
++/* SCM device will be garded off next IPL due to failure */
++#define PAPR_SCM_DIMM_HEALTH_FATAL		PPC_BIT(5)
++/* SCM contents cannot persist due to current platform health status */
++#define PAPR_SCM_DIMM_HEALTH_UNHEALTHY		PPC_BIT(6)
++/* SCM device is unable to persist memory contents in certain conditions */
++#define PAPR_SCM_DIMM_HEALTH_NON_CRITICAL	PPC_BIT(7)
++/* SCM device is encrypted */
++#define PAPR_SCM_DIMM_ENCRYPTED			PPC_BIT(8)
++/* SCM device has been scrubbed and locked */
++#define PAPR_SCM_DIMM_SCRUBBED_AND_LOCKED	PPC_BIT(9)
++
++/* Bits status indicators for health bitmap indicating unarmed dimm */
++#define PAPR_SCM_DIMM_UNARMED_MASK (PAPR_SCM_DIMM_UNARMED |	\
++					PAPR_SCM_DIMM_HEALTH_UNHEALTHY)
++
++/* Bits status indicators for health bitmap indicating unflushed dimm */
++#define PAPR_SCM_DIMM_BAD_SHUTDOWN_MASK (PAPR_SCM_DIMM_SHUTDOWN_DIRTY)
++
++/* Bits status indicators for health bitmap indicating unrestored dimm */
++#define PAPR_SCM_DIMM_BAD_RESTORE_MASK  (PAPR_SCM_DIMM_EMPTY)
++
++/* Bit status indicators for smart event notification */
++#define PAPR_SCM_DIMM_SMART_EVENT_MASK (PAPR_SCM_DIMM_HEALTH_CRITICAL | \
++					   PAPR_SCM_DIMM_HEALTH_FATAL | \
++					   PAPR_SCM_DIMM_HEALTH_UNHEALTHY)
++
++#endif
+diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
+index 0b4467e378e5..aaf2e4ab1f75 100644
+--- a/arch/powerpc/platforms/pseries/papr_scm.c
++++ b/arch/powerpc/platforms/pseries/papr_scm.c
+@@ -14,6 +14,7 @@
+ #include <linux/delay.h>
+ 
+ #include <asm/plpar_wrappers.h>
++#include <asm/papr_scm.h>
+ 
+ #define BIND_ANY_ADDR (~0ul)
+ 
+@@ -39,6 +40,13 @@ struct papr_scm_priv {
+ 	struct resource res;
+ 	struct nd_region *region;
+ 	struct nd_interleave_set nd_set;
++
++	/* Protect dimm data from concurrent access */
++	struct mutex dimm_mutex;
++
++	/* Health information for the dimm */
++	__be64 health_bitmap;
++	__be64 health_bitmap_valid;
+ };
+ 
+ static int drc_pmem_bind(struct papr_scm_priv *p)
+@@ -144,6 +152,35 @@ static int drc_pmem_query_n_bind(struct papr_scm_priv *p)
+ 	return drc_pmem_bind(p);
+ }
+ 
++static int drc_pmem_query_health(struct papr_scm_priv *p)
++{
++	unsigned long ret[PLPAR_HCALL_BUFSIZE];
++	int64_t rc;
++
++	rc = plpar_hcall(H_SCM_HEALTH, ret, p->drc_index);
++	if (rc != H_SUCCESS) {
++		dev_err(&p->pdev->dev,
++			 "Failed to query health information, Err:%lld\n", rc);
++		return -ENXIO;
++	}
++
++	/* Protect modifications to papr_scm_priv with the mutex */
++	rc = mutex_lock_interruptible(&p->dimm_mutex);
++	if (rc)
++		return rc;
++
++	/* Store the retrieved health information in dimm platform data */
++	p->health_bitmap = ret[0];
++	p->health_bitmap_valid = ret[1];
++
++	dev_dbg(&p->pdev->dev,
++		"Queried dimm health info. Bitmap:0x%016llx Mask:0x%016llx\n",
++		be64_to_cpu(p->health_bitmap),
++		be64_to_cpu(p->health_bitmap_valid));
++
++	mutex_unlock(&p->dimm_mutex);
++	return 0;
++}
+ 
+ static int papr_scm_meta_get(struct papr_scm_priv *p,
+ 			     struct nd_cmd_get_config_data_hdr *hdr)
+@@ -304,6 +341,67 @@ static inline int papr_scm_node(int node)
+ 	return min_node;
+ }
+ 
++static ssize_t papr_flags_show(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	struct nvdimm *dimm = to_nvdimm(dev);
++	struct papr_scm_priv *p = nvdimm_provider_data(dimm);
++	__be64 health;
++	int rc;
++
++	rc = drc_pmem_query_health(p);
++	if (rc)
++		return rc;
++
++	/* Protect against modifications to papr_scm_priv with the mutex */
++	rc = mutex_lock_interruptible(&p->dimm_mutex);
++	if (rc)
++		return rc;
++
++	health = p->health_bitmap & p->health_bitmap_valid;
++
++	/* Check for various masks in bitmap and set the buffer */
++	if (health & PAPR_SCM_DIMM_UNARMED_MASK)
++		rc += sprintf(buf, "not_armed ");
++
++	if (health & PAPR_SCM_DIMM_BAD_SHUTDOWN_MASK)
++		rc += sprintf(buf + rc, "save_fail ");
++
++	if (health & PAPR_SCM_DIMM_BAD_RESTORE_MASK)
++		rc += sprintf(buf + rc, "restore_fail ");
++
++	if (health & PAPR_SCM_DIMM_ENCRYPTED)
++		rc += sprintf(buf + rc, "encrypted ");
++
++	if (health & PAPR_SCM_DIMM_SMART_EVENT_MASK)
++		rc += sprintf(buf + rc, "smart_notify ");
++
++	if (health & PAPR_SCM_DIMM_SCRUBBED_AND_LOCKED)
++		rc += sprintf(buf + rc, "scrubbed locked ");
++
++	if (rc > 0)
++		rc += sprintf(buf + rc, "\n");
++
++	mutex_unlock(&p->dimm_mutex);
++	return rc;
++}
++DEVICE_ATTR_RO(papr_flags);
++
++/* papr_scm specific dimm attributes */
++static struct attribute *papr_scm_nd_attributes[] = {
++	&dev_attr_papr_flags.attr,
++	NULL,
++};
++
++static struct attribute_group papr_scm_nd_attribute_group = {
++	.attrs = papr_scm_nd_attributes,
++};
++
++static const struct attribute_group *papr_scm_dimm_attr_groups[] = {
++	&papr_scm_nd_attribute_group,
++	NULL,
++};
++
+ static int papr_scm_nvdimm_init(struct papr_scm_priv *p)
+ {
+ 	struct device *dev = &p->pdev->dev;
+@@ -330,8 +428,8 @@ static int papr_scm_nvdimm_init(struct papr_scm_priv *p)
+ 	dimm_flags = 0;
+ 	set_bit(NDD_ALIASING, &dimm_flags);
+ 
+-	p->nvdimm = nvdimm_create(p->bus, p, NULL, dimm_flags,
+-				  PAPR_SCM_DIMM_CMD_MASK, 0, NULL);
++	p->nvdimm = nvdimm_create(p->bus, p, papr_scm_dimm_attr_groups,
++				  dimm_flags, PAPR_SCM_DIMM_CMD_MASK, 0, NULL);
+ 	if (!p->nvdimm) {
+ 		dev_err(dev, "Error creating DIMM object for %pOF\n", p->dn);
+ 		goto err;
+@@ -415,6 +513,9 @@ static int papr_scm_probe(struct platform_device *pdev)
+ 	if (!p)
+ 		return -ENOMEM;
+ 
++	/* Initialize the dimm mutex */
++	mutex_init(&p->dimm_mutex);
++
+ 	/* optional DT properties */
+ 	of_property_read_u32(dn, "ibm,metadata-size", &metadata_size);
+ 
+-- 
+2.25.1
 
