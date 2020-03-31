@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E371DC43331
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 10:11:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9D4BC43331
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 10:13:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9BCA0206DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 10:11:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9BCA0206DB
+	by mail.kernel.org (Postfix) with ESMTPS id 74851206DB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 10:13:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 74851206DB
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48s4qk60y3zDrKV
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 21:11:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48s4sl4mZbzDr7l
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 21:13:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=sandipan@linux.ibm.com;
@@ -30,63 +30,63 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48s4Xt294zzDqVP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2020 20:58:54 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48s4Xw3LgNzDqTp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2020 20:58:56 +1100 (AEDT)
 Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 02V9YLR6043284
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2020 05:58:46 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 301yffj73a-1
+ 02V9YLwb043262
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2020 05:58:54 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 301yffj75t-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2020 05:58:45 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2020 05:58:53 -0400
 Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.ibm.com>;
- Tue, 31 Mar 2020 10:58:30 +0100
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Tue, 31 Mar 2020 10:58:36 +0100
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 31 Mar 2020 10:58:27 +0100
+ Tue, 31 Mar 2020 10:58:31 +0100
 Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
  [9.149.105.58])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 02V9wcLU59375628
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 02V9wiSx30933028
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 31 Mar 2020 09:58:38 GMT
+ Tue, 31 Mar 2020 09:58:44 GMT
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 424954C04A;
- Tue, 31 Mar 2020 09:58:38 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 496854C044;
+ Tue, 31 Mar 2020 09:58:44 +0000 (GMT)
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7E9EA4C040;
- Tue, 31 Mar 2020 09:58:35 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id A0D714C040;
+ Tue, 31 Mar 2020 09:58:41 +0000 (GMT)
 Received: from fir03.in.ibm.com (unknown [9.121.59.65])
  by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 31 Mar 2020 09:58:35 +0000 (GMT)
+ Tue, 31 Mar 2020 09:58:41 +0000 (GMT)
 From: Sandipan Das <sandipan@linux.ibm.com>
 To: akpm@linux-foundation.org
-Subject: [PATCH v19 03/24] selftests/vm/pkeys: Move generic definitions to
- header file
-Date: Tue, 31 Mar 2020 15:28:04 +0530
+Subject: [PATCH v19 05/24] selftests/vm/pkeys: Make gcc check arguments of
+ sigsafe_printf()
+Date: Tue, 31 Mar 2020 15:28:06 +0530
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <cover.1585646528.git.sandipan@linux.ibm.com>
 References: <cover.1585646528.git.sandipan@linux.ibm.com>
 In-Reply-To: <cover.1585646528.git.sandipan@linux.ibm.com>
 References: <cover.1585646528.git.sandipan@linux.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 20033109-0016-0000-0000-000002FB8F29
+x-cbid: 20033109-0020-0000-0000-000003BED75C
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20033109-0017-0000-0000-0000335F4D94
-Message-Id: <57177f99e92a51295956715d5f2d5688a4d13927.1585646528.git.sandipan@linux.ibm.com>
+x-cbparentid: 20033109-0021-0000-0000-00002217772D
+Message-Id: <b40b7a95fdd4045d62530a2a34452934caf3b0bc.1585646528.git.sandipan@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
  definitions=2020-03-31_03:2020-03-30,
  2020-03-31 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  lowpriorityscore=0
  suspectscore=1 impostorscore=0 mlxscore=0 phishscore=0 clxscore=1015
- bulkscore=0 malwarescore=0 spamscore=0 mlxlogscore=911 adultscore=0
+ bulkscore=0 malwarescore=0 spamscore=0 mlxlogscore=999 adultscore=0
  priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2003020000 definitions=main-2003310081
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -101,144 +101,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: linux-arch@vger.kernel.org, fweimer@redhat.com, shuah@kernel.org,
- Dave Hansen <dave.hansen@intel.com>, aneesh.kumar@linux.ibm.com,
- x86@kernel.org, linuxram@us.ibm.com, mhocko@kernel.org, linux-mm@kvack.org,
- mingo@redhat.com, linux-kselftest@vger.kernel.org, msuchanek@suse.de,
+ aneesh.kumar@linux.ibm.com, x86@kernel.org, linuxram@us.ibm.com,
+ mhocko@kernel.org, linux-mm@kvack.org, mingo@redhat.com,
+ linux-kselftest@vger.kernel.org, msuchanek@suse.de,
  linuxppc-dev@lists.ozlabs.org, bauerman@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Ram Pai <linuxram@us.ibm.com>
+From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
 
-Moved all the generic definition and helper functions to the
-header file.
+This will help us ensure we print pkey_reg_t values correctly in
+different architectures.
 
-cc: Dave Hansen <dave.hansen@intel.com>
-cc: Florian Weimer <fweimer@redhat.com>
-Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-Acked-by: Dave Hansen <dave.hansen@intel.com>
 Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
+Acked-by: Dave Hansen <dave.hansen@intel.com>
 ---
- tools/testing/selftests/vm/pkey-helpers.h    | 35 +++++++++++++++++---
- tools/testing/selftests/vm/protection_keys.c | 27 ---------------
- 2 files changed, 30 insertions(+), 32 deletions(-)
+ tools/testing/selftests/vm/pkey-helpers.h | 4 ++++
+ 1 file changed, 4 insertions(+)
 
 diff --git a/tools/testing/selftests/vm/pkey-helpers.h b/tools/testing/selftests/vm/pkey-helpers.h
-index d5779be4793f8..6ad1bd54ef946 100644
+index 3ed2f021bf7a0..7f18a82e54fc8 100644
 --- a/tools/testing/selftests/vm/pkey-helpers.h
 +++ b/tools/testing/selftests/vm/pkey-helpers.h
-@@ -13,6 +13,14 @@
- #include <ucontext.h>
- #include <sys/mman.h>
- 
-+/* Define some kernel-like types */
-+#define  u8 uint8_t
-+#define u16 uint16_t
-+#define u32 uint32_t
-+#define u64 uint64_t
+@@ -27,6 +27,10 @@
+ #define DPRINT_IN_SIGNAL_BUF_SIZE 4096
+ extern int dprint_in_signal;
+ extern char dprint_in_signal_buffer[DPRINT_IN_SIGNAL_BUF_SIZE];
 +
-+#define PTR_ERR_ENOTSUP ((void *)-ENOTSUP)
-+
- #define NR_PKEYS 16
- #define PKEY_BITS_PER_PKEY 2
- 
-@@ -53,6 +61,18 @@ static inline void sigsafe_printf(const char *format, ...)
- #define dprintf3(args...) dprintf_level(3, args)
- #define dprintf4(args...) dprintf_level(4, args)
- 
-+extern void abort_hooks(void);
-+#define pkey_assert(condition) do {		\
-+	if (!(condition)) {			\
-+		dprintf0("assert() at %s::%d test_nr: %d iteration: %d\n", \
-+				__FILE__, __LINE__,	\
-+				test_nr, iteration_nr);	\
-+		dprintf0("errno at assert: %d", errno);	\
-+		abort_hooks();			\
-+		exit(__LINE__);			\
-+	}					\
-+} while (0)
-+
- extern unsigned int shadow_pkey_reg;
- static inline unsigned int __read_pkey_reg(void)
++#ifdef __GNUC__
++__attribute__((format(printf, 1, 2)))
++#endif
+ static inline void sigsafe_printf(const char *format, ...)
  {
-@@ -137,11 +157,6 @@ static inline void __pkey_write_allow(int pkey, int do_allow_write)
- 	dprintf4("pkey_reg now: %08x\n", read_pkey_reg());
- }
- 
--#define PROT_PKEY0     0x10            /* protection key value (bit 0) */
--#define PROT_PKEY1     0x20            /* protection key value (bit 1) */
--#define PROT_PKEY2     0x40            /* protection key value (bit 2) */
--#define PROT_PKEY3     0x80            /* protection key value (bit 3) */
--
- #define PAGE_SIZE 4096
- #define MB	(1<<20)
- 
-@@ -219,4 +234,14 @@ int pkey_reg_xstate_offset(void)
- 	return xstate_offset;
- }
- 
-+#define ARRAY_SIZE(x) (sizeof(x) / sizeof(*(x)))
-+#define ALIGN_UP(x, align_to)	(((x) + ((align_to)-1)) & ~((align_to)-1))
-+#define ALIGN_DOWN(x, align_to) ((x) & ~((align_to)-1))
-+#define ALIGN_PTR_UP(p, ptr_align_to)	\
-+	((typeof(p))ALIGN_UP((unsigned long)(p), ptr_align_to))
-+#define ALIGN_PTR_DOWN(p, ptr_align_to)	\
-+	((typeof(p))ALIGN_DOWN((unsigned long)(p), ptr_align_to))
-+#define __stringify_1(x...)     #x
-+#define __stringify(x...)       __stringify_1(x)
-+
- #endif /* _PKEYS_HELPER_H */
-diff --git a/tools/testing/selftests/vm/protection_keys.c b/tools/testing/selftests/vm/protection_keys.c
-index 2f4ab81c570db..42ffb58810f29 100644
---- a/tools/testing/selftests/vm/protection_keys.c
-+++ b/tools/testing/selftests/vm/protection_keys.c
-@@ -51,31 +51,10 @@ int test_nr;
- unsigned int shadow_pkey_reg;
- 
- #define HPAGE_SIZE	(1UL<<21)
--#define ARRAY_SIZE(x) (sizeof(x) / sizeof(*(x)))
--#define ALIGN_UP(x, align_to)	(((x) + ((align_to)-1)) & ~((align_to)-1))
--#define ALIGN_DOWN(x, align_to) ((x) & ~((align_to)-1))
--#define ALIGN_PTR_UP(p, ptr_align_to)	((typeof(p))ALIGN_UP((unsigned long)(p),	ptr_align_to))
--#define ALIGN_PTR_DOWN(p, ptr_align_to)	((typeof(p))ALIGN_DOWN((unsigned long)(p),	ptr_align_to))
--#define __stringify_1(x...)     #x
--#define __stringify(x...)       __stringify_1(x)
--
--#define PTR_ERR_ENOTSUP ((void *)-ENOTSUP)
- 
- int dprint_in_signal;
- char dprint_in_signal_buffer[DPRINT_IN_SIGNAL_BUF_SIZE];
- 
--extern void abort_hooks(void);
--#define pkey_assert(condition) do {		\
--	if (!(condition)) {			\
--		dprintf0("assert() at %s::%d test_nr: %d iteration: %d\n", \
--				__FILE__, __LINE__,	\
--				test_nr, iteration_nr);	\
--		dprintf0("errno at assert: %d", errno);	\
--		abort_hooks();			\
--		exit(__LINE__);			\
--	}					\
--} while (0)
--
- void cat_into_file(char *str, char *file)
- {
- 	int fd = open(file, O_RDWR);
-@@ -186,12 +165,6 @@ void lots_o_noops_around_write(int *write_to_me)
- 	dprintf3("%s() done\n", __func__);
- }
- 
--/* Define some kernel-like types */
--#define  u8 uint8_t
--#define u16 uint16_t
--#define u32 uint32_t
--#define u64 uint64_t
--
- #ifdef __i386__
- 
- #ifndef SYS_mprotect_key
+ 	va_list ap;
 -- 
 2.17.1
 
