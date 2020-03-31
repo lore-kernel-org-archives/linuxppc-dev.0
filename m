@@ -1,94 +1,78 @@
 Return-Path: <SRS0=kug9=5Q=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-X-Spam-Level: 
-X-Spam-Status: No, score=-7.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Level: **
+X-Spam-Status: No, score=2.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C3785C43331
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 09:57:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3DD8BC43331
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 10:01:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6ECEB207FF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 09:57:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id DECF520658
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 10:01:17 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="veoTVgVR"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6ECEB207FF
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="J/EqjWzz"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DECF520658
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48s4Wb4YLSzDqSl
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 20:57:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48s4bX2jXvzDqld
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 21:01:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::443;
- helo=mail-pf1-x443.google.com; envelope-from=nicoleotsuka@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::129;
+ helo=mail-lf1-x129.google.com; envelope-from=shiva.jaishankar@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=veoTVgVR; dkim-atps=neutral
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
- [IPv6:2607:f8b0:4864:20::443])
+ header.s=20161025 header.b=J/EqjWzz; dkim-atps=neutral
+Received: from mail-lf1-x129.google.com (mail-lf1-x129.google.com
+ [IPv6:2a00:1450:4864:20::129])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48s4TT2sSSzDqR0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2020 20:55:56 +1100 (AEDT)
-Received: by mail-pf1-x443.google.com with SMTP id h72so10111547pfe.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2020 02:55:56 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48s2Jk3wY9zDq6l
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2020 19:18:11 +1100 (AEDT)
+Received: by mail-lf1-x129.google.com with SMTP id j17so16512887lfe.7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2020 01:18:11 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=OhHn08M8/D8HCM9gjXRbI/j0PhmAwA3tYAp3gRgxrKk=;
- b=veoTVgVRtYQTK+5zN3HYDh+HdtUTeX2nPPRVzQPABdleK9zHQb4Qfl3r/T33195phu
- DUMvCdDjmJ78SwW3P5o7zoX0gQW9ZZDwSrxEVbpixY5yShzky96M6m66YJKWwWc/MH7V
- DTMF5UWOC4YbOb73eYMwZR65xCARdm0J/queSu86YPQrB0FH77ohZOcmu/5KUeQVQ6I4
- nQFqCHefw2XGkVEG/L6uSEWsxvl3sjAAL6Ir2zECJfvkWLoJdbK4tzNXLmcUYsGJ/sBq
- CPnwAaW2kHAUq3VyOfa33eKhAyvQVC0DX4/21UX9tD/bRIhnr7KrIZxDHyWY1o/jw5ul
- +t5w==
+ h=mime-version:from:date:message-id:subject:to;
+ bh=V7fuHVPz3lx46P59CWAG0NcrtXbR0iGK6GXsoD3H490=;
+ b=J/EqjWzzOYlqO5wL8ydFVeEpjEezh+oW4Lcj9lznzriOEfhblMu4jf3u4NC81iOehP
+ dMR5ShJ1iFO1mTmm1m35rZ06Ws2ZgEsezUwCwLF2APdpuasWEnF1lrGcqtVt0+KnH5r3
+ 6slWwkw5zRdBy7SP9l1hCctWaHPfWcXidCqGXYTF0TCUjZH2VqyppSloY1V24r3WtFxf
+ SbBm2cEzRZ9UMBp+FGgv25CL3Uac4vOhy0CzdnpCnR5Ja6jy3FPTzQ1bLMtyy+luFNQo
+ Jinq2N31CVEWdIayGTzoMoVvUVcgJKKRtLm0gZpy+Csms7StW4a+FTl7eXBPBuazzRiD
+ HT1Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=OhHn08M8/D8HCM9gjXRbI/j0PhmAwA3tYAp3gRgxrKk=;
- b=sidjzNX+SiGhLyrkc+kqzu1AhN/tVuNjGB/XnKns+KGPwSv+aBlD5zDKQofZ2zXDfM
- 4U4fgG2dsYSCv+ffstDgueFmA4cTttbOpWlX0TKMjpm8AkjJ1RjMPRoO8xKG5TNneLGc
- qwZFWvIauWEkTrf15iHREwDBk/384JnL1bRsYJ8WgPBnFpHVvUQxq2BHYNRXKyRQSA2X
- 16ncXNWPNppKaTj3Pf34jtkN9ATl6AQte3kcrZnnAUEoQAK4viNgVA28X9c/fPg0Mb8z
- mcgQAyI/uQqJD1E8+EdM62qvyEbvWQIWkS+RNAj3OSCJYMXkSNtYDHC3yl/i66rfSOB7
- L02A==
-X-Gm-Message-State: AGi0PubXBEdhH6t76cCdLzX7wREr8MB9iykAoIoPXLJAlBEQyTy57zVH
- XDE3rYYhZJ107dErYxpL+TU=
-X-Google-Smtp-Source: APiQypKviN8/GNUryvnwnsY+oU28GHx/wV6pyb4CAI4uheoqqx5DsQb2OaoNtRTW26FnN4BK6da7gA==
-X-Received: by 2002:a63:8ac3:: with SMTP id y186mr4395435pgd.277.1585648552952; 
- Tue, 31 Mar 2020 02:55:52 -0700 (PDT)
-Received: from Asurada (c-73-162-191-63.hsd1.ca.comcast.net. [73.162.191.63])
- by smtp.gmail.com with ESMTPSA id
- mq6sm1626110pjb.38.2020.03.31.02.55.52
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 31 Mar 2020 02:55:52 -0700 (PDT)
-Date: Tue, 31 Mar 2020 02:55:34 -0700
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: Shengjiu Wang <shengjiu.wang@gmail.com>
-Subject: Re: [PATCH v5 1/7] ASoC: dt-bindings: fsl_asrc: Add new property
- fsl,asrc-format
-Message-ID: <20200331095534.GA2976@Asurada>
-References: <cover.1583725533.git.shengjiu.wang@nxp.com>
- <24f69c50925b93afd7a706bd888ee25d27247c78.1583725533.git.shengjiu.wang@nxp.com>
- <20200309211943.GB11333@Asurada-Nvidia.nvidia.com>
- <20200320173213.GA9093@bogus>
- <20200323212038.GA7527@Asurada-Nvidia.nvidia.com>
- <CAA+D8APu0JYqnUvY+fCYTcZ9U1BCv-zU8J4Zt-5doZcNkgaXFQ@mail.gmail.com>
+ h=x-gm-message-state:mime-version:from:date:message-id:subject:to;
+ bh=V7fuHVPz3lx46P59CWAG0NcrtXbR0iGK6GXsoD3H490=;
+ b=gFkKwkAaExKXu6NFHi/VhjJlG6c20ME8AN4jfn3tyuDxIqeLzVlDJZhdWwzS7qgNK9
+ ExH7pUtIY7wT0g/kaQWcKBg3+K9e6WvhQ5t1bo41Z7L2ZsuXLMZYnR6csY8uv2sc5bHE
+ MXAsChVna+5E/lGDAtanOqoO4ePLmn94xNjaC/3zsaVopdN0NgzzbXwSQ/8KFiuzwMA0
+ c8NpqXn0ob4ce2+JrFuDKPJl9qF9479SD2hcqq5vyDYxoG1wLlHD0uqVIpBzkNojp5xC
+ uIWNKqNByviEbsihst6tkfuTsiJHiSnviQx/IbE1yFdyhsg+MT1+xZ7eVc8cyFUpxzzq
+ UoUg==
+X-Gm-Message-State: AGi0PuYmi9HpeOBp1pKW0+jfDb7VgnFe6xpip0sbwGMMoAGgq72/2dEU
+ NjG52etv3uvEbEwjVkEPa0TT0NzOaB/rmGtGYXBLGQ==
+X-Google-Smtp-Source: APiQypJZD/fUo26vUbWHS5iCAItKNfwgmFznCxLgYuW+B/PVTiJ/QPjbqUZDaoIQOc4mC0cOedxxQjSk8bjhCywjt2M=
+X-Received: by 2002:a05:6512:2023:: with SMTP id
+ s3mr10406997lfs.121.1585642685914; 
+ Tue, 31 Mar 2020 01:18:05 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAA+D8APu0JYqnUvY+fCYTcZ9U1BCv-zU8J4Zt-5doZcNkgaXFQ@mail.gmail.com>
-User-Agent: Mutt/1.5.22 (2013-10-16)
+From: shivakanth k <shiva.jaishankar@gmail.com>
+Date: Tue, 31 Mar 2020 13:47:55 +0530
+Message-ID: <CAMksNJXP5BKoS245igR2aNXVnf6Yvh_zXseyvg=Q7+h-0gavcQ@mail.gmail.com>
+Subject: Emulate ppc64le builds on x86/x64 machine
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary="00000000000008e53805a22235ea"
+X-Mailman-Approved-At: Tue, 31 Mar 2020 20:57:31 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,79 +84,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh@kernel.org>,
- Linux-ALSA <alsa-devel@alsa-project.org>, Timur Tabi <timur@kernel.org>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>,
- Shengjiu Wang <shengjiu.wang@nxp.com>, Takashi Iwai <tiwai@suse.com>,
- Liam Girdwood <lgirdwood@gmail.com>,
- "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
- <devicetree@vger.kernel.org>, Mark Brown <broonie@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Mar 31, 2020 at 10:28:25AM +0800, Shengjiu Wang wrote:
-> Hi
-> 
-> On Tue, Mar 24, 2020 at 5:22 AM Nicolin Chen <nicoleotsuka@gmail.com> wrote:
-> >
-> > On Fri, Mar 20, 2020 at 11:32:13AM -0600, Rob Herring wrote:
-> > > On Mon, Mar 09, 2020 at 02:19:44PM -0700, Nicolin Chen wrote:
-> > > > On Mon, Mar 09, 2020 at 11:58:28AM +0800, Shengjiu Wang wrote:
-> > > > > In order to support new EASRC and simplify the code structure,
-> > > > > We decide to share the common structure between them. This bring
-> > > > > a problem that EASRC accept format directly from devicetree, but
-> > > > > ASRC accept width from devicetree.
-> > > > >
-> > > > > In order to align with new ESARC, we add new property fsl,asrc-format.
-> > > > > The fsl,asrc-format can replace the fsl,asrc-width, then driver
-> > > > > can accept format from devicetree, don't need to convert it to
-> > > > > format through width.
-> > > > >
-> > > > > Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-> > > > > ---
-> > > > >  Documentation/devicetree/bindings/sound/fsl,asrc.txt | 5 +++++
-> > > > >  1 file changed, 5 insertions(+)
-> > > > >
-> > > > > diff --git a/Documentation/devicetree/bindings/sound/fsl,asrc.txt b/Documentation/devicetree/bindings/sound/fsl,asrc.txt
-> > > > > index cb9a25165503..780455cf7f71 100644
-> > > > > --- a/Documentation/devicetree/bindings/sound/fsl,asrc.txt
-> > > > > +++ b/Documentation/devicetree/bindings/sound/fsl,asrc.txt
-> > > > > @@ -51,6 +51,11 @@ Optional properties:
-> > > > >                     will be in use as default. Otherwise, the big endian
-> > > > >                     mode will be in use for all the device registers.
-> > > > >
-> > > > > +   - fsl,asrc-format     : Defines a mutual sample format used by DPCM Back
-> > > > > +                   Ends, which can replace the fsl,asrc-width.
-> > > > > +                   The value is SNDRV_PCM_FORMAT_S16_LE, or
-> > > > > +                   SNDRV_PCM_FORMAT_S24_LE
-> > > >
-> > > > I am still holding the concern at the DT binding of this format,
-> > > > as it uses values from ASoC header file instead of a dt-binding
-> > > > header file -- not sure if we can do this. Let's wait for Rob's
-> > > > comments.
-> > >
-> > > I assume those are an ABI as well, so it's okay to copy them unless we
-> >
-> > They are defined under include/uapi. So I think we can use them?
-> >
-> > > already have some format definitions for DT. But it does need to be copy
-> > > in a header under include/dt-bindings/.
-> >
-> > Shengjiu is actually quoting those integral values, rather than
-> > those macros, so actually no need copy to include/dt-bindings,
-> > yet whoever adds this format property to a new DT would need to
-> > look up the value in a header file under include/uapi. I's just
-> > wondering if that's okay.
-> >
-> > Thanks
-> Shall I keep this change or drop this change?
+--00000000000008e53805a22235ea
+Content-Type: text/plain; charset="UTF-8"
 
-This version of patch defines the format using those two marcos.
-So what Rob suggested is to copy those defines from uapi header
-file to dt-bindings folder. But you don't intend to do that?
+Hi ,
+Could you please help me to set up ppc64le 0n liunux machine
 
-My follow-up mail is to find if using integral values is doable.
-Yet, not seeing any reply further. I think you can make a choice
-to send it -- We will see how Rob acks eventually, or not.
+--00000000000008e53805a22235ea
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr">Hi ,<div>Could you please help me to set up ppc64le 0n liu=
+nux machine=C2=A0</div></div>
+
+--00000000000008e53805a22235ea--
