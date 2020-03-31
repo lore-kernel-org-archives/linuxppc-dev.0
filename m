@@ -2,96 +2,94 @@ Return-Path: <SRS0=kug9=5Q=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B3AFFC43331
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 05:00:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 86272C43331
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 05:03:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5FCA720748
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 05:00:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3578E20748
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 05:03:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="OyzXHsKO";
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="UT2XjkMW"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5FCA720748
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="WTVQJnlW";
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="rf5sU28a"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3578E20748
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48rxwX0V95zDqnn
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 16:00:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48rxzz3ztWzDqfK
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2020 16:03:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=russell.cc (client-ip=66.111.4.29;
- helo=out5-smtp.messagingengine.com; envelope-from=ruscur@russell.cc;
+ smtp.mailfrom=russell.cc (client-ip=66.111.4.229;
+ helo=new3-smtp.messagingengine.com; envelope-from=ruscur@russell.cc;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256
- header.s=fm1 header.b=OyzXHsKO; 
+ header.s=fm1 header.b=WTVQJnlW; 
  dkim=pass (2048-bit key;
  unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.a=rsa-sha256 header.s=fm2 header.b=UT2XjkMW; 
+ header.a=rsa-sha256 header.s=fm2 header.b=rf5sU28a; 
  dkim-atps=neutral
-Received: from out5-smtp.messagingengine.com (out5-smtp.messagingengine.com
- [66.111.4.29])
+X-Greylist: delayed 433 seconds by postgrey-1.36 at bilbo;
+ Tue, 31 Mar 2020 15:56:03 AEDT
+Received: from new3-smtp.messagingengine.com (new3-smtp.messagingengine.com
+ [66.111.4.229])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48rxgQ3Wh8zDqmh
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2020 15:49:06 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48rxqR6vPvzDqsx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2020 15:56:03 +1100 (AEDT)
 Received: from compute4.internal (compute4.nyi.internal [10.202.2.44])
- by mailout.nyi.internal (Postfix) with ESMTP id 614095C026D;
- Tue, 31 Mar 2020 00:49:03 -0400 (EDT)
+ by mailnew.nyi.internal (Postfix) with ESMTP id 4089D58024C;
+ Tue, 31 Mar 2020 00:48:45 -0400 (EDT)
 Received: from mailfrontend2 ([10.202.2.163])
- by compute4.internal (MEProxy); Tue, 31 Mar 2020 00:49:03 -0400
+ by compute4.internal (MEProxy); Tue, 31 Mar 2020 00:48:45 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=
- from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding; s=fm1; bh=ZLAZryI+IRf6Z
- 3eYrBz4DeBzmXqKWU+nW4J9jKdBaZE=; b=OyzXHsKO9hYAkc4/b9QORvxk3bRc3
- mRn0TH7gHqvRATPDGrpe0z2Mftpg82ngs/CFCdoRzwdsCc8bS3xoWdxJ02HURXvY
- cgrAor0mhZuPpFta7+oSFd6r87zqPNxY8lcHwUOP7CArnBkF3fWR/tmdDVn3T7Xo
- CJUz3PbMf6KzmvkDHJbBdIehZQ49HLfbsKvPcpTAs87ifFR9eLPQaTJLGWK53C4w
- iBwyeMCOxduWuNf3PwgKwxvFQr0fLaYbREDLozZi2MxjobTrdzIYbBTVFfQpYP2R
- XleEVWwhXjWZW+FbRoSv/D3XvVPXALRYXBR7P3gDbjq9eTpstF+mmOcBw==
+ from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding; s=fm1; bh=yY8X33qvg/yRwHhINvujWxa4XK
+ uItnDDjdDahuZGPeg=; b=WTVQJnlWEiOA/heukWV5Hwoz7jZwL7h7p0pYQcCp4u
+ 2kvFvq08tkHLEQpc55+H1I+1MR8XbcuRw4/Ntpu5FHvzlhQLnu0J0yCYi/HyjQDX
+ 1km1XHQ2CfXzt42O5AR+EYPNiddupYpublxsN3CgyD98CFM7UT38yt2DqVSposHJ
+ zd+EFm/zBnb1Xa7EwtyjDBbKauWLzVRErcyAIlapUXIvHewsBgXNjS9xMABz3kAC
+ 823ZS/b/34WeSSySGI29pE00KgC4R6Zr/UWga4MWzbBjnSk8seCqhPsYvjOBMRBY
+ lqImRO3eoc18pldJ2njEkRbmMeP6kSeYb0P3Y/5/U2uw==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
  messagingengine.com; h=cc:content-transfer-encoding:date:from
- :in-reply-to:message-id:mime-version:references:subject:to
- :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
- fm2; bh=ZLAZryI+IRf6Z3eYrBz4DeBzmXqKWU+nW4J9jKdBaZE=; b=UT2XjkMW
- hIdNaXSNFzjBV5IChTNYT8J6W7LcQvMs3P8ZDeEca9SF5oS3F3de7TYelEmOyaBO
- qOWWCoeAN5zGvtI77a3WTW1eZED1cUEO+nqtJ1PkZZQ1uHVPNzELtf/UqbSLWivr
- bmE0uvA7PJlHtwm0/uCeaigxCpG4Ig18P9xsxwPM37fQ7v4Pzm4/GX5waCi4axOS
- ihSSISxGpR5ypv54LKfEgTNQfAA2HU1tB0yBlFogd+O5xhI2gcctKwhMh0bfA/SE
- 0Fqx3ltiXJQSqv0bzmmszwVlCPxj/MznDrAghAyTxyk/yNWtH4/t0hR0S1yvmlg+
- 22zaVPHV6rjTXQ==
-X-ME-Sender: <xms:v8uCXoZ5YuvPVKWWcoQ36K3qlwAM7ogRvxxJa5f_xaTh7pw9m_LXVA>
+ :message-id:mime-version:subject:to:x-me-proxy:x-me-proxy
+ :x-me-sender:x-me-sender:x-sasl-enc; s=fm2; bh=yY8X33qvg/yRwHhIN
+ vujWxa4XKuItnDDjdDahuZGPeg=; b=rf5sU28amT7+teD62/QPQPQcdO+aAZURi
+ 4jrvcCHgCQacTOWvrAF+i8Oqnt/fjwtCw2eHhzBnyKHt1MAuFmk+nuIxLC3LLIy5
+ gfb+lTs2AXq/IBSYY4bButzBAIAiHyz1Z75mNZV9HlR6yzQrPUIMV4XuFZrSFmBL
+ bP3RlAA+hEL97vJP8+j5rcxwlgvkP0gLz3X2nBJcKYkcc2sW5bRT2smLsq6dkU8B
+ nvgCPwgGX1EJSvf/SoYBPWNbcqxvLLcIxz/p2K7J6EI6EPJixonku1u+j+jikO/y
+ ylKp6IlOFRcuvflDNmPp3V86g/zRa5WLyIdwsq0cXjZ5W5oN0RrIg==
+X-ME-Sender: <xms:q8uCXhZ89m7wgrEPr1azLl5QZR58fjOjmz5kTXgFjNJew5ucRiRWkg>
 X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedugedrudeiiedgkeeiucetufdoteggodetrfdotf
  fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
- uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
- gfrhhlucfvnfffucdludehmdenucfjughrpefhvffufffkofgjfhgggfestdekredtredt
- tdenucfhrhhomheptfhushhsvghllhcuvehurhhrvgihuceorhhushgtuhhrsehruhhssh
- gvlhhlrdgttgeqnecukfhppeduvddurdeghedrvdduvddrvdefleenucevlhhushhtvghr
- ufhiiigvpeehnecurfgrrhgrmhepmhgrihhlfhhrohhmpehruhhstghurhesrhhushhsvg
- hllhdrtggt
-X-ME-Proxy: <xmx:v8uCXjHkHncorBQB6Q-3EtMMNexMA31cl0li3ZiDkZ5JHO3DouL34Q>
- <xmx:v8uCXum0z7YsDTYBOe_FRnFBu6ZOkk5PacatM-Zm9HgRSZsD0dMiWA>
- <xmx:v8uCXuegEz8Avm0hi3_cxeGJ3E0KoKV41kG6AKxCZVBhThIJW2bG9Q>
- <xmx:v8uCXlLQRi2xoVhAKi1hwjoXx_saPzt4VUmBxOLP7r-v7ivTvzdjug>
+ uceurghilhhouhhtmecufedttdenucgfrhhlucfvnfffucdludehmdenogevohgrshhtrg
+ hlqdfhgeduvddqtddvucdludehtddmnecujfgurhephffvufffkffoggfgsedtkeertder
+ tddtnecuhfhrohhmpeftuhhsshgvlhhlucevuhhrrhgvhicuoehruhhstghurhesrhhush
+ hsvghllhdrtggtqeenucffohhmrghinhepohiilhgrsghsrdhorhhgnecukfhppeduvddu
+ rdeghedrvdduvddrvdefleenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmh
+ grihhlfhhrohhmpehruhhstghurhesrhhushhsvghllhdrtggt
+X-ME-Proxy: <xmx:q8uCXogqcm2Iv85hPvg9qfoyXQSuO4ca17wK4VvwCdZEuUi5vhOBZg>
+ <xmx:q8uCXrZgZ9hIm-f06xH2JJul-hbkV1bEe4G4I8LudNzXm1FwC8Awqw>
+ <xmx:q8uCXmNRdq16GQBtZxe_eFJvvu5eWLrNKo6ntuIpxmlCe5IV4DR4WA>
+ <xmx:rcuCXreEe-rdDx-XBwx9KHd2PqAo0db0iIP-UPGVtAwqP-cKRz5ZWA>
 Received: from crackle.ozlabs.ibm.com.com
  (ppp121-45-212-239.bras1.cbr2.internode.on.net [121.45.212.239])
- by mail.messagingengine.com (Postfix) with ESMTPA id 1F6A6306CA96;
- Tue, 31 Mar 2020 00:49:00 -0400 (EDT)
+ by mail.messagingengine.com (Postfix) with ESMTPA id 3AC95306CAD2;
+ Tue, 31 Mar 2020 00:48:41 -0400 (EDT)
 From: Russell Currey <ruscur@russell.cc>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v7 7/7] powerpc/32: use set_memory_attr()
-Date: Tue, 31 Mar 2020 15:48:25 +1100
-Message-Id: <20200331044825.591653-8-ruscur@russell.cc>
+Subject: [PATCH v7 0/7] set_memory() routines and STRICT_MODULE_RWX
+Date: Tue, 31 Mar 2020 15:48:18 +1100
+Message-Id: <20200331044825.591653-1-ruscur@russell.cc>
 X-Mailer: git-send-email 2.26.0
-In-Reply-To: <20200331044825.591653-1-ruscur@russell.cc>
-References: <20200331044825.591653-1-ruscur@russell.cc>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -106,177 +104,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: ajd@linux.ibm.com, kernel-hardening@lists.openwall.com, npiggin@gmail.com,
- dja@axtens.net
+ Russell Currey <ruscur@russell.cc>, dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Christophe Leroy <christophe.leroy@c-s.fr>
+Addressing review comments from Daniel Axtens.
 
-Use set_memory_attr() instead of the PPC32 specific change_page_attr()
+v6: https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=163335
+v5: https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=160869
 
-change_page_attr() was checking that the address was not mapped by
-blocks and was handling highmem, but that's unneeded because the
-affected pages can't be in highmem and block mapping verification
-is already done by the callers.
+Changes since v6:
+	[1/7] and [6/7]: Check for negative values of numpages and use
+	      	  	 apply_to_existing_page_range() thanks to dja
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/mm/pgtable_32.c | 95 ++++--------------------------------
- 1 file changed, 10 insertions(+), 85 deletions(-)
+Thanks for the feedback.
 
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 5fb90edd865e..3d92eaf3ee2f 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -23,6 +23,7 @@
- #include <linux/highmem.h>
- #include <linux/memblock.h>
- #include <linux/slab.h>
-+#include <linux/set_memory.h>
- 
- #include <asm/pgtable.h>
- #include <asm/pgalloc.h>
-@@ -121,99 +122,20 @@ void __init mapin_ram(void)
- 	}
- }
- 
--/* Scan the real Linux page tables and return a PTE pointer for
-- * a virtual address in a context.
-- * Returns true (1) if PTE was found, zero otherwise.  The pointer to
-- * the PTE pointer is unmodified if PTE is not found.
-- */
--static int
--get_pteptr(struct mm_struct *mm, unsigned long addr, pte_t **ptep, pmd_t **pmdp)
--{
--        pgd_t	*pgd;
--	pud_t	*pud;
--        pmd_t	*pmd;
--        pte_t	*pte;
--        int     retval = 0;
--
--        pgd = pgd_offset(mm, addr & PAGE_MASK);
--        if (pgd) {
--		pud = pud_offset(pgd, addr & PAGE_MASK);
--		if (pud && pud_present(*pud)) {
--			pmd = pmd_offset(pud, addr & PAGE_MASK);
--			if (pmd_present(*pmd)) {
--				pte = pte_offset_map(pmd, addr & PAGE_MASK);
--				if (pte) {
--					retval = 1;
--					*ptep = pte;
--					if (pmdp)
--						*pmdp = pmd;
--					/* XXX caller needs to do pte_unmap, yuck */
--				}
--			}
--		}
--        }
--        return(retval);
--}
--
--static int __change_page_attr_noflush(struct page *page, pgprot_t prot)
--{
--	pte_t *kpte;
--	pmd_t *kpmd;
--	unsigned long address;
--
--	BUG_ON(PageHighMem(page));
--	address = (unsigned long)page_address(page);
--
--	if (v_block_mapped(address))
--		return 0;
--	if (!get_pteptr(&init_mm, address, &kpte, &kpmd))
--		return -EINVAL;
--	__set_pte_at(&init_mm, address, kpte, mk_pte(page, prot), 0);
--	pte_unmap(kpte);
--
--	return 0;
--}
--
--/*
-- * Change the page attributes of an page in the linear mapping.
-- *
-- * THIS DOES NOTHING WITH BAT MAPPINGS, DEBUG USE ONLY
-- */
--static int change_page_attr(struct page *page, int numpages, pgprot_t prot)
--{
--	int i, err = 0;
--	unsigned long flags;
--	struct page *start = page;
--
--	local_irq_save(flags);
--	for (i = 0; i < numpages; i++, page++) {
--		err = __change_page_attr_noflush(page, prot);
--		if (err)
--			break;
--	}
--	wmb();
--	local_irq_restore(flags);
--	flush_tlb_kernel_range((unsigned long)page_address(start),
--			       (unsigned long)page_address(page));
--	return err;
--}
--
- void mark_initmem_nx(void)
- {
--	struct page *page = virt_to_page(_sinittext);
- 	unsigned long numpages = PFN_UP((unsigned long)_einittext) -
- 				 PFN_DOWN((unsigned long)_sinittext);
- 
- 	if (v_block_mapped((unsigned long)_stext + 1))
- 		mmu_mark_initmem_nx();
- 	else
--		change_page_attr(page, numpages, PAGE_KERNEL);
-+		set_memory_attr((unsigned long)_sinittext, numpages, PAGE_KERNEL);
- }
- 
- #ifdef CONFIG_STRICT_KERNEL_RWX
- void mark_rodata_ro(void)
- {
--	struct page *page;
- 	unsigned long numpages;
- 
- 	if (v_block_mapped((unsigned long)_sinittext)) {
-@@ -222,20 +144,18 @@ void mark_rodata_ro(void)
- 		return;
- 	}
- 
--	page = virt_to_page(_stext);
- 	numpages = PFN_UP((unsigned long)_etext) -
- 		   PFN_DOWN((unsigned long)_stext);
- 
--	change_page_attr(page, numpages, PAGE_KERNEL_ROX);
-+	set_memory_attr((unsigned long)_stext, numpages, PAGE_KERNEL_ROX);
- 	/*
- 	 * mark .rodata as read only. Use __init_begin rather than __end_rodata
- 	 * to cover NOTES and EXCEPTION_TABLE.
- 	 */
--	page = virt_to_page(__start_rodata);
- 	numpages = PFN_UP((unsigned long)__init_begin) -
- 		   PFN_DOWN((unsigned long)__start_rodata);
- 
--	change_page_attr(page, numpages, PAGE_KERNEL_RO);
-+	set_memory_attr((unsigned long)__start_rodata, numpages, PAGE_KERNEL_RO);
- 
- 	// mark_initmem_nx() should have already run by now
- 	ptdump_check_wx();
-@@ -245,9 +165,14 @@ void mark_rodata_ro(void)
- #ifdef CONFIG_DEBUG_PAGEALLOC
- void __kernel_map_pages(struct page *page, int numpages, int enable)
- {
-+	unsigned long addr = (unsigned long)page_address(page);
-+
- 	if (PageHighMem(page))
- 		return;
- 
--	change_page_attr(page, numpages, enable ? PAGE_KERNEL : __pgprot(0));
-+	if (enable)
-+		set_memory_attr(addr, numpages, PAGE_KERNEL);
-+	else
-+		set_memory_attr(addr, numpages, __pgprot(0));
- }
- #endif /* CONFIG_DEBUG_PAGEALLOC */
+Christophe Leroy (2):
+  powerpc/mm: implement set_memory_attr()
+  powerpc/32: use set_memory_attr()
+
+Russell Currey (5):
+  powerpc/mm: Implement set_memory() routines
+  powerpc/kprobes: Mark newly allocated probes as RO
+  powerpc/mm/ptdump: debugfs handler for W+X checks at runtime
+  powerpc: Set ARCH_HAS_STRICT_MODULE_RWX
+  powerpc/configs: Enable STRICT_MODULE_RWX in skiroot_defconfig
+
+ arch/powerpc/Kconfig                   |   2 +
+ arch/powerpc/Kconfig.debug             |   6 +-
+ arch/powerpc/configs/skiroot_defconfig |   1 +
+ arch/powerpc/include/asm/set_memory.h  |  34 ++++++++
+ arch/powerpc/kernel/kprobes.c          |  17 +++-
+ arch/powerpc/mm/Makefile               |   2 +-
+ arch/powerpc/mm/pageattr.c             | 114 +++++++++++++++++++++++++
+ arch/powerpc/mm/pgtable_32.c           |  95 +++------------------
+ arch/powerpc/mm/ptdump/ptdump.c        |  21 ++++-
+ 9 files changed, 199 insertions(+), 93 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/set_memory.h
+ create mode 100644 arch/powerpc/mm/pageattr.c
+
 -- 
 2.26.0
 
