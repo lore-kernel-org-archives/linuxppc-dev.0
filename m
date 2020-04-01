@@ -6,40 +6,40 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1A08C43331
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2020 13:54:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CC79C2D0F3
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2020 13:57:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9E5C820776
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2020 13:54:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9E5C820776
+	by mail.kernel.org (Postfix) with ESMTPS id CFE9A206CC
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2020 13:57:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CFE9A206CC
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48snjn3VK7zDr8s
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 00:54:05 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 48snp55wDvzDrBH
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 00:57:49 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48smN52lcqzDr22
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Apr 2020 23:53:41 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48smN815HqzDr22
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Apr 2020 23:53:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 48smN22mz1z9sTZ; Wed,  1 Apr 2020 23:53:38 +1100 (AEDT)
+ id 48smN56xCzz9sTZ; Wed,  1 Apr 2020 23:53:41 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 48smN05XGCz9sTb; Wed,  1 Apr 2020 23:53:36 +1100 (AEDT)
+ id 48smN53KSzz9sTX; Wed,  1 Apr 2020 23:53:40 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 9686813f6e9d5568bc045de0be853411e44958c8
-In-Reply-To: <20200327095319.2347641-1-mpe@ellerman.id.au>
+X-powerpc-patch-commit: c7def7fbdeaa25feaa19caf4a27c5d10bd8789e4
+In-Reply-To: <20200401023836.3286664-1-mpe@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH] selftests/powerpc: Fix try-run when source tree is not
- writable
-Message-Id: <48smN05XGCz9sTb@ozlabs.org>
-Date: Wed,  1 Apr 2020 23:53:35 +1100 (AEDT)
+Subject: Re: [PATCH] powerpc/64/tm: Don't let userspace set regs->trap via
+ sigreturn
+Message-Id: <48smN53KSzz9sTX@ozlabs.org>
+Date: Wed,  1 Apr 2020 23:53:40 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,46 +51,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: harish@linux.ibm.com
+Cc: mikey@neuling.org, npiggin@gmail.com, gromero@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2020-03-27 at 09:53:19 UTC, Michael Ellerman wrote:
-> We added a usage of try-run to pmu/ebb/Makefile to detect if the
-> toolchain supported the -no-pie option.
+On Wed, 2020-04-01 at 02:38:36 UTC, Michael Ellerman wrote:
+> In restore_tm_sigcontexts() we take the trap value directly from the
+> user sigcontext with no checking:
 > 
-> This fails if we build out-of-tree and the source tree is not
-> writable, as try-run tries to write its temporary files to the current
-> directory. That leads to the -no-pie option being silently dropped,
-> which leads to broken executables with some toolchains.
+> 	err |= __get_user(regs->trap, &sc->gp_regs[PT_TRAP]);
 > 
-> If we remove the redirect to /dev/null in try-run, we see the error:
+> This means we can be in the kernel with an arbitrary regs->trap value.
 > 
->   make[3]: Entering directory '/linux/tools/testing/selftests/powerpc/pmu/ebb'
->   /usr/bin/ld: cannot open output file .54.tmp: Read-only file system
->   collect2: error: ld returned 1 exit status
->   make[3]: Nothing to be done for 'all'.
+> Although that's not immediately problematic, there is a risk we could
+> trigger one of the uses of CHECK_FULL_REGS():
 > 
-> And looking with strace we see it's trying to use a file that's in the
-> source tree:
+> 	#define CHECK_FULL_REGS(regs)	BUG_ON(regs->trap & 1)
 > 
->   lstat("/linux/tools/testing/selftests/powerpc/pmu/ebb/.54.tmp", 0x7ffffc0f83c8)
+> It can also cause us to unnecessarily save non-volatile GPRs again in
+> save_nvgprs(), which shouldn't be problematic but is still wrong.
 > 
-> We can fix it by setting TMPOUT to point to the $(OUTPUT) directory,
-> and we can verify with strace it's now trying to write to the output
-> directory:
+> It's also possible it could trick the syscall restart machinery, which
+> relies on regs->trap not being == 0xc00 (see 9a81c16b5275 ("powerpc:
+> fix double syscall restarts")), though I haven't been able to make
+> that happen.
 > 
->   lstat("/output/kselftest/powerpc/pmu/ebb/.54.tmp", 0x7fffd1bf6bf8)
+> Finally it doesn't match the behaviour of the non-TM case, in
+> restore_sigcontext() which zeroes regs->trap.
 > 
-> And also see that the -no-pie option is now correctly detected.
+> So change restore_tm_sigcontexts() to zero regs->trap.
 > 
-> Fixes: 0695f8bca93e ("selftests/powerpc: Handle Makefile for unrecognized option")
-> Cc: stable@vger.kernel.org # v5.5+
+> This was discovered while testing Nick's upcoming rewrite of the
+> syscall entry path. In that series the call to save_nvgprs() prior to
+> signal handling (do_notify_resume()) is removed, which leaves the
+> low-bit of regs->trap uncleared which can then trigger the FULL_REGS()
+> WARNs in setup_tm_sigcontexts().
+> 
+> Fixes: 2b0a576d15e0 ("powerpc: Add new transactional memory state to the signal context")
+> Cc: stable@vger.kernel.org # v3.9+
 > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
 Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/9686813f6e9d5568bc045de0be853411e44958c8
+https://git.kernel.org/powerpc/c/c7def7fbdeaa25feaa19caf4a27c5d10bd8789e4
 
 cheers
