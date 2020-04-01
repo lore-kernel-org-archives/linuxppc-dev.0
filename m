@@ -2,94 +2,70 @@ Return-Path: <SRS0=4P7+=5R=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 37116C43331
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2020 18:51:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6C3CC43331
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2020 18:57:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D529C206F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2020 18:51:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id EECAD206F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2020 18:57:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="bpaHX75z"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D529C206F5
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="HSkwMdGj"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EECAD206F5
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48swKH0btpzDqpG
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 05:51:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=oracle.com (client-ip=141.146.126.78; helo=aserp2120.oracle.com;
- envelope-from=mike.kravetz@oracle.com; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48swRv1H0jzDqfB
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 05:57:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=oracle.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256
- header.s=corp-2020-01-29 header.b=bpaHX75z; 
- dkim-atps=neutral
-Received: from aserp2120.oracle.com (aserp2120.oracle.com [141.146.126.78])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
+ envelope-from=rdunlap@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48sw5702QYzDqqW
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2020 05:41:14 +1100 (AEDT)
-Received: from pps.filterd (aserp2120.oracle.com [127.0.0.1])
- by aserp2120.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 031IdZbN048822;
- Wed, 1 Apr 2020 18:40:38 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
- h=from : to : cc :
- subject : date : message-id : mime-version : content-transfer-encoding;
- s=corp-2020-01-29; bh=4EuKkI1FgDUHa7f3yhLdd4Qr6gCWZ73+BoGG9fGqtWQ=;
- b=bpaHX75zugPD8IcwwEfSwAZbX185+ocOT3IiOb2MByRjSddFi1VkEHG5DHv2i/lw8ub1
- qL/CsXFLjShsUv3XIAVdC3XGYVkqi5triEUjloAr5MhE6nUvx2mF0mr9Q7QKkwbAwdvG
- MjlsdMz3TWMp02m7GRhcDcB+kBIQqSUySU145aU8eS50Ruka9n0juY1Wx6Iq3z9eFSGh
- MBAseM+pRUmcAB+jJzf2pYQu1BeWxgfmCZmMpHP7Dmr9WaC0X7+OpSMLN5fvOu5xJ0iG
- S9/pW8B89OAxwBZebuunnT8UJvC1XouGuocqs60tWdy65mV3b0a5wlfCV8RKGQUO1mPj Tw== 
-Received: from userp3020.oracle.com (userp3020.oracle.com [156.151.31.79])
- by aserp2120.oracle.com with ESMTP id 303yun9sh2-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 01 Apr 2020 18:40:38 +0000
-Received: from pps.filterd (userp3020.oracle.com [127.0.0.1])
- by userp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 031IcWdc176892;
- Wed, 1 Apr 2020 18:38:37 GMT
-Received: from aserv0121.oracle.com (aserv0121.oracle.com [141.146.126.235])
- by userp3020.oracle.com with ESMTP id 302ga0ym75-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 01 Apr 2020 18:38:37 +0000
-Received: from abhmp0003.oracle.com (abhmp0003.oracle.com [141.146.116.9])
- by aserv0121.oracle.com (8.14.4/8.13.8) with ESMTP id 031IcSj8006092;
- Wed, 1 Apr 2020 18:38:28 GMT
-Received: from monkey.oracle.com (/71.63.128.209)
- by default (Oracle Beehive Gateway v4.0)
- with ESMTP ; Wed, 01 Apr 2020 11:38:28 -0700
-From: Mike Kravetz <mike.kravetz@oracle.com>
-To: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-doc@vger.kernel.org
-Subject: [PATCH v2 0/4] Clean up hugetlb boot command line processing
-Date: Wed,  1 Apr 2020 11:38:15 -0700
-Message-Id: <20200401183819.20647-1-mike.kravetz@oracle.com>
-X-Mailer: git-send-email 2.25.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48swPY474ZzDqHj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2020 05:55:29 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
+ Content-Type:In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:
+ Subject:Sender:Reply-To:Content-ID:Content-Description;
+ bh=g+zmGJ2+G9hNWUAMUsh52VSSKxFQTXVxsgcRUv3kCKw=; b=HSkwMdGjJTzeDKg6viAgg+vkYX
+ GwWikN3woD12qqHVvV7ZHlDBuSnIT1YTLhhPxnYeVhU4Yz0w22ayIAzSGGNCEEH3ESWk2Of0bsMU/
+ dG0H9jo2k7LKZZep+4GqrDqfz7gda+n57tRazqwm0NtWpHChHNHExKMuQaHVOKIjVTNZsLgekVjVB
+ ETytEzAil0LGP9C/6DiupNZY0kRjExHiViQlWPo3nNbK3R5aGeyag92MZI3KBpNK3UjeJxk/U9Ng8
+ RaPo+1ZWEAkLxis4FKl6f+lSrhmDY1a51cw8esCzD2Yt7ZzKeDLwwC0kkohK8jmUgrXJhRy6f60cJ
+ K5QabcFg==;
+Received: from [2601:1c0:6280:3f0:897c:6038:c71d:ecac]
+ by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+ id 1jJiVz-0003u7-Lp; Wed, 01 Apr 2020 18:55:03 +0000
+Subject: Re: [PATCH v2 4/4] hugetlbfs: clean up command line processing
+To: Mike Kravetz <mike.kravetz@oracle.com>, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-doc@vger.kernel.org
+References: <20200401183819.20647-1-mike.kravetz@oracle.com>
+ <20200401183819.20647-5-mike.kravetz@oracle.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Message-ID: <a80f530d-e803-3952-e714-705a8589f50a@infradead.org>
+Date: Wed, 1 Apr 2020 11:55:01 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.6.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9578
- signatures=668685
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0
- malwarescore=0
- mlxlogscore=999 bulkscore=0 mlxscore=0 spamscore=0 adultscore=0
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2003020000 definitions=main-2004010151
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9578
- signatures=668685
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0
- lowpriorityscore=0
- malwarescore=0 adultscore=0 priorityscore=1501 mlxlogscore=999 bulkscore=0
- suspectscore=0 mlxscore=0 spamscore=0 impostorscore=0 clxscore=1015
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2003020000
- definitions=main-2004010150
+In-Reply-To: <20200401183819.20647-5-mike.kravetz@oracle.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,65 +86,62 @@ Cc: Mina Almasry <almasrymina@google.com>, Albert Ou <aou@eecs.berkeley.edu>,
  Palmer Dabbelt <palmer@dabbelt.com>, Paul Walmsley <paul.walmsley@sifive.com>,
  Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
  Longpeng <longpeng2@huawei.com>, Will Deacon <will@kernel.org>,
- "David S . Miller" <davem@davemloft.net>,
- Mike Kravetz <mike.kravetz@oracle.com>
+ "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-v2 -
-   Fix build errors with patch 1 (Will)
-   Change arch_hugetlb_valid_size arg to unsigned long and remove
-     irrelevant 'extern' keyword (Christophe)
-   Documentation and other misc changes (Randy, Christophe, Mina)
-   Do not process command line options if !hugepages_supported()
-     (Dave, but it sounds like we may want to additional changes to
-      hugepages_supported() for x86?  If that is needed I would prefer
-      a separate patch.)
+On 4/1/20 11:38 AM, Mike Kravetz wrote:
+> With all hugetlb page processing done in a single file clean up code.
+> - Make code match desired semantics
+>   - Update documentation with semantics
+> - Make all warnings and errors messages start with 'HugeTLB:'.
+> - Consistently name command line parsing routines.
+> - Check for hugepages_supported() before processing parameters.
+> - Add comments to code
+>   - Describe some of the subtle interactions
+>   - Describe semantics of command line arguments
+> 
+> Signed-off-by: Mike Kravetz <mike.kravetz@oracle.com>
+> ---
 
-Longpeng(Mike) reported a weird message from hugetlb command line processing
-and proposed a solution [1].  While the proposed patch does address the
-specific issue, there are other related issues in command line processing.
-As hugetlbfs evolved, updates to command line processing have been made to
-meet immediate needs and not necessarily in a coordinated manner.  The result
-is that some processing is done in arch specific code, some is done in arch
-independent code and coordination is problematic.  Semantics can vary between
-architectures.
+Hi Mike,
+One nit, please see below:
 
-The patch series does the following:
-- Define arch specific arch_hugetlb_valid_size routine used to validate
-  passed huge page sizes.
-- Move hugepagesz= command line parsing out of arch specific code and into
-  an arch independent routine.
-- Clean up command line processing to follow desired semantics and
-  document those semantics.
+>  .../admin-guide/kernel-parameters.txt         | 35 ++++---
+>  Documentation/admin-guide/mm/hugetlbpage.rst  | 44 +++++++++
+>  mm/hugetlb.c                                  | 96 +++++++++++++++----
+>  3 files changed, 142 insertions(+), 33 deletions(-)
+> 
+> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+> index 1bd5454b5e5f..de653cfe1726 100644
+> --- a/Documentation/admin-guide/kernel-parameters.txt
+> +++ b/Documentation/admin-guide/kernel-parameters.txt
+> @@ -832,12 +832,15 @@
+>  			See also Documentation/networking/decnet.txt.
+>  
+>  	default_hugepagesz=
+> -			[same as hugepagesz=] The size of the default
+> -			HugeTLB page size. This is the size represented by
+> -			the legacy /proc/ hugepages APIs, used for SHM, and
+> -			default size when mounting hugetlbfs filesystems.
+> -			Defaults to the default architecture's huge page size
+> -			if not specified.
+> +			[HW] The size of the default HugeTLB page size. This
 
-[1] https://lore.kernel.org/linux-mm/20200305033014.1152-1-longpeng2@huawei.com
+			Drop one "size" above?
 
-Mike Kravetz (4):
-  hugetlbfs: add arch_hugetlb_valid_size
-  hugetlbfs: move hugepagesz= parsing to arch independent code
-  hugetlbfs: remove hugetlb_add_hstate() warning for existing hstate
-  hugetlbfs: clean up command line processing
+> +			is the size represented by the legacy /proc/ hugepages
+> +			APIs.  In addition, this is the default hugetlb size
+> +			used for shmget(), mmap() and mounting hugetlbfs
+> +			filesystems.  If not specified, defaults to the
+> +			architecture's default huge page size.  Huge page
+> +			sizes are architecture dependent.  See also
+> +			Documentation/admin-guide/mm/hugetlbpage.rst.
+> +			Format: size[KMG]
 
- .../admin-guide/kernel-parameters.txt         |  35 +++--
- Documentation/admin-guide/mm/hugetlbpage.rst  |  44 ++++++
- arch/arm64/include/asm/hugetlb.h              |   2 +
- arch/arm64/mm/hugetlbpage.c                   |  30 +---
- arch/powerpc/include/asm/hugetlb.h            |   3 +
- arch/powerpc/mm/hugetlbpage.c                 |  30 ++--
- arch/riscv/include/asm/hugetlb.h              |   3 +
- arch/riscv/mm/hugetlbpage.c                   |  24 +--
- arch/s390/include/asm/hugetlb.h               |   3 +
- arch/s390/mm/hugetlbpage.c                    |  24 +--
- arch/sparc/include/asm/hugetlb.h              |   3 +
- arch/sparc/mm/init_64.c                       |  43 ++----
- arch/x86/include/asm/hugetlb.h                |   5 +
- arch/x86/mm/hugetlbpage.c                     |  23 +--
- include/linux/hugetlb.h                       |   8 +-
- mm/hugetlb.c                                  | 141 ++++++++++++++----
- 16 files changed, 252 insertions(+), 169 deletions(-)
+
 
 -- 
-2.25.1
+~Randy
 
