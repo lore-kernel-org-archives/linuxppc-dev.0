@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 775E6C2BA12
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2020 16:41:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C906C2D0F2
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2020 16:47:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EF276206F8
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2020 16:41:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 171A020714
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2020 16:47:57 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="mt/p+B+q"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EF276206F8
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="0joRB7AX"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 171A020714
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48ssRJ49FpzDrBd
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 03:41:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48ssZM4SlFzDrBd
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 03:47:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
  helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
@@ -30,34 +30,34 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=mt/p+B+q; dkim-atps=neutral
+ header.s=default header.b=0joRB7AX; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48ssJH0rzxzDqVK
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2020 03:35:43 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48ssTl2h66zDrBg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2020 03:43:55 +1100 (AEDT)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 0AF7420BED;
- Wed,  1 Apr 2020 16:35:38 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 6540B20658;
+ Wed,  1 Apr 2020 16:43:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1585758938;
- bh=Nb0r+HQTy4g3tmCtBYbsXP+gteUn0DVvrhjMF+wHtw8=;
+ s=default; t=1585759432;
+ bh=6XSQgvo4o579LCnRulq9Io3ACHXqq6KyZTFGZ5m1QBM=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=mt/p+B+q8f3YrrqJDCKhbZiGTeCshTbnDOpaVdd3c1Uq0djz4RHxxXvS9VV/dqoaB
- zHtDoHpZZ2n2GiNXnowgi32dvHEqhmdnFk1ehkRv8liKLJ1B56JnmNIQoCM092vVvN
- HyW9S7pmXY4DB+QowJvtD2vKeK9mIDEt0n6Cw3b4=
+ b=0joRB7AXrildeO2ta796ppxfN3hfF1LZK4kgS00Zpj2x/WbBoDpHeX/sGXFwOLZQY
+ Z2XdWss605+szUXxRySSuA4aVObHdE7A6T/04Kv8Y6kDYuOreWRtlMXMyUWAjb9Qk6
+ 7xRCcbBXG/c9pBVYCCvMEHaq+04+pTmJ84nVuHqw=
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 4.9 026/102] mm,
+Subject: [PATCH 4.14 037/148] mm,
  slub: prevent kmalloc_node crashes and memory leaks
-Date: Wed,  1 Apr 2020 18:17:29 +0200
-Message-Id: <20200401161538.000681014@linuxfoundation.org>
+Date: Wed,  1 Apr 2020 18:17:09 +0200
+Message-Id: <20200401161556.297841650@linuxfoundation.org>
 X-Mailer: git-send-email 2.26.0
-In-Reply-To: <20200401161530.451355388@linuxfoundation.org>
-References: <20200401161530.451355388@linuxfoundation.org>
+In-Reply-To: <20200401161552.245876366@linuxfoundation.org>
+References: <20200401161552.245876366@linuxfoundation.org>
 User-Agent: quilt/0.66
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -210,7 +210,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
 --- a/mm/slub.c
 +++ b/mm/slub.c
-@@ -1909,8 +1909,6 @@ static void *get_partial(struct kmem_cac
+@@ -1923,8 +1923,6 @@ static void *get_partial(struct kmem_cac
  
  	if (node == NUMA_NO_NODE)
  		searchnode = numa_mem_id();
@@ -219,7 +219,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
  
  	object = get_partial_node(s, get_node(s, searchnode), c, flags);
  	if (object || node != NUMA_NO_NODE)
-@@ -2506,17 +2504,27 @@ static void *___slab_alloc(struct kmem_c
+@@ -2521,17 +2519,27 @@ static void *___slab_alloc(struct kmem_c
  	struct page *page;
  
  	page = c->page;
@@ -252,7 +252,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 +			goto redo;
 +		} else {
  			stat(s, ALLOC_NODE_MISMATCH);
- 			deactivate_slab(s, page, c->freelist);
- 			c->page = NULL;
+ 			deactivate_slab(s, page, c->freelist, c);
+ 			goto new_slab;
 
 
