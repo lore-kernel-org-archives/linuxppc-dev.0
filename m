@@ -2,98 +2,68 @@ Return-Path: <SRS0=sSB4=5S=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.4 required=3.0 tests=FROM_LOCAL_HEX,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 024BBC43331
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 11:20:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C045C43331
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 11:23:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 72FF720675
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 11:20:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 72FF720675
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 333EB20675
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 11:23:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 333EB20675
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48tLFf4mXTzDrRK
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 22:20:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48tLK109mHzDrRG
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 22:23:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=au1.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ellerman@au1.ibm.com;
+ smtp.mailfrom=m3kw2wvrgufz5godrsrytgd7.apphosting.bounces.google.com
+ (client-ip=209.85.166.71; helo=mail-io1-f71.google.com;
+ envelope-from=3m8afxgkbanaekl6w770dwbb4z.2aa270ge0dya9f09f.ya8@m3kw2wvrgufz5godrsrytgd7.apphosting.bounces.google.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=au1.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=syzkaller.appspotmail.com
+Received: from mail-io1-f71.google.com (mail-io1-f71.google.com
+ [209.85.166.71])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48tJwg5djxzDr1S
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2020 21:20:13 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 032A33FF102128
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Apr 2020 06:20:11 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3022r18q0q-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Apr 2020 06:20:10 -0400
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ellerman@au1.ibm.com>;
- Thu, 2 Apr 2020 11:19:50 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 2 Apr 2020 11:19:47 +0100
-Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
- [9.149.105.60])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 032AK4EG41222338
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 2 Apr 2020 10:20:04 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1F0E74204D;
- Thu,  2 Apr 2020 10:20:04 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7838442052;
- Thu,  2 Apr 2020 10:20:03 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu,  2 Apr 2020 10:20:03 +0000 (GMT)
-Received: from localhost (unknown [9.102.33.58])
- (using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 9E8E7A0130;
- Thu,  2 Apr 2020 21:19:57 +1100 (AEDT)
-From: Michael Ellerman <ellerman@au1.ibm.com>
-To: Vaibhav Jain <vaibhav@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-nvdimm@lists.01.org
-Subject: Re: [PATCH v5 1/4] powerpc/papr_scm: Fetch nvdimm health information
- from PHYP
-In-Reply-To: <20200331143229.306718-2-vaibhav@linux.ibm.com>
-References: <20200331143229.306718-1-vaibhav@linux.ibm.com>
- <20200331143229.306718-2-vaibhav@linux.ibm.com>
-Date: Thu, 02 Apr 2020 21:20:11 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48tKs70pf8zDrMb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2020 22:02:13 +1100 (AEDT)
+Received: by mail-io1-f71.google.com with SMTP id n26so2497638iop.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Apr 2020 04:02:13 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:date:message-id:subject:from:to;
+ bh=HEen/pjteG0riA5Fq+vm6ECwHW6v+ASlw0ZuUHgsq9k=;
+ b=G9kuW9SkfcYG3Ppmo51A0A5opGjbk+y1tFlxXzdRBq+2y/fmCiW6p7tDaHcqrqDeUF
+ vOK77oAr5POzsRRx+XjCxGZRHZ2NyeXR3vtYgcXa3uYgaVtRp/JvcFcvzRX0Q/fzy+OH
+ lV0e5UX7Bbw+vr2eltacXr+GEGm1CYSuquveLmbHb2DFtgaJDC3wxwm4kZPFi8Ds8gZ6
+ 7l1OVT91Z646uif6SfJlbKiUwC7HZBUKEAqU7R6xIMbqj2ge0E+14+/BPU+8JOVnsOsk
+ RfeTjtwjYQDL0jDQ6tyBTZXej4HIjtbT6V2hNXGzG6kMov9XGQj8WyaPZ10cYqObbt0c
+ z2Pw==
+X-Gm-Message-State: AGi0PuandeGXpEcgZE/oqn0HEsxGVNSlVCQWnYHlYFrHCf/FSslRRX5K
+ UTMClUKZjTtSEAyGn/gajFgGwyWk+Ouj39fNuwLXrzLOA6ck
+X-Google-Smtp-Source: APiQypKHwawm+XbPWjWm1WiRkJzzTagLnpKvQGlicoTPOrocdiTCMJ/gjTwzIrZQK9hMY9riqRRVEZaqILPuquo840fL+Y/tOjQR
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-x-cbid: 20040210-0020-0000-0000-000003C02470
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20040210-0021-0000-0000-00002218CED9
-Message-Id: <878sjetcis.fsf@mpe.ellerman.id.au>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
- definitions=2020-04-02_01:2020-03-31,
- 2020-04-02 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- phishscore=0 malwarescore=0 spamscore=0 mlxlogscore=999 impostorscore=0
- suspectscore=1 adultscore=0 clxscore=1011 bulkscore=0 mlxscore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2003020000 definitions=main-2004020091
+X-Received: by 2002:a02:8c4:: with SMTP id 187mr2706675jac.50.1585825331302;
+ Thu, 02 Apr 2020 04:02:11 -0700 (PDT)
+Date: Thu, 02 Apr 2020 04:02:11 -0700
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <0000000000008c5a4605a24cbb16@google.com>
+Subject: WARNING in ext4_da_update_reserve_space
+From: syzbot <syzbot+67e4f16db666b1c8253c@syzkaller.appspotmail.com>
+To: a@unstable.cc, adilger.kernel@dilger.ca, b.a.t.m.a.n@lists.open-mesh.org, 
+ benh@kernel.crashing.org, davem@davemloft.net, linux-ext4@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+ mareklindner@neomailbox.ch, mpe@ellerman.id.au, muriloo@linux.ibm.com, 
+ netdev@vger.kernel.org, paulus@samba.org, sw@simonwunderlich.de, 
+ syzkaller-bugs@googlegroups.com, tytso@mit.edu
+Content-Type: text/plain; charset="UTF-8"
 X-Mailman-Approved-At: Thu, 02 Apr 2020 22:17:55 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -106,220 +76,91 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alastair D'Silva <alastair@au1.ibm.com>,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
- Jeff Moyer <jmoyer@redhat.com>, Oliver O'Halloran <oohall@gmail.com>,
- Vishal Verma <vishal.l.verma@intel.com>, Vaibhav Jain <vaibhav@linux.ibm.com>,
- Dan Williams <dan.j.williams@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Vaibhav Jain <vaibhav@linux.ibm.com> writes:
+Hello,
 
-> Implement support for fetching nvdimm health information via
-> H_SCM_HEALTH hcall as documented in Ref[1]. The hcall returns a pair
-> of 64-bit big-endian integers which are then stored in 'struct
-> papr_scm_priv' and subsequently partially exposed to user-space via
-> newly introduced dimm specific attribute 'papr_flags'. Also a new asm
-> header named 'papr-scm.h' is added that describes the interface
-> between PHYP and guest kernel.
->
-> Following flags are reported via 'papr_flags' sysfs attribute contents
-> of which are space separated string flags indicating various nvdimm
-> states:
->
->  * "not_armed" 	: Indicating that nvdimm contents wont survive a power
-> 		   cycle.
->  * "save_fail" 	: Indicating that nvdimm contents couldn't be flushed
-> 		   during last shutdown event.
->  * "restore_fail": Indicating that nvdimm contents couldn't be restored
-> 		   during dimm initialization.
->  * "encrypted" 	: Dimm contents are encrypted.
->  * "smart_notify": There is health event for the nvdimm.
->  * "scrubbed" 	: Indicating that contents of the nvdimm have been
-> 		   scrubbed.
->  * "locked"	: Indicating that nvdimm contents cant be modified
-> 		   until next power cycle.
->
-> [1]: commit 58b278f568f0 ("powerpc: Provide initial documentation for
-> PAPR hcalls")
->
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
-> ---
-> Changelog:
->
-> v4..v5 : None
->
-> v3..v4 : None
->
-> v2..v3 : Removed PAPR_SCM_DIMM_HEALTH_NON_CRITICAL as a condition for
->        	 NVDIMM unarmed [Aneesh]
->
-> v1..v2 : New patch in the series.
-> ---
->  arch/powerpc/include/asm/papr_scm.h       |  48 ++++++++++
->  arch/powerpc/platforms/pseries/papr_scm.c | 105 +++++++++++++++++++++-
->  2 files changed, 151 insertions(+), 2 deletions(-)
->  create mode 100644 arch/powerpc/include/asm/papr_scm.h
->
-> diff --git a/arch/powerpc/include/asm/papr_scm.h b/arch/powerpc/include/asm/papr_scm.h
-> new file mode 100644
-> index 000000000000..868d3360f56a
-> --- /dev/null
-> +++ b/arch/powerpc/include/asm/papr_scm.h
-> @@ -0,0 +1,48 @@
-> +/* SPDX-License-Identifier: GPL-2.0-or-later */
-> +/*
-> + * Structures and defines needed to manage nvdimms for spapr guests.
-> + */
-> +#ifndef _ASM_POWERPC_PAPR_SCM_H_
-> +#define _ASM_POWERPC_PAPR_SCM_H_
-> +
-> +#include <linux/types.h>
-> +#include <asm/bitsperlong.h>
-> +
-> +/* DIMM health bitmap bitmap indicators */
-> +/* SCM device is unable to persist memory contents */
-> +#define PAPR_SCM_DIMM_UNARMED			PPC_BIT(0)
+syzbot found the following crash on:
 
-Please don't use PPC_BIT, it's just unncessary obfuscation for folks
-who are reading the code without access to the docs (ie. more or less
-everyone other than you :)
+HEAD commit:    1a147b74 Merge branch 'DSA-mtu'
+git tree:       net-next
+console output: https://syzkaller.appspot.com/x/log.txt?x=14237713e00000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=46ee14d4915944bc
+dashboard link: https://syzkaller.appspot.com/bug?extid=67e4f16db666b1c8253c
+compiler:       gcc (GCC) 9.0.0 20181231 (experimental)
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=12237713e00000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=10ec7c97e00000
 
-> diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
-> index 0b4467e378e5..aaf2e4ab1f75 100644
-> --- a/arch/powerpc/platforms/pseries/papr_scm.c
-> +++ b/arch/powerpc/platforms/pseries/papr_scm.c
-> @@ -14,6 +14,7 @@
->  #include <linux/delay.h>
->  
->  #include <asm/plpar_wrappers.h>
-> +#include <asm/papr_scm.h>
->  
->  #define BIND_ANY_ADDR (~0ul)
->  
-> @@ -39,6 +40,13 @@ struct papr_scm_priv {
->  	struct resource res;
->  	struct nd_region *region;
->  	struct nd_interleave_set nd_set;
-> +
-> +	/* Protect dimm data from concurrent access */
-> +	struct mutex dimm_mutex;
-> +
-> +	/* Health information for the dimm */
-> +	__be64 health_bitmap;
-> +	__be64 health_bitmap_valid;
+The bug was bisected to:
 
-It's much less error prone to store the data in CPU endian and do the
-endian conversion only at the point where the data either comes from or
-goes to firmware.
+commit 658b0f92bc7003bc734471f61bf7cd56339eb8c3
+Author: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
+Date:   Wed Aug 1 21:33:15 2018 +0000
 
-That would also mean you can define flags above without needing PPC_BIT
-because they'll be in CPU endian too.
+    powerpc/traps: Print unhandled signals in a separate function
 
-> @@ -144,6 +152,35 @@ static int drc_pmem_query_n_bind(struct papr_scm_priv *p)
->  	return drc_pmem_bind(p);
->  }
->  
-> +static int drc_pmem_query_health(struct papr_scm_priv *p)
-> +{
-> +	unsigned long ret[PLPAR_HCALL_BUFSIZE];
-> +	int64_t rc;
+bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=15979f5be00000
+final crash:    https://syzkaller.appspot.com/x/report.txt?x=17979f5be00000
+console output: https://syzkaller.appspot.com/x/log.txt?x=13979f5be00000
 
-Use kernel types please, ie. s64, or just long.
+IMPORTANT: if you fix the bug, please add the following tag to the commit:
+Reported-by: syzbot+67e4f16db666b1c8253c@syzkaller.appspotmail.com
+Fixes: 658b0f92bc70 ("powerpc/traps: Print unhandled signals in a separate function")
 
-> +	rc = plpar_hcall(H_SCM_HEALTH, ret, p->drc_index);
-> +	if (rc != H_SUCCESS) {
-> +		dev_err(&p->pdev->dev,
-> +			 "Failed to query health information, Err:%lld\n", rc);
-> +		return -ENXIO;
-> +	}
-> +
-> +	/* Protect modifications to papr_scm_priv with the mutex */
-> +	rc = mutex_lock_interruptible(&p->dimm_mutex);
-> +	if (rc)
-> +		return rc;
-> +
-> +	/* Store the retrieved health information in dimm platform data */
-> +	p->health_bitmap = ret[0];
-> +	p->health_bitmap_valid = ret[1];
-> +
-> +	dev_dbg(&p->pdev->dev,
-> +		"Queried dimm health info. Bitmap:0x%016llx Mask:0x%016llx\n",
-> +		be64_to_cpu(p->health_bitmap),
-> +		be64_to_cpu(p->health_bitmap_valid));
-> +
-> +	mutex_unlock(&p->dimm_mutex);
-> +	return 0;
-> +}
->  
->  static int papr_scm_meta_get(struct papr_scm_priv *p,
->  			     struct nd_cmd_get_config_data_hdr *hdr)
-> @@ -304,6 +341,67 @@ static inline int papr_scm_node(int node)
->  	return min_node;
->  }
->  
-> +static ssize_t papr_flags_show(struct device *dev,
-> +				struct device_attribute *attr, char *buf)
-> +{
-> +	struct nvdimm *dimm = to_nvdimm(dev);
-> +	struct papr_scm_priv *p = nvdimm_provider_data(dimm);
-> +	__be64 health;
+EXT4-fs warning (device sda1): ext4_da_update_reserve_space:344: ext4_da_update_reserve_space: ino 15722, used 1 with only 0 reserved data blocks
+------------[ cut here ]------------
+WARNING: CPU: 1 PID: 359 at fs/ext4/inode.c:348 ext4_da_update_reserve_space+0x622/0x7d0 fs/ext4/inode.c:344
+Kernel panic - not syncing: panic_on_warn set ...
+CPU: 1 PID: 359 Comm: kworker/u4:5 Not tainted 5.6.0-rc7-syzkaller #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
+Workqueue: writeback wb_workfn (flush-8:0)
+Call Trace:
+ __dump_stack lib/dump_stack.c:77 [inline]
+ dump_stack+0x188/0x20d lib/dump_stack.c:118
+ panic+0x2e3/0x75c kernel/panic.c:221
+ __warn.cold+0x2f/0x35 kernel/panic.c:582
+ report_bug+0x27b/0x2f0 lib/bug.c:195
+ fixup_bug arch/x86/kernel/traps.c:174 [inline]
+ fixup_bug arch/x86/kernel/traps.c:169 [inline]
+ do_error_trap+0x12b/0x220 arch/x86/kernel/traps.c:267
+ do_invalid_op+0x32/0x40 arch/x86/kernel/traps.c:286
+ invalid_op+0x23/0x30 arch/x86/entry/entry_64.S:1027
+RIP: 0010:ext4_da_update_reserve_space+0x622/0x7d0 fs/ext4/inode.c:348
+Code: 02 00 0f 85 94 01 00 00 48 8b 7d 28 49 c7 c0 20 72 3c 88 41 56 48 c7 c1 80 60 3c 88 53 ba 58 01 00 00 4c 89 c6 e8 1e 6d 0d 00 <0f> 0b 48 b8 00 00 00 00 00 fc ff df 4c 89 ea 48 c1 ea 03 0f b6 04
+RSP: 0018:ffffc90002197288 EFLAGS: 00010296
+RAX: 0000000000000000 RBX: 0000000000000001 RCX: 0000000000000000
+RDX: 0000000000000000 RSI: ffffffff820bf066 RDI: fffff52000432e21
+RBP: ffff888086b744c8 R08: 0000000000000091 R09: ffffed1015ce6659
+R10: ffffed1015ce6658 R11: ffff8880ae7332c7 R12: 0000000000000001
+R13: ffff888086b74990 R14: 0000000000000000 R15: ffff888086b74a40
+ ext4_ext_map_blocks+0x24aa/0x37d0 fs/ext4/extents.c:4500
+ ext4_map_blocks+0x4cb/0x1650 fs/ext4/inode.c:622
+ mpage_map_one_extent fs/ext4/inode.c:2365 [inline]
+ mpage_map_and_submit_extent fs/ext4/inode.c:2418 [inline]
+ ext4_writepages+0x19eb/0x3080 fs/ext4/inode.c:2772
+ do_writepages+0xfa/0x2a0 mm/page-writeback.c:2344
+ __writeback_single_inode+0x12a/0x1410 fs/fs-writeback.c:1452
+ writeback_sb_inodes+0x515/0xdd0 fs/fs-writeback.c:1716
+ wb_writeback+0x2a5/0xd90 fs/fs-writeback.c:1892
+ wb_do_writeback fs/fs-writeback.c:2037 [inline]
+ wb_workfn+0x339/0x11c0 fs/fs-writeback.c:2078
+ process_one_work+0x94b/0x1690 kernel/workqueue.c:2266
+ worker_thread+0x96/0xe20 kernel/workqueue.c:2412
+ kthread+0x357/0x430 kernel/kthread.c:255
+ ret_from_fork+0x24/0x30 arch/x86/entry/entry_64.S:352
+Kernel Offset: disabled
+Rebooting in 86400 seconds..
 
-No need for __be64 here if health_bitmap was stored in CPU endian.
 
-> +	int rc;
-> +
-> +	rc = drc_pmem_query_health(p);
-> +	if (rc)
-> +		return rc;
-> +
-> +	/* Protect against modifications to papr_scm_priv with the mutex */
-> +	rc = mutex_lock_interruptible(&p->dimm_mutex);
-> +	if (rc)
-> +		return rc;
-> +
-> +	health = p->health_bitmap & p->health_bitmap_valid;
+---
+This bug is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
 
-This is all you ever do with the health_bitmap? In which case why not
-just do the masking before storing it into priv and save yourself 8
-bytes?
-
-> +	/* Check for various masks in bitmap and set the buffer */
-> +	if (health & PAPR_SCM_DIMM_UNARMED_MASK)
-> +		rc += sprintf(buf, "not_armed ");
-
-I know buf is "big enough" but using sprintf() in 2020 is a bit ... :)
-
-seq_buf is a pretty thin wrapper over a buffer you can use to make this
-cleaner and also handles overflow for you.
-
-See eg. show_user_instructions() for an example.
-
-> +
-> +	if (health & PAPR_SCM_DIMM_BAD_SHUTDOWN_MASK)
-> +		rc += sprintf(buf + rc, "save_fail ");
-> +
-> +	if (health & PAPR_SCM_DIMM_BAD_RESTORE_MASK)
-> +		rc += sprintf(buf + rc, "restore_fail ");
-> +
-> +	if (health & PAPR_SCM_DIMM_ENCRYPTED)
-> +		rc += sprintf(buf + rc, "encrypted ");
-> +
-> +	if (health & PAPR_SCM_DIMM_SMART_EVENT_MASK)
-> +		rc += sprintf(buf + rc, "smart_notify ");
-> +
-> +	if (health & PAPR_SCM_DIMM_SCRUBBED_AND_LOCKED)
-> +		rc += sprintf(buf + rc, "scrubbed locked ");
-> +
-> +	if (rc > 0)
-> +		rc += sprintf(buf + rc, "\n");
-> +
-> +	mutex_unlock(&p->dimm_mutex);
-> +	return rc;
-> +}
-> +DEVICE_ATTR_RO(papr_flags);
-
-cheers
-
+syzbot will keep track of this bug report. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+For information about bisection process see: https://goo.gl/tpsmEJ#bisection
+syzbot can test patches for this bug, for details see:
+https://goo.gl/tpsmEJ#testing-patches
