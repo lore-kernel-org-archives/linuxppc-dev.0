@@ -2,76 +2,63 @@ Return-Path: <SRS0=sSB4=5S=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_2 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91398C43331
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 12:56:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A8587C43331
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 13:42:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3FA1520784
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 12:56:26 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="PxF8Gb9R"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3FA1520784
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 10B6C206E9
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 13:42:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 10B6C206E9
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48tNNl51VDzDqMK
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 23:56:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48tPQ50QrszDrRy
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 00:42:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=207.211.31.81;
- helo=us-smtp-delivery-1.mimecast.com; envelope-from=jolsa@redhat.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kaod.org (client-ip=46.105.57.200; helo=7.mo3.mail-out.ovh.net;
+ envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=PxF8Gb9R; 
- dkim-atps=neutral
-Received: from us-smtp-delivery-1.mimecast.com (us-smtp-1.mimecast.com
- [207.211.31.81])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48tNFT3fH6zDrRJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2020 23:50:04 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1585831801;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=CBJyPLqFGhbd2JdWD+WaRlQquIJw7j0X5AJyxZsJMXo=;
- b=PxF8Gb9RIv2zFmjp9dGiX0EwyKCxFrYUEFWpJEV6UTlQhPR1iog3HUDMZY+r51VHYyAOMk
- mElVBdMbJrIf+HBqTrPzEqpEz0ZpTE7SjwAeuX0HZ8MBfVD7lTHKi2yBx27rPd4sFTk8du
- lXMOC63TcHtJGlqymRBss9M6jETRYTs=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-43-WChm82hsORS-s5OYgxip1A-1; Thu, 02 Apr 2020 08:49:57 -0400
-X-MC-Unique: WChm82hsORS-s5OYgxip1A-1
-Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.phx2.redhat.com
- [10.5.11.16])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 8C82F85EE6C;
- Thu,  2 Apr 2020 12:49:54 +0000 (UTC)
-Received: from krava (unknown [10.40.194.72])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id 031A45C290;
- Thu,  2 Apr 2020 12:49:48 +0000 (UTC)
-Date: Thu, 2 Apr 2020 14:49:46 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: Kajol Jain <kjain@linux.ibm.com>
-Subject: Re: [PATCH v8 6/7] tools/perf: Enable Hz/hz prinitg for
- --metric-only option
-Message-ID: <20200402124946.GH2518490@krava>
-References: <20200401203340.31402-1-kjain@linux.ibm.com>
- <20200401203340.31402-7-kjain@linux.ibm.com>
+ dmarc=none (p=none dis=none) header.from=kaod.org
+X-Greylist: delayed 4201 seconds by postgrey-1.36 at bilbo;
+ Fri, 03 Apr 2020 00:37:58 AEDT
+Received: from 7.mo3.mail-out.ovh.net (7.mo3.mail-out.ovh.net [46.105.57.200])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48tPJk6fPQzDrPP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2020 00:37:54 +1100 (AEDT)
+Received: from player697.ha.ovh.net (unknown [10.110.208.43])
+ by mo3.mail-out.ovh.net (Postfix) with ESMTP id 8A14D24B25E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2020 13:10:55 +0200 (CEST)
+Received: from kaod.org (lns-bzn-46-82-253-208-248.adsl.proxad.net
+ [82.253.208.248]) (Authenticated sender: groug@kaod.org)
+ by player697.ha.ovh.net (Postfix) with ESMTPSA id AEBE3110DE660;
+ Thu,  2 Apr 2020 11:10:14 +0000 (UTC)
+Date: Thu, 2 Apr 2020 13:10:12 +0200
+From: Greg Kurz <groug@kaod.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v4 00/25] Add support for OpenCAPI Persistent Memory
+ devices
+Message-ID: <20200402131012.579c7bf7@bahia.lan>
+In-Reply-To: <87bloatd6e.fsf@mpe.ellerman.id.au>
+References: <20200327071202.2159885-1-alastair@d-silva.org>
+ <CAPcyv4iJYZBVhV1NW7EB6-EwETiUAy6r1iiE+F+HvFXfGZt9Aw@mail.gmail.com>
+ <2d6901d60877$16aa7a90$43ff6fb0$@d-silva.org>
+ <87imiituxm.fsf@mpe.ellerman.id.au>
+ <CAOSf1CHdpFyT_6zetKM6eHDK3AT8-UNTzjdd2y+QqYT2AO9VDw@mail.gmail.com>
+ <87bloatd6e.fsf@mpe.ellerman.id.au>
+X-Mailer: Claws Mail 3.17.4 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200401203340.31402-7-kjain@linux.ibm.com>
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.16
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Ovh-Tracer-Id: 14428970257110833585
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -51
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduhedrtdeggdefudcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenogfuuhhsphgvtghtffhomhgrihhnucdlgeelmdenucfjughrpeffhffvuffkjghfofggtgfgsehtjeertdertddvnecuhfhrohhmpefirhgvghcumfhurhiiuceoghhrohhugheskhgrohgurdhorhhgqeenucffohhmrghinhepghhithhhuhgsrdgtohhmpdhgihhthhhusgdrihhonecukfhppedtrddtrddtrddtpdekvddrvdehfedrvddtkedrvdegkeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehplhgrhigvrheileejrdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomhepghhrohhugheskhgrohgurdhorhhgpdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrgh
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,54 +70,74 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, maddy@linux.vnet.ibm.com, peterz@infradead.org,
- yao.jin@linux.intel.com, mingo@kernel.org, kan.liang@linux.intel.com,
- ak@linux.intel.com, alexander.shishkin@linux.intel.com,
- anju@linux.vnet.ibm.com, mamatha4@linux.vnet.ibm.com,
- sukadev@linux.vnet.ibm.com, ravi.bangoria@linux.ibm.com, acme@kernel.org,
- jmario@redhat.com, namhyung@kernel.org, tglx@linutronix.de, mpetlan@redhat.com,
- gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
- linux-perf-users@vger.kernel.org, jolsa@kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Oliver O'Halloran <oohall@gmail.com>,
+ Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
+ Ira Weiny <ira.weiny@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Rob Herring <robh@kernel.org>, Dave Jiang <dave.jiang@intel.com>,
+ linux-nvdimm <linux-nvdimm@lists.01.org>, "Aneesh
+ Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ Krzysztof Kozlowski <krzk@kernel.org>,
+ Anju T Sudhakar <anju@linux.vnet.ibm.com>,
+ Alastair D'Silva <alastair@d-silva.org>, Andrew Donnellan <ajd@linux.ibm.com>,
+ Arnd Bergmann <arnd@arndb.de>, Nicholas Piggin <npiggin@gmail.com>,
+ =?UTF-8?B?Q8OpZHJpYw==?= Le Goater <clg@kaod.org>,
+ Dan Williams <dan.j.williams@intel.com>, Hari Bathini <hbathini@linux.ibm.com>,
+ Linux MM <linux-mm@kvack.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Vishal Verma <vishal.l.verma@intel.com>,
+ Frederic Barrat <fbarrat@linux.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Apr 02, 2020 at 02:03:39AM +0530, Kajol Jain wrote:
-> Commit 54b5091606c18 ("perf stat: Implement --metric-only mode")
-> added function 'valid_only_metric()' which drops "Hz" or "hz",
-> if it is part of "ScaleUnit". This patch enable it since hv_24x7
-> supports couple of frequency events.
+On Thu, 02 Apr 2020 21:06:01 +1100
+Michael Ellerman <mpe@ellerman.id.au> wrote:
+
+> "Oliver O'Halloran" <oohall@gmail.com> writes:
+> > On Thu, Apr 2, 2020 at 2:42 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
+> >> "Alastair D'Silva" <alastair@d-silva.org> writes:
+> >> >> -----Original Message-----
+> >> >> From: Dan Williams <dan.j.williams@intel.com>
+> >> >>
+> >> >> On Sun, Mar 29, 2020 at 10:23 PM Alastair D'Silva <alastair@d-silva.org>
+> >> >> wrote:
+> >> >> >
+> >> >> > *snip*
+> >> >> Are OPAL calls similar to ACPI DSMs? I.e. methods for the OS to invoke
+> >> >> platform firmware services? What's Skiboot?
+> >> >
+> >> > Yes, OPAL is the interface to firmware for POWER. Skiboot is the open-source (and only) implementation of OPAL.
+> >>
+> >>   https://github.com/open-power/skiboot
+> >>
+> >> In particular the tokens for calls are defined here:
+> >>
+> >>   https://github.com/open-power/skiboot/blob/master/include/opal-api.h#L220
+> >>
+> >> And you can grep for the token to find the implementation:
+> >>
+> >>   https://github.com/open-power/skiboot/blob/master/hw/npu2-opencapi.c#L2328
+> >
+> > I'm not sure I'd encourage anyone to read npu2-opencapi.c. I find it
+> > hard enough to follow even with access to the workbooks.
 > 
-> Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
-> ---
->  tools/perf/util/stat-display.c | 2 --
->  1 file changed, 2 deletions(-)
+> Compared to certain firmwares that run on certain other platforms it's
+> actually pretty readable code ;)
 > 
-> diff --git a/tools/perf/util/stat-display.c b/tools/perf/util/stat-display.c
-> index 9e757d18d713..679aaa655824 100644
-> --- a/tools/perf/util/stat-display.c
-> +++ b/tools/perf/util/stat-display.c
-> @@ -237,8 +237,6 @@ static bool valid_only_metric(const char *unit)
->  	if (!unit)
->  		return false;
->  	if (strstr(unit, "/sec") ||
-> -	    strstr(unit, "hz") ||
-> -	    strstr(unit, "Hz") ||
 
-will this change output of --metric-only for some setups then?
+Forth rocks ! ;-)
 
-Andi, are you ok with this?
-
-other than this, the patchset looks ok to me
-
-thanks,
-jirka
-
->  	    strstr(unit, "CPUs utilized"))
->  		return false;
->  	return true;
-> -- 
-> 2.21.0
+> > There's an OPAL call API reference here:
+> > http://open-power.github.io/skiboot/doc/opal-api/index.html
 > 
+> Even better.
+> 
+> cheers
 
