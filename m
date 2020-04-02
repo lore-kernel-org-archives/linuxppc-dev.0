@@ -2,88 +2,75 @@ Return-Path: <SRS0=sSB4=5S=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 52DD6C43331
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 21:13:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 451BCC43331
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 21:29:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B606B206D3
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 21:13:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B606B206D3
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 98EC020737
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 21:29:03 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="jNKpC5kn"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 98EC020737
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48tbPz4X32zDrbK
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 08:13:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48tbmF3wvxzDrBg
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 08:29:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=muriloo@linux.ibm.com;
+ smtp.mailfrom=redhat.com (client-ip=205.139.110.120;
+ helo=us-smtp-1.mimecast.com; envelope-from=jolsa@redhat.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=jNKpC5kn; 
+ dkim-atps=neutral
+Received: from us-smtp-1.mimecast.com (us-smtp-delivery-1.mimecast.com
+ [205.139.110.120])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48tPxl0Lf4zDqWZ
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2020 01:06:28 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 032E5GSm148955; Thu, 2 Apr 2020 10:06:16 -0400
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0b-001b2d01.pphosted.com with ESMTP id 302071hnen-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 02 Apr 2020 10:06:15 -0400
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 032E5KDf008421;
- Thu, 2 Apr 2020 14:06:15 GMT
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by ppma01wdc.us.ibm.com with ESMTP id 301x76hd8x-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 02 Apr 2020 14:06:15 +0000
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 032E6ETG62718338
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 2 Apr 2020 14:06:14 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id EA79BBE053;
- Thu,  2 Apr 2020 14:06:13 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B266CBE04F;
- Thu,  2 Apr 2020 14:06:12 +0000 (GMT)
-Received: from localhost (unknown [9.85.199.165])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTPS;
- Thu,  2 Apr 2020 14:06:12 +0000 (GMT)
-From: Murilo Opsfelder =?ISO-8859-1?Q?Ara=FAjo?= <muriloo@linux.ibm.com>
-To: syzbot <syzbot+67e4f16db666b1c8253c@syzkaller.appspotmail.com>
-Subject: Re: WARNING in ext4_da_update_reserve_space
-Date: Thu, 02 Apr 2020 11:06:10 -0300
-Message-ID: <2094673.WoIe4zePQG@kermit.br.ibm.com>
-Organization: IBM
-In-Reply-To: <0000000000008c5a4605a24cbb16@google.com>
-References: <0000000000008c5a4605a24cbb16@google.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48tbkZ3PB8zDrF2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2020 08:27:32 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1585862849;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=nYosSnECcnDnXEwCUr/zQ5HjFFOmJvXZ42i/XsVNG9w=;
+ b=jNKpC5kninK1zaeQ4If3A+mothGLBkMOjRo+nhg/qJOjFiQOJFtAUhQQbN8buF7xPj37+5
+ QqRSh9AkKU5eIjrkGzw2gA0uoBOa7MAH2m/KIshsaW61K4eHbaLimtuTBGhXy5H/yBt0UR
+ AYN9AjhOD1rvEowFnEydV2+3Cpj5nfE=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-458-pomMgmzbOCyAw40CTZu6UA-1; Thu, 02 Apr 2020 17:27:25 -0400
+X-MC-Unique: pomMgmzbOCyAw40CTZu6UA-1
+Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
+ [10.5.11.23])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 442CD8017F5;
+ Thu,  2 Apr 2020 21:27:22 +0000 (UTC)
+Received: from krava (unknown [10.40.194.72])
+ by smtp.corp.redhat.com (Postfix) with ESMTPS id 26AF2196AE;
+ Thu,  2 Apr 2020 21:27:08 +0000 (UTC)
+Date: Thu, 2 Apr 2020 23:27:04 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: Kajol Jain <kjain@linux.ibm.com>
+Subject: Re: [PATCH v8 0/7]  powerpc/perf: Add json file metric support for
+ the hv_24x7 socket/chip level events
+Message-ID: <20200402212704.GC2784502@krava>
+References: <20200401203340.31402-1-kjain@linux.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
- definitions=2020-04-02_05:2020-03-31,
- 2020-04-02 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1011 malwarescore=0
- spamscore=0 lowpriorityscore=0 adultscore=0 mlxlogscore=999 suspectscore=0
- bulkscore=0 phishscore=0 priorityscore=1501 mlxscore=0 impostorscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2003020000
- definitions=main-2004020124
-X-Mailman-Approved-At: Fri, 03 Apr 2020 08:11:45 +1100
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200401203340.31402-1-kjain@linux.ibm.com>
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,114 +82,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: tytso@mit.edu, mareklindner@neomailbox.ch, sw@simonwunderlich.de,
- b.a.t.m.a.n@lists.open-mesh.org, a@unstable.cc, linux-kernel@vger.kernel.org,
- syzkaller-bugs@googlegroups.com, netdev@vger.kernel.org,
- adilger.kernel@dilger.ca, paulus@samba.org, linux-ext4@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: mark.rutland@arm.com, maddy@linux.vnet.ibm.com, peterz@infradead.org,
+ yao.jin@linux.intel.com, mingo@kernel.org, kan.liang@linux.intel.com,
+ ak@linux.intel.com, alexander.shishkin@linux.intel.com,
+ anju@linux.vnet.ibm.com, mamatha4@linux.vnet.ibm.com,
+ sukadev@linux.vnet.ibm.com, ravi.bangoria@linux.ibm.com, acme@kernel.org,
+ jmario@redhat.com, namhyung@kernel.org, tglx@linutronix.de, mpetlan@redhat.com,
+ gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
+ linux-perf-users@vger.kernel.org, jolsa@kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thursday, April 2, 2020 8:02:11 AM -03 syzbot wrote:
-> Hello,
->
-> syzbot found the following crash on:
->
-> HEAD commit:    1a147b74 Merge branch 'DSA-mtu'
-> git tree:       net-next
-> console output: https://syzkaller.appspot.com/x/log.txt?x=14237713e00000
-> kernel config:  https://syzkaller.appspot.com/x/.config?x=46ee14d4915944bc
-> dashboard link: https://syzkaller.appspot.com/bug?extid=67e4f16db666b1c8253c
-> compiler:       gcc (GCC) 9.0.0 20181231 (experimental)
-> syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=12237713e00000
-> C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=10ec7c97e00000
->
-> The bug was bisected to:
->
-> commit 658b0f92bc7003bc734471f61bf7cd56339eb8c3
-> Author: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
-> Date:   Wed Aug 1 21:33:15 2018 +0000
->
->     powerpc/traps: Print unhandled signals in a separate function
+On Thu, Apr 02, 2020 at 02:03:33AM +0530, Kajol Jain wrote:
+> Patchset adds json file metric support for the hv_24x7 socket/chip level
+> events. "hv_24x7" pmu interface events needs system dependent parameter
+> like socket/chip/core. For example, hv_24x7 chip level events needs
+> specific chip-id to which the data is requested should be added as part
+> of pmu events.
+> 
+> So to enable JSON file support to "hv_24x7" interface, patchset reads
+> total number of sockets details in sysfs under 
+> "/sys/devices/hv_24x7/interface/".
+> 
+> Second patch of the patchset adds expr_scanner_ctx object to hold user
+> data for the expr scanner, which can be used to hold runtime parameter.
+> 
+> Patch 4 & 6 of the patchset handles perf tool plumbing needed to replace
+> the "?" character in the metric expression to proper value and hv_24x7
+> json metric file for different Socket/chip resources.
+> 
+> Patch set also enable Hz/hz prinitg for --metric-only option to print
+> metric data for bus frequency.
+> 
+> Applied and tested all these patches cleanly on top of jiri's flex changes
+> with the changes done by Kan Liang for "Support metric group constraint"
+> patchset and made required changes.
+> 
+> Also apply this patch on top of the fix patch send earlier
+> for printing metric name incase overlapping events.
+> https://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git/commit/?h=perf/core&id=37cd7f65bf71a48f25eeb6d9be5dacb20d008ea6
+> 
+> Changelog:
+> v7 -> v8
+> - Add test case for testing parsing of "?" in metric expression
+> - Reaname variables name to runtime
 
-This commit is specific to powerpc and the crash is from an x86_64 system.
+Acked-by: Jiri Olsa <jolsa@redhat.com>
 
-There is a bunch of scp errors in the logs:
+thanks,
+jirka
 
-scp: ./syz-executor998635077: No space left on device
-
-Is it possible that these errors might be misleading the syzbot?
-
->
-> bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=15979f5be00000
-> final crash:    https://syzkaller.appspot.com/x/report.txt?x=17979f5be00000
-> console output: https://syzkaller.appspot.com/x/log.txt?x=13979f5be00000
->
-> IMPORTANT: if you fix the bug, please add the following tag to the commit:
-> Reported-by: syzbot+67e4f16db666b1c8253c@syzkaller.appspotmail.com
-> Fixes: 658b0f92bc70 ("powerpc/traps: Print unhandled signals in a separate
-> function")
->
-> EXT4-fs warning (device sda1): ext4_da_update_reserve_space:344:
-> ext4_da_update_reserve_space: ino 15722, used 1 with only 0 reserved data
-> blocks ------------[ cut here ]------------
-> WARNING: CPU: 1 PID: 359 at fs/ext4/inode.c:348
-> ext4_da_update_reserve_space+0x622/0x7d0 fs/ext4/inode.c:344 Kernel panic -
-> not syncing: panic_on_warn set ...
-> CPU: 1 PID: 359 Comm: kworker/u4:5 Not tainted 5.6.0-rc7-syzkaller #0
-> Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS
-> Google 01/01/2011 Workqueue: writeback wb_workfn (flush-8:0)
-> Call Trace:
->  __dump_stack lib/dump_stack.c:77 [inline]
->  dump_stack+0x188/0x20d lib/dump_stack.c:118
->  panic+0x2e3/0x75c kernel/panic.c:221
->  __warn.cold+0x2f/0x35 kernel/panic.c:582
->  report_bug+0x27b/0x2f0 lib/bug.c:195
->  fixup_bug arch/x86/kernel/traps.c:174 [inline]
->  fixup_bug arch/x86/kernel/traps.c:169 [inline]
->  do_error_trap+0x12b/0x220 arch/x86/kernel/traps.c:267
->  do_invalid_op+0x32/0x40 arch/x86/kernel/traps.c:286
->  invalid_op+0x23/0x30 arch/x86/entry/entry_64.S:1027
-> RIP: 0010:ext4_da_update_reserve_space+0x622/0x7d0 fs/ext4/inode.c:348
-> Code: 02 00 0f 85 94 01 00 00 48 8b 7d 28 49 c7 c0 20 72 3c 88 41 56 48 c7
-> c1 80 60 3c 88 53 ba 58 01 00 00 4c 89 c6 e8 1e 6d 0d 00 <0f> 0b 48 b8 00
-> 00 00 00 00 fc ff df 4c 89 ea 48 c1 ea 03 0f b6 04 RSP:
-> 0018:ffffc90002197288 EFLAGS: 00010296
-> RAX: 0000000000000000 RBX: 0000000000000001 RCX: 0000000000000000
-> RDX: 0000000000000000 RSI: ffffffff820bf066 RDI: fffff52000432e21
-> RBP: ffff888086b744c8 R08: 0000000000000091 R09: ffffed1015ce6659
-> R10: ffffed1015ce6658 R11: ffff8880ae7332c7 R12: 0000000000000001
-> R13: ffff888086b74990 R14: 0000000000000000 R15: ffff888086b74a40
->  ext4_ext_map_blocks+0x24aa/0x37d0 fs/ext4/extents.c:4500
->  ext4_map_blocks+0x4cb/0x1650 fs/ext4/inode.c:622
->  mpage_map_one_extent fs/ext4/inode.c:2365 [inline]
->  mpage_map_and_submit_extent fs/ext4/inode.c:2418 [inline]
->  ext4_writepages+0x19eb/0x3080 fs/ext4/inode.c:2772
->  do_writepages+0xfa/0x2a0 mm/page-writeback.c:2344
->  __writeback_single_inode+0x12a/0x1410 fs/fs-writeback.c:1452
->  writeback_sb_inodes+0x515/0xdd0 fs/fs-writeback.c:1716
->  wb_writeback+0x2a5/0xd90 fs/fs-writeback.c:1892
->  wb_do_writeback fs/fs-writeback.c:2037 [inline]
->  wb_workfn+0x339/0x11c0 fs/fs-writeback.c:2078
->  process_one_work+0x94b/0x1690 kernel/workqueue.c:2266
->  worker_thread+0x96/0xe20 kernel/workqueue.c:2412
->  kthread+0x357/0x430 kernel/kthread.c:255
->  ret_from_fork+0x24/0x30 arch/x86/entry/entry_64.S:352
-> Kernel Offset: disabled
-> Rebooting in 86400 seconds..
->
->
-> ---
-> This bug is generated by a bot. It may contain errors.
-> See https://goo.gl/tpsmEJ for more information about syzbot.
-> syzbot engineers can be reached at syzkaller@googlegroups.com.
->
-> syzbot will keep track of this bug report. See:
-> https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
-> For information about bisection process see: https://goo.gl/tpsmEJ#bisection
-> syzbot can test patches for this bug, for details see:
-> https://goo.gl/tpsmEJ#testing-patches
-
---
-Murilo
