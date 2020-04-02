@@ -2,69 +2,62 @@ Return-Path: <SRS0=sSB4=5S=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.4 required=3.0 tests=FROM_LOCAL_HEX,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C045C43331
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 11:23:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E43DC43331
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 11:27:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 333EB20675
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 11:23:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 333EB20675
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4DCF3206F8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 11:27:12 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="WBA8Q4J9"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4DCF3206F8
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48tLK109mHzDrRG
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 22:23:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=m3kw2wvrgufz5godrsrytgd7.apphosting.bounces.google.com
- (client-ip=209.85.166.71; helo=mail-io1-f71.google.com;
- envelope-from=3m8afxgkbanaekl6w770dwbb4z.2aa270ge0dya9f09f.ya8@m3kw2wvrgufz5godrsrytgd7.apphosting.bounces.google.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=syzkaller.appspotmail.com
-Received: from mail-io1-f71.google.com (mail-io1-f71.google.com
- [209.85.166.71])
+	by lists.ozlabs.org (Postfix) with ESMTP id 48tLPn67c5zDr7W
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 22:27:09 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48tKs70pf8zDrMb
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2020 22:02:13 +1100 (AEDT)
-Received: by mail-io1-f71.google.com with SMTP id n26so2497638iop.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Apr 2020 04:02:13 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:date:message-id:subject:from:to;
- bh=HEen/pjteG0riA5Fq+vm6ECwHW6v+ASlw0ZuUHgsq9k=;
- b=G9kuW9SkfcYG3Ppmo51A0A5opGjbk+y1tFlxXzdRBq+2y/fmCiW6p7tDaHcqrqDeUF
- vOK77oAr5POzsRRx+XjCxGZRHZ2NyeXR3vtYgcXa3uYgaVtRp/JvcFcvzRX0Q/fzy+OH
- lV0e5UX7Bbw+vr2eltacXr+GEGm1CYSuquveLmbHb2DFtgaJDC3wxwm4kZPFi8Ds8gZ6
- 7l1OVT91Z646uif6SfJlbKiUwC7HZBUKEAqU7R6xIMbqj2ge0E+14+/BPU+8JOVnsOsk
- RfeTjtwjYQDL0jDQ6tyBTZXej4HIjtbT6V2hNXGzG6kMov9XGQj8WyaPZ10cYqObbt0c
- z2Pw==
-X-Gm-Message-State: AGi0PuandeGXpEcgZE/oqn0HEsxGVNSlVCQWnYHlYFrHCf/FSslRRX5K
- UTMClUKZjTtSEAyGn/gajFgGwyWk+Ouj39fNuwLXrzLOA6ck
-X-Google-Smtp-Source: APiQypKHwawm+XbPWjWm1WiRkJzzTagLnpKvQGlicoTPOrocdiTCMJ/gjTwzIrZQK9hMY9riqRRVEZaqILPuquo840fL+Y/tOjQR
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48tLL24lW4zDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2020 22:23:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=WBA8Q4J9; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 48tLKz3MYhz9sQt;
+ Thu,  2 Apr 2020 22:23:51 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1585826634;
+ bh=pbSAXegT+8Z7l+avNPLwehmYnEsWWDO1v7MhVYfnlXQ=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=WBA8Q4J9sICs9xdSJobj+NAfU8iWBq+SIuyZsPoatm6SJyynjd/gDpSp8Q2IRLDAj
+ qZ+iNATA+K/H1WTtmn68sbjnFno/g4Beb5PLSEi6h3QlGXkW4iCmQUeCd06yzlsh9N
+ rY3ckrUC4nYLEOlJn0d4JZnmg7grBQmkzFyOPX+Rk0xFHFogaa/vsPtpcTkLYVpMag
+ CYvbnUYFJF0159LbLkXs5vfYv1NvrRX3oW9uSbWq0R2Goc3QCmQnGgowk5kgCnPb85
+ /WRTeLt/QnmTptocrCOg0qQKSatI6wCxQ5+7e7dI2hu95e/8NQ0I8dCz/tAwQOX063
+ +CCfaQAvD9tjg==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Qian Cai <cai@lca.pw>, peterz@infradead.org, mingo@redhat.com
+Subject: Re: [PATCH v2] sched/core: fix illegal RCU from offline CPUs
+In-Reply-To: <20200401214033.8448-1-cai@lca.pw>
+References: <20200401214033.8448-1-cai@lca.pw>
+Date: Thu, 02 Apr 2020 22:24:00 +1100
+Message-ID: <87369mt9kf.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-X-Received: by 2002:a02:8c4:: with SMTP id 187mr2706675jac.50.1585825331302;
- Thu, 02 Apr 2020 04:02:11 -0700 (PDT)
-Date: Thu, 02 Apr 2020 04:02:11 -0700
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <0000000000008c5a4605a24cbb16@google.com>
-Subject: WARNING in ext4_da_update_reserve_space
-From: syzbot <syzbot+67e4f16db666b1c8253c@syzkaller.appspotmail.com>
-To: a@unstable.cc, adilger.kernel@dilger.ca, b.a.t.m.a.n@lists.open-mesh.org, 
- benh@kernel.crashing.org, davem@davemloft.net, linux-ext4@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- mareklindner@neomailbox.ch, mpe@ellerman.id.au, muriloo@linux.ibm.com, 
- netdev@vger.kernel.org, paulus@samba.org, sw@simonwunderlich.de, 
- syzkaller-bugs@googlegroups.com, tytso@mit.edu
-Content-Type: text/plain; charset="UTF-8"
-X-Mailman-Approved-At: Thu, 02 Apr 2020 22:17:55 +1100
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,91 +69,175 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: juri.lelli@redhat.com, James.Bottomley@HansenPartnership.com,
+ vincent.guittot@linaro.org, linux-parisc@vger.kernel.org, paulmck@kernel.org,
+ deller@gmx.de, Nicholas Piggin <npiggin@gmail.com>,
+ linux-kernel@vger.kernel.org, rostedt@goodmis.org, bsegall@google.com,
+ linux-mm@kvack.org, Qian Cai <cai@lca.pw>, mgorman@suse.de, tglx@linutronix.de,
+ linuxppc-dev@lists.ozlabs.org, dietmar.eggemann@arm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello,
+Qian Cai <cai@lca.pw> writes:
+> From: Peter Zijlstra <peterz@infradead.org>
+>
+> In the CPU-offline process, it calls mmdrop() after idle entry and the
+> subsequent call to cpuhp_report_idle_dead(). Once execution passes the
+> call to rcu_report_dead(), RCU is ignoring the CPU, which results in
+> lockdep complaining when mmdrop() uses RCU from either memcg or
+> debugobjects below.
+>
+> Fix it by cleaning up the active_mm state from BP instead. Every arch
+> which has CONFIG_HOTPLUG_CPU should have already called idle_task_exit()
+> from AP. The only exception is parisc because it switches them to
+> &init_mm unconditionally (see smp_boot_one_cpu() and smp_cpu_init()),
+> but the patch will still work there because it calls mmgrab(&init_mm) in
+> smp_cpu_init() and then should call mmdrop(&init_mm) in finish_cpu().
 
-syzbot found the following crash on:
+Thanks for debugging this. How did you hit it in the first place?
 
-HEAD commit:    1a147b74 Merge branch 'DSA-mtu'
-git tree:       net-next
-console output: https://syzkaller.appspot.com/x/log.txt?x=14237713e00000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=46ee14d4915944bc
-dashboard link: https://syzkaller.appspot.com/bug?extid=67e4f16db666b1c8253c
-compiler:       gcc (GCC) 9.0.0 20181231 (experimental)
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=12237713e00000
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=10ec7c97e00000
+A link to the original thread would have helped me:
 
-The bug was bisected to:
+  https://lore.kernel.org/lkml/20200113190331.12788-1-cai@lca.pw/
 
-commit 658b0f92bc7003bc734471f61bf7cd56339eb8c3
-Author: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
-Date:   Wed Aug 1 21:33:15 2018 +0000
+> WARNING: suspicious RCU usage
+> -----------------------------
+> kernel/workqueue.c:710 RCU or wq_pool_mutex should be held!
+>
+> other info that might help us debug this:
+>
+> RCU used illegally from offline CPU!
+> Call Trace:
+>  dump_stack+0xf4/0x164 (unreliable)
+>  lockdep_rcu_suspicious+0x140/0x164
+>  get_work_pool+0x110/0x150
+>  __queue_work+0x1bc/0xca0
+>  queue_work_on+0x114/0x120
+>  css_release+0x9c/0xc0
+>  percpu_ref_put_many+0x204/0x230
+>  free_pcp_prepare+0x264/0x570
+>  free_unref_page+0x38/0xf0
+>  __mmdrop+0x21c/0x2c0
+>  idle_task_exit+0x170/0x1b0
+>  pnv_smp_cpu_kill_self+0x38/0x2e0
+>  cpu_die+0x48/0x64
+>  arch_cpu_idle_dead+0x30/0x50
+>  do_idle+0x2f4/0x470
+>  cpu_startup_entry+0x38/0x40
+>  start_secondary+0x7a8/0xa80
+>  start_secondary_resume+0x10/0x14
 
-    powerpc/traps: Print unhandled signals in a separate function
+Do we know when this started happening? ie. can we determine a Fixes
+tag?
 
-bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=15979f5be00000
-final crash:    https://syzkaller.appspot.com/x/report.txt?x=17979f5be00000
-console output: https://syzkaller.appspot.com/x/log.txt?x=13979f5be00000
+> <Peter to sign off here>
+> Signed-off-by: Qian Cai <cai@lca.pw>
+> ---
+>  arch/powerpc/platforms/powernv/smp.c |  1 -
+>  include/linux/sched/mm.h             |  2 ++
+>  kernel/cpu.c                         | 18 +++++++++++++++++-
+>  kernel/sched/core.c                  |  5 +++--
+>  4 files changed, 22 insertions(+), 4 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
+> index 13e251699346..b2ba3e95bda7 100644
+> --- a/arch/powerpc/platforms/powernv/smp.c
+> +++ b/arch/powerpc/platforms/powernv/smp.c
+> @@ -167,7 +167,6 @@ static void pnv_smp_cpu_kill_self(void)
+>  	/* Standard hot unplug procedure */
+>  
+>  	idle_task_exit();
+> -	current->active_mm = NULL; /* for sanity */
 
-IMPORTANT: if you fix the bug, please add the following tag to the commit:
-Reported-by: syzbot+67e4f16db666b1c8253c@syzkaller.appspotmail.com
-Fixes: 658b0f92bc70 ("powerpc/traps: Print unhandled signals in a separate function")
+If I'm reading it right, we'll now be running with active_mm == init_mm
+in the offline loop.
 
-EXT4-fs warning (device sda1): ext4_da_update_reserve_space:344: ext4_da_update_reserve_space: ino 15722, used 1 with only 0 reserved data blocks
-------------[ cut here ]------------
-WARNING: CPU: 1 PID: 359 at fs/ext4/inode.c:348 ext4_da_update_reserve_space+0x622/0x7d0 fs/ext4/inode.c:344
-Kernel panic - not syncing: panic_on_warn set ...
-CPU: 1 PID: 359 Comm: kworker/u4:5 Not tainted 5.6.0-rc7-syzkaller #0
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
-Workqueue: writeback wb_workfn (flush-8:0)
-Call Trace:
- __dump_stack lib/dump_stack.c:77 [inline]
- dump_stack+0x188/0x20d lib/dump_stack.c:118
- panic+0x2e3/0x75c kernel/panic.c:221
- __warn.cold+0x2f/0x35 kernel/panic.c:582
- report_bug+0x27b/0x2f0 lib/bug.c:195
- fixup_bug arch/x86/kernel/traps.c:174 [inline]
- fixup_bug arch/x86/kernel/traps.c:169 [inline]
- do_error_trap+0x12b/0x220 arch/x86/kernel/traps.c:267
- do_invalid_op+0x32/0x40 arch/x86/kernel/traps.c:286
- invalid_op+0x23/0x30 arch/x86/entry/entry_64.S:1027
-RIP: 0010:ext4_da_update_reserve_space+0x622/0x7d0 fs/ext4/inode.c:348
-Code: 02 00 0f 85 94 01 00 00 48 8b 7d 28 49 c7 c0 20 72 3c 88 41 56 48 c7 c1 80 60 3c 88 53 ba 58 01 00 00 4c 89 c6 e8 1e 6d 0d 00 <0f> 0b 48 b8 00 00 00 00 00 fc ff df 4c 89 ea 48 c1 ea 03 0f b6 04
-RSP: 0018:ffffc90002197288 EFLAGS: 00010296
-RAX: 0000000000000000 RBX: 0000000000000001 RCX: 0000000000000000
-RDX: 0000000000000000 RSI: ffffffff820bf066 RDI: fffff52000432e21
-RBP: ffff888086b744c8 R08: 0000000000000091 R09: ffffed1015ce6659
-R10: ffffed1015ce6658 R11: ffff8880ae7332c7 R12: 0000000000000001
-R13: ffff888086b74990 R14: 0000000000000000 R15: ffff888086b74a40
- ext4_ext_map_blocks+0x24aa/0x37d0 fs/ext4/extents.c:4500
- ext4_map_blocks+0x4cb/0x1650 fs/ext4/inode.c:622
- mpage_map_one_extent fs/ext4/inode.c:2365 [inline]
- mpage_map_and_submit_extent fs/ext4/inode.c:2418 [inline]
- ext4_writepages+0x19eb/0x3080 fs/ext4/inode.c:2772
- do_writepages+0xfa/0x2a0 mm/page-writeback.c:2344
- __writeback_single_inode+0x12a/0x1410 fs/fs-writeback.c:1452
- writeback_sb_inodes+0x515/0xdd0 fs/fs-writeback.c:1716
- wb_writeback+0x2a5/0xd90 fs/fs-writeback.c:1892
- wb_do_writeback fs/fs-writeback.c:2037 [inline]
- wb_workfn+0x339/0x11c0 fs/fs-writeback.c:2078
- process_one_work+0x94b/0x1690 kernel/workqueue.c:2266
- worker_thread+0x96/0xe20 kernel/workqueue.c:2412
- kthread+0x357/0x430 kernel/kthread.c:255
- ret_from_fork+0x24/0x30 arch/x86/entry/entry_64.S:352
-Kernel Offset: disabled
-Rebooting in 86400 seconds..
+I guess that's fine, I can't think of any reason it would matter, and it
+seems like we were NULL'ing it out just for paranoia's sake not because
+of any actual problem.
+
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
 
 
----
-This bug is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
+cheers
 
-syzbot will keep track of this bug report. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
-For information about bisection process see: https://goo.gl/tpsmEJ#bisection
-syzbot can test patches for this bug, for details see:
-https://goo.gl/tpsmEJ#testing-patches
+> diff --git a/include/linux/sched/mm.h b/include/linux/sched/mm.h
+> index c49257a3b510..a132d875d351 100644
+> --- a/include/linux/sched/mm.h
+> +++ b/include/linux/sched/mm.h
+> @@ -49,6 +49,8 @@ static inline void mmdrop(struct mm_struct *mm)
+>  		__mmdrop(mm);
+>  }
+>  
+> +void mmdrop(struct mm_struct *mm);
+> +
+>  /*
+>   * This has to be called after a get_task_mm()/mmget_not_zero()
+>   * followed by taking the mmap_sem for writing before modifying the
+> diff --git a/kernel/cpu.c b/kernel/cpu.c
+> index 2371292f30b0..244d30544377 100644
+> --- a/kernel/cpu.c
+> +++ b/kernel/cpu.c
+> @@ -3,6 +3,7 @@
+>   *
+>   * This code is licenced under the GPL.
+>   */
+> +#include <linux/sched/mm.h>
+>  #include <linux/proc_fs.h>
+>  #include <linux/smp.h>
+>  #include <linux/init.h>
+> @@ -564,6 +565,21 @@ static int bringup_cpu(unsigned int cpu)
+>  	return bringup_wait_for_ap(cpu);
+>  }
+>  
+> +static int finish_cpu(unsigned int cpu)
+> +{
+> +	struct task_struct *idle = idle_thread_get(cpu);
+> +	struct mm_struct *mm = idle->active_mm;
+> +
+> +	/*
+> +	 * idle_task_exit() will have switched to &init_mm, now
+> +	 * clean up any remaining active_mm state.
+> +	 */
+> +	if (mm != &init_mm)
+> +		idle->active_mm = &init_mm;
+> +	mmdrop(mm);
+> +	return 0;
+> +}
+> +
+>  /*
+>   * Hotplug state machine related functions
+>   */
+> @@ -1549,7 +1565,7 @@ static struct cpuhp_step cpuhp_hp_states[] = {
+>  	[CPUHP_BRINGUP_CPU] = {
+>  		.name			= "cpu:bringup",
+>  		.startup.single		= bringup_cpu,
+> -		.teardown.single	= NULL,
+> +		.teardown.single	= finish_cpu,
+>  		.cant_stop		= true,
+>  	},
+>  	/* Final state before CPU kills itself */
+> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> index a2694ba82874..8787958339d5 100644
+> --- a/kernel/sched/core.c
+> +++ b/kernel/sched/core.c
+> @@ -6200,13 +6200,14 @@ void idle_task_exit(void)
+>  	struct mm_struct *mm = current->active_mm;
+>  
+>  	BUG_ON(cpu_online(smp_processor_id()));
+> +	BUG_ON(current != this_rq()->idle);
+>  
+>  	if (mm != &init_mm) {
+>  		switch_mm(mm, &init_mm, current);
+> -		current->active_mm = &init_mm;
+>  		finish_arch_post_lock_switch();
+>  	}
+> -	mmdrop(mm);
+> +
+> +	/* finish_cpu(), as ran on the BP, will clean up the active_mm state */
+>  }
+>  
+>  /*
+> -- 
+> 2.21.0 (Apple Git-122.2)
