@@ -2,83 +2,62 @@ Return-Path: <SRS0=sSB4=5S=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY autolearn=unavailable
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 71952C43331
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 00:29:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 423DBC43331
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 01:33:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0F1D42063A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 00:29:58 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=intel-com.20150623.gappssmtp.com header.i=@intel-com.20150623.gappssmtp.com header.b="b6uKoVWD"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0F1D42063A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id AD80E20721
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 01:33:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AD80E20721
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=perches.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48t3qS1BnpzDrF4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 11:29:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=2a00:1450:4864:20::542;
- helo=mail-ed1-x542.google.com; envelope-from=dan.j.williams@intel.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48t5F42b4rzDrM9
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 12:33:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=intel-com.20150623.gappssmtp.com
- header.i=@intel-com.20150623.gappssmtp.com header.a=rsa-sha256
- header.s=20150623 header.b=b6uKoVWD; dkim-atps=neutral
-Received: from mail-ed1-x542.google.com (mail-ed1-x542.google.com
- [IPv6:2a00:1450:4864:20::542])
+ spf=none (no SPF record) smtp.mailfrom=perches.com
+ (client-ip=216.40.44.141; helo=smtprelay.hostedemail.com;
+ envelope-from=joe@perches.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=perches.com
+Received: from smtprelay.hostedemail.com (smtprelay0141.hostedemail.com
+ [216.40.44.141])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48t3nC3sg8zDrCs
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2020 11:27:58 +1100 (AEDT)
-Received: by mail-ed1-x542.google.com with SMTP id i16so2033147edy.11
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2020 17:27:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=intel-com.20150623.gappssmtp.com; s=20150623;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=rMoG139BAS3vSwnWNPt9NkvE0YK9VqiQxacpdg4y9C8=;
- b=b6uKoVWD6Cr/lKr0YKKqMS9MF7tOH9aunCZBAsMTrUwvYWsPp1CQ7F2m6pUvgy7vnC
- 7RoP8LQla92LBHCgkc2g8QdtBVJnzc0090CjTAM1Qi72DURzMZxg+e3varCSqD1vdYPW
- M/J9cDqpOhDIQV8pOvn/Wi9N2bh1HIWmlCL9gpU0A+E2OcO1vE/3E9uIvB/gKd1dzfw9
- cOKT2ahz2TY5AoDZtiyTHFtltYl4sHWpADTGK37DpLuiTdhIl4j/T+eRkmatFe2Dxpsa
- kI6IxAFqojnBZm1JIGXsGk8QJgQIoQVNjJWwM41Euv2WGnSLotJt/HR6pWfn0S80QoFK
- FCqA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=rMoG139BAS3vSwnWNPt9NkvE0YK9VqiQxacpdg4y9C8=;
- b=DgE+JGJ6gHmWfwsGHBqosdPMXa0RnKDwR/ntUFiWekv3SsyC4PKG7qY0KYtWKbrXlC
- 6163FR6qU8vWLiKeV1vnDjJFmp7YyIe73KuPP9IbLCej8IYQrJJLTEmcOZcy7CXWdTCa
- TCeN1A2Cbgqaj2YlmtbtJRi4F6K4qDMnmh2MBGCUL8FbMkBzkWKuiV/owoJvbssSgxvO
- udWDasyd9x4wW8MPk+yTLaRk+Cf6olTYtntnE8ydkijAv3JhIhYonkqMmsuiRWPwn6q8
- oInWXaYW0oxAFQVEBSHujtwmH+yvFOq8xRHEYSkCB2yqlvbxOX5TJvFGdKRWC9pNRT5c
- VYOA==
-X-Gm-Message-State: AGi0PuaIBtrAntWMpFAveP8jO1cWdwSodISn7MjhB0RyzVF1/Ppwbjzi
- BREv6MYrkhY6VWkbTzh9eHtfp1PBuYjAItsF14Mc9Q==
-X-Google-Smtp-Source: APiQypK1MdubaXDzXDW0OryS7Btp1yg8dmm5kamYFesYesYpOR0BQWhTUFKcfXpacPdBoNYqNEriI3UdkexV9JqGWrM=
-X-Received: by 2002:a17:906:dbd4:: with SMTP id
- yc20mr703878ejb.335.1585787276297; 
- Wed, 01 Apr 2020 17:27:56 -0700 (PDT)
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48t5Bs3CJLzDrJJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2020 12:31:47 +1100 (AEDT)
+Received: from filter.hostedemail.com (clb03-v110.bra.tucows.net
+ [216.40.38.60])
+ by smtprelay05.hostedemail.com (Postfix) with ESMTP id 0FB2E1802914A;
+ Thu,  2 Apr 2020 01:31:44 +0000 (UTC)
+X-Session-Marker: 6A6F6540706572636865732E636F6D
+X-HE-Tag: magic31_e7601e651344
+X-Filterd-Recvd-Size: 4003
+Received: from XPS-9350.home (unknown [47.151.136.130])
+ (Authenticated sender: joe@perches.com)
+ by omf11.hostedemail.com (Postfix) with ESMTPA;
+ Thu,  2 Apr 2020 01:31:39 +0000 (UTC)
+Message-ID: <aac1e71953b564d48f2d1288e50924ebd7e3e98a.camel@perches.com>
+Subject: Re: [PATCH v4 08/25] ocxl: Emit a log message showing how much LPC
+ memory was detected
+From: Joe Perches <joe@perches.com>
+To: Dan Williams <dan.j.williams@intel.com>, Alastair D'Silva
+ <alastair@d-silva.org>
+Date: Wed, 01 Apr 2020 18:29:42 -0700
+In-Reply-To: <CAPcyv4j4_owxEVjanwH5TiuMMJB3CaMannDzpXnaHedX7LuarQ@mail.gmail.com>
 References: <20200327071202.2159885-1-alastair@d-silva.org>
- <20200327071202.2159885-16-alastair@d-silva.org>
-In-Reply-To: <20200327071202.2159885-16-alastair@d-silva.org>
-From: Dan Williams <dan.j.williams@intel.com>
-Date: Wed, 1 Apr 2020 17:27:45 -0700
-Message-ID: <CAPcyv4hvg_tizkOWkm2nSpR841m8X2Kh54KzU-qX=kvJuGJ9fg@mail.gmail.com>
-Subject: Re: [PATCH v4 15/25] nvdimm/ocxl: Register a character device for
- userspace to interact with
-To: "Alastair D'Silva" <alastair@d-silva.org>
-Content-Type: text/plain; charset="UTF-8"
+ <20200327071202.2159885-9-alastair@d-silva.org>
+ <CAPcyv4j4_owxEVjanwH5TiuMMJB3CaMannDzpXnaHedX7LuarQ@mail.gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+User-Agent: Evolution 3.34.1-2 
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,7 +82,7 @@ Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
  Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
  Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
  Greg Kurz <groug@kaod.org>, Nicholas Piggin <npiggin@gmail.com>,
- =?UTF-8?Q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>,
+ =?ISO-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>,
  Thomas Gleixner <tglx@linutronix.de>, Hari Bathini <hbathini@linux.ibm.com>,
  Linux MM <linux-mm@kvack.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
@@ -116,219 +95,60 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Mar 29, 2020 at 10:53 PM Alastair D'Silva <alastair@d-silva.org> wrote:
->
-> This patch introduces a character device (/dev/ocxlpmemX) which further
-> patches will use to interact with userspace, such as error logs,
-> controller stats and card debug functionality.
+On Wed, 2020-04-01 at 01:49 -0700, Dan Williams wrote:
+> On Sun, Mar 29, 2020 at 10:23 PM Alastair D'Silva <alastair@d-silva.org> wrote:
+> > This patch emits a message showing how much LPC memory & special purpose
+> > memory was detected on an OCXL device.
+[]
+> > diff --git a/drivers/misc/ocxl/config.c b/drivers/misc/ocxl/config.c
+[]
+> > @@ -568,6 +568,10 @@ static int read_afu_lpc_memory_info(struct pci_dev *dev,
+> >                 afu->special_purpose_mem_size =
+> >                         total_mem_size - lpc_mem_size;
+> >         }
+> > +
+> > +       dev_info(&dev->dev, "Probed LPC memory of %#llx bytes and special purpose memory of %#llx bytes\n",
+> > +                afu->lpc_mem_size, afu->special_purpose_mem_size);
+> 
+> A patch for a single log message is too fine grained for my taste,
+> let's squash this into another patch in the series.
 
-This was asked earlier, but I'll reiterate, I do not see what
-justifies an ocxlpmemX private device ABI vs routing through the
-existing generic character ndbusX and nmemX character devices.
+Is the granularity of lpc_mem_size actually bytes?
+Might this be better as KiB or something using functions
 
->
-> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
-> ---
->  drivers/nvdimm/ocxl/main.c     | 117 ++++++++++++++++++++++++++++++++-
->  drivers/nvdimm/ocxl/ocxlpmem.h |   2 +
->  2 files changed, 117 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/nvdimm/ocxl/main.c b/drivers/nvdimm/ocxl/main.c
-> index 8db573036423..9b85fcd3f1c9 100644
-> --- a/drivers/nvdimm/ocxl/main.c
-> +++ b/drivers/nvdimm/ocxl/main.c
-> @@ -10,6 +10,7 @@
->  #include <misc/ocxl.h>
->  #include <linux/delay.h>
->  #include <linux/ndctl.h>
-> +#include <linux/fs.h>
->  #include <linux/mm_types.h>
->  #include <linux/memory_hotplug.h>
->  #include "ocxlpmem.h"
-> @@ -356,6 +357,67 @@ static int ocxlpmem_register(struct ocxlpmem *ocxlpmem)
->         return device_register(&ocxlpmem->dev);
->  }
->
-> +static void ocxlpmem_put(struct ocxlpmem *ocxlpmem)
-> +{
-> +       put_device(&ocxlpmem->dev);
-> +}
-> +
-> +static struct ocxlpmem *ocxlpmem_get(struct ocxlpmem *ocxlpmem)
-> +{
-> +       return (!get_device(&ocxlpmem->dev)) ? NULL : ocxlpmem;
-> +}
-> +
-> +static struct ocxlpmem *find_and_get_ocxlpmem(dev_t devno)
-> +{
-> +       struct ocxlpmem *ocxlpmem;
-> +       int minor = MINOR(devno);
-> +
-> +       mutex_lock(&minors_idr_lock);
-> +       ocxlpmem = idr_find(&minors_idr, minor);
-> +       if (ocxlpmem)
-> +               ocxlpmem_get(ocxlpmem);
-> +       mutex_unlock(&minors_idr_lock);
-> +
-> +       return ocxlpmem;
-> +}
-> +
-> +static int file_open(struct inode *inode, struct file *file)
-> +{
-> +       struct ocxlpmem *ocxlpmem;
-> +
-> +       ocxlpmem = find_and_get_ocxlpmem(inode->i_rdev);
-> +       if (!ocxlpmem)
-> +               return -ENODEV;
-> +
-> +       file->private_data = ocxlpmem;
-> +       return 0;
-> +}
-> +
-> +static int file_release(struct inode *inode, struct file *file)
-> +{
-> +       struct ocxlpmem *ocxlpmem = file->private_data;
-> +
-> +       ocxlpmem_put(ocxlpmem);
-> +       return 0;
-> +}
-> +
-> +static const struct file_operations fops = {
-> +       .owner          = THIS_MODULE,
-> +       .open           = file_open,
-> +       .release        = file_release,
-> +};
-> +
-> +/**
-> + * create_cdev() - Create the chardev in /dev for the device
-> + * @ocxlpmem: the SCM metadata
-> + * Return: 0 on success, negative on failure
-> + */
-> +static int create_cdev(struct ocxlpmem *ocxlpmem)
-> +{
-> +       cdev_init(&ocxlpmem->cdev, &fops);
-> +       return cdev_add(&ocxlpmem->cdev, ocxlpmem->dev.devt, 1);
-> +}
-> +
->  /**
->   * ocxlpmem_remove() - Free an OpenCAPI persistent memory device
->   * @pdev: the PCI device information struct
-> @@ -376,6 +438,13 @@ static void remove(struct pci_dev *pdev)
->                 if (ocxlpmem->nvdimm_bus)
->                         nvdimm_bus_unregister(ocxlpmem->nvdimm_bus);
->
-> +               /*
-> +                * Remove the cdev early to prevent a race against userspace
-> +                * via the char dev
-> +                */
-> +               if (ocxlpmem->cdev.owner)
-> +                       cdev_del(&ocxlpmem->cdev);
-> +
->                 device_unregister(&ocxlpmem->dev);
->         }
->  }
-> @@ -527,11 +596,18 @@ static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
->                 goto err;
->         }
->
-> -       if (setup_command_metadata(ocxlpmem)) {
-> +       rc = setup_command_metadata(ocxlpmem);
-> +       if (rc) {
->                 dev_err(&pdev->dev, "Could not read command metadata\n");
->                 goto err;
->         }
->
-> +       rc = create_cdev(ocxlpmem);
-> +       if (rc) {
-> +               dev_err(&pdev->dev, "Could not create character device\n");
-> +               goto err;
-> +       }
-> +
->         elapsed = 0;
->         timeout = ocxlpmem->readiness_timeout +
->                   ocxlpmem->memory_available_timeout;
-> @@ -599,6 +675,36 @@ static struct pci_driver pci_driver = {
->         .shutdown = remove,
->  };
->
-> +static int file_init(void)
-> +{
-> +       int rc;
-> +
-> +       rc = alloc_chrdev_region(&ocxlpmem_dev, 0, NUM_MINORS, "ocxlpmem");
-> +       if (rc) {
-> +               idr_destroy(&minors_idr);
-> +               pr_err("Unable to allocate OpenCAPI persistent memory major number: %d\n",
-> +                      rc);
-> +               return rc;
-> +       }
-> +
-> +       ocxlpmem_class = class_create(THIS_MODULE, "ocxlpmem");
-> +       if (IS_ERR(ocxlpmem_class)) {
-> +               idr_destroy(&minors_idr);
-> +               pr_err("Unable to create ocxlpmem class\n");
-> +               unregister_chrdev_region(ocxlpmem_dev, NUM_MINORS);
-> +               return PTR_ERR(ocxlpmem_class);
-> +       }
-> +
-> +       return 0;
-> +}
-> +
-> +static void file_exit(void)
-> +{
-> +       class_destroy(ocxlpmem_class);
-> +       unregister_chrdev_region(ocxlpmem_dev, NUM_MINORS);
-> +       idr_destroy(&minors_idr);
-> +}
-> +
->  static int __init ocxlpmem_init(void)
->  {
->         int rc;
-> @@ -606,16 +712,23 @@ static int __init ocxlpmem_init(void)
->         mutex_init(&minors_idr_lock);
->         idr_init(&minors_idr);
->
-> -       rc = pci_register_driver(&pci_driver);
-> +       rc = file_init();
->         if (rc)
->                 return rc;
->
-> +       rc = pci_register_driver(&pci_driver);
-> +       if (rc) {
-> +               file_exit();
-> +               return rc;
-> +       }
-> +
->         return 0;
->  }
->
->  static void ocxlpmem_exit(void)
->  {
->         pci_unregister_driver(&pci_driver);
-> +       file_exit();
->  }
->
->  module_init(ocxlpmem_init);
-> diff --git a/drivers/nvdimm/ocxl/ocxlpmem.h b/drivers/nvdimm/ocxl/ocxlpmem.h
-> index b72b3f909fc3..ee3bd651f254 100644
-> --- a/drivers/nvdimm/ocxl/ocxlpmem.h
-> +++ b/drivers/nvdimm/ocxl/ocxlpmem.h
-> @@ -2,6 +2,7 @@
->  // Copyright 2020 IBM Corp.
->
->  #include <linux/pci.h>
-> +#include <linux/cdev.h>
->  #include <misc/ocxl.h>
->  #include <linux/libnvdimm.h>
->  #include <linux/mm.h>
-> @@ -103,6 +104,7 @@ struct command_metadata {
->  struct ocxlpmem {
->         struct device dev;
->         struct pci_dev *pdev;
-> +       struct cdev cdev;
->         struct ocxl_fn *ocxl_fn;
->         struct nd_interleave_set nd_set;
->         struct nvdimm_bus_descriptor bus_desc;
-> --
-> 2.24.1
->
+Maybe something like:
+
+unsigned long si_val(unsigned long val)
+{
+	static const char units[] = "BKMGTPE";
+	const char *unit = units;
+
+	while (!(val & 1023) && unit[1]) {
+		val >>= 10;
+		unit++;
+	}
+
+	return val;
+}
+
+char si_type(unsigned long val)
+{
+	static const char units[] = "BKMGTPE";
+	const char *unit = units;
+
+	while (!(val & 1023) && unit[1]) {
+		val >>= 10;
+		unit++;
+	}
+
+	return *unit;
+}
+
+so this could be something like:
+
+       dev_info(&dev->dev, "Probed LPC memory of %#llu%c and special purpose memory of %#llu%c\n",
+                si_val(afu->lpc_mem_size), si_type(afu->lpc_mem_size),
+		si_val(afu->special_purpose_mem_size), si_type(afu->special_purpose_mem_size));
+
+
+
