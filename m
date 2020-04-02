@@ -2,75 +2,79 @@ Return-Path: <SRS0=sSB4=5S=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 451BCC43331
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 21:29:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A289FC43331
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 22:49:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 98EC020737
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 21:29:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 004D12072E
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 22:49:09 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="jNKpC5kn"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 98EC020737
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="qYPyZxkk"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 004D12072E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48tbmF3wvxzDrBg
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 08:29:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48tdXg3DnjzDq8F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 09:49:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=205.139.110.120;
- helo=us-smtp-1.mimecast.com; envelope-from=jolsa@redhat.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::d44;
+ helo=mail-io1-xd44.google.com; envelope-from=oohall@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=jNKpC5kn; 
- dkim-atps=neutral
-Received: from us-smtp-1.mimecast.com (us-smtp-delivery-1.mimecast.com
- [205.139.110.120])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=qYPyZxkk; dkim-atps=neutral
+Received: from mail-io1-xd44.google.com (mail-io1-xd44.google.com
+ [IPv6:2607:f8b0:4864:20::d44])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48tbkZ3PB8zDrF2
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2020 08:27:32 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1585862849;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=nYosSnECcnDnXEwCUr/zQ5HjFFOmJvXZ42i/XsVNG9w=;
- b=jNKpC5kninK1zaeQ4If3A+mothGLBkMOjRo+nhg/qJOjFiQOJFtAUhQQbN8buF7xPj37+5
- QqRSh9AkKU5eIjrkGzw2gA0uoBOa7MAH2m/KIshsaW61K4eHbaLimtuTBGhXy5H/yBt0UR
- AYN9AjhOD1rvEowFnEydV2+3Cpj5nfE=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-458-pomMgmzbOCyAw40CTZu6UA-1; Thu, 02 Apr 2020 17:27:25 -0400
-X-MC-Unique: pomMgmzbOCyAw40CTZu6UA-1
-Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
- [10.5.11.23])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 442CD8017F5;
- Thu,  2 Apr 2020 21:27:22 +0000 (UTC)
-Received: from krava (unknown [10.40.194.72])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id 26AF2196AE;
- Thu,  2 Apr 2020 21:27:08 +0000 (UTC)
-Date: Thu, 2 Apr 2020 23:27:04 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: Kajol Jain <kjain@linux.ibm.com>
-Subject: Re: [PATCH v8 0/7]  powerpc/perf: Add json file metric support for
- the hv_24x7 socket/chip level events
-Message-ID: <20200402212704.GC2784502@krava>
-References: <20200401203340.31402-1-kjain@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48tdVC5FSwzDr7k
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2020 09:46:59 +1100 (AEDT)
+Received: by mail-io1-xd44.google.com with SMTP id i3so5419836ioo.13
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Apr 2020 15:46:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=OQnxweQnqXfPXtvAjWkG4LAwMm7QgxQOU06/1lbhuSY=;
+ b=qYPyZxkk8z01LGWskSrm9aG/7nt3J+cgEH/SymGNN597NCfm6MCdZIy6TzISZy66q4
+ pj6rRU04jWHnuCETpqmyHTLKqZiwVuEyeFh5Rr0b3hSMwg5eGng2Ha2xdSdKsvmQxAOB
+ QPSasGKfa8n/l/zHMpnSI/pAoBE+Rpko2nlur98dOVL1Ua5pOL9Ld4KHgbshpQDQcTna
+ ZN9LC+pER0Nd3/NjtUkjv0UtAskAfOkP49pxmJi+E9xuTviSHaZd0wPMgN1pFs3Uk30N
+ wghTmqvUOM9XnmeCBS/2N/NZZe5q7C6DI1LgBPQnuYA89x4cjlENgCSO+fUrkfhakK+1
+ XFEg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=OQnxweQnqXfPXtvAjWkG4LAwMm7QgxQOU06/1lbhuSY=;
+ b=OmPSNY8T9dJfL3dBxGqwMo+F3YYjSA1LemWVNriqPyMyACnbEwLvVV18SXAMopCPLU
+ BKD7q+6uDQvrK2v8OFFh8o6nNFKcHMDvHNAG2sj3UY50+7s4QG20vthBkPn2P1nFGFIh
+ Ukc75rVPCdbtH9p890rkf9OiIjhtaoWIvsvKos5vf35U7sfAwmZWQ+x8qhuZpJgZc3Rc
+ veiJL/tPdnQqyXZHU3k+L4oLd0wIW8SJmjdYiSdA5U+vtwn3Ukns3GXPvpaFDRex70+W
+ 252OdXuuTM+yToj98rxNDYtKy3BAght4XJet8JBNV+KhVm9lCtqdjsjUiHkbKyWwvABc
+ SUjw==
+X-Gm-Message-State: AGi0PubTvsoDWkX825tyFix44CE2yMs0evPR/H5JyIp/6ojrDb2eLs5g
+ 7tlBK3xKTnnPR8Z7M11EcVUe5IrKtgZbXRHlSrw=
+X-Google-Smtp-Source: APiQypJ96SzZqukS6zpyCpAiLjdlBVXL/4HDhO4ilUK7VCKGO7VXzhUxFl62HyckGydrE57jcQ6v+hhAdMKSuRB5sZg=
+X-Received: by 2002:a05:6638:d6:: with SMTP id w22mr494171jao.72.1585867615842; 
+ Thu, 02 Apr 2020 15:46:55 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200401203340.31402-1-kjain@linux.ibm.com>
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
+References: <20200402195156.626430-1-leonardo@linux.ibm.com>
+In-Reply-To: <20200402195156.626430-1-leonardo@linux.ibm.com>
+From: "Oliver O'Halloran" <oohall@gmail.com>
+Date: Fri, 3 Apr 2020 09:46:44 +1100
+Message-ID: <CAOSf1CEihBDDRny5S_7TA5Cqbdgsh6zN=kdq83OSgaLbRphtrg@mail.gmail.com>
+Subject: Re: [PATCH v3 1/1] powerpc/kernel: Enables memory hot-remove after
+ reboot on pseries guests
+To: Leonardo Bras <leonardo@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,55 +86,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, maddy@linux.vnet.ibm.com, peterz@infradead.org,
- yao.jin@linux.intel.com, mingo@kernel.org, kan.liang@linux.intel.com,
- ak@linux.intel.com, alexander.shishkin@linux.intel.com,
- anju@linux.vnet.ibm.com, mamatha4@linux.vnet.ibm.com,
- sukadev@linux.vnet.ibm.com, ravi.bangoria@linux.ibm.com, acme@kernel.org,
- jmario@redhat.com, namhyung@kernel.org, tglx@linutronix.de, mpetlan@redhat.com,
- gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
- linux-perf-users@vger.kernel.org, jolsa@kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Claudio Carvalho <cclaudio@linux.ibm.com>,
+ Bharata B Rao <bharata@linux.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Hari Bathini <hbathini@linux.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Allison Randal <allison@lohutok.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Apr 02, 2020 at 02:03:33AM +0530, Kajol Jain wrote:
-> Patchset adds json file metric support for the hv_24x7 socket/chip level
-> events. "hv_24x7" pmu interface events needs system dependent parameter
-> like socket/chip/core. For example, hv_24x7 chip level events needs
-> specific chip-id to which the data is requested should be added as part
-> of pmu events.
-> 
-> So to enable JSON file support to "hv_24x7" interface, patchset reads
-> total number of sockets details in sysfs under 
-> "/sys/devices/hv_24x7/interface/".
-> 
-> Second patch of the patchset adds expr_scanner_ctx object to hold user
-> data for the expr scanner, which can be used to hold runtime parameter.
-> 
-> Patch 4 & 6 of the patchset handles perf tool plumbing needed to replace
-> the "?" character in the metric expression to proper value and hv_24x7
-> json metric file for different Socket/chip resources.
-> 
-> Patch set also enable Hz/hz prinitg for --metric-only option to print
-> metric data for bus frequency.
-> 
-> Applied and tested all these patches cleanly on top of jiri's flex changes
-> with the changes done by Kan Liang for "Support metric group constraint"
-> patchset and made required changes.
-> 
-> Also apply this patch on top of the fix patch send earlier
-> for printing metric name incase overlapping events.
-> https://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git/commit/?h=perf/core&id=37cd7f65bf71a48f25eeb6d9be5dacb20d008ea6
-> 
-> Changelog:
-> v7 -> v8
-> - Add test case for testing parsing of "?" in metric expression
-> - Reaname variables name to runtime
+On Fri, Apr 3, 2020 at 6:55 AM Leonardo Bras <leonardo@linux.ibm.com> wrote:
+>
+> While providing guests, it's desirable to resize it's memory on demand.
+>
+> By now, it's possible to do so by creating a guest with a small base
+> memory, hot-plugging all the rest, and using 'movable_node' kernel
+> command-line parameter, which puts all hot-plugged memory in
+> ZONE_MOVABLE, allowing it to be removed whenever needed.
+>
+> But there is an issue regarding guest reboot:
+> If memory is hot-plugged, and then the guest is rebooted, all hot-plugged
+> memory goes to ZONE_NORMAL, which offers no guaranteed hot-removal.
+> It usually prevents this memory to be hot-removed from the guest.
+>
+> It's possible to use device-tree information to fix that behavior, as
+> it stores flags for LMB ranges on ibm,dynamic-memory-vN.
+> It involves marking each memblock with the correct flags as hotpluggable
+> memory, which mm/memblock.c puts in ZONE_MOVABLE during boot if
+> 'movable_node' is passed.
 
-Acked-by: Jiri Olsa <jolsa@redhat.com>
-
-thanks,
-jirka
-
+I don't really understand why the flag is needed at all. According to
+PAPR any memory provided by dynamic reconfiguration can be hot-removed
+so why aren't we treating all DR memory as hot removable? The only
+memory guaranteed to be there 100% of the time is what's in the
+/memory@0 node since that's supposed to cover the real mode area.
