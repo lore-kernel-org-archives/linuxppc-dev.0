@@ -2,96 +2,81 @@ Return-Path: <SRS0=sSB4=5S=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FF46C43331
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 23:09:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0027BC43331
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 23:33:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2956B2077D
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 23:09:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2956B2077D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 5BFEF2077D
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 23:33:33 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="RU7KK9hh"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5BFEF2077D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48tf046nkmzDrB4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 10:09:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48tfWs6dVZzDrVP
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 10:33:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=leonardo@linux.ibm.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::141;
+ helo=mail-il1-x141.google.com; envelope-from=oohall@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=RU7KK9hh; dkim-atps=neutral
+Received: from mail-il1-x141.google.com (mail-il1-x141.google.com
+ [IPv6:2607:f8b0:4864:20::141])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48tdxg42cgzDrQB
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2020 10:07:19 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 032N5dOe061784; Thu, 2 Apr 2020 19:07:05 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 304hjbtd3b-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 02 Apr 2020 19:07:05 -0400
-Received: from m0098394.ppops.net (m0098394.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 032N74eg068691;
- Thu, 2 Apr 2020 19:07:05 -0400
-Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
- [169.53.41.122])
- by mx0a-001b2d01.pphosted.com with ESMTP id 304hjbtd2t-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 02 Apr 2020 19:07:04 -0400
-Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
- by ppma04dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 032N6GSv030635;
- Thu, 2 Apr 2020 23:07:04 GMT
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by ppma04dal.us.ibm.com with ESMTP id 301x777j8y-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 02 Apr 2020 23:07:03 +0000
-Received: from b03ledav004.gho.boulder.ibm.com
- (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 032N72nt52560292
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 2 Apr 2020 23:07:02 GMT
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0963B78060;
- Thu,  2 Apr 2020 23:07:02 +0000 (GMT)
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 691807805C;
- Thu,  2 Apr 2020 23:06:48 +0000 (GMT)
-Received: from LeoBras (unknown [9.85.174.86])
- by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu,  2 Apr 2020 23:06:47 +0000 (GMT)
-Message-ID: <6b4a4a0d4f7af723d0a5a12f4267717a507ce3f0.camel@linux.ibm.com>
-Subject: Re: [PATCH v3 1/1] powerpc/kernel: Enables memory hot-remove after
- reboot on pseries guests
-From: Leonardo Bras <leonardo@linux.ibm.com>
-To: "Oliver O'Halloran" <oohall@gmail.com>
-Date: Thu, 02 Apr 2020 20:06:41 -0300
-In-Reply-To: <CAOSf1CEihBDDRny5S_7TA5Cqbdgsh6zN=kdq83OSgaLbRphtrg@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48tfTp5tG3zDqfd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2020 10:31:42 +1100 (AEDT)
+Received: by mail-il1-x141.google.com with SMTP id i75so5415297ild.13
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Apr 2020 16:31:42 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=jmXWSnZFrGmmooR0jk9MQKfEVRvqr4Bhu0RmJo6EKnI=;
+ b=RU7KK9hhnWQJ37k68Oi3oIEBbXk/64ZO2mh73lxhk7GTlRqey4MxSgxLfvF3eU4HqV
+ +t+7bc0tVqKgfh06b3PP78MbdPAsUHqAtLBknJWTZ8RvMmDjpI/v1Vch4E7CJCZPyA63
+ L3XUGRqhzy0Hx4URAzBCSIn/0sV4q/oM/C7hExlaNjLGXTCVc4dG1qceJvhiqFEm/UYC
+ NYLs0iA9ZC9+lP+5dWVwBJCQ/Y2Ee9kCnAxXWVue+h1ynLNzgC6POAuoC2qo1VMHX72D
+ X7r73yxULfTxkMLLEsjFzcU1jpbimQTZtMyilSANjjyIRHnfCL03W5cABR2zVVWi8suK
+ Bnxw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=jmXWSnZFrGmmooR0jk9MQKfEVRvqr4Bhu0RmJo6EKnI=;
+ b=eZY+wLARa/3ARtnAQ1IwcKjy3abw0evATd0axTXZGe46GL5Kn5PvYjpRX5JF70aj/h
+ J9pxp59ixTMXSfgJnJ4sdsSY9zTSBOp9PRyiqAnUSHIqHVQxx9sc45jpBXEhIKmdtDS0
+ gvxt7+ebU2O9Vicf5dXo58Axc1+VwIa+Horruxp/aOH/lvquIiSgckeuMQZH7teHHlfS
+ eRATIGNwhh9ESMmTdRWHFAGayRjF1z+139IgGYl6O0/G7liTpk/eJ1e46XuUdxFMGg2E
+ cb9zb6iCmPLkuZSA4RB3TJiKVjM3xYccvgYqx5V8W44GBIAREyrYOdHCI/wU5AloFRJf
+ +Yng==
+X-Gm-Message-State: AGi0PuagcxjqnDU2w4N9j+AOIa7hDO8dZgOwgDjMA+a2yicTXtuzc8t2
+ 8IIp48Fn9vToVx/DBamzToB7w73GCz7kyluZ/NU=
+X-Google-Smtp-Source: APiQypK+zEl2CUhXKeN1pMFtLbx4xPC9hxcsM3MweNUup1O/ZINcmABvKJgjGr2DS3uy3r8m7Wbjhq7W2uEpl1447J8=
+X-Received: by 2002:a92:39cc:: with SMTP id h73mr5683281ilf.298.1585870299305; 
+ Thu, 02 Apr 2020 16:31:39 -0700 (PDT)
+MIME-Version: 1.0
 References: <20200402195156.626430-1-leonardo@linux.ibm.com>
  <CAOSf1CEihBDDRny5S_7TA5Cqbdgsh6zN=kdq83OSgaLbRphtrg@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha256";
- protocol="application/pgp-signature"; boundary="=-LbIuD+NSE0mfSgDYZOtG"
-User-Agent: Evolution 3.34.4 (3.34.4-1.fc31) 
-MIME-Version: 1.0
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
- definitions=2020-04-02_13:2020-04-02,
- 2020-04-02 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 impostorscore=0
- suspectscore=0 adultscore=0 priorityscore=1501 mlxscore=0
- lowpriorityscore=0 clxscore=1015 spamscore=0 mlxlogscore=930
- malwarescore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2003020000 definitions=main-2004020166
+ <6b4a4a0d4f7af723d0a5a12f4267717a507ce3f0.camel@linux.ibm.com>
+In-Reply-To: <6b4a4a0d4f7af723d0a5a12f4267717a507ce3f0.camel@linux.ibm.com>
+From: "Oliver O'Halloran" <oohall@gmail.com>
+Date: Fri, 3 Apr 2020 10:31:28 +1100
+Message-ID: <CAOSf1CHSCMsQgJTcMPiRUFDxBF=WVpTRk7-bzyg6iit8bmm7rg@mail.gmail.com>
+Subject: Re: [PATCH v3 1/1] powerpc/kernel: Enables memory hot-remove after
+ reboot on pseries guests
+To: Leonardo Bras <leonardo@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,59 +101,37 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Fri, Apr 3, 2020 at 10:07 AM Leonardo Bras <leonardo@linux.ibm.com> wrote:
+>
+> Hello Oliver, thank you for the feedback.
+> Comments inline:
+>
+> On Fri, 2020-04-03 at 09:46 +1100, Oliver O'Halloran wrote:
+> >
+> > I don't really understand why the flag is needed at all. According to
+> > PAPR any memory provided by dynamic reconfiguration can be hot-removed
+> > so why aren't we treating all DR memory as hot removable? The only
+> > memory guaranteed to be there 100% of the time is what's in the
+> > /memory@0 node since that's supposed to cover the real mode area.
+>
+> All LMBs are listed in DR memory, even the base memory.
+>
+> The v1 of the patch would work this way, as qemu would configure it's
+> DR memory with (DRC_INVALID | RESERVED) flags and the hot-added memory
+> with (ASSIGNED) flag. Looking for assigned flag would be enough.
+>
+> But as of today, PowerVM doesn't seem to work that way.
+> When you boot a PowerVM virtual machine with Linux, all memory is added
+> with the same flags (ASSIGNED).
+>
+> To create a solution that doesn't break PowerVM, this new flag was made
+> necessary.
 
---=-LbIuD+NSE0mfSgDYZOtG
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+I'm still not convinced it's necessary. Why not check memory@0 and use
+the size as a clip level? Any memory above that level gets marked as
+hotpluggable and anything below doesn't. Seems to me that would work
+on all current platforms, so what am I missing here?
 
-Hello Oliver, thank you for the feedback.
-Comments inline:
-
-On Fri, 2020-04-03 at 09:46 +1100, Oliver O'Halloran wrote:
->=20
-> I don't really understand why the flag is needed at all. According to
-> PAPR any memory provided by dynamic reconfiguration can be hot-removed
-> so why aren't we treating all DR memory as hot removable? The only
-> memory guaranteed to be there 100% of the time is what's in the
-> /memory@0 node since that's supposed to cover the real mode area.
-
-All LMBs are listed in DR memory, even the base memory.
-
-The v1 of the patch would work this way, as qemu would configure it's
-DR memory with (DRC_INVALID | RESERVED) flags and the hot-added memory
-with (ASSIGNED) flag. Looking for assigned flag would be enough.
-
-But as of today, PowerVM doesn't seem to work that way.=20
-When you boot a PowerVM virtual machine with Linux, all memory is added
-with the same flags (ASSIGNED).
-
-To create a solution that doesn't break PowerVM, this new flag was made
-necessary.
-
-Best regards,
-Leonardo Bras
-
---=-LbIuD+NSE0mfSgDYZOtG
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEMdeUgIzgjf6YmUyOlQYWtz9SttQFAl6GcAEACgkQlQYWtz9S
-ttSDaxAAleKBaZ21PxBQBe/pKqmPitbu7ok6nwICUsc9WhvezbRZQX/W9R3ghKQ6
-+AcPpO4eVPq6K5kJDP8uPD2SxGGpYcwgDIrPlfInjdM00PzmujceFyAvglXGE6PB
-9ZqAEsZsRNZIG5H1ge+H894jdLn+YMqQmO+tdNMyUqd/tSHh+FeXe9tvdM/KERo0
-5OdDkFxUEsUD1W57uARIlM67J+/hKdAqgmr6rKnubQ42PsF4qkHussd9T79BiCeL
-bEdrkwVKTA5vdrUQND1uzT9tS75lW3pwZNW/JtQmqZaMHri0S+zjlgkueSs/tUUo
-X44fCVHs9xxZA0ZN3cQGnDWoASzn5WDvcSCKOhZYowGiSaHBfaoLkDhWBCmR9G+v
-lPeGVRx3gLRU91NCPnGYCg4b1rrfGZeyQB8gq4cmA8ejzCbUTCI78ooO3rZwdnmT
-evrLS4O3gDAfQXmkAMHYaz/ZV5Vvvc38psj5e7OMiCuxH5T52Fe34C/WWFZewZ9q
-tSFP2wQ03SS/BRW5CYhztf3J112vDxfLTD0OnHLWboBAbAlQTR3O//flG6e5y3RA
-0aMWA/4YzL0tB/+1/c+UO0Vwmv+GT3HICs8O7ctU2tnowJWk5tBuj1Oz1+Thvn+O
-X/tnaZNnjPhv3Y3T0UBYWspFgpjEWqvBbJxhTxnN4TNFZQQsIrI=
-=CQXD
------END PGP SIGNATURE-----
-
---=-LbIuD+NSE0mfSgDYZOtG--
-
+>
+> Best regards,
+> Leonardo Bras
