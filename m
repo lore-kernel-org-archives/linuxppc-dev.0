@@ -2,94 +2,82 @@ Return-Path: <SRS0=sSB4=5S=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_2 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A0511C18E5B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 07:43:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD2B3C43331
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 07:47:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5E7A4208E4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 07:43:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5E7A4208E4
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 579462063A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 07:47:15 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="KS94H+7S"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 579462063A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48tFRH0V9TzDrRC
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 18:43:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48tFX105dbzDqcn
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 18:47:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
+ header.s=mail header.b=KS94H+7S; dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48tDxd2MSRzDqLF
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2020 18:20:53 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 03273S6C074188; Thu, 2 Apr 2020 03:20:29 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 303wry4xf9-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 02 Apr 2020 03:20:29 -0400
-Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 03273s9g076210;
- Thu, 2 Apr 2020 03:20:28 -0400
-Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
- [169.55.91.170])
- by mx0a-001b2d01.pphosted.com with ESMTP id 303wry4xey-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 02 Apr 2020 03:20:28 -0400
-Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
- by ppma02wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 0327HYkO030992;
- Thu, 2 Apr 2020 07:20:27 GMT
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25]) by ppma02wdc.us.ibm.com with ESMTP id 301x7772kb-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 02 Apr 2020 07:20:27 +0000
-Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
- [9.57.199.111])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0327KR3l53346634
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 2 Apr 2020 07:20:27 GMT
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0A313AC05B;
- Thu,  2 Apr 2020 07:20:27 +0000 (GMT)
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id DD95AAC05E;
- Thu,  2 Apr 2020 07:20:25 +0000 (GMT)
-Received: from [9.70.82.143] (unknown [9.70.82.143])
- by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Thu,  2 Apr 2020 07:20:25 +0000 (GMT)
-Subject: [PATCH v10 14/14] powerpc: Use mm_context vas_windows counter to
- issue CP_ABORT
-From: Haren Myneni <haren@linux.ibm.com>
-To: mpe@ellerman.id.au
-In-Reply-To: <1585810846.2275.23.camel@hbabu-laptop>
-References: <1585810846.2275.23.camel@hbabu-laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 02 Apr 2020 00:20:24 -0700
-Message-ID: <1585812024.2275.68.camel@hbabu-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.3 
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
- definitions=2020-04-01_04:2020-03-31,
- 2020-04-01 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 lowpriorityscore=0
- mlxlogscore=999 clxscore=1015 bulkscore=0 malwarescore=0 suspectscore=1
- phishscore=0 priorityscore=1501 spamscore=0 adultscore=0 impostorscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2003020000
- definitions=main-2004020063
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48tFFC0bk3zDrQR
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2020 18:34:23 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 48tFF52yP8z9txL2;
+ Thu,  2 Apr 2020 09:34:17 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=KS94H+7S; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id kaxGiOccjasl; Thu,  2 Apr 2020 09:34:17 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 48tFF51mDlz9txKx;
+ Thu,  2 Apr 2020 09:34:17 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1585812857; bh=V4vcpbVWusI/7eDOlQW6hlaHiY3zFHvzAa9y7bZ/ksM=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=KS94H+7SuSU9kGRnvXHZ1fg/RSMwk6Cw45+aOaBvxhFWBtzKlstN4ZQec4mEX67WQ
+ TAA5a/fHXecP7F9hMVXjoDnvy52DUbS4BsRAi6rOcNHNr39SL0hByJioEQYaFYDYiR
+ N3je18KUxfeSeKvDDq/O+aLB7XgWXmO9YvKPR8n0=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0AEC18B76E;
+ Thu,  2 Apr 2020 09:34:18 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id QQaPPfH3-j52; Thu,  2 Apr 2020 09:34:17 +0200 (CEST)
+Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 937078B75E;
+ Thu,  2 Apr 2020 09:34:17 +0200 (CEST)
+Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 6297C656BF; Thu,  2 Apr 2020 07:34:17 +0000 (UTC)
+Message-Id: <25040ad2d2a2cef45a2442b0e934141987e11b71.1585811416.git.christophe.leroy@c-s.fr>
+In-Reply-To: <27106d62fdbd4ffb47796236050e418131cb837f.1585811416.git.christophe.leroy@c-s.fr>
+References: <27106d62fdbd4ffb47796236050e418131cb837f.1585811416.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH RESEND 2/4] uaccess: Selectively open read or write user access
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ airlied@linux.ie, daniel@ffwll.ch, torvalds@linux-foundation.org,
+ viro@zeniv.linux.org.uk, akpm@linux-foundation.org, keescook@chromium.org,
+ hpa@zytor.com
+Date: Thu,  2 Apr 2020 07:34:17 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,146 +89,238 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, ajd@linux.ibm.com, frederic.barrat@fr.ibm.com,
- linux-kernel@vger.kernel.org, npiggin@gmail.com, hch@infradead.org,
- oohall@gmail.com, clg@kaod.org, herbert@gondor.apana.org.au,
- sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- srikar@linux.vnet.ibm.com
+Cc: linux-arch@vger.kernel.org, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+When opening user access to only perform reads, only open read access.
+When opening user access to only perform writes, only open write
+access.
 
-set_thread_uses_vas() sets used_vas flag for a process that opened VAS
-window and issue CP_ABORT during context switch for only that process.
-In multi-thread application, windows can be shared. For example Thread A
-can open a window and Thread B can run COPY/PASTE instructions to send
-NX request which may cause corruption or snooping or a covert channel.
-Also once this flag is set, continue to run CP_ABORT even the VAS window
-is closed.
-
-So define vas-windows counter in process mm_context, increment this
-counter for each window open and decrement it for window close. If
-vas-windows is set, issue CP_ABORT during context switch. It means
-clear the foreign real address mapping only if the process / thread uses
-COPY/PASTE. Then disable it for that process if windows are not open.
-
-Signed-off-by: Haren Myneni <haren@linux.ibm.com>
-Reported-by: Nicholas Piggin <npiggin@gmail.com>
-Suggested-by: Milton Miller <miltonm@us.ibm.com>
-Suggested-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/book3s/64/mmu.h    |  3 +++
- arch/powerpc/include/asm/mmu_context.h      | 22 ++++++++++++++++++++++
- arch/powerpc/include/asm/processor.h        |  1 -
- arch/powerpc/kernel/process.c               |  8 ++++++--
- arch/powerpc/platforms/powernv/vas-window.c |  1 +
- 5 files changed, 32 insertions(+), 3 deletions(-)
+ fs/readdir.c            | 12 ++++++------
+ kernel/compat.c         | 12 ++++++------
+ kernel/exit.c           | 12 ++++++------
+ lib/strncpy_from_user.c |  4 ++--
+ lib/strnlen_user.c      |  4 ++--
+ lib/usercopy.c          |  6 +++---
+ 6 files changed, 25 insertions(+), 25 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
-index bb3deb7..f0a9ff6 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu.h
-@@ -116,6 +116,9 @@ struct patb_entry {
- 	/* Number of users of the external (Nest) MMU */
- 	atomic_t copros;
+diff --git a/fs/readdir.c b/fs/readdir.c
+index de2eceffdee8..ed6aaad451aa 100644
+--- a/fs/readdir.c
++++ b/fs/readdir.c
+@@ -242,7 +242,7 @@ static int filldir(struct dir_context *ctx, const char *name, int namlen,
+ 		return -EINTR;
+ 	dirent = buf->current_dir;
+ 	prev = (void __user *) dirent - prev_reclen;
+-	if (!user_access_begin(prev, reclen + prev_reclen))
++	if (!user_write_access_begin(prev, reclen + prev_reclen))
+ 		goto efault;
  
-+	/* Number of user space windows opened in process mm_context */
-+	atomic_t vas_windows;
-+
- 	struct hash_mm_context *hash_context;
+ 	/* This might be 'dirent->d_off', but if so it will get overwritten */
+@@ -251,14 +251,14 @@ static int filldir(struct dir_context *ctx, const char *name, int namlen,
+ 	unsafe_put_user(reclen, &dirent->d_reclen, efault_end);
+ 	unsafe_put_user(d_type, (char __user *) dirent + reclen - 1, efault_end);
+ 	unsafe_copy_dirent_name(dirent->d_name, name, namlen, efault_end);
+-	user_access_end();
++	user_write_access_end();
  
- 	unsigned long vdso_base;
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index 360367c..7fd249498 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -185,11 +185,33 @@ static inline void mm_context_remove_copro(struct mm_struct *mm)
- 			dec_mm_active_cpus(mm);
+ 	buf->current_dir = (void __user *)dirent + reclen;
+ 	buf->prev_reclen = reclen;
+ 	buf->count -= reclen;
+ 	return 0;
+ efault_end:
+-	user_access_end();
++	user_write_access_end();
+ efault:
+ 	buf->error = -EFAULT;
+ 	return -EFAULT;
+@@ -327,7 +327,7 @@ static int filldir64(struct dir_context *ctx, const char *name, int namlen,
+ 		return -EINTR;
+ 	dirent = buf->current_dir;
+ 	prev = (void __user *)dirent - prev_reclen;
+-	if (!user_access_begin(prev, reclen + prev_reclen))
++	if (!user_write_access_begin(prev, reclen + prev_reclen))
+ 		goto efault;
+ 
+ 	/* This might be 'dirent->d_off', but if so it will get overwritten */
+@@ -336,7 +336,7 @@ static int filldir64(struct dir_context *ctx, const char *name, int namlen,
+ 	unsafe_put_user(reclen, &dirent->d_reclen, efault_end);
+ 	unsafe_put_user(d_type, &dirent->d_type, efault_end);
+ 	unsafe_copy_dirent_name(dirent->d_name, name, namlen, efault_end);
+-	user_access_end();
++	user_write_access_end();
+ 
+ 	buf->prev_reclen = reclen;
+ 	buf->current_dir = (void __user *)dirent + reclen;
+@@ -344,7 +344,7 @@ static int filldir64(struct dir_context *ctx, const char *name, int namlen,
+ 	return 0;
+ 
+ efault_end:
+-	user_access_end();
++	user_write_access_end();
+ efault:
+ 	buf->error = -EFAULT;
+ 	return -EFAULT;
+diff --git a/kernel/compat.c b/kernel/compat.c
+index 843dd17e6078..705ca7e418c6 100644
+--- a/kernel/compat.c
++++ b/kernel/compat.c
+@@ -199,7 +199,7 @@ long compat_get_bitmap(unsigned long *mask, const compat_ulong_t __user *umask,
+ 	bitmap_size = ALIGN(bitmap_size, BITS_PER_COMPAT_LONG);
+ 	nr_compat_longs = BITS_TO_COMPAT_LONGS(bitmap_size);
+ 
+-	if (!user_access_begin(umask, bitmap_size / 8))
++	if (!user_write_access_begin(umask, bitmap_size / 8))
+ 		return -EFAULT;
+ 
+ 	while (nr_compat_longs > 1) {
+@@ -211,11 +211,11 @@ long compat_get_bitmap(unsigned long *mask, const compat_ulong_t __user *umask,
  	}
+ 	if (nr_compat_longs)
+ 		unsafe_get_user(*mask, umask++, Efault);
+-	user_access_end();
++	user_read_access_end();
+ 	return 0;
+ 
+ Efault:
+-	user_access_end();
++	user_read_access_end();
+ 	return -EFAULT;
  }
-+
-+/*
-+ * vas_windows counter shows number of open windows in the mm
-+ * context. During context switch, use this counter to clear the
-+ * foreign real address mapping (CP_ABORT) for the thread / process
-+ * that intend to use COPY/PASTE. When a process closes all windows,
-+ * disable CP_ABORT which is expensive to run.
-+ */
-+static inline void mm_context_add_vas_windows(struct mm_struct *mm)
-+{
-+	atomic_inc(&mm->context.vas_windows);
-+}
-+
-+static inline void mm_context_remove_vas_windows(struct mm_struct *mm)
-+{
-+	int c = atomic_dec_if_positive(&mm->context.vas_windows);
-+
-+	/* Detect imbalance between add and remove */
-+	WARN_ON(c < 0);
-+}
- #else
- static inline void inc_mm_active_cpus(struct mm_struct *mm) { }
- static inline void dec_mm_active_cpus(struct mm_struct *mm) { }
- static inline void mm_context_add_copro(struct mm_struct *mm) { }
- static inline void mm_context_remove_copro(struct mm_struct *mm) { }
-+static inline void mm_context_add_vas_windows(struct mm_struct *mm) { }
-+static inline void mm_context_remove_vas_windows(struct mm_struct *mm) { }
- #endif
  
+@@ -228,7 +228,7 @@ long compat_put_bitmap(compat_ulong_t __user *umask, unsigned long *mask,
+ 	bitmap_size = ALIGN(bitmap_size, BITS_PER_COMPAT_LONG);
+ 	nr_compat_longs = BITS_TO_COMPAT_LONGS(bitmap_size);
  
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index eedcbfb..bfa336f 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -272,7 +272,6 @@ struct thread_struct {
- 	unsigned 	mmcr0;
+-	if (!user_access_begin(umask, bitmap_size / 8))
++	if (!user_read_access_begin(umask, bitmap_size / 8))
+ 		return -EFAULT;
  
- 	unsigned 	used_ebb;
--	unsigned int	used_vas;
- #endif
- };
- 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index fad50db..a3ecaf9 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1221,7 +1221,8 @@ struct task_struct *__switch_to(struct task_struct *prev,
- 		 * mappings, we must issue a cp_abort to clear any state and
- 		 * prevent snooping, corruption or a covert channel.
- 		 */
--		if (current->thread.used_vas)
-+		if (current->mm &&
-+			atomic_read(&current->mm->context.vas_windows))
- 			asm volatile(PPC_CP_ABORT);
+ 	while (nr_compat_longs > 1) {
+@@ -239,10 +239,10 @@ long compat_put_bitmap(compat_ulong_t __user *umask, unsigned long *mask,
  	}
- #endif /* CONFIG_PPC_BOOK3S_64 */
-@@ -1466,7 +1467,10 @@ int set_thread_uses_vas(void)
- 	if (!cpu_has_feature(CPU_FTR_ARCH_300))
- 		return -EINVAL;
+ 	if (nr_compat_longs)
+ 		unsafe_put_user((compat_ulong_t)*mask, umask++, Efault);
+-	user_access_end();
++	user_write_access_end();
+ 	return 0;
+ Efault:
+-	user_access_end();
++	user_write_access_end();
+ 	return -EFAULT;
+ }
  
--	current->thread.used_vas = 1;
-+	if (!current->mm)
-+		return -EINVAL;
-+
-+	mm_context_add_vas_windows(current->mm);
+diff --git a/kernel/exit.c b/kernel/exit.c
+index d70d47159640..61b2f7a85079 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -1555,7 +1555,7 @@ SYSCALL_DEFINE5(waitid, int, which, pid_t, upid, struct siginfo __user *,
+ 	if (!infop)
+ 		return err;
  
- 	/*
- 	 * Even a process that has no foreign real address mapping can use
-diff --git a/arch/powerpc/platforms/powernv/vas-window.c b/arch/powerpc/platforms/powernv/vas-window.c
-index 3ffad5a..33dfbbf 100644
---- a/arch/powerpc/platforms/powernv/vas-window.c
-+++ b/arch/powerpc/platforms/powernv/vas-window.c
-@@ -1333,6 +1333,7 @@ int vas_win_close(struct vas_window *window)
- 			put_pid(window->pid);
- 			if (window->mm) {
- 				mm_context_remove_copro(window->mm);
-+				mm_context_remove_vas_windows(window->mm);
- 				mmdrop(window->mm);
- 			}
+-	if (!user_access_begin(infop, sizeof(*infop)))
++	if (!user_write_access_begin(infop, sizeof(*infop)))
+ 		return -EFAULT;
+ 
+ 	unsafe_put_user(signo, &infop->si_signo, Efault);
+@@ -1564,10 +1564,10 @@ SYSCALL_DEFINE5(waitid, int, which, pid_t, upid, struct siginfo __user *,
+ 	unsafe_put_user(info.pid, &infop->si_pid, Efault);
+ 	unsafe_put_user(info.uid, &infop->si_uid, Efault);
+ 	unsafe_put_user(info.status, &infop->si_status, Efault);
+-	user_access_end();
++	user_write_access_end();
+ 	return err;
+ Efault:
+-	user_access_end();
++	user_write_access_end();
+ 	return -EFAULT;
+ }
+ 
+@@ -1682,7 +1682,7 @@ COMPAT_SYSCALL_DEFINE5(waitid,
+ 	if (!infop)
+ 		return err;
+ 
+-	if (!user_access_begin(infop, sizeof(*infop)))
++	if (!user_write_access_begin(infop, sizeof(*infop)))
+ 		return -EFAULT;
+ 
+ 	unsafe_put_user(signo, &infop->si_signo, Efault);
+@@ -1691,10 +1691,10 @@ COMPAT_SYSCALL_DEFINE5(waitid,
+ 	unsafe_put_user(info.pid, &infop->si_pid, Efault);
+ 	unsafe_put_user(info.uid, &infop->si_uid, Efault);
+ 	unsafe_put_user(info.status, &infop->si_status, Efault);
+-	user_access_end();
++	user_write_access_end();
+ 	return err;
+ Efault:
+-	user_access_end();
++	user_write_access_end();
+ 	return -EFAULT;
+ }
+ #endif
+diff --git a/lib/strncpy_from_user.c b/lib/strncpy_from_user.c
+index 706020b06617..b90ec550183a 100644
+--- a/lib/strncpy_from_user.c
++++ b/lib/strncpy_from_user.c
+@@ -116,9 +116,9 @@ long strncpy_from_user(char *dst, const char __user *src, long count)
+ 
+ 		kasan_check_write(dst, count);
+ 		check_object_size(dst, count, false);
+-		if (user_access_begin(src, max)) {
++		if (user_read_access_begin(src, max)) {
+ 			retval = do_strncpy_from_user(dst, src, count, max);
+-			user_access_end();
++			user_read_access_end();
+ 			return retval;
  		}
+ 	}
+diff --git a/lib/strnlen_user.c b/lib/strnlen_user.c
+index 41670d4a5816..1616710b8a82 100644
+--- a/lib/strnlen_user.c
++++ b/lib/strnlen_user.c
+@@ -109,9 +109,9 @@ long strnlen_user(const char __user *str, long count)
+ 		if (max > count)
+ 			max = count;
+ 
+-		if (user_access_begin(str, max)) {
++		if (user_read_access_begin(str, max)) {
+ 			retval = do_strnlen_user(str, count, max);
+-			user_access_end();
++			user_read_access_end();
+ 			return retval;
+ 		}
+ 	}
+diff --git a/lib/usercopy.c b/lib/usercopy.c
+index cbb4d9ec00f2..ca2a697a2061 100644
+--- a/lib/usercopy.c
++++ b/lib/usercopy.c
+@@ -58,7 +58,7 @@ int check_zeroed_user(const void __user *from, size_t size)
+ 	from -= align;
+ 	size += align;
+ 
+-	if (!user_access_begin(from, size))
++	if (!user_read_access_begin(from, size))
+ 		return -EFAULT;
+ 
+ 	unsafe_get_user(val, (unsigned long __user *) from, err_fault);
+@@ -79,10 +79,10 @@ int check_zeroed_user(const void __user *from, size_t size)
+ 		val &= aligned_byte_mask(size);
+ 
+ done:
+-	user_access_end();
++	user_read_access_end();
+ 	return (val == 0);
+ err_fault:
+-	user_access_end();
++	user_read_access_end();
+ 	return -EFAULT;
+ }
+ EXPORT_SYMBOL(check_zeroed_user);
 -- 
-1.8.3.1
-
-
+2.25.0
 
