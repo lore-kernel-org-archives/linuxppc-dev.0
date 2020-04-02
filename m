@@ -2,59 +2,97 @@ Return-Path: <SRS0=sSB4=5S=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BDC31C43331
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 08:11:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80A6CC43331
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 08:43:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 758732078B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 08:11:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 758732078B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id CE03720857
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 08:43:17 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="tHKWzO/Y";
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="zggeFAj9"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CE03720857
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48tG4D5DMGzDrQn
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 19:11:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48tGmf6cW2zDrPr
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 19:43:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=87.98.172.75; helo=4.mo2.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=russell.cc (client-ip=66.111.4.27;
+ helo=out3-smtp.messagingengine.com; envelope-from=ruscur@russell.cc;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from 4.mo2.mail-out.ovh.net (4.mo2.mail-out.ovh.net [87.98.172.75])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48tG0f5tTtzDqgk
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2020 19:08:33 +1100 (AEDT)
-Received: from player786.ha.ovh.net (unknown [10.110.103.112])
- by mo2.mail-out.ovh.net (Postfix) with ESMTP id 436831C7434
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2020 10:08:29 +0200 (CEST)
-Received: from kaod.org (82-64-250-170.subs.proxad.net [82.64.250.170])
- (Authenticated sender: clg@kaod.org)
- by player786.ha.ovh.net (Postfix) with ESMTPSA id 552F5113122F9;
- Thu,  2 Apr 2020 08:08:13 +0000 (UTC)
-Subject: Re: [PATCH v10 03/14] powerpc/vas: Alloc and setup IRQ and trigger
- port address
-To: Haren Myneni <haren@linux.ibm.com>, mpe@ellerman.id.au
-References: <1585810846.2275.23.camel@hbabu-laptop>
- <1585811431.2275.39.camel@hbabu-laptop>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <99d4f018-0e2d-9ab4-b4d4-58af7e494ec3@kaod.org>
-Date: Thu, 2 Apr 2020 10:08:05 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.5.0
+ dmarc=none (p=none dis=none) header.from=russell.cc
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256
+ header.s=fm1 header.b=tHKWzO/Y; 
+ dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.a=rsa-sha256 header.s=fm2 header.b=zggeFAj9; 
+ dkim-atps=neutral
+Received: from out3-smtp.messagingengine.com (out3-smtp.messagingengine.com
+ [66.111.4.27])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48tGkR4zDQzDrNX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2020 19:41:19 +1100 (AEDT)
+Received: from compute4.internal (compute4.nyi.internal [10.202.2.44])
+ by mailout.nyi.internal (Postfix) with ESMTP id 4C78E5C0193;
+ Thu,  2 Apr 2020 04:41:17 -0400 (EDT)
+Received: from mailfrontend1 ([10.202.2.162])
+ by compute4.internal (MEProxy); Thu, 02 Apr 2020 04:41:17 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=
+ from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding; s=fm1; bh=GOZVk5Fsc5eI2
+ 5Khq7lhjYKWFmMeiiNzwmpYuMZHgMk=; b=tHKWzO/YKIoeg/m4Ct5GMas6HWb+D
+ vSlMm5IFk1yy4M/idFQxdK/RNpRsYtc5CxLucH653PuHO4p26HwU6xHFF6SAuQsF
+ mOYHXroqe+D7zQyIkhyb9U639u4heZOdbGNnwLXB2ctIRhfKwIDIqq2kauCD7QSb
+ R10rXQdtFueXC5vO7VDCQ9m+VsSkSl/aEkwZDTale86hIBAcCKFyqIHwotzUy54Z
+ 6D/6RQud1uX6wQBrZugQy+uRFv3DDTCrF43sZuFpAAUlTZdQFlRSmB9byeHz9tf9
+ xJQB4gkYoqd8tfSOpH2Kdg1245hcygl7VagRi7yjwAgs+iJYNnVR2uScQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:content-transfer-encoding:date:from
+ :in-reply-to:message-id:mime-version:references:subject:to
+ :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+ fm2; bh=GOZVk5Fsc5eI25Khq7lhjYKWFmMeiiNzwmpYuMZHgMk=; b=zggeFAj9
+ MQCctEYeTljjKugBIcF4pEYMp+NLt6pvoiOpZGt9KIHbxMghg22wNSITvAWFdGUQ
+ gySd3KNWuJoM/jcQgiYRRtyjYEKfJDZgQLEfX2YlxP8QmUfVysRO1uRjcH9khEzY
+ OPTmbp7/VK8qjQqpdZwhc0Q2BQZj36y5Babt2+69F2CTSakdyt5+7a+EWadcEZq8
+ BZpA7vv33Q37aZbCMgMaZFYyj5uEjPp0eDN53Ywni1qwzsej1mvnerwm9B/wqgSS
+ rT17SqBPnKPQhjnm9mMqDK6nU/P/Pkhfyovv2oRWg9zqCIM1lInmz5V/JOr1WSWI
+ sHOTVGOdTCcVOw==
+X-ME-Sender: <xms:LaWFXp3ENmPZ_skjgRun2yv5pzMaBsfsDtwsnzBPL7Z3OhX1GKMNew>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduhedrtdeggddtgecutefuodetggdotefrodftvf
+ curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
+ uegrihhlohhuthemuceftddtnecufghrlhcuvffnffculddutddmnecujfgurhephffvuf
+ ffkffojghfggfgsedtkeertdertddtnecuhfhrohhmpeftuhhsshgvlhhlucevuhhrrhgv
+ hicuoehruhhstghurhesrhhushhsvghllhdrtggtqeenucfkphepuddvuddrgeehrddvud
+ dvrddvfeelnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhho
+ mheprhhushgtuhhrsehruhhsshgvlhhlrdgttg
+X-ME-Proxy: <xmx:LaWFXjx_UXBF0CEjRBOFsjep93l3Yme72j8eG8DwRhnvaXG73DH7oA>
+ <xmx:LaWFXk8ipVSGJTJhrrZ5eF6umNStBuByc4CRjiuHt7GypdhBC0ZVgw>
+ <xmx:LaWFXkR1b0U-gEixhKxbD-xrytPTsYskEublO4AtbKQEBRU7jeK0eQ>
+ <xmx:LaWFXrv-WM1y0pdyps0uTOb_5D6BCPfjRKCbUMafKawqebbhaCkWJg>
+Received: from crackle.ozlabs.ibm.com.com
+ (ppp121-45-212-239.bras1.cbr2.internode.on.net [121.45.212.239])
+ by mail.messagingengine.com (Postfix) with ESMTPA id 799B73280060;
+ Thu,  2 Apr 2020 04:41:14 -0400 (EDT)
+From: Russell Currey <ruscur@russell.cc>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v8 2/7] powerpc/kprobes: Mark newly allocated probes as RO
+Date: Thu,  2 Apr 2020 19:40:47 +1100
+Message-Id: <20200402084053.188537-2-ruscur@russell.cc>
+X-Mailer: git-send-email 2.26.0
+In-Reply-To: <20200402084053.188537-1-ruscur@russell.cc>
+References: <20200402084053.188537-1-ruscur@russell.cc>
 MIME-Version: 1.0
-In-Reply-To: <1585811431.2275.39.camel@hbabu-laptop>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 11347945162253044702
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduhedrtdegucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepuffvfhfhkffffgggjggtgfesthekredttdefjeenucfhrhhomhepveorughrihgtpgfnvggpifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucfkpheptddrtddrtddrtddpkedvrdeigedrvdehtddrudejtdenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehplhgrhigvrhejkeeirdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrgh
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,127 +104,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, ajd@linux.ibm.com, frederic.barrat@fr.ibm.com,
- linux-kernel@vger.kernel.org, npiggin@gmail.com, hch@infradead.org,
- oohall@gmail.com, herbert@gondor.apana.org.au, sukadev@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, srikar@linux.vnet.ibm.com
+Cc: ajd@linux.ibm.com, kernel-hardening@lists.openwall.com, npiggin@gmail.com,
+ Russell Currey <ruscur@russell.cc>, dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 4/2/20 9:10 AM, Haren Myneni wrote:
-> 
-> Allocate a xive irq on each chip with a vas instance. The NX coprocessor
-> raises a host CPU interrupt via vas if it encounters page fault on user
-> space request buffer. Subsequent patches register the trigger port with
-> the NX coprocessor, and create a vas fault handler for this interrupt
-> mapping.
+With CONFIG_STRICT_KERNEL_RWX=y and CONFIG_KPROBES=y, there will be one
+W+X page at boot by default.  This can be tested with
+CONFIG_PPC_PTDUMP=y and CONFIG_PPC_DEBUG_WX=y set, and checking the
+kernel log during boot.
 
-Looks good !
+powerpc doesn't implement its own alloc() for kprobes like other
+architectures do, but we couldn't immediately mark RO anyway since we do
+a memcpy to the page we allocate later.  After that, nothing should be
+allowed to modify the page, and write permissions are removed well
+before the kprobe is armed.
 
-> Signed-off-by: Haren Myneni <haren@linux.ibm.com>
+The memcpy() would fail if >1 probes were allocated, so use
+patch_instruction() instead which is safe for RO.
 
+Reviewed-by: Daniel Axtens <dja@axtens.net>
+Signed-off-by: Russell Currey <ruscur@russell.cc>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/kernel/kprobes.c | 17 +++++++++++++----
+ 1 file changed, 13 insertions(+), 4 deletions(-)
 
-Reviewed-by: Cédric Le Goater <clg@kaod.org>
-
-Thanks,
-
-C.
-
-> ---
->  arch/powerpc/platforms/powernv/vas.c | 44 +++++++++++++++++++++++++++++++-----
->  arch/powerpc/platforms/powernv/vas.h |  2 ++
->  2 files changed, 40 insertions(+), 6 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/powernv/vas.c b/arch/powerpc/platforms/powernv/vas.c
-> index ed9cc6d..3303cfe 100644
-> --- a/arch/powerpc/platforms/powernv/vas.c
-> +++ b/arch/powerpc/platforms/powernv/vas.c
-> @@ -15,6 +15,7 @@
->  #include <linux/of_address.h>
->  #include <linux/of.h>
->  #include <asm/prom.h>
-> +#include <asm/xive.h>
->  
->  #include "vas.h"
->  
-> @@ -25,10 +26,12 @@
->  
->  static int init_vas_instance(struct platform_device *pdev)
->  {
-> -	int rc, cpu, vasid;
-> -	struct resource *res;
-> -	struct vas_instance *vinst;
->  	struct device_node *dn = pdev->dev.of_node;
-> +	struct vas_instance *vinst;
-> +	struct xive_irq_data *xd;
-> +	uint32_t chipid, hwirq;
-> +	struct resource *res;
-> +	int rc, cpu, vasid;
->  
->  	rc = of_property_read_u32(dn, "ibm,vas-id", &vasid);
->  	if (rc) {
-> @@ -36,6 +39,12 @@ static int init_vas_instance(struct platform_device *pdev)
->  		return -ENODEV;
->  	}
->  
-> +	rc = of_property_read_u32(dn, "ibm,chip-id", &chipid);
-> +	if (rc) {
-> +		pr_err("No ibm,chip-id property for %s?\n", pdev->name);
-> +		return -ENODEV;
-> +	}
-> +
->  	if (pdev->num_resources != 4) {
->  		pr_err("Unexpected DT configuration for [%s, %d]\n",
->  				pdev->name, vasid);
-> @@ -69,9 +78,32 @@ static int init_vas_instance(struct platform_device *pdev)
->  
->  	vinst->paste_win_id_shift = 63 - res->end;
->  
-> -	pr_devel("Initialized instance [%s, %d], paste_base 0x%llx, "
-> -			"paste_win_id_shift 0x%llx\n", pdev->name, vasid,
-> -			vinst->paste_base_addr, vinst->paste_win_id_shift);
-> +	hwirq = xive_native_alloc_irq_on_chip(chipid);
-> +	if (!hwirq) {
-> +		pr_err("Inst%d: Unable to allocate global irq for chip %d\n",
-> +				vinst->vas_id, chipid);
-> +		return -ENOENT;
-> +	}
-> +
-> +	vinst->virq = irq_create_mapping(NULL, hwirq);
-> +	if (!vinst->virq) {
-> +		pr_err("Inst%d: Unable to map global irq %d\n",
-> +				vinst->vas_id, hwirq);
-> +		return -EINVAL;
-> +	}
-> +
-> +	xd = irq_get_handler_data(vinst->virq);
-> +	if (!xd) {
-> +		pr_err("Inst%d: Invalid virq %d\n",
-> +				vinst->vas_id, vinst->virq);
-> +		return -EINVAL;
-> +	}
-> +
-> +	vinst->irq_port = xd->trig_page;
-> +	pr_devel("Initialized instance [%s, %d] paste_base 0x%llx paste_win_id_shift 0x%llx IRQ %d Port 0x%llx\n",
-> +			pdev->name, vasid, vinst->paste_base_addr,
-> +			vinst->paste_win_id_shift, vinst->virq,
-> +			vinst->irq_port);
->  
->  	for_each_possible_cpu(cpu) {
->  		if (cpu_to_chip_id(cpu) == of_get_ibm_chip_id(dn))
-> diff --git a/arch/powerpc/platforms/powernv/vas.h b/arch/powerpc/platforms/powernv/vas.h
-> index 5574aec..598608b 100644
-> --- a/arch/powerpc/platforms/powernv/vas.h
-> +++ b/arch/powerpc/platforms/powernv/vas.h
-> @@ -313,6 +313,8 @@ struct vas_instance {
->  	u64 paste_base_addr;
->  	u64 paste_win_id_shift;
->  
-> +	u64 irq_port;
-> +	int virq;
->  	struct mutex mutex;
->  	struct vas_window *rxwin[VAS_COP_TYPE_MAX];
->  	struct vas_window *windows[VAS_WINDOWS_PER_CHIP];
-> 
+diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
+index 81efb605113e..fa4502b4de35 100644
+--- a/arch/powerpc/kernel/kprobes.c
++++ b/arch/powerpc/kernel/kprobes.c
+@@ -24,6 +24,8 @@
+ #include <asm/sstep.h>
+ #include <asm/sections.h>
+ #include <linux/uaccess.h>
++#include <linux/set_memory.h>
++#include <linux/vmalloc.h>
+ 
+ DEFINE_PER_CPU(struct kprobe *, current_kprobe) = NULL;
+ DEFINE_PER_CPU(struct kprobe_ctlblk, kprobe_ctlblk);
+@@ -102,6 +104,16 @@ kprobe_opcode_t *kprobe_lookup_name(const char *name, unsigned int offset)
+ 	return addr;
+ }
+ 
++void *alloc_insn_page(void)
++{
++	void *page = vmalloc_exec(PAGE_SIZE);
++
++	if (page)
++		set_memory_ro((unsigned long)page, 1);
++
++	return page;
++}
++
+ int arch_prepare_kprobe(struct kprobe *p)
+ {
+ 	int ret = 0;
+@@ -124,11 +136,8 @@ int arch_prepare_kprobe(struct kprobe *p)
+ 	}
+ 
+ 	if (!ret) {
+-		memcpy(p->ainsn.insn, p->addr,
+-				MAX_INSN_SIZE * sizeof(kprobe_opcode_t));
++		patch_instruction(p->ainsn.insn, *p->addr);
+ 		p->opcode = *p->addr;
+-		flush_icache_range((unsigned long)p->ainsn.insn,
+-			(unsigned long)p->ainsn.insn + sizeof(kprobe_opcode_t));
+ 	}
+ 
+ 	p->ainsn.boostable = 0;
+-- 
+2.26.0
 
