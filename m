@@ -1,98 +1,90 @@
-Return-Path: <SRS0=sSB4=5S=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=ATRk=5T=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B831C43331
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 23:55:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B4AE1C43331
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 00:01:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EC5BE2073B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 23:55:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC5BE2073B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 6A5ED207FF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 00:01:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6A5ED207FF
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48tg1j6wYWzDrdX
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 10:55:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48tg842sB2zDqZl
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 11:01:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=au1.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ellerman@au1.ibm.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=mrochs@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=au1.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48tfzR19GFzDrbx
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2020 10:53:54 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 032NYR9d006056
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Apr 2020 19:53:53 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 304swtdnfp-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Apr 2020 19:53:52 -0400
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ellerman@au1.ibm.com>;
- Fri, 3 Apr 2020 00:53:31 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 3 Apr 2020 00:53:29 +0100
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 032NrlSL45678592
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48tfDP68TpzDrRY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2020 10:19:59 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 032N3nfP114625; Thu, 2 Apr 2020 19:19:55 -0400
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
+ [169.55.85.253])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 303uj5t8a1-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 02 Apr 2020 19:19:55 -0400
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+ by ppma01wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 032NFWme013929;
+ Thu, 2 Apr 2020 23:19:55 GMT
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26]) by ppma01wdc.us.ibm.com with ESMTP id 301x76mgwd-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 02 Apr 2020 23:19:55 +0000
+Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
+ [9.57.199.110])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 032NJrrC15598444
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 2 Apr 2020 23:53:47 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C55705204E;
- Thu,  2 Apr 2020 23:53:47 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 7167E52054;
- Thu,  2 Apr 2020 23:53:47 +0000 (GMT)
-Received: from localhost (unknown [9.102.33.58])
- (using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id ACB2DA01BF;
- Fri,  3 Apr 2020 10:53:41 +1100 (AEDT)
-From: Michael Ellerman <ellerman@au1.ibm.com>
-To: Vaibhav Jain <vajain21@vajain21.in.ibm.com.in.ibm.com>,
- Vaibhav Jain <vaibhav@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-nvdimm@lists.01.org
-Subject: Re: [PATCH v5 1/4] powerpc/papr_scm: Fetch nvdimm health information
- from PHYP
-In-Reply-To: <87o8s9g2nv.fsf@vajain21.in.ibm.com>
-References: <20200331143229.306718-1-vaibhav@linux.ibm.com>
- <20200331143229.306718-2-vaibhav@linux.ibm.com>
- <878sjetcis.fsf@mpe.ellerman.id.au> <87o8s9g2nv.fsf@vajain21.in.ibm.com>
-Date: Fri, 03 Apr 2020 10:53:55 +1100
+ Thu, 2 Apr 2020 23:19:53 GMT
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 740E3AE05F;
+ Thu,  2 Apr 2020 23:19:53 +0000 (GMT)
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E2EF9AE05C;
+ Thu,  2 Apr 2020 23:19:52 +0000 (GMT)
+Received: from p8tul1-build.aus.stglabs.ibm.com (unknown [9.3.141.206])
+ by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTPS;
+ Thu,  2 Apr 2020 23:19:52 +0000 (GMT)
+Date: Thu, 2 Apr 2020 18:19:49 -0500
+From: "Matthew R. Ochs" <mrochs@linux.ibm.com>
+To: Frederic Barrat <fbarrat@linux.ibm.com>
+Subject: Re: [PATCH 1/4] scsi: cxlflash: Access interrupt trigger page from
+ xive directly
+Message-ID: <20200402231949.GA5469@p8tul1-build.aus.stglabs.ibm.com>
+References: <20200402154352.586166-1-fbarrat@linux.ibm.com>
+ <20200402154352.586166-2-fbarrat@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200402154352.586166-2-fbarrat@linux.ibm.com>
+User-Agent: Mutt/1.5.23 (2014-03-12)
 X-TM-AS-GCONF: 00
-x-cbid: 20040223-0020-0000-0000-000003C079C7
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20040223-0021-0000-0000-000022192745
-Message-Id: <87y2rdsauk.fsf@mpe.ellerman.id.au>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
  definitions=2020-04-02_13:2020-04-02,
  2020-04-02 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 suspectscore=1
- bulkscore=0 clxscore=1015 lowpriorityscore=0 mlxlogscore=559 phishscore=0
- adultscore=0 impostorscore=0 malwarescore=0 priorityscore=1501 spamscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2003020000
- definitions=main-2004020169
+ spamscore=0 suspectscore=0
+ impostorscore=0 adultscore=0 mlxlogscore=999 lowpriorityscore=0
+ malwarescore=0 bulkscore=0 priorityscore=1501 phishscore=0 clxscore=1011
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2003020000 definitions=main-2004020166
+X-Mailman-Approved-At: Fri, 03 Apr 2020 10:59:24 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,35 +96,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
- Jeff Moyer <jmoyer@redhat.com>, alastair@linux.ibm.com,
- Oliver O'Halloran <oohall@gmail.com>, Vishal Verma <vishal.l.verma@intel.com>,
- Vaibhav Jain <vaibhav@linux.ibm.com>, Dan Williams <dan.j.williams@intel.com>
+Cc: ukrishn@linux.ibm.com, ajd@linux.ibm.com, haren@linux.ibm.com,
+ groug@kaod.org, clg@kaod.org, linuxppc-dev@lists.ozlabs.org,
+ christophe_lombard@fr.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Vaibhav Jain <vajain21@vajain21.in.ibm.com.in.ibm.com> writes:
-> Thanks for reviewing this patch Mpe,
-> Michael Ellerman <ellerman@au1.ibm.com> writes:
->> Vaibhav Jain <vaibhav@linux.ibm.com> writes:
-...
->>
->>> +	/* Check for various masks in bitmap and set the buffer */
->>> +	if (health & PAPR_SCM_DIMM_UNARMED_MASK)
->>> +		rc += sprintf(buf, "not_armed ");
->>
->> I know buf is "big enough" but using sprintf() in 2020 is a bit ... :)
->>
->> seq_buf is a pretty thin wrapper over a buffer you can use to make this
->> cleaner and also handles overflow for you.
->>
->> See eg. show_user_instructions() for an example.
->
-> Unfortunatly seq_buf_printf() is still not an exported symbol hence not
-> usable in external modules.
+On Thu, Apr 02, 2020 at 05:43:49PM +0200, Frederic Barrat wrote:
+> xive is already mapping the trigger page in kernel space and it can be
+> accessed through standard APIs, so let's reuse it and simplify the code.
+> 
+> Signed-off-by: Frederic Barrat <fbarrat@linux.ibm.com>
+> ---
+>  drivers/scsi/cxlflash/ocxl_hw.c | 17 +++++++----------
+>  drivers/scsi/cxlflash/ocxl_hw.h |  1 -
+>  2 files changed, 7 insertions(+), 11 deletions(-)
+> 
+> diff --git a/drivers/scsi/cxlflash/ocxl_hw.c b/drivers/scsi/cxlflash/ocxl_hw.c
+> index 7018cd802569..59452850f71c 100644
+> --- a/drivers/scsi/cxlflash/ocxl_hw.c
+> +++ b/drivers/scsi/cxlflash/ocxl_hw.c
+> @@ -15,7 +15,8 @@
+>  #include <linux/pseudo_fs.h>
+>  #include <linux/poll.h>
+>  #include <linux/sched/signal.h>
+> -
+> +#include <linux/interrupt.h>
+> +#include <asm/xive.h>
+>  #include <misc/ocxl.h>
+>  
+>  #include <uapi/misc/cxl.h>
+> @@ -180,7 +181,7 @@ static int afu_map_irq(u64 flags, struct ocxlflash_context *ctx, int num,
+>  	struct ocxl_hw_afu *afu = ctx->hw_afu;
+>  	struct device *dev = afu->dev;
+>  	struct ocxlflash_irqs *irq;
+> -	void __iomem *vtrig;
+> +	struct xive_irq_data *xd;
+>  	u32 virq;
+>  	int rc = 0;
+>  
+> @@ -204,15 +205,14 @@ static int afu_map_irq(u64 flags, struct ocxlflash_context *ctx, int num,
+>  		goto err1;
+>  	}
+>  
+> -	vtrig = ioremap(irq->ptrig, PAGE_SIZE);
+> -	if (unlikely(!vtrig)) {
+> -		dev_err(dev, "%s: Trigger page mapping failed\n", __func__);
+> -		rc = -ENOMEM;
+> +	xd = irq_get_handler_data(virq);
+> +	if (unlikely(!xd)) {
+> +		dev_err(dev, "%s: Can't get interrupt data\n", __func__);
 
-Send a patch? :)
+The removal of setting the return code injects a bug should this error leg
+ever be encountered. So we should either keep the rc statement e.g. -EINVAL,
+-ENXIO, -ENODEV, etc., or remove this error leg. I lean towards keeping the
+statement.
 
-cheers
-
+>  		goto err2;
+>  	}
+>  
+>  	irq->virq = virq;
+> -	irq->vtrig = vtrig;
+> +	irq->vtrig = xd->trig_mmio;
+>  out:
+> 
