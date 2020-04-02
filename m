@@ -2,93 +2,68 @@ Return-Path: <SRS0=sSB4=5S=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B2881C2D0F3
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 15:55:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AAD2CC43331
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 15:59:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 70A8120757
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 15:55:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 70A8120757
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4DA8020757
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 15:59:36 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ay8L+idr"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4DA8020757
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48tSMg54yLzDr2p
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 02:55:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48tSS60PFHzDrby
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 02:59:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=fbarrat@linux.ibm.com;
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=srs0=th+t=5s=paulmck-thinkpad-p72.home=paulmck@kernel.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=Ay8L+idr; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48tS6H5yHtzDrJj
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2020 02:44:07 +1100 (AEDT)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 032FWfsO160062
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Apr 2020 11:44:05 -0400
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0a-001b2d01.pphosted.com with ESMTP id 304mccg7c9-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Apr 2020 11:44:03 -0400
-Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
- Thu, 2 Apr 2020 16:43:58 +0100
-Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
- by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 2 Apr 2020 16:43:54 +0100
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 032FgnkK35520940
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 2 Apr 2020 15:42:49 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 09DB1A404D;
- Thu,  2 Apr 2020 15:43:53 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id ACCFBA4040;
- Thu,  2 Apr 2020 15:43:52 +0000 (GMT)
-Received: from pic2.home (unknown [9.145.68.77])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu,  2 Apr 2020 15:43:52 +0000 (GMT)
-From: Frederic Barrat <fbarrat@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, clg@kaod.org, christophe_lombard@fr.ibm.com,
- ajd@linux.ibm.com, ukrishn@linux.ibm.com, mrochs@linux.ibm.com
-Subject: [PATCH 1/4] scsi: cxlflash: Access interrupt trigger page from xive
- directly
-Date: Thu,  2 Apr 2020 17:43:49 +0200
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200402154352.586166-1-fbarrat@linux.ibm.com>
-References: <20200402154352.586166-1-fbarrat@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48tSKs0xXwzDrWQ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2020 02:54:09 +1100 (AEDT)
+Received: from paulmck-ThinkPad-P72.home (50-39-105-78.bvtn.or.frontiernet.net
+ [50.39.105.78])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 793FD2063A;
+ Thu,  2 Apr 2020 15:54:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1585842846;
+ bh=4Eu298RZ2IWYgmD/vOfOB6+9cpJ48Q2EoWqLKqCJRtc=;
+ h=Date:From:To:Cc:Subject:Reply-To:References:In-Reply-To:From;
+ b=Ay8L+idr6K8LOgJLPqEPdE0Z1gVQT47uLiObP4g66rkbmMb/PXuVhVjBucd7eTcWf
+ n5UA5MbyZBE13CQCInce1Kv4ohKzrPFNYQRND3IQale4O5OWn525djNEuult6w5bUo
+ 1aUY8NBcEBqpe5tiEL6fORJCFENwC9AaI5f/mnkQ=
+Received: by paulmck-ThinkPad-P72.home (Postfix, from userid 1000)
+ id 499613521885; Thu,  2 Apr 2020 08:54:06 -0700 (PDT)
+Date: Thu, 2 Apr 2020 08:54:06 -0700
+From: "Paul E. McKenney" <paulmck@kernel.org>
+To: Qian Cai <cai@lca.pw>
+Subject: Re: [PATCH v2] sched/core: fix illegal RCU from offline CPUs
+Message-ID: <20200402155406.GP19865@paulmck-ThinkPad-P72>
+References: <20200401214033.8448-1-cai@lca.pw>
+ <87369mt9kf.fsf@mpe.ellerman.id.au>
+ <C0F26F4C-77A0-41DF-856A-B7E29C56A4B6@lca.pw>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 20040215-0028-0000-0000-000003F0B96D
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20040215-0029-0000-0000-000024B6444D
-Message-Id: <20200402154352.586166-2-fbarrat@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
- definitions=2020-04-02_05:2020-04-02,
- 2020-04-02 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0
- suspectscore=2 bulkscore=0 mlxscore=0 adultscore=0 priorityscore=1501
- clxscore=1015 lowpriorityscore=0 malwarescore=0 phishscore=0
- mlxlogscore=999 spamscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2003020000 definitions=main-2004020131
+In-Reply-To: <C0F26F4C-77A0-41DF-856A-B7E29C56A4B6@lca.pw>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,92 +75,202 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: haren@linux.ibm.com, groug@kaod.org
+Reply-To: paulmck@kernel.org
+Cc: juri.lelli@redhat.com, "James.Bottomley@hansenpartnership.com"
+ <James.Bottomley@HansenPartnership.com>, vincent.guittot@linaro.org,
+ linux-parisc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ deller@gmx.de, Nicholas Piggin <npiggin@gmail.com>,
+ linux-kernel@vger.kernel.org, rostedt@goodmis.org, bsegall@google.com,
+ linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>, mgorman@suse.de,
+ tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org, dietmar.eggemann@arm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-xive is already mapping the trigger page in kernel space and it can be
-accessed through standard APIs, so let's reuse it and simplify the code.
+On Thu, Apr 02, 2020 at 10:00:16AM -0400, Qian Cai wrote:
+> 
+> 
+> > On Apr 2, 2020, at 7:24 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> > 
+> > Qian Cai <cai@lca.pw> writes:
+> >> From: Peter Zijlstra <peterz@infradead.org>
+> >> 
+> >> In the CPU-offline process, it calls mmdrop() after idle entry and the
+> >> subsequent call to cpuhp_report_idle_dead(). Once execution passes the
+> >> call to rcu_report_dead(), RCU is ignoring the CPU, which results in
+> >> lockdep complaining when mmdrop() uses RCU from either memcg or
+> >> debugobjects below.
+> >> 
+> >> Fix it by cleaning up the active_mm state from BP instead. Every arch
+> >> which has CONFIG_HOTPLUG_CPU should have already called idle_task_exit()
+> >> from AP. The only exception is parisc because it switches them to
+> >> &init_mm unconditionally (see smp_boot_one_cpu() and smp_cpu_init()),
+> >> but the patch will still work there because it calls mmgrab(&init_mm) in
+> >> smp_cpu_init() and then should call mmdrop(&init_mm) in finish_cpu().
+> > 
+> > Thanks for debugging this. How did you hit it in the first place?
+> 
+> Just repeatedly offline/online CPUs which will eventually cause an idle thread
+> refcount goes to 0 and trigger __mmdrop() and of course it needs to enable
+> lockdep (PROVE_RCU?) as well as having luck to hit the cgroup, workqueue
+> or debugobject code paths to call RCU.
+> 
+> > 
+> > A link to the original thread would have helped me:
+> > 
+> >  https://lore.kernel.org/lkml/20200113190331.12788-1-cai@lca.pw/
+> > 
+> >> WARNING: suspicious RCU usage
+> >> -----------------------------
+> >> kernel/workqueue.c:710 RCU or wq_pool_mutex should be held!
+> >> 
+> >> other info that might help us debug this:
+> >> 
+> >> RCU used illegally from offline CPU!
+> >> Call Trace:
+> >> dump_stack+0xf4/0x164 (unreliable)
+> >> lockdep_rcu_suspicious+0x140/0x164
+> >> get_work_pool+0x110/0x150
+> >> __queue_work+0x1bc/0xca0
+> >> queue_work_on+0x114/0x120
+> >> css_release+0x9c/0xc0
+> >> percpu_ref_put_many+0x204/0x230
+> >> free_pcp_prepare+0x264/0x570
+> >> free_unref_page+0x38/0xf0
+> >> __mmdrop+0x21c/0x2c0
+> >> idle_task_exit+0x170/0x1b0
+> >> pnv_smp_cpu_kill_self+0x38/0x2e0
+> >> cpu_die+0x48/0x64
+> >> arch_cpu_idle_dead+0x30/0x50
+> >> do_idle+0x2f4/0x470
+> >> cpu_startup_entry+0x38/0x40
+> >> start_secondary+0x7a8/0xa80
+> >> start_secondary_resume+0x10/0x14
+> > 
+> > Do we know when this started happening? ie. can we determine a Fixes
+> > tag?
+> 
+> I don’t know. I looked at some commits that it seems the code was like that
+> even 10-year ago. It must be nobody who cares to run lockdep (PROVE_RCU?)
+> with CPU hotplug very regularly.
 
-Signed-off-by: Frederic Barrat <fbarrat@linux.ibm.com>
----
- drivers/scsi/cxlflash/ocxl_hw.c | 17 +++++++----------
- drivers/scsi/cxlflash/ocxl_hw.h |  1 -
- 2 files changed, 7 insertions(+), 11 deletions(-)
+I do run this combination quite frequently, but only as part of
+rcutorture, which might not be a representative workload.  For one thing,
+it has a minimal userspace consisting only of a trivial init program.
+I don't recall having ever seen this.  (I have seen one recent complaint
+about an IPI being sent to an offline CPU, but I cannot prove that this
+was not due to RCU bugs that I was chasing at the time.)
 
-diff --git a/drivers/scsi/cxlflash/ocxl_hw.c b/drivers/scsi/cxlflash/ocxl_hw.c
-index 7018cd802569..59452850f71c 100644
---- a/drivers/scsi/cxlflash/ocxl_hw.c
-+++ b/drivers/scsi/cxlflash/ocxl_hw.c
-@@ -15,7 +15,8 @@
- #include <linux/pseudo_fs.h>
- #include <linux/poll.h>
- #include <linux/sched/signal.h>
--
-+#include <linux/interrupt.h>
-+#include <asm/xive.h>
- #include <misc/ocxl.h>
- 
- #include <uapi/misc/cxl.h>
-@@ -180,7 +181,7 @@ static int afu_map_irq(u64 flags, struct ocxlflash_context *ctx, int num,
- 	struct ocxl_hw_afu *afu = ctx->hw_afu;
- 	struct device *dev = afu->dev;
- 	struct ocxlflash_irqs *irq;
--	void __iomem *vtrig;
-+	struct xive_irq_data *xd;
- 	u32 virq;
- 	int rc = 0;
- 
-@@ -204,15 +205,14 @@ static int afu_map_irq(u64 flags, struct ocxlflash_context *ctx, int num,
- 		goto err1;
- 	}
- 
--	vtrig = ioremap(irq->ptrig, PAGE_SIZE);
--	if (unlikely(!vtrig)) {
--		dev_err(dev, "%s: Trigger page mapping failed\n", __func__);
--		rc = -ENOMEM;
-+	xd = irq_get_handler_data(virq);
-+	if (unlikely(!xd)) {
-+		dev_err(dev, "%s: Can't get interrupt data\n", __func__);
- 		goto err2;
- 	}
- 
- 	irq->virq = virq;
--	irq->vtrig = vtrig;
-+	irq->vtrig = xd->trig_mmio;
- out:
- 	return rc;
- err2:
-@@ -259,8 +259,6 @@ static void afu_unmap_irq(u64 flags, struct ocxlflash_context *ctx, int num,
- 	}
- 
- 	irq = &ctx->irqs[num];
--	if (irq->vtrig)
--		iounmap(irq->vtrig);
- 
- 	if (irq_find_mapping(NULL, irq->hwirq)) {
- 		free_irq(irq->virq, cookie);
-@@ -648,7 +646,6 @@ static int alloc_afu_irqs(struct ocxlflash_context *ctx, int num)
- 		}
- 
- 		irqs[i].hwirq = hwirq;
--		irqs[i].ptrig = addr;
- 	}
- 
- 	ctx->irqs = irqs;
-diff --git a/drivers/scsi/cxlflash/ocxl_hw.h b/drivers/scsi/cxlflash/ocxl_hw.h
-index fc6ad4f985de..f2fe88816bea 100644
---- a/drivers/scsi/cxlflash/ocxl_hw.h
-+++ b/drivers/scsi/cxlflash/ocxl_hw.h
-@@ -13,7 +13,6 @@
- struct ocxlflash_irqs {
- 	int hwirq;
- 	u32 virq;
--	u64 ptrig;
- 	void __iomem *vtrig;
- };
- 
--- 
-2.25.1
+							Thanx, Paul
 
+> >> <Peter to sign off here>
+> >> Signed-off-by: Qian Cai <cai@lca.pw>
+> >> ---
+> >> arch/powerpc/platforms/powernv/smp.c |  1 -
+> >> include/linux/sched/mm.h             |  2 ++
+> >> kernel/cpu.c                         | 18 +++++++++++++++++-
+> >> kernel/sched/core.c                  |  5 +++--
+> >> 4 files changed, 22 insertions(+), 4 deletions(-)
+> >> 
+> >> diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
+> >> index 13e251699346..b2ba3e95bda7 100644
+> >> --- a/arch/powerpc/platforms/powernv/smp.c
+> >> +++ b/arch/powerpc/platforms/powernv/smp.c
+> >> @@ -167,7 +167,6 @@ static void pnv_smp_cpu_kill_self(void)
+> >> 	/* Standard hot unplug procedure */
+> >> 
+> >> 	idle_task_exit();
+> >> -	current->active_mm = NULL; /* for sanity */
+> > 
+> > If I'm reading it right, we'll now be running with active_mm == init_mm
+> > in the offline loop.
+> > 
+> > I guess that's fine, I can't think of any reason it would matter, and it
+> > seems like we were NULL'ing it out just for paranoia's sake not because
+> > of any actual problem.
+> > 
+> > Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+> > 
+> > 
+> > cheers
+> > 
+> >> diff --git a/include/linux/sched/mm.h b/include/linux/sched/mm.h
+> >> index c49257a3b510..a132d875d351 100644
+> >> --- a/include/linux/sched/mm.h
+> >> +++ b/include/linux/sched/mm.h
+> >> @@ -49,6 +49,8 @@ static inline void mmdrop(struct mm_struct *mm)
+> >> 		__mmdrop(mm);
+> >> }
+> >> 
+> >> +void mmdrop(struct mm_struct *mm);
+> >> +
+> >> /*
+> >>  * This has to be called after a get_task_mm()/mmget_not_zero()
+> >>  * followed by taking the mmap_sem for writing before modifying the
+> >> diff --git a/kernel/cpu.c b/kernel/cpu.c
+> >> index 2371292f30b0..244d30544377 100644
+> >> --- a/kernel/cpu.c
+> >> +++ b/kernel/cpu.c
+> >> @@ -3,6 +3,7 @@
+> >>  *
+> >>  * This code is licenced under the GPL.
+> >>  */
+> >> +#include <linux/sched/mm.h>
+> >> #include <linux/proc_fs.h>
+> >> #include <linux/smp.h>
+> >> #include <linux/init.h>
+> >> @@ -564,6 +565,21 @@ static int bringup_cpu(unsigned int cpu)
+> >> 	return bringup_wait_for_ap(cpu);
+> >> }
+> >> 
+> >> +static int finish_cpu(unsigned int cpu)
+> >> +{
+> >> +	struct task_struct *idle = idle_thread_get(cpu);
+> >> +	struct mm_struct *mm = idle->active_mm;
+> >> +
+> >> +	/*
+> >> +	 * idle_task_exit() will have switched to &init_mm, now
+> >> +	 * clean up any remaining active_mm state.
+> >> +	 */
+> >> +	if (mm != &init_mm)
+> >> +		idle->active_mm = &init_mm;
+> >> +	mmdrop(mm);
+> >> +	return 0;
+> >> +}
+> >> +
+> >> /*
+> >>  * Hotplug state machine related functions
+> >>  */
+> >> @@ -1549,7 +1565,7 @@ static struct cpuhp_step cpuhp_hp_states[] = {
+> >> 	[CPUHP_BRINGUP_CPU] = {
+> >> 		.name			= "cpu:bringup",
+> >> 		.startup.single		= bringup_cpu,
+> >> -		.teardown.single	= NULL,
+> >> +		.teardown.single	= finish_cpu,
+> >> 		.cant_stop		= true,
+> >> 	},
+> >> 	/* Final state before CPU kills itself */
+> >> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> >> index a2694ba82874..8787958339d5 100644
+> >> --- a/kernel/sched/core.c
+> >> +++ b/kernel/sched/core.c
+> >> @@ -6200,13 +6200,14 @@ void idle_task_exit(void)
+> >> 	struct mm_struct *mm = current->active_mm;
+> >> 
+> >> 	BUG_ON(cpu_online(smp_processor_id()));
+> >> +	BUG_ON(current != this_rq()->idle);
+> >> 
+> >> 	if (mm != &init_mm) {
+> >> 		switch_mm(mm, &init_mm, current);
+> >> -		current->active_mm = &init_mm;
+> >> 		finish_arch_post_lock_switch();
+> >> 	}
+> >> -	mmdrop(mm);
+> >> +
+> >> +	/* finish_cpu(), as ran on the BP, will clean up the active_mm state */
+> >> }
+> >> 
+> >> /*
+> >> -- 
+> >> 2.21.0 (Apple Git-122.2)
+> 
