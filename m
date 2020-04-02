@@ -2,83 +2,96 @@ Return-Path: <SRS0=sSB4=5S=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F930C43331
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 07:53:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A51D0C43331
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 07:55:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9504A2063A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 07:53:12 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="tZ0wb+ZQ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9504A2063A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 5CA40206F6
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 07:55:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5CA40206F6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48tFft2V9LzDq9B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 18:53:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=tZ0wb+ZQ; dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+	by lists.ozlabs.org (Postfix) with ESMTP id 48tFjK4pRxzDqNG
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2020 18:55:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=naveen.n.rao@linux.vnet.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48tFFC181LzDrR6
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2020 18:34:22 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 48tFF60bQTz9txL3;
- Thu,  2 Apr 2020 09:34:18 +0200 (CEST)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=tZ0wb+ZQ; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 1R7pAmPi39BZ; Thu,  2 Apr 2020 09:34:18 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 48tFF56cN2z9txKx;
- Thu,  2 Apr 2020 09:34:17 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1585812857; bh=EnNUuGCMz6bk/dO3z5czXXoQkB26spC2D2RLTxDm6dY=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=tZ0wb+ZQyHLgTmXLJ8FEgt5OJA8l60TUwfuw0HeK4TWsAXbQmXnkOlCa+kpFC9Klt
- NGXGC8Pk+7k0DQXtb+4XaAVRQI695aXjOuMwdoZ0SbOOfqW/+Q2GgVmGIz5YfDYSWL
- XXGnecRWKOpfUpkooAxHdeT5W8Eysdj0Vc9+feqY=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D4D578B76E;
- Thu,  2 Apr 2020 09:34:18 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id krpMluquUZLm; Thu,  2 Apr 2020 09:34:18 +0200 (CEST)
-Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 985C88B75E;
- Thu,  2 Apr 2020 09:34:18 +0200 (CEST)
-Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 68681656BF; Thu,  2 Apr 2020 07:34:18 +0000 (UTC)
-Message-Id: <6da6fa391c0d6344cc9ff99a69fcaa65666f3947.1585811416.git.christophe.leroy@c-s.fr>
-In-Reply-To: <27106d62fdbd4ffb47796236050e418131cb837f.1585811416.git.christophe.leroy@c-s.fr>
-References: <27106d62fdbd4ffb47796236050e418131cb837f.1585811416.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH RESEND 3/4] drm/i915/gem: Replace user_access_begin by
- user_write_access_begin
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
- airlied@linux.ie, daniel@ffwll.ch, torvalds@linux-foundation.org,
- viro@zeniv.linux.org.uk, akpm@linux-foundation.org, keescook@chromium.org,
- hpa@zytor.com
-Date: Thu,  2 Apr 2020 07:34:18 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48tFFn4nCyzDr13
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2020 18:34:53 +1100 (AEDT)
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 03273usK134814
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Apr 2020 03:34:45 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 304r50ea6p-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Apr 2020 03:34:43 -0400
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Thu, 2 Apr 2020 08:34:22 +0100
+Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 2 Apr 2020 08:34:20 +0100
+Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
+ [9.149.105.60])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 0327XYfx50856230
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 2 Apr 2020 07:33:34 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B990642041;
+ Thu,  2 Apr 2020 07:34:37 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 559CF4203F;
+ Thu,  2 Apr 2020 07:34:37 +0000 (GMT)
+Received: from localhost (unknown [9.85.74.67])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu,  2 Apr 2020 07:34:37 +0000 (GMT)
+Date: Thu, 02 Apr 2020 13:04:34 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH v4 6/6] pseries/sysfs: Minimise IPI noise while reading
+ [idle_][s]purr
+To: ego@linux.vnet.ibm.com, Michael Ellerman <mpe@ellerman.id.au>
+References: <1585308760-28792-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1585308760-28792-7-git-send-email-ego@linux.vnet.ibm.com>
+ <1585734367.oqwn7dzljo.naveen@linux.ibm.com>
+ <20200401120127.GC17237@in.ibm.com>
+In-Reply-To: <20200401120127.GC17237@in.ibm.com>
+MIME-Version: 1.0
+User-Agent: astroid/v0.15-13-gb675b421 (https://github.com/astroidmail/astroid)
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-TM-AS-GCONF: 00
+x-cbid: 20040207-0020-0000-0000-000003C00DC9
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 20040207-0021-0000-0000-00002218B769
+Message-Id: <1585811157.uig8s95yst.naveen@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
+ definitions=2020-04-01_04:2020-03-31,
+ 2020-04-01 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 impostorscore=0
+ phishscore=0 adultscore=0 lowpriorityscore=0 priorityscore=1501
+ spamscore=0 suspectscore=0 mlxscore=0 malwarescore=0 clxscore=1015
+ mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2003020000 definitions=main-2004020063
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,70 +103,96 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When i915_gem_execbuffer2_ioctl() is using user_access_begin(),
-that's only to perform unsafe_put_user() so use
-user_write_access_begin() in order to only open write access.
+Gautham R Shenoy wrote:
+> Hello Naveen,
+>=20
+>=20
+> On Wed, Apr 01, 2020 at 03:28:48PM +0530, Naveen N. Rao wrote:
+>> Gautham R. Shenoy wrote:
+>> >From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+>> >
+>  [..snip..]
+>=20
+>> >+
+>> >+static ssize_t show_purr(struct device *dev,
+>> >+			 struct device_attribute *attr, char *buf)
+>> > {
+>> >-	u64 *ret =3D val;
+>> >+	struct cpu *cpu =3D container_of(dev, struct cpu, dev);
+>> >+	struct util_acct_stats *stats;
+>> >
+>> >-	*ret =3D read_this_idle_purr();
+>> >+	stats =3D get_util_stats_ptr(cpu->dev.id);
+>> >+	return sprintf(buf, "%llx\n", stats->latest_purr);
+>>=20
+>> This alters the behavior of the current sysfs purr file. I am not sure i=
+f it
+>> is reasonable to return the same PURR value across a 10ms window.
+>=20
+>=20
+> It does reduce it to 10ms window. I am not sure if anyone samples PURR
+> etc faster than that rate.
+>=20
+> I measured how much time it takes to read the purr, spurr, idle_purr,
+> idle_spurr files back-to-back. It takes not more than 150us.  From
+> lparstat will these values be read back-to-back ? If so, we can reduce
+> the staleness_tolerance to something like 500us and still avoid extra
+> IPIs. If not, what is the maximum delay between the first sysfs file
+> read and the last sysfs file read ?
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- drivers/gpu/drm/i915/gem/i915_gem_execbuffer.c | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+Oh, for lparstat usage, this is perfectly fine.
 
-diff --git a/drivers/gpu/drm/i915/gem/i915_gem_execbuffer.c b/drivers/gpu/drm/i915/gem/i915_gem_execbuffer.c
-index 7643a30ba4cd..4be8205a70b6 100644
---- a/drivers/gpu/drm/i915/gem/i915_gem_execbuffer.c
-+++ b/drivers/gpu/drm/i915/gem/i915_gem_execbuffer.c
-@@ -1611,14 +1611,14 @@ static int eb_copy_relocations(const struct i915_execbuffer *eb)
- 		 * happened we would make the mistake of assuming that the
- 		 * relocations were valid.
- 		 */
--		if (!user_access_begin(urelocs, size))
-+		if (!user_write_access_begin(urelocs, size))
- 			goto end;
- 
- 		for (copied = 0; copied < nreloc; copied++)
- 			unsafe_put_user(-1,
- 					&urelocs[copied].presumed_offset,
- 					end_user);
--		user_access_end();
-+		user_write_access_end();
- 
- 		eb->exec[i].relocs_ptr = (uintptr_t)relocs;
- 	}
-@@ -1626,7 +1626,7 @@ static int eb_copy_relocations(const struct i915_execbuffer *eb)
- 	return 0;
- 
- end_user:
--	user_access_end();
-+	user_write_access_end();
- end:
- 	kvfree(relocs);
- 	err = -EFAULT;
-@@ -2991,7 +2991,8 @@ i915_gem_execbuffer2_ioctl(struct drm_device *dev, void *data,
- 		 * And this range already got effectively checked earlier
- 		 * when we did the "copy_from_user()" above.
- 		 */
--		if (!user_access_begin(user_exec_list, count * sizeof(*user_exec_list)))
-+		if (!user_write_access_begin(user_exec_list,
-+					     count * sizeof(*user_exec_list)))
- 			goto end;
- 
- 		for (i = 0; i < args->buffer_count; i++) {
-@@ -3005,7 +3006,7 @@ i915_gem_execbuffer2_ioctl(struct drm_device *dev, void *data,
- 					end_user);
- 		}
- end_user:
--		user_access_end();
-+		user_write_access_end();
- end:;
- 	}
- 
--- 
-2.25.0
+I meant that there could be other users of [s]purr who might care. I=20
+don't know of one, but since this is an existing sysfs interface, I=20
+wanted to point out that the behavior might change.
+
+>=20
+>>
+>> I wonder if we should introduce a sysctl interface to control thresholdi=
+ng.
+>> It can default to 0, which disables thresholding so that the existing
+>> behavior continues. Applications (lparstat) can optionally set it to sui=
+t
+>> their use.
+>=20
+> We would be introducing 3 new sysfs interfaces that way instead of
+> two.
+>=20
+> /sys/devices/system/cpu/purr_spurr_staleness
+> /sys/devices/system/cpu/cpuX/idle_purr
+> /sys/devices/system/cpu/cpuX/idle_spurr
+>=20
+> I don't have a problem with this. Nathan, Michael, thoughts on this?
+>=20
+>=20
+> The alternative is to have a procfs interface, something like
+> /proc/powerpc/resource_util_stats
+>=20
+> which gives a listing similar to /proc/stat, i.e
+>=20
+>       CPUX  <purr>  <idle_purr>  <spurr>  <idle_spurr>
+>=20
+> Even in this case, the values can be obtained in one-shot with a
+> single IPI and be printed in the row corresponding to the CPU.
+
+Right -- and that would be optimal requiring a single system call, at=20
+the cost of using a legacy interface.
+
+The other option would be to drop this patch and to just go with patches=20
+1-5 introducing the new sysfs interfaces for idle_[s]purr. It isn't=20
+entirely clear how often this would be used, or its actual impact. We=20
+can perhaps consider this optimization if and when this causes=20
+problems...
+
+
+Thanks,
+Naveen
 
