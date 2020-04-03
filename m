@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 20979C43331
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 07:23:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9B3AC43331
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 07:25:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C23D5206F8
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 07:23:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6E4DB206F8
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 07:25:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="DLOiZ/Ed"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C23D5206F8
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="SxWEnBj+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6E4DB206F8
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48tryS1mxKzDrTf
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 18:23:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48ts0d3yTbzDsFk
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 18:25:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -30,55 +30,56 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=DLOiZ/Ed; dkim-atps=neutral
+ header.s=mail header.b=SxWEnBj+; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48trvH0Xr7zDqv4
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48trvH0b5xzDr09
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2020 18:20:58 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 48trv75jbvz9tvr3;
- Fri,  3 Apr 2020 09:20:51 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 48trv916Qhz9txk1;
+ Fri,  3 Apr 2020 09:20:53 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=DLOiZ/Ed; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=SxWEnBj+; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id jAzOvKj39vUW; Fri,  3 Apr 2020 09:20:51 +0200 (CEST)
+ with ESMTP id 0H3X2puqBSCu; Fri,  3 Apr 2020 09:20:53 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 48trv675MGz9tvqN;
- Fri,  3 Apr 2020 09:20:50 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 48trv86VBKz9txk0;
+ Fri,  3 Apr 2020 09:20:52 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1585898451; bh=/oqBxgJ4XYSgYAFEZ5RrSzK3O/u21znJc/dqNoWckkU=;
+ t=1585898452; bh=BJgBTHe+L99GMNpZ0oFafGfoiOecONCckWzwsc5wUUE=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=DLOiZ/Ed+mYN2OjP22xiDO/1ejMb8a4stIcxmOYALLvlYccxzwRWMYn+D9EdE98F8
- vAtkjb1BHSn0vANrv2HHHcvqzndOdEe/Wil2hvt4ZfGGyv4nLyCpClvijZDurYua7U
- HNiYkH+L3oAy5K67HzJMmuJ/AYYE43l/EbH3BEws=
+ b=SxWEnBj+72o7ALWqfRfrPFTYJjaUdZfHDcAAkCRllmCJz4B5zYqxoBhW8jW0N0CNf
+ J8x+DDW2r+/4kgtPToKdEKU4hQrT15GDPH6pApmdNUfXn6ILoJyxJ88eiyFlDV0vNt
+ ZNVui8BprR8PAMIvUGlM5sgzxixpc0U8AN1c4KUk=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D07C58B75B;
- Fri,  3 Apr 2020 09:20:51 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id BAF618B944;
+ Fri,  3 Apr 2020 09:20:53 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id d2K3mOZ9N1z8; Fri,  3 Apr 2020 09:20:51 +0200 (CEST)
+ with ESMTP id vLoIaVhxCm-w; Fri,  3 Apr 2020 09:20:53 +0200 (CEST)
 Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 62EBF8B944;
- Fri,  3 Apr 2020 09:20:51 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 6F6568B75B;
+ Fri,  3 Apr 2020 09:20:53 +0200 (CEST)
 Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 3831D65700; Fri,  3 Apr 2020 07:20:51 +0000 (UTC)
-Message-Id: <2e73bc57125c2c6ab12a587586a4eed3a47105fc.1585898438.git.christophe.leroy@c-s.fr>
+ id 4569E65700; Fri,  3 Apr 2020 07:20:53 +0000 (UTC)
+Message-Id: <6c83af0f0809ef2a955c39ac622767f6cbede035.1585898438.git.christophe.leroy@c-s.fr>
 In-Reply-To: <36e43241c7f043a24b5069e78c6a7edd11043be5.1585898438.git.christophe.leroy@c-s.fr>
 References: <36e43241c7f043a24b5069e78c6a7edd11043be5.1585898438.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 2/5] uaccess: Selectively open read or write user access
+Subject: [PATCH v2 4/5] powerpc/uaccess: Implement user_read_access_begin and
+ user_write_access_begin
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  airlied@linux.ie, daniel@ffwll.ch, torvalds@linux-foundation.org,
  viro@zeniv.linux.org.uk, akpm@linux-foundation.org, keescook@chromium.org,
  hpa@zytor.com
-Date: Fri,  3 Apr 2020 07:20:51 +0000 (UTC)
+Date: Fri,  3 Apr 2020 07:20:53 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,236 +98,106 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When opening user access to only perform reads, only open read access.
-When opening user access to only perform writes, only open write
-access.
+Add support for selective read or write user access with
+user_read_access_begin/end and user_write_access_begin/end.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 Reviewed-by: Kees Cook <keescook@chromium.org>
 ---
-v2: Fixed a mismatched use of _read_ and _write_ in compat_get_bitmap()
-and compat_put_bitmap()
+v2: no change
 ---
- fs/readdir.c            | 12 ++++++------
- kernel/compat.c         | 12 ++++++------
- kernel/exit.c           | 12 ++++++------
- lib/strncpy_from_user.c |  4 ++--
- lib/strnlen_user.c      |  4 ++--
- lib/usercopy.c          |  6 +++---
- 6 files changed, 25 insertions(+), 25 deletions(-)
+ arch/powerpc/include/asm/book3s/32/kup.h |  4 ++--
+ arch/powerpc/include/asm/kup.h           | 14 +++++++++++++-
+ arch/powerpc/include/asm/uaccess.h       | 22 ++++++++++++++++++++++
+ 3 files changed, 37 insertions(+), 3 deletions(-)
 
-diff --git a/fs/readdir.c b/fs/readdir.c
-index de2eceffdee8..ed6aaad451aa 100644
---- a/fs/readdir.c
-+++ b/fs/readdir.c
-@@ -242,7 +242,7 @@ static int filldir(struct dir_context *ctx, const char *name, int namlen,
- 		return -EINTR;
- 	dirent = buf->current_dir;
- 	prev = (void __user *) dirent - prev_reclen;
--	if (!user_access_begin(prev, reclen + prev_reclen))
-+	if (!user_write_access_begin(prev, reclen + prev_reclen))
- 		goto efault;
+diff --git a/arch/powerpc/include/asm/book3s/32/kup.h b/arch/powerpc/include/asm/book3s/32/kup.h
+index 3c0ba22dc360..1617e73bee30 100644
+--- a/arch/powerpc/include/asm/book3s/32/kup.h
++++ b/arch/powerpc/include/asm/book3s/32/kup.h
+@@ -108,7 +108,7 @@ static __always_inline void allow_user_access(void __user *to, const void __user
+ 	u32 addr, end;
  
- 	/* This might be 'dirent->d_off', but if so it will get overwritten */
-@@ -251,14 +251,14 @@ static int filldir(struct dir_context *ctx, const char *name, int namlen,
- 	unsafe_put_user(reclen, &dirent->d_reclen, efault_end);
- 	unsafe_put_user(d_type, (char __user *) dirent + reclen - 1, efault_end);
- 	unsafe_copy_dirent_name(dirent->d_name, name, namlen, efault_end);
--	user_access_end();
-+	user_write_access_end();
+ 	BUILD_BUG_ON(!__builtin_constant_p(dir));
+-	BUILD_BUG_ON(dir == KUAP_CURRENT);
++	BUILD_BUG_ON(dir & ~KUAP_READ_WRITE);
  
- 	buf->current_dir = (void __user *)dirent + reclen;
- 	buf->prev_reclen = reclen;
- 	buf->count -= reclen;
- 	return 0;
- efault_end:
--	user_access_end();
-+	user_write_access_end();
- efault:
- 	buf->error = -EFAULT;
- 	return -EFAULT;
-@@ -327,7 +327,7 @@ static int filldir64(struct dir_context *ctx, const char *name, int namlen,
- 		return -EINTR;
- 	dirent = buf->current_dir;
- 	prev = (void __user *)dirent - prev_reclen;
--	if (!user_access_begin(prev, reclen + prev_reclen))
-+	if (!user_write_access_begin(prev, reclen + prev_reclen))
- 		goto efault;
+ 	if (!(dir & KUAP_WRITE))
+ 		return;
+@@ -131,7 +131,7 @@ static __always_inline void prevent_user_access(void __user *to, const void __us
  
- 	/* This might be 'dirent->d_off', but if so it will get overwritten */
-@@ -336,7 +336,7 @@ static int filldir64(struct dir_context *ctx, const char *name, int namlen,
- 	unsafe_put_user(reclen, &dirent->d_reclen, efault_end);
- 	unsafe_put_user(d_type, &dirent->d_type, efault_end);
- 	unsafe_copy_dirent_name(dirent->d_name, name, namlen, efault_end);
--	user_access_end();
-+	user_write_access_end();
+ 	BUILD_BUG_ON(!__builtin_constant_p(dir));
  
- 	buf->prev_reclen = reclen;
- 	buf->current_dir = (void __user *)dirent + reclen;
-@@ -344,7 +344,7 @@ static int filldir64(struct dir_context *ctx, const char *name, int namlen,
- 	return 0;
+-	if (dir == KUAP_CURRENT) {
++	if (dir & KUAP_CURRENT_WRITE) {
+ 		u32 kuap = current->thread.kuap;
  
- efault_end:
--	user_access_end();
-+	user_write_access_end();
- efault:
- 	buf->error = -EFAULT;
- 	return -EFAULT;
-diff --git a/kernel/compat.c b/kernel/compat.c
-index 843dd17e6078..b8d2800bb4b7 100644
---- a/kernel/compat.c
-+++ b/kernel/compat.c
-@@ -199,7 +199,7 @@ long compat_get_bitmap(unsigned long *mask, const compat_ulong_t __user *umask,
- 	bitmap_size = ALIGN(bitmap_size, BITS_PER_COMPAT_LONG);
- 	nr_compat_longs = BITS_TO_COMPAT_LONGS(bitmap_size);
+ 		if (unlikely(!kuap))
+diff --git a/arch/powerpc/include/asm/kup.h b/arch/powerpc/include/asm/kup.h
+index 92bcd1a26d73..c745ee41ad66 100644
+--- a/arch/powerpc/include/asm/kup.h
++++ b/arch/powerpc/include/asm/kup.h
+@@ -10,7 +10,9 @@
+  * Use the current saved situation instead of the to/from/size params.
+  * Used on book3s/32
+  */
+-#define KUAP_CURRENT	4
++#define KUAP_CURRENT_READ	4
++#define KUAP_CURRENT_WRITE	8
++#define KUAP_CURRENT		(KUAP_CURRENT_READ | KUAP_CURRENT_WRITE)
  
--	if (!user_access_begin(umask, bitmap_size / 8))
-+	if (!user_read_access_begin(umask, bitmap_size / 8))
- 		return -EFAULT;
- 
- 	while (nr_compat_longs > 1) {
-@@ -211,11 +211,11 @@ long compat_get_bitmap(unsigned long *mask, const compat_ulong_t __user *umask,
- 	}
- 	if (nr_compat_longs)
- 		unsafe_get_user(*mask, umask++, Efault);
--	user_access_end();
-+	user_read_access_end();
- 	return 0;
- 
- Efault:
--	user_access_end();
-+	user_read_access_end();
- 	return -EFAULT;
+ #ifdef CONFIG_PPC64
+ #include <asm/book3s/64/kup-radix.h>
+@@ -101,6 +103,16 @@ static inline void prevent_current_access_user(void)
+ 	prevent_user_access(NULL, NULL, ~0UL, KUAP_CURRENT);
  }
  
-@@ -228,7 +228,7 @@ long compat_put_bitmap(compat_ulong_t __user *umask, unsigned long *mask,
- 	bitmap_size = ALIGN(bitmap_size, BITS_PER_COMPAT_LONG);
- 	nr_compat_longs = BITS_TO_COMPAT_LONGS(bitmap_size);
++static inline void prevent_current_read_from_user(void)
++{
++	prevent_user_access(NULL, NULL, ~0UL, KUAP_CURRENT_READ);
++}
++
++static inline void prevent_current_write_to_user(void)
++{
++	prevent_user_access(NULL, NULL, ~0UL, KUAP_CURRENT_WRITE);
++}
++
+ #endif /* !__ASSEMBLY__ */
  
--	if (!user_access_begin(umask, bitmap_size / 8))
-+	if (!user_write_access_begin(umask, bitmap_size / 8))
- 		return -EFAULT;
+ #endif /* _ASM_POWERPC_KUAP_H_ */
+diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+index 2f500debae21..4427d419eb1d 100644
+--- a/arch/powerpc/include/asm/uaccess.h
++++ b/arch/powerpc/include/asm/uaccess.h
+@@ -468,6 +468,28 @@ static __must_check inline bool user_access_begin(const void __user *ptr, size_t
+ #define user_access_save	prevent_user_access_return
+ #define user_access_restore	restore_user_access
  
- 	while (nr_compat_longs > 1) {
-@@ -239,10 +239,10 @@ long compat_put_bitmap(compat_ulong_t __user *umask, unsigned long *mask,
- 	}
- 	if (nr_compat_longs)
- 		unsafe_put_user((compat_ulong_t)*mask, umask++, Efault);
--	user_access_end();
-+	user_write_access_end();
- 	return 0;
- Efault:
--	user_access_end();
-+	user_write_access_end();
- 	return -EFAULT;
- }
- 
-diff --git a/kernel/exit.c b/kernel/exit.c
-index d70d47159640..61b2f7a85079 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -1555,7 +1555,7 @@ SYSCALL_DEFINE5(waitid, int, which, pid_t, upid, struct siginfo __user *,
- 	if (!infop)
- 		return err;
- 
--	if (!user_access_begin(infop, sizeof(*infop)))
-+	if (!user_write_access_begin(infop, sizeof(*infop)))
- 		return -EFAULT;
- 
- 	unsafe_put_user(signo, &infop->si_signo, Efault);
-@@ -1564,10 +1564,10 @@ SYSCALL_DEFINE5(waitid, int, which, pid_t, upid, struct siginfo __user *,
- 	unsafe_put_user(info.pid, &infop->si_pid, Efault);
- 	unsafe_put_user(info.uid, &infop->si_uid, Efault);
- 	unsafe_put_user(info.status, &infop->si_status, Efault);
--	user_access_end();
-+	user_write_access_end();
- 	return err;
- Efault:
--	user_access_end();
-+	user_write_access_end();
- 	return -EFAULT;
- }
- 
-@@ -1682,7 +1682,7 @@ COMPAT_SYSCALL_DEFINE5(waitid,
- 	if (!infop)
- 		return err;
- 
--	if (!user_access_begin(infop, sizeof(*infop)))
-+	if (!user_write_access_begin(infop, sizeof(*infop)))
- 		return -EFAULT;
- 
- 	unsafe_put_user(signo, &infop->si_signo, Efault);
-@@ -1691,10 +1691,10 @@ COMPAT_SYSCALL_DEFINE5(waitid,
- 	unsafe_put_user(info.pid, &infop->si_pid, Efault);
- 	unsafe_put_user(info.uid, &infop->si_uid, Efault);
- 	unsafe_put_user(info.status, &infop->si_status, Efault);
--	user_access_end();
-+	user_write_access_end();
- 	return err;
- Efault:
--	user_access_end();
-+	user_write_access_end();
- 	return -EFAULT;
- }
- #endif
-diff --git a/lib/strncpy_from_user.c b/lib/strncpy_from_user.c
-index 706020b06617..b90ec550183a 100644
---- a/lib/strncpy_from_user.c
-+++ b/lib/strncpy_from_user.c
-@@ -116,9 +116,9 @@ long strncpy_from_user(char *dst, const char __user *src, long count)
- 
- 		kasan_check_write(dst, count);
- 		check_object_size(dst, count, false);
--		if (user_access_begin(src, max)) {
-+		if (user_read_access_begin(src, max)) {
- 			retval = do_strncpy_from_user(dst, src, count, max);
--			user_access_end();
-+			user_read_access_end();
- 			return retval;
- 		}
- 	}
-diff --git a/lib/strnlen_user.c b/lib/strnlen_user.c
-index 41670d4a5816..1616710b8a82 100644
---- a/lib/strnlen_user.c
-+++ b/lib/strnlen_user.c
-@@ -109,9 +109,9 @@ long strnlen_user(const char __user *str, long count)
- 		if (max > count)
- 			max = count;
- 
--		if (user_access_begin(str, max)) {
-+		if (user_read_access_begin(str, max)) {
- 			retval = do_strnlen_user(str, count, max);
--			user_access_end();
-+			user_read_access_end();
- 			return retval;
- 		}
- 	}
-diff --git a/lib/usercopy.c b/lib/usercopy.c
-index cbb4d9ec00f2..ca2a697a2061 100644
---- a/lib/usercopy.c
-+++ b/lib/usercopy.c
-@@ -58,7 +58,7 @@ int check_zeroed_user(const void __user *from, size_t size)
- 	from -= align;
- 	size += align;
- 
--	if (!user_access_begin(from, size))
-+	if (!user_read_access_begin(from, size))
- 		return -EFAULT;
- 
- 	unsafe_get_user(val, (unsigned long __user *) from, err_fault);
-@@ -79,10 +79,10 @@ int check_zeroed_user(const void __user *from, size_t size)
- 		val &= aligned_byte_mask(size);
- 
- done:
--	user_access_end();
-+	user_read_access_end();
- 	return (val == 0);
- err_fault:
--	user_access_end();
-+	user_read_access_end();
- 	return -EFAULT;
- }
- EXPORT_SYMBOL(check_zeroed_user);
++static __must_check inline bool
++user_read_access_begin(const void __user *ptr, size_t len)
++{
++	if (unlikely(!access_ok(ptr, len)))
++		return false;
++	allow_read_from_user(ptr, len);
++	return true;
++}
++#define user_read_access_begin	user_read_access_begin
++#define user_read_access_end		prevent_current_read_from_user
++
++static __must_check inline bool
++user_write_access_begin(const void __user *ptr, size_t len)
++{
++	if (unlikely(!access_ok(ptr, len)))
++		return false;
++	allow_write_to_user((void __user *)ptr, len);
++	return true;
++}
++#define user_write_access_begin	user_write_access_begin
++#define user_write_access_end		prevent_current_write_to_user
++
+ #define unsafe_op_wrap(op, err) do { if (unlikely(op)) goto err; } while (0)
+ #define unsafe_get_user(x, p, e) unsafe_op_wrap(__get_user_allowed(x, p), e)
+ #define unsafe_put_user(x, p, e) unsafe_op_wrap(__put_user_allowed(x, p), e)
 -- 
 2.25.0
 
