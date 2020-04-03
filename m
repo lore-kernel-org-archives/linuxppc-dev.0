@@ -2,89 +2,60 @@ Return-Path: <SRS0=ATRk=5T=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 683D6C43331
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 09:51:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 085A7C2BA17
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 09:53:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0345420737
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 09:51:06 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="nLRJFbXv"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0345420737
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id AF15E20737
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 09:53:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AF15E20737
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48twDR6rwLzDrg3
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 20:51:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48twGz5ZZJzDrWy
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 20:53:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1043;
- helo=mail-pj1-x1043.google.com; envelope-from=npiggin@gmail.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kaod.org (client-ip=46.105.63.230; helo=7.mo68.mail-out.ovh.net;
+ envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=nLRJFbXv; dkim-atps=neutral
-Received: from mail-pj1-x1043.google.com (mail-pj1-x1043.google.com
- [IPv6:2607:f8b0:4864:20::1043])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=kaod.org
+X-Greylist: delayed 602 seconds by postgrey-1.36 at bilbo;
+ Fri, 03 Apr 2020 20:43:34 AEDT
+Received: from 7.mo68.mail-out.ovh.net (7.mo68.mail-out.ovh.net
+ [46.105.63.230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48tw3f6xt7zDrVY
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2020 20:43:26 +1100 (AEDT)
-Received: by mail-pj1-x1043.google.com with SMTP id nu11so2719529pjb.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2020 02:43:26 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :user-agent:message-id:content-transfer-encoding;
- bh=V/K/TopxgY/8Pfa0UGk/d52N4S8WjM3ZtpLq5otXWDg=;
- b=nLRJFbXvcnX9KjvdLeliIAClVlFBtpYf8dR/MOzxugDqqjEXaG3M2s3fBH0MUS9vNl
- d5byJptunL4LzCTFbC9z/84HwBQ1XTwCd7b9+4Dx/pkLAD5W7BqzYV9C6f9W9hyDuDI3
- wkGbtWVXIOj7PO/cvaGLBfMEGyzAJJuFPZZgGGpVy8UancS6V/Vjke33v7+8zZyV6ggx
- o4gkQGK7Z3zyxFFUHfOyX2crEth42imqyskO6rQ5RoklbXr6KsoCUwC9cXbEAxE4w47A
- AMrpHAzlMfhfcer8ERrz9Vt6D0iZ2jLL6pk6QBj5Ttb49GrYdTTPH4r3xloaJ/Zaq+RK
- qjjw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:user-agent:message-id:content-transfer-encoding;
- bh=V/K/TopxgY/8Pfa0UGk/d52N4S8WjM3ZtpLq5otXWDg=;
- b=s7/TKFEj2jxtV4IqIGGt15E/Qz1DRsXycdVpvQZMlOfmgDDDecpiakOSRIZvZdhpmo
- /dmQ97zAEf7K02x9ztpqK5liGm1lnHVZsqdIAojj+aht1+AwytHTDma/+jF56Va1DPmQ
- saebKOD69/tvm99Oqje/TB/8PKJlMSWH37pcQXlbDMviTW7B2dxSiMSUFo/6J26m+oAq
- tY5JocgsKCMxhoSJbP5Hb860kJyy6G19AQuFHWLY0dK+Oqumj8/fYf02mhS1DVY/U1Jw
- puHVAFghC+q3J3sgJgWlCUjKczm8sNchjGT2poPcRYP/qV7KcAoftf+JU5cBEHcY7Zr8
- 0WCw==
-X-Gm-Message-State: AGi0PuZF7gBiHxR3WKRLfUSN4FyqybUHRuCe4n20BsKR1kVtRxeAgKbr
- xlY8odGgYALn418xtv8XW4s=
-X-Google-Smtp-Source: APiQypKgzaEPql2QfLHfMCXRc3y1MZ8BdRgQhdTYpTU2xjaKbIbFQwq80Rz6RMeOZ9XNFArJ+MVGPA==
-X-Received: by 2002:a17:902:9f84:: with SMTP id g4mr7276136plq.2.1585907002336; 
- Fri, 03 Apr 2020 02:43:22 -0700 (PDT)
-Received: from localhost (60-241-117-97.tpgi.com.au. [60.241.117.97])
- by smtp.gmail.com with ESMTPSA id w205sm5432553pfc.75.2020.04.03.02.43.20
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 03 Apr 2020 02:43:21 -0700 (PDT)
-Date: Fri, 03 Apr 2020 19:43:14 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v11 0/8] Disable compat cruft on ppc64le v11
-To: Christophe Leroy <christophe.leroy@c-s.fr>, linuxppc-dev@lists.ozlabs.org, 
- Michal Suchanek <msuchanek@suse.de>
-References: <20200225173541.1549955-1-npiggin@gmail.com>
- <cover.1584620202.git.msuchanek@suse.de>
- <1585898335.tckaz04a6x.astroid@bobo.none>
- <1e00a725-9710-2b80-4aff-2f284b31d2e5@c-s.fr>
-In-Reply-To: <1e00a725-9710-2b80-4aff-2f284b31d2e5@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48tw3p240xzDqQt
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2020 20:43:31 +1100 (AEDT)
+Received: from player794.ha.ovh.net (unknown [10.110.208.115])
+ by mo68.mail-out.ovh.net (Postfix) with ESMTP id 1DB54160684
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2020 11:25:50 +0200 (CEST)
+Received: from kaod.org (lns-bzn-46-82-253-208-248.adsl.proxad.net
+ [82.253.208.248]) (Authenticated sender: groug@kaod.org)
+ by player794.ha.ovh.net (Postfix) with ESMTPSA id 5A93FE11ACD2;
+ Fri,  3 Apr 2020 09:25:43 +0000 (UTC)
+Date: Fri, 3 Apr 2020 11:25:39 +0200
+From: Greg Kurz <groug@kaod.org>
+To: Frederic Barrat <fbarrat@linux.ibm.com>
+Subject: Re: [PATCH 3/4] ocxl: Don't return trigger page when allocating an
+ interrupt
+Message-ID: <20200403112539.1768fa1e@bahia.lan>
+In-Reply-To: <20200402154352.586166-4-fbarrat@linux.ibm.com>
+References: <20200402154352.586166-1-fbarrat@linux.ibm.com>
+ <20200402154352.586166-4-fbarrat@linux.ibm.com>
+X-Mailer: Claws Mail 3.17.4 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
-User-Agent: astroid/0.15.0 (https://github.com/astroidmail/astroid)
-Message-Id: <1585906885.3dbukubyr8.astroid@bobo.none>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Ovh-Tracer-Id: 80501843921443173
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduhedrtdeigdduhecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpeffhffvuffkjghfofggtgfgsehtjeertdertddvnecuhfhrohhmpefirhgvghcumfhurhiiuceoghhrohhugheskhgrohgurdhorhhgqeenucfkpheptddrtddrtddrtddpkedvrddvheefrddvtdekrddvgeeknecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepphhlrgihvghrjeelgedrhhgrrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpehgrhhouhhgsehkrghougdrohhrghdprhgtphhtthhopehlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhg
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,86 +67,160 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>,
- Gustavo Luiz Duarte <gustavold@linux.ibm.com>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Jiri Olsa <jolsa@redhat.com>, Rob Herring <robh@kernel.org>,
- Michael Neuling <mikey@neuling.org>, Eric Richter <erichte@linux.ibm.com>,
- Masahiro Yamada <masahiroy@kernel.org>, Nayna Jain <nayna@linux.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
- Hari Bathini <hbathini@linux.ibm.com>, Jordan Niethe <jniethe5@gmail.com>,
- Valentin Schneider <valentin.schneider@arm.com>, Arnd Bergmann <arnd@arndb.de>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Jonathan Cameron <Jonathan.Cameron@huawei.com>,
- Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Allison Randal <allison@lohutok.net>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Claudio Carvalho <cclaudio@linux.ibm.com>,
- Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
- "Eric W. Biederman" <ebiederm@xmission.com>, linux-fsdevel@vger.kernel.org,
- "David S. Miller" <davem@davemloft.net>,
- Thiago Jung Bauermann <bauerman@linux.ibm.com>
+Cc: ukrishn@linux.ibm.com, ajd@linux.ibm.com, haren@linux.ibm.com, clg@kaod.org,
+ linuxppc-dev@lists.ozlabs.org, christophe_lombard@fr.ibm.com,
+ mrochs@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy's on April 3, 2020 5:26 pm:
->=20
->=20
-> Le 03/04/2020 =C3=A0 09:25, Nicholas Piggin a =C3=A9crit=C2=A0:
->> Michal Suchanek's on March 19, 2020 10:19 pm:
->>> Less code means less bugs so add a knob to skip the compat stuff.
->>>
->>> Changes in v2: saner CONFIG_COMPAT ifdefs
->>> Changes in v3:
->>>   - change llseek to 32bit instead of builing it unconditionally in fs
->>>   - clanup the makefile conditionals
->>>   - remove some ifdefs or convert to IS_DEFINED where possible
->>> Changes in v4:
->>>   - cleanup is_32bit_task and current_is_64bit
->>>   - more makefile cleanup
->>> Changes in v5:
->>>   - more current_is_64bit cleanup
->>>   - split off callchain.c 32bit and 64bit parts
->>> Changes in v6:
->>>   - cleanup makefile after split
->>>   - consolidate read_user_stack_32
->>>   - fix some checkpatch warnings
->>> Changes in v7:
->>>   - add back __ARCH_WANT_SYS_LLSEEK to fix build with llseek
->>>   - remove leftover hunk
->>>   - add review tags
->>> Changes in v8:
->>>   - consolidate valid_user_sp to fix it in the split callchain.c
->>>   - fix build errors/warnings with PPC64 !COMPAT and PPC32
->>> Changes in v9:
->>>   - remove current_is_64bit()
->>> Chanegs in v10:
->>>   - rebase, sent together with the syscall cleanup
->>> Changes in v11:
->>>   - rebase
->>>   - add MAINTAINERS pattern for ppc perf
->>=20
->> These all look good to me. I had some minor comment about one patch but
->> not really a big deal and there were more cleanups on top of it, so I
->> don't mind if it's merged as is.
->>=20
->> Actually I think we have a bit of stack reading fixes for 64s radix now
->> (not a bug fix as such, but we don't need the hash fault logic in radix)=
-,
->> so if I get around to that I can propose the changes in that series.
->>=20
->=20
-> As far as I can see, there is a v12
+On Thu,  2 Apr 2020 17:43:51 +0200
+Frederic Barrat <fbarrat@linux.ibm.com> wrote:
 
-For the most part I was looking at the patches in mpe's next-test
-tree on github, if that's the v12 series, same comment applies but
-it's a pretty small nitpick.
+> Existing users of ocxl_link_irq_alloc() have been converted to obtain
+> the trigger page of an interrupt through xive directly, we therefore
+> have no need to return the trigger page when allocating an interrupt.
+> 
+> It also allows ocxl to use the xive native interface to allocate
+> interrupts, instead of its custom service.
+> 
+> Signed-off-by: Frederic Barrat <fbarrat@linux.ibm.com>
+> ---
 
-Thanks,
-Nick
-=
+Reviewed-by: Greg Kurz <groug@kaod.org>
+
+>  drivers/misc/ocxl/Kconfig       |  2 +-
+>  drivers/misc/ocxl/afu_irq.c     |  4 +---
+>  drivers/misc/ocxl/link.c        | 15 +++++++--------
+>  drivers/scsi/cxlflash/ocxl_hw.c |  3 +--
+>  include/misc/ocxl.h             | 10 ++--------
+>  5 files changed, 12 insertions(+), 22 deletions(-)
+> 
+> diff --git a/drivers/misc/ocxl/Kconfig b/drivers/misc/ocxl/Kconfig
+> index 2d2266c1439e..e65773f5cf59 100644
+> --- a/drivers/misc/ocxl/Kconfig
+> +++ b/drivers/misc/ocxl/Kconfig
+> @@ -9,7 +9,7 @@ config OCXL_BASE
+>  
+>  config OCXL
+>  	tristate "OpenCAPI coherent accelerator support"
+> -	depends on PPC_POWERNV && PCI && EEH
+> +	depends on PPC_POWERNV && PCI && EEH && PPC_XIVE_NATIVE
+>  	select OCXL_BASE
+>  	select HOTPLUG_PCI_POWERNV
+>  	default m
+> diff --git a/drivers/misc/ocxl/afu_irq.c b/drivers/misc/ocxl/afu_irq.c
+> index b30ec0ef7be7..ecdcfae025b7 100644
+> --- a/drivers/misc/ocxl/afu_irq.c
+> +++ b/drivers/misc/ocxl/afu_irq.c
+> @@ -11,7 +11,6 @@ struct afu_irq {
+>  	int hw_irq;
+>  	unsigned int virq;
+>  	char *name;
+> -	u64 trigger_page;
+>  	irqreturn_t (*handler)(void *private);
+>  	void (*free_private)(void *private);
+>  	void *private;
+> @@ -125,8 +124,7 @@ int ocxl_afu_irq_alloc(struct ocxl_context *ctx, int *irq_id)
+>  		goto err_unlock;
+>  	}
+>  
+> -	rc = ocxl_link_irq_alloc(ctx->afu->fn->link, &irq->hw_irq,
+> -				&irq->trigger_page);
+> +	rc = ocxl_link_irq_alloc(ctx->afu->fn->link, &irq->hw_irq);
+>  	if (rc)
+>  		goto err_idr;
+>  
+> diff --git a/drivers/misc/ocxl/link.c b/drivers/misc/ocxl/link.c
+> index 58d111afd9f6..fd73d3bc0eb6 100644
+> --- a/drivers/misc/ocxl/link.c
+> +++ b/drivers/misc/ocxl/link.c
+> @@ -6,6 +6,7 @@
+>  #include <linux/mmu_context.h>
+>  #include <asm/copro.h>
+>  #include <asm/pnv-ocxl.h>
+> +#include <asm/xive.h>
+>  #include <misc/ocxl.h>
+>  #include "ocxl_internal.h"
+>  #include "trace.h"
+> @@ -682,23 +683,21 @@ int ocxl_link_remove_pe(void *link_handle, int pasid)
+>  }
+>  EXPORT_SYMBOL_GPL(ocxl_link_remove_pe);
+>  
+> -int ocxl_link_irq_alloc(void *link_handle, int *hw_irq, u64 *trigger_addr)
+> +int ocxl_link_irq_alloc(void *link_handle, int *hw_irq)
+>  {
+>  	struct ocxl_link *link = (struct ocxl_link *) link_handle;
+> -	int rc, irq;
+> -	u64 addr;
+> +	int irq;
+>  
+>  	if (atomic_dec_if_positive(&link->irq_available) < 0)
+>  		return -ENOSPC;
+>  
+> -	rc = pnv_ocxl_alloc_xive_irq(&irq, &addr);
+> -	if (rc) {
+> +	irq = xive_native_alloc_irq();
+> +	if (!irq) {
+>  		atomic_inc(&link->irq_available);
+> -		return rc;
+> +		return -ENXIO;
+>  	}
+>  
+>  	*hw_irq = irq;
+> -	*trigger_addr = addr;
+>  	return 0;
+>  }
+>  EXPORT_SYMBOL_GPL(ocxl_link_irq_alloc);
+> @@ -707,7 +706,7 @@ void ocxl_link_free_irq(void *link_handle, int hw_irq)
+>  {
+>  	struct ocxl_link *link = (struct ocxl_link *) link_handle;
+>  
+> -	pnv_ocxl_free_xive_irq(hw_irq);
+> +	xive_native_free_irq(hw_irq);
+>  	atomic_inc(&link->irq_available);
+>  }
+>  EXPORT_SYMBOL_GPL(ocxl_link_free_irq);
+> diff --git a/drivers/scsi/cxlflash/ocxl_hw.c b/drivers/scsi/cxlflash/ocxl_hw.c
+> index 59452850f71c..03bff0cae658 100644
+> --- a/drivers/scsi/cxlflash/ocxl_hw.c
+> +++ b/drivers/scsi/cxlflash/ocxl_hw.c
+> @@ -613,7 +613,6 @@ static int alloc_afu_irqs(struct ocxlflash_context *ctx, int num)
+>  	struct ocxl_hw_afu *afu = ctx->hw_afu;
+>  	struct device *dev = afu->dev;
+>  	struct ocxlflash_irqs *irqs;
+> -	u64 addr;
+>  	int rc = 0;
+>  	int hwirq;
+>  	int i;
+> @@ -638,7 +637,7 @@ static int alloc_afu_irqs(struct ocxlflash_context *ctx, int num)
+>  	}
+>  
+>  	for (i = 0; i < num; i++) {
+> -		rc = ocxl_link_irq_alloc(afu->link_token, &hwirq, &addr);
+> +		rc = ocxl_link_irq_alloc(afu->link_token, &hwirq);
+>  		if (unlikely(rc)) {
+>  			dev_err(dev, "%s: ocxl_link_irq_alloc failed rc=%d\n",
+>  				__func__, rc);
+> diff --git a/include/misc/ocxl.h b/include/misc/ocxl.h
+> index 06dd5839e438..a2868adec22f 100644
+> --- a/include/misc/ocxl.h
+> +++ b/include/misc/ocxl.h
+> @@ -480,14 +480,8 @@ int ocxl_link_remove_pe(void *link_handle, int pasid);
+>   * Allocate an AFU interrupt associated to the link.
+>   *
+>   * 'hw_irq' is the hardware interrupt number
+> - * 'obj_handle' is the 64-bit object handle to be passed to the AFU to
+> - * trigger the interrupt.
+> - * On P9, 'obj_handle' is an address, which, if written, triggers the
+> - * interrupt. It is an MMIO address which needs to be remapped (one
+> - * page).
+> - */
+> -int ocxl_link_irq_alloc(void *link_handle, int *hw_irq,
+> -			u64 *obj_handle);
+> + */
+> +int ocxl_link_irq_alloc(void *link_handle, int *hw_irq);
+>  
+>  /*
+>   * Free a previously allocated AFU interrupt
+
