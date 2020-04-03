@@ -1,51 +1,49 @@
-Return-Path: <SRS0=ATRk=5T=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=TkMf=5U=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 20225C2BA16
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 20:54:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C29B7C43331
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Apr 2020 01:01:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 966EF2077D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 20:54:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 966EF2077D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=zeniv.linux.org.uk
+	by mail.kernel.org (Postfix) with ESMTPS id AD022206F6
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Apr 2020 01:01:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AD022206F6
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48vBxW5M0gzDr1b
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Apr 2020 07:54:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=ftp.linux.org.uk (client-ip=2002:c35c:fd02::1;
- helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk;
+	by lists.ozlabs.org (Postfix) with ESMTP id 48vJQc6rYbzF0f5
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Apr 2020 12:01:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
+ (client-ip=195.135.220.15; helo=mx2.suse.de; envelope-from=ykaukab@suse.de;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=zeniv.linux.org.uk
-Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [IPv6:2002:c35c:fd02::1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48vBvk2VsszDqXV
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Apr 2020 07:52:34 +1100 (AEDT)
-Received: from viro by ZenIV.linux.org.uk with local (Exim 4.92.3 #3 (Red Hat
- Linux)) id 1jKTIL-009rSy-AY; Fri, 03 Apr 2020 20:52:05 +0000
-Date: Fri, 3 Apr 2020 21:52:05 +0100
-From: Al Viro <viro@zeniv.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH v2 5/5] uaccess: Rename user_access_begin/end() to
- user_full_access_begin/end()
-Message-ID: <20200403205205.GK23230@ZenIV.linux.org.uk>
-References: <36e43241c7f043a24b5069e78c6a7edd11043be5.1585898438.git.christophe.leroy@c-s.fr>
- <42da416106d5c1cf92bda1e058434fe240b35f44.1585898438.git.christophe.leroy@c-s.fr>
- <CAHk-=wh_DY_dysMX0NuvJmMFr3+QDKOZPZqWKwLkkjgZTuyQ+A@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAHk-=wh_DY_dysMX0NuvJmMFr3+QDKOZPZqWKwLkkjgZTuyQ+A@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48vCYg34SCzDqWX
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Apr 2020 08:21:53 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx2.suse.de (Postfix) with ESMTP id E75EFAD57;
+ Fri,  3 Apr 2020 21:21:47 +0000 (UTC)
+From: Mian Yousaf Kaukab <ykaukab@suse.de>
+To: linux-pm@vger.kernel.org, andy.tang@nxp.com, shawnguo@kernel.org,
+ leoyang.li@nxp.com
+Subject: [PATCH 2/2] clk: qoriq: add cpufreq platform device
+Date: Fri,  3 Apr 2020 23:21:14 +0200
+Message-Id: <20200403212114.15565-2-ykaukab@suse.de>
+X-Mailer: git-send-email 2.16.4
+In-Reply-To: <20200403212114.15565-1-ykaukab@suse.de>
+References: <20200403212114.15565-1-ykaukab@suse.de>
+X-Mailman-Approved-At: Sat, 04 Apr 2020 11:59:20 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,79 +55,96 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch <linux-arch@vger.kernel.org>, Kees Cook <keescook@chromium.org>,
- Dave Airlie <airlied@linux.ie>, intel-gfx@lists.freedesktop.org,
- Peter Anvin <hpa@zytor.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Linux-MM <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
- Daniel Vetter <daniel@ffwll.ch>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Mian Yousaf Kaukab <ykaukab@suse.de>, viresh.kumar@linaro.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Apr 03, 2020 at 11:01:10AM -0700, Linus Torvalds wrote:
-> On Fri, Apr 3, 2020 at 12:21 AM Christophe Leroy
-> <christophe.leroy@c-s.fr> wrote:
-> >
-> > Now we have user_read_access_begin() and user_write_access_begin()
-> > in addition to user_access_begin().
-> 
-> I realize Al asked for this, but I don't think it really adds anything
-> to the series.
-> 
-> The "full" makes the names longer, but not really any more legible.
-> 
-> So I like 1-4, but am unconvinced about 5 and would prefer that to be
-> dropped. Sorry for the bikeshedding.
-> 
-> And I like this series much better without the cookie that was
-> discussed, and just making the hard rule be that they can't nest.
-> 
-> Some architecture may obviously use a cookie internally if they have
-> some nesting behavior of their own, but it doesn't look like we have
-> any major reason to expose that as the actual interface.
-> 
-> The only other question is how to synchronize this? I'm ok with it
-> going through the ppc tree, for example, and just let others build on
-> that.  Maybe using a shared immutable branch with 5.6 as a base?
+Add a platform device for qoirq-cpufreq driver for the compatible
+clockgen blocks.
 
-I can do a 5.7-rc1-based branch with that; depending upon what we end
-up doing for arm and s390 we can always change the calling conventions
-come next cycle ;-/
+Signed-off-by: Mian Yousaf Kaukab <ykaukab@suse.de>
+---
+ drivers/clk/clk-qoriq.c | 30 +++++++++++++++++++++++++++---
+ 1 file changed, 27 insertions(+), 3 deletions(-)
 
-My impressions after digging through arm side of things:
+diff --git a/drivers/clk/clk-qoriq.c b/drivers/clk/clk-qoriq.c
+index d5946f7486d6..374afcab89af 100644
+--- a/drivers/clk/clk-qoriq.c
++++ b/drivers/clk/clk-qoriq.c
+@@ -95,6 +95,7 @@ struct clockgen {
+ };
+ 
+ static struct clockgen clockgen;
++static bool add_cpufreq_dev __initdata;
+ 
+ static void cg_out(struct clockgen *cg, u32 val, u32 __iomem *reg)
+ {
+@@ -1019,7 +1020,7 @@ static void __init create_muxes(struct clockgen *cg)
+ 	}
+ }
+ 
+-static void __init clockgen_init(struct device_node *np);
++static void __init _clockgen_init(struct device_node *np, bool legacy);
+ 
+ /*
+  * Legacy nodes may get probed before the parent clockgen node.
+@@ -1030,7 +1031,7 @@ static void __init clockgen_init(struct device_node *np);
+ static void __init legacy_init_clockgen(struct device_node *np)
+ {
+ 	if (!clockgen.node)
+-		clockgen_init(of_get_parent(np));
++		_clockgen_init(of_get_parent(np), true);
+ }
+ 
+ /* Legacy node */
+@@ -1447,7 +1448,7 @@ static bool __init has_erratum_a4510(void)
+ }
+ #endif
+ 
+-static void __init clockgen_init(struct device_node *np)
++static void __init _clockgen_init(struct device_node *np, bool legacy)
+ {
+ 	int i, ret;
+ 	bool is_old_ls1021a = false;
+@@ -1516,12 +1517,35 @@ static void __init clockgen_init(struct device_node *np)
+ 		       __func__, np, ret);
+ 	}
+ 
++	/* Don't create cpufreq device for legacy clockgen blocks */
++	add_cpufreq_dev = !legacy;
++
+ 	return;
+ err:
+ 	iounmap(clockgen.regs);
+ 	clockgen.regs = NULL;
+ }
+ 
++static void __init clockgen_init(struct device_node *np)
++{
++	_clockgen_init(np, false);
++}
++
++static int __init clockgen_cpufreq_init(void)
++{
++	struct platform_device *pdev;
++
++	if (add_cpufreq_dev) {
++		pdev = platform_device_register_simple("qoriq-cpufreq", -1,
++				NULL, 0);
++		if (IS_ERR(pdev))
++			pr_err("Couldn't register qoriq-cpufreq err=%ld\n",
++				PTR_ERR(pdev));
++	}
++	return 0;
++}
++device_initcall(clockgen_cpufreq_init);
++
+ CLK_OF_DECLARE(qoriq_clockgen_1, "fsl,qoriq-clockgen-1.0", clockgen_init);
+ CLK_OF_DECLARE(qoriq_clockgen_2, "fsl,qoriq-clockgen-2.0", clockgen_init);
+ CLK_OF_DECLARE(qoriq_clockgen_b4420, "fsl,b4420-clockgen", clockgen_init);
+-- 
+2.16.4
 
-1) the only instance of nesting I'd found there (so far) is a mistake.
-The rule should be "no fucking nesting, TYVM".
-
-2) I'm really unhappy about the uaccess_with_memcpy thing.  Besides
-being fucking ugly, it kills any hope of lifting user_access_begin/end
-out of raw_copy_to_user() - the things done in that bastard are
-obviously *NOT* fit for uaccess block.  Including the wonders like
-        /* the mmap semaphore is taken only if not in an atomic context */
-        atomic = faulthandler_disabled();
-
-        if (!atomic)
-                down_read(&current->mm->mmap_sem);
-which, IMO, deserves to be taken out and shot.  Not that pin_page_for_write()
-in the same file (arch/arm/lib/uaccess_with_memcpy.c) did not deserve the
-same treatment...  As far as I can tell, the whole point of that thing
-is that well, memcpy() is optimized better than raw_copy_to_user()...
-So what's wrong with taking the damn optimized memcpy and using it for
-raw_copy_to_user() instead?
-
-Is that the lack of STRT analogue that would store several registers?
-Because AFAICS commit f441882a5229ffaef61a47bccd4518f7e2749cbc
-Author: Vincent Whitchurch <vincent.whitchurch@axis.com>
-Date:   Fri Nov 9 10:09:48 2018 +0100
-    ARM: 8812/1: Optimise copy_{from/to}_user for !CPU_USE_DOMAINS
-makes for much saner solution...  I realize that it's v6+ and this
-thing is specifically for a v5 variant, but...
-
-3) how much do we need to keep the old DACR value in a register for
-uaccess_restore()?  AFAICS, if we prohibit nesting it becomes
-a function of USER_DS/KERNEL_DS setting (and that - only for
-CPU_USE_DOMAINS), doesn't it?  And we had to have fetched it
-recently, back when access_ok() had been done, so shouldn't
-it be in cache?
