@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B1F1C43331
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 19:26:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 721A2C43331
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 19:27:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1B00C20675
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 19:26:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1B00C20675
+	by mail.kernel.org (Postfix) with ESMTPS id 21AC420675
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 19:27:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 21AC420675
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48v8zy1s2ZzDr5Q
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Apr 2020 06:26:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48v91p4GKqzF0lJ
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Apr 2020 06:27:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=srs0=n7ih=5t=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
@@ -28,12 +28,12 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48v8wc19CSzDr84
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Apr 2020 06:23:12 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48v8xZ2BVQzF0fL
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Apr 2020 06:24:02 +1100 (AEDT)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 206203] kmemleak reports various leaks in drivers/of/unittest.c
-Date: Fri, 03 Apr 2020 19:23:09 +0000
+Date: Fri, 03 Apr 2020 19:23:59 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
@@ -49,7 +49,7 @@ X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
 X-Bugzilla-Changed-Fields: attachments.isobsolete attachments.created
-Message-ID: <bug-206203-206035-bW0xiRF0J2@https.bugzilla.kernel.org/>
+Message-ID: <bug-206203-206035-Y3snhDMDgJ@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-206203-206035@https.bugzilla.kernel.org/>
 References: <bug-206203-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -78,13 +78,13 @@ Erhard F. (erhard_f@mailbox.org) changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
- Attachment #286805|0                           |1
+ Attachment #286801|0                           |1
         is obsolete|                            |
 
---- Comment #9 from Erhard F. (erhard_f@mailbox.org) ---
-Created attachment 288187
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D288187&action=3Dedit
-kernel .config (kernel 5.6.2, Talos II)
+--- Comment #10 from Erhard F. (erhard_f@mailbox.org) ---
+Created attachment 288189
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D288189&action=3Dedit
+kmemleak output (kernel 5.6.2, Talos II)
 
 --=20
 You are receiving this mail because:
