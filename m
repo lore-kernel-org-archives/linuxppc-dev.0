@@ -2,89 +2,102 @@ Return-Path: <SRS0=ATRk=5T=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F606C2D0E8
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 07:38:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BA328C43331
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 08:01:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E370420721
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 07:38:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 1085B206F8
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 08:01:22 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DIpxYzwc"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E370420721
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="e9cOEAQ8";
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="FMzZwVpA"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1085B206F8
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48tsHr2bCtzF0Y4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 18:38:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48tsnr20BzzDqfP
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 19:01:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::443;
- helo=mail-pf1-x443.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=russell.cc (client-ip=64.147.123.19;
+ helo=wout3-smtp.messagingengine.com; envelope-from=ruscur@russell.cc;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+ dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=DIpxYzwc; dkim-atps=neutral
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
- [IPv6:2607:f8b0:4864:20::443])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256
+ header.s=fm1 header.b=e9cOEAQ8; 
+ dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.a=rsa-sha256 header.s=fm2 header.b=FMzZwVpA; 
+ dkim-atps=neutral
+Received: from wout3-smtp.messagingengine.com (unknown [64.147.123.19])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48tsB50YKNzF0Rt
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2020 18:33:48 +1100 (AEDT)
-Received: by mail-pf1-x443.google.com with SMTP id n10so3093723pff.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2020 00:33:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :user-agent:message-id:content-transfer-encoding;
- bh=6eTQPyddv5f9SRxTrCu1HpU/mZFl02NaYZhT7ltXJvM=;
- b=DIpxYzwc7IBK/NsPfM0wzUov+Iv1OcKRReEWjT2bmDGtKez3CWY5TXWaIQMzsoUgtU
- NIClVMRucU+ZGL4X3rND3J/Sv5+cPTJGKLNhRuL3g/1jq+O1PnA/AbdgkxCOxux7Z3Ee
- 05BisU9HXpM13G6inAt73sB+MxkGslDj0WX6KeoUU+IK+CfqfE6CThK5m87JlMCwcMR9
- 2n+z65y9hXathwW164UwoutNkcR83FebyA7fsHe1SZDx9fleqlPOOR4/YEvT+FHHHNF1
- NUMWfJ0JwslkFzifHLGMtNoO2YqvXlAohajKqffSl0TVy4OxM3oldUugnckD5X2nPYHW
- qMOg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:user-agent:message-id:content-transfer-encoding;
- bh=6eTQPyddv5f9SRxTrCu1HpU/mZFl02NaYZhT7ltXJvM=;
- b=DNnb5dEJ+gaUxSE9TzwHM4hqYMdH2iRIVsJeW1cGz/rKk17aJ6sNk7+0JIqWkjD8cL
- 5/fh6qAUgy+BJFeuquzKHkEp2atuanU1or85iRi7NxPOBlyXzqBOCEOyb95CqkSjTMUd
- JET1limpoJ4JYQaDH0HKMy6j1lx9pFKBRTjhjHfX4TuTgGWZXdKYNwAbqso8VQgZXSml
- /x8VNcEkMF76oJuBLyvXWsz7PCLs6kQAl9qjvZnrVe6o8W8BmO8sveXobYVELJ+ZRbth
- lwOFpEXmuWAuaoxIPetch6dQz/B9eXo6XEiq3ChkQXShJu3qvimVWbFNd8G9E1AZNSpm
- uzaQ==
-X-Gm-Message-State: AGi0PuYnF0CRhlpcrgGELEQVrPJSxxGmdelWBo5INPmKVbgUWFyNUszr
- 1p/ibYU0GzDgvs/Dc99XaEE=
-X-Google-Smtp-Source: APiQypI0pCTSglQqiqf6qQwJ44I91xTYmtj4PFApCZx7Y0Y3z+lHknCzOY64l1KScrStsuRgDAWPZg==
-X-Received: by 2002:aa7:9f42:: with SMTP id h2mr6792832pfr.22.1585899225368;
- Fri, 03 Apr 2020 00:33:45 -0700 (PDT)
-Received: from localhost (60-241-117-97.tpgi.com.au. [60.241.117.97])
- by smtp.gmail.com with ESMTPSA id h4sm4750410pgg.67.2020.04.03.00.33.43
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 03 Apr 2020 00:33:44 -0700 (PDT)
-Date: Fri, 03 Apr 2020 17:33:38 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [RFC WIP PATCH] powerpc/32: system call implement entry/exit
- logic in C
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Christophe Leroy
- <christophe.leroy@c-s.fr>, Michael Ellerman <mpe@ellerman.id.au>,
- msuchanek@suse.de, Paul Mackerras <paulus@samba.org>
-References: <bbc0a09cfaf523bc00893253a7101362c98b31eb.1585667934.git.christophe.leroy@c-s.fr>
- <059c1abd-6be2-25ea-83e0-dcd411b7951b@c-s.fr>
-In-Reply-To: <059c1abd-6be2-25ea-83e0-dcd411b7951b@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48tslk0Y7wzDr7s
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2020 18:59:29 +1100 (AEDT)
+Received: from compute4.internal (compute4.nyi.internal [10.202.2.44])
+ by mailout.west.internal (Postfix) with ESMTP id 6B154351;
+ Fri,  3 Apr 2020 03:59:16 -0400 (EDT)
+Received: from mailfrontend2 ([10.202.2.163])
+ by compute4.internal (MEProxy); Fri, 03 Apr 2020 03:59:16 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=
+ message-id:subject:from:to:cc:date:in-reply-to:references
+ :content-type:mime-version:content-transfer-encoding; s=fm1; bh=
+ nd+7G8s6MZrgGUYenpUJDE9f0FAk5ae6re4bdlUv6Pk=; b=e9cOEAQ8CFWqvYoG
+ 95Yn5S5hEqMTwMxm2ykJBW0NA8XmJcyi0fRAC4DSBANBWeEQ+hxiW+m1RLKkL2IH
+ fyPQil4SxPwbYb03JzGkcRFmehdOsIG44Ej/CX1w4ucn5k7+17eO0cU8pvGq49/o
+ ZF/ZcY8qXGRLDuX8TTMMKy6y0Ui25Swqyt8K/+H0sjVI1KZZeTEPybM+jZoQbL3P
+ kpKYHsiIr/nctd9IESqMKVf0EK1L/52nrQoSXQlxVfdKGI8AIfWa21Z4/9GGXh7X
+ OW1jRneeGSbwgeKJy2II5XTWrc6tXcvkb9PJg9u8TXUqISmKk27Vb5HfXh+ISved
+ kmQRag==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:content-transfer-encoding:content-type
+ :date:from:in-reply-to:message-id:mime-version:references
+ :subject:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
+ :x-sasl-enc; s=fm2; bh=nd+7G8s6MZrgGUYenpUJDE9f0FAk5ae6re4bdlUv6
+ Pk=; b=FMzZwVpAsfdbkN/HK6dzZjUYHOXT1QbyuPguizILdd5CTrpimZ2iUEsXs
+ A5XvQT3ErWBFVVNIRFMukqK9UzhoREGYZ83KWK0kYXNIOPs6Iec1i6oiqKRX5t9K
+ 58WOy0kPighqBgPKh4aZcOhMcyktzt2VsW62rwoERRkidFbfpHNWbOtzPvg+8S+y
+ 3qK/VVMECF2psirHGCpP1MuTbSl2umbEKDEpyojVQhuLh6npbQ5keSvF1mmXZLGZ
+ w3TlynFWEd6D4NIB5ava1WOpKs9Znpt4HjRyIY2QslvlYbrXtTmUVAMxliG7V8RD
+ 02wwks4ydOfQ0aFA+Tv7TWEUXAmSg==
+X-ME-Sender: <xms:0-yGXlPtzcPhobaH6w0QVkW61TuQA2lCCgpSKmtO2Hughh1_0oZGcA>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduhedrtdehgdduvdehucetufdoteggodetrfdotf
+ fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+ uceurghilhhouhhtmecufedttdenucgfrhhlucfvnfffucdluddtmdenucfjughrpefkuf
+ fhvfffjghftggfggfgsehtjeertddtreejnecuhfhrohhmpeftuhhsshgvlhhlucevuhhr
+ rhgvhicuoehruhhstghurhesrhhushhsvghllhdrtggtqeenucfkphepuddvuddrgeehrd
+ dvuddvrddvfeelnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhf
+ rhhomheprhhushgtuhhrsehruhhsshgvlhhlrdgttg
+X-ME-Proxy: <xmx:0-yGXlbkRHdsN9uwO3euJeM6NuBwZZFuVtfDvZhK0vjQ9LXEnLDzTg>
+ <xmx:0-yGXkM4E9-g0ezGFvXskZjXmycvYKaD1QV8T5pk_fpLdtL5j94p7Q>
+ <xmx:0-yGXjW_w6GUSaIwzW2iP6_uRA9GobmiVK3GnXhGgL_hD9H04F1zpg>
+ <xmx:1OyGXhE2GSAbViTPmZmsRvt26qwHxc9Dk91KC7oTDrNijvgfvhOUlA>
+Received: from crackle.ozlabs.ibm.com
+ (ppp121-45-212-239.bras1.cbr2.internode.on.net [121.45.212.239])
+ by mail.messagingengine.com (Postfix) with ESMTPA id 39C80306CF3D;
+ Fri,  3 Apr 2020 03:59:12 -0400 (EDT)
+Message-ID: <c336400d5b7765eb72b3090cd9f8a3c57761d0b6.camel@russell.cc>
+Subject: Re: [PATCH v8 2/7] powerpc/kprobes: Mark newly allocated probes as RO
+From: Russell Currey <ruscur@russell.cc>
+To: "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, 
+ linuxppc-dev@lists.ozlabs.org
+Date: Fri, 03 Apr 2020 18:59:09 +1100
+In-Reply-To: <1585852977.oiikywo1jz.naveen@linux.ibm.com>
+References: <20200402084053.188537-1-ruscur@russell.cc>
+ <20200402084053.188537-2-ruscur@russell.cc>
+ <1585844035.o235bvxmq0.naveen@linux.ibm.com>
+ <1585852977.oiikywo1jz.naveen@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.36.1 
 MIME-Version: 1.0
-User-Agent: astroid/0.15.0 (https://github.com/astroidmail/astroid)
-Message-Id: <1585898897.1jwur86s6a.astroid@bobo.none>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,42 +109,98 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: kernel-hardening@lists.openwall.com, ajd@linux.ibm.com, npiggin@gmail.com,
+ dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy's on April 1, 2020 9:48 pm:
->=20
->=20
-> Le 31/03/2020 =C3=A0 17:22, Christophe Leroy a =C3=A9crit=C2=A0:
->> That's first try to port PPC64 syscall entry/exit logic in C to PPC32.
->> I've do the minimum to get it work. I have not reworked calls
->> to sys_fork() and friends for instance.
->>=20
->> For the time being, it seems to work more or less but:
->> - ping reports EINVAL on recvfrom
->> - strace shows NULL instead of strings in call like open() for instance.
->=20
-> For the two above problems, that's because system_call_exception()=20
-> doesn't set orig_gpr3 whereas DoSycall() does in entry_32.S . Is that=20
-> only done on PPC32 ?
->=20
-> With the following line at the begining of system_call_exception(), it=20
-> works perfectly:
->=20
-> 	regs->orig_gpr3 =3D r3;
+On Fri, 2020-04-03 at 00:18 +0530, Naveen N. Rao wrote:
+> Naveen N. Rao wrote:
+> > Russell Currey wrote:
+> > > With CONFIG_STRICT_KERNEL_RWX=y and CONFIG_KPROBES=y, there will
+> > > be one
+> > > W+X page at boot by default.  This can be tested with
+> > > CONFIG_PPC_PTDUMP=y and CONFIG_PPC_DEBUG_WX=y set, and checking
+> > > the
+> > > kernel log during boot.
+> > > 
+> > > powerpc doesn't implement its own alloc() for kprobes like other
+> > > architectures do, but we couldn't immediately mark RO anyway
+> > > since we do
+> > > a memcpy to the page we allocate later.  After that, nothing
+> > > should be
+> > > allowed to modify the page, and write permissions are removed
+> > > well
+> > > before the kprobe is armed.
+> > > 
+> > > The memcpy() would fail if >1 probes were allocated, so use
+> > > patch_instruction() instead which is safe for RO.
+> > > 
+> > > Reviewed-by: Daniel Axtens <dja@axtens.net>
+> > > Signed-off-by: Russell Currey <ruscur@russell.cc>
+> > > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> > > ---
+> > >  arch/powerpc/kernel/kprobes.c | 17 +++++++++++++----
+> > >  1 file changed, 13 insertions(+), 4 deletions(-)
+> > > 
+> > > diff --git a/arch/powerpc/kernel/kprobes.c
+> > > b/arch/powerpc/kernel/kprobes.c
+> > > index 81efb605113e..fa4502b4de35 100644
+> > > --- a/arch/powerpc/kernel/kprobes.c
+> > > +++ b/arch/powerpc/kernel/kprobes.c
+> > > @@ -24,6 +24,8 @@
+> > >  #include <asm/sstep.h>
+> > >  #include <asm/sections.h>
+> > >  #include <linux/uaccess.h>
+> > > +#include <linux/set_memory.h>
+> > > +#include <linux/vmalloc.h>
+> > >  
+> > >  DEFINE_PER_CPU(struct kprobe *, current_kprobe) = NULL;
+> > >  DEFINE_PER_CPU(struct kprobe_ctlblk, kprobe_ctlblk);
+> > > @@ -102,6 +104,16 @@ kprobe_opcode_t *kprobe_lookup_name(const
+> > > char *name, unsigned int offset)
+> > >  	return addr;
+> > >  }
+> > >  
+> > > +void *alloc_insn_page(void)
+> > > +{
+> > > +	void *page = vmalloc_exec(PAGE_SIZE);
+> > > +
+> > > +	if (page)
+> > > +		set_memory_ro((unsigned long)page, 1);
+> > > +
+> > > +	return page;
+> > > +}
+> > > +
+> > 
+> > This crashes for me with KPROBES_SANITY_TEST during the kretprobe
+> > test.  
+> 
+> That isn't needed to reproduce this. After bootup, disabling
+> optprobes 
+> also shows the crash with kretprobes:
+> 	sysctl debug.kprobes-optimization=0
+> 
+> The problem happens to be with patch_instruction() in 
+> arch_prepare_kprobe(). During boot, on kprobe init, we register a
+> probe 
+> on kretprobe_trampoline for use with kretprobes (see 
+> arch_init_kprobes()). This results in an instruction slot being 
+> allocated, and arch_prepare_kprobe() to be called for copying the 
+> instruction (nop) at kretprobe_trampoline. patch_instruction() is 
+> failing resulting in corrupt instruction which we try to
+> emulate/single 
+> step causing the crash.
 
-Oh great, nice work. We should be able to make some simple helpers or
-move some things a bit to reduce the amount of ifdefs in the C code.
-It doesn't look too bad though.
+OK I think I've fixed it, KPROBES_SANITY_TEST passes too.  I'd
+appreciate it if you could test v9, and thanks again for finding this -
+very embarrassing bug on my side.
 
-> I will now focus on performance to see if we can do something about it.
+- Russell
 
-What's the performance difference between current asm code just with
-always saving NVGPRS vs C?
+> 
+> 
+> - Naveen
+> 
 
-Thanks,
-Nick
-
-=
