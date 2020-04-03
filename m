@@ -2,61 +2,55 @@ Return-Path: <SRS0=ATRk=5T=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35304C43331
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 11:24:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F08C9C43331
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 11:30:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8EAD820737
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 11:24:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8EAD820737
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 7360D2073B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 11:30:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7360D2073B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48tyHk2v9WzDrng
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 22:24:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=188.165.48.182; helo=7.mo2.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48tyR6668JzDqXT
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 22:30:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from 7.mo2.mail-out.ovh.net (7.mo2.mail-out.ovh.net [188.165.48.182])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48tyBt1yp0zDrg0
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2020 22:19:46 +1100 (AEDT)
-Received: from player718.ha.ovh.net (unknown [10.110.103.177])
- by mo2.mail-out.ovh.net (Postfix) with ESMTP id 6C13F1D00F0
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2020 13:19:41 +0200 (CEST)
-Received: from kaod.org (82-64-250-170.subs.proxad.net [82.64.250.170])
- (Authenticated sender: clg@kaod.org)
- by player718.ha.ovh.net (Postfix) with ESMTPSA id 396C310FE6259;
- Fri,  3 Apr 2020 11:19:30 +0000 (UTC)
-Subject: Re: [PATCH 1/4] scsi: cxlflash: Access interrupt trigger page from
- xive directly
-To: "Matthew R. Ochs" <mrochs@linux.ibm.com>,
- Frederic Barrat <fbarrat@linux.ibm.com>
-References: <20200402154352.586166-1-fbarrat@linux.ibm.com>
- <20200402154352.586166-2-fbarrat@linux.ibm.com>
- <20200402231949.GA5469@p8tul1-build.aus.stglabs.ibm.com>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <831be9d2-5639-bdfe-ebc8-e4c10d9b7669@kaod.org>
-Date: Fri, 3 Apr 2020 13:19:29 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.6.0
+ spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
+ (client-ip=217.140.110.172; helo=foss.arm.com;
+ envelope-from=catalin.marinas@arm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+ by lists.ozlabs.org (Postfix) with ESMTP id 48tyLV30PtzDqHS
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2020 22:26:17 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C6D737FA;
+ Fri,  3 Apr 2020 04:26:14 -0700 (PDT)
+Received: from mbp (unknown [172.31.20.19])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 916893F68F;
+ Fri,  3 Apr 2020 04:26:12 -0700 (PDT)
+Date: Fri, 3 Apr 2020 12:26:10 +0100
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH RESEND 1/4] uaccess: Add user_read_access_begin/end and
+ user_write_access_begin/end
+Message-ID: <20200403112609.GB26633@mbp>
+References: <27106d62fdbd4ffb47796236050e418131cb837f.1585811416.git.christophe.leroy@c-s.fr>
+ <20200402162942.GG23230@ZenIV.linux.org.uk>
+ <67e21b65-0e2d-7ca5-7518-cec1b7abc46c@c-s.fr>
+ <20200402175032.GH23230@ZenIV.linux.org.uk>
+ <202004021132.813F8E88@keescook>
+ <20200403005831.GI23230@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-In-Reply-To: <20200402231949.GA5469@p8tul1-build.aus.stglabs.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Ovh-Tracer-Id: 2002975937169034137
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduhedrtdeigdeflecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefuvfhfhffkffgfgggjtgfgsehtjeertddtfeejnecuhfhrohhmpeevrogurhhitggpnfgvpgfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecukfhppedtrddtrddtrddtpdekvddrieegrddvhedtrddujedtnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepphhlrgihvghrjedukedrhhgrrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpegtlhhgsehkrghougdrohhrghdprhgtphhtthhopehlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhg
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200403005831.GI23230@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,73 +62,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ukrishn@linux.ibm.com, ajd@linux.ibm.com, haren@linux.ibm.com,
- groug@kaod.org, linuxppc-dev@lists.ozlabs.org, christophe_lombard@fr.ibm.com
+Cc: linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Kees Cook <keescook@chromium.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, airlied@linux.ie,
+ hpa@zytor.com, linux-kernel@vger.kernel.org,
+ Russell King <linux@armlinux.org.uk>, linux-mm@kvack.org,
+ Paul Mackerras <paulus@samba.org>, daniel@ffwll.ch, akpm@linux-foundation.org,
+ torvalds@linux-foundation.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 4/3/20 1:19 AM, Matthew R. Ochs wrote:
-> On Thu, Apr 02, 2020 at 05:43:49PM +0200, Frederic Barrat wrote:
->> xive is already mapping the trigger page in kernel space and it can be
->> accessed through standard APIs, so let's reuse it and simplify the code.
->>
->> Signed-off-by: Frederic Barrat <fbarrat@linux.ibm.com>
->> ---
->>  drivers/scsi/cxlflash/ocxl_hw.c | 17 +++++++----------
->>  drivers/scsi/cxlflash/ocxl_hw.h |  1 -
->>  2 files changed, 7 insertions(+), 11 deletions(-)
->>
->> diff --git a/drivers/scsi/cxlflash/ocxl_hw.c b/drivers/scsi/cxlflash/ocxl_hw.c
->> index 7018cd802569..59452850f71c 100644
->> --- a/drivers/scsi/cxlflash/ocxl_hw.c
->> +++ b/drivers/scsi/cxlflash/ocxl_hw.c
->> @@ -15,7 +15,8 @@
->>  #include <linux/pseudo_fs.h>
->>  #include <linux/poll.h>
->>  #include <linux/sched/signal.h>
->> -
->> +#include <linux/interrupt.h>
->> +#include <asm/xive.h>
->>  #include <misc/ocxl.h>
->>  
->>  #include <uapi/misc/cxl.h>
->> @@ -180,7 +181,7 @@ static int afu_map_irq(u64 flags, struct ocxlflash_context *ctx, int num,
->>  	struct ocxl_hw_afu *afu = ctx->hw_afu;
->>  	struct device *dev = afu->dev;
->>  	struct ocxlflash_irqs *irq;
->> -	void __iomem *vtrig;
->> +	struct xive_irq_data *xd;
->>  	u32 virq;
->>  	int rc = 0;
->>  
->> @@ -204,15 +205,14 @@ static int afu_map_irq(u64 flags, struct ocxlflash_context *ctx, int num,
->>  		goto err1;
->>  	}
->>  
->> -	vtrig = ioremap(irq->ptrig, PAGE_SIZE);
->> -	if (unlikely(!vtrig)) {
->> -		dev_err(dev, "%s: Trigger page mapping failed\n", __func__);
->> -		rc = -ENOMEM;
->> +	xd = irq_get_handler_data(virq);
->> +	if (unlikely(!xd)) {
->> +		dev_err(dev, "%s: Can't get interrupt data\n", __func__);
+On Fri, Apr 03, 2020 at 01:58:31AM +0100, Al Viro wrote:
+> On Thu, Apr 02, 2020 at 11:35:57AM -0700, Kees Cook wrote:
+> > Yup, I think it's a weakness of the ARM implementation and I'd like to
+> > not extend it further. AFAIK we should never nest, but I would not be
+> > surprised at all if we did.
+> > 
+> > If we were looking at a design goal for all architectures, I'd like
+> > to be doing what the public PaX patchset did for their memory access
+> > switching, which is to alarm if calling into "enable" found the access
+> > already enabled, etc. Such a condition would show an unexpected nesting
+> > (like we've seen with similar constructs with set_fs() not getting reset
+> > during an exception handler, etc etc).
 > 
-> The removal of setting the return code injects a bug should this error leg
-> ever be encountered. So we should either keep the rc statement e.g. -EINVAL,
-> -ENXIO, -ENODEV, etc., or remove this error leg. I lean towards keeping the
-> statement.
+> FWIW, maybe I'm misreading the ARM uaccess logics, but... it smells like
+> KERNEL_DS is somewhat more dangerous there than on e.g. x86.
+> 
+> Look: with CONFIG_CPU_DOMAINS, set_fs(KERNEL_DS) tells MMU to ignore
+> per-page permission bits in DOMAIN_KERNEL (i.e. for kernel address
+> ranges), allowing them even if they would normally be denied.  We need
+> that for actual uaccess loads/stores, since those use insns that pretend
+> to be done in user mode and we want them to access the kernel pages.
+> But that affects the normal loads/stores as well; unless I'm misreading
+> that code, it will ignore (supervisor) r/o on a page.  And that's not
+> just for the code inside the uaccess blocks; *everything* done under
+> KERNEL_DS is subject to that.
 
-I like ENXIO for XIVE matters. 
+That's correct. Luckily this only affects ARMv5 and earlier. From ARMv6
+onwards, CONFIG_CPU_USE_DOMAINS is no longer selected and the uaccess
+instructions are just plain ldr/str.
 
-C. 
+Russell should know the details on whether there was much choice. Since
+the kernel was living in the linear map with full rwx permissions, the
+KERNEL_DS overriding was probably not a concern and the ldrt/strt for
+uaccess deemed more secure. We also have weird permission setting
+pre-ARMv6 (or rather v6k) where RO user pages are writable from the
+kernel with standard str instructions (breaking CoW). I don't recall
+whether it was a choice made by the kernel or something the architecture
+enforced. The vectors page has to be kernel writable (and user RO) to
+store the TLS value in the absence of a TLS register but maybe we could
+do this via the linear alias together with the appropriate cache
+maintenance.
 
->>  		goto err2;
->>  	}
->>  
->>  	irq->virq = virq;
->> -	irq->vtrig = vtrig;
->> +	irq->vtrig = xd->trig_mmio;
->>  out:
->>
+From ARMv6, the domain overriding had the side-effect of ignoring the XN
+bit and causing random instruction fetches from ioremap() areas. So we
+had to remove the domain switching. We also gained a dedicated TLS
+register.
 
+> Why do we do that (modify_domain(), that is) inside set_fs() and not
+> in uaccess_enable() et.al.?
+
+I think uaccess_enable() could indeed switch the kernel domain if
+KERNEL_DS is set and move this out of set_fs(). It would reduce the
+window the kernel domain permissions are overridden. Anyway,
+uaccess_enable() appeared much later on arm when Russell introduced PAN
+(SMAP) like support by switching the user domain.
+
+-- 
+Catalin
