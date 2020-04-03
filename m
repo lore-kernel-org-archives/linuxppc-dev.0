@@ -8,74 +8,74 @@ X-Spam-Status: No, score=-9.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DAE2C43331
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 14:28:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E06AEC43331
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 14:33:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E64A92077D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 14:28:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 43DCD2073B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 14:33:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="P1dm04uq"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E64A92077D
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="vTjKq8Wa"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 43DCD2073B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48v2Nk3wz4zDqpB
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Apr 2020 01:28:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48v2Vl1yF7zDr3Z
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Apr 2020 01:33:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::541;
- helo=mail-pg1-x541.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::444;
+ helo=mail-pf1-x444.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=P1dm04uq; dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
+ header.s=20161025 header.b=vTjKq8Wa; dkim-atps=neutral
+Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
+ [IPv6:2607:f8b0:4864:20::444])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48v12834QxzDrdH
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Apr 2020 00:27:28 +1100 (AEDT)
-Received: by mail-pg1-x541.google.com with SMTP id k191so3487360pgc.13
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2020 06:27:28 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48v12B0FqrzDrcN
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Apr 2020 00:27:30 +1100 (AEDT)
+Received: by mail-pf1-x444.google.com with SMTP id c138so3494284pfc.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2020 06:27:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=eHABQ0e8hhMeohhlg0yik4/JbKqE36gMrfpYoFlgvHo=;
- b=P1dm04uq+B7BQJtGkym4pg1Sz4uiZaDvmyNq7ZSFNiC4TDdjV6CppeUJV8zn/hUH1e
- I3NB0o8TCVISsB8vfHcqzbUzI83oS6D6LWWsXJjfZGwSNKxigldXnAEnKce6s6N2xVWy
- Js4BHOOmuSzvTdymevKal9+X5yYMgLEwTiemQEcqxl6raF9aQqxIp7ey/xIf9o59Cww7
- ddNiSlyL43IXaCNs+QvWtm9sP0Qv72HlzVD3Z9/eyXh4dmv2hf1J6alGDrus4NjkvI2v
- 6omY+WvJAYva/wp/MNgyCGN8f6+QLvR0dgF602mUS9unXhy7IK2lJOISEaym819aOh7K
- M25A==
+ bh=CLgv1Tr/4aXBIgB/GiWcfJX2n6o4COGZP8RD7C43ZRI=;
+ b=vTjKq8WaW5kZOm4cp+07uOAaGHAzmnZvTx6U+A8ycnBwRe8Cz719Dr3hbblXUu7ffx
+ CzP3X3O6BTfwA6YWrLE9IzydNCRGxjQMqLP7WF9bqyMdtrP6dsFff7LDL43ayd1saIci
+ X7TLBKGTiN6OMA+aiKA9vyL6LPB+zX1MgAbrkIq35Os6e4Exsx3/nPimp8e/3L1F2xpy
+ Bw2bUx4ydafRPYyY+s1a5JOTMLKIkZ1xJYddSJqJ1+Z1N/NIj2RSHHE81mVyEIpiEdYA
+ IXlqMjMDDQJkn0yoFRvTP00xBpeBwkmPKoD7y2zyMDF8XvpH6ZsS1eF11M4kH1sZBNkg
+ Rdwg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=eHABQ0e8hhMeohhlg0yik4/JbKqE36gMrfpYoFlgvHo=;
- b=UeTo5p9Hu/ZgoObpK27tzxOQ/Ku/BkYWryisXnaQbt70bty6UHTDA88d8iE0z+R/rm
- fLb9OfDt9607JGJ5m6FjZfwcWw0VfEvMUzB13LqvzH074b8tornq6Jlhh2gwUirETXTY
- iH7mwJ5XayAO0UzzJrNHivFUJf3zZCPs3iz79u2z4Tlp18JZszXJlbKdSPHBNSKiF6tD
- xpMD0E5lFbcRf7EJpmgMvRR8MC7ZZtivjNRpEp4F6ROBt4xdCSUyd+gyRxqo9jvSGac/
- cqthe/536Zp2zuslXRcsAdx27iaBbNliakZVxDlHTs2bnURaEWBv6eZAkkd8DvCB9to4
- xGWg==
-X-Gm-Message-State: AGi0PuYDUgz1Ecami+SEWyiR+oxKPC0ZzV6/TUpq+66ywcKXeFRMnHDD
- oSKlMP8a8rWCkOkpCYtcjHDHIQOe
-X-Google-Smtp-Source: APiQypL3pO0+wxrid6OOT81qoK+ePDKqy0gN7ezANTK6jb5hyvRCOjZ/38uqICY4RAItUtc4gJkcAQ==
-X-Received: by 2002:a65:5b49:: with SMTP id y9mr8122525pgr.153.1585920444812; 
- Fri, 03 Apr 2020 06:27:24 -0700 (PDT)
+ bh=CLgv1Tr/4aXBIgB/GiWcfJX2n6o4COGZP8RD7C43ZRI=;
+ b=S7No5AqwhEcARpTdHNf4I4BYPWi5wkNSp5Pl0sZNU11rTN96Wgvy6JyjsnAWmXilcU
+ tjCnUVs7xgzwYYd7uP8FiDGyeeYbnWKNqJ0jWihMLrc6GrrDxOu3ktglENiEh6Z+IVmV
+ vLypekkiUj0MbZWNZRbznKNDm+Gbt7Cdf+A7MwBzqU/gMeR3dNmk1pbD/A+BmEUp0LmE
+ kB0Nf9mKE+CIFcbHgCYUiAVYQBaZtJkUk+aBP74DwnyRkjMBZA298hp0METi62wm9kc5
+ nzZ8XWdd/p3G7uJxeoNsO79CVv+mRF0+WQC+yjPa9pgEC7NAR/WrPziBldXsHaAyRivF
+ QGEQ==
+X-Gm-Message-State: AGi0PuZHDNf7Rdkx8tymJ59aP0TRKPCQ7bMIHAqmxOK9OyXPLDP2CpZq
+ fqtz8qSa7yjxLr0o2w17pcSlez6z
+X-Google-Smtp-Source: APiQypJ2DjFZa7w0LAnb8+5FfGFKJKMZWZYfh7h9cH1fzdkdUJrfPVTdKoHv/MTbXc2mHoNlSY/i0Q==
+X-Received: by 2002:a63:6d87:: with SMTP id i129mr8294782pgc.54.1585920448013; 
+ Fri, 03 Apr 2020 06:27:28 -0700 (PDT)
 Received: from bobo.ozlabs.ibm.com (60-241-117-97.tpgi.com.au. [60.241.117.97])
- by smtp.gmail.com with ESMTPSA id o65sm5941422pfg.187.2020.04.03.06.27.21
+ by smtp.gmail.com with ESMTPSA id o65sm5941422pfg.187.2020.04.03.06.27.25
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 03 Apr 2020 06:27:24 -0700 (PDT)
+ Fri, 03 Apr 2020 06:27:27 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 13/14] powerpc/64s: system reset do not trace
-Date: Fri,  3 Apr 2020 23:26:21 +1000
-Message-Id: <20200403132622.130394-14-npiggin@gmail.com>
+Subject: [PATCH v2 14/14] powerpc: make unrecoverable NMIs die instead of panic
+Date: Fri,  3 Apr 2020 23:26:22 +1000
+Message-Id: <20200403132622.130394-15-npiggin@gmail.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20200403132622.130394-1-npiggin@gmail.com>
 References: <20200403132622.130394-1-npiggin@gmail.com>
@@ -93,45 +93,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
  Ganesh Goudar <ganeshgr@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Similarly to the previous patch, do not trace system reset. This code
-is used when there is a crash or hang, and tracing disturbs the system
-more and has been known to crash in the crash handling path.
+System Reset and Machine Check interrupts that are not recoverable due
+to being nested or interrupting when RI=0 currently panic. This is
+not necessary, and can often just kill the current context and recover.
 
-Acked-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/traps.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/powerpc/kernel/traps.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 1845fd7e161a..ed7b7a6e2dc0 100644
+index ed7b7a6e2dc0..1f0277f8d40e 100644
 --- a/arch/powerpc/kernel/traps.c
 +++ b/arch/powerpc/kernel/traps.c
-@@ -443,6 +443,9 @@ void system_reset_exception(struct pt_regs *regs)
- 	unsigned long hsrr0, hsrr1;
- 	bool nested = in_nmi();
- 	bool saved_hsrrs = false;
-+	u8 ftrace_enabled = local_paca->ftrace_enabled;
-+
-+	local_paca->ftrace_enabled = 0;
+@@ -513,11 +513,11 @@ void system_reset_exception(struct pt_regs *regs)
+ #ifdef CONFIG_PPC_BOOK3S_64
+ 	BUG_ON(get_paca()->in_nmi == 0);
+ 	if (get_paca()->in_nmi > 1)
+-		nmi_panic(regs, "Unrecoverable nested System Reset");
++		die("Unrecoverable nested System Reset", regs, SIGABRT);
+ #endif
+ 	/* Must die if the interrupt is not recoverable */
+ 	if (!(regs->msr & MSR_RI))
+-		nmi_panic(regs, "Unrecoverable System Reset");
++		die("Unrecoverable System Reset", regs, SIGABRT);
  
- 	/*
- 	 * Avoid crashes in case of nested NMI exceptions. Recoverability
-@@ -524,6 +527,8 @@ void system_reset_exception(struct pt_regs *regs)
- 	if (!nested)
- 		nmi_exit();
- 
-+	local_paca->ftrace_enabled = ftrace_enabled;
-+
- 	/* What should we do here? We could issue a shutdown or hard reset. */
+ 	if (saved_hsrrs) {
+ 		mtspr(SPRN_HSRR0, hsrr0);
+@@ -858,7 +858,7 @@ void machine_check_exception(struct pt_regs *regs)
+ bail:
+ 	/* Must die if the interrupt is not recoverable */
+ 	if (!(regs->msr & MSR_RI))
+-		nmi_panic(regs, "Unrecoverable Machine check");
++		die("Unrecoverable Machine check", regs, SIGBUS);
  }
  
+ void SMIException(struct pt_regs *regs)
 -- 
 2.23.0
 
