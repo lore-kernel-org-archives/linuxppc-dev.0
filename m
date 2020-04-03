@@ -2,62 +2,94 @@ Return-Path: <SRS0=ATRk=5T=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 86B87C43331
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 06:39:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 75A92C43331
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 06:41:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2D5962073B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 06:39:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2D5962073B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 1F6FE20757
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 06:41:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1F6FE20757
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48tqzX55rfzDrfc
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 17:39:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=188.165.33.112; helo=8.mo4.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 2375 seconds by postgrey-1.36 at bilbo;
- Fri, 03 Apr 2020 17:36:14 AEDT
-Received: from 8.mo4.mail-out.ovh.net (8.mo4.mail-out.ovh.net [188.165.33.112])
+	by lists.ozlabs.org (Postfix) with ESMTP id 48tr210wjJzDqCh
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 17:41:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48tqvf38hTzDrgp
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2020 17:36:13 +1100 (AEDT)
-Received: from player799.ha.ovh.net (unknown [10.108.57.43])
- by mo4.mail-out.ovh.net (Postfix) with ESMTP id E880522C9F9
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2020 07:56:33 +0200 (CEST)
-Received: from kaod.org (82-64-250-170.subs.proxad.net [82.64.250.170])
- (Authenticated sender: clg@kaod.org)
- by player799.ha.ovh.net (Postfix) with ESMTPSA id 0337C1115E0CE;
- Fri,  3 Apr 2020 05:56:25 +0000 (UTC)
-Subject: Re: [PATCH 4/4] ocxl: Remove custom service to allocate interrupts
-To: Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- christophe_lombard@fr.ibm.com, ajd@linux.ibm.com, ukrishn@linux.ibm.com,
- mrochs@linux.ibm.com
-References: <20200402154352.586166-1-fbarrat@linux.ibm.com>
- <20200402154352.586166-5-fbarrat@linux.ibm.com>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <0554665d-f3c5-dd77-c726-2180cdf7d3ad@kaod.org>
-Date: Fri, 3 Apr 2020 07:56:25 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.5.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48tqxG4N6szDqHK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2020 17:37:38 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0336Xh3I139605; Fri, 3 Apr 2020 02:37:31 -0400
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
+ [169.55.85.253])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 305s830n84-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 03 Apr 2020 02:37:31 -0400
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+ by ppma01wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 0336ZrqC010353;
+ Fri, 3 Apr 2020 06:37:30 GMT
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by ppma01wdc.us.ibm.com with ESMTP id 301x76pxmk-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 03 Apr 2020 06:37:30 +0000
+Received: from b03ledav006.gho.boulder.ibm.com
+ (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0336bTQH21234074
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 3 Apr 2020 06:37:29 GMT
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id AE6EFC6055;
+ Fri,  3 Apr 2020 06:37:29 +0000 (GMT)
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 29235C605A;
+ Fri,  3 Apr 2020 06:37:29 +0000 (GMT)
+Received: from sofia.ibm.com (unknown [9.199.34.1])
+ by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Fri,  3 Apr 2020 06:37:29 +0000 (GMT)
+Received: by sofia.ibm.com (Postfix, from userid 1000)
+ id 48C752E3005; Fri,  3 Apr 2020 11:58:18 +0530 (IST)
+Date: Fri, 3 Apr 2020 11:58:18 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH v4 6/6] pseries/sysfs: Minimise IPI noise while reading
+ [idle_][s]purr
+Message-ID: <20200403062818.GB9066@in.ibm.com>
+References: <1585308760-28792-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1585308760-28792-7-git-send-email-ego@linux.vnet.ibm.com>
+ <1585734367.oqwn7dzljo.naveen@linux.ibm.com>
+ <20200401120127.GC17237@in.ibm.com>
+ <1585811157.uig8s95yst.naveen@linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20200402154352.586166-5-fbarrat@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 14992764634737249177
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduhedrtdehgddutdduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepuffvfhfhkffffgggjggtgfesthekredttdefjeenucfhrhhomhepveorughrihgtpgfnvggpifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucfkpheptddrtddrtddrtddpkedvrdeigedrvdehtddrudejtdenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehplhgrhigvrhejleelrdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrgh
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1585811157.uig8s95yst.naveen@linux.ibm.com>
+User-Agent: Mutt/1.5.23 (2014-03-12)
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
+ definitions=2020-04-03_04:2020-04-02,
+ 2020-04-03 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0
+ mlxlogscore=999 impostorscore=0 phishscore=0 malwarescore=0 bulkscore=0
+ clxscore=1015 priorityscore=1501 mlxscore=0 suspectscore=0 spamscore=0
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2003020000 definitions=main-2004030054
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,80 +101,87 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: haren@linux.ibm.com, groug@kaod.org
+Reply-To: ego@linux.vnet.ibm.com
+Cc: ego@linux.vnet.ibm.com, Tyrel Datwyler <tyreld@linux.ibm.com>,
+ linux-kernel@vger.kernel.org, Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 4/2/20 5:43 PM, Frederic Barrat wrote:
-> We now allocate interrupts through xive directly.
+Hi Naveen,
+
+On Thu, Apr 02, 2020 at 01:04:34PM +0530, Naveen N. Rao wrote:
+[..snip..]
+
+> >
+> >It does reduce it to 10ms window. I am not sure if anyone samples PURR
+> >etc faster than that rate.
+> >
+> >I measured how much time it takes to read the purr, spurr, idle_purr,
+> >idle_spurr files back-to-back. It takes not more than 150us.  From
+> >lparstat will these values be read back-to-back ? If so, we can reduce
+> >the staleness_tolerance to something like 500us and still avoid extra
+> >IPIs. If not, what is the maximum delay between the first sysfs file
+> >read and the last sysfs file read ?
 > 
-> Signed-off-by: Frederic Barrat <fbarrat@linux.ibm.com>
-
-
-Reviewed-by: Cédric Le Goater <clg@kaod.org>
-
-> ---
->  arch/powerpc/include/asm/pnv-ocxl.h   |  3 ---
->  arch/powerpc/platforms/powernv/ocxl.c | 30 ---------------------------
->  2 files changed, 33 deletions(-)
+> Oh, for lparstat usage, this is perfectly fine.
 > 
-> diff --git a/arch/powerpc/include/asm/pnv-ocxl.h b/arch/powerpc/include/asm/pnv-ocxl.h
-> index 7de82647e761..e90650328c9c 100644
-> --- a/arch/powerpc/include/asm/pnv-ocxl.h
-> +++ b/arch/powerpc/include/asm/pnv-ocxl.h
-> @@ -30,7 +30,4 @@ extern int pnv_ocxl_spa_setup(struct pci_dev *dev, void *spa_mem, int PE_mask,
->  extern void pnv_ocxl_spa_release(void *platform_data);
->  extern int pnv_ocxl_spa_remove_pe_from_cache(void *platform_data, int pe_handle);
->  
-> -extern int pnv_ocxl_alloc_xive_irq(u32 *irq, u64 *trigger_addr);
-> -extern void pnv_ocxl_free_xive_irq(u32 irq);
-> -
->  #endif /* _ASM_PNV_OCXL_H */
-> diff --git a/arch/powerpc/platforms/powernv/ocxl.c b/arch/powerpc/platforms/powernv/ocxl.c
-> index 8c65aacda9c8..ecdad219d704 100644
-> --- a/arch/powerpc/platforms/powernv/ocxl.c
-> +++ b/arch/powerpc/platforms/powernv/ocxl.c
-> @@ -2,7 +2,6 @@
->  // Copyright 2017 IBM Corp.
->  #include <asm/pnv-ocxl.h>
->  #include <asm/opal.h>
-> -#include <asm/xive.h>
->  #include <misc/ocxl-config.h>
->  #include "pci.h"
->  
-> @@ -484,32 +483,3 @@ int pnv_ocxl_spa_remove_pe_from_cache(void *platform_data, int pe_handle)
->  	return rc;
->  }
->  EXPORT_SYMBOL_GPL(pnv_ocxl_spa_remove_pe_from_cache);
-> -
-> -int pnv_ocxl_alloc_xive_irq(u32 *irq, u64 *trigger_addr)
-> -{
-> -	__be64 flags, trigger_page;
-> -	s64 rc;
-> -	u32 hwirq;
-> -
-> -	hwirq = xive_native_alloc_irq();
-> -	if (!hwirq)
-> -		return -ENOENT;
-> -
-> -	rc = opal_xive_get_irq_info(hwirq, &flags, NULL, &trigger_page, NULL,
-> -				NULL);
-> -	if (rc || !trigger_page) {
-> -		xive_native_free_irq(hwirq);
-> -		return -ENOENT;
-> -	}
-> -	*irq = hwirq;
-> -	*trigger_addr = be64_to_cpu(trigger_page);
-> -	return 0;
-> -
-> -}
-> -EXPORT_SYMBOL_GPL(pnv_ocxl_alloc_xive_irq);
-> -
-> -void pnv_ocxl_free_xive_irq(u32 irq)
-> -{
-> -	xive_native_free_irq(irq);
-> -}
-> -EXPORT_SYMBOL_GPL(pnv_ocxl_free_xive_irq);
+> I meant that there could be other users of [s]purr who might care. I don't
+> know of one, but since this is an existing sysfs interface, I wanted to
+> point out that the behavior might change.
+
+Fair point. Perhaps this should be documented in the Documentation, if
+we are going to continue with this patch.
+
+> 
+> >
+> >>
+> >>I wonder if we should introduce a sysctl interface to control thresholding.
+> >>It can default to 0, which disables thresholding so that the existing
+> >>behavior continues. Applications (lparstat) can optionally set it to suit
+> >>their use.
+> >
+> >We would be introducing 3 new sysfs interfaces that way instead of
+> >two.
+> >
+> >/sys/devices/system/cpu/purr_spurr_staleness
+> >/sys/devices/system/cpu/cpuX/idle_purr
+> >/sys/devices/system/cpu/cpuX/idle_spurr
+> >
+> >I don't have a problem with this. Nathan, Michael, thoughts on this?
+> >
+> >
+> >The alternative is to have a procfs interface, something like
+> >/proc/powerpc/resource_util_stats
+> >
+> >which gives a listing similar to /proc/stat, i.e
+> >
+> >      CPUX  <purr>  <idle_purr>  <spurr>  <idle_spurr>
+> >
+> >Even in this case, the values can be obtained in one-shot with a
+> >single IPI and be printed in the row corresponding to the CPU.
+> 
+> Right -- and that would be optimal requiring a single system call, at the
+> cost of using a legacy interface.
+> 
+> The other option would be to drop this patch and to just go with patches 1-5
+> introducing the new sysfs interfaces for idle_[s]purr. It isn't entirely
+> clear how often this would be used, or its actual impact. We can perhaps
+> consider this optimization if and when this causes problems...
+
+I am ok with that. We can revisit the problem if IPI noise becomes
+noticable. However, if Nathan or Michael feel that this problem is
+better solved now, than leaving it for the future, we will have to
+take a call on what the interface is going to be.
+
+> 
+> 
+> Thanks,
+> Naveen
 > 
 
+--
+Thanks and Regards
+gautham.
