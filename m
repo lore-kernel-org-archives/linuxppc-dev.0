@@ -2,88 +2,62 @@ Return-Path: <SRS0=ATRk=5T=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B73FC43331
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 16:01:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 67AC7C43331
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 16:04:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 31128206E9
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 16:01:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 31128206E9
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 20472206E9
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2020 16:04:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 20472206E9
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48v4SM2PdMzDqW8
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Apr 2020 03:01:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48v4Vx587NzDq8X
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Apr 2020 03:04:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=mrochs@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kaod.org (client-ip=188.165.33.202; helo=13.mo3.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=none (p=none dis=none) header.from=kaod.org
+Received: from 13.mo3.mail-out.ovh.net (13.mo3.mail-out.ovh.net
+ [188.165.33.202])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48v4Dc3B3qzDqcD
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Apr 2020 02:51:44 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 033FYJdi133738; Fri, 3 Apr 2020 11:51:40 -0400
-Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.10])
- by mx0a-001b2d01.pphosted.com with ESMTP id 305emg464v-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 03 Apr 2020 11:51:39 -0400
-Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
- by ppma02dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 033FogCJ008555;
- Fri, 3 Apr 2020 15:51:39 GMT
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28]) by ppma02dal.us.ibm.com with ESMTP id 301x77xkqk-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 03 Apr 2020 15:51:39 +0000
-Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
- [9.57.199.111])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 033Fpbta51839260
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 3 Apr 2020 15:51:37 GMT
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3DBB1AC05F;
- Fri,  3 Apr 2020 15:51:37 +0000 (GMT)
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id AEE0BAC05B;
- Fri,  3 Apr 2020 15:51:36 +0000 (GMT)
-Received: from p8tul1-build.aus.stglabs.ibm.com (unknown [9.3.141.206])
- by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTPS;
- Fri,  3 Apr 2020 15:51:36 +0000 (GMT)
-Date: Fri, 3 Apr 2020 10:51:35 -0500
-From: "Matthew R. Ochs" <mrochs@linux.ibm.com>
-To: Frederic Barrat <fbarrat@linux.ibm.com>
-Subject: Re: [PATCH v2 1/4] scsi: cxlflash: Access interrupt trigger page
- from xive directly
-Message-ID: <20200403155135.GB6661@p8tul1-build.aus.stglabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48v4Mt1WyCzDrDf
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Apr 2020 02:58:00 +1100 (AEDT)
+Received: from player761.ha.ovh.net (unknown [10.108.54.59])
+ by mo3.mail-out.ovh.net (Postfix) with ESMTP id 8DADF2487C9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2020 17:48:25 +0200 (CEST)
+Received: from kaod.org (82-64-250-170.subs.proxad.net [82.64.250.170])
+ (Authenticated sender: clg@kaod.org)
+ by player761.ha.ovh.net (Postfix) with ESMTPSA id 2371D1119FAAA;
+ Fri,  3 Apr 2020 15:48:16 +0000 (UTC)
+Subject: Re: [PATCH v2 1/4] scsi: cxlflash: Access interrupt trigger page from
+ xive directly
+To: Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ christophe_lombard@fr.ibm.com, ajd@linux.ibm.com, ukrishn@linux.ibm.com,
+ mrochs@linux.ibm.com
 References: <20200403153838.29224-1-fbarrat@linux.ibm.com>
  <20200403153838.29224-2-fbarrat@linux.ibm.com>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <da35afa6-fad8-260b-b08b-573879fac489@kaod.org>
+Date: Fri, 3 Apr 2020 17:48:15 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.6.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 In-Reply-To: <20200403153838.29224-2-fbarrat@linux.ibm.com>
-User-Agent: Mutt/1.5.23 (2014-03-12)
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
- definitions=2020-04-03_11:2020-04-03,
- 2020-04-03 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 suspectscore=2
- mlxlogscore=999 priorityscore=1501 lowpriorityscore=0 clxscore=1015
- phishscore=0 malwarescore=0 bulkscore=0 mlxscore=0 impostorscore=0
- spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2003020000 definitions=main-2004030133
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 6541759936675220377
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduhedrtdeigdelvdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefuvfhfhffkffgfgggjtgfgsehtkeertddtfeejnecuhfhrohhmpeevrogurhhitggpnfgvpgfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecukfhppedtrddtrddtrddtpdekvddrieegrddvhedtrddujedtnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepphhlrgihvghrjeeiuddrhhgrrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpegtlhhgsehkrghougdrohhrghdprhgtphhtthhopehlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhg
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,22 +69,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ukrishn@linux.ibm.com, ajd@linux.ibm.com, haren@linux.ibm.com,
- groug@kaod.org, clg@kaod.org, linuxppc-dev@lists.ozlabs.org,
- christophe_lombard@fr.ibm.com
+Cc: haren@linux.ibm.com, groug@kaod.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Apr 03, 2020 at 05:38:35PM +0200, Frederic Barrat wrote:
+On 4/3/20 5:38 PM, Frederic Barrat wrote:
 > xive is already mapping the trigger page in kernel space and it can be
 > accessed through standard APIs, so let's reuse it and simplify the code.
 > 
 > Signed-off-by: Frederic Barrat <fbarrat@linux.ibm.com>
 
-Looks good!
 
-Acked-by: Matthew R. Ochs <mrochs@linux.ibm.com>
+Reviewed-by: Cédric Le Goater <clg@kaod.org>
+
+Thanks,
+
+C. 
 
 > ---
 > Changelog:
@@ -194,6 +169,5 @@ Acked-by: Matthew R. Ochs <mrochs@linux.ibm.com>
 >  	void __iomem *vtrig;
 >  };
 >  
-> -- 
-> 2.25.1
 > 
+
