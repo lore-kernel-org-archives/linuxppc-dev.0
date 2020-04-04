@@ -2,54 +2,97 @@ Return-Path: <SRS0=TkMf=5U=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	HTML_MESSAGE,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F3E6C2BA15
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Apr 2020 18:43:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 35614C2BA15
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Apr 2020 21:32:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DC4D9206F7
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Apr 2020 18:43:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DC4D9206F7
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=mit.edu
+	by mail.kernel.org (Postfix) with ESMTPS id 9D6C8206F5
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Apr 2020 21:32:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9D6C8206F5
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48vm0p63RSzDrQl
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Apr 2020 04:43:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=mit.edu
- (client-ip=18.9.28.11; helo=outgoing.mit.edu; envelope-from=tytso@mit.edu;
+	by lists.ozlabs.org (Postfix) with ESMTP id 48vqlc6V2lzDqY5
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Apr 2020 07:32:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ganeshgr@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=mit.edu
-X-Greylist: delayed 202 seconds by postgrey-1.36 at bilbo;
- Sun, 05 Apr 2020 04:40:57 AEST
-Received: from outgoing.mit.edu (outgoing-auth-1.mit.edu [18.9.28.11])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48vlxP5MS1zDrVM
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Apr 2020 04:40:57 +1000 (AEST)
-Received: from callcc.thunk.org (pool-72-93-95-157.bstnma.fios.verizon.net
- [72.93.95.157]) (authenticated bits=0)
- (User authenticated as tytso@ATHENA.MIT.EDU)
- by outgoing.mit.edu (8.14.7/8.12.4) with ESMTP id 034Ib7GU017545
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Sat, 4 Apr 2020 14:37:08 -0400
-Received: by callcc.thunk.org (Postfix, from userid 15806)
- id 80DC1420021; Sat,  4 Apr 2020 14:37:07 -0400 (EDT)
-Date: Sat, 4 Apr 2020 14:37:07 -0400
-From: "Theodore Y. Ts'o" <tytso@mit.edu>
-To: syzbot <syzbot+67e4f16db666b1c8253c@syzkaller.appspotmail.com>
-Subject: Re: WARNING in ext4_da_update_reserve_space
-Message-ID: <20200404183707.GK45598@mit.edu>
-References: <0000000000008c5a4605a24cbb16@google.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48vcVW4FLYzDrg6
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Apr 2020 00:05:39 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 034D4gTn059763
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 4 Apr 2020 09:05:35 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 306k4d7uyc-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Apr 2020 09:05:35 -0400
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ganeshgr@linux.ibm.com>;
+ Sat, 4 Apr 2020 14:05:13 +0100
+Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Sat, 4 Apr 2020 14:05:11 +0100
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 034D4Ppg49021412
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Sat, 4 Apr 2020 13:04:25 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6811E11C050;
+ Sat,  4 Apr 2020 13:05:29 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 1CCDF11C04A;
+ Sat,  4 Apr 2020 13:05:26 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.85.75.6])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Sat,  4 Apr 2020 13:05:25 +0000 (GMT)
+Subject: Re: [PATCH] powerpc/mce: Add MCE notification chain
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ mpe@ellerman.id.au
+References: <20200330071219.12284-1-ganeshgr@linux.ibm.com>
+ <1585879413.ubv3w8ta2y.astroid@bobo.none>
+From: Ganesh <ganeshgr@linux.ibm.com>
+Date: Sat, 4 Apr 2020 18:35:23 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.3.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0000000000008c5a4605a24cbb16@google.com>
+In-Reply-To: <1585879413.ubv3w8ta2y.astroid@bobo.none>
+Content-Type: multipart/alternative;
+ boundary="------------87CCF05201A858112AAEDE76"
+Content-Language: en-US
+X-TM-AS-GCONF: 00
+x-cbid: 20040413-0016-0000-0000-000002FE3527
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 20040413-0017-0000-0000-0000336206EB
+Message-Id: <a9b03938-5053-3c44-217b-5892533bd38d@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
+ definitions=2020-04-04_09:2020-04-03,
+ 2020-04-04 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0
+ spamscore=0 suspectscore=0 clxscore=1015 priorityscore=1501
+ mlxlogscore=999 adultscore=0 phishscore=0 impostorscore=0 bulkscore=0
+ malwarescore=0 mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2003020000 definitions=main-2004040117
+X-Mailman-Approved-At: Sun, 05 Apr 2020 07:29:55 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,23 +104,108 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mareklindner@neomailbox.ch, sw@simonwunderlich.de, muriloo@linux.ibm.com,
- a@unstable.cc, linux-kernel@vger.kernel.org, syzkaller-bugs@googlegroups.com,
- b.a.t.m.a.n@diktynna.open-mesh.org, netdev@vger.kernel.org,
- adilger.kernel@dilger.ca, paulus@samba.org, linux-ext4@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: aneesh.kumar@linux.ibm.com, santosh@fossix.org, arbab@linux.ibm.com,
+ mahesh@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-#syz test https://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git dev
+This is a multi-part message in MIME format.
+--------------87CCF05201A858112AAEDE76
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-I'm curious why this is only showing up as failing on next-next.
-Let's see if it fails on the ext4.git tree.
+On 4/3/20 7:38 AM, Nicholas Piggin wrote:
 
-From the bisect logs syzbot is able to repro on all of v5.x and
-v4.20.0.  However, I'm not able to repro it using kvm with either
-v5.6-rc4 or the tip of the ext4 git tree.  So let's see what syzbot
-can do with the tip of the dev tree.
+> Ganesh Goudar's on March 30, 2020 5:12 pm:
+>> From: Santosh S <santosh@fossix.org>
+>>
+>> Introduce notification chain which lets know about uncorrected memory
+>> errors(UE). This would help prospective users in pmem or nvdimm subsystem
+>> to track bad blocks for better handling of persistent memory allocations.
+>>
+>> Signed-off-by: Santosh S <santosh@fossix.org>
+>> Signed-off-by: Ganesh Goudar <ganeshgr@linux.ibm.com>
+> Do you have any such users yet? It would be good to refer to an example
+> user and give a brief description of what it does in its notifier.
 
-						- Ted
+Santosh has sent a patch which uses this notification.
+https://patchwork.ozlabs.org/patch/1265062/
+
+>> @@ -263,6 +277,7 @@ static void machine_process_ue_event(struct work_struct *work)
+>>   	while (__this_cpu_read(mce_ue_count) > 0) {
+>>   		index = __this_cpu_read(mce_ue_count) - 1;
+>>   		evt = this_cpu_ptr(&mce_ue_event_queue[index]);
+>> +		blocking_notifier_call_chain(&mce_notifier_list, 0, evt);
+> Can we really use a blocking notifier here? I'm not sure that we can.
+
+I think we can, do you see any problem?
+
+>
+> Thanks,
+> Nick
+
+
+--------------87CCF05201A858112AAEDE76
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body text="#000000" bgcolor="#FFFFFF">
+    <pre>On 4/3/20 7:38 AM, Nicholas Piggin wrote:</pre>
+    <blockquote type="cite"
+      cite="mid:1585879413.ubv3w8ta2y.astroid@bobo.none">
+      <pre class="moz-quote-pre" wrap="">Ganesh Goudar's on March 30, 2020 5:12 pm:
+</pre>
+      <blockquote type="cite">
+        <pre class="moz-quote-pre" wrap="">From: Santosh S <a class="moz-txt-link-rfc2396E" href="mailto:santosh@fossix.org">&lt;santosh@fossix.org&gt;</a>
+
+Introduce notification chain which lets know about uncorrected memory
+errors(UE). This would help prospective users in pmem or nvdimm subsystem
+to track bad blocks for better handling of persistent memory allocations.
+
+Signed-off-by: Santosh S <a class="moz-txt-link-rfc2396E" href="mailto:santosh@fossix.org">&lt;santosh@fossix.org&gt;</a>
+Signed-off-by: Ganesh Goudar <a class="moz-txt-link-rfc2396E" href="mailto:ganeshgr@linux.ibm.com">&lt;ganeshgr@linux.ibm.com&gt;</a>
+</pre>
+      </blockquote>
+      <pre class="moz-quote-pre" wrap="">
+Do you have any such users yet? It would be good to refer to an example 
+user and give a brief description of what it does in its notifier.</pre>
+    </blockquote>
+    <pre>Santosh has sent a patch which uses this notification.
+<a class="moz-txt-link-freetext" href="https://patchwork.ozlabs.org/patch/1265062/">https://patchwork.ozlabs.org/patch/1265062/</a>
+</pre>
+    <blockquote type="cite"
+      cite="mid:1585879413.ubv3w8ta2y.astroid@bobo.none">
+      <pre class="moz-quote-pre" wrap="">
+</pre>
+      <blockquote type="cite">
+        <pre class="moz-quote-pre" wrap="">@@ -263,6 +277,7 @@ static void machine_process_ue_event(struct work_struct *work)
+ 	while (__this_cpu_read(mce_ue_count) &gt; 0) {
+ 		index = __this_cpu_read(mce_ue_count) - 1;
+ 		evt = this_cpu_ptr(&amp;mce_ue_event_queue[index]);
++		blocking_notifier_call_chain(&amp;mce_notifier_list, 0, evt);
+</pre>
+      </blockquote>
+      <pre class="moz-quote-pre" wrap="">
+Can we really use a blocking notifier here? I'm not sure that we can.</pre>
+    </blockquote>
+    <pre>I think we can, do you see any problem?
+</pre>
+    <blockquote type="cite"
+      cite="mid:1585879413.ubv3w8ta2y.astroid@bobo.none">
+      <pre class="moz-quote-pre" wrap="">
+
+Thanks,
+Nick
+</pre>
+    </blockquote>
+    <br>
+  </body>
+</html>
+
+--------------87CCF05201A858112AAEDE76--
+
