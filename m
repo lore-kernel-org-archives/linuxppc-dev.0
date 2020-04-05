@@ -2,85 +2,58 @@ Return-Path: <SRS0=yY75=5V=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5049FC2BA19
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Apr 2020 23:14:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2128CC2BA19
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Apr 2020 23:27:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 976DB20659
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Apr 2020 23:14:23 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=daynix-com.20150623.gappssmtp.com header.i=@daynix-com.20150623.gappssmtp.com header.b="jJyCDymm"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 976DB20659
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=daynix.com
+	by mail.kernel.org (Postfix) with ESMTPS id B58F420659
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Apr 2020 23:27:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B58F420659
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48wTyN5wK1zDr0Q
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 09:14:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48wVFt2PWxzDqfq
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 09:27:46 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=intel.com (client-ip=134.134.136.31; helo=mga06.intel.com;
+ envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=daynix.com
- (client-ip=2a00:1450:4864:20::141; helo=mail-lf1-x141.google.com;
- envelope-from=andrew@daynix.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=daynix.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=daynix-com.20150623.gappssmtp.com
- header.i=@daynix-com.20150623.gappssmtp.com header.a=rsa-sha256
- header.s=20150623 header.b=jJyCDymm; dkim-atps=neutral
-Received: from mail-lf1-x141.google.com (mail-lf1-x141.google.com
- [IPv6:2a00:1450:4864:20::141])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga06.intel.com (mga06.intel.com [134.134.136.31])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48wPxm4p5jzDqQt
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Apr 2020 06:13:27 +1000 (AEST)
-Received: by mail-lf1-x141.google.com with SMTP id t11so10094088lfe.4
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Apr 2020 13:13:27 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=daynix-com.20150623.gappssmtp.com; s=20150623;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=ZecswmQzcKyJcaA1KVr1PgDOFuDkBa9m5xQm0CMlRfg=;
- b=jJyCDymm6a4Y4wyhQ19mQrdIHDOuRafStVA1S1Ig6u2VsstNNG+WN5ithcMu/UoDhe
- CJm6CNrO5du/C461KF08IoNM6ixV+wdPZH8150mM/yVeqUBK51IxAnWz7mKOY839n8aW
- d7cHEB5htx7FQ8+DMQOGIPAUPdAP2iIaT8fdrFL0ztPZz0GCoILB7X3WnENer2eAJskQ
- eeo1VWbmuMKB2MUvYRbouX1S5SlVWKrKQ6M6xDtskZYZDXj9EBjSi5jMaCUjXzgkBOze
- jU3zjVkxzmHp8gl2mo4gFFASzkAJPg2bF21TLTOydSfR8DchzsZcVw7KD93PqUSsu39Y
- 78tQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=ZecswmQzcKyJcaA1KVr1PgDOFuDkBa9m5xQm0CMlRfg=;
- b=dbFNUHlVW923idcEAIojVLVHoqdfk3IItRs9pjJ8VEbFNwMBLbcm4iOC5w4mTu3y9f
- fW+Ks5+lQPtf688ftaZAz8kvor3T/7QF5umpLF9lT7mrdQAl8GNcnw7vbHYgg5gHGr0B
- e3oG9KMoXYGezF1vVRtfb3iJ/YJbn/9A9kOvTaQZ/ubGcVGGa67muNSsJoWiBA1iBols
- 9tiFjkrT2tiDqX74j23iM04oO7YeSqjXIj7hGCnOFxR/l3dVA1aGHq0scVF5ae8tTHPs
- RmTfx12gs3yFhYp8bJMQ6iA9XA6Q9SBRVD2o45Ammh4gFkn1kdmgAJfYsJFpYHoAHT+g
- fKbQ==
-X-Gm-Message-State: AGi0PuZkklDWeiAcVEeFt10mHMbK9RtLssVxyKIo9SXmlo5fwjWeSKhm
- lMiVTrY9MEN6ncAywicw8c0Iqw==
-X-Google-Smtp-Source: APiQypIEsOpmUVRbUVIGQF9PTFmAXeRwenTbMDANUZ4VQGITx+F9m6bijBqeMQEHZ9PikkiF90Ex9A==
-X-Received: by 2002:ac2:4143:: with SMTP id c3mr4585061lfi.131.1586117602906; 
- Sun, 05 Apr 2020 13:13:22 -0700 (PDT)
-Received: from navi.cosmonova.net.ua ([95.67.24.131])
- by smtp.gmail.com with ESMTPSA id m1sm5450815lfl.69.2020.04.05.13.13.21
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 05 Apr 2020 13:13:22 -0700 (PDT)
-From: andrew@daynix.com
-To: virtualization@lists.linux-foundation.org
-Subject: [PATCH] Fix: buffer overflow during hvc_alloc().
-Date: Sun,  5 Apr 2020 23:40:24 +0300
-Message-Id: <20200405204024.1007843-1-andrew@daynix.com>
-X-Mailer: git-send-email 2.24.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48wVCN0vbPzDqhb
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Apr 2020 09:25:35 +1000 (AEST)
+IronPort-SDR: 1zQatsxJM+jugcI+Hd9WR9iQwyz9FL6j/boqFTLF5W4E0aqTw35w7qXdS68h1qYw7gNN364gWW
+ BYbEZmK+r2sA==
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+ by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 05 Apr 2020 16:25:34 -0700
+IronPort-SDR: YQZH3YzIdGjlJzOiEPz7iVcBHExSnA5BDKg7nGCClDJzQWNgGPhb+/RcS/9VMjVWjMGH9j7aVa
+ iUbu/LKBgSAQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.72,349,1580803200"; d="scan'208";a="268911809"
+Received: from lkp-server01.sh.intel.com (HELO lkp-server01) ([10.239.97.150])
+ by orsmga002.jf.intel.com with ESMTP; 05 Apr 2020 16:25:32 -0700
+Received: from kbuild by lkp-server01 with local (Exim 4.89)
+ (envelope-from <lkp@intel.com>)
+ id 1jLEdw-000ALY-5W; Mon, 06 Apr 2020 07:25:32 +0800
+Date: Mon, 06 Apr 2020 07:24:36 +0800
+From: kbuild test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:next] BUILD SUCCESS 6ba4a2d3591039aea1cb45c7c42262d26351a2fa
+Message-ID: <5e8a68b4.+QhDCJQqWo5F10Mz%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Mon, 06 Apr 2020 09:12:42 +1000
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,68 +65,202 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: gregkh@linuxfoundation.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, jslaby@suse.com
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Andrew Melnychenko <andrew@daynix.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  next
+branch HEAD: 6ba4a2d3591039aea1cb45c7c42262d26351a2fa  selftests/powerpc: Always build the tm-poison test 64-bit
 
-If there is a lot(more then 16) of virtio-console devices
-or virtio_console module is reloaded
-- buffers 'vtermnos' and 'cons_ops' are overflowed.
-In older kernels it overruns spinlock which leads to kernel freezing:
-https://bugzilla.redhat.com/show_bug.cgi?id=1786239
+elapsed time: 627m
 
-Signed-off-by: Andrew Melnychenko <andrew@daynix.com>
+configs tested: 179
+configs skipped: 27
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+arm64                            allyesconfig
+arm                              allyesconfig
+arm64                             allnoconfig
+arm                               allnoconfig
+arm                              allmodconfig
+arm64                            allmodconfig
+arm                           efm32_defconfig
+arm                         at91_dt_defconfig
+arm                        shmobile_defconfig
+arm64                               defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm                        multi_v7_defconfig
+sparc                            allyesconfig
+microblaze                      mmu_defconfig
+mips                             allmodconfig
+parisc                            allnoconfig
+s390                              allnoconfig
+microblaze                    nommu_defconfig
+s390                       zfcpdump_defconfig
+powerpc                             defconfig
+riscv                            allyesconfig
+c6x                              allyesconfig
+nds32                             allnoconfig
+mips                      fuloong2e_defconfig
+parisc                generic-64bit_defconfig
+powerpc                       ppc64_defconfig
+sparc                               defconfig
+i386                              allnoconfig
+i386                             allyesconfig
+i386                             alldefconfig
+i386                              debian-10.3
+i386                                defconfig
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                             allyesconfig
+ia64                                defconfig
+c6x                        evmc6678_defconfig
+nios2                         10m50_defconfig
+nios2                         3c120_defconfig
+openrisc                    or1ksim_defconfig
+openrisc                 simple_smp_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+nds32                               defconfig
+csky                                defconfig
+alpha                               defconfig
+h8300                       h8s-sim_defconfig
+h8300                     edosk2674_defconfig
+m68k                       m5475evb_defconfig
+m68k                             allmodconfig
+h8300                    h8300h-sim_defconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+arc                              allyesconfig
+arc                                 defconfig
+powerpc                           allnoconfig
+powerpc                          rhel-kconfig
+mips                           32r2_defconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                             allyesconfig
+mips                      malta_kvm_defconfig
+parisc                           allyesconfig
+parisc                generic-32bit_defconfig
+i386                 randconfig-a003-20200405
+x86_64               randconfig-a001-20200405
+x86_64               randconfig-a002-20200405
+x86_64               randconfig-a003-20200405
+i386                 randconfig-a001-20200405
+i386                 randconfig-a002-20200405
+alpha                randconfig-a001-20200405
+m68k                 randconfig-a001-20200405
+mips                 randconfig-a001-20200405
+nds32                randconfig-a001-20200405
+parisc               randconfig-a001-20200405
+riscv                randconfig-a001-20200405
+c6x                  randconfig-a001-20200405
+h8300                randconfig-a001-20200405
+microblaze           randconfig-a001-20200405
+nios2                randconfig-a001-20200405
+sparc64              randconfig-a001-20200405
+csky                 randconfig-a001-20200405
+openrisc             randconfig-a001-20200405
+s390                 randconfig-a001-20200405
+sh                   randconfig-a001-20200405
+xtensa               randconfig-a001-20200405
+csky                 randconfig-a001-20200406
+openrisc             randconfig-a001-20200406
+s390                 randconfig-a001-20200406
+sh                   randconfig-a001-20200406
+xtensa               randconfig-a001-20200406
+x86_64               randconfig-b001-20200405
+x86_64               randconfig-b002-20200405
+x86_64               randconfig-b003-20200405
+i386                 randconfig-b001-20200405
+i386                 randconfig-b002-20200405
+i386                 randconfig-b003-20200405
+i386                 randconfig-c003-20200405
+i386                 randconfig-c001-20200405
+x86_64               randconfig-c002-20200405
+x86_64               randconfig-c003-20200405
+i386                 randconfig-c002-20200405
+x86_64               randconfig-c001-20200405
+x86_64               randconfig-d003-20200405
+i386                 randconfig-d003-20200405
+i386                 randconfig-d001-20200405
+x86_64               randconfig-d002-20200405
+i386                 randconfig-d002-20200405
+x86_64               randconfig-d001-20200405
+x86_64               randconfig-e001-20200405
+x86_64               randconfig-e002-20200405
+x86_64               randconfig-e003-20200405
+i386                 randconfig-e001-20200405
+i386                 randconfig-e002-20200405
+i386                 randconfig-e003-20200405
+x86_64               randconfig-e001-20200406
+x86_64               randconfig-e002-20200406
+x86_64               randconfig-e003-20200406
+i386                 randconfig-e001-20200406
+i386                 randconfig-e002-20200406
+i386                 randconfig-e003-20200406
+x86_64               randconfig-f001-20200405
+x86_64               randconfig-f002-20200405
+x86_64               randconfig-f003-20200405
+i386                 randconfig-f001-20200405
+i386                 randconfig-f002-20200405
+i386                 randconfig-f003-20200405
+x86_64               randconfig-g001-20200405
+x86_64               randconfig-g002-20200405
+x86_64               randconfig-g003-20200405
+i386                 randconfig-g001-20200405
+i386                 randconfig-g002-20200405
+i386                 randconfig-g003-20200405
+x86_64               randconfig-h001-20200405
+x86_64               randconfig-h002-20200405
+x86_64               randconfig-h003-20200405
+i386                 randconfig-h001-20200405
+i386                 randconfig-h002-20200405
+i386                 randconfig-h003-20200405
+arm64                randconfig-a001-20200406
+sparc                randconfig-a001-20200406
+ia64                 randconfig-a001-20200406
+arc                  randconfig-a001-20200406
+arm                  randconfig-a001-20200406
+arc                  randconfig-a001-20200405
+arm                  randconfig-a001-20200405
+arm64                randconfig-a001-20200405
+ia64                 randconfig-a001-20200405
+powerpc              randconfig-a001-20200405
+sparc                randconfig-a001-20200405
+riscv                            allmodconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                    nommu_virt_defconfig
+riscv                          rv32_defconfig
+s390                             alldefconfig
+s390                             allmodconfig
+s390                             allyesconfig
+s390                          debug_defconfig
+s390                                defconfig
+sh                          rsk7269_defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                          allyesconfig
+sparc64                             defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+um                                  defconfig
+x86_64                               rhel-7.6
+x86_64                         rhel-7.2-clear
+x86_64                              fedora-25
+x86_64                                  kexec
+x86_64                                    lkp
+x86_64                                   rhel
+
 ---
- drivers/tty/hvc/hvc_console.c | 23 ++++++++++++++---------
- 1 file changed, 14 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
-index 27284a2dcd2b..436cc51c92c3 100644
---- a/drivers/tty/hvc/hvc_console.c
-+++ b/drivers/tty/hvc/hvc_console.c
-@@ -302,10 +302,6 @@ int hvc_instantiate(uint32_t vtermno, int index, const struct hv_ops *ops)
- 	vtermnos[index] = vtermno;
- 	cons_ops[index] = ops;
- 
--	/* reserve all indices up to and including this index */
--	if (last_hvc < index)
--		last_hvc = index;
--
- 	/* check if we need to re-register the kernel console */
- 	hvc_check_console(index);
- 
-@@ -960,13 +956,22 @@ struct hvc_struct *hvc_alloc(uint32_t vtermno, int data,
- 		    cons_ops[i] == hp->ops)
- 			break;
- 
--	/* no matching slot, just use a counter */
--	if (i >= MAX_NR_HVC_CONSOLES)
--		i = ++last_hvc;
-+	if (i >= MAX_NR_HVC_CONSOLES) {
-+
-+		/* find 'empty' slot for console */
-+		for (i = 0; i < MAX_NR_HVC_CONSOLES && vtermnos[i] != -1; i++) {
-+		}
-+
-+		/* no matching slot, just use a counter */
-+		if (i == MAX_NR_HVC_CONSOLES)
-+			i = ++last_hvc + MAX_NR_HVC_CONSOLES;
-+	}
- 
- 	hp->index = i;
--	cons_ops[i] = ops;
--	vtermnos[i] = vtermno;
-+	if (i < MAX_NR_HVC_CONSOLES) {
-+		cons_ops[i] = ops;
-+		vtermnos[i] = vtermno;
-+	}
- 
- 	list_add_tail(&(hp->next), &hvc_structs);
- 	mutex_unlock(&hvc_structs_mutex);
--- 
-2.24.1
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
