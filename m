@@ -2,164 +2,135 @@ Return-Path: <SRS0=i/4Y=5W=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 531FFC2BA1E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 10:08:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D138BC2BA19
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 10:09:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 078552063A
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 10:08:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6144520678
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 10:09:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="jEyka+27"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 078552063A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=web.de header.i=@web.de header.b="AeXxU4Ft"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6144520678
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=web.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48wmSh0VX9zDqpR
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 20:08:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.ru (client-ip=2607:f8b0:4864:20::633;
- helo=mail-pl1-x633.google.com; envelope-from=aik@ozlabs.ru;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48wmVZ2glmzDr3b
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 20:09:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
- header.i=@ozlabs-ru.20150623.gappssmtp.com header.a=rsa-sha256
- header.s=20150623 header.b=jEyka+27; dkim-atps=neutral
-Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com
- [IPv6:2607:f8b0:4864:20::633])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=pass (sender SPF authorized) smtp.mailfrom=web.de
+ (client-ip=217.72.192.78; helo=mout.web.de;
+ envelope-from=markus.elfring@web.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=web.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ secure) header.d=web.de header.i=@web.de header.a=rsa-sha256
+ header.s=dbaedf251592 header.b=AeXxU4Ft; 
+ dkim-atps=neutral
+Received: from mout.web.de (mout.web.de [217.72.192.78])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48wmBz1hWKzDqpq
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Apr 2020 19:56:11 +1000 (AEST)
-Received: by mail-pl1-x633.google.com with SMTP id e1so5702708plt.9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Apr 2020 02:56:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
- h=subject:to:references:from:autocrypt:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=+02bV+VYj5FqBIID4PNHvkpLCv1dEehJxv9kiUtaJM8=;
- b=jEyka+273MxT+i/ogybp8/qt3+RwmJs5ZQEqyVHKjqlm/kortyhH37nFgyEkLWQaqu
- 3TN3dh6ZKY0F8mwKsD817LbxkRDQpoQdbEVOBsLmtC2I4iv41qj7RWfRDTpF2RbxRIav
- BIk4LnphTeidYjnDduc5EMpSU6et6YoIaZldL3GV7WFgDVLZZbaMQGrQshI75pbRw1hF
- llw0VtfmFvcLD5+DLGBpRqkg0vphBnRq7s7oDNhurMTbqPGaNhDxmotdcidExeChrQoe
- g9VFw2yyqKBpxWQbNQe5Z0OfkQ6BmD8Aqb/LLjth3VoF3vFeBtE1WJ+/wc5LAeBHzYl/
- /uWg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:references:from:autocrypt:message-id
- :date:user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=+02bV+VYj5FqBIID4PNHvkpLCv1dEehJxv9kiUtaJM8=;
- b=Dgpk1RrbwqPpCTbBXqU1v3Oz32N8tI2CMVINnAHDitM7xEzVrLA2rR5yCPAyWkV5fg
- iUyCNE8wBY6YQ54WY60kxOOU1mh71P/7niFA9TJeJFnR4gPaQLS+r3hph4W1HKC1Vpru
- RHx+9yBMUWg8VJXcJffDPL1ch1jd9giXjAxEHABotI13FHylDVbNNE5Vy5y9jFNUPl1G
- X9zhuktVY3CLSo3wgdym9wCZutugfElX489VtJ1Rp8mAbAtkc6/O/MTM7DJhJlKcq1te
- m7Lu01ESOx2wi31fkL+imrRRXuVUPx2gvbFWLdO5A4sMb2UtNzv5OsPNWVFBjd2jupYh
- n9kg==
-X-Gm-Message-State: AGi0PuaIvdc+aRq0lgpCXzXyrTCypgIOTnI4lXD6T0Bn2/BCXNOIHTNb
- 240ZWBpUSSlqZCyctGkLkPitgfVrxeI=
-X-Google-Smtp-Source: APiQypLExUN/0UVAOBF/Nly7dXUOp1+4Om8iQu6FSEDF7sRIell2xuy3k5HqE2vhXBiC2rrtBW25EQ==
-X-Received: by 2002:a17:90a:346f:: with SMTP id
- o102mr25440578pjb.162.1586166967181; 
- Mon, 06 Apr 2020 02:56:07 -0700 (PDT)
-Received: from [192.168.10.94] (124-171-87-207.dyn.iinet.net.au.
- [124.171.87.207])
- by smtp.gmail.com with ESMTPSA id e30sm4521516pgn.92.2020.04.06.02.56.05
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Mon, 06 Apr 2020 02:56:06 -0700 (PDT)
-Subject: Re: Make PowerNV IOMMU group setup saner (and fix it for hotpug)
-To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <20200406030745.24595-1-oohall@gmail.com>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Autocrypt: addr=aik@ozlabs.ru; keydata=
- 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
-Message-ID: <5f23712e-2525-2d91-7c16-afd32e423291@ozlabs.ru>
-Date: Mon, 6 Apr 2020 19:56:03 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48wmLV5QPxzDqTy
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Apr 2020 20:02:42 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=web.de;
+ s=dbaedf251592; t=1586167335;
+ bh=JFE5yypuYuZzW5WwkCf5zJCeEjjeW5Qyz2xHEI/OQro=;
+ h=X-UI-Sender-Class:Subject:To:Cc:References:From:Date:In-Reply-To;
+ b=AeXxU4Ft+bfibvhKa1wd1ofSGRd3Vc2QvFsYjP4jYUSx9mF6gDu8I7uFj/SGkmGZ8
+ vWzuekP6x1pCbmccTvIIBd/Ra+wAf9vvV7XcWMC5cQm1K8j431TQxbSo9PrSbpaLJo
+ oYC0gGe3zM/mL39+/v+P4cbM4wmQ98PE76GD9tx8=
+X-UI-Sender-Class: c548c8c5-30a9-4db5-a2e7-cb6cb037b8f9
+Received: from [192.168.1.3] ([2.243.176.200]) by smtp.web.de (mrweb101
+ [213.165.67.124]) with ESMTPSA (Nemesis) id 0MLPaA-1jKqLl2TAo-000bTG; Mon, 06
+ Apr 2020 12:02:15 +0200
+Subject: Re: [PATCH v3] powerpc/powernv: add NULL check after kzalloc in
+ opal_add_one_export
+To: Oliver O'Halloran <oohall@gmail.com>, Qiujun Huang <hqjagain@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
+References: <d4a96597-6704-3030-b936-6282f0994f09@web.de>
+ <CAJRQjofnnhzOp4yis=sL85ESDvNApXHL3dpv6T1NJL-Wh0OOfA@mail.gmail.com>
+ <CAOSf1CGLZ5H1cUsv6atZ7hNpQ+PDyyAjp6dzJjXMwC5XoUOVQQ@mail.gmail.com>
+From: Markus Elfring <Markus.Elfring@web.de>
+Autocrypt: addr=Markus.Elfring@web.de; prefer-encrypt=mutual; keydata=
+ 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 FEE=
+Message-ID: <d8334f5d-403f-941f-abcc-2714d297082b@web.de>
+Date: Mon, 6 Apr 2020 12:02:11 +0200
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.5.0
+ Thunderbird/68.6.0
 MIME-Version: 1.0
-In-Reply-To: <20200406030745.24595-1-oohall@gmail.com>
+In-Reply-To: <CAOSf1CGLZ5H1cUsv6atZ7hNpQ+PDyyAjp6dzJjXMwC5XoUOVQQ@mail.gmail.com>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:elEk+FNh8DDJPDv/vyH6T56FR0YYNiKzXr4V9womxuj82Z9nlRJ
+ kwGWRYm6uUINU7LmcwSiwuDOx5GpWeckFgvh+wl2hDWyLjPw92i9hzQ3zp9TQmge7w3IYEx
+ KwQjWf2vk77EoruoH1ginatKYhFuHunaW80ZuSEol/IOYLcORXGYU4LMDZarBROZ5i4bOuR
+ LT7dSexaBA2gKYcXRwpUw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:vlDb4B/53Qw=:1NKXuT386l1Fvr7BkC+8H0
+ pqjuPnBHtPWYqYeEtMcZ0beJbJ7pApfaK3RERVLEM67BH4orWFA3aioHnQPViqP+oD+O2+1ZR
+ UMxiUhCefNQGK3xnjbMEr6lArR1FOwqofj8KDpbQkjT/IPbuF8w0Pds8HMXBteFEf5fqWwlK+
+ 3XX1LUuEm5w1CVfMU1xT1tAhYXyHmvi4MpVtLQBH2C6otrmxEieafaMrDC/XHJ0Td6xgvZbNh
+ XGKIjTlk9xmFztvrPgpvURct/haGXHljh5Ad+ADolWnHZiEH7+eZO9+z3Fq2Pfwy3GFgEE8RF
+ VhdyvrGz2IZ3uXeLkUQpl9Cv7lCRWDBrOzQ6k1d0lQ6XK8sm1NLi3xxp6otP3Ns42BNgTB5aQ
+ UPgNGqicte+S/j0CMU2HzjB/Wx+OjSPCt6u3JdLs650faC2t3SIQ5jecYkXbqWjVMtNSrHtpk
+ 54JqaVGIPV8cPJvMmc7i7C+LH9Y0p+gHIxpFF6rerESr7oib7FzAtLeH2l2yv0WHB2hxZIxwk
+ qlg8bOsqFFWZnYXlfvQquL1/9uwfsCgNDk3VTDoVjntwnESiu7dwFbSlQgP4gZbNVwBD7hOcW
+ LS1Ae/1m4tMIM8toUJL7rnfRTp31LGFEfWJZdIkwf/OHihUxfOpoQv3yHMK4gfOFG9FmPTw/i
+ bXETrBCURHEJD5pyHXPX8hqtFxocfPNm7y4KFYEEfyZSZKX3vxgrKyRo57a1FKtO+Am0fQWeJ
+ xawbxIwV0R+RKEVgFhy5VB5/tTKldtMqXQH8+pfl0IOKmHmV8IzG5iiy5LVvumbPujD0ADoix
+ vtWSaU/sBPDNLxNCMUTnd65Lg1tPp3Kb8Bsow3cY/BeNt18pNSO+BD+vmY9hxlwLjLPWTL1RM
+ 7TyU1FYe6gbYDaHe4hceUf8Ubpu2/3zsbuLPBypTO7HJMbdqOMvgFADH+PVUN1nIjgqqn+YTG
+ dH2A9YOC2IssffSImD901ciwba0JH/OsYqiUBGeFxPbu551tF0zbyeGCiCMHiSaQJyx/BFq5o
+ qgBgk5v1n2fF3M+S8nyZbKDRqA/fZOV9N0Xn3jafefW5eJrYjU46XR9t0CPq9LYpCXwzvdcfe
+ bHN8/iQTwnqqah6i8Uk4i2XqB8GCZQnCrzTyqPN9T4kgH3zS50Cv5K2X+wgAEP9Jz6eRfE4t3
+ U0tRk9MAneqmfvdrXH0ZVhiBdqYtC7edyd+8ZHvC5r4ia5vp9J5UgbzHiAWoMcwiIwjIztCdj
+ XELNB9T60SkvFMYRW
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -171,45 +142,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Paul Mackerras <paulus@samba.org>,
+ LKML <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+>>>> Here needs a NULL check.
+>> quite obvious?
+
+I suggest to consider another fine-tuning for the wording also around
+such =E2=80=9Cobvious=E2=80=9D programming items.
 
 
-On 06/04/2020 13:07, Oliver O'Halloran wrote:
-> Currently on PowerNV the IOMMU group of a device is initialised in
-> boot-time fixup which runs after devices are probed. Because this is
-> only run at boot time hotplugged devices do not recieve an iommu group
-> assignment which prevents them from being passed through to a guest.
-> 
-> This series fixes that by moving the point where IOMMU groups are
-> registered to when we configure DMA for a PE, and moves the point where
-> we add a device to the PE's IOMMU group into the per-device DMA setup
-> callback for IODA phbs (pnv_pci_ioda_dma_dev_setup()). This change means
-> that we'll do group setup for hotplugged devices and that we can remove
-> the hack we have for VFs which are currently added to their group
-> via a bus notifier.
-> 
-> With this change there's no longer any per-device setup that needs to
-> run in a fixup for ordinary PCI devices. The exception is, as per usual,
-> NVLink devices. For those the GPU and any of it's NVLink devices need
-> to be in a "compound" IOMMU group which keeps the DMA address spaces
-> of each device in sync with it's attached devices. As a result that
-> setup can only be done when both the NVLink devices and the GPU device
-> has been probed, so that setup is still done in the fixup. Sucks, but
-> it's still an improvement.
-> 
-> Boot tested on a witherspoon with 6xGPUs and it didn't crash so it must
-> be good.
+>>> I find this change description questionable
+>>> (despite of a reasonable patch subject).
 
-Thanks for cleaning this up!
+I got further development concerns.
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Do=
+cumentation/process/submitting-patches.rst?id=3Da10c9c710f9ecea87b9f4bbb83=
+7467893b4bef01#n129
 
-I tried this with IOV on P8 (garrison2) and witherspoon+GPU+NPU
-passthrough, works, as before, IOMMU group numbers change but we never
-relied on those anyway.
+* Were changes mixed for different issues according to the diff code?
+
+* I find it safer here to split specific changes into separate update step=
+s
+  for a small patch series.
+
+* Will the addition of the desired null pointer check qualify for
+  the specification of the tag =E2=80=9CFixes=E2=80=9D?
 
 
+>>> Will a patch change log be helpful here?
+>> I realized I should write some change log, and the change log was meani=
+ngless.
 
--- 
-Alexey
+Will any more adjustments happen for the discussed update suggestion
+after the third patch version?
+
+
+> The changelog is fine IMO. The point of a changelog is to tell a
+> reader doing git archeology why a change happened and this is
+> sufficent for that.
+
+We might stumble on a different understanding for the affected =E2=80=9Cch=
+ange logs=E2=80=9D.
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Do=
+cumentation/process/submitting-patches.rst?id=3Da10c9c710f9ecea87b9f4bbb83=
+7467893b4bef01#n751
+
+Would you like to follow the patch evolution a bit easier?
+
+Regards,
+Markus
