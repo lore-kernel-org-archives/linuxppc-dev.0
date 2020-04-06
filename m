@@ -2,86 +2,87 @@ Return-Path: <SRS0=i/4Y=5W=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E8D0C2BA17
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 03:00:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 079F4C2D0F4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 03:09:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DBE8520719
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 03:00:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9F68220738
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 03:09:51 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="NqPNfIWg"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DBE8520719
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="aamsoEdj"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F68220738
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48wZzL2xbJzDr0x
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 13:00:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48wbB525gSzDr0N
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 13:09:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::542;
- helo=mail-pg1-x542.google.com; envelope-from=viresh.kumar@linaro.org;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::642;
+ helo=mail-pl1-x642.google.com; envelope-from=oohall@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linaro.org
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
- header.s=google header.b=NqPNfIWg; dkim-atps=neutral
-Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
- [IPv6:2607:f8b0:4864:20::542])
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=aamsoEdj; dkim-atps=neutral
+Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
+ [IPv6:2607:f8b0:4864:20::642])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48wZxF30PJzDqwp
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Apr 2020 12:58:36 +1000 (AEST)
-Received: by mail-pg1-x542.google.com with SMTP id l14so6888543pgb.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Apr 2020 19:58:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=Snmazk82MB0/0cCIeeJxaxYr1fCvgV5xCLT8s21RwAs=;
- b=NqPNfIWgOWaM4sqrQjkJIXbp4kT3YO3B6wIsbdOFmc7pyXoGE+VpXs21oojmhTvtCm
- Y+y1dtXB9zv/cjK4hEKRyVCSiKUqpVhrhbMDH0nxoyKBSwhydSdWpqPFNrMbYEONwqRW
- aPZFVQ+NIt+dsDmxklpi93KoEIHkfhL69mX9exDgI3NQ7tsVfsbL/lQC2vH8WXGmiQ18
- tK1paQ3pARNq8QchfUQ0D4YtTSh6wI92NpK4P6clPK4hPofDCqwBhwYS+iMTL+iVNgCJ
- Eu0wi6WiU9hZSkSnbDcsayaICj10GcZoZ1P4m/kiIeeE+qqGEfWThwuD5BK6c41DsOE8
- 33/w==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48wb83022nzDqvY
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Apr 2020 13:08:02 +1000 (AEST)
+Received: by mail-pl1-x642.google.com with SMTP id s23so5335111plq.13
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Apr 2020 20:08:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=E2qWsIMiygkD4gxWJ4WDuEUPozx3Qle5TChbeDfpN3M=;
+ b=aamsoEdjLOOoqHNOV4CId51Cndrk4wm8xRf7qKZ3UiViLyE5PLY85NQqXC8CkGP9dT
+ QRfzE099nXj0iUcGTpUuxyzQIhNRyQUrEq4Gy/nsU6nkriLptnO2NNiOs/3BGTgczmA1
+ +LOXcBl03GAJS9WozdhuqVSxeYxY3vzUjQgfkIoU2smXvlX2yRmNzj8R9wp2yiQ61G7W
+ 5VGqe+hhI2Eo7cwMuTBYLO+kR3cFCb5wAhDEKYL9MSiRQ06liZwrWDV8FYVr8Rz4QKDb
+ 30dTbgFfX12C+ECB43vsLSW/RXa9qQT49H8DOJD4Xr4jrqxL6C9txfvajQJaiZZp64ES
+ 7OBw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=Snmazk82MB0/0cCIeeJxaxYr1fCvgV5xCLT8s21RwAs=;
- b=cwmDIb/PCe6+rK1Yc3k4s8l3Gwwf3kd39RmflRWuB6PYVHr1BCPj6xbbdAMjriSLcQ
- +SsnyYfQlj4arJTLzIrMgrBe1FOXZcZ0EwDD8cM8oQD0RF7KQWKUZ4oNvGYBiFHmIHRM
- oI0qVZD1aQKYkJ8LctOgaWWHKGB7xdDAvw/orjecc7CfABhXBBpz7ZIWI4RSC3VeISOf
- 6S2Zgma3c0eQcMfrV5ttfj/DQR2oP7+jl4oXSCtUJE3q4rNqiQHRreiJFbLimaH488f6
- APdgP60H39nXmdhFAzaiRw1gIQ0rU4ThfO2HtfEL/SGTWtfQ3zpQ3lV4S4L4U1pn1QmU
- hCjw==
-X-Gm-Message-State: AGi0PubFl+hYNh+1eHt4LVSm14os7Sa3zUO3bGR8uPX7+8oySW+XcBVC
- +VURZGPpWZo0Nw875KM0sBMcMA==
-X-Google-Smtp-Source: APiQypJFIzF+3oECidi3FpRsgBdzk96yF/DdD8sX4fg1ZTuRL6fKY5vITqktCAnS0MAH0XqQp9KVDg==
-X-Received: by 2002:a63:64c2:: with SMTP id
- y185mr19296513pgb.133.1586141914636; 
- Sun, 05 Apr 2020 19:58:34 -0700 (PDT)
-Received: from localhost ([122.171.118.46])
- by smtp.gmail.com with ESMTPSA id d3sm10450782pfq.126.2020.04.05.19.58.33
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Sun, 05 Apr 2020 19:58:33 -0700 (PDT)
-Date: Mon, 6 Apr 2020 08:28:32 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Mian Yousaf Kaukab <ykaukab@suse.de>
-Subject: Re: [PATCH 1/2] cpufreq: qoriq: convert to a platform driver
-Message-ID: <20200406025832.7bbtfo52k3dz5pkj@vireshk-i7>
-References: <20200403212114.15565-1-ykaukab@suse.de>
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=E2qWsIMiygkD4gxWJ4WDuEUPozx3Qle5TChbeDfpN3M=;
+ b=KNlwvr6M8VQA5bwcOgRbgpYTpUHBxO7PbggcalIMc3JbmE2bgM/9/sWSbkiakNTDQj
+ M/4CQraCNczRnBAIE43lJaM/KI0z0sA1v8MjLw64j1hGP0+AirrGNiOegD9mJj4dz0Ba
+ 7etwiSPLRLPhTSZ3Fklt7LWodar9IEh9DB6/dwhISte091sg9IzXN0wWuFY7x7D7cacX
+ +npUtaKYjE2Kwq1VkIlOY++C5qEFdIw8YVxq7X8hCJZClExKzG4aCekuuaI4DwsaILDz
+ NqEx/c8XWLx5u7S9+Xr9uvjeryshE+9ie4ElTMFQu923wx8xzdZjcCxZLOcUlgUZEtV6
+ fGrQ==
+X-Gm-Message-State: AGi0Pub+TB1DHTFlosRMEZ7LZ4ee94j3mr3Y2a6uCWL+VfDKwowrBArT
+ 83JVQOdj+HHRNPWzagDAqXbiK/3l
+X-Google-Smtp-Source: APiQypKJt2pBrJxGjz0mCCbPe4cP5n0tN3HWf7+00JomkVpA/4NH2WMolnBGqsOJPoPs8HCfCYfwMg==
+X-Received: by 2002:a17:90a:eb0f:: with SMTP id
+ j15mr23646621pjz.139.1586142479338; 
+ Sun, 05 Apr 2020 20:07:59 -0700 (PDT)
+Received: from localhost.ibm.com ([220.240.58.168])
+ by smtp.gmail.com with ESMTPSA id e187sm10196443pfe.143.2020.04.05.20.07.57
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Sun, 05 Apr 2020 20:07:59 -0700 (PDT)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/7] powerpc/powernv/npu: Clean up compound table group
+ initialisation
+Date: Mon,  6 Apr 2020 13:07:39 +1000
+Message-Id: <20200406030745.24595-2-oohall@gmail.com>
+X-Mailer: git-send-email 2.21.1
+In-Reply-To: <20200406030745.24595-1-oohall@gmail.com>
+References: <20200406030745.24595-1-oohall@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200403212114.15565-1-ykaukab@suse.de>
-User-Agent: NeoMutt/20180716-391-311a52
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,31 +94,93 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: andy.tang@nxp.com, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, leoyang.li@nxp.com, shawnguo@kernel.org,
- linux-arm-kernel@lists.infradead.org
+Cc: aik@ozlabs.ru, Oliver O'Halloran <oohall@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 03-04-20, 23:21, Mian Yousaf Kaukab wrote:
-> The driver has to be manually loaded if it is built as a module. It
-> is neither exporting MODULE_DEVICE_TABLE nor MODULE_ALIAS. Moreover,
-> no platform-device is created (and thus no uevent is sent) for the
-> clockgen nodes it depends on.
-> 
-> Convert the module to a platform driver with its own alias. Moreover,
-> drop whitelisted SOCs. Platform device will be created only for the
-> compatible platforms.
-> 
-> Signed-off-by: Mian Yousaf Kaukab <ykaukab@suse.de>
-> ---
->  drivers/cpufreq/qoriq-cpufreq.c | 76 ++++++++++++++++-------------------------
->  1 file changed, 29 insertions(+), 47 deletions(-)
+Re-work the control flow a bit so what's going on is a little clearer.
+This also ensures the table_group is only initialised once in the P9
+case. This shouldn't be a functional change since all the GPU PCI
+devices should have the same table_group configuration, but it does
+look strange.
 
-For both patches,
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+---
+ arch/powerpc/platforms/powernv/npu-dma.c | 46 +++++++++++-------------
+ 1 file changed, 21 insertions(+), 25 deletions(-)
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
+diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+index b95b9e3c4c98..de617549c9a3 100644
+--- a/arch/powerpc/platforms/powernv/npu-dma.c
++++ b/arch/powerpc/platforms/powernv/npu-dma.c
+@@ -427,7 +427,7 @@ static void pnv_comp_attach_table_group(struct npu_comp *npucomp,
+ 
+ struct iommu_table_group *pnv_try_setup_npu_table_group(struct pnv_ioda_pe *pe)
+ {
+-	struct iommu_table_group *table_group;
++	struct iommu_table_group *compound_group;
+ 	struct npu_comp *npucomp;
+ 	struct pci_dev *gpdev = NULL;
+ 	struct pci_controller *hose;
+@@ -446,36 +446,32 @@ struct iommu_table_group *pnv_try_setup_npu_table_group(struct pnv_ioda_pe *pe)
+ 	hose = pci_bus_to_host(npdev->bus);
+ 
+ 	if (hose->npu) {
+-		table_group = &hose->npu->npucomp.table_group;
+-
+-		if (!table_group->group) {
+-			table_group->ops = &pnv_npu_peers_ops;
+-			iommu_register_group(table_group,
+-					hose->global_number,
+-					pe->pe_number);
+-		}
++		/* P9 case: compound group is per-NPU (all gpus, all links) */
++		npucomp = &hose->npu->npucomp;
+ 	} else {
+-		/* Create a group for 1 GPU and attached NPUs for POWER8 */
+-		pe->npucomp = kzalloc(sizeof(*pe->npucomp), GFP_KERNEL);
+-		table_group = &pe->npucomp->table_group;
+-		table_group->ops = &pnv_npu_peers_ops;
+-		iommu_register_group(table_group, hose->global_number,
+-				pe->pe_number);
++		/* P8 case: Compound group is per-GPU (1 gpu, 2 links) */
++		npucomp = pe->npucomp = kzalloc(sizeof(*npucomp), GFP_KERNEL);
+ 	}
+ 
+-	/* Steal capabilities from a GPU PE */
+-	table_group->max_dynamic_windows_supported =
+-		pe->table_group.max_dynamic_windows_supported;
+-	table_group->tce32_start = pe->table_group.tce32_start;
+-	table_group->tce32_size = pe->table_group.tce32_size;
+-	table_group->max_levels = pe->table_group.max_levels;
+-	if (!table_group->pgsizes)
+-		table_group->pgsizes = pe->table_group.pgsizes;
++	compound_group = &npucomp->table_group;
++	if (!compound_group->group) {
++		compound_group->ops = &pnv_npu_peers_ops;
++		iommu_register_group(compound_group, hose->global_number,
++				pe->pe_number);
++
++		/* Steal capabilities from a GPU PE */
++		compound_group->max_dynamic_windows_supported =
++			pe->table_group.max_dynamic_windows_supported;
++		compound_group->tce32_start = pe->table_group.tce32_start;
++		compound_group->tce32_size = pe->table_group.tce32_size;
++		compound_group->max_levels = pe->table_group.max_levels;
++		if (!compound_group->pgsizes)
++			compound_group->pgsizes = pe->table_group.pgsizes;
++	}
+ 
+-	npucomp = container_of(table_group, struct npu_comp, table_group);
+ 	pnv_comp_attach_table_group(npucomp, pe);
+ 
+-	return table_group;
++	return compound_group;
+ }
+ 
+ struct iommu_table_group *pnv_npu_compound_attach(struct pnv_ioda_pe *pe)
 -- 
-viresh
+2.21.1
+
