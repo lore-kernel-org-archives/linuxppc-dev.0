@@ -2,41 +2,73 @@ Return-Path: <SRS0=i/4Y=5W=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8347BC2BA19
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 13:51:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9CCC4C2BA19
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 13:54:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3EAB62336E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 13:51:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3EAB62336E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 535D922582
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 13:54:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 535D922582
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48wsQT5wyBzDrJY
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 23:51:29 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 48wsTR1HBkzDr1Z
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 23:54:03 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=arndb.de
+ (client-ip=212.227.126.134; helo=mout.kundenserver.de;
+ envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arndb.de
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.134])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48wrQ72KqszDqbt
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Apr 2020 23:06:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 48wrQ63WhXz9sSy; Mon,  6 Apr 2020 23:06:05 +1000 (AEST)
-X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: d16a58f8854b194c964a4bbe8156ec624ebfdbd2
-In-Reply-To: <20200403131006.123243-1-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: improve ppc_save_regs
-Message-Id: <48wrQ63WhXz9sSy@ozlabs.org>
-Date: Mon,  6 Apr 2020 23:06:05 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48wrZC2BTjzDqtl
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Apr 2020 23:13:06 +1000 (AEST)
+Received: from mail-qk1-f173.google.com ([209.85.222.173]) by
+ mrelayeu.kundenserver.de (mreue010 [212.227.15.129]) with ESMTPSA (Nemesis)
+ id 1MEmMt-1jVahp2edv-00GKvH for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Apr
+ 2020 15:13:02 +0200
+Received: by mail-qk1-f173.google.com with SMTP id o18so13180358qko.12
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Apr 2020 06:13:02 -0700 (PDT)
+X-Gm-Message-State: AGi0PuaBIIbqtmKTULFVC7Hg6geHFygw6pm6YDOows8Skj4pFn/2dOF+
+ RQBsZz6SjGhXHj64eRpPm/5ykG5lIQ8fsmC7nAc=
+X-Google-Smtp-Source: APiQypK8zqZk5uLnoIubAdQeJgGTiVyPkpSzxxqDGQ7EZ4yy/nSPnZICKVDeK2bBxoQfBZJEyLjW+qUVp5bYDvV/ciM=
+X-Received: by 2002:a37:2714:: with SMTP id n20mr6302088qkn.138.1586178781557; 
+ Mon, 06 Apr 2020 06:13:01 -0700 (PDT)
+MIME-Version: 1.0
+References: <20200406120312.1150405-1-hch@lst.de>
+ <20200406120312.1150405-2-hch@lst.de>
+In-Reply-To: <20200406120312.1150405-2-hch@lst.de>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Mon, 6 Apr 2020 15:12:45 +0200
+X-Gmail-Original-Message-ID: <CAK8P3a1YdCuChb0mOU1+27PHK9qK6NGkuKfrHQa4LC=1LZmPTw@mail.gmail.com>
+Message-ID: <CAK8P3a1YdCuChb0mOU1+27PHK9qK6NGkuKfrHQa4LC=1LZmPTw@mail.gmail.com>
+Subject: Re: [PATCH 1/6] powerpc/spufs: simplify spufs core dumping
+To: Christoph Hellwig <hch@lst.de>
+Content-Type: text/plain; charset="UTF-8"
+X-Provags-ID: V03:K1:MVHMNJVbot1x+2RamT4BheYWQ4BV8svB9PbcfLCTJzAUPcti3F+
+ zaZ2074mRwwTlDFCod9SWB3z08TWFB0CZ3Sxzj+14EEYipIrufzu6j4gQLVjjIDCSzYSrZ4
+ zXmcrObI0cY36AW9YV7G1WewQX1YEpbqJ608rGpZk7XQD4YnpY7z6/tl3gk8pSnBczVo2ws
+ BNRs3VI2fWEsRtFbM9UsA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:kVAC9ct4C8M=:e8V1jROxYphQEURklNLK3u
+ UY1cErNbNZnoaGWJvY+bwGjz8wnEd5VDMwEldPw862QwCfX5IMz6DLCoCo90YQax+KDZzjWFk
+ 1klAcc/3hl5w0JTT/UA1NsQkm+w/1DjCCyFkZtnIokzQ6SaRX0xC54r3vVlhNABSLaPgwISMl
+ yTeyTV5LjVZ9IuKyUUeSk51xq+IklHEMUU0EDbgKtkegoHHCm3w0k8+sWCqAKBUkgOTae2vFi
+ QhqnZPKCZv+5IELf/qPr9ErELrbE/eaJkHiTzvBwwPppjWJSKs8DTUvsTwJdiCn6tHslHmRws
+ 6BlalfDjEy0PXqWPiPokhcdbRK34od0NZ1Qw5/6LEz2w9SeBspZmiGwcleTmTQn06TevwXYPU
+ BZnZ3C4B+AeyTLu9Zj65fjh70mET9XfI0Ls+RjdpH9jiPVtT6vd7DHnbddOOWUarjCViXSpGv
+ Odbb1tNdPiM5lH9coe7p70z8eWRxFcBr04WmFfO/LKeuj8vcC3XO1oEWSDhId6JTCzGgX5cif
+ M8nriCv4ndeirKHeCrbsq92Wyy2FDAlqeNjmJoEFLxpQB1SydtbBMCjTjD2v6qRK8JhYbFzAj
+ z2ZhIkJ7M+dWIv7wknMTsrXZTd7eWghphayZeHDgC5ndj3eqAVd6v29oBi4ZgOi8V+sbuI2WS
+ +2bYNZdwgZxlqAi1pFk0t7tOxe8Ka2snMwrk1HW4c3STiL1Cl5TdFebZLlKFQwTAr6Ua3tYWi
+ ffbBtC5JwImPNUwewJa1JFPLyXSOPqpyNn2J4/W4+XL6wMhljmaj2Uba1rjdrQxvXV/aT1eAR
+ Vn5gODNyJh1FwLOfCTsRQNz7OQwWJzarLV1q7WGrIFrlXySFog=
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,86 +80,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Alexander Viro <viro@zeniv.linux.org.uk>,
+ Linux FS-devel Mailing List <linux-fsdevel@vger.kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Jeremy Kerr <jk@ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2020-04-03 at 13:10:05 UTC, Nicholas Piggin wrote:
-> Make ppc_save_regs a bit more useful:
-> - Set NIP to our caller rather rather than the caller's caller (which is
->   what we save to LR in the stack frame).
-> - Set SOFTE to the current irq soft-mask state rather than
->   uninitialised.
-> - Zero CFAR rather than leave it uninitialised.
-> 
-> In qemu, injecting a nmi to an idle CPU gives a nicer stack trace (note
-> NIP, IRQMASK, CFAR).
-> 
->   Oops: System Reset, sig: 6 [#1]
->   LE PAGE_SIZE=64K MMU=Hash PREEMPT SMP NR_CPUS=2048 NUMA PowerNV
->   Modules linked in:
->   CPU: 0 PID: 0 Comm: swapper/0 Not tainted 5.6.0-rc2-00429-ga76e38fd80bf #1277
->   NIP:  c0000000000b6e5c LR: c0000000000b6e5c CTR: c000000000b06270
->   REGS: c00000000173fb08 TRAP: 0100   Not tainted
->   MSR:  9000000000001033 <SF,HV,ME,IR,DR,RI,LE>  CR: 28000224  XER: 00000000
->   CFAR: c0000000016a2128 IRQMASK: c00000000173fc80
->   GPR00: c0000000000b6e5c c00000000173fc80 c000000001743400 c00000000173fb08
->   GPR04: 0000000000000000 0000000000000000 0000000000000008 0000000000000001
->   GPR08: 00000001fea80000 0000000000000000 0000000000000000 ffffffffffffffff
->   GPR12: c000000000b06270 c000000001930000 00000000300026c0 0000000000000000
->   GPR16: 0000000000000000 0000000000000000 0000000000000003 c0000000016a2128
->   GPR20: c0000001ffc97148 0000000000000001 c000000000f289a8 0000000000080000
->   GPR24: c0000000016e1480 000000011dc870ba 0000000000000000 0000000000000003
->   GPR28: c0000000016a2128 c0000001ffc97148 c0000000016a2260 0000000000000003
->   NIP [c0000000000b6e5c] power9_idle_type+0x5c/0x70
->   LR [c0000000000b6e5c] power9_idle_type+0x5c/0x70
->   Call Trace:
->   [c00000000173fc80] [c0000000000b6e5c] power9_idle_type+0x5c/0x70 (unreliable)
->   [c00000000173fcb0] [c000000000b062b0] stop_loop+0x40/0x60
->   [c00000000173fce0] [c000000000b022d8] cpuidle_enter_state+0xa8/0x660
->   [c00000000173fd60] [c000000000b0292c] cpuidle_enter+0x4c/0x70
->   [c00000000173fda0] [c00000000017624c] call_cpuidle+0x4c/0x90
->   [c00000000173fdc0] [c000000000176768] do_idle+0x338/0x460
->   [c00000000173fe60] [c000000000176b3c] cpu_startup_entry+0x3c/0x40
->   [c00000000173fe90] [c0000000000126b4] rest_init+0x124/0x140
->   [c00000000173fed0] [c0000000010948d4] start_kernel+0x938/0x988
->   [c00000000173ff90] [c00000000000cdcc] start_here_common+0x1c/0x20
-> 
->   Oops: System Reset, sig: 6 [#1]
->   LE PAGE_SIZE=64K MMU=Hash PREEMPT SMP NR_CPUS=2048 NUMA PowerNV
->   Modules linked in:
->   CPU: 0 PID: 0 Comm: swapper/0 Not tainted 5.6.0-rc2-00430-gddce91b8712f #1278
->   NIP:  c00000000001d150 LR: c0000000000b6e5c CTR: c000000000b06270
->   REGS: c00000000173fb08 TRAP: 0100   Not tainted
->   MSR:  9000000000001033 <SF,HV,ME,IR,DR,RI,LE>  CR: 28000224  XER: 00000000
->   CFAR: 0000000000000000 IRQMASK: 1
->   GPR00: c0000000000b6e5c c00000000173fc80 c000000001743400 c00000000173fb08
->   GPR04: 0000000000000000 0000000000000000 0000000000000008 0000000000000001
->   GPR08: 00000001fea80000 0000000000000000 0000000000000000 ffffffffffffffff
->   GPR12: c000000000b06270 c000000001930000 00000000300026c0 0000000000000000
->   GPR16: 0000000000000000 0000000000000000 0000000000000003 c0000000016a2128
->   GPR20: c0000001ffc97148 0000000000000001 c000000000f289a8 0000000000080000
->   GPR24: c0000000016e1480 00000000b68db8ce 0000000000000000 0000000000000003
->   GPR28: c0000000016a2128 c0000001ffc97148 c0000000016a2260 0000000000000003
->   NIP [c00000000001d150] replay_system_reset+0x30/0xa0
->   LR [c0000000000b6e5c] power9_idle_type+0x5c/0x70
->   Call Trace:
->   [c00000000173fc80] [c0000000000b6e5c] power9_idle_type+0x5c/0x70 (unreliable)
->   [c00000000173fcb0] [c000000000b062b0] stop_loop+0x40/0x60
->   [c00000000173fce0] [c000000000b022d8] cpuidle_enter_state+0xa8/0x660
->   [c00000000173fd60] [c000000000b0292c] cpuidle_enter+0x4c/0x70
->   [c00000000173fda0] [c00000000017624c] call_cpuidle+0x4c/0x90
->   [c00000000173fdc0] [c000000000176768] do_idle+0x338/0x460
->   [c00000000173fe60] [c000000000176b38] cpu_startup_entry+0x38/0x40
->   [c00000000173fe90] [c0000000000126b4] rest_init+0x124/0x140
->   [c00000000173fed0] [c0000000010948d4] start_kernel+0x938/0x988
->   [c00000000173ff90] [c00000000000cdcc] start_here_common+0x1c/0x20
-> 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+On Mon, Apr 6, 2020 at 2:03 PM Christoph Hellwig <hch@lst.de> wrote:
+>
+> Replace the coredump ->read method with a ->dump method that must call
+> dump_emit itself.  That way we avoid a buffer allocation an messing with
+> set_fs() to call into code that is intended to deal with user buffers.
+> For the ->get case we can now use a small on-stack buffer and avoid
+> memory allocations as well.
 
-Applied to powerpc next, thanks.
+I had no memory of this code at all, but your change looks fine to me.
+Amazingly you even managed to even make it smaller and more readable
 
-https://git.kernel.org/powerpc/c/d16a58f8854b194c964a4bbe8156ec624ebfdbd2
-
-cheers
+Reviewed-by: Arnd Bergmann <arnd@arndb.de>
