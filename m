@@ -2,80 +2,85 @@ Return-Path: <SRS0=i/4Y=5W=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5289C2D0F4
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 03:11:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36677C2D0F4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 03:13:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8B6D020738
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 03:11:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D7FE320738
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 03:13:26 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="J8lTbrbR"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8B6D020738
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hNfudXPj"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D7FE320738
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48wbD53M4CzDqxX
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 13:11:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48wbGD5vQTzDqjp
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 13:13:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42b;
- helo=mail-pf1-x42b.google.com; envelope-from=oohall@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::642;
+ helo=mail-pl1-x642.google.com; envelope-from=oohall@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=J8lTbrbR; dkim-atps=neutral
-Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com
- [IPv6:2607:f8b0:4864:20::42b])
+ header.s=20161025 header.b=hNfudXPj; dkim-atps=neutral
+Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
+ [IPv6:2607:f8b0:4864:20::642])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48wb82756YzDqs8
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Apr 2020 13:08:02 +1000 (AEST)
-Received: by mail-pf1-x42b.google.com with SMTP id f206so6859496pfa.10
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Apr 2020 20:08:02 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48wb8350lRzDqwP
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Apr 2020 13:08:03 +1000 (AEST)
+Received: by mail-pl1-x642.google.com with SMTP id w3so5355080plz.5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Apr 2020 20:08:03 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=pQP5wDfqlM1Reo+P7etosHyX354NfcGWU0e7tHfs54A=;
- b=J8lTbrbRw7roqx2E46ykpCAi5Bfc8bedF4adubz07O1StUkfXy4+tsVjPS2q2dnDTk
- w4z8hEuCJFqXaygVNFXoU5Ou+aRHTa8PF1yCmZAdXUWyfZkjGc4a89V7cFgkKnoCB7yE
- /rlhnEHRRe83bsvRPNvDh/otqRrXQh43viZT5rsPpN2bjBdbvtB7Zz3ukl0jXkm49rby
- 912Phj0K4hkkzraffoCEEpnXBZ7H2qUWv1ANcvM1E1h2esKuLoTGARmjnK5WSETHxduf
- YCsk6/4aAGceRj/L0i7zxCW0WOKfzFlLQXvTM45YDecqYB4QoDuovSeiHLWgcDVKE/jR
- OJ8A==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=9s8Dd4k0iLEu+uLz6i4AaFtNRdR5AG14qmCBn0sIFyM=;
+ b=hNfudXPjganUktUgOd+dWGSBbqG3OjXzQVEv2jXaTsTm/KAi+A51UhgADglKNrsE0M
+ QIkKkrdOAewMY2rYcaGUM5hPTj5WxauSh1a+HqorBkEvrD8Kpv/ca0gqXzR8mBLtos0a
+ 5uZUobTNJmF6LOsaHIeQ5q+WeZfwxAVxuw6T4nCRlEN0Nla58AKm/y5mmnVKxxESXwUl
+ YIB/e6hs0JLWMgKCvuo0U6nIoGvHbFTWqeoB+Nu3i//OhQJzrrOfQpNNQFuuGajg67+O
+ NocdVZZkMRCunkVxmCHiujJW5ZLCJUnaiYLFGdCvgcT2jjGquq04zAcPaNCh96d2c0v1
+ Hp7A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=pQP5wDfqlM1Reo+P7etosHyX354NfcGWU0e7tHfs54A=;
- b=pbi5I/B0EJjHInAmSgtjM/hc5XkV2zs2iKvxXMcKXnxsPp27e5p5zn/fB5CdzxSU+r
- yZzPJdJkP31ra5XWT0bn3BtSc0DMUl4bHBOxybhcMzowOjdHrF19NkO++W9oX6E0RCxl
- k7B/tnLONZpFb6mmZrvnOksLMdKAeas493fZ+rYBRw92Mv40YAQvRGu6438JvanW62ux
- dZzGFQWMG2oZhjKzZW8dI1P8tHkCrnB6gKOoJiKZ6jF8l4odjDAnVg2tO8BttFwi+Qz/
- 4XSL8Zy4FTzRct12jPzALuKWDh9RFyMW6uijvH6sbbhmmBafXypNnivizCuf3DUIHGN/
- JpHQ==
-X-Gm-Message-State: AGi0PuYZ1/o8vRWoTQmfBP1Cz9CAfQ6OxZ2GBlJm4Yl4m3Eh6VJmBdKK
- IRjbdk+5fSe+xLBZImfpfmJgAKiN
-X-Google-Smtp-Source: APiQypJGfJ39TYUfXxvsq2GtZMkZrpaK1bEMQC2pdcpvC2srCISKNHvjJtbVwSkEYs/M2hxwgM3Zwg==
-X-Received: by 2002:aa7:83c5:: with SMTP id j5mr19909009pfn.100.1586142477229; 
- Sun, 05 Apr 2020 20:07:57 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=9s8Dd4k0iLEu+uLz6i4AaFtNRdR5AG14qmCBn0sIFyM=;
+ b=nN+BYGwgc0fdHdu7l7SWSQoKWvBjg1ERfFZnEJ9bxenctpc8cwjvaqmdDWK8gL0Dh4
+ 93jJiGBzqoCPPfueO7f/rNECNaj0zaDATbtt+7e8ohCWwpEiq3tF0pPmyR+CNbxUp2gG
+ /FsgknJJdMMUex0kdKnpyquBF7T54CWoNriptUiHrnWS75eyuoe/baHX1tFQqlSlV6FA
+ fryaF8HlLvI6x1Zry/kdS05QVzC6d7k/JDJ/hrXejkdfUk0jJK8n7LkAtGgyqp9+JH3E
+ ZB6frzYaVVKpWoHwolgwWbvgGNEPaT6dcIpVvy4RY8WPXzsWkqb6T3bolujl8vgwwUsS
+ tx7Q==
+X-Gm-Message-State: AGi0Pubg/PH30wld217u5BbccGR1HEzYg5HlI/6aGmIlYJfVqlPddV3/
+ Yvy2xT+TEQ9oduA4is9ENUrmynef
+X-Google-Smtp-Source: APiQypIEgdwQ70GMS2UgD4fBUAhHSaQQ8VRjFyf7CTDnKU2xJL36W8apVVL/ZV9iNFPOR6iEMJlTRg==
+X-Received: by 2002:a17:90b:490b:: with SMTP id
+ kr11mr24148303pjb.21.1586142481499; 
+ Sun, 05 Apr 2020 20:08:01 -0700 (PDT)
 Received: from localhost.ibm.com ([220.240.58.168])
- by smtp.gmail.com with ESMTPSA id e187sm10196443pfe.143.2020.04.05.20.07.55
+ by smtp.gmail.com with ESMTPSA id e187sm10196443pfe.143.2020.04.05.20.07.59
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 05 Apr 2020 20:07:56 -0700 (PDT)
+ Sun, 05 Apr 2020 20:08:01 -0700 (PDT)
 From: Oliver O'Halloran <oohall@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: Make PowerNV IOMMU group setup saner (and fix it for hotpug)
-Date: Mon,  6 Apr 2020 13:07:38 +1000
-Message-Id: <20200406030745.24595-1-oohall@gmail.com>
+Subject: [PATCH 2/7] powerpc/powernv/iov: Don't add VFs to iommu group during
+ PE config
+Date: Mon,  6 Apr 2020 13:07:40 +1000
+Message-Id: <20200406030745.24595-3-oohall@gmail.com>
 X-Mailer: git-send-email 2.21.1
+In-Reply-To: <20200406030745.24595-1-oohall@gmail.com>
+References: <20200406030745.24595-1-oohall@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -89,34 +94,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aik@ozlabs.ru
+Cc: aik@ozlabs.ru, Oliver O'Halloran <oohall@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently on PowerNV the IOMMU group of a device is initialised in
-boot-time fixup which runs after devices are probed. Because this is
-only run at boot time hotplugged devices do not recieve an iommu group
-assignment which prevents them from being passed through to a guest.
+In pnv_ioda_setup_vf_PE() we register an iommu group for the VF PE
+then call pnv_ioda_setup_bus_iommu_group() to add devices to that group.
+However, this function is called before the VFs are scanned so there's
+no devices to add.
 
-This series fixes that by moving the point where IOMMU groups are
-registered to when we configure DMA for a PE, and moves the point where
-we add a device to the PE's IOMMU group into the per-device DMA setup
-callback for IODA phbs (pnv_pci_ioda_dma_dev_setup()). This change means
-that we'll do group setup for hotplugged devices and that we can remove
-the hack we have for VFs which are currently added to their group
-via a bus notifier.
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+---
+ arch/powerpc/platforms/powernv/pci-ioda.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-With this change there's no longer any per-device setup that needs to
-run in a fixup for ordinary PCI devices. The exception is, as per usual,
-NVLink devices. For those the GPU and any of it's NVLink devices need
-to be in a "compound" IOMMU group which keeps the DMA address spaces
-of each device in sync with it's attached devices. As a result that
-setup can only be done when both the NVLink devices and the GPU device
-has been probed, so that setup is still done in the fixup. Sucks, but
-it's still an improvement.
-
-Boot tested on a witherspoon with 6xGPUs and it didn't crash so it must
-be good.
-
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 57d3a6af1d52..2c340504fa77 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1622,7 +1622,6 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+ #ifdef CONFIG_IOMMU_API
+ 		iommu_register_group(&pe->table_group,
+ 				pe->phb->hose->global_number, pe->pe_number);
+-		pnv_ioda_setup_bus_iommu_group(pe, &pe->table_group, NULL);
+ #endif
+ 	}
+ }
+-- 
+2.21.1
 
