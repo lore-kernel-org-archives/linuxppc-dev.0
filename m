@@ -2,62 +2,90 @@ Return-Path: <SRS0=i/4Y=5W=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.7 required=3.0 tests=DATE_IN_PAST_12_24,
-	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4573AC2BA1A
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 22:41:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 70F53C2BA2B
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 22:45:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ED31A20753
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 22:41:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 16CC62072A
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 22:45:41 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="ndLxKC3j"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ED31A20753
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="kLJPEGqk"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 16CC62072A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48x59w533czDqy9
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 08:41:24 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 48x5Gp5sD5zDqgk
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 08:45:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::643;
+ helo=mail-pl1-x643.google.com; envelope-from=nicoleotsuka@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=kLJPEGqk; dkim-atps=neutral
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48x57z6NLhzDqcW
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2020 08:39:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gibson.dropbear.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.a=rsa-sha256 header.s=201602 header.b=ndLxKC3j; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 48x57z0wMQz9sQx; Tue,  7 Apr 2020 08:39:43 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1586212783;
- bh=L+6BwS8iTSp76qfstt4C3QhyP38Szgs0Xg0WTZ8BuC4=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=ndLxKC3jsJ1i5VxzQMVcVXLbDIIYCOh7zwnQkeqRO1j4Z6mAi8a5rwVBw2zJ31Ghp
- cXONh0azmLHB7kvG46E5VtsyzyPMGIjSIgYtkpS0eVC+AnYS7Vu5yEfCqTycU9RDrO
- MA6+tdF+5iebFTdghG8XjzHkMqZyRVekejr5hZf0=
-Date: Mon, 6 Apr 2020 19:58:19 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [RFC/PATCH  2/3] pseries/kvm: Clear PSSCR[ESL|EC] bits before
- guest entry
-Message-ID: <20200406095819.GC2945@umbus.fritz.box>
-References: <1585656658-1838-1-git-send-email-ego@linux.vnet.ibm.com>
- <1585656658-1838-3-git-send-email-ego@linux.vnet.ibm.com>
- <1585880159.w3mc2nk6h3.astroid@bobo.none>
- <20200403093103.GA20293@in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48x5Dq3xtGzDqXL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2020 08:43:54 +1000 (AEST)
+Received: by mail-pl1-x643.google.com with SMTP id s23so437046plq.13
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Apr 2020 15:43:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=TU6zRlp6bLsLQvuU0UNh0Rjs9SMeCJnn8DHzXq3NahA=;
+ b=kLJPEGqkkgLnVbzA/I1nZdwcgddzzL+2wXZ5Xp1wnWMMVjFPOf3YQaOQy8TL1M0v26
+ 3zVTMY9m62NSg/FwiRYeADQhn6OD90JCaiQOoLGTOSfHSyRH98rGuTU4k3wUihHLgnoM
+ 3slUwXsnIbL3ONy473/bh2JtTR12Aj8f9DfVhCGwBDD35ya2UJbjieo3M0XuSZONcaLe
+ 4NTBLpfwm38kvCsf9/fDWgJlbf9SsZEMzZfQdD7zeT5JZ+/AmrdHAqboOvL2/ycAgkdx
+ OmtkjNNiJAORPFexNi771zvXl40gfTZ8znTbAE9+pChnRuB1o2OtQonZU9tDWIsYHnrx
+ lLHw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=TU6zRlp6bLsLQvuU0UNh0Rjs9SMeCJnn8DHzXq3NahA=;
+ b=Mcbxcd/I9V5LDBX17+tiD1ezmyKWMSY7qh9P9vT98RzHhXiul2F3Cc2747cuGdYZmy
+ 3cBOFrRHyK8075irZu2IC4Ol8KdaazkdokhJ6pg7nsK8wu0CF81VlTfe0Mf3bMmwPedO
+ RvWyaqrlKC5TaA2NiDDJYhsiMVdC+V+YIancF01M/bXHKwAvUcHmR+VW8femOoITp1AW
+ /rGpL1NI9e2AkFiQ1WLVJF4eIEWUXpcFZ508t01LAMjGgaw2FhaozI/4ZHFW3v0nwfdw
+ Eknkc4AQvmziVBkVzPb0WBzV4yasXQXUVi7Sz9wj8/hLLPlx4mMjDVCiMq2IqbUDqsm0
+ V7/Q==
+X-Gm-Message-State: AGi0PuZYZ87ubRBvgV6e30s666AX2bIybZXk2eJZ5ayGhEh8TJ7fIXfp
+ QTv08AbSb8bE2eydxCSP278=
+X-Google-Smtp-Source: APiQypLOSynrL78ItHLA268DR9LFHq6YzYF0pLnuY2yHwnMr2DJQM0F4Xmt3tudbtp848HtDy2ffOQ==
+X-Received: by 2002:a17:90a:1911:: with SMTP id
+ 17mr1755900pjg.65.1586213030402; 
+ Mon, 06 Apr 2020 15:43:50 -0700 (PDT)
+Received: from Asurada-Nvidia.nvidia.com (thunderhill.nvidia.com.
+ [216.228.112.22])
+ by smtp.gmail.com with ESMTPSA id l7sm12590717pfl.171.2020.04.06.15.43.49
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Mon, 06 Apr 2020 15:43:50 -0700 (PDT)
+Date: Mon, 6 Apr 2020 15:43:52 -0700
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: Shengjiu Wang <shengjiu.wang@nxp.com>
+Subject: Re: [PATCH v6 2/7] ASoC: dt-bindings: fsl_asrc: Add new property
+ fsl,asrc-format
+Message-ID: <20200406224352.GA20891@Asurada-Nvidia.nvidia.com>
+References: <cover.1585726761.git.shengjiu.wang@nxp.com>
+ <47fcf06689d1a086141ce4d80f7ea7af7958dc89.1585726761.git.shengjiu.wang@nxp.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="pAwQNkOnpTn9IO2O"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200403093103.GA20293@in.ibm.com>
+In-Reply-To: <47fcf06689d1a086141ce4d80f7ea7af7958dc89.1585726761.git.shengjiu.wang@nxp.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,200 +97,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michael Neuling <mikey@neuling.org>, Nicholas Piggin <npiggin@gmail.com>,
- Bharata B Rao <bharata@linux.ibm.com>, linuxppc-dev@ozlabs.org,
- kvm-ppc@vger.kernel.org, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, timur@kernel.org, Xiubo.Lee@gmail.com,
+ linuxppc-dev@lists.ozlabs.org, tiwai@suse.com, lgirdwood@gmail.com,
+ robh+dt@kernel.org, perex@perex.cz, broonie@kernel.org, festevam@gmail.com,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Wed, Apr 01, 2020 at 04:45:35PM +0800, Shengjiu Wang wrote:
+> In order to support new EASRC and simplify the code structure,
+> We decide to share the common structure between them. This bring
+> a problem that EASRC accept format directly from devicetree, but
+> ASRC accept width from devicetree.
+> 
+> In order to align with new ESARC, we add new property fsl,asrc-format.
+> The fsl,asrc-format can replace the fsl,asrc-width, then driver
+> can accept format from devicetree, don't need to convert it to
+> format through width.
+> 
+> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
 
---pAwQNkOnpTn9IO2O
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Once Rob has no objection:
+Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
 
-On Fri, Apr 03, 2020 at 03:01:03PM +0530, Gautham R Shenoy wrote:
-> On Fri, Apr 03, 2020 at 12:20:26PM +1000, Nicholas Piggin wrote:
-> > Gautham R. Shenoy's on March 31, 2020 10:10 pm:
-> > > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> > >=20
-> > > ISA v3.0 allows the guest to execute a stop instruction. For this, the
-> > > PSSCR[ESL|EC] bits need to be cleared by the hypervisor before
-> > > scheduling in the guest vCPU.
-> > >=20
-> > > Currently we always schedule in a vCPU with PSSCR[ESL|EC] bits
-> > > set. This patch changes the behaviour to enter the guest with
-> > > PSSCR[ESL|EC] bits cleared. This is a RFC patch where we
-> > > unconditionally clear these bits. Ideally this should be done
-> > > conditionally on platforms where the guest stop instruction has no
-> > > Bugs (starting POWER9 DD2.3).
-> >=20
-> > How will guests know that they can use this facility safely after your
-> > series? You need both DD2.3 and a patched KVM.
->=20
->=20
-> Yes, this is something that isn't addressed in this series (mentioned
-> in the cover letter), which is a POC demonstrating that the stop0lite
-> state in guest works.
->=20
-> However, to answer your question, this is the scheme that I had in
-> mind :
->=20
-> OPAL:
->    On Procs >=3D DD2.3 : we publish a dt-cpu-feature "idle-stop-guest"
->=20
-> Hypervisor Kernel:
->     1. If "idle-stop-guest" dt-cpu-feature is discovered, then
->        we set bool enable_guest_stop =3D true;
->=20
->     2. During KVM guest entry, clear PSSCR[ESL|EC] iff
->        enable_guest_stop =3D=3D true.
->=20
->     3. In kvm_vm_ioctl_check_extension(), for a new capability
->        KVM_CAP_STOP, return true iff enable_guest_top =3D=3D true.
->=20
-> QEMU:
->    Check with the hypervisor if KVM_CAP_STOP is present. If so,
->    indicate the presence to the guest via device tree.
-
-Nack.  Presenting different capabilities to the guest depending on
-host capabilities (rather than explicit options) is never ok.  It
-means that depending on the system you start on you may or may not be
-able to migrate to other systems that you're supposed to be able to,
-
-> Guest Kernel:
->    Check for the presence of guest stop state support in
->    device-tree. If available, enable the stop0lite in the cpuidle
->    driver.=20
->   =20
->=20
-> We still have a challenge of migrating a guest which started on a
-> hypervisor supporting guest stop state to a hypervisor without it.
-> The target hypervisor should atleast have Patch 1 of this series, so
-> that we don't crash the guest.
->=20
-> >=20
-> > >=20
-> > > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> > > ---
-> > >  arch/powerpc/kvm/book3s_hv.c            |  2 +-
-> > >  arch/powerpc/kvm/book3s_hv_rmhandlers.S | 25 +++++++++++++----------=
---
-> > >  2 files changed, 14 insertions(+), 13 deletions(-)
-> > >=20
-> > > diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_h=
-v.c
-> > > index cdb7224..36d059a 100644
-> > > --- a/arch/powerpc/kvm/book3s_hv.c
-> > > +++ b/arch/powerpc/kvm/book3s_hv.c
-> > > @@ -3424,7 +3424,7 @@ static int kvmhv_load_hv_regs_and_go(struct kvm=
-_vcpu *vcpu, u64 time_limit,
-> > >  	mtspr(SPRN_IC, vcpu->arch.ic);
-> > >  	mtspr(SPRN_PID, vcpu->arch.pid);
-> > > =20
-> > > -	mtspr(SPRN_PSSCR, vcpu->arch.psscr | PSSCR_EC |
-> > > +	mtspr(SPRN_PSSCR, (vcpu->arch.psscr  & ~(PSSCR_EC | PSSCR_ESL)) |
-> > >  	      (local_paca->kvm_hstate.fake_suspend << PSSCR_FAKE_SUSPEND_LG=
-));
-> > > =20
-> > >  	mtspr(SPRN_HFSCR, vcpu->arch.hfscr);
-> > > diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/k=
-vm/book3s_hv_rmhandlers.S
-> > > index dbc2fec..c2daec3 100644
-> > > --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> > > +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> > > @@ -823,6 +823,18 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
-> > >  	mtspr	SPRN_PID, r7
-> > >  	mtspr	SPRN_WORT, r8
-> > >  BEGIN_FTR_SECTION
-> > > +	/* POWER9-only registers */
-> > > +	ld	r5, VCPU_TID(r4)
-> > > +	ld	r6, VCPU_PSSCR(r4)
-> > > +	lbz	r8, HSTATE_FAKE_SUSPEND(r13)
-> > > +	lis 	r7, (PSSCR_EC | PSSCR_ESL)@h /* Allow guest to call stop */
-> > > +	andc	r6, r6, r7
-> > > +	rldimi	r6, r8, PSSCR_FAKE_SUSPEND_LG, 63 - PSSCR_FAKE_SUSPEND_LG
-> > > +	ld	r7, VCPU_HFSCR(r4)
-> > > +	mtspr	SPRN_TIDR, r5
-> > > +	mtspr	SPRN_PSSCR, r6
-> > > +	mtspr	SPRN_HFSCR, r7
-> > > +FTR_SECTION_ELSE
-> >=20
-> > Why did you move these around? Just because the POWER9 section became
-> > larger than the other?
->=20
-> Yes.
->=20
-> >=20
-> > That's a real wart in the instruction patching implementation, I think
-> > we can fix it by padding with nops in the macros.
-> >=20
-> > Can you just add the additional required nops to the top branch without
-> > changing them around for this patch, so it's easier to see what's going
-> > on? The end result will be the same after patching. Actually changing
-> > these around can have a slight unintended consequence in that code that
-> > runs before features were patched will execute the IF code. Not a
-> > problem here, but another reason why the instruction patching=20
-> > restriction is annoying.
->=20
-> Sure, I will repost this patch with additional nops instead of
-> moving them around.
->=20
-> >=20
-> > Thanks,
-> > Nick
-> >=20
-> > >  	/* POWER8-only registers */
-> > >  	ld	r5, VCPU_TCSCR(r4)
-> > >  	ld	r6, VCPU_ACOP(r4)
-> > > @@ -833,18 +845,7 @@ BEGIN_FTR_SECTION
-> > >  	mtspr	SPRN_CSIGR, r7
-> > >  	mtspr	SPRN_TACR, r8
-> > >  	nop
-> > > -FTR_SECTION_ELSE
-> > > -	/* POWER9-only registers */
-> > > -	ld	r5, VCPU_TID(r4)
-> > > -	ld	r6, VCPU_PSSCR(r4)
-> > > -	lbz	r8, HSTATE_FAKE_SUSPEND(r13)
-> > > -	oris	r6, r6, PSSCR_EC@h	/* This makes stop trap to HV */
-> > > -	rldimi	r6, r8, PSSCR_FAKE_SUSPEND_LG, 63 - PSSCR_FAKE_SUSPEND_LG
-> > > -	ld	r7, VCPU_HFSCR(r4)
-> > > -	mtspr	SPRN_TIDR, r5
-> > > -	mtspr	SPRN_PSSCR, r6
-> > > -	mtspr	SPRN_HFSCR, r7
-> > > -ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_300)
-> > > +ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_300)
-> > >  8:
-> > > =20
-> > >  	ld	r5, VCPU_SPRG0(r4)
->=20
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---pAwQNkOnpTn9IO2O
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAl6K/TgACgkQbDjKyiDZ
-s5KnqhAAof6uPdQc0eK9Cv1MTodmJ4laYdEhgnJx1OMLGLdhAg4DAn7ODiDAtwnk
-GrNxnL9PM0VdmtICV93KO/WXBXdBY6Dfuw7af0XYYQB+yw6KWU1lgD0QrcwTkDRw
-ONFiSiebB/MnPTJEd0kGi4+kVo4o/77Csh90jTn5pY2Yz02/V2IB9imFFTx1L8E+
-J1jkPQgk4ilaBr4FX6mBoBP16aiCHmUXsaOeaEgmgUCu9VauWzn25dVDBZy/qvre
-QitLPjEjFrHjfwZXB1xC47y8fCWD5xIr7eTHmqidlydlMmIf2LHDLZ57coh5g9H3
-Dbc/2Ua4cVSwq38GgLiG5B9zNo/eYmHoxk4bM7uDEUnab1SPaSAIetuCkiv2r6zh
-WadeJEPs136XVFExK5Td2Qpatu/nvlVQFF5UVbjRTSuvGC3p7Kvl1wxLQS3esUKS
-fTHTz+kCQmVxzu1Ls8sQUG3GBgxm+Go/EDvtIeVZ8s8HvIES4ZTimz6BMwSEa+k2
-haHAcrsL8gwLrU1UaUmvXZa9a5yw4kCXXKAtuG4tTmOjcDYMXyA88bVaeU274JFC
-vciPzopqoGfw2gIyI8GfDO6PMt7ZvD7kWgGTXqNueQuxTxUcaK6yzQBnXAHEipM6
-QBUgj7uyceeu9anehjhU9KBvN2GxZ6Gr7y+Jnk98JWb8tWQMeqU=
-=pGx+
------END PGP SIGNATURE-----
-
---pAwQNkOnpTn9IO2O--
+> ---
+>  Documentation/devicetree/bindings/sound/fsl,asrc.txt | 4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/sound/fsl,asrc.txt b/Documentation/devicetree/bindings/sound/fsl,asrc.txt
+> index cb9a25165503..998b4c8a7f78 100644
+> --- a/Documentation/devicetree/bindings/sound/fsl,asrc.txt
+> +++ b/Documentation/devicetree/bindings/sound/fsl,asrc.txt
+> @@ -51,6 +51,10 @@ Optional properties:
+>  			  will be in use as default. Otherwise, the big endian
+>  			  mode will be in use for all the device registers.
+>  
+> +   - fsl,asrc-format	: Defines a mutual sample format used by DPCM Back
+> +			  Ends, which can replace the fsl,asrc-width.
+> +			  The value is 2 (S16_LE), or 6 (S24_LE).
+> +
+>  Example:
+>  
+>  asrc: asrc@2034000 {
+> -- 
+> 2.21.0
+> 
