@@ -2,99 +2,81 @@ Return-Path: <SRS0=i/4Y=5W=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46472C2BA17
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 00:34:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C12DDC2BA17
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 01:16:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6952220678
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 00:33:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6952220678
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3250720678
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 01:16:26 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Bn2nl4eq"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3250720678
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48wWkC2ZXWzDr0L
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 10:33:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48wXgC75DCzDqsv
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 11:16:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::144;
+ helo=mail-il1-x144.google.com; envelope-from=hqjagain@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=Bn2nl4eq; dkim-atps=neutral
+Received: from mail-il1-x144.google.com (mail-il1-x144.google.com
+ [IPv6:2607:f8b0:4864:20::144])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48wWgw0qwpzDqLW
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Apr 2020 10:31:55 +1000 (AEST)
-Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0360VcSh154501
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 Apr 2020 20:31:48 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 306nvua1ju-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Apr 2020 20:31:48 -0400
-Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ajd@linux.ibm.com>;
- Mon, 6 Apr 2020 01:31:24 +0100
-Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 6 Apr 2020 01:31:22 +0100
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 0360VhAR46727478
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 6 Apr 2020 00:31:43 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 43B68A4053;
- Mon,  6 Apr 2020 00:31:43 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E48AAA4040;
- Mon,  6 Apr 2020 00:31:42 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon,  6 Apr 2020 00:31:42 +0000 (GMT)
-Received: from [9.206.138.204] (unknown [9.206.138.204])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 14BAEA021B;
- Mon,  6 Apr 2020 10:31:37 +1000 (AEST)
-Subject: Re: [PATCH] Fix: buffer overflow during hvc_alloc().
-To: andrew@daynix.com, virtualization@lists.linux-foundation.org
-References: <20200405204024.1007843-1-andrew@daynix.com>
-From: Andrew Donnellan <ajd@linux.ibm.com>
-Date: Mon, 6 Apr 2020 10:31:40 +1000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.6.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48wXc90nvfzDqq7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Apr 2020 11:13:45 +1000 (AEST)
+Received: by mail-il1-x144.google.com with SMTP id x16so13113575ilp.12
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Apr 2020 18:13:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc:content-transfer-encoding;
+ bh=Tr1Ryw65VhOvk3m5+ACJJuQ36awxae0foxLzvaXT+Rc=;
+ b=Bn2nl4eq8BB2ZKi4J8DvgtFkJ49z9XvCgAAaHTOPnLupvspsxRYNrzbRxecgPvkh6J
+ Ze74qBrszLcI/hFUVBNXqcyDiYc9nm4p/2y9W3/Dyz0JQdx6TLspNKb5httdYS97ocN5
+ jbvNVkjaf2tvb6kcYC8vGwIQ89KWlYoFaiIneRC06yr4VIyGXSYKJ7rGeOjQ1RgMYqqo
+ 1weqXYO3aJs9K5aGXkTCHDPFyORPSs5xOHfD7YW3Dmy4LR8UqcMLth7YagAvyCn4oqYG
+ LisuKL8NQcpH/vKi+KL1bEAL8DEmxe+iqCJegFycJOIBMFA9RAW9720LllOHnR8dukGm
+ 3RHA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc:content-transfer-encoding;
+ bh=Tr1Ryw65VhOvk3m5+ACJJuQ36awxae0foxLzvaXT+Rc=;
+ b=Csm4nqWkquTtQaX88H5BZsjgKtAyz2ugVsaJJsD534Pd9fnmAL5vmq263CTpnr5QGC
+ NiwYwljErvUXh4R7evGIy6shSEgUwIiI8elevEFV1WSRZIKljgQb3n3YQ9WOsUGQnk0g
+ qSx4TMmyfAZn8W6Sn9YdxIx1aLra90C7LINSafsDfltyOgNgG5x6mWkTe8+MedLIi0FR
+ 0UxuqqxUfTYu3Uo5pPFKyl6yybfbXfM3Ac3B+M1uWRDmqYFnaaXZbE51gboajTX7sxxo
+ WOejVGSwlDFOWbWUERYldd9XmHSl7/QlvFtx0/jZzjSPVoFt9Xnhra/26D3ISFUJyzLN
+ n5MA==
+X-Gm-Message-State: AGi0PuZNpGXnqOMspON3+ltZDYCrJzmrAwL8RRTKxP/hrbgER+ttN6ez
+ /mlPO1QzkJd6LGMqP4ULVbTrIhCNDe4cJ8oVw8KcY+AyKq0=
+X-Google-Smtp-Source: APiQypLctLPWysDkyb6i/E2KOEUufZlwX841KcPj07wNMqkZtrKXqXFzHg1U9vo/hFePDp1ni4Sb3bHJDeI0jsVW2cs=
+X-Received: by 2002:a92:ce51:: with SMTP id a17mr19598576ilr.263.1586135621955; 
+ Sun, 05 Apr 2020 18:13:41 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20200405204024.1007843-1-andrew@daynix.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 20040600-0016-0000-0000-000002FF0476
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20040600-0017-0000-0000-00003362D8BC
-Message-Id: <a8ab8fe3-3200-9591-7572-abbbd2d505ff@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
- definitions=2020-04-05_11:2020-04-03,
- 2020-04-05 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 clxscore=1015
- malwarescore=0 phishscore=0 mlxscore=0 priorityscore=1501 adultscore=0
- suspectscore=0 lowpriorityscore=0 mlxlogscore=999 spamscore=0 bulkscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2003020000
- definitions=main-2004050216
+References: <d4a96597-6704-3030-b936-6282f0994f09@web.de>
+In-Reply-To: <d4a96597-6704-3030-b936-6282f0994f09@web.de>
+From: Qiujun Huang <hqjagain@gmail.com>
+Date: Mon, 6 Apr 2020 09:13:28 +0800
+Message-ID: <CAJRQjofnnhzOp4yis=sL85ESDvNApXHL3dpv6T1NJL-Wh0OOfA@mail.gmail.com>
+Subject: Re: [PATCH v3] powerpc/powernv: add NULL check after kzalloc in
+ opal_add_one_export
+To: Markus Elfring <Markus.Elfring@web.de>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,29 +88,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: gregkh@linuxfoundation.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, jslaby@suse.com
+Cc: LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 6/4/20 6:40 am, andrew@daynix.com wrote:
-> From: Andrew Melnychenko <andrew@daynix.com>
-> 
-> If there is a lot(more then 16) of virtio-console devices
-> or virtio_console module is reloaded
-> - buffers 'vtermnos' and 'cons_ops' are overflowed.
-> In older kernels it overruns spinlock which leads to kernel freezing:
-> https://bugzilla.redhat.com/show_bug.cgi?id=1786239
-> 
-
-This Bugzilla report isn't publicly accessible. Can you include a 
-relevant summary here and/or make the report publicly viewable?
-
-If it does indeed lead to a kernel freeze, this should be tagged with a 
-Fixes: and a Cc: stable@vger.kernel.org.
-
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-ajd@linux.ibm.com             IBM Australia Limited
-
+On Mon, Apr 6, 2020 at 3:06 AM Markus Elfring <Markus.Elfring@web.de> wrote=
+:
+>
+> > Here needs a NULL check.
+quite obvious?
+>
+> I find this change description questionable
+> (despite of a reasonable patch subject).
+>
+>
+> > Issue found by coccinelle.
+>
+> Would an information like =E2=80=9CGenerated by: scripts/coccinelle/null/=
+kmerr.cocci=E2=80=9D
+> be nicer?
+Yeah, but I think It was enough.
+>
+>
+> > ---
+>
+> Will a patch change log be helpful here?
+I realized I should write some change log, and the change log was meaningle=
+ss.
+So I left it blank.
+>
+> Regards,
+> Markus
