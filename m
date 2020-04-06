@@ -2,51 +2,62 @@ Return-Path: <SRS0=i/4Y=5W=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.7 required=3.0 tests=DATE_IN_PAST_12_24,
+	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89EADC2BA1A
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 21:03:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4573AC2BA1A
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 22:41:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4BFA8206B8
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 21:03:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4BFA8206B8
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
+	by mail.kernel.org (Postfix) with ESMTPS id ED31A20753
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 22:41:26 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="ndLxKC3j"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ED31A20753
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48x30s6GTLzDqG9
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 07:03:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
- (client-ip=195.135.220.15; helo=mx2.suse.de; envelope-from=msuchanek@suse.de;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=suse.de
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 48x59w533czDqy9
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 08:41:24 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48x2xj0T7mzDqZw
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2020 07:00:40 +1000 (AEST)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx2.suse.de (Postfix) with ESMTP id 08B77AA55;
- Mon,  6 Apr 2020 21:00:37 +0000 (UTC)
-From: Michal Suchanek <msuchanek@suse.de>
-To: linuxppc-dev@lists.ozlabs.org,
-	Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH] powerpcs: perf: consolidate perf_callchain_user_64 and
- perf_callchain_user_32
-Date: Mon,  6 Apr 2020 23:00:22 +0200
-Message-Id: <20200406210022.32265-1-msuchanek@suse.de>
-X-Mailer: git-send-email 2.23.0
-In-Reply-To: <1585896170.ohti800w9v.astroid@bobo.none>
-References: <1585896170.ohti800w9v.astroid@bobo.none>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48x57z6NLhzDqcW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2020 08:39:43 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=gibson.dropbear.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
+ header.a=rsa-sha256 header.s=201602 header.b=ndLxKC3j; 
+ dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1007)
+ id 48x57z0wMQz9sQx; Tue,  7 Apr 2020 08:39:43 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=gibson.dropbear.id.au; s=201602; t=1586212783;
+ bh=L+6BwS8iTSp76qfstt4C3QhyP38Szgs0Xg0WTZ8BuC4=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=ndLxKC3jsJ1i5VxzQMVcVXLbDIIYCOh7zwnQkeqRO1j4Z6mAi8a5rwVBw2zJ31Ghp
+ cXONh0azmLHB7kvG46E5VtsyzyPMGIjSIgYtkpS0eVC+AnYS7Vu5yEfCqTycU9RDrO
+ MA6+tdF+5iebFTdghG8XjzHkMqZyRVekejr5hZf0=
+Date: Mon, 6 Apr 2020 19:58:19 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Subject: Re: [RFC/PATCH  2/3] pseries/kvm: Clear PSSCR[ESL|EC] bits before
+ guest entry
+Message-ID: <20200406095819.GC2945@umbus.fritz.box>
+References: <1585656658-1838-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1585656658-1838-3-git-send-email-ego@linux.vnet.ibm.com>
+ <1585880159.w3mc2nk6h3.astroid@bobo.none>
+ <20200403093103.GA20293@in.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="pAwQNkOnpTn9IO2O"
+Content-Disposition: inline
+In-Reply-To: <20200403093103.GA20293@in.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,133 +69,200 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Peter Zijlstra <peterz@infradead.org>,
- linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Namhyung Kim <namhyung@kernel.org>, Michal Suchanek <msuchanek@suse.de>,
- Jiri Olsa <jolsa@redhat.com>
+Cc: Michael Neuling <mikey@neuling.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Bharata B Rao <bharata@linux.ibm.com>, linuxppc-dev@ozlabs.org,
+ kvm-ppc@vger.kernel.org, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-perf_callchain_user_64 and perf_callchain_user_32 are nearly identical.
-Consolidate into one function with thin wrappers.
 
-Suggested-by: Nicholas Piggin <npiggin@gmail.com>
-Signed-off-by: Michal Suchanek <msuchanek@suse.de>
----
- arch/powerpc/perf/callchain.h    | 24 +++++++++++++++++++++++-
- arch/powerpc/perf/callchain_32.c | 21 ++-------------------
- arch/powerpc/perf/callchain_64.c | 14 ++++----------
- 3 files changed, 29 insertions(+), 30 deletions(-)
+--pAwQNkOnpTn9IO2O
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/arch/powerpc/perf/callchain.h b/arch/powerpc/perf/callchain.h
-index 7a2cb9e1181a..7540bb71cb60 100644
---- a/arch/powerpc/perf/callchain.h
-+++ b/arch/powerpc/perf/callchain.h
-@@ -2,7 +2,7 @@
- #ifndef _POWERPC_PERF_CALLCHAIN_H
- #define _POWERPC_PERF_CALLCHAIN_H
- 
--int read_user_stack_slow(void __user *ptr, void *buf, int nb);
-+int read_user_stack_slow(const void __user *ptr, void *buf, int nb);
- void perf_callchain_user_64(struct perf_callchain_entry_ctx *entry,
- 			    struct pt_regs *regs);
- void perf_callchain_user_32(struct perf_callchain_entry_ctx *entry,
-@@ -16,4 +16,26 @@ static inline bool invalid_user_sp(unsigned long sp)
- 	return (!sp || (sp & mask) || (sp > top));
- }
- 
-+/*
-+ * On 32-bit we just access the address and let hash_page create a
-+ * HPTE if necessary, so there is no need to fall back to reading
-+ * the page tables.  Since this is called at interrupt level,
-+ * do_page_fault() won't treat a DSI as a page fault.
-+ */
-+static inline int __read_user_stack(const void __user *ptr, void *ret,
-+				    size_t size)
-+{
-+	int rc;
-+
-+	if ((unsigned long)ptr > TASK_SIZE - size ||
-+			((unsigned long)ptr & (size - 1)))
-+		return -EFAULT;
-+	rc = probe_user_read(ret, ptr, size);
-+
-+	if (rc && IS_ENABLED(CONFIG_PPC64))
-+		return read_user_stack_slow(ptr, ret, size);
-+
-+	return rc;
-+}
-+
- #endif /* _POWERPC_PERF_CALLCHAIN_H */
-diff --git a/arch/powerpc/perf/callchain_32.c b/arch/powerpc/perf/callchain_32.c
-index 8aa951003141..1b4621f177e8 100644
---- a/arch/powerpc/perf/callchain_32.c
-+++ b/arch/powerpc/perf/callchain_32.c
-@@ -31,26 +31,9 @@
- 
- #endif /* CONFIG_PPC64 */
- 
--/*
-- * On 32-bit we just access the address and let hash_page create a
-- * HPTE if necessary, so there is no need to fall back to reading
-- * the page tables.  Since this is called at interrupt level,
-- * do_page_fault() won't treat a DSI as a page fault.
-- */
--static int read_user_stack_32(unsigned int __user *ptr, unsigned int *ret)
-+static int read_user_stack_32(const unsigned int __user *ptr, unsigned int *ret)
- {
--	int rc;
--
--	if ((unsigned long)ptr > TASK_SIZE - sizeof(unsigned int) ||
--	    ((unsigned long)ptr & 3))
--		return -EFAULT;
--
--	rc = probe_user_read(ret, ptr, sizeof(*ret));
--
--	if (IS_ENABLED(CONFIG_PPC64) && rc)
--		return read_user_stack_slow(ptr, ret, 4);
--
--	return rc;
-+	return __read_user_stack(ptr, ret, sizeof(*ret);
- }
- 
- /*
-diff --git a/arch/powerpc/perf/callchain_64.c b/arch/powerpc/perf/callchain_64.c
-index df1ffd8b20f2..55bbc25a54ed 100644
---- a/arch/powerpc/perf/callchain_64.c
-+++ b/arch/powerpc/perf/callchain_64.c
-@@ -24,7 +24,7 @@
-  * interrupt context, so if the access faults, we read the page tables
-  * to find which page (if any) is mapped and access it directly.
-  */
--int read_user_stack_slow(void __user *ptr, void *buf, int nb)
-+int read_user_stack_slow(const void __user *ptr, void *buf, int nb)
- {
- 	int ret = -EFAULT;
- 	pgd_t *pgdir;
-@@ -65,16 +65,10 @@ int read_user_stack_slow(void __user *ptr, void *buf, int nb)
- 	return ret;
- }
- 
--static int read_user_stack_64(unsigned long __user *ptr, unsigned long *ret)
-+static int read_user_stack_64(const unsigned long __user *ptr,
-+			      unsigned long *ret)
- {
--	if ((unsigned long)ptr > TASK_SIZE - sizeof(unsigned long) ||
--	    ((unsigned long)ptr & 7))
--		return -EFAULT;
--
--	if (!probe_user_read(ret, ptr, sizeof(*ret)))
--		return 0;
--
--	return read_user_stack_slow(ptr, ret, 8);
-+	return __read_user_stack(ptr, ret, sizeof(*ret));
- }
- 
- /*
--- 
-2.23.0
+On Fri, Apr 03, 2020 at 03:01:03PM +0530, Gautham R Shenoy wrote:
+> On Fri, Apr 03, 2020 at 12:20:26PM +1000, Nicholas Piggin wrote:
+> > Gautham R. Shenoy's on March 31, 2020 10:10 pm:
+> > > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> > >=20
+> > > ISA v3.0 allows the guest to execute a stop instruction. For this, the
+> > > PSSCR[ESL|EC] bits need to be cleared by the hypervisor before
+> > > scheduling in the guest vCPU.
+> > >=20
+> > > Currently we always schedule in a vCPU with PSSCR[ESL|EC] bits
+> > > set. This patch changes the behaviour to enter the guest with
+> > > PSSCR[ESL|EC] bits cleared. This is a RFC patch where we
+> > > unconditionally clear these bits. Ideally this should be done
+> > > conditionally on platforms where the guest stop instruction has no
+> > > Bugs (starting POWER9 DD2.3).
+> >=20
+> > How will guests know that they can use this facility safely after your
+> > series? You need both DD2.3 and a patched KVM.
+>=20
+>=20
+> Yes, this is something that isn't addressed in this series (mentioned
+> in the cover letter), which is a POC demonstrating that the stop0lite
+> state in guest works.
+>=20
+> However, to answer your question, this is the scheme that I had in
+> mind :
+>=20
+> OPAL:
+>    On Procs >=3D DD2.3 : we publish a dt-cpu-feature "idle-stop-guest"
+>=20
+> Hypervisor Kernel:
+>     1. If "idle-stop-guest" dt-cpu-feature is discovered, then
+>        we set bool enable_guest_stop =3D true;
+>=20
+>     2. During KVM guest entry, clear PSSCR[ESL|EC] iff
+>        enable_guest_stop =3D=3D true.
+>=20
+>     3. In kvm_vm_ioctl_check_extension(), for a new capability
+>        KVM_CAP_STOP, return true iff enable_guest_top =3D=3D true.
+>=20
+> QEMU:
+>    Check with the hypervisor if KVM_CAP_STOP is present. If so,
+>    indicate the presence to the guest via device tree.
 
+Nack.  Presenting different capabilities to the guest depending on
+host capabilities (rather than explicit options) is never ok.  It
+means that depending on the system you start on you may or may not be
+able to migrate to other systems that you're supposed to be able to,
+
+> Guest Kernel:
+>    Check for the presence of guest stop state support in
+>    device-tree. If available, enable the stop0lite in the cpuidle
+>    driver.=20
+>   =20
+>=20
+> We still have a challenge of migrating a guest which started on a
+> hypervisor supporting guest stop state to a hypervisor without it.
+> The target hypervisor should atleast have Patch 1 of this series, so
+> that we don't crash the guest.
+>=20
+> >=20
+> > >=20
+> > > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> > > ---
+> > >  arch/powerpc/kvm/book3s_hv.c            |  2 +-
+> > >  arch/powerpc/kvm/book3s_hv_rmhandlers.S | 25 +++++++++++++----------=
+--
+> > >  2 files changed, 14 insertions(+), 13 deletions(-)
+> > >=20
+> > > diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_h=
+v.c
+> > > index cdb7224..36d059a 100644
+> > > --- a/arch/powerpc/kvm/book3s_hv.c
+> > > +++ b/arch/powerpc/kvm/book3s_hv.c
+> > > @@ -3424,7 +3424,7 @@ static int kvmhv_load_hv_regs_and_go(struct kvm=
+_vcpu *vcpu, u64 time_limit,
+> > >  	mtspr(SPRN_IC, vcpu->arch.ic);
+> > >  	mtspr(SPRN_PID, vcpu->arch.pid);
+> > > =20
+> > > -	mtspr(SPRN_PSSCR, vcpu->arch.psscr | PSSCR_EC |
+> > > +	mtspr(SPRN_PSSCR, (vcpu->arch.psscr  & ~(PSSCR_EC | PSSCR_ESL)) |
+> > >  	      (local_paca->kvm_hstate.fake_suspend << PSSCR_FAKE_SUSPEND_LG=
+));
+> > > =20
+> > >  	mtspr(SPRN_HFSCR, vcpu->arch.hfscr);
+> > > diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/k=
+vm/book3s_hv_rmhandlers.S
+> > > index dbc2fec..c2daec3 100644
+> > > --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> > > +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> > > @@ -823,6 +823,18 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
+> > >  	mtspr	SPRN_PID, r7
+> > >  	mtspr	SPRN_WORT, r8
+> > >  BEGIN_FTR_SECTION
+> > > +	/* POWER9-only registers */
+> > > +	ld	r5, VCPU_TID(r4)
+> > > +	ld	r6, VCPU_PSSCR(r4)
+> > > +	lbz	r8, HSTATE_FAKE_SUSPEND(r13)
+> > > +	lis 	r7, (PSSCR_EC | PSSCR_ESL)@h /* Allow guest to call stop */
+> > > +	andc	r6, r6, r7
+> > > +	rldimi	r6, r8, PSSCR_FAKE_SUSPEND_LG, 63 - PSSCR_FAKE_SUSPEND_LG
+> > > +	ld	r7, VCPU_HFSCR(r4)
+> > > +	mtspr	SPRN_TIDR, r5
+> > > +	mtspr	SPRN_PSSCR, r6
+> > > +	mtspr	SPRN_HFSCR, r7
+> > > +FTR_SECTION_ELSE
+> >=20
+> > Why did you move these around? Just because the POWER9 section became
+> > larger than the other?
+>=20
+> Yes.
+>=20
+> >=20
+> > That's a real wart in the instruction patching implementation, I think
+> > we can fix it by padding with nops in the macros.
+> >=20
+> > Can you just add the additional required nops to the top branch without
+> > changing them around for this patch, so it's easier to see what's going
+> > on? The end result will be the same after patching. Actually changing
+> > these around can have a slight unintended consequence in that code that
+> > runs before features were patched will execute the IF code. Not a
+> > problem here, but another reason why the instruction patching=20
+> > restriction is annoying.
+>=20
+> Sure, I will repost this patch with additional nops instead of
+> moving them around.
+>=20
+> >=20
+> > Thanks,
+> > Nick
+> >=20
+> > >  	/* POWER8-only registers */
+> > >  	ld	r5, VCPU_TCSCR(r4)
+> > >  	ld	r6, VCPU_ACOP(r4)
+> > > @@ -833,18 +845,7 @@ BEGIN_FTR_SECTION
+> > >  	mtspr	SPRN_CSIGR, r7
+> > >  	mtspr	SPRN_TACR, r8
+> > >  	nop
+> > > -FTR_SECTION_ELSE
+> > > -	/* POWER9-only registers */
+> > > -	ld	r5, VCPU_TID(r4)
+> > > -	ld	r6, VCPU_PSSCR(r4)
+> > > -	lbz	r8, HSTATE_FAKE_SUSPEND(r13)
+> > > -	oris	r6, r6, PSSCR_EC@h	/* This makes stop trap to HV */
+> > > -	rldimi	r6, r8, PSSCR_FAKE_SUSPEND_LG, 63 - PSSCR_FAKE_SUSPEND_LG
+> > > -	ld	r7, VCPU_HFSCR(r4)
+> > > -	mtspr	SPRN_TIDR, r5
+> > > -	mtspr	SPRN_PSSCR, r6
+> > > -	mtspr	SPRN_HFSCR, r7
+> > > -ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_300)
+> > > +ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_300)
+> > >  8:
+> > > =20
+> > >  	ld	r5, VCPU_SPRG0(r4)
+>=20
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--pAwQNkOnpTn9IO2O
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAl6K/TgACgkQbDjKyiDZ
+s5KnqhAAof6uPdQc0eK9Cv1MTodmJ4laYdEhgnJx1OMLGLdhAg4DAn7ODiDAtwnk
+GrNxnL9PM0VdmtICV93KO/WXBXdBY6Dfuw7af0XYYQB+yw6KWU1lgD0QrcwTkDRw
+ONFiSiebB/MnPTJEd0kGi4+kVo4o/77Csh90jTn5pY2Yz02/V2IB9imFFTx1L8E+
+J1jkPQgk4ilaBr4FX6mBoBP16aiCHmUXsaOeaEgmgUCu9VauWzn25dVDBZy/qvre
+QitLPjEjFrHjfwZXB1xC47y8fCWD5xIr7eTHmqidlydlMmIf2LHDLZ57coh5g9H3
+Dbc/2Ua4cVSwq38GgLiG5B9zNo/eYmHoxk4bM7uDEUnab1SPaSAIetuCkiv2r6zh
+WadeJEPs136XVFExK5Td2Qpatu/nvlVQFF5UVbjRTSuvGC3p7Kvl1wxLQS3esUKS
+fTHTz+kCQmVxzu1Ls8sQUG3GBgxm+Go/EDvtIeVZ8s8HvIES4ZTimz6BMwSEa+k2
+haHAcrsL8gwLrU1UaUmvXZa9a5yw4kCXXKAtuG4tTmOjcDYMXyA88bVaeU274JFC
+vciPzopqoGfw2gIyI8GfDO6PMt7ZvD7kWgGTXqNueQuxTxUcaK6yzQBnXAHEipM6
+QBUgj7uyceeu9anehjhU9KBvN2GxZ6Gr7y+Jnk98JWb8tWQMeqU=
+=pGx+
+-----END PGP SIGNATURE-----
+
+--pAwQNkOnpTn9IO2O--
