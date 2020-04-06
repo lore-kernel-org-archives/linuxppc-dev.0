@@ -6,37 +6,37 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A3137C2BA19
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 13:30:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B96FDC2BA19
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 13:33:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5D7D0221EC
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 13:30:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5D7D0221EC
+	by mail.kernel.org (Postfix) with ESMTPS id 70E0A2332A
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 13:33:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 70E0A2332A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48wry14mvhzDrBn
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 23:30:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48ws1M1SvvzDqm6
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 23:33:11 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48wrPn6bxqzDr6L
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Apr 2020 23:05:49 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48wrPq0GmWzDqbt
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Apr 2020 23:05:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 48wrPg17tHz9sSj; Mon,  6 Apr 2020 23:05:41 +1000 (AEST)
+ id 48wrPh3hJZz9sSx; Mon,  6 Apr 2020 23:05:43 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 7ee417497a29028502cf952f419ab2635f563d51
-In-Reply-To: <1bc5a16a22c487c478a204ebb7b80a22d2ad9cd0.1585340156.git.geoff@infradead.org>
+X-powerpc-patch-commit: 96efbab92cccbe3434501e5a77cbaa01c5bc2767
+In-Reply-To: <ddc3513dc54d15456692c80df49287fe3babe40a.1585340156.git.geoff@infradead.org>
 To: Geoff Levand <geoff@infradead.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH 1/9] powerpc/ps3: Remove duplicate error messages
-Message-Id: <48wrPg17tHz9sSj@ozlabs.org>
-Date: Mon,  6 Apr 2020 23:05:41 +1000 (AEST)
+Subject: Re: [PATCH 4/9] powerpc/ps3: remove an unneeded NULL check
+Message-Id: <48wrPh3hJZz9sSx@ozlabs.org>
+Date: Mon,  6 Apr 2020 23:05:43 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,15 +57,17 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 On Fri, 2020-03-27 at 20:26:23 UTC, Geoff Levand wrote:
-> From: Markus Elfring <elfring@users.sourceforge.net>
+> From: Dan Carpenter <dan.carpenter@oracle.com>
 > 
-> Remove duplicate memory allocation failure error messages.
+> Static checkers don't like the inconsistent NULL checking on "ops".
+> This function is only called once and "ops" isn't NULL so the check can
+> be removed.
 > 
-> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 > Signed-off-by: Geoff Levand <geoff@infradead.org>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/7ee417497a29028502cf952f419ab2635f563d51
+https://git.kernel.org/powerpc/c/96efbab92cccbe3434501e5a77cbaa01c5bc2767
 
 cheers
