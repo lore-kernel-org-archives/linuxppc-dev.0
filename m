@@ -6,39 +6,38 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8EA1AC2BA19
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 13:36:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 13973C2BA1E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 13:38:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 491EE2332B
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 13:36:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 491EE2332B
+	by mail.kernel.org (Postfix) with ESMTPS id C602323356
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 13:38:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C602323356
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48ws4q1kFnzDrDD
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 23:36:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48ws7k32JSzDrBw
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 23:38:42 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48wrPn6bZCzDqf4
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Apr 2020 23:05:49 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48wrPv3xsvzDr6D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Apr 2020 23:05:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 48wrPd0l89z9sSw; Mon,  6 Apr 2020 23:05:41 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 48wrPb54Vqz9sRf; Mon,  6 Apr 2020 23:05:39 +1000 (AEST)
+ id 48wrPk4QyJz9sSK; Mon,  6 Apr 2020 23:05:45 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: bbe9064f30f06e7791d04f9f61a842226a6a44fe
-In-Reply-To: <20200326061144.2006522-1-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+X-powerpc-patch-commit: d3883fa0784832bb65df019ae6a291a87d146fb1
+In-Reply-To: <410cda9aa1a6e04434dfe1f9aa2103d0694f706c.1585340156.git.geoff@infradead.org>
+To: Geoff Levand <geoff@infradead.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH] selftests/eeh: Skip ahci adapters
-Message-Id: <48wrPb54Vqz9sRf@ozlabs.org>
-Date: Mon,  6 Apr 2020 23:05:39 +1000 (AEST)
+Subject: Re: [PATCH 6/9] powerpc/ps3: Set CONFIG_UEVENT_HELPER=y in
+ ps3_defconfig
+Message-Id: <48wrPk4QyJz9sSK@ozlabs.org>
+Date: Mon,  6 Apr 2020 23:05:45 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,22 +49,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: oohall@gmail.com
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linuxppc-dev@lists.ozlabs.org,
+ Markus Elfring <elfring@users.sourceforge.net>,
+ Dan Carpenter <dan.carpenter@oracle.com>,
+ Emmanuel Nicolet <emmanuel.nicolet@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2020-03-26 at 06:11:44 UTC, Michael Ellerman wrote:
-> The ahci driver doesn't support error recovery, and if your root
-> filesystem is attached to it the eeh-basic.sh test will likely kill
-> your machine.
+On Fri, 2020-03-27 at 20:26:23 UTC, Geoff Levand wrote:
+> Set CONFIG_UEVENT_HELPER=y in ps3_defconfig.
 > 
-> So skip any device we see using the ahci driver.
+> commit 1be01d4a57142ded23bdb9e0c8d9369e693b26cc (driver: base: Disable
+> CONFIG_UEVENT_HELPER by default) disabled the CONFIG_UEVENT_HELPER option
+> that is needed for hotplug and module loading by most older 32bit powerpc
+> distributions that users typically install on the PS3.
 > 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+> Signed-off-by: Geoff Levand <geoff@infradead.org>
 
-Applied to powerpc next.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/bbe9064f30f06e7791d04f9f61a842226a6a44fe
+https://git.kernel.org/powerpc/c/d3883fa0784832bb65df019ae6a291a87d146fb1
 
 cheers
