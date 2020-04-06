@@ -6,38 +6,37 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 22AF1C2BA19
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 13:43:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56BC2C2BA19
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 13:46:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D24352336F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 13:43:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D24352336F
+	by mail.kernel.org (Postfix) with ESMTPS id 0D8BA23341
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 13:46:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0D8BA23341
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48wsFP3TBpzDqVF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 23:43:37 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 48wsK06r5GzDqTh
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 23:46:44 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48wrPv5rX2zDr6K
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Apr 2020 23:05:55 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48wrQ43GNGzDqRy
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Apr 2020 23:06:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 48wrPr2x9bz9sRY; Mon,  6 Apr 2020 23:05:51 +1000 (AEST)
+ id 48wrPs5VWNz9sRR; Mon,  6 Apr 2020 23:05:53 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: abc3fce76adbdfa8f87272c784b388cd20b46049
-In-Reply-To: <20200402120401.1115883-1-npiggin@gmail.com>
+X-powerpc-patch-commit: 0c89649a70bed679fd408c1eb82fa99dbe1354a0
+In-Reply-To: <20200402121212.1118218-1-npiggin@gmail.com>
 To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [PATCH] Revert "powerpc/64: irq_work avoid interrupt when called
- with hardware irqs enabled"
-Message-Id: <48wrPr2x9bz9sRY@ozlabs.org>
-Date: Mon,  6 Apr 2020 23:05:51 +1000 (AEST)
+Subject: Re: [PATCH] powerpc/64s: Fix doorbell wakeup msgclr optimisation
+Message-Id: <48wrPs5VWNz9sRR@ozlabs.org>
+Date: Mon,  6 Apr 2020 23:05:53 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -54,30 +53,32 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2020-04-02 at 12:04:01 UTC, Nicholas Piggin wrote:
-> This reverts commit ebb37cf3ffd39fdb6ec5b07111f8bb2f11d92c5f.
+On Thu, 2020-04-02 at 12:12:12 UTC, Nicholas Piggin wrote:
+> Commit 3282a3da25bd ("powerpc/64: Implement soft interrupt replay in C")
+> broke the doorbell wakeup optimisation introduced by commit a9af97aa0a12
+> ("powerpc/64s: msgclr when handling doorbell exceptions from system
+> reset").
 > 
-> That commit does not play well with soft-masked irq state manipulations
-> in idle, interrupt replay, and possibly others due to tracing code
-> sometimes using irq_work_queue (e.g., in trace_hardirqs_on()). That
-> can cause PACA_IRQ_DEC to become set when it is not expected, and be
-> ignored or cleared or cause warnings.
+> This patch restores it, in C code. It's moved explicitly to the system
+> reset wakeup path, rather than the doorbell replay path, because it is
+> always the right thing to do in the wakeup case, but it could be rare to
+> have a pending message in other cases in which case it's wasted work --
+> we would have to be done to see if that was a worthwhile optimisation,
+> and I suspect it would not be.
 > 
-> The net result seems to be missing an irq_work until the next timer
-> interrupt in the worst case which is usually not going to be noticed,
-> however it could be a long time if the tick is disabled, which is
-> agains the spirit of irq_work and might cause real problems.
+> The results are similar to those in the original commit, test on POWER8
+> of context_switch selftests benchmark with polling idle disabled (e.g.,
+> always nap, giving cross-CPU IPIs) gives the following results:
 > 
-> The idea is still solid, but it would need more work. It's not really
-> clear if it would be worth added complexity, so revert this for now
-> (not a straight revert, but replace with a comment explaining why we
-> might see interrupts happening, and gives git blame something to find).
+>                                     broken           patched
+>     Different threads, same core:   317k/s           375k/s    +18.7%
+>     Different cores:                280k/s           282k/s     +1.0%
 > 
-> Fixes: ebb37cf3ffd3 ("powerpc/64: irq_work avoid interrupt when called with hardware irqs enabled")
+> Fixes: 3282a3da25bd ("powerpc/64: Implement soft interrupt replay in C")
 > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/abc3fce76adbdfa8f87272c784b388cd20b46049
+https://git.kernel.org/powerpc/c/0c89649a70bed679fd408c1eb82fa99dbe1354a0
 
 cheers
