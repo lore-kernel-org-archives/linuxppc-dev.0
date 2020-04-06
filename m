@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A478FC2BA17
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 18:31:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CF48C2BA17
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 18:33:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F40822072F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 18:31:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 086B92072F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2020 18:33:02 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="ZHSeZuKF"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F40822072F
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="JFvO0rb5"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 086B92072F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48wzdC2KTdzDqxq
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 04:31:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48wzgJ1WTRzDqxG
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 04:33:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -30,54 +30,54 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=ZHSeZuKF; dkim-atps=neutral
+ header.s=mail header.b=JFvO0rb5; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48wzJb67B9zDqTn
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48wzJb6WxbzDqVW
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2020 04:16:47 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 48wzJV6Bqfz9v01G;
- Mon,  6 Apr 2020 20:16:42 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 48wzJY0DCdz9v019;
+ Mon,  6 Apr 2020 20:16:45 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=ZHSeZuKF; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=JFvO0rb5; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id cz3nR_S0gR3m; Mon,  6 Apr 2020 20:16:42 +0200 (CEST)
+ with ESMTP id bIiZCr6jX6iI; Mon,  6 Apr 2020 20:16:44 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 48wzJV59VGz9v016;
- Mon,  6 Apr 2020 20:16:42 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 48wzJX6GdFz9v016;
+ Mon,  6 Apr 2020 20:16:44 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1586197002; bh=HNyUM5qFo9XY5Fj+Oqj6ESs8K40UJCokKbJOCnivcsk=;
+ t=1586197004; bh=MwxdsxMck4eaEAPV4Ww9U1Ygwtb2fGfhDbCMs+X12uo=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=ZHSeZuKFaBV9IcvbK1E1aGjNT86Od/h24R4j1KBn3xWTmwQCS9846agJqIqsMSi7O
- pxOw+4t4mqZCTsPBfniEAi26eOcwZA7/PMVljXQ3FLhZOg4MYH59AEd+jswAX0CQBI
- 6E2xpDAIX1oPGjs8WeUPt0iSwA/fZtYytF0k68bk=
+ b=JFvO0rb5Sb/KpkfyfWMZ7Vk3xsYhavvkOm8L+5nzA9bXrTbV6m0P4cOHuB5q0hlfF
+ JLGrDiEoCgqibn5ayBqRxT0/yFDkCbochf+0ubucKvNhqjCSnOJb+IFPPYgTgkkTTw
+ g8SkB/wt4tKdXSVcOdAOFrDTjOcRfGwn6nbDOUw4=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A11448B78D;
- Mon,  6 Apr 2020 20:16:42 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B40F88B784;
+ Mon,  6 Apr 2020 20:16:44 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 49VM5QD-CMdi; Mon,  6 Apr 2020 20:16:42 +0200 (CEST)
+ with ESMTP id YS8eWPeNeISB; Mon,  6 Apr 2020 20:16:44 +0200 (CEST)
 Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 67FCE8B775;
- Mon,  6 Apr 2020 20:16:42 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 78FE98B775;
+ Mon,  6 Apr 2020 20:16:44 +0200 (CEST)
 Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 3E7A6656E9; Mon,  6 Apr 2020 18:16:42 +0000 (UTC)
-Message-Id: <40bc753eaf6f82ce7c8dee219fa730bf00c0974d.1586196948.git.christophe.leroy@c-s.fr>
+ id 4EC02656E9; Mon,  6 Apr 2020 18:16:44 +0000 (UTC)
+Message-Id: <7352e32fa9bd4fbe7cf2bc6dfd5c712ee6be77fb.1586196948.git.christophe.leroy@c-s.fr>
 In-Reply-To: <5aeaa33383e833f6eca30893fbd188b88e019eaa.1586196948.git.christophe.leroy@c-s.fr>
 References: <5aeaa33383e833f6eca30893fbd188b88e019eaa.1586196948.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [RFC PATCH v3 06/15] powerpc/irq: Add new helpers to play with MSR_EE
- and MSR_RI on PPC32
+Subject: [RFC PATCH v3 08/15] powerpc/syscall: Rename syscall_64.c into
+ syscall.c
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  npiggin@gmail.com, msuchanek@suse.de
-Date: Mon,  6 Apr 2020 18:16:42 +0000 (UTC)
+Date: Mon,  6 Apr 2020 18:16:44 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,51 +94,34 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In preparation of porting PPC32 to C syscall entry/exit,
-add PPC32 version of following helpers:
-	__hard_irq_enable()
-	__hard_irq_disable()
-	__hard_EE_RI_disable()
-	__hard_RI_enable()
+syscall_64.c will be reused almost as is for PPC32.
+
+Rename it syscall.c
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/hw_irq.h | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ arch/powerpc/kernel/Makefile                    | 2 +-
+ arch/powerpc/kernel/{syscall_64.c => syscall.c} | 0
+ 2 files changed, 1 insertion(+), 1 deletion(-)
+ rename arch/powerpc/kernel/{syscall_64.c => syscall.c} (100%)
 
-diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-index e69466867d5f..8c30a72262fd 100644
---- a/arch/powerpc/include/asm/hw_irq.h
-+++ b/arch/powerpc/include/asm/hw_irq.h
-@@ -330,6 +330,16 @@ static inline void arch_local_irq_disable(void)
- 		mtmsr(mfmsr() & ~MSR_EE);
- }
- 
-+static inline void arch_local_recovery_disable(void)
-+{
-+	if (IS_ENABLED(CONFIG_BOOKE))
-+		wrtee(0);
-+	else if (IS_ENABLED(CONFIG_PPC_8xx))
-+		wrtspr(SPRN_NRI);
-+	else
-+		mtmsr(mfmsr() & ~(MSR_EE | MSR_RI));
-+}
-+
- static inline void arch_local_irq_enable(void)
- {
- 	if (IS_ENABLED(CONFIG_BOOKE))
-@@ -352,6 +362,11 @@ static inline bool arch_irqs_disabled(void)
- 
- #define hard_irq_disable()		arch_local_irq_disable()
- 
-+#define __hard_irq_enable()		arch_local_irq_enable()
-+#define __hard_irq_disable()		arch_local_irq_disable()
-+#define __hard_EE_RI_disable()		arch_local_recovery_disable()
-+#define __hard_RI_enable()		arch_local_irq_disable()
-+
- static inline bool arch_irq_disabled_regs(struct pt_regs *regs)
- {
- 	return !(regs->msr & MSR_EE);
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 570660efbb3d..8cc3c831dccd 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -49,7 +49,7 @@ obj-y				:= cputable.o syscalls.o \
+ obj-y				+= ptrace/
+ obj-$(CONFIG_PPC64)		+= setup_64.o sys_ppc32.o signal_64.o \
+ 				   paca.o nvram_64.o firmware.o note.o \
+-				   syscall_64.o
++				   syscall.o
+ obj-$(CONFIG_VDSO32)		+= vdso32/
+ obj-$(CONFIG_PPC_WATCHDOG)	+= watchdog.o
+ obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= hw_breakpoint.o
+diff --git a/arch/powerpc/kernel/syscall_64.c b/arch/powerpc/kernel/syscall.c
+similarity index 100%
+rename from arch/powerpc/kernel/syscall_64.c
+rename to arch/powerpc/kernel/syscall.c
 -- 
 2.25.0
 
