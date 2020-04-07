@@ -8,75 +8,75 @@ X-Spam-Status: No, score=-9.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DF72C2BA16
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 05:23:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5D35C2BA16
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 05:26:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DD8E7206F7
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 05:23:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6E6D0206BE
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 05:26:03 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="CF+jOCQ/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DD8E7206F7
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="eSwMkiLE"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6E6D0206BE
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48xG630HNBzDqZw
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 15:23:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48xG8m6gW6zDqlh
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 15:26:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::543;
- helo=mail-pg1-x543.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::542;
+ helo=mail-pg1-x542.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=CF+jOCQ/; dkim-atps=neutral
-Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
- [IPv6:2607:f8b0:4864:20::543])
+ header.s=20161025 header.b=eSwMkiLE; dkim-atps=neutral
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
+ [IPv6:2607:f8b0:4864:20::542])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48xFzw2Rl1zDqdr
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2020 15:18:20 +1000 (AEST)
-Received: by mail-pg1-x543.google.com with SMTP id m13so1162544pgd.8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Apr 2020 22:18:20 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48xG022wnczDqvY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2020 15:18:26 +1000 (AEST)
+Received: by mail-pg1-x542.google.com with SMTP id m17so1169247pgj.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Apr 2020 22:18:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=ZtY2WfL1JPGj+fO1hNVGxKtL2inTNkP2M7UMo8aWaBA=;
- b=CF+jOCQ/+HZxkyS7J/G8FJ/nAMvhwHda6yqjcGxxRMRRexgpMJ1tfBxW7giReBvtl4
- n7R00xdllU9owZvI/+Gx2SdNJhRdOAdmhMIsSSjYaXZb17JsoVexf/fa41Hkd4mMaAm3
- J+MgI6/ZZYtLn9V5mQB5JBb9OFs4OgiQqoHSe31Y/K6EgrbwT8442IfWevlrg2FV/BGh
- +IN1lLj1H+qdxXsnZ6qsoROKzKkmGFrDDc8Nic4kcFyIOhNEh4mfKENLoWWBlUNWfBBB
- GYYgyWoqhrP6KknFMnt/BUVqNBk3jCzPoibeQrfwO61YuJlRp/q/Jf1aRRt1cVaiaT51
- Ffwg==
+ bh=ObCCMRtKkqm4cLMRI3tfvXaacA0omo0bqALi0UF8jqk=;
+ b=eSwMkiLEQVWfVYCO6EqT52Nuu5AC5GO4AFvOdPnm1m5qsV6Qan2nW9a5sj1Zs/w30Y
+ H6BhIXEBv2LwaI8TH2ev27GnAl+/ZY86vm7zM30pKW/fLP2Ybj65LDn4g/h/F9w6hnUk
+ 5rJZSUCY45GubUMSz9aqmQxNOF2GG2lAgcOxJ6pUSuycjl1V6jdngEdVFSViK3siDy6Y
+ hape9+7MWRbG83a8fLzQTi6YzGGqokourknK94rqvUxYi3aSIOZ5ZPs9IHNsoVThYDln
+ ZeTbzLEK4VgVugAH9Qg/xL3Cl0UFrZuZ1adCt09kSAQuwygZbaLKPcKKQvanmD2djdgW
+ VkTA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=ZtY2WfL1JPGj+fO1hNVGxKtL2inTNkP2M7UMo8aWaBA=;
- b=KVEckjG06JUduC6vn4sZohOhIko5oN9oJFVscsXnVvBG+nu4DAlk+rsRK+O1/kSds9
- OCwTvS724e56q1ha2r7z+e6Mu3DEvwXpOpEzf0Grrjaljb1bmQYkCCH5LchW0wAkwNLv
- bCSy6ZkrnGg+9ZdCwqUnDmiuFAqGbGRRiqbN7tMbxKXlzOYZYvDHUJdGk7CNP5QZxYDj
- EceWgh3zjsIlFLmgDR1unQPN2LMEdqpEMEjLnN+cDFmT1yUdvmP/fusRYFwB1jeuQz9J
- dZVDpuiS1dIsI6izyMgJ07L0/yd5en3ZFykl+3Hv1kJKkNWdjgiLAdjVVO89mglsQ1rE
- 3RkA==
-X-Gm-Message-State: AGi0PubRyVKsHdg1hAe37KSqfIUplhdt5vyRbNIngbbM6KatodsnxqSK
- a1VGnqRifg48PW37GlP/vhDTCzcM
-X-Google-Smtp-Source: APiQypJT6EEU6sHKr7NKXUOvYB7rO/79wG4Eo8LovE6m4hWV8C1JU7q/X67Flln7G8+FLdIymrqbmg==
-X-Received: by 2002:a63:8848:: with SMTP id l69mr326293pgd.288.1586236698323; 
- Mon, 06 Apr 2020 22:18:18 -0700 (PDT)
+ bh=ObCCMRtKkqm4cLMRI3tfvXaacA0omo0bqALi0UF8jqk=;
+ b=XR/3jscElYx33fIM8Cx8btwMiikoXPf5nog6OlVFR5jGssITieeDwADinmpeFSSIJ0
+ HojP3bPW/uSyIYn7Eul7yogzDUUeL75hfcCo+1/5iV/8SUs4zdIuP22N/EFhKCWAeaGx
+ 8pnMQ10S62ArcV0eOkYZGnrbZL9NfjQHO5Sz7KFn6+CEs+1Z20IYmuq/xmKeIFfTO9at
+ YF2PNX+7rKFCyGElqRwPGzalBrw27HeEfpXTnFplGmzxXhB5BNCjv9f4ASKajHhUJLCV
+ PrPz/KsSFSwdAW02HJYKOaQrRu9E4IFjD4yaZ8GcVTDpG4uk6KXGP6AGV/c7sZUUtbb0
+ Yrbg==
+X-Gm-Message-State: AGi0PuaNRR8SS/zpHJRTxU17Nh+iYlC9egXv/PPlP18WmapGbWWKRnOp
+ 1B14AekF1I/Hz3pqdKpBVrJuI44v
+X-Google-Smtp-Source: APiQypKOwP8vShBOP3JXkLYLrACMTb3FTeVOClmjr3APBBtmPkWsvJ412CVglzlDle563IOoQ0hw9A==
+X-Received: by 2002:a63:fd11:: with SMTP id d17mr341377pgh.213.1586236701795; 
+ Mon, 06 Apr 2020 22:18:21 -0700 (PDT)
 Received: from bobo.ozlabs.ibm.com (60-241-117-97.tpgi.com.au. [60.241.117.97])
- by smtp.gmail.com with ESMTPSA id y17sm12866486pfl.104.2020.04.06.22.18.15
+ by smtp.gmail.com with ESMTPSA id y17sm12866486pfl.104.2020.04.06.22.18.18
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 06 Apr 2020 22:18:17 -0700 (PDT)
+ Mon, 06 Apr 2020 22:18:21 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 02/15] powerpc/64s/exceptions: Fix in_mce accounting in
- unrecoverable path
-Date: Tue,  7 Apr 2020 15:16:23 +1000
-Message-Id: <20200407051636.648369-3-npiggin@gmail.com>
+Subject: [PATCH v3 03/15] powerpc/64s/exceptions: Change irq reconcile for
+ NMIs from reusing _DAR to RESULT
+Date: Tue,  7 Apr 2020 15:16:24 +1000
+Message-Id: <20200407051636.648369-4-npiggin@gmail.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20200407051636.648369-1-npiggin@gmail.com>
 References: <20200407051636.648369-1-npiggin@gmail.com>
@@ -94,33 +94,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Ganesh Goudar <ganeshgr@linux.ibm.com>,
- Mahesh Salgaonkar <mahesh@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
+ Ganesh Goudar <ganeshgr@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Acked-by: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+A spare interrupt stack slot is needed to save irq state when
+reconciling NMIs (sreset and decrementer soft-nmi). _DAR is used
+for this, but we want to reconcile machine checks as well, which
+do use _DAR. Switch to using RESULT instead, as it's used by
+system calls.
+
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/exceptions-64s.S | 4 ++++
- 1 file changed, 4 insertions(+)
+ arch/powerpc/kernel/exceptions-64s.S | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index bbf3109c5cba..3322000316ab 100644
+index 3322000316ab..a42b73efb1a9 100644
 --- a/arch/powerpc/kernel/exceptions-64s.S
 +++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -1267,6 +1267,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
- 	andc	r10,r10,r3
- 	mtmsrd	r10
+@@ -939,13 +939,13 @@ EXC_COMMON_BEGIN(system_reset_common)
+ 	 * the right thing. We do not want to reconcile because that goes
+ 	 * through irq tracing which we don't want in NMI.
+ 	 *
+-	 * Save PACAIRQHAPPENED to _DAR (otherwise unused), and set HARD_DIS
++	 * Save PACAIRQHAPPENED to RESULT (otherwise unused), and set HARD_DIS
+ 	 * as we are running with MSR[EE]=0.
+ 	 */
+ 	li	r10,IRQS_ALL_DISABLED
+ 	stb	r10,PACAIRQSOFTMASK(r13)
+ 	lbz	r10,PACAIRQHAPPENED(r13)
+-	std	r10,_DAR(r1)
++	std	r10,RESULT(r1)
+ 	ori	r10,r10,PACA_IRQ_HARD_DIS
+ 	stb	r10,PACAIRQHAPPENED(r13)
  
-+	lhz	r12,PACA_IN_MCE(r13)
-+	subi	r12,r12,1
-+	sth	r12,PACA_IN_MCE(r13)
-+
- 	/* Invoke machine_check_exception to print MCE event and panic. */
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	machine_check_exception
+@@ -966,7 +966,7 @@ EXC_COMMON_BEGIN(system_reset_common)
+ 	/*
+ 	 * Restore soft mask settings.
+ 	 */
+-	ld	r10,_DAR(r1)
++	ld	r10,RESULT(r1)
+ 	stb	r10,PACAIRQHAPPENED(r13)
+ 	ld	r10,SOFTE(r1)
+ 	stb	r10,PACAIRQSOFTMASK(r13)
+@@ -2743,7 +2743,7 @@ EXC_COMMON_BEGIN(soft_nmi_common)
+ 	li	r10,IRQS_ALL_DISABLED
+ 	stb	r10,PACAIRQSOFTMASK(r13)
+ 	lbz	r10,PACAIRQHAPPENED(r13)
+-	std	r10,_DAR(r1)
++	std	r10,RESULT(r1)
+ 	ori	r10,r10,PACA_IRQ_HARD_DIS
+ 	stb	r10,PACAIRQHAPPENED(r13)
+ 
+@@ -2757,7 +2757,7 @@ EXC_COMMON_BEGIN(soft_nmi_common)
+ 	/*
+ 	 * Restore soft mask settings.
+ 	 */
+-	ld	r10,_DAR(r1)
++	ld	r10,RESULT(r1)
+ 	stb	r10,PACAIRQHAPPENED(r13)
+ 	ld	r10,SOFTE(r1)
+ 	stb	r10,PACAIRQSOFTMASK(r13)
 -- 
 2.23.0
 
