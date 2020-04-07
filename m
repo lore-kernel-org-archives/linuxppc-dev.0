@@ -2,26 +2,26 @@ Return-Path: <SRS0=EQUS=5X=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-8.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C9035C2BA16
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 05:51:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 203BFC2BA16
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 05:54:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7F1A320747
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 05:51:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8748220747
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 05:54:13 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="iDRwPVn9"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7F1A320747
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="DMRlPXM1"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8748220747
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48xGkc4BdwzDqXq
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 15:51:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48xGnG5GlszDqc2
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 15:54:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -30,54 +30,53 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=iDRwPVn9; dkim-atps=neutral
+ header.s=mail header.b=DMRlPXM1; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48xGPg1d9czDqY1
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2020 15:37:11 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48xGRc0q5qzDr4R
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2020 15:38:52 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 48xGPZ567Dz9tyl0;
- Tue,  7 Apr 2020 07:37:06 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 48xGRX2X7rz9tyl0;
+ Tue,  7 Apr 2020 07:38:48 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=iDRwPVn9; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=DMRlPXM1; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id he_JtFx4FWod; Tue,  7 Apr 2020 07:37:06 +0200 (CEST)
+ with ESMTP id hLuwsCtw1kpH; Tue,  7 Apr 2020 07:38:48 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 48xGPZ3sLsz9tykx;
- Tue,  7 Apr 2020 07:37:06 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 48xGRX0xJZz9tykx;
+ Tue,  7 Apr 2020 07:38:48 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1586237826; bh=0x4+TWqk8JW6pvSjtGBATvZRUz0SffM/R45B7NoZvGE=;
+ t=1586237928; bh=HWz6MS7lTAi3uXy84h5BXT3D81kIcUyUUFUZeGSSns4=;
  h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=iDRwPVn9l6EMEAPKcEg7YkbwNyKGgJQn6eSVb/3ns2xOEo4TNl6UCV60tun1npTbb
- HjbXZ56ASAkKybsHkyyLgapCQWPKw9vqRweX8IH502w2sVzTu24yAze9073TjKMsMg
- 1In8R5vlVG0JKqyxKpjEL8YJKdEK0k5N4WKBmXRI=
+ b=DMRlPXM1JPEei9rDIiad0eEXgUR6yu0goL732ewszFzENm8cAA3tre3MZbusCnAiX
+ Xafr3sIMdpd4/WGfMirjzIagobPxx1BYksPWR3nMoyF1TmF+Ccd0/nGdloyjbNW0Dk
+ cmXxfSwYsJ/F9mdMZHWlqTjkz7EaRuSlTviePH/E=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 46D528B76E;
- Tue,  7 Apr 2020 07:37:07 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E866B8B76E;
+ Tue,  7 Apr 2020 07:38:48 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id ouk7-S44oSdO; Tue,  7 Apr 2020 07:37:07 +0200 (CEST)
+ with ESMTP id f6tr5ICfRfgC; Tue,  7 Apr 2020 07:38:48 +0200 (CEST)
 Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 767308B75E;
- Tue,  7 Apr 2020 07:37:06 +0200 (CEST)
-Subject: Re: [PATCH v3 11/15] powerpc/64s: machine check interrupt update NMI
- accounting
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id F2E698B75E;
+ Tue,  7 Apr 2020 07:38:47 +0200 (CEST)
+Subject: Re: [PATCH v3 09/15] powerpc/pseries: limit machine check stack to 4GB
 To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 References: <20200407051636.648369-1-npiggin@gmail.com>
- <20200407051636.648369-12-npiggin@gmail.com>
+ <20200407051636.648369-10-npiggin@gmail.com>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <684cdf24-a87a-1099-70c1-d3ff9a3921ff@c-s.fr>
-Date: Tue, 7 Apr 2020 07:37:02 +0200
+Message-ID: <d2b8d560-c444-14a8-c0d3-58844e31c64f@c-s.fr>
+Date: Tue, 7 Apr 2020 07:38:43 +0200
 User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
  Thunderbird/68.6.0
 MIME-Version: 1.0
-In-Reply-To: <20200407051636.648369-12-npiggin@gmail.com>
+In-Reply-To: <20200407051636.648369-10-npiggin@gmail.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: fr
 Content-Transfer-Encoding: 8bit
@@ -93,7 +92,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Ganesh Goudar <ganeshgr@linux.ibm.com>
+ Ganesh Goudar <ganeshgr@linux.ibm.com>,
+ Mahesh Salgaonkar <mahesh@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
@@ -101,101 +101,56 @@ Sender: "Linuxppc-dev"
 
 
 Le 07/04/2020 à 07:16, Nicholas Piggin a écrit :
-> machine_check_early is taken as an NMI, so nmi_enter is used there.
-> machine_check_exception is no longer taken as an NMI (it's invoked
-> via irq_work in the case a machine check hits in kernel mode), so
-> remove the nmi_enter from that case.
-
-Euh ... Is that also the case for PPC32 ?
-
-AFAIK machine_check_exception() is called as an NMI on PPC32.
-
-Christophe
-
+> This allows rtas_args to be put on the machine check stack, which
+> avoids a lot of complications with re-entrancy deadlocks.
 > 
-> In NMI context, hash faults don't try to refill the hash table, which
-> can lead to crashes accessing non-pinned kernel pages. System reset
-> still has this potential problem.
-> 
+> Reviewed-by: Mahesh Salgaonkar <mahesh@linux.ibm.com>
 > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+
+Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
+
 > ---
->   arch/powerpc/kernel/mce.c     |  7 +++++++
->   arch/powerpc/kernel/process.c |  2 +-
->   arch/powerpc/kernel/traps.c   | 13 +------------
->   3 files changed, 9 insertions(+), 13 deletions(-)
+>   arch/powerpc/kernel/setup_64.c | 15 ++++++++++++---
+>   1 file changed, 12 insertions(+), 3 deletions(-)
 > 
-> diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
-> index 8077b5fb18a7..be7e3f92a7b5 100644
-> --- a/arch/powerpc/kernel/mce.c
-> +++ b/arch/powerpc/kernel/mce.c
-> @@ -574,6 +574,9 @@ EXPORT_SYMBOL_GPL(machine_check_print_event_info);
->   long machine_check_early(struct pt_regs *regs)
+> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+> index 438a9befce41..defe05b6b7a9 100644
+> --- a/arch/powerpc/kernel/setup_64.c
+> +++ b/arch/powerpc/kernel/setup_64.c
+> @@ -709,7 +709,7 @@ void __init exc_lvl_early_init(void)
+>    */
+>   void __init emergency_stack_init(void)
 >   {
->   	long handled = 0;
-> +	bool nested = in_nmi();
-> +	if (!nested)
-> +		nmi_enter();
+> -	u64 limit;
+> +	u64 limit, mce_limit;
+>   	unsigned int i;
 >   
->   	hv_nmi_check_nonrecoverable(regs);
->   
-> @@ -582,6 +585,10 @@ long machine_check_early(struct pt_regs *regs)
+>   	/*
+> @@ -726,7 +726,16 @@ void __init emergency_stack_init(void)
+>   	 * initialized in kernel/irq.c. These are initialized here in order
+>   	 * to have emergency stacks available as early as possible.
 >   	 */
->   	if (ppc_md.machine_check_early)
->   		handled = ppc_md.machine_check_early(regs);
+> -	limit = min(ppc64_bolted_size(), ppc64_rma_size);
+> +	limit = mce_limit = min(ppc64_bolted_size(), ppc64_rma_size);
 > +
-> +	if (!nested)
-> +		nmi_exit();
-> +
->   	return handled;
->   }
+> +	/*
+> +	 * Machine check on pseries calls rtas, but can't use the static
+> +	 * rtas_args due to a machine check hitting while the lock is held.
+> +	 * rtas args have to be under 4GB, so the machine check stack is
+> +	 * limited to 4GB so args can be put on stack.
+> +	 */
+> +	if (firmware_has_feature(FW_FEATURE_LPAR) && mce_limit > SZ_4G)
+> +		mce_limit = SZ_4G;
 >   
-> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-> index 9c21288f8645..44410dd3029f 100644
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -1421,7 +1421,7 @@ void show_regs(struct pt_regs * regs)
->   		pr_cont("DAR: "REG" DSISR: %08lx ", regs->dar, regs->dsisr);
+>   	for_each_possible_cpu(i) {
+>   		paca_ptrs[i]->emergency_sp = alloc_stack(limit, i) + THREAD_SIZE;
+> @@ -736,7 +745,7 @@ void __init emergency_stack_init(void)
+>   		paca_ptrs[i]->nmi_emergency_sp = alloc_stack(limit, i) + THREAD_SIZE;
+>   
+>   		/* emergency stack for machine check exception handling. */
+> -		paca_ptrs[i]->mc_emergency_sp = alloc_stack(limit, i) + THREAD_SIZE;
+> +		paca_ptrs[i]->mc_emergency_sp = alloc_stack(mce_limit, i) + THREAD_SIZE;
 >   #endif
->   #ifdef CONFIG_PPC64
-> -	pr_cont("IRQMASK: %lx ", regs->softe);
-> +	pr_cont("IRQMASK: %lx IN_NMI:%d IN_MCE:%d", regs->softe, (int)get_paca()->in_nmi, (int)get_paca()->in_mce);
->   #endif
->   #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
->   	if (MSR_TM_ACTIVE(regs->msr))
-> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> index 3fca22276bb1..9f221772eb73 100644
-> --- a/arch/powerpc/kernel/traps.c
-> +++ b/arch/powerpc/kernel/traps.c
-> @@ -823,9 +823,6 @@ int machine_check_generic(struct pt_regs *regs)
->   void machine_check_exception(struct pt_regs *regs)
->   {
->   	int recover = 0;
-> -	bool nested = in_nmi();
-> -	if (!nested)
-> -		nmi_enter();
->   
->   	__this_cpu_inc(irq_stat.mce_exceptions);
->   
-> @@ -851,20 +848,12 @@ void machine_check_exception(struct pt_regs *regs)
->   	if (check_io_access(regs))
->   		goto bail;
->   
-> -	if (!nested)
-> -		nmi_exit();
-> -
->   	die("Machine check", regs, SIGBUS);
->   
-> +bail:
->   	/* Must die if the interrupt is not recoverable */
->   	if (!(regs->msr & MSR_RI))
->   		nmi_panic(regs, "Unrecoverable Machine check");
-> -
-> -	return;
-> -
-> -bail:
-> -	if (!nested)
-> -		nmi_exit();
+>   	}
 >   }
->   
->   void SMIException(struct pt_regs *regs)
 > 
