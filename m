@@ -2,25 +2,26 @@ Return-Path: <SRS0=EQUS=5X=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0524BC2BB1D
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 13:19:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F0D2AC2BB1D
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 13:21:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A94A420719
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 13:19:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5A31B20719
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 13:21:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="ga88shwg"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A94A420719
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="YuNrsa/S"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5A31B20719
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48xSfq26qJzDqND
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 23:19:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48xSjf0f8NzDqHn
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 23:21:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,51 +30,54 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=ga88shwg; dkim-atps=neutral
+ header.s=mail header.b=YuNrsa/S; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48xSXk70VczDqHl
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48xSXk6lbWzDqHS
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2020 23:13:57 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 48xSXc0v7mz9ty2T;
- Tue,  7 Apr 2020 15:13:52 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 48xSXd0lmXz9ty2g;
+ Tue,  7 Apr 2020 15:13:53 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=ga88shwg; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=YuNrsa/S; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id Qz2HClTgpfVO; Tue,  7 Apr 2020 15:13:52 +0200 (CEST)
+ with ESMTP id 0YdF7S3HsdLY; Tue,  7 Apr 2020 15:13:53 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 48xSXb6sw4z9vDCK;
- Tue,  7 Apr 2020 15:13:51 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1586265232; bh=UPDaSeoTITdgPbCgjM+NltBDEuNbcuKw8CZpyU9Hygc=;
- h=From:Subject:To:Cc:Date:From;
- b=ga88shwg2cV5JbrbDN0iaLvKTTDp6xX/kUFvNXkf06MwgEuWn8G9ut4c4/Gkt1cEy
- E9PH1gUTmE5XdHek3cBS7Q1jq4VQCPEhK7u7eYXsFjP4+ZLEDU3+ezn6OUbSS5+scv
- 6I0l+QqwO35OVqI+hWCYdhksoyyChP/4/EyF3KRA=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id F2A4E8B7B9;
+ by pegase1.c-s.fr (Postfix) with ESMTP id 48xSXc6fmcz9ty2V;
  Tue,  7 Apr 2020 15:13:52 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1586265232; bh=sfGFxmiLk0piqyU/qQus80qwW8Tg3vU9asN8yDMG0JY=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=YuNrsa/S4bfrdAB7PY/lHJmAsGeaqoS5cCYj6i0QYqSyASGIV5RySWR4KffDIP3Z0
+ RokDfghdelkbU/Swg4ez4IpEvTve7jqEGnHLdh6QjEhw3AoJbngHenL5fAz7DIF0+e
+ KbeoZTLWhx13XZ5rSsJ2hNun+CrOYKaUxrppiO2o=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1983B8B7B9;
+ Tue,  7 Apr 2020 15:13:54 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id TngpBxE_ZTa0; Tue,  7 Apr 2020 15:13:52 +0200 (CEST)
+ with ESMTP id MH-8SVvpbFbD; Tue,  7 Apr 2020 15:13:53 +0200 (CEST)
 Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 825F58B79C;
- Tue,  7 Apr 2020 15:13:52 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 706CD8B79C;
+ Tue,  7 Apr 2020 15:13:53 +0200 (CEST)
 Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 374F765746; Tue,  7 Apr 2020 13:13:52 +0000 (UTC)
-Message-Id: <cover.1586265010.git.christophe.leroy@c-s.fr>
+ id 467D065746; Tue,  7 Apr 2020 13:13:53 +0000 (UTC)
+Message-Id: <a826ead68a844285581eccc5e840fb062d6618bb.1586265010.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1586265010.git.christophe.leroy@c-s.fr>
+References: <cover.1586265010.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v6 0/4] powerpc: switch VDSO to C implementation
+Subject: [PATCH v6 1/4] powerpc/vdso64: Switch from __get_datapage() to
+ get_datapage inline macro
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  nathanl@linux.ibm.com
-Date: Tue,  7 Apr 2020 13:13:52 +0000 (UTC)
+Date: Tue,  7 Apr 2020 13:13:53 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,59 +95,155 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is a sixth version of a series to switch powerpc VDSO to generic
-C implementation. There is no major change since v5, mainly rebasing.
-Generic changes are all in linus/master now, so the series only
-includes powerpc parts now.
+On the same way as already done on PPC32, drop __get_datapage()
+function and use get_datapage inline macro instead.
 
-Patch 3 is new, required following rework of header files for VDSO.
+See commit ec0895f08f99 ("powerpc/vdso32: inline __get_datapage()")
 
-This series applies on today's powerpc/merge branch.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/kernel/vdso64/cacheflush.S   |  9 ++++----
+ arch/powerpc/kernel/vdso64/datapage.S     | 28 +++--------------------
+ arch/powerpc/kernel/vdso64/gettimeofday.S |  8 +++----
+ 3 files changed, 11 insertions(+), 34 deletions(-)
 
-See the last patch for details on changes and performance.
-
-Christophe Leroy (4):
-  powerpc/vdso64: Switch from __get_datapage() to get_datapage inline
-    macro
-  powerpc/vdso: Remove __kernel_datapage_offset and simplify
-    __get_datapage()
-  powerpc/processor: Move cpu_relax() into asm/vdso/processor.h
-  powerpc/vdso: Switch VDSO to generic C implementation.
-
- arch/powerpc/Kconfig                         |   2 +
- arch/powerpc/include/asm/clocksource.h       |   7 +
- arch/powerpc/include/asm/processor.h         |  10 +-
- arch/powerpc/include/asm/vdso/clocksource.h  |   7 +
- arch/powerpc/include/asm/vdso/gettimeofday.h | 175 +++++++++++
- arch/powerpc/include/asm/vdso/processor.h    |  23 ++
- arch/powerpc/include/asm/vdso/vsyscall.h     |  25 ++
- arch/powerpc/include/asm/vdso_datapage.h     |  51 ++--
- arch/powerpc/kernel/asm-offsets.c            |  49 +---
- arch/powerpc/kernel/time.c                   |  91 +-----
- arch/powerpc/kernel/vdso.c                   |  58 +---
- arch/powerpc/kernel/vdso32/Makefile          |  32 +-
- arch/powerpc/kernel/vdso32/cacheflush.S      |   2 +-
- arch/powerpc/kernel/vdso32/config-fake32.h   |  34 +++
- arch/powerpc/kernel/vdso32/datapage.S        |   7 +-
- arch/powerpc/kernel/vdso32/gettimeofday.S    | 291 +------------------
- arch/powerpc/kernel/vdso32/vdso32.lds.S      |   7 +-
- arch/powerpc/kernel/vdso32/vgettimeofday.c   |  29 ++
- arch/powerpc/kernel/vdso64/Makefile          |  23 +-
- arch/powerpc/kernel/vdso64/cacheflush.S      |   9 +-
- arch/powerpc/kernel/vdso64/datapage.S        |  31 +-
- arch/powerpc/kernel/vdso64/gettimeofday.S    | 243 +---------------
- arch/powerpc/kernel/vdso64/vdso64.lds.S      |   7 +-
- arch/powerpc/kernel/vdso64/vgettimeofday.c   |  29 ++
- 24 files changed, 443 insertions(+), 799 deletions(-)
- create mode 100644 arch/powerpc/include/asm/clocksource.h
- create mode 100644 arch/powerpc/include/asm/vdso/clocksource.h
- create mode 100644 arch/powerpc/include/asm/vdso/gettimeofday.h
- create mode 100644 arch/powerpc/include/asm/vdso/processor.h
- create mode 100644 arch/powerpc/include/asm/vdso/vsyscall.h
- create mode 100644 arch/powerpc/kernel/vdso32/config-fake32.h
- create mode 100644 arch/powerpc/kernel/vdso32/vgettimeofday.c
- create mode 100644 arch/powerpc/kernel/vdso64/vgettimeofday.c
-
+diff --git a/arch/powerpc/kernel/vdso64/cacheflush.S b/arch/powerpc/kernel/vdso64/cacheflush.S
+index 526f5ba2593e..cab14324242b 100644
+--- a/arch/powerpc/kernel/vdso64/cacheflush.S
++++ b/arch/powerpc/kernel/vdso64/cacheflush.S
+@@ -8,6 +8,7 @@
+ #include <asm/processor.h>
+ #include <asm/ppc_asm.h>
+ #include <asm/vdso.h>
++#include <asm/vdso_datapage.h>
+ #include <asm/asm-offsets.h>
+ 
+ 	.text
+@@ -24,14 +25,12 @@ V_FUNCTION_BEGIN(__kernel_sync_dicache)
+   .cfi_startproc
+ 	mflr	r12
+   .cfi_register lr,r12
+-	mr	r11,r3
+-	bl	V_LOCAL_FUNC(__get_datapage)
++	get_datapage	r10, r0
+ 	mtlr	r12
+-	mr	r10,r3
+ 
+ 	lwz	r7,CFG_DCACHE_BLOCKSZ(r10)
+ 	addi	r5,r7,-1
+-	andc	r6,r11,r5		/* round low to line bdy */
++	andc	r6,r3,r5		/* round low to line bdy */
+ 	subf	r8,r6,r4		/* compute length */
+ 	add	r8,r8,r5		/* ensure we get enough */
+ 	lwz	r9,CFG_DCACHE_LOGBLOCKSZ(r10)
+@@ -48,7 +47,7 @@ V_FUNCTION_BEGIN(__kernel_sync_dicache)
+ 
+ 	lwz	r7,CFG_ICACHE_BLOCKSZ(r10)
+ 	addi	r5,r7,-1
+-	andc	r6,r11,r5		/* round low to line bdy */
++	andc	r6,r3,r5		/* round low to line bdy */
+ 	subf	r8,r6,r4		/* compute length */
+ 	add	r8,r8,r5
+ 	lwz	r9,CFG_ICACHE_LOGBLOCKSZ(r10)
+diff --git a/arch/powerpc/kernel/vdso64/datapage.S b/arch/powerpc/kernel/vdso64/datapage.S
+index dc84f5ae3802..067247d3efb9 100644
+--- a/arch/powerpc/kernel/vdso64/datapage.S
++++ b/arch/powerpc/kernel/vdso64/datapage.S
+@@ -10,35 +10,13 @@
+ #include <asm/asm-offsets.h>
+ #include <asm/unistd.h>
+ #include <asm/vdso.h>
++#include <asm/vdso_datapage.h>
+ 
+ 	.text
+ .global	__kernel_datapage_offset;
+ __kernel_datapage_offset:
+ 	.long	0
+ 
+-V_FUNCTION_BEGIN(__get_datapage)
+-  .cfi_startproc
+-	/* We don't want that exposed or overridable as we want other objects
+-	 * to be able to bl directly to here
+-	 */
+-	.protected __get_datapage
+-	.hidden __get_datapage
+-
+-	mflr	r0
+-  .cfi_register lr,r0
+-
+-	bcl	20,31,data_page_branch
+-data_page_branch:
+-	mflr	r3
+-	mtlr	r0
+-	addi	r3, r3, __kernel_datapage_offset-data_page_branch
+-	lwz	r0,0(r3)
+-  .cfi_restore lr
+-	add	r3,r0,r3
+-	blr
+-  .cfi_endproc
+-V_FUNCTION_END(__get_datapage)
+-
+ /*
+  * void *__kernel_get_syscall_map(unsigned int *syscall_count) ;
+  *
+@@ -53,7 +31,7 @@ V_FUNCTION_BEGIN(__kernel_get_syscall_map)
+ 	mflr	r12
+   .cfi_register lr,r12
+ 	mr	r4,r3
+-	bl	V_LOCAL_FUNC(__get_datapage)
++	get_datapage	r3, r0
+ 	mtlr	r12
+ 	addi	r3,r3,CFG_SYSCALL_MAP64
+ 	cmpldi	cr0,r4,0
+@@ -75,7 +53,7 @@ V_FUNCTION_BEGIN(__kernel_get_tbfreq)
+   .cfi_startproc
+ 	mflr	r12
+   .cfi_register lr,r12
+-	bl	V_LOCAL_FUNC(__get_datapage)
++	get_datapage	r3, r0
+ 	ld	r3,CFG_TB_TICKS_PER_SEC(r3)
+ 	mtlr	r12
+ 	crclr	cr0*4+so
+diff --git a/arch/powerpc/kernel/vdso64/gettimeofday.S b/arch/powerpc/kernel/vdso64/gettimeofday.S
+index 1c9a04703250..e54c4ce4d356 100644
+--- a/arch/powerpc/kernel/vdso64/gettimeofday.S
++++ b/arch/powerpc/kernel/vdso64/gettimeofday.S
+@@ -26,7 +26,7 @@ V_FUNCTION_BEGIN(__kernel_gettimeofday)
+ 
+ 	mr	r11,r3			/* r11 holds tv */
+ 	mr	r10,r4			/* r10 holds tz */
+-	bl	V_LOCAL_FUNC(__get_datapage)	/* get data page */
++	get_datapage	r3, r0
+ 	cmpldi	r11,0			/* check if tv is NULL */
+ 	beq	2f
+ 	lis	r7,1000000@ha		/* load up USEC_PER_SEC */
+@@ -71,7 +71,7 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
+ 	mflr	r12			/* r12 saves lr */
+   .cfi_register lr,r12
+ 	mr	r11,r4			/* r11 saves tp */
+-	bl	V_LOCAL_FUNC(__get_datapage)	/* get data page */
++	get_datapage	r3, r0
+ 	lis	r7,NSEC_PER_SEC@h	/* want nanoseconds */
+ 	ori	r7,r7,NSEC_PER_SEC@l
+ 	beq	cr5,70f
+@@ -188,7 +188,7 @@ V_FUNCTION_BEGIN(__kernel_clock_getres)
+ 
+ 	mflr	r12
+   .cfi_register lr,r12
+-	bl	V_LOCAL_FUNC(__get_datapage)
++	get_datapage	r3, r0
+ 	lwz	r5, CLOCK_HRTIMER_RES(r3)
+ 	mtlr	r12
+ 	li	r3,0
+@@ -221,7 +221,7 @@ V_FUNCTION_BEGIN(__kernel_time)
+   .cfi_register lr,r12
+ 
+ 	mr	r11,r3			/* r11 holds t */
+-	bl	V_LOCAL_FUNC(__get_datapage)
++	get_datapage	r3, r0
+ 
+ 	ld	r4,STAMP_XTIME_SEC(r3)
+ 
 -- 
 2.25.0
 
