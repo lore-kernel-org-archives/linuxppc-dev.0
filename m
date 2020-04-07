@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-8.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21323C2BA16
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 06:01:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 056EAC2BA16
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 06:03:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BFF3E2051A
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 06:01:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A99E12051A
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 06:03:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="f4HWt7Or"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BFF3E2051A
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="M99A/SGA"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A99E12051A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48xGxL6KGyzDqN7
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 16:01:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48xGzl5VWmzDqRR
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2020 16:03:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -30,53 +30,54 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=f4HWt7Or; dkim-atps=neutral
+ header.s=mail header.b=M99A/SGA; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48xGb83QKbzDr3h
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2020 15:45:24 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48xGbV6nYVzDqb1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2020 15:45:42 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 48xGb44KkWz9tyl1;
- Tue,  7 Apr 2020 07:45:20 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 48xGbQ0hkZz9tyl1;
+ Tue,  7 Apr 2020 07:45:38 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=f4HWt7Or; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=M99A/SGA; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id aOlQcO2TMTV4; Tue,  7 Apr 2020 07:45:20 +0200 (CEST)
+ with ESMTP id RZDAUZtSitE5; Tue,  7 Apr 2020 07:45:38 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 48xGb42vgyz9tyl0;
- Tue,  7 Apr 2020 07:45:20 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 48xGbP6n4qz9tyl0;
+ Tue,  7 Apr 2020 07:45:37 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1586238320; bh=/FbVZl2qNswYiJjAQeF9V7X9sWcfutdPc4E6CnADDl8=;
+ t=1586238337; bh=AZSkTtvxcCCwIz4GzLm/SNYJ9WQST5ys+SpBvAUyXaw=;
  h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=f4HWt7OrSa6KjKTRQGRZJLqGSfIscMXlCZMSh79ELCD64qNDpp/uLTwZauZCudYL2
- GQnB23ddAULDTTJrSiLMRhiWrzw/slNeXwWT6DclL/4WcfMOSRSypGnXE0zOs13N7G
- BO5mRaksYRxKTCK1vTpliEy+OXLwFJ6xpWzz9Nho=
+ b=M99A/SGAplo/+24PFkSHqzgVgjVtNGZQ+rQ0+8rDItkDT+Jx1S0aCZpQ2jBGSi5wp
+ OnTdyDC7IrgT6KNwytsnTfZdJlt79HZsB9b+AgBR86OE8kmv5lVqARLl1JOF2FmWhf
+ ZoK+B0lNfj1+YePZMh8ug0znNQtV45/AsGbdZRts=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 16E008B76E;
- Tue,  7 Apr 2020 07:45:21 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B17548B76E;
+ Tue,  7 Apr 2020 07:45:38 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id qrgIT9dyeboy; Tue,  7 Apr 2020 07:45:21 +0200 (CEST)
+ with ESMTP id C7yp2_gGgCSr; Tue,  7 Apr 2020 07:45:38 +0200 (CEST)
 Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 197868B75E;
- Tue,  7 Apr 2020 07:45:20 +0200 (CEST)
-Subject: Re: [PATCH v3 12/15] powerpc: ftrace_enabled helper
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 26B068B75E;
+ Tue,  7 Apr 2020 07:45:38 +0200 (CEST)
+Subject: Re: [PATCH v3 13/15] powerpc/64s: machine check do not trace
+ real-mode handler
 To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 References: <20200407051636.648369-1-npiggin@gmail.com>
- <20200407051636.648369-13-npiggin@gmail.com>
+ <20200407051636.648369-14-npiggin@gmail.com>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <71b09f76-2cba-4aa5-34d7-e10bdd681f57@c-s.fr>
-Date: Tue, 7 Apr 2020 07:45:15 +0200
+Message-ID: <86bfbf0b-7734-68a1-650c-7e2a29854875@c-s.fr>
+Date: Tue, 7 Apr 2020 07:45:33 +0200
 User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
  Thunderbird/68.6.0
 MIME-Version: 1.0
-In-Reply-To: <20200407051636.648369-13-npiggin@gmail.com>
+In-Reply-To: <20200407051636.648369-14-npiggin@gmail.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: fr
 Content-Transfer-Encoding: 8bit
@@ -101,41 +102,55 @@ Sender: "Linuxppc-dev"
 
 
 Le 07/04/2020 à 07:16, Nicholas Piggin a écrit :
+> Rather than notrace annotations throughout a significant part of the
+> machine check code across kernel/ pseries/ and powernv/ which can
+> easily be broken and is infrequently tested, use paca->ftrace_enabled
+> to blanket-disable tracing of the real-mode non-maskable handler.
+> 
+> Acked-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
 Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-
 > ---
->   arch/powerpc/include/asm/ftrace.h | 14 ++++++++++++++
->   1 file changed, 14 insertions(+)
+>   arch/powerpc/kernel/mce.c | 9 ++++++++-
+>   1 file changed, 8 insertions(+), 1 deletion(-)
 > 
-> diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
-> index f54a08a2cd70..bc76970b6ee5 100644
-> --- a/arch/powerpc/include/asm/ftrace.h
-> +++ b/arch/powerpc/include/asm/ftrace.h
-> @@ -108,9 +108,23 @@ static inline void this_cpu_enable_ftrace(void)
+> diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
+> index be7e3f92a7b5..fd90c0eda229 100644
+> --- a/arch/powerpc/kernel/mce.c
+> +++ b/arch/powerpc/kernel/mce.c
+> @@ -16,6 +16,7 @@
+>   #include <linux/export.h>
+>   #include <linux/irq_work.h>
+>   #include <linux/extable.h>
+> +#include <linux/ftrace.h>
+>   
+>   #include <asm/machdep.h>
+>   #include <asm/mce.h>
+> @@ -571,10 +572,14 @@ EXPORT_SYMBOL_GPL(machine_check_print_event_info);
+>    *
+>    * regs->nip and regs->msr contains srr0 and ssr1.
+>    */
+> -long machine_check_early(struct pt_regs *regs)
+> +long notrace machine_check_early(struct pt_regs *regs)
 >   {
->   	get_paca()->ftrace_enabled = 1;
+>   	long handled = 0;
+>   	bool nested = in_nmi();
+> +	u8 ftrace_enabled = this_cpu_get_ftrace_enabled();
+> +
+> +	this_cpu_set_ftrace_enabled(0);
+> +
+>   	if (!nested)
+>   		nmi_enter();
+>   
+> @@ -589,6 +594,8 @@ long machine_check_early(struct pt_regs *regs)
+>   	if (!nested)
+>   		nmi_exit();
+>   
+> +	this_cpu_set_ftrace_enabled(ftrace_enabled);
+> +
+>   	return handled;
 >   }
-> +
-> +/* Disable ftrace on this CPU if possible (may not be implemented) */
-> +static inline void this_cpu_set_ftrace_enabled(u8 ftrace_enabled)
-> +{
-> +	get_paca()->ftrace_enabled = ftrace_enabled;
-> +}
-> +
-> +static inline u8 this_cpu_get_ftrace_enabled(void)
-> +{
-> +	return get_paca()->ftrace_enabled;
-> +}
-> +
->   #else /* CONFIG_PPC64 */
->   static inline void this_cpu_disable_ftrace(void) { }
->   static inline void this_cpu_enable_ftrace(void) { }
-> +static inline void this_cpu_set_ftrace_enabled(u8 ftrace_enabled) { }
-> +static inline u8 this_cpu_get_ftrace_enabled(void) { return 1; }
->   #endif /* CONFIG_PPC64 */
->   #endif /* !__ASSEMBLY__ */
 >   
 > 
