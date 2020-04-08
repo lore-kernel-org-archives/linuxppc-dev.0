@@ -4,24 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 104C6C2D0EA
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2020 12:14:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E9858C2D0EA
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2020 12:16:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AA8142051A
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2020 12:14:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 951542074F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2020 12:16:35 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="AiON82kA"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AA8142051A
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="cE87E28x"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 951542074F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48y39604qHzDqFK
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2020 22:14:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48y3D06mWFzDqtG
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2020 22:16:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -31,28 +31,28 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=bombadil.20170209 header.b=AiON82kA; 
+ header.a=rsa-sha256 header.s=bombadil.20170209 header.b=cE87E28x; 
  dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48y2s20CFkzDqkK
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2020 22:00:06 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48y2s76bn0zDqjQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2020 22:00:11 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description;
- bh=+4crHe3uhOmeHMYSCHBlBmEtvSN8/No0ezjzDuAPTuI=; b=AiON82kAyefLxy+FnZ++rrbSGF
- 8ljclPntA9K5i1rFNcDzzNtb63TTWtGJSdnMqW0bhVGAYZt+qQcOqPfq4fDc568XB7I7cWIgfoqy+
- 6aenP3/iW/aR8b0vgGnlg0/i1bQGTrRgtjPifPNjiGXsxt5wbwP+/2dAdjbu9jFF+sVu6xIZlzI8o
- 3UkjBpDdKvNbq45B5GA71q8xbnKt3wrPiFv5ystbAKd7zx7YxnjPKJNYX2mPxSKe0km6OLETZ3nj5
- 3paLvGqR73XDd5RV0Xn10xsA1T1zo/zYu9OVpyCR9CkQIy+VawEhi9xD2bMjIzI1c97gMiqCU45fY
- rKKah2mA==;
+ bh=otUadJ/9rL6aYPVuoUV0sPFutoeCBs/4mPZmKKBwvU8=; b=cE87E28xw1VZmqGi/8uV9lZ4gZ
+ 8m2WMEdYnen6/11ACKb9ocqaLlAu0SETiydeCxqWgX0d4eS9+Gsc81PE+r593JfF5TNN3JX8S8zDD
+ acvrqEpr4Tc4bcguGc++Mc2y6WjAV02zTlw1YSrM7gI4c8dED+plaO3O6PdBxZHrsyVLJJftC6FCI
+ ScUU1hRyogYzzIxFTBY2MFeIIQvr+jKEeom96Cf/+r/vEqXYtiCw0nJAGns7cWVrr3UEbZfNXjG3T
+ mMepp1wVEGJsvISHmFgrK5SJc39wh6OjhR2+5AV8w8r3Kv5NwJZ4wxcfWwokzduJrXQ9DwPsrDh9t
+ k5XJjZrg==;
 Received: from [2001:4bb8:180:5765:65b6:f11e:f109:b151] (helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jM9Ms-0001h3-0H; Wed, 08 Apr 2020 11:59:42 +0000
+ id 1jM9My-0001wY-DB; Wed, 08 Apr 2020 11:59:49 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Andrew Morton <akpm@linux-foundation.org>,
  "K. Y. Srinivasan" <kys@microsoft.com>,
@@ -63,9 +63,9 @@ To: Andrew Morton <akpm@linux-foundation.org>,
  Sumit Semwal <sumit.semwal@linaro.org>,
  Sakari Ailus <sakari.ailus@linux.intel.com>,
  Minchan Kim <minchan@kernel.org>, Nitin Gupta <ngupta@vflare.org>
-Subject: [PATCH 04/28] dma-mapping: use vmap insted of reimplementing it
-Date: Wed,  8 Apr 2020 13:59:02 +0200
-Message-Id: <20200408115926.1467567-5-hch@lst.de>
+Subject: [PATCH 06/28] powerpc: remove __ioremap_at and __iounmap_at
+Date: Wed,  8 Apr 2020 13:59:04 +0200
+Message-Id: <20200408115926.1467567-7-hch@lst.de>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200408115926.1467567-1-hch@lst.de>
 References: <20200408115926.1467567-1-hch@lst.de>
@@ -94,97 +94,177 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Replace the open coded instance of vmap with the actual function.  In
-the non-contiguous (IOMMU) case this requires an extra find_vm_area,
-but given that this isn't a fast path function that is a small price
-to pay.
+These helpers are only used for remapping the ISA I/O base.  Replace
+the mapping side with a remap_isa_range helper in isa-bridge.c that
+hard codes all the known arguments, and just remove __iounmap_at in
+favour of open coding it in the only caller.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- kernel/dma/remap.c | 48 ++++++++++++----------------------------------
- 1 file changed, 12 insertions(+), 36 deletions(-)
+ arch/powerpc/include/asm/io.h    |  8 -----
+ arch/powerpc/kernel/isa-bridge.c | 28 +++++++++++++-----
+ arch/powerpc/mm/ioremap_64.c     | 50 --------------------------------
+ 3 files changed, 21 insertions(+), 65 deletions(-)
 
-diff --git a/kernel/dma/remap.c b/kernel/dma/remap.c
-index d14cbc83986a..7a8ba60951e8 100644
---- a/kernel/dma/remap.c
-+++ b/kernel/dma/remap.c
-@@ -20,23 +20,6 @@ struct page **dma_common_find_pages(void *cpu_addr)
- 	return area->pages;
+diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
+index 71f1c5d69839..4fdbb9e45dd7 100644
+--- a/arch/powerpc/include/asm/io.h
++++ b/arch/powerpc/include/asm/io.h
+@@ -699,10 +699,6 @@ static inline void iosync(void)
+  *
+  * * iounmap undoes such a mapping and can be hooked
+  *
+- * * __ioremap_at (and the pending __iounmap_at) are low level functions to
+- *   create hand-made mappings for use only by the PCI code and cannot
+- *   currently be hooked. Must be page aligned.
+- *
+  * * __ioremap_caller is the same as above but takes an explicit caller
+  *   reference rather than using __builtin_return_address(0)
+  *
+@@ -729,10 +725,6 @@ void __iomem *do_ioremap(phys_addr_t pa, phys_addr_t offset, unsigned long size,
+ extern void __iomem *__ioremap_caller(phys_addr_t, unsigned long size,
+ 				      pgprot_t prot, void *caller);
+ 
+-extern void __iomem * __ioremap_at(phys_addr_t pa, void *ea,
+-				   unsigned long size, pgprot_t prot);
+-extern void __iounmap_at(void *ea, unsigned long size);
+-
+ /*
+  * When CONFIG_PPC_INDIRECT_PIO is set, we use the generic iomap implementation
+  * which needs some additional definitions here. They basically allow PIO
+diff --git a/arch/powerpc/kernel/isa-bridge.c b/arch/powerpc/kernel/isa-bridge.c
+index 773671b512df..2257d24e6a26 100644
+--- a/arch/powerpc/kernel/isa-bridge.c
++++ b/arch/powerpc/kernel/isa-bridge.c
+@@ -18,6 +18,7 @@
+ #include <linux/init.h>
+ #include <linux/mm.h>
+ #include <linux/notifier.h>
++#include <linux/vmalloc.h>
+ 
+ #include <asm/processor.h>
+ #include <asm/io.h>
+@@ -38,6 +39,22 @@ EXPORT_SYMBOL_GPL(isa_bridge_pcidev);
+ #define ISA_SPACE_MASK 0x1
+ #define ISA_SPACE_IO 0x1
+ 
++static void remap_isa_base(phys_addr_t pa, unsigned long size)
++{
++	WARN_ON_ONCE(ISA_IO_BASE & ~PAGE_MASK);
++	WARN_ON_ONCE(pa & ~PAGE_MASK);
++	WARN_ON_ONCE(size & ~PAGE_MASK);
++
++	if (slab_is_available()) {
++		if (ioremap_page_range(ISA_IO_BASE, ISA_IO_BASE + size, pa,
++				pgprot_noncached(PAGE_KERNEL)))
++			unmap_kernel_range(ISA_IO_BASE, size);
++	} else {
++		early_ioremap_range(ISA_IO_BASE, pa, size,
++				pgprot_noncached(PAGE_KERNEL));
++	}
++}
++
+ static void pci_process_ISA_OF_ranges(struct device_node *isa_node,
+ 				      unsigned long phb_io_base_phys)
+ {
+@@ -105,15 +122,13 @@ static void pci_process_ISA_OF_ranges(struct device_node *isa_node,
+ 	if (size > 0x10000)
+ 		size = 0x10000;
+ 
+-	__ioremap_at(phb_io_base_phys, (void *)ISA_IO_BASE,
+-		     size, pgprot_noncached(PAGE_KERNEL));
++	remap_isa_base(phb_io_base_phys, size);
+ 	return;
+ 
+ inval_range:
+ 	printk(KERN_ERR "no ISA IO ranges or unexpected isa range, "
+ 	       "mapping 64k\n");
+-	__ioremap_at(phb_io_base_phys, (void *)ISA_IO_BASE,
+-		     0x10000, pgprot_noncached(PAGE_KERNEL));
++	remap_isa_base(phb_io_base_phys, 0x10000);
  }
  
--static struct vm_struct *__dma_common_pages_remap(struct page **pages,
--			size_t size, pgprot_t prot, const void *caller)
+ 
+@@ -248,8 +263,7 @@ void __init isa_bridge_init_non_pci(struct device_node *np)
+ 	 * and map it
+ 	 */
+ 	isa_io_base = ISA_IO_BASE;
+-	__ioremap_at(pbase, (void *)ISA_IO_BASE,
+-		     size, pgprot_noncached(PAGE_KERNEL));
++	remap_isa_base(pbase, size);
+ 
+ 	pr_debug("ISA: Non-PCI bridge is %pOF\n", np);
+ }
+@@ -297,7 +311,7 @@ static void isa_bridge_remove(void)
+ 	isa_bridge_pcidev = NULL;
+ 
+ 	/* Unmap the ISA area */
+-	__iounmap_at((void *)ISA_IO_BASE, 0x10000);
++	unmap_kernel_range(ISA_IO_BASE, 0x10000);
+ }
+ 
+ /**
+diff --git a/arch/powerpc/mm/ioremap_64.c b/arch/powerpc/mm/ioremap_64.c
+index 50a99d9684f7..ba5cbb0d66bd 100644
+--- a/arch/powerpc/mm/ioremap_64.c
++++ b/arch/powerpc/mm/ioremap_64.c
+@@ -4,56 +4,6 @@
+ #include <linux/slab.h>
+ #include <linux/vmalloc.h>
+ 
+-/**
+- * Low level function to establish the page tables for an IO mapping
+- */
+-void __iomem *__ioremap_at(phys_addr_t pa, void *ea, unsigned long size, pgprot_t prot)
 -{
--	struct vm_struct *area;
+-	int ret;
+-	unsigned long va = (unsigned long)ea;
 -
--	area = get_vm_area_caller(size, VM_DMA_COHERENT, caller);
--	if (!area)
+-	/* We don't support the 4K PFN hack with ioremap */
+-	if (pgprot_val(prot) & H_PAGE_4K_PFN)
 -		return NULL;
 -
--	if (map_vm_area(area, prot, pages)) {
--		vunmap(area->addr);
+-	if ((ea + size) >= (void *)IOREMAP_END) {
+-		pr_warn("Outside the supported range\n");
 -		return NULL;
 -	}
 -
--	return area;
+-	WARN_ON(pa & ~PAGE_MASK);
+-	WARN_ON(((unsigned long)ea) & ~PAGE_MASK);
+-	WARN_ON(size & ~PAGE_MASK);
+-
+-	if (slab_is_available()) {
+-		ret = ioremap_page_range(va, va + size, pa, prot);
+-		if (ret)
+-			unmap_kernel_range(va, size);
+-	} else {
+-		ret = early_ioremap_range(va, pa, size, prot);
+-	}
+-
+-	if (ret)
+-		return NULL;
+-
+-	return (void __iomem *)ea;
 -}
+-EXPORT_SYMBOL(__ioremap_at);
 -
- /*
-  * Remaps an array of PAGE_SIZE pages into another vm_area.
-  * Cannot be used in non-sleeping contexts
-@@ -44,15 +27,12 @@ static struct vm_struct *__dma_common_pages_remap(struct page **pages,
- void *dma_common_pages_remap(struct page **pages, size_t size,
- 			 pgprot_t prot, const void *caller)
+-/**
+- * Low level function to tear down the page tables for an IO mapping. This is
+- * used for mappings that are manipulated manually, like partial unmapping of
+- * PCI IOs or ISA space.
+- */
+-void __iounmap_at(void *ea, unsigned long size)
+-{
+-	WARN_ON(((unsigned long)ea) & ~PAGE_MASK);
+-	WARN_ON(size & ~PAGE_MASK);
+-
+-	unmap_kernel_range((unsigned long)ea, size);
+-}
+-EXPORT_SYMBOL(__iounmap_at);
+-
+ void __iomem *__ioremap_caller(phys_addr_t addr, unsigned long size,
+ 			       pgprot_t prot, void *caller)
  {
--	struct vm_struct *area;
-+	void *vaddr;
- 
--	area = __dma_common_pages_remap(pages, size, prot, caller);
--	if (!area)
--		return NULL;
--
--	area->pages = pages;
--
--	return area->addr;
-+	vaddr = vmap(pages, count, VM_DMA_COHERENT, prot);
-+	if (vaddr)
-+		find_vm_area(vaddr)->pages = pages;
-+	return vaddr;
- }
- 
- /*
-@@ -62,24 +42,20 @@ void *dma_common_pages_remap(struct page **pages, size_t size,
- void *dma_common_contiguous_remap(struct page *page, size_t size,
- 			pgprot_t prot, const void *caller)
- {
--	int i;
-+	int count = size >> PAGE_SHIFT;
- 	struct page **pages;
--	struct vm_struct *area;
-+	void *vaddr;
-+	int i;
- 
--	pages = kmalloc(sizeof(struct page *) << get_order(size), GFP_KERNEL);
-+	pages = kmalloc_array(count, sizeof(struct page *), GFP_KERNEL);
- 	if (!pages)
- 		return NULL;
--
--	for (i = 0; i < (size >> PAGE_SHIFT); i++)
-+	for (i = 0; i < count; i++)
- 		pages[i] = nth_page(page, i);
--
--	area = __dma_common_pages_remap(pages, size, prot, caller);
--
-+	vaddr = vmap(pages, count, VM_DMA_COHERENT, prot);
- 	kfree(pages);
- 
--	if (!area)
--		return NULL;
--	return area->addr;
-+	return vaddr;
- }
- 
- /*
 -- 
 2.25.1
 
