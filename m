@@ -4,24 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B7326C2BA1A
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2020 12:21:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 436C1C2D0EA
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2020 12:24:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 059652076D
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2020 12:21:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B618E206F7
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2020 12:24:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="kMYww0dY"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 059652076D
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="VTuUlyaH"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B618E206F7
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48y3Km0qxGzDqR7
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2020 22:21:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48y3Pd4V3HzDqCh
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2020 22:24:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -31,28 +31,28 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=bombadil.20170209 header.b=kMYww0dY; 
+ header.a=rsa-sha256 header.s=bombadil.20170209 header.b=VTuUlyaH; 
  dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48y2sM2FGRzDqq0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48y2sM2wlszDqhD
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2020 22:00:23 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description;
- bh=Ny8WDSQUfoBWfg8q985YYaQfhGb7DzEU/DgzJ/fuVqQ=; b=kMYww0dYMqih4nXqzFYzLPfwnu
- 8K11Gs1tthUPRpdveSrymRFrZ0AVzpFluASNT9W/MXTSLm36Nq+FNZrkrtyYWAfqtPnCF0yjS0H1M
- Uxbs0RnXCNez6dObH6FXoi/Z9xkxRqrhT5h06lOoWOEO1ket0/Q9AuHndax7AZxGCy3BwVrydOXXm
- YH7Pe4IJMJ1S01/u2nF1MsbH0mBlipl+zFJctp6ep3xodceTMqiXEAGWiXBisIlyKE2D5ARBU/P8j
- YPmdp7H/bfFoIXC5huhvRMyqgN6ZQamt5E3HP2VUUfa+ZWPvTde6fdDn4gdxptbNAbOt5LZolTubJ
- R0C0ixmA==;
+ bh=3abNsx+EShWxD+ucjKGAn+8BXbsWA3npQb6OT4j8l/k=; b=VTuUlyaHjuDzGAY0l0Q22uhlLf
+ wD/tAlox5u5sxwFwINA4oO8TKm//8TPhXfbrlexPUg+aMWMvm2VJo3XJBh+Q/URlDJwK/WXYOIqeE
+ itgjnyzqS9qM62X+s2FY6wgZPZwdcgVDuvcYWRMFVYFRkpvylxG5hinTXVu4DlbECjifF8IxKkSaj
+ cIlPRqgcXUpLYjxtckGXmCEjkhgaGgmVSwpDkUczmnaU14CBOdlC4pJ/E1tYZYqk8DY+hdPi28d5/
+ v/JuastRyfpIpckKinEsZDF94IKsPBkGGesJScTNgNFFeu8ITiRK19RpZ0CP7qP7hJoo3OYuGXLCo
+ vBlTJxNQ==;
 Received: from [2001:4bb8:180:5765:65b6:f11e:f109:b151] (helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jM9N2-00021M-Ag; Wed, 08 Apr 2020 11:59:53 +0000
+ id 1jM9N6-000255-5d; Wed, 08 Apr 2020 11:59:56 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Andrew Morton <akpm@linux-foundation.org>,
  "K. Y. Srinivasan" <kys@microsoft.com>,
@@ -63,9 +63,9 @@ To: Andrew Morton <akpm@linux-foundation.org>,
  Sumit Semwal <sumit.semwal@linaro.org>,
  Sakari Ailus <sakari.ailus@linux.intel.com>,
  Minchan Kim <minchan@kernel.org>, Nitin Gupta <ngupta@vflare.org>
-Subject: [PATCH 07/28] mm: remove __get_vm_area
-Date: Wed,  8 Apr 2020 13:59:05 +0200
-Message-Id: <20200408115926.1467567-8-hch@lst.de>
+Subject: [PATCH 08/28] mm: unexport unmap_kernel_range_noflush
+Date: Wed,  8 Apr 2020 13:59:06 +0200
+Message-Id: <20200408115926.1467567-9-hch@lst.de>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200408115926.1467567-1-hch@lst.de>
 References: <20200408115926.1467567-1-hch@lst.de>
@@ -94,76 +94,25 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Switch the two remaining callers to use __get_vm_area_caller instead.
+There are no modular users of this function.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/powerpc/kernel/pci_64.c | 3 ++-
- arch/sh/kernel/cpu/sh4/sq.c  | 3 ++-
- include/linux/vmalloc.h      | 2 --
- mm/vmalloc.c                 | 8 --------
- 4 files changed, 4 insertions(+), 12 deletions(-)
+ mm/vmalloc.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-index 8e86bd9c1eca..155e2ef60053 100644
---- a/arch/powerpc/kernel/pci_64.c
-+++ b/arch/powerpc/kernel/pci_64.c
-@@ -132,7 +132,8 @@ void __iomem *ioremap_pbh(phys_addr_t paddr, unsigned long size)
- 	 * address decoding but I'd rather not deal with those outside of the
- 	 * reserved 64K legacy region.
- 	 */
--	area = __get_vm_area(size, 0, PHB_IO_BASE, PHB_IO_END);
-+	area = __get_vm_area_caller(size, 0, PHB_IO_BASE, PHB_IO_END,
-+				    __builtin_return_address(0));
- 	if (!area)
- 		return NULL;
- 
-diff --git a/arch/sh/kernel/cpu/sh4/sq.c b/arch/sh/kernel/cpu/sh4/sq.c
-index 934ff84844fa..d432164b23b7 100644
---- a/arch/sh/kernel/cpu/sh4/sq.c
-+++ b/arch/sh/kernel/cpu/sh4/sq.c
-@@ -103,7 +103,8 @@ static int __sq_remap(struct sq_mapping *map, pgprot_t prot)
- #if defined(CONFIG_MMU)
- 	struct vm_struct *vma;
- 
--	vma = __get_vm_area(map->size, VM_ALLOC, map->sq_addr, SQ_ADDRMAX);
-+	vma = __get_vm_area_caller(map->size, VM_ALLOC, map->sq_addr,
-+			SQ_ADDRMAX, __builtin_return_address(0));
- 	if (!vma)
- 		return -ENOMEM;
- 
-diff --git a/include/linux/vmalloc.h b/include/linux/vmalloc.h
-index 0507a162ccd0..3070b4dbc2d9 100644
---- a/include/linux/vmalloc.h
-+++ b/include/linux/vmalloc.h
-@@ -161,8 +161,6 @@ static inline size_t get_vm_area_size(const struct vm_struct *area)
- extern struct vm_struct *get_vm_area(unsigned long size, unsigned long flags);
- extern struct vm_struct *get_vm_area_caller(unsigned long size,
- 					unsigned long flags, const void *caller);
--extern struct vm_struct *__get_vm_area(unsigned long size, unsigned long flags,
--					unsigned long start, unsigned long end);
- extern struct vm_struct *__get_vm_area_caller(unsigned long size,
- 					unsigned long flags,
- 					unsigned long start, unsigned long end,
 diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-index 399f219544f7..d1534d610b48 100644
+index d1534d610b48..3375f9508ef6 100644
 --- a/mm/vmalloc.c
 +++ b/mm/vmalloc.c
-@@ -2127,14 +2127,6 @@ static struct vm_struct *__get_vm_area_node(unsigned long size,
- 	return area;
+@@ -2029,7 +2029,6 @@ void unmap_kernel_range_noflush(unsigned long addr, unsigned long size)
+ {
+ 	vunmap_page_range(addr, addr + size);
  }
+-EXPORT_SYMBOL_GPL(unmap_kernel_range_noflush);
  
--struct vm_struct *__get_vm_area(unsigned long size, unsigned long flags,
--				unsigned long start, unsigned long end)
--{
--	return __get_vm_area_node(size, 1, flags, start, end, NUMA_NO_NODE,
--				  GFP_KERNEL, __builtin_return_address(0));
--}
--EXPORT_SYMBOL_GPL(__get_vm_area);
--
- struct vm_struct *__get_vm_area_caller(unsigned long size, unsigned long flags,
- 				       unsigned long start, unsigned long end,
- 				       const void *caller)
+ /**
+  * unmap_kernel_range - unmap kernel VM area and flush cache and TLB
 -- 
 2.25.1
 
