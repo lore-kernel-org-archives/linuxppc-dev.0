@@ -2,79 +2,77 @@ Return-Path: <SRS0=I3TE=5Y=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F0AEC2BA1A
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2020 15:07:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B4F5C2D0EA
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2020 15:16:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2202E2082F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2020 15:07:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2CC77206C0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2020 15:16:43 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="RPEB5PM7"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2202E2082F
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="FuXsAshY"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2CC77206C0
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48y71g2J9gzDqVR
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Apr 2020 01:07:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48y7Cr2W2BzDqN1
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Apr 2020 01:16:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
- envelope-from=rdunlap@infradead.org; receiver=<UNKNOWN>)
+ (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
+ envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=bombadil.20170209 header.b=RPEB5PM7; 
+ header.a=rsa-sha256 header.s=merlin.20170209 header.b=FuXsAshY; 
  dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:8b0:10b:1231::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48y6st4cy9zDql8
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2020 01:01:06 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48y7730FmczDqTx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2020 01:12:30 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
- Content-Type:In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:
- Subject:Sender:Reply-To:Content-ID:Content-Description;
- bh=7j15irdsaxGX8cfTWAC6matDqLKA3gIZxxOmemamMLM=; b=RPEB5PM73ynSvK416UNxfE6GIR
- mZshayq2k05WAcYJu/+/rVKoK6NKG7B3MH4ANvlIlgjmk7SZQ9SVZvCi1iFzh152x1dc5HFwC6wiB
- qZ7+wtgUYAJ/AL1+Nrnu40kKBJNxHFgPazhMH2Ric3UWgKjdkfBZZ4L5DzjO4UWC8nOiEfakNU3sL
- xeYGj2y01wlVJ6IMOAIJN1BDOjqY06mtmnlOMMnimuv0Lk5fEUfE8xZSq6u7bkZB9iCd/RQJzE/kr
- AiM4v2OB70pEwCX5052hN8D8H6d2m6wVwy7YCb7MRCFvqlow1x10n6P0OTVWoUlmG05Xu6u09f4Jd
- +6y90bjw==;
-Received: from [2601:1c0:6280:3f0::19c2]
- by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jMCCM-0006Vd-CA; Wed, 08 Apr 2020 15:01:02 +0000
+ d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description;
+ bh=Rjv5131jSAiyIu5HYACdcXLWZcmDSy5Ae4NdyG3A0EU=; b=FuXsAshYsSTgOfgG+tafxq311H
+ 2DLcoyBxKM/nbGCT2GEvorwEQ03/VOWi5DKAbxhI4DqIPjAGXNNsOWsSOG7aU/Lla3ICxHLRu6SzM
+ /q9DEwOTHGBUUXd+C1gWvP9Pjgc6GcW+Xi/RtUJFOAx/HNAnnerQFGHAfcPScOe5j3ll7FaXVMW5Z
+ Z2xjwSDzwp0YcD5TzxjStK7nQDDKjXVISOx5Itl6OOQeUK3wpMFWDuSjU7Q7E7VC31GOzaWh+PQx5
+ zbPF7UcdVGkG+53Xs4Olbyq1FLyXUWKqf1azA1wf6Pm9lsIEV7Cpflmxs3MnCPe2MFR6K51PRMHF8
+ JF/j+ctA==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100]
+ helo=noisy.programming.kicks-ass.net)
+ by merlin.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+ id 1jMCN3-0004v8-A7; Wed, 08 Apr 2020 15:12:05 +0000
+Received: from hirez.programming.kicks-ass.net
+ (hirez.programming.kicks-ass.net [192.168.1.225])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 64B9E300478;
+ Wed,  8 Apr 2020 17:12:03 +0200 (CEST)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+ id 2B71F2BB026A0; Wed,  8 Apr 2020 17:12:03 +0200 (CEST)
+Date: Wed, 8 Apr 2020 17:12:03 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Randy Dunlap <rdunlap@infradead.org>
 Subject: Re: [PATCH 10/28] mm: only allow page table mappings for built-in
  zsmalloc
-To: Christoph Hellwig <hch@lst.de>, Andrew Morton
- <akpm@linux-foundation.org>, "K. Y. Srinivasan" <kys@microsoft.com>,
- Haiyang Zhang <haiyangz@microsoft.com>,
- Stephen Hemminger <sthemmin@microsoft.com>, Wei Liu <wei.liu@kernel.org>,
- x86@kernel.org, David Airlie <airlied@linux.ie>,
- Daniel Vetter <daniel@ffwll.ch>, Laura Abbott <labbott@redhat.com>,
- Sumit Semwal <sumit.semwal@linaro.org>,
- Sakari Ailus <sakari.ailus@linux.intel.com>, Minchan Kim
- <minchan@kernel.org>, Nitin Gupta <ngupta@vflare.org>
+Message-ID: <20200408151203.GN20730@hirez.programming.kicks-ass.net>
 References: <20200408115926.1467567-1-hch@lst.de>
  <20200408115926.1467567-11-hch@lst.de>
-From: Randy Dunlap <rdunlap@infradead.org>
-Message-ID: <c0c86feb-b3d8-78f2-127f-71d682ffc51f@infradead.org>
-Date: Wed, 8 Apr 2020 08:01:00 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.6.0
+ <c0c86feb-b3d8-78f2-127f-71d682ffc51f@infradead.org>
 MIME-Version: 1.0
-In-Reply-To: <20200408115926.1467567-11-hch@lst.de>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <c0c86feb-b3d8-78f2-127f-71d682ffc51f@infradead.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,37 +84,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-hyperv@vger.kernel.org,
- linux-s390@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org,
- linux-mm@kvack.org, iommu@lists.linux-foundation.org, bpf@vger.kernel.org,
- Robin Murphy <robin.murphy@arm.com>, linux-arm-kernel@lists.infradead.org
+Cc: linux-hyperv@vger.kernel.org, David Airlie <airlied@linux.ie>,
+ dri-devel@lists.freedesktop.org, linux-mm@kvack.org,
+ "K. Y. Srinivasan" <kys@microsoft.com>, Sumit Semwal <sumit.semwal@linaro.org>,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Wei Liu <wei.liu@kernel.org>, Stephen Hemminger <sthemmin@microsoft.com>,
+ x86@kernel.org, Christoph Hellwig <hch@lst.de>,
+ Laura Abbott <labbott@redhat.com>, Nitin Gupta <ngupta@vflare.org>,
+ Daniel Vetter <daniel@ffwll.ch>, Haiyang Zhang <haiyangz@microsoft.com>,
+ linaro-mm-sig@lists.linaro.org, bpf@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, Robin Murphy <robin.murphy@arm.com>,
+ linux-kernel@vger.kernel.org, Minchan Kim <minchan@kernel.org>,
+ iommu@lists.linux-foundation.org, Sakari Ailus <sakari.ailus@linux.intel.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+On Wed, Apr 08, 2020 at 08:01:00AM -0700, Randy Dunlap wrote:
+> Hi,
+> 
+> On 4/8/20 4:59 AM, Christoph Hellwig wrote:
+> > diff --git a/mm/Kconfig b/mm/Kconfig
+> > index 36949a9425b8..614cc786b519 100644
+> > --- a/mm/Kconfig
+> > +++ b/mm/Kconfig
+> > @@ -702,7 +702,7 @@ config ZSMALLOC
+> >  
+> >  config ZSMALLOC_PGTABLE_MAPPING
+> >  	bool "Use page table mapping to access object in zsmalloc"
+> > -	depends on ZSMALLOC
+> > +	depends on ZSMALLOC=y
+> 
+> It's a bool so this shouldn't matter... not needed.
 
-On 4/8/20 4:59 AM, Christoph Hellwig wrote:
-> diff --git a/mm/Kconfig b/mm/Kconfig
-> index 36949a9425b8..614cc786b519 100644
-> --- a/mm/Kconfig
-> +++ b/mm/Kconfig
-> @@ -702,7 +702,7 @@ config ZSMALLOC
->  
->  config ZSMALLOC_PGTABLE_MAPPING
->  	bool "Use page table mapping to access object in zsmalloc"
-> -	depends on ZSMALLOC
-> +	depends on ZSMALLOC=y
+My mm/Kconfig has:
 
-It's a bool so this shouldn't matter... not needed.
+config ZSMALLOC
+	tristate "Memory allocator for compressed pages"
+	depends on MMU
 
->  	help
->  	  By default, zsmalloc uses a copy-based object mapping method to
->  	  access allocations that span two pages. However, if a particular
-
-
--- 
-~Randy
-
+which I think means it can be modular, no?
