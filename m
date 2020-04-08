@@ -2,51 +2,72 @@ Return-Path: <SRS0=I3TE=5Y=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0CDDC2D0EA
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2020 13:38:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F2C44C2D0EA
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2020 13:41:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6DACF20747
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2020 13:38:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6DACF20747
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 619152074F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2020 13:41:39 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="MaMka7xA"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 619152074F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48y5326mGDzDr3p
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2020 23:38:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=mark.rutland@arm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 48y3G9462czDqM5
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2020 22:18:17 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 94ADC31B;
- Wed,  8 Apr 2020 05:18:12 -0700 (PDT)
-Received: from lakrids.cambridge.arm.com (usa-sjc-imap-foss1.foss.arm.com
- [10.121.207.14])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3217A3F73D;
- Wed,  8 Apr 2020 05:18:09 -0700 (PDT)
-Date: Wed, 8 Apr 2020 13:18:02 +0100
-From: Mark Rutland <mark.rutland@arm.com>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 26/28] arm64: use __vmalloc_node in arch_alloc_vmap_stack
-Message-ID: <20200408121802.GA36478@lakrids.cambridge.arm.com>
-References: <20200408115926.1467567-1-hch@lst.de>
- <20200408115926.1467567-27-hch@lst.de>
+	by lists.ozlabs.org (Postfix) with ESMTP id 48y5674NSqzDqPG
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2020 23:41:35 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48y3KZ03Y5zDqM1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2020 22:21:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=MaMka7xA; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 48y3KV3x0wz9sTG;
+ Wed,  8 Apr 2020 22:21:18 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1586348478;
+ bh=4rUz+H7v2Waw0n15vK+mmX8ZhtuacfaRbQ798xCdaM0=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=MaMka7xAc3QkSqtY2z/tAQFXfmV4ucoolb1YqB7wefK3LbcrOrxfX6f+CLllXsIuK
+ lmZVWGu2izJKrnQfReazlBh48q/o6auoc12hucM6QxPR1ju+Gyi71q4qkEA3tv7OrA
+ kGWbDF6LxWTs9R9CyQKRIQd2IdCOStaxL5kCklL8tIRpRqitBPYdrI90PkbHGAOgKp
+ ehDhGwwFteQ6pwz2dDzSmkyyeNzlrbRvu5f5ZAlri2k93vHk0+NNUIbaToBShXTabn
+ ipiEocP6c8sr74GvXc0BbiybpCI0B4XxuwKC7d0MaNLGVKLThKG/blEw6nUmwhV1xF
+ 3CA6d2ywW4snQ==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Leonardo Bras <leonardo@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>,
+ Alexios Zavras <alexios.zavras@intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Christophe Leroy <christophe.leroy@c-s.fr>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Enrico Weigelt <info@metux.net>, Paul Mackerras <paulus@samba.org>,
+ peterz@infradead.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH v3 1/1] ppc/crash: Reset spinlocks during crash
+In-Reply-To: <fb98f346a4d6a9d689ae64dae33cbd45d2f8b0df.camel@linux.ibm.com>
+References: <20200401000020.590447-1-leonardo@linux.ibm.com>
+ <871rp6t9di.fsf@mpe.ellerman.id.au>
+ <02e74be19534ab1db2f16a0c89ecb164e380c12a.camel@linux.ibm.com>
+ <1585895551.7o9oa0ey62.astroid@bobo.none>
+ <fb98f346a4d6a9d689ae64dae33cbd45d2f8b0df.camel@linux.ibm.com>
+Date: Wed, 08 Apr 2020 22:21:29 +1000
+Message-ID: <87v9majhh2.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200408115926.1467567-27-hch@lst.de>
-User-Agent: Mutt/1.11.1+11 (2f07cb52) (2018-12-01)
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,54 +79,111 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-hyperv@vger.kernel.org, David Airlie <airlied@linux.ie>,
- dri-devel@lists.freedesktop.org, linux-mm@kvack.org,
- "K. Y. Srinivasan" <kys@microsoft.com>, Sumit Semwal <sumit.semwal@linaro.org>,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- Wei Liu <wei.liu@kernel.org>, Stephen Hemminger <sthemmin@microsoft.com>,
- x86@kernel.org, Peter Zijlstra <peterz@infradead.org>,
- Laura Abbott <labbott@redhat.com>, Nitin Gupta <ngupta@vflare.org>,
- Daniel Vetter <daniel@ffwll.ch>, Haiyang Zhang <haiyangz@microsoft.com>,
- linaro-mm-sig@lists.linaro.org, bpf@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, Robin Murphy <robin.murphy@arm.com>,
- linux-kernel@vger.kernel.org, Minchan Kim <minchan@kernel.org>,
- iommu@lists.linux-foundation.org, james.morse@arm.com,
- Sakari Ailus <sakari.ailus@linux.intel.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Apr 08, 2020 at 01:59:24PM +0200, Christoph Hellwig wrote:
-> arch_alloc_vmap_stack can use a slightly higher level vmalloc function.
-> 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+Leonardo Bras <leonardo@linux.ibm.com> writes:
+> Hello Nick, Michael,
+>
+> On Fri, 2020-04-03 at 16:41 +1000, Nicholas Piggin wrote:
+> [...]
+>> > > PAPR says we are not allowed to have multiple CPUs calling RTAS at once,
+>> > > except for a very small list of RTAS calls. So if we bust the RTAS lock
+>> > > there's a risk we violate that part of PAPR and crash even harder.
+>> > 
+>> > Interesting, I was not aware.
+>> > 
+>> > > Also it's not specific to kdump, we can't even get through a normal
+>> > > reboot if we crash with the RTAS lock held.
+>> > > 
+>> > > Anyway here's a patch with some ideas. That allows me to get from a
+>> > > crash with the RTAS lock held through kdump into the 2nd kernel. But it
+>> > > only works if it's the crashing CPU that holds the RTAS lock.
+>> > > 
+>> > 
+>> > Nice idea. 
+>> > But my test environment is just triggering a crash from sysrq, so I
+>> > think it would not improve the result, given that this thread is
+>> > probably not holding the lock by the time.
+>> 
+>> Crash paths should not take that RTAS lock, it's a massive pain. I'm 
+>> fixing it for machine check, for other crashes I think it can be removed 
+>> too, it just needs to be unpicked. The good thing with crashing is that 
+>> you can reasonably *know* that you're single threaded, so you can 
+>> usually reason through situations like above.
+>> 
+>> > I noticed that when rtas is locked, irqs and preemption are also
+>> > disabled.
+>> > 
+>> > Should the IPI send by crash be able to interrupt a thread with
+>> > disabled irqs?
+>> 
+>> Yes. It's been a bit painful, but in the long term it means that a CPU 
+>> which hangs with interrupts off can be debugged, and it means we can 
+>> take it offline to crash without risking that it will be clobbering what 
+>> we're doing.
+>> 
+>> Arguably what I should have done is try a regular IPI first, wait a few 
+>> seconds, then NMI IPI.
+>> 
+>> A couple of problems with that. Firstly it probably avoids this issue 
+>> you hit almost all the time, so it won't get fixed. So when we really 
+>> need the NMI IPI in the field, it'll still be riddled with deadlocks.
+>> 
+>> Secondly, sending the IPI first in theory can be more intrusive to the 
+>> state that we want to debug. It uses the currently running stack, paca 
+>> save areas, ec. NMI IPI uses its own stack and save regions so it's a 
+>> little more isolated. Maybe this is only a small advantage but I'd like 
+>> to have it if we can.  
+>
+> I think the printk issue is solved (sent a patch on that), now what is
+> missing is the rtas call spinlock.
+>
+> I noticed that rtas.lock is taken on machine_kexec_mask_interrupts(),
+> which happen after crashing the other threads and getting into
+> realmode. 
+>
+> The following rtas are called each IRQ with valid interrupt descriptor:
+> ibm,int-off : Reset mask bit for that interrupt
+> ibm,set_xive : Set XIVE priority to 0xff
+>
+> By what I could understand, these rtas calls happen to put the next
+> kexec kernel (kdump kernel) in a safer environment, so I think it's not
+> safe to just remove them.
 
-Acked-by: Mark Rutland <mark.rutland@arm.com>
+Yes.
 
-Mark.
+> (See commit d6c1a9081080c6c4658acf2a06d851feb2855933)
 
-> ---
->  arch/arm64/include/asm/vmap_stack.h | 6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/arm64/include/asm/vmap_stack.h b/arch/arm64/include/asm/vmap_stack.h
-> index 0a12115d9638..0cc6636e3f15 100644
-> --- a/arch/arm64/include/asm/vmap_stack.h
-> +++ b/arch/arm64/include/asm/vmap_stack.h
-> @@ -19,10 +19,8 @@ static inline unsigned long *arch_alloc_vmap_stack(size_t stack_size, int node)
->  {
->  	BUILD_BUG_ON(!IS_ENABLED(CONFIG_VMAP_STACK));
->  
-> -	return __vmalloc_node_range(stack_size, THREAD_ALIGN,
-> -				    VMALLOC_START, VMALLOC_END,
-> -				    THREADINFO_GFP, PAGE_KERNEL, 0, node,
-> -				    __builtin_return_address(0));
-> +	return __vmalloc_node(stack_size, THREAD_ALIGN, THREADINFO_GFP, node,
-> +			__builtin_return_address(0));
->  }
->  
->  #endif /* __ASM_VMAP_STACK_H */
-> -- 
-> 2.25.1
-> 
+In hindsight the person who wrote that commit was being lazy. We
+*should* have made the 2nd kernel robust against the IRQ state being
+messed up.
+
+> On the other hand, busting the rtas.lock could be dangerous, because
+> it's code we can't control.
+>
+> According with LoPAR, for both of these rtas-calls, we have:
+>
+> For the PowerPC External Interrupt option: The call must be reentrant
+> to the number of processors on the platform.
+> For the PowerPC External Interrupt option: The argument call buffer for
+> each simultaneous call must be physically unique.
+
+Oh well spotted. Where is that in the doc?
+
+> Which I think means this rtas-calls can be done simultaneously.
+
+I think so too. I'll read PAPR in the morning and make sure.
+
+> Would it mean that busting the rtas.lock for these calls would be safe?
+
+What would be better is to make those specific calls not take the global
+RTAS lock to begin with.
+
+We should be able to just allocate the rtas_args on the stack, it's only
+~80 odd bytes. And then we can use rtas_call_unlocked() which doesn't
+take the global lock.
+
+cheers
