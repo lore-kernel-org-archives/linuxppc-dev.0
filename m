@@ -2,80 +2,70 @@ Return-Path: <SRS0=vMbJ=5Z=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A342C2BA19
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Apr 2020 22:27:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE409C2BA19
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Apr 2020 22:34:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B648D206C0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Apr 2020 22:27:22 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="W4onPV0F"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B648D206C0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8506820679
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Apr 2020 22:34:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8506820679
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48ywkG1xH0zDqnp
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2020 08:27:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48ywtL2CsJzDqYV
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2020 08:34:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::744;
- helo=mail-qk1-x744.google.com; envelope-from=andrii.nakryiko@gmail.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=gmail.com (client-ip=209.85.221.65; helo=mail-wr1-f65.google.com;
+ envelope-from=wei.liu.linux@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=W4onPV0F; dkim-atps=neutral
-Received: from mail-qk1-x744.google.com (mail-qk1-x744.google.com
- [IPv6:2607:f8b0:4864:20::744])
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from mail-wr1-f65.google.com (mail-wr1-f65.google.com
+ [209.85.221.65])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48ywh36j50zDqZL
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2020 08:25:18 +1000 (AEST)
-Received: by mail-qk1-x744.google.com with SMTP id g74so394789qke.13
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Apr 2020 15:25:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=9zZmDvv9VsaMcSR+uAlcqBBO7fDfxOBX/cPeyIGlPXM=;
- b=W4onPV0FDtRSS9y6l1W+W/FVY7uMwYmp/vLxbV+vsTO2W55vIfLst1ikMIBLMv47KZ
- 64ToStA7a/6zppDU+wTlTfU6Un6EOx32pfCLeSVtqFEU4ptlSPugU0N+X034gxeIEd+F
- sZ22vzsQqnM3Miz22Gk0POiNvD6ME0G4DRZUu2V8o+JOPEqF23MicCWNGTbmmYIhLe6V
- 3W5oV53czY23X0IJIdp9cV+2Oc5V3oKlN3PwYT1QLJTo9I26Y6rC6ay6XFYA6QD+wQeh
- /I0xueubtqoupnFXkcYtIoaN9TVAPRTkCMdnq3avNZap0J3hFNk8iJ7/qgVG1ZOC7J6L
- Bwaw==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48ylyY0PCGzDrCB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2020 01:52:15 +1000 (AEST)
+Received: by mail-wr1-f65.google.com with SMTP id k1so12537385wrm.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Apr 2020 08:52:15 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=9zZmDvv9VsaMcSR+uAlcqBBO7fDfxOBX/cPeyIGlPXM=;
- b=Dc7dU1S0IP4xmNqxWawSUZy2GlUqJg2Xl5+SgIDOyzGwMIzqz7nMP/iSZBI9u0yinF
- 6FykbVa1TV5zJZXfC3h5C8y9otCJeY9f9x8W+vc/bQNdjRQWY5OxmsAAT5MVIPJx21vV
- uPMqzlwYXYEhCrlUdmeZXbS5m2Enx7PW/6KlmQigPEfZYKGD1RDKmHZp07eCkWtF82Xd
- WxuHBOMsJzrWY+WbVldOA7oEirza8VGjwHz1iusCjafys7Cf0vXDpL4XrC2IASKzdTQ0
- nJoBZWrQGL+cc4D8BWj5saYOES93CbR1tUn1n6mqL6DsR75HaLnZd9L07X+6dKNQcdcB
- c8bA==
-X-Gm-Message-State: AGi0PubVyM6dYvG//vHQu5EBKibewx/FG1mGqsiqGyINfHf7AJ0UpczK
- HkRmm5r0j0M9xL53vE9ZUO5stysDj1DTznar/pk=
-X-Google-Smtp-Source: APiQypIwNq7wZY1PnpGu/Qv59bzelpOE6CP1WGeABev8jhWjEtJ5m8SKmmGAGV+0ntLTtupM9GwEs2trz+3rj7Qjirg=
-X-Received: by 2002:a37:6587:: with SMTP id z129mr1198478qkb.437.1586471114653; 
- Thu, 09 Apr 2020 15:25:14 -0700 (PDT)
-MIME-Version: 1.0
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=eqkR8PSND6qViZd9vmRT63/nOL3pGElbecF9kS9AV5s=;
+ b=ezz7AjJ9ppFAJRgBjN5LK8BkDh+5SP6SizZ5I0EhX/DHASUbmK0VfQ6P8D0XdmZvHp
+ YKf4t8DC3KDg6sSzUXGW/ZFrKN35xeSpAFkCCCWmITwowCuY7tWZ17lXvdGJE2JcSqF1
+ LVfMj7AXxLNAYL1IQDaixwFaAP5/oYQ9uGQT8ryJp9lAZuPwpuVaIQ08IwykbEmO+xkM
+ jC8+1cVKrDp9UbMwxnA0+TrZO7yE+7ftYMVrLBwMLRncLu7/pioo3D6u2AfNQMhhmd8/
+ N5xbFiloQJ0oSxQblxivxXpZf7U2GgVwv9/v3A+lBRnTYabwbhI5LKm8QjAbZY11IZW8
+ N6Lw==
+X-Gm-Message-State: AGi0Pua4M6HTYfmy8WukoGV2J+Dib4EnWhLf4mGcX+jJlSEXHMt0Kxyy
+ xYMD5BWgMmarUWStd62QZN4=
+X-Google-Smtp-Source: APiQypKMJHF6OiHO4wdgZ4uGElDczTXQUdaiFhgSzp0EipiSdhIJoRoqAA6vF3j45RxLstvXaIP8Cw==
+X-Received: by 2002:adf:8b5c:: with SMTP id v28mr13870834wra.98.1586447532733; 
+ Thu, 09 Apr 2020 08:52:12 -0700 (PDT)
+Received: from debian (44.142.6.51.dyn.plus.net. [51.6.142.44])
+ by smtp.gmail.com with ESMTPSA id o13sm18258592wrm.74.2020.04.09.08.52.10
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 09 Apr 2020 08:52:11 -0700 (PDT)
+Date: Thu, 9 Apr 2020 16:52:09 +0100
+From: Wei Liu <wei.liu@kernel.org>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH 01/28] x86/hyperv: use vmalloc_exec for the hypercall page
+Message-ID: <20200409155209.4tqaipnwifcsrmda@debian>
 References: <20200408115926.1467567-1-hch@lst.de>
- <20200408115926.1467567-26-hch@lst.de>
-In-Reply-To: <20200408115926.1467567-26-hch@lst.de>
-From: Andrii Nakryiko <andrii.nakryiko@gmail.com>
-Date: Thu, 9 Apr 2020 15:25:03 -0700
-Message-ID: <CAEf4BzZOC2tLrqt_Km=WQb=9xiya2e31i6K3oJuzgYQt6wp1LQ@mail.gmail.com>
-Subject: Re: [PATCH 25/28] mm: remove vmalloc_user_node_flags
-To: Christoph Hellwig <hch@lst.de>, Johannes Weiner <hannes@cmpxchg.org>
-Content-Type: text/plain; charset="UTF-8"
+ <20200408115926.1467567-2-hch@lst.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200408115926.1467567-2-hch@lst.de>
+User-Agent: NeoMutt/20180716
+X-Mailman-Approved-At: Fri, 10 Apr 2020 08:32:37 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,153 +85,19 @@ Cc: linux-hyperv@vger.kernel.org, David Airlie <airlied@linux.ie>,
  x86@kernel.org, Peter Zijlstra <peterz@infradead.org>,
  Laura Abbott <labbott@redhat.com>, Nitin Gupta <ngupta@vflare.org>,
  Daniel Vetter <daniel@ffwll.ch>, Haiyang Zhang <haiyangz@microsoft.com>,
- linaro-mm-sig@lists.linaro.org, bpf <bpf@vger.kernel.org>,
+ linaro-mm-sig@lists.linaro.org, bpf@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, Robin Murphy <robin.murphy@arm.com>,
- open list <linux-kernel@vger.kernel.org>, Minchan Kim <minchan@kernel.org>,
+ linux-kernel@vger.kernel.org, Minchan Kim <minchan@kernel.org>,
  iommu@lists.linux-foundation.org, Sakari Ailus <sakari.ailus@linux.intel.com>,
  Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-cc Johannes who suggested this API call originally
-
-On Wed, Apr 8, 2020 at 5:03 AM Christoph Hellwig <hch@lst.de> wrote:
->
-> Open code it in __bpf_map_area_alloc, which is the only caller.  Also
-> clean up __bpf_map_area_alloc to have a single vmalloc call with
-> slightly different flags instead of the current two different calls.
->
-> For this to compile for the nommu case add a __vmalloc_node_range stub
-> to nommu.c.
->
+On Wed, Apr 08, 2020 at 01:58:59PM +0200, Christoph Hellwig wrote:
+> Use the designated helper for allocating executable kernel memory, and
+> remove the now unused PAGE_KERNEL_RX define.
+> 
 > Signed-off-by: Christoph Hellwig <hch@lst.de>
-> ---
->  include/linux/vmalloc.h |  1 -
->  kernel/bpf/syscall.c    | 23 +++++++++++++----------
->  mm/nommu.c              | 14 ++++++++------
->  mm/vmalloc.c            | 20 --------------------
->  4 files changed, 21 insertions(+), 37 deletions(-)
->
-> diff --git a/include/linux/vmalloc.h b/include/linux/vmalloc.h
-> index 108f49b47756..f90f2946aac2 100644
-> --- a/include/linux/vmalloc.h
-> +++ b/include/linux/vmalloc.h
-> @@ -106,7 +106,6 @@ extern void *vzalloc(unsigned long size);
->  extern void *vmalloc_user(unsigned long size);
->  extern void *vmalloc_node(unsigned long size, int node);
->  extern void *vzalloc_node(unsigned long size, int node);
-> -extern void *vmalloc_user_node_flags(unsigned long size, int node, gfp_t flags);
->  extern void *vmalloc_exec(unsigned long size);
->  extern void *vmalloc_32(unsigned long size);
->  extern void *vmalloc_32_user(unsigned long size);
-> diff --git a/kernel/bpf/syscall.c b/kernel/bpf/syscall.c
-> index 48d98ea8fad6..249d9bd43321 100644
-> --- a/kernel/bpf/syscall.c
-> +++ b/kernel/bpf/syscall.c
-> @@ -281,26 +281,29 @@ static void *__bpf_map_area_alloc(u64 size, int numa_node, bool mmapable)
->          * __GFP_RETRY_MAYFAIL to avoid such situations.
->          */
->
-> -       const gfp_t flags = __GFP_NOWARN | __GFP_ZERO;
-> +       const gfp_t gfp = __GFP_NOWARN | __GFP_ZERO;
-> +       unsigned int flags = 0;
-> +       unsigned long align = 1;
->         void *area;
->
->         if (size >= SIZE_MAX)
->                 return NULL;
->
->         /* kmalloc()'ed memory can't be mmap()'ed */
-> -       if (!mmapable && size <= (PAGE_SIZE << PAGE_ALLOC_COSTLY_ORDER)) {
-> -               area = kmalloc_node(size, GFP_USER | __GFP_NORETRY | flags,
-> +       if (mmapable) {
-> +               BUG_ON(!PAGE_ALIGNED(size));
-> +               align = SHMLBA;
-> +               flags = VM_USERMAP;
-> +       } else if (size <= (PAGE_SIZE << PAGE_ALLOC_COSTLY_ORDER)) {
-> +               area = kmalloc_node(size, gfp | GFP_USER | __GFP_NORETRY,
->                                     numa_node);
->                 if (area != NULL)
->                         return area;
->         }
-> -       if (mmapable) {
-> -               BUG_ON(!PAGE_ALIGNED(size));
-> -               return vmalloc_user_node_flags(size, numa_node, GFP_KERNEL |
-> -                                              __GFP_RETRY_MAYFAIL | flags);
-> -       }
-> -       return __vmalloc_node(size, 1, GFP_KERNEL | __GFP_RETRY_MAYFAIL | flags,
-> -                             numa_node, __builtin_return_address(0));
-> +
-> +       return __vmalloc_node_range(size, align, VMALLOC_START, VMALLOC_END,
-> +                       gfp | GFP_KERNEL | __GFP_RETRY_MAYFAIL, PAGE_KERNEL,
-> +                       flags, numa_node, __builtin_return_address(0));
->  }
->
->  void *bpf_map_area_alloc(u64 size, int numa_node)
-> diff --git a/mm/nommu.c b/mm/nommu.c
-> index 81a86cd85893..b42cd6003d7d 100644
-> --- a/mm/nommu.c
-> +++ b/mm/nommu.c
-> @@ -150,6 +150,14 @@ void *__vmalloc(unsigned long size, gfp_t gfp_mask)
->  }
->  EXPORT_SYMBOL(__vmalloc);
->
-> +void *__vmalloc_node_range(unsigned long size, unsigned long align,
-> +               unsigned long start, unsigned long end, gfp_t gfp_mask,
-> +               pgprot_t prot, unsigned long vm_flags, int node,
-> +               const void *caller)
-> +{
-> +       return __vmalloc(size, flags);
-> +}
-> +
->  void *__vmalloc_node(unsigned long size, unsigned long align, gfp_t gfp_mask,
->                 int node, const void *caller)
->  {
-> @@ -180,12 +188,6 @@ void *vmalloc_user(unsigned long size)
->  }
->  EXPORT_SYMBOL(vmalloc_user);
->
-> -void *vmalloc_user_node_flags(unsigned long size, int node, gfp_t flags)
-> -{
-> -       return __vmalloc_user_flags(size, flags | __GFP_ZERO);
-> -}
-> -EXPORT_SYMBOL(vmalloc_user_node_flags);
-> -
->  struct page *vmalloc_to_page(const void *addr)
->  {
->         return virt_to_page(addr);
-> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-> index 333fbe77255a..f6f2acdaf70c 100644
-> --- a/mm/vmalloc.c
-> +++ b/mm/vmalloc.c
-> @@ -2658,26 +2658,6 @@ void *vzalloc_node(unsigned long size, int node)
->  }
->  EXPORT_SYMBOL(vzalloc_node);
->
-> -/**
-> - * vmalloc_user_node_flags - allocate memory for userspace on a specific node
-> - * @size: allocation size
-> - * @node: numa node
-> - * @flags: flags for the page level allocator
-> - *
-> - * The resulting memory area is zeroed so it can be mapped to userspace
-> - * without leaking data.
-> - *
-> - * Return: pointer to the allocated memory or %NULL on error
-> - */
-> -void *vmalloc_user_node_flags(unsigned long size, int node, gfp_t flags)
-> -{
-> -       return __vmalloc_node_range(size, SHMLBA,  VMALLOC_START, VMALLOC_END,
-> -                                   flags | __GFP_ZERO, PAGE_KERNEL,
-> -                                   VM_USERMAP, node,
-> -                                   __builtin_return_address(0));
-> -}
-> -EXPORT_SYMBOL(vmalloc_user_node_flags);
-> -
->  /**
->   * vmalloc_exec - allocate virtually contiguous, executable memory
->   * @size:        allocation size
-> --
-> 2.25.1
->
+
+Acked-by: Wei Liu <wei.liu@kernel.org>
