@@ -2,75 +2,85 @@ Return-Path: <SRS0=vMbJ=5Z=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	FSL_HELO_FAKE,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23A55C2BA2B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Apr 2020 15:35:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 96FB4C2BA2B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Apr 2020 16:02:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 95D3420753
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Apr 2020 15:35:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 95D3420753
+	by mail.kernel.org (Postfix) with ESMTPS id 0E6DA20768
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Apr 2020 16:02:16 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="sih21yyd"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0E6DA20768
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48ylb71cKVzDrGt
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2020 01:35:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48ym9z0XMjzDrM1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2020 02:02:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.221.68; helo=mail-wr1-f68.google.com;
- envelope-from=mstsxfx@gmail.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::441;
+ helo=mail-pf1-x441.google.com; envelope-from=minchan.kim@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-wr1-f68.google.com (mail-wr1-f68.google.com
- [209.85.221.68])
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=sih21yyd; dkim-atps=neutral
+Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
+ [IPv6:2607:f8b0:4864:20::441])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48ylXn4BbMzDr2y
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2020 01:33:26 +1000 (AEST)
-Received: by mail-wr1-f68.google.com with SMTP id g3so12457432wrx.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Apr 2020 08:33:26 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48ym7Z1zqJzDrCH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2020 02:00:06 +1000 (AEST)
+Received: by mail-pf1-x441.google.com with SMTP id b72so4289677pfb.11
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Apr 2020 09:00:06 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=sender:date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to;
+ bh=aQRKpekxDIbOTQGjAcEIQGsYobF8qM0SxjsCWTw2ZsI=;
+ b=sih21yydVRFHZsFGgg59HNuBfeOLWxP9lrEPMN105FfVz58rnW/GDEcO4zsmsi+D4H
+ wfVsCAsfHYhb74tml4QNYR7f9EYK10v4PgVx53AGyktrCWIvgakaRU3DkpUR+Lp5/V+G
+ lLb/WOY+7lne5P6uJPBpxjiGqkkRjtOHRD+VYpIGgdyip5zJPYNfganUG5rlt+iX65Ia
+ G+O1XkANhyv7aIffHK9DPrr3KKB0tuS8o3hYzz5dANw43pLgXhhewQpf8p3UQzu7jaUX
+ vklovoYaq3tUs05JhS/KPyXwPS2z6JKDw0gxXTNpi9Odm5NtE18/784OJMXo1euPhq2F
+ NSfA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=eU8HVKPcEFasCzGb3YcmSlRzYlNKnx8U/U7SeGkKTM4=;
- b=LuzlrEE+nDMBHaUHlfVGa3+KFsKouRFxob0cZnuqtgeUNPYJ2d3bs/ywRuc0oY4kOc
- wM72EWO3j34o6jObEoweoY2JubjsEdt2nSqgqx4OZRuC2GjcNKZocKN7cHPTPPAnc/mB
- Jz5tYR2Bh8xeD/XY7a2C4yuoAEqBTsSOK7ea5KXnsxXuTGgQGvbwMl2SQPe5uVEla/NS
- zUn8IXiTX2J35faWZ9UT67bv3GKBhI4WnwTa1EV2uV9G7uSiidD07CXE7RBUea44e0vA
- n+kR2IyVzA2QBKU/Ks/bnjTWBE56dPUpntNRfmhhhF+yu52CSAX2n+H6YbyNmYOH//I1
- VLNw==
-X-Gm-Message-State: AGi0PuYObGMULMuMk5DOxIKFEhcOFeuKvLF1MUQ7I8sXHS9oJp3BU2Ex
- El0aQ1pL18qXqxNeGEU/blc=
-X-Google-Smtp-Source: APiQypLhnJ0ArE660dAIRKPg+UfX8htjcJDtxqzlxSXIrBucMDxX/FoA+uq76nGwKcjVTj7PGoGnsA==
-X-Received: by 2002:a5d:5112:: with SMTP id s18mr15000370wrt.306.1586446403503; 
- Thu, 09 Apr 2020 08:33:23 -0700 (PDT)
-Received: from localhost (ip-37-188-180-223.eurotel.cz. [37.188.180.223])
- by smtp.gmail.com with ESMTPSA id o67sm4335914wmo.5.2020.04.09.08.33.22
+ h=x-gm-message-state:sender:date:from:to:cc:subject:message-id
+ :references:mime-version:content-disposition:in-reply-to;
+ bh=aQRKpekxDIbOTQGjAcEIQGsYobF8qM0SxjsCWTw2ZsI=;
+ b=c1VpOKIwgnwyuAVCo3dIEWJiQ+CXtnEim8ap7DrIV4Dp+XmTSuWfBSQP8r/acUEteF
+ 5NEKvgJSadP/0tWaBWur6Pci6pP94odIMc8GWS0Ekixz8Y5bymt72wUhQYKlN/KyjtYZ
+ 36Woc19LkJl/YmE9GbgfggHgCPk9pxBiaz53zgfdfAOp0agwgmhlHXI9HB5JRt70u6C3
+ MBBFyHt3NwKCoBFXoe04Hg4pynV+Uip1vtkg6flvvjOh1Zka7uavizSyOfyDHzupwv7R
+ aVz3QOa5QBsJVLiLAAP8B44AUhjkDjgMj6V+RIWOvJx8gc+aToFNg+KOWbIXZJcOHrqO
+ PTnQ==
+X-Gm-Message-State: AGi0PubZO2nno/UjtV02qaO4UzpD+TmC3wkfh/VV3ZuEHjYJCvNDc32x
+ nGwcfNXPMhVNiVuwjMX2b6E=
+X-Google-Smtp-Source: APiQypJjp3TKUZfafGLvg6qEU9KISYf3/iG0IoFzAvoBFmETLO9Bl0QvCAR/K1DmpfYnyGtmiu0e2g==
+X-Received: by 2002:a65:580d:: with SMTP id g13mr110923pgr.45.1586448003209;
+ Thu, 09 Apr 2020 09:00:03 -0700 (PDT)
+Received: from google.com ([2601:647:4001:3000::50e3])
+ by smtp.gmail.com with ESMTPSA id a24sm10081726pgd.50.2020.04.09.09.00.00
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 09 Apr 2020 08:33:22 -0700 (PDT)
-Date: Thu, 9 Apr 2020 17:33:21 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: Baoquan He <bhe@redhat.com>
-Subject: Re: [PATCH RFC] mm: remove CONFIG_HAVE_MEMBLOCK_NODE_MAP (was: Re:
- [PATCH v3 0/5] mm: Enable CONFIG_NODES_SPAN_OTHER_NODES by default for NUMA)
-Message-ID: <20200409153321.GQ18386@dhcp22.suse.cz>
-References: <1585420282-25630-1-git-send-email-Hoan@os.amperecomputing.com>
- <20200330074246.GA14243@dhcp22.suse.cz>
- <20200330092127.GB30942@linux.ibm.com>
- <20200330095843.GF14243@dhcp22.suse.cz>
- <20200331215618.GG30942@linux.ibm.com>
- <20200401054227.GC2129@MiWiFi-R3L-srv>
- <20200401075155.GH30942@linux.ibm.com>
- <20200402080144.GK22681@dhcp22.suse.cz>
- <20200409144119.GE2129@MiWiFi-R3L-srv>
+ Thu, 09 Apr 2020 09:00:01 -0700 (PDT)
+Date: Thu, 9 Apr 2020 08:59:59 -0700
+From: Minchan Kim <minchan@kernel.org>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH 09/28] mm: rename CONFIG_PGTABLE_MAPPING to
+ CONFIG_ZSMALLOC_PGTABLE_MAPPING
+Message-ID: <20200409155959.GB247701@google.com>
+References: <20200408115926.1467567-1-hch@lst.de>
+ <20200408115926.1467567-10-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200409144119.GE2129@MiWiFi-R3L-srv>
+In-Reply-To: <20200408115926.1467567-10-hch@lst.de>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,67 +92,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mmorana@amperecomputing.com, Catalin Marinas <catalin.marinas@arm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- "open list:MEMORY MANAGEMENT" <linux-mm@kvack.org>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux@vger.kernel.org,
- Alexander Duyck <alexander.h.duyck@linux.intel.com>,
- linux-s390@vger.kernel.org, x86@kernel.org, Mike Rapoport <rppt@linux.ibm.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Hoan Tran <Hoan@os.amperecomputing.com>,
- Pavel Tatashin <pavel.tatashin@microsoft.com>, lho@amperecomputing.com,
- Vasily Gorbik <gor@linux.ibm.com>, Vlastimil Babka <vbabka@suse.cz>,
- Will Deacon <will.deacon@arm.com>, Borislav Petkov <bp@alien8.de>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Oscar Salvador <osalvador@suse.de>, linux-kernel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Cc: linux-hyperv@vger.kernel.org, David Airlie <airlied@linux.ie>,
+ dri-devel@lists.freedesktop.org, linux-mm@kvack.org,
+ "K. Y. Srinivasan" <kys@microsoft.com>, Sumit Semwal <sumit.semwal@linaro.org>,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Wei Liu <wei.liu@kernel.org>, Stephen Hemminger <sthemmin@microsoft.com>,
+ x86@kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ Laura Abbott <labbott@redhat.com>, Nitin Gupta <ngupta@vflare.org>,
+ Daniel Vetter <daniel@ffwll.ch>, Haiyang Zhang <haiyangz@microsoft.com>,
+ linaro-mm-sig@lists.linaro.org, bpf@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, Robin Murphy <robin.murphy@arm.com>,
+ linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+ Sakari Ailus <sakari.ailus@linux.intel.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu 09-04-20 22:41:19, Baoquan He wrote:
-> On 04/02/20 at 10:01am, Michal Hocko wrote:
-> > On Wed 01-04-20 10:51:55, Mike Rapoport wrote:
-> > > Hi,
-> > > 
-> > > On Wed, Apr 01, 2020 at 01:42:27PM +0800, Baoquan He wrote:
-> > [...]
-> > > > From above information, we can remove HAVE_MEMBLOCK_NODE_MAP, and
-> > > > replace it with CONFIG_NUMA. That sounds more sensible to store nid into
-> > > > memblock when NUMA support is enabled.
-> > >  
-> > > Replacing CONFIG_HAVE_MEMBLOCK_NODE_MAP with CONFIG_NUMA will work, but
-> > > this will not help cleaning up the whole node/zone initialization mess and
-> > > we'll be stuck with two implementations.
-> > 
-> > Yeah, this is far from optimal.
-> > 
-> > > The overhead of enabling HAVE_MEMBLOCK_NODE_MAP is only for init time as
-> > > most architectures will anyway discard the entire memblock, so having it in
-> > > a UMA arch won't be a problem. The only exception is arm that uses
-> > > memblock for pfn_valid(), here we may also think about a solution to
-> > > compensate the addition of nid to the memblock structures. 
-> > 
-> > Well, we can make memblock_region->nid defined only for CONFIG_NUMA.
-> > memblock_get_region_node would then unconditionally return 0 on UMA.
-> > Essentially the same way we do NUMA for other MM code. I only see few
-> > direct usage of region->nid.
+On Wed, Apr 08, 2020 at 01:59:07PM +0200, Christoph Hellwig wrote:
+> Rename the Kconfig variable to clarify the scope.
 > 
-> Checked code again, seems HAVE_MEMBLOCK_NODE_MAP is selected directly in
-> all ARCHes which support it. Means HAVE_MEMBLOCK_NODE_MAP is enabled by
-> default on those ARCHes, and has no dependency on CONFIG_NUMA at all.
-> E.g on x86, it just calls free_area_init_nodes() in generic code path,
-> while free_area_init_nodes() is defined in CONFIG_HAVE_MEMBLOCK_NODE_MAP
-> ifdeffery scope. So I tend to agree with Mike to remove
-> HAVE_MEMBLOCK_NODE_MAP firstly on all ARCHes. We can check if it's worth
-> only defining memblock_region->nid for CONFIG_NUMA case after
-> HAVE_MEMBLOCK_NODE_MAP is removed.
-
-This can surely go in separate patches. What I meant to say is the
-region->nid is by definition 0 on !CONFIG_NUMA.
-
--- 
-Michal Hocko
-SUSE Labs
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+Acked-by: Minchan Kim <minchan@kernel.org>
