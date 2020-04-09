@@ -2,70 +2,56 @@ Return-Path: <SRS0=vMbJ=5Z=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=0.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,TVD_SUBJ_WIPE_DEBT,
+	USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CE409C2BA19
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Apr 2020 22:34:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 100DCC2BA19
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Apr 2020 23:00:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8506820679
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Apr 2020 22:34:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8506820679
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 684ED206C0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Apr 2020 23:00:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 684ED206C0
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48ywtL2CsJzDqYV
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2020 08:34:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.221.65; helo=mail-wr1-f65.google.com;
- envelope-from=wei.liu.linux@gmail.com; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48yxS35sXQzDrMK
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2020 09:00:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-wr1-f65.google.com (mail-wr1-f65.google.com
- [209.85.221.65])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=permerror (SPF Permanent Error: Unknown mechanism
+ found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
+ (client-ip=76.164.61.194; helo=kernel.crashing.org;
+ envelope-from=benh@kernel.crashing.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=kernel.crashing.org
+Received: from kernel.crashing.org (kernel.crashing.org [76.164.61.194])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48ylyY0PCGzDrCB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2020 01:52:15 +1000 (AEST)
-Received: by mail-wr1-f65.google.com with SMTP id k1so12537385wrm.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Apr 2020 08:52:15 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=eqkR8PSND6qViZd9vmRT63/nOL3pGElbecF9kS9AV5s=;
- b=ezz7AjJ9ppFAJRgBjN5LK8BkDh+5SP6SizZ5I0EhX/DHASUbmK0VfQ6P8D0XdmZvHp
- YKf4t8DC3KDg6sSzUXGW/ZFrKN35xeSpAFkCCCWmITwowCuY7tWZ17lXvdGJE2JcSqF1
- LVfMj7AXxLNAYL1IQDaixwFaAP5/oYQ9uGQT8ryJp9lAZuPwpuVaIQ08IwykbEmO+xkM
- jC8+1cVKrDp9UbMwxnA0+TrZO7yE+7ftYMVrLBwMLRncLu7/pioo3D6u2AfNQMhhmd8/
- N5xbFiloQJ0oSxQblxivxXpZf7U2GgVwv9/v3A+lBRnTYabwbhI5LKm8QjAbZY11IZW8
- N6Lw==
-X-Gm-Message-State: AGi0Pua4M6HTYfmy8WukoGV2J+Dib4EnWhLf4mGcX+jJlSEXHMt0Kxyy
- xYMD5BWgMmarUWStd62QZN4=
-X-Google-Smtp-Source: APiQypKMJHF6OiHO4wdgZ4uGElDczTXQUdaiFhgSzp0EipiSdhIJoRoqAA6vF3j45RxLstvXaIP8Cw==
-X-Received: by 2002:adf:8b5c:: with SMTP id v28mr13870834wra.98.1586447532733; 
- Thu, 09 Apr 2020 08:52:12 -0700 (PDT)
-Received: from debian (44.142.6.51.dyn.plus.net. [51.6.142.44])
- by smtp.gmail.com with ESMTPSA id o13sm18258592wrm.74.2020.04.09.08.52.10
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 09 Apr 2020 08:52:11 -0700 (PDT)
-Date: Thu, 9 Apr 2020 16:52:09 +0100
-From: Wei Liu <wei.liu@kernel.org>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 01/28] x86/hyperv: use vmalloc_exec for the hypercall page
-Message-ID: <20200409155209.4tqaipnwifcsrmda@debian>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48yxPj2LRtzDqSm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2020 08:58:01 +1000 (AEST)
+Received: from localhost (gate.crashing.org [63.228.1.57])
+ (authenticated bits=0)
+ by kernel.crashing.org (8.14.7/8.14.7) with ESMTP id 039Muffv010125
+ (version=TLSv1/SSLv3 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
+ Thu, 9 Apr 2020 17:56:47 -0500
+Message-ID: <0f360b9cb72b80bae0d0db8150f65598c2776268.camel@kernel.crashing.org>
+Subject: Re: [PATCH 19/28] gpu/drm: remove the powerpc hack in
+ drm_legacy_sg_alloc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Daniel Vetter <daniel@ffwll.ch>
+Date: Fri, 10 Apr 2020 08:56:41 +1000
+In-Reply-To: <CAKMK7uHtkLvdsWFGiAtkzVa5mpnDvXkn3CHZQ6bgJ_enbyAc8A@mail.gmail.com>
 References: <20200408115926.1467567-1-hch@lst.de>
- <20200408115926.1467567-2-hch@lst.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200408115926.1467567-2-hch@lst.de>
-User-Agent: NeoMutt/20180716
-X-Mailman-Approved-At: Fri, 10 Apr 2020 08:32:37 +1000
+ <20200408115926.1467567-20-hch@lst.de>
+ <20200408122504.GO3456981@phenom.ffwll.local>
+ <eb48f7b6327e482ea9911b129210c0417ab48345.camel@kernel.crashing.org>
+ <CAKMK7uHtkLvdsWFGiAtkzVa5mpnDvXkn3CHZQ6bgJ_enbyAc8A@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.1 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,26 +64,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: linux-hyperv@vger.kernel.org, David Airlie <airlied@linux.ie>,
- dri-devel@lists.freedesktop.org, linux-mm@kvack.org,
+ dri-devel <dri-devel@lists.freedesktop.org>, Linux MM <linux-mm@kvack.org>,
  "K. Y. Srinivasan" <kys@microsoft.com>, Sumit Semwal <sumit.semwal@linaro.org>,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- Wei Liu <wei.liu@kernel.org>, Stephen Hemminger <sthemmin@microsoft.com>,
- x86@kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ "open list:GENERIC INCLUDE/A..." <linux-arch@vger.kernel.org>,
+ linux-s390@vger.kernel.org, Wei Liu <wei.liu@kernel.org>,
+ Stephen Hemminger <sthemmin@microsoft.com>, X86 ML <x86@kernel.org>,
+ Christoph Hellwig <hch@lst.de>, Peter Zijlstra <peterz@infradead.org>,
  Laura Abbott <labbott@redhat.com>, Nitin Gupta <ngupta@vflare.org>,
- Daniel Vetter <daniel@ffwll.ch>, Haiyang Zhang <haiyangz@microsoft.com>,
- linaro-mm-sig@lists.linaro.org, bpf@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, Robin Murphy <robin.murphy@arm.com>,
- linux-kernel@vger.kernel.org, Minchan Kim <minchan@kernel.org>,
- iommu@lists.linux-foundation.org, Sakari Ailus <sakari.ailus@linux.intel.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+ Haiyang Zhang <haiyangz@microsoft.com>,
+ "moderated list:DMA BUFFER SHARING FRAMEWORK" <linaro-mm-sig@lists.linaro.org>,
+ bpf <bpf@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>,
+ Robin Murphy <robin.murphy@arm.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Minchan Kim <minchan@kernel.org>,
+ "list@263.net:IOMMU DRIVERS <iommu@lists.linux-foundation.org>, Joerg 
+ Roedel <joro@8bytes.org>, " <iommu@lists.linux-foundation.org>,
+ Sakari Ailus <sakari.ailus@linux.intel.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Apr 08, 2020 at 01:58:59PM +0200, Christoph Hellwig wrote:
-> Use the designated helper for allocating executable kernel memory, and
-> remove the now unused PAGE_KERNEL_RX define.
-> 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+On Thu, 2020-04-09 at 11:41 +0200, Daniel Vetter wrote:
+> Now if these boxes didn't ever have agp then I think we can get away
+> with deleting this, since we've already deleted the legacy radeon
+> driver. And that one used vmalloc for everything. The new kms one does
+> use the dma-api if the gpu isn't connected through agp
 
-Acked-by: Wei Liu <wei.liu@kernel.org>
+Definitely no AGP there.
+
+Cheers
+Ben.
+
+
