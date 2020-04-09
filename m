@@ -2,81 +2,69 @@ Return-Path: <SRS0=vMbJ=5Z=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5076EC2D0EA
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Apr 2020 07:52:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 94A9CC2BB54
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Apr 2020 08:01:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B1AB020678
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Apr 2020 07:52:07 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=fossix-org.20150623.gappssmtp.com header.i=@fossix-org.20150623.gappssmtp.com header.b="TqoKoQfV"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B1AB020678
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=fossix.org
+	by mail.kernel.org (Postfix) with ESMTPS id 522D820692
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Apr 2020 08:01:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 522D820692
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 48yYJP3Xk0zDrDF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Apr 2020 17:52:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 48yYWP2N0bzDrBg
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Apr 2020 18:01:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=209.85.128.67; helo=mail-wm1-f67.google.com;
+ envelope-from=mstsxfx@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=fossix.org
- (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
- envelope-from=santosh@fossix.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=fossix.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=fossix-org.20150623.gappssmtp.com
- header.i=@fossix-org.20150623.gappssmtp.com header.a=rsa-sha256
- header.s=20150623 header.b=TqoKoQfV; dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from mail-wm1-f67.google.com (mail-wm1-f67.google.com
+ [209.85.128.67])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48yY3649XYzDr68
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2020 17:40:33 +1000 (AEST)
-Received: by mail-pg1-x541.google.com with SMTP id n13so3170785pgp.11
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Apr 2020 00:40:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=fossix-org.20150623.gappssmtp.com; s=20150623;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=bN/4A8Ly/29eaOazRj9JlpI0+6+iuEmZbJr34QeqMJA=;
- b=TqoKoQfVPbjiwmwpRv/eSmkYk1WUux1ynyXcQEx/CrC+OTueNCFtiIczIHlc0IzVj2
- vt/YN7t5cqHyZf/XhW7S8eDStwH3jnp3ksvwk0y60A7wc/0FLr9VhYyrbg41j+aP2yfn
- aFu4EkEDtN4pGFopAN4MwA5WSQG3ounpOPxYrUCcsOdq3n/P9ev8W0B/U4ScZsB/M3Rf
- JR4p+6Rfi8l2cTV60t0I6EAVlQsdWvJcRZupJE+uaYUwUofZS5eUwRn0zUOvuChjvcjA
- o6YssQzSwJYjAn24kgkIhW+vfCOPCrVjqGR7NPdtj8scItfs+R/Mp9+xWFnqgRgiyn4v
- 4lIw==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48yYT25mL5zDr9W
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2020 17:59:34 +1000 (AEST)
+Received: by mail-wm1-f67.google.com with SMTP id f20so3178221wmh.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Apr 2020 00:59:34 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=bN/4A8Ly/29eaOazRj9JlpI0+6+iuEmZbJr34QeqMJA=;
- b=sUmslQXWsiB/KExO7e0ZW3SdqD+H9rSnTuLijC5iE1sbsGZuzeIWHlkRRd68xJhbJl
- hkLzOpeb+jAcJcC4M8Ko8XnHrC19l7vx30hWBF6gLP+28Nlo6EDFk3E9aHavjj/1ZxIJ
- OIZmpoELl351Ku6rGsOzEHpiqsnXrIhRogAIasmWdkhhdGwra0aucsrj5Yf2W5OEY+kV
- 9mCLnuNQYsWzSErfb89Rx04HwZqKSFeP1zmzV2lOgL1tBuJ0j66uSqtc9ZUiJXy6YL80
- Zx32kEzzVsDcyG6C6Ek1nLNn3lX5V8StUqP9W0kwGgy3jHWyMsJ1BNeSYJilpl9UAibQ
- AxOA==
-X-Gm-Message-State: AGi0PuaC9ymlmVv0Eqyn0TNnD88ld5+nn+FiBak5C4zRKAa/K6XpsTX+
- fyBpubD1HyxByMN94Hlll4ntxFe/dF192VHzAVlrilJs
-X-Google-Smtp-Source: APiQypLMxA3Ik3H4k/zFG2OqBtMh0xj6wjoNgo8rdGMA0RBg2b1YqS1R9VLWnaYzOT6u8w0+Spr1luCpafFBLjq4cJE=
-X-Received: by 2002:aa7:96f5:: with SMTP id i21mr4858515pfq.248.1586418030349; 
- Thu, 09 Apr 2020 00:40:30 -0700 (PDT)
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to;
+ bh=7aTkrJXqv2ZbDFk7CEzBnxc6D6u1o+Ia6P0f4mFbFV8=;
+ b=eXo3k3e86t2vxnMWYrpSxeV92tnHRg8+1cKZOf1V01kmYqpXnayh78/074z10CuCNX
+ 0tFhYwsj9A1t/Zcpe7UwUPzJivwdKl/JP6vqoEfp+d664WapyKLC+KlQ+qn7przDEaCT
+ LF1+a6EwjVZETDes3f2RM78gYtu6ViU0Mg5ty6Ca/FydE/2HSvobzwGeb0o6rxGztCZa
+ Aj3kZG1F5LDiWBq2gVp4zenfPDoCgTP9DQ6Ynz/9lHHhm4A1ZDEhlggDRI0pohW/hYVN
+ d2ZDgExLb3x0517PMfErnZz5GgJT0IqA/6ZOSP+QBW9tAKoRP+6xOQ1VQICFgEY4AFcR
+ JmWg==
+X-Gm-Message-State: AGi0PuaOTG4J22h38ivwzj0K7T5F4wj+TUJOpG/hwR/8fO+X7ur+VDXm
+ 7LUtdg6uJWL98+EYkgF27Po=
+X-Google-Smtp-Source: APiQypLF3rX8q4/0ETJueh+0y6VY0OOa4Qm9U2dPCpWP+b4Cb0cvwVi9cfda2DXukoQvwZZcCvJTsQ==
+X-Received: by 2002:a7b:c8cd:: with SMTP id f13mr9019734wml.181.1586419170075; 
+ Thu, 09 Apr 2020 00:59:30 -0700 (PDT)
+Received: from localhost (ip-37-188-180-223.eurotel.cz. [37.188.180.223])
+ by smtp.gmail.com with ESMTPSA id b82sm2901790wmh.1.2020.04.09.00.59.28
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 09 Apr 2020 00:59:28 -0700 (PDT)
+Date: Thu, 9 Apr 2020 09:59:27 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v1 1/2] powerpc/pseries/hotplug-memory: stop checking
+ is_mem_section_removable()
+Message-ID: <20200409075927.GC18386@dhcp22.suse.cz>
+References: <20200407135416.24093-1-david@redhat.com>
+ <20200407135416.24093-2-david@redhat.com>
+ <87sghdjf1y.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-References: <20200401074741.1562361-1-santosh@fossix.org>
-In-Reply-To: <20200401074741.1562361-1-santosh@fossix.org>
-From: Santosh Sivaraj <santosh@fossix.org>
-Date: Thu, 9 Apr 2020 13:10:19 +0530
-Message-ID: <CA+n8AA_Rm1n4tmKFBREzSVQ1hBFXvWBuuHH-yo5=wzkvFcWfLg@mail.gmail.com>
-Subject: Re: [PATCH] papr/scm: Add bad memory ranges to nvdimm bad ranges
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: multipart/alternative; boundary="0000000000002a26d105a2d6bb43"
-X-Mailman-Approved-At: Thu, 09 Apr 2020 17:50:04 +1000
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87sghdjf1y.fsf@mpe.ellerman.id.au>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,428 +76,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ganesh Goudar <ganeshgr@linux.ibm.com>, Oliver <oohall@gmail.com>,
- Mahesh Salgaonkar <mahesh@linux.ibm.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Cc: Baoquan He <bhe@redhat.com>, David Hildenbrand <david@redhat.com>,
+ linux-kernel@vger.kernel.org, Wei Yang <richard.weiyang@gmail.com>,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Oscar Salvador <osalvador@suse.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---0000000000002a26d105a2d6bb43
-Content-Type: text/plain; charset="UTF-8"
+On Thu 09-04-20 17:26:01, Michael Ellerman wrote:
+> David Hildenbrand <david@redhat.com> writes:
+> 
+> > In commit 53cdc1cb29e8 ("drivers/base/memory.c: indicate all memory
+> > blocks as removable"), the user space interface to compute whether a memory
+> > block can be offlined (exposed via
+> > /sys/devices/system/memory/memoryX/removable) has effectively been
+> > deprecated. We want to remove the leftovers of the kernel implementation.
+> >
+> > When offlining a memory block (mm/memory_hotplug.c:__offline_pages()),
+> > we'll start by:
+> > 1. Testing if it contains any holes, and reject if so
+> > 2. Testing if pages belong to different zones, and reject if so
+> > 3. Isolating the page range, checking if it contains any unmovable pages
+> >
+> > Using is_mem_section_removable() before trying to offline is not only racy,
+> > it can easily result in false positives/negatives. Let's stop manually
+> > checking is_mem_section_removable(), and let device_offline() handle it
+> > completely instead. We can remove the racy is_mem_section_removable()
+> > implementation next.
+> >
+> > We now take more locks (e.g., memory hotplug lock when offlining and the
+> > zone lock when isolating), but maybe we should optimize that
+> > implementation instead if this ever becomes a real problem (after all,
+> > memory unplug is already an expensive operation). We started using
+> > is_mem_section_removable() in commit 51925fb3c5c9 ("powerpc/pseries:
+> > Implement memory hotplug remove in the kernel"), with the initial
+> > hotremove support of lmbs.
+> 
+> It's also not very pretty in dmesg.
+> 
+> Before:
+> 
+>   pseries-hotplug-mem: Attempting to hot-add 10 LMB(s)
+>   pseries-hotplug-mem: Memory hot-add failed, removing any added LMBs
+>   dlpar: Could not handle DLPAR request "memory add count 10"
 
-On Wed, Apr 1, 2020 at 1:18 PM Santosh Sivaraj <santosh@fossix.org> wrote:
+Yeah, there is more output but isn't that useful? Or put it differently
+what is the actual problem from having those messages in the kernel log?
 
-> Subscribe to the MCE notification and add the physical address which
-> generated a memory error to nvdimm bad range.
->
-> Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
-> ---
->
+From the below you can clearly tell that there are kernel allocations
+which prevent hot remove from happening.
 
-Any comments on this?
-
-Thanks,
-Santosh
-
-
-> This patch depends on "powerpc/mce: Add MCE notification chain" [1].
->
-> Unlike the previous series[2], the patch adds badblock registration only
-> for
-> pseries scm driver. Handling badblocks for baremetal (powernv) PMEM will
-> be done
-> later and if possible get the badblock handling as a common code.
->
-> [1]
-> https://lore.kernel.org/linuxppc-dev/20200330071219.12284-1-ganeshgr@linux.ibm.com/
-> [2]
-> https://lore.kernel.org/linuxppc-dev/20190820023030.18232-1-santosh@fossix.org/
->
-> arch/powerpc/platforms/pseries/papr_scm.c | 96 ++++++++++++++++++++++-
->  1 file changed, 95 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/platforms/pseries/papr_scm.c
-> b/arch/powerpc/platforms/pseries/papr_scm.c
-> index 0b4467e378e5..5012cbf4606e 100644
-> --- a/arch/powerpc/platforms/pseries/papr_scm.c
-> +++ b/arch/powerpc/platforms/pseries/papr_scm.c
-> @@ -12,6 +12,8 @@
->  #include <linux/libnvdimm.h>
->  #include <linux/platform_device.h>
->  #include <linux/delay.h>
-> +#include <linux/nd.h>
-> +#include <asm/mce.h>
->
->  #include <asm/plpar_wrappers.h>
->
-> @@ -39,8 +41,12 @@ struct papr_scm_priv {
->         struct resource res;
->         struct nd_region *region;
->         struct nd_interleave_set nd_set;
-> +       struct list_head region_list;
->  };
->
-> +LIST_HEAD(papr_nd_regions);
-> +DEFINE_MUTEX(papr_ndr_lock);
-> +
->  static int drc_pmem_bind(struct papr_scm_priv *p)
->  {
->         unsigned long ret[PLPAR_HCALL_BUFSIZE];
-> @@ -372,6 +378,10 @@ static int papr_scm_nvdimm_init(struct papr_scm_priv
-> *p)
->                 dev_info(dev, "Region registered with target node %d and
-> online node %d",
->                          target_nid, online_nid);
->
-> +       mutex_lock(&papr_ndr_lock);
-> +       list_add_tail(&p->region_list, &papr_nd_regions);
-> +       mutex_unlock(&papr_ndr_lock);
-> +
->         return 0;
->
->  err:   nvdimm_bus_unregister(p->bus);
-> @@ -379,6 +389,68 @@ err:       nvdimm_bus_unregister(p->bus);
->         return -ENXIO;
->  }
->
-> +void papr_scm_add_badblock(struct nd_region *region, struct nvdimm_bus
-> *bus,
-> +                          u64 phys_addr)
-> +{
-> +       u64 aligned_addr = ALIGN_DOWN(phys_addr, L1_CACHE_BYTES);
-> +
-> +       if (nvdimm_bus_add_badrange(bus, aligned_addr, L1_CACHE_BYTES)) {
-> +               pr_err("Bad block registration for 0x%llx failed\n",
-> phys_addr);
-> +               return;
-> +       }
-> +
-> +       pr_debug("Add memory range (0x%llx - 0x%llx) as bad range\n",
-> +                aligned_addr, aligned_addr + L1_CACHE_BYTES);
-> +
-> +       nvdimm_region_notify(region, NVDIMM_REVALIDATE_POISON);
-> +}
-> +
-> +static int handle_mce_ue(struct notifier_block *nb, unsigned long val,
-> +                        void *data)
-> +{
-> +       struct machine_check_event *evt = data;
-> +       struct papr_scm_priv *p;
-> +       u64 phys_addr;
-> +       bool found = false;
-> +
-> +       if (evt->error_type != MCE_ERROR_TYPE_UE)
-> +               return NOTIFY_DONE;
-> +
-> +       if (list_empty(&papr_nd_regions))
-> +               return NOTIFY_DONE;
-> +
-> +       phys_addr = evt->u.ue_error.physical_address +
-> +               (evt->u.ue_error.effective_address & ~PAGE_MASK);
-> +
-> +       if (!evt->u.ue_error.physical_address_provided ||
-> +           !is_zone_device_page(pfn_to_page(phys_addr >> PAGE_SHIFT)))
-> +               return NOTIFY_DONE;
-> +
-> +       /* mce notifier is called from a process context, so mutex is safe
-> */
-> +       mutex_lock(&papr_ndr_lock);
-> +       list_for_each_entry(p, &papr_nd_regions, region_list) {
-> +               struct resource res = p->res;
-> +
-> +               if (phys_addr >= res.start && phys_addr <= res.end) {
-> +                       found = true;
-> +                       break;
-> +               }
-> +       }
-> +
-> +       mutex_unlock(&papr_ndr_lock);
-> +
-> +       if (!found)
-> +               return NOTIFY_DONE;
-> +
-> +       papr_scm_add_badblock(p->region, p->bus, phys_addr);
-> +
-> +       return NOTIFY_OK;
-> +}
-> +
-> +static struct notifier_block mce_ue_nb = {
-> +       .notifier_call = handle_mce_ue
-> +};
-> +
->  static int papr_scm_probe(struct platform_device *pdev)
->  {
->         struct device_node *dn = pdev->dev.of_node;
-> @@ -476,6 +548,10 @@ static int papr_scm_remove(struct platform_device
-> *pdev)
->  {
->         struct papr_scm_priv *p = platform_get_drvdata(pdev);
->
-> +       mutex_lock(&papr_ndr_lock);
-> +       list_del(&(p->region_list));
-> +       mutex_unlock(&papr_ndr_lock);
-> +
->         nvdimm_bus_unregister(p->bus);
->         drc_pmem_unbind(p);
->         kfree(p->bus_desc.provider_name);
-> @@ -498,7 +574,25 @@ static struct platform_driver papr_scm_driver = {
->         },
->  };
->
-> -module_platform_driver(papr_scm_driver);
-> +static int __init papr_scm_init(void)
-> +{
-> +       int ret;
-> +
-> +       ret = platform_driver_register(&papr_scm_driver);
-> +       if (!ret)
-> +               mce_register_notifier(&mce_ue_nb);
-> +
-> +       return ret;
-> +}
-> +module_init(papr_scm_init);
-> +
-> +static void __exit papr_scm_exit(void)
-> +{
-> +       mce_unregister_notifier(&mce_ue_nb);
-> +       platform_driver_unregister(&papr_scm_driver);
-> +}
-> +module_exit(papr_scm_exit);
-> +
->  MODULE_DEVICE_TABLE(of, papr_scm_match);
->  MODULE_LICENSE("GPL");
->  MODULE_AUTHOR("IBM Corporation");
-> --
-> 2.25.1
->
->
-
---0000000000002a26d105a2d6bb43
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr"><div dir=3D"ltr"></div><br><div class=3D"gmail_quote"><div=
- dir=3D"ltr" class=3D"gmail_attr">On Wed, Apr 1, 2020 at 1:18 PM Santosh Si=
-varaj &lt;<a href=3D"mailto:santosh@fossix.org" target=3D"_blank">santosh@f=
-ossix.org</a>&gt; wrote:<br></div><blockquote class=3D"gmail_quote" style=
-=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);padding=
--left:1ex">Subscribe to the MCE notification and add the physical address w=
-hich<br>
-generated a memory error to nvdimm bad range.<br>
-<br>
-Signed-off-by: Santosh Sivaraj &lt;<a href=3D"mailto:santosh@fossix.org" ta=
-rget=3D"_blank">santosh@fossix.org</a>&gt;<br>
----<br></blockquote><div><br></div><div>Any comments on this?</div><div><br=
-></div><div>Thanks,</div><div>Santosh</div><div><br></div><blockquote class=
-=3D"gmail_quote" style=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rg=
-b(204,204,204);padding-left:1ex">
-<br>
-This patch depends on &quot;powerpc/mce: Add MCE notification chain&quot; [=
-1].<br>
-<br>
-Unlike the previous series[2], the patch adds badblock registration only fo=
-r<br>
-pseries scm driver. Handling badblocks for baremetal (powernv) PMEM will be=
- done<br>
-later and if possible get the badblock handling as a common code.<br>
-<br>
-[1] <a href=3D"https://lore.kernel.org/linuxppc-dev/20200330071219.12284-1-=
-ganeshgr@linux.ibm.com/" rel=3D"noreferrer" target=3D"_blank">https://lore.=
-kernel.org/linuxppc-dev/20200330071219.12284-1-ganeshgr@linux.ibm.com/</a><=
-br>
-[2] <a href=3D"https://lore.kernel.org/linuxppc-dev/20190820023030.18232-1-=
-santosh@fossix.org/" rel=3D"noreferrer" target=3D"_blank">https://lore.kern=
-el.org/linuxppc-dev/20190820023030.18232-1-santosh@fossix.org/</a><br>
-<br>
-arch/powerpc/platforms/pseries/papr_scm.c | 96 ++++++++++++++++++++++-<br>
-=C2=A01 file changed, 95 insertions(+), 1 deletion(-)<br>
-<br>
-diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platf=
-orms/pseries/papr_scm.c<br>
-index 0b4467e378e5..5012cbf4606e 100644<br>
---- a/arch/powerpc/platforms/pseries/papr_scm.c<br>
-+++ b/arch/powerpc/platforms/pseries/papr_scm.c<br>
-@@ -12,6 +12,8 @@<br>
-=C2=A0#include &lt;linux/libnvdimm.h&gt;<br>
-=C2=A0#include &lt;linux/platform_device.h&gt;<br>
-=C2=A0#include &lt;linux/delay.h&gt;<br>
-+#include &lt;linux/nd.h&gt;<br>
-+#include &lt;asm/mce.h&gt;<br>
-<br>
-=C2=A0#include &lt;asm/plpar_wrappers.h&gt;<br>
-<br>
-@@ -39,8 +41,12 @@ struct papr_scm_priv {<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 struct resource res;<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 struct nd_region *region;<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 struct nd_interleave_set nd_set;<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0struct list_head region_list;<br>
-=C2=A0};<br>
-<br>
-+LIST_HEAD(papr_nd_regions);<br>
-+DEFINE_MUTEX(papr_ndr_lock);<br>
-+<br>
-=C2=A0static int drc_pmem_bind(struct papr_scm_priv *p)<br>
-=C2=A0{<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 unsigned long ret[PLPAR_HCALL_BUFSIZE];<br>
-@@ -372,6 +378,10 @@ static int papr_scm_nvdimm_init(struct papr_scm_priv *=
-p)<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 dev_info(dev, &quot=
-;Region registered with target node %d and online node %d&quot;,<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0target_nid, online_nid);<br>
-<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0mutex_lock(&amp;papr_ndr_lock);<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0list_add_tail(&amp;p-&gt;region_list, &amp;papr=
-_nd_regions);<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0mutex_unlock(&amp;papr_ndr_lock);<br>
-+<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 return 0;<br>
-<br>
-=C2=A0err:=C2=A0 =C2=A0nvdimm_bus_unregister(p-&gt;bus);<br>
-@@ -379,6 +389,68 @@ err:=C2=A0 =C2=A0 =C2=A0 =C2=A0nvdimm_bus_unregister(p=
--&gt;bus);<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 return -ENXIO;<br>
-=C2=A0}<br>
-<br>
-+void papr_scm_add_badblock(struct nd_region *region, struct nvdimm_bus *bu=
-s,<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 u64 phys_addr)<br>
-+{<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0u64 aligned_addr =3D ALIGN_DOWN(phys_addr, L1_C=
-ACHE_BYTES);<br>
-+<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0if (nvdimm_bus_add_badrange(bus, aligned_addr, =
-L1_CACHE_BYTES)) {<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0pr_err(&quot;Bad bl=
-ock registration for 0x%llx failed\n&quot;, phys_addr);<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return;<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0}<br>
-+<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0pr_debug(&quot;Add memory range (0x%llx - 0x%ll=
-x) as bad range\n&quot;,<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 aligned_addr, alig=
-ned_addr + L1_CACHE_BYTES);<br>
-+<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0nvdimm_region_notify(region, NVDIMM_REVALIDATE_=
-POISON);<br>
-+}<br>
-+<br>
-+static int handle_mce_ue(struct notifier_block *nb, unsigned long val,<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 void *data)<br>
-+{<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0struct machine_check_event *evt =3D data;<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0struct papr_scm_priv *p;<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0u64 phys_addr;<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0bool found =3D false;<br>
-+<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0if (evt-&gt;error_type !=3D MCE_ERROR_TYPE_UE)<=
-br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return NOTIFY_DONE;=
-<br>
-+<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0if (list_empty(&amp;papr_nd_regions))<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return NOTIFY_DONE;=
-<br>
-+<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0phys_addr =3D evt-&gt;u.ue_error.physical_addre=
-ss +<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0(evt-&gt;u.ue_error=
-.effective_address &amp; ~PAGE_MASK);<br>
-+<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0if (!evt-&gt;u.ue_error.physical_address_provid=
-ed ||<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0!is_zone_device_page(pfn_to_page(=
-phys_addr &gt;&gt; PAGE_SHIFT)))<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return NOTIFY_DONE;=
-<br>
-+<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0/* mce notifier is called from a process contex=
-t, so mutex is safe */<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0mutex_lock(&amp;papr_ndr_lock);<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0list_for_each_entry(p, &amp;papr_nd_regions, re=
-gion_list) {<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0struct resource res=
- =3D p-&gt;res;<br>
-+<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0if (phys_addr &gt;=
-=3D res.start &amp;&amp; phys_addr &lt;=3D res.end) {<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0found =3D true;<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0break;<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0}<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0}<br>
-+<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0mutex_unlock(&amp;papr_ndr_lock);<br>
-+<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0if (!found)<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return NOTIFY_DONE;=
-<br>
-+<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0papr_scm_add_badblock(p-&gt;region, p-&gt;bus, =
-phys_addr);<br>
-+<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0return NOTIFY_OK;<br>
-+}<br>
-+<br>
-+static struct notifier_block mce_ue_nb =3D {<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0.notifier_call =3D handle_mce_ue<br>
-+};<br>
-+<br>
-=C2=A0static int papr_scm_probe(struct platform_device *pdev)<br>
-=C2=A0{<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 struct device_node *dn =3D pdev-&gt;dev.of_node=
-;<br>
-@@ -476,6 +548,10 @@ static int papr_scm_remove(struct platform_device *pde=
-v)<br>
-=C2=A0{<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 struct papr_scm_priv *p =3D platform_get_drvdat=
-a(pdev);<br>
-<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0mutex_lock(&amp;papr_ndr_lock);<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0list_del(&amp;(p-&gt;region_list));<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0mutex_unlock(&amp;papr_ndr_lock);<br>
-+<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 nvdimm_bus_unregister(p-&gt;bus);<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 drc_pmem_unbind(p);<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 kfree(p-&gt;bus_desc.provider_name);<br>
-@@ -498,7 +574,25 @@ static struct platform_driver papr_scm_driver =3D {<br=
->
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 },<br>
-=C2=A0};<br>
-<br>
--module_platform_driver(papr_scm_driver);<br>
-+static int __init papr_scm_init(void)<br>
-+{<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0int ret;<br>
-+<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0ret =3D platform_driver_register(&amp;papr_scm_=
-driver);<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0if (!ret)<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0mce_register_notifi=
-er(&amp;mce_ue_nb);<br>
-+<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0return ret;<br>
-+}<br>
-+module_init(papr_scm_init);<br>
-+<br>
-+static void __exit papr_scm_exit(void)<br>
-+{<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0mce_unregister_notifier(&amp;mce_ue_nb);<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0platform_driver_unregister(&amp;papr_scm_driver=
-);<br>
-+}<br>
-+module_exit(papr_scm_exit);<br>
-+<br>
-=C2=A0MODULE_DEVICE_TABLE(of, papr_scm_match);<br>
-=C2=A0MODULE_LICENSE(&quot;GPL&quot;);<br>
-=C2=A0MODULE_AUTHOR(&quot;IBM Corporation&quot;);<br>
--- <br>
-2.25.1<br>
-<br>
-</blockquote></div><br></div>
-
---0000000000002a26d105a2d6bb43--
+If the overall size of the debugging output is a concern then we can
+think of a way to reduce it. E.g. once you have a couple of pages
+reported then all others from the same block are likely not interesting
+much.
+-- 
+Michal Hocko
+SUSE Labs
