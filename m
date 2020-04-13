@@ -2,90 +2,114 @@ Return-Path: <SRS0=PHx5=55=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 929C4C2BA2B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2020 21:41:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FD99C2BA2B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2020 21:42:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 12449206DA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2020 21:41:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 12073206DA
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2020 21:42:52 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="MKKdXREx"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 12449206DA
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="IuYqFbiH"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 12073206DA
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=amsat.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 491MVz55pNzDqQG
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 07:40:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 491MY65mY8zDqRL
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 07:42:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=205.139.110.120;
- helo=us-smtp-1.mimecast.com; envelope-from=eesposit@redhat.com;
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::444;
+ helo=mail-wr1-x444.google.com; envelope-from=philippe.mathieu.daude@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=MKKdXREx; 
- dkim-atps=neutral
-Received: from us-smtp-1.mimecast.com (us-smtp-delivery-1.mimecast.com
- [205.139.110.120])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=fail (p=none dis=none) header.from=amsat.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=IuYqFbiH; dkim-atps=neutral
+Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com
+ [IPv6:2a00:1450:4864:20::444])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4919Mv3p01zDq9p
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 00:04:01 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1586786638;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding;
- bh=tr36Ztz1zaNKdeDfrf7SQyxfeOTbsC/uHO5FgmoVJ30=;
- b=MKKdXRExodyzRzdWFN0V64aNaLXrN9Og35Y+b/olAGteLLoaHMEYaqO1IZyVQWbJj35GMM
- wyZQ1mDOzLOeYFjaOBRRCxsTCuRP8R/MNQW9vFa1+U2dkIZkQmiE2QsguBWsgWVFHA5obk
- sRRVChJvMPzeUe0t/l7tWqCnQGPsVZs=
-Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
- [209.85.221.72]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-312-rJNJjbBWPlyuQjL-01wZwQ-1; Mon, 13 Apr 2020 10:03:55 -0400
-X-MC-Unique: rJNJjbBWPlyuQjL-01wZwQ-1
-Received: by mail-wr1-f72.google.com with SMTP id r11so5705330wrx.21
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2020 07:03:55 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 491MMX0Z0XzDqNT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 07:34:25 +1000 (AEST)
+Received: by mail-wr1-x444.google.com with SMTP id f13so11826183wrm.13
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2020 14:34:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=sender:subject:to:cc:references:from:autocrypt:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=WDLpX6un52/AMwecGbJF0+8vb65HmQ8qFANqOY0XK7Y=;
+ b=IuYqFbiHvSBMhlKLU88FQD6ph6l8u5128kLqE8SenvYihQJEPGmJINrkyvIh6vpW2u
+ /atBvA75QL7UmEbyidSfCXE9VeE6SdB9IhYX6B3aHhwgMX0tmJ1dGgq1iHOBxSuH5Ezk
+ VCWc51OJuo2eWBiWuYxF2kVCeRK0CX7KJ1dT2S+MSOGnulH5DMjtn5pZ88A/Y0yof0T2
+ UcJ+AiMZeX97qHo6+sK6kWsJjsp0iuoGeKviv5k/BbU7JcMcpQXEn6SjrQEbaon0dw6S
+ y7IERsJ3FCFJptrbidN9ACEH4G0Eg5BXm3yzzlYa9opYGLDAD1VPzulRpYMvxfhhzH+p
+ vOlg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=DMxjnALOO+13jpd4EXyv1/+VreDyJBNjIrO01oQGGFU=;
- b=L25i+NDzhVozpBDHnSfByT9nOB2msKrNzIHzYOR9uXTvMQDzwLOUBAgLOI+gwzHIPJ
- PoOIubXpPD39Aw8wqgzPUth+RMmF0h77tRkZOrg7ng49i1KxgOXw3XE1CVOqrXY9q5YK
- c6iDJZTUz2114pCxFN1ycweogeHAwYo30UBxyLXwuqkz7lgGtoX29dr4V1BgUbftmIiQ
- 1S6P9WptamMw/Zx9RAzgjiU15xav2Xp9m7gb6WYBPOAWXTe1kZZdyQoa99HlBbM3i626
- 2dZQoeGSc95r8cfz2PRIZ4XAB7hd2fitnu7rFOVFfxxF8xAk5AqBmDunbiSd+BXi38mi
- hmGg==
-X-Gm-Message-State: AGi0Puau2qFLOBO9ioO1Cvv5RPGCoOyQUq8if8wmpFx885j+ghqjCVlI
- 5ycTzsMHDlCgY+OUXrqSEDLjivYDVPQZLC2xztk730YPLsoRl+4ZWEwFpRYvM3OpPXlrwueEQnW
- XQRly+he5EyVafU+09jbGn7kCHA==
-X-Received: by 2002:adf:fc4c:: with SMTP id e12mr18660287wrs.265.1586786634645; 
- Mon, 13 Apr 2020 07:03:54 -0700 (PDT)
-X-Google-Smtp-Source: APiQypLRZJuELUsSHD7peAwU3uRWTiihVpgUEtD1l8rr9Jo5lHrC+5Swh69bNDnIpYlTippwc8wt9Q==
-X-Received: by 2002:adf:fc4c:: with SMTP id e12mr18660255wrs.265.1586786634361; 
- Mon, 13 Apr 2020 07:03:54 -0700 (PDT)
-Received: from emanuele-MacBookPro.redhat.com ([194.230.155.239])
- by smtp.gmail.com with ESMTPSA id j10sm11726263wmi.18.2020.04.13.07.03.52
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 13 Apr 2020 07:03:53 -0700 (PDT)
-From: Emanuele Giuseppe Esposito <eesposit@redhat.com>
-To: kvm@vger.kernel.org
-Subject: [PATCH] kvm_host: unify VM_STAT and VCPU_STAT definitions in a single
- place
-Date: Mon, 13 Apr 2020 16:03:32 +0200
-Message-Id: <20200413140332.22896-1-eesposit@redhat.com>
-X-Mailer: git-send-email 2.17.1
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+ h=x-gm-message-state:sender:subject:to:cc:references:from:autocrypt
+ :message-id:date:user-agent:mime-version:in-reply-to
+ :content-language:content-transfer-encoding;
+ bh=WDLpX6un52/AMwecGbJF0+8vb65HmQ8qFANqOY0XK7Y=;
+ b=NU673suAQeDtUO29q/so+ZCeXQ4bV+VzdO1OQLfdTi2O2e0QOocNWOyoMy/6168TrK
+ RmF107BOhL8JjpbbCv8YVu8AOZzrbOk7ucvqHkH+M8TX1OqRs7g1sMkMNMCkWmKrPcuS
+ SDNH9oOw/ZPu/2Qt7NNCu28dn8HG29Ry5J/xCmzEECiUK4/MdigqzQj6Okue9TAJl9vj
+ jDJQdZFQrw4RPwJw1K5s0Sp2lEWXw5lduewWzmvv06MKJ9J1UznvUnPIMvIReUAnGzUT
+ sI5eTRajmO5lu8SnS3REuAK69p1YxsS7MLmc6kQbGpyCC06VSfHTV+vIYBCG+h+9OC2J
+ e3cA==
+X-Gm-Message-State: AGi0PuZ+YO1TE6HkimZpg01W3GRyIfo/wxWfJNL3hfY3sdwLS6/3NFcL
+ Cdg8KQ1XRDvDOXz7hDxNGDQ=
+X-Google-Smtp-Source: APiQypIaudaXPJ6rENC31BASdvEjjHEOZ24liPPj6hbZ7Im0hP2KXUJDynYo1n+j8lgnYgsqwzYqNQ==
+X-Received: by 2002:a5d:5230:: with SMTP id i16mr14472562wra.71.1586813661849; 
+ Mon, 13 Apr 2020 14:34:21 -0700 (PDT)
+Received: from [192.168.1.39] (116.red-83-42-57.dynamicip.rima-tde.net.
+ [83.42.57.116])
+ by smtp.gmail.com with ESMTPSA id b11sm16503963wrq.26.2020.04.13.14.34.19
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Mon, 13 Apr 2020 14:34:21 -0700 (PDT)
+Subject: Re: [PATCH] kvm_host: unify VM_STAT and VCPU_STAT definitions in a
+ single place
+To: Emanuele Giuseppe Esposito <eesposit@redhat.com>, kvm@vger.kernel.org
+References: <20200413140332.22896-1-eesposit@redhat.com>
+From: =?UTF-8?Q?Philippe_Mathieu-Daud=c3=a9?= <f4bug@amsat.org>
+Autocrypt: addr=f4bug@amsat.org; keydata=
+ mQINBDU8rLoBEADb5b5dyglKgWF9uDbIjFXU4gDtcwiga9wJ/wX6xdhBqU8tlQ4BroH7AeRl
+ u4zXP0QnBDAG7EetxlQzcfYbPmxFISWjckDBFvDbFsojrZmwF2/LkFSzlvKiN5KLghzzJhLO
+ HhjGlF8deEZz/d/G8qzO9mIw8GIBS8uuWh6SIcG/qq7+y+2+aifaj92EdwU79apZepT/U3vN
+ YrfcAuo1Ycy7/u0hJ7rlaFUn2Fu5KIgV2O++hHYtCCQfdPBg/+ujTL+U+sCDawCyq+9M5+LJ
+ ojCzP9rViLZDd/gS6jX8T48hhidtbtsFRj/e9QpdZgDZfowRMVsRx+TB9yzjFdMO0YaYybXp
+ dg/wCUepX5xmDBrle6cZ8VEe00+UQCAU1TY5Hs7QFfBbjgR3k9pgJzVXNUKcJ9DYQP0OBH9P
+ ZbZvM0Ut2Bk6bLBO5iCVDOco0alrPkX7iJul2QWBy3Iy9j02GnA5jZ1Xtjr9kpCqQT+sRXso
+ Vpm5TPGWaWljIeLWy/qL8drX1eyJzwTB3A36Ck4r3YmjMjfmvltSZB1uAdo1elHTlFEULpU/
+ HiwvvqXQ9koB15U154VCuguvx/Qnboz8GFb9Uw8VyawzVxYVNME7xw7CQF8FYxzj6eI7rBf2
+ Dj/II6wxWPgDEy3oUzuNOxTB7sT3b/Ym76yOJzWX5BylXQIJ5wARAQABtDFQaGlsaXBwZSBN
+ YXRoaWV1LURhdWTDqSAoRjRCVUcpIDxmNGJ1Z0BhbXNhdC5vcmc+iQJVBBMBCAA/AhsPBgsJ
+ CAcDAgYVCAIJCgsEFgIDAQIeAQIXgBYhBPqr514SkXIh3P1rsuPjLCzercDeBQJd660aBQks
+ klzgAAoJEOPjLCzercDe2iMP+gMG2dUf+qHz2uG8nTBGMjgK0aEJrKVPodFA+iedQ5Kp3BMo
+ jrTg3/DG1HMYdcvQu/NFLYwamUfUasyor1k+3dB23hY09O4xOsYJBWdilkBGsJTKErUmkUO2
+ 3J/kawosvYtJJSHUpw3N6mwz/iWnjkT8BPp7fFXSujV63aZWZINueTbK7Y8skFHI0zpype9s
+ loU8xc4JBrieGccy3n4E/kogGrTG5jcMTNHZ106DsQkhFnjhWETp6g9xOKrzZQbETeRBOe4P
+ sRsY9YSG2Sj+ZqmZePvO8LyzGRjYU7T6Z80S1xV0lH6KTMvq7vvz5rd92f3pL4YrXq+e//HZ
+ JsiLen8LH/FRhTsWRgBtNYkOsd5F9NvfJtSM0qbX32cSXMAStDVnS4U+H2vCVCWnfNug2TdY
+ 7v4NtdpaCi4CBBa3ZtqYVOU05IoLnlx0miKTBMqmI05kpgX98pi2QUPJBYi/+yNu3fjjcuS9
+ K5WmpNFTNi6yiBbNjJA5E2qUKbIT/RwQFQvhrxBUcRCuK4x/5uOZrysjFvhtR8YGm08h+8vS
+ n0JCnJD5aBhiVdkohEFAz7e5YNrAg6kOA5IVRHB44lTBOatLqz7ntwdGD0rteKuHaUuXpTYy
+ CRqCVAKqFJtxhvJvaX0vLS1Z2dwtDwhjfIdgPiKEGOgCNGH7R8l+aaM4OPOd
+Message-ID: <03a481a8-bcf2-8755-d113-71ef393508bf@amsat.org>
+Date: Mon, 13 Apr 2020 23:34:18 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.5.0
+MIME-Version: 1.0
+In-Reply-To: <20200413140332.22896-1-eesposit@redhat.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-Mailman-Approved-At: Tue, 14 Apr 2020 07:39:21 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -100,9 +124,9 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Wanpeng Li <wanpengli@tencent.com>, David Hildenbrand <david@redhat.com>,
  linux-mips@vger.kernel.org, kvmarm@lists.cs.columbia.edu,
- Emanuele Giuseppe Esposito <eesposit@redhat.com>, linux-s390@vger.kernel.org,
- Janosch Frank <frankja@linux.ibm.com>, Marc Zyngier <maz@kernel.org>,
- Joerg Roedel <joro@8bytes.org>, Christian Borntraeger <borntraeger@de.ibm.com>,
+ linux-s390@vger.kernel.org, Janosch Frank <frankja@linux.ibm.com>,
+ Marc Zyngier <maz@kernel.org>, Joerg Roedel <joro@8bytes.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
  Julien Thierry <julien.thierry.kdev@gmail.com>,
  Suzuki K Poulose <suzuki.poulose@arm.com>, kvm-ppc@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, Jim Mattson <jmattson@google.com>,
@@ -114,214 +138,83 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The macros VM_STAT and VCPU_STAT are redundantly implemented in multiple
-files, each used by a different architecure to initialize the debugfs
-entries for statistics. Since they all have the same purpose, they can be
-unified in a single common definition in include/linux/kvm_host.h
+Hi Emanuele,
 
-Signed-off-by: Emanuele Giuseppe Esposito <eesposit@redhat.com>
----
- arch/arm64/kvm/guest.c    | 23 +++++++--------
- arch/mips/kvm/mips.c      | 61 +++++++++++++++++++--------------------
- arch/powerpc/kvm/book3s.c |  3 --
- arch/powerpc/kvm/booke.c  |  3 --
- arch/s390/kvm/kvm-s390.c  |  3 --
- arch/x86/kvm/x86.c        |  3 --
- include/linux/kvm_host.h  |  3 ++
- 7 files changed, 43 insertions(+), 56 deletions(-)
+On 4/13/20 4:03 PM, Emanuele Giuseppe Esposito wrote:
+> The macros VM_STAT and VCPU_STAT are redundantly implemented in multiple
+> files, each used by a different architecure to initialize the debugfs
+> entries for statistics. Since they all have the same purpose, they can be
+> unified in a single common definition in include/linux/kvm_host.h
+> 
+> Signed-off-by: Emanuele Giuseppe Esposito <eesposit@redhat.com>
+> ---
+>  arch/arm64/kvm/guest.c    | 23 +++++++--------
+>  arch/mips/kvm/mips.c      | 61 +++++++++++++++++++--------------------
+>  arch/powerpc/kvm/book3s.c |  3 --
+>  arch/powerpc/kvm/booke.c  |  3 --
+>  arch/s390/kvm/kvm-s390.c  |  3 --
+>  arch/x86/kvm/x86.c        |  3 --
+>  include/linux/kvm_host.h  |  3 ++
+>  7 files changed, 43 insertions(+), 56 deletions(-)
+> 
+> diff --git a/arch/arm64/kvm/guest.c b/arch/arm64/kvm/guest.c
+> index 23ebe51410f0..3e3aee8b37c0 100644
+> --- a/arch/arm64/kvm/guest.c
+> +++ b/arch/arm64/kvm/guest.c
+> @@ -29,20 +29,17 @@
+>  
+>  #include "trace.h"
+>  
+> -#define VM_STAT(x) { #x, offsetof(struct kvm, stat.x), KVM_STAT_VM }
+> -#define VCPU_STAT(x) { #x, offsetof(struct kvm_vcpu, stat.x), KVM_STAT_VCPU }
+> -
+>  struct kvm_stats_debugfs_item debugfs_entries[] = {
+> -	VCPU_STAT(halt_successful_poll),
+> -	VCPU_STAT(halt_attempted_poll),
+> -	VCPU_STAT(halt_poll_invalid),
+> -	VCPU_STAT(halt_wakeup),
+> -	VCPU_STAT(hvc_exit_stat),
+> -	VCPU_STAT(wfe_exit_stat),
+> -	VCPU_STAT(wfi_exit_stat),
+> -	VCPU_STAT(mmio_exit_user),
+> -	VCPU_STAT(mmio_exit_kernel),
+> -	VCPU_STAT(exits),
+> +	{ "halt_successful_poll", VCPU_STAT(halt_successful_poll) },
+> +	{ "halt_attempted_poll", VCPU_STAT(halt_attempted_poll) },
+> +	{ "halt_poll_invalid", VCPU_STAT(halt_poll_invalid) },
+> +	{ "halt_wakeup", VCPU_STAT(halt_wakeup) },
+> +	{ "hvc_exit_stat", VCPU_STAT(hvc_exit_stat) },
+> +	{ "wfe_exit_stat", VCPU_STAT(wfe_exit_stat) },
+> +	{ "wfi_exit_stat", VCPU_STAT(wfi_exit_stat) },
+> +	{ "mmio_exit_user", VCPU_STAT(mmio_exit_user) },
+> +	{ "mmio_exit_kernel", VCPU_STAT(mmio_exit_kernel) },
+> +	{ "exits", VCPU_STAT(exits) },
+>  	{ NULL }
+>  };
+>  
+[...]
+> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+> index 6d58beb65454..e02d38c7fff1 100644
+> --- a/include/linux/kvm_host.h
+> +++ b/include/linux/kvm_host.h
+> @@ -1130,6 +1130,9 @@ struct kvm_stats_debugfs_item {
+>  #define KVM_DBGFS_GET_MODE(dbgfs_item)                                         \
+>  	((dbgfs_item)->mode ? (dbgfs_item)->mode : 0644)
+>  
+> +#define VM_STAT(x, ...) offsetof(struct kvm, stat.x), KVM_STAT_VM, ## __VA_ARGS__
+> +#define VCPU_STAT(x, ...) offsetof(struct kvm_vcpu, stat.x), KVM_STAT_VCPU, ## __VA_ARGS__
 
-diff --git a/arch/arm64/kvm/guest.c b/arch/arm64/kvm/guest.c
-index 23ebe51410f0..3e3aee8b37c0 100644
---- a/arch/arm64/kvm/guest.c
-+++ b/arch/arm64/kvm/guest.c
-@@ -29,20 +29,17 @@
-=20
- #include "trace.h"
-=20
--#define VM_STAT(x) { #x, offsetof(struct kvm, stat.x), KVM_STAT_VM }
--#define VCPU_STAT(x) { #x, offsetof(struct kvm_vcpu, stat.x), KVM_STAT_VCP=
-U }
--
- struct kvm_stats_debugfs_item debugfs_entries[] =3D {
--=09VCPU_STAT(halt_successful_poll),
--=09VCPU_STAT(halt_attempted_poll),
--=09VCPU_STAT(halt_poll_invalid),
--=09VCPU_STAT(halt_wakeup),
--=09VCPU_STAT(hvc_exit_stat),
--=09VCPU_STAT(wfe_exit_stat),
--=09VCPU_STAT(wfi_exit_stat),
--=09VCPU_STAT(mmio_exit_user),
--=09VCPU_STAT(mmio_exit_kernel),
--=09VCPU_STAT(exits),
-+=09{ "halt_successful_poll", VCPU_STAT(halt_successful_poll) },
-+=09{ "halt_attempted_poll", VCPU_STAT(halt_attempted_poll) },
-+=09{ "halt_poll_invalid", VCPU_STAT(halt_poll_invalid) },
-+=09{ "halt_wakeup", VCPU_STAT(halt_wakeup) },
-+=09{ "hvc_exit_stat", VCPU_STAT(hvc_exit_stat) },
-+=09{ "wfe_exit_stat", VCPU_STAT(wfe_exit_stat) },
-+=09{ "wfi_exit_stat", VCPU_STAT(wfi_exit_stat) },
-+=09{ "mmio_exit_user", VCPU_STAT(mmio_exit_user) },
-+=09{ "mmio_exit_kernel", VCPU_STAT(mmio_exit_kernel) },
-+=09{ "exits", VCPU_STAT(exits) },
- =09{ NULL }
- };
-=20
-diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
-index 8f05dd0a0f4e..f14b93d02f02 100644
---- a/arch/mips/kvm/mips.c
-+++ b/arch/mips/kvm/mips.c
-@@ -39,40 +39,39 @@
- #define VECTORSPACING 0x100=09/* for EI/VI mode */
- #endif
-=20
--#define VCPU_STAT(x) offsetof(struct kvm_vcpu, stat.x)
- struct kvm_stats_debugfs_item debugfs_entries[] =3D {
--=09{ "wait",=09  VCPU_STAT(wait_exits),=09 KVM_STAT_VCPU },
--=09{ "cache",=09  VCPU_STAT(cache_exits),=09 KVM_STAT_VCPU },
--=09{ "signal",=09  VCPU_STAT(signal_exits),=09 KVM_STAT_VCPU },
--=09{ "interrupt",=09  VCPU_STAT(int_exits),=09=09 KVM_STAT_VCPU },
--=09{ "cop_unusable", VCPU_STAT(cop_unusable_exits), KVM_STAT_VCPU },
--=09{ "tlbmod",=09  VCPU_STAT(tlbmod_exits),=09 KVM_STAT_VCPU },
--=09{ "tlbmiss_ld",=09  VCPU_STAT(tlbmiss_ld_exits),=09 KVM_STAT_VCPU },
--=09{ "tlbmiss_st",=09  VCPU_STAT(tlbmiss_st_exits),=09 KVM_STAT_VCPU },
--=09{ "addrerr_st",=09  VCPU_STAT(addrerr_st_exits),=09 KVM_STAT_VCPU },
--=09{ "addrerr_ld",=09  VCPU_STAT(addrerr_ld_exits),=09 KVM_STAT_VCPU },
--=09{ "syscall",=09  VCPU_STAT(syscall_exits),=09 KVM_STAT_VCPU },
--=09{ "resvd_inst",=09  VCPU_STAT(resvd_inst_exits),=09 KVM_STAT_VCPU },
--=09{ "break_inst",=09  VCPU_STAT(break_inst_exits),=09 KVM_STAT_VCPU },
--=09{ "trap_inst",=09  VCPU_STAT(trap_inst_exits),=09 KVM_STAT_VCPU },
--=09{ "msa_fpe",=09  VCPU_STAT(msa_fpe_exits),=09 KVM_STAT_VCPU },
--=09{ "fpe",=09  VCPU_STAT(fpe_exits),=09=09 KVM_STAT_VCPU },
--=09{ "msa_disabled", VCPU_STAT(msa_disabled_exits), KVM_STAT_VCPU },
--=09{ "flush_dcache", VCPU_STAT(flush_dcache_exits), KVM_STAT_VCPU },
-+=09{ "wait",=09  VCPU_STAT(wait_exits) },
-+=09{ "cache",=09  VCPU_STAT(cache_exits) },
-+=09{ "signal",=09  VCPU_STAT(signal_exits) },
-+=09{ "interrupt",=09  VCPU_STAT(int_exits) },
-+=09{ "cop_unusable", VCPU_STAT(cop_unusable_exits) },
-+=09{ "tlbmod",=09  VCPU_STAT(tlbmod_exits) },
-+=09{ "tlbmiss_ld",=09  VCPU_STAT(tlbmiss_ld_exits) },
-+=09{ "tlbmiss_st",=09  VCPU_STAT(tlbmiss_st_exits) },
-+=09{ "addrerr_st",=09  VCPU_STAT(addrerr_st_exits) },
-+=09{ "addrerr_ld",=09  VCPU_STAT(addrerr_ld_exits) },
-+=09{ "syscall",=09  VCPU_STAT(syscall_exits) },
-+=09{ "resvd_inst",=09  VCPU_STAT(resvd_inst_exits) },
-+=09{ "break_inst",=09  VCPU_STAT(break_inst_exits) },
-+=09{ "trap_inst",=09  VCPU_STAT(trap_inst_exits) },
-+=09{ "msa_fpe",=09  VCPU_STAT(msa_fpe_exits) },
-+=09{ "fpe",=09  VCPU_STAT(fpe_exits) },
-+=09{ "msa_disabled", VCPU_STAT(msa_disabled_exits) },
-+=09{ "flush_dcache", VCPU_STAT(flush_dcache_exits) },
- #ifdef CONFIG_KVM_MIPS_VZ
--=09{ "vz_gpsi",=09  VCPU_STAT(vz_gpsi_exits),=09 KVM_STAT_VCPU },
--=09{ "vz_gsfc",=09  VCPU_STAT(vz_gsfc_exits),=09 KVM_STAT_VCPU },
--=09{ "vz_hc",=09  VCPU_STAT(vz_hc_exits),=09 KVM_STAT_VCPU },
--=09{ "vz_grr",=09  VCPU_STAT(vz_grr_exits),=09 KVM_STAT_VCPU },
--=09{ "vz_gva",=09  VCPU_STAT(vz_gva_exits),=09 KVM_STAT_VCPU },
--=09{ "vz_ghfc",=09  VCPU_STAT(vz_ghfc_exits),=09 KVM_STAT_VCPU },
--=09{ "vz_gpa",=09  VCPU_STAT(vz_gpa_exits),=09 KVM_STAT_VCPU },
--=09{ "vz_resvd",=09  VCPU_STAT(vz_resvd_exits),=09 KVM_STAT_VCPU },
-+=09{ "vz_gpsi",=09  VCPU_STAT(vz_gpsi_exits) },
-+=09{ "vz_gsfc",=09  VCPU_STAT(vz_gsfc_exits) },
-+=09{ "vz_hc",=09  VCPU_STAT(vz_hc_exits) },
-+=09{ "vz_grr",=09  VCPU_STAT(vz_grr_exits) },
-+=09{ "vz_gva",=09  VCPU_STAT(vz_gva_exits) },
-+=09{ "vz_ghfc",=09  VCPU_STAT(vz_ghfc_exits) },
-+=09{ "vz_gpa",=09  VCPU_STAT(vz_gpa_exits) },
-+=09{ "vz_resvd",=09  VCPU_STAT(vz_resvd_exits) },
- #endif
--=09{ "halt_successful_poll", VCPU_STAT(halt_successful_poll), KVM_STAT_VCP=
-U },
--=09{ "halt_attempted_poll", VCPU_STAT(halt_attempted_poll), KVM_STAT_VCPU =
-},
--=09{ "halt_poll_invalid", VCPU_STAT(halt_poll_invalid), KVM_STAT_VCPU },
--=09{ "halt_wakeup",  VCPU_STAT(halt_wakeup),=09 KVM_STAT_VCPU },
-+=09{ "halt_successful_poll", VCPU_STAT(halt_successful_poll) },
-+=09{ "halt_attempted_poll", VCPU_STAT(halt_attempted_poll) },
-+=09{ "halt_poll_invalid", VCPU_STAT(halt_poll_invalid) },
-+=09{ "halt_wakeup",  VCPU_STAT(halt_wakeup) },
- =09{NULL}
- };
-=20
-diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index 5690a1f9b976..55cb728ba06e 100644
---- a/arch/powerpc/kvm/book3s.c
-+++ b/arch/powerpc/kvm/book3s.c
-@@ -36,9 +36,6 @@
- #include "book3s.h"
- #include "trace.h"
-=20
--#define VM_STAT(x, ...) offsetof(struct kvm, stat.x), KVM_STAT_VM, ## __VA=
-_ARGS__
--#define VCPU_STAT(x, ...) offsetof(struct kvm_vcpu, stat.x), KVM_STAT_VCPU=
-, ## __VA_ARGS__
--
- /* #define EXIT_DEBUG */
-=20
- struct kvm_stats_debugfs_item debugfs_entries[] =3D {
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index 6c18ea88fd25..fb8fa7060804 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -35,9 +35,6 @@
-=20
- unsigned long kvmppc_booke_handlers;
-=20
--#define VM_STAT(x) offsetof(struct kvm, stat.x), KVM_STAT_VM
--#define VCPU_STAT(x) offsetof(struct kvm_vcpu, stat.x), KVM_STAT_VCPU
--
- struct kvm_stats_debugfs_item debugfs_entries[] =3D {
- =09{ "mmio",       VCPU_STAT(mmio_exits) },
- =09{ "sig",        VCPU_STAT(signal_exits) },
-diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
-index 19a81024fe16..1a7bf8759750 100644
---- a/arch/s390/kvm/kvm-s390.c
-+++ b/arch/s390/kvm/kvm-s390.c
-@@ -57,9 +57,6 @@
- #define VCPU_IRQS_MAX_BUF (sizeof(struct kvm_s390_irq) * \
- =09=09=09   (KVM_MAX_VCPUS + LOCAL_IRQS))
-=20
--#define VCPU_STAT(x) offsetof(struct kvm_vcpu, stat.x), KVM_STAT_VCPU
--#define VM_STAT(x) offsetof(struct kvm, stat.x), KVM_STAT_VM
--
- struct kvm_stats_debugfs_item debugfs_entries[] =3D {
- =09{ "userspace_handled", VCPU_STAT(exit_userspace) },
- =09{ "exit_null", VCPU_STAT(exit_null) },
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index b8124b562dea..fb035d304004 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -97,9 +97,6 @@ static u64 __read_mostly efer_reserved_bits =3D ~((u64)EF=
-ER_SCE);
-=20
- static u64 __read_mostly cr4_reserved_bits =3D CR4_RESERVED_BITS;
-=20
--#define VM_STAT(x, ...) offsetof(struct kvm, stat.x), KVM_STAT_VM, ## __VA=
-_ARGS__
--#define VCPU_STAT(x, ...) offsetof(struct kvm_vcpu, stat.x), KVM_STAT_VCPU=
-, ## __VA_ARGS__
--
- #define KVM_X2APIC_API_VALID_FLAGS (KVM_X2APIC_API_USE_32BIT_IDS | \
-                                     KVM_X2APIC_API_DISABLE_BROADCAST_QUIRK=
-)
-=20
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 6d58beb65454..e02d38c7fff1 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -1130,6 +1130,9 @@ struct kvm_stats_debugfs_item {
- #define KVM_DBGFS_GET_MODE(dbgfs_item)                                    =
-     \
- =09((dbgfs_item)->mode ? (dbgfs_item)->mode : 0644)
-=20
-+#define VM_STAT(x, ...) offsetof(struct kvm, stat.x), KVM_STAT_VM, ## __VA=
-_ARGS__
-+#define VCPU_STAT(x, ...) offsetof(struct kvm_vcpu, stat.x), KVM_STAT_VCPU=
-, ## __VA_ARGS__
-+
- extern struct kvm_stats_debugfs_item debugfs_entries[];
- extern struct dentry *kvm_debugfs_dir;
-=20
---=20
-2.17.1
+I find this macro expanding into multiple fields odd... Maybe a matter
+of taste. Sugggestion, have the macro define the full structure, as in
+the arm64 arch:
 
+#define VM_STAT(n, x, ...) { n, offsetof(struct kvm, stat.x),
+KVM_STAT_VM, ## __VA_ARGS__ }
+
+Ditto for VCPU_STAT().
+
+> +
+>  extern struct kvm_stats_debugfs_item debugfs_entries[];
+>  extern struct dentry *kvm_debugfs_dir;
+>  
+> 
