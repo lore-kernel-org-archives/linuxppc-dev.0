@@ -2,65 +2,61 @@ Return-Path: <SRS0=PHx5=55=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A94FC2BA19
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2020 13:43:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C23E7C2BBFD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2020 14:14:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9DCE82073E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2020 13:43:50 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="AS59FWW5"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9DCE82073E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id 3713B2078B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2020 14:14:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3713B2078B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4918wN1CydzDqNT
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2020 23:43:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
- envelope-from=willy@infradead.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=bombadil.20170209 header.b=AS59FWW5; 
- dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4919c34hQ4zDqPb
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 00:14:43 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=srs0=qxs9=55=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=bugzilla.kernel.org
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4918sL5GPkzDqM2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2020 23:41:10 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=PXr19U1fgLFA690aiYcKrrCMpq73umlTXiDnSKGqGOU=; b=AS59FWW5J2xkZJ9kAYmjKnECFC
- BLSjvKBPwhifmVm0b5v4PfawQRVu5DP0tQGTKPn6KCVJMt7KdvBxQpzRQnHyk4LAWKvUfkYN+RLcV
- n/pjOAShKf8BL2G3umFK2CB5KD4whLLIBC3Tw8s+tBTw8ia9togBAWZhVArgb67NY36Lsv3wSNc7H
- PwUWigJp4ffAivNapErEQqgf9qRfC0XGFRp5sSkQkw0J0y3Ou64R3DRZ3kgJuUanyLiHXv6t9uvpB
- RYquPuIThmO9pQiFXNaeVJAe5rkXt9G2Xe8fCsiX0tRh/cMK+w3C4nXGQ+lewhZRyZBD7oybQW222
- Mtlbo1Hg==;
-Received: from willy by bombadil.infradead.org with local (Exim 4.92.3 #3 (Red
- Hat Linux)) id 1jNzKk-0001yI-VC; Mon, 13 Apr 2020 13:41:06 +0000
-Date: Mon, 13 Apr 2020 06:41:06 -0700
-From: Matthew Wilcox <willy@infradead.org>
-To: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v2 4/4] mm/vmalloc: Hugepage vmalloc mappings
-Message-ID: <20200413134106.GN21484@bombadil.infradead.org>
-References: <20200413125303.423864-1-npiggin@gmail.com>
- <20200413125303.423864-5-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4919YB22l8zDqNH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 00:12:13 +1000 (AEST)
+From: bugzilla-daemon@bugzilla.kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 205099] KASAN hit at raid6_pq: BUG: Unable to handle kernel
+ data access at 0x00f0fd0d
+Date: Mon, 13 Apr 2020 14:12:10 +0000
+X-Bugzilla-Reason: None
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
+X-Bugzilla-Product: Platform Specific/Hardware
+X-Bugzilla-Component: PPC-32
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: erhard_f@mailbox.org
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: attachments.isobsolete attachments.created
+Message-ID: <bug-205099-206035-54mmoFn30H@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-205099-206035@https.bugzilla.kernel.org/>
+References: <bug-205099-206035@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200413125303.423864-5-npiggin@gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,26 +68,86 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
- Will Deacon <will@kernel.org>, x86@kernel.org, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, Catalin Marinas <catalin.marinas@arm.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Apr 13, 2020 at 10:53:03PM +1000, Nicholas Piggin wrote:
-> +static int vmap_pages_range_noflush(unsigned long start, unsigned long end,
-> +				    pgprot_t prot, struct page **pages,
-> +				    unsigned int page_shift)
-> +{
-> +	if (page_shift == PAGE_SIZE) {
+https://bugzilla.kernel.org/show_bug.cgi?id=3D205099
 
-... I think you meant 'page_shift == PAGE_SHIFT'
+Erhard F. (erhard_f@mailbox.org) changed:
 
-Overall I like this series, although it's a bit biased towards CPUs
-which have page sizes which match PMD/PUD sizes.  It doesn't offer the
-possibility of using 64kB page sizes on ARM, for example.  But it's a
-step in the right direction.
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+ Attachment #287621|0                           |1
+        is obsolete|                            |
+
+--- Comment #28 from Erhard F. (erhard_f@mailbox.org) ---
+Created attachment 288411
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D288411&action=3Dedit
+dmesg (5.7-rc1, OUTLINE KASAN, PowerMac G4 DP)
+
+Re-tested with v5.7-rc1 out of curiosity. Not much change here, the bug sho=
+ws
+up with OUTLINE KASAN but not with INLINE KASAN, everything else being equa=
+l.
+
+[...]
+Apr 13 16:01:11 T600 kernel: BUG: Unable to handle kernel data access on re=
+ad
+at 0x0050a0f0
+Apr 13 16:01:11 T600 kernel: Faulting instruction address: 0xf1aa1564
+Apr 13 16:01:11 T600 kernel: Oops: Kernel access of bad area, sig: 11 [#1]
+Apr 13 16:01:11 T600 kernel: BE PAGE_SIZE=3D4K MMU=3DHash SMP NR_CPUS=3D2 P=
+owerMac
+Apr 13 16:01:11 T600 kernel: Modules linked in: raid6_pq(+) zlib_inflate
+firewire_ohci firewire_core ehci_pci(+) ohci_hcd crc_itu_t sr_mod cdrom
+ehci_hcd snd_aoa_i2sbus snd_aoa_soundbus snd_pcm snd_timer snd ss>
+Apr 13 16:01:11 T600 kernel: CPU: 0 PID: 149 Comm: modprobe Tainted: G     =
+   W
+        5.7.0-rc1-PowerMacG4+ #1
+Apr 13 16:01:11 T600 kernel: NIP:  f1aa1564 LR: f1aa14e8 CTR: c0255b78
+Apr 13 16:01:11 T600 kernel: REGS: f1963780 TRAP: 0300   Tainted: G        =
+W=20=20=20
+      (5.7.0-rc1-PowerMacG4+)
+Apr 13 16:01:11 T600 kernel: MSR:  02009032 <VEC,EE,ME,IR,DR,RI>  CR: 28228=
+828=20
+XER: 00000000
+Apr 13 16:01:11 T600 kernel: DAR: 0050a0f0 DSISR: 40000000=20
+                             GPR00: f19639d8 f1963838 ebd1de60 eb1dc070
+00001000 00000003 f1aa14e8 00000000=20
+                             GPR08: 00000000 0050a0f0 5d0dfdad fffffff0
+c0255b78 00a48ff4 00000060 00000050=20
+                             GPR16: eb1dc000 eb1df000 eb1de000 00000070
+00000060 00000050 00000040 00000030=20
+                             GPR24: 00000020 00000010 00000008 f1963a8c
+f1963a78 eb1df010 eb1de010 00000000=20
+Apr 13 16:01:11 T600 kernel: NIP [f1aa1564]
+raid6_altivec8_gen_syndrome_real+0x3c4/0x480 [raid6_pq]
+Apr 13 16:01:11 T600 kernel: LR [f1aa14e8]
+raid6_altivec8_gen_syndrome_real+0x348/0x480 [raid6_pq]
+Apr 13 16:01:11 T600 kernel: Call Trace:
+Apr 13 16:01:11 T600 kernel: [f1963838] [0000000a] 0xa (unreliable)
+Apr 13 16:01:11 T600 kernel: [f1963a28] [f1aa1654]
+raid6_altivec8_gen_syndrome+0x34/0x58 [raid6_pq]
+Apr 13 16:01:11 T600 kernel: [f1963a48] [f12603cc] init_module+0x3cc/0x530
+[raid6_pq]
+Apr 13 16:01:11 T600 kernel: [f1963b18] [c00058e4] do_one_initcall+0xb8/0x3=
+6c
+Apr 13 16:01:11 T600 kernel: [f1963be8] [c0117f64] do_init_module+0xa8/0x2c4
+Apr 13 16:01:11 T600 kernel: [f1963c18] [c011ae38] load_module+0x2bd8/0x2d5c
+Apr 13 16:01:11 T600 kernel: [f1963e18] [c011b230] sys_finit_module+0x100/0=
+x138
+Apr 13 16:01:11 T600 kernel: [f1963f38] [c001a224] ret_from_syscall+0x0/0x34
+Apr 13 16:01:11 T600 kernel: --- interrupt: c01 at 0x892988
+                                 LR =3D 0xa20a14
+Apr 13 16:01:11 T600 kernel: Instruction dump:
+Apr 13 16:01:11 T600 kernel: 1304c4c4 7d2048ce 39210090 1325ccc4 7d6048ce
+1346d4c4 81210088 1367dcc4=20
+Apr 13 16:01:11 T600 kernel: 8141008c 11284cc4 115f5b06 116b5800 <7c0048ce>
+392100a0 7d8048ce 392100b0=20
+Apr 13 16:01:11 T600 kernel: ---[ end trace ebe3b589d509d4f6 ]---
+[...]
+
+--=20
+You are receiving this mail because:
+You are watching the assignee of the bug.=
