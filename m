@@ -1,88 +1,58 @@
-Return-Path: <SRS0=Pd+i=54=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=PHx5=55=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 00832C2D0EC
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 12 Apr 2020 21:38:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 780B7C2BB85
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2020 01:26:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 30383206C3
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 12 Apr 2020 21:38:39 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=gmx.net header.i=@gmx.net header.b="L1Zz+FBS"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 30383206C3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gmx.co.uk
+	by mail.kernel.org (Postfix) with ESMTPS id AF976206C3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2020 01:26:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AF976206C3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 490lVh3kzkzDqW5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2020 07:38:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 490rY65TJCzDqVs
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2020 11:26:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmx.co.uk (client-ip=212.227.17.21; helo=mout.gmx.net;
- envelope-from=alex.dewar@gmx.co.uk; receiver=<UNKNOWN>)
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.191; helo=huawei.com;
+ envelope-from=yanaijie@huawei.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=gmx.co.uk
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- secure) header.d=gmx.net header.i=@gmx.net header.a=rsa-sha256
- header.s=badeba3b8450 header.b=L1Zz+FBS; 
- dkim-atps=neutral
-X-Greylist: delayed 333 seconds by postgrey-1.36 at bilbo;
- Mon, 13 Apr 2020 01:51:19 AEST
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+ dmarc=none (p=none dis=none) header.from=huawei.com
+Received: from huawei.com (szxga05-in.huawei.com [45.249.212.191])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 490bnz0RtkzDqQT
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2020 01:51:18 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
- s=badeba3b8450; t=1586706666;
- bh=Ozo3Pc+S3y/l2oIB0mqBuzQkGUe1bcJdHUx4viCHUBo=;
- h=X-UI-Sender-Class:From:To:Cc:Subject:Date;
- b=L1Zz+FBSRviVdjwHuyyvATJup/xPK2SuxWHOcI6CRYqOOBcb5xy0oL+ZZuUmuGWQp
- H7cB2wRIeuqJe3EkmUY4R+592ca8W5R6Ukl5fXpj3Kjoz/A716JIvPro6o7loiUOuX
- ybcB3pV//V6D7WQOgnFTcCOWXSCKmmoHFElfKdfo=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from localhost.localdomain ([82.19.195.159]) by mail.gmx.com
- (mrgmx104 [212.227.17.174]) with ESMTPSA (Nemesis) id
- 1MmlTC-1ixuAX3jOw-00jqWo; Sun, 12 Apr 2020 17:45:24 +0200
-From: Alex Dewar <alex.dewar@gmx.co.uk>
-To: Paul Mackerras <paulus@ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, kvm-ppc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] KVM: PPC: Book3S: Remove unneeded NULL check before kfree()
-Date: Sun, 12 Apr 2020 16:45:09 +0100
-Message-Id: <20200412154510.36496-1-alex.dewar@gmx.co.uk>
-X-Mailer: git-send-email 2.26.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 490rVS3zk6zDqTg
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2020 11:23:40 +1000 (AEST)
+Received: from DGGEMS406-HUB.china.huawei.com (unknown [172.30.72.58])
+ by Forcepoint Email with ESMTP id 84931C6D573870651A49;
+ Mon, 13 Apr 2020 09:23:34 +0800 (CST)
+Received: from [127.0.0.1] (10.173.221.195) by DGGEMS406-HUB.china.huawei.com
+ (10.3.19.206) with Microsoft SMTP Server id 14.3.487.0;
+ Mon, 13 Apr 2020 09:23:24 +0800
+Subject: Re: [PATCH v5 0/6] implement KASLR for powerpc/fsl_booke/64
+To: <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
+ <diana.craciun@nxp.com>, <christophe.leroy@c-s.fr>,
+ <benh@kernel.crashing.org>, <paulus@samba.org>, <npiggin@gmail.com>,
+ <keescook@chromium.org>, <kernel-hardening@lists.openwall.com>,
+ <oss@buserror.net>
+References: <20200330022023.3691-1-yanaijie@huawei.com>
+From: Jason Yan <yanaijie@huawei.com>
+Message-ID: <433bb006-aa45-524d-c57e-79657d01c685@huawei.com>
+Date: Mon, 13 Apr 2020 09:23:23 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101
+ Thunderbird/68.4.2
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:zvL24rS43N3XslrqBtPvrvM5md1EmfOJKzhOuGBfpkdurmKL1sy
- uTI3dwu+5jue0RbfeTpwSienBHxg8f8T3xXFOQLLczXuLOaoONOFEHKMYK2NLTSgSwLm7VA
- vPUpyMYOVgqJbwZXqSP4pW2KOvNV69AGK3HL1VFG+GVx2I55airIC82U+LZtruRyUGAVd9f
- Axncb1CsQHTVM9/rg3zow==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:NIVryeOfWqU=:zkG+usDpHXdVVciC/00VPS
- yNFVg6ZPKynHDCplWY3XkwfEmmZTLBiivAYSApDbtAH43RsaYpgdE8gD7Ikf3orcEoFHcthK/
- II0XVr1gjc4cAKG+sc9B5Vw5Q4j4BhXOWhPAEL47tZZDOOF7pqrHdYe7d1yUxDqMgpDUaHxzv
- duf6q9k7IlQRFN4mSx4982DykNy21tD0n2zvZeIBptPwlhLHDgxaCIriXzY/An4KLVug+JFLM
- En61B9N6Ak4mOQnogFQmflZzH5s3bTjEBTNYLLhgy6q9AvIqxqneAzrlfsLRU2LMYnJzoNsLr
- mUebpR7Qk2cRoChKaRXDFS3e+CaasMEWYi+t7UNQxmff4b4WIuWNhA6GetYBI5IcmKpCwPc+S
- d/l9W9A+xjzfaSvO/GSFhhpcBXWUNnSH4G/K/nH8kYj9LF9tRRcFwxl8QZghZO3Zx0ZH4gSq7
- ggShfm+P7HzJiuEry+O/wa5sHsPuTPFepCKsQWQ0Q8A7MTlpm85M1/Ca+pQaHm4DAjTe+3gZr
- KfsPOQsO8XMNG70Fi7yQmkoW7BZ347/uX8OiVu8AzGEWbQgBpGeWymXnSWyXiyb9f3tzHJ+A+
- SjmNscmyeebFqihFoGxHa6arEC5tJpIR4Dtqq1OOuY1N71vMIKetj3Au06JFWg3tVdzTgEDzi
- PRgN8PoAgGKsTswPqpgxp6HW/z2SCFGXXGw0xd2us5Jk6H84e+0VyGGm/Jiok9yhyUwoHbDvQ
- 4fRnaxFN6kTp7SLqFOendayqX8t39aMuheRPpr+Vof4XMkDr1W07Bjp2LudRJcg2j3eO5N6My
- EsDfksPmITGMOh7cCg34SYLz3vvCQ/K/cOfr83iLL/mAExtM04+0I4hgg/+hBNNgzaJaqoqkY
- org72oWhY15rpjoRbTr7naiM4o8axKrtz7ibGHOp5y4bIjnVrIckl9zOWy9VR93GRg5LG6bxJ
- iAT5JUn7y8kAkdc4nGqCGhPiM0JpNLX6DAlyTw7ZHpmAn8/1y44Msq2hkT9VHyNNjvUEkgQme
- vY/6idMgk7LTw6BXltAa8Y8/q2Ya8pxuxATlD028TRszi03gYlc2j410h8AnYgiHSE0qiA9tN
- 0oz2koLTgLtsztrTDAHe6YmvBxQjvPk6Bd4RbU84XFvqyZZzzmSFJbpBJ9dr9/IqlUTQ71E98
- /txsAXs0x0b8Yj7XimjTu7YXBSa5x4XIcRFR/nfpX1qe91RQlb0imWQ7wWl8KyuuOlShqocWo
- +VRI7njatvUIiZOyB
-X-Mailman-Approved-At: Mon, 13 Apr 2020 07:36:57 +1000
+In-Reply-To: <20200330022023.3691-1-yanaijie@huawei.com>
+Content-Type: text/plain; charset="gbk"; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [10.173.221.195]
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,35 +64,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alex Dewar <alex.dewar@gmx.co.uk>
+Cc: dja@axtens.net, linux-kernel@vger.kernel.org, zhaohongjiang@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-kfree() already checks for NULL arguments, so this check is reduntant.
-Remove it.
+ping...
 
-Signed-off-by: Alex Dewar <alex.dewar@gmx.co.uk>
-=2D--
- arch/powerpc/kvm/book3s_hv_nested.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3s=
-_hv_nested.c
-index dc97e5be76f61..cad324312040b 100644
-=2D-- a/arch/powerpc/kvm/book3s_hv_nested.c
-+++ b/arch/powerpc/kvm/book3s_hv_nested.c
-@@ -1416,8 +1416,7 @@ static long int __kvmhv_nested_page_fault(struct kvm=
-_run *run,
- 	rmapp =3D &memslot->arch.rmap[gfn - memslot->base_gfn];
- 	ret =3D kvmppc_create_pte(kvm, gp->shadow_pgtable, pte, n_gpa, level,
- 				mmu_seq, gp->shadow_lpid, rmapp, &n_rmap);
--	if (n_rmap)
--		kfree(n_rmap);
-+	kfree(n_rmap);
- 	if (ret =3D=3D -EAGAIN)
- 		ret =3D RESUME_GUEST;	/* Let the guest try again */
-
-=2D-
-2.26.0
+ÔÚ 2020/3/30 10:20, Jason Yan Ð´µÀ:
+> This is a try to implement KASLR for Freescale BookE64 which is based on
+> my earlier implementation for Freescale BookE32:
+> https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=131718&state=*
+> 
+> The implementation for Freescale BookE64 is similar as BookE32. One
+> difference is that Freescale BookE64 set up a TLB mapping of 1G during
+> booting. Another difference is that ppc64 needs the kernel to be
+> 64K-aligned. So we can randomize the kernel in this 1G mapping and make
+> it 64K-aligned. This can save some code to creat another TLB map at
+> early boot. The disadvantage is that we only have about 1G/64K = 16384
+> slots to put the kernel in.
+> 
+>      KERNELBASE
+> 
+>            64K                     |--> kernel <--|
+>             |                      |              |
+>          +--+--+--+    +--+--+--+--+--+--+--+--+--+    +--+--+
+>          |  |  |  |....|  |  |  |  |  |  |  |  |  |....|  |  |
+>          +--+--+--+    +--+--+--+--+--+--+--+--+--+    +--+--+
+>          |                         |                        1G
+>          |----->   offset    <-----|
+> 
+>                                kernstart_virt_addr
+> 
+> I'm not sure if the slot numbers is enough or the design has any
+> defects. If you have some better ideas, I would be happy to hear that.
+> 
+> Thank you all.
+> 
+> v4->v5:
+>    Fix "-Werror=maybe-uninitialized" compile error.
+>    Fix typo "similar as" -> "similar to".
+> v3->v4:
+>    Do not define __kaslr_offset as a fixed symbol. Reference __run_at_load and
+>      __kaslr_offset by symbol instead of magic offsets.
+>    Use IS_ENABLED(CONFIG_PPC32) instead of #ifdef CONFIG_PPC32.
+>    Change kaslr-booke32 to kaslr-booke in index.rst
+>    Switch some instructions to 64-bit.
+> v2->v3:
+>    Fix build error when KASLR is disabled.
+> v1->v2:
+>    Add __kaslr_offset for the secondary cpu boot up.
+> 
+> Jason Yan (6):
+>    powerpc/fsl_booke/kaslr: refactor kaslr_legal_offset() and
+>      kaslr_early_init()
+>    powerpc/fsl_booke/64: introduce reloc_kernel_entry() helper
+>    powerpc/fsl_booke/64: implement KASLR for fsl_booke64
+>    powerpc/fsl_booke/64: do not clear the BSS for the second pass
+>    powerpc/fsl_booke/64: clear the original kernel if randomized
+>    powerpc/fsl_booke/kaslr: rename kaslr-booke32.rst to kaslr-booke.rst
+>      and add 64bit part
+> 
+>   Documentation/powerpc/index.rst               |  2 +-
+>   .../{kaslr-booke32.rst => kaslr-booke.rst}    | 35 ++++++-
+>   arch/powerpc/Kconfig                          |  2 +-
+>   arch/powerpc/kernel/exceptions-64e.S          | 23 +++++
+>   arch/powerpc/kernel/head_64.S                 | 13 +++
+>   arch/powerpc/kernel/setup_64.c                |  3 +
+>   arch/powerpc/mm/mmu_decl.h                    | 23 +++--
+>   arch/powerpc/mm/nohash/kaslr_booke.c          | 91 +++++++++++++------
+>   8 files changed, 147 insertions(+), 45 deletions(-)
+>   rename Documentation/powerpc/{kaslr-booke32.rst => kaslr-booke.rst} (59%)
+> 
 
