@@ -2,109 +2,70 @@ Return-Path: <SRS0=VNWk=56=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1DDD8C2BB1D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 06:46:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6AC07C2BA19
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 07:04:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6BC8F2072D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 06:46:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6BC8F2072D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id A27DA2076C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 07:04:35 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="lnobmZEr"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A27DA2076C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 491bcd0NwGzDqXM
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 16:46:41 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 491c1D6rnczDqXS
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 17:04:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
+ helo=bombadil.infradead.org;
+ envelope-from=batv+4a22011dcb1da0b09bf4+6078+infradead.org+hch@bombadil.srs.infradead.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=lst.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.a=rsa-sha256 header.s=bombadil.20170209 header.b=lnobmZEr; 
+ dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 491bZ05kJYzDqRW
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 16:44:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 491bYy5l5Tz8syr
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 16:44:22 +1000 (AEST)
-Received: by ozlabs.org (Postfix)
- id 491bYy5NKVz9sSt; Tue, 14 Apr 2020 16:44:22 +1000 (AEST)
-Authentication-Results: ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 491bYy1rG1z9sSq
- for <linuxppc-dev@ozlabs.org>; Tue, 14 Apr 2020 16:44:21 +1000 (AEST)
-Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 03E6YLF3113066; Tue, 14 Apr 2020 02:44:15 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 30b9hv2gjn-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 14 Apr 2020 02:44:15 -0400
-Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 03E6YOHG113143;
- Tue, 14 Apr 2020 02:44:15 -0400
-Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
- [169.53.41.122])
- by mx0a-001b2d01.pphosted.com with ESMTP id 30b9hv2gj8-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 14 Apr 2020 02:44:14 -0400
-Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
- by ppma04dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 03E6eOW6021208;
- Tue, 14 Apr 2020 06:44:14 GMT
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27]) by ppma04dal.us.ibm.com with ESMTP id 30b5h6v01c-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 14 Apr 2020 06:44:13 +0000
-Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
- [9.57.199.111])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 03E6iDaZ51380502
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 14 Apr 2020 06:44:13 GMT
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2A398AC05B;
- Tue, 14 Apr 2020 06:44:13 +0000 (GMT)
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 78ABEAC066;
- Tue, 14 Apr 2020 06:44:12 +0000 (GMT)
-Received: from sofia.ibm.com (unknown [9.199.58.33])
- by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Tue, 14 Apr 2020 06:44:12 +0000 (GMT)
-Received: by sofia.ibm.com (Postfix, from userid 1000)
- id 1927C2E3019; Tue, 14 Apr 2020 12:14:09 +0530 (IST)
-Date: Tue, 14 Apr 2020 12:14:09 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Pratik Rajesh Sampat <psampat@linux.ibm.com>
-Subject: Re: [PATCH v6 2/4] Self save API integration
-Message-ID: <20200414064408.GB24277@in.ibm.com>
-References: <20200326070917.12744-1-psampat@linux.ibm.com>
- <20200326070917.12744-3-psampat@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 491byD3QK4zDqWJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 17:01:56 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
+ MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
+ :Reply-To:Content-Type:Content-ID:Content-Description;
+ bh=M5406jaK+bnV3+r5y6smgvAwTuAJNfgWrpEoKc2FMtE=; b=lnobmZErFPQjemXWVfuj+8d0Lz
+ QDgTJnTZzTYtmGKt7aebusPt5mowrAGRRmliTllsHexAjuPdZIuN5d9uyGy/LYiZiuj12bNZS/+bz
+ EZGF2/5SwG4Mdrd9MEAeCefF2Q2Jitm7qz42hYlyiTjI89T5tGOU9I0OYgZYu4b7xz02W5vQ7Jnlq
+ 8qCnbJ7Om828F1bXwVt4rphFhlVizWTzSLfbP+S7Iuv9bRzbOJE3h8JAOZdF1A+WUUXnUBPCjFs/a
+ GDshM2H7yqQY34qbUmtCpa/twKd1FLbOZbtJ1ks2ZZSqijZPEagw8ZoWJGU/zdq1MjrhIzpt1KOpu
+ /JYDLxZw==;
+Received: from [2001:4bb8:180:384b:4c21:af7:dd95:e552] (helo=localhost)
+ by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+ id 1jOFZs-0005Y0-2U; Tue, 14 Apr 2020 07:01:48 +0000
+From: Christoph Hellwig <hch@lst.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+ Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: [PATCH 1/8] powerpc/spufs: simplify spufs core dumping
+Date: Tue, 14 Apr 2020 09:01:35 +0200
+Message-Id: <20200414070142.288696-2-hch@lst.de>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20200414070142.288696-1-hch@lst.de>
+References: <20200414070142.288696-1-hch@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200326070917.12744-3-psampat@linux.ibm.com>
-User-Agent: Mutt/1.5.23 (2014-03-12)
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
- definitions=2020-04-14_01:2020-04-13,
- 2020-04-14 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 malwarescore=0
- mlxlogscore=999 lowpriorityscore=0 clxscore=1015 phishscore=0 spamscore=0
- adultscore=0 impostorscore=0 bulkscore=0 priorityscore=1501 suspectscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2003020000
- definitions=main-2004140048
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,354 +77,654 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: ego@linux.vnet.ibm.com
-Cc: ego@linux.vnet.ibm.com, pratik.r.sampat@gmail.com, linuxram@us.ibm.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, oohall@gmail.com,
- skiboot@lists.ozlabs.org
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
+ Jeremy Kerr <jk@ozlabs.org>, linux-fsdevel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, "Eric W . Biederman" <ebiederm@xmission.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello Pratik,
+Replace the coredump ->read method with a ->dump method that must call
+dump_emit itself.  That way we avoid a buffer allocation an messing with
+set_fs() to call into code that is intended to deal with user buffers.
+For the ->get case we can now use a small on-stack buffer and avoid
+memory allocations as well.
 
-On Thu, Mar 26, 2020 at 12:39:15PM +0530, Pratik Rajesh Sampat wrote:
-> The commit makes the self save API available outside the firmware by defining
-> an OPAL wrapper.
-> This wrapper has a similar interface to that of self restore and expects the
-> cpu pir, SPR number, minus the value of that SPR to be passed in its
-> paramters and returns OPAL_SUCCESS on success.
-> The commit also documents both the self-save and the self-restore API
-> calls along with their working and usage.
-> 
-> Signed-off-by: Pratik Rajesh Sampat <psampat@linux.ibm.com>
-> ---
->  doc/opal-api/opal-slw-self-save-reg-181.rst | 49 ++++++++++++
->  doc/opal-api/opal-slw-set-reg-100.rst       |  5 ++
->  doc/power-management.rst                    | 44 ++++++++++
->  hw/slw.c                                    | 89 +++++++++++++++++++++
->  include/opal-api.h                          |  3 +-
->  include/p9_stop_api.H                       | 17 ++++
->  include/skiboot.h                           |  3 +
->  7 files changed, 209 insertions(+), 1 deletion(-)
->  create mode 100644 doc/opal-api/opal-slw-self-save-reg-181.rst
-> 
-> diff --git a/doc/opal-api/opal-slw-self-save-reg-181.rst b/doc/opal-api/opal-slw-self-save-reg-181.rst
-> new file mode 100644
-> index 00000000..5aa4c930
-> --- /dev/null
-> +++ b/doc/opal-api/opal-slw-self-save-reg-181.rst
-> @@ -0,0 +1,49 @@
-> +.. OPAL_SLW_SELF_SAVE_REG:
-> +
-> +OPAL_SLW_SELF_SAVE_REG
-> +======================
-> +
-> +.. code-block:: c
-> +
-> +   #define OPAL_SLW_SELF_SAVE_REG			181
-> +
-> +   int64_t opal_slw_self_save_reg(uint64_t cpu_pir, uint64_t sprn);
-> +
-> +:ref:`OPAL_SLW_SELF_SAVE_REG` is used to inform low-level firmware to save
-> +the current contents of the SPR before entering a state of loss and
-> +also restore the content back on waking up from a deep stop state.
-> +
-> +An OPAL call `OPAL_SLW_SET_REG` exists which is similar in function as
-> +saving and restoring the SPR, with one difference being that the value of the
-> +SPR must also be supplied in the parameters.
-> +Complete reference: doc/opal-api/opal-slw-set-reg-100.rst
-> +
-> +Parameters
-> +----------
-> +
-> +``uint64_t cpu_pir``
-> +  This parameter specifies the pir of the cpu for which the call is being made.
-> +``uint64_t sprn``
-> +  This parameter specifies the spr number as mentioned in p9_stop_api.H
-> +  The list of SPRs supported is as follows. This list is suppiled through the
-> +  device tree:
-> +	P9_STOP_SPR_DAWR,
-> +	P9_STOP_SPR_HSPRG0,
-> +	P9_STOP_SPR_LDBAR,
-> +	P9_STOP_SPR_LPCR,
-> +	P9_STOP_SPR_PSSCR,
-> +	P9_STOP_SPR_MSR,
-> +	P9_STOP_SPR_HRMOR,
-> +	P9_STOP_SPR_HMEER,
-> +	P9_STOP_SPR_PMCR,
-> +	P9_STOP_SPR_PTCR
-> +
-> +Returns
-> +-------
-> +
-> +:ref:`OPAL_UNSUPPORTED`
-> +  If spr restore is not supported by pore engine.
-> +:ref:`OPAL_PARAMETER`
-> +  Invalid handle for the pir/chip
-> +:ref:`OPAL_SUCCESS`
-> +  On success
-> diff --git a/doc/opal-api/opal-slw-set-reg-100.rst b/doc/opal-api/opal-slw-set-reg-100.rst
-> index 2e8f1bd6..ee3e68ce 100644
-> --- a/doc/opal-api/opal-slw-set-reg-100.rst
-> +++ b/doc/opal-api/opal-slw-set-reg-100.rst
-> @@ -21,6 +21,11 @@ In Power 9, it uses p9_stop_save_cpureg(), api provided by self restore code,
->  to inform the spr with their corresponding values with which they
->  must be restored.
-> 
-> +An OPAL call `OPAL_SLW_SELF_SAVE_REG` exists which is similar in function
-> +saving and restoring the SPR, with one difference being that the value of the
-> +SPR doesn't need to be passed in the parameters, only with the SPR number
-> +the firmware can identify, save and restore the values for the same.
-> +Complete reference: doc/opal-api/opal-slw-self-save-reg-181.rst
-> 
->  Parameters
->  ----------
-> diff --git a/doc/power-management.rst b/doc/power-management.rst
-> index 76491a71..992a18d0 100644
-> --- a/doc/power-management.rst
-> +++ b/doc/power-management.rst
-> @@ -15,3 +15,47 @@ On boot, specific stop states can be disabled via setting a mask. For example,
->  to disable all but stop 0,1,2, use ~0xE0000000. ::
-> 
->    nvram -p ibm,skiboot --update-config opal-stop-state-disable-mask=0x1FFFFFFF
-> +
-> +Saving and restoring Special Purpose Registers(SPRs)
-> +----------------------------------------------------
-> +
-> +When a CPU wakes up from a deep stop state which can result in
-> +hypervisor state loss, all the SPRs are lost. The Linux Kernel expects
-> +a small set of SPRs to contain an expected value when the CPU wakes up
-> +from such a deep stop state. The microcode firmware provides the
-> +following two APIs, collectively known as the stop-APIs, to allow the
-> +kernel/OPAL to specify this set of SPRs and the value that they need
-> +to be restored with on waking up from a deep stop state.
-> +
-> +Self-restore:
-> +int64_t opal_slw_set_reg(uint64_t cpu_pir, uint64_t sprn, uint64_t val);
-> +The SPR number and the value of the that SPR must be restored with on
-> +wakeup from the deep-stop state must be specified. When this call is
-> +made, the microcode inserts instruction into the HOMER region to
-> +restore the content of the SPR to the specified value on wakeup from a
-> +deep-stop state. These instructions are executed by the CPU as soon as
-> +it wakes up from a deep stop state. The call is to be made once per
-> +SPR.
-> +
-> +Self-Save:
-> +int64_t opal_slw_self_save_reg(uint64_t cpu_pir, uint64_t sprn);
-> +Only the SPR number needs to be specified. When this call is made, the
-> +microcode inserts instructions into the HOMER region to save the
-> +current value of the SPR before the CPU goes to a deep stop state, and
-> +restores the value back when the CPU wakes up from a deep stop state.
-> +These instructions are correspondingly executed just before and after
-> +the CPU goes/comes out of a deep stop state. This call can be made
-> +once per SPR.
-> +
-> +The key difference between self-save and self-restore is the
-> +use-case. If the Kernel expects the SPR to contain a particular value
-> +on waking up from a deep-stop state, that wasn't the value of that SPR
-> +before entering deep stop-state, then self-restore is preferable.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Reviewed-by: Arnd Bergmann <arnd@arndb.de>
+Reviewed-by: Jeremy Kerr <jk@ozlabs.org>
+---
+ arch/powerpc/platforms/cell/spufs/coredump.c |  87 ++----
+ arch/powerpc/platforms/cell/spufs/file.c     | 273 ++++++++++---------
+ arch/powerpc/platforms/cell/spufs/spufs.h    |   3 +-
+ 3 files changed, 170 insertions(+), 193 deletions(-)
 
+diff --git a/arch/powerpc/platforms/cell/spufs/coredump.c b/arch/powerpc/platforms/cell/spufs/coredump.c
+index 8b3296b62f65..3b75e8f60609 100644
+--- a/arch/powerpc/platforms/cell/spufs/coredump.c
++++ b/arch/powerpc/platforms/cell/spufs/coredump.c
+@@ -21,22 +21,6 @@
+ 
+ #include "spufs.h"
+ 
+-static ssize_t do_coredump_read(int num, struct spu_context *ctx, void *buffer,
+-				size_t size, loff_t *off)
+-{
+-	u64 data;
+-	int ret;
+-
+-	if (spufs_coredump_read[num].read)
+-		return spufs_coredump_read[num].read(ctx, buffer, size, off);
+-
+-	data = spufs_coredump_read[num].get(ctx);
+-	ret = snprintf(buffer, size, "0x%.16llx", data);
+-	if (ret >= size)
+-		return size;
+-	return ++ret; /* count trailing NULL */
+-}
+-
+ static int spufs_ctx_note_size(struct spu_context *ctx, int dfd)
+ {
+ 	int i, sz, total = 0;
+@@ -118,58 +102,43 @@ int spufs_coredump_extra_notes_size(void)
+ static int spufs_arch_write_note(struct spu_context *ctx, int i,
+ 				  struct coredump_params *cprm, int dfd)
+ {
+-	loff_t pos = 0;
+-	int sz, rc, total = 0;
+-	const int bufsz = PAGE_SIZE;
+-	char *name;
+-	char fullname[80], *buf;
++	size_t sz = spufs_coredump_read[i].size;
++	char fullname[80];
+ 	struct elf_note en;
+-	size_t skip;
+-
+-	buf = (void *)get_zeroed_page(GFP_KERNEL);
+-	if (!buf)
+-		return -ENOMEM;
++	size_t ret;
+ 
+-	name = spufs_coredump_read[i].name;
+-	sz = spufs_coredump_read[i].size;
+-
+-	sprintf(fullname, "SPU/%d/%s", dfd, name);
++	sprintf(fullname, "SPU/%d/%s", dfd, spufs_coredump_read[i].name);
+ 	en.n_namesz = strlen(fullname) + 1;
+ 	en.n_descsz = sz;
+ 	en.n_type = NT_SPU;
+ 
+ 	if (!dump_emit(cprm, &en, sizeof(en)))
+-		goto Eio;
+-
++		return -EIO;
+ 	if (!dump_emit(cprm, fullname, en.n_namesz))
+-		goto Eio;
+-
++		return -EIO;
+ 	if (!dump_align(cprm, 4))
+-		goto Eio;
+-
+-	do {
+-		rc = do_coredump_read(i, ctx, buf, bufsz, &pos);
+-		if (rc > 0) {
+-			if (!dump_emit(cprm, buf, rc))
+-				goto Eio;
+-			total += rc;
+-		}
+-	} while (rc == bufsz && total < sz);
+-
+-	if (rc < 0)
+-		goto out;
+-
+-	skip = roundup(cprm->pos - total + sz, 4) - cprm->pos;
+-	if (!dump_skip(cprm, skip))
+-		goto Eio;
+-
+-	rc = 0;
+-out:
+-	free_page((unsigned long)buf);
+-	return rc;
+-Eio:
+-	free_page((unsigned long)buf);
+-	return -EIO;
++		return -EIO;
++
++	if (spufs_coredump_read[i].dump) {
++		ret = spufs_coredump_read[i].dump(ctx, cprm);
++		if (ret < 0)
++			return ret;
++	} else {
++		char buf[32];
++
++		ret = snprintf(buf, sizeof(buf), "0x%.16llx",
++			       spufs_coredump_read[i].get(ctx));
++		if (ret >= sizeof(buf))
++			return sizeof(buf);
++
++		/* count trailing the NULL: */
++		if (!dump_emit(cprm, buf, ret + 1))
++			return -EIO;
++	}
++
++	if (!dump_skip(cprm, roundup(cprm->pos - ret + sz, 4) - cprm->pos))
++		return -EIO;
++	return 0;
+ }
+ 
+ int spufs_coredump_extra_notes_write(struct coredump_params *cprm)
+diff --git a/arch/powerpc/platforms/cell/spufs/file.c b/arch/powerpc/platforms/cell/spufs/file.c
+index c0f950a3f4e1..0f8c3d692af0 100644
+--- a/arch/powerpc/platforms/cell/spufs/file.c
++++ b/arch/powerpc/platforms/cell/spufs/file.c
+@@ -9,6 +9,7 @@
+ 
+ #undef DEBUG
+ 
++#include <linux/coredump.h>
+ #include <linux/fs.h>
+ #include <linux/ioctl.h>
+ #include <linux/export.h>
+@@ -129,6 +130,14 @@ static ssize_t spufs_attr_write(struct file *file, const char __user *buf,
+ 	return ret;
+ }
+ 
++static ssize_t spufs_dump_emit(struct coredump_params *cprm, void *buf,
++		size_t size)
++{
++	if (!dump_emit(cprm, buf, size))
++		return -EIO;
++	return size;
++}
++
+ #define DEFINE_SPUFS_SIMPLE_ATTRIBUTE(__fops, __get, __set, __fmt)	\
+ static int __fops ## _open(struct inode *inode, struct file *file)	\
+ {									\
+@@ -172,12 +181,9 @@ spufs_mem_release(struct inode *inode, struct file *file)
+ }
+ 
+ static ssize_t
+-__spufs_mem_read(struct spu_context *ctx, char __user *buffer,
+-			size_t size, loff_t *pos)
++spufs_mem_dump(struct spu_context *ctx, struct coredump_params *cprm)
+ {
+-	char *local_store = ctx->ops->get_ls(ctx);
+-	return simple_read_from_buffer(buffer, size, pos, local_store,
+-					LS_SIZE);
++	return spufs_dump_emit(cprm, ctx->ops->get_ls(ctx), LS_SIZE);
+ }
+ 
+ static ssize_t
+@@ -190,7 +196,8 @@ spufs_mem_read(struct file *file, char __user *buffer,
+ 	ret = spu_acquire(ctx);
+ 	if (ret)
+ 		return ret;
+-	ret = __spufs_mem_read(ctx, buffer, size, pos);
++	ret = simple_read_from_buffer(buffer, size, pos, ctx->ops->get_ls(ctx),
++				      LS_SIZE);
+ 	spu_release(ctx);
+ 
+ 	return ret;
+@@ -459,12 +466,10 @@ spufs_regs_open(struct inode *inode, struct file *file)
+ }
+ 
+ static ssize_t
+-__spufs_regs_read(struct spu_context *ctx, char __user *buffer,
+-			size_t size, loff_t *pos)
++spufs_regs_dump(struct spu_context *ctx, struct coredump_params *cprm)
+ {
+-	struct spu_lscsa *lscsa = ctx->csa.lscsa;
+-	return simple_read_from_buffer(buffer, size, pos,
+-				      lscsa->gprs, sizeof lscsa->gprs);
++	return spufs_dump_emit(cprm, ctx->csa.lscsa->gprs,
++			       sizeof(ctx->csa.lscsa->gprs));
+ }
+ 
+ static ssize_t
+@@ -482,7 +487,8 @@ spufs_regs_read(struct file *file, char __user *buffer,
+ 	ret = spu_acquire_saved(ctx);
+ 	if (ret)
+ 		return ret;
+-	ret = __spufs_regs_read(ctx, buffer, size, pos);
++	ret = simple_read_from_buffer(buffer, size, pos, ctx->csa.lscsa->gprs,
++				      sizeof(ctx->csa.lscsa->gprs));
+ 	spu_release_saved(ctx);
+ 	return ret;
+ }
+@@ -517,12 +523,10 @@ static const struct file_operations spufs_regs_fops = {
+ };
+ 
+ static ssize_t
+-__spufs_fpcr_read(struct spu_context *ctx, char __user * buffer,
+-			size_t size, loff_t * pos)
++spufs_fpcr_dump(struct spu_context *ctx, struct coredump_params *cprm)
+ {
+-	struct spu_lscsa *lscsa = ctx->csa.lscsa;
+-	return simple_read_from_buffer(buffer, size, pos,
+-				      &lscsa->fpcr, sizeof(lscsa->fpcr));
++	return spufs_dump_emit(cprm, &ctx->csa.lscsa->fpcr,
++			       sizeof(ctx->csa.lscsa->fpcr));
+ }
+ 
+ static ssize_t
+@@ -535,7 +539,8 @@ spufs_fpcr_read(struct file *file, char __user * buffer,
+ 	ret = spu_acquire_saved(ctx);
+ 	if (ret)
+ 		return ret;
+-	ret = __spufs_fpcr_read(ctx, buffer, size, pos);
++	ret = simple_read_from_buffer(buffer, size, pos, &ctx->csa.lscsa->fpcr,
++				      sizeof(ctx->csa.lscsa->fpcr));
+ 	spu_release_saved(ctx);
+ 	return ret;
+ }
+@@ -967,28 +972,26 @@ spufs_signal1_release(struct inode *inode, struct file *file)
+ 	return 0;
+ }
+ 
+-static ssize_t __spufs_signal1_read(struct spu_context *ctx, char __user *buf,
+-			size_t len, loff_t *pos)
++static ssize_t spufs_signal1_dump(struct spu_context *ctx,
++		struct coredump_params *cprm)
+ {
+-	int ret = 0;
+-	u32 data;
++	if (!ctx->csa.spu_chnlcnt_RW[3])
++		return 0;
++	return spufs_dump_emit(cprm, &ctx->csa.spu_chnldata_RW[3],
++			       sizeof(ctx->csa.spu_chnldata_RW[3]));
++}
+ 
+-	if (len < 4)
++static ssize_t __spufs_signal1_read(struct spu_context *ctx, char __user *buf,
++			size_t len)
++{
++	if (len < sizeof(ctx->csa.spu_chnldata_RW[3]))
+ 		return -EINVAL;
+-
+-	if (ctx->csa.spu_chnlcnt_RW[3]) {
+-		data = ctx->csa.spu_chnldata_RW[3];
+-		ret = 4;
+-	}
+-
+-	if (!ret)
+-		goto out;
+-
+-	if (copy_to_user(buf, &data, 4))
++	if (!ctx->csa.spu_chnlcnt_RW[3])
++		return 0;
++	if (copy_to_user(buf, &ctx->csa.spu_chnldata_RW[3],
++			 sizeof(ctx->csa.spu_chnldata_RW[3])))
+ 		return -EFAULT;
+-
+-out:
+-	return ret;
++	return sizeof(ctx->csa.spu_chnldata_RW[3]);
+ }
+ 
+ static ssize_t spufs_signal1_read(struct file *file, char __user *buf,
+@@ -1000,7 +1003,7 @@ static ssize_t spufs_signal1_read(struct file *file, char __user *buf,
+ 	ret = spu_acquire_saved(ctx);
+ 	if (ret)
+ 		return ret;
+-	ret = __spufs_signal1_read(ctx, buf, len, pos);
++	ret = __spufs_signal1_read(ctx, buf, len);
+ 	spu_release_saved(ctx);
+ 
+ 	return ret;
+@@ -1104,28 +1107,26 @@ spufs_signal2_release(struct inode *inode, struct file *file)
+ 	return 0;
+ }
+ 
+-static ssize_t __spufs_signal2_read(struct spu_context *ctx, char __user *buf,
+-			size_t len, loff_t *pos)
++static ssize_t spufs_signal2_dump(struct spu_context *ctx,
++		struct coredump_params *cprm)
+ {
+-	int ret = 0;
+-	u32 data;
++	if (!ctx->csa.spu_chnlcnt_RW[4])
++		return 0;
++	return spufs_dump_emit(cprm, &ctx->csa.spu_chnldata_RW[4],
++			       sizeof(ctx->csa.spu_chnldata_RW[4]));
++}
+ 
+-	if (len < 4)
++static ssize_t __spufs_signal2_read(struct spu_context *ctx, char __user *buf,
++			size_t len)
++{
++	if (len < sizeof(ctx->csa.spu_chnldata_RW[4]))
+ 		return -EINVAL;
+-
+-	if (ctx->csa.spu_chnlcnt_RW[4]) {
+-		data =  ctx->csa.spu_chnldata_RW[4];
+-		ret = 4;
+-	}
+-
+-	if (!ret)
+-		goto out;
+-
+-	if (copy_to_user(buf, &data, 4))
++	if (!ctx->csa.spu_chnlcnt_RW[4])
++		return 0;
++	if (copy_to_user(buf, &ctx->csa.spu_chnldata_RW[4],
++			 sizeof(ctx->csa.spu_chnldata_RW[4])))
+ 		return -EFAULT;
+-
+-out:
+-	return ret;
++	return sizeof(ctx->csa.spu_chnldata_RW[4]);
+ }
+ 
+ static ssize_t spufs_signal2_read(struct file *file, char __user *buf,
+@@ -1137,7 +1138,7 @@ static ssize_t spufs_signal2_read(struct file *file, char __user *buf,
+ 	ret = spu_acquire_saved(ctx);
+ 	if (ret)
+ 		return ret;
+-	ret = __spufs_signal2_read(ctx, buf, len, pos);
++	ret = __spufs_signal2_read(ctx, buf, len);
+ 	spu_release_saved(ctx);
+ 
+ 	return ret;
+@@ -1961,18 +1962,13 @@ static const struct file_operations spufs_caps_fops = {
+ 	.release	= single_release,
+ };
+ 
+-static ssize_t __spufs_mbox_info_read(struct spu_context *ctx,
+-			char __user *buf, size_t len, loff_t *pos)
++static ssize_t spufs_mbox_info_dump(struct spu_context *ctx,
++		struct coredump_params *cprm)
+ {
+-	u32 data;
+-
+-	/* EOF if there's no entry in the mbox */
+ 	if (!(ctx->csa.prob.mb_stat_R & 0x0000ff))
+ 		return 0;
+-
+-	data = ctx->csa.prob.pu_mb_R;
+-
+-	return simple_read_from_buffer(buf, len, pos, &data, sizeof data);
++	return spufs_dump_emit(cprm, &ctx->csa.prob.pu_mb_R,
++			       sizeof(ctx->csa.prob.pu_mb_R));
+ }
+ 
+ static ssize_t spufs_mbox_info_read(struct file *file, char __user *buf,
+@@ -1988,7 +1984,12 @@ static ssize_t spufs_mbox_info_read(struct file *file, char __user *buf,
+ 	if (ret)
+ 		return ret;
+ 	spin_lock(&ctx->csa.register_lock);
+-	ret = __spufs_mbox_info_read(ctx, buf, len, pos);
++	/* EOF if there's no entry in the mbox */
++	if (ctx->csa.prob.mb_stat_R & 0x0000ff) {
++		ret = simple_read_from_buffer(buf, len, pos,
++				&ctx->csa.prob.pu_mb_R,
++				sizeof(ctx->csa.prob.pu_mb_R));
++	}
+ 	spin_unlock(&ctx->csa.register_lock);
+ 	spu_release_saved(ctx);
+ 
+@@ -2001,18 +2002,13 @@ static const struct file_operations spufs_mbox_info_fops = {
+ 	.llseek  = generic_file_llseek,
+ };
+ 
+-static ssize_t __spufs_ibox_info_read(struct spu_context *ctx,
+-				char __user *buf, size_t len, loff_t *pos)
++static ssize_t spufs_ibox_info_dump(struct spu_context *ctx,
++		struct coredump_params *cprm)
+ {
+-	u32 data;
+-
+-	/* EOF if there's no entry in the ibox */
+ 	if (!(ctx->csa.prob.mb_stat_R & 0xff0000))
+ 		return 0;
+-
+-	data = ctx->csa.priv2.puint_mb_R;
+-
+-	return simple_read_from_buffer(buf, len, pos, &data, sizeof data);
++	return spufs_dump_emit(cprm, &ctx->csa.priv2.puint_mb_R,
++			       sizeof(ctx->csa.priv2.puint_mb_R));
+ }
+ 
+ static ssize_t spufs_ibox_info_read(struct file *file, char __user *buf,
+@@ -2028,7 +2024,12 @@ static ssize_t spufs_ibox_info_read(struct file *file, char __user *buf,
+ 	if (ret)
+ 		return ret;
+ 	spin_lock(&ctx->csa.register_lock);
+-	ret = __spufs_ibox_info_read(ctx, buf, len, pos);
++	/* EOF if there's no entry in the ibox */
++	if (ctx->csa.prob.mb_stat_R & 0xff0000) {
++		ret = simple_read_from_buffer(buf, len, pos,
++				&ctx->csa.priv2.puint_mb_R,
++				sizeof(ctx->csa.priv2.puint_mb_R));
++	}
+ 	spin_unlock(&ctx->csa.register_lock);
+ 	spu_release_saved(ctx);
+ 
+@@ -2041,21 +2042,16 @@ static const struct file_operations spufs_ibox_info_fops = {
+ 	.llseek  = generic_file_llseek,
+ };
+ 
+-static ssize_t __spufs_wbox_info_read(struct spu_context *ctx,
+-			char __user *buf, size_t len, loff_t *pos)
++static size_t spufs_wbox_info_cnt(struct spu_context *ctx)
+ {
+-	int i, cnt;
+-	u32 data[4];
+-	u32 wbox_stat;
+-
+-	wbox_stat = ctx->csa.prob.mb_stat_R;
+-	cnt = 4 - ((wbox_stat & 0x00ff00) >> 8);
+-	for (i = 0; i < cnt; i++) {
+-		data[i] = ctx->csa.spu_mailbox_data[i];
+-	}
++	return (4 - ((ctx->csa.prob.mb_stat_R & 0x00ff00) >> 8)) * sizeof(u32);
++}
+ 
+-	return simple_read_from_buffer(buf, len, pos, &data,
+-				cnt * sizeof(u32));
++static ssize_t spufs_wbox_info_dump(struct spu_context *ctx,
++		struct coredump_params *cprm)
++{
++	return spufs_dump_emit(cprm, &ctx->csa.spu_mailbox_data,
++			spufs_wbox_info_cnt(ctx));
+ }
+ 
+ static ssize_t spufs_wbox_info_read(struct file *file, char __user *buf,
+@@ -2071,7 +2067,8 @@ static ssize_t spufs_wbox_info_read(struct file *file, char __user *buf,
+ 	if (ret)
+ 		return ret;
+ 	spin_lock(&ctx->csa.register_lock);
+-	ret = __spufs_wbox_info_read(ctx, buf, len, pos);
++	ret = simple_read_from_buffer(buf, len, pos, &ctx->csa.spu_mailbox_data,
++				      spufs_wbox_info_cnt(ctx));
+ 	spin_unlock(&ctx->csa.register_lock);
+ 	spu_release_saved(ctx);
+ 
+@@ -2084,36 +2081,42 @@ static const struct file_operations spufs_wbox_info_fops = {
+ 	.llseek  = generic_file_llseek,
+ };
+ 
+-static ssize_t __spufs_dma_info_read(struct spu_context *ctx,
+-			char __user *buf, size_t len, loff_t *pos)
++static void __spufs_dma_info_read(struct spu_context *ctx,
++		struct spu_dma_info *info)
+ {
+-	struct spu_dma_info info;
+-	struct mfc_cq_sr *qp, *spuqp;
+ 	int i;
+ 
+-	info.dma_info_type = ctx->csa.priv2.spu_tag_status_query_RW;
+-	info.dma_info_mask = ctx->csa.lscsa->tag_mask.slot[0];
+-	info.dma_info_status = ctx->csa.spu_chnldata_RW[24];
+-	info.dma_info_stall_and_notify = ctx->csa.spu_chnldata_RW[25];
+-	info.dma_info_atomic_command_status = ctx->csa.spu_chnldata_RW[27];
++	info->dma_info_type = ctx->csa.priv2.spu_tag_status_query_RW;
++	info->dma_info_mask = ctx->csa.lscsa->tag_mask.slot[0];
++	info->dma_info_status = ctx->csa.spu_chnldata_RW[24];
++	info->dma_info_stall_and_notify = ctx->csa.spu_chnldata_RW[25];
++	info->dma_info_atomic_command_status = ctx->csa.spu_chnldata_RW[27];
++
+ 	for (i = 0; i < 16; i++) {
+-		qp = &info.dma_info_command_data[i];
+-		spuqp = &ctx->csa.priv2.spuq[i];
++		struct mfc_cq_sr *qp = &info->dma_info_command_data[i];
++		struct mfc_cq_sr *spuqp = &ctx->csa.priv2.spuq[i];
+ 
+ 		qp->mfc_cq_data0_RW = spuqp->mfc_cq_data0_RW;
+ 		qp->mfc_cq_data1_RW = spuqp->mfc_cq_data1_RW;
+ 		qp->mfc_cq_data2_RW = spuqp->mfc_cq_data2_RW;
+ 		qp->mfc_cq_data3_RW = spuqp->mfc_cq_data3_RW;
+ 	}
++}
++
++static ssize_t spufs_dma_info_dump(struct spu_context *ctx,
++		struct coredump_params *cprm)
++{
++	struct spu_dma_info info;
+ 
+-	return simple_read_from_buffer(buf, len, pos, &info,
+-				sizeof info);
++	__spufs_dma_info_read(ctx, &info);
++	return spufs_dump_emit(cprm, &info, sizeof(info));
+ }
+ 
+ static ssize_t spufs_dma_info_read(struct file *file, char __user *buf,
+ 			      size_t len, loff_t *pos)
+ {
+ 	struct spu_context *ctx = file->private_data;
++	struct spu_dma_info info;
+ 	int ret;
+ 
+ 	if (!access_ok(buf, len))
+@@ -2123,7 +2126,8 @@ static ssize_t spufs_dma_info_read(struct file *file, char __user *buf,
+ 	if (ret)
+ 		return ret;
+ 	spin_lock(&ctx->csa.register_lock);
+-	ret = __spufs_dma_info_read(ctx, buf, len, pos);
++	__spufs_dma_info_read(ctx, &info);
++	ret = simple_read_from_buffer(buf, len, pos, &info, sizeof(info));
+ 	spin_unlock(&ctx->csa.register_lock);
+ 	spu_release_saved(ctx);
+ 
+@@ -2136,48 +2140,53 @@ static const struct file_operations spufs_dma_info_fops = {
+ 	.llseek = no_llseek,
+ };
+ 
+-static ssize_t __spufs_proxydma_info_read(struct spu_context *ctx,
+-			char __user *buf, size_t len, loff_t *pos)
++static void __spufs_proxydma_info_read(struct spu_context *ctx,
++	struct spu_proxydma_info *info)
+ {
+-	struct spu_proxydma_info info;
+-	struct mfc_cq_sr *qp, *puqp;
+-	int ret = sizeof info;
+ 	int i;
+ 
+-	if (len < ret)
+-		return -EINVAL;
+-
+-	if (!access_ok(buf, len))
+-		return -EFAULT;
++	info->proxydma_info_type = ctx->csa.prob.dma_querytype_RW;
++	info->proxydma_info_mask = ctx->csa.prob.dma_querymask_RW;
++	info->proxydma_info_status = ctx->csa.prob.dma_tagstatus_R;
+ 
+-	info.proxydma_info_type = ctx->csa.prob.dma_querytype_RW;
+-	info.proxydma_info_mask = ctx->csa.prob.dma_querymask_RW;
+-	info.proxydma_info_status = ctx->csa.prob.dma_tagstatus_R;
+ 	for (i = 0; i < 8; i++) {
+-		qp = &info.proxydma_info_command_data[i];
+-		puqp = &ctx->csa.priv2.puq[i];
++		struct mfc_cq_sr *qp = &info->proxydma_info_command_data[i];
++		struct mfc_cq_sr *puqp = &ctx->csa.priv2.puq[i];
+ 
+ 		qp->mfc_cq_data0_RW = puqp->mfc_cq_data0_RW;
+ 		qp->mfc_cq_data1_RW = puqp->mfc_cq_data1_RW;
+ 		qp->mfc_cq_data2_RW = puqp->mfc_cq_data2_RW;
+ 		qp->mfc_cq_data3_RW = puqp->mfc_cq_data3_RW;
+ 	}
++}
++
++static ssize_t spufs_proxydma_info_dump(struct spu_context *ctx,
++		struct coredump_params *cprm)
++{
++	struct spu_proxydma_info info;
+ 
+-	return simple_read_from_buffer(buf, len, pos, &info,
+-				sizeof info);
++	__spufs_proxydma_info_read(ctx, &info);
++	return spufs_dump_emit(cprm, &info, sizeof(info));
+ }
+ 
+ static ssize_t spufs_proxydma_info_read(struct file *file, char __user *buf,
+ 				   size_t len, loff_t *pos)
+ {
+ 	struct spu_context *ctx = file->private_data;
++	struct spu_proxydma_info info;
+ 	int ret;
+ 
++	if (len < sizeof(info))
++		return -EINVAL;
++	if (!access_ok(buf, len))
++		return -EFAULT;
++
+ 	ret = spu_acquire_saved(ctx);
+ 	if (ret)
+ 		return ret;
+ 	spin_lock(&ctx->csa.register_lock);
+-	ret = __spufs_proxydma_info_read(ctx, buf, len, pos);
++	__spufs_proxydma_info_read(ctx, &info);
++	ret = simple_read_from_buffer(buf, len, pos, &info, sizeof(info));
+ 	spin_unlock(&ctx->csa.register_lock);
+ 	spu_release_saved(ctx);
+ 
+@@ -2625,23 +2634,23 @@ const struct spufs_tree_descr spufs_dir_debug_contents[] = {
+ };
+ 
+ const struct spufs_coredump_reader spufs_coredump_read[] = {
+-	{ "regs", __spufs_regs_read, NULL, sizeof(struct spu_reg128[128])},
+-	{ "fpcr", __spufs_fpcr_read, NULL, sizeof(struct spu_reg128) },
++	{ "regs", spufs_regs_dump, NULL, sizeof(struct spu_reg128[128])},
++	{ "fpcr", spufs_fpcr_dump, NULL, sizeof(struct spu_reg128) },
+ 	{ "lslr", NULL, spufs_lslr_get, 19 },
+ 	{ "decr", NULL, spufs_decr_get, 19 },
+ 	{ "decr_status", NULL, spufs_decr_status_get, 19 },
+-	{ "mem", __spufs_mem_read, NULL, LS_SIZE, },
+-	{ "signal1", __spufs_signal1_read, NULL, sizeof(u32) },
++	{ "mem", spufs_mem_dump, NULL, LS_SIZE, },
++	{ "signal1", spufs_signal1_dump, NULL, sizeof(u32) },
+ 	{ "signal1_type", NULL, spufs_signal1_type_get, 19 },
+-	{ "signal2", __spufs_signal2_read, NULL, sizeof(u32) },
++	{ "signal2", spufs_signal2_dump, NULL, sizeof(u32) },
+ 	{ "signal2_type", NULL, spufs_signal2_type_get, 19 },
+ 	{ "event_mask", NULL, spufs_event_mask_get, 19 },
+ 	{ "event_status", NULL, spufs_event_status_get, 19 },
+-	{ "mbox_info", __spufs_mbox_info_read, NULL, sizeof(u32) },
+-	{ "ibox_info", __spufs_ibox_info_read, NULL, sizeof(u32) },
+-	{ "wbox_info", __spufs_wbox_info_read, NULL, 4 * sizeof(u32)},
+-	{ "dma_info", __spufs_dma_info_read, NULL, sizeof(struct spu_dma_info)},
+-	{ "proxydma_info", __spufs_proxydma_info_read,
++	{ "mbox_info", spufs_mbox_info_dump, NULL, sizeof(u32) },
++	{ "ibox_info", spufs_ibox_info_dump, NULL, sizeof(u32) },
++	{ "wbox_info", spufs_wbox_info_dump, NULL, 4 * sizeof(u32)},
++	{ "dma_info", spufs_dma_info_dump, NULL, sizeof(struct spu_dma_info)},
++	{ "proxydma_info", spufs_proxydma_info_dump,
+ 			   NULL, sizeof(struct spu_proxydma_info)},
+ 	{ "object-id", NULL, spufs_object_id_get, 19 },
+ 	{ "npc", NULL, spufs_npc_get, 19 },
+diff --git a/arch/powerpc/platforms/cell/spufs/spufs.h b/arch/powerpc/platforms/cell/spufs/spufs.h
+index 413c89afe112..1ba4d884febf 100644
+--- a/arch/powerpc/platforms/cell/spufs/spufs.h
++++ b/arch/powerpc/platforms/cell/spufs/spufs.h
+@@ -337,8 +337,7 @@ void spufs_dma_callback(struct spu *spu, int type);
+ extern struct spu_coredump_calls spufs_coredump_calls;
+ struct spufs_coredump_reader {
+ 	char *name;
+-	ssize_t (*read)(struct spu_context *ctx,
+-			char __user *buffer, size_t size, loff_t *pos);
++	ssize_t (*dump)(struct spu_context *ctx, struct coredump_params *cprm);
+ 	u64 (*get)(struct spu_context *ctx);
+ 	size_t size;
+ };
+-- 
+2.25.1
 
-Not just when the value during wakeup is different, but even when the
-value of an SPR doesn't change across the lifetime of a kernel,
-self-restore is preferable.
-
-> +When deep stop states are to be supported in an Ultravisor
-> +environment, since HOMER is in a secure region, the stop-api cannot
-> +update the HOMER if invoked from a context when the OPAL/Kernel is
-> +executing without the ultravisor privilege. In this scenario, at the
-> +time of early OPAL boot, while OPAL has ultravisor privileges, it can
-> +make the self-save stop-api call for all the supported SPRs, so that
-> +the microcode in the HOMER will always save and restore all the
-> +supported SPRs during entry/exit from a deep stop state.
-> diff --git a/hw/slw.c b/hw/slw.c
-> index beb129a8..6a09cc2c 100644
-> --- a/hw/slw.c
-> +++ b/hw/slw.c
-> @@ -35,6 +35,43 @@ static bool slw_current_le = false;
->  enum wakeup_engine_states wakeup_engine_state = WAKEUP_ENGINE_NOT_PRESENT;
->  bool has_deep_states = false;
-> 
-> +/**
-> + * The struct and SPR list is partially consistent with libpore/p9_stop_api.c
-> + */
-> +/**
-> + * @brief summarizes attributes associated with a SPR register.
-> + */
-> +typedef struct
-> +{
-> +    uint32_t iv_sprId;
-> +    bool     iv_isThreadScope;
-> +    uint32_t iv_saveMaskPos;
-> +
-> +} StopSprReg_t;
-> +
-> +/**
-> + * @brief a true in the table below means register is of scope thread
-> + * whereas a false meanse register is of scope core.
-> + * The number is the bit position on a uint32_t mask
-> + */
-> +
-> +static const StopSprReg_t g_sprRegister[] =
-> +{
-> +	{ P9_STOP_SPR_DAWR,      true,  1   },
-> +	{ P9_STOP_SPR_HSPRG0,    true,  3   },
-> +	{ P9_STOP_SPR_LDBAR,     true,  4,  },
-> +	{ P9_STOP_SPR_LPCR,      true,  5   },
-> +	{ P9_STOP_SPR_PSSCR,     true,  6   },
-> +	{ P9_STOP_SPR_MSR,       true,  7   },
-> +	{ P9_STOP_SPR_HRMOR,     false, 255 },
-> +	{ P9_STOP_SPR_HID,       false, 21  },
-> +	{ P9_STOP_SPR_HMEER,     false, 22  },
-> +	{ P9_STOP_SPR_PMCR,      false, 23  },
-> +	{ P9_STOP_SPR_PTCR,      false, 24  },
-> +};
-> +
-> +static const uint32_t MAX_SPR_SUPPORTED	= ARRAY_SIZE(g_sprRegister);
-> +
->  DEFINE_LOG_ENTRY(OPAL_RC_SLW_INIT, OPAL_PLATFORM_ERR_EVT, OPAL_SLW,
->  		 OPAL_PLATFORM_FIRMWARE, OPAL_PREDICTIVE_ERR_GENERAL,
->  		 OPAL_NA);
-> @@ -1446,6 +1483,58 @@ int64_t opal_slw_set_reg(uint64_t cpu_pir, uint64_t sprn, uint64_t val)
-> 
->  opal_call(OPAL_SLW_SET_REG, opal_slw_set_reg, 3);
-> 
-> +int64_t opal_slw_self_save_reg(uint64_t cpu_pir, uint64_t sprn)
-> +{
-> +	struct cpu_thread * c = find_cpu_by_pir(cpu_pir);
-> +	uint32_t save_reg_vector = 0;
-> +	struct proc_chip * chip;
-> +	int rc;
-> +	int index;
-> +
-> +	if (!c) {
-> +		prlog(PR_DEBUG, "SLW: Unknown thread with pir %x\n",
-> +		      (u32) cpu_pir);
-> +		return OPAL_PARAMETER;
-> +	}
-> +
-> +	chip = get_chip(c->chip_id);
-> +	if (!chip) {
-> +		prlog(PR_DEBUG, "SLW: Unknown chip for thread with pir %x\n",
-> +		      (u32) cpu_pir);
-> +		return OPAL_PARAMETER;
-> +	}
-> +	if (proc_gen != proc_gen_p9 || !has_deep_states) {
-> +		prlog(PR_DEBUG, "SLW: Does not support deep states\n");
-
-The log should say "Self-save feature unsupported" in this case, no ?
-
-
-> +		return OPAL_UNSUPPORTED;
-> +	}
-> +	if (wakeup_engine_state != WAKEUP_ENGINE_PRESENT) {
-> +		log_simple_error(&e_info(OPAL_RC_SLW_REG),
-> +			"SLW: wakeup_engine in bad state=%d chip=%x\n",
-> +			wakeup_engine_state, chip->id);
-> +		return OPAL_INTERNAL_ERROR;
-> +	}
-> +	for (index = 0; index < MAX_SPR_SUPPORTED; ++index) {
-> +		if (sprn == (CpuReg_t) g_sprRegister[index].iv_sprId) {
-> +			save_reg_vector = PPC_BIT32(
-> +				g_sprRegister[index].iv_saveMaskPos);
-> +			break;
-> +		}
-> +	}
-> +	if (save_reg_vector == 0)
-> +		return OPAL_INTERNAL_ERROR;
-> +	rc = p9_stop_save_cpureg_control((void *) chip->homer_base,
-> +						cpu_pir, save_reg_vector);
-> +
-> +	if (rc) {
-> +		log_simple_error(&e_info(OPAL_RC_SLW_REG),
-> +			"SLW: Failed to save vector %x for CPU %x\n",
-> +			save_reg_vector, c->pir);
-> +		return OPAL_INTERNAL_ERROR;
-> +	}
-> +	return OPAL_SUCCESS;
-> +}
-> +opal_call(OPAL_SLW_SELF_SAVE_REG, opal_slw_self_save_reg, 2);
-> +
->  void slw_init(void)
->  {
->  	struct proc_chip *chip;
-> diff --git a/include/opal-api.h b/include/opal-api.h
-> index e90cab1e..1607a89b 100644
-> --- a/include/opal-api.h
-> +++ b/include/opal-api.h
-> @@ -227,7 +227,8 @@
->  #define OPAL_SECVAR_ENQUEUE_UPDATE		178
->  #define OPAL_PHB_SET_OPTION			179
->  #define OPAL_PHB_GET_OPTION			180
-> -#define OPAL_LAST				180
-> +#define OPAL_SLW_SELF_SAVE_REG			181
-> +#define OPAL_LAST				181
-> 
->  #define QUIESCE_HOLD			1 /* Spin all calls at entry */
->  #define QUIESCE_REJECT			2 /* Fail all calls with OPAL_BUSY */
-> diff --git a/include/p9_stop_api.H b/include/p9_stop_api.H
-> index 9d3bc1e5..c304f70f 100644
-> --- a/include/p9_stop_api.H
-> +++ b/include/p9_stop_api.H
-> @@ -34,6 +34,8 @@
->  ///
->  /// @file   p9_stop_api.H
->  /// @brief  describes STOP API which  create/manipulate STOP image.
-> +///         This header need not be consistent, however is a subset of the
-> +///         libpore/p9_stop_api.H counterpart
->  ///
->  // *HWP HW Owner    :  Greg Still <stillgs@us.ibm.com>
->  // *HWP FW Owner    :  Prem Shanker Jha <premjha2@in.ibm.com>
-> @@ -58,6 +60,7 @@ typedef enum
->      P9_STOP_SPR_HRMOR   =    313,   // core register
->      P9_STOP_SPR_LPCR    =    318,   // thread register
->      P9_STOP_SPR_HMEER   =    337,   // core register
-> +    P9_STOP_SPR_PTCR    =    464,   // core register
->      P9_STOP_SPR_LDBAR   =    850,   // thread register
->      P9_STOP_SPR_PSSCR   =    855,   // thread register
->      P9_STOP_SPR_PMCR    =    884,   // core register
-> @@ -230,6 +233,20 @@ StopReturnCode_t p9_stop_save_scom( void* const   i_pImage,
->                                      const ScomOperation_t i_operation,
->                                      const ScomSection_t i_section );
-> 
-> +/**
-> + * @brief       Facilitates self save and restore of a list of SPRs of a thread.
-> + * @param[in]   i_pImage        points to the start of HOMER image of P9 chip.
-> + * @param[in]   i_pir           PIR associated with thread
-> + * @param[in]   i_saveRegVector bit vector representing SPRs that needs to be restored.
-> + * @return      STOP_SAVE_SUCCESS if API succeeds, error code otherwise.
-> + * @note        SPR save vector is a bit vector. For each SPR supported,
-> + *              there is an associated bit position in the bit vector.Refer
-> + *              to definition of SprBitPositionList_t to determine bit position
-> + *              associated with a particular SPR.
-> + */
-> +StopReturnCode_t
-> +p9_stop_save_cpureg_control( void* i_pImage, const uint64_t i_pir,
-> +                             const uint32_t  i_saveRegVector );
->  #ifdef __cplusplus
->  } // extern "C"
->  };  // namespace stopImageSection ends
-> diff --git a/include/skiboot.h b/include/skiboot.h
-> index 30ff500c..9ced240e 100644
-> --- a/include/skiboot.h
-> +++ b/include/skiboot.h
-> @@ -306,6 +306,9 @@ extern void nx_p9_rng_late_init(void);
->  /* SLW reinit function for switching core settings */
->  extern int64_t slw_reinit(uint64_t flags);
-> 
-> +/* Self save SPR before entering the stop state */
-> +extern int64_t opal_slw_self_save_reg(uint64_t cpu_pir, uint64_t sprn);
-> +
->  /* Patch SPR in SLW image */
->  extern int64_t opal_slw_set_reg(uint64_t cpu_pir, uint64_t sprn, uint64_t val);
->
-
-
-
-The patch looks good otherwise.
-
-Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-
-> -- 
-> 2.24.1
-> 
