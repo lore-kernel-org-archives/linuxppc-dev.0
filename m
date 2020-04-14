@@ -2,26 +2,26 @@ Return-Path: <SRS0=VNWk=56=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_SBL,URIBL_SBL_A,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C5655C2BA19
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 14:34:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22CE6C2BA19
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 14:36:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4864B2064A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 14:34:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id BC96E2064A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 14:36:49 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="HfmpPyvP"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4864B2064A
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="EmYWhnqL"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BC96E2064A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 491nzv2WbYzDqNS
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2020 00:34:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 491p331bWqzDqQn
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2020 00:36:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -31,28 +31,28 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=bombadil.20170209 header.b=HfmpPyvP; 
+ header.a=rsa-sha256 header.s=bombadil.20170209 header.b=EmYWhnqL; 
  dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 491mFF597WzDqZF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 23:15:29 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 491mFJ1Z2vzDqQk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 23:15:32 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description;
- bh=YXFzdr5HGEJcHZQgdDij+Un2nC+B60W1nPGp60Ixm4g=; b=HfmpPyvPzvaSjXo7cXeZuRCVJQ
- ruB3mrUeV0xgcQlkRG60tCYSX4VRW9oEPKips1rWgJPa/0ANYIsAjSdafu8tHUQp819flShPJRL2X
- AoQmhPgrejo1xGiFvLsLHkbwSpdOuFjWU4YY5tf5Rv+wzL4reVWM5qgMR3iVA6Jo67+4YreV0HhBa
- mpS2NYqwnXW9t9XXnhlY5p+sPOK+vdIPkTBTP5d05U9/j5BFxugbi1WSNqU6+eXww3goA8sIeqcMU
- /VOsPREmAVJ0Nd+dupdX0BoZiJhdS4Dwj74THfP5GMuKKBp/Cc+7MmG2DamHxJXXfrK3blkA4IuL4
- sN2L7Kog==;
+ bh=u3nIu92+yzd2DkZyrdIwKviaxx6KjPltBpD1EwU5vf4=; b=EmYWhnqLHvhUkXM+PJWi6bo1Ia
+ etHuuwEOyZ2ARE55ofJOGLAB1N8BvyKT8vIGa2G4/jTU0js9MGTzT1kGsl6VQE2hDtOz4b+YKwPpf
+ QREUVBWSt3gqmsjYdkAJ3XJxjT2G/4hnhFyaY/XmVFEjz3+CD1yDoxHysRiSwklc3Jgsd9DppXJiE
+ af8RLvbaw2aaJGLqEtnajEMjTD3n8ZpUzNKrdyFJN39yhWMzSfhQB5F0wXvWkTsBEryX4m1J5aZF9
+ wCf9fIGTCNnPEgYQbZP4R5Y9JSu6ffdMnd3b62bVSq02UmAN+uJ+7Y53ZjR1XeyQp4vxbc1bQJtbk
+ /QsUK7iA==;
 Received: from [2001:4bb8:180:384b:c70:4a89:bc61:2] (helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jOLP4-0007HD-8q; Tue, 14 Apr 2020 13:15:03 +0000
+ id 1jOLPD-0008Me-8R; Tue, 14 Apr 2020 13:15:11 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Andrew Morton <akpm@linux-foundation.org>,
  "K. Y. Srinivasan" <kys@microsoft.com>,
@@ -63,9 +63,9 @@ To: Andrew Morton <akpm@linux-foundation.org>,
  Sumit Semwal <sumit.semwal@linaro.org>,
  Sakari Ailus <sakari.ailus@linux.intel.com>,
  Minchan Kim <minchan@kernel.org>, Nitin Gupta <ngupta@vflare.org>
-Subject: [PATCH 21/29] mm: remove the pgprot argument to __vmalloc
-Date: Tue, 14 Apr 2020 15:13:40 +0200
-Message-Id: <20200414131348.444715-22-hch@lst.de>
+Subject: [PATCH 23/29] mm: remove both instances of __vmalloc_node_flags
+Date: Tue, 14 Apr 2020 15:13:42 +0200
+Message-Id: <20200414131348.444715-24-hch@lst.de>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200414131348.444715-1-hch@lst.de>
 References: <20200414131348.444715-1-hch@lst.de>
@@ -87,581 +87,114 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Cc: linux-arch@vger.kernel.org, linux-hyperv@vger.kernel.org,
  linux-s390@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org, Michael Kelley <mikelley@microsoft.com>,
- linaro-mm-sig@lists.linaro.org, linux-mm@kvack.org,
- iommu@lists.linux-foundation.org, bpf@vger.kernel.org,
- Robin Murphy <robin.murphy@arm.com>, Gao Xiang <xiang@kernel.org>,
- linux-arm-kernel@lists.infradead.org
+ dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org,
+ linux-mm@kvack.org, iommu@lists.linux-foundation.org, bpf@vger.kernel.org,
+ Robin Murphy <robin.murphy@arm.com>, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The pgprot argument to __vmalloc is always PROT_KERNEL now, so remove
-it.
+The real version just had a few callers that can open code it and
+remove one layer of indirection.  The nommu stub was public but only
+had a single caller, so remove it and avoid a CONFIG_MMU ifdef in
+vmalloc.h.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
-Reviewed-by: Michael Kelley <mikelley@microsoft.com> [hyperv]
-Acked-by: Gao Xiang <xiang@kernel.org> [erofs]
 Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 ---
- arch/x86/hyperv/hv_init.c              |  3 +--
- arch/x86/include/asm/kvm_host.h        |  3 +--
- arch/x86/kvm/svm/sev.c                 |  3 +--
- drivers/block/drbd/drbd_bitmap.c       |  4 +---
- drivers/gpu/drm/etnaviv/etnaviv_dump.c |  4 ++--
- drivers/lightnvm/pblk-init.c           |  5 ++---
- drivers/md/dm-bufio.c                  |  4 ++--
- drivers/mtd/ubi/io.c                   |  4 ++--
- drivers/scsi/sd_zbc.c                  |  3 +--
- fs/gfs2/dir.c                          |  9 ++++-----
- fs/gfs2/quota.c                        |  2 +-
- fs/nfs/blocklayout/extent_tree.c       |  2 +-
- fs/ntfs/malloc.h                       |  2 +-
- fs/ubifs/debug.c                       |  2 +-
- fs/ubifs/lprops.c                      |  2 +-
- fs/ubifs/lpt_commit.c                  |  4 ++--
- fs/ubifs/orphan.c                      |  2 +-
- fs/xfs/kmem.c                          |  2 +-
- include/linux/vmalloc.h                |  2 +-
- kernel/bpf/core.c                      |  6 +++---
- kernel/groups.c                        |  2 +-
- kernel/module.c                        |  3 +--
- mm/nommu.c                             | 15 +++++++--------
- mm/page_alloc.c                        |  2 +-
- mm/percpu.c                            |  2 +-
- mm/vmalloc.c                           |  4 ++--
- net/bridge/netfilter/ebtables.c        |  6 ++----
- sound/core/memalloc.c                  |  2 +-
- sound/core/pcm_memory.c                |  2 +-
- 29 files changed, 47 insertions(+), 59 deletions(-)
+ include/linux/vmalloc.h |  9 ---------
+ mm/nommu.c              |  3 ++-
+ mm/vmalloc.c            | 20 ++++++--------------
+ 3 files changed, 8 insertions(+), 24 deletions(-)
 
-diff --git a/arch/x86/hyperv/hv_init.c b/arch/x86/hyperv/hv_init.c
-index 5a4b363ba67b..a3d689dfc745 100644
---- a/arch/x86/hyperv/hv_init.c
-+++ b/arch/x86/hyperv/hv_init.c
-@@ -95,8 +95,7 @@ static int hv_cpu_init(unsigned int cpu)
- 	 * not be stopped in the case of CPU offlining and the VM will hang.
- 	 */
- 	if (!*hvp) {
--		*hvp = __vmalloc(PAGE_SIZE, GFP_KERNEL | __GFP_ZERO,
--				 PAGE_KERNEL);
-+		*hvp = __vmalloc(PAGE_SIZE, GFP_KERNEL | __GFP_ZERO);
- 	}
- 
- 	if (*hvp) {
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index 42a2d0d3984a..71bc09bff01a 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -1280,8 +1280,7 @@ extern struct kmem_cache *x86_fpu_cache;
- #define __KVM_HAVE_ARCH_VM_ALLOC
- static inline struct kvm *kvm_arch_alloc_vm(void)
- {
--	return __vmalloc(kvm_x86_ops.vm_size,
--			 GFP_KERNEL_ACCOUNT | __GFP_ZERO, PAGE_KERNEL);
-+	return __vmalloc(kvm_x86_ops.vm_size, GFP_KERNEL_ACCOUNT | __GFP_ZERO);
- }
- void kvm_arch_free_vm(struct kvm *kvm);
- 
-diff --git a/arch/x86/kvm/svm/sev.c b/arch/x86/kvm/svm/sev.c
-index 0e3fc311d7da..b699e40573ad 100644
---- a/arch/x86/kvm/svm/sev.c
-+++ b/arch/x86/kvm/svm/sev.c
-@@ -335,8 +335,7 @@ static struct page **sev_pin_memory(struct kvm *kvm, unsigned long uaddr,
- 	/* Avoid using vmalloc for smaller buffers. */
- 	size = npages * sizeof(struct page *);
- 	if (size > PAGE_SIZE)
--		pages = __vmalloc(size, GFP_KERNEL_ACCOUNT | __GFP_ZERO,
--				  PAGE_KERNEL);
-+		pages = __vmalloc(size, GFP_KERNEL_ACCOUNT | __GFP_ZERO);
- 	else
- 		pages = kmalloc(size, GFP_KERNEL_ACCOUNT);
- 
-diff --git a/drivers/block/drbd/drbd_bitmap.c b/drivers/block/drbd/drbd_bitmap.c
-index 15e99697234a..df53dca5d02c 100644
---- a/drivers/block/drbd/drbd_bitmap.c
-+++ b/drivers/block/drbd/drbd_bitmap.c
-@@ -396,9 +396,7 @@ static struct page **bm_realloc_pages(struct drbd_bitmap *b, unsigned long want)
- 	bytes = sizeof(struct page *)*want;
- 	new_pages = kzalloc(bytes, GFP_NOIO | __GFP_NOWARN);
- 	if (!new_pages) {
--		new_pages = __vmalloc(bytes,
--				GFP_NOIO | __GFP_ZERO,
--				PAGE_KERNEL);
-+		new_pages = __vmalloc(bytes, GFP_NOIO | __GFP_ZERO);
- 		if (!new_pages)
- 			return NULL;
- 	}
-diff --git a/drivers/gpu/drm/etnaviv/etnaviv_dump.c b/drivers/gpu/drm/etnaviv/etnaviv_dump.c
-index 648cf0207309..706af0304ca4 100644
---- a/drivers/gpu/drm/etnaviv/etnaviv_dump.c
-+++ b/drivers/gpu/drm/etnaviv/etnaviv_dump.c
-@@ -154,8 +154,8 @@ void etnaviv_core_dump(struct etnaviv_gem_submit *submit)
- 	file_size += sizeof(*iter.hdr) * n_obj;
- 
- 	/* Allocate the file in vmalloc memory, it's likely to be big */
--	iter.start = __vmalloc(file_size, GFP_KERNEL | __GFP_NOWARN | __GFP_NORETRY,
--			       PAGE_KERNEL);
-+	iter.start = __vmalloc(file_size, GFP_KERNEL | __GFP_NOWARN |
-+			__GFP_NORETRY);
- 	if (!iter.start) {
- 		mutex_unlock(&gpu->mmu_context->lock);
- 		dev_warn(gpu->dev, "failed to allocate devcoredump file\n");
-diff --git a/drivers/lightnvm/pblk-init.c b/drivers/lightnvm/pblk-init.c
-index 9a967a2e83dd..6e677ff62cc9 100644
---- a/drivers/lightnvm/pblk-init.c
-+++ b/drivers/lightnvm/pblk-init.c
-@@ -145,9 +145,8 @@ static int pblk_l2p_init(struct pblk *pblk, bool factory_init)
- 	int ret = 0;
- 
- 	map_size = pblk_trans_map_size(pblk);
--	pblk->trans_map = __vmalloc(map_size, GFP_KERNEL | __GFP_NOWARN
--					| __GFP_RETRY_MAYFAIL | __GFP_HIGHMEM,
--					PAGE_KERNEL);
-+	pblk->trans_map = __vmalloc(map_size, GFP_KERNEL | __GFP_NOWARN |
-+				    __GFP_RETRY_MAYFAIL | __GFP_HIGHMEM);
- 	if (!pblk->trans_map) {
- 		pblk_err(pblk, "failed to allocate L2P (need %zu of memory)\n",
- 				map_size);
-diff --git a/drivers/md/dm-bufio.c b/drivers/md/dm-bufio.c
-index 2d519c223562..d1786cfd7f22 100644
---- a/drivers/md/dm-bufio.c
-+++ b/drivers/md/dm-bufio.c
-@@ -400,13 +400,13 @@ static void *alloc_buffer_data(struct dm_bufio_client *c, gfp_t gfp_mask,
- 	 */
- 	if (gfp_mask & __GFP_NORETRY) {
- 		unsigned noio_flag = memalloc_noio_save();
--		void *ptr = __vmalloc(c->block_size, gfp_mask, PAGE_KERNEL);
-+		void *ptr = __vmalloc(c->block_size, gfp_mask);
- 
- 		memalloc_noio_restore(noio_flag);
- 		return ptr;
- 	}
- 
--	return __vmalloc(c->block_size, gfp_mask, PAGE_KERNEL);
-+	return __vmalloc(c->block_size, gfp_mask);
- }
- 
- /*
-diff --git a/drivers/mtd/ubi/io.c b/drivers/mtd/ubi/io.c
-index b57b84fb97d0..14d890b00d2c 100644
---- a/drivers/mtd/ubi/io.c
-+++ b/drivers/mtd/ubi/io.c
-@@ -1297,7 +1297,7 @@ static int self_check_write(struct ubi_device *ubi, const void *buf, int pnum,
- 	if (!ubi_dbg_chk_io(ubi))
- 		return 0;
- 
--	buf1 = __vmalloc(len, GFP_NOFS, PAGE_KERNEL);
-+	buf1 = __vmalloc(len, GFP_NOFS);
- 	if (!buf1) {
- 		ubi_err(ubi, "cannot allocate memory to check writes");
- 		return 0;
-@@ -1361,7 +1361,7 @@ int ubi_self_check_all_ff(struct ubi_device *ubi, int pnum, int offset, int len)
- 	if (!ubi_dbg_chk_io(ubi))
- 		return 0;
- 
--	buf = __vmalloc(len, GFP_NOFS, PAGE_KERNEL);
-+	buf = __vmalloc(len, GFP_NOFS);
- 	if (!buf) {
- 		ubi_err(ubi, "cannot allocate memory to check for 0xFFs");
- 		return 0;
-diff --git a/drivers/scsi/sd_zbc.c b/drivers/scsi/sd_zbc.c
-index f45c22b09726..8be27426aa66 100644
---- a/drivers/scsi/sd_zbc.c
-+++ b/drivers/scsi/sd_zbc.c
-@@ -136,8 +136,7 @@ static void *sd_zbc_alloc_report_buffer(struct scsi_disk *sdkp,
- 
- 	while (bufsize >= SECTOR_SIZE) {
- 		buf = __vmalloc(bufsize,
--				GFP_KERNEL | __GFP_ZERO | __GFP_NORETRY,
--				PAGE_KERNEL);
-+				GFP_KERNEL | __GFP_ZERO | __GFP_NORETRY);
- 		if (buf) {
- 			*buflen = bufsize;
- 			return buf;
-diff --git a/fs/gfs2/dir.c b/fs/gfs2/dir.c
-index c3f7732415be..c0f2875c946c 100644
---- a/fs/gfs2/dir.c
-+++ b/fs/gfs2/dir.c
-@@ -354,7 +354,7 @@ static __be64 *gfs2_dir_get_hash_table(struct gfs2_inode *ip)
- 
- 	hc = kmalloc(hsize, GFP_NOFS | __GFP_NOWARN);
- 	if (hc == NULL)
--		hc = __vmalloc(hsize, GFP_NOFS, PAGE_KERNEL);
-+		hc = __vmalloc(hsize, GFP_NOFS);
- 
- 	if (hc == NULL)
- 		return ERR_PTR(-ENOMEM);
-@@ -1166,7 +1166,7 @@ static int dir_double_exhash(struct gfs2_inode *dip)
- 
- 	hc2 = kmalloc_array(hsize_bytes, 2, GFP_NOFS | __GFP_NOWARN);
- 	if (hc2 == NULL)
--		hc2 = __vmalloc(hsize_bytes * 2, GFP_NOFS, PAGE_KERNEL);
-+		hc2 = __vmalloc(hsize_bytes * 2, GFP_NOFS);
- 
- 	if (!hc2)
- 		return -ENOMEM;
-@@ -1327,7 +1327,7 @@ static void *gfs2_alloc_sort_buffer(unsigned size)
- 	if (size < KMALLOC_MAX_SIZE)
- 		ptr = kmalloc(size, GFP_NOFS | __GFP_NOWARN);
- 	if (!ptr)
--		ptr = __vmalloc(size, GFP_NOFS, PAGE_KERNEL);
-+		ptr = __vmalloc(size, GFP_NOFS);
- 	return ptr;
- }
- 
-@@ -1987,8 +1987,7 @@ static int leaf_dealloc(struct gfs2_inode *dip, u32 index, u32 len,
- 
- 	ht = kzalloc(size, GFP_NOFS | __GFP_NOWARN);
- 	if (ht == NULL)
--		ht = __vmalloc(size, GFP_NOFS | __GFP_NOWARN | __GFP_ZERO,
--			       PAGE_KERNEL);
-+		ht = __vmalloc(size, GFP_NOFS | __GFP_NOWARN | __GFP_ZERO);
- 	if (!ht)
- 		return -ENOMEM;
- 
-diff --git a/fs/gfs2/quota.c b/fs/gfs2/quota.c
-index cc0c4b5800be..b84ac5843ec4 100644
---- a/fs/gfs2/quota.c
-+++ b/fs/gfs2/quota.c
-@@ -1368,7 +1368,7 @@ int gfs2_quota_init(struct gfs2_sbd *sdp)
- 	sdp->sd_quota_bitmap = kzalloc(bm_size, GFP_NOFS | __GFP_NOWARN);
- 	if (sdp->sd_quota_bitmap == NULL)
- 		sdp->sd_quota_bitmap = __vmalloc(bm_size, GFP_NOFS |
--						 __GFP_ZERO, PAGE_KERNEL);
-+						 __GFP_ZERO);
- 	if (!sdp->sd_quota_bitmap)
- 		return error;
- 
-diff --git a/fs/nfs/blocklayout/extent_tree.c b/fs/nfs/blocklayout/extent_tree.c
-index 7a57ff2528af..8f7cff7a4293 100644
---- a/fs/nfs/blocklayout/extent_tree.c
-+++ b/fs/nfs/blocklayout/extent_tree.c
-@@ -582,7 +582,7 @@ ext_tree_prepare_commit(struct nfs4_layoutcommit_args *arg)
- 		if (!arg->layoutupdate_pages)
- 			return -ENOMEM;
- 
--		start_p = __vmalloc(buffer_size, GFP_NOFS, PAGE_KERNEL);
-+		start_p = __vmalloc(buffer_size, GFP_NOFS);
- 		if (!start_p) {
- 			kfree(arg->layoutupdate_pages);
- 			return -ENOMEM;
-diff --git a/fs/ntfs/malloc.h b/fs/ntfs/malloc.h
-index 842b0bfc3ac9..7068425735f1 100644
---- a/fs/ntfs/malloc.h
-+++ b/fs/ntfs/malloc.h
-@@ -34,7 +34,7 @@ static inline void *__ntfs_malloc(unsigned long size, gfp_t gfp_mask)
- 		/* return (void *)__get_free_page(gfp_mask); */
- 	}
- 	if (likely((size >> PAGE_SHIFT) < totalram_pages()))
--		return __vmalloc(size, gfp_mask, PAGE_KERNEL);
-+		return __vmalloc(size, gfp_mask);
- 	return NULL;
- }
- 
-diff --git a/fs/ubifs/debug.c b/fs/ubifs/debug.c
-index 0f5a480fe264..31288d8fa2ce 100644
---- a/fs/ubifs/debug.c
-+++ b/fs/ubifs/debug.c
-@@ -815,7 +815,7 @@ void ubifs_dump_leb(const struct ubifs_info *c, int lnum)
- 
- 	pr_err("(pid %d) start dumping LEB %d\n", current->pid, lnum);
- 
--	buf = __vmalloc(c->leb_size, GFP_NOFS, PAGE_KERNEL);
-+	buf = __vmalloc(c->leb_size, GFP_NOFS);
- 	if (!buf) {
- 		ubifs_err(c, "cannot allocate memory for dumping LEB %d", lnum);
- 		return;
-diff --git a/fs/ubifs/lprops.c b/fs/ubifs/lprops.c
-index 29826c51883a..22bfda158f7f 100644
---- a/fs/ubifs/lprops.c
-+++ b/fs/ubifs/lprops.c
-@@ -1095,7 +1095,7 @@ static int scan_check_cb(struct ubifs_info *c,
- 		return LPT_SCAN_CONTINUE;
- 	}
- 
--	buf = __vmalloc(c->leb_size, GFP_NOFS, PAGE_KERNEL);
-+	buf = __vmalloc(c->leb_size, GFP_NOFS);
- 	if (!buf)
- 		return -ENOMEM;
- 
-diff --git a/fs/ubifs/lpt_commit.c b/fs/ubifs/lpt_commit.c
-index ff5e0411cf2d..d76a19e460cd 100644
---- a/fs/ubifs/lpt_commit.c
-+++ b/fs/ubifs/lpt_commit.c
-@@ -1596,7 +1596,7 @@ static int dbg_check_ltab_lnum(struct ubifs_info *c, int lnum)
- 	if (!dbg_is_chk_lprops(c))
- 		return 0;
- 
--	buf = p = __vmalloc(c->leb_size, GFP_NOFS, PAGE_KERNEL);
-+	buf = p = __vmalloc(c->leb_size, GFP_NOFS);
- 	if (!buf) {
- 		ubifs_err(c, "cannot allocate memory for ltab checking");
- 		return 0;
-@@ -1845,7 +1845,7 @@ static void dump_lpt_leb(const struct ubifs_info *c, int lnum)
- 	void *buf, *p;
- 
- 	pr_err("(pid %d) start dumping LEB %d\n", current->pid, lnum);
--	buf = p = __vmalloc(c->leb_size, GFP_NOFS, PAGE_KERNEL);
-+	buf = p = __vmalloc(c->leb_size, GFP_NOFS);
- 	if (!buf) {
- 		ubifs_err(c, "cannot allocate memory to dump LPT");
- 		return;
-diff --git a/fs/ubifs/orphan.c b/fs/ubifs/orphan.c
-index 283f9eb48410..2c294085ffed 100644
---- a/fs/ubifs/orphan.c
-+++ b/fs/ubifs/orphan.c
-@@ -977,7 +977,7 @@ static int dbg_scan_orphans(struct ubifs_info *c, struct check_info *ci)
- 	if (c->no_orphs)
- 		return 0;
- 
--	buf = __vmalloc(c->leb_size, GFP_NOFS, PAGE_KERNEL);
-+	buf = __vmalloc(c->leb_size, GFP_NOFS);
- 	if (!buf) {
- 		ubifs_err(c, "cannot allocate memory to check orphans");
- 		return 0;
-diff --git a/fs/xfs/kmem.c b/fs/xfs/kmem.c
-index 1da94237a8cf..f1366475c389 100644
---- a/fs/xfs/kmem.c
-+++ b/fs/xfs/kmem.c
-@@ -48,7 +48,7 @@ __kmem_vmalloc(size_t size, xfs_km_flags_t flags)
- 	if (flags & KM_NOFS)
- 		nofs_flag = memalloc_nofs_save();
- 
--	ptr = __vmalloc(size, lflags, PAGE_KERNEL);
-+	ptr = __vmalloc(size, lflags);
- 
- 	if (flags & KM_NOFS)
- 		memalloc_nofs_restore(nofs_flag);
 diff --git a/include/linux/vmalloc.h b/include/linux/vmalloc.h
-index 9273b1a91ca5..c1b9d6eca05f 100644
+index c1b9d6eca05f..4a46d296e70d 100644
 --- a/include/linux/vmalloc.h
 +++ b/include/linux/vmalloc.h
-@@ -110,7 +110,7 @@ extern void *vmalloc_user_node_flags(unsigned long size, int node, gfp_t flags);
- extern void *vmalloc_exec(unsigned long size);
- extern void *vmalloc_32(unsigned long size);
- extern void *vmalloc_32_user(unsigned long size);
--extern void *__vmalloc(unsigned long size, gfp_t gfp_mask, pgprot_t prot);
-+extern void *__vmalloc(unsigned long size, gfp_t gfp_mask);
- extern void *__vmalloc_node_range(unsigned long size, unsigned long align,
+@@ -115,17 +115,8 @@ extern void *__vmalloc_node_range(unsigned long size, unsigned long align,
  			unsigned long start, unsigned long end, gfp_t gfp_mask,
  			pgprot_t prot, unsigned long vm_flags, int node,
-diff --git a/kernel/bpf/core.c b/kernel/bpf/core.c
-index 916f5132a984..c712de560357 100644
---- a/kernel/bpf/core.c
-+++ b/kernel/bpf/core.c
-@@ -82,7 +82,7 @@ struct bpf_prog *bpf_prog_alloc_no_stats(unsigned int size, gfp_t gfp_extra_flag
- 	struct bpf_prog *fp;
+ 			const void *caller);
+-#ifndef CONFIG_MMU
+-extern void *__vmalloc_node_flags(unsigned long size, int node, gfp_t flags);
+-static inline void *__vmalloc_node_flags_caller(unsigned long size, int node,
+-						gfp_t flags, void *caller)
+-{
+-	return __vmalloc_node_flags(size, node, flags);
+-}
+-#else
+ extern void *__vmalloc_node_flags_caller(unsigned long size,
+ 					 int node, gfp_t flags, void *caller);
+-#endif
  
- 	size = round_up(size, PAGE_SIZE);
--	fp = __vmalloc(size, gfp_flags, PAGE_KERNEL);
-+	fp = __vmalloc(size, gfp_flags);
- 	if (fp == NULL)
- 		return NULL;
- 
-@@ -232,7 +232,7 @@ struct bpf_prog *bpf_prog_realloc(struct bpf_prog *fp_old, unsigned int size,
- 	if (ret)
- 		return NULL;
- 
--	fp = __vmalloc(size, gfp_flags, PAGE_KERNEL);
-+	fp = __vmalloc(size, gfp_flags);
- 	if (fp == NULL) {
- 		__bpf_prog_uncharge(fp_old->aux->user, delta);
- 	} else {
-@@ -1089,7 +1089,7 @@ static struct bpf_prog *bpf_prog_clone_create(struct bpf_prog *fp_other,
- 	gfp_t gfp_flags = GFP_KERNEL | __GFP_ZERO | gfp_extra_flags;
- 	struct bpf_prog *fp;
- 
--	fp = __vmalloc(fp_other->pages * PAGE_SIZE, gfp_flags, PAGE_KERNEL);
-+	fp = __vmalloc(fp_other->pages * PAGE_SIZE, gfp_flags);
- 	if (fp != NULL) {
- 		/* aux->prog still points to the fp_other one, so
- 		 * when promoting the clone to the real program,
-diff --git a/kernel/groups.c b/kernel/groups.c
-index daae2f2dc6d4..6ee6691f6839 100644
---- a/kernel/groups.c
-+++ b/kernel/groups.c
-@@ -20,7 +20,7 @@ struct group_info *groups_alloc(int gidsetsize)
- 	len = sizeof(struct group_info) + sizeof(kgid_t) * gidsetsize;
- 	gi = kmalloc(len, GFP_KERNEL_ACCOUNT|__GFP_NOWARN|__GFP_NORETRY);
- 	if (!gi)
--		gi = __vmalloc(len, GFP_KERNEL_ACCOUNT, PAGE_KERNEL);
-+		gi = __vmalloc(len, GFP_KERNEL_ACCOUNT);
- 	if (!gi)
- 		return NULL;
- 
-diff --git a/kernel/module.c b/kernel/module.c
-index 646f1e2330d2..086618a0058f 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -2946,8 +2946,7 @@ static int copy_module_from_user(const void __user *umod, unsigned long len,
- 		return err;
- 
- 	/* Suck in entire file: we'll want most of it. */
--	info->hdr = __vmalloc(info->len,
--			GFP_KERNEL | __GFP_NOWARN, PAGE_KERNEL);
-+	info->hdr = __vmalloc(info->len, GFP_KERNEL | __GFP_NOWARN);
- 	if (!info->hdr)
- 		return -ENOMEM;
- 
+ extern void vfree(const void *addr);
+ extern void vfree_atomic(const void *addr);
 diff --git a/mm/nommu.c b/mm/nommu.c
-index 4f07b7ef0297..2df549adb22b 100644
+index 2df549adb22b..9553efa59787 100644
 --- a/mm/nommu.c
 +++ b/mm/nommu.c
-@@ -140,7 +140,7 @@ void vfree(const void *addr)
+@@ -150,7 +150,8 @@ void *__vmalloc(unsigned long size, gfp_t gfp_mask)
  }
- EXPORT_SYMBOL(vfree);
+ EXPORT_SYMBOL(__vmalloc);
  
--void *__vmalloc(unsigned long size, gfp_t gfp_mask, pgprot_t prot)
-+void *__vmalloc(unsigned long size, gfp_t gfp_mask)
+-void *__vmalloc_node_flags(unsigned long size, int node, gfp_t flags)
++void *__vmalloc_node_flags_caller(unsigned long size, int node, gfp_t flags,
++		void *caller)
  {
- 	/*
- 	 *  You can't specify __GFP_HIGHMEM with kmalloc() since kmalloc()
-@@ -152,14 +152,14 @@ EXPORT_SYMBOL(__vmalloc);
- 
- void *__vmalloc_node_flags(unsigned long size, int node, gfp_t flags)
- {
--	return __vmalloc(size, flags, PAGE_KERNEL);
-+	return __vmalloc(size, flags);
+ 	return __vmalloc(size, flags);
  }
+diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+index de7952959e82..3d59d848ad48 100644
+--- a/mm/vmalloc.c
++++ b/mm/vmalloc.c
+@@ -2566,14 +2566,6 @@ void *__vmalloc(unsigned long size, gfp_t gfp_mask)
+ }
+ EXPORT_SYMBOL(__vmalloc);
  
- static void *__vmalloc_user_flags(unsigned long size, gfp_t flags)
+-static inline void *__vmalloc_node_flags(unsigned long size,
+-					int node, gfp_t flags)
+-{
+-	return __vmalloc_node(size, 1, flags, node,
+-				__builtin_return_address(0));
+-}
+-
+-
+ void *__vmalloc_node_flags_caller(unsigned long size, int node, gfp_t flags,
+ 				  void *caller)
  {
- 	void *ret;
- 
--	ret = __vmalloc(size, flags, PAGE_KERNEL);
-+	ret = __vmalloc(size, flags);
- 	if (ret) {
- 		struct vm_area_struct *vma;
- 
-@@ -230,7 +230,7 @@ long vwrite(char *buf, char *addr, unsigned long count)
+@@ -2594,8 +2586,8 @@ void *__vmalloc_node_flags_caller(unsigned long size, int node, gfp_t flags,
   */
  void *vmalloc(unsigned long size)
  {
--       return __vmalloc(size, GFP_KERNEL | __GFP_HIGHMEM, PAGE_KERNEL);
-+       return __vmalloc(size, GFP_KERNEL | __GFP_HIGHMEM);
+-	return __vmalloc_node_flags(size, NUMA_NO_NODE,
+-				    GFP_KERNEL);
++	return __vmalloc_node(size, 1, GFP_KERNEL, NUMA_NO_NODE,
++				__builtin_return_address(0));
  }
  EXPORT_SYMBOL(vmalloc);
  
-@@ -248,8 +248,7 @@ EXPORT_SYMBOL(vmalloc);
+@@ -2614,8 +2606,8 @@ EXPORT_SYMBOL(vmalloc);
   */
  void *vzalloc(unsigned long size)
  {
--	return __vmalloc(size, GFP_KERNEL | __GFP_HIGHMEM | __GFP_ZERO,
--			PAGE_KERNEL);
-+	return __vmalloc(size, GFP_KERNEL | __GFP_HIGHMEM | __GFP_ZERO);
+-	return __vmalloc_node_flags(size, NUMA_NO_NODE,
+-				GFP_KERNEL | __GFP_ZERO);
++	return __vmalloc_node(size, 1, GFP_KERNEL | __GFP_ZERO, NUMA_NO_NODE,
++				__builtin_return_address(0));
  }
  EXPORT_SYMBOL(vzalloc);
  
-@@ -302,7 +301,7 @@ EXPORT_SYMBOL(vzalloc_node);
- 
- void *vmalloc_exec(unsigned long size)
- {
--	return __vmalloc(size, GFP_KERNEL | __GFP_HIGHMEM, PAGE_KERNEL_EXEC);
-+	return __vmalloc(size, GFP_KERNEL | __GFP_HIGHMEM);
- }
- 
- /**
-@@ -314,7 +313,7 @@ void *vmalloc_exec(unsigned long size)
+@@ -2670,8 +2662,8 @@ EXPORT_SYMBOL(vmalloc_node);
   */
- void *vmalloc_32(unsigned long size)
+ void *vzalloc_node(unsigned long size, int node)
  {
--	return __vmalloc(size, GFP_KERNEL, PAGE_KERNEL);
-+	return __vmalloc(size, GFP_KERNEL);
+-	return __vmalloc_node_flags(size, node,
+-			 GFP_KERNEL | __GFP_ZERO);
++	return __vmalloc_node(size, 1, GFP_KERNEL | __GFP_ZERO, node,
++				__builtin_return_address(0));
  }
- EXPORT_SYMBOL(vmalloc_32);
+ EXPORT_SYMBOL(vzalloc_node);
  
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 69827d4fa052..d4379026cc63 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -8238,7 +8238,7 @@ void *__init alloc_large_system_hash(const char *tablename,
- 				table = memblock_alloc_raw(size,
- 							   SMP_CACHE_BYTES);
- 		} else if (get_order(size) >= MAX_ORDER || hashdist) {
--			table = __vmalloc(size, gfp_flags, PAGE_KERNEL);
-+			table = __vmalloc(size, gfp_flags);
- 			virt = true;
- 		} else {
- 			/*
-diff --git a/mm/percpu.c b/mm/percpu.c
-index d7e3bc649f4e..1e278099e185 100644
---- a/mm/percpu.c
-+++ b/mm/percpu.c
-@@ -481,7 +481,7 @@ static void *pcpu_mem_zalloc(size_t size, gfp_t gfp)
- 	if (size <= PAGE_SIZE)
- 		return kzalloc(size, gfp);
- 	else
--		return __vmalloc(size, gfp | __GFP_ZERO, PAGE_KERNEL);
-+		return __vmalloc(size, gfp | __GFP_ZERO);
- }
- 
- /**
-diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-index 334c75251ddb..466a449b3a15 100644
---- a/mm/vmalloc.c
-+++ b/mm/vmalloc.c
-@@ -2563,9 +2563,9 @@ static void *__vmalloc_node(unsigned long size, unsigned long align,
- 				gfp_mask, prot, 0, node, caller);
- }
- 
--void *__vmalloc(unsigned long size, gfp_t gfp_mask, pgprot_t prot)
-+void *__vmalloc(unsigned long size, gfp_t gfp_mask)
- {
--	return __vmalloc_node(size, 1, gfp_mask, prot, NUMA_NO_NODE,
-+	return __vmalloc_node(size, 1, gfp_mask, PAGE_KERNEL, NUMA_NO_NODE,
- 				__builtin_return_address(0));
- }
- EXPORT_SYMBOL(__vmalloc);
-diff --git a/net/bridge/netfilter/ebtables.c b/net/bridge/netfilter/ebtables.c
-index 78db58c7aec2..7e869284e052 100644
---- a/net/bridge/netfilter/ebtables.c
-+++ b/net/bridge/netfilter/ebtables.c
-@@ -1095,16 +1095,14 @@ static int do_replace(struct net *net, const void __user *user,
- 	tmp.name[sizeof(tmp.name) - 1] = 0;
- 
- 	countersize = COUNTER_OFFSET(tmp.nentries) * nr_cpu_ids;
--	newinfo = __vmalloc(sizeof(*newinfo) + countersize, GFP_KERNEL_ACCOUNT,
--			    PAGE_KERNEL);
-+	newinfo = __vmalloc(sizeof(*newinfo) + countersize, GFP_KERNEL_ACCOUNT);
- 	if (!newinfo)
- 		return -ENOMEM;
- 
- 	if (countersize)
- 		memset(newinfo->counters, 0, countersize);
- 
--	newinfo->entries = __vmalloc(tmp.entries_size, GFP_KERNEL_ACCOUNT,
--				     PAGE_KERNEL);
-+	newinfo->entries = __vmalloc(tmp.entries_size, GFP_KERNEL_ACCOUNT);
- 	if (!newinfo->entries) {
- 		ret = -ENOMEM;
- 		goto free_newinfo;
-diff --git a/sound/core/memalloc.c b/sound/core/memalloc.c
-index a83553fbedf0..bea46ed157a6 100644
---- a/sound/core/memalloc.c
-+++ b/sound/core/memalloc.c
-@@ -143,7 +143,7 @@ int snd_dma_alloc_pages(int type, struct device *device, size_t size,
- 		break;
- 	case SNDRV_DMA_TYPE_VMALLOC:
- 		gfp = snd_mem_get_gfp_flags(device, GFP_KERNEL | __GFP_HIGHMEM);
--		dmab->area = __vmalloc(size, gfp, PAGE_KERNEL);
-+		dmab->area = __vmalloc(size, gfp);
- 		dmab->addr = 0;
- 		break;
- #ifdef CONFIG_HAS_DMA
-diff --git a/sound/core/pcm_memory.c b/sound/core/pcm_memory.c
-index fcab37ea6641..860935e3aea4 100644
---- a/sound/core/pcm_memory.c
-+++ b/sound/core/pcm_memory.c
-@@ -460,7 +460,7 @@ int _snd_pcm_lib_alloc_vmalloc_buffer(struct snd_pcm_substream *substream,
- 			return 0; /* already large enough */
- 		vfree(runtime->dma_area);
- 	}
--	runtime->dma_area = __vmalloc(size, gfp_flags, PAGE_KERNEL);
-+	runtime->dma_area = __vmalloc(size, gfp_flags);
- 	if (!runtime->dma_area)
- 		return -ENOMEM;
- 	runtime->dma_bytes = size;
 -- 
 2.25.1
 
