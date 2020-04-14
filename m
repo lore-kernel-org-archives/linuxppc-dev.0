@@ -2,70 +2,55 @@ Return-Path: <SRS0=VNWk=56=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F32C4C2BA19
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 07:21:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2ADCDC2BA19
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 07:24:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6E4C6206E9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 07:21:45 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="M4PtP/lB"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6E4C6206E9
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id D52672076A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 07:24:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D52672076A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 491cP34RP7zDqZV
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 17:21:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
- helo=bombadil.infradead.org;
- envelope-from=batv+4a22011dcb1da0b09bf4+6078+infradead.org+hch@bombadil.srs.infradead.org;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 491cRz3R8SzDqTb
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 17:24:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=bombadil.20170209 header.b=M4PtP/lB; 
- dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.13; helo=inva020.nxp.com;
+ envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 491byX5tslzDqX7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 17:02:12 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
- MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
- :Reply-To:Content-Type:Content-ID:Content-Description;
- bh=rvOSO61i3/jQ/ilksqAh/f4ysGJ637bFsFY3rjCKklM=; b=M4PtP/lBet2Xy2E1CCCPDNqK9u
- v1cpryba8Y6ps3lng2CXPRJOMBYU3+msR1+BWQeKBXn4xMFXCRLMk8WMVli3A6rAgZBimkWhEoUkb
- H7dDJxsCCuPqiYTjz63vcYavuQaZgt3cc3uq8EWFXxN9ZJus7qN9qgC2qpeZsZ6ckkBbplcPyqcoo
- bhWwIdgZdm4ekAzS+mIhQa+NhYvo8g0ZSraQ+AC/xcRiTnZUIBI1Be+rImrbgPl85DGS6n/OoKDXg
- Xm7mGyhcz511ObvzivnUuFLNurra74JnVZw2QeeM8M1wGHvU8XDlLHSM5zUWAgRjrJsjzezJI7Zbj
- Tg89hhGg==;
-Received: from [2001:4bb8:180:384b:4c21:af7:dd95:e552] (helo=localhost)
- by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jOFaB-0005Zy-JS; Tue, 14 Apr 2020 07:02:08 +0000
-From: Christoph Hellwig <hch@lst.de>
-To: Andrew Morton <akpm@linux-foundation.org>,
- Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: [PATCH 8/8] exec: open code copy_string_kernel
-Date: Tue, 14 Apr 2020 09:01:42 +0200
-Message-Id: <20200414070142.288696-9-hch@lst.de>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200414070142.288696-1-hch@lst.de>
-References: <20200414070142.288696-1-hch@lst.de>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
- bombadil.infradead.org. See http://www.infradead.org/rpr.html
+ by lists.ozlabs.org (Postfix) with ESMTPS id 491c1C5SmwzDqYJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 17:04:30 +1000 (AEST)
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 377AC1A0317;
+ Tue, 14 Apr 2020 09:04:26 +0200 (CEST)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
+ [165.114.16.14])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 9161F1A0300;
+ Tue, 14 Apr 2020 09:04:20 +0200 (CEST)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net
+ [10.192.224.44])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 834104028B;
+ Tue, 14 Apr 2020 15:04:13 +0800 (SGT)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
+ festevam@gmail.com, broonie@kernel.org, alsa-devel@alsa-project.org,
+ lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com, robh+dt@kernel.org,
+ mark.rutland@arm.com, devicetree@vger.kernel.org
+Subject: [PATCH v8 0/7] ASoC: Add new module driver for new ASRC
+Date: Tue, 14 Apr 2020 14:56:00 +0800
+Message-Id: <cover.1586845137.git.shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,80 +62,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
- Jeremy Kerr <jk@ozlabs.org>, linux-fsdevel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, "Eric W . Biederman" <ebiederm@xmission.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently copy_string_kernel is just a wrapper around copy_strings that
-simplifies the calling conventions and uses set_fs to allow passing a
-kernel pointer.  But due to the fact the we only need to handle a single
-kernel argument pointer, the logic can be sigificantly simplified while
-getting rid of the set_fs.
+Add new module driver for new ASRC in i.MX8MN, several commits
+are added for new property fsl,asrc-format
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- fs/exec.c | 43 ++++++++++++++++++++++++++++++++++---------
- 1 file changed, 34 insertions(+), 9 deletions(-)
+Shengjiu Wang (7):
+  ASoC: fsl_asrc: rename asrc_priv to asrc
+  ASoC: dt-bindings: fsl_asrc: Add new property fsl,asrc-format
+  ASoC: fsl-asoc-card: Support new property fsl,asrc-format
+  ASoC: fsl_asrc: Support new property fsl,asrc-format
+  ASoC: fsl_asrc: Move common definition to fsl_asrc_common
+  ASoC: dt-bindings: fsl_easrc: Add document for EASRC
+  ASoC: fsl_easrc: Add EASRC ASoC CPU DAI drivers
 
-diff --git a/fs/exec.c b/fs/exec.c
-index b2a77d5acede..ea90af1fb236 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -592,17 +592,42 @@ static int copy_strings(int argc, struct user_arg_ptr argv,
-  */
- int copy_string_kernel(const char *arg, struct linux_binprm *bprm)
- {
--	int r;
--	mm_segment_t oldfs = get_fs();
--	struct user_arg_ptr argv = {
--		.ptr.native = (const char __user *const  __user *)&arg,
--	};
-+	int len = strnlen(arg, MAX_ARG_STRLEN) + 1 /* terminating NUL */;
-+	unsigned long pos = bprm->p;
-+
-+	if (len == 0)
-+		return -EFAULT;
-+	if (!valid_arg_len(bprm, len))
-+		return -E2BIG;
-+
-+	/* We're going to work our way backwards. */
-+	arg += len;
-+	bprm->p -= len;
-+	if (IS_ENABLED(CONFIG_MMU) && bprm->p < bprm->argmin)
-+		return -E2BIG;
-+
-+	while (len > 0) {
-+		unsigned int bytes_to_copy = min_t(unsigned int, len,
-+				min_not_zero(offset_in_page(pos), PAGE_SIZE));
-+		struct page *page;
-+		char *kaddr;
- 
--	set_fs(KERNEL_DS);
--	r = copy_strings(1, argv, bprm);
--	set_fs(oldfs);
-+		pos -= bytes_to_copy;
-+		arg -= bytes_to_copy;
-+		len -= bytes_to_copy;
- 
--	return r;
-+		page = get_arg_page(bprm, pos, 1);
-+		if (!page)
-+			return -E2BIG;
-+		kaddr = kmap_atomic(page);
-+		flush_arg_page(bprm, pos & PAGE_MASK, page);
-+		memcpy(kaddr + offset_in_page(pos), arg, bytes_to_copy);
-+		flush_kernel_dcache_page(page);
-+		kunmap_atomic(kaddr);
-+		put_arg_page(page);
-+	}
-+
-+	return 0;
- }
- EXPORT_SYMBOL(copy_string_kernel);
- 
+changes in v8
+- change get_pair_priv_size to pair_priv_size variable
+
+changes in v7
+- updated according to Nicoin's comments.
+- add get_pair_priv_size to replace PAIR_PRIVATE_SIZE
+
+changes in v6
+- updated according to Nicoin's and Rob's comments.
+
+changes in v5
+- Add new property fsl,asrc-format, rather than change fsl,asrc-width
+  to fsl,asrc-formt.
+- code change for above change.
+
+changes in v4
+- Add several commit for changing DT binding asrc-width to asrc-format
+- rename asrc_priv to asrc
+
+changes in v3
+- add new commit "ASoC: fsl_asrc: Change asrc_width to asrc_format"
+- modify binding doc to yaml format
+- remove fsl_easrc_dma.c, make fsl_asrc_dma.c useable for easrc.
+
+changes in v2
+- change i.MX815 to i.MX8MN
+- Add changes in Kconfig and Makefile
+
+ .../devicetree/bindings/sound/fsl,asrc.txt    |    4 +
+ .../devicetree/bindings/sound/fsl,easrc.yaml  |  101 +
+ sound/soc/fsl/Kconfig                         |   11 +
+ sound/soc/fsl/Makefile                        |    2 +
+ sound/soc/fsl/fsl-asoc-card.c                 |   24 +-
+ sound/soc/fsl/fsl_asrc.c                      |  305 +--
+ sound/soc/fsl/fsl_asrc.h                      |   74 +-
+ sound/soc/fsl/fsl_asrc_common.h               |  106 +
+ sound/soc/fsl/fsl_asrc_dma.c                  |   54 +-
+ sound/soc/fsl/fsl_easrc.c                     | 2114 +++++++++++++++++
+ sound/soc/fsl/fsl_easrc.h                     |  651 +++++
+ 11 files changed, 3212 insertions(+), 234 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/sound/fsl,easrc.yaml
+ create mode 100644 sound/soc/fsl/fsl_asrc_common.h
+ create mode 100644 sound/soc/fsl/fsl_easrc.c
+ create mode 100644 sound/soc/fsl/fsl_easrc.h
+
 -- 
-2.25.1
+2.21.0
 
