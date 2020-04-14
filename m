@@ -2,89 +2,87 @@ Return-Path: <SRS0=VNWk=56=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 32449C2BBFD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 03:17:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A888CC2BA2B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 03:22:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A20A92076B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 03:17:47 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="QqZbwjSj"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A20A92076B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3785F20732
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 03:22:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3785F20732
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 491VzX4jF0zDqJs
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 13:17:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 491W4b0Dj8zDqSf
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 13:22:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::444;
- helo=mail-pf1-x444.google.com; envelope-from=nicoleotsuka@gmail.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ravi.bangoria@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=QqZbwjSj; dkim-atps=neutral
-Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
- [IPv6:2607:f8b0:4864:20::444])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 491TR03GZwzDqJQ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 12:07:43 +1000 (AEST)
-Received: by mail-pf1-x444.google.com with SMTP id l1so5379281pff.10
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2020 19:07:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=5D/iZIZkZcDpS6kx/415RbCsRqRRwuRfxlRc0sHly4Y=;
- b=QqZbwjSjtSQpz3SlpqPldzbuhg+pariHVz063YbZ4QNr9Xz+hN6U5IXK6wCVyWLIv1
- oPKQ3EOsiwcSEXmEFvumckWdvyrHCNQ1pGubuZyHL6nP8oEhqyz6es8MI3/8nNZU5kk6
- vk+dFx8JFF93z87qrdOLMMGMSWOjEgD3ZPnOI/IUC+qVep5mOB9514q6OHOBmfT/B/vf
- okKTY4rNaBuRlKmOTYoF2/dRnATUq8OfPh5ML382ZwzwMhAuaJkut+dapH9nOuhGVCUc
- Qh/ZQsfd4d2EGHx1rgk2GmFcKtnBbSzVgSL+TQiWtxoxwnKTLZIo5/yj4qJKGHsftFzY
- YAmQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=5D/iZIZkZcDpS6kx/415RbCsRqRRwuRfxlRc0sHly4Y=;
- b=C/kFMAnnnJf5IeFmvG2BtEaAWc/xHtYMA/YVgNTKajCk8sniAm68K15E0BXwKv1XEV
- u/En23MUM7aG/wHSThYuMP6qQ2FWGGSXwJ3H18DqqtQlh0mr6zmrRvNI33+RodDGb+Wb
- +mrxvGIqzLj9AmTCKLb0CIXqP+HHT9DMyBCoMzUdTHLdDuf51hvQ24zzBn2+VWVmxXm3
- M+tPwK/BSqng0AOJzjtMZYwx+n1GfVnyen9d8Fjeym6OJ1cpmzZWLn7yg9e2tZsqWUyS
- zP9k5SZ4zft+wglXEoEPynYjt6A1RBea2odaSE/xMwJT+7MC0ETpTi6HJ7tT+OYGc2v/
- 9qvQ==
-X-Gm-Message-State: AGi0PuZ57NQqzW0NRMOluP8+7xdr2hLSpkMuaZzJEqA0YLcpHUQI5WxP
- JKIX8WhAXxTwC5Xe+ciMZQY=
-X-Google-Smtp-Source: APiQypLK639UxIA+FT+5Ot/3qPNoOsaHuQJ8finTEvj7k/GdLBDOknElzhbA4HM7L3jjPzj13KJKYA==
-X-Received: by 2002:a63:5d7:: with SMTP id 206mr8048114pgf.136.1586830058811; 
- Mon, 13 Apr 2020 19:07:38 -0700 (PDT)
-Received: from Asurada-Nvidia.nvidia.com (thunderhill.nvidia.com.
- [216.228.112.22])
- by smtp.gmail.com with ESMTPSA id y71sm9900161pfb.179.2020.04.13.19.07.38
- (version=TLS1_2 cipher=ECDHE-ECDSA-CHACHA20-POLY1305 bits=256/256);
- Mon, 13 Apr 2020 19:07:38 -0700 (PDT)
-Date: Mon, 13 Apr 2020 19:07:49 -0700
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: Shengjiu Wang <shengjiu.wang@nxp.com>
-Subject: Re: [PATCH v7 5/7] ASoC: fsl_asrc: Move common definition to
- fsl_asrc_common
-Message-ID: <20200414020748.GB10195@Asurada-Nvidia.nvidia.com>
-References: <cover.1586747728.git.shengjiu.wang@nxp.com>
- <6d2bed91bcdbc3f75a9d12ac4ebf6c34c9bb9c3f.1586747728.git.shengjiu.wang@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 491VzP5spVzDqS1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 13:17:37 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 03E34x6o142964
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2020 23:17:34 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30cwkyu8dp-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2020 23:17:34 -0400
+Received: from localhost
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.ibm.com>;
+ Tue, 14 Apr 2020 04:17:15 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 14 Apr 2020 04:17:10 +0100
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 03E3HQIH60096710
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 14 Apr 2020 03:17:26 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7033D52054;
+ Tue, 14 Apr 2020 03:17:26 +0000 (GMT)
+Received: from bangoria.ibmuc.com (unknown [9.199.60.157])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id DE98652067;
+ Tue, 14 Apr 2020 03:17:11 +0000 (GMT)
+From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+To: mpe@ellerman.id.au, mikey@neuling.org
+Subject: [PATCH v3 00/16] powerpc/watchpoint: Preparation for more than one
+ watchpoint
+Date: Tue, 14 Apr 2020 08:46:43 +0530
+X-Mailer: git-send-email 2.25.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6d2bed91bcdbc3f75a9d12ac4ebf6c34c9bb9c3f.1586747728.git.shengjiu.wang@nxp.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 20041403-0012-0000-0000-000003A410A8
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 20041403-0013-0000-0000-000021E1457A
+Message-Id: <20200414031659.58875-1-ravi.bangoria@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
+ definitions=2020-04-13_11:2020-04-13,
+ 2020-04-13 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ mlxlogscore=639 phishscore=0
+ suspectscore=0 adultscore=0 mlxscore=0 malwarescore=0 priorityscore=1501
+ impostorscore=0 lowpriorityscore=0 spamscore=0 clxscore=1015 bulkscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2003020000
+ definitions=main-2004140024
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,58 +94,74 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, timur@kernel.org, Xiubo.Lee@gmail.com,
- linuxppc-dev@lists.ozlabs.org, tiwai@suse.com, lgirdwood@gmail.com,
- robh+dt@kernel.org, perex@perex.cz, broonie@kernel.org, festevam@gmail.com,
- linux-kernel@vger.kernel.org
+Cc: apopple@linux.ibm.com, ravi.bangoria@linux.ibm.com, peterz@infradead.org,
+ fweisbec@gmail.com, oleg@redhat.com, npiggin@gmail.com,
+ linux-kernel@vger.kernel.org, paulus@samba.org, jolsa@kernel.org,
+ naveen.n.rao@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ mingo@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 14, 2020 at 08:43:07AM +0800, Shengjiu Wang wrote:
-> There is a new ASRC included in i.MX serial platform, there
-> are some common definition can be shared with each other.
-> So move the common definition to a separate header file.
-> 
-> And add fsl_asrc_pair_priv and fsl_asrc_priv for
-> the variable specific for the module, which can be used
-> internally.
-> 
-> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+So far, powerpc Book3S code has been written with an assumption of only
+one watchpoint. But future power architecture is introducing second
+watchpoint register (DAWR). Even though this patchset does not enable
+2nd DAWR, it make the infrastructure ready so that enabling 2nd DAWR
+should just be a matter of changing count.
 
-> diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
-> +static size_t fsl_asrc_get_pair_priv_size(void)
-> +{
-> +	return sizeof(struct fsl_asrc_pair_priv);
-> +}
+Existing functionality works fine with the patchset. I've tested it with
+perf, ptrace(gdb), xmon. All hw-breakpoint selftests are passing as well.
+And I've build tested for 8xx and 'AMCC 44x, 46x or 47x'.
 
-Perhaps we haven't understood completely each other's point.
+Note: kvm or PowerVM guest is not enabled yet.
 
-Yet, would the following change work?
+v2:
+  https://lore.kernel.org/linuxppc-dev/20200401061309.92442-1-ravi.bangoria@linux.ibm.com
 
-> diff --git a/sound/soc/fsl/fsl_asrc_common.h b/sound/soc/fsl/fsl_asrc_common.h
-> new file mode 100644
-> index 000000000000..b15244e027d0
-> --- /dev/null
-> +++ b/sound/soc/fsl/fsl_asrc_common.h
-> +struct fsl_asrc {
-> +	size_t (*get_pair_priv_size)(void);
+v2->v3:
+ - Few minor improvements as suggested by Christophe
+ - Rebased to powerpc/next
 
-+	size_t pair_priv_size;
+Ravi Bangoria (16):
+  powerpc/watchpoint: Rename current DAWR macros
+  powerpc/watchpoint: Add SPRN macros for second DAWR
+  powerpc/watchpoint: Introduce function to get nr watchpoints
+    dynamically
+  powerpc/watchpoint/ptrace: Return actual num of available watchpoints
+  powerpc/watchpoint: Provide DAWR number to set_dawr
+  powerpc/watchpoint: Provide DAWR number to __set_breakpoint
+  powerpc/watchpoint: Get watchpoint count dynamically while disabling
+    them
+  powerpc/watchpoint: Disable all available watchpoints when
+    !dawr_force_enable
+  powerpc/watchpoint: Convert thread_struct->hw_brk to an array
+  powerpc/watchpoint: Use loop for thread_struct->ptrace_bps
+  powerpc/watchpoint: Introduce is_ptrace_bp() function
+  powerpc/watchpoint: Use builtin ALIGN*() macros
+  powerpc/watchpoint: Prepare handler to handle more than one
+    watcnhpoint
+  powerpc/watchpoint: Don't allow concurrent perf and ptrace events
+  powerpc/watchpoint/xmon: Don't allow breakpoint overwriting
+  powerpc/watchpoint/xmon: Support 2nd dawr
 
-> diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
-> @@ -992,25 +1012,32 @@ static int fsl_asrc_probe(struct platform_device *pdev)
-> +	asrc->get_pair_priv_size = fsl_asrc_get_pair_priv_size;
+ arch/powerpc/include/asm/cputable.h       |   6 +-
+ arch/powerpc/include/asm/debug.h          |   2 +-
+ arch/powerpc/include/asm/hw_breakpoint.h  |  32 +-
+ arch/powerpc/include/asm/processor.h      |   6 +-
+ arch/powerpc/include/asm/reg.h            |   6 +-
+ arch/powerpc/include/asm/sstep.h          |   2 +
+ arch/powerpc/kernel/dawr.c                |  23 +-
+ arch/powerpc/kernel/hw_breakpoint.c       | 646 ++++++++++++++++++----
+ arch/powerpc/kernel/process.c             |  85 +--
+ arch/powerpc/kernel/ptrace/ptrace-noadv.c |  72 ++-
+ arch/powerpc/kernel/ptrace/ptrace32.c     |   4 +-
+ arch/powerpc/kernel/signal.c              |  12 +-
+ arch/powerpc/kvm/book3s_hv.c              |  12 +-
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S   |  18 +-
+ arch/powerpc/xmon/xmon.c                  |  99 +++-
+ kernel/events/hw_breakpoint.c             |  16 +
+ 16 files changed, 814 insertions(+), 227 deletions(-)
 
-+	asrc->pair_priv_size = sizeof(struct fsl_asrc_pair_priv);
+-- 
+2.21.1
 
-> diff --git a/sound/soc/fsl/fsl_asrc_dma.c b/sound/soc/fsl/fsl_asrc_dma.c
-> @@ -311,11 +311,12 @@ static int fsl_asrc_dma_startup(struct snd_soc_component *component,
->  		return ret;
->  	}
->  
-> -	pair = kzalloc(sizeof(struct fsl_asrc_pair), GFP_KERNEL);
-> +	pair = kzalloc(sizeof(*pair) + asrc->get_pair_priv_size(), GFP_KERNEL);
-
-+	pair = kzalloc(sizeof(*pair) + asrc->pair_priv_size, GFP_KERNEL);
