@@ -2,90 +2,83 @@ Return-Path: <SRS0=VNWk=56=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+X-Spam-Status: No, score=-6.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6C17C2BA2B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 01:55:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B97F5C2BB86
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 02:41:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3DDD92072A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 01:55:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 368C42075E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 02:41:02 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OCvhU4O/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3DDD92072A
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GG1kscR7"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 368C42075E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 491T8Z27JXzDqNm
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 11:55:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 491V955T2BzDqCY
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 12:40:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::644;
- helo=mail-pl1-x644.google.com; envelope-from=nicoleotsuka@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::941;
+ helo=mail-ua1-x941.google.com; envelope-from=shengjiu.wang@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=OCvhU4O/; dkim-atps=neutral
-Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
- [IPv6:2607:f8b0:4864:20::644])
+ header.s=20161025 header.b=GG1kscR7; dkim-atps=neutral
+Received: from mail-ua1-x941.google.com (mail-ua1-x941.google.com
+ [IPv6:2607:f8b0:4864:20::941])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 491T5G2FgzzDqHY
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 11:52:33 +1000 (AEST)
-Received: by mail-pl1-x644.google.com with SMTP id h11so4078263plr.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2020 18:52:33 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 491Twh5VZtzDqCk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 12:30:10 +1000 (AEST)
+Received: by mail-ua1-x941.google.com with SMTP id x18so3186748uap.8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2020 19:30:10 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=ueS8P+6v2FrlXivoVjNe19uVCUfAZxgQePy2A4X+RsE=;
- b=OCvhU4O/qcMY2FRjZ40rJkFvcFiCnnlXdwpTxot5wBOLYRNgpnFCHbxz852a6MeIj4
- NPa5mtPY5kIIvICQIRdv37OLe4jCCFm8PShYINo9ATeH1KlDDfWsZ63+QG4jZNNEo+JT
- ZyYXrSwFwjTBYt3Q7xqkXtfvZ6bICTCH9ANVE52aI2sjgtoMB7gTeo1rGz6wLMQK2Pi3
- HPAAtEEsaclya5CZ9i66SK7RRcTQNe54wG7Z76wzS/QaxaFwFWDD4Am8L5ZsOUjDswix
- rdZ6h8419sEHgMfFI4g0w+/ucUvgIoU75+jPx9MwFrekVFL1Z78EFnshuf0yOivCZApK
- 7YSw==
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=awmGrwmcz5aeG6k8MhFEgBaKuoZUeZk5jIB18zmrVt8=;
+ b=GG1kscR7x6EajZgB+6nk3ksaoiMBiXTRMW0RaFD4RVIzeNEG4w0De5NWOLiD4ZLDG1
+ gh7sO3nE30kQm9RhUlQU2nmzKEFmx7yhpYtim9eaTvXRuoNDSKjvdZIPvkGEg5RU1yjy
+ 4xjPgyvrVc/mhQNNfQhayQTfJt46Qo5ykXU7RJfGw5LrK/i3oSo66RQfghLTbMgxMwzr
+ TdLVAi8sOZMxaIg1oDg9vLTkiXtPed9UEulCMmWT503xsa430fas5vWruFU2s5+Mkk4n
+ 2QLA8SAJiaMSgRY5Yn66oRn2D6mpzmti3qOgFglKKGr5u62ckvtW6SopqvesdvS3oEPS
+ bfqA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=ueS8P+6v2FrlXivoVjNe19uVCUfAZxgQePy2A4X+RsE=;
- b=Zxps4Od9BF8JFox+W73cphkNl2vKa7RBlcbrnP6shuGqxxPY4I2ESQkGpBjsi0CZz4
- 7ht3dkizhJR8c6yh3K68R0iWfOhsNu2DXOi1lXsNF/kMktSmg7A07eFQXSn5qnGZkNqD
- zY26Am6PSMdUnl2ok4XcOJMEsfMzH73C4Mv0m/omYI/L0KplV1dornJkVxP8UvzvJPSD
- TlVdpofZkiQKVVftJpGO00urSXFd+7kWUCoDQn+OEQloBCYSzBD18Za3mmXj/sHwciei
- QZiH9t2f79Aj207g6zwK7jbXWBK/ogbO06fVGnCEHYX+iYzhZPz4z3tM6i3Jiw4txdW9
- AHFg==
-X-Gm-Message-State: AGi0PuZm10jvXSN3eFfp4woWNHh3E3tzaxuuQ6KFDr07qc/VxLjcHTim
- thsYI69yezs4XBvVtsIdUqo=
-X-Google-Smtp-Source: APiQypLV5A3zPqygKILoFJrzU50eijbeEVBpOWKiwDq2bSqyS0pUFarFX0qGCERIK8ocAccEOj2a5A==
-X-Received: by 2002:a17:90a:252f:: with SMTP id
- j44mr16076039pje.9.1586829149030; 
- Mon, 13 Apr 2020 18:52:29 -0700 (PDT)
-Received: from Asurada-Nvidia.nvidia.com (thunderhill.nvidia.com.
- [216.228.112.22])
- by smtp.gmail.com with ESMTPSA id x12sm2242431pfq.209.2020.04.13.18.52.28
- (version=TLS1_2 cipher=ECDHE-ECDSA-CHACHA20-POLY1305 bits=256/256);
- Mon, 13 Apr 2020 18:52:28 -0700 (PDT)
-Date: Mon, 13 Apr 2020 18:52:37 -0700
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: Shengjiu Wang <shengjiu.wang@nxp.com>
-Subject: Re: [PATCH v7 4/7] ASoC: fsl_asrc: Support new property
- fsl,asrc-format
-Message-ID: <20200414015235.GA10195@Asurada-Nvidia.nvidia.com>
-References: <cover.1586747728.git.shengjiu.wang@nxp.com>
- <d10df72d2e9985fede7969b5da1f579627f5e821.1586747728.git.shengjiu.wang@nxp.com>
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=awmGrwmcz5aeG6k8MhFEgBaKuoZUeZk5jIB18zmrVt8=;
+ b=isw47xb5FRXW3umtQeqms309982uJpjHX9rhs6ZVLC+Efhrp24exefd8XGrM1+eAN8
+ eoKAksJe9oO3aWFQt7829Bnekwn3E4/CX0O/H8slNYlFWzoGuiiF/Wqc+G/D4imKGPBg
+ OKGNGMJXc6kzZ+1+jjD9Y9wVJVcTWvEAvUOp6t4Fv1Ff0F4gpxWJJGB/jUsjDsKxlRca
+ GqLrxPTeLprvxEMBwDHmhG5PCa+ZnhocyGOReaHNmQnMFHsVnE4At91Tmu3rs6B0C8oS
+ r+zCwkHrZc3t+7xeCh+pYvlakjTda+8kGJEBHIzX2H0zk5zn1vaBFw+B5q62LkG8xEf5
+ k/Fg==
+X-Gm-Message-State: AGi0PuYHfsd0NM99aU94OVq5cfROjRpFD8ZY7nW7yGesEoV7qwZnAMkI
+ wl6yoh57oRP3K9HacfJJiKNfUS+ofcoljUXhAon7tlJb
+X-Google-Smtp-Source: APiQypLMHH0a+6ypkNMRaTXre5eZdgyn24IXJp/BZeN67bbx+T1wgzVcBrLvf9iDyZK21J6aJ/AflIrlpoPaR0RLk+8=
+X-Received: by 2002:a05:6902:4a2:: with SMTP id
+ r2mr32195235ybs.60.1586830923366; 
+ Mon, 13 Apr 2020 19:22:03 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d10df72d2e9985fede7969b5da1f579627f5e821.1586747728.git.shengjiu.wang@nxp.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+References: <cover.1586747728.git.shengjiu.wang@nxp.com>
+ <6d2bed91bcdbc3f75a9d12ac4ebf6c34c9bb9c3f.1586747728.git.shengjiu.wang@nxp.com>
+ <20200414020748.GB10195@Asurada-Nvidia.nvidia.com>
+In-Reply-To: <20200414020748.GB10195@Asurada-Nvidia.nvidia.com>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Tue, 14 Apr 2020 10:21:29 +0800
+Message-ID: <CAA+D8AN8OUtTftc_So-Z0_sjWt4RXq6fr4GpSy3Xh+YbkryfpQ@mail.gmail.com>
+Subject: Re: [PATCH v7 5/7] ASoC: fsl_asrc: Move common definition to
+ fsl_asrc_common
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,21 +90,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, timur@kernel.org, Xiubo.Lee@gmail.com,
- linuxppc-dev@lists.ozlabs.org, tiwai@suse.com, lgirdwood@gmail.com,
- robh+dt@kernel.org, perex@perex.cz, broonie@kernel.org, festevam@gmail.com,
- linux-kernel@vger.kernel.org
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>, Linux-ALSA <alsa-devel@alsa-project.org>,
+ Timur Tabi <timur@kernel.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ Fabio Estevam <festevam@gmail.com>, Shengjiu Wang <shengjiu.wang@nxp.com>,
+ Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Rob Herring <robh+dt@kernel.org>, Mark Brown <broonie@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 14, 2020 at 08:43:06AM +0800, Shengjiu Wang wrote:
-> In order to align with new ESARC, we add new property fsl,asrc-format.
-> The fsl,asrc-format can replace the fsl,asrc-width, driver
-> can accept format from devicetree, don't need to convert it to
-> format through width.
-> 
-> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+On Tue, Apr 14, 2020 at 10:09 AM Nicolin Chen <nicoleotsuka@gmail.com> wrote:
+>
+> On Tue, Apr 14, 2020 at 08:43:07AM +0800, Shengjiu Wang wrote:
+> > There is a new ASRC included in i.MX serial platform, there
+> > are some common definition can be shared with each other.
+> > So move the common definition to a separate header file.
+> >
+> > And add fsl_asrc_pair_priv and fsl_asrc_priv for
+> > the variable specific for the module, which can be used
+> > internally.
+> >
+> > Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+>
+> > diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
+> > +static size_t fsl_asrc_get_pair_priv_size(void)
+> > +{
+> > +     return sizeof(struct fsl_asrc_pair_priv);
+> > +}
+>
+> Perhaps we haven't understood completely each other's point.
+>
+> Yet, would the following change work?
 
-Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
+Should work, almost same, or do you want me to use variable to
+replace function pointer?
+
+best regards
+wang shengjiu
