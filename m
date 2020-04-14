@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84759C2BA19
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 08:34:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C2D5C2BA19
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 08:36:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 36A92206D5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 08:34:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C6DF4206D5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 08:36:32 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="iJRtpihP"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 36A92206D5
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="SX0KR4o4"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C6DF4206D5
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 491f1J1Z2czDqZn
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 18:34:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 491f3L3ZZSzDqZn
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 18:36:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -30,53 +30,53 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=iJRtpihP; dkim-atps=neutral
+ header.s=mail header.b=SX0KR4o4; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 491dgj3NclzDqYq
+ by lists.ozlabs.org (Postfix) with ESMTPS id 491dgj4DZZzDqcR
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 18:19:29 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 491dgd3ZLyz9tydX;
- Tue, 14 Apr 2020 10:19:25 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 491dgc20cSz9tydW;
+ Tue, 14 Apr 2020 10:19:24 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=iJRtpihP; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=SX0KR4o4; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 4V4LQiifNT80; Tue, 14 Apr 2020 10:19:25 +0200 (CEST)
+ with ESMTP id jP2eeCt2hNIE; Tue, 14 Apr 2020 10:19:24 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 491dgd2YLhz9tydT;
- Tue, 14 Apr 2020 10:19:25 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 491dgc0wyLz9tydT;
+ Tue, 14 Apr 2020 10:19:24 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1586852365; bh=P5l/XUfUvD4P00st6kgxn9/rml1eRRECj9OWtVUlXpg=;
+ t=1586852364; bh=IOd4O3xkB+aom5zJSI5Z7fRTG9FibbyNCqSVmNBD+Pg=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=iJRtpihPkggZ5i1hMqrmky1S8ldtIo29f/5nR2JTCWLlSYnMrwYw2v1wAVchTYsKW
- ExX0ZMQRcL7PTQ/JgNDr0cQW7yESUe+pZhgVSRBL1tjP/8DpkbiLbweiulhv0m6dWM
- 1ld6hsoEswW0hltcpf8V4phb2m9e+9oYplr8u7LU=
+ b=SX0KR4o4ct70+GbzizjWfuOZXGjvjVgchIJnc2LuWIYafDGA/sJgf/wTBoO1mtjD5
+ 53pY3kUXd8rvB4Uq+Qiij2kmJjPA18gwtCMq0Hj35M4pBI3D2PssqLECC+k8uIrXHQ
+ oy6J8QhcWfB0V+e3THyq5ldllMJifHwU/lpyk3+8=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 662C78B797;
- Tue, 14 Apr 2020 10:19:26 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 2F5528B797;
+ Tue, 14 Apr 2020 10:19:25 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id G3sFzHe7Qy3X; Tue, 14 Apr 2020 10:19:26 +0200 (CEST)
+ with ESMTP id oUkOpJgVPig4; Tue, 14 Apr 2020 10:19:25 +0200 (CEST)
 Received: from localhost.localdomain (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id F05618B796;
- Tue, 14 Apr 2020 10:19:25 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E89A58B796;
+ Tue, 14 Apr 2020 10:19:24 +0200 (CEST)
 Received: by localhost.localdomain (Postfix, from userid 0)
- id C33ED6578A; Tue, 14 Apr 2020 08:19:25 +0000 (UTC)
-Message-Id: <c43cc980a4483879f555d46399b296957a46fe8e.1586852082.git.christophe.leroy@c-s.fr>
+ id BBA0D6578A; Tue, 14 Apr 2020 08:19:24 +0000 (UTC)
+Message-Id: <81c86101f400b17f0eadd954878e226b207d18d6.1586852082.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1586852082.git.christophe.leroy@c-s.fr>
 References: <cover.1586852082.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 09/13] powerpc/40x: Remove support for IBM 405GP
+Subject: [PATCH v3 08/13] powerpc/40x: Remove support for ISS Simulator
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  michal.simek@xilinx.com, arnd@arndb.de
-Date: Tue, 14 Apr 2020 08:19:25 +0000 (UTC)
+Date: Tue, 14 Apr 2020 08:19:24 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,57 +93,29 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-All platforms selecting the obsolete processor are gone now.
+ISS4xx has support for 405GP which is obsolete.
 
-Remove support for it.
+Remote it.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/cputable.c     | 13 -------------
- arch/powerpc/platforms/40x/Kconfig |  6 ------
- 2 files changed, 19 deletions(-)
+ arch/powerpc/platforms/44x/Kconfig | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index bdc4eab0daaf..8ed553734919 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -1232,19 +1232,6 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 	},
- #endif /* CONFIG_PPC_8xx */
- #ifdef CONFIG_40x
--	{	/* 405GP */
--		.pvr_mask		= 0xffff0000,
--		.pvr_value		= 0x40110000,
--		.cpu_name		= "405GP",
--		.cpu_features		= CPU_FTRS_40X,
--		.cpu_user_features	= PPC_FEATURE_32 |
--			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
--		.mmu_features		= MMU_FTR_TYPE_40x,
--		.icache_bsize		= 32,
--		.dcache_bsize		= 32,
--		.machine_check		= machine_check_4xx,
--		.platform		= "ppc405",
--	},
- 	{	/* STB 04xxx */
- 		.pvr_mask		= 0xffff0000,
- 		.pvr_value		= 0x41810000,
-diff --git a/arch/powerpc/platforms/40x/Kconfig b/arch/powerpc/platforms/40x/Kconfig
-index 5d9d96e7223a..253c047fe6fe 100644
---- a/arch/powerpc/platforms/40x/Kconfig
-+++ b/arch/powerpc/platforms/40x/Kconfig
-@@ -51,12 +51,6 @@ config PPC40x_SIMPLE
- 	help
- 	  This option enables the simple PowerPC 40x platform support.
+diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
+index 39e93d23fb38..78ac6d67a935 100644
+--- a/arch/powerpc/platforms/44x/Kconfig
++++ b/arch/powerpc/platforms/44x/Kconfig
+@@ -167,8 +167,7 @@ config YOSEMITE
  
--config 405GP
--	bool
--	select IBM405_ERR77
--	select IBM405_ERR51
--	select IBM_EMAC_ZMII if IBM_EMAC
--
- config 405EX
- 	bool
- 	select IBM_EMAC_EMAC4 if IBM_EMAC
+ config ISS4xx
+ 	bool "ISS 4xx Simulator"
+-	depends on (44x || 40x)
+-	select 405GP if 40x
++	depends on 44x
+ 	select 440GP if 44x && !PPC_47x
+ 	select PPC_FPU
+ 	select OF_RTC
 -- 
 2.25.0
 
