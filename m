@@ -2,65 +2,84 @@ Return-Path: <SRS0=VNWk=56=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 327F7C2BB1D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 22:24:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC201C2BB1D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 23:37:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D32B52076B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 22:24:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2F2012072D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 23:37:12 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="XLWBhRlV"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D32B52076B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ba4Nokhh"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2F2012072D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4920QM6v8gzDr0Q
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2020 08:24:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49222Y4Z0rzDqyq
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2020 09:37:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::544;
+ helo=mail-pg1-x544.google.com; envelope-from=oohall@gmail.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=XLWBhRlV; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=Ba4Nokhh; dkim-atps=neutral
+Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
+ [IPv6:2607:f8b0:4864:20::544])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 491lzv4BnzzDqMF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 23:03:55 +1000 (AEST)
-Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
- [83.86.89.107])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 6A7BF2075E;
- Tue, 14 Apr 2020 13:03:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1586869433;
- bh=EOypBrU9tcg2QQEPNGGQltllXks3y35z6IXUGjl1DG4=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=XLWBhRlVYg1iCtB++EIMGXPAVeF1ZU6z7ff1mOzRtuHPt0RW282VdRwUJrVcq7xeD
- 10yO4veG3HRuw+wEo+nv2oXA/aW+uL5LE1lsss39dNDwE7jHcFqC693e0pj+pbc2Iw
- pkZZOnW468SR89YvW+ma9CDlA+A8SG2buRxyANGk=
-Date: Tue, 14 Apr 2020 15:03:50 +0200
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Emanuele Giuseppe Esposito <eesposit@redhat.com>
-Subject: Re: [PATCH 3/8] fs: wrap simple_pin_fs/simple_release_fs arguments
- in a struct
-Message-ID: <20200414130350.GE720679@kroah.com>
-References: <20200414124304.4470-1-eesposit@redhat.com>
- <20200414124304.4470-4-eesposit@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49220R07YDzDqwV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2020 09:35:16 +1000 (AEST)
+Received: by mail-pg1-x544.google.com with SMTP id n16so642927pgb.7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 16:35:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=+YmqX+iFmzpuLC39YXH9ihsyFQ9/x2YtAd8ekMEk1P4=;
+ b=Ba4NokhhnIStzX97W+Y32o3gdVMO5Y3gk0nYFC1kQFnBa2ehZS+Jl9rjwzCSyMXkPU
+ 0VLJxzUuISB/8yuu1yh91XDcmSkaxi5/zhVn7nDon2AnU2DSBm262KPuJn1YlAGJGldA
+ Q4jMa0z6T/YLqZm0VUHAxOD0nt1SeKMDDDYBmJ1LEs5Nm20IYgqpLxxsdk6+DKh05Syd
+ NUJhXOcUrTmYQIjLbBnheZyGOnXi136Xsn+4TnYFlOiBy3WwabxbuwnvVZXojNdCvYpX
+ KmqWfY6UesP/WBlzhsBWVKtz3uz7hLTVgBW7wiFffYLhLWOxsmt7iGCPAmb1GGL6C8qy
+ Dxww==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=+YmqX+iFmzpuLC39YXH9ihsyFQ9/x2YtAd8ekMEk1P4=;
+ b=LYKRLkeeBB5C5c7h65f0VHUDdIpxWDckRYwSEXhHb1d51K9/IvtABo8Xsu37Ez96M/
+ YOBxC1aBraO6285M4FH2x4+K4K00ZWxcaNTWH5Wa6bALxh7g61NmKAv6iaE877cHhd5Y
+ q5/tJ+q9n0zcKuEcTx/PAy4ttxzwXJEeWEmGs8fHgOxigh5Ird07XckNnowG2wJvI/zy
+ NzrgiZHMQ2/xA9nhe/RKg/2qFHLlFpUgdRmY4UGeweb9c3sodIY57/h2DTJWQFsfqiNI
+ gP+f+yADX9P+TphI+sPi5Oz7LnShrUEhA2/yyzld4uP1BCrD9cbMeawVCPxx/JVMjJAC
+ ugZQ==
+X-Gm-Message-State: AGi0PuZbZJQosfArsdJXCND65UXGe+dcEu09ZwkHPebrtUrYbR5jS8RT
+ uz5tKKirC0xD1fnjul0gSEUQJqGZ
+X-Google-Smtp-Source: APiQypJFfT+ZVr/A+zJExA0JobhrC5QJlw6Qejjejt47a7VNU8AgLabKwrMIMEzxMtC57bhDFby7Vw==
+X-Received: by 2002:a62:64c9:: with SMTP id y192mr25444512pfb.26.1586907312823; 
+ Tue, 14 Apr 2020 16:35:12 -0700 (PDT)
+Received: from localhost.ibm.com ([220.240.137.199])
+ by smtp.gmail.com with ESMTPSA id i187sm11987996pfc.112.2020.04.14.16.35.11
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 14 Apr 2020 16:35:12 -0700 (PDT)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/powernv/pci: Add an explaination for
+ PNV_IODA_PE_BUS_ALL
+Date: Wed, 15 Apr 2020 09:35:02 +1000
+Message-Id: <20200414233502.758-1-oohall@gmail.com>
+X-Mailer: git-send-email 2.21.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200414124304.4470-4-eesposit@redhat.com>
-X-Mailman-Approved-At: Wed, 15 Apr 2020 08:15:09 +1000
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,68 +91,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Song Liu <songliubraving@fb.com>, linux-usb@vger.kernel.org,
- bpf@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
- David Airlie <airlied@linux.ie>, Heiko Carstens <heiko.carstens@de.ibm.com>,
- Alexei Starovoitov <ast@kernel.org>, dri-devel@lists.freedesktop.org,
- "J. Bruce Fields" <bfields@fieldses.org>,
- Joseph Qi <joseph.qi@linux.alibaba.com>, Hugh Dickins <hughd@google.com>,
- Paul Mackerras <paulus@samba.org>, John Johansen <john.johansen@canonical.com>,
- netdev@vger.kernel.org, ocfs2-devel@oss.oracle.com,
- Christoph Hellwig <hch@lst.de>, Andrew Donnellan <ajd@linux.ibm.com>,
- Matthew Garrett <matthew.garrett@nebula.com>, linux-efi@vger.kernel.org,
- Arnd Bergmann <arnd@arndb.de>, Daniel Borkmann <daniel@iogearbox.net>,
- Christian Borntraeger <borntraeger@de.ibm.com>, linux-rdma@vger.kernel.org,
- Mark Fasheh <mark@fasheh.com>, Anton Vorontsov <anton@enomsg.org>,
- John Fastabend <john.fastabend@gmail.com>, James Morris <jmorris@namei.org>,
- Ard Biesheuvel <ardb@kernel.org>, Jason Gunthorpe <jgg@ziepe.ca>,
- Doug Ledford <dledford@redhat.com>, oprofile-list@lists.sf.net,
- Yonghong Song <yhs@fb.com>, Ian Kent <raven@themaw.net>,
- Andrii Nakryiko <andriin@fb.com>, Alexey Dobriyan <adobriyan@gmail.com>,
- "Serge E. Hallyn" <serge@hallyn.com>, Robert Richter <rric@kernel.org>,
- Thomas Zimmermann <tzimmermann@suse.de>, Vasily Gorbik <gor@linux.ibm.com>,
- Tony Luck <tony.luck@intel.com>, Kees Cook <keescook@chromium.org>,
- "James E.J. Bottomley" <jejb@linux.ibm.com>, autofs@vger.kernel.org,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Mike Marciniszyn <mike.marciniszyn@intel.com>,
- Maxime Ripard <mripard@kernel.org>, linux-fsdevel@vger.kernel.org,
- "Manoj N. Kumar" <manoj@linux.ibm.com>, Uma Krishnan <ukrishn@linux.ibm.com>,
- Jakub Kicinski <kuba@kernel.org>, KP Singh <kpsingh@chromium.org>,
- Trond Myklebust <trond.myklebust@hammerspace.com>,
- "Matthew R. Ochs" <mrochs@linux.ibm.com>,
- "David S. Miller" <davem@davemloft.net>, Felipe Balbi <balbi@kernel.org>,
- linux-nfs@vger.kernel.org, Iurii Zaikin <yzaikin@google.com>,
- linux-scsi@vger.kernel.org, "Martin K. Petersen" <martin.petersen@oracle.com>,
- linux-mm@kvack.org, linux-s390@vger.kernel.org,
- Dennis Dalessandro <dennis.dalessandro@intel.com>,
- Miklos Szeredi <miklos@szeredi.hu>, linux-security-module@vger.kernel.org,
- linux-kernel@vger.kernel.org, Anna Schumaker <anna.schumaker@netapp.com>,
- Luis Chamberlain <mcgrof@kernel.org>, Chuck Lever <chuck.lever@oracle.com>,
- Jeremy Kerr <jk@ozlabs.org>, Daniel Vetter <daniel@ffwll.ch>,
- Colin Cross <ccross@android.com>, Frederic Barrat <fbarrat@linux.ibm.com>,
- Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
- Mike Kravetz <mike.kravetz@oracle.com>, linuxppc-dev@lists.ozlabs.org,
- Martin KaFai Lau <kafai@fb.com>, Joel Becker <jlbec@evilplan.org>,
- Alexander Viro <viro@zeniv.linux.org.uk>
+Cc: Oliver O'Halloran <oohall@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 14, 2020 at 02:42:57PM +0200, Emanuele Giuseppe Esposito wrote:
-> @@ -676,9 +674,9 @@ static void __debugfs_file_removed(struct dentry *dentry)
->  
->  static void remove_one(struct dentry *victim)
->  {
-> -        if (d_is_reg(victim))
-> +    if (d_is_reg(victim))
->  		__debugfs_file_removed(victim);
-> -	simple_release_fs(&debugfs_mount, &debugfs_mount_count);
-> +	simple_release_fs(&debugfs);
->  }
->  
->  /**
+It's pretty obsecure and confused me for a long time so I figured it's
+worth documenting properly.
 
-Always run checkpatch.pl on your patches so you do not get grumpy
-maintainers telling you to run checkpatch.pl on your patches...
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+---
+ arch/powerpc/platforms/powernv/pci.h | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index a8cde70..51c254f2 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -33,6 +33,24 @@ enum pnv_phb_model {
+ #define PNV_IODA_PE_SLAVE	(1 << 4)	/* Slave PE in compound case	*/
+ #define PNV_IODA_PE_VF		(1 << 5)	/* PE for one VF 		*/
+ 
++/*
++ * A brief note on PNV_IODA_PE_BUS_ALL
++ *
++ * This is needed because of the behaviour of PCIe-to-PCI bridges. The PHB uses
++ * the Requester ID field of the PCIe request header to determine the device
++ * (and PE) that initiated a DMA. In legacy PCI individual memory read/write
++ * requests aren't tagged with the RID. To work around this the PCIe-to-PCI
++ * bridge will use (secondary_bus_no << 8) | 0x00 as the RID on the PCIe side.
++ *
++ * PCIe-to-X bridges have a similar issue even though PCI-X requests also have
++ * a RID in the transaction header. The PCIe-to-X bridge is permitted to "take
++ * ownership" of a transaction by a PCI-X device when forwarding it to the PCIe
++ * side of the bridge.
++ *
++ * To work around these problems we use the BUS_ALL flag since every subordinate
++ * bus of the bridge should go into the same PE.
++ */
++
+ /* Indicates operations are frozen for a PE: MMIO in PESTA & DMA in PESTB. */
+ #define PNV_IODA_STOPPED_STATE	0x8000000000000000
+ 
+-- 
+2.9.5
 
