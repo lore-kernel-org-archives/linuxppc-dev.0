@@ -2,72 +2,112 @@ Return-Path: <SRS0=VNWk=56=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.2 required=3.0 tests=DATE_IN_PAST_03_06,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AAD40C2BA19
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 11:21:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE70AC2BA19
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 11:32:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5E6AF206B6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 11:21:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5E6AF206B6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 344A6206D5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 11:32:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 344A6206D5
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 491jjJ0gSHzDqcM
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 21:21:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.208.65; helo=mail-ed1-f65.google.com;
- envelope-from=k.kozlowski.k@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-ed1-f65.google.com (mail-ed1-f65.google.com
- [209.85.208.65])
+	by lists.ozlabs.org (Postfix) with ESMTP id 491jxt0KfWzDqck
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 21:32:02 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 491jg41tWdzDqTP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 21:19:09 +1000 (AEST)
-Received: by mail-ed1-f65.google.com with SMTP id s10so8415947edy.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 04:19:09 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=kLr1otCrFIODbPMjYkvy3aKgept10MpBYq6j6d3c97s=;
- b=MpH1hUKfv4ln8mx5F7Cm70UUf5bkTiArHARzlZ38XuJYRZuVCTc/FhLpK34w74MNT4
- hM9yXazkIrzte5Nr9+ZWoiQTENxQ/D8VH2N3Lgi/dJmw0GoJvYvU0TaMpVa2W2/kYS1Q
- o0lR8jdcjpewyt+2kfOb1hU8vU002BpWKl3IqgXj7AoME+6fBcfA295JFyEr2ryuM3PC
- ml6vJFwYhi1VKihZ5qGOrTT/0mi20izgJYJl2Itc0dGTvp90UrRTdazyOfyk1YYMum0W
- dsUJuxapvkKVzkysBpbW8EsI8lR8PSOZ3o+5RsvCBso0pjL25RtP5jYEQI5y3jEvqJti
- z0YQ==
-X-Gm-Message-State: AGi0PuZr5WVee1SVcB7Uv9sINQASQHxq4RCDc0c5CYVu4QPckzn2W5s3
- yyE6mTUaVK6UJf4HX/drv6A=
-X-Google-Smtp-Source: APiQypI+e8NhZbH4s6s1t6e787WWdZVnlyyo3DThuzngTxyATZQvoEtvVJUA6KnpSKeyc8xiorGa1Q==
-X-Received: by 2002:a17:906:7e19:: with SMTP id
- e25mr20500556ejr.358.1586863146621; 
- Tue, 14 Apr 2020 04:19:06 -0700 (PDT)
-Received: from kozik-lap ([194.230.155.125])
- by smtp.googlemail.com with ESMTPSA id j5sm1662117edh.4.2020.04.14.04.19.05
- (version=TLS1_2 cipher=ECDHE-ECDSA-CHACHA20-POLY1305 bits=256/256);
- Tue, 14 Apr 2020 04:19:05 -0700 (PDT)
-Date: Tue, 14 Apr 2020 13:19:03 +0200
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: Build regressions/improvements in v5.7-rc1
-Message-ID: <20200414111903.GA1895@kozik-lap>
-References: <20200413093100.24470-1-geert@linux-m68k.org>
- <alpine.DEB.2.21.2004131232220.32713@ramsan.of.borg>
- <877dyijrh7.fsf@mpe.ellerman.id.au>
- <20200414110627.GA1373@kozik-lap>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 491jtJ25gLzDqTP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 21:28:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 491jtH4KrJz8shd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 21:28:55 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 491jtH391qz9sSy; Tue, 14 Apr 2020 21:28:55 +1000 (AEST)
+Authentication-Results: ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 491jtG5xdTz9sSt
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Apr 2020 21:28:54 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 03EB4jui015701; Tue, 14 Apr 2020 07:28:46 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30bad8m8g3-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 14 Apr 2020 07:28:46 -0400
+Received: from m0098394.ppops.net (m0098394.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 03EB54Xc017625;
+ Tue, 14 Apr 2020 07:28:45 -0400
+Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.26])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30bad8m8fn-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 14 Apr 2020 07:28:45 -0400
+Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
+ by ppma04wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 03EBMULn030882;
+ Tue, 14 Apr 2020 11:28:44 GMT
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by ppma04wdc.us.ibm.com with ESMTP id 30b5h6g5ra-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 14 Apr 2020 11:28:44 +0000
+Received: from b03ledav004.gho.boulder.ibm.com
+ (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 03EBShNI55116192
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 14 Apr 2020 11:28:43 GMT
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id AA42B78064;
+ Tue, 14 Apr 2020 11:28:43 +0000 (GMT)
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id F2E797805E;
+ Tue, 14 Apr 2020 11:28:42 +0000 (GMT)
+Received: from sofia.ibm.com (unknown [9.85.109.81])
+ by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Tue, 14 Apr 2020 11:28:42 +0000 (GMT)
+Received: by sofia.ibm.com (Postfix, from userid 1000)
+ id 72BE52E3019; Tue, 14 Apr 2020 12:38:20 +0530 (IST)
+Date: Tue, 14 Apr 2020 12:38:20 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Pratik Rajesh Sampat <psampat@linux.ibm.com>
+Subject: Re: [PATCH v6 4/4] Advertise the self-save and self-restore
+ attributes in the device tree
+Message-ID: <20200414070820.GC24277@in.ibm.com>
+References: <20200326070917.12744-1-psampat@linux.ibm.com>
+ <20200326070917.12744-5-psampat@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200414110627.GA1373@kozik-lap>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+In-Reply-To: <20200326070917.12744-5-psampat@linux.ibm.com>
+User-Agent: Mutt/1.5.23 (2014-03-12)
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
+ definitions=2020-04-14_02:2020-04-14,
+ 2020-04-14 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 mlxscore=0
+ mlxlogscore=999 adultscore=0 priorityscore=1501 suspectscore=2
+ impostorscore=0 phishscore=0 spamscore=0 clxscore=1015 malwarescore=0
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2003020000 definitions=main-2004140092
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,60 +119,273 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, virtualization@lists.linux-foundation.org,
- Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org,
- netdev@vger.kernel.org
+Reply-To: ego@linux.vnet.ibm.com
+Cc: ego@linux.vnet.ibm.com, pratik.r.sampat@gmail.com, linuxram@us.ibm.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, oohall@gmail.com,
+ skiboot@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 14, 2020 at 01:06:27PM +0200, Krzysztof Kozlowski wrote:
-> On Tue, Apr 14, 2020 at 08:23:32PM +1000, Michael Ellerman wrote:
- > >>  + /kisskb/src/arch/powerpc/include/asm/nohash/64/pgtable-4k.h: error: expected ')' before '!=' token:  => 58:40
-> > >>  + /kisskb/src/arch/powerpc/include/asm/nohash/64/pgtable-4k.h: error: expected ')' before '==' token:  => 57:37
-> > >>  + /kisskb/src/arch/powerpc/include/asm/nohash/64/pgtable-4k.h: error: expected identifier or '(' before '!' token:  => 56:25
-> > >>  + /kisskb/src/arch/powerpc/include/asm/nohash/64/pgtable.h: error: expected ')' before '!=' token:  => 163:40
-> > >>  + /kisskb/src/arch/powerpc/include/asm/nohash/64/pgtable.h: error: expected ')' before '==' token:  => 333:50
-> > >>  + /kisskb/src/arch/powerpc/include/asm/nohash/64/pgtable.h: error: expected ')' before '^' token:  => 333:36
-> > >>  + /kisskb/src/arch/powerpc/include/asm/nohash/64/pgtable.h: error: expected identifier or '(' before '!' token:  => 146:27, 144:24, 160:25, 161:24, 143:25
-> > >>  + /kisskb/src/arch/powerpc/include/asm/nohash/64/pgtable.h: error: expected identifier or '(' before 'struct':  => 77:21
-> > >>  + /kisskb/src/arch/powerpc/include/asm/nohash/pgtable.h: error: redefinition of 'pgd_huge':  => 291:19
-> > >>  + /kisskb/src/arch/powerpc/include/asm/nohash/pte-book3e.h: error: redefinition of 'pte_mkprivileged':  => 108:26
-> > >>  + /kisskb/src/arch/powerpc/include/asm/nohash/pte-book3e.h: error: redefinition of 'pte_mkuser':  => 115:20
-> > >>  + /kisskb/src/arch/powerpc/kvm/book3s_64_vio_hv.c: error: 'struct kvm_arch' has no member named 'spapr_tce_tables':  => 68:46, 68:2
-> > >
-> > > ppc64_book3e_allmodconfig
-> > 
-> > Caused by:
-> > 
-> > e93a1695d7fb ("iommu: Enable compile testing for some of drivers")
-> > 
-> > Which did:
-> > 
-> >  config SPAPR_TCE_IOMMU
-> >  	bool "sPAPR TCE IOMMU Support"
-> > -	depends on PPC_POWERNV || PPC_PSERIES
-> > +	depends on PPC_POWERNV || PPC_PSERIES || (PPC && COMPILE_TEST)
-> > 
-> > 
-> > Which is just ... not right, the dependencies on the correct platform
-> > are important, otherwise the build breaks.
+Hello Pratik,
+
+On Thu, Mar 26, 2020 at 12:39:17PM +0530, Pratik Rajesh Sampat wrote:
+> Support for self save and self restore interface is advertised in the
+> device tree, along with the list of SPRs it supports for each.
 > 
-> The SPAPR_TCE_IOMMU should compile fine.  The actual trouble here is
-> that KVM_BOOK3S_64 selects SPAPR_TCE_IOMMU which is a user-visible
-> symbol.  This is generally discouraged because of exactly this error -
-> select ignores any dependencies.
+> The Special Purpose Register identification is encoded in a 2048 bitmask
+> structure, where each bit signifies the identification key of that SPR
+> which is consistent with that of the POWER architecture set for that
+> register.
 > 
-> I can revert the COMPILE_TEST for SPAPR_TCE_IOMMU or change
-> select->depends in KVM_BOOK3S_64.  I think the latter is the proper
-> change here.
+> Signed-off-by: Pratik Rajesh Sampat <psampat@linux.ibm.com>
+> ---
+>  .../ibm,opal/power-mgt/self-restore.rst       |  27 ++++
+>  .../ibm,opal/power-mgt/self-save.rst          |  27 ++++
+>  hw/slw.c                                      | 116 ++++++++++++++++++
+>  include/skiboot.h                             |   1 +
+>  4 files changed, 171 insertions(+)
+>  create mode 100644 doc/device-tree/ibm,opal/power-mgt/self-restore.rst
+>  create mode 100644 doc/device-tree/ibm,opal/power-mgt/self-save.rst
+> 
+> diff --git a/doc/device-tree/ibm,opal/power-mgt/self-restore.rst b/doc/device-tree/ibm,opal/power-mgt/self-restore.rst
+> new file mode 100644
+> index 00000000..2a2269f7
+> --- /dev/null
+> +++ b/doc/device-tree/ibm,opal/power-mgt/self-restore.rst
+> @@ -0,0 +1,27 @@
+> +ibm,opal/power-mgt/self-restore device tree entries
+> +===================================================
+> +
+> +This node exports the bitmask representing the special purpose registers that
+> +the self-restore API currently supports.
+> +
+> +Example:
+> +
+> +.. code-block:: dts
+> +
+> +  self-restore {
+> +        sprn-bitmask = <0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x42010000 0x0 0x0
+> +                        0x20000 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0
+> +                        0x0 0x0 0x100000 0x900000 0x0 0x0 0x530000 0x0 0x0 0x0
+> +                        0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0
+> +                        0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0
+> +                        0x0 0x10000>;
+> +        phandle = <0x1c7>;
+> +  };
+> +
+> +sprn-bitmask
+> +------------
+> +
+> +This property is a bitmask of of all the existing SPRs and if the SPR is
+> +supported, the corresponding bit of the SPR number is set to 1.
+> +The representation of the bits are left-right, i.e the MSB of the first
+> +doubleword represants the 0th bit.
+> diff --git a/doc/device-tree/ibm,opal/power-mgt/self-save.rst b/doc/device-tree/ibm,opal/power-mgt/self-save.rst
+> new file mode 100644
+> index 00000000..c367720e
+> --- /dev/null
+> +++ b/doc/device-tree/ibm,opal/power-mgt/self-save.rst
+> @@ -0,0 +1,27 @@
+> +ibm,opal/power-mgt/self-save device tree entries
+> +===================================================
+> +
+> +This node exports the bitmask representing the special purpose registers that
+> +the self-save API currently supports.
+> +
+> +Example:
+> +
+> +.. code-block:: dts
+> +
+> +  self-save {
+> +        sprn-bitmask = <0x0 0x0 0x0 0x0 0x100000 0x0 0x0 0x0 0x42010000 0x0 0x0
+> +                        0x20000 0x0 0x0 0x0 0x10000 0x0 0x0 0x0 0x0 0x0 0x0 0x0
+> +                        0x0 0x0 0x0 0x100000 0x840000 0x0 0x0 0x0 0x0 0x0 0x0
+> +                        0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0
+> +                        0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0
+> +                        0x0 0x10000>;
+> +        phandle = <0x1c8>;
+> +  };
+> +
+> +sprn-bitmask
+> +------------
+> +
+> +This property is a bitmask of of all the existing SPRs and if the SPR is
+> +supported, the corresponding bit of the SPR number is set to 1.
+> +The representation of the bits are left-right, i.e the MSB of the first
+> +doubleword represants the 0th bit.
+> diff --git a/hw/slw.c b/hw/slw.c
+> index 6a09cc2c..9d1fe2c5 100644
+> --- a/hw/slw.c
+> +++ b/hw/slw.c
+> @@ -29,6 +29,7 @@
+>  #include <sbe_xip_image.h>
+> 
+>  static uint32_t slw_saved_reset[0x100];
+> +#define SPR_BITMAP_LENGTH	2048
+> 
+>  static bool slw_current_le = false;
+> 
+> @@ -750,6 +751,119 @@ static void slw_late_init_p9(struct proc_chip *chip)
+>  	}
+>  }
+> 
+> +/* Add device tree properties to determine self-save | restore */
+> +void add_cpu_self_save_restore_properties(void)
+> +{
+> +	struct dt_node *self_restore, *self_save, *power_mgt;
+> +	uint64_t *self_save_mask, *self_restore_mask;
+> +	bool self_save_supported = true;
+> +	uint64_t compVector = -1;
+> +	struct proc_chip *chip;
+> +	int i, rc;
+> +
+> +	const uint64_t self_restore_regs[] = {
+> +		P8_SPR_HRMOR,
+> +		P8_SPR_HMEER,
+> +		P8_SPR_PMICR,
+> +		P8_SPR_PMCR,
+> +		P8_SPR_HID0,
+> +		P8_SPR_HID1,
+> +		P8_SPR_HID4,
+> +		P8_SPR_HID5,
+> +		P8_SPR_HSPRG0,
+> +		P8_SPR_LPCR,
+> +		P8_MSR_MSR
+> +	};
+> +
+> +	const uint64_t self_save_regs[] = {
+> +		P9_STOP_SPR_DAWR,
+> +		P9_STOP_SPR_HSPRG0,
+> +		P9_STOP_SPR_LDBAR,
+> +		P9_STOP_SPR_LPCR,
+> +		P9_STOP_SPR_PSSCR,
+> +		P9_STOP_SPR_MSR,
+> +		P9_STOP_SPR_HRMOR,
+> +		P9_STOP_SPR_HMEER,
+> +		P9_STOP_SPR_PMCR,
+> +		P9_STOP_SPR_PTCR
+> +	};
+> +
+> +	chip = next_chip(NULL);
+> +	assert(chip);
+> +	rc = proc_stop_api_discover_capability((void *) chip->homer_base,
+> +					       &compVector);
+> +	if (rc == STOP_SAVE_ARG_INVALID_IMG) {
+> +		prlog(PR_DEBUG, "HOMER BASE INVALID\n");
+> +		return;
+> +	} else if (rc == STOP_SAVE_API_IMG_INCOMPATIBLE) {
+> +		prlog(PR_DEBUG, "STOP API running incompatible versions\n");
+> +		if ((compVector & SELF_RESTORE_VER_MISMATCH) == 0) {
+> +			prlog(PR_DEBUG, "Self-save API unsupported\n");
+> +			self_save_supported = false;
+> +		}
+> +	}
+> +
+> +	power_mgt = dt_find_by_path(dt_root, "/ibm,opal/power-mgt");
+> +	if (!power_mgt) {
+> +		prerror("OCC: dt node /ibm,opal/power-mgt not found\n");
 
-Eh, not really, it looks more complex because there are more
-dependencies (the book3s_64_vio_hv is pulled by KVM Makefile if
-SPAPR_TCE_IOMMU is set).
+The prerror/warning in this function should be prefixed with "SLW"
+instead of "OCC" here. This function has nothing to do with OCC.
 
-I guess the revert of this part makes most sense.
 
-Best regards,
-Krzysztof
+> +		return;
+> +	}
+> +
+> +	self_restore = dt_new(power_mgt, "self-restore");
+> +	if (!self_restore) {
+> +		prerror("OCC: Failed to create self restore node");
 
+Ditto.
+
+> +		return;
+> +	}
+> +
+> +	self_restore_mask = zalloc(SPR_BITMAP_LENGTH / 8);
+> +	if (!self_restore_mask)
+> +		return;
+> +
+> +	for (i = 0; i < ARRAY_SIZE(self_restore_regs); i++) {
+> +		int bitmask_idx = self_restore_regs[i] / 64;
+> +		uint64_t bitmask_pos = self_restore_regs[i] % 64;
+> +		self_restore_mask[bitmask_idx] |= 1ul << bitmask_pos;
+> +	}
+> +
+> +	for (i = 0; i < (SPR_BITMAP_LENGTH / 64); i++) {
+> +		self_restore_mask[i] = cpu_to_be64(self_restore_mask[i]);
+> +	}
+> +
+> +	dt_add_property(self_restore, "sprn-bitmask", self_restore_mask,
+> +			SPR_BITMAP_LENGTH / 8);
+> +	dt_add_property_string(self_restore, "compatible",
+> +			       "ibm,opal-self-restore");
+> +	free(self_restore_mask);
+> +
+> +	if (proc_gen != proc_gen_p9 || !self_save_supported)
+
+We need a 
+prlog(PR_INFO, "SLW: self-save not supported on this platform");
+
+?
+
+> +		return;
+
+
+> +
+> +	self_save = dt_new(power_mgt, "self-save");
+> +	if (!self_save) {
+> +		prerror("OCC: Failed to create self save node");
+> +		return;
+> +	}
+> +
+> +	self_save_mask = zalloc(SPR_BITMAP_LENGTH / 8);
+> +	if (!self_save_mask)
+> +		return;
+> +
+> +	for (i = 0; i < ARRAY_SIZE(self_save_regs); i++) {
+> +		int bitmask_idx = self_save_regs[i] / 64;
+> +		uint64_t bitmask_pos = self_save_regs[i] % 64;
+> +		self_save_mask[bitmask_idx] |= 1ul << bitmask_pos;
+> +	}
+> +
+> +	for (i = 0; i < (SPR_BITMAP_LENGTH / 64); i++) {
+> +		self_save_mask[i] = cpu_to_be64(self_save_mask[i]);
+> +	}
+> +
+> +	dt_add_property(self_save, "sprn-bitmask", self_save_mask,
+> +			SPR_BITMAP_LENGTH / 8);
+> +	dt_add_property_string(self_save, "compatible", "ibm,opal-self-save");
+> +	free(self_save_mask);
+> +}
+> +
+>  /* Add device tree properties to describe idle states */
+>  void add_cpu_idle_state_properties(void)
+>  {
+> @@ -1563,4 +1677,6 @@ void slw_init(void)
+>  		}
+>  	}
+>  	add_cpu_idle_state_properties();
+> +	if (has_deep_states)
+> +		add_cpu_self_save_restore_properties();
+>  }
+> diff --git a/include/skiboot.h b/include/skiboot.h
+> index 9ced240e..d3631dea 100644
+> --- a/include/skiboot.h
+> +++ b/include/skiboot.h
+> @@ -209,6 +209,7 @@ extern void early_uart_init(void);
+>  extern void homer_init(void);
+>  extern void slw_init(void);
+>  extern void add_cpu_idle_state_properties(void);
+> +extern void add_cpu_self_save_restore_properties(void);
+>  extern void lpc_rtc_init(void);
+
+Apart from these minor quibbles,
+
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+
+> 
+>  /* flash support */
+> -- 
+> 2.24.1
+> 
