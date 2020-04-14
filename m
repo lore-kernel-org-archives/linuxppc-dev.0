@@ -2,25 +2,25 @@ Return-Path: <SRS0=VNWk=56=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FAD8C2BB1D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 22:18:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E047C2BB1D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 22:20:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0CBE720767
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 22:18:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 299C720767
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 22:20:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="owjpvTR/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0CBE720767
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="O+0/+J3q"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 299C720767
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4920Hh2BpszDr1Q
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2020 08:18:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4920Ks3bCyzDr24
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2020 08:20:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
  helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
@@ -29,36 +29,36 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=owjpvTR/; dkim-atps=neutral
+ header.s=default header.b=O+0/+J3q; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 491lnn4gZhzDq9J
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 22:55:09 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 491lqN0Rc6zDqfB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 22:56:31 +1000 (AEST)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 75B9C206A2;
- Tue, 14 Apr 2020 12:55:05 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 040772076D;
+ Tue, 14 Apr 2020 12:56:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1586868906;
- bh=3mtVbazOODlWmZkI2pC3OZrxU4xuKxy4xYMqOMi+DOo=;
+ s=default; t=1586868988;
+ bh=cUsRBw4xRJcezB/ZRtjYiCyoUTShgzDF9QmHT/uunvY=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=owjpvTR/99cTOPzzwnkDnpkDpyHwqR3u/28s6xClkS7BDEyhyW63auTVtn9fbzvgw
- gSPxDTRm63N6w859trpZorcERRfHwuo0gOq3qU8enok4JrslGok4+0RyU/6hKXTvQp
- N1FGoKtqAWcRwtbvdskl4jZY6mpYC1zWhMkP0m6o=
-Date: Tue, 14 Apr 2020 14:55:03 +0200
+ b=O+0/+J3q6IpztwhxEGT0OVnfIh3pCJ6dMzQN4HIku+0vphymoWpQOOM8ckygO7bvj
+ tEo5/7yl4Jc4KVFc6uDRp76itFJ6WWgv+Y89NA119rqZSOnLZidaj8mNe2CoW6MsD9
+ WuhJF5efIRKL5VDTIVeF02sAYzd85r8Rx8V2Id0A=
+Date: Tue, 14 Apr 2020 14:56:26 +0200
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: Emanuele Giuseppe Esposito <eesposit@redhat.com>
-Subject: Re: [PATCH 5/8] simplefs: add alloc_anon_inode wrapper
-Message-ID: <20200414125503.GB720679@kroah.com>
+Subject: Re: [PATCH 6/8] simplefs: add file creation functions
+Message-ID: <20200414125626.GC720679@kroah.com>
 References: <20200414124304.4470-1-eesposit@redhat.com>
- <20200414124304.4470-6-eesposit@redhat.com>
+ <20200414124304.4470-7-eesposit@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200414124304.4470-6-eesposit@redhat.com>
+In-Reply-To: <20200414124304.4470-7-eesposit@redhat.com>
 X-Mailman-Approved-At: Wed, 15 Apr 2020 08:15:09 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -118,12 +118,25 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 14, 2020 at 02:42:59PM +0200, Emanuele Giuseppe Esposito wrote:
-> Start adding file creation wrappers, the simplest returns an anonymous
-> inode.
+On Tue, Apr 14, 2020 at 02:43:00PM +0200, Emanuele Giuseppe Esposito wrote:
+> A bunch of code is duplicated between debugfs and tracefs, unify it to the
+> simplefs library.
+> 
+> The code is very similar, except that dentry and inode creation are unified
+> into a single function (unlike start_creating in debugfs and tracefs, which
+> only takes care of dentries).  This adds an output parameter to the creation
+> functions, but pushes all error recovery into fs/simplefs.c.
+> 
+> Signed-off-by: Emanuele Giuseppe Esposito <eesposit@redhat.com>
+> ---
+>  fs/simplefs.c            | 150 +++++++++++++++++++++++++++++++++++++++
+>  include/linux/simplefs.h |  19 +++++
+>  2 files changed, 169 insertions(+)
 
-This changelog text does not make much sense on its own.  Please say why
-you are doing something, not just what you are doing.
+What's wrong with libfs, isn't that supposed to be for these types of
+"common" filesystem interactions?
+
+Why create a whole "new" fs for this?
 
 thanks,
 
