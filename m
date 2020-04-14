@@ -2,91 +2,85 @@ Return-Path: <SRS0=VNWk=56=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 56924C2BB1D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 04:07:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 64FDDC2BB1D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 05:50:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C4345206D5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 04:07:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id BB2C820678
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 05:50:49 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="a6BlHTzB"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C4345206D5
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="XjqpawvA"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BB2C820678
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 491X4h3YkXzDqWh
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 14:07:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::243;
- helo=mail-oi1-x243.google.com; envelope-from=natechancellor@gmail.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 491ZN62HXqzDqSf
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 15:50:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=a6BlHTzB; dkim-atps=neutral
-Received: from mail-oi1-x243.google.com (mail-oi1-x243.google.com
- [IPv6:2607:f8b0:4864:20::243])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
+ header.s=mail header.b=XjqpawvA; dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 491X2Y6GhFzDqMN
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 14:05:23 +1000 (AEST)
-Received: by mail-oi1-x243.google.com with SMTP id j16so9345266oih.10
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2020 21:05:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=Tg2WSh831FNsYBv0b1Z6yZuwq3dfkUIjSqBChy52co4=;
- b=a6BlHTzB/xon0enFlcpOTS6p3YfbVx7JypaA95SnXxU2Lu1SOreC5FpaBfOxQAROmd
- eFUrJjjN884ladpHMW6BTXf04byhvl2YJ0VsLm1AY1sY5o30F9TOFnm3mAGbahiMyGgn
- oGBnHB98cOrf0xvGY7bqXx3hZkz0UaSTv1vYPPDEn/V4H9a040qIS8KsbkiagHOvQkjZ
- 2LAlSH5AJepgCkaNYrZGo65M8atMNYYSqATxso+htzvIRSIwNwfPHymqpmXBraXNFYqA
- sJnF8771SqUQylWE6HPSynejLmOrtlrWVf7MeLdFPC9bhPnQEJG+PjXF4urmkGefCDUs
- 2PJA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=Tg2WSh831FNsYBv0b1Z6yZuwq3dfkUIjSqBChy52co4=;
- b=uY0JhIPUELif1cmVwwnIi+C47BQVCf2hScKu/YElkLsvUBQSivPAMmO43tsEcPNxMC
- 4WXZkNhkNJ0WvOLqqnaTYBVf+ThMcRnxg42yTOKbQFXuAMtWbtx4SWY7HO+NYEtb65gc
- LoH+dg1Li9Ba2Nvzv4Z67xgn1Dj5aC5kDS0tNkPoK1W/tL225q011/KecsoDmDsdeia6
- KSeed1ltmK7858FyOZN4pTIozmVl0DihQTu6dX0Ra2Q86mZFme6P5+05z7iwAMqieMjS
- mkITESPSHBk/cCDbv4+ej1lPKHL09lIq6/ZaiJGiO5cl4fuxFSTRPMf7KbUKddcZdGm2
- CFWw==
-X-Gm-Message-State: AGi0PuahUIuJlJiaRQWjIQifXzbAdljbvD8HKRn9J0UY+v66clXy8sr9
- Z2/WokWKm0uasrPr7mVrrh4=
-X-Google-Smtp-Source: APiQypLXFqd/qfevw0nE4+wkwvGzhAeOaNcSzuw0BWByzycZA6kckMmKb9Y7k8qKdE7lGqdPGSvEIw==
-X-Received: by 2002:aca:f4c4:: with SMTP id s187mr14254390oih.83.1586837117864; 
- Mon, 13 Apr 2020 21:05:17 -0700 (PDT)
-Received: from ubuntu-s3-xlarge-x86 ([2604:1380:4111:8b00::3])
- by smtp.gmail.com with ESMTPSA id u199sm5360896oif.25.2020.04.13.21.05.16
- (version=TLS1_2 cipher=ECDHE-ECDSA-CHACHA20-POLY1305 bits=256/256);
- Mon, 13 Apr 2020 21:05:17 -0700 (PDT)
-Date: Mon, 13 Apr 2020 21:05:15 -0700
-From: Nathan Chancellor <natechancellor@gmail.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: Boot flakiness with QEMU 3.1.0 and Clang built kernels
-Message-ID: <20200414040515.GA22855@ubuntu-s3-xlarge-x86>
-References: <20200410205932.GA880@ubuntu-s3-xlarge-x86>
- <1586564375.zt8lm9finh.astroid@bobo.none>
- <20200411005354.GA24145@ubuntu-s3-xlarge-x86>
- <1586597161.xyshvdbjo6.astroid@bobo.none>
- <1586612535.6kk4az03np.astroid@bobo.none>
- <20200414020553.GD48061@umbus.fritz.box>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 491ZKm5Qq9zDqSd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 15:48:42 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 491ZKd03TGz9txjw;
+ Tue, 14 Apr 2020 07:48:37 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=XjqpawvA; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id CFRg9po7RoTN; Tue, 14 Apr 2020 07:48:36 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 491ZKc5qf7z9txjv;
+ Tue, 14 Apr 2020 07:48:36 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1586843316; bh=la9sDQY/dxZgqFKLruaF3b+j+rnTidsUGNC7IrNFJSE=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=XjqpawvAzKt6Jdvmq1FWMyWVqehzEkusRFhdD7YTIcd/OQAws19RU59vKRvS3c2gN
+ 1SLUR5ipesIbSxHVk2ust7Q5r7YGWHhAU/6SOoCr7Km83GYmIMqOELpMV9mCqsk3hd
+ 5afhfDxKoYYGO/aejZeGstqfUXr64p0GWi6sqT0I=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A9D098B77D;
+ Tue, 14 Apr 2020 07:48:37 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id FBpeMWwl2jQz; Tue, 14 Apr 2020 07:48:37 +0200 (CEST)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A96748B752;
+ Tue, 14 Apr 2020 07:48:36 +0200 (CEST)
+Subject: Re: [PATCH v3 12/16] powerpc/watchpoint: Use builtin ALIGN*() macros
+To: Ravi Bangoria <ravi.bangoria@linux.ibm.com>, mpe@ellerman.id.au,
+ mikey@neuling.org
+References: <20200414031659.58875-1-ravi.bangoria@linux.ibm.com>
+ <20200414031659.58875-13-ravi.bangoria@linux.ibm.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <a2d7abe8-44e0-9780-6603-00f16300c2ca@c-s.fr>
+Date: Tue, 14 Apr 2020 07:48:33 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
+ Thunderbird/68.7.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200414020553.GD48061@umbus.fritz.box>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+In-Reply-To: <20200414031659.58875-13-ravi.bangoria@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,111 +92,133 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: qemu-devel@nongnu.org, Nicholas Piggin <npiggin@gmail.com>,
- clang-built-linux@googlegroups.com,
- =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@fr.ibm.com>, qemu-ppc@nongnu.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: apopple@linux.ibm.com, peterz@infradead.org, fweisbec@gmail.com,
+ oleg@redhat.com, npiggin@gmail.com, linux-kernel@vger.kernel.org,
+ paulus@samba.org, jolsa@kernel.org, naveen.n.rao@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 14, 2020 at 12:05:53PM +1000, David Gibson wrote:
-> On Sat, Apr 11, 2020 at 11:57:23PM +1000, Nicholas Piggin wrote:
-> > Nicholas Piggin's on April 11, 2020 7:32 pm:
-> > > Nathan Chancellor's on April 11, 2020 10:53 am:
-> > >> The tt.config values are needed to reproduce but I did not verify that
-> > >> ONLY tt.config was needed. Other than that, no, we are just building
-> > >> either pseries_defconfig or powernv_defconfig with those configs and
-> > >> letting it boot up with a simple initramfs, which prints the version
-> > >> string then shuts the machine down.
-> > >> 
-> > >> Let me know if you need any more information, cheers!
-> > > 
-> > > Okay I can reproduce it. Sometimes it eventually recovers after a long
-> > > pause, and some keyboard input often helps it along. So that seems like 
-> > > it might be a lost interrupt.
-> > > 
-> > > POWER8 vs POWER9 might just be a timing thing if P9 is still hanging
-> > > sometimes. I wasn't able to reproduce it with defconfig+tt.config, I
-> > > needed your other config with various other debug options.
-> > > 
-> > > Thanks for the very good report. I'll let you know what I find.
-> > 
-> > It looks like a qemu bug. Booting with '-d int' shows the decrementer 
-> > simply stops firing at the point of the hang, even though MSR[EE]=1 and 
-> > the DEC register is wrapping. Linux appears to be doing the right thing 
-> > as far as I can tell (not losing interrupts).
-> > 
-> > This qemu patch fixes the boot hang for me. I don't know that qemu 
-> > really has the right idea of "context synchronizing" as defined in the
-> > powerpc architecture -- mtmsrd L=1 is not context synchronizing but that
-> > does not mean it can avoid looking at exceptions until the next such
-> > event. It looks like the decrementer exception goes high but the
-> > execution of mtmsrd L=1 is ignoring it.
-> > 
-> > Prior to the Linux patch 3282a3da25b you bisected to, interrupt replay
-> > code would return with an 'rfi' instruction as part of interrupt return,
-> > which probably helped to get things moving along a bit. However it would
-> > not be foolproof, and Cedric did say he encountered some mysterious
-> > lockups under load with qemu powernv before that patch was merged, so
-> > maybe it's the same issue?
-> > 
-> > Thanks,
-> > Nick
-> > 
-> > The patch is a bit of a hack, but if you can run it and verify it fixes
-> > your boot hang would be good.
+
+
+Le 14/04/2020 à 05:16, Ravi Bangoria a écrit :
+> Currently we calculate hw aligned start and end addresses manually.
+> Replace them with builtin ALIGN_DOWN() and ALIGN() macros.
 > 
-> So a bug in this handling wouldn't surprise me at all.  However a
-> report against QEMU 3.1 isn't particularly useful.
+> Suggested-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+> ---
+>   arch/powerpc/include/asm/hw_breakpoint.h  |  5 +++--
+>   arch/powerpc/kernel/hw_breakpoint.c       | 12 ++++++------
+>   arch/powerpc/kernel/process.c             |  8 ++++----
+>   arch/powerpc/kernel/ptrace/ptrace-noadv.c |  2 +-
+>   4 files changed, 14 insertions(+), 13 deletions(-)
 > 
->  * Does the problem occur with current upstream master qemu?
+> diff --git a/arch/powerpc/include/asm/hw_breakpoint.h b/arch/powerpc/include/asm/hw_breakpoint.h
+> index d472b2eb757e..add5aa076919 100644
+> --- a/arch/powerpc/include/asm/hw_breakpoint.h
+> +++ b/arch/powerpc/include/asm/hw_breakpoint.h
+> @@ -34,10 +34,11 @@ struct arch_hw_breakpoint {
+>   #define HW_BRK_TYPE_PRIV_ALL	(HW_BRK_TYPE_USER | HW_BRK_TYPE_KERNEL | \
+>   				 HW_BRK_TYPE_HYP)
+>   
+> +/* Minimum granularity */
+>   #ifdef CONFIG_PPC_8xx
+> -#define HW_BREAKPOINT_ALIGN 0x3
+> +#define HW_BREAKPOINT_SIZE  0x4
+>   #else
+> -#define HW_BREAKPOINT_ALIGN 0x7
+> +#define HW_BREAKPOINT_SIZE  0x8
+>   #endif
+>   
+>   #define DABR_MAX_LEN	8
+> diff --git a/arch/powerpc/kernel/hw_breakpoint.c b/arch/powerpc/kernel/hw_breakpoint.c
+> index 319a761b7412..02ffd14f4519 100644
+> --- a/arch/powerpc/kernel/hw_breakpoint.c
+> +++ b/arch/powerpc/kernel/hw_breakpoint.c
+> @@ -145,10 +145,10 @@ int arch_bp_generic_fields(int type, int *gen_bp_type)
+>    *    <---8 bytes--->
+>    *
+>    * In this case, we should configure hw as:
+> - *   start_addr = address & ~HW_BREAKPOINT_ALIGN
+> + *   start_addr = address & ~(HW_BREAKPOINT_SIZE - 1)
+>    *   len = 16 bytes
+>    *
+> - * @start_addr and @end_addr are inclusive.
+> + * @start_addr is inclusive but @end_addr is exclusive.
+>    */
+>   static int hw_breakpoint_validate_len(struct arch_hw_breakpoint *hw)
+>   {
+> @@ -156,14 +156,14 @@ static int hw_breakpoint_validate_len(struct arch_hw_breakpoint *hw)
+>   	u16 hw_len;
+>   	unsigned long start_addr, end_addr;
+>   
+> -	start_addr = hw->address & ~HW_BREAKPOINT_ALIGN;
+> -	end_addr = (hw->address + hw->len - 1) | HW_BREAKPOINT_ALIGN;
+> -	hw_len = end_addr - start_addr + 1;
+> +	start_addr = ALIGN_DOWN(hw->address, HW_BREAKPOINT_SIZE);
+> +	end_addr = ALIGN(hw->address + hw->len, HW_BREAKPOINT_SIZE);
+> +	hw_len = end_addr - start_addr;
+>   
+>   	if (dawr_enabled()) {
+>   		max_len = DAWR_MAX_LEN;
+>   		/* DAWR region can't cross 512 bytes boundary */
+> -		if ((start_addr >> 9) != (end_addr >> 9))
+> +		if ((start_addr >> 9) != ((end_addr - 1) >> 9))
 
-Yes, I can reproduce the hang on 5.0.0-rc2.
+What about:
+	if (ALIGN(start_addr, SZ_512M) != ALIGN(end - 1, SZ_512M))
 
->  * Does the problem occur with qemu-2.12 (a pretty widely deployed
->    "stable" qemu, e.g. in RHEL)?
+>   			return -EINVAL;
+>   	} else if (IS_ENABLED(CONFIG_PPC_8xx)) {
+>   		/* 8xx can setup a range without limitation */
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> index aab82ab80dfa..06679adac447 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -800,12 +800,12 @@ static inline int set_breakpoint_8xx(struct arch_hw_breakpoint *brk)
+>   	unsigned long lctrl1 = LCTRL1_CTE_GT | LCTRL1_CTF_LT | LCTRL1_CRWE_RW |
+>   			       LCTRL1_CRWF_RW;
+>   	unsigned long lctrl2 = LCTRL2_LW0EN | LCTRL2_LW0LADC | LCTRL2_SLW0EN;
+> -	unsigned long start_addr = brk->address & ~HW_BREAKPOINT_ALIGN;
+> -	unsigned long end_addr = (brk->address + brk->len - 1) | HW_BREAKPOINT_ALIGN;
+> +	unsigned long start_addr = ALIGN_DOWN(brk->address, HW_BREAKPOINT_SIZE);
+> +	unsigned long end_addr = ALIGN(brk->address + brk->len, HW_BREAKPOINT_SIZE);
+>   
+>   	if (start_addr == 0)
+>   		lctrl2 |= LCTRL2_LW0LA_F;
+> -	else if (end_addr == ~0U)
+> +	else if (end_addr - 1 == ~0U)
 
-No idea but I would assume so. I might have time later this week to test
-but I assume it is kind of irrelevant if it is reproducible at ToT.
+What about:
+	else if (end_addr == 0)
 
-> > ---
-> > 
-> > diff --git a/target/ppc/translate.c b/target/ppc/translate.c
-> > index b207fb5386..1d997f5c32 100644
-> > --- a/target/ppc/translate.c
-> > +++ b/target/ppc/translate.c
-> > @@ -4364,12 +4364,21 @@ static void gen_mtmsrd(DisasContext *ctx)
-> >      if (ctx->opcode & 0x00010000) {
-> >          /* Special form that does not need any synchronisation */
-> >          TCGv t0 = tcg_temp_new();
-> > +        TCGv t1 = tcg_temp_new();
-> >          tcg_gen_andi_tl(t0, cpu_gpr[rS(ctx->opcode)],
-> >                          (1 << MSR_RI) | (1 << MSR_EE));
-> > -        tcg_gen_andi_tl(cpu_msr, cpu_msr,
-> > +        tcg_gen_andi_tl(t1, cpu_msr,
-> >                          ~(target_ulong)((1 << MSR_RI) | (1 << MSR_EE)));
-> > -        tcg_gen_or_tl(cpu_msr, cpu_msr, t0);
-> > +        tcg_gen_or_tl(t1, t1, t0);
-> > +
-> > +        gen_update_nip(ctx, ctx->base.pc_next);
-> > +        gen_helper_store_msr(cpu_env, t1);
-> >          tcg_temp_free(t0);
-> > +        tcg_temp_free(t1);
-> > +        /* Must stop the translation as machine state (may have) changed */
-> > +        /* Note that mtmsr is not always defined as context-synchronizing */
-> > +        gen_stop_exception(ctx);
-> > +
-> >      } else {
-> >          /*
-> >           * XXX: we need to update nip before the store if we enter
-> > 
+>   		lctrl2 |= LCTRL2_LW0LA_E;
+>   	else
+>   		lctrl2 |= LCTRL2_LW0LA_EandF;
+> @@ -821,7 +821,7 @@ static inline int set_breakpoint_8xx(struct arch_hw_breakpoint *brk)
+>   		lctrl1 |= LCTRL1_CRWE_WO | LCTRL1_CRWF_WO;
+>   
+>   	mtspr(SPRN_CMPE, start_addr - 1);
+> -	mtspr(SPRN_CMPF, end_addr + 1);
+> +	mtspr(SPRN_CMPF, end_addr);
+>   	mtspr(SPRN_LCTRL1, lctrl1);
+>   	mtspr(SPRN_LCTRL2, lctrl2);
+>   
+> diff --git a/arch/powerpc/kernel/ptrace/ptrace-noadv.c b/arch/powerpc/kernel/ptrace/ptrace-noadv.c
+> index 08cb8c1b504c..697c7e4b5877 100644
+> --- a/arch/powerpc/kernel/ptrace/ptrace-noadv.c
+> +++ b/arch/powerpc/kernel/ptrace/ptrace-noadv.c
+> @@ -216,7 +216,7 @@ long ppc_set_hwdebug(struct task_struct *child, struct ppc_hw_breakpoint *bp_inf
+>   	if ((unsigned long)bp_info->addr >= TASK_SIZE)
+>   		return -EIO;
+>   
+> -	brk.address = bp_info->addr & ~HW_BREAKPOINT_ALIGN;
+> +	brk.address = ALIGN_DOWN(bp_info->addr, HW_BREAKPOINT_SIZE);
+>   	brk.type = HW_BRK_TYPE_TRANSLATE;
+>   	brk.len = DABR_MAX_LEN;
+>   	if (bp_info->trigger_type & PPC_BREAKPOINT_TRIGGER_READ)
 > 
-> -- 
-> David Gibson			| I'll have my music baroque, and my code
-> david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-> 				| _way_ _around_!
-> http://www.ozlabs.org/~dgibson
 
-Cheers,
-Nathan
+Christophe
