@@ -2,64 +2,111 @@ Return-Path: <SRS0=VNWk=56=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.2 required=3.0 tests=DATE_IN_PAST_03_06,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BEDF3C2BA19
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 10:25:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CA660C2BBC7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 10:31:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 41DC02076B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 10:25:07 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="n2mBtHay"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 41DC02076B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 5098120644
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 10:31:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5098120644
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 491hSd3QKczDqbw
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 20:25:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 491hcJ6p3PzDqVQ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 20:31:44 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 491hQf44KszDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 20:23:22 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 491hY34cZ2zDqFH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 20:28:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=n2mBtHay; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 491hQf0V2qz9sQx;
- Tue, 14 Apr 2020 20:23:21 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1586859802;
- bh=ienca7ZJ75pM+OCUk27lcHXGMdt0SeTl/HP5+1YtOxU=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=n2mBtHayRRbODGHoWJrV/3ljUnGm9heXTVaq2X3r6CZsNA65YPe0sYJz8dwbagm9X
- 95vB1bVwGEz8/FqLfVcwNOowC7onp56AxAtT9sPZgsLTfWiIpPLVbprGeMNhVkepZS
- GOlrh1RN6Tr8FaR+yrfcPDcY99iq0ADnNyDD+D162EUbsD7vEC3+Mhsa57BLen65Qc
- hLBEb1zHppuo0Qwr3w11yVuKt37vDRQY/aY2oj1wDfkdKUFqTwEjCEN+QxlWq3WG2K
- okjnls2BXcRLcz5KtNgzOgqc48f1S8qh95/59xYFabmnCmJtCdTK27EtLQcRUpNt0Q
- CILdJgvaXmf+A==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org,
- Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: Build regressions/improvements in v5.7-rc1
-In-Reply-To: <alpine.DEB.2.21.2004131232220.32713@ramsan.of.borg>
-References: <20200413093100.24470-1-geert@linux-m68k.org>
- <alpine.DEB.2.21.2004131232220.32713@ramsan.of.borg>
-Date: Tue, 14 Apr 2020 20:23:32 +1000
-Message-ID: <877dyijrh7.fsf@mpe.ellerman.id.au>
+ header.from=linux.vnet.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 491hY26ND2z8sxV
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 20:28:54 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 491hY24m57z9sSG; Tue, 14 Apr 2020 20:28:54 +1000 (AEST)
+Authentication-Results: ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 491hY21KSXz9sSy
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Apr 2020 20:28:53 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 03EA43cp067568; Tue, 14 Apr 2020 06:28:47 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30cx1k4n47-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 14 Apr 2020 06:28:47 -0400
+Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 03EA4ZCw069519;
+ Tue, 14 Apr 2020 06:28:47 -0400
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
+ [169.55.85.253])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30cx1k4n3m-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 14 Apr 2020 06:28:47 -0400
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+ by ppma01wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 03EAQ8l2030289;
+ Tue, 14 Apr 2020 10:28:45 GMT
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24]) by ppma01wdc.us.ibm.com with ESMTP id 30b5h67snk-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 14 Apr 2020 10:28:45 +0000
+Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
+ [9.57.199.108])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 03EASjds42664336
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 14 Apr 2020 10:28:45 GMT
+Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 75C8BB2065;
+ Tue, 14 Apr 2020 10:28:45 +0000 (GMT)
+Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C6269B205F;
+ Tue, 14 Apr 2020 10:28:44 +0000 (GMT)
+Received: from sofia.ibm.com (unknown [9.85.109.81])
+ by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
+ Tue, 14 Apr 2020 10:28:44 +0000 (GMT)
+Received: by sofia.ibm.com (Postfix, from userid 1000)
+ id 1843B2E30FB; Tue, 14 Apr 2020 12:46:24 +0530 (IST)
+Date: Tue, 14 Apr 2020 12:46:24 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Pratik Rajesh Sampat <psampat@linux.ibm.com>
+Subject: Re: [PATCH v6 1/3] powerpc/powernv: Introduce interface for
+ self-restore support
+Message-ID: <20200414071623.GE24277@in.ibm.com>
+References: <20200326071034.12838-1-psampat@linux.ibm.com>
+ <20200326071034.12838-2-psampat@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200326071034.12838-2-psampat@linux.ibm.com>
+User-Agent: Mutt/1.5.23 (2014-03-12)
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
+ definitions=2020-04-14_02:2020-04-13,
+ 2020-04-14 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ mlxscore=0 lowpriorityscore=0
+ bulkscore=0 mlxlogscore=999 priorityscore=1501 phishscore=0
+ impostorscore=0 spamscore=0 malwarescore=0 suspectscore=0 clxscore=1015
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2003020000 definitions=main-2004140078
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,171 +118,275 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- virtualization@lists.linux-foundation.org
+Reply-To: ego@linux.vnet.ibm.com
+Cc: ego@linux.vnet.ibm.com, pratik.r.sampat@gmail.com, linuxram@us.ibm.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, oohall@gmail.com,
+ skiboot@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Geert Uytterhoeven <geert@linux-m68k.org> writes:
-> On Mon, 13 Apr 2020, Geert Uytterhoeven wrote:
->> Below is the list of build error/warning regressions/improvements in
->> v5.7-rc1[1] compared to v5.6[2].
->>
->> Summarized:
->>  - build errors: +132/-3
->>  - build warnings: +257/-79
->>
->> Happy fixing! ;-)
->>
->> Thanks to the linux-next team for providing the build service.
->>
->> [1] http://kisskb.ellerman.id.au/kisskb/branch/linus/head/8f3d9f354286745c751374f5f1fcafee6b3f3136/ (all 239 configs)
->> [2] http://kisskb.ellerman.id.au/kisskb/branch/linus/head/7111951b8d4973bda27ff663f2cf18b663d15b48/ (all 239 configs)
->>
->>
->> *** ERRORS ***
->>
->> 132 error regressions:
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/hash.h: error: implicit declaration of function 'pte_raw' [-Werror=implicit-function-declaration]:  => 192:2
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/hash.h: error: implicit declaration of function 'pte_raw'; did you mean 'pte_read'? [-Werror=implicit-function-declaration]:  => 192:8
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/mmu-hash.h: error: 'SLICE_NUM_HIGH' undeclared here (not in a function):  => 698:2, 698:30
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/mmu-hash.h: error: 'struct mmu_psize_def' has no member named 'ap':  => 207:28
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/mmu-hash.h: error: 'struct mmu_psize_def' has no member named 'avpnm':  => 337:57
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/mmu-hash.h: error: 'struct mmu_psize_def' has no member named 'penc':  => 411:49
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/mmu-hash.h: error: 'struct mmu_psize_def' has no member named 'penc'; did you mean 'enc'?:  => 411:50
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/mmu-hash.h: error: 'struct mmu_psize_def' has no member named 'sllp':  => 218:32, 219:26
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/mmu-hash.h: error: redefinition of 'mmu_psize_to_shift':  => 195:28
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/mmu-hash.h: error: redefinition of 'shift_to_mmu_psize':  => 185:19
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable-4k.h: error: implicit declaration of function 'pgd_raw' [-Werror=implicit-function-declaration]:  => 35:3
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable-4k.h: error: implicit declaration of function 'pgd_raw'; did you mean 'pgd_val'? [-Werror=implicit-function-declaration]:  => 35:13
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable-4k.h: error: implicit declaration of function 'pud_raw' [-Werror=implicit-function-declaration]:  => 25:3
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable-4k.h: error: implicit declaration of function 'pud_raw'; did you mean 'pud_val'? [-Werror=implicit-function-declaration]:  => 25:13
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable-4k.h: error: redefinition of 'hugepd_ok':  => 44:19
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable-4k.h: error: redefinition of 'pgd_huge':  => 29:19
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable-4k.h: error: redefinition of 'pmd_huge':  => 9:19
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable-4k.h: error: redefinition of 'pud_huge':  => 19:19
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: expected ')' before '!=' token:  => 964:19, 921:19
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: expected ')' before '==' token:  => 979:19, 801:19
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: expected ')' before '^' token:  => 801:19
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: expected ')' before '__vmalloc_end':  => 291:21, 274:21
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: expected identifier or '(' before '!' token:  => 916:19, 904:19, 939:19, 959:19, 868:19, 873:19
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: expected identifier or '(' before 'struct':  => 291:21
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: implicit declaration of function '__pgd_raw' [-Werror=implicit-function-declaration]:  => 976:2
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: implicit declaration of function '__pgd_raw'; did you mean '__fdget_raw'? [-Werror=implicit-function-declaration]:  => 976:9
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: implicit declaration of function '__pmd_raw' [-Werror=implicit-function-declaration]:  => 1075:9, 1075:2
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: implicit declaration of function '__pte_raw' [-Werror=implicit-function-declaration]:  => 552:2, 552:9
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: implicit declaration of function '__pud_raw' [-Werror=implicit-function-declaration]:  => 935:9, 935:2
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: incompatible types when returning type 'int' but 'pgd_t' was expected:  => 976:2
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: incompatible types when returning type 'int' but 'pgd_t' {aka 'struct <anonymous>'} was expected:  => 976:9
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: incompatible types when returning type 'int' but 'pmd_t' was expected:  => 1075:2
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: incompatible types when returning type 'int' but 'pmd_t' {aka 'struct <anonymous>'} was expected:  => 1075:9
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: incompatible types when returning type 'int' but 'pte_t' was expected:  => 675:2, 552:2, 971:2, 670:2, 1070:2, 647:2, 652:2, 642:2, 695:2, 660:2, 632:2, 665:2, 690:2, 627:2, 714:2, 930:2, 685:2, 637:2
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: incompatible types when returning type 'int' but 'pte_t' {aka 'struct <anonymous>'} was expected:  => 1070:9, 695:9, 627:9, 685:9, 642:9, 930:9, 647:9, 690:9, 665:9, 660:9, 675:9, 670:9, 714:9, 552:9, 971:9, 637:9, 632:9, 652:9
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: incompatible types when returning type 'int' but 'pud_t' was expected:  => 935:2
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: incompatible types when returning type 'int' but 'pud_t' {aka 'struct <anonymous>'} was expected:  => 935:9
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of '__ptep_set_access_flags':  => 789:20
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of '__ptep_test_and_clear_young':  => 371:19
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of '__set_pte_at':  => 815:20
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'huge_ptep_set_wrprotect':  => 437:20
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pfn_pte':  => 609:21
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pgd_clear':  => 954:20
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pgd_is_leaf':  => 1373:21, 1375:20
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pgd_pte':  => 969:21
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pmd_clear':  => 863:20
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pmd_is_leaf':  => 1359:21, 1361:20
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pmd_pte':  => 1068:21
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_access_permitted':  => 587:20, 586:30
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_ci':  => 853:20
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_clear':  => 474:20
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_devmap':  => 704:19
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_dirty':  => 480:19
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_exec':  => 495:20
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_exprotect':  => 630:21
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_hw_valid':  => 567:20
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_mkclean':  => 635:21
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_mkdirty':  => 663:21
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_mkexec':  => 645:21
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_mkhuge':  => 678:21
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_mkold':  => 640:21
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_mkprivileged':  => 688:21
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_mkpte':  => 650:21
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_mkspecial':  => 673:21
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_mkuser':  => 693:21
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_mkwrite':  => 655:21
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_mkyoung':  => 668:21
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_modify':  => 711:21
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_none':  => 808:19
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_pfn':  => 617:29
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_pgd':  => 974:21
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_present':  => 556:19
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_pud':  => 933:21
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_read':  => 421:19
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_special':  => 490:19
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_unmap':  => 1022:20
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_update':  => 353:29
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_user':  => 581:20
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_write':  => 416:19
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_wrprotect':  => 623:21
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pte_young':  => 485:19
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'ptep_get_and_clear':  => 451:21
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'ptep_get_and_clear_full':  => 459:21
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'ptep_set_wrprotect':  => 427:20
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pud_clear':  => 911:20
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pud_is_leaf':  => 1366:21, 1368:20
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: redefinition of 'pud_pte':  => 928:21
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: static declaration of 'map_kernel_page' follows non-static declaration:  => 1037:19
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: static declaration of 'vmemmap_create_mapping' follows non-static declaration:  => 1049:29
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/pgtable.h: error: static declaration of 'vmemmap_remove_mapping' follows non-static declaration:  => 1059:20
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/radix.h: error: implicit declaration of function 'pmd_raw' [-Werror=implicit-function-declaration]:  => 221:2
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/radix.h: error: implicit declaration of function 'pmd_raw'; did you mean 'pmd_val'? [-Werror=implicit-function-declaration]:  => 221:11
->>  + /kisskb/src/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h: error: 'struct mmu_psize_def' has no member named 'ap':  => 11:30
->>  + /kisskb/src/arch/powerpc/include/asm/kvm_book3s.h: error: 'struct kvm_vcpu_arch' has no member named 'book3s':  => 316:19
->>  + /kisskb/src/arch/powerpc/include/asm/kvm_book3s.h: error: 'struct kvm_vcpu_arch' has no member named 'fault_dar':  => 396:19
->>  + /kisskb/src/arch/powerpc/include/asm/kvm_book3s.h: error: 'struct kvm_vcpu_arch' has no member named 'fault_dar'; did you mean 'fault_dear'?:  => 396:20
->>  + /kisskb/src/arch/powerpc/include/asm/kvm_book3s.h: error: redefinition of 'kvmppc_get_cr':  => 343:19
->>  + /kisskb/src/arch/powerpc/include/asm/kvm_book3s.h: error: redefinition of 'kvmppc_get_ctr':  => 363:21
->>  + /kisskb/src/arch/powerpc/include/asm/kvm_book3s.h: error: redefinition of 'kvmppc_get_fault_dar':  => 394:21
->>  + /kisskb/src/arch/powerpc/include/asm/kvm_book3s.h: error: redefinition of 'kvmppc_get_gpr':  => 333:21
->>  + /kisskb/src/arch/powerpc/include/asm/kvm_book3s.h: error: redefinition of 'kvmppc_get_lr':  => 373:21
->>  + /kisskb/src/arch/powerpc/include/asm/kvm_book3s.h: error: redefinition of 'kvmppc_get_pc':  => 383:21
->>  + /kisskb/src/arch/powerpc/include/asm/kvm_book3s.h: error: redefinition of 'kvmppc_get_xer':  => 353:21
->>  + /kisskb/src/arch/powerpc/include/asm/kvm_book3s.h: error: redefinition of 'kvmppc_need_byteswap':  => 389:20
->>  + /kisskb/src/arch/powerpc/include/asm/kvm_book3s.h: error: redefinition of 'kvmppc_set_cr':  => 338:20
->>  + /kisskb/src/arch/powerpc/include/asm/kvm_book3s.h: error: redefinition of 'kvmppc_set_ctr':  => 358:20
->>  + /kisskb/src/arch/powerpc/include/asm/kvm_book3s.h: error: redefinition of 'kvmppc_set_gpr':  => 328:20
->>  + /kisskb/src/arch/powerpc/include/asm/kvm_book3s.h: error: redefinition of 'kvmppc_set_lr':  => 368:20
->>  + /kisskb/src/arch/powerpc/include/asm/kvm_book3s.h: error: redefinition of 'kvmppc_set_pc':  => 378:20
->>  + /kisskb/src/arch/powerpc/include/asm/kvm_book3s.h: error: redefinition of 'kvmppc_set_xer':  => 348:20
->>  + /kisskb/src/arch/powerpc/include/asm/kvm_book3s.h: error: redefinition of 'kvmppc_supports_magic_page':  => 405:20
->>  + /kisskb/src/arch/powerpc/include/asm/nohash/64/pgtable-4k.h: error: expected ')' before '!=' token:  => 58:40
->>  + /kisskb/src/arch/powerpc/include/asm/nohash/64/pgtable-4k.h: error: expected ')' before '==' token:  => 57:37
->>  + /kisskb/src/arch/powerpc/include/asm/nohash/64/pgtable-4k.h: error: expected identifier or '(' before '!' token:  => 56:25
->>  + /kisskb/src/arch/powerpc/include/asm/nohash/64/pgtable.h: error: expected ')' before '!=' token:  => 163:40
->>  + /kisskb/src/arch/powerpc/include/asm/nohash/64/pgtable.h: error: expected ')' before '==' token:  => 333:50
->>  + /kisskb/src/arch/powerpc/include/asm/nohash/64/pgtable.h: error: expected ')' before '^' token:  => 333:36
->>  + /kisskb/src/arch/powerpc/include/asm/nohash/64/pgtable.h: error: expected identifier or '(' before '!' token:  => 146:27, 144:24, 160:25, 161:24, 143:25
->>  + /kisskb/src/arch/powerpc/include/asm/nohash/64/pgtable.h: error: expected identifier or '(' before 'struct':  => 77:21
->>  + /kisskb/src/arch/powerpc/include/asm/nohash/pgtable.h: error: redefinition of 'pgd_huge':  => 291:19
->>  + /kisskb/src/arch/powerpc/include/asm/nohash/pte-book3e.h: error: redefinition of 'pte_mkprivileged':  => 108:26
->>  + /kisskb/src/arch/powerpc/include/asm/nohash/pte-book3e.h: error: redefinition of 'pte_mkuser':  => 115:20
->>  + /kisskb/src/arch/powerpc/kvm/book3s_64_vio_hv.c: error: 'struct kvm_arch' has no member named 'spapr_tce_tables':  => 68:46, 68:2
->
-> ppc64_book3e_allmodconfig
+On Thu, Mar 26, 2020 at 12:40:32PM +0530, Pratik Rajesh Sampat wrote:
+> Introduces an interface that helps determine support for the
+> self-restore API. The commit is isomorphic to the original interface of
+> declaring SPRs to self-restore.
+> 
+> Signed-off-by: Pratik Rajesh Sampat <psampat@linux.ibm.com>
 
-Caused by:
+This patch looks good to me.
 
-e93a1695d7fb ("iommu: Enable compile testing for some of drivers")
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 
-Which did:
-
- config SPAPR_TCE_IOMMU
- 	bool "sPAPR TCE IOMMU Support"
--	depends on PPC_POWERNV || PPC_PSERIES
-+	depends on PPC_POWERNV || PPC_PSERIES || (PPC && COMPILE_TEST)
-
-
-Which is just ... not right, the dependencies on the correct platform
-are important, otherwise the build breaks.
-
-cheers
+> ---
+>  arch/powerpc/platforms/powernv/idle.c | 200 +++++++++++++++++++-------
+>  1 file changed, 152 insertions(+), 48 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
+> index 78599bca66c2..858ceb86394d 100644
+> --- a/arch/powerpc/platforms/powernv/idle.c
+> +++ b/arch/powerpc/platforms/powernv/idle.c
+> @@ -32,10 +32,67 @@
+>  #define P9_STOP_SPR_MSR 2000
+>  #define P9_STOP_SPR_PSSCR      855
+> 
+> +/*
+> + * Type of support for each SPR
+> + * FIRMWARE_RESTORE: firmware restoration supported: calls self-restore OPAL API
+> + */
+> +#define UNSUPPORTED           0x0
+> +#define FIRMWARE_RESTORE      0x1
+> +
+>  static u32 supported_cpuidle_states;
+>  struct pnv_idle_states_t *pnv_idle_states;
+>  int nr_pnv_idle_states;
+> 
+> +struct preferred_sprs {
+> +	u64 spr;
+> +	u32 supported_mode;
+> +};
+> +
+> +/*
+> + * Supported mode: Default support. Can be overwritten during system
+> + *		   initialization
+> + */
+> +struct preferred_sprs preferred_sprs[] = {
+> +	{
+> +		.spr = SPRN_HSPRG0,
+> +		.supported_mode = FIRMWARE_RESTORE,
+> +	},
+> +	{
+> +		.spr = SPRN_LPCR,
+> +		.supported_mode = FIRMWARE_RESTORE,
+> +	},
+> +	{
+> +		.spr = SPRN_HMEER,
+> +		.supported_mode = FIRMWARE_RESTORE,
+> +	},
+> +	{
+> +		.spr = SPRN_HID0,
+> +		.supported_mode = FIRMWARE_RESTORE,
+> +	},
+> +	{
+> +		.spr = P9_STOP_SPR_MSR,
+> +		.supported_mode = FIRMWARE_RESTORE,
+> +	},
+> +	{
+> +		.spr = P9_STOP_SPR_PSSCR,
+> +		.supported_mode = FIRMWARE_RESTORE,
+> +	},
+> +	{
+> +		.spr = SPRN_HID1,
+> +		.supported_mode = FIRMWARE_RESTORE,
+> +	},
+> +	{
+> +		.spr = SPRN_HID4,
+> +		.supported_mode = FIRMWARE_RESTORE,
+> +	},
+> +	{
+> +		.spr = SPRN_HID5,
+> +		.supported_mode = FIRMWARE_RESTORE,
+> +	}
+> +};
+> +
+> +const int nr_preferred_sprs = ARRAY_SIZE(preferred_sprs);
+> +
+>  /*
+>   * The default stop state that will be used by ppc_md.power_save
+>   * function on platforms that support stop instruction.
+> @@ -61,78 +118,125 @@ static bool deepest_stop_found;
+> 
+>  static unsigned long power7_offline_type;
+> 
+> -static int pnv_save_sprs_for_deep_states(void)
+> +static int pnv_self_restore_sprs(u64 pir, int cpu, u64 spr)
+>  {
+> -	int cpu;
+> +	u64 reg_val;
+>  	int rc;
+> 
+> -	/*
+> -	 * hid0, hid1, hid4, hid5, hmeer and lpcr values are symmetric across
+> -	 * all cpus at boot. Get these reg values of current cpu and use the
+> -	 * same across all cpus.
+> -	 */
+> -	uint64_t lpcr_val	= mfspr(SPRN_LPCR);
+> -	uint64_t hid0_val	= mfspr(SPRN_HID0);
+> -	uint64_t hid1_val	= mfspr(SPRN_HID1);
+> -	uint64_t hid4_val	= mfspr(SPRN_HID4);
+> -	uint64_t hid5_val	= mfspr(SPRN_HID5);
+> -	uint64_t hmeer_val	= mfspr(SPRN_HMEER);
+> -	uint64_t msr_val = MSR_IDLE;
+> -	uint64_t psscr_val = pnv_deepest_stop_psscr_val;
+> -
+> -	for_each_present_cpu(cpu) {
+> -		uint64_t pir = get_hard_smp_processor_id(cpu);
+> -		uint64_t hsprg0_val = (uint64_t)paca_ptrs[cpu];
+> -
+> -		rc = opal_slw_set_reg(pir, SPRN_HSPRG0, hsprg0_val);
+> +	switch (spr) {
+> +	case SPRN_HSPRG0:
+> +		reg_val = (uint64_t)paca_ptrs[cpu];
+> +		rc = opal_slw_set_reg(pir, SPRN_HSPRG0, reg_val);
+>  		if (rc != 0)
+>  			return rc;
+> -
+> -		rc = opal_slw_set_reg(pir, SPRN_LPCR, lpcr_val);
+> +		break;
+> +	case SPRN_LPCR:
+> +		reg_val = mfspr(SPRN_LPCR);
+> +		rc = opal_slw_set_reg(pir, SPRN_LPCR, reg_val);
+>  		if (rc != 0)
+>  			return rc;
+> -
+> +		break;
+> +	case P9_STOP_SPR_MSR:
+> +		reg_val = MSR_IDLE;
+>  		if (cpu_has_feature(CPU_FTR_ARCH_300)) {
+> -			rc = opal_slw_set_reg(pir, P9_STOP_SPR_MSR, msr_val);
+> +			rc = opal_slw_set_reg(pir, P9_STOP_SPR_MSR, reg_val);
+>  			if (rc)
+>  				return rc;
+> -
+> -			rc = opal_slw_set_reg(pir,
+> -					      P9_STOP_SPR_PSSCR, psscr_val);
+> -
+> +		}
+> +		break;
+> +	case P9_STOP_SPR_PSSCR:
+> +		reg_val = pnv_deepest_stop_psscr_val;
+> +		if (cpu_has_feature(CPU_FTR_ARCH_300)) {
+> +			rc = opal_slw_set_reg(pir, P9_STOP_SPR_PSSCR, reg_val);
+>  			if (rc)
+>  				return rc;
+>  		}
+> -
+> -		/* HIDs are per core registers */
+> +		break;
+> +	case SPRN_HMEER:
+> +		reg_val = mfspr(SPRN_HMEER);
+>  		if (cpu_thread_in_core(cpu) == 0) {
+> -
+> -			rc = opal_slw_set_reg(pir, SPRN_HMEER, hmeer_val);
+> -			if (rc != 0)
+> +			rc = opal_slw_set_reg(pir, SPRN_HMEER, reg_val);
+> +			if (rc)
+>  				return rc;
+> -
+> -			rc = opal_slw_set_reg(pir, SPRN_HID0, hid0_val);
+> -			if (rc != 0)
+> +		}
+> +		break;
+> +	case SPRN_HID0:
+> +		reg_val = mfspr(SPRN_HID0);
+> +		if (cpu_thread_in_core(cpu) == 0) {
+> +			rc = opal_slw_set_reg(pir, SPRN_HID0, reg_val);
+> +			if (rc)
+>  				return rc;
+> +		}
+> +		break;
+> +	case SPRN_HID1:
+> +		reg_val = mfspr(SPRN_HID1);
+> +		if (!cpu_has_feature(CPU_FTR_ARCH_300) &&
+> +		    cpu_thread_in_core(cpu) == 0) {
+> +			rc = opal_slw_set_reg(pir, SPRN_HID1, reg_val);
+> +			if (rc)
+> +				return rc;
+> +		}
+> +		break;
+> +	case SPRN_HID4:
+> +		reg_val = mfspr(SPRN_HID4);
+> +		if (!cpu_has_feature(CPU_FTR_ARCH_300) &&
+> +		    cpu_thread_in_core(cpu) == 0) {
+> +			rc = opal_slw_set_reg(pir, SPRN_HID4, reg_val);
+> +			if (rc)
+> +				return rc;
+> +		}
+> +		break;
+> +	case SPRN_HID5:
+> +		reg_val = mfspr(SPRN_HID5);
+> +		if (!cpu_has_feature(CPU_FTR_ARCH_300) &&
+> +		    cpu_thread_in_core(cpu) == 0) {
+> +			rc = opal_slw_set_reg(pir, SPRN_HID5, reg_val);
+> +			if (rc)
+> +				return rc;
+> +		}
+> +		break;
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +	return 0;
+> +}
+> 
+> -			/* Only p8 needs to set extra HID regiters */
+> -			if (!cpu_has_feature(CPU_FTR_ARCH_300)) {
+> -
+> -				rc = opal_slw_set_reg(pir, SPRN_HID1, hid1_val);
+> -				if (rc != 0)
+> -					return rc;
+> -
+> -				rc = opal_slw_set_reg(pir, SPRN_HID4, hid4_val);
+> -				if (rc != 0)
+> -					return rc;
+> +static int pnv_self_save_restore_sprs(void)
+> +{
+> +	int rc, index, cpu;
+> +	u64 pir;
+> +	struct preferred_sprs curr_spr;
+> 
+> -				rc = opal_slw_set_reg(pir, SPRN_HID5, hid5_val);
+> +	for_each_present_cpu(cpu) {
+> +		pir = get_hard_smp_processor_id(cpu);
+> +		for (index = 0; index < nr_preferred_sprs; index++) {
+> +			curr_spr = preferred_sprs[index];
+> +			/* HIDs are per core register */
+> +			if (cpu_thread_in_core(cpu) != 0 &&
+> +			    (curr_spr.spr == SPRN_HMEER ||
+> +			     curr_spr.spr == SPRN_HID0  ||
+> +			     curr_spr.spr == SPRN_HID1  ||
+> +			     curr_spr.spr == SPRN_HID4  ||
+> +			     curr_spr.spr == SPRN_HID5))
+> +				continue;
+> +			if (curr_spr.supported_mode & FIRMWARE_RESTORE) {
+> +				rc = pnv_self_restore_sprs(pir, cpu,
+> +							   curr_spr.spr);
+>  				if (rc != 0)
+>  					return rc;
+>  			}
+>  		}
+>  	}
+> +	return 0;
+> +}
+> 
+> +static int pnv_save_sprs_for_deep_states(void)
+> +{
+> +	int rc;
+> +
+> +	rc = pnv_self_save_restore_sprs();
+> +	if (rc != 0)
+> +		return rc;
+>  	return 0;
+>  }
+> 
+> -- 
+> 2.17.1
+> 
