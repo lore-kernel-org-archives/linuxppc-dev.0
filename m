@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 949C8C2BA19
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 14:07:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5F68C2BA19
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 14:09:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 43CF120578
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 14:07:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 753F92064A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 14:09:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="VJlZLs1g"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 43CF120578
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="JXYdttdn"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 753F92064A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 491nP21D8gzDqcM
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2020 00:07:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 491nRf3BDKzDqjQ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2020 00:09:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -31,28 +31,28 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=bombadil.20170209 header.b=VJlZLs1g; 
+ header.a=rsa-sha256 header.s=bombadil.20170209 header.b=JXYdttdn; 
  dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 491mDV1YSJzDqQk
+ by lists.ozlabs.org (Postfix) with ESMTPS id 491mDV5dmyzDqZF
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 23:14:50 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description;
- bh=e0PtFSPo0Iy8oJ4AyTx7isQx+jUj9sBCh3WiJ7noJgw=; b=VJlZLs1gWebRy4YQPswH/Z8Jx5
- qJDtJm9oUL50SK3MdnShcWlZj3qn/JmLl4WXQPMdfksoHOFPIy15ASpmhOOGsUxMbrHeVHV8gdWRU
- UCuBa+xiakEmMn6lvr0DTJmIJAgl2S01lnpBusJzo0U1J4z757NE4e2GDpCIwVpsyQPIs3FAFK0jy
- 4EXTYCe4HaWcotfsaa2WsYwxdP7SOCkBJH0yCmyWvoKBo5Aa+Psiv26r1eOwMk8O5QMGH0WZBtV8h
- NfsGFtFTw4PlQWMF4vJUqRreblEroLpFCwgul6XK9DKdIjFoicP5aS3yJsmZVL7XNYQK7QBkn/DFY
- 6YsSQ7fg==;
+ bh=ounqfI9CXMUIXqEGvecn2fVMevKBON5/GtrMu/96rgE=; b=JXYdttdnaHgBP+lrnbNQv+l484
+ AiTLXkeT89LiTTe8UjKuAOXDWRuFGAcQ/0CnDrMoy9ZGKz4sk7r96NGt6CuvaRdpA66qBYAJs0u4x
+ u7ZGjCB5NfHcOgUfTmMxihPOpHU3YzO7ATv3rEodE1mB0A6EDcsMfLgynRGNEoH0URG1N67vsvQ19
+ 2xBcQNMtObO5UAoeqB1qDJY5ftdJr1rvZS8JlFIjADihw193xCv/FJPXcuqN0qXZ02y6IQK+CKIx5
+ yQbDGbmNwBHeYmOIds2Y0zr7VGGy4VAfNmsEEGLFdUk7woS9f96wHe5hQkcMuG6kN1pDBO+UDwMcB
+ 358La5gQ==;
 Received: from [2001:4bb8:180:384b:c70:4a89:bc61:2] (helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jOLOQ-0006bs-Qu; Tue, 14 Apr 2020 13:14:23 +0000
+ id 1jOLOY-0006i4-0d; Tue, 14 Apr 2020 13:14:30 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Andrew Morton <akpm@linux-foundation.org>,
  "K. Y. Srinivasan" <kys@microsoft.com>,
@@ -63,9 +63,9 @@ To: Andrew Morton <akpm@linux-foundation.org>,
  Sumit Semwal <sumit.semwal@linaro.org>,
  Sakari Ailus <sakari.ailus@linux.intel.com>,
  Minchan Kim <minchan@kernel.org>, Nitin Gupta <ngupta@vflare.org>
-Subject: [PATCH 09/29] mm: unexport unmap_kernel_range_noflush
-Date: Tue, 14 Apr 2020 15:13:28 +0200
-Message-Id: <20200414131348.444715-10-hch@lst.de>
+Subject: [PATCH 11/29] mm: only allow page table mappings for built-in zsmalloc
+Date: Tue, 14 Apr 2020 15:13:30 +0200
+Message-Id: <20200414131348.444715-12-hch@lst.de>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200414131348.444715-1-hch@lst.de>
 References: <20200414131348.444715-1-hch@lst.de>
@@ -94,26 +94,56 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There are no modular users of this function.
+This allows to unexport map_vm_area and unmap_kernel_range, which are
+rather deep internal and should not be available to modules, as they for
+example allow fine grained control of mapping permissions, and also
+allow splitting the setup of a vmalloc area and the actual mapping and
+thus expose vmalloc internals.
+
+zsmalloc is typically built-in and continues to work (just like the
+percpu-vm code using a similar patter), while modular zsmalloc also
+continues to work, but must use copies.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 ---
- mm/vmalloc.c | 1 -
- 1 file changed, 1 deletion(-)
+ mm/Kconfig   | 2 +-
+ mm/vmalloc.c | 2 --
+ 2 files changed, 1 insertion(+), 3 deletions(-)
 
+diff --git a/mm/Kconfig b/mm/Kconfig
+index 09a9edfb8461..5c0362bd8d56 100644
+--- a/mm/Kconfig
++++ b/mm/Kconfig
+@@ -707,7 +707,7 @@ config ZSMALLOC
+ 
+ config ZSMALLOC_PGTABLE_MAPPING
+ 	bool "Use page table mapping to access object in zsmalloc"
+-	depends on ZSMALLOC
++	depends on ZSMALLOC=y
+ 	help
+ 	  By default, zsmalloc uses a copy-based object mapping method to
+ 	  access allocations that span two pages. However, if a particular
 diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-index d1534d610b48..3375f9508ef6 100644
+index 3375f9508ef6..9183fc0d365a 100644
 --- a/mm/vmalloc.c
 +++ b/mm/vmalloc.c
-@@ -2029,7 +2029,6 @@ void unmap_kernel_range_noflush(unsigned long addr, unsigned long size)
- {
- 	vunmap_page_range(addr, addr + size);
+@@ -2046,7 +2046,6 @@ void unmap_kernel_range(unsigned long addr, unsigned long size)
+ 	vunmap_page_range(addr, end);
+ 	flush_tlb_kernel_range(addr, end);
  }
--EXPORT_SYMBOL_GPL(unmap_kernel_range_noflush);
+-EXPORT_SYMBOL_GPL(unmap_kernel_range);
  
- /**
-  * unmap_kernel_range - unmap kernel VM area and flush cache and TLB
+ int map_vm_area(struct vm_struct *area, pgprot_t prot, struct page **pages)
+ {
+@@ -2058,7 +2057,6 @@ int map_vm_area(struct vm_struct *area, pgprot_t prot, struct page **pages)
+ 
+ 	return err > 0 ? 0 : err;
+ }
+-EXPORT_SYMBOL_GPL(map_vm_area);
+ 
+ static inline void setup_vmalloc_vm_locked(struct vm_struct *vm,
+ 	struct vmap_area *va, unsigned long flags, const void *caller)
 -- 
 2.25.1
 
