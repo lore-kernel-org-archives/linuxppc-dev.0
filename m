@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 05C20C2BA19
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 14:13:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DFDFCC2BA19
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 14:16:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AC98B20578
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 14:13:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9000E206D5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 14:16:11 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="qNNie7Om"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AC98B20578
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="Ti3ffasG"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9000E206D5
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 491nXf43S1zDqNG
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2020 00:13:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 491nbF3hRczDqfv
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2020 00:16:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -31,28 +31,28 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=bombadil.20170209 header.b=qNNie7Om; 
+ header.a=rsa-sha256 header.s=bombadil.20170209 header.b=Ti3ffasG; 
  dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 491mDf6Q93zDqKr
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 23:14:58 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 491mDg3NFFzDqQk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 23:14:59 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description;
- bh=MpeupzvgpEqnfkrgU67Yb1a4x+y3iqN0nzmL/bt6hXs=; b=qNNie7Om2OVo5RfG/yvHOZ5B6f
- YvJRXnbW9/6E6MwFckGLJXrvDnIv9l8M9gc4UOGmpnybKChZUWz3d2aGtx4Uw9clqXpEyMLwkDFxO
- vqizncH9flXaVBQAvFGQ6C1oAfh3TZpQHLdcWc2THIuGUxjbG4nP9Ao84blj707cvMTH1crz0qDkV
- gFOCLdcNSV/TR1D0Y9L9P8wo7AyraAHJOzvOXV/aR4wt1yFBFAbgLugghJeYvYojjdxDQ+Zb60qn4
- 7qGwDGaSlKpu5JX96H75W0kD7avku7EHd7u0Qd7e5x6AEMkNL0Rl1yBQRQ0uQU4zO8kF9JD/6MFCr
- sHBbh3YQ==;
+ bh=4ea5vsXJHOIJ4irJzF3v/kw19HEG5lklgexzNgWZ/1E=; b=Ti3ffasGFdJfP7AhXGeAZ/PYTk
+ 43AUQ1PSFQAZ7WGZ/VBVgxH/nNZxJgXAZj/yyuu3G93ZCLztJ2CBv3xmZV79CqVGwV498jT02i9WW
+ BGTGLelScsgzrM52iMp9MW4B23C+J/o8VApAuCOFOWUzwQLfAlrUCTz724PYhJPxI2emn+NQ4uqMi
+ htQVEyeUDMlWfXZtUztV0oKj+Br/dY2zJOaS8Xfg/GZ337f8nx6Lrn6ZtJP2irUgteZJ1pUsRBadO
+ b29OU9+KR/DsBLAr3LbRvma+3vCNDe2phUCJKZiZXL980yGD1UNRONHtagJGsws//MdDfhiowtE2z
+ m3682ViQ==;
 Received: from [2001:4bb8:180:384b:c70:4a89:bc61:2] (helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jOLOi-0006vf-4M; Tue, 14 Apr 2020 13:14:40 +0000
+ id 1jOLOe-0006ns-BO; Tue, 14 Apr 2020 13:14:37 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Andrew Morton <akpm@linux-foundation.org>,
  "K. Y. Srinivasan" <kys@microsoft.com>,
@@ -63,9 +63,9 @@ To: Andrew Morton <akpm@linux-foundation.org>,
  Sumit Semwal <sumit.semwal@linaro.org>,
  Sakari Ailus <sakari.ailus@linux.intel.com>,
  Minchan Kim <minchan@kernel.org>, Nitin Gupta <ngupta@vflare.org>
-Subject: [PATCH 14/29] mm: rename vmap_page_range to map_kernel_range
-Date: Tue, 14 Apr 2020 15:13:33 +0200
-Message-Id: <20200414131348.444715-15-hch@lst.de>
+Subject: [PATCH 13/29] mm: remove vmap_page_range_noflush and vunmap_page_range
+Date: Tue, 14 Apr 2020 15:13:32 +0200
+Message-Id: <20200414131348.444715-14-hch@lst.de>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200414131348.444715-1-hch@lst.de>
 References: <20200414131348.444715-1-hch@lst.de>
@@ -94,57 +94,173 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This matches the map_kernel_range_noflush API.  Also change to pass
-a size instead of the end, similar to the noflush version.
+These have non-static aliases called map_kernel_range_noflush and
+unmap_kernel_range_noflush that just differ slightly in the calling
+conventions that pass addr + size instead of an end.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 ---
- mm/vmalloc.c | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+ mm/vmalloc.c | 98 +++++++++++++++++++++-------------------------------
+ 1 file changed, 40 insertions(+), 58 deletions(-)
 
 diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-index 55df5dc6a9fc..a3d810def567 100644
+index aada9e9144bd..55df5dc6a9fc 100644
 --- a/mm/vmalloc.c
 +++ b/mm/vmalloc.c
-@@ -272,13 +272,13 @@ int map_kernel_range_noflush(unsigned long addr, unsigned long size,
- 	return nr;
+@@ -127,10 +127,24 @@ static void vunmap_p4d_range(pgd_t *pgd, unsigned long addr, unsigned long end)
+ 	} while (p4d++, addr = next, addr != end);
  }
  
--static int vmap_page_range(unsigned long start, unsigned long end,
-+static int map_kernel_range(unsigned long start, unsigned long size,
- 			   pgprot_t prot, struct page **pages)
+-static void vunmap_page_range(unsigned long addr, unsigned long end)
++/**
++ * unmap_kernel_range_noflush - unmap kernel VM area
++ * @addr: start of the VM area to unmap
++ * @size: size of the VM area to unmap
++ *
++ * Unmap PFN_UP(@size) pages at @addr.  The VM area @addr and @size specify
++ * should have been allocated using get_vm_area() and its friends.
++ *
++ * NOTE:
++ * This function does NOT do any cache flushing.  The caller is responsible
++ * for calling flush_cache_vunmap() on to-be-mapped areas before calling this
++ * function and flush_tlb_kernel_range() after.
++ */
++void unmap_kernel_range_noflush(unsigned long addr, unsigned long size)
+ {
+-	pgd_t *pgd;
++	unsigned long end = addr + size;
+ 	unsigned long next;
++	pgd_t *pgd;
+ 
+ 	BUG_ON(addr >= end);
+ 	pgd = pgd_offset_k(addr);
+@@ -219,18 +233,30 @@ static int vmap_p4d_range(pgd_t *pgd, unsigned long addr,
+ 	return 0;
+ }
+ 
+-/*
+- * Set up page tables in kva (addr, end). The ptes shall have prot "prot", and
+- * will have pfns corresponding to the "pages" array.
++/**
++ * map_kernel_range_noflush - map kernel VM area with the specified pages
++ * @addr: start of the VM area to map
++ * @size: size of the VM area to map
++ * @prot: page protection flags to use
++ * @pages: pages to map
+  *
+- * Ie. pte at addr+N*PAGE_SIZE shall point to pfn corresponding to pages[N]
++ * Map PFN_UP(@size) pages at @addr.  The VM area @addr and @size specify should
++ * have been allocated using get_vm_area() and its friends.
++ *
++ * NOTE:
++ * This function does NOT do any cache flushing.  The caller is responsible for
++ * calling flush_cache_vmap() on to-be-mapped areas before calling this
++ * function.
++ *
++ * RETURNS:
++ * The number of pages mapped on success, -errno on failure.
+  */
+-static int vmap_page_range_noflush(unsigned long start, unsigned long end,
+-				   pgprot_t prot, struct page **pages)
++int map_kernel_range_noflush(unsigned long addr, unsigned long size,
++			     pgprot_t prot, struct page **pages)
+ {
+-	pgd_t *pgd;
++	unsigned long end = addr + size;
+ 	unsigned long next;
+-	unsigned long addr = start;
++	pgd_t *pgd;
+ 	int err = 0;
+ 	int nr = 0;
+ 
+@@ -251,7 +277,7 @@ static int vmap_page_range(unsigned long start, unsigned long end,
  {
  	int ret;
  
--	ret = map_kernel_range_noflush(start, end - start, prot, pages);
--	flush_cache_vmap(start, end);
-+	ret = map_kernel_range_noflush(start, size, prot, pages);
-+	flush_cache_vmap(start, start + size);
+-	ret = vmap_page_range_noflush(start, end, prot, pages);
++	ret = map_kernel_range_noflush(start, end - start, prot, pages);
+ 	flush_cache_vmap(start, end);
  	return ret;
  }
- 
-@@ -1866,7 +1866,7 @@ void *vm_map_ram(struct page **pages, unsigned int count, int node, pgprot_t pro
- 
- 	kasan_unpoison_vmalloc(mem, size);
- 
--	if (vmap_page_range(addr, addr + size, prot, pages) < 0) {
-+	if (map_kernel_range(addr, size, prot, pages) < 0) {
- 		vm_unmap_ram(mem, count);
- 		return NULL;
- 	}
-@@ -2030,10 +2030,9 @@ void unmap_kernel_range(unsigned long addr, unsigned long size)
- int map_vm_area(struct vm_struct *area, pgprot_t prot, struct page **pages)
+@@ -1226,7 +1252,7 @@ EXPORT_SYMBOL_GPL(unregister_vmap_purge_notifier);
+  */
+ static void unmap_vmap_area(struct vmap_area *va)
  {
- 	unsigned long addr = (unsigned long)area->addr;
--	unsigned long end = addr + get_vm_area_size(area);
- 	int err;
- 
--	err = vmap_page_range(addr, end, prot, pages);
-+	err = map_kernel_range(addr, get_vm_area_size(area), prot, pages);
- 
- 	return err > 0 ? 0 : err;
+-	vunmap_page_range(va->va_start, va->va_end);
++	unmap_kernel_range_noflush(va->va_start, va->va_end - va->va_start);
  }
+ 
+ /*
+@@ -1686,7 +1712,7 @@ static void vb_free(unsigned long addr, unsigned long size)
+ 	rcu_read_unlock();
+ 	BUG_ON(!vb);
+ 
+-	vunmap_page_range(addr, addr + size);
++	unmap_kernel_range_noflush(addr, size);
+ 
+ 	if (debug_pagealloc_enabled_static())
+ 		flush_tlb_kernel_range(addr, addr + size);
+@@ -1984,50 +2010,6 @@ void __init vmalloc_init(void)
+ 	vmap_initialized = true;
+ }
+ 
+-/**
+- * map_kernel_range_noflush - map kernel VM area with the specified pages
+- * @addr: start of the VM area to map
+- * @size: size of the VM area to map
+- * @prot: page protection flags to use
+- * @pages: pages to map
+- *
+- * Map PFN_UP(@size) pages at @addr.  The VM area @addr and @size
+- * specify should have been allocated using get_vm_area() and its
+- * friends.
+- *
+- * NOTE:
+- * This function does NOT do any cache flushing.  The caller is
+- * responsible for calling flush_cache_vmap() on to-be-mapped areas
+- * before calling this function.
+- *
+- * RETURNS:
+- * The number of pages mapped on success, -errno on failure.
+- */
+-int map_kernel_range_noflush(unsigned long addr, unsigned long size,
+-			     pgprot_t prot, struct page **pages)
+-{
+-	return vmap_page_range_noflush(addr, addr + size, prot, pages);
+-}
+-
+-/**
+- * unmap_kernel_range_noflush - unmap kernel VM area
+- * @addr: start of the VM area to unmap
+- * @size: size of the VM area to unmap
+- *
+- * Unmap PFN_UP(@size) pages at @addr.  The VM area @addr and @size
+- * specify should have been allocated using get_vm_area() and its
+- * friends.
+- *
+- * NOTE:
+- * This function does NOT do any cache flushing.  The caller is
+- * responsible for calling flush_cache_vunmap() on to-be-mapped areas
+- * before calling this function and flush_tlb_kernel_range() after.
+- */
+-void unmap_kernel_range_noflush(unsigned long addr, unsigned long size)
+-{
+-	vunmap_page_range(addr, addr + size);
+-}
+-
+ /**
+  * unmap_kernel_range - unmap kernel VM area and flush cache and TLB
+  * @addr: start of the VM area to unmap
+@@ -2041,7 +2023,7 @@ void unmap_kernel_range(unsigned long addr, unsigned long size)
+ 	unsigned long end = addr + size;
+ 
+ 	flush_cache_vunmap(addr, end);
+-	vunmap_page_range(addr, end);
++	unmap_kernel_range_noflush(addr, size);
+ 	flush_tlb_kernel_range(addr, end);
+ }
+ 
 -- 
 2.25.1
 
