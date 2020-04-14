@@ -2,23 +2,24 @@ Return-Path: <SRS0=VNWk=56=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B44AFC2BA2B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 00:55:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF1EEC2BA2B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 00:56:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6B3E220732
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 00:55:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6B3E220732
+	by mail.kernel.org (Postfix) with ESMTPS id 67D0220732
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 00:56:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 67D0220732
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 491RqD2sK5zDqLB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 10:55:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 491Rs53KZRzDqTs
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 10:56:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
  (client-ip=92.121.34.13; helo=inva020.nxp.com;
@@ -28,28 +29,33 @@ Authentication-Results: lists.ozlabs.org;
 Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 491Rkp6vF7zDqL8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 10:51:28 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 491Rkq1YggzDqLC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 10:51:31 +1000 (AEST)
 Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 825601A0247;
- Tue, 14 Apr 2020 02:51:24 +0200 (CEST)
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 19E561A0231;
+ Tue, 14 Apr 2020 02:51:28 +0200 (CEST)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
  [165.114.16.14])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id DAB5A1A023F;
- Tue, 14 Apr 2020 02:51:18 +0200 (CEST)
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 6A76C1A024C;
+ Tue, 14 Apr 2020 02:51:22 +0200 (CEST)
 Received: from localhost.localdomain (shlinux2.ap.freescale.net
  [10.192.224.44])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id CB1474028B;
- Tue, 14 Apr 2020 08:51:11 +0800 (SGT)
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 5B8F1402E2;
+ Tue, 14 Apr 2020 08:51:15 +0800 (SGT)
 From: Shengjiu Wang <shengjiu.wang@nxp.com>
 To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
  festevam@gmail.com, broonie@kernel.org, alsa-devel@alsa-project.org,
  lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com, robh+dt@kernel.org,
  mark.rutland@arm.com, devicetree@vger.kernel.org
-Subject: [PATCH v7 0/7] ASoC: Add new module driver for new ASRC
-Date: Tue, 14 Apr 2020 08:43:02 +0800
-Message-Id: <cover.1586747728.git.shengjiu.wang@nxp.com>
+Subject: [PATCH v7 3/7] ASoC: fsl-asoc-card: Support new property fsl,
+ asrc-format
+Date: Tue, 14 Apr 2020 08:43:05 +0800
+Message-Id: <d345821ea8016283e1b1d80bed5fc373272f79de.1586747728.git.shengjiu.wang@nxp.com>
 X-Mailer: git-send-email 2.7.4
+In-Reply-To: <cover.1586747728.git.shengjiu.wang@nxp.com>
+References: <cover.1586747728.git.shengjiu.wang@nxp.com>
+In-Reply-To: <cover.1586747728.git.shengjiu.wang@nxp.com>
+References: <cover.1586747728.git.shengjiu.wang@nxp.com>
 X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -67,60 +73,54 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add new module driver for new ASRC in i.MX8MN, several commits
-are added for new property fsl,asrc-format
+In order to align with new ESARC, we add new property fsl,asrc-format.
+The fsl,asrc-format can replace the fsl,asrc-width, driver
+can accept format from devicetree, don't need to convert it to
+format through width.
 
-Shengjiu Wang (7):
-  ASoC: fsl_asrc: rename asrc_priv to asrc
-  ASoC: dt-bindings: fsl_asrc: Add new property fsl,asrc-format
-  ASoC: fsl-asoc-card: Support new property fsl,asrc-format
-  ASoC: fsl_asrc: Support new property fsl,asrc-format
-  ASoC: fsl_asrc: Move common definition to fsl_asrc_common
-  ASoC: dt-bindings: fsl_easrc: Add document for EASRC
-  ASoC: fsl_easrc: Add EASRC ASoC CPU DAI drivers
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
+---
+ sound/soc/fsl/fsl-asoc-card.c | 24 +++++++++++++++---------
+ 1 file changed, 15 insertions(+), 9 deletions(-)
 
-changes in v7
-- updated according to Nicoin's comments.
-- add get_pair_priv_size to replace PAIR_PRIVATE_SIZE
-
-changes in v6
-- updated according to Nicoin's and Rob's comments.
-
-changes in v5
-- Add new property fsl,asrc-format, rather than change fsl,asrc-width
-  to fsl,asrc-formt.
-- code change for above change.
-
-changes in v4
-- Add several commit for changing DT binding asrc-width to asrc-format
-- rename asrc_priv to asrc
-
-changes in v3
-- add new commit "ASoC: fsl_asrc: Change asrc_width to asrc_format"
-- modify binding doc to yaml format
-- remove fsl_easrc_dma.c, make fsl_asrc_dma.c useable for easrc.
-
-changes in v2
-- change i.MX815 to i.MX8MN
-- Add changes in Kconfig and Makefile
-
- .../devicetree/bindings/sound/fsl,asrc.txt    |    4 +
- .../devicetree/bindings/sound/fsl,easrc.yaml  |  101 +
- sound/soc/fsl/Kconfig                         |   11 +
- sound/soc/fsl/Makefile                        |    2 +
- sound/soc/fsl/fsl-asoc-card.c                 |   24 +-
- sound/soc/fsl/fsl_asrc.c                      |  310 +--
- sound/soc/fsl/fsl_asrc.h                      |   74 +-
- sound/soc/fsl/fsl_asrc_common.h               |  106 +
- sound/soc/fsl/fsl_asrc_dma.c                  |   54 +-
- sound/soc/fsl/fsl_easrc.c                     | 2119 +++++++++++++++++
- sound/soc/fsl/fsl_easrc.h                     |  651 +++++
- 11 files changed, 3222 insertions(+), 234 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/sound/fsl,easrc.yaml
- create mode 100644 sound/soc/fsl/fsl_asrc_common.h
- create mode 100644 sound/soc/fsl/fsl_easrc.c
- create mode 100644 sound/soc/fsl/fsl_easrc.h
-
+diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
+index bb33601fab84..cf4feb835743 100644
+--- a/sound/soc/fsl/fsl-asoc-card.c
++++ b/sound/soc/fsl/fsl-asoc-card.c
+@@ -680,17 +680,23 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
+ 			goto asrc_fail;
+ 		}
+ 
+-		ret = of_property_read_u32(asrc_np, "fsl,asrc-width", &width);
++		ret = of_property_read_u32(asrc_np, "fsl,asrc-format",
++					   &priv->asrc_format);
+ 		if (ret) {
+-			dev_err(&pdev->dev, "failed to get output rate\n");
+-			ret = -EINVAL;
+-			goto asrc_fail;
+-		}
++			/* Fallback to old binding; translate to asrc_format */
++			ret = of_property_read_u32(asrc_np, "fsl,asrc-width",
++						   &width);
++			if (ret) {
++				dev_err(&pdev->dev,
++					"failed to decide output format\n");
++				goto asrc_fail;
++			}
+ 
+-		if (width == 24)
+-			priv->asrc_format = SNDRV_PCM_FORMAT_S24_LE;
+-		else
+-			priv->asrc_format = SNDRV_PCM_FORMAT_S16_LE;
++			if (width == 24)
++				priv->asrc_format = SNDRV_PCM_FORMAT_S24_LE;
++			else
++				priv->asrc_format = SNDRV_PCM_FORMAT_S16_LE;
++		}
+ 	}
+ 
+ 	/* Finish card registering */
 -- 
 2.21.0
 
