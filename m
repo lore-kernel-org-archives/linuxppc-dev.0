@@ -2,84 +2,64 @@ Return-Path: <SRS0=VNWk=56=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB0AFC2BA19
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 12:47:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C7F42C2BBC7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 12:49:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3F1D5206A2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 12:47:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7C2E4206A2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 12:49:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="IXS45WnH"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3F1D5206A2
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="G6+UuRKX"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7C2E4206A2
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 491lcT6VKczDqfC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 22:47:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
+	by lists.ozlabs.org (Postfix) with ESMTP id 491lgh4MtszDqg3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 22:49:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
+ helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=IXS45WnH; dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=G6+UuRKX; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 491lCN6vbgzDqcD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 22:28:47 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 491lCB2VyJz9ty2q;
- Tue, 14 Apr 2020 14:28:38 +0200 (CEST)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=IXS45WnH; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id OnGikXuRMKJq; Tue, 14 Apr 2020 14:28:38 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 491lCB1Nqtz9ty2r;
- Tue, 14 Apr 2020 14:28:38 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1586867318; bh=q5tuqv3XX5tdFZ2Nwqglyq4XexfbdM7sUkp/aIyLDRw=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=IXS45WnHSm1Ayq4SS0uiPxa3vST+WWMTF8g5pm0xicL0YmkmdHBVHM7MqFdvFivSy
- 4VKx/15HSGMZn84Khq7Sc+ziISswwhSUCUvDincDkchHmmJIjHMEuycCM/NgnTr/Xv
- cQH5RqaZiSzViAlD2v1Y1/wud6OaF/wj8MGMt9vo=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 8E0138B7EB;
- Tue, 14 Apr 2020 14:28:39 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 91o1xMRYsudU; Tue, 14 Apr 2020 14:28:39 +0200 (CEST)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 8F2278B7EA;
- Tue, 14 Apr 2020 14:28:38 +0200 (CEST)
-Subject: Re: [PATCH v2 4/4] mm/vmalloc: Hugepage vmalloc mappings
-To: Matthew Wilcox <willy@infradead.org>, Nicholas Piggin <npiggin@gmail.com>
-References: <20200413125303.423864-1-npiggin@gmail.com>
- <20200413125303.423864-5-npiggin@gmail.com>
- <20200413134106.GN21484@bombadil.infradead.org>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <36616218-1d3a-b18a-8fb8-4fc9eff22780@c-s.fr>
-Date: Tue, 14 Apr 2020 14:28:35 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.7.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 491lck1WzwzDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 22:47:18 +1000 (AEST)
+Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
+ [83.86.89.107])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 5534B20768;
+ Tue, 14 Apr 2020 12:47:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1586868434;
+ bh=rohU/pNk/NEJ3ruftZTeBtEweHiD6E5lSK9Jtcsrpb8=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=G6+UuRKXecdjX2i6han5AV7ZYNLnYqonKUbjMYx1Cco2W27c3jFXvhb4Tg6Wuuc5G
+ 78hZzGDZTBpycjsXM1fhdTYEzYCqnaQHx28KlebKxqDkIzeLT6vYx5j7MUhPKmYCQb
+ 39wELCBozn9OYUNvL/k4hAqFrInonJT7d2XNN8Tc=
+Date: Tue, 14 Apr 2020 14:47:12 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH 3/4] dma-mapping: add a dma_ops_bypass flag to struct
+ device
+Message-ID: <20200414124712.GA720223@kroah.com>
+References: <20200414122506.438134-1-hch@lst.de>
+ <20200414122506.438134-4-hch@lst.de>
 MIME-Version: 1.0
-In-Reply-To: <20200413134106.GN21484@bombadil.infradead.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200414122506.438134-4-hch@lst.de>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,45 +71,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Catalin Marinas <catalin.marinas@arm.com>, x86@kernel.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
- Will Deacon <will@kernel.org>, linux-arm-kernel@lists.infradead.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
+ Joerg Roedel <joro@8bytes.org>, linux-kernel@vger.kernel.org,
+ iommu@lists.linux-foundation.org, Robin Murphy <robin.murphy@arm.com>,
+ Lu Baolu <baolu.lu@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-Le 13/04/2020 à 15:41, Matthew Wilcox a écrit :
-> On Mon, Apr 13, 2020 at 10:53:03PM +1000, Nicholas Piggin wrote:
->> +static int vmap_pages_range_noflush(unsigned long start, unsigned long end,
->> +				    pgprot_t prot, struct page **pages,
->> +				    unsigned int page_shift)
->> +{
->> +	if (page_shift == PAGE_SIZE) {
+On Tue, Apr 14, 2020 at 02:25:05PM +0200, Christoph Hellwig wrote:
+> Several IOMMU drivers have a bypass mode where they can use a direct
+> mapping if the devices DMA mask is large enough.  Add generic support
+> to the core dma-mapping code to do that to switch those drivers to
+> a common solution.
 > 
-> ... I think you meant 'page_shift == PAGE_SHIFT'
-> 
-> Overall I like this series, although it's a bit biased towards CPUs
-> which have page sizes which match PMD/PUD sizes.  It doesn't offer the
-> possibility of using 64kB page sizes on ARM, for example.  But it's a
-> step in the right direction.
-> 
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> ---
+>  include/linux/device.h |  6 ++++
+>  kernel/dma/mapping.c   | 70 +++++++++++++++++++++++++++++-------------
+>  2 files changed, 55 insertions(+), 21 deletions(-)
 
-I was going to ask more or less the same question, I would have liked to 
-use 512kB hugepages on powerpc 8xx.
-
-Even the 8M hugepages (still on the 8xx), can they be used as well, 
-taking into account that two PGD entries have to point to the same 8M page ?
-
-I sent out a series which tends to make the management of 512k and 8M 
-pages closer to what Linux expects, in order to use them inside kernel, 
-for Linear mappings and Kasan mappings for the moment. See 
-https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=164620
-It would be nice if we could amplify it a use it for ioremaps and 
-vmallocs as well.
-
-Christophe
+Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
