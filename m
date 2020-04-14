@@ -2,47 +2,109 @@ Return-Path: <SRS0=VNWk=56=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C61D2C2BBC7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 11:50:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B153C2BA19
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 12:13:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7B6F32072D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 11:50:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7B6F32072D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id C7033206A2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 12:13:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C7033206A2
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 491kMM0wcbzDq9d
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 21:50:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 491ksS5n0LzDqVv
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 22:13:16 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 491kph0xpfzDqbm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 22:10:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 491kFC0HlmzDqc5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 21:45:18 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A672B1FB;
- Tue, 14 Apr 2020 04:45:16 -0700 (PDT)
-Received: from p8cg001049571a15.arm.com (unknown [10.163.1.49])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 8B1B93F6C4;
- Tue, 14 Apr 2020 04:45:06 -0700 (PDT)
-From: Anshuman Khandual <anshuman.khandual@arm.com>
-To: linux-mm@kvack.org
-Subject: [PATCH 3/3] mm/hugetlb: Introduce HAVE_ARCH_CLEAR_HUGEPAGE_FLAGS
-Date: Tue, 14 Apr 2020 17:14:30 +0530
-Message-Id: <1586864670-21799-4-git-send-email-anshuman.khandual@arm.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1586864670-21799-1-git-send-email-anshuman.khandual@arm.com>
-References: <1586864670-21799-1-git-send-email-anshuman.khandual@arm.com>
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 491kpg6G5dz8sX5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 22:10:51 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 491kpg5Zq4z9sT0; Tue, 14 Apr 2020 22:10:51 +1000 (AEST)
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=psampat@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 491kpg1JZYz9sPF
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Apr 2020 22:10:50 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 03EC6V8k008497
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Apr 2020 08:10:48 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30cwm08xfn-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Apr 2020 08:10:48 -0400
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <psampat@linux.ibm.com>;
+ Tue, 14 Apr 2020 13:10:13 +0100
+Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 14 Apr 2020 13:10:10 +0100
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 03EC9aUc49021380
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 14 Apr 2020 12:09:36 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A6212AE045;
+ Tue, 14 Apr 2020 12:10:42 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 27BA8AE051;
+ Tue, 14 Apr 2020 12:10:41 +0000 (GMT)
+Received: from [9.199.55.119] (unknown [9.199.55.119])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue, 14 Apr 2020 12:10:40 +0000 (GMT)
+Subject: Re: [PATCH v6 0/3] powerpc/powernv: Introduce interface for
+ self-restore support
+To: ego@linux.vnet.ibm.com
+References: <20200326071034.12838-1-psampat@linux.ibm.com>
+ <20200414071149.GD24277@in.ibm.com>
+From: Pratik Sampat <psampat@linux.ibm.com>
+Date: Tue, 14 Apr 2020 17:40:40 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.6.0
+MIME-Version: 1.0
+In-Reply-To: <20200414071149.GD24277@in.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
+X-TM-AS-GCONF: 00
+x-cbid: 20041412-4275-0000-0000-000003BFB016
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 20041412-4276-0000-0000-000038D52267
+Message-Id: <f0e6d1c2-e888-2ff6-ea80-95f753e89051@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
+ definitions=2020-04-14_05:2020-04-14,
+ 2020-04-14 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ mlxlogscore=999 phishscore=0
+ suspectscore=0 adultscore=0 mlxscore=0 malwarescore=0 priorityscore=1501
+ impostorscore=0 lowpriorityscore=0 spamscore=0 clxscore=1015 bulkscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2003020000
+ definitions=main-2004140101
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -54,253 +116,143 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
- Will Deacon <will@kernel.org>, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
- Helge Deller <deller@gmx.de>, x86@kernel.org,
- Russell King <linux@armlinux.org.uk>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Anshuman Khandual <anshuman.khandual@arm.com>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Borislav Petkov <bp@alien8.de>, Paul Walmsley <paul.walmsley@sifive.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Tony Luck <tony.luck@intel.com>, linux-parisc@vger.kernel.org,
- linux-mips@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
- Mike Kravetz <mike.kravetz@oracle.com>
+Cc: pratik.r.sampat@gmail.com, linuxram@us.ibm.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, oohall@gmail.com,
+ skiboot@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There are multiple similar definitions for arch_clear_hugepage_flags() on
-various platforms. This introduces HAVE_ARCH_CLEAR_HUGEPAGE_FLAGS for those
-platforms that need to define their own arch_clear_hugepage_flags() while
-also providing a generic fallback definition for others to use. This help
-reduce code duplication.
+Hello Gautham
 
-Cc: Russell King <linux@armlinux.org.uk>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will@kernel.org>
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Fenghua Yu <fenghua.yu@intel.com>
-Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
-Cc: Helge Deller <deller@gmx.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Paul Walmsley <paul.walmsley@sifive.com>
-Cc: Palmer Dabbelt <palmer@dabbelt.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Vasily Gorbik <gor@linux.ibm.com>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
-Cc: Rich Felker <dalias@libc.org>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Mike Kravetz <mike.kravetz@oracle.com>
-Cc: x86@kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-ia64@vger.kernel.org
-Cc: linux-mips@vger.kernel.org
-Cc: linux-parisc@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-riscv@lists.infradead.org
-Cc: linux-s390@vger.kernel.org
-Cc: linux-sh@vger.kernel.org
-Cc: sparclinux@vger.kernel.org
-Cc: linux-mm@kvack.org
-Cc: linux-arch@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
----
- arch/arm/include/asm/hugetlb.h     | 1 +
- arch/arm64/include/asm/hugetlb.h   | 1 +
- arch/ia64/include/asm/hugetlb.h    | 4 ----
- arch/mips/include/asm/hugetlb.h    | 4 ----
- arch/parisc/include/asm/hugetlb.h  | 4 ----
- arch/powerpc/include/asm/hugetlb.h | 4 ----
- arch/riscv/include/asm/hugetlb.h   | 4 ----
- arch/s390/include/asm/hugetlb.h    | 1 +
- arch/sh/include/asm/hugetlb.h      | 1 +
- arch/sparc/include/asm/hugetlb.h   | 4 ----
- arch/x86/include/asm/hugetlb.h     | 4 ----
- include/linux/hugetlb.h            | 4 ++++
- 12 files changed, 8 insertions(+), 28 deletions(-)
+On 14/04/20 12:41 pm, Gautham R Shenoy wrote:
+> Hello Pratik,
+>
+> On Thu, Mar 26, 2020 at 12:40:31PM +0530, Pratik Rajesh Sampat wrote:
+>> v5: https://lkml.org/lkml/2020/3/17/944
+>> Changelog
+>> v5-->v6
+>> 1. Updated background, motivation and illuminated potential design
+>> choices
+>> 2. Re-organization of patch-set
+>>    a. Split introducing preference for optimization from 1/1 to patch 3/3
+>>    b. Merge introducing self-save API and parsing the device-tree
+>>    c. Introduce a supported mode called KERNEL_SAVE_RESTORE which
+>>       outlines and makes kernel supported SPRs for save-restore more
+>>       explicit
+>>
+> [..snip..]
+>
+>> Presenting the design choices in front of us:
+>>
+>> Design-Choice 1:
+>> ----------------
+>> A simple implementation is to just replace self-restore calls with
+>> self-save as it is direct super-set.
+>>
+>> Pros:
+>> A simple design, quick to implement
+>>
+>>
+>> Cons:
+>> * Breaks backward compatibility. Self-restore has historically been
+>>    supported in the firmware and an old firmware running on an new
+>>    kernel will be incompatible and deep stop states will be cut.
+>> * Furthermore, critical SPRs which need to be restored
+>>    before 0x100 vector like HID0 are not supported by self-save.
+>>
+>> Design-Choice 2:
+>> ----------------
+>> Advertise both self-restore and self-save from OPAL including the set
+>> of registers that each support. The kernel can then choose which API
+>> to go with.
+>> For the sake of simplicity, in case both modes are supported for an
+>> SPR by default self-save would be called for it.
+>>
+>> Pros:
+>> * Backwards compatible
+>>
+>> Cons:
+>> Overhead in parsing device tree with the SPR list
+>>
+>> Possible optimization with Approach2:
+>> -------------------------------------
+>> There are SPRs whose values don't tend to change over time and invoking
+>> self-save on them, where the values are gotten each time may turn out to
+>> be inefficient. In that case calling a self-restore where passing the
+>> value makes more sense as, if the value is same, the memory location
+>> is not updated.
+>> SPRs that dont change are as follows:
+>> SPRN_HSPRG0,
+>> SPRN_LPCR,
+>> SPRN_PTCR,
+>> SPRN_HMEER,
+>> SPRN_HID0,
+> We can just pick self-save wherever available and fallback to
+> self-restore when self-save support is not avaiable for any SPR.
+> The optimization that you mention here can be revisited if the
+> additional latency due to self-save becomes observable (Note that both
+> stop4 and stop5 have wakeup latency between 200-500us).
 
-diff --git a/arch/arm/include/asm/hugetlb.h b/arch/arm/include/asm/hugetlb.h
-index 9ecd516d1ff7..7107c1e6f020 100644
---- a/arch/arm/include/asm/hugetlb.h
-+++ b/arch/arm/include/asm/hugetlb.h
-@@ -14,6 +14,7 @@
- #include <asm/hugetlb-3level.h>
- #include <asm-generic/hugetlb.h>
- 
-+#define HAVE_ARCH_CLEAR_HUGEPAGE_FLAGS
- static inline void arch_clear_hugepage_flags(struct page *page)
- {
- 	clear_bit(PG_dcache_clean, &page->flags);
-diff --git a/arch/arm64/include/asm/hugetlb.h b/arch/arm64/include/asm/hugetlb.h
-index 8f58e052697a..5369cf26a05d 100644
---- a/arch/arm64/include/asm/hugetlb.h
-+++ b/arch/arm64/include/asm/hugetlb.h
-@@ -17,6 +17,7 @@
- extern bool arch_hugetlb_migration_supported(struct hstate *h);
- #endif
- 
-+#define HAVE_ARCH_CLEAR_HUGEPAGE_FLAGS
- static inline void arch_clear_hugepage_flags(struct page *page)
- {
- 	clear_bit(PG_dcache_clean, &page->flags);
-diff --git a/arch/ia64/include/asm/hugetlb.h b/arch/ia64/include/asm/hugetlb.h
-index f17c1e228045..2ecff18a32e5 100644
---- a/arch/ia64/include/asm/hugetlb.h
-+++ b/arch/ia64/include/asm/hugetlb.h
-@@ -28,10 +28,6 @@ static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
- {
- }
- 
--static inline void arch_clear_hugepage_flags(struct page *page)
--{
--}
--
- #include <asm-generic/hugetlb.h>
- 
- #endif /* _ASM_IA64_HUGETLB_H */
-diff --git a/arch/mips/include/asm/hugetlb.h b/arch/mips/include/asm/hugetlb.h
-index 8b201e281f67..10e3be870df7 100644
---- a/arch/mips/include/asm/hugetlb.h
-+++ b/arch/mips/include/asm/hugetlb.h
-@@ -75,10 +75,6 @@ static inline int huge_ptep_set_access_flags(struct vm_area_struct *vma,
- 	return changed;
- }
- 
--static inline void arch_clear_hugepage_flags(struct page *page)
--{
--}
--
- #include <asm-generic/hugetlb.h>
- 
- #endif /* __ASM_HUGETLB_H */
-diff --git a/arch/parisc/include/asm/hugetlb.h b/arch/parisc/include/asm/hugetlb.h
-index 411d9d867baa..a69cf9efb0c1 100644
---- a/arch/parisc/include/asm/hugetlb.h
-+++ b/arch/parisc/include/asm/hugetlb.h
-@@ -42,10 +42,6 @@ int huge_ptep_set_access_flags(struct vm_area_struct *vma,
- 					     unsigned long addr, pte_t *ptep,
- 					     pte_t pte, int dirty);
- 
--static inline void arch_clear_hugepage_flags(struct page *page)
--{
--}
--
- #include <asm-generic/hugetlb.h>
- 
- #endif /* _ASM_PARISC64_HUGETLB_H */
-diff --git a/arch/powerpc/include/asm/hugetlb.h b/arch/powerpc/include/asm/hugetlb.h
-index 9dd50e1e4fe5..d259e056e6cf 100644
---- a/arch/powerpc/include/asm/hugetlb.h
-+++ b/arch/powerpc/include/asm/hugetlb.h
-@@ -61,10 +61,6 @@ int huge_ptep_set_access_flags(struct vm_area_struct *vma,
- 			       unsigned long addr, pte_t *ptep,
- 			       pte_t pte, int dirty);
- 
--static inline void arch_clear_hugepage_flags(struct page *page)
--{
--}
--
- #include <asm-generic/hugetlb.h>
- 
- #else /* ! CONFIG_HUGETLB_PAGE */
-diff --git a/arch/riscv/include/asm/hugetlb.h b/arch/riscv/include/asm/hugetlb.h
-index 866f6ae6467c..a5c2ca1d1cd8 100644
---- a/arch/riscv/include/asm/hugetlb.h
-+++ b/arch/riscv/include/asm/hugetlb.h
-@@ -5,8 +5,4 @@
- #include <asm-generic/hugetlb.h>
- #include <asm/page.h>
- 
--static inline void arch_clear_hugepage_flags(struct page *page)
--{
--}
--
- #endif /* _ASM_RISCV_HUGETLB_H */
-diff --git a/arch/s390/include/asm/hugetlb.h b/arch/s390/include/asm/hugetlb.h
-index 7d27ea96ec2f..9f067a66609b 100644
---- a/arch/s390/include/asm/hugetlb.h
-+++ b/arch/s390/include/asm/hugetlb.h
-@@ -35,6 +35,7 @@ static inline int prepare_hugepage_range(struct file *file,
- 	return 0;
- }
- 
-+#define HAVE_ARCH_CLEAR_HUGEPAGE_FLAGS
- static inline void arch_clear_hugepage_flags(struct page *page)
- {
- 	clear_bit(PG_arch_1, &page->flags);
-diff --git a/arch/sh/include/asm/hugetlb.h b/arch/sh/include/asm/hugetlb.h
-index 536ad2cb8aa4..869b5a947f07 100644
---- a/arch/sh/include/asm/hugetlb.h
-+++ b/arch/sh/include/asm/hugetlb.h
-@@ -26,6 +26,7 @@ static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
- {
- }
- 
-+#define HAVE_ARCH_CLEAR_HUGEPAGE_FLAGS
- static inline void arch_clear_hugepage_flags(struct page *page)
- {
- 	clear_bit(PG_dcache_clean, &page->flags);
-diff --git a/arch/sparc/include/asm/hugetlb.h b/arch/sparc/include/asm/hugetlb.h
-index a056fe1119f5..53838a173f62 100644
---- a/arch/sparc/include/asm/hugetlb.h
-+++ b/arch/sparc/include/asm/hugetlb.h
-@@ -47,10 +47,6 @@ static inline int huge_ptep_set_access_flags(struct vm_area_struct *vma,
- 	return changed;
- }
- 
--static inline void arch_clear_hugepage_flags(struct page *page)
--{
--}
--
- #define __HAVE_ARCH_HUGETLB_FREE_PGD_RANGE
- void hugetlb_free_pgd_range(struct mmu_gather *tlb, unsigned long addr,
- 			    unsigned long end, unsigned long floor,
-diff --git a/arch/x86/include/asm/hugetlb.h b/arch/x86/include/asm/hugetlb.h
-index cc98f79074d0..1721b1aadeb1 100644
---- a/arch/x86/include/asm/hugetlb.h
-+++ b/arch/x86/include/asm/hugetlb.h
-@@ -7,8 +7,4 @@
- 
- #define hugepages_supported() boot_cpu_has(X86_FEATURE_PSE)
- 
--static inline void arch_clear_hugepage_flags(struct page *page)
--{
--}
--
- #endif /* _ASM_X86_HUGETLB_H */
-diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
-index 2342e5a8d1dd..359cfa1b6f54 100644
---- a/include/linux/hugetlb.h
-+++ b/include/linux/hugetlb.h
-@@ -544,6 +544,10 @@ static inline int is_hugepage_only_range(struct mm_struct *mm,
- }
- #endif
- 
-+#ifndef HAVE_ARCH_CLEAR_HUGEPAGE_FLAGS
-+static inline void arch_clear_hugepage_flags(struct page *page) { }
-+#endif
-+
- #ifndef arch_make_huge_pte
- static inline pte_t arch_make_huge_pte(pte_t entry, struct vm_area_struct *vma,
- 				       struct page *page, int writable)
--- 
-2.20.1
+Yes, Patch2 introduces picking self-save when available and using
+self-restore as fallback.
+Sure. The optimization of preference does certainly add an additional
+layer of complexity. As you mentioned, in the case the latency really
+begins to hurt us we can revisit this discussion.
+
+Thanks
+Pratik
+
+>> The values of PSSCR and MSR change at runtime and hence, the kernel
+>> cannot determine during boot time what their values will be before
+>> entering a particular deep-stop state.
+>>
+>> Therefore, a preference based interface is introduced for choosing
+>> between self-save or self-restore between for each SPR.
+>> The per-SPR preference is only a refinement of
+>> approach 2 purely for performance reasons. It can be dropped if the
+>> complexity is not deemed worth the returns.
+>>
+>> Patches Organization
+>> ====================
+>> Design Choice 2 has been chosen as an implementation to demonstrate in
+>> the patch series.
+>>
+>> Patch1:
+>> Devises an interface which lists all the interested SPRs, along with
+>> highlighting the support of mode.
+>> It is an isomorphic patch to replicate the functionality of the older
+>> self-restore firmware for the new interface
+>>
+>> Patch2:
+>> Introduces the self-save API and leverages upon the struct interface to
+>> add another supported mode in the mix of saving and restoring. It also
+>> enforces that in case both modes are supported self-save is chosen over
+>> self-restore
+>>
+>> The commit also parses the device-tree and populate support for
+>> self-save and self-restore in the supported mask
+>>
+>> Patch3:
+>> Introduce an optimization to allow preference to choose between one more
+>> over the one when both both modes are supported. This optimization can
+>> allow for better performance for the SPRs that don't change in value and
+>> hence self-restore is a better alternative, and in cases when it is
+>> known for values to change self-save is more convenient.
+>>
+>> Pratik Rajesh Sampat (3):
+>>    powerpc/powernv: Introduce interface for self-restore support
+>>    powerpc/powernv: Introduce support and parsing for self-save API
+>>    powerpc/powernv: Preference optimization for SPRs with constant values
+>>
+>>   .../bindings/powerpc/opal/power-mgt.txt       |  18 +
+>>   arch/powerpc/include/asm/opal-api.h           |   3 +-
+>>   arch/powerpc/include/asm/opal.h               |   1 +
+>>   arch/powerpc/platforms/powernv/idle.c         | 385 +++++++++++++++---
+>>   arch/powerpc/platforms/powernv/opal-call.c    |   1 +
+>>   5 files changed, 351 insertions(+), 57 deletions(-)
+>>
+>> -- 
+>> 2.17.1
+>>
 
