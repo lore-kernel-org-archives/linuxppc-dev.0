@@ -3,24 +3,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9700C2BB1D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 22:22:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 327F7C2BB1D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 22:24:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6530020767
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 22:22:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D32B52076B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 22:24:13 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="pOCxwRST"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6530020767
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="XLWBhRlV"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D32B52076B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4920NS2qGtzDqy1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2020 08:22:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4920QM6v8gzDr0Q
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2020 08:24:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
  helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
@@ -29,36 +29,37 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=pOCxwRST; dkim-atps=neutral
+ header.s=default header.b=XLWBhRlV; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 491lxP5BkWzDqfp
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 23:01:45 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 491lzv4BnzzDqMF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 23:03:55 +1000 (AEST)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id E704E20732;
- Tue, 14 Apr 2020 13:01:41 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 6A7BF2075E;
+ Tue, 14 Apr 2020 13:03:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1586869303;
- bh=pWPiuEMg4P2H6WWtKoeEIrJA7EIxTZWcj4PZDt4NV3A=;
+ s=default; t=1586869433;
+ bh=EOypBrU9tcg2QQEPNGGQltllXks3y35z6IXUGjl1DG4=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=pOCxwRSTLKG+fKpoNN6pL7bEaN07jAmFr2DuV0C9RfMmBlnWAv1JOM6YaFZT6nGbN
- ondepi//P7WD886QVYVo/H59B351/kYJKvtSpuSM2jwd5MW3QWne+H2FTR56zMYOCD
- F4NR2z3OGSVjhXk6eqQkeYr86KdJjXN3jC1vRArk=
-Date: Tue, 14 Apr 2020 15:01:40 +0200
+ b=XLWBhRlVYg1iCtB++EIMGXPAVeF1ZU6z7ff1mOzRtuHPt0RW282VdRwUJrVcq7xeD
+ 10yO4veG3HRuw+wEo+nv2oXA/aW+uL5LE1lsss39dNDwE7jHcFqC693e0pj+pbc2Iw
+ pkZZOnW468SR89YvW+ma9CDlA+A8SG2buRxyANGk=
+Date: Tue, 14 Apr 2020 15:03:50 +0200
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: Emanuele Giuseppe Esposito <eesposit@redhat.com>
-Subject: Re: [PATCH 4/8] fs: introduce simple_new_inode
-Message-ID: <20200414130140.GD720679@kroah.com>
+Subject: Re: [PATCH 3/8] fs: wrap simple_pin_fs/simple_release_fs arguments
+ in a struct
+Message-ID: <20200414130350.GE720679@kroah.com>
 References: <20200414124304.4470-1-eesposit@redhat.com>
- <20200414124304.4470-5-eesposit@redhat.com>
+ <20200414124304.4470-4-eesposit@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200414124304.4470-5-eesposit@redhat.com>
+In-Reply-To: <20200414124304.4470-4-eesposit@redhat.com>
 X-Mailman-Approved-At: Wed, 15 Apr 2020 08:15:09 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -118,46 +119,21 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 14, 2020 at 02:42:58PM +0200, Emanuele Giuseppe Esposito wrote:
-> It is a common special case for new_inode to initialize the
-> time to the current time and the inode to get_next_ino().
-> Introduce a core function that does it and use it throughout
-> Linux.
-
-Shouldn't this just be called new_inode_current_time()?
-
-How is anyone going to remember what simple_new_inode() does to the
-inode structure?
-
-> --- a/fs/libfs.c
-> +++ b/fs/libfs.c
-> @@ -595,6 +595,18 @@ int simple_write_end(struct file *file, struct address_space *mapping,
->  }
->  EXPORT_SYMBOL(simple_write_end);
+On Tue, Apr 14, 2020 at 02:42:57PM +0200, Emanuele Giuseppe Esposito wrote:
+> @@ -676,9 +674,9 @@ static void __debugfs_file_removed(struct dentry *dentry)
 >  
-> +struct inode *simple_new_inode(struct super_block *sb)
-> +{
-> +	struct inode *inode = new_inode(sb);
-> +	if (inode) {
-> +		inode->i_ino = get_next_ino();
-> +		inode->i_atime = inode->i_mtime =
-> +			inode->i_ctime = current_time(inode);
-> +	}
-> +	return inode;
-> +}
-> +EXPORT_SYMBOL(simple_new_inode);
+>  static void remove_one(struct dentry *victim)
+>  {
+> -        if (d_is_reg(victim))
+> +    if (d_is_reg(victim))
+>  		__debugfs_file_removed(victim);
+> -	simple_release_fs(&debugfs_mount, &debugfs_mount_count);
+> +	simple_release_fs(&debugfs);
+>  }
+>  
+>  /**
 
-No kernel doc explaining that get_next_ino() is called already?
+Always run checkpatch.pl on your patches so you do not get grumpy
+maintainers telling you to run checkpatch.pl on your patches...
 
-Please document new global functions like this so we have a chance to
-know how to use them.
 
-Also, it is almost always easier to introduce a common function, get it
-merged, and _THEN_ send out cleanup functions to all of the different
-subsystems to convert over to it.  Yes, it takes longer, but it makes it
-possible to do this in a way that can be reviewed properly, unlike this
-patch series :(
-
-thanks,
-
-greg k-h
