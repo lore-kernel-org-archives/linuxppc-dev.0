@@ -2,61 +2,73 @@ Return-Path: <SRS0=VNWk=56=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77FB7C2BB1D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 03:08:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B5939C2BA2B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 03:11:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C91612072D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 03:08:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 651A92072D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 03:11:04 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="C0o1HILR"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C91612072D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="iWmGQtqq"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 651A92072D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 491Vn00P1JzDqRk
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 13:08:36 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 491TyR4sWyzDqPg
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 12:31:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gibson.dropbear.id.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 491Vqn5JcSzDqGM
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 13:11:01 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=redhat.com (client-ip=205.139.110.120;
+ helo=us-smtp-1.mimecast.com; envelope-from=jasowang@redhat.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.a=rsa-sha256 header.s=201602 header.b=C0o1HILR; 
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=iWmGQtqq; 
  dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 491Twc1sd7z9sTS; Tue, 14 Apr 2020 12:22:34 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1586831408;
- bh=s+h6RahcZzYYfeeXQO5SulGcL901j5evDB+gL/9pWUg=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=C0o1HILRNbU52slNTOS7Ou5kuosrbTG0h3HLBCUime57Kk4a99mwmIwfWjOTbr50i
- pcrEom/eyxXvWTdp1LE340uZjjmwg03ANoJa0UlZNjGLY7Qj7HA402fXka//JG3QCC
- 8Uqe74ZF8xKCd3yveJUwYqyGZBZmlcNkhNHGrBgw=
-Date: Tue, 14 Apr 2020 12:05:53 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: Boot flakiness with QEMU 3.1.0 and Clang built kernels
-Message-ID: <20200414020553.GD48061@umbus.fritz.box>
-References: <20200410205932.GA880@ubuntu-s3-xlarge-x86>
- <1586564375.zt8lm9finh.astroid@bobo.none>
- <20200411005354.GA24145@ubuntu-s3-xlarge-x86>
- <1586597161.xyshvdbjo6.astroid@bobo.none>
- <1586612535.6kk4az03np.astroid@bobo.none>
+Received: from us-smtp-1.mimecast.com (us-smtp-delivery-1.mimecast.com
+ [205.139.110.120])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 491VJ871HTzDqQW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 12:47:04 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1586832421;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding;
+ bh=1JQT2Xm0ZoYwsGUbbr9yEBymLjUdcqLv7hF40ghU85w=;
+ b=iWmGQtqqGR7nOj067FqfP6wUT1sMvOY8I9JTSxcEfm85EdAfh/xEV71fOK2aIeM76Rv2ib
+ TEaYefth8Nj1H2D2CxJcjmIJUict6y3Jy16mc3RZDWcZn4y1t6nWSDcWEWGTdtwsQ8+PPD
+ l/LzrhErvywcW41W9WE/7RwUEMrZKx8=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-223-DsspG1W7MT6P3LkdYibTNg-1; Mon, 13 Apr 2020 22:44:52 -0400
+X-MC-Unique: DsspG1W7MT6P3LkdYibTNg-1
+Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com
+ [10.5.11.12])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 359E6107ACC4;
+ Tue, 14 Apr 2020 02:44:49 +0000 (UTC)
+Received: from jason-ThinkPad-X1-Carbon-6th.redhat.com
+ (ovpn-13-119.pek2.redhat.com [10.72.13.119])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 199AB60BE1;
+ Tue, 14 Apr 2020 02:44:40 +0000 (UTC)
+From: Jason Wang <jasowang@redhat.com>
+To: mst@redhat.com,
+	jasowang@redhat.com
+Subject: [PATCH] vhost: do not enable VHOST_MENU by default
+Date: Tue, 14 Apr 2020 10:44:38 +0800
+Message-Id: <20200414024438.19103-1-jasowang@redhat.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="WBsA/oQW3eTA3LlM"
-Content-Disposition: inline
-In-Reply-To: <1586612535.6kk4az03np.astroid@bobo.none>
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,133 +80,180 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: qemu-devel@nongnu.org, clang-built-linux@googlegroups.com,
- =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@fr.ibm.com>, qemu-ppc@nongnu.org,
- Nathan Chancellor <natechancellor@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-s390@vger.kernel.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Vasily Gorbik <gor@linux.ibm.com>, kvm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ linux-mips@vger.kernel.org, virtualization@lists.linux-foundation.org,
+ Christian Borntraeger <borntraeger@de.ibm.com>, geert@linux-m68k.org,
+ netdev@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+We try to keep the defconfig untouched after decoupling CONFIG_VHOST
+out of CONFIG_VIRTUALIZATION in commit 20c384f1ea1a
+("vhost: refine vhost and vringh kconfig") by enabling VHOST_MENU by
+default. Then the defconfigs can keep enabling CONFIG_VHOST_NET
+without the caring of CONFIG_VHOST.
 
---WBsA/oQW3eTA3LlM
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+But this will leave a "CONFIG_VHOST_MENU=3Dy" in all defconfigs and even
+for the ones that doesn't want vhost. So it actually shifts the
+burdens to the maintainers of all other to add "CONFIG_VHOST_MENU is
+not set". So this patch tries to enable CONFIG_VHOST explicitly in
+defconfigs that enables CONFIG_VHOST_NET and CONFIG_VHOST_VSOCK.
 
-On Sat, Apr 11, 2020 at 11:57:23PM +1000, Nicholas Piggin wrote:
-> Nicholas Piggin's on April 11, 2020 7:32 pm:
-> > Nathan Chancellor's on April 11, 2020 10:53 am:
-> >> The tt.config values are needed to reproduce but I did not verify that
-> >> ONLY tt.config was needed. Other than that, no, we are just building
-> >> either pseries_defconfig or powernv_defconfig with those configs and
-> >> letting it boot up with a simple initramfs, which prints the version
-> >> string then shuts the machine down.
-> >>=20
-> >> Let me know if you need any more information, cheers!
-> >=20
-> > Okay I can reproduce it. Sometimes it eventually recovers after a long
-> > pause, and some keyboard input often helps it along. So that seems like=
+Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Vasily Gorbik <gor@linux.ibm.com>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>
+Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Signed-off-by: Jason Wang <jasowang@redhat.com>
+---
+ arch/mips/configs/malta_kvm_defconfig  |  1 +
+ arch/powerpc/configs/powernv_defconfig |  1 +
+ arch/powerpc/configs/ppc64_defconfig   |  1 +
+ arch/powerpc/configs/pseries_defconfig |  1 +
+ arch/s390/configs/debug_defconfig      |  1 +
+ arch/s390/configs/defconfig            |  1 +
+ drivers/vhost/Kconfig                  | 18 +++++-------------
+ 7 files changed, 11 insertions(+), 13 deletions(-)
+
+diff --git a/arch/mips/configs/malta_kvm_defconfig b/arch/mips/configs/ma=
+lta_kvm_defconfig
+index 8ef612552a19..06f0c7a0ca87 100644
+--- a/arch/mips/configs/malta_kvm_defconfig
++++ b/arch/mips/configs/malta_kvm_defconfig
+@@ -18,6 +18,7 @@ CONFIG_PCI=3Dy
+ CONFIG_VIRTUALIZATION=3Dy
+ CONFIG_KVM=3Dm
+ CONFIG_KVM_MIPS_DEBUG_COP0_COUNTERS=3Dy
++CONFIG_VHOST=3Dm
+ CONFIG_VHOST_NET=3Dm
+ CONFIG_MODULES=3Dy
+ CONFIG_MODULE_UNLOAD=3Dy
+diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/config=
+s/powernv_defconfig
+index 71749377d164..404245b4594d 100644
+--- a/arch/powerpc/configs/powernv_defconfig
++++ b/arch/powerpc/configs/powernv_defconfig
+@@ -346,5 +346,6 @@ CONFIG_CRYPTO_DEV_VMX=3Dy
+ CONFIG_VIRTUALIZATION=3Dy
+ CONFIG_KVM_BOOK3S_64=3Dm
+ CONFIG_KVM_BOOK3S_64_HV=3Dm
++CONFIG_VHOST=3Dm
+ CONFIG_VHOST_NET=3Dm
+ CONFIG_PRINTK_TIME=3Dy
+diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/=
+ppc64_defconfig
+index 7e68cb222c7b..4599fc7be285 100644
+--- a/arch/powerpc/configs/ppc64_defconfig
++++ b/arch/powerpc/configs/ppc64_defconfig
+@@ -61,6 +61,7 @@ CONFIG_ELECTRA_CF=3Dy
+ CONFIG_VIRTUALIZATION=3Dy
+ CONFIG_KVM_BOOK3S_64=3Dm
+ CONFIG_KVM_BOOK3S_64_HV=3Dm
++CONFIG_VHOST=3Dm
+ CONFIG_VHOST_NET=3Dm
+ CONFIG_OPROFILE=3Dm
+ CONFIG_KPROBES=3Dy
+diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/config=
+s/pseries_defconfig
+index 6b68109e248f..4cad3901b5de 100644
+--- a/arch/powerpc/configs/pseries_defconfig
++++ b/arch/powerpc/configs/pseries_defconfig
+@@ -321,5 +321,6 @@ CONFIG_CRYPTO_DEV_VMX=3Dy
+ CONFIG_VIRTUALIZATION=3Dy
+ CONFIG_KVM_BOOK3S_64=3Dm
+ CONFIG_KVM_BOOK3S_64_HV=3Dm
++CONFIG_VHOST=3Dm
+ CONFIG_VHOST_NET=3Dm
+ CONFIG_PRINTK_TIME=3Dy
+diff --git a/arch/s390/configs/debug_defconfig b/arch/s390/configs/debug_=
+defconfig
+index 0c86ba19fa2b..6ec6e69630d1 100644
+--- a/arch/s390/configs/debug_defconfig
++++ b/arch/s390/configs/debug_defconfig
+@@ -57,6 +57,7 @@ CONFIG_PROTECTED_VIRTUALIZATION_GUEST=3Dy
+ CONFIG_CMM=3Dm
+ CONFIG_APPLDATA_BASE=3Dy
+ CONFIG_KVM=3Dm
++CONFIG_VHOST=3Dm
+ CONFIG_VHOST_NET=3Dm
+ CONFIG_VHOST_VSOCK=3Dm
+ CONFIG_OPROFILE=3Dm
+diff --git a/arch/s390/configs/defconfig b/arch/s390/configs/defconfig
+index 6b27d861a9a3..d1b3bf83d687 100644
+--- a/arch/s390/configs/defconfig
++++ b/arch/s390/configs/defconfig
+@@ -57,6 +57,7 @@ CONFIG_PROTECTED_VIRTUALIZATION_GUEST=3Dy
+ CONFIG_CMM=3Dm
+ CONFIG_APPLDATA_BASE=3Dy
+ CONFIG_KVM=3Dm
++CONFIG_VHOST=3Dm
+ CONFIG_VHOST_NET=3Dm
+ CONFIG_VHOST_VSOCK=3Dm
+ CONFIG_OPROFILE=3Dm
+diff --git a/drivers/vhost/Kconfig b/drivers/vhost/Kconfig
+index e79cbbdfea45..14d296dc18cd 100644
+--- a/drivers/vhost/Kconfig
++++ b/drivers/vhost/Kconfig
+@@ -12,23 +12,18 @@ config VHOST_RING
+ 	  This option is selected by any driver which needs to access
+ 	  the host side of a virtio ring.
 =20
-> > it might be a lost interrupt.
-> >=20
-> > POWER8 vs POWER9 might just be a timing thing if P9 is still hanging
-> > sometimes. I wasn't able to reproduce it with defconfig+tt.config, I
-> > needed your other config with various other debug options.
-> >=20
-> > Thanks for the very good report. I'll let you know what I find.
->=20
-> It looks like a qemu bug. Booting with '-d int' shows the decrementer=20
-> simply stops firing at the point of the hang, even though MSR[EE]=3D1 and=
+-config VHOST
+-	tristate
++menuconfig VHOST
++	tristate "Vhost Devices"
+ 	select VHOST_IOTLB
+ 	help
+-	  This option is selected by any driver which needs to access
+-	  the core of vhost.
+-
+-menuconfig VHOST_MENU
+-	bool "VHOST drivers"
+-	default y
++	  Enable option to support host kernel or hardware accelerator
++	  for virtio device.
 =20
-> the DEC register is wrapping. Linux appears to be doing the right thing=
+-if VHOST_MENU
++if VHOST
 =20
-> as far as I can tell (not losing interrupts).
->=20
-> This qemu patch fixes the boot hang for me. I don't know that qemu=20
-> really has the right idea of "context synchronizing" as defined in the
-> powerpc architecture -- mtmsrd L=3D1 is not context synchronizing but that
-> does not mean it can avoid looking at exceptions until the next such
-> event. It looks like the decrementer exception goes high but the
-> execution of mtmsrd L=3D1 is ignoring it.
->=20
-> Prior to the Linux patch 3282a3da25b you bisected to, interrupt replay
-> code would return with an 'rfi' instruction as part of interrupt return,
-> which probably helped to get things moving along a bit. However it would
-> not be foolproof, and Cedric did say he encountered some mysterious
-> lockups under load with qemu powernv before that patch was merged, so
-> maybe it's the same issue?
->=20
-> Thanks,
-> Nick
->=20
-> The patch is a bit of a hack, but if you can run it and verify it fixes
-> your boot hang would be good.
-
-So a bug in this handling wouldn't surprise me at all.  However a
-report against QEMU 3.1 isn't particularly useful.
-
- * Does the problem occur with current upstream master qemu?
- * Does the problem occur with qemu-2.12 (a pretty widely deployed
-   "stable" qemu, e.g. in RHEL)?
-
-> ---
->=20
-> diff --git a/target/ppc/translate.c b/target/ppc/translate.c
-> index b207fb5386..1d997f5c32 100644
-> --- a/target/ppc/translate.c
-> +++ b/target/ppc/translate.c
-> @@ -4364,12 +4364,21 @@ static void gen_mtmsrd(DisasContext *ctx)
->      if (ctx->opcode & 0x00010000) {
->          /* Special form that does not need any synchronisation */
->          TCGv t0 =3D tcg_temp_new();
-> +        TCGv t1 =3D tcg_temp_new();
->          tcg_gen_andi_tl(t0, cpu_gpr[rS(ctx->opcode)],
->                          (1 << MSR_RI) | (1 << MSR_EE));
-> -        tcg_gen_andi_tl(cpu_msr, cpu_msr,
-> +        tcg_gen_andi_tl(t1, cpu_msr,
->                          ~(target_ulong)((1 << MSR_RI) | (1 << MSR_EE)));
-> -        tcg_gen_or_tl(cpu_msr, cpu_msr, t0);
-> +        tcg_gen_or_tl(t1, t1, t0);
-> +
-> +        gen_update_nip(ctx, ctx->base.pc_next);
-> +        gen_helper_store_msr(cpu_env, t1);
->          tcg_temp_free(t0);
-> +        tcg_temp_free(t1);
-> +        /* Must stop the translation as machine state (may have) changed=
- */
-> +        /* Note that mtmsr is not always defined as context-synchronizin=
-g */
-> +        gen_stop_exception(ctx);
-> +
->      } else {
->          /*
->           * XXX: we need to update nip before the store if we enter
->=20
-
+ config VHOST_NET
+ 	tristate "Host kernel accelerator for virtio net"
+ 	depends on NET && EVENTFD && (TUN || !TUN) && (TAP || !TAP)
+-	select VHOST
+ 	---help---
+ 	  This kernel module can be loaded in host kernel to accelerate
+ 	  guest networking with virtio_net. Not to be confused with virtio_net
+@@ -40,7 +35,6 @@ config VHOST_NET
+ config VHOST_SCSI
+ 	tristate "VHOST_SCSI TCM fabric driver"
+ 	depends on TARGET_CORE && EVENTFD
+-	select VHOST
+ 	default n
+ 	---help---
+ 	Say M here to enable the vhost_scsi TCM fabric module
+@@ -49,7 +43,6 @@ config VHOST_SCSI
+ config VHOST_VSOCK
+ 	tristate "vhost virtio-vsock driver"
+ 	depends on VSOCKETS && EVENTFD
+-	select VHOST
+ 	select VIRTIO_VSOCKETS_COMMON
+ 	default n
+ 	---help---
+@@ -63,7 +56,6 @@ config VHOST_VSOCK
+ config VHOST_VDPA
+ 	tristate "Vhost driver for vDPA-based backend"
+ 	depends on EVENTFD
+-	select VHOST
+ 	depends on VDPA
+ 	help
+ 	  This kernel module can be loaded in host kernel to accelerate
 --=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+2.20.1
 
---WBsA/oQW3eTA3LlM
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAl6VGoAACgkQbDjKyiDZ
-s5Lyhg//TomNgFk7I7WoNDVdWfstVP8av11YeK/MKpSxrha0zOw+CgPJJAGUeCQT
-c/K0tQXzXR2joC0opPWbO8VBLms5CapY8+I11tOsOi5okidzvJTP6T/ZCff5/Guz
-Oi4reP211wqoYISQhjzoNL21HB1fyzPUMLycpNYokQYagyUBROO29mVAZpVgWMfm
-B7L4p89VPzTxd5FcM5/xT7rNRzpcW5ICxpOQLIm0Tbo6Ez9OLXwPHxqTVdZnekhD
-+1pygEVhKwy80e+fJ1EYnAWCXKLgQBmBQ65sdA/H6y90KLLSlQireaPwroMkVWyP
-tNf75J3JIzqUdaO08ZgjuV90/EoeuJ+AtJ+txqWNnQ3LAIrskL7WBmarOMVQq/3y
-IRGlesv6M/dsXLwgw6cX0Hr/iSwHP9ytfZFoGlG2GNeNFphfRyIJKRaisF+jWI6w
-1gUt8wy7H2zJ+ghmUJWgie8Nay7p9uWLnX4JP74JsA+qEMb5q1DTsK7BTfKyQEqL
-pCZtQLNAJbW61KQT0TWOdJlv1szE5JB+Aj7QF96VWwEUZaLtmE8ZoK8uoYbQb6na
-WHmlMu/VX1De4SCsZgB2iQfeOqn7BiQt4VseXOsaN843bFhap40x4o+jwYuQIsBI
-vaFMm2sLBsgmzdLEqwIXy8ujgTsj5lFrVmqzNlzKb7JgjmgUF3o=
-=/XSB
------END PGP SIGNATURE-----
-
---WBsA/oQW3eTA3LlM--
