@@ -2,79 +2,110 @@ Return-Path: <SRS0=VNWk=56=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-1.2 required=3.0 tests=DATE_IN_PAST_03_06,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CB15C2BA19
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 09:50:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A157C2BA19
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 10:22:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B0F852064A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 09:50:52 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Qx9SLKZn"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B0F852064A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 311E32076B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 10:22:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 311E32076B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 491gj56MJ1zDqXm
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 19:50:49 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=207.211.31.81;
- helo=us-smtp-delivery-1.mimecast.com; envelope-from=jasowang@redhat.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 491hPh70rqzDqbh
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 20:22:32 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 491hML3m03zDqZF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 20:20:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 491hML0LPNz9B3v
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 20:20:30 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 491hMK6sDHz9sSG; Tue, 14 Apr 2020 20:20:29 +1000 (AEST)
+Authentication-Results: ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=Qx9SLKZn; 
- dkim-atps=neutral
-Received: from us-smtp-delivery-1.mimecast.com (us-smtp-1.mimecast.com
- [207.211.31.81])
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 491gfJ1l94zDqXC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 19:48:24 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1586857701;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=RCUnMVTMhiXmQTIRtH4ig9vejIyMaafXsJBXVyt/T0o=;
- b=Qx9SLKZnYhNTbLa8p/DYIAU0u2He3JEZV5OKgGMkD4j2ar8VvcMvI9spYac/1V3on30r2I
- gbJce48bO5HPmbEmghmwYgdkOH95MFmGVN4ZtiTnORz2dRt/vYrruVIsTRvK9PJofjgjuB
- 2vmruUNOZBfI96c2As4BSe9rWipu3HM=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-295-qE1gTkkzPsijc6xmZp2iOg-1; Tue, 14 Apr 2020 05:48:17 -0400
-X-MC-Unique: qE1gTkkzPsijc6xmZp2iOg-1
-Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.phx2.redhat.com
- [10.5.11.22])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id AF2DE800D53;
- Tue, 14 Apr 2020 09:48:13 +0000 (UTC)
-Received: from [10.72.13.119] (ovpn-13-119.pek2.redhat.com [10.72.13.119])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 7602F1001920;
- Tue, 14 Apr 2020 09:48:05 +0000 (UTC)
-Subject: Re: [PATCH] vhost: do not enable VHOST_MENU by default
-To: Christian Borntraeger <borntraeger@de.ibm.com>, mst@redhat.com
-References: <20200414024438.19103-1-jasowang@redhat.com>
- <375181ee-08ec-77a6-2dfc-f3c9c26705a1@de.ibm.com>
-From: Jason Wang <jasowang@redhat.com>
-Message-ID: <802e6da9-4827-a9a4-b409-f08a5de4e750@redhat.com>
-Date: Tue, 14 Apr 2020 17:48:04 +0800
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.9.0
+ by ozlabs.org (Postfix) with ESMTPS id 491hMK3Vzbz9sQx
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Apr 2020 20:20:29 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 03EA35YJ060749; Tue, 14 Apr 2020 06:20:22 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30cwm05pdd-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 14 Apr 2020 06:20:22 -0400
+Received: from m0098396.ppops.net (m0098396.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 03EA3etk063999;
+ Tue, 14 Apr 2020 06:20:21 -0400
+Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
+ [169.55.91.170])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30cwm05pcw-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 14 Apr 2020 06:20:21 -0400
+Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
+ by ppma02wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 03EAFWfA003461;
+ Tue, 14 Apr 2020 10:20:20 GMT
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by ppma02wdc.us.ibm.com with ESMTP id 30b5h67qs2-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 14 Apr 2020 10:20:20 +0000
+Received: from b03ledav006.gho.boulder.ibm.com
+ (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 03EAKJ8n52101384
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 14 Apr 2020 10:20:19 GMT
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8AFAAC6059;
+ Tue, 14 Apr 2020 10:20:19 +0000 (GMT)
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D0C80C6055;
+ Tue, 14 Apr 2020 10:20:18 +0000 (GMT)
+Received: from sofia.ibm.com (unknown [9.85.109.81])
+ by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Tue, 14 Apr 2020 10:20:18 +0000 (GMT)
+Received: by sofia.ibm.com (Postfix, from userid 1000)
+ id F27BF2E301A; Tue, 14 Apr 2020 12:41:49 +0530 (IST)
+Date: Tue, 14 Apr 2020 12:41:49 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Pratik Rajesh Sampat <psampat@linux.ibm.com>
+Subject: Re: [PATCH v6 0/3] powerpc/powernv: Introduce interface for
+ self-restore support
+Message-ID: <20200414071149.GD24277@in.ibm.com>
+References: <20200326071034.12838-1-psampat@linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <375181ee-08ec-77a6-2dfc-f3c9c26705a1@de.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.22
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200326071034.12838-1-psampat@linux.ibm.com>
+User-Agent: Mutt/1.5.23 (2014-03-12)
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
+ definitions=2020-04-14_02:2020-04-13,
+ 2020-04-14 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ mlxlogscore=999 phishscore=0
+ suspectscore=0 adultscore=0 mlxscore=0 malwarescore=0 priorityscore=1501
+ impostorscore=0 lowpriorityscore=0 spamscore=0 clxscore=1015 bulkscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2003020000
+ definitions=main-2004140083
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,51 +117,133 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Vasily Gorbik <gor@linux.ibm.com>, kvm@vger.kernel.org,
- linux-kernel@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
- linux-mips@vger.kernel.org, virtualization@lists.linux-foundation.org,
- geert@linux-m68k.org, netdev@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Reply-To: ego@linux.vnet.ibm.com
+Cc: ego@linux.vnet.ibm.com, pratik.r.sampat@gmail.com, linuxram@us.ibm.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, oohall@gmail.com,
+ skiboot@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Hello Pratik,
 
-On 2020/4/14 =E4=B8=8B=E5=8D=883:26, Christian Borntraeger wrote:
-> On 14.04.20 04:44, Jason Wang wrote:
->> We try to keep the defconfig untouched after decoupling CONFIG_VHOST
->> out of CONFIG_VIRTUALIZATION in commit 20c384f1ea1a
->> ("vhost: refine vhost and vringh kconfig") by enabling VHOST_MENU by
->> default. Then the defconfigs can keep enabling CONFIG_VHOST_NET
->> without the caring of CONFIG_VHOST.
->>
->> But this will leave a "CONFIG_VHOST_MENU=3Dy" in all defconfigs and ev=
-en
->> for the ones that doesn't want vhost. So it actually shifts the
->> burdens to the maintainers of all other to add "CONFIG_VHOST_MENU is
->> not set". So this patch tries to enable CONFIG_VHOST explicitly in
->> defconfigs that enables CONFIG_VHOST_NET and CONFIG_VHOST_VSOCK.
->>
->> Cc: Thomas Bogendoerfer<tsbogend@alpha.franken.de>
->> Cc: Benjamin Herrenschmidt<benh@kernel.crashing.org>
->> Cc: Paul Mackerras<paulus@samba.org>
->> Cc: Michael Ellerman<mpe@ellerman.id.au>
->> Cc: Heiko Carstens<heiko.carstens@de.ibm.com>
->> Cc: Vasily Gorbik<gor@linux.ibm.com>
->> Cc: Christian Borntraeger<borntraeger@de.ibm.com>
-> Fine with me.
-> s390 part
->
-> Acked-by: Christian Borntraeger<borntraeger@de.ibm.com>
->
->   That was my first approach to get things fixed before I reported
-> this to you.
+On Thu, Mar 26, 2020 at 12:40:31PM +0530, Pratik Rajesh Sampat wrote:
+> v5: https://lkml.org/lkml/2020/3/17/944
+> Changelog
+> v5-->v6
+> 1. Updated background, motivation and illuminated potential design
+> choices
+> 2. Re-organization of patch-set
+>   a. Split introducing preference for optimization from 1/1 to patch 3/3
+>   b. Merge introducing self-save API and parsing the device-tree
+>   c. Introduce a supported mode called KERNEL_SAVE_RESTORE which
+>      outlines and makes kernel supported SPRs for save-restore more
+>      explicit
+> 
+[..snip..]
 
+> Presenting the design choices in front of us:
+> 
+> Design-Choice 1:
+> ----------------
+> A simple implementation is to just replace self-restore calls with
+> self-save as it is direct super-set.
+> 
+> Pros:
+> A simple design, quick to implement
+> 
+> 
+> Cons:
+> * Breaks backward compatibility. Self-restore has historically been
+>   supported in the firmware and an old firmware running on an new
+>   kernel will be incompatible and deep stop states will be cut.
+> * Furthermore, critical SPRs which need to be restored
+>   before 0x100 vector like HID0 are not supported by self-save.
+> 
+> Design-Choice 2:
+> ----------------
+> Advertise both self-restore and self-save from OPAL including the set
+> of registers that each support. The kernel can then choose which API
+> to go with.
+> For the sake of simplicity, in case both modes are supported for an
+> SPR by default self-save would be called for it.
+> 
+> Pros:
+> * Backwards compatible
+> 
+> Cons:
+> Overhead in parsing device tree with the SPR list
+> 
+> Possible optimization with Approach2:
+> -------------------------------------
+> There are SPRs whose values don't tend to change over time and invoking
+> self-save on them, where the values are gotten each time may turn out to
+> be inefficient. In that case calling a self-restore where passing the
+> value makes more sense as, if the value is same, the memory location
+> is not updated.
+> SPRs that dont change are as follows:
+> SPRN_HSPRG0,
+> SPRN_LPCR,
+> SPRN_PTCR,
+> SPRN_HMEER,
+> SPRN_HID0,
 
-Exactly.
+We can just pick self-save wherever available and fallback to
+self-restore when self-save support is not avaiable for any SPR.
+The optimization that you mention here can be revisited if the
+additional latency due to self-save becomes observable (Note that both
+stop4 and stop5 have wakeup latency between 200-500us).
 
-Thanks
-
->
-
+> 
+> The values of PSSCR and MSR change at runtime and hence, the kernel
+> cannot determine during boot time what their values will be before
+> entering a particular deep-stop state.
+> 
+> Therefore, a preference based interface is introduced for choosing
+> between self-save or self-restore between for each SPR.
+> The per-SPR preference is only a refinement of
+> approach 2 purely for performance reasons. It can be dropped if the
+> complexity is not deemed worth the returns.
+> 
+> Patches Organization
+> ====================
+> Design Choice 2 has been chosen as an implementation to demonstrate in
+> the patch series.
+> 
+> Patch1:
+> Devises an interface which lists all the interested SPRs, along with
+> highlighting the support of mode.
+> It is an isomorphic patch to replicate the functionality of the older
+> self-restore firmware for the new interface
+> 
+> Patch2:
+> Introduces the self-save API and leverages upon the struct interface to
+> add another supported mode in the mix of saving and restoring. It also
+> enforces that in case both modes are supported self-save is chosen over
+> self-restore
+> 
+> The commit also parses the device-tree and populate support for
+> self-save and self-restore in the supported mask
+> 
+> Patch3:
+> Introduce an optimization to allow preference to choose between one more
+> over the one when both both modes are supported. This optimization can
+> allow for better performance for the SPRs that don't change in value and
+> hence self-restore is a better alternative, and in cases when it is
+> known for values to change self-save is more convenient.
+> 
+> Pratik Rajesh Sampat (3):
+>   powerpc/powernv: Introduce interface for self-restore support
+>   powerpc/powernv: Introduce support and parsing for self-save API
+>   powerpc/powernv: Preference optimization for SPRs with constant values
+> 
+>  .../bindings/powerpc/opal/power-mgt.txt       |  18 +
+>  arch/powerpc/include/asm/opal-api.h           |   3 +-
+>  arch/powerpc/include/asm/opal.h               |   1 +
+>  arch/powerpc/platforms/powernv/idle.c         | 385 +++++++++++++++---
+>  arch/powerpc/platforms/powernv/opal-call.c    |   1 +
+>  5 files changed, 351 insertions(+), 57 deletions(-)
+> 
+> -- 
+> 2.17.1
+> 
