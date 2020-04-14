@@ -2,67 +2,59 @@ Return-Path: <SRS0=VNWk=56=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D2A3C2BA2B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 01:00:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E6620C2BA2B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 01:02:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8251820768
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 01:00:03 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="YlEB2G4L"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8251820768
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 9161420768
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 01:02:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9161420768
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 491Rwd4t8DzDqLC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 11:00:01 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 491Ryv0DCZzDqWX
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 11:01:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.21; helo=inva021.nxp.com;
+ envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 491Rkq30F5zDqLF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 10:51:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=YlEB2G4L; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 491Rkp6QyRz9sSk;
- Tue, 14 Apr 2020 10:51:30 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1586825491;
- bh=Lu+lnFaV1xSDWR81mSR54x4nl15RVb3+4B7MuYkt1g0=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=YlEB2G4L51G4Z0CbLAgGzQc/vGjKnbCq9KXxcegdigB4DRQklBa7IBu8dK4izaEb6
- v687sHdCGAZpeS1DxBs5R9kJrF9bdDIhPhGazL0Nd+K/ssVh+gdzWUIb/hBEoszcHE
- frEaMXbSFVIubwOihvFtfknrgbSbdhdEBk3reW2RBYIV3VbLfOupyyrSG4OiTvIFNG
- wdE1E0IOpqH91p7JNhYelJMCtg8VXhzuAZkqds3a403iWenYza6oqoaZcMf/LT22i0
- JCPFbkrKzEyFveJh+Y5gP183qZX4QyjkK8fB7vlb+2sINn1sq1ABQRbYVogPBcdw0h
- Yd78MVLfPPHew==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
- Sachin Sant <sachinp@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] qtpm2: Export tpm2_get_cc_attrs_tbl for ibmvtpm driver
- as module
-In-Reply-To: <20200402193134.GC10314@linux.intel.com>
-References: <20200319010017.738677-1-stefanb@linux.vnet.ibm.com>
- <20200319195706.GD24804@linux.intel.com>
- <2BF66599-184A-4647-BC57-105A1512F119@linux.vnet.ibm.com>
- <20200402193134.GC10314@linux.intel.com>
-Date: Tue, 14 Apr 2020 10:51:37 +1000
-Message-ID: <87k12ikhye.fsf@mpe.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 491Rkt1m6lzDqL2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 10:51:33 +1000 (AEST)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 6FD602001F8;
+ Tue, 14 Apr 2020 02:51:29 +0200 (CEST)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
+ [165.114.16.14])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 8D6E22001EE;
+ Tue, 14 Apr 2020 02:51:23 +0200 (CEST)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net
+ [10.192.224.44])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 7F3C1402FB;
+ Tue, 14 Apr 2020 08:51:16 +0800 (SGT)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
+ festevam@gmail.com, broonie@kernel.org, alsa-devel@alsa-project.org,
+ lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com, robh+dt@kernel.org,
+ mark.rutland@arm.com, devicetree@vger.kernel.org
+Subject: [PATCH v7 4/7] ASoC: fsl_asrc: Support new property fsl,asrc-format
+Date: Tue, 14 Apr 2020 08:43:06 +0800
+Message-Id: <d10df72d2e9985fede7969b5da1f579627f5e821.1586747728.git.shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <cover.1586747728.git.shengjiu.wang@nxp.com>
+References: <cover.1586747728.git.shengjiu.wang@nxp.com>
+In-Reply-To: <cover.1586747728.git.shengjiu.wang@nxp.com>
+References: <cover.1586747728.git.shengjiu.wang@nxp.com>
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,38 +66,166 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Stefan Berger <stefanb@linux.vnet.ibm.com>,
- LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
- linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Stefan Berger <stefanb@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com> writes:
-> On Wed, Apr 01, 2020 at 02:40:30PM +0530, Sachin Sant wrote:
->> > On 20-Mar-2020, at 1:27 AM, Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com> wrote:
->> > 
->> > On Wed, Mar 18, 2020 at 09:00:17PM -0400, Stefan Berger wrote:
->> >> From: Stefan Berger <stefanb@linux.ibm.com>
->> >> 
->> >> This patch fixes the following problem when the ibmvtpm driver
->> >> is built as a module:
->> >> 
->> >> ERROR: modpost: "tpm2_get_cc_attrs_tbl" [drivers/char/tpm/tpm_ibmvtpm.ko] undefined!
->> >> make[1]: *** [scripts/Makefile.modpost:94: __modpost] Error 1
->> >> make: *** [Makefile:1298: modules] Error 2
->> >> 
->> >> Fixes: 18b3670d79ae ("tpm: ibmvtpm: Add support for TPM2")
->> >> Signed-off-by: Stefan Berger <stefanb@linux.ibm.com>
->> >> Reported-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
->> >> Tested-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
->> > 
->> 
->> Ping. This failure can now be seen in mainline (cad18da0af) as well.
->
-> It is in my tree
+In order to align with new ESARC, we add new property fsl,asrc-format.
+The fsl,asrc-format can replace the fsl,asrc-width, driver
+can accept format from devicetree, don't need to convert it to
+format through width.
 
-Can you please send it to Linus?
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+---
+ sound/soc/fsl/fsl_asrc.c     | 41 +++++++++++++++++++++++-------------
+ sound/soc/fsl/fsl_asrc.h     |  4 ++--
+ sound/soc/fsl/fsl_asrc_dma.c | 15 ++++++++++---
+ 3 files changed, 40 insertions(+), 20 deletions(-)
 
-cheers
+diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
+index 4d3e51bfa949..a9458fe268bc 100644
+--- a/sound/soc/fsl/fsl_asrc.c
++++ b/sound/soc/fsl/fsl_asrc.c
+@@ -589,7 +589,6 @@ static int fsl_asrc_dai_hw_params(struct snd_pcm_substream *substream,
+ 	unsigned int channels = params_channels(params);
+ 	unsigned int rate = params_rate(params);
+ 	struct asrc_config config;
+-	snd_pcm_format_t format;
+ 	int ret;
+ 
+ 	ret = fsl_asrc_request_pair(channels, pair);
+@@ -600,11 +599,6 @@ static int fsl_asrc_dai_hw_params(struct snd_pcm_substream *substream,
+ 
+ 	pair->config = &config;
+ 
+-	if (asrc->asrc_width == 16)
+-		format = SNDRV_PCM_FORMAT_S16_LE;
+-	else
+-		format = SNDRV_PCM_FORMAT_S24_LE;
+-
+ 	config.pair = pair->index;
+ 	config.channel_num = channels;
+ 	config.inclk = INCLK_NONE;
+@@ -612,11 +606,11 @@ static int fsl_asrc_dai_hw_params(struct snd_pcm_substream *substream,
+ 
+ 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
+ 		config.input_format   = params_format(params);
+-		config.output_format  = format;
++		config.output_format  = asrc->asrc_format;
+ 		config.input_sample_rate  = rate;
+ 		config.output_sample_rate = asrc->asrc_rate;
+ 	} else {
+-		config.input_format   = format;
++		config.input_format   = asrc->asrc_format;
+ 		config.output_format  = params_format(params);
+ 		config.input_sample_rate  = asrc->asrc_rate;
+ 		config.output_sample_rate = rate;
+@@ -946,6 +940,7 @@ static int fsl_asrc_probe(struct platform_device *pdev)
+ 	int irq, ret, i;
+ 	u32 map_idx;
+ 	char tmp[16];
++	u32 width;
+ 
+ 	asrc = devm_kzalloc(&pdev->dev, sizeof(*asrc), GFP_KERNEL);
+ 	if (!asrc)
+@@ -1052,16 +1047,32 @@ static int fsl_asrc_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
+-	ret = of_property_read_u32(np, "fsl,asrc-width",
+-				   &asrc->asrc_width);
++	ret = of_property_read_u32(np, "fsl,asrc-format", &asrc->asrc_format);
+ 	if (ret) {
+-		dev_err(&pdev->dev, "failed to get output width\n");
+-		return ret;
++		ret = of_property_read_u32(np, "fsl,asrc-width", &width);
++		if (ret) {
++			dev_err(&pdev->dev, "failed to decide output format\n");
++			return ret;
++		}
++
++		switch (width) {
++		case 16:
++			asrc->asrc_format = SNDRV_PCM_FORMAT_S16_LE;
++			break;
++		case 24:
++			asrc->asrc_format = SNDRV_PCM_FORMAT_S24_LE;
++			break;
++		default:
++			dev_warn(&pdev->dev,
++				 "unsupported width, use default S24_LE\n");
++			asrc->asrc_format = SNDRV_PCM_FORMAT_S24_LE;
++			break;
++		}
+ 	}
+ 
+-	if (asrc->asrc_width != 16 && asrc->asrc_width != 24) {
+-		dev_warn(&pdev->dev, "unsupported width, switching to 24bit\n");
+-		asrc->asrc_width = 24;
++	if (!(FSL_ASRC_FORMATS & (1ULL << asrc->asrc_format))) {
++		dev_warn(&pdev->dev, "unsupported width, use default S24_LE\n");
++		asrc->asrc_format = SNDRV_PCM_FORMAT_S24_LE;
+ 	}
+ 
+ 	platform_set_drvdata(pdev, asrc);
+diff --git a/sound/soc/fsl/fsl_asrc.h b/sound/soc/fsl/fsl_asrc.h
+index 95d62c45afde..3b0f156af2c3 100644
+--- a/sound/soc/fsl/fsl_asrc.h
++++ b/sound/soc/fsl/fsl_asrc.h
+@@ -493,7 +493,7 @@ struct fsl_asrc_pair {
+  * @channel_avail: non-occupied channel numbers
+  * @clk_map: clock map for input/output clock
+  * @asrc_rate: default sample rate for ASoC Back-Ends
+- * @asrc_width: default sample width for ASoC Back-Ends
++ * @asrc_format: default sample format for ASoC Back-Ends
+  * @regcache_cfg: store register value of REG_ASRCFG
+  */
+ struct fsl_asrc {
+@@ -514,7 +514,7 @@ struct fsl_asrc {
+ 	unsigned char *clk_map[2];
+ 
+ 	int asrc_rate;
+-	int asrc_width;
++	snd_pcm_format_t asrc_format;
+ 
+ 	u32 regcache_cfg;
+ };
+diff --git a/sound/soc/fsl/fsl_asrc_dma.c b/sound/soc/fsl/fsl_asrc_dma.c
+index 5fe83aece25b..a9dd3155ff35 100644
+--- a/sound/soc/fsl/fsl_asrc_dma.c
++++ b/sound/soc/fsl/fsl_asrc_dma.c
+@@ -146,7 +146,7 @@ static int fsl_asrc_dma_hw_params(struct snd_soc_component *component,
+ 	struct device *dev_be;
+ 	u8 dir = tx ? OUT : IN;
+ 	dma_cap_mask_t mask;
+-	int ret;
++	int ret, width;
+ 
+ 	/* Fetch the Back-End dma_data from DPCM */
+ 	for_each_dpcm_be(rtd, stream, dpcm) {
+@@ -230,10 +230,19 @@ static int fsl_asrc_dma_hw_params(struct snd_soc_component *component,
+ 		return -EINVAL;
+ 	}
+ 
+-	if (asrc->asrc_width == 16)
++	width = snd_pcm_format_physical_width(asrc->asrc_format);
++	if (width < 8 || width > 64)
++		return -EINVAL;
++	else if (width == 8)
++		buswidth = DMA_SLAVE_BUSWIDTH_1_BYTE;
++	else if (width == 16)
+ 		buswidth = DMA_SLAVE_BUSWIDTH_2_BYTES;
+-	else
++	else if (width == 24)
++		buswidth = DMA_SLAVE_BUSWIDTH_3_BYTES;
++	else if (width <= 32)
+ 		buswidth = DMA_SLAVE_BUSWIDTH_4_BYTES;
++	else
++		buswidth = DMA_SLAVE_BUSWIDTH_8_BYTES;
+ 
+ 	config_be.direction = DMA_DEV_TO_DEV;
+ 	config_be.src_addr_width = buswidth;
+-- 
+2.21.0
+
