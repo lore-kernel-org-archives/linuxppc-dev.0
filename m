@@ -2,175 +2,63 @@ Return-Path: <SRS0=VNWk=56=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3943CC2BB1D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 06:24:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B992C2BB1D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 06:28:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D9F172072D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 06:24:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6596C2072D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 06:28:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="jlXnhyu7"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D9F172072D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="XEQBNgUU"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6596C2072D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 491b6v3GndzDqTw
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 16:24:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.ru (client-ip=2607:f8b0:4864:20::541;
- helo=mail-pg1-x541.google.com; envelope-from=aik@ozlabs.ru;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
- header.i=@ozlabs-ru.20150623.gappssmtp.com header.a=rsa-sha256
- header.s=20150623 header.b=jlXnhyu7; dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
+	by lists.ozlabs.org (Postfix) with ESMTP id 491bCM3NTJzDqQV
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 16:28:15 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 491b3l1WHYzDqTx
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 16:21:38 +1000 (AEST)
-Received: by mail-pg1-x541.google.com with SMTP id g6so5552887pgs.9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2020 23:21:38 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
- h=subject:from:to:cc:references:autocrypt:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=T2V6RFxG+St6MIwHonDlDqJYtf1QoZ6rfA/nQPhlGxM=;
- b=jlXnhyu78Pr3Mf9T3zCyZ59xDjsHm3mWl3rYbZSrzdBF1tTa1afLDAfFkEOx40odgC
- UOJ2mgADsZhbLZC/mbBFYPobHXNEwLUlvqLwFNNZkbic1x8aOSRRE+nXAXAhGqFbkKiE
- DX6GdjyxxLEAEOu0fQ/Zv/7nYNhsDQqyH53V7fWCQEL6BQSD6uScccI+8yiNWhYIAIk+
- lT92xWmziQdvsYLgjUxqFcpcDak5rZHQ9lRwe9MHp/VzXC/Bv7buD/ZWELIV90ZXX6lZ
- lgQs5ntF0YygigTCZb/4nvzcQYOtHFq1imyoiCZMp5OiLSMQoTc8HWjbi5EWeSQN3fWL
- n71Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:from:to:cc:references:autocrypt
- :message-id:date:user-agent:mime-version:in-reply-to
- :content-language:content-transfer-encoding;
- bh=T2V6RFxG+St6MIwHonDlDqJYtf1QoZ6rfA/nQPhlGxM=;
- b=GaPc0gMUOoa6NQrc5FS47TNpzh/gjQUCMBa9j0HRXqpTV/zYOzZOaakfujlS7p88xM
- eN+X9DJkSvc3rX+pYJXtAdnwAhDPf7wWImB1ktN5FXN3NlxMXcmc1oESslY4HRggt5Z2
- wYVV0dwgGr2qLEwW04H/3mYtoUChu/nPP8ZF2qQIJqSt88z1ElyrzvGSvma/uLoaRKkt
- OtbqTct/oE58Qa90CBCiCTz29ReU6qbJTIkLsN8HJ+mLsP25FXaxOla13RDhCqEBO0e2
- 3WquyDq1vENRXyGWEINqkVwsz1owwSOqjG/wqSOxS6B4tyLv96z1qMPjYG3KsfrjStdW
- PJOQ==
-X-Gm-Message-State: AGi0Pubc5VcT0gdOuu+B7gCYSNbpj2L2akn0aoLEtFoLjFgQ0cJkbT7M
- Ec1BwrHY9QE/40v7bRKy5ubRZA==
-X-Google-Smtp-Source: APiQypL83TT0KlsOsKIJ3fvR06bQJNuFT6Oa4gTm65rKyfX1kCum+En95qF9urIy+WRzq1bLEYqidA==
-X-Received: by 2002:a63:7d5d:: with SMTP id m29mr15941343pgn.65.1586845294300; 
- Mon, 13 Apr 2020 23:21:34 -0700 (PDT)
-Received: from [192.168.10.94] (124-171-87-207.dyn.iinet.net.au.
- [124.171.87.207])
- by smtp.gmail.com with ESMTPSA id u44sm9699150pgn.81.2020.04.13.23.21.30
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Mon, 13 Apr 2020 23:21:33 -0700 (PDT)
-Subject: Re: [PATCH 1/2] dma-mapping: add a dma_ops_bypass flag to struct
- device
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: Christoph Hellwig <hch@lst.de>
-References: <87sghz2ibh.fsf@linux.ibm.com> <20200323172256.GB31269@lst.de>
- <ffce1af6-a215-dee8-7b5c-2111f43accfd@ozlabs.ru>
- <20200324075402.GJ23447@lst.de>
- <41975da3-3a4a-fc3c-2b90-8d607cf220e6@ozlabs.ru>
- <20200325083740.GC21605@lst.de>
- <a705afc5-779d-baf4-e5d2-e2da04c82743@ozlabs.ru>
- <213b0c7d-f908-b4f4-466d-6240c3622cd6@ozlabs.ru>
- <20200406115016.GA10941@lst.de>
- <348046e7-7a38-62d6-4df0-e4a537b98926@ozlabs.ru>
- <20200406171706.GA3231@lst.de>
- <95395244-bdec-84d2-b81b-3040c076fe4d@ozlabs.ru>
-Autocrypt: addr=aik@ozlabs.ru; keydata=
- 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
-Message-ID: <44ad32a4-7ce5-4f4d-8237-53356f76f53a@ozlabs.ru>
-Date: Tue, 14 Apr 2020 16:21:27 +1000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.5.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 491b8S69xwzDq6q
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 16:25:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=gibson.dropbear.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
+ header.a=rsa-sha256 header.s=201602 header.b=XEQBNgUU; 
+ dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1007)
+ id 491b8R6PfYz9sSt; Tue, 14 Apr 2020 16:25:43 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=gibson.dropbear.id.au; s=201602; t=1586845543;
+ bh=uEH5LAwtpcdLGU0lKQ8WRrkiPMOAl5BsxGpDf7qHgGo=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=XEQBNgUU5RcPyT3rZM0XykfCiS5hEzP5FE7uvhErC+hI649HnDdaD2b9WTox1r1Oj
+ popVl5Z8csA3Sj0q9haKZre4/klW/JVngFnokTBxRjg/eIkZJXqjKJ3xJ6X2jannkt
+ M0S/nSXgYMxpC6zMm+K4VooTXa62twhBw2EDwEzY=
+Date: Tue, 14 Apr 2020 14:40:10 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Nathan Chancellor <natechancellor@gmail.com>
+Subject: Re: Boot flakiness with QEMU 3.1.0 and Clang built kernels
+Message-ID: <20200414044010.GK48061@umbus.fritz.box>
+References: <20200410205932.GA880@ubuntu-s3-xlarge-x86>
+ <1586564375.zt8lm9finh.astroid@bobo.none>
+ <20200411005354.GA24145@ubuntu-s3-xlarge-x86>
+ <1586597161.xyshvdbjo6.astroid@bobo.none>
+ <1586612535.6kk4az03np.astroid@bobo.none>
+ <20200414020553.GD48061@umbus.fritz.box>
+ <20200414040515.GA22855@ubuntu-s3-xlarge-x86>
 MIME-Version: 1.0
-In-Reply-To: <95395244-bdec-84d2-b81b-3040c076fe4d@ozlabs.ru>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="9JSHP372f+2dzJ8X"
+Content-Disposition: inline
+In-Reply-To: <20200414040515.GA22855@ubuntu-s3-xlarge-x86>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -182,55 +70,160 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Joerg Roedel <joro@8bytes.org>, Robin Murphy <robin.murphy@arm.com>,
- linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
- Lu Baolu <baolu.lu@linux.intel.com>
+Cc: qemu-devel@nongnu.org, Nicholas Piggin <npiggin@gmail.com>,
+ clang-built-linux@googlegroups.com,
+ =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@fr.ibm.com>, qemu-ppc@nongnu.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
+--9JSHP372f+2dzJ8X
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 07/04/2020 20:12, Alexey Kardashevskiy wrote:
-> 
-> 
-> On 07/04/2020 03:17, Christoph Hellwig wrote:
->> On Mon, Apr 06, 2020 at 11:25:09PM +1000, Alexey Kardashevskiy wrote:
->>>>> Do you see any serious problem with this approach? Thanks!
->>>>
->>>> Do you have a link to the whole branch?  The github UI is unfortunately
->>>> unusable for that (or I'm missing something).
->>>
->>> The UI shows the branch but since I rebased and forcepushed it, it does
->>> not. Here is the current one with:
->>>
->>> https://github.com/aik/linux/commits/dma-bypass.3
->>
->> Ok, so we use the core bypass without persistent memory, and then
->> have another bypass mode on top.  Not great, but I can't think
->> of anything better.  Note that your checks for the map_sg case
->> aren't very efficient - for one it would make sense to calculate
->> the limit only once, 
-> 
-> Good points, I'll post revised version when you post your v3 of this.
+On Mon, Apr 13, 2020 at 09:05:15PM -0700, Nathan Chancellor wrote:
+> On Tue, Apr 14, 2020 at 12:05:53PM +1000, David Gibson wrote:
+> > On Sat, Apr 11, 2020 at 11:57:23PM +1000, Nicholas Piggin wrote:
+> > > Nicholas Piggin's on April 11, 2020 7:32 pm:
+> > > > Nathan Chancellor's on April 11, 2020 10:53 am:
+> > > >> The tt.config values are needed to reproduce but I did not verify =
+that
+> > > >> ONLY tt.config was needed. Other than that, no, we are just buildi=
+ng
+> > > >> either pseries_defconfig or powernv_defconfig with those configs a=
+nd
+> > > >> letting it boot up with a simple initramfs, which prints the versi=
+on
+> > > >> string then shuts the machine down.
+> > > >>=20
+> > > >> Let me know if you need any more information, cheers!
+> > > >=20
+> > > > Okay I can reproduce it. Sometimes it eventually recovers after a l=
+ong
+> > > > pause, and some keyboard input often helps it along. So that seems =
+like=20
+> > > > it might be a lost interrupt.
+> > > >=20
+> > > > POWER8 vs POWER9 might just be a timing thing if P9 is still hanging
+> > > > sometimes. I wasn't able to reproduce it with defconfig+tt.config, I
+> > > > needed your other config with various other debug options.
+> > > >=20
+> > > > Thanks for the very good report. I'll let you know what I find.
+> > >=20
+> > > It looks like a qemu bug. Booting with '-d int' shows the decrementer=
+=20
+> > > simply stops firing at the point of the hang, even though MSR[EE]=3D1=
+ and=20
+> > > the DEC register is wrapping. Linux appears to be doing the right thi=
+ng=20
+> > > as far as I can tell (not losing interrupts).
+> > >=20
+> > > This qemu patch fixes the boot hang for me. I don't know that qemu=20
+> > > really has the right idea of "context synchronizing" as defined in the
+> > > powerpc architecture -- mtmsrd L=3D1 is not context synchronizing but=
+ that
+> > > does not mean it can avoid looking at exceptions until the next such
+> > > event. It looks like the decrementer exception goes high but the
+> > > execution of mtmsrd L=3D1 is ignoring it.
+> > >=20
+> > > Prior to the Linux patch 3282a3da25b you bisected to, interrupt replay
+> > > code would return with an 'rfi' instruction as part of interrupt retu=
+rn,
+> > > which probably helped to get things moving along a bit. However it wo=
+uld
+> > > not be foolproof, and Cedric did say he encountered some mysterious
+> > > lockups under load with qemu powernv before that patch was merged, so
+> > > maybe it's the same issue?
+> > >=20
+> > > Thanks,
+> > > Nick
+> > >=20
+> > > The patch is a bit of a hack, but if you can run it and verify it fix=
+es
+> > > your boot hang would be good.
+> >=20
+> > So a bug in this handling wouldn't surprise me at all.  However a
+> > report against QEMU 3.1 isn't particularly useful.
+> >=20
+> >  * Does the problem occur with current upstream master qemu?
+>=20
+> Yes, I can reproduce the hang on 5.0.0-rc2.
 
+Ok.
 
+Nick, can you polish up your fix shortly and submit upstream in the
+usual fashion?
 
-Any plans on posting v3 of this? Thanks,
+> >  * Does the problem occur with qemu-2.12 (a pretty widely deployed
+> >    "stable" qemu, e.g. in RHEL)?
+>=20
+> No idea but I would assume so. I might have time later this week to test
+> but I assume it is kind of irrelevant if it is reproducible at ToT.
+>=20
+> > > ---
+> > >=20
+> > > diff --git a/target/ppc/translate.c b/target/ppc/translate.c
+> > > index b207fb5386..1d997f5c32 100644
+> > > --- a/target/ppc/translate.c
+> > > +++ b/target/ppc/translate.c
+> > > @@ -4364,12 +4364,21 @@ static void gen_mtmsrd(DisasContext *ctx)
+> > >      if (ctx->opcode & 0x00010000) {
+> > >          /* Special form that does not need any synchronisation */
+> > >          TCGv t0 =3D tcg_temp_new();
+> > > +        TCGv t1 =3D tcg_temp_new();
+> > >          tcg_gen_andi_tl(t0, cpu_gpr[rS(ctx->opcode)],
+> > >                          (1 << MSR_RI) | (1 << MSR_EE));
+> > > -        tcg_gen_andi_tl(cpu_msr, cpu_msr,
+> > > +        tcg_gen_andi_tl(t1, cpu_msr,
+> > >                          ~(target_ulong)((1 << MSR_RI) | (1 << MSR_EE=
+)));
+> > > -        tcg_gen_or_tl(cpu_msr, cpu_msr, t0);
+> > > +        tcg_gen_or_tl(t1, t1, t0);
+> > > +
+> > > +        gen_update_nip(ctx, ctx->base.pc_next);
+> > > +        gen_helper_store_msr(cpu_env, t1);
+> > >          tcg_temp_free(t0);
+> > > +        tcg_temp_free(t1);
+> > > +        /* Must stop the translation as machine state (may have) cha=
+nged */
+> > > +        /* Note that mtmsr is not always defined as context-synchron=
+izing */
+> > > +        gen_stop_exception(ctx);
+> > > +
+> > >      } else {
+> > >          /*
+> > >           * XXX: we need to update nip before the store if we enter
+> > >=20
+> >=20
+>=20
 
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
-> 
->> but also it would make sense to reuse the
->> calculted diecect mapping addresses instead of doing another pass
->> later on in the dma-direct code.
-> 
-> Probably but I wonder what kind of hardware we need to see the
-> difference. I might try, just need to ride to the office to plug the
-> cable in my 100GBit eth machines :) Thanks,
-> 
-> 
+--9JSHP372f+2dzJ8X
+Content-Type: application/pgp-signature; name="signature.asc"
 
--- 
-Alexey
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAl6VPqgACgkQbDjKyiDZ
+s5LQ4hAAiszktfJyjf69flxQVUji0VqWbKOgdXpQ56ydhV2HwU5FdLYGC6qyMqjc
+5YGxQ94hXsS3q85Dp6ebQ/YRY0yGWXer1v3vUEbD/Lfb1CNSvGr5fahNiD3hTYxt
+PXa4yyghf0EFaYKOLrbnLKPPYNZoN91gavyFeNRfmYoksOYOesltyT3pEX8bZHdl
+0P50v+DVn/PBir9t3/nAxD4u+Z7uCs0IJAkB8cFQq0G5FMSiAbz7usABiQkQDgJq
+IwzErIPPmjYGZxUTHKorxM0d6Ozcd1wdn27abdkj80N9e6g+MB4oXsRpNlnbEly/
+E2715dEWIZju8PDCO3n/vxJiImPV2OEosAhJUormJbKw/n6B1Ie97tt/zwGP0ghr
+9hJBQXx/MLxQqwPd8Qnp1Fc5FNMKs0iLQ5hI3KvmiHOKPWEYmr+qBCPBxadifD9p
+XdX6Ugfy64WRB1hDEMK44s5NPEx0QXhr1mwb5iaQhgFiw2X12FUJxFUZsQ1ItScT
+Sx9lAziVQZPIgIhmO26vmLG8Y0r64gleKDom/0dAyHYJI+J8aGiXnSBaGC+OYj2W
+DdzQ8X6/DngnkhjB1UrFEgusweBnoKX/V/Fc501cut17ls3ARjdaKBpt0WRzO0iA
+QJWdq27miCREtqphebPNTNAiJYD78OFkRn3mONj6krOEIXPWKHI=
+=0KPK
+-----END PGP SIGNATURE-----
+
+--9JSHP372f+2dzJ8X--
