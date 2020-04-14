@@ -2,80 +2,50 @@ Return-Path: <SRS0=VNWk=56=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A13EC2BA19
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 12:52:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 23307C2BBC7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 12:55:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E74F2206A2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 12:52:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E74F2206A2
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.cz
+	by mail.kernel.org (Postfix) with ESMTPS id D49992076D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 12:55:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D49992076D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=alpha.franken.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 491lkq6KTBzDqQ4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 22:52:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz
- (client-ip=195.135.220.15; helo=mx2.suse.de; envelope-from=dsterba@suse.cz;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=suse.cz
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 491lgX0NBCzDqTP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 22:49:43 +1000 (AEST)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx2.suse.de (Postfix) with ESMTP id 6EF73AA7C;
- Tue, 14 Apr 2020 12:49:36 +0000 (UTC)
-Received: by ds.suse.cz (Postfix, from userid 10065)
- id E5E76DA72D; Tue, 14 Apr 2020 14:48:54 +0200 (CEST)
-Date: Tue, 14 Apr 2020 14:48:54 +0200
-From: David Sterba <dsterba@suse.cz>
-To: Waiman Long <longman@redhat.com>
-Subject: Re: [PATCH 1/2] mm, treewide: Rename kzfree() to kfree_sensitive()
-Message-ID: <20200414124854.GQ5920@twin.jikos.cz>
-Mail-Followup-To: dsterba@suse.cz, Waiman Long <longman@redhat.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- David Howells <dhowells@redhat.com>,
- Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
- James Morris <jmorris@namei.org>,
- "Serge E. Hallyn" <serge@hallyn.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Joe Perches <joe@perches.com>, Matthew Wilcox <willy@infradead.org>,
- David Rientjes <rientjes@google.com>, linux-mm@kvack.org,
- keyrings@vger.kernel.org, linux-kernel@vger.kernel.org,
- x86@kernel.org, linux-crypto@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-stm32@st-md-mailman.stormreply.com,
- linux-arm-kernel@lists.infradead.org,
- linux-amlogic@lists.infradead.org,
- linux-mediatek@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org, linux-ppp@vger.kernel.org,
- wireguard@lists.zx2c4.com, linux-wireless@vger.kernel.org,
- devel@driverdev.osuosl.org, linux-scsi@vger.kernel.org,
- target-devel@vger.kernel.org, linux-btrfs@vger.kernel.org,
- linux-cifs@vger.kernel.org, samba-technical@lists.samba.org,
- linux-fscrypt@vger.kernel.org, ecryptfs@vger.kernel.org,
- kasan-dev@googlegroups.com, linux-bluetooth@vger.kernel.org,
- linux-wpan@vger.kernel.org, linux-sctp@vger.kernel.org,
- linux-nfs@vger.kernel.org, tipc-discussion@lists.sourceforge.net,
- cocci@systeme.lip6.fr, linux-security-module@vger.kernel.org,
- linux-integrity@vger.kernel.org
-References: <20200413211550.8307-1-longman@redhat.com>
- <20200413211550.8307-2-longman@redhat.com>
+	by lists.ozlabs.org (Postfix) with ESMTP id 491lpC34qNzDqfF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2020 22:55:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.helo=elvis.franken.de (client-ip=193.175.24.41; helo=elvis.franken.de;
+ envelope-from=tsbogend@alpha.franken.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=alpha.franken.de
+X-Greylist: delayed 985 seconds by postgrey-1.36 at bilbo;
+ Tue, 14 Apr 2020 22:09:25 AEST
+Received: from elvis.franken.de (elvis.franken.de [193.175.24.41])
+ by lists.ozlabs.org (Postfix) with ESMTP id 491kn15K2GzDqbg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2020 22:09:25 +1000 (AEST)
+Received: from uucp (helo=alpha)
+ by elvis.franken.de with local-bsmtp (Exim 3.36 #1)
+ id 1jOK7V-0002BV-00; Tue, 14 Apr 2020 13:52:49 +0200
+Received: by alpha.franken.de (Postfix, from userid 1000)
+ id 68F61C0108; Tue, 14 Apr 2020 13:52:35 +0200 (CEST)
+Date: Tue, 14 Apr 2020 13:52:35 +0200
+From: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+To: Jason Wang <jasowang@redhat.com>
+Subject: Re: [PATCH] vhost: do not enable VHOST_MENU by default
+Message-ID: <20200414115235.GA13675@alpha.franken.de>
+References: <20200414024438.19103-1-jasowang@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200413211550.8307-2-longman@redhat.com>
-User-Agent: Mutt/1.5.23.1-rc1 (2014-03-12)
+In-Reply-To: <20200414024438.19103-1-jasowang@redhat.com>
+User-Agent: Mutt/1.5.23 (2014-03-12)
+X-Mailman-Approved-At: Tue, 14 Apr 2020 22:51:52 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,47 +57,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: dsterba@suse.cz
-Cc: linux-btrfs@vger.kernel.org,
- Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
- virtualization@lists.linux-foundation.org, David Howells <dhowells@redhat.com>,
- linux-mm@kvack.org, linux-sctp@vger.kernel.org, keyrings@vger.kernel.org,
- kasan-dev@googlegroups.com, samba-technical@lists.samba.org,
- linux-stm32@st-md-mailman.stormreply.com, devel@driverdev.osuosl.org,
- linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, x86@kernel.org,
- James Morris <jmorris@namei.org>, Matthew Wilcox <willy@infradead.org>,
- cocci@systeme.lip6.fr, linux-wpan@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org, David Rientjes <rientjes@google.com>,
- "Serge E. Hallyn" <serge@hallyn.com>, linux-pm@vger.kernel.org,
- ecryptfs@vger.kernel.org, linux-nfs@vger.kernel.org,
- linux-fscrypt@vger.kernel.org, linux-mediatek@lists.infradead.org,
- linux-amlogic@lists.infradead.org, linux-integrity@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-cifs@vger.kernel.org,
- Linus Torvalds <torvalds@linux-foundation.org>, linux-wireless@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-bluetooth@vger.kernel.org,
- linux-security-module@vger.kernel.org, target-devel@vger.kernel.org,
- tipc-discussion@lists.sourceforge.net, linux-crypto@vger.kernel.org,
- netdev@vger.kernel.org, Joe Perches <joe@perches.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- wireguard@lists.zx2c4.com, linux-ppp@vger.kernel.org
+Cc: linux-s390@vger.kernel.org, Vasily Gorbik <gor@linux.ibm.com>,
+ kvm@vger.kernel.org, mst@redhat.com, netdev@vger.kernel.org,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
+ linux-mips@vger.kernel.org, Christian Borntraeger <borntraeger@de.ibm.com>,
+ geert@linux-m68k.org, Paul Mackerras <paulus@samba.org>,
+ virtualization@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Apr 13, 2020 at 05:15:49PM -0400, Waiman Long wrote:
->  fs/btrfs/ioctl.c                              |  2 +-
+On Tue, Apr 14, 2020 at 10:44:38AM +0800, Jason Wang wrote:
+> We try to keep the defconfig untouched after decoupling CONFIG_VHOST
+> out of CONFIG_VIRTUALIZATION in commit 20c384f1ea1a
+> ("vhost: refine vhost and vringh kconfig") by enabling VHOST_MENU by
+> default. Then the defconfigs can keep enabling CONFIG_VHOST_NET
+> without the caring of CONFIG_VHOST.
+> 
+> But this will leave a "CONFIG_VHOST_MENU=y" in all defconfigs and even
+> for the ones that doesn't want vhost. So it actually shifts the
+> burdens to the maintainers of all other to add "CONFIG_VHOST_MENU is
+> not set". So this patch tries to enable CONFIG_VHOST explicitly in
+> defconfigs that enables CONFIG_VHOST_NET and CONFIG_VHOST_VSOCK.
+> 
+> Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+> Cc: Vasily Gorbik <gor@linux.ibm.com>
+> Cc: Christian Borntraeger <borntraeger@de.ibm.com>
+> Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> Signed-off-by: Jason Wang <jasowang@redhat.com>
+> ---
+>  arch/mips/configs/malta_kvm_defconfig  |  1 +
 
+Acked-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
 
-> diff --git a/fs/btrfs/ioctl.c b/fs/btrfs/ioctl.c
-> index 40b729dce91c..eab3f8510426 100644
-> --- a/fs/btrfs/ioctl.c
-> +++ b/fs/btrfs/ioctl.c
-> @@ -2691,7 +2691,7 @@ static int btrfs_ioctl_get_subvol_info(struct file *file, void __user *argp)
->  	btrfs_put_root(root);
->  out_free:
->  	btrfs_free_path(path);
-> -	kzfree(subvol_info);
-> +	kfree_sensitive(subvol_info);
+Thomas.
 
-This is not in a sensitive context so please switch it to plain kfree.
-With that you have my acked-by. Thanks.
+-- 
+Crap can work. Given enough thrust pigs will fly, but it's not necessarily a
+good idea.                                                [ RFC1925, 2.3 ]
