@@ -7,88 +7,88 @@ X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 79FD7C2BB55
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2020 13:18:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 83545C3815B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2020 13:22:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A24662076D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2020 13:18:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A24662076D
+	by mail.kernel.org (Postfix) with ESMTPS id 40E5C20936
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2020 13:22:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 40E5C20936
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 492NFq321lzDr32
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2020 23:18:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 492NLR4NNMzDqwN
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2020 23:22:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 492MPb5PNqzDqpH
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2020 22:39:47 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 492MQG1jTzzDr0x
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2020 22:40:21 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 03FCdTUJ087290
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2020 08:39:44 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 30dnn84tpg-1
+ 03FCZHRI038251
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2020 08:40:20 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30dnn5csp0-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2020 08:39:44 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2020 08:40:19 -0400
 Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ajd@linux.ibm.com>;
- Wed, 15 Apr 2020 13:39:01 +0100
-Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Wed, 15 Apr 2020 13:39:41 +0100
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 15 Apr 2020 13:38:58 +0100
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 03FCdcuL33620236
+ Wed, 15 Apr 2020 13:39:40 +0100
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 03FCeFGr55443674
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 15 Apr 2020 12:39:38 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5EBCE4C046;
- Wed, 15 Apr 2020 12:39:38 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0A8954C04E;
- Wed, 15 Apr 2020 12:39:38 +0000 (GMT)
+ Wed, 15 Apr 2020 12:40:15 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5BE7BA405F;
+ Wed, 15 Apr 2020 12:40:15 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 08006A405B;
+ Wed, 15 Apr 2020 12:40:15 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 15 Apr 2020 12:39:38 +0000 (GMT)
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 15 Apr 2020 12:40:14 +0000 (GMT)
 Received: from intelligence.ibm.com (unknown [9.206.128.45])
  (using TLSv1.2 with cipher DHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 3FAEAA00A5;
- Wed, 15 Apr 2020 22:39:32 +1000 (AEST)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 3F193A00A5;
+ Wed, 15 Apr 2020 22:40:09 +1000 (AEST)
 From: Andrew Donnellan <ajd@linux.ibm.com>
 To: stable@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 4.14] powerpc/powernv/idle: Restore AMR/UAMOR/AMOR after idle
-Date: Wed, 15 Apr 2020 22:39:24 +1000
+Subject: [PATCH 4.19] powerpc/powernv/idle: Restore AMR/UAMOR/AMOR after idle
+Date: Wed, 15 Apr 2020 22:40:05 +1000
 X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 20041512-0020-0000-0000-000003C84466
+x-cbid: 20041512-0016-0000-0000-00000304FCA8
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20041512-0021-0000-0000-0000222125FF
-Message-Id: <20200415123924.26799-1-ajd@linux.ibm.com>
+x-cbparentid: 20041512-0017-0000-0000-00003368FACF
+Message-Id: <20200415124005.26920-1-ajd@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
  definitions=2020-04-15_04:2020-04-14,
  2020-04-15 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 spamscore=0
- phishscore=0 mlxlogscore=895 impostorscore=0 malwarescore=0 adultscore=0
- priorityscore=1501 lowpriorityscore=0 mlxscore=0 clxscore=1015
+ priorityscore=1501
+ malwarescore=0 adultscore=0 bulkscore=0 clxscore=1015 spamscore=0
+ mlxlogscore=895 impostorscore=0 mlxscore=0 lowpriorityscore=0 phishscore=0
  suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2003020000 definitions=main-2004150094
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -117,17 +117,17 @@ UAMOR/AMOR.
 So save/restore these regs in the idle code.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-[ajd: Backport to 4.14 tree, CVE-2020-11669]
+[ajd: Backport to 4.19 tree, CVE-2020-11669]
 Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
 ---
  arch/powerpc/kernel/idle_book3s.S | 27 +++++++++++++++++++++++----
  1 file changed, 23 insertions(+), 4 deletions(-)
 
 diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-index 74fc20431082..01b823bdb49c 100644
+index 36178000a2f2..4a860d3b9229 100644
 --- a/arch/powerpc/kernel/idle_book3s.S
 +++ b/arch/powerpc/kernel/idle_book3s.S
-@@ -163,8 +163,11 @@ core_idle_lock_held:
+@@ -170,8 +170,11 @@ core_idle_lock_held:
  	bne-	core_idle_lock_held
  	blr
  
@@ -140,7 +140,7 @@ index 74fc20431082..01b823bdb49c 100644
  
  /*
   * Pass requested state in r3:
-@@ -198,8 +201,16 @@ pnv_powersave_common:
+@@ -205,8 +208,16 @@ pnv_powersave_common:
  	SAVE_NVGPRS(r1)
  
  BEGIN_FTR_SECTION
@@ -157,7 +157,7 @@ index 74fc20431082..01b823bdb49c 100644
  END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
  
  	mfcr	r5
-@@ -951,12 +962,20 @@ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
+@@ -935,12 +946,20 @@ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
  	REST_GPR(2, r1)
  
  BEGIN_FTR_SECTION
