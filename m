@@ -2,25 +2,26 @@ Return-Path: <SRS0=owsf=57=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BE711C2BB55
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2020 14:36:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 87101C2BA19
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2020 14:40:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0BD302076D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2020 14:36:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 38D222076D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2020 14:40:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="zmtkQ2yv"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0BD302076D
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="o0/qQEAs"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 38D222076D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 492Q014K79zDqfS
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 00:36:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 492Q4k6b3CzDqh3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 00:40:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=mchehab@kernel.org; receiver=<UNKNOWN>)
@@ -28,34 +29,36 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=zmtkQ2yv; dkim-atps=neutral
+ header.s=default header.b=o0/qQEAs; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 492Pw54ZmhzDqD5
+ by lists.ozlabs.org (Postfix) with ESMTPS id 492PwC63kZzDqM4
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2020 00:32:53 +1000 (AEST)
 Received: from mail.kernel.org (ip5f5ad4d8.dynamic.kabel-deutschland.de
  [95.90.212.216])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id AE72520857;
- Wed, 15 Apr 2020 14:32:50 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id CA95721775;
+ Wed, 15 Apr 2020 14:32:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1586961170;
- bh=KiqG+YaH9TfLHMU7kAk5iZVq2iZm2vOE/nCgWZIaKyc=;
- h=From:To:Cc:Subject:Date:From;
- b=zmtkQ2yvb4lMCW7VyZbrY08AHuA6jaNelMxk+XjbrMt6hLetgzFtmSoM/epsya/Qn
- SEsnxu9G/tLR8lcHUuNuNcTbKgVyOplhVgI6xMcESplhJZCdGjqpBiZ/9grkpTlftr
- a1iGFMi+kSC7G4SOvfHDNZD5/3QnrIy5wZXFM5Y4=
+ s=default; t=1586961172;
+ bh=YIRc9iyKpk3vP7JWjAgsMk2zE3Vu8SevHanHWSNLTyE=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=o0/qQEAsXJ6FNaz7lXGDXWr1cREtlUjeLmhRDVgpHQ5AMAENTbDBRtG3/7rqPTo69
+ gSfBC5FVgEZEoQ12I6wis3bkxX/+J9KGP86fC8YNcFtjUXCcT1bE6cUQvSuRgRzmpX
+ Edx70BvzGRKoZT87fCx997Xh3BHB/tFN1VlZoq0o=
 Received: from mchehab by mail.kernel.org with local (Exim 4.92.3)
  (envelope-from <mchehab@kernel.org>)
- id 1jOj5s-006kNi-SJ; Wed, 15 Apr 2020 16:32:48 +0200
+ id 1jOj5u-006kQ0-2h; Wed, 15 Apr 2020 16:32:50 +0200
 From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 To: Linux Doc Mailing List <linux-doc@vger.kernel.org>
-Subject: [PATCH 00/34] fs: convert remaining docs to ReST file format
-Date: Wed, 15 Apr 2020 16:32:13 +0200
-Message-Id: <cover.1586960617.git.mchehab+huawei@kernel.org>
+Subject: [PATCH 29/34] docs: filesystems: convert spufs/spufs.txt to ReST
+Date: Wed, 15 Apr 2020 16:32:42 +0200
+Message-Id: <868f3c1e3356459e1b6b7e8bfd620200c49452ab.1586960617.git.mchehab+huawei@kernel.org>
 X-Mailer: git-send-email 2.25.2
+In-Reply-To: <cover.1586960617.git.mchehab+huawei@kernel.org>
+References: <cover.1586960617.git.mchehab+huawei@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -69,212 +72,194 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: freedreno@lists.freedesktop.org, linux-usb@vger.kernel.org,
- linux-xfs@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
- Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
- linux-arm-msm@vger.kernel.org, linux-ext4@vger.kernel.org,
- ecryptfs@vger.kernel.org, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-unionfs@vger.kernel.org,
- cluster-devel@redhat.com, linux-ntfs-dev@lists.sourceforge.net,
- linux-cachefs@redhat.com, Alexander Viro <viro@zeniv.linux.org.uk>,
- linux-fsdevel@vger.kernel.org, codalist@coda.cs.cmu.edu,
- linuxppc-dev@lists.ozlabs.org, linux-afs@lists.infradead.org,
- ocfs2-devel@oss.oracle.com
+Cc: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
+ Jeremy Kerr <jk@ozlabs.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch series convert the remaining files under Documentation/filesystems
-to the ReST file format. It is based on linux-next (next-20200414).
+This file is at groff output format. Manually convert it to
+ReST format, trying to preserve a similar output after parsed.
 
-PS.: I opted to add mainly ML from the output of get_maintainers.pl to the c/c
-list of patch 00/34, because  otherwise the number of c/c would be too many,
-with would very likely cause ML servers to reject it.
+Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+---
+ Documentation/filesystems/spufs/index.rst     |  1 +
+ .../spufs/{spufs.txt => spufs.rst}            | 59 +++++++++----------
+ MAINTAINERS                                   |  2 +-
+ 3 files changed, 30 insertions(+), 32 deletions(-)
+ rename Documentation/filesystems/spufs/{spufs.txt => spufs.rst} (95%)
 
-The results of those changes (together with other changes from my pending
-doc patches) are available at:
-
-   https://www.infradead.org/~mchehab/kernel_docs/filesystems/index.html
-
-Mauro Carvalho Chehab (34):
-  docs: filesystems: fix references for doc files there
-  docs: filesystems: convert caching/object.txt to ReST
-  docs: filesystems: convert caching/fscache.txt to ReST format
-  docs: filesystems: caching/netfs-api.txt: convert it to ReST
-  docs: filesystems: caching/operations.txt: convert it to ReST
-  docs: filesystems: caching/cachefiles.txt: convert to ReST
-  docs: filesystems: caching/backend-api.txt: convert it to ReST
-  docs: filesystems: convert cifs/cifsroot.rst to ReST
-  docs: filesystems: convert configfs.txt to ReST
-  docs: filesystems: convert automount-support.txt to ReST
-  docs: filesystems: convert coda.txt to ReST
-  docs: filesystems: convert dax.txt to ReST
-  docs: filesystems: convert devpts.txt to ReST
-  docs: filesystems: convert dnotify.txt to ReST
-  docs: filesystems: convert fiemap.txt to ReST
-  docs: filesystems: convert files.txt to ReST
-  docs: filesystems: convert fuse-io.txt to ReST
-  docs: filesystems: convert gfs2-glocks.txt to ReST
-  docs: filesystems: convert locks.txt to ReST
-  docs: filesystems: convert mandatory-locking.txt to ReST
-  docs: filesystems: convert mount_api.txt to ReST
-  docs: filesystems: rename path-lookup.txt file
-  docs: filesystems: convert path-walking.txt to ReST
-  docs: filesystems: convert quota.txt to ReST
-  docs: filesystems: convert seq_file.txt to ReST
-  docs: filesystems: convert sharedsubtree.txt to ReST
-  docs: filesystems: split spufs.txt into 3 separate files
-  docs: filesystems: convert spufs/spu_create.txt to ReST
-  docs: filesystems: convert spufs/spufs.txt to ReST
-  docs: filesystems: convert spufs/spu_run.txt to ReST
-  docs: filesystems: convert sysfs-pci.txt to ReST
-  docs: filesystems: convert sysfs-tagging.txt to ReST
-  docs: filesystems: convert xfs-delayed-logging-design.txt to ReST
-  docs: filesystems: convert xfs-self-describing-metadata.txt to ReST
-
- Documentation/ABI/stable/sysfs-devices-node   |    2 +-
- Documentation/ABI/testing/procfs-smaps_rollup |    2 +-
- Documentation/admin-guide/cpu-load.rst        |    2 +-
- Documentation/admin-guide/ext4.rst            |    2 +-
- Documentation/admin-guide/nfs/nfsroot.rst     |    2 +-
- Documentation/admin-guide/sysctl/kernel.rst   |    2 +-
- .../driver-api/driver-model/device.rst        |    2 +-
- .../driver-api/driver-model/overview.rst      |    2 +-
- ...ount-support.txt => automount-support.rst} |   23 +-
- .../{backend-api.txt => backend-api.rst}      |  165 +-
- .../{cachefiles.txt => cachefiles.rst}        |  139 +-
- Documentation/filesystems/caching/fscache.rst |  565 ++++++
- Documentation/filesystems/caching/fscache.txt |  448 -----
- Documentation/filesystems/caching/index.rst   |   14 +
- .../caching/{netfs-api.txt => netfs-api.rst}  |  172 +-
- .../caching/{object.txt => object.rst}        |   43 +-
- .../{operations.txt => operations.rst}        |   45 +-
- .../cifs/{cifsroot.txt => cifsroot.rst}       |   56 +-
- Documentation/filesystems/coda.rst            | 1670 ++++++++++++++++
- Documentation/filesystems/coda.txt            | 1676 -----------------
- .../{configfs/configfs.txt => configfs.rst}   |  129 +-
- .../filesystems/{dax.txt => dax.rst}          |   11 +-
- Documentation/filesystems/devpts.rst          |   36 +
- Documentation/filesystems/devpts.txt          |   26 -
- .../filesystems/{dnotify.txt => dnotify.rst}  |   13 +-
- Documentation/filesystems/ext2.rst            |    2 +-
- .../filesystems/{fiemap.txt => fiemap.rst}    |  133 +-
- .../filesystems/{files.txt => files.rst}      |   15 +-
- .../filesystems/{fuse-io.txt => fuse-io.rst}  |    6 +
- .../{gfs2-glocks.txt => gfs2-glocks.rst}      |  147 +-
- Documentation/filesystems/index.rst           |   26 +
- .../filesystems/{locks.txt => locks.rst}      |   14 +-
- ...tory-locking.txt => mandatory-locking.rst} |   25 +-
- .../{mount_api.txt => mount_api.rst}          |  329 ++--
- .../{path-lookup.txt => path-walking.rst}     |   88 +-
- Documentation/filesystems/porting.rst         |    2 +-
- Documentation/filesystems/proc.rst            |    2 +-
- .../filesystems/{quota.txt => quota.rst}      |   41 +-
- .../filesystems/ramfs-rootfs-initramfs.rst    |    2 +-
- .../{seq_file.txt => seq_file.rst}            |   61 +-
- .../{sharedsubtree.txt => sharedsubtree.rst}  |  394 ++--
- Documentation/filesystems/spufs/index.rst     |   13 +
- .../filesystems/spufs/spu_create.rst          |  131 ++
- Documentation/filesystems/spufs/spu_run.rst   |  138 ++
- .../{spufs.txt => spufs/spufs.rst}            |  304 +--
- .../{sysfs-pci.txt => sysfs-pci.rst}          |   23 +-
- .../{sysfs-tagging.txt => sysfs-tagging.rst}  |   22 +-
- ...ign.txt => xfs-delayed-logging-design.rst} |   65 +-
- ...a.txt => xfs-self-describing-metadata.rst} |  182 +-
- Documentation/iio/iio_configfs.rst            |    2 +-
- .../powerpc/firmware-assisted-dump.rst        |    2 +-
- Documentation/process/adding-syscalls.rst     |    2 +-
- .../it_IT/process/adding-syscalls.rst         |    2 +-
- .../translations/zh_CN/filesystems/sysfs.txt  |    6 +-
- Documentation/usb/gadget_configfs.rst         |    4 +-
- MAINTAINERS                                   |   16 +-
- drivers/gpu/drm/msm/disp/dpu1/dpu_kms.h       |    2 +-
- fs/Kconfig                                    |    2 +-
- fs/Kconfig.binfmt                             |    2 +-
- fs/adfs/Kconfig                               |    2 +-
- fs/affs/Kconfig                               |    2 +-
- fs/afs/Kconfig                                |    6 +-
- fs/bfs/Kconfig                                |    2 +-
- fs/cachefiles/Kconfig                         |    4 +-
- fs/coda/Kconfig                               |    2 +-
- fs/configfs/inode.c                           |    2 +-
- fs/configfs/item.c                            |    2 +-
- fs/cramfs/Kconfig                             |    2 +-
- fs/dcache.c                                   |    6 +-
- fs/ecryptfs/Kconfig                           |    2 +-
- fs/fat/Kconfig                                |    8 +-
- fs/fscache/Kconfig                            |    8 +-
- fs/fscache/cache.c                            |    8 +-
- fs/fscache/cookie.c                           |    2 +-
- fs/fscache/object.c                           |    4 +-
- fs/fscache/operation.c                        |    2 +-
- fs/fuse/Kconfig                               |    2 +-
- fs/fuse/dev.c                                 |    2 +-
- fs/hfs/Kconfig                                |    2 +-
- fs/hpfs/Kconfig                               |    2 +-
- fs/isofs/Kconfig                              |    2 +-
- fs/locks.c                                    |    2 +-
- fs/namei.c                                    |    2 +-
- fs/namespace.c                                |    2 +-
- fs/notify/inotify/Kconfig                     |    2 +-
- fs/ntfs/Kconfig                               |    2 +-
- fs/ocfs2/Kconfig                              |    2 +-
- fs/overlayfs/Kconfig                          |    6 +-
- fs/proc/Kconfig                               |    4 +-
- fs/romfs/Kconfig                              |    2 +-
- fs/sysfs/dir.c                                |    2 +-
- fs/sysfs/file.c                               |    2 +-
- fs/sysfs/mount.c                              |    2 +-
- fs/sysfs/symlink.c                            |    2 +-
- fs/sysv/Kconfig                               |    2 +-
- fs/udf/Kconfig                                |    2 +-
- include/linux/configfs.h                      |    2 +-
- include/linux/fs_context.h                    |    2 +-
- include/linux/fscache-cache.h                 |    4 +-
- include/linux/fscache.h                       |   42 +-
- include/linux/lsm_hooks.h                     |    2 +-
- include/linux/relay.h                         |    2 +-
- include/linux/sysfs.h                         |    2 +-
- kernel/relay.c                                |    2 +-
- 104 files changed, 4048 insertions(+), 3572 deletions(-)
- rename Documentation/filesystems/{automount-support.txt => automount-support.rst} (92%)
- rename Documentation/filesystems/caching/{backend-api.txt => backend-api.rst} (87%)
- rename Documentation/filesystems/caching/{cachefiles.txt => cachefiles.rst} (90%)
- create mode 100644 Documentation/filesystems/caching/fscache.rst
- delete mode 100644 Documentation/filesystems/caching/fscache.txt
- create mode 100644 Documentation/filesystems/caching/index.rst
- rename Documentation/filesystems/caching/{netfs-api.txt => netfs-api.rst} (91%)
- rename Documentation/filesystems/caching/{object.txt => object.rst} (95%)
- rename Documentation/filesystems/caching/{operations.txt => operations.rst} (90%)
- rename Documentation/filesystems/cifs/{cifsroot.txt => cifsroot.rst} (72%)
- create mode 100644 Documentation/filesystems/coda.rst
- delete mode 100644 Documentation/filesystems/coda.txt
- rename Documentation/filesystems/{configfs/configfs.txt => configfs.rst} (87%)
- rename Documentation/filesystems/{dax.txt => dax.rst} (96%)
- create mode 100644 Documentation/filesystems/devpts.rst
- delete mode 100644 Documentation/filesystems/devpts.txt
- rename Documentation/filesystems/{dnotify.txt => dnotify.rst} (88%)
- rename Documentation/filesystems/{fiemap.txt => fiemap.rst} (70%)
- rename Documentation/filesystems/{files.txt => files.rst} (95%)
- rename Documentation/filesystems/{fuse-io.txt => fuse-io.rst} (95%)
- rename Documentation/filesystems/{gfs2-glocks.txt => gfs2-glocks.rst} (63%)
- rename Documentation/filesystems/{locks.txt => locks.rst} (91%)
- rename Documentation/filesystems/{mandatory-locking.txt => mandatory-locking.rst} (91%)
- rename Documentation/filesystems/{mount_api.txt => mount_api.rst} (79%)
- rename Documentation/filesystems/{path-lookup.txt => path-walking.rst} (91%)
- rename Documentation/filesystems/{quota.txt => quota.rst} (81%)
- rename Documentation/filesystems/{seq_file.txt => seq_file.rst} (92%)
- rename Documentation/filesystems/{sharedsubtree.txt => sharedsubtree.rst} (72%)
- create mode 100644 Documentation/filesystems/spufs/index.rst
- create mode 100644 Documentation/filesystems/spufs/spu_create.rst
- create mode 100644 Documentation/filesystems/spufs/spu_run.rst
- rename Documentation/filesystems/{spufs.txt => spufs/spufs.rst} (57%)
- rename Documentation/filesystems/{sysfs-pci.txt => sysfs-pci.rst} (92%)
- rename Documentation/filesystems/{sysfs-tagging.txt => sysfs-tagging.rst} (72%)
- rename Documentation/filesystems/{xfs-delayed-logging-design.txt => xfs-delayed-logging-design.rst} (97%)
- rename Documentation/filesystems/{xfs-self-describing-metadata.txt => xfs-self-describing-metadata.rst} (83%)
-
+diff --git a/Documentation/filesystems/spufs/index.rst b/Documentation/filesystems/spufs/index.rst
+index 39553c6ebefd..939cf59a7d9e 100644
+--- a/Documentation/filesystems/spufs/index.rst
++++ b/Documentation/filesystems/spufs/index.rst
+@@ -8,4 +8,5 @@ SPU Filesystem
+ .. toctree::
+    :maxdepth: 1
+ 
++   spufs
+    spu_create
+diff --git a/Documentation/filesystems/spufs/spufs.txt b/Documentation/filesystems/spufs/spufs.rst
+similarity index 95%
+rename from Documentation/filesystems/spufs/spufs.txt
+rename to Documentation/filesystems/spufs/spufs.rst
+index caf36aaae804..8a42859bb100 100644
+--- a/Documentation/filesystems/spufs/spufs.txt
++++ b/Documentation/filesystems/spufs/spufs.rst
+@@ -1,12 +1,18 @@
+-SPUFS(2)                   Linux Programmer's Manual                  SPUFS(2)
++.. SPDX-License-Identifier: GPL-2.0
+ 
++=====
++spufs
++=====
+ 
++Name
++====
+ 
+-NAME
+        spufs - the SPU file system
+ 
+ 
+-DESCRIPTION
++Description
++===========
++
+        The SPU file system is used on PowerPC machines that implement the Cell
+        Broadband Engine Architecture in order to access Synergistic  Processor
+        Units (SPUs).
+@@ -21,7 +27,9 @@ DESCRIPTION
+        ally add or remove files.
+ 
+ 
+-MOUNT OPTIONS
++Mount Options
++=============
++
+        uid=<uid>
+               set the user owning the mount point, the default is 0 (root).
+ 
+@@ -29,7 +37,9 @@ MOUNT OPTIONS
+               set the group owning the mount point, the default is 0 (root).
+ 
+ 
+-FILES
++Files
++=====
++
+        The files in spufs mostly follow the standard behavior for regular sys-
+        tem  calls like read(2) or write(2), but often support only a subset of
+        the operations supported on regular file systems. This list details the
+@@ -125,14 +135,12 @@ FILES
+               space is available for writing.
+ 
+ 
+-   /mbox_stat
+-   /ibox_stat
+-   /wbox_stat
++   /mbox_stat, /ibox_stat, /wbox_stat
+        Read-only files that contain the length of the current queue, i.e.  how
+        many  words  can  be  read  from  mbox or ibox or how many words can be
+        written to wbox without blocking.  The files can be read only in 4-byte
+        units  and  return  a  big-endian  binary integer number.  The possible
+-       operations on an open *box_stat file are:
++       operations on an open ``*box_stat`` file are:
+ 
+        read(2)
+               If a count smaller than four is requested, read returns  -1  and
+@@ -143,12 +151,7 @@ FILES
+               in EAGAIN.
+ 
+ 
+-   /npc
+-   /decr
+-   /decr_status
+-   /spu_tag_mask
+-   /event_mask
+-   /srr0
++   /npc, /decr, /decr_status, /spu_tag_mask, /event_mask, /srr0
+        Internal  registers  of  the SPU. The representation is an ASCII string
+        with the numeric value of the next instruction to  be  executed.  These
+        can  be  used in read/write mode for debugging, but normal operation of
+@@ -157,17 +160,14 @@ FILES
+ 
+        The contents of these files are:
+ 
++       =================== ===================================
+        npc                 Next Program Counter
+-
+        decr                SPU Decrementer
+-
+        decr_status         Decrementer Status
+-
+        spu_tag_mask        MFC tag mask for SPU DMA
+-
+        event_mask          Event mask for SPU interrupts
+-
+        srr0                Interrupt Return address register
++       =================== ===================================
+ 
+ 
+        The   possible   operations   on   an   open  npc,  decr,  decr_status,
+@@ -206,8 +206,7 @@ FILES
+               from the data buffer, updating the value of the fpcr register.
+ 
+ 
+-   /signal1
+-   /signal2
++   /signal1, /signal2
+        The two signal notification channels of an SPU.  These  are  read-write
+        files  that  operate  on  a 32 bit word.  Writing to one of these files
+        triggers an interrupt on the SPU.  The  value  written  to  the  signal
+@@ -233,8 +232,7 @@ FILES
+               file.
+ 
+ 
+-   /signal1_type
+-   /signal2_type
++   /signal1_type, /signal2_type
+        These two files change the behavior of the signal1 and signal2  notifi-
+        cation  files.  The  contain  a numerical ASCII string which is read as
+        either "1" or "0".  In mode 0 (overwrite), the  hardware  replaces  the
+@@ -259,18 +257,17 @@ FILES
+               the previous setting.
+ 
+ 
+-EXAMPLES
++Examples
++========
+        /etc/fstab entry
+               none      /spu      spufs     gid=spu   0    0
+ 
+ 
+-AUTHORS
++Authors
++=======
+        Arnd  Bergmann  <arndb@de.ibm.com>,  Mark  Nutter <mnutter@us.ibm.com>,
+        Ulrich Weigand <Ulrich.Weigand@de.ibm.com>
+ 
+-SEE ALSO
++See Also
++========
+        capabilities(7), close(2), spu_create(2), spu_run(2), spufs(7)
+-
+-
+-
+-Linux                             2005-09-28                          SPUFS(2)
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 519f5d84adca..2ac15ec9ebf8 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -15900,7 +15900,7 @@ M:	Jeremy Kerr <jk@ozlabs.org>
+ L:	linuxppc-dev@lists.ozlabs.org
+ S:	Supported
+ W:	http://www.ibm.com/developerworks/power/cell/
+-F:	Documentation/filesystems/spufs.txt
++F:	Documentation/filesystems/spufs/spufs.rst
+ F:	arch/powerpc/platforms/cell/spufs/
+ 
+ SQUASHFS FILE SYSTEM
 -- 
 2.25.2
-
 
