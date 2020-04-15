@@ -2,65 +2,53 @@ Return-Path: <SRS0=owsf=57=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C4FC5C2BA19
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2020 12:26:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 05306C2BA19
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2020 12:39:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3B3BF208FE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2020 12:26:58 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="NQ5HqyQt"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3B3BF208FE
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 6FEA420737
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2020 12:39:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6FEA420737
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=vivo.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 492M6l0s0wzDq5b
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2020 22:26:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 492MNt3mRxzDqnZ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2020 22:39:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=vivo.com (client-ip=59.111.176.18; helo=m17618.mail.qiye.163.com;
+ envelope-from=wenhu.wang@vivo.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=NQ5HqyQt; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ dmarc=none (p=none dis=none) header.from=vivo.com
+Received: from m17618.mail.qiye.163.com (m17618.mail.qiye.163.com
+ [59.111.176.18])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 492LFq3xWjzDqf5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2020 21:47:58 +1000 (AEST)
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
- [73.47.72.35])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 2A2492166E;
- Wed, 15 Apr 2020 11:47:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1586951276;
- bh=i3Ux0xyQDuBdGA7BktnWpwTgBU7SDcaAFTMtDViyrKQ=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=NQ5HqyQtICSnZXrr3DEWgo0cVbtXiFV3aY5F1U+i+G+VG+5rjptWwCYTBv4dLuzzw
- tmHtMCkobaIvyVsYWP664+U26qY+Wjy7JrT3qeHLIj/jiVXpTEbu5fEA6IVq6Yd+Q0
- XD2GbRTUUAWd62OsP/wC7HM/Tt4Ady6f5rYv8EdM=
-From: Sasha Levin <sashal@kernel.org>
-To: linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 06/21] powerpc/maple: Fix declaration made after
- definition
-Date: Wed, 15 Apr 2020 07:47:33 -0400
-Message-Id: <20200415114748.15713-6-sashal@kernel.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20200415114748.15713-1-sashal@kernel.org>
-References: <20200415114748.15713-1-sashal@kernel.org>
-MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 492MHT5KH8zDqQT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2020 22:34:28 +1000 (AEST)
+Received: from ubuntu.localdomain (unknown [58.251.74.226])
+ by m17618.mail.qiye.163.com (Hmail) with ESMTPA id 26B094E207B;
+ Wed, 15 Apr 2020 20:34:21 +0800 (CST)
+From: Wang Wenhu <wenhu.wang@vivo.com>
+To: gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, oss@buserror.net,
+ christophe.leroy@c-s.fr, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/5] powerpc: 85xx: make FSL_85XX_CACHE_SRAM configurable
+Date: Wed, 15 Apr 2020 05:33:42 -0700
+Message-Id: <20200415123346.116212-2-wenhu.wang@vivo.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200415123346.116212-1-wenhu.wang@vivo.com>
+References: <20200415123346.116212-1-wenhu.wang@vivo.com>
+X-HM-Spam-Status: e1kfGhgUHx5ZQUtXWQgYFAkeWUFZSFVMQk5LS0tLTE1JQkhCTllXWShZQU
+ hPN1dZLVlBSVdZCQ4XHghZQVk1NCk2OjckKS43PlkG
+X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6PQg6Nxw*PDg8Qwg6KU0TIzAQ
+ Dh8aCy9VSlVKTkNNQk5PS01KTkhIVTMWGhIXVQweFRMOVQwaFRw7DRINFFUYFBZFWVdZEgtZQVlO
+ Q1VJTkpVTE9VSUlNWVdZCAFZQUlCSk83Bg++
+X-HM-Tid: 0a717dd5466a9376kuws26b094e207b
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,97 +60,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, Ilie Halip <ilie.halip@gmail.com>,
- Nick Desaulniers <ndesaulniers@google.com>, clang-built-linux@googlegroups.com,
- Nathan Chancellor <natechancellor@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: kernel@vivo.com, Wang Wenhu <wenhu.wang@vivo.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Nathan Chancellor <natechancellor@gmail.com>
+Enable FSL_85XX_CACHE_SRAM selection. On e500 platforms, the cache
+could be configured and used as a piece of SRAM which is hignly
+friendly for some user level application performances.
 
-[ Upstream commit af6cf95c4d003fccd6c2ecc99a598fb854b537e7 ]
-
-When building ppc64 defconfig, Clang errors (trimmed for brevity):
-
-  arch/powerpc/platforms/maple/setup.c:365:1: error: attribute declaration
-  must precede definition [-Werror,-Wignored-attributes]
-  machine_device_initcall(maple, maple_cpc925_edac_setup);
-  ^
-
-machine_device_initcall expands to __define_machine_initcall, which in
-turn has the macro machine_is used in it, which declares mach_##name
-with an __attribute__((weak)). define_machine actually defines
-mach_##name, which in this file happens before the declaration, hence
-the warning.
-
-To fix this, move define_machine after machine_device_initcall so that
-the declaration occurs before the definition, which matches how
-machine_device_initcall and define_machine work throughout
-arch/powerpc.
-
-While we're here, remove some spaces before tabs.
-
-Fixes: 8f101a051ef0 ("edac: cpc925 MC platform device setup")
-Reported-by: Nick Desaulniers <ndesaulniers@google.com>
-Suggested-by: Ilie Halip <ilie.halip@gmail.com>
-Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Link: https://lore.kernel.org/r/20200323222729.15365-1-natechancellor@gmail.com
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Scott Wood <oss@buserror.net>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Wang Wenhu <wenhu.wang@vivo.com>
 ---
- arch/powerpc/platforms/maple/setup.c | 34 ++++++++++++++--------------
- 1 file changed, 17 insertions(+), 17 deletions(-)
+ arch/powerpc/platforms/85xx/Kconfig    | 2 +-
+ arch/powerpc/platforms/Kconfig.cputype | 5 +++--
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/platforms/maple/setup.c b/arch/powerpc/platforms/maple/setup.c
-index b7f937563827d..d1fee2d35b49c 100644
---- a/arch/powerpc/platforms/maple/setup.c
-+++ b/arch/powerpc/platforms/maple/setup.c
-@@ -299,23 +299,6 @@ static int __init maple_probe(void)
- 	return 1;
- }
+diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+index fa3d29dcb57e..6debb4f1b9cc 100644
+--- a/arch/powerpc/platforms/85xx/Kconfig
++++ b/arch/powerpc/platforms/85xx/Kconfig
+@@ -17,7 +17,7 @@ if FSL_SOC_BOOKE
+ if PPC32
  
--define_machine(maple) {
--	.name			= "Maple",
--	.probe			= maple_probe,
--	.setup_arch		= maple_setup_arch,
--	.init_IRQ		= maple_init_IRQ,
--	.pci_irq_fixup		= maple_pci_irq_fixup,
--	.pci_get_legacy_ide_irq	= maple_pci_get_legacy_ide_irq,
--	.restart		= maple_restart,
--	.halt			= maple_halt,
--       	.get_boot_time		= maple_get_boot_time,
--       	.set_rtc_time		= maple_set_rtc_time,
--       	.get_rtc_time		= maple_get_rtc_time,
--      	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= maple_progress,
--	.power_save		= power4_idle,
--};
--
- #ifdef CONFIG_EDAC
- /*
-  * Register a platform device for CPC925 memory controller on
-@@ -372,3 +355,20 @@ static int __init maple_cpc925_edac_setup(void)
- }
- machine_device_initcall(maple, maple_cpc925_edac_setup);
- #endif
+ config FSL_85XX_CACHE_SRAM
+-	bool
++	bool "Freescale 85xx Cache-Sram"
+ 	select PPC_LIB_RHEAP
+ 	help
+ 	  When selected, this option enables cache-sram support
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index 0c3c1902135c..1921e9a573e8 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -1,6 +1,6 @@
+ # SPDX-License-Identifier: GPL-2.0
+ config PPC32
+-	bool
++	bool "32-bit kernel"
+ 	default y if !PPC64
+ 	select KASAN_VMALLOC if KASAN && MODULES
+ 
+@@ -15,6 +15,7 @@ config PPC_BOOK3S_32
+ 	bool
+ 
+ menu "Processor support"
 +
-+define_machine(maple) {
-+	.name			= "Maple",
-+	.probe			= maple_probe,
-+	.setup_arch		= maple_setup_arch,
-+	.init_IRQ		= maple_init_IRQ,
-+	.pci_irq_fixup		= maple_pci_irq_fixup,
-+	.pci_get_legacy_ide_irq	= maple_pci_get_legacy_ide_irq,
-+	.restart		= maple_restart,
-+	.halt			= maple_halt,
-+	.get_boot_time		= maple_get_boot_time,
-+	.set_rtc_time		= maple_set_rtc_time,
-+	.get_rtc_time		= maple_get_rtc_time,
-+	.calibrate_decr		= generic_calibrate_decr,
-+	.progress		= maple_progress,
-+	.power_save		= power4_idle,
-+};
+ choice
+ 	prompt "Processor Type"
+ 	depends on PPC32
+@@ -211,9 +212,9 @@ config PPC_BOOK3E
+ 	depends on PPC_BOOK3E_64
+ 
+ config E500
++	bool "e500 Support"
+ 	select FSL_EMB_PERFMON
+ 	select PPC_FSL_BOOK3E
+-	bool
+ 
+ config PPC_E500MC
+ 	bool "e500mc Support"
 -- 
-2.20.1
+2.17.1
 
