@@ -2,55 +2,48 @@ Return-Path: <SRS0=XoDJ=6A=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97C30C2BB55
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 16:17:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E3F35C2BB55
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 16:22:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1885B20771
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 16:17:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1885B20771
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=vivo.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9787020857
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 16:22:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9787020857
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=libc.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49349r001gzDrZC
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 02:17:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=vivo.com (client-ip=115.236.127.101;
- helo=mail-m127101.qiye.163.com; envelope-from=wenhu.wang@vivo.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4934JX5LNNzDrD2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 02:22:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=vivo.com
-Received: from mail-m127101.qiye.163.com (mail-m127101.qiye.163.com
- [115.236.127.101])
+ spf=none (no SPF record) smtp.mailfrom=libc.org
+ (client-ip=216.12.86.13; helo=brightrain.aerifal.cx;
+ envelope-from=dalias@libc.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=libc.org
+Received: from brightrain.aerifal.cx (216-12-86-13.cv.mvl.ntelos.net
+ [216.12.86.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4933Gd5SFnzDrg0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr 2020 01:36:08 +1000 (AEST)
-Received: from ubuntu.localdomain (unknown [58.251.74.226])
- by mail-m127101.qiye.163.com (Hmail) with ESMTPA id 4FA7E47833;
- Thu, 16 Apr 2020 23:35:57 +0800 (CST)
-From: Wang Wenhu <wenhu.wang@vivo.com>
-To: gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, oss@buserror.net,
- christophe.leroy@c-s.fr, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4,
- 3/4] powerpc: sysdev: fix compile warning for fsl_85xx_cache_sram
-Date: Thu, 16 Apr 2020 08:35:36 -0700
-Message-Id: <20200416153537.23736-4-wenhu.wang@vivo.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200416153537.23736-1-wenhu.wang@vivo.com>
-References: <20200416153537.23736-1-wenhu.wang@vivo.com>
-X-HM-Spam-Status: e1kfGhgUHx5ZQUtXWQgYFAkeWUFZSlVCQ0tCQkJCT01OQk9JT1lXWShZQU
- hPN1dZLVlBSVdZCQ4XHghZQVk1NCk2OjckKS43PlkG
-X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6ME06TSo6IjgrGg8MFj85KS8s
- EgsKFA5VSlVKTkNMS05KSE5MTU1DVTMWGhIXVQweFRMOVQwaFRw7DRINFFUYFBZFWVdZEgtZQVlO
- Q1VJTkpVTE9VSUlNWVdZCAFZQUlMTUw3Bg++
-X-HM-Tid: 0a7183a1e5979865kuuu4fa7e47833
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4933Jl3GvgzDrQV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr 2020 01:37:58 +1000 (AEST)
+Date: Thu, 16 Apr 2020 11:37:56 -0400
+From: Rich Felker <dalias@libc.org>
+To: Adhemerval Zanella <adhemerval.zanella@linaro.org>
+Subject: Re: [musl] Powerpc Linux 'scv' system call ABI proposal take 2
+Message-ID: <20200416153756.GU11469@brightrain.aerifal.cx>
+References: <1586931450.ub4c8cq8dj.astroid@bobo.none>
+ <20200415225539.GL11469@brightrain.aerifal.cx>
+ <c2612908-67f7-cceb-d121-700dea096016@linaro.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <c2612908-67f7-cceb-d121-700dea096016@linaro.org>
+User-Agent: Mutt/1.5.21 (2010-09-15)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,53 +55,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel@vivo.com, Wang Wenhu <wenhu.wang@vivo.com>
+Cc: musl@lists.openwall.com, libc-alpha@sourceware.org,
+ linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>,
+ libc-dev@lists.llvm.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Function instantiate_cache_sram should not be linked into the init
-section for its caller mpc85xx_l2ctlr_of_probe is none-__init.
+On Thu, Apr 16, 2020 at 11:16:04AM -0300, Adhemerval Zanella wrote:
+> > My preference would be that it work just like the i386 AT_SYSINFO
+> > where you just replace "int $128" with "call *%%gs:16" and the kernel
+> > provides a stub in the vdso that performs either scv or the old
+> > mechanism with the same calling convention. Then if the kernel doesn't
+> > provide it (because the kernel is too old) libc would have to provide
+> > its own stub that uses the legacy method and matches the calling
+> > convention of the one the kernel is expected to provide.
+> 
+> What about pthread cancellation and the requirement of checking the
+> cancellable syscall anchors in asynchronous cancellation? My plan is
+> still to use musl strategy on glibc (BZ#12683) and for i686 it 
+> requires to always use old int$128 for program that uses cancellation
+> (static case) or just threads (dynamic mode, which should be more
+> common on glibc).
+> 
+> Using the i686 strategy of a vDSO bridge symbol would require to always
+> fallback to 'sc' to still use the same cancellation strategy (and
+> thus defeating this optimization in such cases).
 
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Scott Wood <oss@buserror.net>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Fixes: 6db92cc9d07d ("powerpc/85xx: add cache-sram support")
-Signed-off-by: Wang Wenhu <wenhu.wang@vivo.com>
+Yes, I assumed it would be the same, ignoring the new syscall
+mechanism for cancellable syscalls. While there are some exceptions,
+cancellable syscalls are generally not hot paths but things that are
+expected to block and to have significant amounts of work to do in
+kernelspace, so saving a few tens of cycles is rather pointless.
 
-Warning information:
-  MODPOST vmlinux.o
-WARNING: modpost: vmlinux.o(.text+0x1e540): Section mismatch in reference from the function mpc85xx_l2ctlr_of_probe() to the function .init.text:instantiate_cache_sram()
-The function mpc85xx_l2ctlr_of_probe() references
-the function __init instantiate_cache_sram().
-This is often because mpc85xx_l2ctlr_of_probe lacks a __init
-annotation or the annotation of instantiate_cache_sram is wrong.
----
-Changes since v1:
- * None
-Changes since v2:
- * None
-Changes since v3:
- * None
----
- arch/powerpc/sysdev/fsl_85xx_cache_sram.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+It's possible to do a branch/multiple versions of the syscall asm for
+cancellation but would require extending the cancellation handler to
+support checking against multiple independent address ranges or using
+some alternate markup of them.
 
-diff --git a/arch/powerpc/sysdev/fsl_85xx_cache_sram.c b/arch/powerpc/sysdev/fsl_85xx_cache_sram.c
-index be3aef4229d7..3de5ac8382c0 100644
---- a/arch/powerpc/sysdev/fsl_85xx_cache_sram.c
-+++ b/arch/powerpc/sysdev/fsl_85xx_cache_sram.c
-@@ -68,7 +68,7 @@ void mpc85xx_cache_sram_free(void *ptr)
- }
- EXPORT_SYMBOL(mpc85xx_cache_sram_free);
- 
--int __init instantiate_cache_sram(struct platform_device *dev,
-+int instantiate_cache_sram(struct platform_device *dev,
- 		struct sram_parameters sram_params)
- {
- 	int ret = 0;
--- 
-2.17.1
-
+Rich
