@@ -2,89 +2,60 @@ Return-Path: <SRS0=XoDJ=6A=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28C5CC2BB55
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 12:31:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B7BEC2BB55
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 12:38:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8EB7F21973
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 12:31:37 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="BKowtfSq"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8EB7F21973
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
+	by mail.kernel.org (Postfix) with ESMTPS id 04052217D8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 12:38:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 04052217D8
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 492z9f3ZCczDrST
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 22:31:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::442;
- helo=mail-wr1-x442.google.com; envelope-from=alex.bennee@linaro.org;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 492zKC4Nw7zDrdd
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 22:38:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
- header.s=google header.b=BKowtfSq; dkim-atps=neutral
-Received: from mail-wr1-x442.google.com (mail-wr1-x442.google.com
- [IPv6:2a00:1450:4864:20::442])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.21; helo=inva021.nxp.com;
+ envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 492z6935FFzDrSN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2020 22:28:29 +1000 (AEST)
-Received: by mail-wr1-x442.google.com with SMTP id i10so4561333wrv.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2020 05:28:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
- h=references:user-agent:from:to:cc:subject:in-reply-to:date
- :message-id:mime-version:content-transfer-encoding;
- bh=cMPkCMlqwl3yXb/VVFCTfLN11oVh/xjvMsOT4/7WQk0=;
- b=BKowtfSqqF3I9mEY8o3N/wAIkueWSOaWjKnRxf16CuNNUXqMgBe1PZDOBLVH1KZZbW
- B1d4NXhXE30zt6slNR5HPMIYfppoq/G7AJXk1mwggtYImulksoeHGjTs0p/uLlgXRhRe
- NVNrCcmHxP8IXcjXZNrWc/phuqzLkAl5ygcS9FNChg1zN5dWMLxmSQoFWFSMMwFm3ZyT
- INC7+nw7hBLenwrtKujK/rhn7Pm+bcbaCNdq1YJogjn54qxd5L3VuyN//IThLb/R2yhl
- 4Bi+YqdADN0xSsj9IZxWX6dwC87sn0/cCvHKATDs6vSLUFBk7Fjxw1861JVJuYNp7mNu
- NffA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:references:user-agent:from:to:cc:subject
- :in-reply-to:date:message-id:mime-version:content-transfer-encoding;
- bh=cMPkCMlqwl3yXb/VVFCTfLN11oVh/xjvMsOT4/7WQk0=;
- b=Gg3068rvTHxZkMFnnh0cV6fwI440Czg94hm509h3QJZ9xYapFd0THDQ7AN6xwK1E5K
- pOXoDSohEh8TpvN4TFdFHuMmD5RNXYPElFphXWV/mxKCHQRycO/Oe00jqFrpiue8nw/Q
- unEosxumChg2vyu903g4HWUx584YoBE2nU+z0etuQPHHX7jaquzOahmdxTB6A5NGrJFR
- s7X6hkKudOjBfiq2kNG5hG0jd0vhAWETPdceusy52okqGUy+9Bk3W84IjRKocCnBgzfg
- vsvQIndhzhPjCxv859dTlmEiyQ9/Lk3ei3MUPbLZSBpp7MYyNjZu7ZzLPyaw8LyhQQu1
- GMvQ==
-X-Gm-Message-State: AGi0PuaiblD2cN7mzwv4dIFyN57khyZ4nrUwCJlNXTYE61hEKvrZZmX2
- FyrsiplxMJ76hahYX7T6XWCAqTkBsyw=
-X-Google-Smtp-Source: APiQypIjYJwFDPI8PVovlQFxKski+eCbaQ21MFDv3mC7HaE3sHGpYUobkvtZTA0lOUcvr6aYNQBbmw==
-X-Received: by 2002:a5d:474b:: with SMTP id o11mr32713237wrs.4.1587040105587; 
- Thu, 16 Apr 2020 05:28:25 -0700 (PDT)
-Received: from zen.linaroharston ([51.148.130.216])
- by smtp.gmail.com with ESMTPSA id n2sm6848626wrq.74.2020.04.16.05.28.24
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 16 Apr 2020 05:28:24 -0700 (PDT)
-Received: from zen (localhost [127.0.0.1])
- by zen.linaroharston (Postfix) with ESMTP id 510DC1FF7E;
- Thu, 16 Apr 2020 13:28:23 +0100 (BST)
-References: <20200414111131.465560-1-npiggin@gmail.com>
- <74e47708-fcc0-d3db-5f6b-2a513722fef9@kaod.org>
-User-agent: mu4e 1.3.10; emacs 28.0.50
-From: Alex =?utf-8?Q?Benn=C3=A9e?= <alex.bennee@linaro.org>
-To: =?utf-8?Q?C=C3=A9dric?= Le Goater <clg@kaod.org>
-Subject: Re: [EXTERNAL] [PATCH] target/ppc: Fix mtmsr(d) L=1 variant that
- loses interrupts
-In-reply-to: <74e47708-fcc0-d3db-5f6b-2a513722fef9@kaod.org>
-Date: Thu, 16 Apr 2020 13:28:23 +0100
-Message-ID: <87o8rrfwd4.fsf@linaro.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 492zDT0rxTzDrSc
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2020 22:34:00 +1000 (AEST)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 0CD94200CE4;
+ Thu, 16 Apr 2020 14:33:57 +0200 (CEST)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
+ [165.114.16.14])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 63F4D200CD9;
+ Thu, 16 Apr 2020 14:33:51 +0200 (CEST)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net
+ [10.192.224.44])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 57759402FC;
+ Thu, 16 Apr 2020 20:33:44 +0800 (SGT)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
+ festevam@gmail.com, broonie@kernel.org, alsa-devel@alsa-project.org,
+ lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com, robh+dt@kernel.org,
+ mark.rutland@arm.com, devicetree@vger.kernel.org
+Subject: [PATCH v9 2/7] ASoC: dt-bindings: fsl_asrc: Add new property fsl,
+ asrc-format
+Date: Thu, 16 Apr 2020 20:25:32 +0800
+Message-Id: <e7acbde4b26a82b674a4091515a219e09f847eac.1587038908.git.shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <cover.1587038908.git.shengjiu.wang@nxp.com>
+References: <cover.1587038908.git.shengjiu.wang@nxp.com>
+In-Reply-To: <cover.1587038908.git.shengjiu.wang@nxp.com>
+References: <cover.1587038908.git.shengjiu.wang@nxp.com>
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,181 +67,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: qemu-stable@nongnu.org, Nicholas Piggin <npiggin@gmail.com>,
- qemu-devel@nongnu.org, qemu-ppc@nongnu.org,
- Nathan Chancellor <natechancellor@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+In order to support new EASRC and simplify the code structure,
+We decide to share the common structure between them. This bring
+a problem that EASRC accept format directly from devicetree, but
+ASRC accept width from devicetree.
 
-C=C3=A9dric Le Goater <clg@kaod.org> writes:
+In order to align with new ESARC, we add new property fsl,asrc-format.
+The fsl,asrc-format can replace the fsl,asrc-width, then driver
+can accept format from devicetree, don't need to convert it to
+format through width.
 
-> On 4/14/20 1:11 PM, Nicholas Piggin wrote:
->> If mtmsr L=3D1 sets MSR[EE] while there is a maskable exception pending,
->> it does not cause an interrupt. This causes the test case to hang:
->>=20
->> https://urldefense.proofpoint.com/v2/url?u=3Dhttps-3A__lists.gnu.org_arc=
-hive_html_qemu-2Dppc_2019-2D10_msg00826.html&d=3DDwIDAg&c=3Djf_iaSHvJObTbx-=
-siA1ZOg&r=3DXHJsZhhuWSw9713Fp0ciew&m=3DTQfi_v-8XYgz7MiMDAZ_CjkyalSh9-EXhQ3o=
-DesUm74&s=3DpFoesXbioVBh5wCuzEnzwgfze6X7e-a9unkfUgsRwiw&e=3D=20
->>=20
-<snip>
-> I was expecting more changes but this looks fine.=20
->
-> Reviewed-by: C=C3=A9dric Le Goater <clg@kaod.org>
->
->> Cc: qemu-stable@nongnu.org
->> Reported-by: Anton Blanchard <anton@ozlabs.org>
->> Reported-by: Nathan Chancellor <natechancellor@gmail.com>
->> Tested-by: Nathan Chancellor <natechancellor@gmail.com>
->> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
->
-> I gave it a try on PowerNV, pseries and mac99. All good.
->
-> Tested-by: C=C3=A9dric Le Goater <clg@kaod.org>
->
-> I don't know how we could include tests in QEMU such as the one Anton=20
-> sent. These are good exercisers for our exception model.
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
+Acked-by: Rob Herring <robh@kernel.org>
+---
+ Documentation/devicetree/bindings/sound/fsl,asrc.txt | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-It certainly looks possible. The ideal would be a fresh boot.S for ppc64
-that supported:
+diff --git a/Documentation/devicetree/bindings/sound/fsl,asrc.txt b/Documentation/devicetree/bindings/sound/fsl,asrc.txt
+index cb9a25165503..998b4c8a7f78 100644
+--- a/Documentation/devicetree/bindings/sound/fsl,asrc.txt
++++ b/Documentation/devicetree/bindings/sound/fsl,asrc.txt
+@@ -51,6 +51,10 @@ Optional properties:
+ 			  will be in use as default. Otherwise, the big endian
+ 			  mode will be in use for all the device registers.
+ 
++   - fsl,asrc-format	: Defines a mutual sample format used by DPCM Back
++			  Ends, which can replace the fsl,asrc-width.
++			  The value is 2 (S16_LE), or 6 (S24_LE).
++
+ Example:
+ 
+ asrc: asrc@2034000 {
+-- 
+2.21.0
 
- a) some sort of serial output
- b) a way to exit the test case with a result
-
-For ARM we use semihosting, for x86 we use plain ioport and an ACPI
-exit. See the tests in: tests/tcg/[x86_64/aarch64]/system/boot.S and the
-Makefile.softmmu-target files under tests/tcg.
-
->
-> Thanks,
->
-> C.=20
->
->> ---
->> Thanks very much to Nathan for reporting and testing it, I added his
->> Tested-by tag despite a more polished patch, as the the basics are=20
->> still the same (and still fixes his test case here).
->>=20
->> This bug possibly goes back to early v2.04 / mtmsrd L=3D1 support around
->> 2007, and the code has been changed several times since then so may
->> require some backporting.
->>=20
->> 32-bit / mtmsr untested at the moment, I don't have an environment
->> handy.
->>
->>=20
->>  target/ppc/translate.c | 46 +++++++++++++++++++++++++-----------------
->>  1 file changed, 27 insertions(+), 19 deletions(-)
->>=20
->> diff --git a/target/ppc/translate.c b/target/ppc/translate.c
->> index b207fb5386..9959259dba 100644
->> --- a/target/ppc/translate.c
->> +++ b/target/ppc/translate.c
->> @@ -4361,30 +4361,34 @@ static void gen_mtmsrd(DisasContext *ctx)
->>      CHK_SV;
->>=20=20
->>  #if !defined(CONFIG_USER_ONLY)
->> +    if (tb_cflags(ctx->base.tb) & CF_USE_ICOUNT) {
->> +        gen_io_start();
->> +    }
->>      if (ctx->opcode & 0x00010000) {
->> -        /* Special form that does not need any synchronisation */
->> +        /* L=3D1 form only updates EE and RI */
->>          TCGv t0 =3D tcg_temp_new();
->> +        TCGv t1 =3D tcg_temp_new();
->>          tcg_gen_andi_tl(t0, cpu_gpr[rS(ctx->opcode)],
->>                          (1 << MSR_RI) | (1 << MSR_EE));
->> -        tcg_gen_andi_tl(cpu_msr, cpu_msr,
->> +        tcg_gen_andi_tl(t1, cpu_msr,
->>                          ~(target_ulong)((1 << MSR_RI) | (1 << MSR_EE)));
->> -        tcg_gen_or_tl(cpu_msr, cpu_msr, t0);
->> +        tcg_gen_or_tl(t1, t1, t0);
->> +
->> +        gen_helper_store_msr(cpu_env, t1);
->>          tcg_temp_free(t0);
->> +        tcg_temp_free(t1);
->> +
->>      } else {
->>          /*
->>           * XXX: we need to update nip before the store if we enter
->>           *      power saving mode, we will exit the loop directly from
->>           *      ppc_store_msr
->>           */
->> -        if (tb_cflags(ctx->base.tb) & CF_USE_ICOUNT) {
->> -            gen_io_start();
->> -        }
->>          gen_update_nip(ctx, ctx->base.pc_next);
->>          gen_helper_store_msr(cpu_env, cpu_gpr[rS(ctx->opcode)]);
->> -        /* Must stop the translation as machine state (may have) change=
-d */
->> -        /* Note that mtmsr is not always defined as context-synchronizi=
-ng */
->> -        gen_stop_exception(ctx);
->>      }
->> +    /* Must stop the translation as machine state (may have) changed */
->> +    gen_stop_exception(ctx);
->>  #endif /* !defined(CONFIG_USER_ONLY) */
->>  }
->>  #endif /* defined(TARGET_PPC64) */
->> @@ -4394,15 +4398,23 @@ static void gen_mtmsr(DisasContext *ctx)
->>      CHK_SV;
->>=20=20
->>  #if !defined(CONFIG_USER_ONLY)
->> -   if (ctx->opcode & 0x00010000) {
->> -        /* Special form that does not need any synchronisation */
->> +    if (tb_cflags(ctx->base.tb) & CF_USE_ICOUNT) {
->> +        gen_io_start();
->> +    }
->> +    if (ctx->opcode & 0x00010000) {
->> +        /* L=3D1 form only updates EE and RI */
->>          TCGv t0 =3D tcg_temp_new();
->> +        TCGv t1 =3D tcg_temp_new();
->>          tcg_gen_andi_tl(t0, cpu_gpr[rS(ctx->opcode)],
->>                          (1 << MSR_RI) | (1 << MSR_EE));
->> -        tcg_gen_andi_tl(cpu_msr, cpu_msr,
->> +        tcg_gen_andi_tl(t1, cpu_msr,
->>                          ~(target_ulong)((1 << MSR_RI) | (1 << MSR_EE)));
->> -        tcg_gen_or_tl(cpu_msr, cpu_msr, t0);
->> +        tcg_gen_or_tl(t1, t1, t0);
->> +
->> +        gen_helper_store_msr(cpu_env, t1);
->>          tcg_temp_free(t0);
->> +        tcg_temp_free(t1);
->> +
->>      } else {
->>          TCGv msr =3D tcg_temp_new();
->>=20=20
->> @@ -4411,9 +4423,6 @@ static void gen_mtmsr(DisasContext *ctx)
->>           *      power saving mode, we will exit the loop directly from
->>           *      ppc_store_msr
->>           */
->> -        if (tb_cflags(ctx->base.tb) & CF_USE_ICOUNT) {
->> -            gen_io_start();
->> -        }
->>          gen_update_nip(ctx, ctx->base.pc_next);
->>  #if defined(TARGET_PPC64)
->>          tcg_gen_deposit_tl(msr, cpu_msr, cpu_gpr[rS(ctx->opcode)], 0, 3=
-2);
->> @@ -4422,10 +4431,9 @@ static void gen_mtmsr(DisasContext *ctx)
->>  #endif
->>          gen_helper_store_msr(cpu_env, msr);
->>          tcg_temp_free(msr);
->> -        /* Must stop the translation as machine state (may have) change=
-d */
->> -        /* Note that mtmsr is not always defined as context-synchronizi=
-ng */
->> -        gen_stop_exception(ctx);
->>      }
->> +    /* Must stop the translation as machine state (may have) changed */
->> +    gen_stop_exception(ctx);
->>  #endif
->>  }
->>=20=20
->>=20
-
-
---=20
-Alex Benn=C3=A9e
