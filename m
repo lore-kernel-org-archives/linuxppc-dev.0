@@ -2,73 +2,72 @@ Return-Path: <SRS0=XoDJ=6A=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B760C2BB85
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 08:26:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1EAACC2BB85
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 08:28:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 12481206B9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 08:26:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 12481206B9
+	by mail.kernel.org (Postfix) with ESMTPS id A2D18206F9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 08:28:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A2D18206F9
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 492sl76sC1zDrRW
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 18:26:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 492snH1vd4zDr5Z
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 18:28:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.210.194;
- helo=mail-pf1-f194.google.com; envelope-from=mcgrof@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=209.85.215.194;
+ helo=mail-pg1-f194.google.com; envelope-from=mcgrof@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-pf1-f194.google.com (mail-pf1-f194.google.com
- [209.85.210.194])
+Received: from mail-pg1-f194.google.com (mail-pg1-f194.google.com
+ [209.85.215.194])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 492qfr3b33zDqgN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2020 16:52:52 +1000 (AEST)
-Received: by mail-pf1-f194.google.com with SMTP id u9so1227896pfm.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2020 23:52:52 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 492qpS5j3HzDrK4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2020 16:59:27 +1000 (AEST)
+Received: by mail-pg1-f194.google.com with SMTP id d17so1222209pgo.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2020 23:59:27 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:date:from:to:cc:subject:message-id:references
  :mime-version:content-disposition:in-reply-to:user-agent;
- bh=u9FJuUtFkBVVe754ASFiMsIrGIfB932jO4gCk5SijoQ=;
- b=GsZN7EdiouDC3wpr+AMb1hBF48aJPP13P/jmS9NVB05jWto0ECOUdqAkGi6v1Ax0gf
- xnfurpbAA/+cHKjcX3IVTM2F434V3PY8Mx7dwfQp3Ym61qxQAS60KF6Io1WnIQvClFCZ
- IKWlyw8wkR2scHwN/QU43f7Zx6JphbuK2NC/5fjKYNtyYUUQRsf2DKJUbsRHtktO+R1s
- KC1Pk1dx+dEo0Pr9wQlSmvhKkNAyRPJWqGLMmP11E6BqqatCSAWy4Xw0iRU1GqjHoNBL
- MACTKcRmIT6Ktq7oj/3SzkMARYMA9GS6/A1OhdjBBJ2TeXf72mcQNqPnfXsfWPCkcyp7
- x+zA==
-X-Gm-Message-State: AGi0PuZRwgw1I2yslgHg4tZbUryQHPptrPSJLUZkDxLiS07bOF3Epd6H
- edJXHH4jguSvD+mziTbJdvlE/4pc3BgxGA==
-X-Google-Smtp-Source: APiQypKByakqrvOibndG+UYJLRLNL9uRjqKma5zqDprpms3bUdiJFXDLYMCGhOmLou9lQzysqs9jaQ==
-X-Received: by 2002:a63:5f01:: with SMTP id t1mr29126955pgb.186.1587019969901; 
- Wed, 15 Apr 2020 23:52:49 -0700 (PDT)
+ bh=5dFbWwPMLFdLLdwYDe+nstRRn0RE7K4B+Qa2HC0tOOY=;
+ b=qGTMHK9OtX8Ug7x/l0cQ4fs0mvZL9hzsk9Y515lEJ5TadtVepXkuOltQ5xHxfux2si
+ pB4bYxKQGvLU137W//bFJa49ERqNvDvE5s1hL87lgtoacmGMjakb3/PFvgaiTqeRRBuh
+ szUFYql04vZMoJdmFJYCHhcGrx6WoPW1IyUzKa+5nzH7NHoEUrpYNKgm4BQczDxw7PEe
+ RqBquxMgPAW6t1P+Ns4iN8f7HtzToANducetjNgTN2ZSBNC56wlBXLidwGaKieNFZ+JL
+ Yd/m9PJnJiD263GWbUVFQU0NpsnJduGfAZEoQLKZ4T2QTf6to0P9u61vLehmHP+Bab8Y
+ 0ufA==
+X-Gm-Message-State: AGi0PuaM7msz0jn8svbKz6nqYzp1Mio5mJZAOdAh8KqJdG6UDEtLvCsH
+ bNNbP/1wvJWFRCOY1XJLJj5f1UkjgZ2ftQ==
+X-Google-Smtp-Source: APiQypKYSV9pWERJBF2Lj8aG00aAhQIVsOnD/2ZHIeLFO4IUsilJzt/FXcAdiCflTz1lmRzioNqQ9Q==
+X-Received: by 2002:a65:68c9:: with SMTP id k9mr31759314pgt.355.1587020364771; 
+ Wed, 15 Apr 2020 23:59:24 -0700 (PDT)
 Received: from 42.do-not-panic.com (42.do-not-panic.com. [157.230.128.187])
- by smtp.gmail.com with ESMTPSA id o125sm14400027pgo.74.2020.04.15.23.52.48
+ by smtp.gmail.com with ESMTPSA id ep21sm1550532pjb.24.2020.04.15.23.59.23
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 15 Apr 2020 23:52:48 -0700 (PDT)
+ Wed, 15 Apr 2020 23:59:24 -0700 (PDT)
 Received: by 42.do-not-panic.com (Postfix, from userid 1000)
- id 8222840277; Thu, 16 Apr 2020 06:52:47 +0000 (UTC)
-Date: Thu, 16 Apr 2020 06:52:47 +0000
+ id 6A84140277; Thu, 16 Apr 2020 06:59:22 +0000 (UTC)
+Date: Thu, 16 Apr 2020 06:59:22 +0000
 From: Luis Chamberlain <mcgrof@kernel.org>
 To: Emanuele Giuseppe Esposito <eesposit@redhat.com>
-Subject: Re: [PATCH 2/8] fs: extract simple_pin/release_fs to separate files
-Message-ID: <20200416065247.GR11244@42.do-not-panic.com>
+Subject: Re: [PATCH 0/8] Simplefs: group and simplify linux fs code
+Message-ID: <20200416065922.GS11244@42.do-not-panic.com>
 References: <20200414124304.4470-1-eesposit@redhat.com>
- <20200414124304.4470-3-eesposit@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200414124304.4470-3-eesposit@redhat.com>
+In-Reply-To: <20200414124304.4470-1-eesposit@redhat.com>
 User-Agent: Mutt/1.10.1 (2018-07-13)
-X-Mailman-Approved-At: Thu, 16 Apr 2020 18:10:13 +1000
+X-Mailman-Approved-At: Thu, 16 Apr 2020 18:10:14 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -127,46 +126,18 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 14, 2020 at 02:42:56PM +0200, Emanuele Giuseppe Esposito wrote:
-> We will augment this family of functions with inode management.  To avoid
-> littering include/linux/fs.h and fs/libfs.c, move them to a separate header,
-> with a Kconfig symbol to enable them.
+On Tue, Apr 14, 2020 at 02:42:54PM +0200, Emanuele Giuseppe Esposito wrote:
+> This series of patches introduce wrappers for functions,
+> arguments simplification in functions calls and most importantly
+> groups duplicated code in a single header, simplefs, to avoid redundancy
+> in the linux fs, especially debugfs and tracefs.
 
-If there are no functional changes, indicating that on the commit log
-will make the review much easier.
+The general goal seems worthy, but here I don't see explained why hasn't
+this gone through libfs, and what the intention was long term. For
+instance, you added some other generalizations which you have found. It
+was not clear that this was the goal here, to expand on these paths.
 
-> diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-> index d1398cef3b18..fc38a6f0fc11 100644
-> --- a/lib/Kconfig.debug
-> +++ b/lib/Kconfig.debug
-> @@ -288,12 +288,16 @@ config STRIP_ASM_SYMS
->  
->  config READABLE_ASM
->  	bool "Generate readable assembler code"
-> -	depends on DEBUG_KERNEL
-> -	help
-> -	  Disable some compiler optimizations that tend to generate human unreadable
-> -	  assembler output. This may make the kernel slightly slower, but it helps
-> -	  to keep kernel developers who have to stare a lot at assembler listings
-> -	  sane.
-> +    depends on DEBUG_KERNEL
-> +    help
-> +      Disable some compiler optimizations that tend to generate human unreadable
-> +      assembler output. This may make the kernel slightly slower, but it helps
-> +      to keep kernel developers who have to stare a lot at assembler listings
-> +      sane.
-> +	  
-
-This minor change above should just be a separate patch. Its just noise
-otherwise.
-
-> +config DEBUG_FS
-> +	bool "Debug Filesystem"
-> +	select SIMPLEFS
-
-I'm at a loss reviewing this,  my lib/Kconfig.debug already has a config
-DEBUG_FS.  But above I see it is being added for the very first time.
-I'm sure there is some odd conditional which is obscuring this, can
-this be explained in the commit log?
+What if common code on fs is found which are not part of debugfs and
+tracefs, how does one decide if to move to libfs or simplefs?
 
   Luis
