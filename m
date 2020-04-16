@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FE6BC2BB55
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 11:29:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 327AAC2BB55
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 11:31:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 39E242078B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 11:29:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 39E242078B
+	by mail.kernel.org (Postfix) with ESMTPS id E0EB5208E4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 11:31:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E0EB5208E4
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=vivo.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 492xns0ry1zDrV2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 21:29:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 492xr546RvzDrby
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 21:31:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=vivo.com (client-ip=115.236.127.101;
  helo=mail-m127101.qiye.163.com; envelope-from=wenhu.wang@vivo.com;
@@ -29,27 +29,30 @@ Received: from mail-m127101.qiye.163.com (mail-m127101.qiye.163.com
  [115.236.127.101])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 492xft1K9FzDrRt
+ by lists.ozlabs.org (Postfix) with ESMTPS id 492xft1C5kzDrRr
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2020 21:23:17 +1000 (AEST)
 Received: from ubuntu.localdomain (unknown [58.251.74.226])
- by mail-m127101.qiye.163.com (Hmail) with ESMTPA id F3E0948372;
- Thu, 16 Apr 2020 19:16:49 +0800 (CST)
+ by mail-m127101.qiye.163.com (Hmail) with ESMTPA id 49AF3483C3;
+ Thu, 16 Apr 2020 19:16:46 +0800 (CST)
 From: Wang Wenhu <wenhu.wang@vivo.com>
 To: gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, oss@buserror.net,
  christophe.leroy@c-s.fr, linuxppc-dev@lists.ozlabs.org
 Subject: [PATCH RESEND, v3,
- 3/4] powerpc: sysdev: fix compile warning for fsl_85xx_cache_sram
-Date: Thu, 16 Apr 2020 04:16:08 -0700
-Message-Id: <20200416111609.4191-4-wenhu.wang@vivo.com>
+ 1/4] powerpc: sysdev: fix compile error for fsl_85xx_l2ctlr
+Date: Thu, 16 Apr 2020 04:16:06 -0700
+Message-Id: <20200416111609.4191-2-wenhu.wang@vivo.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200416111609.4191-1-wenhu.wang@vivo.com>
 References: <20200416111609.4191-1-wenhu.wang@vivo.com>
-X-HM-Spam-Status: e1kfGhgUHx5ZQUtXWQgYFAkeWUFZSVVPSENCQkJDQkpJQ0pKSFlXWShZQU
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-HM-Spam-Status: e1kfGhgUHx5ZQUtXWQgYFAkeWUFZSVVDSkhCQkJDQkpJQ0pKSFlXWShZQU
  hPN1dZLVlBSVdZCQ4XHghZQVk1NCk2OjckKS43PlkG
-X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6MyI6SQw6Cjg1KA8KLw8rEk5I
- IywKCz1VSlVKTkNMS0hOQ0pLSENLVTMWGhIXVQweFRMOVQwaFRw7DRINFFUYFBZFWVdZEgtZQVlO
- Q1VJTkpVTE9VSUlNWVdZCAFZQUlMT0w3Bg++
-X-HM-Tid: 0a7182b4a9de9865kuuuf3e0948372
+X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6KzY6GQw*AzgrMA8#EQgiEgIi
+ Tk0wCRpVSlVKTkNMS0hOQ0tNTUJIVTMWGhIXVQweFRMOVQwaFRw7DRINFFUYFBZFWVdZEgtZQVlO
+ Q1VJTkpVTE9VSUlNWVdZCAFZQUhLTkI3Bg++
+X-HM-Tid: 0a7182b49b729865kuuu49af3483c3
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,8 +69,21 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Function instantiate_cache_sram should not be linked into the init
-section for its caller mpc85xx_l2ctlr_of_probe is none-__init.
+Include "linux/of_address.h" to fix the compile error for
+mpc85xx_l2ctlr_of_probe() when compiling fsl_85xx_cache_sram.c.
+
+  CC      arch/powerpc/sysdev/fsl_85xx_l2ctlr.o
+arch/powerpc/sysdev/fsl_85xx_l2ctlr.c: In function ‘mpc85xx_l2ctlr_of_probe’:
+arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:90:11: error: implicit declaration of function ‘of_iomap’; did you mean ‘pci_iomap’? [-Werror=implicit-function-declaration]
+  l2ctlr = of_iomap(dev->dev.of_node, 0);
+           ^~~~~~~~
+           pci_iomap
+arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:90:9: error: assignment makes pointer from integer without a cast [-Werror=int-conversion]
+  l2ctlr = of_iomap(dev->dev.of_node, 0);
+         ^
+cc1: all warnings being treated as errors
+scripts/Makefile.build:267: recipe for target 'arch/powerpc/sysdev/fsl_85xx_l2ctlr.o' failed
+make[2]: *** [arch/powerpc/sysdev/fsl_85xx_l2ctlr.o] Error 1
 
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: Christophe Leroy <christophe.leroy@c-s.fr>
@@ -76,36 +92,27 @@ Cc: Michael Ellerman <mpe@ellerman.id.au>
 Cc: linuxppc-dev@lists.ozlabs.org
 Fixes: 6db92cc9d07d ("powerpc/85xx: add cache-sram support")
 Signed-off-by: Wang Wenhu <wenhu.wang@vivo.com>
-
-Warning information:
-  MODPOST vmlinux.o
-WARNING: modpost: vmlinux.o(.text+0x1e540): Section mismatch in reference from the function mpc85xx_l2ctlr_of_probe() to the function .init.text:instantiate_cache_sram()
-The function mpc85xx_l2ctlr_of_probe() references
-the function __init instantiate_cache_sram().
-This is often because mpc85xx_l2ctlr_of_probe lacks a __init
-annotation or the annotation of instantiate_cache_sram is wrong.
 ---
 Changes since v1:
  * None
 Changes since v2:
  * None
 ---
- arch/powerpc/sysdev/fsl_85xx_cache_sram.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/sysdev/fsl_85xx_l2ctlr.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/sysdev/fsl_85xx_cache_sram.c b/arch/powerpc/sysdev/fsl_85xx_cache_sram.c
-index be3aef4229d7..3de5ac8382c0 100644
---- a/arch/powerpc/sysdev/fsl_85xx_cache_sram.c
-+++ b/arch/powerpc/sysdev/fsl_85xx_cache_sram.c
-@@ -68,7 +68,7 @@ void mpc85xx_cache_sram_free(void *ptr)
- }
- EXPORT_SYMBOL(mpc85xx_cache_sram_free);
+diff --git a/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c b/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
+index 2d0af0c517bb..7533572492f0 100644
+--- a/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
++++ b/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
+@@ -10,6 +10,7 @@
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/of_platform.h>
++#include <linux/of_address.h>
+ #include <asm/io.h>
  
--int __init instantiate_cache_sram(struct platform_device *dev,
-+int instantiate_cache_sram(struct platform_device *dev,
- 		struct sram_parameters sram_params)
- {
- 	int ret = 0;
+ #include "fsl_85xx_cache_ctlr.h"
 -- 
 2.17.1
 
