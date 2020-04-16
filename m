@@ -2,55 +2,70 @@ Return-Path: <SRS0=XoDJ=6A=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C44CBC2BB55
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 11:34:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FD87C2BB55
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 11:44:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 46E6A208E4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 11:34:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 46E6A208E4
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=vivo.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0B4E1206D6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 11:44:44 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="F6msH8q4"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0B4E1206D6
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 492xvQ6cQQzDrbx
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 21:34:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=vivo.com (client-ip=115.236.127.101;
- helo=mail-m127101.qiye.163.com; envelope-from=wenhu.wang@vivo.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=vivo.com
-Received: from mail-m127101.qiye.163.com (mail-m127101.qiye.163.com
- [115.236.127.101])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 492y7Z14XQzDrDX
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 21:44:42 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 492xmg62BZzDrVN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2020 21:28:18 +1000 (AEST)
-Received: from ubuntu.localdomain (unknown [58.251.74.226])
- by mail-m127101.qiye.163.com (Hmail) with ESMTPA id 9752248233;
- Thu, 16 Apr 2020 19:16:35 +0800 (CST)
-From: Wang Wenhu <wenhu.wang@vivo.com>
-To: gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, oss@buserror.net,
- christophe.leroy@c-s.fr, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH RESEND, v3,
- 0/4] drivers: uio: new driver uio_fsl_85xx_cache_sram
-Date: Thu, 16 Apr 2020 04:16:05 -0700
-Message-Id: <20200416111609.4191-1-wenhu.wang@vivo.com>
-X-Mailer: git-send-email 2.17.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 492y5X2jNdzDqgN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2020 21:42:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=F6msH8q4; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 492y5V2GZKz9sR4;
+ Thu, 16 Apr 2020 21:42:53 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1587037375;
+ bh=t4CnpKi/1cWNveFL503UiUpa0nOioFN2uGWTVXoAKYo=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=F6msH8q4pMopBVokSfSDN6OBQ2S/Eb32uVgHlQ0T511IzSGtYtiaPIYwl/WVqwAzB
+ pl3QBuU5QbsXoXyFXmZ21FGYq7sWMmuonMX+4+FRxfwvwDpTakIsA64FlIELXls/Fk
+ iBWCoCwbM3fY2tIz6olJLuRfOd3prB0QUwORjf0UHyg5D0cXZN1n2479owrKo8mb2H
+ 4Z9qCObz2+YH64TdrgA0v1on7J/TO5im0Sp37K7tv9tXlYJHD2zvBgJiPJGgTe5v36
+ ucqbz3InfjaVmg95tQi4nJj8dJYQ4sEzmpGlNqQ4eO6FheHkpmQ39ZsOyKv/JzFSDC
+ IOvVLxgMc6YPA==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Chris Packham <Chris.Packham@alliedtelesis.co.nz>,
+ "christophe.leroy\@c-s.fr" <christophe.leroy@c-s.fr>,
+ "paulus\@samba.org" <paulus@samba.org>,
+ "benh\@kernel.crashing.org" <benh@kernel.crashing.org>,
+ "oss\@buserror.net" <oss@buserror.net>,
+ "tglx\@linutronix.de" <tglx@linutronix.de>
+Subject: Re: [PATCH v2] powerpc/setup_64: Set cache-line-size based on
+ cache-block-size
+In-Reply-To: <343c0e8b01ab74481e0b8dfbe588b1c84127a487.camel@alliedtelesis.co.nz>
+References: <dd342c71e03e654a8786302d82f9662004418c6e.camel@alliedtelesis.co.nz>
+ <20200325031854.7625-1-chris.packham@alliedtelesis.co.nz>
+ <343c0e8b01ab74481e0b8dfbe588b1c84127a487.camel@alliedtelesis.co.nz>
+Date: Thu, 16 Apr 2020 21:43:04 +1000
+Message-ID: <87tv1jirlj.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-HM-Spam-Status: e1kfGhgUHx5ZQUlXWQgYFAkeWUFZTFVJSENCQkJDT0hOQkxPSllXWShZQU
- hPN1dZLVlBSVdZCQ4XHghZQVk1NCk2OjckKS43PlkG
-X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6OUk6Fjo6GjgwFg8iLw4LMxke
- KBEwCjFVSlVKTkNMS0hOTEJDS0tOVTMWGhIXVQweFRMOVQwaFRw7DRINFFUYFBZFWVdZEgtZQVlO
- Q1VJTkpVTE9VSUlNWVdZCAFZQUlCSk43Bg++
-X-HM-Tid: 0a7182b471ac9865kuuu9752248233
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,53 +77,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel@vivo.com, Wang Wenhu <wenhu.wang@vivo.com>
+Cc: Hamish Martin <Hamish.Martin@alliedtelesis.co.nz>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This series add a new uio driver for freescale 85xx platforms to
-access the Cache-Sram form user level. This is extremely helpful
-for the user-space applications that require high performance memory
-accesses.
+Chris Packham <Chris.Packham@alliedtelesis.co.nz> writes:
+> Hi All,
+>
+> On Wed, 2020-03-25 at 16:18 +1300, Chris Packham wrote:
+>> If {i,d}-cache-block-size is set and {i,d}-cache-line-size is not,
+>> use
+>> the block-size value for both. Per the devicetree spec cache-line-
+>> size
+>> is only needed if it differs from the block size.
+>> 
+>> Signed-off-by: Chris Packham <chris.packham@alliedtelesis.co.nz>
+>> ---
+>> It looks as though the bsizep = lsizep is not required per the spec
+>> but it's
+>> probably safer to retain it.
+>> 
+>> Changes in v2:
+>> - Scott pointed out that u-boot should be filling in the cache
+>> properties
+>>   (which it does). But it does not specify a cache-line-size because
+>> it
+>>   provides a cache-block-size and the spec says you don't have to if
+>> they are
+>>   the same. So the error is in the parsing not in the devicetree
+>> itself.
+>> 
+>
+> Ping? This thread went kind of quiet.
 
-It fixes the compile errors and warning of the hardware level drivers
-and implements the uio driver in uio_fsl_85xx_cache_sram.c.
+I replied in the other thread:
 
-Changes since v1:
- * Addressed comments from Greg K-H
- * Moved kfree(info->name) into uio_info_free_internal()
+  https://lore.kernel.org/linuxppc-dev/87369xx99u.fsf@mpe.ellerman.id.au/
 
-Changes since v2:
- * Drop the patch that modifies Kconfigs of arch/powerpc/platforms
-   and modified the sequence of patches:
-    01:dropped, 02->03, 03->02, 04->01, 05->04
- * Addressed comments from Greg, Scott and Christophe
- * Use "uiomem->internal_addr" as if condition for sram memory free,
-   and memset the uiomem entry
- * Modified of_match_table make the driver apart from Cache-Sram HW info
-   which belong to the HW level driver fsl_85xx_cache_sram to match
- * Use roundup_pow_of_two for align calc(really learned a lot from Christophe)
- * Remove useless clear block of uiomem entries.
- * Use UIO_INFO_VER micro for info->version, and define it as
-   "devicetree,pseudo", meaning this is pseudo device and probed from
-   device tree configuration
- * Select FSL_85XX_CACHE_SRAM rather than depends on it
+But then the merge window happened which is a busy time.
 
-Wang Wenhu (4):
-  powerpc: sysdev: fix compile error for fsl_85xx_l2ctlr
-  powerpc: sysdev: fix compile error for fsl_85xx_cache_sram
-  powerpc: sysdev: fix compile warning for fsl_85xx_cache_sram
-  drivers: uio: new driver for fsl_85xx_cache_sram
+What I'd really like is a v3 that incorporates the info I wrote in the
+other thread and a Fixes tag.
 
- arch/powerpc/sysdev/fsl_85xx_cache_sram.c |   3 +-
- arch/powerpc/sysdev/fsl_85xx_l2ctlr.c     |   1 +
- drivers/uio/Kconfig                       |   9 ++
- drivers/uio/Makefile                      |   1 +
- drivers/uio/uio_fsl_85xx_cache_sram.c     | 158 ++++++++++++++++++++++
- 5 files changed, 171 insertions(+), 1 deletion(-)
- create mode 100644 drivers/uio/uio_fsl_85xx_cache_sram.c
+If you feel like doing that, that would be great. Otherwise I'll do it
+tomorrow.
 
--- 
-2.17.1
-
+cheers
