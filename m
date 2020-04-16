@@ -2,90 +2,52 @@ Return-Path: <SRS0=XoDJ=6A=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97334C2BA19
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 02:57:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BFECC3815B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 03:04:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3BD28206F9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 02:57:21 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="vdlW0vB0"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3BD28206F9
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 434E32072D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 03:04:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 434E32072D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=libc.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 492kR213XGzDqrT
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 12:57:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::643;
- helo=mail-pl1-x643.google.com; envelope-from=npiggin@gmail.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 492kbj23DxzDrJ5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 13:04:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=vdlW0vB0; dkim-atps=neutral
-Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
- [IPv6:2607:f8b0:4864:20::643])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=none (no SPF record) smtp.mailfrom=libc.org
+ (client-ip=216.12.86.13; helo=brightrain.aerifal.cx;
+ envelope-from=dalias@libc.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=libc.org
+Received: from brightrain.aerifal.cx (216-12-86-13.cv.mvl.ntelos.net
+ [216.12.86.13])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 492kMT3r6ZzDrDg
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2020 12:54:13 +1000 (AEST)
-Received: by mail-pl1-x643.google.com with SMTP id k18so824578pll.6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2020 19:54:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :message-id:content-transfer-encoding;
- bh=lLNbxLPEmJyAwYNKxo9v4vAHZXAgKtB/PX1Pq9OmgM4=;
- b=vdlW0vB0Kn8o4q2DLFeiSzGBUwfXEHsFwu4Jw2x5girwUMP6n08lSG53RPj3QQSWx+
- XSKQ1dyUnTvg8JpD/mVb1hs+iJaWg3PBphY8lUqfr034Im+lLsbN/4BHnxPRTbjWb1Ez
- MKyERFneOvtek5HdoKA3kUIDmZIxpsDJZeyMKhePmRmOvM6wYgd6l/F9ho7cCX3zga7C
- Kl+HIRu35Y6X3+Rt7xS20g7QPs40xfVa3WFg2dni0v4j/upGGFNff0zi7X7kIi2eSIfb
- GaL+ezOhXbymJ4Zjix1kviSCI6gOArWkjEFww67oZtMpaUR816+aUF1c2RLmSYM6FTvx
- N6aw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:message-id:content-transfer-encoding;
- bh=lLNbxLPEmJyAwYNKxo9v4vAHZXAgKtB/PX1Pq9OmgM4=;
- b=O8Ybr/7iAr2j16VaNDTk7RLIAzjzCqp9dTWpwtHTJqwk3OFrRGx4tPx4c1cv14pDnV
- YK9cGZvzQHiHkO+Zrc7FMYpzDRQGgqlQtPYsdAisTJEI7RnNNMnzNB37Wk8MIhyO1BRd
- ASuPCPWgjN0chGZs1yFR/hF1jq7De2aMjCAnfdhvuvh66cCvZ/5to870Ww/ljEHChLDF
- 3v2Q9OiBMaymTKDekR/AtFLV+5/XjbRwNntt4AXsmVIU1VqcbeOiAn3CKSJAZn6ftEmB
- 92ZVtq8iwc1hpXKZdrq5whGs7Y3hVyP3h9/d68LpWB+oh/QePHLKPVKIYK4NEda3paoW
- B6Tg==
-X-Gm-Message-State: AGi0PuaCI78odbDhrfy95a8OYlFnzHNYvuAOJ+EAb7Epc+uoDSmN1dBm
- r38XvILhxxOsrc6lbYLXIMI=
-X-Google-Smtp-Source: APiQypLn1XwWmgK/wlfgK8bb63/Y5yL6+2SRpvjsP4Qbspe9So2Bp7TA/W4Rkd4ki/bhyYn9x+R/bQ==
-X-Received: by 2002:a17:90b:4d04:: with SMTP id
- mw4mr2490284pjb.180.1587005650426; 
- Wed, 15 Apr 2020 19:54:10 -0700 (PDT)
-Received: from localhost ([203.18.28.220])
- by smtp.gmail.com with ESMTPSA id x76sm14937361pfc.190.2020.04.15.19.54.08
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 15 Apr 2020 19:54:09 -0700 (PDT)
-Date: Thu, 16 Apr 2020 12:53:31 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 492kYq2xqyzDqw1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2020 13:03:08 +1000 (AEST)
+Date: Wed, 15 Apr 2020 23:03:04 -0400
+From: Rich Felker <dalias@libc.org>
+To: Nicholas Piggin <npiggin@gmail.com>
 Subject: Re: [musl] Powerpc Linux 'scv' system call ABI proposal take 2
-To: Rich Felker <dalias@libc.org>
+Message-ID: <20200416030304.GQ11469@brightrain.aerifal.cx>
 References: <1586931450.ub4c8cq8dj.astroid@bobo.none>
  <20200415225539.GL11469@brightrain.aerifal.cx>
  <1586994952.nnxigedbu2.astroid@bobo.none>
  <20200416004843.GO11469@brightrain.aerifal.cx>
  <1587002854.f0slo0111r.astroid@bobo.none>
  <20200416023542.GP11469@brightrain.aerifal.cx>
-In-Reply-To: <20200416023542.GP11469@brightrain.aerifal.cx>
+ <1587004907.ioxh0bxsln.astroid@bobo.none>
 MIME-Version: 1.0
-Message-Id: <1587004907.ioxh0bxsln.astroid@bobo.none>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1587004907.ioxh0bxsln.astroid@bobo.none>
+User-Agent: Mutt/1.5.21 (2010-09-15)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,75 +65,46 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Excerpts from Rich Felker's message of April 16, 2020 12:35 pm:
-> On Thu, Apr 16, 2020 at 12:24:16PM +1000, Nicholas Piggin wrote:
->> >> > Likewise, it's not useful to have different error return mechanisms
->> >> > because the caller just has to branch to support both (or the
->> >> > kernel-provided stub just has to emulate one for it; that could wor=
-k
->> >> > if you really want to change the bad existing convention).
->> >> >=20
->> >> > Thoughts?
->> >>=20
->> >> The existing convention has to change somewhat because of the clobber=
-s,
->> >> so I thought we could change the error return at the same time. I'm
->> >> open to not changing it and using CR0[SO], but others liked the idea.
->> >> Pro: it matches sc and vsyscall. Con: it's different from other commo=
-n
->> >> archs. Performnce-wise it would really be a wash -- cost of condition=
-al
->> >> branch is not the cmp but the mispredict.
->> >=20
->> > If you do the branch on hwcap at each syscall, then you significantly
->> > increase code size of every syscall point, likely turning a bunch of
->> > trivial functions that didn't need stack frames into ones that do. You
->> > also potentially make them need a TOC pointer. Making them all just do
->> > an indirect call unconditionally (with pointer in TLS like i386?) is a
->> > lot more efficient in code size and at least as good for performance.
->>=20
->> I disagree. Doing the long vdso indirect call *necessarily* requires
->> touching a new icache line, and even a new TLB entry. Indirect branches
->=20
-> The increase in number of icache lines from the branch at every
-> syscall point is far greater than the use of a single extra icache
-> line shared by all syscalls.
+On Thu, Apr 16, 2020 at 12:53:31PM +1000, Nicholas Piggin wrote:
+> > Not to mention the dcache line to access
+> > __hwcap or whatever, and the icache lines to setup access TOC-relative
+> > access to it. (Of course you could put a copy of its value in TLS at a
+> > fixed offset, which would somewhat mitigate both.)
+> > 
+> >> And finally, the HWCAP test can eventually go away in future. A vdso
+> >> call can not.
+> > 
+> > We support nearly arbitrarily old kernels (with limited functionality)
+> > and hardware (with full functionality) and don't intend for that to
+> > change, ever. But indeed glibc might want too eventually drop the
+> > check.
+> 
+> Ah, cool. Any build-time flexibility there?
+> 
+> We may or may not be getting a new ABI that will use instructions not 
+> supported by old processors.
+> 
+> https://sourceware.org/legacy-ml/binutils/2019-05/msg00331.html
+> 
+> Current ABI continues to work of course and be the default for some 
+> time, but building for new one would give some opportunity to drop
+> such support for old procs, at least for glibc.
 
-That's true, I was thinking of a single function that does the test and=20
-calls syscalls, which might be the fair comparison.
+What does "new ABI" entail to you? In the terminology I use with musl,
+"new ABI" and "new ISA level" are different things. You can compile
+(explicit -march or compiler default) binaries that won't run on older
+cpus due to use of new insns etc., but we consider it the same ABI if
+you can link code for an older/baseline ISA level with the
+newer-ISA-level object files, i.e. if the interface surface for
+linkage remains compatible. We also try to avoid gratuitous
+proliferation of different ABIs unless there's a strong underlying
+need (like addition of softfloat ABIs for archs that usually have FPU,
+or vice versa).
 
-> Not to mention the dcache line to access
-> __hwcap or whatever, and the icache lines to setup access TOC-relative
-> access to it. (Of course you could put a copy of its value in TLS at a
-> fixed offset, which would somewhat mitigate both.)
->=20
->> And finally, the HWCAP test can eventually go away in future. A vdso
->> call can not.
->=20
-> We support nearly arbitrarily old kernels (with limited functionality)
-> and hardware (with full functionality) and don't intend for that to
-> change, ever. But indeed glibc might want too eventually drop the
-> check.
+In principle the same could be done for kernels except it's a bigger
+silent gotcha (possible ENOSYS in places where it shouldn't be able to
+happen rather than a trapping SIGILL or similar) and there's rarely
+any serious performance or size benefit to dropping support for older
+kernels.
 
-Ah, cool. Any build-time flexibility there?
-
-We may or may not be getting a new ABI that will use instructions not=20
-supported by old processors.
-
-https://sourceware.org/legacy-ml/binutils/2019-05/msg00331.html
-
-Current ABI continues to work of course and be the default for some=20
-time, but building for new one would give some opportunity to drop
-such support for old procs, at least for glibc.
-
->=20
->> If you really want to select with an indirect branch rather than
->> direct conditional, you can do that all within the library.
->=20
-> OK. It's a little bit more work if that's not the interface the kernel
-> will give us, but it's no big deal.
-
-Okay.
-
-Thanks,
-Nick
+Rich
