@@ -2,53 +2,84 @@ Return-Path: <SRS0=XoDJ=6A=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D0B4C2BB85
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 08:51:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 50C2BC2BB85
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 08:53:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2A31E20784
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 08:51:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2A31E20784
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=vivo.com
+	by mail.kernel.org (Postfix) with ESMTPS id F3B3520784
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 08:53:43 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=fossix-org.20150623.gappssmtp.com header.i=@fossix-org.20150623.gappssmtp.com header.b="PMRUQRm1"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F3B3520784
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=fossix.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 492tJ902wMzDrRW
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 18:51:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=vivo.com (client-ip=59.111.176.18; helo=m17618.mail.qiye.163.com;
- envelope-from=wenhu.wang@vivo.com; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 492tLD2pzTzDrNR
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 18:53:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=vivo.com
-Received: from m17618.mail.qiye.163.com (m17618.mail.qiye.163.com
- [59.111.176.18])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=none (no SPF record) smtp.mailfrom=fossix.org
+ (client-ip=2607:f8b0:4864:20::1043; helo=mail-pj1-x1043.google.com;
+ envelope-from=santosh@fossix.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=fossix.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=fossix-org.20150623.gappssmtp.com
+ header.i=@fossix-org.20150623.gappssmtp.com header.a=rsa-sha256
+ header.s=20150623 header.b=PMRUQRm1; dkim-atps=neutral
+Received: from mail-pj1-x1043.google.com (mail-pj1-x1043.google.com
+ [IPv6:2607:f8b0:4864:20::1043])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 492sj65cgDzDrR9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2020 18:24:58 +1000 (AEST)
-Received: from ubuntu.localdomain (unknown [58.251.74.226])
- by m17618.mail.qiye.163.com (Hmail) with ESMTPA id BE89C4E3785;
- Thu, 16 Apr 2020 15:42:03 +0800 (CST)
-From: Wang Wenhu <wenhu.wang@vivo.com>
-To: gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, oss@buserror.net,
- christophe.leroy@c-s.fr, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3,4/4] drivers: uio: new driver for fsl_85xx_cache_sram
-Date: Thu, 16 Apr 2020 00:41:41 -0700
-Message-Id: <20200416074141.3555-5-wenhu.wang@vivo.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200416074141.3555-1-wenhu.wang@vivo.com>
-References: <20200415152442.122873-1-wenhu.wang@vivo.com>
- <20200416074141.3555-1-wenhu.wang@vivo.com>
-X-HM-Spam-Status: e1kfGhgUHx5ZQUtXWQgYFAkeWUFZT1VKS0lLS0tJSE1OSkpJSFlXWShZQU
- hPN1dZLVlBSVdZCQ4XHghZQVk1NCk2OjckKS43PlkG
-X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6OhQ6Kxw4AjgzFggjHSMjKiM6
- AggaCVZVSlVKTkNMS0lJQklPSUtJVTMWGhIXVQweFRMOVQwaFRw7DRINFFUYFBZFWVdZEgtZQVlO
- Q1VJTkpVTE9VSUlNWVdZCAFZQUNLQ043Bg++
-X-HM-Tid: 0a7181f009179376kuwsbe89c4e3785
+ by lists.ozlabs.org (Postfix) with ESMTPS id 492sjl14ZyzDqwH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2020 18:25:30 +1000 (AEST)
+Received: by mail-pj1-x1043.google.com with SMTP id 7so787717pjo.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2020 01:25:30 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=fossix-org.20150623.gappssmtp.com; s=20150623;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=YDLYzFyP5Ud03DyAQDeiT+t7DUpASCapmXQkYuDhScg=;
+ b=PMRUQRm1WuoXM7LWzRPK78/ZyC9uShamoHtqDJMdgZ+GPwKT4K6rX7TC5KMHhQbG8h
+ tMue560nzC9nNtMD2CLFeffPilKfaIfk/3BBsL00L+/m2OOuit12IPxGXAk0uVIDVUQ2
+ ZtS3H4xF+0GNQJUdfKS0naEN9DhtRLNhtTxZE+07W5jXqjkxk7bn6utNl9sJy+zrAEC9
+ 7/Yz5jBt37x2j7sSqiFxDJ2u7sZ+b/bYjcZ2nVNJFpdza0R0X5s8y45jRrc+Hpj5wuQk
+ ikHbvGvRlbVFJxbS1CxczrDXEoBQGuV3H5RsfxWkmMAa+qqOfuUhiRM+vgwFD/Ej7Ecq
+ BCnQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=YDLYzFyP5Ud03DyAQDeiT+t7DUpASCapmXQkYuDhScg=;
+ b=sasyTEcJQ99uYLi40LWanUYWCNQwJzZYmkHJJaB3GV8Rme3TYHHqifTMzwiQAz2gwZ
+ 1ycchZ6HBFofrx82hyVKIOA488+SqZSlmPxcpMqzIKGPfDyqsnU4sJ2P/yAo0N50dDY7
+ Os0eqgyPFED2Ajq4WdSspfxMJAkO7sQNiNfPiH26v/0/zvYxqlyPa3TuEARG0Ea52Kch
+ 1KOyelrL/rcqIV61A+rv+SnXcL7apdiOcD7jVWa+Xa1WLooYWRYTeYruvvafqZ3uxwgl
+ tjql1Fqq2K1x9g4qxmbvza098Yt5HzGXwhoxggvKLzhG5ST5MGeekbY7GdVtYTIXmoC1
+ 1EKw==
+X-Gm-Message-State: AGi0PubJMPKaizNUITHnLKZuJaE4Ve7AsI6ssxl8cNsFcjorPvqeglBq
+ 3cyWtpo1KACf8zrN9AtQPDQdSo/kjcukBA==
+X-Google-Smtp-Source: APiQypLKVzfc5DtR6f0W7jbFflm2m1lNle2XKZHDotAQZNxQjndj9xWU4v3MuKSXlgiaKwNbOD9Tug==
+X-Received: by 2002:a17:902:db86:: with SMTP id m6mr8341882pld.4.1587025521986; 
+ Thu, 16 Apr 2020 01:25:21 -0700 (PDT)
+Received: from santosiv.in.ibm.com ([2401:4900:2348:c4cf:97f8:ab74:4c:86fc])
+ by smtp.gmail.com with ESMTPSA id w11sm1446902pfq.100.2020.04.16.01.25.17
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 16 Apr 2020 01:25:21 -0700 (PDT)
+From: Santosh Sivaraj <santosh@fossix.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v2] papr/scm: Add bad memory ranges to nvdimm bad ranges
+Date: Thu, 16 Apr 2020 13:54:55 +0530
+Message-Id: <20200416082455.2645740-1-santosh@fossix.org>
+X-Mailer: git-send-email 2.25.2
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,238 +91,170 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel@vivo.com, Wang Wenhu <wenhu.wang@vivo.com>
+Cc: Oliver <oohall@gmail.com>, Santosh Sivaraj <santosh@fossix.org>,
+ Mahesh Salgaonkar <mahesh@linux.ibm.com>,
+ Ganesh Goudar <ganeshgr@linux.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Vaibhav Jain <vaibhav@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-A driver for freescale 85xx platforms to access the Cache-Sram form
-user level. This is extremely helpful for some user-space applications
-that require high performance memory accesses.
+Subscribe to the MCE notification and add the physical address which
+generated a memory error to nvdimm bad range.
 
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Scott Wood <oss@buserror.net>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Wang Wenhu <wenhu.wang@vivo.com>
+Reviewed-by: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
 ---
-Changes since v1:
- * Addressed comments from Greg K-H
- * Moved kfree(info->name) into uio_info_free_internal()
-Changes since v2:
- * Addressed comments from Greg, Scott and Christophe
- * Use "uiomem->internal_addr" as if condition for sram memory free,
-   and memset the uiomem entry
- * Modified of_match_table make the driver apart from Cache-Sram HW info
-   which belong to the HW level driver fsl_85xx_cache_sram to match
- * Use roundup_pow_of_two for align calculation
- * Remove useless clear block of uiomem entries.
- * Use UIO_INFO_VER micro for info->version, and define it as
-   "devicetree,pseudo", meaning this is pseudo device and probed from
-   device tree configuration
- * Select FSL_85XX_CACHE_SRAM rather than depends on it
----
- drivers/uio/Kconfig                   |   9 ++
- drivers/uio/Makefile                  |   1 +
- drivers/uio/uio_fsl_85xx_cache_sram.c | 158 ++++++++++++++++++++++++++
- 3 files changed, 168 insertions(+)
- create mode 100644 drivers/uio/uio_fsl_85xx_cache_sram.c
+ arch/powerpc/platforms/pseries/papr_scm.c | 98 ++++++++++++++++++++++-
+ 1 file changed, 97 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
-index 202ee81cfc2b..9c3b47461b71 100644
---- a/drivers/uio/Kconfig
-+++ b/drivers/uio/Kconfig
-@@ -105,6 +105,15 @@ config UIO_NETX
- 	  To compile this driver as a module, choose M here; the module
- 	  will be called uio_netx.
+diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
+index f35592423380..e23fd1399d5b 100644
+--- a/arch/powerpc/platforms/pseries/papr_scm.c
++++ b/arch/powerpc/platforms/pseries/papr_scm.c
+@@ -12,6 +12,8 @@
+ #include <linux/libnvdimm.h>
+ #include <linux/platform_device.h>
+ #include <linux/delay.h>
++#include <linux/nd.h>
++#include <asm/mce.h>
  
-+config UIO_FSL_85XX_CACHE_SRAM
-+	tristate "Freescale 85xx Cache-Sram driver"
-+	depends on FSL_SOC_BOOKE && PPC32
-+	select FSL_85XX_CACHE_SRAM
-+	help
-+	  Generic driver for accessing the Cache-Sram form user level. This
-+	  is extremely helpful for some user-space applications that require
-+	  high performance memory accesses.
+ #include <asm/plpar_wrappers.h>
+ 
+@@ -39,8 +41,12 @@ struct papr_scm_priv {
+ 	struct resource res;
+ 	struct nd_region *region;
+ 	struct nd_interleave_set nd_set;
++	struct list_head region_list;
+ };
+ 
++LIST_HEAD(papr_nd_regions);
++DEFINE_MUTEX(papr_ndr_lock);
 +
- config UIO_FSL_ELBC_GPCM
- 	tristate "eLBC/GPCM driver"
- 	depends on FSL_LBC
-diff --git a/drivers/uio/Makefile b/drivers/uio/Makefile
-index c285dd2a4539..be2056cffc21 100644
---- a/drivers/uio/Makefile
-+++ b/drivers/uio/Makefile
-@@ -10,4 +10,5 @@ obj-$(CONFIG_UIO_NETX)	+= uio_netx.o
- obj-$(CONFIG_UIO_PRUSS)         += uio_pruss.o
- obj-$(CONFIG_UIO_MF624)         += uio_mf624.o
- obj-$(CONFIG_UIO_FSL_ELBC_GPCM)	+= uio_fsl_elbc_gpcm.o
-+obj-$(CONFIG_UIO_FSL_85XX_CACHE_SRAM)	+= uio_fsl_85xx_cache_sram.o
- obj-$(CONFIG_UIO_HV_GENERIC)	+= uio_hv_generic.o
-diff --git a/drivers/uio/uio_fsl_85xx_cache_sram.c b/drivers/uio/uio_fsl_85xx_cache_sram.c
-new file mode 100644
-index 000000000000..8701df695307
---- /dev/null
-+++ b/drivers/uio/uio_fsl_85xx_cache_sram.c
-@@ -0,0 +1,158 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright (C) 2020 Vivo Communication Technology Co. Ltd.
-+ * Copyright (C) 2020 Wang Wenhu <wenhu.wang@vivo.com>
-+ * All rights reserved.
-+ */
+ static int drc_pmem_bind(struct papr_scm_priv *p)
+ {
+ 	unsigned long ret[PLPAR_HCALL_BUFSIZE];
+@@ -356,6 +362,10 @@ static int papr_scm_nvdimm_init(struct papr_scm_priv *p)
+ 		dev_info(dev, "Region registered with target node %d and online node %d",
+ 			 target_nid, online_nid);
+ 
++	mutex_lock(&papr_ndr_lock);
++	list_add_tail(&p->region_list, &papr_nd_regions);
++	mutex_unlock(&papr_ndr_lock);
 +
-+#include <linux/platform_device.h>
-+#include <linux/uio_driver.h>
-+#include <linux/stringify.h>
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <asm/fsl_85xx_cache_sram.h>
-+
-+#define DRIVER_NAME	"uio_fsl_85xx_cache_sram"
-+#define UIO_INFO_VER	"devicetree,pseudo"
-+#define UIO_NAME	"uio_cache_sram"
-+
-+static void uio_info_free_internal(struct uio_info *info)
+ 	return 0;
+ 
+ err:	nvdimm_bus_unregister(p->bus);
+@@ -363,6 +373,70 @@ err:	nvdimm_bus_unregister(p->bus);
+ 	return -ENXIO;
+ }
+ 
++void papr_scm_add_badblock(struct nd_region *region, struct nvdimm_bus *bus,
++			   u64 phys_addr)
 +{
-+	struct uio_mem *uiomem = info->mem;
++	u64 aligned_addr = ALIGN_DOWN(phys_addr, L1_CACHE_BYTES);
 +
-+	while (uiomem < &info->mem[MAX_UIO_MAPS]) {
-+		if (uiomem->internal_addr) {
-+			mpc85xx_cache_sram_free(uiomem->internal_addr);
-+			kfree(uiomem->name);
-+			memset(uiomem, 0, sizeof(*uiomem));
-+		}
-+		uiomem++;
++	if (nvdimm_bus_add_badrange(bus, aligned_addr, L1_CACHE_BYTES)) {
++		pr_err("Bad block registration for 0x%llx failed\n", phys_addr);
++		return;
 +	}
 +
-+	kfree(info->name);
++	pr_debug("Add memory range (0x%llx - 0x%llx) as bad range\n",
++		 aligned_addr, aligned_addr + L1_CACHE_BYTES);
++
++	nvdimm_region_notify(region, NVDIMM_REVALIDATE_POISON);
 +}
 +
-+static int uio_fsl_85xx_cache_sram_probe(struct platform_device *pdev)
++static int handle_mce_ue(struct notifier_block *nb, unsigned long val,
++			 void *data)
 +{
-+	struct device_node *parent = pdev->dev.of_node;
-+	struct device_node *node = NULL;
-+	struct uio_info *info;
-+	struct uio_mem *uiomem;
-+	const char *dt_name;
-+	u32 mem_size;
-+	int ret;
++	struct machine_check_event *evt = data;
++	struct papr_scm_priv *p;
++	u64 phys_addr;
++	bool found = false;
 +
-+	/* alloc uio_info for one device */
-+	info = kzalloc(sizeof(*info), GFP_KERNEL);
-+	if (!info)
-+		return -ENOMEM;
++	if (evt->error_type != MCE_ERROR_TYPE_UE)
++		return NOTIFY_DONE;
 +
-+	/* get optional uio name */
-+	if (of_property_read_string(parent, "uio_name", &dt_name))
-+		dt_name = UIO_NAME;
++	if (list_empty(&papr_nd_regions))
++		return NOTIFY_DONE;
 +
-+	info->name = kstrdup(dt_name, GFP_KERNEL);
-+	if (!info->name) {
-+		ret = -ENOMEM;
-+		goto err_info_free;
-+	}
++	/*
++	 * The physical address obtained here is PAGE_SIZE aligned, so get the
++	 * exact address from the effective address
++	 */
++	phys_addr = evt->u.ue_error.physical_address +
++		(evt->u.ue_error.effective_address & ~PAGE_MASK);
 +
-+	uiomem = info->mem;
-+	for_each_child_of_node(parent, node) {
-+		void *virt;
-+		phys_addr_t phys;
++	if (!evt->u.ue_error.physical_address_provided ||
++	    !is_zone_device_page(pfn_to_page(phys_addr >> PAGE_SHIFT)))
++		return NOTIFY_DONE;
 +
-+		ret = of_property_read_u32(node, "cache-mem-size", &mem_size);
-+		if (ret) {
-+			ret = -EINVAL;
-+			goto err_info_free_internal;
-+		}
++	/* mce notifier is called from a process context, so mutex is safe */
++	mutex_lock(&papr_ndr_lock);
++	list_for_each_entry(p, &papr_nd_regions, region_list) {
++		struct resource res = p->res;
 +
-+		if (mem_size == 0) {
-+			dev_err(&pdev->dev, "cache-mem-size should not be 0\n");
-+			ret = -EINVAL;
-+			goto err_info_free_internal;
-+		}
-+
-+		virt = mpc85xx_cache_sram_alloc(mem_size,
-+						&phys,
-+						roundup_pow_of_two(mem_size));
-+		if (!virt) {
-+			/* mpc85xx_cache_sram_alloc to define the real cause */
-+			ret = -ENOMEM;
-+			goto err_info_free_internal;
-+		}
-+
-+		uiomem->memtype = UIO_MEM_PHYS;
-+		uiomem->addr = phys;
-+		uiomem->size = mem_size;
-+		uiomem->name = kstrdup(node->name, GFP_KERNEL);;
-+		uiomem->internal_addr = virt;
-+		uiomem++;
-+
-+		if (uiomem >= &info->mem[MAX_UIO_MAPS]) {
-+			dev_warn(&pdev->dev, "more than %d uio-maps for device.\n",
-+				 MAX_UIO_MAPS);
++		if (phys_addr >= res.start && phys_addr <= res.end) {
++			found = true;
 +			break;
 +		}
 +	}
 +
-+	if (uiomem == info->mem) {
-+		dev_err(&pdev->dev, "error no valid uio-map configured\n");
-+		ret = -EINVAL;
-+		goto err_info_free_internal;
-+	}
++	if (found)
++		papr_scm_add_badblock(p->region, p->bus, phys_addr);
 +
-+	info->version = UIO_INFO_VER;
++	mutex_unlock(&papr_ndr_lock);
 +
-+	/* register uio device */
-+	if (uio_register_device(&pdev->dev, info)) {
-+		dev_err(&pdev->dev, "uio registration failed\n");
-+		ret = -ENODEV;
-+		goto err_info_free_internal;
-+	}
++	return found ? NOTIFY_OK : NOTIFY_DONE;
++}
 +
-+	platform_set_drvdata(pdev, info);
++static struct notifier_block mce_ue_nb = {
++	.notifier_call = handle_mce_ue
++};
 +
-+	return 0;
-+err_info_free_internal:
-+	uio_info_free_internal(info);
-+err_info_free:
-+	kfree(info);
+ static int papr_scm_probe(struct platform_device *pdev)
+ {
+ 	struct device_node *dn = pdev->dev.of_node;
+@@ -460,6 +534,10 @@ static int papr_scm_remove(struct platform_device *pdev)
+ {
+ 	struct papr_scm_priv *p = platform_get_drvdata(pdev);
+ 
++	mutex_lock(&papr_ndr_lock);
++	list_del(&(p->region_list));
++	mutex_unlock(&papr_ndr_lock);
++
+ 	nvdimm_bus_unregister(p->bus);
+ 	drc_pmem_unbind(p);
+ 	kfree(p->bus_desc.provider_name);
+@@ -482,7 +560,25 @@ static struct platform_driver papr_scm_driver = {
+ 	},
+ };
+ 
+-module_platform_driver(papr_scm_driver);
++static int __init papr_scm_init(void)
++{
++	int ret;
++
++	ret = platform_driver_register(&papr_scm_driver);
++	if (!ret)
++		mce_register_notifier(&mce_ue_nb);
++
 +	return ret;
 +}
++module_init(papr_scm_init);
 +
-+static int uio_fsl_85xx_cache_sram_remove(struct platform_device *pdev)
++static void __exit papr_scm_exit(void)
 +{
-+	struct uio_info *info = platform_get_drvdata(pdev);
-+
-+	uio_unregister_device(info);
-+
-+	uio_info_free_internal(info);
-+
-+	kfree(info);
-+
-+	return 0;
++	mce_unregister_notifier(&mce_ue_nb);
++	platform_driver_unregister(&papr_scm_driver);
 +}
++module_exit(papr_scm_exit);
 +
-+static const struct of_device_id uio_mpc85xx_l2ctlr_of_match[] = {
-+	{	.compatible = "uio,mpc85xx-cache-sram",	},
-+	{},
-+};
-+
-+static struct platform_driver uio_fsl_85xx_cache_sram = {
-+	.probe = uio_fsl_85xx_cache_sram_probe,
-+	.remove = uio_fsl_85xx_cache_sram_remove,
-+	.driver = {
-+		.name = DRIVER_NAME,
-+		.owner = THIS_MODULE,
-+		.of_match_table	= uio_mpc85xx_l2ctlr_of_match,
-+	},
-+};
-+
-+module_platform_driver(uio_fsl_85xx_cache_sram);
-+
-+MODULE_AUTHOR("Wang Wenhu <wenhu.wang@vivo.com>");
-+MODULE_DESCRIPTION("Freescale MPC85xx Cache-Sram UIO Platform Driver");
-+MODULE_ALIAS("platform:" DRIVER_NAME);
-+MODULE_LICENSE("GPL v2");
+ MODULE_DEVICE_TABLE(of, papr_scm_match);
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("IBM Corporation");
 -- 
-2.17.1
+2.25.2
 
