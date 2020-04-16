@@ -2,53 +2,57 @@ Return-Path: <SRS0=XoDJ=6A=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C1A4C2BB55
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 20:14:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B37DC2BB55
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 20:20:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C34EE2076D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 20:14:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C34EE2076D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 72FBC2076D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 20:20:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 72FBC2076D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=deneb.enyo.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4939S90MnwzDsNQ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 06:14:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4939b9211VzDsNW
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 06:20:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.100; helo=mga07.intel.com;
- envelope-from=jonathan.derrick@intel.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=deneb.enyo.de (client-ip=37.24.231.21; helo=albireo.enyo.de;
+ envelope-from=fw@deneb.enyo.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4939Pr3bsJzDr6D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr 2020 06:12:42 +1000 (AEST)
-IronPort-SDR: Bj9qdzVcnmTHLXlSdwIeSTpjxyaN9/0bPNv8kFpF9XyZwWHrQmC+/qY73mwXsDRzP0EpplC/5B
- VHGxWmKkZ0ig==
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
- by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 16 Apr 2020 13:12:39 -0700
-IronPort-SDR: r7Og5Oq2XCEbwNdn2DsqVN0NlTMRI+7z5XW0KToc2Tr/tmkoUXOe5tkG+DfeBCdZdzt5gajFsu
- V5/GechOGFhg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.72,392,1580803200"; d="scan'208";a="257345226"
-Received: from unknown (HELO nsgsw-wilsonpoint.lm.intel.com) ([10.232.116.102])
- by orsmga006.jf.intel.com with ESMTP; 16 Apr 2020 13:12:38 -0700
-From: Jon Derrick <jonathan.derrick@intel.com>
-To: Bjorn Helgaas <helgaas@kernel.org>
-Subject: [PATCH] PCI/DPC: Allow Non-ACPI Native ports to use DPC
-Date: Thu, 16 Apr 2020 13:59:15 -0600
-Message-Id: <1587067157-2291-1-git-send-email-jonathan.derrick@intel.com>
-X-Mailer: git-send-email 1.8.3.1
+ dmarc=none (p=none dis=none) header.from=deneb.enyo.de
+Received: from albireo.enyo.de (albireo.enyo.de [37.24.231.21])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4939XP4qvGzDrPB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr 2020 06:18:28 +1000 (AEST)
+Received: from [172.17.203.2] (helo=deneb.enyo.de)
+ by albireo.enyo.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ id 1jPAxm-0006kd-Sh; Thu, 16 Apr 2020 20:18:18 +0000
+Received: from fw by deneb.enyo.de with local (Exim 4.92)
+ (envelope-from <fw@deneb.enyo.de>)
+ id 1jPAxm-0005WN-Nn; Thu, 16 Apr 2020 22:18:18 +0200
+From: Florian Weimer <fw@deneb.enyo.de>
+To: Nicholas Piggin via Libc-alpha <libc-alpha@sourceware.org>
+Subject: Re: [musl] Powerpc Linux 'scv' system call ABI proposal take 2
+References: <1586931450.ub4c8cq8dj.astroid@bobo.none>
+ <20200415225539.GL11469@brightrain.aerifal.cx>
+ <1586994952.nnxigedbu2.astroid@bobo.none>
+ <20200416004843.GO11469@brightrain.aerifal.cx>
+ <1587002854.f0slo0111r.astroid@bobo.none>
+ <20200416023542.GP11469@brightrain.aerifal.cx>
+ <1587004907.ioxh0bxsln.astroid@bobo.none>
+Date: Thu, 16 Apr 2020 22:18:18 +0200
+In-Reply-To: <1587004907.ioxh0bxsln.astroid@bobo.none> (Nicholas Piggin via
+ Libc-alpha's message of "Thu, 16 Apr 2020 12:53:31 +1000")
+Message-ID: <87wo6fchh1.fsf@mid.deneb.enyo.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,53 +64,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>,
- Frederick Lawler <fred@fredlawl.com>, Sam Bobroff <sbobroff@linux.ibm.com>,
- linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
- Keith Busch <keith.busch@intel.com>, Olof Johansson <olof@lixom.net>,
- Oliver O'Halloran <oohall@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>,
- linuxppc-dev@lists.ozlabs.org, Jon Derrick <jonathan.derrick@intel.com>
+Cc: libc-dev@lists.llvm.org, Rich Felker <dalias@libc.org>,
+ linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>,
+ musl@lists.openwall.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Some platforms have a mix of ports whose capabilities can be negotiated
-by _OSC, and some ports which are not described by ACPI and instead
-managed by Native drivers. The existing Firmware-First HEST model can
-incorrectly tag these Native, Non-ACPI ports as Firmware-First capable
-ports by advertising the HEST Global flag and specifying the type and
-class (aer_hest_parse).
+* Nicholas Piggin via Libc-alpha:
 
-This ultimately can lead to bad situations if the BIOS or port firmware
-leaves DPC preconfigured and the Linux DPC driver is unable to bind to
-the port to handle DPC events.
+> We may or may not be getting a new ABI that will use instructions not=20
+> supported by old processors.
+>
+> https://sourceware.org/legacy-ml/binutils/2019-05/msg00331.html
+>
+> Current ABI continues to work of course and be the default for some=20
+> time, but building for new one would give some opportunity to drop
+> such support for old procs, at least for glibc.
 
-This patch adds the check for Native DPC in the port's host bridge in
-order to allow DPC services to bind to the port.
+If I recall correctly, during last year's GNU Tools Cauldron, I think
+it was pretty clear that this was only to be used for intra-DSO ABIs,
+not cross-DSO optimization.  Relocatable object files have an ABI,
+too, of course, so that's why there's a ABI documentation needed.
 
-Signed-off-by: Jon Derrick <jonathan.derrick@intel.com>
----
- drivers/pci/pcie/dpc.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+For cross-DSO optimization, the link editor would look at the DSO
+being linked in, check if it uses the -mfuture ABI, and apply some
+shortcuts.  But at that point, if the DSO is swapped back to a version
+built without -mfuture, it no longer works with those newly linked
+binaries against the -mfuture version.  Such a thing is a clear ABI
+bump, and based what I remember from Cauldron, that is not the plan
+here.
 
-diff --git a/drivers/pci/pcie/dpc.c b/drivers/pci/pcie/dpc.c
-index 7621704..a1e355d 100644
---- a/drivers/pci/pcie/dpc.c
-+++ b/drivers/pci/pcie/dpc.c
-@@ -281,10 +281,12 @@ static int dpc_probe(struct pcie_device *dev)
- {
- 	struct pci_dev *pdev = dev->port;
- 	struct device *device = &dev->device;
-+	struct pci_host_bridge *host = pci_find_host_bridge(pdev->bus);
- 	int status;
- 	u16 ctl, cap;
- 
--	if (pcie_aer_get_firmware_first(pdev) && !pcie_ports_dpc_native)
-+	if (pcie_aer_get_firmware_first(pdev) && !pcie_ports_dpc_native &&
-+	    !host->native_dpc)
- 		return -ENOTSUPP;
- 
- 	status = devm_request_threaded_irq(device, dev->irq, dpc_irq,
--- 
-1.8.3.1
-
+(I don't have any insider knowledge=E2=80=94I just don't want people to read
+this think: gosh, yet another POWER ABI bump.  But the PCREL stuff
+*is* exciting!)
