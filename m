@@ -2,24 +2,23 @@ Return-Path: <SRS0=XoDJ=6A=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED9A4C352BE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 08:35:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B32E6C2BB85
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 08:37:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AC5422063A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 08:35:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AC5422063A
+	by mail.kernel.org (Postfix) with ESMTPS id 6E6622063A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 08:37:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6E6622063A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=vivo.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 492sws4SGtzDrSB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 18:35:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 492szF2Qk0zDrWk
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 18:37:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=vivo.com (client-ip=59.111.176.18; helo=m17618.mail.qiye.163.com;
  envelope-from=wenhu.wang@vivo.com; receiver=<UNKNOWN>)
@@ -29,31 +28,29 @@ Received: from m17618.mail.qiye.163.com (m17618.mail.qiye.163.com
  [59.111.176.18])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 492sGF0Gf7zDrRr
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2020 18:05:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 492sGJ31CqzDrZp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2020 18:05:12 +1000 (AEST)
 Received: from ubuntu.localdomain (unknown [58.251.74.226])
- by m17618.mail.qiye.163.com (Hmail) with ESMTPA id C94384E3BE9;
- Thu, 16 Apr 2020 15:30:04 +0800 (CST)
+ by m17618.mail.qiye.163.com (Hmail) with ESMTPA id 3640F4E2A75;
+ Thu, 16 Apr 2020 15:29:57 +0800 (CST)
 From: Wang Wenhu <wenhu.wang@vivo.com>
 To: gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, oss@buserror.net,
  christophe.leroy@c-s.fr, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3,
- 2/4] powerpc: sysdev: fix compile error for fsl_85xx_cache_sram
-Date: Thu, 16 Apr 2020 00:29:27 -0700
-Message-Id: <20200416072929.3489-3-wenhu.wang@vivo.com>
+Subject: [PATCH v3,0/4] drivers: uio: new driver uio_fsl_85xx_cache_sram
+Date: Thu, 16 Apr 2020 00:29:25 -0700
+Message-Id: <20200416072929.3489-1-wenhu.wang@vivo.com>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200416072929.3489-1-wenhu.wang@vivo.com>
+In-Reply-To: <20200415152442.122873-1-wenhu.wang@vivo.com>
 References: <20200415152442.122873-1-wenhu.wang@vivo.com>
- <20200416072929.3489-1-wenhu.wang@vivo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-HM-Spam-Status: e1kfGhgUHx5ZQUtXWQgYFAkeWUFZSVVDTk1CQkJDTE9KSk9CQllXWShZQU
- hPN1dZLVlBSVdZCQ4XHghZQVk1NCk2OjckKS43PlkG
-X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6NSI6URw4Mjg1NAgPKzk4Fyg1
- ORZPCz5VSlVKTkNMS0lJSUtOSU1KVTMWGhIXVQweFRMOVQwaFRw7DRINFFUYFBZFWVdZEgtZQVlO
- Q1VJTkpVTE9VSUlNWVdZCAFZQUhIS0M3Bg++
-X-HM-Tid: 0a7181e510d89376kuwsc94384e3be9
+X-HM-Spam-Status: e1kfGhgUHx5ZQUtXWQgYFAkeWUFZSFVMTU9LS0tPSk5DS0lZV1koWUFITz
+ dXWS1ZQUlXWQkOFx4IWUFZNTQpNjo3JCkuNz5ZBg++
+X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6OVE6Igw*DDgzMAgzHT83FzMp
+ Ny8aCk9VSlVKTkNMS0lJSkJCTkJNVTMWGhIXVQweFRMOVQwaFRw7DRINFFUYFBZFWVdZEgtZQVlO
+ Q1VJTkpVTE9VSUlNWVdZCAFZQUhKSks3Bg++
+X-HM-Tid: 0a7181e4f2e39376kuws3640f4e2a75
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,51 +67,48 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Include linux/io.h into fsl_85xx_cache_sram.c to fix the
-implicit-declaration compile error when building Cache-Sram.
+This series add a new uio driver for freescale 85xx platforms to
+access the Cache-Sram form user level. This is extremely helpful
+for the user-space applications that require high performance memory
+accesses.
 
-arch/powerpc/sysdev/fsl_85xx_cache_sram.c: In function ‘instantiate_cache_sram’:
-arch/powerpc/sysdev/fsl_85xx_cache_sram.c:97:26: error: implicit declaration of function ‘ioremap_coherent’; did you mean ‘bitmap_complement’? [-Werror=implicit-function-declaration]
-  cache_sram->base_virt = ioremap_coherent(cache_sram->base_phys,
-                          ^~~~~~~~~~~~~~~~
-                          bitmap_complement
-arch/powerpc/sysdev/fsl_85xx_cache_sram.c:97:24: error: assignment makes pointer from integer without a cast [-Werror=int-conversion]
-  cache_sram->base_virt = ioremap_coherent(cache_sram->base_phys,
-                        ^
-arch/powerpc/sysdev/fsl_85xx_cache_sram.c:123:2: error: implicit declaration of function ‘iounmap’; did you mean ‘roundup’? [-Werror=implicit-function-declaration]
-  iounmap(cache_sram->base_virt);
-  ^~~~~~~
-  roundup
-cc1: all warnings being treated as errors
+It fixes the compile errors and warning of the hardware level drivers
+and implements the uio driver in uio_fsl_85xx_cache_sram.c.
 
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Scott Wood <oss@buserror.net>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Fixes: 6db92cc9d07d ("powerpc/85xx: add cache-sram support")
-Signed-off-by: WANG Wenhu <wenhu.wang@vivo.com>
----
 Changes since v1:
- * None
-Changes since v2:
- * None
----
- arch/powerpc/sysdev/fsl_85xx_cache_sram.c | 1 +
- 1 file changed, 1 insertion(+)
+ * Addressed comments from Greg K-H
+ * Moved kfree(info->name) into uio_info_free_internal()
 
-diff --git a/arch/powerpc/sysdev/fsl_85xx_cache_sram.c b/arch/powerpc/sysdev/fsl_85xx_cache_sram.c
-index f6c665dac725..be3aef4229d7 100644
---- a/arch/powerpc/sysdev/fsl_85xx_cache_sram.c
-+++ b/arch/powerpc/sysdev/fsl_85xx_cache_sram.c
-@@ -17,6 +17,7 @@
- #include <linux/of_platform.h>
- #include <asm/pgtable.h>
- #include <asm/fsl_85xx_cache_sram.h>
-+#include <linux/io.h>
- 
- #include "fsl_85xx_cache_ctlr.h"
- 
+Changes since v2:
+ * Drop the patch that modifies Kconfigs of arch/powerpc/platforms
+   and modified the sequence of patches:
+    01:dropped, 02->03, 03->02, 04->01, 05->04
+ * Addressed comments from Greg, Scott and Christophe
+ * Use "uiomem->internal_addr" as if condition for sram memory free,
+   and memset the uiomem entry
+ * Modified of_match_table make the driver apart from Cache-Sram HW info
+   which belong to the HW level driver fsl_85xx_cache_sram to match
+ * Use roundup_pow_of_two for align calc(really learned a lot from Christophe)
+ * Remove useless clear block of uiomem entries.
+ * Use UIO_INFO_VER micro for info->version, and define it as
+   "devicetree,pseudo", meaning this is pseudo device and probed from
+   device tree configuration
+ * Select FSL_85XX_CACHE_SRAM rather than depends on it
+
+Wang Wenhu (4):
+  powerpc: sysdev: fix compile error for fsl_85xx_l2ctlr
+  powerpc: sysdev: fix compile error for fsl_85xx_cache_sram
+  powerpc: sysdev: fix compile warning for fsl_85xx_cache_sram
+  drivers: uio: new driver for fsl_85xx_cache_sram
+
+ arch/powerpc/sysdev/fsl_85xx_cache_sram.c |   3 +-
+ arch/powerpc/sysdev/fsl_85xx_l2ctlr.c     |   1 +
+ drivers/uio/Kconfig                       |   9 ++
+ drivers/uio/Makefile                      |   1 +
+ drivers/uio/uio_fsl_85xx_cache_sram.c     | 158 ++++++++++++++++++++++
+ 5 files changed, 171 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/uio/uio_fsl_85xx_cache_sram.c
+
 -- 
 2.17.1
 
