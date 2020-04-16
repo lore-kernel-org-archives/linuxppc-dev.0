@@ -2,94 +2,93 @@ Return-Path: <SRS0=XoDJ=6A=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46D53C2BA19
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 03:29:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C227EC2BB55
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 03:43:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1CAB9206F9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 03:29:53 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="sqqdKApM"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1CAB9206F9
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 6EA3820737
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 03:43:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6EA3820737
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 492l8b1mmjzDrJp
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 13:29:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 492lS649WvzDqvd
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 13:43:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::730;
- helo=mail-qk1-x730.google.com; envelope-from=frowand.list@gmail.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=sqqdKApM; dkim-atps=neutral
-Received: from mail-qk1-x730.google.com (mail-qk1-x730.google.com
- [IPv6:2607:f8b0:4864:20::730])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 492l651hRczDr74
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2020 13:27:41 +1000 (AEST)
-Received: by mail-qk1-x730.google.com with SMTP id v7so20020455qkc.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2020 20:27:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=subject:from:to:cc:references:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=fg/eOvi6U9RqG+QAXvqR+/A5eU3CqPPx0mBk8bdqBpc=;
- b=sqqdKApM5ce3sFe0p7UZQAB0LxbIOVe5qCDvC2TNNyMnNaMRrSKs/HgLDi6tMRGgGj
- bdb/v06R7rOdoHoZ8njblz9bZGa6/Jx6jufj1IYN0FH2HDHn3e/eWJguk20iO44G7q7w
- u8cmsJ52tDsC1YvPQIDj3kst+EZEJTHbhRHCIb+GkGVW99qDPEfxvmZwXf8az6H5oEok
- 0bMHR2DdBa2JpaUl8Rn5NH/4XmPaz+hPp14KsMPR+/QydzO5+6okCviEXnX0dPMUz2+k
- W9ap/fs6oDZjonCIT1U8QXI81+17zcibs/w8igrb2TvYzi14WE627kiIhe/MXMCAc0n9
- V72g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:from:to:cc:references:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=fg/eOvi6U9RqG+QAXvqR+/A5eU3CqPPx0mBk8bdqBpc=;
- b=E/Nq2ufOXL9IYSrG3ZoZ+5FO7P9RIKzUV/7V9sf3fJ39UsQxYMcvm6456KktXLzFn3
- 8BOKRjPubto2XFUl4hJmHVnmGEsmO02slNftcU90/MBygMOZ40eks7R64us/ESWaZIcW
- dSfdHk2AcxbIA34RD7YgvC74iTBPTSuWMuoUSmgUhEYZu53X6hcu6L1qSoQvcJa+OuHW
- 0YQcm0L5fs/4LiqhnTsou+5T0rbiPL/8Uwb9b9NrLzgIRN7g/Z86S/aEVG5P+3ev0rXs
- 4yeS4lx2ERYgAnfrSdA3rTkFR7loECO/WyKi29BFUPMTuWQXocWV2HRLxjQPJMojx9oh
- 7cWg==
-X-Gm-Message-State: AGi0PuaufttyAPPGnrusB0A1QDpRbhVXoaNTJDVMN8HYE0q150djU/FZ
- y4gn8AfvEmmrIWhPEL2tGeg=
-X-Google-Smtp-Source: APiQypIlIkfUkaU4OrqGbXpo1JULPY+3/SiZ1Tzfile7A/TbCwVMBnhaJ8oVmZ3qzc4ofBXmHvae3g==
-X-Received: by 2002:a05:620a:2158:: with SMTP id
- m24mr19374274qkm.272.1587007655928; 
- Wed, 15 Apr 2020 20:27:35 -0700 (PDT)
-Received: from [192.168.1.46] (c-73-88-245-53.hsd1.tn.comcast.net.
- [73.88.245.53])
- by smtp.gmail.com with ESMTPSA id c33sm10630441qtb.76.2020.04.15.20.27.34
- (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
- Wed, 15 Apr 2020 20:27:35 -0700 (PDT)
-Subject: Re: [Bug 206203] kmemleak reports various leaks in
- drivers/of/unittest.c
-From: Frank Rowand <frowand.list@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Rob Herring <robh+dt@kernel.org>
-References: <bug-206203-206035@https.bugzilla.kernel.org/>
- <bug-206203-206035-Y3snhDMDgJ@https.bugzilla.kernel.org/>
- <877dyqlles.fsf@mpe.ellerman.id.au>
- <8383090b-f8d1-f346-5ff3-7234a9d44092@gmail.com>
-Message-ID: <a717b335-de6c-46eb-1daa-ae5054664e93@gmail.com>
-Date: Wed, 15 Apr 2020 22:27:34 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.9.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 492lQ06nLTzDr7m
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2020 13:41:28 +1000 (AEST)
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 03G3YwPZ164188
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2020 23:41:25 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30edn6txeb-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2020 23:41:24 -0400
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.ibm.com>;
+ Thu, 16 Apr 2020 04:40:45 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 16 Apr 2020 04:40:43 +0100
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 03G3fJJX49873104
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 16 Apr 2020 03:41:19 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 83E60A404D;
+ Thu, 16 Apr 2020 03:41:19 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id CB69EA4040;
+ Thu, 16 Apr 2020 03:41:16 +0000 (GMT)
+Received: from vajain21.in.ibm.com (unknown [9.85.94.100])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Thu, 16 Apr 2020 03:41:16 +0000 (GMT)
+Received: by vajain21.in.ibm.com (sSMTP sendmail emulation);
+ Thu, 16 Apr 2020 09:11:15 +0530
+From: Vaibhav Jain <vaibhav@linux.ibm.com>
+To: Santosh Sivaraj <santosh@fossix.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] papr/scm: Add bad memory ranges to nvdimm bad ranges
+In-Reply-To: <20200401074741.1562361-1-santosh@fossix.org>
+References: <20200401074741.1562361-1-santosh@fossix.org>
+Date: Thu, 16 Apr 2020 09:11:15 +0530
 MIME-Version: 1.0
-In-Reply-To: <8383090b-f8d1-f346-5ff3-7234a9d44092@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+x-cbid: 20041603-0016-0000-0000-0000030559CC
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 20041603-0017-0000-0000-000033695B66
+Message-Id: <87y2qw6qsk.fsf@vajain21.in.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
+ definitions=2020-04-15_08:2020-04-14,
+ 2020-04-15 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ mlxscore=0 malwarescore=0
+ priorityscore=1501 clxscore=1015 suspectscore=0 adultscore=0 bulkscore=0
+ lowpriorityscore=0 phishscore=0 mlxlogscore=999 spamscore=0
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2003020000 definitions=main-2004160017
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,2275 +100,195 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Oliver <oohall@gmail.com>, Ganesh Goudar <ganeshgr@linux.ibm.com>,
+ Mahesh Salgaonkar <mahesh@linux.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 4/8/20 10:22 AM, Frank Rowand wrote:
-> Hi Michael,
-> 
-> On 4/7/20 10:13 PM, Michael Ellerman wrote:
->> bugzilla-daemon@bugzilla.kernel.org writes:
->>> https://bugzilla.kernel.org/show_bug.cgi?id=206203
->>>
->>> Erhard F. (erhard_f@mailbox.org) changed:
->>>
->>>            What    |Removed                     |Added
->>> ----------------------------------------------------------------------------
->>>  Attachment #286801|0                           |1
->>>         is obsolete|                            |
->>>
->>> --- Comment #10 from Erhard F. (erhard_f@mailbox.org) ---
->>> Created attachment 288189
->>>   --> https://bugzilla.kernel.org/attachment.cgi?id=288189&action=edit
->>> kmemleak output (kernel 5.6.2, Talos II)
->>
->> These are all in or triggered by the of unittest code AFAICS.
->> Content of the log reproduced below.
->>
->> Frank/Rob, are these memory leaks expected?
-> 
-> Thanks for the report.  I'll look at each one.
+Hi Santosh,
 
-Only one of the leaks was expected.  I have patches to fix the
-unexpected leaks and to remove the expected leak so that the
-kmemleak report of it will not have to be checked again.
+Some review comments below.
 
-I expect to send the patch series tomorrow (Thursday).
+Santosh Sivaraj <santosh@fossix.org> writes:
 
--Frank
+> Subscribe to the MCE notification and add the physical address which
+> generated a memory error to nvdimm bad range.
+>
+> Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
+> ---
+>
+> This patch depends on "powerpc/mce: Add MCE notification chain" [1].
+>
+> Unlike the previous series[2], the patch adds badblock registration only for
+> pseries scm driver. Handling badblocks for baremetal (powernv) PMEM will be done
+> later and if possible get the badblock handling as a common code.
+>
+> [1] https://lore.kernel.org/linuxppc-dev/20200330071219.12284-1-ganeshgr@linux.ibm.com/
+> [2] https://lore.kernel.org/linuxppc-dev/20190820023030.18232-1-santosh@fossix.org/
+>
+> arch/powerpc/platforms/pseries/papr_scm.c | 96 ++++++++++++++++++++++-
+>  1 file changed, 95 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
+> index 0b4467e378e5..5012cbf4606e 100644
+> --- a/arch/powerpc/platforms/pseries/papr_scm.c
+> +++ b/arch/powerpc/platforms/pseries/papr_scm.c
+> @@ -12,6 +12,8 @@
+>  #include <linux/libnvdimm.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/delay.h>
+> +#include <linux/nd.h>
+> +#include <asm/mce.h>
+>  
+>  #include <asm/plpar_wrappers.h>
+>  
+> @@ -39,8 +41,12 @@ struct papr_scm_priv {
+>  	struct resource res;
+>  	struct nd_region *region;
+>  	struct nd_interleave_set nd_set;
+> +	struct list_head region_list;
+>  };
+>  
+> +LIST_HEAD(papr_nd_regions);
+> +DEFINE_MUTEX(papr_ndr_lock);
+> +
+>  static int drc_pmem_bind(struct papr_scm_priv *p)
+>  {
+>  	unsigned long ret[PLPAR_HCALL_BUFSIZE];
+> @@ -372,6 +378,10 @@ static int papr_scm_nvdimm_init(struct papr_scm_priv *p)
+>  		dev_info(dev, "Region registered with target node %d and online node %d",
+>  			 target_nid, online_nid);
+>  
+> +	mutex_lock(&papr_ndr_lock);
+> +	list_add_tail(&p->region_list, &papr_nd_regions);
+> +	mutex_unlock(&papr_ndr_lock);
+> +
+>  	return 0;
+>  
+>  err:	nvdimm_bus_unregister(p->bus);
+> @@ -379,6 +389,68 @@ err:	nvdimm_bus_unregister(p->bus);
+>  	return -ENXIO;
+>  }
+>  
+> +void papr_scm_add_badblock(struct nd_region *region, struct nvdimm_bus *bus,
+> +			   u64 phys_addr)
+> +{
+> +	u64 aligned_addr = ALIGN_DOWN(phys_addr, L1_CACHE_BYTES);
+> +
+> +	if (nvdimm_bus_add_badrange(bus, aligned_addr, L1_CACHE_BYTES)) {
+> +		pr_err("Bad block registration for 0x%llx failed\n", phys_addr);
+> +		return;
+> +	}
+> +
+> +	pr_debug("Add memory range (0x%llx - 0x%llx) as bad range\n",
+> +		 aligned_addr, aligned_addr + L1_CACHE_BYTES);
+> +
+> +	nvdimm_region_notify(region, NVDIMM_REVALIDATE_POISON);
+> +}
+> +
+> +static int handle_mce_ue(struct notifier_block *nb, unsigned long val,
+> +			 void *data)
+> +{
+> +	struct machine_check_event *evt = data;
+> +	struct papr_scm_priv *p;
+> +	u64 phys_addr;
+> +	bool found = false;
+> +
+> +	if (evt->error_type != MCE_ERROR_TYPE_UE)
+> +		return NOTIFY_DONE;
+> +
+> +	if (list_empty(&papr_nd_regions))
+> +		return NOTIFY_DONE;
+> +
+> +	phys_addr = evt->u.ue_error.physical_address +
+> +		(evt->u.ue_error.effective_address & ~PAGE_MASK);
+Though it seems that you are trying to get the actual physical address
+from the page aligned evt->u.ue_error.physical_address, it would be nice
+if you could put a comment as to why you are doing this seemingly wierd
+math with real and effective addresses here.
+> +
+> +	if (!evt->u.ue_error.physical_address_provided ||
+> +	    !is_zone_device_page(pfn_to_page(phys_addr >> PAGE_SHIFT)))
+> +		return NOTIFY_DONE;
+> +
+> +	/* mce notifier is called from a process context, so mutex is safe */
+> +	mutex_lock(&papr_ndr_lock);
+> +	list_for_each_entry(p, &papr_nd_regions, region_list) {
+> +		struct resource res = p->res;
+> +
+> +		if (phys_addr >= res.start && phys_addr <= res.end) {
+> +			found = true;
+> +			break;
+> +		}
+> +	}
+> +
+> +	mutex_unlock(&papr_ndr_lock);
+> +
+> +	if (!found)
+> +		return NOTIFY_DONE;
+> +
+> +	papr_scm_add_badblock(p->region, p->bus, phys_addr);
+I see a possible race between papr_scm_add_badblock() and
+papr_scm_remove() as a bad block may be reported just remove a region is
+disabled. Would recomment calling papr_scm_bad_block() in context of
+papr_ndr_lock.
 
-> 
-> -Frank
-> 
-> 
->>
->> cheers
->>
->>
->> unreferenced object 0xc0000007eb89ca58 (size 192):
->>   comm "swapper/0", pid 1, jiffies 4294878935 (age 824.747s)
->>   hex dump (first 32 bytes):
->>     c0 00 00 00 00 d9 21 38 00 00 00 00 00 00 00 00  ......!8........
->>     c0 00 00 07 ec 97 80 08 00 00 00 00 00 00 00 00  ................
->>   backtrace:
->>     [<0000000007b50c76>] .__of_node_dup+0x38/0x1c0
->>     [<00000000e2115f4f>] .of_unittest_changeset+0x13c/0xa20
->>     [<00000000925a8013>] .of_unittest+0x1ba0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec978008 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878935 (age 824.747s)
->>   hex dump (first 8 bytes):
->>     6e 31 00 6b 6b 6b 6b a5                          n1.kkkk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000a074532f>] .__of_node_dup+0x50/0x1c0
->>     [<00000000e2115f4f>] .of_unittest_changeset+0x13c/0xa20
->>     [<00000000925a8013>] .of_unittest+0x1ba0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007eb89e318 (size 192):
->>   comm "swapper/0", pid 1, jiffies 4294878935 (age 824.747s)
->>   hex dump (first 32 bytes):
->>     c0 00 00 00 00 d9 21 38 00 00 00 00 00 00 00 00  ......!8........
->>     c0 00 00 07 ec 97 ab 08 00 00 00 00 00 00 00 00  ................
->>   backtrace:
->>     [<0000000007b50c76>] .__of_node_dup+0x38/0x1c0
->>     [<00000000881dc9c4>] .of_unittest_changeset+0x194/0xa20
->>     [<00000000925a8013>] .of_unittest+0x1ba0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec97ab08 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878935 (age 824.747s)
->>   hex dump (first 8 bytes):
->>     6e 32 00 6b 6b 6b 6b a5                          n2.kkkk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000a074532f>] .__of_node_dup+0x50/0x1c0
->>     [<00000000881dc9c4>] .of_unittest_changeset+0x194/0xa20
->>     [<00000000925a8013>] .of_unittest+0x1ba0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007eb89e528 (size 192):
->>   comm "swapper/0", pid 1, jiffies 4294878935 (age 824.747s)
->>   hex dump (first 32 bytes):
->>     c0 00 00 07 ec 97 bd d8 00 00 00 00 00 00 00 00  ................
->>     c0 00 00 07 ec 97 b3 18 00 00 00 00 00 00 00 00  ................
->>   backtrace:
->>     [<0000000007b50c76>] .__of_node_dup+0x38/0x1c0
->>     [<00000000af6923cb>] .of_unittest_changeset+0x1ec/0xa20
->>     [<00000000925a8013>] .of_unittest+0x1ba0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec97b318 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878935 (age 824.747s)
->>   hex dump (first 8 bytes):
->>     6e 32 31 00 6b 6b 6b a5                          n21.kkk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000a074532f>] .__of_node_dup+0x50/0x1c0
->>     [<00000000af6923cb>] .of_unittest_changeset+0x1ec/0xa20
->>     [<00000000925a8013>] .of_unittest+0x1ba0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007f1c1fb00 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878935 (age 824.757s)
->>   hex dump (first 32 bytes):
->>     c0 00 00 07 ec 97 90 28 00 00 00 03 00 00 00 00  .......(........
->>     c0 00 00 07 ec 97 8e d0 00 00 00 00 00 00 00 00  ................
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<000000003079b8f2>] .of_unittest_changeset+0x310/0xa20
->>     [<00000000925a8013>] .of_unittest+0x1ba0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec979028 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878935 (age 824.757s)
->>   hex dump (first 8 bytes):
->>     6e 61 6d 65 00 6b 6b a5                          name.kk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000f0610228>] .__of_prop_dup+0x60/0x130
->>     [<000000003079b8f2>] .of_unittest_changeset+0x310/0xa20
->>     [<00000000925a8013>] .of_unittest+0x1ba0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec978ed0 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878935 (age 824.757s)
->>   hex dump (first 8 bytes):
->>     6e 31 00 6b 6b 6b 6b a5                          n1.kkkk.
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<000000003079b8f2>] .of_unittest_changeset+0x310/0xa20
->>     [<00000000925a8013>] .of_unittest+0x1ba0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007f1c1bc80 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878935 (age 824.757s)
->>   hex dump (first 32 bytes):
->>     c0 00 00 07 ec 97 b4 70 00 00 00 03 00 00 00 00  .......p........
->>     c0 00 00 07 ec 97 b1 c0 00 00 00 00 00 00 00 00  ................
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<000000000f97f174>] .of_unittest_changeset+0x368/0xa20
->>     [<00000000925a8013>] .of_unittest+0x1ba0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec97b470 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878935 (age 824.757s)
->>   hex dump (first 8 bytes):
->>     6e 61 6d 65 00 6b 6b a5                          name.kk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000f0610228>] .__of_prop_dup+0x60/0x130
->>     [<000000000f97f174>] .of_unittest_changeset+0x368/0xa20
->>     [<00000000925a8013>] .of_unittest+0x1ba0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec97b1c0 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878935 (age 824.757s)
->>   hex dump (first 8 bytes):
->>     6e 32 00 6b 6b 6b 6b a5                          n2.kkkk.
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<000000000f97f174>] .of_unittest_changeset+0x368/0xa20
->>     [<00000000925a8013>] .of_unittest+0x1ba0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007f1c1d800 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878935 (age 824.764s)
->>   hex dump (first 32 bytes):
->>     c0 00 00 07 ec 97 88 18 00 00 00 03 00 00 00 00  ................
->>     c0 00 00 07 ec 97 bd d8 00 00 00 00 00 00 00 00  ................
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<00000000c71a088a>] .of_unittest_changeset+0x3c0/0xa20
->>     [<00000000925a8013>] .of_unittest+0x1ba0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec978818 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878935 (age 824.764s)
->>   hex dump (first 8 bytes):
->>     6e 61 6d 65 00 6b 6b a5                          name.kk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000f0610228>] .__of_prop_dup+0x60/0x130
->>     [<00000000c71a088a>] .of_unittest_changeset+0x3c0/0xa20
->>     [<00000000925a8013>] .of_unittest+0x1ba0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec97bdd8 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878935 (age 824.764s)
->>   hex dump (first 8 bytes):
->>     6e 32 31 6b 6b 6b 6b a5                          n21kkkk.
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<00000000c71a088a>] .of_unittest_changeset+0x3c0/0xa20
->>     [<00000000925a8013>] .of_unittest+0x1ba0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec979d98 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878935 (age 824.764s)
->>   hex dump (first 8 bytes):
->>     6e 31 00 6b 6b 6b 6b a5                          n1.kkkk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<0000000001df4c62>] .kvasprintf_const+0xa8/0xf0
->>     [<00000000b7ba15a5>] .kobject_set_name_vargs+0x34/0xf0
->>     [<0000000076cbbcf2>] .kobject_add+0x50/0xe0
->>     [<000000002d7a6157>] .__of_attach_node_sysfs+0xa8/0x160
->>     [<000000004ed552f3>] .__of_changeset_entry_apply+0x32c/0x390
->>     [<0000000062a8a683>] .__of_changeset_apply_entries+0x48/0x110
->>     [<00000000530ec4ee>] .of_changeset_apply+0x54/0xc0
->>     [<0000000039fa95c3>] .of_unittest_changeset+0x8a4/0xa20
->>     [<00000000925a8013>] .of_unittest+0x1ba0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec9796e0 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878935 (age 824.764s)
->>   hex dump (first 8 bytes):
->>     6e 32 00 6b 6b 6b 6b a5                          n2.kkkk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<0000000001df4c62>] .kvasprintf_const+0xa8/0xf0
->>     [<00000000b7ba15a5>] .kobject_set_name_vargs+0x34/0xf0
->>     [<0000000076cbbcf2>] .kobject_add+0x50/0xe0
->>     [<000000002d7a6157>] .__of_attach_node_sysfs+0xa8/0x160
->>     [<000000004ed552f3>] .__of_changeset_entry_apply+0x32c/0x390
->>     [<0000000062a8a683>] .__of_changeset_apply_entries+0x48/0x110
->>     [<00000000530ec4ee>] .of_changeset_apply+0x54/0xc0
->>     [<0000000039fa95c3>] .of_unittest_changeset+0x8a4/0xa20
->>     [<00000000925a8013>] .of_unittest+0x1ba0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec979ef0 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878935 (age 824.764s)
->>   hex dump (first 8 bytes):
->>     6e 32 31 00 6b 6b 6b a5                          n21.kkk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<0000000001df4c62>] .kvasprintf_const+0xa8/0xf0
->>     [<00000000b7ba15a5>] .kobject_set_name_vargs+0x34/0xf0
->>     [<0000000076cbbcf2>] .kobject_add+0x50/0xe0
->>     [<000000002d7a6157>] .__of_attach_node_sysfs+0xa8/0x160
->>     [<000000004ed552f3>] .__of_changeset_entry_apply+0x32c/0x390
->>     [<0000000062a8a683>] .__of_changeset_apply_entries+0x48/0x110
->>     [<00000000530ec4ee>] .of_changeset_apply+0x54/0xc0
->>     [<0000000039fa95c3>] .of_unittest_changeset+0x8a4/0xa20
->>     [<00000000925a8013>] .of_unittest+0x1ba0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f2e98800 (size 2048):
->>   comm "swapper/0", pid 1, jiffies 4294878936 (age 824.760s)
->>   hex dump (first 32 bytes):
->>     c0 00 00 07 ec 92 dc 40 ff ff ff ff 00 00 00 00  .......@........
->>     c0 00 00 07 ec 92 dc 40 c0 00 20 07 f2 e9 88 18  .......@.. .....
->>   backtrace:
->>     [<00000000d07b7b2c>] .platform_device_alloc+0x34/0x100
->>     [<00000000d9abb21d>] .of_device_alloc+0x44/0x390
->>     [<0000000002d381f5>] .of_platform_device_create_pdata+0x78/0x1a0
->>     [<00000000c7a45eba>] .of_platform_bus_create+0x214/0x2f0
->>     [<00000000c6ba35e7>] .of_platform_bus_create+0x268/0x2f0
->>     [<0000000076525030>] .of_platform_populate+0x78/0x140
->>     [<00000000d3aeed04>] .of_unittest_platform_populate+0x328/0x50c
->>     [<000000003978eb44>] .of_unittest+0x24a8/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec92dc40 (size 64):
->>   comm "swapper/0", pid 1, jiffies 4294878936 (age 824.760s)
->>   hex dump (first 32 bytes):
->>     74 65 73 74 63 61 73 65 2d 64 61 74 61 3a 70 6c  testcase-data:pl
->>     61 74 66 6f 72 6d 2d 74 65 73 74 73 3a 74 65 73  atform-tests:tes
->>   backtrace:
->>     [<00000000154ad5cf>] .kvasprintf+0x60/0xd0
->>     [<00000000b7ba15a5>] .kobject_set_name_vargs+0x34/0xf0
->>     [<00000000cce6fd03>] .dev_set_name+0x2c/0x40
->>     [<000000007d4be46f>] .of_device_alloc+0x2b0/0x390
->>     [<0000000002d381f5>] .of_platform_device_create_pdata+0x78/0x1a0
->>     [<00000000c7a45eba>] .of_platform_bus_create+0x214/0x2f0
->>     [<00000000c6ba35e7>] .of_platform_bus_create+0x268/0x2f0
->>     [<0000000076525030>] .of_platform_populate+0x78/0x140
->>     [<00000000d3aeed04>] .of_unittest_platform_populate+0x328/0x50c
->>     [<000000003978eb44>] .of_unittest+0x24a8/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007eb8aa100 (size 256):
->>   comm "swapper/0", pid 1, jiffies 4294878936 (age 824.760s)
->>   hex dump (first 32 bytes):
->>     00 00 00 00 de ad 4e ad ff ff ff ff 00 00 00 00  ......N.........
->>     ff ff ff ff ff ff ff ff c0 00 00 00 02 30 31 a8  .............01.
->>   backtrace:
->>     [<000000008039b6cb>] .device_add+0x578/0x980
->>     [<0000000012aa326f>] .of_device_add+0x58/0x70
->>     [<00000000d6a8e21f>] .of_platform_device_create_pdata+0xc4/0x1a0
->>     [<00000000c7a45eba>] .of_platform_bus_create+0x214/0x2f0
->>     [<00000000c6ba35e7>] .of_platform_bus_create+0x268/0x2f0
->>     [<0000000076525030>] .of_platform_populate+0x78/0x140
->>     [<00000000d3aeed04>] .of_unittest_platform_populate+0x328/0x50c
->>     [<000000003978eb44>] .of_unittest+0x24a8/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f2e9a000 (size 2048):
->>   comm "swapper/0", pid 1, jiffies 4294878936 (age 824.764s)
->>   hex dump (first 32 bytes):
->>     c0 00 20 07 f2 e7 a2 40 ff ff ff ff 00 00 00 00  .. ....@........
->>     c0 00 20 07 f2 e7 a2 40 c0 00 20 07 f2 e9 a0 18  .. ....@.. .....
->>   backtrace:
->>     [<00000000d07b7b2c>] .platform_device_alloc+0x34/0x100
->>     [<00000000d9abb21d>] .of_device_alloc+0x44/0x390
->>     [<0000000002d381f5>] .of_platform_device_create_pdata+0x78/0x1a0
->>     [<00000000c7a45eba>] .of_platform_bus_create+0x214/0x2f0
->>     [<00000000c6ba35e7>] .of_platform_bus_create+0x268/0x2f0
->>     [<0000000076525030>] .of_platform_populate+0x78/0x140
->>     [<00000000d3aeed04>] .of_unittest_platform_populate+0x328/0x50c
->>     [<000000003978eb44>] .of_unittest+0x24a8/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f2e7a240 (size 64):
->>   comm "swapper/0", pid 1, jiffies 4294878936 (age 824.764s)
->>   hex dump (first 32 bytes):
->>     74 65 73 74 63 61 73 65 2d 64 61 74 61 3a 70 6c  testcase-data:pl
->>     61 74 66 6f 72 6d 2d 74 65 73 74 73 3a 74 65 73  atform-tests:tes
->>   backtrace:
->>     [<00000000154ad5cf>] .kvasprintf+0x60/0xd0
->>     [<00000000b7ba15a5>] .kobject_set_name_vargs+0x34/0xf0
->>     [<00000000cce6fd03>] .dev_set_name+0x2c/0x40
->>     [<000000007d4be46f>] .of_device_alloc+0x2b0/0x390
->>     [<0000000002d381f5>] .of_platform_device_create_pdata+0x78/0x1a0
->>     [<00000000c7a45eba>] .of_platform_bus_create+0x214/0x2f0
->>     [<00000000c6ba35e7>] .of_platform_bus_create+0x268/0x2f0
->>     [<0000000076525030>] .of_platform_populate+0x78/0x140
->>     [<00000000d3aeed04>] .of_unittest_platform_populate+0x328/0x50c
->>     [<000000003978eb44>] .of_unittest+0x24a8/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007eb8ac100 (size 256):
->>   comm "swapper/0", pid 1, jiffies 4294878936 (age 824.764s)
->>   hex dump (first 32 bytes):
->>     00 00 00 00 de ad 4e ad ff ff ff ff 00 00 00 00  ......N.........
->>     ff ff ff ff ff ff ff ff c0 00 00 00 02 30 31 a8  .............01.
->>   backtrace:
->>     [<000000008039b6cb>] .device_add+0x578/0x980
->>     [<0000000012aa326f>] .of_device_add+0x58/0x70
->>     [<00000000d6a8e21f>] .of_platform_device_create_pdata+0xc4/0x1a0
->>     [<00000000c7a45eba>] .of_platform_bus_create+0x214/0x2f0
->>     [<00000000c6ba35e7>] .of_platform_bus_create+0x268/0x2f0
->>     [<0000000076525030>] .of_platform_populate+0x78/0x140
->>     [<00000000d3aeed04>] .of_unittest_platform_populate+0x328/0x50c
->>     [<000000003978eb44>] .of_unittest+0x24a8/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007eb89f7b8 (size 192):
->>   comm "swapper/0", pid 1, jiffies 4294878937 (age 824.760s)
->>   hex dump (first 32 bytes):
->>     c0 00 00 07 f1 ea 17 b0 00 00 00 00 00 00 00 00  ................
->>     c0 00 20 07 f2 e8 47 40 00 00 00 00 00 00 00 00  .. ...G@........
->>   backtrace:
->>     [<0000000007b50c76>] .__of_node_dup+0x38/0x1c0
->>     [<000000006f73e286>] .build_changeset_next_level+0x280/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<00000000d856304a>] .of_unittest+0x2758/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f2e84740 (size 16):
->>   comm "swapper/0", pid 1, jiffies 4294878937 (age 824.764s)
->>   hex dump (first 16 bytes):
->>     74 65 73 74 2d 75 6e 69 74 74 65 73 74 34 00 a5  test-unittest4..
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000a074532f>] .__of_node_dup+0x50/0x1c0
->>     [<000000006f73e286>] .build_changeset_next_level+0x280/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<00000000d856304a>] .of_unittest+0x2758/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007f1c1c680 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878937 (age 824.764s)
->>   hex dump (first 32 bytes):
->>     c0 00 20 07 f2 e8 70 f0 00 00 00 09 00 00 00 00  .. ...p.........
->>     c0 00 20 07 f4 2e b6 b0 c0 00 00 07 f1 c1 df 80  .. .............
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<00000000d856304a>] .of_unittest+0x2758/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f2e870f0 (size 16):
->>   comm "swapper/0", pid 1, jiffies 4294878937 (age 824.764s)
->>   hex dump (first 16 bytes):
->>     63 6f 6d 70 61 74 69 62 6c 65 00 6b 6b 6b 6b a5  compatible.kkkk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000f0610228>] .__of_prop_dup+0x60/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<00000000d856304a>] .of_unittest+0x2758/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f42eb6b0 (size 16):
->>   comm "swapper/0", pid 1, jiffies 4294878937 (age 824.764s)
->>   hex dump (first 16 bytes):
->>     75 6e 69 74 74 65 73 74 00 6b 6b 6b 6b 6b 6b a5  unittest.kkkkkk.
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<00000000d856304a>] .of_unittest+0x2758/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007f1c1df80 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878937 (age 824.767s)
->>   hex dump (first 32 bytes):
->>     c0 00 00 07 ec 7f ec 60 00 00 00 05 00 00 00 00  .......`........
->>     c0 00 00 07 ec 7f f4 70 c0 00 00 07 f1 c1 e2 00  .......p........
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<00000000d856304a>] .of_unittest+0x2758/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec7fec60 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878937 (age 824.767s)
->>   hex dump (first 8 bytes):
->>     73 74 61 74 75 73 00 a5                          status..
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000f0610228>] .__of_prop_dup+0x60/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<00000000d856304a>] .of_unittest+0x2758/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec7ff470 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878937 (age 824.767s)
->>   hex dump (first 8 bytes):
->>     6f 6b 61 79 00 6b 6b a5                          okay.kk.
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<00000000d856304a>] .of_unittest+0x2758/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007f1c1e200 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878937 (age 824.767s)
->>   hex dump (first 32 bytes):
->>     c0 00 00 07 ec 7f dc 40 00 00 00 04 00 00 00 00  .......@........
->>     c0 00 00 07 ec 7f cc 20 c0 00 00 07 f1 c1 97 00  ....... ........
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<00000000d856304a>] .of_unittest+0x2758/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec7fdc40 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878937 (age 824.767s)
->>   hex dump (first 8 bytes):
->>     72 65 67 00 6b 6b 6b a5                          reg.kkk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000f0610228>] .__of_prop_dup+0x60/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<00000000d856304a>] .of_unittest+0x2758/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec7fcc20 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878937 (age 824.767s)
->>   hex dump (first 8 bytes):
->>     00 00 00 04 6b 6b 6b a5                          ....kkk.
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<00000000d856304a>] .of_unittest+0x2758/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007f1c19700 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878937 (age 824.770s)
->>   hex dump (first 32 bytes):
->>     c0 00 00 07 ec 7f c5 68 00 00 00 0f 00 00 00 00  .......h........
->>     c0 00 20 07 f4 2e bb 00 00 00 00 00 00 00 00 00  .. .............
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<00000000d856304a>] .of_unittest+0x2758/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec7fc568 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878937 (age 824.770s)
->>   hex dump (first 8 bytes):
->>     6e 61 6d 65 00 6b 6b a5                          name.kk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000f0610228>] .__of_prop_dup+0x60/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<00000000d856304a>] .of_unittest+0x2758/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f42ebb00 (size 16):
->>   comm "swapper/0", pid 1, jiffies 4294878937 (age 824.770s)
->>   hex dump (first 16 bytes):
->>     74 65 73 74 2d 75 6e 69 74 74 65 73 74 34 00 a5  test-unittest4..
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<00000000d856304a>] .of_unittest+0x2758/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f42e8fe0 (size 16):
->>   comm "swapper/0", pid 1, jiffies 4294878937 (age 824.770s)
->>   hex dump (first 16 bytes):
->>     74 65 73 74 2d 75 6e 69 74 74 65 73 74 34 00 a5  test-unittest4..
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<0000000001df4c62>] .kvasprintf_const+0xa8/0xf0
->>     [<00000000b7ba15a5>] .kobject_set_name_vargs+0x34/0xf0
->>     [<0000000076cbbcf2>] .kobject_add+0x50/0xe0
->>     [<000000002d7a6157>] .__of_attach_node_sysfs+0xa8/0x160
->>     [<000000004ed552f3>] .__of_changeset_entry_apply+0x32c/0x390
->>     [<0000000062a8a683>] .__of_changeset_apply_entries+0x48/0x110
->>     [<0000000067290146>] .of_overlay_fdt_apply+0xb00/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<00000000d856304a>] .of_unittest+0x2758/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007eb89e108 (size 192):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.767s)
->>   hex dump (first 32 bytes):
->>     c0 00 00 07 eb a1 c8 a0 00 00 00 00 00 00 00 00  ................
->>     c0 00 20 07 f4 2e 8b 90 00 00 00 00 00 00 00 00  .. .............
->>   backtrace:
->>     [<0000000007b50c76>] .__of_node_dup+0x38/0x1c0
->>     [<000000006f73e286>] .build_changeset_next_level+0x280/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f42e8b90 (size 16):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.767s)
->>   hex dump (first 16 bytes):
->>     74 65 73 74 2d 75 6e 69 74 74 65 73 74 31 30 00  test-unittest10.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000a074532f>] .__of_node_dup+0x50/0x1c0
->>     [<000000006f73e286>] .build_changeset_next_level+0x280/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007f1c18f80 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.767s)
->>   hex dump (first 32 bytes):
->>     c0 00 20 07 f4 2e 8a 20 00 00 00 09 00 00 00 00  .. .... ........
->>     c0 00 20 07 f4 2e a5 70 c0 00 00 07 f1 c1 8a 80  .. ....p........
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f42e8a20 (size 16):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.770s)
->>   hex dump (first 16 bytes):
->>     63 6f 6d 70 61 74 69 62 6c 65 00 6b 6b 6b 6b a5  compatible.kkkk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000f0610228>] .__of_prop_dup+0x60/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f42ea570 (size 16):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.770s)
->>   hex dump (first 16 bytes):
->>     75 6e 69 74 74 65 73 74 00 6b 6b 6b 6b 6b 6b a5  unittest.kkkkkk.
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007f1c18a80 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.770s)
->>   hex dump (first 32 bytes):
->>     c0 00 20 07 f5 57 61 a0 00 00 00 05 00 00 00 00  .. ..Wa.........
->>     c0 00 20 07 f5 57 4e d0 c0 00 00 07 f1 c1 94 80  .. ..WN.........
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f55761a0 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.774s)
->>   hex dump (first 8 bytes):
->>     73 74 61 74 75 73 00 a5                          status..
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000f0610228>] .__of_prop_dup+0x60/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f5574ed0 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.774s)
->>   hex dump (first 8 bytes):
->>     6f 6b 61 79 00 6b 6b a5                          okay.kk.
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007f1c19480 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.774s)
->>   hex dump (first 32 bytes):
->>     c0 00 20 07 f5 57 50 28 00 00 00 04 00 00 00 00  .. ..WP(........
->>     c0 00 20 07 f5 57 71 c0 c0 00 00 07 f1 c1 c1 80  .. ..Wq.........
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f5575028 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.774s)
->>   hex dump (first 8 bytes):
->>     72 65 67 00 6b 6b 6b a5                          reg.kkk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000f0610228>] .__of_prop_dup+0x60/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f55771c0 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.774s)
->>   hex dump (first 8 bytes):
->>     00 00 00 0a 6b 6b 6b a5                          ....kkk.
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007f1c1c180 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.774s)
->>   hex dump (first 32 bytes):
->>     c0 00 20 07 f4 2e 99 f0 00 00 00 04 00 00 00 00  .. .............
->>     c0 00 20 07 f5 57 74 70 c0 00 00 07 f1 c1 ab 00  .. ..Wtp........
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f5577470 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.777s)
->>   hex dump (first 8 bytes):
->>     00 00 00 01 6b 6b 6b a5                          ....kkk.
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007f1c1ab00 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.777s)
->>   hex dump (first 32 bytes):
->>     c0 00 20 07 f4 2e 88 b0 00 00 00 04 00 00 00 00  .. .............
->>     c0 00 20 07 f5 57 7d d8 c0 00 00 07 f1 c1 8d 00  .. ..W}.........
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f42e88b0 (size 16):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.777s)
->>   hex dump (first 16 bytes):
->>     23 73 69 7a 65 2d 63 65 6c 6c 73 00 6b 6b 6b a5  #size-cells.kkk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000f0610228>] .__of_prop_dup+0x60/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f5577dd8 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.780s)
->>   hex dump (first 8 bytes):
->>     00 00 00 00 6b 6b 6b a5                          ....kkk.
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007f1c18d00 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.780s)
->>   hex dump (first 32 bytes):
->>     c0 00 20 07 f5 57 48 18 00 00 00 10 00 00 00 00  .. ..WH.........
->>     c0 00 20 07 f4 2e ac a0 00 00 00 00 00 00 00 00  .. .............
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f5574818 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.780s)
->>   hex dump (first 8 bytes):
->>     6e 61 6d 65 00 6b 6b a5                          name.kk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000f0610228>] .__of_prop_dup+0x60/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f42eaca0 (size 16):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.780s)
->>   hex dump (first 16 bytes):
->>     74 65 73 74 2d 75 6e 69 74 74 65 73 74 31 30 00  test-unittest10.
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007eb89d8c8 (size 192):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.780s)
->>   hex dump (first 32 bytes):
->>     c0 00 00 07 eb a1 cb 50 00 00 00 00 00 00 00 00  .......P........
->>     c0 00 00 07 ea dd 8d 20 00 00 00 00 00 00 00 00  ....... ........
->>   backtrace:
->>     [<0000000007b50c76>] .__of_node_dup+0x38/0x1c0
->>     [<000000006f73e286>] .build_changeset_next_level+0x280/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007eadd8d20 (size 32):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.780s)
->>   hex dump (first 32 bytes):
->>     74 65 73 74 2d 75 6e 69 74 74 65 73 74 31 30 31  test-unittest101
->>     00 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b a5  .kkkkkkkkkkkkkk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000a074532f>] .__of_node_dup+0x50/0x1c0
->>     [<000000006f73e286>] .build_changeset_next_level+0x280/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007f1c1a880 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.784s)
->>   hex dump (first 32 bytes):
->>     c0 00 20 07 f4 2e af 80 00 00 00 09 00 00 00 00  .. .............
->>     c0 00 20 07 f4 2e 81 80 c0 00 00 07 f1 c1 92 00  .. .............
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f42eaf80 (size 16):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.784s)
->>   hex dump (first 16 bytes):
->>     63 6f 6d 70 61 74 69 62 6c 65 00 6b 6b 6b 6b a5  compatible.kkkk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000f0610228>] .__of_prop_dup+0x60/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f42e8180 (size 16):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.784s)
->>   hex dump (first 16 bytes):
->>     75 6e 69 74 74 65 73 74 00 6b 6b 6b 6b 6b 6b a5  unittest.kkkkkk.
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007f1c19200 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.784s)
->>   hex dump (first 32 bytes):
->>     c0 00 20 07 f5 57 75 c8 00 00 00 05 00 00 00 00  .. ..Wu.........
->>     c0 00 20 07 f5 57 7c 80 c0 00 00 07 f1 c1 d3 00  .. ..W|.........
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f55775c8 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.784s)
->>   hex dump (first 8 bytes):
->>     73 74 61 74 75 73 00 a5                          status..
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000f0610228>] .__of_prop_dup+0x60/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f5577c80 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.784s)
->>   hex dump (first 8 bytes):
->>     6f 6b 61 79 00 6b 6b a5                          okay.kk.
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007f1c1d300 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.787s)
->>   hex dump (first 32 bytes):
->>     c0 00 20 07 f5 57 77 20 00 00 00 04 00 00 00 00  .. ..Ww ........
->>     c0 00 20 07 f5 57 5d 98 c0 00 00 07 f2 25 0f 80  .. ..W]......%..
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f5577720 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.787s)
->>   hex dump (first 8 bytes):
->>     72 65 67 00 6b 6b 6b a5                          reg.kkk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000f0610228>] .__of_prop_dup+0x60/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f5575d98 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.787s)
->>   hex dump (first 8 bytes):
->>     00 00 00 01 6b 6b 6b a5                          ....kkk.
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007f2250f80 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.790s)
->>   hex dump (first 32 bytes):
->>     c0 00 20 07 f5 57 68 58 00 00 00 11 00 00 00 00  .. ..WhX........
->>     c0 00 00 07 ea dd a2 40 00 00 00 00 00 00 00 00  .......@........
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f5576858 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.790s)
->>   hex dump (first 8 bytes):
->>     6e 61 6d 65 00 6b 6b a5                          name.kk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000f0610228>] .__of_prop_dup+0x60/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007eadda240 (size 32):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.790s)
->>   hex dump (first 32 bytes):
->>     74 65 73 74 2d 75 6e 69 74 74 65 73 74 31 30 31  test-unittest101
->>     00 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b a5  .kkkkkkkkkkkkkk.
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007ece6bc70 (size 16):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.790s)
->>   hex dump (first 16 bytes):
->>     74 65 73 74 2d 75 6e 69 74 74 65 73 74 31 30 00  test-unittest10.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<0000000001df4c62>] .kvasprintf_const+0xa8/0xf0
->>     [<00000000b7ba15a5>] .kobject_set_name_vargs+0x34/0xf0
->>     [<0000000076cbbcf2>] .kobject_add+0x50/0xe0
->>     [<000000002d7a6157>] .__of_attach_node_sysfs+0xa8/0x160
->>     [<000000004ed552f3>] .__of_changeset_entry_apply+0x32c/0x390
->>     [<0000000062a8a683>] .__of_changeset_apply_entries+0x48/0x110
->>     [<0000000067290146>] .of_overlay_fdt_apply+0xb00/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007eadd9540 (size 32):
->>   comm "swapper/0", pid 1, jiffies 4294878938 (age 824.790s)
->>   hex dump (first 32 bytes):
->>     74 65 73 74 2d 75 6e 69 74 74 65 73 74 31 30 31  test-unittest101
->>     00 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b a5  .kkkkkkkkkkkkkk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<0000000001df4c62>] .kvasprintf_const+0xa8/0xf0
->>     [<00000000b7ba15a5>] .kobject_set_name_vargs+0x34/0xf0
->>     [<0000000076cbbcf2>] .kobject_add+0x50/0xe0
->>     [<000000002d7a6157>] .__of_attach_node_sysfs+0xa8/0x160
->>     [<000000004ed552f3>] .__of_changeset_entry_apply+0x32c/0x390
->>     [<0000000062a8a683>] .__of_changeset_apply_entries+0x48/0x110
->>     [<0000000067290146>] .of_overlay_fdt_apply+0xb00/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<00000000e3d25537>] .of_unittest_apply_overlay_check+0xfc/0x1e4
->>     [<000000009b1b95aa>] .of_unittest+0x2da4/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007eb89e738 (size 192):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.787s)
->>   hex dump (first 32 bytes):
->>     c0 00 00 07 eb a1 98 a0 00 00 00 00 00 00 00 00  ................
->>     c0 00 20 07 ec e6 8e 70 00 00 00 00 00 00 00 00  .. ....p........
->>   backtrace:
->>     [<0000000007b50c76>] .__of_node_dup+0x38/0x1c0
->>     [<000000006f73e286>] .build_changeset_next_level+0x280/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007ece68e70 (size 16):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.790s)
->>   hex dump (first 16 bytes):
->>     74 65 73 74 2d 75 6e 69 74 74 65 73 74 31 31 00  test-unittest11.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000a074532f>] .__of_node_dup+0x50/0x1c0
->>     [<000000006f73e286>] .build_changeset_next_level+0x280/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec886200 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.790s)
->>   hex dump (first 32 bytes):
->>     c0 00 20 07 ec e6 a4 00 00 00 00 09 00 00 00 00  .. .............
->>     c0 00 20 07 ec e6 99 f0 c0 00 00 07 ec 88 55 80  .. ...........U.
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007ece6a400 (size 16):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.790s)
->>   hex dump (first 16 bytes):
->>     63 6f 6d 70 61 74 69 62 6c 65 00 6b 6b 6b 6b a5  compatible.kkkk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000f0610228>] .__of_prop_dup+0x60/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007ece699f0 (size 16):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.794s)
->>   hex dump (first 16 bytes):
->>     75 6e 69 74 74 65 73 74 00 6b 6b 6b 6b 6b 6b a5  unittest.kkkkkk.
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec885580 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.794s)
->>   hex dump (first 32 bytes):
->>     c0 00 20 07 f8 5d a0 48 00 00 00 05 00 00 00 00  .. ..].H........
->>     c0 00 20 07 f8 5d ac 60 c0 00 00 07 ec 88 46 80  .. ..].`......F.
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f85da048 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.794s)
->>   hex dump (first 8 bytes):
->>     73 74 61 74 75 73 00 a5                          status..
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000f0610228>] .__of_prop_dup+0x60/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f85dac60 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.794s)
->>   hex dump (first 8 bytes):
->>     6f 6b 61 79 00 6b 6b a5                          okay.kk.
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec884680 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.794s)
->>   hex dump (first 32 bytes):
->>     c0 00 20 07 f8 5d ab 08 00 00 00 04 00 00 00 00  .. ..]..........
->>     c0 00 20 07 f8 5d 9a e8 c0 00 00 07 ec 88 6e 80  .. ..]........n.
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f85dab08 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.794s)
->>   hex dump (first 8 bytes):
->>     72 65 67 00 6b 6b 6b a5                          reg.kkk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000f0610228>] .__of_prop_dup+0x60/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f85d9ae8 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.797s)
->>   hex dump (first 8 bytes):
->>     00 00 00 0b 6b 6b 6b a5                          ....kkk.
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec886e80 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.797s)
->>   hex dump (first 32 bytes):
->>     c0 00 20 07 ec e6 a6 e0 00 00 00 04 00 00 00 00  .. .............
->>     c0 00 20 07 f8 5d b3 18 c0 00 00 07 ec 88 44 00  .. ..]........D.
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007ece6a6e0 (size 16):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.797s)
->>   hex dump (first 16 bytes):
->>     23 61 64 64 72 65 73 73 2d 63 65 6c 6c 73 00 a5  #address-cells..
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000f0610228>] .__of_prop_dup+0x60/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f85db318 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.797s)
->>   hex dump (first 8 bytes):
->>     00 00 00 01 6b 6b 6b a5                          ....kkk.
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec884400 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.797s)
->>   hex dump (first 32 bytes):
->>     c0 00 20 07 ec e6 81 80 00 00 00 04 00 00 00 00  .. .............
->>     c0 00 20 07 f8 5d 92 d8 c0 00 00 07 ec 88 3a 00  .. ..]........:.
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007ece68180 (size 16):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.797s)
->>   hex dump (first 16 bytes):
->>     23 73 69 7a 65 2d 63 65 6c 6c 73 00 6b 6b 6b a5  #size-cells.kkk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000f0610228>] .__of_prop_dup+0x60/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f85d92d8 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.800s)
->>   hex dump (first 8 bytes):
->>     00 00 00 00 6b 6b 6b a5                          ....kkk.
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec883a00 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.800s)
->>   hex dump (first 32 bytes):
->>     c0 00 20 07 f8 5d 80 08 00 00 00 10 00 00 00 00  .. ..]..........
->>     c0 00 20 07 ec e6 b3 d0 00 00 00 00 00 00 00 00  .. .............
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f85d8008 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.800s)
->>   hex dump (first 8 bytes):
->>     6e 61 6d 65 00 6b 6b a5                          name.kk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000f0610228>] .__of_prop_dup+0x60/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007ece6b3d0 (size 16):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.804s)
->>   hex dump (first 16 bytes):
->>     74 65 73 74 2d 75 6e 69 74 74 65 73 74 31 31 00  test-unittest11.
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007eb89fde8 (size 192):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.804s)
->>   hex dump (first 32 bytes):
->>     c0 00 00 07 eb a1 9b 50 00 00 00 00 00 00 00 00  .......P........
->>     c0 00 00 07 ea dd 85 00 00 00 00 00 00 00 00 00  ................
->>   backtrace:
->>     [<0000000007b50c76>] .__of_node_dup+0x38/0x1c0
->>     [<000000006f73e286>] .build_changeset_next_level+0x280/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007eadd8500 (size 32):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.804s)
->>   hex dump (first 32 bytes):
->>     74 65 73 74 2d 75 6e 69 74 74 65 73 74 31 31 31  test-unittest111
->>     00 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b a5  .kkkkkkkkkkkkkk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000a074532f>] .__of_node_dup+0x50/0x1c0
->>     [<000000006f73e286>] .build_changeset_next_level+0x280/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec886c00 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.804s)
->>   hex dump (first 32 bytes):
->>     c0 00 20 07 ec e6 8a 20 00 00 00 09 00 00 00 00  .. .... ........
->>     c0 00 20 07 ec e6 ab 30 c0 00 00 07 ec 88 0a 80  .. ....0........
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007ece68a20 (size 16):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.804s)
->>   hex dump (first 16 bytes):
->>     63 6f 6d 70 61 74 69 62 6c 65 00 6b 6b 6b 6b a5  compatible.kkkk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000f0610228>] .__of_prop_dup+0x60/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007ece6ab30 (size 16):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.804s)
->>   hex dump (first 16 bytes):
->>     75 6e 69 74 74 65 73 74 00 6b 6b 6b 6b 6b 6b a5  unittest.kkkkkk.
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec880a80 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.807s)
->>   hex dump (first 32 bytes):
->>     c0 00 20 07 f8 5d a5 a8 00 00 00 05 00 00 00 00  .. ..]..........
->>     c0 00 00 07 eb 18 c8 18 c0 00 00 07 ec 88 58 00  ..............X.
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f85da5a8 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.807s)
->>   hex dump (first 8 bytes):
->>     73 74 61 74 75 73 00 a5                          status..
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000f0610228>] .__of_prop_dup+0x60/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007eb18c818 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.807s)
->>   hex dump (first 8 bytes):
->>     6f 6b 61 79 00 6b 6b a5                          okay.kk.
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec885800 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.810s)
->>   hex dump (first 32 bytes):
->>     c0 00 00 07 eb 18 fc 80 00 00 00 04 00 00 00 00  ................
->>     c0 00 00 07 eb 18 f4 70 c0 00 00 07 ec 88 41 80  .......p......A.
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007eb18fc80 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.810s)
->>   hex dump (first 8 bytes):
->>     72 65 67 00 6b 6b 6b a5                          reg.kkk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000f0610228>] .__of_prop_dup+0x60/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007eb18f470 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.810s)
->>   hex dump (first 8 bytes):
->>     00 00 00 01 6b 6b 6b a5                          ....kkk.
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec884180 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.810s)
->>   hex dump (first 32 bytes):
->>     c0 00 00 07 eb 18 dd 98 00 00 00 11 00 00 00 00  ................
->>     c0 00 00 07 ea dd b4 20 00 00 00 00 00 00 00 00  ....... ........
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007eb18dd98 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.810s)
->>   hex dump (first 8 bytes):
->>     6e 61 6d 65 00 6b 6b a5                          name.kk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000f0610228>] .__of_prop_dup+0x60/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007eaddb420 (size 32):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.810s)
->>   hex dump (first 32 bytes):
->>     74 65 73 74 2d 75 6e 69 74 74 65 73 74 31 31 31  test-unittest111
->>     00 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b a5  .kkkkkkkkkkkkkk.
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<0000000038c6aced>] .add_changeset_property.isra.0+0x61c/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<0000000034ba1197>] .build_changeset_next_level+0x334/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007ece6a850 (size 16):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.814s)
->>   hex dump (first 16 bytes):
->>     74 65 73 74 2d 75 6e 69 74 74 65 73 74 31 31 00  test-unittest11.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<0000000001df4c62>] .kvasprintf_const+0xa8/0xf0
->>     [<00000000b7ba15a5>] .kobject_set_name_vargs+0x34/0xf0
->>     [<0000000076cbbcf2>] .kobject_add+0x50/0xe0
->>     [<000000002d7a6157>] .__of_attach_node_sysfs+0xa8/0x160
->>     [<000000004ed552f3>] .__of_changeset_entry_apply+0x32c/0x390
->>     [<0000000062a8a683>] .__of_changeset_apply_entries+0x48/0x110
->>     [<0000000067290146>] .of_overlay_fdt_apply+0xb00/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007eadda580 (size 32):
->>   comm "swapper/0", pid 1, jiffies 4294878939 (age 824.814s)
->>   hex dump (first 32 bytes):
->>     74 65 73 74 2d 75 6e 69 74 74 65 73 74 31 31 31  test-unittest111
->>     00 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b a5  .kkkkkkkkkkkkkk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<0000000001df4c62>] .kvasprintf_const+0xa8/0xf0
->>     [<00000000b7ba15a5>] .kobject_set_name_vargs+0x34/0xf0
->>     [<0000000076cbbcf2>] .kobject_add+0x50/0xe0
->>     [<000000002d7a6157>] .__of_attach_node_sysfs+0xa8/0x160
->>     [<000000004ed552f3>] .__of_changeset_entry_apply+0x32c/0x390
->>     [<0000000062a8a683>] .__of_changeset_apply_entries+0x48/0x110
->>     [<0000000067290146>] .of_overlay_fdt_apply+0xb00/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<000000003ad7372f>] .of_unittest_apply_overlay.constprop.0+0x54/0xb8
->>     [<000000008fda7969>] .of_unittest_apply_revert_overlay_check.constprop.0+0xc4/0x2b4
->>     [<00000000ea132166>] .of_unittest+0x2ee0/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec881200 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878943 (age 824.800s)
->>   hex dump (first 32 bytes):
->>     c0 00 00 07 ec 71 d0 28 00 00 00 0c 00 00 00 00  .....q.(........
->>     c0 00 20 07 f2 e8 c5 d0 00 00 00 00 00 00 00 00  .. .............
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<000000004e6be113>] .of_unittest+0x3458/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec71d028 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878943 (age 824.800s)
->>   hex dump (first 8 bytes):
->>     6e 61 6d 65 00 6b 6b a5                          name.kk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000f0610228>] .__of_prop_dup+0x60/0x130
->>     [<000000004e6be113>] .of_unittest+0x3458/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007f2e8c5d0 (size 16):
->>   comm "swapper/0", pid 1, jiffies 4294878943 (age 824.804s)
->>   hex dump (first 16 bytes):
->>     5f 5f 73 79 6d 62 6f 6c 73 5f 5f 00 6b 6b 6b a5  __symbols__.kkk.
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<000000004e6be113>] .of_unittest+0x3458/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007eaddb280 (size 32):
->>   comm "swapper/0", pid 1, jiffies 4294878943 (age 824.804s)
->>   hex dump (first 32 bytes):
->>     2f 74 65 73 74 63 61 73 65 2d 64 61 74 61 2d 32  /testcase-data-2
->>     2f 73 75 62 73 74 61 74 69 6f 6e 40 31 30 30 00  /substation@100.
->>   backtrace:
->>     [<00000000154ad5cf>] .kvasprintf+0x60/0xd0
->>     [<00000000c2320ab8>] .kasprintf+0x2c/0x40
->>     [<000000005511b2ac>] .add_changeset_property.isra.0+0x170/0xaf0
->>     [<0000000060888297>] .of_overlay_fdt_apply+0x5e4/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<00000000daa7ed62>] .of_unittest+0x3404/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007eadd9880 (size 32):
->>   comm "swapper/0", pid 1, jiffies 4294878943 (age 824.804s)
->>   hex dump (first 32 bytes):
->>     2f 74 65 73 74 63 61 73 65 2d 64 61 74 61 2d 32  /testcase-data-2
->>     2f 66 61 69 72 77 61 79 2d 31 00 6b 6b 6b 6b a5  /fairway-1.kkkk.
->>   backtrace:
->>     [<00000000154ad5cf>] .kvasprintf+0x60/0xd0
->>     [<00000000c2320ab8>] .kasprintf+0x2c/0x40
->>     [<000000005511b2ac>] .add_changeset_property.isra.0+0x170/0xaf0
->>     [<0000000060888297>] .of_overlay_fdt_apply+0x5e4/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<00000000daa7ed62>] .of_unittest+0x3404/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007eaddbc40 (size 32):
->>   comm "swapper/0", pid 1, jiffies 4294878943 (age 824.804s)
->>   hex dump (first 32 bytes):
->>     2f 74 65 73 74 63 61 73 65 2d 64 61 74 61 2d 32  /testcase-data-2
->>     2f 66 61 69 72 77 61 79 2d 31 00 6b 6b 6b 6b a5  /fairway-1.kkkk.
->>   backtrace:
->>     [<00000000154ad5cf>] .kvasprintf+0x60/0xd0
->>     [<00000000c2320ab8>] .kasprintf+0x2c/0x40
->>     [<000000005511b2ac>] .add_changeset_property.isra.0+0x170/0xaf0
->>     [<0000000060888297>] .of_overlay_fdt_apply+0x5e4/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<00000000daa7ed62>] .of_unittest+0x3404/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007eaddbaa0 (size 32):
->>   comm "swapper/0", pid 1, jiffies 4294878943 (age 824.804s)
->>   hex dump (first 32 bytes):
->>     2f 74 65 73 74 63 61 73 65 2d 64 61 74 61 2d 32  /testcase-data-2
->>     2f 66 61 69 72 77 61 79 2d 31 00 6b 6b 6b 6b a5  /fairway-1.kkkk.
->>   backtrace:
->>     [<00000000154ad5cf>] .kvasprintf+0x60/0xd0
->>     [<00000000c2320ab8>] .kasprintf+0x2c/0x40
->>     [<000000005511b2ac>] .add_changeset_property.isra.0+0x170/0xaf0
->>     [<0000000060888297>] .of_overlay_fdt_apply+0x5e4/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<00000000daa7ed62>] .of_unittest+0x3404/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec37b000 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878945 (age 824.797s)
->>   hex dump (first 32 bytes):
->>     c0 00 00 07 eb 7a 42 f0 00 00 00 04 00 00 00 00  .....zB.........
->>     c0 00 20 07 ef af e1 a0 00 00 00 00 00 00 00 00  .. .............
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<00000000e6e185ca>] .add_changeset_property.isra.0+0x960/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000043c13a57>] .build_changeset_next_level+0x21c/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<00000000eaf6e6ea>] .of_unittest+0x35b8/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007eb7a42f0 (size 16):
->>   comm "swapper/0", pid 1, jiffies 4294878945 (age 824.797s)
->>   hex dump (first 16 bytes):
->>     72 70 6d 5f 61 76 61 69 6c 00 6b 6b 6b 6b 6b a5  rpm_avail.kkkkk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000f0610228>] .__of_prop_dup+0x60/0x130
->>     [<00000000e6e185ca>] .add_changeset_property.isra.0+0x960/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000043c13a57>] .build_changeset_next_level+0x21c/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<00000000eaf6e6ea>] .of_unittest+0x35b8/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007efafe1a0 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878945 (age 824.797s)
->>   hex dump (first 8 bytes):
->>     00 00 00 64 6b 6b 6b a5                          ...dkkk.
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<00000000e6e185ca>] .add_changeset_property.isra.0+0x960/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<0000000043c13a57>] .build_changeset_next_level+0x21c/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<00000000eaf6e6ea>] .of_unittest+0x35b8/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007ec37bf00 (size 128):
->>   comm "swapper/0", pid 1, jiffies 4294878945 (age 824.797s)
->>   hex dump (first 32 bytes):
->>     c0 00 00 07 eb 7a 5b 60 00 00 00 08 00 00 00 00  .....z[`........
->>     c0 00 20 07 ef af f7 20 00 00 00 00 00 00 00 00  .. .... ........
->>   backtrace:
->>     [<00000000fd6c039b>] .__of_prop_dup+0x48/0x130
->>     [<00000000e6e185ca>] .add_changeset_property.isra.0+0x960/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<00000000eaf6e6ea>] .of_unittest+0x35b8/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0000007eb7a5b60 (size 16):
->>   comm "swapper/0", pid 1, jiffies 4294878945 (age 824.800s)
->>   hex dump (first 16 bytes):
->>     72 70 6d 5f 61 76 61 69 6c 00 6b 6b 6b 6b 6b a5  rpm_avail.kkkkk.
->>   backtrace:
->>     [<00000000c939be68>] .kstrdup+0x44/0xb0
->>     [<00000000f0610228>] .__of_prop_dup+0x60/0x130
->>     [<00000000e6e185ca>] .add_changeset_property.isra.0+0x960/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<00000000eaf6e6ea>] .of_unittest+0x35b8/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->> unreferenced object 0xc0002007efaff720 (size 8):
->>   comm "swapper/0", pid 1, jiffies 4294878945 (age 824.800s)
->>   hex dump (first 8 bytes):
->>     00 00 00 64 00 00 00 c8                          ...d....
->>   backtrace:
->>     [<00000000a2a61f11>] .kmemdup+0x30/0x70
->>     [<00000000fcebe2cd>] .__of_prop_dup+0x7c/0x130
->>     [<00000000e6e185ca>] .add_changeset_property.isra.0+0x960/0xaf0
->>     [<000000008b0977be>] .build_changeset_next_level+0x74/0x370
->>     [<000000009598e32c>] .of_overlay_fdt_apply+0x504/0xf90
->>     [<00000000a7d4460c>] .overlay_data_apply+0xa8/0x118
->>     [<00000000eaf6e6ea>] .of_unittest+0x35b8/0x3778
->>     [<00000000af117d89>] .do_one_initcall+0x7c/0x420
->>     [<00000000c99776b4>] .kernel_init_freeable+0x318/0x3d8
->>     [<0000000001b957ee>] .kernel_init+0x14/0x168
->>     [<000000001fe347b5>] .ret_from_kernel_thread+0x58/0x68
->>
-> 
-> 
+> +
+> +	return NOTIFY_OK;
+> +}
+> +
+> +static struct notifier_block mce_ue_nb = {
+> +	.notifier_call = handle_mce_ue
+> +};
+> +
+>  static int papr_scm_probe(struct platform_device *pdev)
+>  {
+>  	struct device_node *dn = pdev->dev.of_node;
+> @@ -476,6 +548,10 @@ static int papr_scm_remove(struct platform_device *pdev)
+>  {
+>  	struct papr_scm_priv *p = platform_get_drvdata(pdev);
+>  
+> +	mutex_lock(&papr_ndr_lock);
+> +	list_del(&(p->region_list));
+> +	mutex_unlock(&papr_ndr_lock);
+> +
+>  	nvdimm_bus_unregister(p->bus);
+>  	drc_pmem_unbind(p);
+>  	kfree(p->bus_desc.provider_name);
+> @@ -498,7 +574,25 @@ static struct platform_driver papr_scm_driver = {
+>  	},
+>  };
+>  
+> -module_platform_driver(papr_scm_driver);
+> +static int __init papr_scm_init(void)
+> +{
+> +	int ret;
+> +
+> +	ret = platform_driver_register(&papr_scm_driver);
+> +	if (!ret)
+> +		mce_register_notifier(&mce_ue_nb);
+> +
+> +	return ret;
+> +}
+> +module_init(papr_scm_init);
+> +
+> +static void __exit papr_scm_exit(void)
+> +{
+> +	mce_unregister_notifier(&mce_ue_nb);
+> +	platform_driver_unregister(&papr_scm_driver);
+> +}
+> +module_exit(papr_scm_exit);
+> +
+>  MODULE_DEVICE_TABLE(of, papr_scm_match);
+>  MODULE_LICENSE("GPL");
+>  MODULE_AUTHOR("IBM Corporation");
+> -- 
+> 2.25.1
+>
+
+-- 
+Vaibhav Jain <vaibhav@linux.ibm.com>
+Linux Technology Center, IBM India Pvt. Ltd.
 
