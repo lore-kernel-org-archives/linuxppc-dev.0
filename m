@@ -2,93 +2,103 @@ Return-Path: <SRS0=XoDJ=6A=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63446C2BB85
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 09:22:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A1029C2BB85
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 09:24:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C5F34206D6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 09:22:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 467BA206D6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 09:24:12 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Zgz/eeB9";
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="gC6PUpVg"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C5F34206D6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="L8qgkmXk"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 467BA206D6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 492tz26b2SzDrVM
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 19:22:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=207.211.31.120;
- helo=us-smtp-1.mimecast.com; envelope-from=cohuck@redhat.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 492v1P6DnGzDrQb
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2020 19:24:09 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 492txd1YSXzDrQV
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2020 19:20:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=Zgz/eeB9; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=gC6PUpVg; 
- dkim-atps=neutral
-Received: from us-smtp-1.mimecast.com (us-smtp-delivery-1.mimecast.com
- [207.211.31.120])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=L8qgkmXk; dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 492txb6Dsbz8sy0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2020 19:20:51 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 492txb4tD7z9sRN; Thu, 16 Apr 2020 19:20:51 +1000 (AEST)
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::641;
+ helo=mail-pl1-x641.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=L8qgkmXk; dkim-atps=neutral
+Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
+ [IPv6:2607:f8b0:4864:20::641])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 492tLk35CmzDrNR
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2020 18:54:06 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1587027242;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=HBOSp8KoaqgQUXlL6khiQxh82SbQfD3UXPaPxlc3NpI=;
- b=Zgz/eeB9LNPsw+fRyve48eAo2hSl40TxZq64+zG7TY4Yk5GzCSMvkkcBe41GyHVR2o7ywk
- /C47T5N81IhUOGsPSCUYZ/WHvsucskYR9u2+JHXgKTZ3vAa4HFpyqkLGYbqh/sJ+nPpcOG
- qYOLABRQBYR+LVLED7K8O+M5LZK8rH0=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1587027243;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=HBOSp8KoaqgQUXlL6khiQxh82SbQfD3UXPaPxlc3NpI=;
- b=gC6PUpVg1VUXH99HAvRfv32y+vQGI1Ld3pvVEYUseLs69LlT80/857edi4CHbMsOHqFbhK
- Gu0S8U0P1YwO5z8h1DItTxg+AiJxtf0PJxJx7JlI67BoyPUdFm8OwsvDaCHE2sROMhYvmI
- Klo5EKrfRHOwW3EZYzO4lkUmjHnlWP8=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-270-MuypNbuHM0uD0I3hVYYtuw-1; Thu, 16 Apr 2020 04:50:46 -0400
-X-MC-Unique: MuypNbuHM0uD0I3hVYYtuw-1
-Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.phx2.redhat.com
- [10.5.11.11])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 994A818C35A6;
- Thu, 16 Apr 2020 08:50:42 +0000 (UTC)
-Received: from gondolin (ovpn-112-234.ams2.redhat.com [10.36.112.234])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 330E27E7C4;
- Thu, 16 Apr 2020 08:50:22 +0000 (UTC)
-Date: Thu, 16 Apr 2020 10:50:19 +0200
-From: Cornelia Huck <cohuck@redhat.com>
-To: Tianjia Zhang <tianjia.zhang@linux.alibaba.com>
-Subject: Re: [PATCH v2] KVM: Optimize kvm_arch_vcpu_ioctl_run function
-Message-ID: <20200416105019.51191d79.cohuck@redhat.com>
-In-Reply-To: <8b92fb5b-5138-0695-fb90-6c36b8dfad00@linux.alibaba.com>
-References: <20200416051057.26526-1-tianjia.zhang@linux.alibaba.com>
- <878sivx67g.fsf@vitty.brq.redhat.com>
- <1000159f971a6fa3b5bd9e5871ce4d82@kernel.org>
- <8b92fb5b-5138-0695-fb90-6c36b8dfad00@linux.alibaba.com>
-Organization: Red Hat GmbH
+ by ozlabs.org (Postfix) with ESMTPS id 492txb37BLz9sP7
+ for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2020 19:20:51 +1000 (AEST)
+Received: by mail-pl1-x641.google.com with SMTP id t4so1132317plq.12
+ for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2020 02:20:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:references:in-reply-to:mime-version:message-id
+ :content-transfer-encoding;
+ bh=ISswPnrNrNb7nFmczeJsSdHsuzmn6GJTNiO2AA6ZMvY=;
+ b=L8qgkmXkYeu5jJTg+ipIJY8BQF5APB04ZGGEk43KAKB0lojbpQytpa19pr5OsPtK3r
+ u0gE4p2/Sm7ipWuK8kmQLOm/OFyF5ubhyH5b5GpTxa/OYaK4NRrvY9Fql9R0cd717HbX
+ Remjjhg2Y7P1uqUZZJlb3MxqGVrRV+FoGhLYW9icz2UWTSKwJ1nE/OYAIwmpPqcZfLOM
+ U7LlkemoVeiNYs4FpIggxNz+yeMHdZin7xrdISnv77d8dGRH6vJokPQnH+fF5jzZYN48
+ dhk4jkhYGQwFPqCyMjI1SxcuZkGPWc1g96C9E3iDo0eZ32YYPwtkN+HkyWovgvqf72ne
+ A16w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:references:in-reply-to
+ :mime-version:message-id:content-transfer-encoding;
+ bh=ISswPnrNrNb7nFmczeJsSdHsuzmn6GJTNiO2AA6ZMvY=;
+ b=ofIymh0xV01Tut+RhQiyIIxDdTYLLRxZWLBlK3ouHAWOT5P2VC0abI8tc/GvGiOyr0
+ h5CoxwJgoHYN640eNNGQnvMRcBjzrnFmVr21e1JM+S9AeLS/MwJHf1DBA0WeH5GLvSnY
+ s4HI+cJ741S3ysFbQ9Dy537EfPRwwhUUwdts13F55aQudfmf4SZrB9y9ZntPnn1DXtcn
+ aRgnqmnb2JnW0PPNlQ2a1922jyQ4rAX2u4uYdbACiansxk2PIb8AEHwLtMUGpVCOXRqV
+ xZm5OrDJm4NnfrLEBGfEMITkcYMpadrErKKKquwIggMFvgS8Fp8m1zknuMBtAvc0Vjbb
+ TQNw==
+X-Gm-Message-State: AGi0PuboxaR9LiSlK2vbdoA9+lEOHi4ONna8DRw6WBk00DR5RVcfG+nZ
+ vjd+0Fmh1Fs4ArKUr/R5sY4=
+X-Google-Smtp-Source: APiQypIfIWa7ne5B8iyA/iiIAXtW+KwIwjFSYx6zfx/UL24qnf0VWGrY9kqZvVTlfGCEuBUTUc5CVQ==
+X-Received: by 2002:a17:90a:fe8:: with SMTP id 95mr4064190pjz.45.1587028849247; 
+ Thu, 16 Apr 2020 02:20:49 -0700 (PDT)
+Received: from localhost ([203.18.28.220])
+ by smtp.gmail.com with ESMTPSA id i128sm7106767pfc.149.2020.04.16.02.20.47
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 16 Apr 2020 02:20:48 -0700 (PDT)
+Date: Thu, 16 Apr 2020 19:20:05 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [Skiboot] [PATCH v7 0/4] Support for Self Save API in OPAL
+To: ego@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+ linuxppc-dev@ozlabs.org, linuxram@us.ibm.com, mpe@ellerman.id.au,
+ oohall@gmail.com, pratik.r.sampat@gmail.com, Pratik Rajesh Sampat
+ <psampat@linux.ibm.com>, skiboot@lists.ozlabs.org
+References: <20200416075341.75268-1-psampat@linux.ibm.com>
+In-Reply-To: <20200416075341.75268-1-psampat@linux.ibm.com>
 MIME-Version: 1.0
+Message-Id: <1587026695.tnsg4h9617.astroid@bobo.none>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.11
-X-Mailman-Approved-At: Thu, 16 Apr 2020 19:18:11 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,72 +110,107 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: christoffer.dall@arm.com, wanpengli@tencent.com, kvm@vger.kernel.org,
- david@redhat.com, heiko.carstens@de.ibm.com, peterx@redhat.com,
- linux-kernel@vger.kernel.org, hpa@zytor.com, kvmarm@lists.cs.columbia.edu,
- linux-s390@vger.kernel.org, frankja@linux.ibm.com,
- Marc Zyngier <maz@kernel.org>, joro@8bytes.org, x86@kernel.org,
- borntraeger@de.ibm.com, mingo@redhat.com, julien.thierry.kdev@gmail.com,
- thuth@redhat.com, gor@linux.ibm.com, suzuki.poulose@arm.com,
- kvm-ppc@vger.kernel.org, bp@alien8.de, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, jmattson@google.com,
- tsbogend@alpha.franken.de, linux-mips@vger.kernel.org,
- sean.j.christopherson@intel.com, james.morse@arm.com, pbonzini@redhat.com,
- Vitaly Kuznetsov <vkuznets@redhat.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 16 Apr 2020 16:45:33 +0800
-Tianjia Zhang <tianjia.zhang@linux.alibaba.com> wrote:
-
-> On 2020/4/16 16:28, Marc Zyngier wrote:
-> > On 2020-04-16 08:03, Vitaly Kuznetsov wrote: =20
-> >> Tianjia Zhang <tianjia.zhang@linux.alibaba.com> writes:
-> >> =20
-> >>> In earlier versions of kvm, 'kvm_run' is an independent structure
-> >>> and is not included in the vcpu structure. At present, 'kvm_run'
-> >>> is already included in the vcpu structure, so the parameter
-> >>> 'kvm_run' is redundant.
-> >>>
-> >>> This patch simplify the function definition, removes the extra
-> >>> 'kvm_run' parameter, and extract it from the 'kvm_vcpu' structure
-> >>> if necessary.
-> >>>
-> >>> Signed-off-by: Tianjia Zhang <tianjia.zhang@linux.alibaba.com>
-> >>> ---
-> >>>
-> >>> v2 change:
-> >>> =C2=A0 remove 'kvm_run' parameter and extract it from 'kvm_vcpu'
-> >>>
-> >>> =C2=A0arch/mips/kvm/mips.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=
-=A0 3 ++-
-> >>> =C2=A0arch/powerpc/kvm/powerpc.c |=C2=A0 3 ++-
-> >>> =C2=A0arch/s390/kvm/kvm-s390.c=C2=A0=C2=A0 |=C2=A0 3 ++-
-> >>> =C2=A0arch/x86/kvm/x86.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0 | 11 ++++++-----
-> >>> =C2=A0include/linux/kvm_host.h=C2=A0=C2=A0 |=C2=A0 2 +-
-> >>> =C2=A0virt/kvm/arm/arm.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0 |=C2=A0 6 +++---
-> >>> =C2=A0virt/kvm/kvm_main.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=
-=C2=A0 2 +-
-> >>> =C2=A07 files changed, 17 insertions(+), 13 deletions(-)
-
-> > Overall, there is a large set of cleanups to be done when both the vcpu=
-=20
-> > and the run
-> > structures are passed as parameters at the same time. Just grepping the=
-=20
-> > tree for
-> > kvm_run is pretty instructive.
-> >=20
-> >  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 M. =20
+Excerpts from Pratik Rajesh Sampat's message of April 16, 2020 5:53 pm:
+> v6: https://lists.ozlabs.org/pipermail/skiboot/2020-March/016645.html
+> Changelog
+> v6 --> v7
+> 1. Addressed comments from Gautham for reporting warnings and errors
 >=20
-> Sorry, it's my mistake, I only compiled the x86 platform, I will submit=20
-> patch again.
+> Background
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>=20
+> The power management framework on POWER systems include core idle
+> states that lose context. Deep idle states namely "winkle" on POWER8
+> and "stop4" and "stop5" on POWER9 can be entered by a CPU to save
+> different levels of power, as a consequence of which all the
+> hypervisor resources such as SPRs and SCOMs are lost.
+>=20
+> For most SPRs, saving and restoration of content for SPRs and SCOMs
+> is handled by the hypervisor kernel prior to entering an post exit
+> from an idle state respectively. However, there is a small set of
+> critical SPRs and XSCOMs that are expected to contain sane values even
+> before the control is transferred to the hypervisor kernel at system
+> reset vector.
+>=20
+> For this purpose, microcode firmware provides a mechanism to restore
+> values on certain SPRs. The communication mechanism between the
+> hypervisor kernel and the microcode is a standard interface called
+> sleep-winkle-engine (SLW) on Power8 and Stop-API on Power9 which is
+> abstracted by OPAL calls from the hypervisor kernel. The Stop-API
+> provides an interface known as the self-restore API, to which the SPR
+> number and a predefined value to be restored on wake-up from a deep
+> stop state is supplied.
+>=20
+>=20
+> Motivation to introduce a new Stop-API
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>=20
+> The self-restore API expects not just the SPR number but also the
+> value with which the SPR is restored. This is good for those SPRs such
+> as HSPRG0 whose values do not change at runtime, since for them, the
+> kernel can invoke the self-restore API at boot time once the values of
+> these SPRs are determined.
+>=20
+> However, there are use-cases where-in the value to be saved cannot be
+> known or cannot be updated in the layer it currently is.
+> The shortcomings and the new use-cases which cannot be served by the
+> existing self-restore API, serves as motivation for a new API:
 
-I think it's completely fine (and even preferable) to do cleanups like
-that on top.
+Thanks for writing this up, it goes some way to help think about the=20
+feature.
 
-[FWIW, I compiled s390 here.]
+> Shortcoming1:
+> ------------
+> In a special wakeup scenario when a CPU is woken up in stop4/5 and
+> after the task is done, the HCODE puts it back to stop. The value of
+> PSSCR is passed to the HCODE via the self-restore API. The kernel
+> currently provides the value of the deepest stop state due to being
+> conservative. Thus if a core that was in stop4 was woken up due to
+> special wakeup, the HCODE will now put it back to stop5 thus increasing
+> the subsequent wakeup latency to ~200us.
+> A mechanism is needed in place to update the PSSCR value each time the
+> core is woken up due to special wakeup.
 
+This seems like a shortcoming of the wakeup firmware that shouldn't need=20
+any APIs to the kernel to solve, but the whole deep sleep wakeup seems=20
+like a shortcoming so let's assume they won't do that for whatever=20
+reason, then how much of a problem is this really? Are special wakeups=20
+that frequent?
+
+> Shortcoming2:
+> ------------
+> The value of LPCR is dynamic based on if the CPU is entered a stop
+> state during cpu idle versus cpu hotplug.
+> Today, an additional self-restore call is made before entering
+> CPU-Hotplug to clear the PECE1 bit in stop-API so that if we are
+> woken up by a special wakeup on an offlined CPU, we go back to stop
+> with the the bit cleared.
+> There is a overhead of an extra call
+
+This is a self-restore call when we offline or online a CPU? That's not=20
+a real problem either, is it?
+
+> New Use-case:
+> -------------
+> In the case where the hypervisor is running on an
+> ultravisor environment, the boot time is too late in the cycle to make
+> the self-restore API calls, as these cannot be invoked from an
+> non-secure context anymore
+>=20
+> To address these shortcomings, the firmware provides another API known
+> as the self-save API. The self-save API only takes the SPR number as a
+> parameter and will ensure that on wakeup from a deep-stop state the
+> SPR is restored with the value that it contained prior to entering the
+> deep-stop.
+>=20
+
+If the ultravisor is deployed in production only systems where we don't=20
+use runtime deep-stop states, do we need to handle this case?
+
+Thanks,
+Nick
