@@ -2,94 +2,78 @@ Return-Path: <SRS0=SBso=6B=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BEAB8C2D0EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 19:04:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 95B0EC2D0EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 20:09:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 747E120780
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 19:04:05 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="PCK2CWPB"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 747E120780
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
+	by mail.kernel.org (Postfix) with ESMTPS id E32BA221EC
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 20:09:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E32BA221EC
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 493lr211JYzDsP0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 05:04:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=oracle.com (client-ip=156.151.31.86; helo=userp2130.oracle.com;
- envelope-from=mike.kravetz@oracle.com; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 493nHF3zsnzDrgN
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 06:09:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=oracle.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256
- header.s=corp-2020-01-29 header.b=PCK2CWPB; 
- dkim-atps=neutral
-Received: from userp2130.oracle.com (userp2130.oracle.com [156.151.31.86])
+ spf=none (no SPF record) smtp.mailfrom=arndb.de
+ (client-ip=212.227.17.13; helo=mout.kundenserver.de;
+ envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arndb.de
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 493lcD5NkGzDqLC
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2020 04:53:48 +1000 (AEST)
-Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
- by userp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 03HIqHgt124145;
- Fri, 17 Apr 2020 18:53:11 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
- h=from : to : cc :
- subject : date : message-id : mime-version : content-transfer-encoding;
- s=corp-2020-01-29; bh=gYVwjW9uIr3S+PxyOOpBOdl7Nnodqy4JmhYGCNmfQWM=;
- b=PCK2CWPBOxDZpbIRlSU/o+jYUMdyVvyKxjAMbW+oUxjYTSaHIambzyU7BFyZHbzeF4L9
- jaKxiLm80n8l4nnHnZPGPepMUpf+V4l11YuMmLQTgL/OLSY2Mz2vAHKWucWhtfR0llkY
- l6FnrY9EjQzQknGNZpicgor/igM+VAitMhMbeYS+Ljh1G29ma/aYl84zvZNDQqNvFV1T
- I0DqNzDqA385q7pXjl+nwBs8ea8SGWdQYBnLwrPWWfNbrGTBulSYfDmkAUXiA0aLipGE
- aN2SOyDIr6aERMsWJLNV0utldXu2OdLE9KOASoTm/CY2HsDa4VHth5atxrHeASpUqunP xw== 
-Received: from aserp3020.oracle.com (aserp3020.oracle.com [141.146.126.70])
- by userp2130.oracle.com with ESMTP id 30e0aae8rg-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 17 Apr 2020 18:53:11 +0000
-Received: from pps.filterd (aserp3020.oracle.com [127.0.0.1])
- by aserp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 03HIcJ0Z118535;
- Fri, 17 Apr 2020 18:51:10 GMT
-Received: from userv0122.oracle.com (userv0122.oracle.com [156.151.31.75])
- by aserp3020.oracle.com with ESMTP id 30dn9ks84n-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 17 Apr 2020 18:51:10 +0000
-Received: from abhmp0006.oracle.com (abhmp0006.oracle.com [141.146.116.12])
- by userv0122.oracle.com (8.14.4/8.14.4) with ESMTP id 03HIotrG025242;
- Fri, 17 Apr 2020 18:50:55 GMT
-Received: from monkey.oracle.com (/71.63.128.209)
- by default (Oracle Beehive Gateway v4.0)
- with ESMTP ; Fri, 17 Apr 2020 11:50:55 -0700
-From: Mike Kravetz <mike.kravetz@oracle.com>
-To: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-doc@vger.kernel.org
-Subject: [PATCH v3 0/4] Clean up hugetlb boot command line processing
-Date: Fri, 17 Apr 2020 11:50:45 -0700
-Message-Id: <20200417185049.275845-1-mike.kravetz@oracle.com>
-X-Mailer: git-send-email 2.25.2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 493nDc5Kd2zDrbv
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2020 06:06:54 +1000 (AEST)
+Received: from mail-qt1-f180.google.com ([209.85.160.180]) by
+ mrelayeu.kundenserver.de (mreue106 [212.227.15.145]) with ESMTPSA (Nemesis)
+ id 1M4Ja3-1jPoNP2Imf-000PBk for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr
+ 2020 22:06:50 +0200
+Received: by mail-qt1-f180.google.com with SMTP id w24so3036004qts.11
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr 2020 13:06:49 -0700 (PDT)
+X-Gm-Message-State: AGi0PuYPtEgPvxh517+geiJo+tcLP1wM0D6SY6BHavX+ptEE2v72KF1V
+ XXVTUKKe/1UBShJUQ4gKqP+5hSLw8AyfKUGyHLU=
+X-Google-Smtp-Source: APiQypIuVYTMsWNIMRfLctc2Px6V3Nv5laT/h9easo3nN8JdO/iC9u+TYaVOxEylqCGtuWj1RzmpVdKpAc4Qm4vntwk=
+X-Received: by 2002:ac8:6757:: with SMTP id n23mr4819273qtp.304.1587154008516; 
+ Fri, 17 Apr 2020 13:06:48 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9594
- signatures=668686
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxlogscore=999
- mlxscore=0 adultscore=0
- spamscore=0 phishscore=0 bulkscore=0 suspectscore=0 malwarescore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2003020000
- definitions=main-2004170142
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9594
- signatures=668686
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 bulkscore=0
- clxscore=1015
- impostorscore=0 mlxlogscore=999 mlxscore=0 lowpriorityscore=0
- suspectscore=0 adultscore=0 spamscore=0 malwarescore=0 phishscore=0
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2003020000 definitions=main-2004170142
+References: <20200414070142.288696-1-hch@lst.de>
+ <20200414070142.288696-5-hch@lst.de>
+ <CAK8P3a3HvbPKTkwfWr6PbZ96koO_NrJP1qgk8H1mgk=qUScGkQ@mail.gmail.com>
+ <20200415074514.GA1393@lst.de>
+ <CAK8P3a0QGQX85LaqKC1UuTERk6Bpr5TW6aWF+jxi2cOpa4L_AA@mail.gmail.com>
+ <20200417132714.GA6401@lst.de> <87o8rqc7az.fsf@x220.int.ebiederm.org>
+In-Reply-To: <87o8rqc7az.fsf@x220.int.ebiederm.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 17 Apr 2020 22:06:32 +0200
+X-Gmail-Original-Message-ID: <CAK8P3a0x0vsgVp-pRWd7rL-6Zg9KimNQjJpnp6KG+kS1=eK7wg@mail.gmail.com>
+Message-ID: <CAK8P3a0x0vsgVp-pRWd7rL-6Zg9KimNQjJpnp6KG+kS1=eK7wg@mail.gmail.com>
+Subject: Re: [PATCH 4/8] binfmt_elf: open code copy_siginfo_to_user to
+ kernelspace buffer
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Provags-ID: V03:K1:xOxQvadrI6Xd64ZZILfJmYg+7H53bQcPb8LkahO5WvGMmATJoLz
+ U0lEIMDGEp5QY+jUO8bKdhJMXdeFHlxBpHRTUtjrFbrUVzjKZl9aV8xVy78TE6tyU15Q/sf
+ N9VDNxRUgxzFM/ouxyRk31DbvjexLmrWkiy00C1A7pvFQ/j9D2vAXUFssqSKE/0v8pZWN4e
+ ac+Iqh0HyQvDfmpbEv3Hw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:UVWB+BP5jpA=:z+vKHUozGsW4CYhVAG2epm
+ 93dl5aWlQy12NHcaCdZncE2I3AyV3Zfw6jAau5iD6Zs7+coVrxdrXhIO7GzBaM99xhnOqRFJO
+ R6EOEva5sp6KlPjOQaDzxzeGL9wQEBoTHg6yAYB168OldjU0Sn12aRMlvYtYXlmvqz2Rujn1O
+ ROTxES8uotycd/mnN4j2PsFZC3koxzi6yoLjjbbTn8p+GB+JTm2hBm+b/DwPuhf1W6JXkm95a
+ waEazoQUD92rUwPD2Qldb8ixzaBEnJmeIE7tn2WTnQ1EY33M0MDvPmFeNa+EJ7mxacubKY1TH
+ ovxxcg3ThGCKHfNgGeHBChLdzFdzlqXflo8XKhGwdoUvP4MG1fSS2WSaQvROBw1OC0SOowtAd
+ DOBOpHjbIa1Kt/iSdins+rJ0jwcmP73bTdmWEjkp/02D4mWoe38uZJa/8AqHD9KpwdlaFfO8E
+ XKCoY2+QVJDQII6dFGfSi12SP5x3fgPx4VU3KAX6G/Pl7spM19ZEEBbJRYQjtDO3l2BnzwXyO
+ GIn1MAaGkSmV8F+5gOm+CMfIZ6FiPBKOyctCLGYLiLAaMzIDolHMyvpoFzCASvl9cLAHccqo2
+ la8PPwIo8vc8MWP9DOsJduQhtXPWozBioyiIvE02IgRITLd4GAOu6gEnsmPkcguEboW6zXHGw
+ HWiKRgHiaPhHjurlgpw7JiFobXjVvoCcc7ITwi6WNPwYwIqqoqj0+V6eIaHAS2NRorSi4tkqg
+ fSm8JRanPqYb0vNECU0ot1ceAyNt8YLvb6bX9VAst6yWkePKsnCoWhANdSOYwB0akrh7VoFhQ
+ kDiLK8wAraK0ORiDSdCYP3zP0BXSuFpvNJjggiZi4IaKyyJWDo=
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,81 +85,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Peter Xu <peterx@redhat.com>,
- Paul Mackerras <paulus@samba.org>, Will Deacon <will@kernel.org>,
- Mina Almasry <almasrymina@google.com>, Jonathan Corbet <corbet@lwn.net>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Longpeng <longpeng2@huawei.com>,
- Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>,
- Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>,
- Nitesh Narayan Lal <nitesh@redhat.com>, Randy Dunlap <rdunlap@infradead.org>,
- Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>,
- "David S . Miller" <davem@davemloft.net>,
- Mike Kravetz <mike.kravetz@oracle.com>
+Cc: the arch/x86 maintainers <x86@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Jeremy Kerr <jk@ozlabs.org>,
+ Linux FS-devel Mailing List <linux-fsdevel@vger.kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Christoph Hellwig <hch@lst.de>,
+ Alexander Viro <viro@zeniv.linux.org.uk>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-v3 -
-   Used weak attribute method of defining arch_hugetlb_valid_size.
-     This eliminates changes to arch specific hugetlb.h files (Peter)
-   Updated documentation (Peter, Randy)
-   Fixed handling of implicitly specified gigantic page preallocation
-     in existing code and removed documentation of such.  There is now
-     no difference between handling of gigantic and non-gigantic pages.
-     (Peter, Nitesh).
-     This requires the most review as there is a small change to
-     undocumented behavior.  See patch 4 commit message for details.
-   Added Acks and Reviews (Mina, Peter)
+On Fri, Apr 17, 2020 at 8:13 PM Eric W. Biederman <ebiederm@xmission.com> wrote:
+>
+> Christoph Hellwig <hch@lst.de> writes:
+>
+> > On Wed, Apr 15, 2020 at 10:20:11AM +0200, Arnd Bergmann wrote:
+> >> > I'd rather keep it out of this series and to
+> >> > an interested party.  Then again x32 doesn't seem to have a whole lot
+> >> > of interested parties..
+> >>
+> >> Fine with me. It's on my mental list of things that we want to kill off
+> >> eventually as soon as the remaining users stop replying to questions
+> >> about it.
+> >>
+> >> In fact I should really turn that into a properly maintained list in
+> >> Documentation/... that contains any options that someone has
+> >> asked about removing in the past, along with the reasons for keeping
+> >> it around and a time at which we should ask about it again.
+> >
+> > To the newly added x86 maintainers:  Arnd brought up the point that
+> > elf_core_dump writes the ABI siginfo format into the core dump. That
+> > format differs for i386 vs x32.  Is there any good way to find out
+> > which is the right format when are not in a syscall?
+> >
+> > As far a I can tell x32 vs i386 just seems to be based around what
+> > syscall table was used for the current syscall, but core dumps aren't
+> > always in syscall context.
+>
+> I don't think this matters.  The i386 and x32 signal structures
+> only differ for SIGCHLD.  The SIGCHLD signal does cause coredumps.
+> So as long as we get the 32bit vs 64bit distinct correct all should be
+> well.
 
-v2 -
-   Fix build errors with patch 1 (Will)
-   Change arch_hugetlb_valid_size arg to unsigned long and remove
-     irrelevant 'extern' keyword (Christophe)
-   Documentation and other misc changes (Randy, Christophe, Mina)
-   Do not process command line options if !hugepages_supported()
-     (Dave, but it sounds like we may want to additional changes to
-      hugepages_supported() for x86?  If that is needed I would prefer
-      a separate patch.)
+Ok, makes sense. Thanks for taking a look into this!
 
-Longpeng(Mike) reported a weird message from hugetlb command line processing
-and proposed a solution [1].  While the proposed patch does address the
-specific issue, there are other related issues in command line processing.
-As hugetlbfs evolved, updates to command line processing have been made to
-meet immediate needs and not necessarily in a coordinated manner.  The result
-is that some processing is done in arch specific code, some is done in arch
-independent code and coordination is problematic.  Semantics can vary between
-architectures.
-
-The patch series does the following:
-- Define arch specific arch_hugetlb_valid_size routine used to validate
-  passed huge page sizes.
-- Move hugepagesz= command line parsing out of arch specific code and into
-  an arch independent routine.
-- Clean up command line processing to follow desired semantics and
-  document those semantics.
-
-[1] https://lore.kernel.org/linux-mm/20200305033014.1152-1-longpeng2@huawei.com
-
-Mike Kravetz (4):
-  hugetlbfs: add arch_hugetlb_valid_size
-  hugetlbfs: move hugepagesz= parsing to arch independent code
-  hugetlbfs: remove hugetlb_add_hstate() warning for existing hstate
-  hugetlbfs: clean up command line processing
-
- .../admin-guide/kernel-parameters.txt         |  40 ++--
- Documentation/admin-guide/mm/hugetlbpage.rst  |  35 ++++
- arch/arm64/mm/hugetlbpage.c                   |  30 +--
- arch/powerpc/mm/hugetlbpage.c                 |  30 +--
- arch/riscv/mm/hugetlbpage.c                   |  24 +--
- arch/s390/mm/hugetlbpage.c                    |  24 +--
- arch/sparc/mm/init_64.c                       |  43 +---
- arch/x86/mm/hugetlbpage.c                     |  23 +--
- include/linux/hugetlb.h                       |   2 +-
- mm/hugetlb.c                                  | 190 +++++++++++++++---
- 10 files changed, 271 insertions(+), 170 deletions(-)
-
--- 
-2.25.2
-
+      Arnd
