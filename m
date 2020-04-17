@@ -5,19 +5,19 @@ X-Spam-Level:
 X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B680C352BE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 15:50:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CFB1C352BE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 15:54:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 886C020936
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 15:50:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 886C020936
+	by mail.kernel.org (Postfix) with ESMTPS id C3FDE20656
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 15:54:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C3FDE20656
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 493gXm4VKzzDr8H
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 01:50:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 493gdB3qrkzDqc6
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 01:54:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=srs0=8ax1=6b=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
@@ -27,12 +27,12 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 493gSK0nVfzDrgJ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2020 01:46:40 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 493gTQ5rBCzDrhj
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2020 01:47:38 +1000 (AEST)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 206203] kmemleak reports various leaks in drivers/of/unittest.c
-Date: Fri, 17 Apr 2020 15:46:38 +0000
+Date: Fri, 17 Apr 2020 15:47:35 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
@@ -48,7 +48,7 @@ X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
 X-Bugzilla-Changed-Fields: attachments.created
-Message-ID: <bug-206203-206035-AVA4q1wknv@https.bugzilla.kernel.org/>
+Message-ID: <bug-206203-206035-SpD0ltbknX@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-206203-206035@https.bugzilla.kernel.org/>
 References: <bug-206203-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -73,20 +73,10 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D206203
 
---- Comment #11 from Erhard F. (erhard_f@mailbox.org) ---
-Created attachment 288565
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D288565&action=3Dedit
-kmemleak output (kernel 5.7-rc1, PowerMac G5 11,2)
-
-Applied Frank's patch set on top of 5.7-rc1. Though there are certainly less
-memory leaks now, there are still some OF ones reported.
-
-Frank Rowand (5):
-  of: unittest: kmemleak on changeset destroy
-  of: unittest: kmemleak in of_unittest_platform_populate()
-  of: unittest: kmemleak in of_unittest_overlay_high_level()
-  of: overlay: kmemleak in dup_and_fixup_symbol_prop()
-  of: unittest: kmemleak in duplicate property update
+--- Comment #12 from Erhard F. (erhard_f@mailbox.org) ---
+Created attachment 288567
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D288567&action=3Dedit
+dmesg (kernel 5.7-rc1, PowerMac G5 11,2)
 
 --=20
 You are receiving this mail because:
