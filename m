@@ -2,93 +2,86 @@ Return-Path: <SRS0=SBso=6B=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 679C1C2BA2B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 03:20:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 23C91C2BB1D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 04:09:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1893421D94
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 03:20:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 88C1921D93
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 04:09:57 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="iDF3Rr2Q";
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="iDF3Rr2Q"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1893421D94
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OmgdRQx3"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 88C1921D93
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 493Lv60NgKzDsTL
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 13:20:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 493N0M1BMmzF0d9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 14:09:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=207.211.31.120;
- helo=us-smtp-1.mimecast.com; envelope-from=jasowang@redhat.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::644;
+ helo=mail-pl1-x644.google.com; envelope-from=oohall@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=iDF3Rr2Q; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=iDF3Rr2Q; 
- dkim-atps=neutral
-Received: from us-smtp-1.mimecast.com (us-smtp-delivery-1.mimecast.com
- [207.211.31.120])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=OmgdRQx3; dkim-atps=neutral
+Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
+ [IPv6:2607:f8b0:4864:20::644])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 493Lry0wmqzF0dT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr 2020 13:18:25 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1587093501;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=9kod4sBVNZl13j111ZtiqdMeSXjTm/Tfeat7xy/R1z0=;
- b=iDF3Rr2QhqQ8/1Trk2HSHyRHJHyKKgbXy4sQLBS1xQV1EQ//YbSkEcS+x3IIWcsXK7kiFi
- Pnra9u481jzbRSqhI5f595Y7FQeo4i/CvKE+6zY3m/Bzwk6aXcm515c7yyfRt4NJEeF0Uy
- hMhmQA2MsvNj36MzCgYbEVscl8g1wSo=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1587093501;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=9kod4sBVNZl13j111ZtiqdMeSXjTm/Tfeat7xy/R1z0=;
- b=iDF3Rr2QhqQ8/1Trk2HSHyRHJHyKKgbXy4sQLBS1xQV1EQ//YbSkEcS+x3IIWcsXK7kiFi
- Pnra9u481jzbRSqhI5f595Y7FQeo4i/CvKE+6zY3m/Bzwk6aXcm515c7yyfRt4NJEeF0Uy
- hMhmQA2MsvNj36MzCgYbEVscl8g1wSo=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-92-IdiGn_JcMJi4EAOTBKuGeg-1; Thu, 16 Apr 2020 23:12:26 -0400
-X-MC-Unique: IdiGn_JcMJi4EAOTBKuGeg-1
-Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
- [10.5.11.23])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 1D22E8017F3;
- Fri, 17 Apr 2020 03:12:24 +0000 (UTC)
-Received: from [10.72.13.254] (ovpn-13-254.pek2.redhat.com [10.72.13.254])
- by smtp.corp.redhat.com (Postfix) with ESMTP id F061027BD7;
- Fri, 17 Apr 2020 03:12:15 +0000 (UTC)
-Subject: Re: [PATCH V2] vhost: do not enable VHOST_MENU by default
-To: "Michael S. Tsirkin" <mst@redhat.com>
-References: <20200415024356.23751-1-jasowang@redhat.com>
- <20200416185426-mutt-send-email-mst@kernel.org>
-From: Jason Wang <jasowang@redhat.com>
-Message-ID: <b7e2deb7-cb64-b625-aeb4-760c7b28c0c8@redhat.com>
-Date: Fri, 17 Apr 2020 11:12:14 +0800
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.9.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 493MyJ5n8tzDrcK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr 2020 14:08:08 +1000 (AEST)
+Received: by mail-pl1-x644.google.com with SMTP id f8so499131plt.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2020 21:08:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=1favo7u/N3GGzynnXhNSh5aFkCUQ5dnyg32mk9RZIBM=;
+ b=OmgdRQx3SUepAmtdh/2FWRC02/sc67dVsgZdpItOmn4LGZ8CAzN46L74X2l5ONQ8iR
+ Zkl4AxHi+KfGuT34Py9ihhcdv5gURKoDabrXnY/Tut5H6aF2uKFco5qMKlyBBRLnalnm
+ D0+xG4XXDsEM3sXwm8ImZ9EcAtB3iZ5XFynlDmWaSBYHGdFinnRc/nmTwCADkY3pumB0
+ Iwye/0MXhMYhc9M5WLHKtm6tDwZ5nwqr5TNsGoODAAQsGeExPo1ZWCOuKQD2wuypqyyQ
+ X5qg59eIic9PbWJloNoe4IWaQdcedbrnCC9IyZjXLCr4Nx5bGH8AxYsnluRCsHL/xNc8
+ Qsiw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=1favo7u/N3GGzynnXhNSh5aFkCUQ5dnyg32mk9RZIBM=;
+ b=Qsb3rEdc5RLzOiOzyTgcbx5/Rugh/gd+0m5uj/tjMBJbl88WEnOikPHrLiDm0pzrJw
+ cGfShRnWCQYGZ1ftT2EgjkfbctkUT+Wd18wYW04gxTkcpec1f1Rdd9Z9AvCj0ri20E7Q
+ c4kBnEETQVeJ6e2Wrn+Qeg/FjLFwNlr0EyirWnKooKyw3w6dY8VSeEchtRFMcHgu2xZK
+ 9aZHndtW1plTa9wChgJuOu6oeehaDWRBk7XIO1FNc0QmCKAwl+6qvImaxkDOT1550h2p
+ zWYgrk8Szj6r9WRN85aZkM1ZuO//hbRH2JO1mzalBnQDm1p8jnH3Kg5EO5TASuA9c0hq
+ jnwA==
+X-Gm-Message-State: AGi0PubG/MCvzddOz2r/EafxGwQMzbrII4LMiivMawqhs/vPoZw98iHQ
+ dBuTBrRJhyYzip5282ohr9JyCcHy
+X-Google-Smtp-Source: APiQypL+BYtUy0w6Wx1KTuXTI/x3rNVLS3QGeHFbChaph43wIHpHvZI0SKD0AZLc+uGAL0vDXwrf4Q==
+X-Received: by 2002:a17:90b:3110:: with SMTP id
+ gc16mr1923293pjb.155.1587096484394; 
+ Thu, 16 Apr 2020 21:08:04 -0700 (PDT)
+Received: from 192-168-1-13.tpgi.com.au (115-64-37-247.static.tpgi.com.au.
+ [115.64.37.247])
+ by smtp.gmail.com with ESMTPSA id b2sm16693718pgg.77.2020.04.16.21.08.02
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 16 Apr 2020 21:08:03 -0700 (PDT)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/pseries: Make vio and ibmebus initcalls pseries
+ specific
+Date: Fri, 17 Apr 2020 14:07:49 +1000
+Message-Id: <20200417040749.25800-1-oohall@gmail.com>
+X-Mailer: git-send-email 2.21.1
 MIME-Version: 1.0
-In-Reply-To: <20200416185426-mutt-send-email-mst@kernel.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,59 +93,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, tsbogend@alpha.franken.de, gor@linux.ibm.com,
- kvm@vger.kernel.org, linux-kernel@vger.kernel.org, heiko.carstens@de.ibm.com,
- linux-mips@vger.kernel.org, virtualization@lists.linux-foundation.org,
- borntraeger@de.ibm.com, geert@linux-m68k.org, netdev@vger.kernel.org,
- paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Cc: Oliver O'Halloran <oohall@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+The vio and ibmebus buses are used for pseries specific paravirtualised
+devices and currently they're initialised by the generic initcall types.
+This is mostly fine, but it can result in some nuisance errors in dmesg
+when booting on PowerNV on some OSes, e.g.
 
-On 2020/4/17 =E4=B8=8A=E5=8D=886:55, Michael S. Tsirkin wrote:
-> On Wed, Apr 15, 2020 at 10:43:56AM +0800, Jason Wang wrote:
->> We try to keep the defconfig untouched after decoupling CONFIG_VHOST
->> out of CONFIG_VIRTUALIZATION in commit 20c384f1ea1a
->> ("vhost: refine vhost and vringh kconfig") by enabling VHOST_MENU by
->> default. Then the defconfigs can keep enabling CONFIG_VHOST_NET
->> without the caring of CONFIG_VHOST.
->>
->> But this will leave a "CONFIG_VHOST_MENU=3Dy" in all defconfigs and ev=
-en
->> for the ones that doesn't want vhost. So it actually shifts the
->> burdens to the maintainers of all other to add "CONFIG_VHOST_MENU is
->> not set". So this patch tries to enable CONFIG_VHOST explicitly in
->> defconfigs that enables CONFIG_VHOST_NET and CONFIG_VHOST_VSOCK.
->>
->> Acked-by: Christian Borntraeger<borntraeger@de.ibm.com>  (s390)
->> Acked-by: Michael Ellerman<mpe@ellerman.id.au>  (powerpc)
->> Cc: Thomas Bogendoerfer<tsbogend@alpha.franken.de>
->> Cc: Benjamin Herrenschmidt<benh@kernel.crashing.org>
->> Cc: Paul Mackerras<paulus@samba.org>
->> Cc: Michael Ellerman<mpe@ellerman.id.au>
->> Cc: Heiko Carstens<heiko.carstens@de.ibm.com>
->> Cc: Vasily Gorbik<gor@linux.ibm.com>
->> Cc: Christian Borntraeger<borntraeger@de.ibm.com>
->> Reported-by: Geert Uytterhoeven<geert@linux-m68k.org>
->> Signed-off-by: Jason Wang<jasowang@redhat.com>
-> I rebased this on top of OABI fix since that
-> seems more orgent to fix.
-> Pushed to my vhost branch pls take a look and
-> if possible test.
-> Thanks!
+[    2.984439] synth uevent: /devices/vio: failed to send uevent
+[    2.984442] vio vio: uevent: failed to send synthetic uevent
+[   17.968551] synth uevent: /devices/vio: failed to send uevent
+[   17.968554] vio vio: uevent: failed to send synthetic uevent
 
+We don't see anything similar for the ibmebus because that depends on
+!CONFIG_LITTLE_ENDIAN.
 
-I test this patch by generating the defconfigs that wants vhost_net or=20
-vhost_vsock. All looks fine.
+This patch squashes those by switching to using machine_*_initcall() so the bus
+type is only registered when the kernel is running on a pseries machine.
 
-But having CONFIG_VHOST_DPN=3Dy may end up with the similar situation tha=
-t=20
-this patch want to address.
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+---
+ arch/powerpc/platforms/pseries/ibmebus.c | 2 +-
+ arch/powerpc/platforms/pseries/vio.c     | 6 +++---
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-Maybe we can let CONFIG_VHOST depends on !ARM || AEABI then add another=20
-menuconfig for VHOST_RING and do something similar?
-
-Thanks
-
+diff --git a/arch/powerpc/platforms/pseries/ibmebus.c b/arch/powerpc/platforms/pseries/ibmebus.c
+index b91eb09..4cd9e65 100644
+--- a/arch/powerpc/platforms/pseries/ibmebus.c
++++ b/arch/powerpc/platforms/pseries/ibmebus.c
+@@ -464,4 +464,4 @@ static int __init ibmebus_bus_init(void)
+ 
+ 	return 0;
+ }
+-postcore_initcall(ibmebus_bus_init);
++machine_postcore_initcall(pseries, ibmebus_bus_init);
+diff --git a/arch/powerpc/platforms/pseries/vio.c b/arch/powerpc/platforms/pseries/vio.c
+index 37f1f25..33be37e 100644
+--- a/arch/powerpc/platforms/pseries/vio.c
++++ b/arch/powerpc/platforms/pseries/vio.c
+@@ -1513,7 +1513,7 @@ static int __init vio_bus_init(void)
+ 
+ 	return 0;
+ }
+-postcore_initcall(vio_bus_init);
++machine_postcore_initcall(pseries, vio_bus_init);
+ 
+ static int __init vio_device_init(void)
+ {
+@@ -1522,7 +1522,7 @@ static int __init vio_device_init(void)
+ 
+ 	return 0;
+ }
+-device_initcall(vio_device_init);
++machine_device_initcall(pseries, vio_device_init);
+ 
+ static ssize_t name_show(struct device *dev,
+ 		struct device_attribute *attr, char *buf)
+@@ -1703,4 +1703,4 @@ static int __init vio_init(void)
+ 	dma_debug_add_bus(&vio_bus_type);
+ 	return 0;
+ }
+-fs_initcall(vio_init);
++machine_fs_initcall(pseries, vio_init);
+-- 
+2.9.5
 
