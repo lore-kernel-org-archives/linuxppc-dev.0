@@ -2,58 +2,88 @@ Return-Path: <SRS0=SBso=6B=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_2 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64662C2BB1D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 23:04:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 79494C2BB1D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 23:42:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AF551214D8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 23:04:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AF551214D8
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=buserror.net
+	by mail.kernel.org (Postfix) with ESMTPS id DAE8A2083E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 23:42:24 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Yq7npGFo"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DAE8A2083E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 493s944ZxjzDrfd
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 09:04:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 493t193vqnzDrfV
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 09:42:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::442;
+ helo=mail-pf1-x442.google.com; envelope-from=amodra@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=buserror.net
- (client-ip=165.227.176.147; helo=baldur.buserror.net;
- envelope-from=oss@buserror.net; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=buserror.net
-Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=Yq7npGFo; dkim-atps=neutral
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 493s6z3chVzDr8v
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2020 09:02:19 +1000 (AEST)
-Received: from [2601:449:8480:af0:12bf:48ff:fe84:c9a0]
- by baldur.buserror.net with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
- (Exim 4.89) (envelope-from <oss@buserror.net>)
- id 1jPZzx-0007Uz-49; Fri, 17 Apr 2020 18:02:14 -0500
-Message-ID: <1f05e37b5aa52aad44d4310edfdc6b36894cb964.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Wang Wenhu <wenhu.wang@vivo.com>, gregkh@linuxfoundation.org, 
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Fri, 17 Apr 2020 18:02:12 -0500
-In-Reply-To: <20200417172130.14287-1-wenhu.wang@vivo.com>
-References: <20200417172130.14287-1-wenhu.wang@vivo.com>
-Organization: Red Hat
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.1 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 2601:449:8480:af0:12bf:48ff:fe84:c9a0
-X-SA-Exim-Rcpt-To: wenhu.wang@vivo.com, gregkh@linuxfoundation.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- christophe.leroy@c-s.fr, kernel@vivo.com, robh@kernel.org, mpe@ellerman.id.au
-X-SA-Exim-Mail-From: oss@buserror.net
-Subject: Re: [PATCH] drivers: uio: new driver uio_fsl_85xx_cache_sram
-X-SA-Exim-Version: 4.2.1 (built Tue, 02 Aug 2016 21:08:31 +0000)
-X-SA-Exim-Scanned: Yes (on baldur.buserror.net)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 493sz56z53zDrfM
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2020 09:40:33 +1000 (AEST)
+Received: by mail-pf1-x442.google.com with SMTP id r14so1811170pfg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr 2020 16:40:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=t2pHPUO5psRk+6AYZcx6fAxPGP+2uVE/k5zlxhVYoaQ=;
+ b=Yq7npGFoXiQshxjDVuclwgklknnilfl9aB978gDcZ3RKRCa7CXHqaQR5HO/Z1ou7Ct
+ 2ZZFbm5uNsBG7BCcDWTYSkxzz6F7nIlq380QkFsbmnDCsfb4tNjWcjNVNpVUlHlDTWou
+ LMicDqgfxjbhMA2iq9ryyBOlqNH9zyUyCBJamJ1hXlyN0CqBqmUcZ/Poppam0BJ2rjhr
+ QVuwfn+6vM+8aS3oIUMEbsze+RbU8cSsj5CKsxZJXEWh81RHsFQT2GjnnJ8Oyd2ZkiAa
+ W2Fo9n5I+HJAaRcQrbcmxNN3rN+KGXshiKOHVJ0tzsNqq98KPO79Xfbw5+qv/P/iiLH2
+ X6Lw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=t2pHPUO5psRk+6AYZcx6fAxPGP+2uVE/k5zlxhVYoaQ=;
+ b=KU2EdiijfowxG7M1pb1OVu5uvgi0msaoGx6NecSGKzR78HVwaPGKFfnubiogRL3FlH
+ xCMmXn9xdCC81DTQOMSWUdWtf7A+J2j4/uHOSf3PkFk+SRtV8RZN+zyDPjKjHQmEnIcb
+ u0oDz0ey6UwNkzwe6+kF4doa7doJ/mCwO3DQM1pyWHv+9KZPdycQse5+P/bWkbDVxlfw
+ bApRTyHTOx35KRh2yj5zcbyaR/EEfc0v81U/zFU3gppd+R1dXLGk5Qg/xYt1nPyP5213
+ 6YFCcrDSsX8896dZ0BP4M3AmeYH21cgVRAWRAQuxfOQJV/zn6QrnEBL8Ycita918dM/5
+ p/jw==
+X-Gm-Message-State: AGi0PuaOStSS4fDZJM8ZDHvmuj03iBW/Rcni6YM+tzHT6pC8WYW6alhy
+ j0aW4wFjhjQYZ7eNfK9qrXg=
+X-Google-Smtp-Source: APiQypLr/AS425mDt0OZARiNY619IeuikYJvqstxOLMxwlfVwb3oVlgLCzB/uSSUZ6O66AvHNAaKcA==
+X-Received: by 2002:a62:4dc3:: with SMTP id a186mr5858229pfb.40.1587166830971; 
+ Fri, 17 Apr 2020 16:40:30 -0700 (PDT)
+Received: from bubble.grove.modra.org ([2406:3400:51d:8cc0:f104:389:7c30:4029])
+ by smtp.gmail.com with ESMTPSA id w3sm5568361pfn.115.2020.04.17.16.40.29
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 17 Apr 2020 16:40:30 -0700 (PDT)
+Received: by bubble.grove.modra.org (Postfix, from userid 1000)
+ id 3604688BCA; Sat, 18 Apr 2020 09:10:26 +0930 (ACST)
+Date: Sat, 18 Apr 2020 09:10:26 +0930
+From: Alan Modra <amodra@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [RFC PATCH] powerpc/64/signal: balance return predictor stack in
+ signal trampoline
+Message-ID: <20200417234026.GB29913@bubble.grove.modra.org>
+References: <20200417091747.316707-1-npiggin@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200417091747.316707-1-npiggin@gmail.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,33 +95,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel@vivo.com, robh@kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2020-04-17 at 10:21 -0700, Wang Wenhu wrote:
-> Implements a new uio driver for freescale 85xx platforms to access
-> the Cache-Sram form user level. It is extremely helpful for the user
-> space applications that require high performance memory accesses.
-> 
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Christophe Leroy <christophe.leroy@c-s.fr>
-> Cc: Scott Wood <oss@buserror.net>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Signed-off-by: Wang Wenhu <wenhu.wang@vivo.com>
-> ---
->  drivers/uio/Kconfig                   |   8 +
->  drivers/uio/Makefile                  |   1 +
->  drivers/uio/uio_fsl_85xx_cache_sram.c | 407 ++++++++++++++++++++++++++
->  3 files changed, 416 insertions(+)
->  create mode 100644 drivers/uio/uio_fsl_85xx_cache_sram.c
+On Fri, Apr 17, 2020 at 07:17:47PM +1000, Nicholas Piggin wrote:
+> I don't know much about dwarf, gdb still seems to recognize the signal
+> frame and unwind properly if I break inside a signal handler.
 
-NACK, we don't need two copies of this code in the kernel.  Please just wait a
-bit and I'll send a patch to have the existing driver expose a dynamic
-allocation interface to userspace.
+Yes, the dwarf unwind info still looks good.  The commented out dwarf
+near the end of sigtramp.S should probably go.  At least if you really
+can't take an async signal in the trampoline (a kernel question, not
+anything to do with gcc support of async signals as the comment
+wrongly says).  If you *can* take an async signal at some point past
+the trampoline addi, then delete the comment and uncomment the code.
+Note that the advance_loc there bitrotted ever since the nop was added
+before the trampoline, so you'd need to change that to an advance_loc
+that moves from .Lsigrt_start to immediately after the addi, ie. 0x42.
 
--Scott
-
-
+-- 
+Alan Modra
+Australia Development Lab, IBM
